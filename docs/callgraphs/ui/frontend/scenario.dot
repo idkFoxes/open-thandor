@@ -1,0 +1,6 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState" [label="0x00547D60\nFrontendRoot_TickNetworkPagesMovieCursorAndScenarioState"];
+  "FrontendMissionBriefingPage_Initialize" [label="0x0054C9F0\nFrontendMissionBriefingPage_Initialize"];
+}

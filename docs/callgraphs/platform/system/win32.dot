@@ -1,0 +1,7 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "Win32_PumpMessages" [label="0x005868D0\nWin32_PumpMessages"];
+  "Win32_ShouldTranslateMessageFlags" [label="0x00577B90\nWin32_ShouldTranslateMessageFlags"];
+  "Win32_PumpMessages" -> "Win32_ShouldTranslateMessageFlags";
+}

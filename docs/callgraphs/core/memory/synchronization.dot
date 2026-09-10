@@ -1,0 +1,9 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "SpinLock_Acquire" [label="0x00407470\nSpinLock_Acquire"];
+  "SpinLock_TryAcquireFlags" [label="0x004074A0\nSpinLock_TryAcquireFlags"];
+  "SpinLock_Release" [label="0x004074D0\nSpinLock_Release"];
+  "SpinLock_ReleaseAndInvoke" [label="0x004074F0\nSpinLock_ReleaseAndInvoke"];
+  "Runtime_Shutdown" [label="0x00585F00\nRuntime_Shutdown"];
+}

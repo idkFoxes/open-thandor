@@ -1,0 +1,69 @@
+# Call graph: `ui/controls/text`
+
+63 functions. Addresses are current V523 executable VAs.
+
+## Functions
+
+- `0x004B0200` **UiTooltip_TickCountdown** — local: `UiTooltip_PrepareTargetText`, `UiTooltip_UpdateHoverTarget`
+- `0x004B5F20` **UiNumericTextEditControl_HandleKeyboardAndCommitCf** — local: `UiTextEditControl_RecomputeLayoutAndClampScroll`, `UiNumericTextControl_ParseAndCommitValue`; cross: `UiNode_DefaultKeyboardEventMoveFocusNextCf` → `ui/controls/input`, `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B68C0` **UiPathTextEditControl_HandleKeyboardAndValidateCf** — local: `UiTextEditControl_RecomputeLayoutAndClampScroll`, `UiPathTextControl_UpdateDos83Validity`; cross: `UiNode_DefaultKeyboardEventMoveFocusNextCf` → `ui/controls/input`, `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B7110` **UiRequiredTextEditControl_HandleKeyboardAndValidateCf** — local: `UiTextEditControl_RecomputeLayoutAndClampScroll`, `UiTextControl_UpdateNonEmptyValidity`; cross: `UiNode_DefaultKeyboardEventMoveFocusNextCf` → `ui/controls/input`, `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004227B0` **UiGraphicsAdapterTextButton_DrawFormattedAdapterText** — local: `UiTextButtonControl_DrawClipped`; cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`
+- `0x004B58F0` **UiNumericTextEditControl_RelocateAndRebuildText** — local: `UiNumericTextControl_RebuildTextFromValue`; cross: `UiContainer_RelocateChildren` → `ui/controls/layout`
+- `0x004B5960` **UiTextEditControl_DrawTextSelectionAndCaret** — local: `UiTextEditControl_MeasurePrefixWidth`; cross: `UiWindow_BlitTiledInterior` → `ui/controls/layout`, `UiWindow_BlitTiledHorizontalEdge` → `ui/controls/layout`, `UiWindow_BlitTiledVerticalEdge` → `ui/controls/layout`, `FontGlyph_GetLogicalSizeActiveRegs` → `assets/text/resources`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`
+- `0x004B5DF0` **UiTextEditControl_BeginSelectionAtPointer** — local: `UiTextEditControl_FindCursorIndexAtX`
+- `0x004B5EA0` **UiTextEditControl_UpdateSelectionFromPointer** — local: `UiTextEditControl_FindCursorIndexAtX`; cross: `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B6850` **UiPathTextEditControl_RelocateAndValidateDos83** — local: `UiPathTextControl_UpdateDos83Validity`; cross: `UiContainer_RelocateChildren` → `ui/controls/layout`
+- `0x004B70A0` **UiRequiredTextEditControl_RelocateAndValidateNonEmpty** — local: `UiTextControl_UpdateNonEmptyValidity`; cross: `UiContainer_RelocateChildren` → `ui/controls/layout`
+- `0x004BB5C0` **UiPointerList_SortByExpandedTextFieldAscending** — local: `UiPointerList_CompareExpandedTextFlags`; cross: `UiScrollableControl_ClampOffsetsToViewport` → `ui/controls/lists`
+- `0x004BB6B0` **UiPointerList_SortByExpandedTextFieldDescending** — local: `UiPointerList_CompareExpandedTextFlags`; cross: `UiScrollableControl_ClampOffsetsToViewport` → `ui/controls/lists`
+- `0x005156A0` **UiNumericPairTextButton_DrawFormattedValues** — local: `UiTextButtonControl_DrawClipped`; cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`
+- `0x00515780` **UiPayloadPairTextButton_DrawFormattedPayloads** — local: `UiTextButtonControl_DrawClipped`; cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`
+- `0x004B0320` **UiTooltip_Draw** — cross: `UiNode_GetRoot` → `ui/core/runtime`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`
+- `0x004B0F90` **UiRootStack_PopUntilWindowTextureBoundaryCf** — cross: `UiRootStack_PopCf` → `ui/controls/layout`
+- `0x004B1DD0` **UiFramedTextButtonControl_Relocate** — cross: `UiContainer_RelocateChildren` → `ui/controls/layout`
+- `0x004B1E10` **UiFramedTextButtonControl_DrawClipped** — cross: `UiWindow_BlitTiledHorizontalEdge` → `ui/controls/layout`, `UiWindow_BlitTiledVerticalEdge` → `ui/controls/layout`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`, `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x004B22A0` **UiFramedTextButtonControl_NonRightPress** — cross: `UiNode_InvalidateRoot` → `ui/core/runtime`, `UiActionQueue_Enqueue` → `ui/core/runtime`
+- `0x004B2380` **UiFramedTextButtonControl_NonRightRelease** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B23F0` **UiFramedTextButtonControl_NonRightDrag** — cross: `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B24C0` **UiFramedTextButtonControl_HitTestRect**
+- `0x004B27D0` **UiWindowControl_DrawFramedTextAndChrome** — cross: `UiWindow_BlitTiledHorizontalEdge` → `ui/controls/layout`, `UiWindow_BlitTiledVerticalEdge` → `ui/controls/layout`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`
+- `0x004B2E40` **UiTextButtonControl_Relocate** — cross: `UiContainer_RelocateChildren` → `ui/controls/layout`
+- `0x004B31B0` **UiTextButtonControl_NonRightPress** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B32C0` **UiTextButtonControl_KeyboardEventCf** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`, `UiNode_DefaultKeyboardEventMoveFocusNextCf` → `ui/controls/input`
+- `0x004B37C0` **UiImagePanelControl_DrawAlignedTextureAndChildren** — cross: `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x004B3960` **UiImagePanelControl_HitTestAlignedTextureAndChildren** — cross: `UiContainer_HitTestChildren` → `ui/controls/layout`
+- `0x004B3AA0` **UiFillPanelControl_DrawColorOrTiledTextureAndChildren** — cross: `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x004B5E60` **UiTextEditControl_EndSelection**
+- `0x004B6480` **UiTextEditControl_SuppressIfActionId** — cross: `UiKeyboardFocus_ReleaseNode` → `ui/controls/input`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B64B0` **UiTextEditControl_UnsuppressIfActionId** — cross: `UiKeyboardFocus_AcquireIfNone` → `ui/controls/input`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B64E0` **UiTextEditControl_TickCaretBlink** — cross: `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x004B95E0` **UiSingleLineTextControl_DrawClipped** — cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`, `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x004B9E90` **UiTextListControl_DrawRowsAndSelection** — cross: `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `UiWindow_BlitTiledHorizontalEdge` → `ui/controls/layout`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`
+- `0x004BA040` **UiTextListControl_SelectRowFromPointer** — cross: `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `UiScrollableControl_ClampOffsetsToViewport` → `ui/controls/lists`, `UiActionQueue_Enqueue` → `ui/core/runtime`
+- `0x004BA130` **UiTextListControl_HandleKeyboardNavigationAndSearchCf** — cross: `UiNode_DefaultKeyboardEventMoveFocusNextCf` → `ui/controls/input`, `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiScrollableControl_QueryContentSizeRegs` → `ui/controls/lists`, `UiScrollableControl_ClampOffsetsToViewport` → `ui/controls/lists`
+- `0x004BA390` **UiTextListControl_TickActivationPulse** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`
+- `0x004BA3D0` **UiTextListControl_UnsuppressIfActionId** — cross: `UiContainer_UnsuppressActionId` → `ui/controls/layout`
+- `0x004BA400` **UiTextListControl_SuppressIfActionId** — cross: `UiContainer_SuppressActionId` → `ui/controls/layout`
+- `0x004BA430` **UiPointerList_InitializeMeasuredTextRows** — cross: `FontGlyph_GetLogicalSizeForStyleRegs` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`
+- `0x004BC490` **UiWrappedTextControl_DrawClipped** — cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_DrawWrappedBlockCf` → `assets/text/richtext`, `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x004BCC80` **UiNineSlicePanelControl_DrawTextureFrameAndChildren** — cross: `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x00515830` **UiFormattedContainer_RelocateWithPatchedTextPayloads** — cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`, `UiContainer_RelocateChildren` → `ui/controls/layout`
+- `0x005158B0` **UiFormattedContainer_DrawClipped** — cross: `GraphicsTextureSource_BlitTiledSourceAlpha` → `graphics/resources/texture`
+- `0x00516D10` **UiArmyMetricsPanel_DrawTextureMetricsAndChildren** — cross: `SelectionPanel_RenderArmyRuntimeMetrics` → `gameplay/selection/runtime`, `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x00519110` **UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren** — cross: `SoftwareTexture_BilinearBlendScaleSubresources` → `graphics/backend/software`, `UiContainer_DrawIntersectingChildren` → `ui/controls/layout`
+- `0x00519190` **UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`
+- `0x005191B0` **UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`
+- `0x005191D0` **UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiKeyboardFocus_MoveNext` → `ui/controls/input`
+- `0x004B0150` **UiTooltip_UpdateHoverTarget** — local: `UiTooltip_PrepareTargetText`
+- `0x004B6520` **UiNumericTextControl_RebuildTextFromValue** — local: `UiNumericTextControl_UpdateRangeValidity`
+- `0x004B65F0` **UiNumericTextControl_ParseAndCommitValue** — local: `UiNumericTextControl_UpdateRangeValidity`; cross: `UiActionQueue_Enqueue` → `ui/core/runtime`
+- `0x004B0250` **UiTooltip_PrepareTargetText** — cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `UiRootStack_InvalidateAll` → `ui/controls/layout`
+- `0x004B66E0` **UiNumericTextControl_UpdateRangeValidity**
+- `0x004B6740` **UiTextEditControl_MeasurePrefixWidth** — cross: `FontGlyph_GetLogicalSizeForStyleRegs` → `assets/text/resources`
+- `0x004B6790` **UiTextEditControl_FindCursorIndexAtX** — cross: `FontGlyph_GetLogicalSizeForStyleRegs` → `assets/text/resources`
+- `0x004B7010` **UiPathTextControl_UpdateDos83Validity**
+- `0x004B78F0` **UiTextControl_UpdateNonEmptyValidity**
+- `0x004BB570` **UiPointerList_CompareExpandedTextFlags** — cross: `RichTextCommandStream_CopyExpandedCf` → `assets/text/richtext`
+- `0x004B5D00` **UiTextEditControl_RecomputeLayoutAndClampScroll** — local: `UiTextEditControl_MeasurePrefixWidth`; cross: `FontGlyph_GetLogicalSizeActiveRegs` → `assets/text/resources`
+- `0x004B2E60` **UiTextButtonControl_DrawClipped** — cross: `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`

@@ -1,0 +1,16 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "WorldRuntime_ApplyEdgeScrollAndGetCursorFrame" [label="0x0050D050\nWorldRuntime_ApplyEdgeScrollAndGetCursorFrame"];
+  "WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn" [label="0x0050C7F0\nWorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn"];
+  "WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn" [label="0x0050C850\nWorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn"];
+  "WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading" [label="0x0050C8C0\nWorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading"];
+  "WorldMotion_AdjustHeadingAndRecomputePosition" [label="0x0050C920\nWorldMotion_AdjustHeadingAndRecomputePosition"];
+  "WorldMotion_AdjustHeadingAndClearFieldGridDirty" [label="0x0050C990\nWorldMotion_AdjustHeadingAndClearFieldGridDirty"];
+  "WorldMotion_AdjustDistanceClampAndRecomputePosition" [label="0x0050C9C0\nWorldMotion_AdjustDistanceClampAndRecomputePosition"];
+  "WorldMotion_AdjustPositionMagnitudeClamp" [label="0x0050CA80\nWorldMotion_AdjustPositionMagnitudeClamp"];
+  "WorldMotion_AdjustPitchClampAndRecomputePosition" [label="0x0050CB10\nWorldMotion_AdjustPitchClampAndRecomputePosition"];
+  "WorldMotion_AdjustPitchClampAndClearFieldGridDirty" [label="0x0050CBE0\nWorldMotion_AdjustPitchClampAndClearFieldGridDirty"];
+  "WorldRuntime_TranslateCameraByScreenDelta" [label="0x0050C770\nWorldRuntime_TranslateCameraByScreenDelta"];
+  "WorldRuntime_ApplyEdgeScrollAndGetCursorFrame" -> "WorldRuntime_TranslateCameraByScreenDelta";
+}

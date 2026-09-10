@@ -1,0 +1,10 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "Random_NextPrimary" [label="0x004030B0\nRandom_NextPrimary"];
+  "Random_NextSecondary" [label="0x004030E0\nRandom_NextSecondary"];
+  "Random_SetBothSeeds" [label="0x00403110\nRandom_SetBothSeeds"];
+  "Random_GetSecondarySeed" [label="0x00403130\nRandom_GetSecondarySeed"];
+  "Random_SelectSecondaryStream" [label="0x00403140\nRandom_SelectSecondaryStream"];
+  "Random_SelectPrimaryStream" [label="0x00403150\nRandom_SelectPrimaryStream"];
+}

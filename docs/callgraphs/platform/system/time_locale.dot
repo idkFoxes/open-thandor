@@ -1,0 +1,22 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "TimerSystem_Shutdown" [label="0x005867B0\nTimerSystem_Shutdown"];
+  "Locale_Init" [label="0x00586BA0\nLocale_Init"];
+  "Locale_MapTelephoneCountryCodeToRegionTagPacked" [label="0x00402F70\nLocale_MapTelephoneCountryCodeToRegionTagPacked"];
+  "TimerSystem_Init" [label="0x00586790\nTimerSystem_Init"];
+  "WinMM_TimerDispatchCallback" [label="0x005867E0\nWinMM_TimerDispatchCallback"];
+  "TimerSystem_RegisterPeriodic" [label="0x00586820\nTimerSystem_RegisterPeriodic"];
+  "Locale_FormatDateFieldsUtf16" [label="0x00586DD0\nLocale_FormatDateFieldsUtf16"];
+  "Locale_FormatCurrentDateUtf16" [label="0x00586F10\nLocale_FormatCurrentDateUtf16"];
+  "Locale_GetPackedCurrentDate" [label="0x00587080\nLocale_GetPackedCurrentDate"];
+  "Locale_FormatTimeFieldsUtf16" [label="0x005870C0\nLocale_FormatTimeFieldsUtf16"];
+  "Locale_FormatCurrentTimeUtf16" [label="0x005871B0\nLocale_FormatCurrentTimeUtf16"];
+  "Locale_GetPackedCurrentTime" [label="0x005872B0\nLocale_GetPackedCurrentTime"];
+  "Locale_GetDefaultTelephoneCountryCode" [label="0x005872F0\nLocale_GetDefaultTelephoneCountryCode"];
+  "Locale_CopyDefaultComputerLabelUtf16" [label="0x00587350\nLocale_CopyDefaultComputerLabelUtf16"];
+  "TimerSystem_UnregisterPeriodic" [label="0x00586880\nTimerSystem_UnregisterPeriodic"];
+  "Locale_ParseUnsignedDecimalAscii" [label="0x00586B70\nLocale_ParseUnsignedDecimalAscii"];
+  "TimerSystem_Shutdown" -> "TimerSystem_UnregisterPeriodic";
+  "Locale_Init" -> "Locale_ParseUnsignedDecimalAscii";
+}

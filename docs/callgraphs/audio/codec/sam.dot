@@ -1,0 +1,8 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "SoundCoefficientTransform_ApplyCosineBanksMmx" [label="0x00417700\nSoundCoefficientTransform_ApplyCosineBanksMmx"];
+  "SoundSample_DecodeCoefficientBlockToPcmMmx" [label="0x00418560\nSoundSample_DecodeCoefficientBlockToPcmMmx"];
+  "SoundSample_DecodeCoefficientBlockToMonoPcmMmx" [label="0x004193D0\nSoundSample_DecodeCoefficientBlockToMonoPcmMmx"];
+  "SoundSample_DecodePackedCoefficientBlock" [label="0x0041A430\nSoundSample_DecodePackedCoefficientBlock"];
+}

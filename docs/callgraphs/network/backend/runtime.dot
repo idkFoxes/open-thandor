@@ -1,0 +1,12 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "FrontendNetwork_HandleHandshakeAndPlayerStatePackets" [label="0x0054EF60\nFrontendNetwork_HandleHandshakeAndPlayerStatePackets"];
+  "FrontendNetwork_HostTickCommandAndSnapshotTransfer" [label="0x0054F240\nFrontendNetwork_HostTickCommandAndSnapshotTransfer"];
+  "FrontendNetwork_TickDisconnectTimeoutAndResetSession" [label="0x0054FA10\nFrontendNetwork_TickDisconnectTimeoutAndResetSession"];
+  "FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf" [label="0x00572710\nFrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf"];
+  "Network_Init" [label="0x00584080\nNetwork_Init"];
+  "Network_Shutdown" [label="0x00584DF0\nNetwork_Shutdown"];
+  "NetworkBackend_SetSessionContextCf" [label="0x00584E50\nNetworkBackend_SetSessionContextCf"];
+  "NetworkBackend_SelectInstanceByIndex" [label="0x00585210\nNetworkBackend_SelectInstanceByIndex"];
+}

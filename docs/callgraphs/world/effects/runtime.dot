@@ -1,0 +1,9 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "EffectRuntime_FindDefinitionByIdCf" [label="0x0051E120\nEffectRuntime_FindDefinitionByIdCf"];
+  "EffectRuntime_InitGraphicsResources" [label="0x0051E190\nEffectRuntime_InitGraphicsResources"];
+  "EffectRuntime_ShutdownGraphicsResources" [label="0x0051E210\nEffectRuntime_ShutdownGraphicsResources"];
+  "EffectRuntime_RebaseSlotsAfterLoad" [label="0x0051E340\nEffectRuntime_RebaseSlotsAfterLoad"];
+  "EffectRuntimePool_CreateInstanceFromDefinitionCf" [label="0x0051E4A0\nEffectRuntimePool_CreateInstanceFromDefinitionCf"];
+}

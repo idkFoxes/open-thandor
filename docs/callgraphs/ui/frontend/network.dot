@@ -1,0 +1,12 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "FrontendNetworkSetupPage_InitializeBackendMode" [label="0x0054C260\nFrontendNetworkSetupPage_InitializeBackendMode"];
+  "FrontendTeardown_SaveRootStateSnapshot80" [label="0x005474A0\nFrontendTeardown_SaveRootStateSnapshot80"];
+  "FrontendTransferPage_ValidateInputAndRequestMailbox" [label="0x0054C7D0\nFrontendTransferPage_ValidateInputAndRequestMailbox"];
+  "FrontendTransferPage_OpenAndRequestMailbox" [label="0x0054CE10\nFrontendTransferPage_OpenAndRequestMailbox"];
+  "FrontendNetworkSetupPage_InitializeFromCommandLine" [label="0x0054C830\nFrontendNetworkSetupPage_InitializeFromCommandLine"];
+  "FrontendNetworkSetupPage_InitializeSingleLocalPlayer" [label="0x0054CE80\nFrontendNetworkSetupPage_InitializeSingleLocalPlayer"];
+  "FrontendNetworkSetupPage_InitializeBackendMode" -> "FrontendNetworkSetupPage_InitializeFromCommandLine";
+  "FrontendNetworkSetupPage_InitializeFromCommandLine" -> "FrontendNetworkSetupPage_InitializeSingleLocalPlayer";
+}

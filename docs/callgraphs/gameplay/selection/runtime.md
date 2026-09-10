@@ -1,0 +1,61 @@
+# Call graph: `gameplay/selection/runtime`
+
+55 functions. Addresses are current V523 executable VAs.
+
+## Functions
+
+- `0x0052E350` **SelectionPanel_RenderArmyRuntimeMetrics** — local: `SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs`, `SelectionPanel_DrawIconCellAndAdvanceRegs`, `SelectionPanel_DrawNumberCellAndAdvanceRegs`, `SelectionPanel_DrawProportionalCappedBar`, `SelectionPanel_DrawSolidCappedBar`, `SelectionPanel_DrawSegmentedCappedBar`, `SelectionPanel_DrawForwardCappedBar`; cross: `ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs` → `world/model/runtime`, `GameFactionRuntime_FindRuntimeGroupIndexCf` → `gameplay/faction/runtime`, `ModelRuntime_QueryHierarchyScaleRatioQ12Regs` → `world/model/runtime`, `ArmyRuntime_QueryMetric6CAndDefinitionC4Regs` → `gameplay/army/runtime`
+- `0x0055FA20` **InGameSelection_RebuildOwnedClass16Selection** — local: `SelectionPointerArray_Clear32`, `SelectionPointerArray_InsertUniqueAndRecenter`; cross: `InGameSelectionDetailPanel_Rebuild` → `ui/ingame/runtime`, `UiCatalogGroup48_RebuildGrid` → `ui/ingame/technology`
+- `0x0055FB30` **InGamePlayerSelection_ReplaceWithArmyRuntimeIndex** — local: `SelectionPointerArray_Clear32`, `SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity`; cross: `InGameSelectionDetailPanel_Rebuild` → `ui/ingame/runtime`, `UiCatalogGroup48_RebuildGrid` → `ui/ingame/technology`
+- `0x0055FE70` **InGamePlayerSelection_ApplyPositionCommandVariantB** — local: `SelectionPointerArray_ApplyPositionCommandVariantB`
+- `0x0055FEA0` **InGamePlayerSelection_ApplyPositionCommand** — local: `SelectionPointerArray_ApplyPositionCommand`
+- `0x0055FED0` **InGamePlayerSelection_SelectArmyRuntimeIndex** — local: `SelectionPointerArray_ApplyArmyRuntimeTarget`
+- `0x0055FF10` **InGamePlayerSelection_ApplyTargetPositionCommand** — local: `SelectionPointerArray_ApplyTargetPositionCommand`
+- `0x0055FF40` **PlayerSelection_ResetMovementPruneAndRecenterEntries** — local: `SelectionRuntime_ResetMovementPruneAndRecenterEntries`
+- `0x0055FF60` **PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries** — local: `SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries`
+- `0x0055FF80` **PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries** — local: `SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries`
+- `0x0055FFA0` **PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries** — local: `SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries`
+- `0x0055FFC0` **InGameSelection_ApplyType16MarkerCoordinatesVariant1** — local: `SelectionPointerArray_ApplyType16MarkerCoordinates`
+- `0x0055FFF0` **InGameSelection_ApplyType16MarkerCoordinatesVariant2** — local: `SelectionPointerArray_ApplyType16MarkerCoordinates`
+- `0x00562050` **SelectionPlayerRuntime_ReissuePrimarySelectionPosition** — local: `SelectionPointerArray_ContainsCf`; cross: `ModelNodeRuntime_RebuildTransformsFromRoot` → `world/model/hierarchy`, `ModelNodeRuntime_UpdateDepthBinMasks` → `world/model/hierarchy`
+- `0x00562220` **SelectionPlayerRuntime_AdvancePrimarySelectionCycle** — local: `SelectionPointerArray_ContainsCf`; cross: `ModelNodeRuntime_RebuildTransformsFromRoot` → `world/model/hierarchy`
+- `0x0052CEE0` **SelectionInfoPanel_InitResources** — cross: `Package_LoadEntry` → `assets/package/runtime`
+- `0x0052D0F0` **SelectionInfoPanel_ShutdownResources** — cross: `Resource_Release` → `assets/resource/runtime`
+- `0x0052FB20` **SelectionPlayerBlocks_RemovePointer**
+- `0x0052FB70` **SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf**
+- `0x0052FD60` **SelectionPointerArray_RemoveFirstMatch**
+- `0x0052FDC0` **SelectionInfo_HasAnyEntryCf**
+- `0x0052FDE0` **SelectionInfo_AllEntriesEmptyOrMatchOwnerCf**
+- `0x0052FE30` **SelectionInfo_ValidateOwnerType16AndAnyActiveCf**
+- `0x0052FEB0` **SelectionInfo_TestAnyActiveOrSingleClass13Cf**
+- `0x0052FF30` **SelectionInfo_TestPositionCommandAtWorldPointCf** — cross: `GridScratch_TestProjectedCellMaskBandsCf` → `world/pathing/grid`, `ArmyRuntimeNode_DispatchTypedCallback` → `gameplay/army/runtime`
+- `0x00530050` **SelectionInfo_TestAllStateField100NonpositiveCf** — cross: `ArmyRuntime_TestStateField100NonnegativeCf` → `gameplay/army/runtime`, `ArmyRuntime_TestStateField100ZeroCf` → `gameplay/army/runtime`
+- `0x005300A0` **SelectionInfo_TestAnyStateField100NonnegativeCf** — cross: `ArmyRuntime_TestStateField100NonnegativeCf` → `gameplay/army/runtime`
+- `0x005300E0` **SelectionInfo_GetFirstEntry**
+- `0x00530100` **SelectionInfo_FindEntryCf**
+- `0x00530770` **SelectionInfo_CollectAttachmentEffectVariantMask** — cross: `ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs` → `gameplay/army/runtime`
+- `0x005307C0` **SelectionInfo_CollectCapabilityFlags**
+- `0x00561000` **SelectionPlayerRuntime_ClearTerrainEditSelectionState**
+- `0x00571020` **SelectionPlayerPairList_ContainsPairCf**
+- `0x005302B0` **SelectionPointerArray_ApplyPositionCommandVariantB** — local: `SelectionPointerArray_IsSpatialSpreadTooLargeCf`, `SelectionPointerArray_Clear32`; cross: `ArmyRuntime_QueueOrStartMoveCommandVariantA` → `gameplay/army/movement`
+- `0x00530420` **SelectionRuntime_ResetMovementPruneAndRecenterEntries** — local: `SelectionPointerArray_RecenterOffsetsAroundAveragePosition`, `SelectionPointerArray_Clear32`; cross: `ArmyRuntime_ResetMovementStateFromModel` → `gameplay/army/movement`, `ModelLookupTable_ContainsPackedKeyCf` → `assets/model/definitions`, `ModelNodeRuntime_TransformLocalPointRegs` → `world/model/hierarchy`
+- `0x0052FCE0` **SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity** — local: `SelectionPointerArray_InsertUniqueAndRecenter`
+- `0x005303A0` **SelectionPointerArray_ApplyPositionCommand** — local: `SelectionPointerArray_IsSpatialSpreadTooLargeCf`; cross: `ArmyRuntime_QueueWaypointOrStartMoveVariantA` → `gameplay/army/movement`
+- `0x0052D600` **SelectionPanel_DrawNumberCellAndAdvanceRegs** — cross: `RichTextCommandStream_MeasureRegs` → `assets/text/richtext`, `RichTextCommandStream_DrawSingleLine` → `assets/text/richtext`
+- `0x0052D6F0` **SelectionPanel_DrawIconCellAndAdvanceRegs**
+- `0x0052D770` **SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs**
+- `0x0052D850` **SelectionPanel_DrawProportionalCappedBar**
+- `0x0052DAF0` **SelectionPanel_DrawForwardCappedBar**
+- `0x0052DBC0` **SelectionPanel_DrawSolidCappedBar**
+- `0x0052DFF0` **SelectionPanel_DrawSegmentedCappedBar**
+- `0x00530130` **SelectionPointerArray_ApplyArmyRuntimeTarget** — cross: `ArmyRuntime_TestStateField100ZeroCf` → `gameplay/army/runtime`, `ArmyRuntime_ResolveCommandTarget` → `gameplay/army/runtime`
+- `0x00530190` **SelectionPointerArray_ApplyTargetPositionCommand** — cross: `ArmyRuntime_TestStateField100ZeroCf` → `gameplay/army/runtime`, `ArmyRuntime_ApplyTargetPositionCommand` → `gameplay/army/runtime`
+- `0x00530540` **SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries** — cross: `GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel` → `gameplay/faction/runtime`
+- `0x005305A0` **SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries** — cross: `ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration` → `gameplay/army/movement`
+- `0x00530600` **SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries** — cross: `ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive` → `world/model/hierarchy`
+- `0x0052FCA0` **SelectionPointerArray_InsertUniqueAndRecenter** — local: `SelectionPointerArray_RecenterOffsetsAroundAveragePosition`
+- `0x0052FBF0` **SelectionPointerArray_RecenterOffsetsAroundAveragePosition**
+- `0x0052FD90` **SelectionPointerArray_ContainsCf**
+- `0x005301F0` **SelectionPointerArray_IsSpatialSpreadTooLargeCf**
+- `0x00530650` **SelectionPointerArray_ApplyType16MarkerCoordinates**
+- `0x0052FB00` **SelectionPointerArray_Clear32**

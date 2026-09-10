@@ -1,0 +1,15 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue" [label="0x0053BD80\nAiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue"];
+  "AiTechnologyCandidate_IsCurrentlyAvailableCf" [label="0x00538000\nAiTechnologyCandidate_IsCurrentlyAvailableCf"];
+  "AiTechnologyPlanning_AddCandidateRecord" [label="0x00538140\nAiTechnologyPlanning_AddCandidateRecord"];
+  "AiTechnologyScore_ComputeFactionScaledCandidateValue" [label="0x0053BCC0\nAiTechnologyScore_ComputeFactionScaledCandidateValue"];
+  "AiTechnologyScore_ReturnBaseCandidateValueForKind2" [label="0x0053BD60\nAiTechnologyScore_ReturnBaseCandidateValueForKind2"];
+  "AiTechnologyScore_ReturnBaseCandidateValueForKind4" [label="0x0053BEA0\nAiTechnologyScore_ReturnBaseCandidateValueForKind4"];
+  "AiTechnologyScore_ComputeCategoryCompatibleCandidateValue" [label="0x0053BEC0\nAiTechnologyScore_ComputeCategoryCompatibleCandidateValue"];
+  "AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf" [label="0x0053BC00\nAiTechnologyCompatibility_AcceptRuntimeClassCandidateCf"];
+  "AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8" [label="0x0053BC20\nAiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8"];
+  "AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue" -> "AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf";
+  "AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue" -> "AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8";
+}

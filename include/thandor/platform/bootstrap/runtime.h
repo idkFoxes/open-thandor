@@ -1,0 +1,61 @@
+#ifndef THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H
+#define THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H
+
+#include <thandor/generated/v523_types.h>
+#include <thandor/core/contracts.h>
+
+/* Submodule: platform/bootstrap/runtime. */
+/* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
+
+/* 0x00585D40 */
+void __cdecl ProcessEntry(void);
+
+/* 0x00512E70 */
+void GameData_ResetDefaults(void);
+
+/* 0x00512F60 */
+undefined8 GameData_LoadExternalTables(void);
+
+/* 0x00573BC0 */
+void * DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
+
+/* 0x00573C50 */
+HINSTANCE DynDLL_Load(char *moduleName);
+
+/* 0x00573CD0 */
+dword DynDLL_Unload(char *moduleName);
+
+/* 0x00573D40 */
+undefined8 BootstrapApi_ResolveBindingByDestination(void **param_1);
+
+/* 0x00573EB0 */
+void __cdecl DynDLL_UnloadAll(void);
+
+/* 0x00585F50 */
+LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
+
+/* 0x00587370 */
+dword __cdecl CPU_DetectFeatures(void);
+
+/* 0x00573070 */
+void __cdecl Game_Run(void);
+
+/* 0x0050BB10 */
+void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
+
+/* 0x00573140 */
+dword __cdecl Game_LoadCoreAssets(void);
+
+/* 0x005739D0 */
+void Game_PlayIntroMovies(void);
+
+/* 0x00573DB0 */
+dword __cdecl DynAPI_Bootstrap(void);
+
+/* 0x00586110 */
+void CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
+
+/* 0x00586170 */
+void __cdecl CommandLine_Parse(void);
+
+#endif /* THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H */

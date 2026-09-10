@@ -1,0 +1,20 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "FrontendResultsTable_DrawColumnSequenceByType" [label="0x00517020\nFrontendResultsTable_DrawColumnSequenceByType"];
+  "FrontendResultsTable_HitTestAlwaysNone" [label="0x00517FB0\nFrontendResultsTable_HitTestAlwaysNone"];
+  "FrontendResultsTable_DrawColourColumn" [label="0x005177F0\nFrontendResultsTable_DrawColourColumn"];
+  "FrontendResultsTable_DrawFactionColumn" [label="0x005178B0\nFrontendResultsTable_DrawFactionColumn"];
+  "FrontendResultsTable_DrawFormattedFactionFieldColumn" [label="0x00517960\nFrontendResultsTable_DrawFormattedFactionFieldColumn"];
+  "FrontendResultsTable_DrawPointsColumn" [label="0x00517A30\nFrontendResultsTable_DrawPointsColumn"];
+  "FrontendResultsTable_DrawEconomyColumn" [label="0x00517B10\nFrontendResultsTable_DrawEconomyColumn"];
+  "FrontendResultsTable_DrawMilitaryColumn" [label="0x00517BF0\nFrontendResultsTable_DrawMilitaryColumn"];
+  "FrontendResultsTable_DrawPlayerColumn" [label="0x00517CD0\nFrontendResultsTable_DrawPlayerColumn"];
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawColourColumn";
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawEconomyColumn";
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawMilitaryColumn";
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawPointsColumn";
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawPlayerColumn";
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawFactionColumn";
+  "FrontendResultsTable_DrawColumnSequenceByType" -> "FrontendResultsTable_DrawFormattedFactionFieldColumn";
+}

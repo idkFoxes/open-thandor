@@ -1,0 +1,34 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ModelRender_DrawMeshGroupsWithTemporaryTransform" [label="0x004BDC90\nModelRender_DrawMeshGroupsWithTemporaryTransform"];
+  "ModelRender_DrawMeshGroupsAlternatePath" [label="0x004BE1F0\nModelRender_DrawMeshGroupsAlternatePath"];
+  "ModelProjectedBounds_AccumulateHierarchyRecursive" [label="0x0050A5C0\nModelProjectedBounds_AccumulateHierarchyRecursive"];
+  "ModelRender_PrepareProjectedVertex" [label="0x004BD4B0\nModelRender_PrepareProjectedVertex"];
+  "ModelRender_SubmitTriangle" [label="0x004BD9B0\nModelRender_SubmitTriangle"];
+  "ModelRender_SubmitMeshTriangles" [label="0x004BDC20\nModelRender_SubmitMeshTriangles"];
+  "ModelRender_SubmitMeshTrianglesAlternatePath" [label="0x004BE180\nModelRender_SubmitMeshTrianglesAlternatePath"];
+  "ModelRender_PrepareProjectedVertexAlternatePath" [label="0x004BD6B0\nModelRender_PrepareProjectedVertexAlternatePath"];
+  "ModelRender_SubmitTriangleAlternatePath" [label="0x004BDFB0\nModelRender_SubmitTriangleAlternatePath"];
+  "ModelProjectedBounds_AccumulateNode" [label="0x0050A4A0\nModelProjectedBounds_AccumulateNode"];
+  "ModelRender_ComputeFacingDotQ12" [label="0x004BD7E0\nModelRender_ComputeFacingDotQ12"];
+  "ModelRender_ComputeVertexIntensityDefaultPath" [label="0x004CC710\nModelRender_ComputeVertexIntensityDefaultPath"];
+  "ModelRender_ComputeVertexIntensityScaledPath" [label="0x004CC820\nModelRender_ComputeVertexIntensityScaledPath"];
+  "ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath" [label="0x004CC940\nModelRender_ComputeNearbyLightPackedVertexColorAlternatePath"];
+  "ModelProjectedBounds_ExpandWithCurrentScratchPoint" [label="0x0050A430\nModelProjectedBounds_ExpandWithCurrentScratchPoint"];
+  "ModelRender_PrepareViewDirections" [label="0x004BD800\nModelRender_PrepareViewDirections"];
+  "ModelRender_DrawMeshGroupsWithTemporaryTransform" -> "ModelRender_SubmitMeshTriangles";
+  "ModelRender_DrawMeshGroupsAlternatePath" -> "ModelRender_SubmitMeshTrianglesAlternatePath";
+  "ModelProjectedBounds_AccumulateHierarchyRecursive" -> "ModelProjectedBounds_AccumulateNode";
+  "ModelRender_PrepareProjectedVertex" -> "ModelRender_ComputeVertexIntensityDefaultPath";
+  "ModelRender_PrepareProjectedVertex" -> "ModelRender_ComputeVertexIntensityScaledPath";
+  "ModelRender_SubmitTriangle" -> "ModelRender_ComputeFacingDotQ12";
+  "ModelRender_SubmitTriangle" -> "ModelRender_PrepareProjectedVertex";
+  "ModelRender_SubmitMeshTriangles" -> "ModelRender_PrepareViewDirections";
+  "ModelRender_SubmitMeshTriangles" -> "ModelRender_SubmitTriangle";
+  "ModelRender_SubmitMeshTrianglesAlternatePath" -> "ModelRender_PrepareViewDirections";
+  "ModelRender_SubmitMeshTrianglesAlternatePath" -> "ModelRender_SubmitTriangleAlternatePath";
+  "ModelRender_PrepareProjectedVertexAlternatePath" -> "ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath";
+  "ModelRender_SubmitTriangleAlternatePath" -> "ModelRender_PrepareProjectedVertexAlternatePath";
+  "ModelProjectedBounds_AccumulateNode" -> "ModelProjectedBounds_ExpandWithCurrentScratchPoint";
+}

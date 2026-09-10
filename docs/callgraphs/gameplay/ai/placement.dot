@@ -1,0 +1,21 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "AiPlacement_ReserveAdditionalSpecialSite" [label="0x0053A110\nAiPlacement_ReserveAdditionalSpecialSite"];
+  "AiCandidatePlanning_AddSpecialSiteCandidate" [label="0x0053AE60\nAiCandidatePlanning_AddSpecialSiteCandidate"];
+  "AiSiteCandidate_AddGeneralCellIfSeparated" [label="0x00537B20\nAiSiteCandidate_AddGeneralCellIfSeparated"];
+  "AiSiteCandidate_AddFlaggedCellIfSeparated" [label="0x00537C10\nAiSiteCandidate_AddFlaggedCellIfSeparated"];
+  "AiSiteCandidate_AddTerrainFeatureCellIfSeparated" [label="0x00537CF0\nAiSiteCandidate_AddTerrainFeatureCellIfSeparated"];
+  "AiPlacement_TestWorkspaceRecordAtPoint" [label="0x00539200\nAiPlacement_TestWorkspaceRecordAtPoint"];
+  "AiPlacement_TestMode4AtWorkspaceRecord" [label="0x0053A1B0\nAiPlacement_TestMode4AtWorkspaceRecord"];
+  "AiPlacement_QueryReachableSiteBucketCount" [label="0x0053B570\nAiPlacement_QueryReachableSiteBucketCount"];
+  "AiPlacement_ReserveMode3SiteCluster" [label="0x0053ACD0\nAiPlacement_ReserveMode3SiteCluster"];
+  "AiCandidatePlanning_ComputeSpecialSiteWeight" [label="0x0053AD50\nAiCandidatePlanning_ComputeSpecialSiteWeight"];
+  "AiPlacement_FindNearestValidWorkspace09Anchor" [label="0x00539330\nAiPlacement_FindNearestValidWorkspace09Anchor"];
+  "AiPlacement_ReserveSeparatedSpecialSiteChain" [label="0x00539EF0\nAiPlacement_ReserveSeparatedSpecialSiteChain"];
+  "AiPlacement_ReserveAdditionalSpecialSite" -> "AiPlacement_ReserveSeparatedSpecialSiteChain";
+  "AiCandidatePlanning_AddSpecialSiteCandidate" -> "AiCandidatePlanning_ComputeSpecialSiteWeight";
+  "AiPlacement_ReserveMode3SiteCluster" -> "AiPlacement_ReserveSeparatedSpecialSiteChain";
+  "AiCandidatePlanning_ComputeSpecialSiteWeight" -> "AiPlacement_ReserveMode3SiteCluster";
+  "AiPlacement_ReserveSeparatedSpecialSiteChain" -> "AiPlacement_FindNearestValidWorkspace09Anchor";
+}

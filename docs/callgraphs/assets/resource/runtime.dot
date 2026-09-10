@@ -1,0 +1,12 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ResourceRegistration_OpenSourceCf" [label="0x0040E2E0\nResourceRegistration_OpenSourceCf"];
+  "Resource_Load" [label="0x0040F000\nResource_Load"];
+  "Resource_Release" [label="0x0040F1D0\nResource_Release"];
+  "ResourceRegistration_SelectDomainPair" [label="0x0050E890\nResourceRegistration_SelectDomainPair"];
+  "ResourceRegistration_QueryDomain0Pair" [label="0x00513020\nResourceRegistration_QueryDomain0Pair"];
+  "ResourceRegistration_QueryDomain1Pair" [label="0x0051E2B0\nResourceRegistration_QueryDomain1Pair"];
+  "ResourceRegistration_QueryDomain2Pair" [label="0x0052B6D0\nResourceRegistration_QueryDomain2Pair"];
+  "ResourceRegistration_ResolveRuntimeRecord" [label="0x00532B00\nResourceRegistration_ResolveRuntimeRecord"];
+}

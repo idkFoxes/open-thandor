@@ -1,0 +1,18 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "Direct3D_EnumDeviceCallback" [label="0x00578270\nDirect3D_EnumDeviceCallback"];
+  "GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback" [label="0x00578820\nGraphicsDirect3D_SelectPreferredTextureFormatEnumCallback"];
+  "Direct3DRenderer_SetAntialiasMode" [label="0x0057A450\nDirect3DRenderer_SetAntialiasMode"];
+  "Direct3DRenderer_SetTextureFilterMode" [label="0x0057A4C0\nDirect3DRenderer_SetTextureFilterMode"];
+  "Direct3DRenderer_SetTexturePerspectiveEnabled" [label="0x0057A550\nDirect3DRenderer_SetTexturePerspectiveEnabled"];
+  "Direct3D_PrimitiveHandler_UntexturedPreset0" [label="0x0057CCB0\nDirect3D_PrimitiveHandler_UntexturedPreset0"];
+  "Direct3D_PrimitiveHandler_UntexturedPreset2" [label="0x0057CF20\nDirect3D_PrimitiveHandler_UntexturedPreset2"];
+  "Direct3D_PrimitiveHandler_UntexturedPreset3" [label="0x0057D1D0\nDirect3D_PrimitiveHandler_UntexturedPreset3"];
+  "Direct3D_PrimitiveHandler_UntexturedPreset4" [label="0x0057D480\nDirect3D_PrimitiveHandler_UntexturedPreset4"];
+  "Direct3D_PrimitiveHandler_TexturedPreset0" [label="0x0057D730\nDirect3D_PrimitiveHandler_TexturedPreset0"];
+  "Direct3D_PrimitiveHandler_TexturedPreset1" [label="0x0057DA50\nDirect3D_PrimitiveHandler_TexturedPreset1"];
+  "Direct3D_PrimitiveHandler_TexturedPreset2" [label="0x0057DD70\nDirect3D_PrimitiveHandler_TexturedPreset2"];
+  "Direct3D_PrimitiveHandler_TexturedPreset3" [label="0x0057E090\nDirect3D_PrimitiveHandler_TexturedPreset3"];
+  "Direct3D_PrimitiveHandler_TexturedPreset4" [label="0x0057E3B0\nDirect3D_PrimitiveHandler_TexturedPreset4"];
+}

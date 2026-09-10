@@ -1,0 +1,12 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "InGameTechnologyAreaTab_SelectAndRebuild" [label="0x0056AE70\nInGameTechnologyAreaTab_SelectAndRebuild"];
+  "InGameTechnologyPanel_ResetAndSelectCurrentArea" [label="0x0056B450\nInGameTechnologyPanel_ResetAndSelectCurrentArea"];
+  "UiCatalogGroup48_RebuildGrid" [label="0x00569DF0\nUiCatalogGroup48_RebuildGrid"];
+  "UiCatalogGroup42_RebuildGrid" [label="0x0056A050\nUiCatalogGroup42_RebuildGrid"];
+  "InGameTechnologyResearch_StartSelected" [label="0x0056AEF0\nInGameTechnologyResearch_StartSelected"];
+  "InGameTechnologyPanel_Rebuild" [label="0x0056B050\nInGameTechnologyPanel_Rebuild"];
+  "InGameTechnologyAreaTab_SelectAndRebuild" -> "InGameTechnologyPanel_Rebuild";
+  "InGameTechnologyPanel_ResetAndSelectCurrentArea" -> "InGameTechnologyPanel_Rebuild";
+}

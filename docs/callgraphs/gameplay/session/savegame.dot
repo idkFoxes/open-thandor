@@ -1,0 +1,12 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "InGameSaveGameList_SelectAndRefreshDetail" [label="0x0056C030\nInGameSaveGameList_SelectAndRefreshDetail"];
+  "InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog" [label="0x0056C190\nInGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog"];
+  "InGameSaveGamePage_RebuildCatalog" [label="0x0056BDD0\nInGameSaveGamePage_RebuildCatalog"];
+  "InGameSaveGame_SaveSelectedOrTypedName" [label="0x0056C230\nInGameSaveGame_SaveSelectedOrTypedName"];
+  "InGameSaveName_UpdateSaveActionValidity" [label="0x0056C2F0\nInGameSaveName_UpdateSaveActionValidity"];
+  "InGameSaveGameList_SelectAndRefreshDetail" -> "InGameSaveGame_SaveSelectedOrTypedName";
+  "InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog" -> "InGameSaveGamePage_RebuildCatalog";
+  "InGameSaveGamePage_RebuildCatalog" -> "InGameSaveName_UpdateSaveActionValidity";
+}

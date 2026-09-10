@@ -1,0 +1,11 @@
+# Call graph: `gameplay/session/savegame`
+
+5 functions. Addresses are current V523 executable VAs.
+
+## Functions
+
+- `0x0056C030` **InGameSaveGameList_SelectAndRefreshDetail** — local: `InGameSaveGame_SaveSelectedOrTypedName`; cross: `UiPointerList_GetSelectedIndexVariantBCf` → `ui/controls/lists`, `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`, `UiNode_GetRoot` → `ui/core/runtime`, `UiNodeList_UnsuppressActionId` → `ui/controls/lists`, `UiNodeList_SuppressActionId` → `ui/controls/lists`
+- `0x0056C190` **InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog** — local: `InGameSaveGamePage_RebuildCatalog`; cross: `UiPointerList_GetSelectedIndexVariantBCf` → `ui/controls/lists`, `WidePath_CombineDirectoryAndLeaf` → `core/text/path`, `WidePath_SetExtensionCode` → `core/text/path`
+- `0x0056BDD0` **InGameSaveGamePage_RebuildCatalog** — local: `InGameSaveName_UpdateSaveActionValidity`; cross: `WidePath_CombineDirectoryAndLeaf` → `core/text/path`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_CopyExpandedCf` → `assets/text/richtext`, `UiPointerList_InitializeColumnLayout` → `ui/controls/lists`, `UiPointerList_SortByDwordPairFieldDescending` → `ui/controls/lists`, `UiPointerList_SelectIndexVariantB` → `ui/controls/lists`, `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `UiNodeList_SuppressActionId` → `ui/controls/lists`, `UiTextControl_UpdateNonEmptyValidity` → `ui/controls/text`, `UiPointerList_GetSelectedIndexVariantBCf` → `ui/controls/lists`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`
+- `0x0056C230` **InGameSaveGame_SaveSelectedOrTypedName** — cross: `UiPointerList_GetSelectedIndexVariantBCf` → `ui/controls/lists`, `WidePath_CombineDirectoryAndLeaf` → `core/text/path`, `WidePath_SetExtensionCode` → `core/text/path`, `InGameUiAction1210_ResourceRegistrationHelper` → `ui/ingame/runtime`, `UiSelectableControl_SetSelected` → `ui/controls/lists`, `InGameSettingsPage_ToggleAndSynchronizeControls` → `ui/ingame/settings`
+- `0x0056C2F0` **InGameSaveName_UpdateSaveActionValidity** — cross: `UiNodeList_UnsuppressActionId` → `ui/controls/lists`, `UiNodeList_SuppressActionId` → `ui/controls/lists`

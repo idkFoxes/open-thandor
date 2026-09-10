@@ -1,0 +1,22 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "UiTree_AdvanceSpriteButtonAnimations" [label="0x004B1D20\nUiTree_AdvanceSpriteButtonAnimations"];
+  "UiSpriteButtonControl_Relocate" [label="0x004B1620\nUiSpriteButtonControl_Relocate"];
+  "UiSpriteButtonControl_DrawClipped" [label="0x004B16E0\nUiSpriteButtonControl_DrawClipped"];
+  "UiSpriteButtonControl_NonRightPress" [label="0x004B1890\nUiSpriteButtonControl_NonRightPress"];
+  "UiSpriteButtonControl_NonRightRelease" [label="0x004B1A30\nUiSpriteButtonControl_NonRightRelease"];
+  "UiSpriteButtonControl_NonRightDrag" [label="0x004B1AE0\nUiSpriteButtonControl_NonRightDrag"];
+  "UiSpriteButtonControl_HitTestOpaque" [label="0x004B1BF0\nUiSpriteButtonControl_HitTestOpaque"];
+  "UiImageActionControl_DrawImageAndChildren" [label="0x00515010\nUiImageActionControl_DrawImageAndChildren"];
+  "UiImageActionControl_QueryPointerCode" [label="0x005151F0\nUiImageActionControl_QueryPointerCode"];
+  "UiImageActionControl_EnqueuePrimaryAction" [label="0x00515210\nUiImageActionControl_EnqueuePrimaryAction"];
+  "UiImageActionControl_EnqueueSecondaryAction" [label="0x00515230\nUiImageActionControl_EnqueueSecondaryAction"];
+  "UiImageActionControl_HandleKeyboardActivationCf" [label="0x00515250\nUiImageActionControl_HandleKeyboardActivationCf"];
+  "UiConditionalActionControl_DrawClipped" [label="0x005152E0\nUiConditionalActionControl_DrawClipped"];
+  "UiConditionalActionControl_QueryPointerCode" [label="0x005155A0\nUiConditionalActionControl_QueryPointerCode"];
+  "UiConditionalActionControl_HitTestWhenEnabled" [label="0x005155C0\nUiConditionalActionControl_HitTestWhenEnabled"];
+  "UiConditionalActionControl_EnqueuePrimaryActionIfEnabled" [label="0x005155F0\nUiConditionalActionControl_EnqueuePrimaryActionIfEnabled"];
+  "UiSpriteButtonControl_AdvanceAnimation" [label="0x004B1C80\nUiSpriteButtonControl_AdvanceAnimation"];
+  "UiTree_AdvanceSpriteButtonAnimations" -> "UiSpriteButtonControl_AdvanceAnimation";
+}

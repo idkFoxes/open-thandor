@@ -1,0 +1,28 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ProcessEntry" [label="0x00585D40\nProcessEntry"];
+  "GameData_ResetDefaults" [label="0x00512E70\nGameData_ResetDefaults"];
+  "GameData_LoadExternalTables" [label="0x00512F60\nGameData_LoadExternalTables"];
+  "DynAPI_Resolve" [label="0x00573BC0\nDynAPI_Resolve"];
+  "DynDLL_Load" [label="0x00573C50\nDynDLL_Load"];
+  "DynDLL_Unload" [label="0x00573CD0\nDynDLL_Unload"];
+  "BootstrapApi_ResolveBindingByDestination" [label="0x00573D40\nBootstrapApi_ResolveBindingByDestination"];
+  "DynDLL_UnloadAll" [label="0x00573EB0\nDynDLL_UnloadAll"];
+  "MainWindowProc" [label="0x00585F50\nMainWindowProc"];
+  "CPU_DetectFeatures" [label="0x00587370\nCPU_DetectFeatures"];
+  "Game_Run" [label="0x00573070\nGame_Run"];
+  "GameRuntime_InitializeSpatialAudioAndRenderingCf" [label="0x0050BB10\nGameRuntime_InitializeSpatialAudioAndRenderingCf"];
+  "Game_LoadCoreAssets" [label="0x00573140\nGame_LoadCoreAssets"];
+  "Game_PlayIntroMovies" [label="0x005739D0\nGame_PlayIntroMovies"];
+  "DynAPI_Bootstrap" [label="0x00573DB0\nDynAPI_Bootstrap"];
+  "CommandLine_FindOption" [label="0x00586110\nCommandLine_FindOption"];
+  "CommandLine_Parse" [label="0x00586170\nCommandLine_Parse"];
+  "ProcessEntry" -> "CommandLine_Parse";
+  "ProcessEntry" -> "DynAPI_Bootstrap";
+  "ProcessEntry" -> "CommandLine_FindOption";
+  "ProcessEntry" -> "Game_Run";
+  "Game_Run" -> "GameRuntime_InitializeSpatialAudioAndRenderingCf";
+  "Game_Run" -> "Game_LoadCoreAssets";
+  "Game_Run" -> "Game_PlayIntroMovies";
+}

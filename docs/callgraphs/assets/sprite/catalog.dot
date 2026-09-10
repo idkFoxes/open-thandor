@@ -1,0 +1,8 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "SpriteAsset_ValidateGroupCountCf" [label="0x00486D60\nSpriteAsset_ValidateGroupCountCf"];
+  "SpriteAssetRegistry_Reset" [label="0x004BE480\nSpriteAssetRegistry_Reset"];
+  "SpriteAssetRegistry_FindById" [label="0x004BE490\nSpriteAssetRegistry_FindById"];
+  "SpriteAsset_RegisterAndRelocatePointers" [label="0x004BE4D0\nSpriteAsset_RegisterAndRelocatePointers"];
+}

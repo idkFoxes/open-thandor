@@ -1,0 +1,32 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "InGameRuntime_RunSessionUntilExit" [label="0x00564F70\nInGameRuntime_RunSessionUntilExit"];
+  "EndGameResultsUiRuntime_UpdateAndHandleInputCf" [label="0x00566290\nEndGameResultsUiRuntime_UpdateAndHandleInputCf"];
+  "InGameConditionRuntime_RebaseLoadedRecords" [label="0x0050EA90\nInGameConditionRuntime_RebaseLoadedRecords"];
+  "InGameRuntime_PeriodicCountdownAndClockTick" [label="0x00565E10\nInGameRuntime_PeriodicCountdownAndClockTick"];
+  "EndGameResultsUiRuntime_DispatchCommandByFlagsCf" [label="0x00567060\nEndGameResultsUiRuntime_DispatchCommandByFlagsCf"];
+  "InGameRuntime_ProcessQueuedSessionNotificationTimer" [label="0x00569920\nInGameRuntime_ProcessQueuedSessionNotificationTimer"];
+  "InGameRuntime_InitializeNewSession" [label="0x005641D0\nInGameRuntime_InitializeNewSession"];
+  "InGameRuntime_InitializeLoadedSession" [label="0x00564920\nInGameRuntime_InitializeLoadedSession"];
+  "InGameRuntime_ShutdownAndReleaseResources" [label="0x005651D0\nInGameRuntime_ShutdownAndReleaseResources"];
+  "InGameRuntime_ReleaseFactionScratchBuffers" [label="0x0050E0D0\nInGameRuntime_ReleaseFactionScratchBuffers"];
+  "InGameConditionRuntime_UpdateScheduledRecords" [label="0x0050E120\nInGameConditionRuntime_UpdateScheduledRecords"];
+  "InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState" [label="0x00513160\nInGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState"];
+  "InGameRuntime_UpdateCursorGridAndViewScaleCache" [label="0x0053D4F0\nInGameRuntime_UpdateCursorGridAndViewScaleCache"];
+  "InGameRuntime_PublishRootWorldStatePointer" [label="0x005651A0\nInGameRuntime_PublishRootWorldStatePointer"];
+  "InGameRuntime_UpdateSimulationAndNetworkTick" [label="0x00565E30\nInGameRuntime_UpdateSimulationAndNetworkTick"];
+  "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf" [label="0x0050E0B0\nInGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf"];
+  "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_InitializeNewSession";
+  "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_InitializeLoadedSession";
+  "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_ShutdownAndReleaseResources";
+  "EndGameResultsUiRuntime_UpdateAndHandleInputCf" -> "InGameRuntime_UpdateCursorGridAndViewScaleCache";
+  "InGameRuntime_InitializeNewSession" -> "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf";
+  "InGameRuntime_InitializeNewSession" -> "InGameRuntime_UpdateSimulationAndNetworkTick";
+  "InGameRuntime_InitializeLoadedSession" -> "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf";
+  "InGameRuntime_InitializeLoadedSession" -> "InGameRuntime_UpdateSimulationAndNetworkTick";
+  "InGameRuntime_ShutdownAndReleaseResources" -> "InGameRuntime_PublishRootWorldStatePointer";
+  "InGameRuntime_ShutdownAndReleaseResources" -> "InGameRuntime_ReleaseFactionScratchBuffers";
+  "InGameRuntime_UpdateSimulationAndNetworkTick" -> "InGameConditionRuntime_UpdateScheduledRecords";
+  "InGameRuntime_UpdateSimulationAndNetworkTick" -> "InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState";
+}

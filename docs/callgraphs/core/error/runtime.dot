@@ -1,0 +1,15 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ErrorSystem_Init" [label="0x00575890\nErrorSystem_Init"];
+  "ErrorRuntime_CallbackAlwaysFailCf" [label="0x00407F50\nErrorRuntime_CallbackAlwaysFailCf"];
+  "ErrorRuntime_CallbackReturnCode8" [label="0x00407F60\nErrorRuntime_CallbackReturnCode8"];
+  "FatalErrorDialog_DismissAndPopRoot" [label="0x00407F70\nFatalErrorDialog_DismissAndPopRoot"];
+  "FatalErrorRuntime_DispatchPendingErrorCf" [label="0x00407F90\nFatalErrorRuntime_DispatchPendingErrorCf"];
+  "ErrorRuntime_InstallUiHandlerAndAllocateState" [label="0x00408090\nErrorRuntime_InstallUiHandlerAndAllocateState"];
+  "FatalError_CopyNarrowToUtf16Cf" [label="0x0041BC50\nFatalError_CopyNarrowToUtf16Cf"];
+  "FatalError_Exit" [label="0x005758D0\nFatalError_Exit"];
+  "FatalError_CopyRichTextToNarrowCf" [label="0x0041BB00\nFatalError_CopyRichTextToNarrowCf"];
+  "ErrorSystem_Init" -> "FatalError_Exit";
+  "FatalError_Exit" -> "FatalError_CopyRichTextToNarrowCf";
+}

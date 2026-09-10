@@ -1,0 +1,33 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "FrontendRomActionTable_ExecuteRecord" [label="0x005452A0\nFrontendRomActionTable_ExecuteRecord"];
+  "RomAsset_PrepareRecords" [label="0x00546450\nRomAsset_PrepareRecords"];
+  "RomRuntime_BuildAllRegistryNodeTrees" [label="0x005466A0\nRomRuntime_BuildAllRegistryNodeTrees"];
+  "FrontendRomTransition_ProcessPendingRecord" [label="0x00547FC0\nFrontendRomTransition_ProcessPendingRecord"];
+  "FrontendRomRegistry_ClearAndReleaseNestedResources" [label="0x00547400\nFrontendRomRegistry_ClearAndReleaseNestedResources"];
+  "FrontendRomTransition_RequestStop" [label="0x00548720\nFrontendRomTransition_RequestStop"];
+  "RomRegistry_FindRecordBySlotValue" [label="0x005487F0\nRomRegistry_FindRecordBySlotValue"];
+  "RomRegistry_FindSlotValueByRecord" [label="0x00548840\nRomRegistry_FindSlotValueByRecord"];
+  "RomRecordTable_FindRecordById" [label="0x00548890\nRomRecordTable_FindRecordById"];
+  "RomRecordTable_FindIndexById" [label="0x005488D0\nRomRecordTable_FindIndexById"];
+  "FrontendRomTransition_ActivateRecordByIdCf" [label="0x005484D0\nFrontendRomTransition_ActivateRecordByIdCf"];
+  "RomRuntime_UpdateRecordVisibilityAndDescriptorsCf" [label="0x00548600\nRomRuntime_UpdateRecordVisibilityAndDescriptorsCf"];
+  "RomAssetRecord_RegisterAndRelocate" [label="0x00546330\nRomAssetRecord_RegisterAndRelocate"];
+  "RomRuntime_BuildNodeTreeRecursive" [label="0x005464C0\nRomRuntime_BuildNodeTreeRecursive"];
+  "FrontendRomTransition_InitializeFromRecord" [label="0x005483C0\nFrontendRomTransition_InitializeFromRecord"];
+  "RomRegistry_FindSlotValueByRecordIdCf" [label="0x005487A0\nRomRegistry_FindSlotValueByRecordIdCf"];
+  "RomRuntime_ApplyIndexedDescriptor" [label="0x00548410\nRomRuntime_ApplyIndexedDescriptor"];
+  "RomRegistry_FindRecordByIdCf" [label="0x00548740\nRomRegistry_FindRecordByIdCf"];
+  "FrontendRomActionTable_ExecuteRecord" -> "RomRegistry_FindRecordByIdCf";
+  "FrontendRomActionTable_ExecuteRecord" -> "FrontendRomTransition_InitializeFromRecord";
+  "FrontendRomActionTable_ExecuteRecord" -> "RomRuntime_UpdateRecordVisibilityAndDescriptorsCf";
+  "RomAsset_PrepareRecords" -> "RomAssetRecord_RegisterAndRelocate";
+  "RomRuntime_BuildAllRegistryNodeTrees" -> "RomRuntime_BuildNodeTreeRecursive";
+  "FrontendRomTransition_ProcessPendingRecord" -> "FrontendRomTransition_ActivateRecordByIdCf";
+  "FrontendRomTransition_ActivateRecordByIdCf" -> "RomRegistry_FindRecordByIdCf";
+  "FrontendRomTransition_ActivateRecordByIdCf" -> "RomRegistry_FindSlotValueByRecordIdCf";
+  "FrontendRomTransition_ActivateRecordByIdCf" -> "RomRuntime_ApplyIndexedDescriptor";
+  "RomRuntime_UpdateRecordVisibilityAndDescriptorsCf" -> "RomRegistry_FindRecordByIdCf";
+  "RomRuntime_UpdateRecordVisibilityAndDescriptorsCf" -> "RomRuntime_ApplyIndexedDescriptor";
+}

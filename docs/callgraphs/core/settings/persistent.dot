@@ -1,0 +1,11 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "PersistentSettings_Flush" [label="0x00402C00\nPersistentSettings_Flush"];
+  "PersistentSettings_Load" [label="0x00402B00\nPersistentSettings_Load"];
+  "PersistentSettings_ReadDword" [label="0x00402C50\nPersistentSettings_ReadDword"];
+  "PersistentSettings_GetRegionOrFallback" [label="0x00402CC0\nPersistentSettings_GetRegionOrFallback"];
+  "PersistentSettings_WriteDwords" [label="0x00402CF0\nPersistentSettings_WriteDwords"];
+  "PersistentSettings_WriteDword" [label="0x00402C80\nPersistentSettings_WriteDword"];
+  "PersistentSettings_Flush" -> "PersistentSettings_WriteDword";
+}

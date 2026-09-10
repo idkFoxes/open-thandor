@@ -1,0 +1,18 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "TerrainCompositeTexture_Create" [label="0x0053D370\nTerrainCompositeTexture_Create"];
+  "TerrainByteClampLookup_Initialize" [label="0x00503B10\nTerrainByteClampLookup_Initialize"];
+  "TerrainVisualResources_LoadPrimary" [label="0x00503F30\nTerrainVisualResources_LoadPrimary"];
+  "TerrainVisualResources_LoadAndClearCellOverlayFlags" [label="0x005041C0\nTerrainVisualResources_LoadAndClearCellOverlayFlags"];
+  "TerrainVisualResources_Shutdown" [label="0x00504470\nTerrainVisualResources_Shutdown"];
+  "TerrainLighting_BuildColorRampAndSetBaseColor" [label="0x00505780\nTerrainLighting_BuildColorRampAndSetBaseColor"];
+  "TerrainCompositeTexture_Destroy" [label="0x0053D4D0\nTerrainCompositeTexture_Destroy"];
+  "TerrainLighting_AdjustDirectionAndRecomputeField" [label="0x00561EA0\nTerrainLighting_AdjustDirectionAndRecomputeField"];
+  "TerrainCompositeTexture_FillPlane1" [label="0x0053D560\nTerrainCompositeTexture_FillPlane1"];
+  "TerrainCompositeTexture_FillPlane2" [label="0x0053D680\nTerrainCompositeTexture_FillPlane2"];
+  "TerrainCompositeTexture_RebuildPlane0" [label="0x0053D840\nTerrainCompositeTexture_RebuildPlane0"];
+  "TerrainCompositeTexture_Create" -> "TerrainCompositeTexture_FillPlane1";
+  "TerrainCompositeTexture_Create" -> "TerrainCompositeTexture_FillPlane2";
+  "TerrainCompositeTexture_Create" -> "TerrainCompositeTexture_RebuildPlane0";
+}

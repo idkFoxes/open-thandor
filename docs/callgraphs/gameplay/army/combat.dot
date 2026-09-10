@@ -1,0 +1,18 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments" [label="0x00523980\nArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments"];
+  "ArmyRuntimeClass_UpdateTransformAndDamageEffect" [label="0x00525130\nArmyRuntimeClass_UpdateTransformAndDamageEffect"];
+  "ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage" [label="0x00527AC0\nArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage"];
+  "ArmyRuntime_ApplyImpactDamageAndFinalizeState" [label="0x0052A2E0\nArmyRuntime_ApplyImpactDamageAndFinalizeState"];
+  "ArmyRuntime_ApplyDamageAndFactionRelationState" [label="0x0052A3E0\nArmyRuntime_ApplyDamageAndFactionRelationState"];
+  "ArmyRuntime_ApplyImpactDamageToRuntimeAndParent" [label="0x0052A640\nArmyRuntime_ApplyImpactDamageToRuntimeAndParent"];
+  "ArmyWeaponRuntime_TestTargetLineOfFireCf" [label="0x0052B9D0\nArmyWeaponRuntime_TestTargetLineOfFireCf"];
+  "ArmyRuntime_ApplyDamageAndPropagateToParent" [label="0x0052A200\nArmyRuntime_ApplyDamageAndPropagateToParent"];
+  "ArmyRuntime_EmitDamageThresholdEffect" [label="0x00528200\nArmyRuntime_EmitDamageThresholdEffect"];
+  "ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments" -> "ArmyRuntime_EmitDamageThresholdEffect";
+  "ArmyRuntimeClass_UpdateTransformAndDamageEffect" -> "ArmyRuntime_EmitDamageThresholdEffect";
+  "ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage" -> "ArmyRuntime_EmitDamageThresholdEffect";
+  "ArmyRuntime_ApplyImpactDamageAndFinalizeState" -> "ArmyRuntime_ApplyDamageAndPropagateToParent";
+  "ArmyRuntime_ApplyDamageAndFactionRelationState" -> "ArmyRuntime_ApplyDamageAndPropagateToParent";
+}

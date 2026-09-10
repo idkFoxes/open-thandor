@@ -1,0 +1,14 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "SpatialSoundPool_Init" [label="0x0050B5D0\nSpatialSoundPool_Init"];
+  "SpatialSound_RebuildListenerTransformFromPose" [label="0x0050B600\nSpatialSound_RebuildListenerTransformFromPose"];
+  "SpatialSound_PlayPositionedOneShot" [label="0x0050B6E0\nSpatialSound_PlayPositionedOneShot"];
+  "SpatialSound_UpdateDesiredPositionedGains" [label="0x0050B7D0\nSpatialSound_UpdateDesiredPositionedGains"];
+  "SpatialSoundSlot_CreateFromSampleAsset" [label="0x0050B8C0\nSpatialSoundSlot_CreateFromSampleAsset"];
+  "SpatialSoundSlot_CreateFromPcm" [label="0x0050B940\nSpatialSoundSlot_CreateFromPcm"];
+  "SpatialSoundSlot_ReleaseSample" [label="0x0050B9D0\nSpatialSoundSlot_ReleaseSample"];
+  "SpatialSoundSlot_ReleasePcm" [label="0x0050BA00\nSpatialSoundSlot_ReleasePcm"];
+  "SpatialSoundPool_ClearDesiredGains" [label="0x0050BA30\nSpatialSoundPool_ClearDesiredGains"];
+  "SpatialSoundPool_ApplyDesiredGains" [label="0x0050BA60\nSpatialSoundPool_ApplyDesiredGains"];
+}

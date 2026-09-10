@@ -1,0 +1,31 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "UiRootCallbacks_FreeCf" [label="0x004228F0\nUiRootCallbacks_FreeCf"];
+  "UiRootCallbacks_NoOpMethod08" [label="0x00422980\nUiRootCallbacks_NoOpMethod08"];
+  "UiRuntime_FormatSignedValues140And144" [label="0x00424270\nUiRuntime_FormatSignedValues140And144"];
+  "UiRuntime_OpenFourValueDialogCf" [label="0x004244E0\nUiRuntime_OpenFourValueDialogCf"];
+  "UiRuntimeRecordRing_DiscardOldestCf" [label="0x004AEF00\nUiRuntimeRecordRing_DiscardOldestCf"];
+  "UiRuntimeRecordRing_Clear" [label="0x004AF020\nUiRuntimeRecordRing_Clear"];
+  "UiRuntimeRecordRing_HasPendingCf" [label="0x004AF030\nUiRuntimeRecordRing_HasPendingCf"];
+  "UiRuntimeRecordRing_ContainsIdCf" [label="0x004AF050\nUiRuntimeRecordRing_ContainsIdCf"];
+  "UiRuntime_SetSynchronizationHooks" [label="0x004AF0F0\nUiRuntime_SetSynchronizationHooks"];
+  "UiRuntime_Initialize" [label="0x004AF210\nUiRuntime_Initialize"];
+  "UiRuntime_Shutdown" [label="0x004AF2F0\nUiRuntime_Shutdown"];
+  "UiRuntime_IncrementPeriodicTickCounter" [label="0x004AF3A0\nUiRuntime_IncrementPeriodicTickCounter"];
+  "UiActionQueue_DispatchPending" [label="0x004AF760\nUiActionQueue_DispatchPending"];
+  "UiNode_DefaultMethod04_NoOp" [label="0x004B05A0\nUiNode_DefaultMethod04_NoOp"];
+  "UiNode_DefaultNonRightPress" [label="0x004B0750\nUiNode_DefaultNonRightPress"];
+  "UiNode_DefaultNonRightRelease" [label="0x004B0760\nUiNode_DefaultNonRightRelease"];
+  "UiNode_ForwardRightPressToParent" [label="0x004B0770\nUiNode_ForwardRightPressToParent"];
+  "UiNode_DefaultRightRelease" [label="0x004B07C0\nUiNode_DefaultRightRelease"];
+  "UiNode_DefaultNonRightDrag" [label="0x004B07D0\nUiNode_DefaultNonRightDrag"];
+  "UiNode_DefaultRightDrag" [label="0x004B07E0\nUiNode_DefaultRightDrag"];
+  "UiNode_ApplyFlagsRecursive" [label="0x004B08E0\nUiNode_ApplyFlagsRecursive"];
+  "UiNode_DefaultTick" [label="0x004B09E0\nUiNode_DefaultTick"];
+  "UiActionHandlers_SetPageCf" [label="0x004B0FD0\nUiActionHandlers_SetPageCf"];
+  "UiNode_GetRoot" [label="0x004B14B0\nUiNode_GetRoot"];
+  "UiNode_InvalidateRoot" [label="0x004B1510\nUiNode_InvalidateRoot"];
+  "UiActionQueue_Enqueue" [label="0x004B1590\nUiActionQueue_Enqueue"];
+  "UiNode_GetStateTintArgb" [label="0x004BD160\nUiNode_GetStateTintArgb"];
+}

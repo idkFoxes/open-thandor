@@ -1,0 +1,24 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices" [label="0x005200C0\nModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices"];
+  "ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming" [label="0x00522A90\nModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming"];
+  "ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform" [label="0x00522B90\nModelRuntimeSlotClassInit_SeedFieldsFromRootTransform"];
+  "ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters" [label="0x00523CA0\nModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters"];
+  "ModelRuntimeSlotClassInit_ClearFields64_68_74_B8" [label="0x005243D0\nModelRuntimeSlotClassInit_ClearFields64_68_74_B8"];
+  "ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C" [label="0x00524CB0\nModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C"];
+  "ModelRuntimeSlot_RebaseClassArmyLinkOffset6C" [label="0x00524CE0\nModelRuntimeSlot_RebaseClassArmyLinkOffset6C"];
+  "ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0" [label="0x00524D10\nModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0"];
+  "ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3" [label="0x005251C0\nModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3"];
+  "ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1" [label="0x00525250\nModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1"];
+  "ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity" [label="0x005252E0\nModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity"];
+  "ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity" [label="0x005254B0\nModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity"];
+  "ModelRuntimeSlot_UnrebaseClassModelLinkOffset60" [label="0x00526340\nModelRuntimeSlot_UnrebaseClassModelLinkOffset60"];
+  "ModelRuntimeSlot_RebaseClassModelLinkOffset60" [label="0x00526370\nModelRuntimeSlot_RebaseClassModelLinkOffset60"];
+  "ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset" [label="0x005263A0\nModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset"];
+  "ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation" [label="0x00526E00\nModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation"];
+  "ModelRuntimeSlotPointerRebase_NoOp" [label="0x00527B80\nModelRuntimeSlotPointerRebase_NoOp"];
+  "ModelRuntimeSlotClassInit_NoOp" [label="0x00527B90\nModelRuntimeSlotClassInit_NoOp"];
+  "ModelRuntimeSlotClassInit_ClearField60" [label="0x005283B0\nModelRuntimeSlotClassInit_ClearField60"];
+  "ModelRuntimeSlotClassInit_ClearFields60AndB8" [label="0x005285D0\nModelRuntimeSlotClassInit_ClearFields60AndB8"];
+}

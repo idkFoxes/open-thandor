@@ -1,0 +1,22 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices" [label="0x004AE520\nGraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices"];
+  "GraphicsPaletteAsset_GetBankCountRegs" [label="0x004AD800\nGraphicsPaletteAsset_GetBankCountRegs"];
+  "GraphicsPaletteAsset_LoadPackage" [label="0x004AD820\nGraphicsPaletteAsset_LoadPackage"];
+  "GraphicsPaletteAsset_ReleasePackage" [label="0x004AD860\nGraphicsPaletteAsset_ReleasePackage"];
+  "GraphicsPaletteAsset_Clone" [label="0x004AD880\nGraphicsPaletteAsset_Clone"];
+  "GraphicsPaletteAsset_ReleaseClone" [label="0x004AD8D0\nGraphicsPaletteAsset_ReleaseClone"];
+  "GraphicsPaletteAsset_Validate" [label="0x004AD8F0\nGraphicsPaletteAsset_Validate"];
+  "GraphicsPaletteAsset_ResolveAllocationBase" [label="0x004AD920\nGraphicsPaletteAsset_ResolveAllocationBase"];
+  "GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets" [label="0x004AE7E0\nGraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets"];
+  "GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources" [label="0x004AE3F0\nGraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources"];
+  "GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank" [label="0x004AE2E0\nGraphicsPaletteTextureSource_RemapColorIndexForPaletteBank"];
+  "GraphicsPaletteTextureSource_CountCombinedUsedColors" [label="0x004AE370\nGraphicsPaletteTextureSource_CountCombinedUsedColors"];
+  "GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources" [label="0x004AE230\nGraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources"];
+  "GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices" -> "GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank";
+  "GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices" -> "GraphicsPaletteTextureSource_CountCombinedUsedColors";
+  "GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices" -> "GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources";
+  "GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices" -> "GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources";
+  "GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources" -> "GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources";
+}

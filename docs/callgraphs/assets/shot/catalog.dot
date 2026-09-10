@@ -1,0 +1,13 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ShotAsset_PrepareEntries" [label="0x0052B4D0\nShotAsset_PrepareEntries"];
+  "ShotDefinitions_ValidateTerrainMaterialReferences" [label="0x0052B7E0\nShotDefinitions_ValidateTerrainMaterialReferences"];
+  "ShotDefinitionRegistry_FindByIdWithErrorCf" [label="0x0052B860\nShotDefinitionRegistry_FindByIdWithErrorCf"];
+  "ShotDefinition_ComputeLaunchAnglesRegs" [label="0x0052B8C0\nShotDefinition_ComputeLaunchAnglesRegs"];
+  "ShotDefinition_ComputeSelectionRange" [label="0x0052BCE0\nShotDefinition_ComputeSelectionRange"];
+  "ShotDefinition_GetModeRangeLimitEbx" [label="0x0052BD50\nShotDefinition_GetModeRangeLimitEbx"];
+  "ShotDefinition_ComputeMode3LeadAdjustment" [label="0x0052BD80\nShotDefinition_ComputeMode3LeadAdjustment"];
+  "ShotDefinition_RegisterAndResolveReferencesCf" [label="0x0052B350\nShotDefinition_RegisterAndResolveReferencesCf"];
+  "ShotAsset_PrepareEntries" -> "ShotDefinition_RegisterAndResolveReferencesCf";
+}

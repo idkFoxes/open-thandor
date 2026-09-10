@@ -1,0 +1,9 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "WidePath_GetExtensionCode" [label="0x0040F240\nWidePath_GetExtensionCode"];
+  "WidePath_SetExtensionCode" [label="0x0040F2B0\nWidePath_SetExtensionCode"];
+  "WidePath_SplitParentAndLeaf" [label="0x0040F320\nWidePath_SplitParentAndLeaf"];
+  "WidePath_CombineDirectoryAndLeaf" [label="0x0040F3C0\nWidePath_CombineDirectoryAndLeaf"];
+  "WidePath_ParseTrailingNumberBeforeExtensionRegs" [label="0x00531170\nWidePath_ParseTrailingNumberBeforeExtensionRegs"];
+}

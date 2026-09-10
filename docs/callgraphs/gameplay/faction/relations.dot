@@ -1,0 +1,25 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "GameFactionRelations_UpdateAllPairsForFaction" [label="0x0053C010\nGameFactionRelations_UpdateAllPairsForFaction"];
+  "PlayerPairList_InsertRange" [label="0x00560E30\nPlayerPairList_InsertRange"];
+  "PlayerPairList_RemoveRange" [label="0x00560E70\nPlayerPairList_RemoveRange"];
+  "GameFactionRelations_TestPairTransitionAllowedCf" [label="0x0053C3D0\nGameFactionRelations_TestPairTransitionAllowedCf"];
+  "GameFactionRelations_BuildEligibleFactionMask" [label="0x0053C090\nGameFactionRelations_BuildEligibleFactionMask"];
+  "GameFactionRelations_EvaluateTransitionRulesCf" [label="0x0053C0F0\nGameFactionRelations_EvaluateTransitionRulesCf"];
+  "GameFactionRelations_IsResetEligibleStateCf" [label="0x0053C490\nGameFactionRelations_IsResetEligibleStateCf"];
+  "GameFactionRelations_MaybeAdvancePairStateRare" [label="0x0053C4D0\nGameFactionRelations_MaybeAdvancePairStateRare"];
+  "GameFactionRelations_MaybeAdvancePairStateCommon" [label="0x0053C540\nGameFactionRelations_MaybeAdvancePairStateCommon"];
+  "GameFactionRelations_MaybeResetPairState" [label="0x0053C5B0\nGameFactionRelations_MaybeResetPairState"];
+  "PlayerPairList_InsertUnique" [label="0x00560EB0\nPlayerPairList_InsertUnique"];
+  "PlayerPairList_RemoveFirstMatch" [label="0x00560F50\nPlayerPairList_RemoveFirstMatch"];
+  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_TestPairTransitionAllowedCf";
+  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_IsResetEligibleStateCf";
+  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_MaybeResetPairState";
+  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_MaybeAdvancePairStateRare";
+  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_MaybeAdvancePairStateCommon";
+  "PlayerPairList_InsertRange" -> "PlayerPairList_InsertUnique";
+  "PlayerPairList_RemoveRange" -> "PlayerPairList_RemoveFirstMatch";
+  "GameFactionRelations_TestPairTransitionAllowedCf" -> "GameFactionRelations_BuildEligibleFactionMask";
+  "GameFactionRelations_TestPairTransitionAllowedCf" -> "GameFactionRelations_EvaluateTransitionRulesCf";
+}

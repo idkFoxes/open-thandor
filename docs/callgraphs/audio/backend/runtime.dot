@@ -1,0 +1,29 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "DirectSound_Shutdown" [label="0x00583410\nDirectSound_Shutdown"];
+  "SoundBackendDisabled_CreateSampleVoiceSet" [label="0x00417570\nSoundBackendDisabled_CreateSampleVoiceSet"];
+  "SoundBackendDisabled_ReleaseSampleVoiceSet" [label="0x00417580\nSoundBackendDisabled_ReleaseSampleVoiceSet"];
+  "SoundBackendDisabled_CreatePcmVoiceSet" [label="0x00417590\nSoundBackendDisabled_CreatePcmVoiceSet"];
+  "SoundBackendDisabled_ReleasePcmVoiceSet" [label="0x004175A0\nSoundBackendDisabled_ReleasePcmVoiceSet"];
+  "SoundBackendDisabled_PlayOneShot" [label="0x004175B0\nSoundBackendDisabled_PlayOneShot"];
+  "SoundBackendDisabled_PlayLooping" [label="0x004175C0\nSoundBackendDisabled_PlayLooping"];
+  "SoundBackendDisabled_StopVoice" [label="0x004175D0\nSoundBackendDisabled_StopVoice"];
+  "SoundBackendDisabled_IsVoicePlaying" [label="0x004175E0\nSoundBackendDisabled_IsVoicePlaying"];
+  "SoundBackendDisabled_QueryVoiceRegs" [label="0x00417600\nSoundBackendDisabled_QueryVoiceRegs"];
+  "SoundBackendDisabled_SetVoiceGains" [label="0x00417610\nSoundBackendDisabled_SetVoiceGains"];
+  "DirectSound_Init" [label="0x00583140\nDirectSound_Init"];
+  "DirectSound_CreateSampleVoiceSet" [label="0x00583490\nDirectSound_CreateSampleVoiceSet"];
+  "DirectSound_ReleaseSampleVoiceSet" [label="0x00583690\nDirectSound_ReleaseSampleVoiceSet"];
+  "DirectSound_CreatePcmVoiceSet" [label="0x00583720\nDirectSound_CreatePcmVoiceSet"];
+  "DirectSound_ReleasePcmVoiceSet" [label="0x005838D0\nDirectSound_ReleasePcmVoiceSet"];
+  "DirectSound_PlayOneShot" [label="0x00583940\nDirectSound_PlayOneShot"];
+  "DirectSound_PlayLooping" [label="0x00583A70\nDirectSound_PlayLooping"];
+  "DirectSound_StopVoice" [label="0x00583B90\nDirectSound_StopVoice"];
+  "DirectSound_IsVoicePlaying" [label="0x00583BC0\nDirectSound_IsVoicePlaying"];
+  "DirectSound_StopAllVoices" [label="0x00583C00\nDirectSound_StopAllVoices"];
+  "DirectSound_QueryVoiceRegsStub" [label="0x00583C60\nDirectSound_QueryVoiceRegsStub"];
+  "DirectSound_SetVoiceGains" [label="0x00583C70\nDirectSound_SetVoiceGains"];
+  "SoundBackendDisabled_StopAllVoices" [label="0x004175F0\nSoundBackendDisabled_StopAllVoices"];
+  "DirectSound_Shutdown" -> "SoundBackendDisabled_StopAllVoices";
+}

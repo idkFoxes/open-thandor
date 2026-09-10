@@ -1,0 +1,9 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "Technology_UnlockForFaction" [label="0x005139C0\nTechnology_UnlockForFaction"];
+  "Technology_IsUnlockedForFactionCf" [label="0x00513AE0\nTechnology_IsUnlockedForFactionCf"];
+  "Technology_IsAvailableForFactionCf" [label="0x00513B20\nTechnology_IsAvailableForFactionCf"];
+  "Technology_ApplyRecordToEntity" [label="0x0052AE10\nTechnology_ApplyRecordToEntity"];
+  "TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks" [label="0x00539BB0\nTechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks"];
+}

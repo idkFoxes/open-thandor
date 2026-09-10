@@ -1,0 +1,18 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "TerrainRegionCollection_CollectConnectedCellsRecursive" [label="0x005137F0\nTerrainRegionCollection_CollectConnectedCellsRecursive"];
+  "TerrainMaterialEdit_SeedMatchingRegionReplacement" [label="0x00561A10\nTerrainMaterialEdit_SeedMatchingRegionReplacement"];
+  "TerrainMaterialEdit_SeedNonTargetRegionReplacement" [label="0x00561AE0\nTerrainMaterialEdit_SeedNonTargetRegionReplacement"];
+  "TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting" [label="0x005616D0\nTerrainEditBuffer_CommitHeightDeltasAndRefreshLighting"];
+  "TerrainEditBuffer_CopyCellMaterialBytes" [label="0x00561830\nTerrainEditBuffer_CopyCellMaterialBytes"];
+  "TerrainEditBuffer_SubtractCurrentCellMaterialBytes" [label="0x00561930\nTerrainEditBuffer_SubtractCurrentCellMaterialBytes"];
+  "TerrainEditBuffer_CommitFlagsAndMaterialDeltas" [label="0x005619A0\nTerrainEditBuffer_CommitFlagsAndMaterialDeltas"];
+  "TerrainEditBuffer_ConvertHeightsToDeltas" [label="0x00561DC0\nTerrainEditBuffer_ConvertHeightsToDeltas"];
+  "TerrainRegionCollection_RecordConnectedCell" [label="0x00513790\nTerrainRegionCollection_RecordConnectedCell"];
+  "TerrainMaterialEdit_PropagateMatchingRegionReplacement" [label="0x00571600\nTerrainMaterialEdit_PropagateMatchingRegionReplacement"];
+  "TerrainMaterialEdit_PropagateNonTargetRegionReplacement" [label="0x00571730\nTerrainMaterialEdit_PropagateNonTargetRegionReplacement"];
+  "TerrainRegionCollection_CollectConnectedCellsRecursive" -> "TerrainRegionCollection_RecordConnectedCell";
+  "TerrainMaterialEdit_SeedMatchingRegionReplacement" -> "TerrainMaterialEdit_PropagateMatchingRegionReplacement";
+  "TerrainMaterialEdit_SeedNonTargetRegionReplacement" -> "TerrainMaterialEdit_PropagateNonTargetRegionReplacement";
+}

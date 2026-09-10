@@ -1,0 +1,626 @@
+[
+  {
+    "module": "assets/army/catalog",
+    "functions": 23,
+    "header": "include/thandor/assets/army/catalog.h",
+    "source": "src/assets/army/catalog.c"
+  },
+  {
+    "module": "assets/effect/catalog",
+    "functions": 4,
+    "header": "include/thandor/assets/effect/catalog.h",
+    "source": "src/assets/effect/catalog.c"
+  },
+  {
+    "module": "assets/fnc/runtime",
+    "functions": 3,
+    "header": "include/thandor/assets/fnc/runtime.h",
+    "source": "src/assets/fnc/runtime.c"
+  },
+  {
+    "module": "assets/model/definitions",
+    "functions": 14,
+    "header": "include/thandor/assets/model/definitions.h",
+    "source": "src/assets/model/definitions.c"
+  },
+  {
+    "module": "assets/package/codec",
+    "functions": 6,
+    "header": "include/thandor/assets/package/codec.h",
+    "source": "src/assets/package/codec.c"
+  },
+  {
+    "module": "assets/package/runtime",
+    "functions": 15,
+    "header": "include/thandor/assets/package/runtime.h",
+    "source": "src/assets/package/runtime.c"
+  },
+  {
+    "module": "assets/resource/runtime",
+    "functions": 8,
+    "header": "include/thandor/assets/resource/runtime.h",
+    "source": "src/assets/resource/runtime.c"
+  },
+  {
+    "module": "assets/rom/runtime",
+    "functions": 18,
+    "header": "include/thandor/assets/rom/runtime.h",
+    "source": "src/assets/rom/runtime.c"
+  },
+  {
+    "module": "assets/scenario/catalog",
+    "functions": 22,
+    "header": "include/thandor/assets/scenario/catalog.h",
+    "source": "src/assets/scenario/catalog.c"
+  },
+  {
+    "module": "assets/shot/catalog",
+    "functions": 8,
+    "header": "include/thandor/assets/shot/catalog.h",
+    "source": "src/assets/shot/catalog.c"
+  },
+  {
+    "module": "assets/sprite/catalog",
+    "functions": 4,
+    "header": "include/thandor/assets/sprite/catalog.h",
+    "source": "src/assets/sprite/catalog.c"
+  },
+  {
+    "module": "assets/text/resources",
+    "functions": 11,
+    "header": "include/thandor/assets/text/resources.h",
+    "source": "src/assets/text/resources.c"
+  },
+  {
+    "module": "assets/text/richtext",
+    "functions": 18,
+    "header": "include/thandor/assets/text/richtext.h",
+    "source": "src/assets/text/richtext.c"
+  },
+  {
+    "module": "audio/backend/runtime",
+    "functions": 24,
+    "header": "include/thandor/audio/backend/runtime.h",
+    "source": "src/audio/backend/runtime.c"
+  },
+  {
+    "module": "audio/codec/sam",
+    "functions": 4,
+    "header": "include/thandor/audio/codec/sam.h",
+    "source": "src/audio/codec/sam.c"
+  },
+  {
+    "module": "audio/spatial/runtime",
+    "functions": 10,
+    "header": "include/thandor/audio/spatial/runtime.h",
+    "source": "src/audio/spatial/runtime.c"
+  },
+  {
+    "module": "core/error/runtime",
+    "functions": 9,
+    "header": "include/thandor/core/error/runtime.h",
+    "source": "src/core/error/runtime.c"
+  },
+  {
+    "module": "core/math/fixed",
+    "functions": 36,
+    "header": "include/thandor/core/math/fixed.h",
+    "source": "src/core/math/fixed.c"
+  },
+  {
+    "module": "core/math/geometry",
+    "functions": 1,
+    "header": "include/thandor/core/math/geometry.h",
+    "source": "src/core/math/geometry.c"
+  },
+  {
+    "module": "core/math/interpolation",
+    "functions": 12,
+    "header": "include/thandor/core/math/interpolation.h",
+    "source": "src/core/math/interpolation.c"
+  },
+  {
+    "module": "core/math/random",
+    "functions": 6,
+    "header": "include/thandor/core/math/random.h",
+    "source": "src/core/math/random.c"
+  },
+  {
+    "module": "core/memory/allocator",
+    "functions": 12,
+    "header": "include/thandor/core/memory/allocator.h",
+    "source": "src/core/memory/allocator.c"
+  },
+  {
+    "module": "core/memory/synchronization",
+    "functions": 5,
+    "header": "include/thandor/core/memory/synchronization.h",
+    "source": "src/core/memory/synchronization.c"
+  },
+  {
+    "module": "core/settings/persistent",
+    "functions": 6,
+    "header": "include/thandor/core/settings/persistent.h",
+    "source": "src/core/settings/persistent.c"
+  },
+  {
+    "module": "core/text/path",
+    "functions": 5,
+    "header": "include/thandor/core/text/path.h",
+    "source": "src/core/text/path.c"
+  },
+  {
+    "module": "core/text/string",
+    "functions": 5,
+    "header": "include/thandor/core/text/string.h",
+    "source": "src/core/text/string.c"
+  },
+  {
+    "module": "gameplay/ai/combat",
+    "functions": 4,
+    "header": "include/thandor/gameplay/ai/combat.h",
+    "source": "src/gameplay/ai/combat.c"
+  },
+  {
+    "module": "gameplay/ai/placement",
+    "functions": 12,
+    "header": "include/thandor/gameplay/ai/placement.h",
+    "source": "src/gameplay/ai/placement.c"
+  },
+  {
+    "module": "gameplay/ai/planning",
+    "functions": 24,
+    "header": "include/thandor/gameplay/ai/planning.h",
+    "source": "src/gameplay/ai/planning.c"
+  },
+  {
+    "module": "gameplay/ai/technology",
+    "functions": 9,
+    "header": "include/thandor/gameplay/ai/technology.h",
+    "source": "src/gameplay/ai/technology.c"
+  },
+  {
+    "module": "gameplay/ai/units",
+    "functions": 9,
+    "header": "include/thandor/gameplay/ai/units.h",
+    "source": "src/gameplay/ai/units.c"
+  },
+  {
+    "module": "gameplay/ai/workspaces",
+    "functions": 26,
+    "header": "include/thandor/gameplay/ai/workspaces.h",
+    "source": "src/gameplay/ai/workspaces.c"
+  },
+  {
+    "module": "gameplay/army/audio",
+    "functions": 10,
+    "header": "include/thandor/gameplay/army/audio.h",
+    "source": "src/gameplay/army/audio.c"
+  },
+  {
+    "module": "gameplay/army/combat",
+    "functions": 9,
+    "header": "include/thandor/gameplay/army/combat.h",
+    "source": "src/gameplay/army/combat.c"
+  },
+  {
+    "module": "gameplay/army/movement",
+    "functions": 32,
+    "header": "include/thandor/gameplay/army/movement.h",
+    "source": "src/gameplay/army/movement.c"
+  },
+  {
+    "module": "gameplay/army/placement",
+    "functions": 25,
+    "header": "include/thandor/gameplay/army/placement.h",
+    "source": "src/gameplay/army/placement.c"
+  },
+  {
+    "module": "gameplay/army/runtime",
+    "functions": 56,
+    "header": "include/thandor/gameplay/army/runtime.h",
+    "source": "src/gameplay/army/runtime.c"
+  },
+  {
+    "module": "gameplay/faction/relations",
+    "functions": 12,
+    "header": "include/thandor/gameplay/faction/relations.h",
+    "source": "src/gameplay/faction/relations.c"
+  },
+  {
+    "module": "gameplay/faction/runtime",
+    "functions": 28,
+    "header": "include/thandor/gameplay/faction/runtime.h",
+    "source": "src/gameplay/faction/runtime.c"
+  },
+  {
+    "module": "gameplay/input/world",
+    "functions": 8,
+    "header": "include/thandor/gameplay/input/world.h",
+    "source": "src/gameplay/input/world.c"
+  },
+  {
+    "module": "gameplay/selection/overlay",
+    "functions": 16,
+    "header": "include/thandor/gameplay/selection/overlay.h",
+    "source": "src/gameplay/selection/overlay.c"
+  },
+  {
+    "module": "gameplay/selection/runtime",
+    "functions": 55,
+    "header": "include/thandor/gameplay/selection/runtime.h",
+    "source": "src/gameplay/selection/runtime.c"
+  },
+  {
+    "module": "gameplay/session/level",
+    "functions": 5,
+    "header": "include/thandor/gameplay/session/level.h",
+    "source": "src/gameplay/session/level.c"
+  },
+  {
+    "module": "gameplay/session/runtime",
+    "functions": 16,
+    "header": "include/thandor/gameplay/session/runtime.h",
+    "source": "src/gameplay/session/runtime.c"
+  },
+  {
+    "module": "gameplay/session/savegame",
+    "functions": 5,
+    "header": "include/thandor/gameplay/session/savegame.h",
+    "source": "src/gameplay/session/savegame.c"
+  },
+  {
+    "module": "gameplay/technology/runtime",
+    "functions": 5,
+    "header": "include/thandor/gameplay/technology/runtime.h",
+    "source": "src/gameplay/technology/runtime.c"
+  },
+  {
+    "module": "graphics/backend/direct3d",
+    "functions": 14,
+    "header": "include/thandor/graphics/backend/direct3d.h",
+    "source": "src/graphics/backend/direct3d.c"
+  },
+  {
+    "module": "graphics/backend/directdraw",
+    "functions": 5,
+    "header": "include/thandor/graphics/backend/directdraw.h",
+    "source": "src/graphics/backend/directdraw.c"
+  },
+  {
+    "module": "graphics/backend/glide",
+    "functions": 34,
+    "header": "include/thandor/graphics/backend/glide.h",
+    "source": "src/graphics/backend/glide.c"
+  },
+  {
+    "module": "graphics/backend/software",
+    "functions": 103,
+    "header": "include/thandor/graphics/backend/software.h",
+    "source": "src/graphics/backend/software.c"
+  },
+  {
+    "module": "graphics/core/runtime",
+    "functions": 28,
+    "header": "include/thandor/graphics/core/runtime.h",
+    "source": "src/graphics/core/runtime.c"
+  },
+  {
+    "module": "graphics/render/model",
+    "functions": 16,
+    "header": "include/thandor/graphics/render/model.h",
+    "source": "src/graphics/render/model.c"
+  },
+  {
+    "module": "graphics/render/primitives",
+    "functions": 15,
+    "header": "include/thandor/graphics/render/primitives.h",
+    "source": "src/graphics/render/primitives.c"
+  },
+  {
+    "module": "graphics/render/projection",
+    "functions": 2,
+    "header": "include/thandor/graphics/render/projection.h",
+    "source": "src/graphics/render/projection.c"
+  },
+  {
+    "module": "graphics/render/shading",
+    "functions": 27,
+    "header": "include/thandor/graphics/render/shading.h",
+    "source": "src/graphics/render/shading.c"
+  },
+  {
+    "module": "graphics/resources/framebuffer",
+    "functions": 7,
+    "header": "include/thandor/graphics/resources/framebuffer.h",
+    "source": "src/graphics/resources/framebuffer.c"
+  },
+  {
+    "module": "graphics/resources/palette",
+    "functions": 13,
+    "header": "include/thandor/graphics/resources/palette.h",
+    "source": "src/graphics/resources/palette.c"
+  },
+  {
+    "module": "graphics/resources/texture",
+    "functions": 36,
+    "header": "include/thandor/graphics/resources/texture.h",
+    "source": "src/graphics/resources/texture.c"
+  },
+  {
+    "module": "movie/runtime/playback",
+    "functions": 18,
+    "header": "include/thandor/movie/runtime/playback.h",
+    "source": "src/movie/runtime/playback.c"
+  },
+  {
+    "module": "network/backend/fallback_udp",
+    "functions": 19,
+    "header": "include/thandor/network/backend/fallback_udp.h",
+    "source": "src/network/backend/fallback_udp.c"
+  },
+  {
+    "module": "network/backend/runtime",
+    "functions": 8,
+    "header": "include/thandor/network/backend/runtime.h",
+    "source": "src/network/backend/runtime.c"
+  },
+  {
+    "module": "network/protocol/commands",
+    "functions": 5,
+    "header": "include/thandor/network/protocol/commands.h",
+    "source": "src/network/protocol/commands.c"
+  },
+  {
+    "module": "network/protocol/transfer",
+    "functions": 27,
+    "header": "include/thandor/network/protocol/transfer.h",
+    "source": "src/network/protocol/transfer.c"
+  },
+  {
+    "module": "platform/bootstrap/runtime",
+    "functions": 17,
+    "header": "include/thandor/platform/bootstrap/runtime.h",
+    "source": "src/platform/bootstrap/runtime.c"
+  },
+  {
+    "module": "platform/filesystem/win32",
+    "functions": 26,
+    "header": "include/thandor/platform/filesystem/win32.h",
+    "source": "src/platform/filesystem/win32.c"
+  },
+  {
+    "module": "platform/input/devices",
+    "functions": 15,
+    "header": "include/thandor/platform/input/devices.h",
+    "source": "src/platform/input/devices.c"
+  },
+  {
+    "module": "platform/system/time_locale",
+    "functions": 16,
+    "header": "include/thandor/platform/system/time_locale.h",
+    "source": "src/platform/system/time_locale.c"
+  },
+  {
+    "module": "platform/system/win32",
+    "functions": 2,
+    "header": "include/thandor/platform/system/win32.h",
+    "source": "src/platform/system/win32.c"
+  },
+  {
+    "module": "ui/controls/buttons",
+    "functions": 17,
+    "header": "include/thandor/ui/controls/buttons.h",
+    "source": "src/ui/controls/buttons.c"
+  },
+  {
+    "module": "ui/controls/input",
+    "functions": 32,
+    "header": "include/thandor/ui/controls/input.h",
+    "source": "src/ui/controls/input.c"
+  },
+  {
+    "module": "ui/controls/layout",
+    "functions": 48,
+    "header": "include/thandor/ui/controls/layout.h",
+    "source": "src/ui/controls/layout.c"
+  },
+  {
+    "module": "ui/controls/lists",
+    "functions": 54,
+    "header": "include/thandor/ui/controls/lists.h",
+    "source": "src/ui/controls/lists.c"
+  },
+  {
+    "module": "ui/controls/misc",
+    "functions": 23,
+    "header": "include/thandor/ui/controls/misc.h",
+    "source": "src/ui/controls/misc.c"
+  },
+  {
+    "module": "ui/controls/text",
+    "functions": 63,
+    "header": "include/thandor/ui/controls/text.h",
+    "source": "src/ui/controls/text.c"
+  },
+  {
+    "module": "ui/core/runtime",
+    "functions": 27,
+    "header": "include/thandor/ui/core/runtime.h",
+    "source": "src/ui/core/runtime.c"
+  },
+  {
+    "module": "ui/frontend/network",
+    "functions": 6,
+    "header": "include/thandor/ui/frontend/network.h",
+    "source": "src/ui/frontend/network.c"
+  },
+  {
+    "module": "ui/frontend/player",
+    "functions": 37,
+    "header": "include/thandor/ui/frontend/player.h",
+    "source": "src/ui/frontend/player.c"
+  },
+  {
+    "module": "ui/frontend/results",
+    "functions": 9,
+    "header": "include/thandor/ui/frontend/results.h",
+    "source": "src/ui/frontend/results.c"
+  },
+  {
+    "module": "ui/frontend/runtime",
+    "functions": 50,
+    "header": "include/thandor/ui/frontend/runtime.h",
+    "source": "src/ui/frontend/runtime.c"
+  },
+  {
+    "module": "ui/frontend/scenario",
+    "functions": 2,
+    "header": "include/thandor/ui/frontend/scenario.h",
+    "source": "src/ui/frontend/scenario.c"
+  },
+  {
+    "module": "ui/frontend/session",
+    "functions": 14,
+    "header": "include/thandor/ui/frontend/session.h",
+    "source": "src/ui/frontend/session.c"
+  },
+  {
+    "module": "ui/frontend/settings",
+    "functions": 33,
+    "header": "include/thandor/ui/frontend/settings.h",
+    "source": "src/ui/frontend/settings.c"
+  },
+  {
+    "module": "ui/ingame/commands",
+    "functions": 67,
+    "header": "include/thandor/ui/ingame/commands.h",
+    "source": "src/ui/ingame/commands.c"
+  },
+  {
+    "module": "ui/ingame/runtime",
+    "functions": 33,
+    "header": "include/thandor/ui/ingame/runtime.h",
+    "source": "src/ui/ingame/runtime.c"
+  },
+  {
+    "module": "ui/ingame/settings",
+    "functions": 30,
+    "header": "include/thandor/ui/ingame/settings.h",
+    "source": "src/ui/ingame/settings.c"
+  },
+  {
+    "module": "ui/ingame/technology",
+    "functions": 6,
+    "header": "include/thandor/ui/ingame/technology.h",
+    "source": "src/ui/ingame/technology.c"
+  },
+  {
+    "module": "ui/support/runtime",
+    "functions": 6,
+    "header": "include/thandor/ui/support/runtime.h",
+    "source": "src/ui/support/runtime.c"
+  },
+  {
+    "module": "world/effects/maintenance",
+    "functions": 4,
+    "header": "include/thandor/world/effects/maintenance.h",
+    "source": "src/world/effects/maintenance.c"
+  },
+  {
+    "module": "world/effects/runtime",
+    "functions": 5,
+    "header": "include/thandor/world/effects/runtime.h",
+    "source": "src/world/effects/runtime.c"
+  },
+  {
+    "module": "world/model/hierarchy",
+    "functions": 28,
+    "header": "include/thandor/world/model/hierarchy.h",
+    "source": "src/world/model/hierarchy.c"
+  },
+  {
+    "module": "world/model/runtime",
+    "functions": 15,
+    "header": "include/thandor/world/model/runtime.h",
+    "source": "src/world/model/runtime.c"
+  },
+  {
+    "module": "world/model/slots",
+    "functions": 20,
+    "header": "include/thandor/world/model/slots.h",
+    "source": "src/world/model/slots.c"
+  },
+  {
+    "module": "world/motion/runtime",
+    "functions": 11,
+    "header": "include/thandor/world/motion/runtime.h",
+    "source": "src/world/motion/runtime.c"
+  },
+  {
+    "module": "world/pathing/grid",
+    "functions": 27,
+    "header": "include/thandor/world/pathing/grid.h",
+    "source": "src/world/pathing/grid.c"
+  },
+  {
+    "module": "world/pathing/influence",
+    "functions": 19,
+    "header": "include/thandor/world/pathing/influence.h",
+    "source": "src/world/pathing/influence.c"
+  },
+  {
+    "module": "world/runtime/core",
+    "functions": 50,
+    "header": "include/thandor/world/runtime/core.h",
+    "source": "src/world/runtime/core.c"
+  },
+  {
+    "module": "world/shots/maintenance",
+    "functions": 4,
+    "header": "include/thandor/world/shots/maintenance.h",
+    "source": "src/world/shots/maintenance.c"
+  },
+  {
+    "module": "world/shots/runtime",
+    "functions": 7,
+    "header": "include/thandor/world/shots/runtime.h",
+    "source": "src/world/shots/runtime.c"
+  },
+  {
+    "module": "world/terrain/editing",
+    "functions": 11,
+    "header": "include/thandor/world/terrain/editing.h",
+    "source": "src/world/terrain/editing.c"
+  },
+  {
+    "module": "world/terrain/grid",
+    "functions": 56,
+    "header": "include/thandor/world/terrain/grid.h",
+    "source": "src/world/terrain/grid.c"
+  },
+  {
+    "module": "world/terrain/height",
+    "functions": 40,
+    "header": "include/thandor/world/terrain/height.h",
+    "source": "src/world/terrain/height.c"
+  },
+  {
+    "module": "world/terrain/occupancy",
+    "functions": 15,
+    "header": "include/thandor/world/terrain/occupancy.h",
+    "source": "src/world/terrain/occupancy.c"
+  },
+  {
+    "module": "world/terrain/projection",
+    "functions": 45,
+    "header": "include/thandor/world/terrain/projection.h",
+    "source": "src/world/terrain/projection.c"
+  },
+  {
+    "module": "world/terrain/visuals",
+    "functions": 11,
+    "header": "include/thandor/world/terrain/visuals.h",
+    "source": "src/world/terrain/visuals.c"
+  }
+]

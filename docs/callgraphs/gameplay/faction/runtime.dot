@@ -1,0 +1,36 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "GameFactionRuntime_AdvancePairwiseRelationState" [label="0x0055F790\nGameFactionRuntime_AdvancePairwiseRelationState"];
+  "GameFactionRuntime_ResetPairwiseRelationState" [label="0x0055F910\nGameFactionRuntime_ResetPairwiseRelationState"];
+  "OldUnitRuntime_RebuildScenarioReplayTables" [label="0x00565320\nOldUnitRuntime_RebuildScenarioReplayTables"];
+  "GameFactionRuntime_RebaseLoadedArmyReferences" [label="0x005130B0\nGameFactionRuntime_RebaseLoadedArmyReferences"];
+  "GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables" [label="0x00513960\nGameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables"];
+  "GameFactionRuntime_TestCapabilityBitClearCf" [label="0x00513CA0\nGameFactionRuntime_TestCapabilityBitClearCf"];
+  "GameFactionRuntime_GetPackedStateNibble" [label="0x00513CD0\nGameFactionRuntime_GetPackedStateNibble"];
+  "GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10" [label="0x00513D70\nGameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10"];
+  "GameFactionRuntime_UpdateImpactAlertAnchorAndNotify" [label="0x00514510\nGameFactionRuntime_UpdateImpactAlertAnchorAndNotify"];
+  "GameFactionRuntime_RecomputeProgressAndScoreMetrics" [label="0x00514730\nGameFactionRuntime_RecomputeProgressAndScoreMetrics"];
+  "GameFactionRuntime_FindRuntimeGroupIndexCf" [label="0x00514900\nGameFactionRuntime_FindRuntimeGroupIndexCf"];
+  "FactionRuntime_HasArmyAssetOrActiveStructureCf" [label="0x0051B800\nFactionRuntime_HasArmyAssetOrActiveStructureCf"];
+  "GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel" [label="0x0051C4C0\nGameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel"];
+  "GameEntityRuntime_ResolveCommandTargetPositionCf" [label="0x0051C680\nGameEntityRuntime_ResolveCommandTargetPositionCf"];
+  "GameEntityRuntime_ApplyImpactDamageAndFactionRelationState" [label="0x0052A4D0\nGameEntityRuntime_ApplyImpactDamageAndFactionRelationState"];
+  "GameFactionRuntime_RegisterArmyAssetPointers" [label="0x00560110\nGameFactionRuntime_RegisterArmyAssetPointers"];
+  "GameFactionRuntime_CancelQueuedArmyAssetsAndRefund" [label="0x00560160\nGameFactionRuntime_CancelQueuedArmyAssetsAndRefund"];
+  "GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer" [label="0x00560400\nGameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer"];
+  "GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid" [label="0x00560620\nGameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid"];
+  "GameFactionRuntime_SellArmyAssetAndRefundSevenEighths" [label="0x005606A0\nGameFactionRuntime_SellArmyAssetAndRefundSevenEighths"];
+  "PlayerRuntime_ResolveAndStoreState8094" [label="0x00561F80\nPlayerRuntime_ResolveAndStoreState8094"];
+  "PlayerRuntime_SetState8090" [label="0x00561FF0\nPlayerRuntime_SetState8090"];
+  "PlayerRuntime_SetState8094" [label="0x00562020\nPlayerRuntime_SetState8094"];
+  "PlayerRuntime_ClearState8094" [label="0x005622C0\nPlayerRuntime_ClearState8094"];
+  "OldUnitRuntime_MergeMasksAndReplayRecords" [label="0x00565590\nOldUnitRuntime_MergeMasksAndReplayRecords"];
+  "GameFactionRuntime_IsRecentTimedRelationStateCf" [label="0x00513D00\nGameFactionRuntime_IsRecentTimedRelationStateCf"];
+  "OldUnitRuntime_ResetPendingTables" [label="0x00565650\nOldUnitRuntime_ResetPendingTables"];
+  "GameFactionRuntime_ApplyPairwiseRelationTransition" [label="0x00513EE0\nGameFactionRuntime_ApplyPairwiseRelationTransition"];
+  "GameFactionRuntime_AdvancePairwiseRelationState" -> "GameFactionRuntime_IsRecentTimedRelationStateCf";
+  "GameFactionRuntime_AdvancePairwiseRelationState" -> "GameFactionRuntime_ApplyPairwiseRelationTransition";
+  "GameFactionRuntime_ResetPairwiseRelationState" -> "GameFactionRuntime_ApplyPairwiseRelationTransition";
+  "OldUnitRuntime_RebuildScenarioReplayTables" -> "OldUnitRuntime_ResetPendingTables";
+}

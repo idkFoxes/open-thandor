@@ -1,0 +1,10 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "WideNumber_FormatUtf16" [label="0x00402D50\nWideNumber_FormatUtf16"];
+  "Utf16String_CompareAsciiCaseInsensitiveFlags" [label="0x00403010\nUtf16String_CompareAsciiCaseInsensitiveFlags"];
+  "Text_CopyNarrowToUtf16Cf" [label="0x0041BAA0\nText_CopyNarrowToUtf16Cf"];
+  "Utf16_CopyAndReturnByteLength" [label="0x00586DA0\nUtf16_CopyAndReturnByteLength"];
+  "WideText_CopyCodeUnits" [label="0x00402D30\nWideText_CopyCodeUnits"];
+  "WideNumber_FormatUtf16" -> "WideText_CopyCodeUnits";
+}

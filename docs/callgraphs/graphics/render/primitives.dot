@@ -1,0 +1,19 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "GraphicsPrimitiveQueue_RadixSortForRendering" [label="0x00486080\nGraphicsPrimitiveQueue_RadixSortForRendering"];
+  "GraphicsPrimitiveQueue_AllocateGlobalPool" [label="0x004D0A10\nGraphicsPrimitiveQueue_AllocateGlobalPool"];
+  "GraphicsPrimitiveQueue_ResetGlobal" [label="0x004D0A40\nGraphicsPrimitiveQueue_ResetGlobal"];
+  "GraphicsPrimitiveQueue_Free" [label="0x004D0A70\nGraphicsPrimitiveQueue_Free"];
+  "GraphicsPrimitiveQueue_GetCount" [label="0x004D0A90\nGraphicsPrimitiveQueue_GetCount"];
+  "GraphicsPrimitiveQueue_Begin" [label="0x004D0AA0\nGraphicsPrimitiveQueue_Begin"];
+  "GraphicsPrimitiveQueue_Next" [label="0x004D0AE0\nGraphicsPrimitiveQueue_Next"];
+  "GraphicsPrimitiveQueue_AppendTriangle" [label="0x004D0B20\nGraphicsPrimitiveQueue_AppendTriangle"];
+  "GraphicsPrimitiveQueue_SetVertexColors" [label="0x004D0C80\nGraphicsPrimitiveQueue_SetVertexColors"];
+  "GraphicsPrimitiveQueue_SetMaterial" [label="0x004D0D00\nGraphicsPrimitiveQueue_SetMaterial"];
+  "GraphicsPrimitiveQueue_OffsetTextureCoordinates" [label="0x004D0D50\nGraphicsPrimitiveQueue_OffsetTextureCoordinates"];
+  "GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle" [label="0x004D0DA0\nGraphicsPrimitiveQueue_AppendTerrainTexturedTriangle"];
+  "GraphicsPrimitiveQueue_AppendTexturedTriangleRegs" [label="0x004D0F20\nGraphicsPrimitiveQueue_AppendTexturedTriangleRegs"];
+  "DepthInterval_BuildBinMask" [label="0x004FFC10\nDepthInterval_BuildBinMask"];
+  "DepthBinMasks_OverlapCf" [label="0x004FFC50\nDepthBinMasks_OverlapCf"];
+}

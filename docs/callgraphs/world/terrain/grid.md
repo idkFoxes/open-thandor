@@ -1,0 +1,62 @@
+# Call graph: `world/terrain/grid`
+
+56 functions. Addresses are current V523 executable VAs.
+
+## Functions
+
+- `0x00505930` **FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf** — local: `FieldGrid_WorldToGridQ12`, `FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial`, `FieldGridCell_RecomputeTriangleNormalAngles`, `FieldGridCell_ComputeDirectionalLightColor`
+- `0x00562330` **TerrainGrid_RunDirectionalRelaxationPasses** — local: `TerrainGrid_RelaxNeighborHeightsForwardWithSignGate`, `TerrainGrid_RelaxNeighborHeightsReverseWithSignGate`, `TerrainGrid_RelaxNeighborHeightsForward`, `TerrainGrid_RelaxNeighborHeightsReverse`
+- `0x005610A0` **FieldGrid_ApplyPositiveCellDeltas** — local: `FieldGridCell_RecomputeTriangleNormalAngles`, `FieldGridCell_ComputeDirectionalLightColor`, `FieldGrid_ProcessHorizontalSpan`; cross: `SelectionPlayerPairList_ContainsPairCf` → `gameplay/selection/runtime`
+- `0x005613C0` **FieldGrid_ApplyNegativeCellDeltas** — local: `FieldGridCell_RecomputeTriangleNormalAngles`, `FieldGridCell_ComputeDirectionalLightColor`, `FieldGrid_ProcessVerticalSpan`; cross: `SelectionPlayerPairList_ContainsPairCf` → `gameplay/selection/runtime`
+- `0x00561C10` **FieldGrid_RebuildLocalInfluenceState** — local: `FieldGrid_ApplyRectangularTransition`, `FieldGridCell_RecomputeTriangleNormalAngles`, `FieldGridCell_ComputeDirectionalLightColor`; cross: `SelectionPlayerPairList_ContainsPairCf` → `gameplay/selection/runtime`
+- `0x00505620` **FieldGrid_RecomputeInteriorTriangleNormalAngles** — local: `FieldGridCell_RecomputeTriangleNormalAngles`
+- `0x00505700` **FieldGrid_RecomputeInteriorDirectionalLighting** — local: `FieldGridCell_ComputeDirectionalLightColor`; cross: `FixedMath_WriteDirectionQ28` → `core/math/fixed`
+- `0x005090E0` **FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf** — local: `FieldGrid_WorldToGridQ12`; cross: `TerrainHeightDelta_ApplyWedge0` → `world/terrain/height`, `TerrainHeightDelta_ApplyWedge1` → `world/terrain/height`, `TerrainHeightDelta_ApplyWedge2` → `world/terrain/height`, `TerrainHeightDelta_ApplyWedge3` → `world/terrain/height`, `TerrainHeightDelta_ApplyWedge4` → `world/terrain/height`, `TerrainHeightDelta_ApplyWedge5` → `world/terrain/height`
+- `0x005618A0` **FieldGrid_ApplyLocalCellUpdate** — local: `FieldGrid_ApplySingleCellTransition`; cross: `SelectionPlayerPairList_ContainsPairCf` → `gameplay/selection/runtime`
+- `0x00562390` **FieldGrid_ApplyEncodedCellUpdate** — local: `FieldGrid_ApplyEncodedUpdateCore`
+- `0x005623D0` **FieldGrid_ApplyMaskDFFFFFFF** — local: `FieldGrid_ApplyMaskedRegionCore`
+- `0x00562410` **FieldGrid_ApplyMaskBFFFFFFF** — local: `FieldGrid_ApplyMaskedRegionCore`
+- `0x00562450` **FieldGrid_ApplyCallerMask** — local: `FieldGrid_ApplyMaskedRegionCore`
+- `0x004FEA80` **FieldGrid_GetNearestTerrainPoint**
+- `0x004FEB10` **FieldGrid_GetNearestTopSurfacePoint**
+- `0x004FEBA0` **FieldGrid_GetNearestWaterDelta**
+- `0x004FEC10` **FieldGrid_InterpolateTerrainHeight**
+- `0x004FED50` **FieldGrid_InterpolateWaterDelta**
+- `0x004FEE90` **FieldGrid_InterpolateWaterSurfaceHeight**
+- `0x004FEFF0` **FieldGrid_InterpolateTopSurfaceHeight**
+- `0x004FF1A0` **FieldGrid_InterpolateTerrainHeightAndNormal** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `FixedMath_VectorToAngles3Regs` → `core/math/fixed`
+- `0x004FF3D0` **FieldGrid_InterpolateTerrainHeightAndTriangle0Normal** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `FixedMath_VectorToAngles3Regs` → `core/math/fixed`
+- `0x004FF600` **FieldGrid_InterpolateTerrainHeightAndTriangle1Normal** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `FixedMath_VectorToAngles3Regs` → `core/math/fixed`
+- `0x004FF830` **FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `FixedMath_VectorToAngles3Regs` → `core/math/fixed`
+- `0x004FFB80` **FieldGrid_TestWorldPointBlockedCf**
+- `0x00503C90` **FieldGrid_InitializeRuntimeCellsAndBoundaryFlags** — cross: `Random_NextPrimary` → `core/math/random`
+- `0x00503DB0` **FieldGrid_RebuildCellLookupPointers**
+- `0x00503E20` **FieldGrid_ApplyByteClampLookupToCells**
+- `0x00503E80` **FieldGrid_ClassifyCellFlagsToRuntimeByte**
+- `0x00503EE0` **TerrainDirectionTable_AdvanceAndRebuildVectors** — cross: `FixedMath_SinCosScaled` → `core/math/fixed`
+- `0x00504B10` **FieldGrid_RaycastTerrainSurfaceDistanceCf** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `TerrainTriangle_IntersectRayDistanceCf` → `world/terrain/height`, `TerrainRay_AdvanceGridTraversalCf` → `world/terrain/height`
+- `0x00504CA0` **FieldGrid_RaycastSecondarySurfaceDistanceCf** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `TerrainTriangle_IntersectRayDistanceCf` → `world/terrain/height`, `TerrainRay_AdvanceGridTraversalCf` → `world/terrain/height`
+- `0x00504E60` **FieldGrid_RaycastTerrainTrianglesAlongDirection** — cross: `FixedMath_DirectionFromAnglesScaledRegs` → `core/math/fixed`, `TerrainTriangle_IntersectRayDistanceCf` → `world/terrain/height`, `TerrainRay_AdvanceGridTraversalCf` → `world/terrain/height`
+- `0x00505120` **FieldGrid_ClearOccupancyMaskBits0To6AllCells**
+- `0x00505240` **FieldGrid_SetOccupancyMaskByteBit0AllCells**
+- `0x00505290` **FieldGrid_ClearOccupancyMaskByteBit0AllCells**
+- `0x00507580` **TerrainGrid_TestProjectedCellMaskBits01Cf**
+- `0x005092A0` **FieldGrid_ClearCellFlag8000AcrossGrid**
+- `0x005092E0` **FieldGrid_SetAllCellOverlayColors**
+- `0x00532B60` **FieldGrid_SaveAssetImageFromRuntimeStateCf** — cross: `FileSystem_WriteBufferToPathCf` → `platform/filesystem/win32`
+- `0x00561050` **FieldGrid_ClearPlayerScratchPlane**
+- `0x00561BB0` **FieldGrid_ResetLocalInfluenceState**
+- `0x00571EC0` **FieldGrid_ApplyEncodedUpdateCore** — local: `FieldGridCell_RecomputeTriangleNormalAngles`, `FieldGridCell_ComputeDirectionalLightColor`
+- `0x005058A0` **FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial**
+- `0x00505AA0` **TerrainGrid_RelaxNeighborHeightsForwardWithSignGate**
+- `0x00505BE0` **TerrainGrid_RelaxNeighborHeightsReverseWithSignGate**
+- `0x00505D30` **TerrainGrid_RelaxNeighborHeightsForward**
+- `0x00505E60` **TerrainGrid_RelaxNeighborHeightsReverse**
+- `0x00571090` **FieldGrid_ProcessHorizontalSpan** — cross: `FixedMath_Length2` → `core/math/fixed`
+- `0x00571250` **FieldGrid_ProcessVerticalSpan** — cross: `FixedMath_Length2` → `core/math/fixed`
+- `0x005713E0` **FieldGrid_ApplySingleCellTransition**
+- `0x00571860` **FieldGrid_ApplyRectangularTransition**
+- `0x004FEA50` **FieldGrid_WorldToGridQ12**
+- `0x00571FE0` **FieldGrid_ApplyMaskedRegionCore**
+- `0x005052E0` **FieldGridCell_RecomputeTriangleNormalAngles** — cross: `FixedMath_VectorToAngles3Regs` → `core/math/fixed`
+- `0x00505690` **FieldGridCell_ComputeDirectionalLightColor** — cross: `FixedMath_DirectionFromAnglesQ28Regs` → `core/math/fixed`

@@ -1,0 +1,9 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "GraphicsDisplayMode_IsEnumeratedCf" [label="0x00423CF0\nGraphicsDisplayMode_IsEnumeratedCf"];
+  "DisplayModeTable_ContainsExactModeCf" [label="0x0054B0E0\nDisplayModeTable_ContainsExactModeCf"];
+  "DirectDraw_EnumAdapterCallback" [label="0x00578080\nDirectDraw_EnumAdapterCallback"];
+  "DirectDraw_EnumDisplayModeCallback" [label="0x005780F0\nDirectDraw_EnumDisplayModeCallback"];
+  "GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf" [label="0x00578920\nGraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf"];
+}

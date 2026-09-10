@@ -1,0 +1,21 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "AiUnitBehavior_UpdateWorkspace01Entities" [label="0x0053B0E0\nAiUnitBehavior_UpdateWorkspace01Entities"];
+  "AiUnitBehavior_SelectBestAnchorAction" [label="0x0053B4C0\nAiUnitBehavior_SelectBestAnchorAction"];
+  "AiUnitBehavior_ComputeWorkspace05DistanceScore" [label="0x0053B1D0\nAiUnitBehavior_ComputeWorkspace05DistanceScore"];
+  "AiUnitBehavior_ComputeFactionAnchorDistanceScore" [label="0x0053B260\nAiUnitBehavior_ComputeFactionAnchorDistanceScore"];
+  "AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore" [label="0x0053B330\nAiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore"];
+  "AiUnitCommand_AssignWorkspacePoint" [label="0x0053B3E0\nAiUnitCommand_AssignWorkspacePoint"];
+  "AiUnitCommand_AssignFactionAnchorPoint" [label="0x0053B420\nAiUnitCommand_AssignFactionAnchorPoint"];
+  "AiUnitBehavior_CollectUnassignedEntity" [label="0x0053B480\nAiUnitBehavior_CollectUnassignedEntity"];
+  "AiUnitBehavior_UpdateSpecialClass12Entity" [label="0x0053B620\nAiUnitBehavior_UpdateSpecialClass12Entity"];
+  "AiUnitBehavior_UpdateWorkspace01Entities" -> "AiUnitBehavior_UpdateSpecialClass12Entity";
+  "AiUnitBehavior_UpdateWorkspace01Entities" -> "AiUnitBehavior_SelectBestAnchorAction";
+  "AiUnitBehavior_SelectBestAnchorAction" -> "AiUnitBehavior_ComputeWorkspace05DistanceScore";
+  "AiUnitBehavior_SelectBestAnchorAction" -> "AiUnitBehavior_ComputeFactionAnchorDistanceScore";
+  "AiUnitBehavior_SelectBestAnchorAction" -> "AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore";
+  "AiUnitBehavior_SelectBestAnchorAction" -> "AiUnitCommand_AssignWorkspacePoint";
+  "AiUnitBehavior_SelectBestAnchorAction" -> "AiUnitCommand_AssignFactionAnchorPoint";
+  "AiUnitBehavior_SelectBestAnchorAction" -> "AiUnitBehavior_CollectUnassignedEntity";
+}

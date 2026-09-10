@@ -1,0 +1,37 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" [label="0x00507460\nTerrainOccupancyBit2_MarkAroundWorldPoint"];
+  "TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint" [label="0x00507610\nTerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint"];
+  "TerrainOccupancyMask_ResolveRuntimeClassFlags" [label="0x005138F0\nTerrainOccupancyMask_ResolveRuntimeClassFlags"];
+  "TerrainOccupancyBit2_MarkWedge0" [label="0x005070A0\nTerrainOccupancyBit2_MarkWedge0"];
+  "TerrainOccupancyBit2_MarkWedge1" [label="0x00507140\nTerrainOccupancyBit2_MarkWedge1"];
+  "TerrainOccupancyBit2_MarkWedge2" [label="0x005071E0\nTerrainOccupancyBit2_MarkWedge2"];
+  "TerrainOccupancyBit2_MarkWedge3" [label="0x00507280\nTerrainOccupancyBit2_MarkWedge3"];
+  "TerrainOccupancyBit2_MarkWedge4" [label="0x00507320\nTerrainOccupancyBit2_MarkWedge4"];
+  "TerrainOccupancyBit2_MarkWedge5" [label="0x005073C0\nTerrainOccupancyBit2_MarkWedge5"];
+  "TerrainOccupancyBit2_MarkDirection0" [label="0x00506EA0\nTerrainOccupancyBit2_MarkDirection0"];
+  "TerrainOccupancyBit2_MarkDirection1" [label="0x00506EF0\nTerrainOccupancyBit2_MarkDirection1"];
+  "TerrainOccupancyBit2_MarkDirection2" [label="0x00506F50\nTerrainOccupancyBit2_MarkDirection2"];
+  "TerrainOccupancyBit2_MarkDirection3" [label="0x00506FA0\nTerrainOccupancyBit2_MarkDirection3"];
+  "TerrainOccupancyBit2_MarkDirection4" [label="0x00506FF0\nTerrainOccupancyBit2_MarkDirection4"];
+  "TerrainOccupancyBit2_MarkDirection5" [label="0x00507050\nTerrainOccupancyBit2_MarkDirection5"];
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" -> "TerrainOccupancyBit2_MarkWedge0";
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" -> "TerrainOccupancyBit2_MarkWedge1";
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" -> "TerrainOccupancyBit2_MarkWedge2";
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" -> "TerrainOccupancyBit2_MarkWedge3";
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" -> "TerrainOccupancyBit2_MarkWedge4";
+  "TerrainOccupancyBit2_MarkAroundWorldPoint" -> "TerrainOccupancyBit2_MarkWedge5";
+  "TerrainOccupancyBit2_MarkWedge0" -> "TerrainOccupancyBit2_MarkDirection0";
+  "TerrainOccupancyBit2_MarkWedge0" -> "TerrainOccupancyBit2_MarkDirection1";
+  "TerrainOccupancyBit2_MarkWedge1" -> "TerrainOccupancyBit2_MarkDirection1";
+  "TerrainOccupancyBit2_MarkWedge1" -> "TerrainOccupancyBit2_MarkDirection2";
+  "TerrainOccupancyBit2_MarkWedge2" -> "TerrainOccupancyBit2_MarkDirection2";
+  "TerrainOccupancyBit2_MarkWedge2" -> "TerrainOccupancyBit2_MarkDirection3";
+  "TerrainOccupancyBit2_MarkWedge3" -> "TerrainOccupancyBit2_MarkDirection3";
+  "TerrainOccupancyBit2_MarkWedge3" -> "TerrainOccupancyBit2_MarkDirection4";
+  "TerrainOccupancyBit2_MarkWedge4" -> "TerrainOccupancyBit2_MarkDirection4";
+  "TerrainOccupancyBit2_MarkWedge4" -> "TerrainOccupancyBit2_MarkDirection5";
+  "TerrainOccupancyBit2_MarkWedge5" -> "TerrainOccupancyBit2_MarkDirection5";
+  "TerrainOccupancyBit2_MarkWedge5" -> "TerrainOccupancyBit2_MarkDirection0";
+}

@@ -1,0 +1,12 @@
+# Call graph: `ui/frontend/network`
+
+6 functions. Addresses are current V523 executable VAs.
+
+## Functions
+
+- `0x0054C260` **FrontendNetworkSetupPage_InitializeBackendMode** — local: `FrontendNetworkSetupPage_InitializeFromCommandLine`; cross: `UiNodeList_UnsuppressActionId` → `ui/controls/lists`, `UiNodeList_SuppressActionId` → `ui/controls/lists`, `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `UiPointerList_InitializeColumnLayout` → `ui/controls/lists`, `RichTextCommandStream_CopyExpandedCf` → `assets/text/richtext`, `UiTransfer_SendPlayerDescriptorPacket20002Cf` → `network/protocol/transfer`, `UiRuntimeRecordRing_Clear` → `ui/core/runtime`, `UiTransferMailbox_RandomizeSequenceToken` → `network/protocol/transfer`, `UiPointerList_GetSelectedIndexVariantACf` → `ui/controls/lists`, `UiPointerList_SelectIndexVariantA` → `ui/controls/lists`, `Text_CopyNarrowToUtf16Cf` → `core/text/string`, `UiTransfer_SendPacketType10000Value2931Cf` → `network/protocol/transfer`, `FrontendSession_ReturnToMainPage` → `ui/frontend/session`, `FrontendCommandQueue_EnqueueLocalPlayerCommand` → `network/protocol/commands`
+- `0x005474A0` **FrontendTeardown_SaveRootStateSnapshot80**
+- `0x0054C7D0` **FrontendTransferPage_ValidateInputAndRequestMailbox** — cross: `UiTransfer_SendPacketType10000Value2931Cf` → `network/protocol/transfer`
+- `0x0054CE10` **FrontendTransferPage_OpenAndRequestMailbox** — cross: `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `UiNodeList_SuppressActionId` → `ui/controls/lists`, `UiPointerList_InitializeColumnLayout` → `ui/controls/lists`, `UiTransfer_SendPacketType10000Value2931Cf` → `network/protocol/transfer`
+- `0x0054C830` **FrontendNetworkSetupPage_InitializeFromCommandLine** — local: `FrontendNetworkSetupPage_InitializeSingleLocalPlayer`; cross: `Text_CopyNarrowToUtf16Cf` → `core/text/string`, `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_CopyExpandedCf` → `assets/text/richtext`, `UiTextControl_UpdateNonEmptyValidity` → `ui/controls/text`, `FrontendNetworkSettings_SetGameName` → `ui/frontend/settings`
+- `0x0054CE80` **FrontendNetworkSetupPage_InitializeSingleLocalPlayer** — cross: `UiNodeList_SuppressActionId` → `ui/controls/lists`, `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `UiPointerList_InitializeColumnLayout` → `ui/controls/lists`, `PcxPreview_Load64x64PaletteAndPixelsCf` → `ui/support/runtime`, `FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction` → `ui/frontend/player`

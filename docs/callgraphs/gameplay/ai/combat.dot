@@ -1,0 +1,10 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "AiCombatDecision_UpdateTargetAssignment" [label="0x00536FC0\nAiCombatDecision_UpdateTargetAssignment"];
+  "AiUnitGroup_AssignCollectedEntitiesToBestTarget" [label="0x0053B8B0\nAiUnitGroup_AssignCollectedEntitiesToBestTarget"];
+  "AiCombatTarget_SelectBestCandidate" [label="0x005372C0\nAiCombatTarget_SelectBestCandidate"];
+  "AiCombatTarget_EvaluateCandidateScore" [label="0x00537060\nAiCombatTarget_EvaluateCandidateScore"];
+  "AiCombatDecision_UpdateTargetAssignment" -> "AiCombatTarget_SelectBestCandidate";
+  "AiCombatTarget_SelectBestCandidate" -> "AiCombatTarget_EvaluateCandidateScore";
+}

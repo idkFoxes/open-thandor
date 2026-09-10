@@ -1,0 +1,28 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf" [label="0x0051B3C0\nModelDefinition_SelectFactionUnlockedLinkedDefinitionCf"];
+  "ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology" [label="0x0051DB00\nModelDefinitionHierarchy_UnlockSelectedLinkedTechnology"];
+  "ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf" [label="0x0051DA60\nModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf"];
+  "ModelAsset_PrepareRecords" [label="0x00528950\nModelAsset_PrepareRecords"];
+  "ModelLookupTable_FindPackedKeyEntryRegsCf" [label="0x004BE670\nModelLookupTable_FindPackedKeyEntryRegsCf"];
+  "ModelLookupTable_ContainsPackedKeyCf" [label="0x004BE6F0\nModelLookupTable_ContainsPackedKeyCf"];
+  "ModelMesh_IntersectTriangleRayDistanceCf" [label="0x0050AEA0\nModelMesh_IntersectTriangleRayDistanceCf"];
+  "ModelDefinitionRegistry_FindBuildMetricTupleByIdCf" [label="0x005289C0\nModelDefinitionRegistry_FindBuildMetricTupleByIdCf"];
+  "ModelDefinitionRegistry_FindByRuntimeClassId" [label="0x0053BA00\nModelDefinitionRegistry_FindByRuntimeClassId"];
+  "ModelDefinition_SelectFactionUnlockedLinkedIdCf" [label="0x0051B430\nModelDefinition_SelectFactionUnlockedLinkedIdCf"];
+  "ModelDefinition_RegisterAndResolveReferencesCf" [label="0x00528600\nModelDefinition_RegisterAndResolveReferencesCf"];
+  "ModelDefinition_UnlockLinkedTechnologyForFactionCf" [label="0x0052ADE0\nModelDefinition_UnlockLinkedTechnologyForFactionCf"];
+  "ModelDefinition_IsFactionTechnologyUnlockedCf" [label="0x0052AD90\nModelDefinition_IsFactionTechnologyUnlockedCf"];
+  "ModelDefinitionRegistry_FindByIdWithErrorCf" [label="0x00528E20\nModelDefinitionRegistry_FindByIdWithErrorCf"];
+  "ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf" -> "ModelDefinition_IsFactionTechnologyUnlockedCf";
+  "ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf" -> "ModelDefinitionRegistry_FindByIdWithErrorCf";
+  "ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology" -> "ModelDefinition_SelectFactionUnlockedLinkedIdCf";
+  "ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology" -> "ModelDefinition_UnlockLinkedTechnologyForFactionCf";
+  "ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf" -> "ModelDefinition_IsFactionTechnologyUnlockedCf";
+  "ModelAsset_PrepareRecords" -> "ModelDefinition_RegisterAndResolveReferencesCf";
+  "ModelDefinition_SelectFactionUnlockedLinkedIdCf" -> "ModelDefinition_IsFactionTechnologyUnlockedCf";
+  "ModelDefinition_RegisterAndResolveReferencesCf" -> "ModelDefinitionRegistry_FindByIdWithErrorCf";
+  "ModelDefinition_UnlockLinkedTechnologyForFactionCf" -> "ModelDefinitionRegistry_FindByIdWithErrorCf";
+  "ModelDefinition_IsFactionTechnologyUnlockedCf" -> "ModelDefinitionRegistry_FindByIdWithErrorCf";
+}

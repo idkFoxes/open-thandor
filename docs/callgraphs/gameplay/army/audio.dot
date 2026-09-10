@@ -1,0 +1,14 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ArmyGraphics_CopyFrontendPlayerPaletteAndTexture" [label="0x0051D5F0\nArmyGraphics_CopyFrontendPlayerPaletteAndTexture"];
+  "ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA" [label="0x00520740\nArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA"];
+  "ArmyRuntimeAudio_DispatchPositionedSoundVariant" [label="0x00520E60\nArmyRuntimeAudio_DispatchPositionedSoundVariant"];
+  "ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB" [label="0x00523240\nArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB"];
+  "ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound" [label="0x00523DD0\nArmyRuntimeAudio_UpdateMovementProjectedLoopingSound"];
+  "ArmyRuntimeAudio_UpdateConditionalProjectedSound" [label="0x00524410\nArmyRuntimeAudio_UpdateConditionalProjectedSound"];
+  "ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds" [label="0x00524DA0\nArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds"];
+  "ArmyRuntimeAudio_UpdateAssetProjectedSound" [label="0x00526490\nArmyRuntimeAudio_UpdateAssetProjectedSound"];
+  "ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds" [label="0x00526EB0\nArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds"];
+  "ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled" [label="0x00527B20\nArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled"];
+}

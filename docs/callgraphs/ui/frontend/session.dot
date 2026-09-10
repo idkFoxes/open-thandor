@@ -1,0 +1,24 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "FrontendSession_ReleaseSelectedResourceAndReturnToMainPage" [label="0x00544270\nFrontendSession_ReleaseSelectedResourceAndReturnToMainPage"];
+  "FrontendSessionAction_CloseMovieAndReturnToMainPage" [label="0x00548FE0\nFrontendSessionAction_CloseMovieAndReturnToMainPage"];
+  "FrontendSessionAction_ApplySpeedOrToggleReady" [label="0x00549090\nFrontendSessionAction_ApplySpeedOrToggleReady"];
+  "FrontendSessionAction_ResetNetworkAndReturnToMainPage" [label="0x0054C770\nFrontendSessionAction_ResetNetworkAndReturnToMainPage"];
+  "FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag" [label="0x0054D0B0\nFrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag"];
+  "FrontendSession_SetGameSpeedPercent" [label="0x00544250\nFrontendSession_SetGameSpeedPercent"];
+  "FrontendSession_ShowPage9WithCompactLayout" [label="0x0054A790\nFrontendSession_ShowPage9WithCompactLayout"];
+  "FrontendTransferPage_ResetSessionOpenAndRequestMailbox" [label="0x0054D2E0\nFrontendTransferPage_ResetSessionOpenAndRequestMailbox"];
+  "FrontendSessionList_DecrementExpiryAndCompactRows" [label="0x0054E3A0\nFrontendSessionList_DecrementExpiryAndCompactRows"];
+  "FrontendSession_PeriodicTick" [label="0x00565670\nFrontendSession_PeriodicTick"];
+  "FrontendClientSession_DecrementTimeoutsAndCompactPlayers" [label="0x005725D0\nFrontendClientSession_DecrementTimeoutsAndCompactPlayers"];
+  "FrontendHostSession_TickShutdownOrReadyConsensus" [label="0x00572960\nFrontendHostSession_TickShutdownOrReadyConsensus"];
+  "FrontendSession_ApplyGameSpeedAndReturnToMainPage" [label="0x00544210\nFrontendSession_ApplyGameSpeedAndReturnToMainPage"];
+  "FrontendSession_ReturnToMainPage" [label="0x00544D10\nFrontendSession_ReturnToMainPage"];
+  "FrontendSession_ReleaseSelectedResourceAndReturnToMainPage" -> "FrontendSession_ReturnToMainPage";
+  "FrontendSessionAction_CloseMovieAndReturnToMainPage" -> "FrontendSession_ReturnToMainPage";
+  "FrontendSessionAction_ApplySpeedOrToggleReady" -> "FrontendSession_ApplyGameSpeedAndReturnToMainPage";
+  "FrontendSessionAction_ResetNetworkAndReturnToMainPage" -> "FrontendSession_ReturnToMainPage";
+  "FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag" -> "FrontendSession_ReturnToMainPage";
+  "FrontendSession_ApplyGameSpeedAndReturnToMainPage" -> "FrontendSession_ReturnToMainPage";
+}

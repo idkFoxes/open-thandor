@@ -1,0 +1,26 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "WorldMotionSpline_EvaluateAndApplyAtTime" [label="0x0053CA30\nWorldMotionSpline_EvaluateAndApplyAtTime"];
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" [label="0x0053CBB0\nWorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf"];
+  "WorldMotionSpline_BuildSixChannelCurves" [label="0x0053CD10\nWorldMotionSpline_BuildSixChannelCurves"];
+  "InterpolationState_SetNegatedTargetAndRescaleProgress" [label="0x004CCC00\nInterpolationState_SetNegatedTargetAndRescaleProgress"];
+  "InterpolationStateTable_Advance256ByTicks" [label="0x004CCC80\nInterpolationStateTable_Advance256ByTicks"];
+  "CubicSpline_SolveCoefficientSystem" [label="0x0053D230\nCubicSpline_SolveCoefficientSystem"];
+  "CubicSpline_BuildNaturalCoefficientSystem" [label="0x0053CF10\nCubicSpline_BuildNaturalCoefficientSystem"];
+  "CubicSpline_ForwardEliminateColumn" [label="0x0053D160\nCubicSpline_ForwardEliminateColumn"];
+  "CubicSpline_BackSubstituteRow" [label="0x0053D1C0\nCubicSpline_BackSubstituteRow"];
+  "WorldMotionSpline_ClearCachedDerivatives" [label="0x0053CA10\nWorldMotionSpline_ClearCachedDerivatives"];
+  "CubicSpline_EvaluateValueQ12" [label="0x0053D2E0\nCubicSpline_EvaluateValueQ12"];
+  "CubicSpline_EvaluateDerivativeQ12" [label="0x0053D320\nCubicSpline_EvaluateDerivativeQ12"];
+  "WorldMotionSpline_EvaluateAndApplyAtTime" -> "CubicSpline_EvaluateValueQ12";
+  "WorldMotionSpline_EvaluateAndApplyAtTime" -> "CubicSpline_EvaluateDerivativeQ12";
+  "WorldMotionSpline_EvaluateAndApplyAtTime" -> "WorldMotionSpline_ClearCachedDerivatives";
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" -> "CubicSpline_EvaluateValueQ12";
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" -> "CubicSpline_EvaluateDerivativeQ12";
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" -> "WorldMotionSpline_ClearCachedDerivatives";
+  "WorldMotionSpline_BuildSixChannelCurves" -> "CubicSpline_BuildNaturalCoefficientSystem";
+  "WorldMotionSpline_BuildSixChannelCurves" -> "CubicSpline_SolveCoefficientSystem";
+  "CubicSpline_SolveCoefficientSystem" -> "CubicSpline_ForwardEliminateColumn";
+  "CubicSpline_SolveCoefficientSystem" -> "CubicSpline_BackSubstituteRow";
+}

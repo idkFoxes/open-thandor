@@ -1,0 +1,35 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "UiDisplaySettingsRoot_RefreshModeSelection" [label="0x00422910\nUiDisplaySettingsRoot_RefreshModeSelection"];
+  "UiDisplayModeAction_UpdateAdapterSelection" [label="0x00423C40\nUiDisplayModeAction_UpdateAdapterSelection"];
+  "UiDisplayModeAction_UpdateResolutionSelection" [label="0x00423C80\nUiDisplayModeAction_UpdateResolutionSelection"];
+  "UiDisplayModeAction_UpdateColorDepthSelection" [label="0x00423CB0\nUiDisplayModeAction_UpdateColorDepthSelection"];
+  "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" [label="0x00424590\nUiDisplayModeAction_ApplyFourValueDialogAndReopenSettings"];
+  "UiImageControl_NonRightDrag" [label="0x004BC8B0\nUiImageControl_NonRightDrag"];
+  "UiImageControl_TickHover" [label="0x004BCB50\nUiImageControl_TickHover"];
+  "UiDisplayModeAction_ApplyPendingMode" [label="0x00423B30\nUiDisplayModeAction_ApplyPendingMode"];
+  "UiDisplayModeAction_CancelAndRebuildPixelPacking" [label="0x00423C00\nUiDisplayModeAction_CancelAndRebuildPixelPacking"];
+  "UiFourValueDialog_TickCountdownAndRequestClose" [label="0x004242D0\nUiFourValueDialog_TickCountdownAndRequestClose"];
+  "UiRangeSliderControl_DrawTrackAndThumb" [label="0x004B3F40\nUiRangeSliderControl_DrawTrackAndThumb"];
+  "UiRangeSliderControl_BeginThumbDrag" [label="0x004B41C0\nUiRangeSliderControl_BeginThumbDrag"];
+  "UiRangeSliderControl_EndThumbDrag" [label="0x004B4280\nUiRangeSliderControl_EndThumbDrag"];
+  "UiRangeSliderControl_SuppressIfActionId" [label="0x004B45F0\nUiRangeSliderControl_SuppressIfActionId"];
+  "UiRangeSliderControl_UnsuppressIfActionId" [label="0x004B4620\nUiRangeSliderControl_UnsuppressIfActionId"];
+  "UiImageControl_DrawClipped" [label="0x004BC5C0\nUiImageControl_DrawClipped"];
+  "UiImageControl_NonRightPress" [label="0x004BC6E0\nUiImageControl_NonRightPress"];
+  "UiImageControl_NonRightRelease" [label="0x004BC7E0\nUiImageControl_NonRightRelease"];
+  "UiModelControl_RefreshStateTint" [label="0x004BD2A0\nUiModelControl_RefreshStateTint"];
+  "UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw" [label="0x00517E30\nUiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw"];
+  "UiDisplaySettings_OpenAndPopulateModeSelectionCf" [label="0x00423600\nUiDisplaySettings_OpenAndPopulateModeSelectionCf"];
+  "UiImageControl_HitTestOpaque" [label="0x004BC9B0\nUiImageControl_HitTestOpaque"];
+  "UiDisplayModeSelection_RefreshEnumeratedOptions" [label="0x00423D70\nUiDisplayModeSelection_RefreshEnumeratedOptions"];
+  "UiDisplaySettingsRoot_RefreshModeSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplayModeAction_UpdateAdapterSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplayModeAction_UpdateResolutionSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplayModeAction_UpdateColorDepthSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" -> "UiDisplaySettings_OpenAndPopulateModeSelectionCf";
+  "UiImageControl_NonRightDrag" -> "UiImageControl_HitTestOpaque";
+  "UiImageControl_TickHover" -> "UiImageControl_HitTestOpaque";
+  "UiDisplaySettings_OpenAndPopulateModeSelectionCf" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+}

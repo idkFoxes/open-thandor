@@ -1,0 +1,35 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "ModelNodeRuntime_UpdateStateTintRecursive" [label="0x004BD1F0\nModelNodeRuntime_UpdateStateTintRecursive"];
+  "ModelNodeRuntime_RebuildTransformsFromRoot" [label="0x004BE360\nModelNodeRuntime_RebuildTransformsFromRoot"];
+  "ModelRuntimeHierarchy_ApplyFactionTechnologyVariants" [label="0x0051DB80\nModelRuntimeHierarchy_ApplyFactionTechnologyVariants"];
+  "ModelNodeRuntime_AccumulateTransformedBoundsRecursive" [label="0x004BD310\nModelNodeRuntime_AccumulateTransformedBoundsRecursive"];
+  "ModelNodeRuntime_BuildViewFacingRotation" [label="0x004BD8D0\nModelNodeRuntime_BuildViewFacingRotation"];
+  "ModelNodeRuntime_BuildBillboardRotation" [label="0x004BD950\nModelNodeRuntime_BuildBillboardRotation"];
+  "ModelNodeRuntime_RecomputeSubtreeBoundingRadius" [label="0x004BE9D0\nModelNodeRuntime_RecomputeSubtreeBoundingRadius"];
+  "ModelNodeRuntime_UpdateDepthBinMasks" [label="0x004BEA30\nModelNodeRuntime_UpdateDepthBinMasks"];
+  "ModelNodeRuntime_TransformLocalPointRegs" [label="0x004BEB80\nModelNodeRuntime_TransformLocalPointRegs"];
+  "ModelNodeRuntime_ComputeRelativeDirectionAngle" [label="0x004BEBC0\nModelNodeRuntime_ComputeRelativeDirectionAngle"];
+  "ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf" [label="0x0050A7A0\nModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf"];
+  "ModelNodeRuntime_RaycastHierarchyNearestCf" [label="0x0050B1D0\nModelNodeRuntime_RaycastHierarchyNearestCf"];
+  "ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf" [label="0x0051B650\nModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf"];
+  "ModelRuntimeHierarchy_SetCommandTargetRecursive" [label="0x0051BEC0\nModelRuntimeHierarchy_SetCommandTargetRecursive"];
+  "ModelRuntimeHierarchy_ClearMatchingTargetRecursive" [label="0x0051BF30\nModelRuntimeHierarchy_ClearMatchingTargetRecursive"];
+  "ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive" [label="0x0051C100\nModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive"];
+  "ModelRuntimeHierarchy_SumMetric3C" [label="0x0051C1F0\nModelRuntimeHierarchy_SumMetric3C"];
+  "ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive" [label="0x00528C20\nModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive"];
+  "ModelNodeRuntime_CreateHierarchyRecursiveCf" [label="0x00528E90\nModelNodeRuntime_CreateHierarchyRecursiveCf"];
+  "ModelRuntimeNode_ReleaseRecursiveAndDetachParent" [label="0x005294E0\nModelRuntimeNode_ReleaseRecursiveAndDetachParent"];
+  "ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics" [label="0x0052A100\nModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics"];
+  "ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs" [label="0x0052A690\nModelRuntimeHierarchy_ComputeScaleRatioQ12Regs"];
+  "ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs" [label="0x0052A6F0\nModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs"];
+  "ModelNodeRuntime_SmoothYawTowardTarget" [label="0x0052AAC0\nModelNodeRuntime_SmoothYawTowardTarget"];
+  "ModelNodeRuntime_SmoothPitchTowardTarget" [label="0x0052AC00\nModelNodeRuntime_SmoothPitchTowardTarget"];
+  "ModelNodeRuntime_ApplyTintRecursive" [label="0x004BD1A0\nModelNodeRuntime_ApplyTintRecursive"];
+  "ModelNodeRuntime_ComposeChildTransformsRecursive" [label="0x004BE390\nModelNodeRuntime_ComposeChildTransformsRecursive"];
+  "ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive" [label="0x0052AEA0\nModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive"];
+  "ModelNodeRuntime_UpdateStateTintRecursive" -> "ModelNodeRuntime_ApplyTintRecursive";
+  "ModelNodeRuntime_RebuildTransformsFromRoot" -> "ModelNodeRuntime_ComposeChildTransformsRecursive";
+  "ModelRuntimeHierarchy_ApplyFactionTechnologyVariants" -> "ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive";
+}

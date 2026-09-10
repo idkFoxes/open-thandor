@@ -1,0 +1,27 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "RichTextCommandStream_MeasureWrappedBlockRegs" [label="0x0041D300\nRichTextCommandStream_MeasureWrappedBlockRegs"];
+  "RichTextCommandStream_DrawWrappedBlockCf" [label="0x0041D7C0\nRichTextCommandStream_DrawWrappedBlockCf"];
+  "RichTextCommandStream_DrawSingleLine" [label="0x0041D4A0\nRichTextCommandStream_DrawSingleLine"];
+  "RichTextCommandStream_PatchPayloadBySelector" [label="0x0041B100\nRichTextCommandStream_PatchPayloadBySelector"];
+  "RichTextCommandStream_BindTextureSource" [label="0x0041B200\nRichTextCommandStream_BindTextureSource"];
+  "RichTextCommandStream_FindNthCommandPayloadPair" [label="0x0041B300\nRichTextCommandStream_FindNthCommandPayloadPair"];
+  "RichTextCommandStream_FindNestedStreamPointer" [label="0x0041B420\nRichTextCommandStream_FindNestedStreamPointer"];
+  "RichTextCommandStream_FindOpcode1APayloadPair" [label="0x0041B520\nRichTextCommandStream_FindOpcode1APayloadPair"];
+  "RichTextCommandStream_FindInlinePayloadPair" [label="0x0041B620\nRichTextCommandStream_FindInlinePayloadPair"];
+  "RichTextCommandStream_FindNthCommandFlagsPair" [label="0x0041B720\nRichTextCommandStream_FindNthCommandFlagsPair"];
+  "RichTextCommandStream_QueryNthCommandFlags" [label="0x0041B840\nRichTextCommandStream_QueryNthCommandFlags"];
+  "RichTextCommandStream_CopyToNarrowCf" [label="0x0041B950\nRichTextCommandStream_CopyToNarrowCf"];
+  "RichTextMarkup_ParseAndBuildStringAsset" [label="0x0041BCB0\nRichTextMarkup_ParseAndBuildStringAsset"];
+  "RichTextCommandStream_CopyExpandedCf" [label="0x0041C8D0\nRichTextCommandStream_CopyExpandedCf"];
+  "RichTextCommandStream_MeasureRegs" [label="0x0041CF30\nRichTextCommandStream_MeasureRegs"];
+  "RichTextCommandStream_MeasureNextWrappedLineCf" [label="0x0041D0F0\nRichTextCommandStream_MeasureNextWrappedLineCf"];
+  "RichTextCommandStream_DrawNextWrappedLineCf" [label="0x0041D9F0\nRichTextCommandStream_DrawNextWrappedLineCf"];
+  "RichTextCommandStream_FlattenNestedToRuntimeBuffer" [label="0x0041D840\nRichTextCommandStream_FlattenNestedToRuntimeBuffer"];
+  "RichTextCommandStream_MeasureWrappedBlockRegs" -> "RichTextCommandStream_FlattenNestedToRuntimeBuffer";
+  "RichTextCommandStream_MeasureWrappedBlockRegs" -> "RichTextCommandStream_MeasureNextWrappedLineCf";
+  "RichTextCommandStream_DrawWrappedBlockCf" -> "RichTextCommandStream_FlattenNestedToRuntimeBuffer";
+  "RichTextCommandStream_DrawWrappedBlockCf" -> "RichTextCommandStream_DrawNextWrappedLineCf";
+  "RichTextCommandStream_DrawSingleLine" -> "RichTextCommandStream_MeasureRegs";
+}

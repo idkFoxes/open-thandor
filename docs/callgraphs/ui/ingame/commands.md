@@ -1,0 +1,73 @@
+# Call graph: `ui/ingame/commands`
+
+67 functions. Addresses are current V523 executable VAs.
+
+## Functions
+
+- `0x0056DB40` **InGameCommandModeG_Select0** — local: `UiCommandModeG_SelectAndSyncPages`, `UiCommandModeG_SetNodeFlag00100000`, `UiCommandModeG_SetNodeFlag00200000`, `UiCommandModeG_ClearNodeFlags00000480`, `UiCommandModeG_SetNodeFlag00800000`, `UiCommandModeG_SetNodeFlag01000000`, `UiCommandModeG_ApplyRawColorVariant`, `UiCommandModeG_ClearNodeFlag02000000`
+- `0x0056DB90` **InGameCommandModeG_Select1** — local: `UiCommandModeG_SelectAndSyncPages`, `UiCommandModeG_SetNodeFlag00100000`, `UiCommandModeG_SetNodeFlag00200000`, `UiCommandModeG_ClearNodeFlags00000480`, `UiCommandModeG_SetNodeFlag00800000`, `UiCommandModeG_ClearNodeFlag01000000`, `UiCommandModeG_ApplyRawColorVariant`, `UiCommandModeG_ClearNodeFlag02000000`
+- `0x0056DBE0` **InGameCommandModeG_Select2** — local: `UiCommandModeG_SelectAndSyncPages`, `UiCommandModeG_SetNodeFlag00100000`, `UiCommandModeG_ClearNodeFlag00200000`, `UiCommandModeG_ClearNodeFlags00000480`, `UiCommandModeG_SetNodeFlag00800000`, `UiCommandModeG_SetNodeFlag01000000`, `UiCommandModeG_ApplyMaskedColorVariant`, `UiCommandModeG_ClearNodeFlag02000000`
+- `0x0056DC30` **InGameCommandModeG_Select3** — local: `UiCommandModeG_SelectAndSyncPages`, `UiCommandModeG_ClearNodeFlag00100000`, `UiCommandModeG_ClearNodeFlag00200000`, `UiCommandModeG_SetNodeFlag00000400`, `UiCommandModeG_SetNodeFlag00800000`, `UiCommandModeG_ClearNodeFlag01000000`, `UiCommandModeG_ApplyRawColorVariant`, `UiCommandModeG_ClearNodeFlag02000000`; cross: `ArmyAssetRegistry_FindByIdCf` → `assets/army/catalog`, `InGameSelectionDetailPanel_Rebuild` → `ui/ingame/runtime`
+- `0x0056DCA0` **InGameCommandModeG_Select4** — local: `UiCommandModeG_SelectAndSyncPages`, `UiCommandModeG_ClearNodeFlag00100000`, `UiCommandModeG_ClearNodeFlag00200000`, `UiCommandModeG_SetNodeFlag00000400`, `UiCommandModeG_SetNodeFlag00800000`, `UiCommandModeG_ClearNodeFlag01000000`, `UiCommandModeG_ApplyRawColorVariant`, `UiCommandModeG_ClearNodeFlag02000000`
+- `0x0056DCF0` **InGameCommandModeG_Select5** — local: `UiCommandModeG_SelectAndSyncPages`, `UiCommandModeG_SetNodeFlag00100000`, `UiCommandModeG_ClearNodeFlag00200000`, `UiCommandModeG_SetNodeFlag00000400`, `UiCommandModeG_SetNodeFlag00800000`, `UiCommandModeG_ClearNodeFlag01000000`, `UiCommandModeG_ApplyRawColorVariant`, `UiCommandModeG_SetNodeFlag02000000`
+- `0x0056AC50` **InGameCommandAction_SetFlag1000OrMarkReady** — local: `UiCommandRuntimeFlags_ApplyClearSetToggleMasks`; cross: `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`, `FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B` → `ui/frontend/player`
+- `0x0056ACC0` **InGameCommandAction_ToggleRuntimeFlag0800** — local: `UiCommandRuntimeFlags_ApplyClearSetToggleMasks`; cross: `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`
+- `0x0056D6C0` **InGameCommandState_CloseSettingsAndDispatchOperation150** — local: `InGameCommand150_HandlePlayerDepartureAndOwnership`; cross: `UiSelectableControl_SetSelected` → `ui/controls/lists`, `InGameSettingsPage_ToggleAndSynchronizeControls` → `ui/ingame/settings`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`
+- `0x0056DFD0` **InGameCommandMatrix_SelectMappedControl** — local: `UiCommandMatrix_SelectIndex`
+- `0x00516360` **UiCommandSpriteButtonControl_BeginPress** — cross: `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x005163A0` **UiCommandSpriteButtonControl_NonRightRelease** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x00516410` **UiCommandSpriteButtonControl_RightRelease** — cross: `UiActionQueue_Enqueue` → `ui/core/runtime`, `UiNode_InvalidateRoot` → `ui/core/runtime`
+- `0x00516490` **UiCommandSpriteVariantA_PointerMove** — cross: `InGameSelectionDetailPanel_Rebuild` → `ui/ingame/runtime`
+- `0x00517F60` **UiCommandVisibilityWrappedText_DrawWhenAllowed** — cross: `UiWrappedTextControl_DrawClipped` → `ui/controls/text`
+- `0x00518010` **UiCommandVisibilitySingleLineText_DrawWhenAllowed** — cross: `UiSingleLineTextControl_DrawClipped` → `ui/controls/text`
+- `0x0055F4A0` **InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal**
+- `0x005604D0` **InGameCommand_ExecuteLocalPlacementFromSelection** — cross: `ArmyPlacement_ValidateAssetAtPointAndCellCornersCf` → `gameplay/army/placement`, `ArmyRuntime_CreateInstanceFromAssetCf` → `gameplay/army/runtime`, `ModelNodeRuntime_RebuildTransformsFromRoot` → `world/model/hierarchy`, `ArmyRuntime_DispatchClassCommand` → `gameplay/army/runtime`, `EffectRuntimePool_CreateInstanceFromDefinitionCf` → `world/effects/runtime`, `UiCatalogGroup48_RebuildGrid` → `ui/ingame/technology`, `UiCatalogGroup42_RebuildGrid` → `ui/ingame/technology`
+- `0x0056A2A0` **UiCommandSpriteVariantA_RebuildGrid** — cross: `UiGrid_ComputeDimensionsPacked` → `ui/controls/layout`
+- `0x0056AFD0` **InGameCommandAction_ClearSelectedArmyTokenAndClosePage** — cross: `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `SelectionInfo_GetFirstEntry` → `gameplay/selection/runtime`, `FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology` → `ui/frontend/player`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`
+- `0x0056C660` **InGameCommandPanel_OpenPage4AndRefreshAvailability** — cross: `UiPageStack_SetActiveIndex` → `ui/controls/layout`, `UiNodeList_UnsuppressActionId` → `ui/controls/lists`, `UiNodeList_SuppressActionId` → `ui/controls/lists`
+- `0x0056CFA0` **InGameCommandCatalog_SubmitGroup48Entry** — cross: `GameFactionRuntime_RegisterArmyAssetPointers` → `gameplay/faction/runtime`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`, `GameFactionRuntime_CancelQueuedArmyAssetsAndRefund` → `gameplay/faction/runtime`
+- `0x0056D090` **InGameCommandCatalog_SubmitGroup42Entry** — cross: `GameFactionRuntime_RegisterArmyAssetPointers` → `gameplay/faction/runtime`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`, `GameFactionRuntime_CancelQueuedArmyAssetsAndRefund` → `gameplay/faction/runtime`
+- `0x0056D180` **InGameCommandSprite_DispatchVariantAControl24** — cross: `GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid` → `gameplay/faction/runtime`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`, `GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer` → `gameplay/faction/runtime`, `GameFactionRuntime_SellArmyAssetAndRefundSevenEighths` → `gameplay/faction/runtime`
+- `0x0056D540` **InGameCommandSprite_DispatchFixedControl8** — cross: `SelectionInfo_AllEntriesEmptyOrMatchOwnerCf` → `gameplay/selection/runtime`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`, `FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh` → `ui/frontend/player`
+- `0x0056D620` **InGameCommandState_SetRuntimeFlag1000**
+- `0x0056D640` **InGameCommandState_SelectAndPropagateBinaryMode** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`, `UiSelectableGroup_NoneVisibleSelectedCf` → `ui/controls/lists`
+- `0x0056D920` **UiCommandModeG_ClearNodeFlag00800000**
+- `0x0056DD50` **InGameCommandModeC_Select0** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DDA0` **InGameCommandModeC_Select1** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DDF0` **InGameCommandModeC_Select2** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DE40` **InGameCommandModeC_Select3** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DE90` **InGameCommandModeD_Select0** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DEE0` **InGameCommandModeD_Select1** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DF30` **InGameCommandModeD_Select2** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056DF80` **InGameCommandModeD_Select3** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E050` **InGameCommandModeA_Select0** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E090` **InGameCommandModeA_Select1** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E0D0` **InGameCommandModeA_Select2** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E110` **InGameCommandModeB_Select0** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E150` **InGameCommandModeB_Select1** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E190` **InGameCommandModeB_Select2** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E1D0` **InGameCommandModeE_Select0** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E220` **InGameCommandModeE_Select1** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E260` **InGameCommandModeE_Select2** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E2A0` **InGameCommandRange_DispatchState0** — cross: `TerrainGrid_RunDirectionalRelaxationPasses` → `world/terrain/grid`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`
+- `0x0056E2E0` **InGameCommandRange_DispatchState1** — cross: `TerrainGrid_RunDirectionalRelaxationPasses` → `world/terrain/grid`, `InGameCommandQueue_AppendLocalPlayerCommand` → `network/protocol/commands`
+- `0x0056E320` **InGameCommandModeF_Select0** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0056E370` **InGameCommandModeF_Select1** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x00570F20` **UiCommandRuntime_CallbackNoOp**
+- `0x0055F280` **InGameCommand150_HandlePlayerDepartureAndOwnership** — cross: `Resource_Release` → `assets/resource/runtime`, `TextResource_Resolve` → `assets/text/resources`, `RichTextCommandStream_PatchPayloadBySelector` → `assets/text/richtext`, `InGameRecentTextHistory_InsertAndRebuild8` → `ui/ingame/runtime`, `ArmyRuntime_DestroyInstanceAndRefreshUi` → `gameplay/army/runtime`
+- `0x0056D980` **UiCommandModeG_ApplyMaskedColorVariant** — cross: `TerrainLighting_BuildColorRampAndSetBaseColor` → `world/terrain/visuals`, `FieldGrid_RecomputeInteriorDirectionalLighting` → `world/terrain/grid`
+- `0x0056DA50` **UiCommandModeG_SetNodeFlag02000000**
+- `0x00571440` **UiCommandMatrix_SelectIndex** — cross: `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`
+- `0x0055F440` **UiCommandRuntimeFlags_ApplyClearSetToggleMasks**
+- `0x0056D860` **UiCommandModeG_ClearNodeFlag00100000**
+- `0x0056D880` **UiCommandModeG_SetNodeFlag00200000**
+- `0x0056D940` **UiCommandModeG_SetNodeFlag01000000**
+- `0x0056D8C0` **UiCommandModeG_SetNodeFlag00000400**
+- `0x0056D8E0` **UiCommandModeG_ClearNodeFlags00000480**
+- `0x0056D840` **UiCommandModeG_SetNodeFlag00100000**
+- `0x0056D8A0` **UiCommandModeG_ClearNodeFlag00200000**
+- `0x0056D960` **UiCommandModeG_ClearNodeFlag01000000**
+- `0x0056D9F0` **UiCommandModeG_ApplyRawColorVariant** — cross: `TerrainLighting_BuildColorRampAndSetBaseColor` → `world/terrain/visuals`, `FieldGrid_RecomputeInteriorDirectionalLighting` → `world/terrain/grid`
+- `0x0056DA70` **UiCommandModeG_ClearNodeFlag02000000**
+- `0x0056D900` **UiCommandModeG_SetNodeFlag00800000**
+- `0x0056DA90` **UiCommandModeG_SelectAndSyncPages** — cross: `UiSelectableGroup_NoneVisibleSelectedCf` → `ui/controls/lists`, `UiSelectableGroup_SelectExclusive` → `ui/controls/lists`, `UiPageStack_SetActiveIndex` → `ui/controls/layout`

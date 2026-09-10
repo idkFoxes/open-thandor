@@ -1,0 +1,31 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "Movie_EncodeFlmBufferFromFrameProviderCf" [label="0x004A8040\nMovie_EncodeFlmBufferFromFrameProviderCf"];
+  "MoviePlayback_AdvanceScheduledFrameAndTick" [label="0x00563FF0\nMoviePlayback_AdvanceScheduledFrameAndTick"];
+  "Movie_Open" [label="0x004A8590\nMovie_Open"];
+  "Movie_GetFrameDimensions" [label="0x004A8A20\nMovie_GetFrameDimensions"];
+  "Movie_SetAudioGainQ15" [label="0x004A8A40\nMovie_SetAudioGainQ15"];
+  "Movie_StreamWorkerThread" [label="0x004A8C00\nMovie_StreamWorkerThread"];
+  "Movie_Rewind" [label="0x004A8D50\nMovie_Rewind"];
+  "Movie_Close" [label="0x004A8D90\nMovie_Close"];
+  "EndMovieUiRuntime_HandleModeTransitionCf" [label="0x005657D0\nEndMovieUiRuntime_HandleModeTransitionCf"];
+  "EndMovieUiRuntime_DispatchCommandByFlagsCf" [label="0x00565810\nEndMovieUiRuntime_DispatchCommandByFlagsCf"];
+  "IntroMovie_TimerTick" [label="0x005739C0\nIntroMovie_TimerTick"];
+  "Movie_EncodeFrame4x4Keyframe" [label="0x004A7030\nMovie_EncodeFrame4x4Keyframe"];
+  "Movie_EncodeFrame4x4Delta" [label="0x004A7770\nMovie_EncodeFrame4x4Delta"];
+  "Movie_AdvanceFrame" [label="0x004A8A60\nMovie_AdvanceFrame"];
+  "MoviePlayback_AdvanceToFrameAndPresent" [label="0x00564080\nMoviePlayback_AdvanceToFrameAndPresent"];
+  "Movie_DecodeFrame4x4Delta" [label="0x004A81C0\nMovie_DecodeFrame4x4Delta"];
+  "MovieColor_ComputeChromaCodeFromRgb888" [label="0x004A6FB0\nMovieColor_ComputeChromaCodeFromRgb888"];
+  "MovieColor_ComputeLuma5FromRgb888" [label="0x004A7000\nMovieColor_ComputeLuma5FromRgb888"];
+  "Movie_EncodeFlmBufferFromFrameProviderCf" -> "Movie_EncodeFrame4x4Keyframe";
+  "Movie_EncodeFlmBufferFromFrameProviderCf" -> "Movie_EncodeFrame4x4Delta";
+  "MoviePlayback_AdvanceScheduledFrameAndTick" -> "MoviePlayback_AdvanceToFrameAndPresent";
+  "Movie_EncodeFrame4x4Keyframe" -> "MovieColor_ComputeLuma5FromRgb888";
+  "Movie_EncodeFrame4x4Keyframe" -> "MovieColor_ComputeChromaCodeFromRgb888";
+  "Movie_EncodeFrame4x4Delta" -> "MovieColor_ComputeLuma5FromRgb888";
+  "Movie_EncodeFrame4x4Delta" -> "MovieColor_ComputeChromaCodeFromRgb888";
+  "Movie_AdvanceFrame" -> "Movie_DecodeFrame4x4Delta";
+  "MoviePlayback_AdvanceToFrameAndPresent" -> "Movie_AdvanceFrame";
+}

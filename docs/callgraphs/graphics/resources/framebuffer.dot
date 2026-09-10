@@ -1,0 +1,11 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "GraphicsFramebuffer_BeginAccessStub" [label="0x004A9250\nGraphicsFramebuffer_BeginAccessStub"];
+  "GraphicsFramebuffer_EndAccessStub" [label="0x004A9260\nGraphicsFramebuffer_EndAccessStub"];
+  "GraphicsFramebuffer_Present" [label="0x005796E0\nGraphicsFramebuffer_Present"];
+  "GraphicsFramebuffer_CaptureRegion16Bit" [label="0x005798A0\nGraphicsFramebuffer_CaptureRegion16Bit"];
+  "GraphicsFramebuffer_CaptureRegion32Bit" [label="0x00579B50\nGraphicsFramebuffer_CaptureRegion32Bit"];
+  "GraphicsFramebuffer_BeginAccess" [label="0x00579D90\nGraphicsFramebuffer_BeginAccess"];
+  "GraphicsFramebuffer_EndAccess" [label="0x00579E60\nGraphicsFramebuffer_EndAccess"];
+}

@@ -1,0 +1,37 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "LevelPackage_ValidateAndMount" [label="0x005460E0\nLevelPackage_ValidateAndMount"];
+  "Package_UpsertEntry" [label="0x0040E840\nPackage_UpsertEntry"];
+  "Package_LoadEntryIntoBuffer" [label="0x0040ED00\nPackage_LoadEntryIntoBuffer"];
+  "Package_MountLowPriority" [label="0x0040E450\nPackage_MountLowPriority"];
+  "Package_DeleteEntry" [label="0x0040E6F0\nPackage_DeleteEntry"];
+  "Package_LoadEntry" [label="0x0040EE30\nPackage_LoadEntry"];
+  "Package_Mount" [label="0x0040E3A0\nPackage_Mount"];
+  "Package_FindEntry" [label="0x0040EB70\nPackage_FindEntry"];
+  "Package_Unmount" [label="0x0040E500\nPackage_Unmount"];
+  "Package_WildcardPathMatches" [label="0x0040ECA0\nPackage_WildcardPathMatches"];
+  "Package_DecodeEntryInto" [label="0x0040EAF0\nPackage_DecodeEntryInto"];
+  "Package_SetLastErrorPath" [label="0x0040E2B0\nPackage_SetLastErrorPath"];
+  "Package_FindEntryInMount" [label="0x0040E640\nPackage_FindEntryInMount"];
+  "Package_FindEntryAcrossMounts" [label="0x0040EA20\nPackage_FindEntryAcrossMounts"];
+  "Package_ReadDirectory" [label="0x0040E570\nPackage_ReadDirectory"];
+  "LevelPackage_ValidateAndMount" -> "Package_Mount";
+  "LevelPackage_ValidateAndMount" -> "Package_FindEntry";
+  "LevelPackage_ValidateAndMount" -> "Package_LoadEntry";
+  "LevelPackage_ValidateAndMount" -> "Package_Unmount";
+  "Package_UpsertEntry" -> "Package_FindEntryInMount";
+  "Package_UpsertEntry" -> "Package_DeleteEntry";
+  "Package_UpsertEntry" -> "Package_ReadDirectory";
+  "Package_LoadEntryIntoBuffer" -> "Package_FindEntryAcrossMounts";
+  "Package_LoadEntryIntoBuffer" -> "Package_DecodeEntryInto";
+  "Package_LoadEntryIntoBuffer" -> "Package_SetLastErrorPath";
+  "Package_MountLowPriority" -> "Package_ReadDirectory";
+  "Package_DeleteEntry" -> "Package_FindEntryInMount";
+  "Package_DeleteEntry" -> "Package_ReadDirectory";
+  "Package_LoadEntry" -> "Package_FindEntryAcrossMounts";
+  "Package_LoadEntry" -> "Package_DecodeEntryInto";
+  "Package_Mount" -> "Package_ReadDirectory";
+  "Package_FindEntry" -> "Package_WildcardPathMatches";
+  "Package_DecodeEntryInto" -> "Package_SetLastErrorPath";
+}

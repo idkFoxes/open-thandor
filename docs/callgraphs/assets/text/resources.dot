@@ -1,0 +1,18 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "TextResourcePage_LoadCompatibilityAliases" [label="0x0041CD30\nTextResourcePage_LoadCompatibilityAliases"];
+  "FontRuntime_Init" [label="0x0041B080\nFontRuntime_Init"];
+  "TextResourcePage_Unload" [label="0x0041CCB0\nTextResourcePage_Unload"];
+  "TextResourceAsset_GetLocaleBlockCount" [label="0x0041CDB0\nTextResourceAsset_GetLocaleBlockCount"];
+  "FontGlyph_GetLogicalSizeActiveRegs" [label="0x0041CEB0\nFontGlyph_GetLogicalSizeActiveRegs"];
+  "FontGlyph_GetLogicalSizeForStyleRegs" [label="0x0041CEF0\nFontGlyph_GetLogicalSizeForStyleRegs"];
+  "FontGlyph_DrawBottomAligned" [label="0x0041D370\nFontGlyph_DrawBottomAligned"];
+  "FontGlyph_DrawVerticallyCentered" [label="0x0041D400\nFontGlyph_DrawVerticallyCentered"];
+  "TextResourcePage_Load" [label="0x0041CA50\nTextResourcePage_Load"];
+  "TextResourceOverride_Register" [label="0x0041CCF0\nTextResourceOverride_Register"];
+  "TextResource_Resolve" [label="0x0041CDE0\nTextResource_Resolve"];
+  "TextResourcePage_LoadCompatibilityAliases" -> "TextResourcePage_Load";
+  "TextResourcePage_LoadCompatibilityAliases" -> "TextResource_Resolve";
+  "TextResourcePage_LoadCompatibilityAliases" -> "TextResourceOverride_Register";
+}

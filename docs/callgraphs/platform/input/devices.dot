@@ -1,0 +1,20 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "Keyboard_CompareAsciiCaseInsensitiveFlags" [label="0x00417280\nKeyboard_CompareAsciiCaseInsensitiveFlags"];
+  "Keyboard_FlushEvents" [label="0x00417230\nKeyboard_FlushEvents"];
+  "Keyboard_ReadNextEventRegs" [label="0x00417240\nKeyboard_ReadNextEventRegs"];
+  "Keyboard_ToLowerAscii" [label="0x004172D0\nKeyboard_ToLowerAscii"];
+  "DirectInputMouse_Init" [label="0x00576CF0\nDirectInputMouse_Init"];
+  "DirectInputMouse_RefreshDeviceIfIdle" [label="0x00576F20\nDirectInputMouse_RefreshDeviceIfIdle"];
+  "DirectInputMouse_Shutdown" [label="0x00577000\nDirectInputMouse_Shutdown"];
+  "DirectInputMouse_PollBufferedEvents" [label="0x00577080\nDirectInputMouse_PollBufferedEvents"];
+  "DirectInputMouse_DisplayModeHookCf" [label="0x005772F0\nDirectInputMouse_DisplayModeHookCf"];
+  "DirectInputMouse_SetPosition" [label="0x00577420\nDirectInputMouse_SetPosition"];
+  "DirectInputMouse_FlushBufferedEvents" [label="0x00577460\nDirectInputMouse_FlushBufferedEvents"];
+  "Keyboard_OnKeyDown" [label="0x005774A0\nKeyboard_OnKeyDown"];
+  "Keyboard_OnKeyUp" [label="0x00577880\nKeyboard_OnKeyUp"];
+  "Keyboard_OnChar" [label="0x00577B30\nKeyboard_OnChar"];
+  "Keyboard_ToUpperAscii" [label="0x004172B0\nKeyboard_ToUpperAscii"];
+  "Keyboard_CompareAsciiCaseInsensitiveFlags" -> "Keyboard_ToUpperAscii";
+}

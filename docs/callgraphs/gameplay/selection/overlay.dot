@@ -1,0 +1,21 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf" [label="0x00568300\nInGameWorldOverlay_RebuildOrReleaseTransientMarkersCf"];
+  "SelectionOverlay_RenderSelectedArmyMetrics" [label="0x0052F0C0\nSelectionOverlay_RenderSelectedArmyMetrics"];
+  "SelectionOverlay_RenderArmyMetricsForEntity" [label="0x0052F1B0\nSelectionOverlay_RenderArmyMetricsForEntity"];
+  "SelectionOverlay_DrawBoundsFrame" [label="0x0052F2A0\nSelectionOverlay_DrawBoundsFrame"];
+  "SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints" [label="0x0052F490\nSelectionOverlay_DrawMarkerADForFieldGridTerrainPoints"];
+  "SelectionOverlay_DrawMarkerACForWorldSurfacePoint" [label="0x0052F5A0\nSelectionOverlay_DrawMarkerACForWorldSurfacePoint"];
+  "SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices" [label="0x0052F680\nSelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices"];
+  "SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags" [label="0x0052F780\nSelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags"];
+  "SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800" [label="0x0052F8C0\nSelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800"];
+  "SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000" [label="0x0052FA20\nSelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000"];
+  "SelectionMarkerCoordinates_ApplyType3" [label="0x00560020\nSelectionMarkerCoordinates_ApplyType3"];
+  "SelectionMarkerCoordinates_ApplyType4" [label="0x00560050\nSelectionMarkerCoordinates_ApplyType4"];
+  "SelectionMarkerCoordinates_ApplyType5" [label="0x00560080\nSelectionMarkerCoordinates_ApplyType5"];
+  "SelectionMarkerCoordinates_ApplyType6" [label="0x005600B0\nSelectionMarkerCoordinates_ApplyType6"];
+  "SelectionMarkerCoordinates_ApplyType7" [label="0x005600E0\nSelectionMarkerCoordinates_ApplyType7"];
+  "InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint" [label="0x00568210\nInGameWorldOverlay_EnsureTransientEffectMarkerAtPoint"];
+  "InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf" -> "InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint";
+}

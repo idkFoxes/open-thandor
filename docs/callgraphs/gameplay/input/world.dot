@@ -1,0 +1,13 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "InGameTargetingContext_AdvanceOrResolveTarget" [label="0x0056D2D0\nInGameTargetingContext_AdvanceOrResolveTarget"];
+  "InGameWorldInput_ResolveContextActionAndCursorCf" [label="0x005688A0\nInGameWorldInput_ResolveContextActionAndCursorCf"];
+  "InGameWorldInput_BeginPointerCaptureCf" [label="0x00568CB0\nInGameWorldInput_BeginPointerCaptureCf"];
+  "InGameWorldInput_UpdateDragSelectionAndCameraCf" [label="0x00568E10\nInGameWorldInput_UpdateDragSelectionAndCameraCf"];
+  "InGameWorldInput_CommitPointerActionCf" [label="0x005691B0\nInGameWorldInput_CommitPointerActionCf"];
+  "InGameCameraCommand_DispatchByCodeAndModifierFlagsCf" [label="0x0056F230\nInGameCameraCommand_DispatchByCodeAndModifierFlagsCf"];
+  "InGameCameraCommand_CaptureBookmarkSlot7EntryAndSharedSuccessTailCf" [label="0x0056F770\nInGameCameraCommand_CaptureBookmarkSlot7EntryAndSharedSuccessTailCf"];
+  "InGameTargetingContext_CancelAndRestoreState" [label="0x0056D4B0\nInGameTargetingContext_CancelAndRestoreState"];
+  "InGameTargetingContext_AdvanceOrResolveTarget" -> "InGameTargetingContext_CancelAndRestoreState";
+}

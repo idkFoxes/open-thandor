@@ -1,0 +1,10 @@
+digraph thandor {
+  rankdir=LR;
+  node [shape=box];
+  "EffectAsset_PrepareEntries" [label="0x0051E0B0\nEffectAsset_PrepareEntries"];
+  "EffectDefinitions_ResolveCrossReferences" [label="0x0051E3E0\nEffectDefinitions_ResolveCrossReferences"];
+  "EffectDefinition_RegisterAndLoadSpriteCf" [label="0x0051DFD0\nEffectDefinition_RegisterAndLoadSpriteCf"];
+  "EffectDefinitionRegistry_FindByIdWithErrorCf" [label="0x0051E440\nEffectDefinitionRegistry_FindByIdWithErrorCf"];
+  "EffectAsset_PrepareEntries" -> "EffectDefinition_RegisterAndLoadSpriteCf";
+  "EffectDefinitions_ResolveCrossReferences" -> "EffectDefinitionRegistry_FindByIdWithErrorCf";
+}
