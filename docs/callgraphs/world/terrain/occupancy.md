@@ -1,21 +1,31 @@
 # Call graph: `world/terrain/occupancy`
 
+[Source](../../../../src/world/terrain/occupancy.c) · [Header](../../../../include/thandor/world/terrain/occupancy.h) · [Graphviz](occupancy.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-occupancy)
+
 15 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x00507460` **TerrainOccupancyBit2_MarkAroundWorldPoint** — local: `TerrainOccupancyBit2_MarkWedge0`, `TerrainOccupancyBit2_MarkWedge1`, `TerrainOccupancyBit2_MarkWedge2`, `TerrainOccupancyBit2_MarkWedge3`, `TerrainOccupancyBit2_MarkWedge4`, `TerrainOccupancyBit2_MarkWedge5`; cross: `FieldGrid_WorldToGridQ12` → `world/terrain/grid`
-- `0x00507610` **TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint** — cross: `FieldGrid_WorldToGridQ12` → `world/terrain/grid`
-- `0x005138F0` **TerrainOccupancyMask_ResolveRuntimeClassFlags**
-- `0x005070A0` **TerrainOccupancyBit2_MarkWedge0** — local: `TerrainOccupancyBit2_MarkDirection0`, `TerrainOccupancyBit2_MarkDirection1`
-- `0x00507140` **TerrainOccupancyBit2_MarkWedge1** — local: `TerrainOccupancyBit2_MarkDirection1`, `TerrainOccupancyBit2_MarkDirection2`
-- `0x005071E0` **TerrainOccupancyBit2_MarkWedge2** — local: `TerrainOccupancyBit2_MarkDirection2`, `TerrainOccupancyBit2_MarkDirection3`
-- `0x00507280` **TerrainOccupancyBit2_MarkWedge3** — local: `TerrainOccupancyBit2_MarkDirection3`, `TerrainOccupancyBit2_MarkDirection4`
-- `0x00507320` **TerrainOccupancyBit2_MarkWedge4** — local: `TerrainOccupancyBit2_MarkDirection4`, `TerrainOccupancyBit2_MarkDirection5`
-- `0x005073C0` **TerrainOccupancyBit2_MarkWedge5** — local: `TerrainOccupancyBit2_MarkDirection5`, `TerrainOccupancyBit2_MarkDirection0`
-- `0x00506EA0` **TerrainOccupancyBit2_MarkDirection0**
-- `0x00506EF0` **TerrainOccupancyBit2_MarkDirection1**
-- `0x00506F50` **TerrainOccupancyBit2_MarkDirection2**
-- `0x00506FA0` **TerrainOccupancyBit2_MarkDirection3**
-- `0x00506FF0` **TerrainOccupancyBit2_MarkDirection4**
-- `0x00507050` **TerrainOccupancyBit2_MarkDirection5**
+- `0x00507460` **[`TerrainOccupancyBit2_MarkAroundWorldPoint`](../../../../src/world/terrain/occupancy.c#L5)** — local: [`TerrainOccupancyBit2_MarkWedge0`](../../../../src/world/terrain/occupancy.c#L254), [`TerrainOccupancyBit2_MarkWedge1`](../../../../src/world/terrain/occupancy.c#L302), [`TerrainOccupancyBit2_MarkWedge2`](../../../../src/world/terrain/occupancy.c#L350), [`TerrainOccupancyBit2_MarkWedge3`](../../../../src/world/terrain/occupancy.c#L394), [`TerrainOccupancyBit2_MarkWedge4`](../../../../src/world/terrain/occupancy.c#L442), [`TerrainOccupancyBit2_MarkWedge5`](../../../../src/world/terrain/occupancy.c#L492); cross: [`FieldGrid_WorldToGridQ12`](../../../../src/world/terrain/grid.c#L3515) → [`world/terrain/grid`](grid.md)
+- `0x00507610` **[`TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`](../../../../src/world/terrain/occupancy.c#L72)** — cross: [`FieldGrid_WorldToGridQ12`](../../../../src/world/terrain/grid.c#L3515) → [`world/terrain/grid`](grid.md)
+- `0x005138F0` **[`TerrainOccupancyMask_ResolveRuntimeClassFlags`](../../../../src/world/terrain/occupancy.c#L219)**
+- `0x005070A0` **[`TerrainOccupancyBit2_MarkWedge0`](../../../../src/world/terrain/occupancy.c#L254)** — local: [`TerrainOccupancyBit2_MarkDirection0`](../../../../src/world/terrain/occupancy.c#L536), [`TerrainOccupancyBit2_MarkDirection1`](../../../../src/world/terrain/occupancy.c#L564)
+- `0x00507140` **[`TerrainOccupancyBit2_MarkWedge1`](../../../../src/world/terrain/occupancy.c#L302)** — local: [`TerrainOccupancyBit2_MarkDirection1`](../../../../src/world/terrain/occupancy.c#L564), [`TerrainOccupancyBit2_MarkDirection2`](../../../../src/world/terrain/occupancy.c#L592)
+- `0x005071E0` **[`TerrainOccupancyBit2_MarkWedge2`](../../../../src/world/terrain/occupancy.c#L350)** — local: [`TerrainOccupancyBit2_MarkDirection2`](../../../../src/world/terrain/occupancy.c#L592), [`TerrainOccupancyBit2_MarkDirection3`](../../../../src/world/terrain/occupancy.c#L620)
+- `0x00507280` **[`TerrainOccupancyBit2_MarkWedge3`](../../../../src/world/terrain/occupancy.c#L394)** — local: [`TerrainOccupancyBit2_MarkDirection3`](../../../../src/world/terrain/occupancy.c#L620), [`TerrainOccupancyBit2_MarkDirection4`](../../../../src/world/terrain/occupancy.c#L648)
+- `0x00507320` **[`TerrainOccupancyBit2_MarkWedge4`](../../../../src/world/terrain/occupancy.c#L442)** — local: [`TerrainOccupancyBit2_MarkDirection4`](../../../../src/world/terrain/occupancy.c#L648), [`TerrainOccupancyBit2_MarkDirection5`](../../../../src/world/terrain/occupancy.c#L676)
+- `0x005073C0` **[`TerrainOccupancyBit2_MarkWedge5`](../../../../src/world/terrain/occupancy.c#L492)** — local: [`TerrainOccupancyBit2_MarkDirection5`](../../../../src/world/terrain/occupancy.c#L676), [`TerrainOccupancyBit2_MarkDirection0`](../../../../src/world/terrain/occupancy.c#L536)
+- `0x00506EA0` **[`TerrainOccupancyBit2_MarkDirection0`](../../../../src/world/terrain/occupancy.c#L536)**
+- `0x00506EF0` **[`TerrainOccupancyBit2_MarkDirection1`](../../../../src/world/terrain/occupancy.c#L564)**
+- `0x00506F50` **[`TerrainOccupancyBit2_MarkDirection2`](../../../../src/world/terrain/occupancy.c#L592)**
+- `0x00506FA0` **[`TerrainOccupancyBit2_MarkDirection3`](../../../../src/world/terrain/occupancy.c#L620)**
+- `0x00506FF0` **[`TerrainOccupancyBit2_MarkDirection4`](../../../../src/world/terrain/occupancy.c#L648)**
+- `0x00507050` **[`TerrainOccupancyBit2_MarkDirection5`](../../../../src/world/terrain/occupancy.c#L676)**
+
+## Called by
+
+- [`gameplay/army/runtime`](../../gameplay/army/runtime.md): [`ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback`](../../../../src/gameplay/army/runtime.c#L1875) → [`TerrainOccupancyBit2_MarkAroundWorldPoint`](../../../../src/world/terrain/occupancy.c#L5); [`ArmyRuntime_InitializeTerrainOccupancyFlags`](../../../../src/gameplay/army/runtime.c#L4044) → [`TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`](../../../../src/world/terrain/occupancy.c#L72); [`ArmyRuntime_InitializeTerrainOccupancyFlags`](../../../../src/gameplay/army/runtime.c#L4044) → [`TerrainOccupancyMask_ResolveRuntimeClassFlags`](../../../../src/world/terrain/occupancy.c#L219)
+- [`world/effects/maintenance`](../effects/maintenance.md): [`EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint`](../../../../src/world/effects/maintenance.c#L5) → [`TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`](../../../../src/world/terrain/occupancy.c#L72); [`EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint`](../../../../src/world/effects/maintenance.c#L5) → [`TerrainOccupancyMask_ResolveRuntimeClassFlags`](../../../../src/world/terrain/occupancy.c#L219)
+- [`world/effects/runtime`](../effects/runtime.md): [`EffectRuntimePool_CreateInstanceFromDefinitionCf`](../../../../src/world/effects/runtime.c#L184) → [`TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`](../../../../src/world/terrain/occupancy.c#L72); [`EffectRuntimePool_CreateInstanceFromDefinitionCf`](../../../../src/world/effects/runtime.c#L184) → [`TerrainOccupancyMask_ResolveRuntimeClassFlags`](../../../../src/world/terrain/occupancy.c#L219)
+- [`world/shots/maintenance`](../shots/maintenance.md): [`ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint`](../../../../src/world/shots/maintenance.c#L5) → [`TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`](../../../../src/world/terrain/occupancy.c#L72); [`ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint`](../../../../src/world/shots/maintenance.c#L5) → [`TerrainOccupancyMask_ResolveRuntimeClassFlags`](../../../../src/world/terrain/occupancy.c#L219)
+- [`world/shots/runtime`](../shots/runtime.md): [`ShotRuntimePool_CreateProjectileFromDefinition`](../../../../src/world/shots/runtime.c#L276) → [`TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`](../../../../src/world/terrain/occupancy.c#L72); [`ShotRuntimePool_CreateProjectileFromDefinition`](../../../../src/world/shots/runtime.c#L276) → [`TerrainOccupancyMask_ResolveRuntimeClassFlags`](../../../../src/world/terrain/occupancy.c#L219)

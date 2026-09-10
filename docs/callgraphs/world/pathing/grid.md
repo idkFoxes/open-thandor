@@ -1,33 +1,43 @@
 # Call graph: `world/pathing/grid`
 
+[Source](../../../../src/world/pathing/grid.c) · [Header](../../../../include/thandor/world/pathing/grid.h) · [Graphviz](grid.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-pathing-grid)
+
 27 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x005349D0` **EntityPathing_ResolveDestinationAndRebuildRoutes** — local: `GridPathCost_FindNearestUnblockedCell`, `EntityPathing_RebuildOverlappingGroupRoutes`, `GridPathLine_TestHexSegmentClearCf`, `GridScratch_ResetTraversalFlagsAndCosts`, `GridPathCost_PropagateWeightedHexNeighbors`, `GridPathRegion_MarkUnreachableFromCell`, `GridPathCost_BacktrackBestHexRoute`
-- `0x00536500` **GridReachability_RebuildConnectedRegionAroundWorldPoint** — local: `GridFootprint_ClearTraversalFlagsAroundWorldPoint`, `GridReachability_MarkOpenRegionRecursive`, `GridReachability_ClearCostedRegionRecursive`
-- `0x00533620` **GridScratch_RebuildTerrainAndRuntimeClassificationMasks** — local: `GridScratch_FloodFillConnectedCellsRegs`
-- `0x00533E70` **GridScratch_TestRuntimePairReachabilityFromWorldPointCf** — local: `GridScratch_TestWorldPointReachabilityCf`
-- `0x005332C0` **GridScratch_AllocateForFieldGridCf**
-- `0x00533360` **GridScratch_ReleaseBuffers**
-- `0x00533400` **GridScratch_PropagateFieldOccupancyMaskNeighborhood**
-- `0x00533BA0` **GridScratch_TestProjectedCellMaskBandsCf**
-- `0x00536C90` **EntityPathing_RebuildOverlappingGroupRoutes** — local: `GridScratch_CopyPrimaryToSecondary`, `GridScratch_SwapPrimarySecondary`, `EntityPathing_UpdateRouteSegment`; cross: `DepthInterval_BuildBinMask` → `graphics/render/primitives`, `DepthBinMasks_OverlapCf` → `graphics/render/primitives`, `PriorityPairHeap_SiftUp` → `core/memory/allocator`, `PriorityPairHeap_SiftDown` → `core/memory/allocator`, `GridInfluence_SetLowDistanceBandsAroundWorldPoint` → `world/pathing/influence`
-- `0x00534F50` **GridFootprint_ClearTraversalFlagsAroundWorldPoint** — local: `GridFootprint_ClearTraversalFlagsDiagonalPositive`, `GridFootprint_ClearTraversalFlagsDiagonalNegative`
-- `0x005369A0` **EntityPathing_UpdateRouteSegment** — local: `GridPathCost_FindNearestUnblockedCell`, `GridPathLine_TestHexSegmentClearCf`; cross: `GridInfluence_SetLowDistanceBandsAroundWorldPoint` → `world/pathing/influence`, `ArmyRuntime_SetPendingMoveTarget` → `gameplay/army/movement`
-- `0x00533D60` **GridScratch_TestWorldPointReachabilityCf** — local: `GridScratch_TestConnectedReachabilityRecursiveCfRegs`
-- `0x00534660` **GridPathCost_BacktrackBestHexRoute** — local: `GridPathLine_TestHexSegmentClearCf`
-- `0x00534960` **GridPathRegion_MarkUnreachableFromCell** — local: `GridPathRegion_MarkUnreachableRecursive`
-- `0x005333B0` **GridScratch_CopyPrimaryToSecondary**
-- `0x005333E0` **GridScratch_SwapPrimarySecondary**
-- `0x00533580` **GridScratch_FloodFillConnectedCellsRegs**
-- `0x00533C50` **GridScratch_TestConnectedReachabilityRecursiveCfRegs**
-- `0x00533EF0` **GridPathCost_PropagateWeightedHexNeighbors**
-- `0x00534200` **GridScratch_ResetTraversalFlagsAndCosts**
-- `0x00534780` **GridPathRegion_MarkUnreachableRecursive**
-- `0x00534E70` **GridFootprint_ClearTraversalFlagsDiagonalNegative**
-- `0x00534EE0` **GridFootprint_ClearTraversalFlagsDiagonalPositive**
-- `0x005363C0` **GridReachability_MarkOpenRegionRecursive**
-- `0x00536440` **GridReachability_ClearCostedRegionRecursive**
-- `0x005342F0` **GridPathCost_FindNearestUnblockedCell**
-- `0x005344B0` **GridPathLine_TestHexSegmentClearCf**
+- `0x005349D0` **[`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5)** — local: [`GridPathCost_FindNearestUnblockedCell`](../../../../src/world/pathing/grid.c#L2069), [`EntityPathing_RebuildOverlappingGroupRoutes`](../../../../src/world/pathing/grid.c#L844), [`GridPathLine_TestHexSegmentClearCf`](../../../../src/world/pathing/grid.c#L2198), [`GridScratch_ResetTraversalFlagsAndCosts`](../../../../src/world/pathing/grid.c#L1782), [`GridPathCost_PropagateWeightedHexNeighbors`](../../../../src/world/pathing/grid.c#L1606), [`GridPathRegion_MarkUnreachableFromCell`](../../../../src/world/pathing/grid.c#L1392), [`GridPathCost_BacktrackBestHexRoute`](../../../../src/world/pathing/grid.c#L1308)
+- `0x00536500` **[`GridReachability_RebuildConnectedRegionAroundWorldPoint`](../../../../src/world/pathing/grid.c#L215)** — local: [`GridFootprint_ClearTraversalFlagsAroundWorldPoint`](../../../../src/world/pathing/grid.c#L1010), [`GridReachability_MarkOpenRegionRecursive`](../../../../src/world/pathing/grid.c#L1967), [`GridReachability_ClearCostedRegionRecursive`](../../../../src/world/pathing/grid.c#L2016)
+- `0x00533620` **[`GridScratch_RebuildTerrainAndRuntimeClassificationMasks`](../../../../src/world/pathing/grid.c#L328)** — local: [`GridScratch_FloodFillConnectedCellsRegs`](../../../../src/world/pathing/grid.c#L1463)
+- `0x00533E70` **[`GridScratch_TestRuntimePairReachabilityFromWorldPointCf`](../../../../src/world/pathing/grid.c#L602)** — local: [`GridScratch_TestWorldPointReachabilityCf`](../../../../src/world/pathing/grid.c#L1268)
+- `0x005332C0` **[`GridScratch_AllocateForFieldGridCf`](../../../../src/world/pathing/grid.c#L620)**
+- `0x00533360` **[`GridScratch_ReleaseBuffers`](../../../../src/world/pathing/grid.c#L674)**
+- `0x00533400` **[`GridScratch_PropagateFieldOccupancyMaskNeighborhood`](../../../../src/world/pathing/grid.c#L693)**
+- `0x00533BA0` **[`GridScratch_TestProjectedCellMaskBandsCf`](../../../../src/world/pathing/grid.c#L813)**
+- `0x00536C90` **[`EntityPathing_RebuildOverlappingGroupRoutes`](../../../../src/world/pathing/grid.c#L844)** — local: [`GridScratch_CopyPrimaryToSecondary`](../../../../src/world/pathing/grid.c#L1422), [`GridScratch_SwapPrimarySecondary`](../../../../src/world/pathing/grid.c#L1446), [`EntityPathing_UpdateRouteSegment`](../../../../src/world/pathing/grid.c#L1112); cross: [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689) → [`graphics/render/primitives`](../../graphics/render/primitives.md), [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716) → [`graphics/render/primitives`](../../graphics/render/primitives.md), [`PriorityPairHeap_SiftUp`](../../../../src/core/memory/allocator.c#L5) → [`core/memory/allocator`](../../core/memory/allocator.md), [`PriorityPairHeap_SiftDown`](../../../../src/core/memory/allocator.c#L44) → [`core/memory/allocator`](../../core/memory/allocator.md), [`GridInfluence_SetLowDistanceBandsAroundWorldPoint`](../../../../src/world/pathing/influence.c#L185) → [`world/pathing/influence`](influence.md)
+- `0x00534F50` **[`GridFootprint_ClearTraversalFlagsAroundWorldPoint`](../../../../src/world/pathing/grid.c#L1010)** — local: [`GridFootprint_ClearTraversalFlagsDiagonalPositive`](../../../../src/world/pathing/grid.c#L1935), [`GridFootprint_ClearTraversalFlagsDiagonalNegative`](../../../../src/world/pathing/grid.c#L1903)
+- `0x005369A0` **[`EntityPathing_UpdateRouteSegment`](../../../../src/world/pathing/grid.c#L1112)** — local: [`GridPathCost_FindNearestUnblockedCell`](../../../../src/world/pathing/grid.c#L2069), [`GridPathLine_TestHexSegmentClearCf`](../../../../src/world/pathing/grid.c#L2198); cross: [`GridInfluence_SetLowDistanceBandsAroundWorldPoint`](../../../../src/world/pathing/influence.c#L185) → [`world/pathing/influence`](influence.md), [`ArmyRuntime_SetPendingMoveTarget`](../../../../src/gameplay/army/movement.c#L1514) → [`gameplay/army/movement`](../../gameplay/army/movement.md)
+- `0x00533D60` **[`GridScratch_TestWorldPointReachabilityCf`](../../../../src/world/pathing/grid.c#L1268)** — local: [`GridScratch_TestConnectedReachabilityRecursiveCfRegs`](../../../../src/world/pathing/grid.c#L1511)
+- `0x00534660` **[`GridPathCost_BacktrackBestHexRoute`](../../../../src/world/pathing/grid.c#L1308)** — local: [`GridPathLine_TestHexSegmentClearCf`](../../../../src/world/pathing/grid.c#L2198)
+- `0x00534960` **[`GridPathRegion_MarkUnreachableFromCell`](../../../../src/world/pathing/grid.c#L1392)** — local: [`GridPathRegion_MarkUnreachableRecursive`](../../../../src/world/pathing/grid.c#L1837)
+- `0x005333B0` **[`GridScratch_CopyPrimaryToSecondary`](../../../../src/world/pathing/grid.c#L1422)**
+- `0x005333E0` **[`GridScratch_SwapPrimarySecondary`](../../../../src/world/pathing/grid.c#L1446)**
+- `0x00533580` **[`GridScratch_FloodFillConnectedCellsRegs`](../../../../src/world/pathing/grid.c#L1463)**
+- `0x00533C50` **[`GridScratch_TestConnectedReachabilityRecursiveCfRegs`](../../../../src/world/pathing/grid.c#L1511)**
+- `0x00533EF0` **[`GridPathCost_PropagateWeightedHexNeighbors`](../../../../src/world/pathing/grid.c#L1606)**
+- `0x00534200` **[`GridScratch_ResetTraversalFlagsAndCosts`](../../../../src/world/pathing/grid.c#L1782)**
+- `0x00534780` **[`GridPathRegion_MarkUnreachableRecursive`](../../../../src/world/pathing/grid.c#L1837)**
+- `0x00534E70` **[`GridFootprint_ClearTraversalFlagsDiagonalNegative`](../../../../src/world/pathing/grid.c#L1903)**
+- `0x00534EE0` **[`GridFootprint_ClearTraversalFlagsDiagonalPositive`](../../../../src/world/pathing/grid.c#L1935)**
+- `0x005363C0` **[`GridReachability_MarkOpenRegionRecursive`](../../../../src/world/pathing/grid.c#L1967)**
+- `0x00536440` **[`GridReachability_ClearCostedRegionRecursive`](../../../../src/world/pathing/grid.c#L2016)**
+- `0x005342F0` **[`GridPathCost_FindNearestUnblockedCell`](../../../../src/world/pathing/grid.c#L2069)**
+- `0x005344B0` **[`GridPathLine_TestHexSegmentClearCf`](../../../../src/world/pathing/grid.c#L2198)**
+
+## Called by
+
+- [`gameplay/ai/planning`](../../gameplay/ai/planning.md): [`AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate`](../../../../src/gameplay/ai/planning.c#L1628) → [`GridReachability_RebuildConnectedRegionAroundWorldPoint`](../../../../src/world/pathing/grid.c#L215)
+- [`gameplay/army/movement`](../../gameplay/army/movement.md): [`ArmyRuntime_StartMoveCommandWithAuxiliaryValues`](../../../../src/gameplay/army/movement.c#L1471) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5); [`ArmyRuntime_QueueOrStartMoveCommandVariantA`](../../../../src/gameplay/army/movement.c#L1636) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5); [`ArmyRuntime_QueueOrStartMoveCommandVariantB`](../../../../src/gameplay/army/movement.c#L1680) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5); [`ArmyRuntime_StartClampedMoveCommand`](../../../../src/gameplay/army/movement.c#L2463) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5); [`ArmyRuntime_StartDirectMoveCommand`](../../../../src/gameplay/army/movement.c#L2509) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5); [`ArmyRuntime_StartMoveCommandWithFallbackWaypoints`](../../../../src/gameplay/army/movement.c#L3321) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5); [`ArmyRuntime_UpdateMovementAndWaypoints`](../../../../src/gameplay/army/movement.c#L3431) → [`EntityPathing_ResolveDestinationAndRebuildRoutes`](../../../../src/world/pathing/grid.c#L5)
+- [`gameplay/army/placement`](../../gameplay/army/placement.md): [`ArmyPlacement_TestGridRuntimeAndFieldBlocking`](../../../../src/gameplay/army/placement.c#L288) → [`GridScratch_TestProjectedCellMaskBandsCf`](../../../../src/world/pathing/grid.c#L813); [`ArmyRuntimeCollision_TestShotSpawnPointCf`](../../../../src/gameplay/army/placement.c#L325) → [`GridScratch_TestProjectedCellMaskBandsCf`](../../../../src/world/pathing/grid.c#L813)
+- [`gameplay/selection/runtime`](../../gameplay/selection/runtime.md): [`SelectionInfo_TestPositionCommandAtWorldPointCf`](../../../../src/gameplay/selection/runtime.c#L1346) → [`GridScratch_TestProjectedCellMaskBandsCf`](../../../../src/world/pathing/grid.c#L813)
+- [`gameplay/session/runtime`](../../gameplay/session/runtime.md): [`InGameRuntime_RunSessionUntilExit`](../../../../src/gameplay/session/runtime.c#L5) → [`GridScratch_ReleaseBuffers`](../../../../src/world/pathing/grid.c#L674); [`InGameRuntime_InitializeNewSession`](../../../../src/gameplay/session/runtime.c#L718) → [`GridScratch_AllocateForFieldGridCf`](../../../../src/world/pathing/grid.c#L620); [`InGameRuntime_InitializeNewSession`](../../../../src/gameplay/session/runtime.c#L718) → [`GridScratch_RebuildTerrainAndRuntimeClassificationMasks`](../../../../src/world/pathing/grid.c#L328); [`InGameRuntime_InitializeLoadedSession`](../../../../src/gameplay/session/runtime.c#L1085) → [`GridScratch_AllocateForFieldGridCf`](../../../../src/world/pathing/grid.c#L620); [`InGameRuntime_InitializeLoadedSession`](../../../../src/gameplay/session/runtime.c#L1085) → [`GridScratch_RebuildTerrainAndRuntimeClassificationMasks`](../../../../src/world/pathing/grid.c#L328); [`InGameRuntime_UpdateSimulationAndNetworkTick`](../../../../src/gameplay/session/runtime.c#L2235) → [`GridScratch_PropagateFieldOccupancyMaskNeighborhood`](../../../../src/world/pathing/grid.c#L693); [`InGameRuntime_UpdateSimulationAndNetworkTick`](../../../../src/gameplay/session/runtime.c#L2235) → [`GridScratch_RebuildTerrainAndRuntimeClassificationMasks`](../../../../src/world/pathing/grid.c#L328)

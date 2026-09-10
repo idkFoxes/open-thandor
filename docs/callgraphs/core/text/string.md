@@ -1,11 +1,28 @@
 # Call graph: `core/text/string`
 
+[Source](../../../../src/core/text/string.c) · [Header](../../../../include/thandor/core/text/string.h) · [Graphviz](string.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-text-string)
+
 5 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x00402D50` **WideNumber_FormatUtf16** — local: `WideText_CopyCodeUnits`
-- `0x00403010` **Utf16String_CompareAsciiCaseInsensitiveFlags**
-- `0x0041BAA0` **Text_CopyNarrowToUtf16Cf**
-- `0x00586DA0` **Utf16_CopyAndReturnByteLength**
-- `0x00402D30` **WideText_CopyCodeUnits**
+- `0x00402D50` **[`WideNumber_FormatUtf16`](../../../../src/core/text/string.c#L5)** — local: [`WideText_CopyCodeUnits`](../../../../src/core/text/string.c#L239)
+- `0x00403010` **[`Utf16String_CompareAsciiCaseInsensitiveFlags`](../../../../src/core/text/string.c#L147)**
+- `0x0041BAA0` **[`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)**
+- `0x00586DA0` **[`Utf16_CopyAndReturnByteLength`](../../../../src/core/text/string.c#L215)**
+- `0x00402D30` **[`WideText_CopyCodeUnits`](../../../../src/core/text/string.c#L239)**
+
+## Called by
+
+- [`assets/scenario/catalog`](../../assets/scenario/catalog.md): [`FrontendScenarioSelectionPage_InitializeAndApplyMapOption`](../../../../src/assets/scenario/catalog.c#L103) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`graphics/backend/direct3d`](../../graphics/backend/direct3d.md): [`Direct3D_EnumDeviceCallback`](../../../../src/graphics/backend/direct3d.c#L5) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`graphics/backend/directdraw`](../../graphics/backend/directdraw.md): [`DirectDraw_EnumAdapterCallback`](../../../../src/graphics/backend/directdraw.c#L64) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`graphics/backend/glide`](../../graphics/backend/glide.md): [`Glide3_InitAndEnumerate`](../../../../src/graphics/backend/glide.c#L692) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`network/backend/fallback_udp`](../../network/backend/fallback_udp.md): [`NetworkFallback_FormatPeerAddress`](../../../../src/network/backend/fallback_udp.c#L325) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`NetworkFallback_FormatAddressUtf16`](../../../../src/network/backend/fallback_udp.c#L415) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md): [`DynAPI_Resolve`](../../../../src/platform/bootstrap/runtime.c#L259) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`DynDLL_Load`](../../../../src/platform/bootstrap/runtime.c#L294) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`DynDLL_Unload`](../../../../src/platform/bootstrap/runtime.c#L321) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`BootstrapApi_ResolveBindingByDestination`](../../../../src/platform/bootstrap/runtime.c#L352) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`Game_LoadCoreAssets`](../../../../src/platform/bootstrap/runtime.c#L593) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`DynAPI_Bootstrap`](../../../../src/platform/bootstrap/runtime.c#L1176) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`CommandLine_Parse`](../../../../src/platform/bootstrap/runtime.c#L1278) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`platform/filesystem/win32`](../../platform/filesystem/win32.md): [`FileSystem_Init`](../../../../src/platform/filesystem/win32.c#L5) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf`](../../../../src/platform/filesystem/win32.c#L724) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf`](../../../../src/platform/filesystem/win32.c#L724) → [`Utf16String_CompareAsciiCaseInsensitiveFlags`](../../../../src/core/text/string.c#L147); [`Win32File_GetCurrentDirectoryCf`](../../../../src/platform/filesystem/win32.c#L880) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`platform/system/time_locale`](../../platform/system/time_locale.md): [`Locale_Init`](../../../../src/platform/system/time_locale.c#L28) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`Locale_FormatDateFieldsUtf16`](../../../../src/platform/system/time_locale.c#L190) → [`Utf16_CopyAndReturnByteLength`](../../../../src/core/text/string.c#L215); [`Locale_FormatCurrentDateUtf16`](../../../../src/platform/system/time_locale.c#L246) → [`Utf16_CopyAndReturnByteLength`](../../../../src/core/text/string.c#L215); [`Locale_FormatTimeFieldsUtf16`](../../../../src/platform/system/time_locale.c#L344) → [`Utf16_CopyAndReturnByteLength`](../../../../src/core/text/string.c#L215); [`Locale_FormatCurrentTimeUtf16`](../../../../src/platform/system/time_locale.c#L402) → [`Utf16_CopyAndReturnByteLength`](../../../../src/core/text/string.c#L215)
+- [`ui/frontend/network`](../../ui/frontend/network.md): [`FrontendNetworkSetupPage_InitializeBackendMode`](../../../../src/ui/frontend/network.c#L5) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`FrontendNetworkSetupPage_InitializeFromCommandLine`](../../../../src/ui/frontend/network.c#L342) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`ui/frontend/player`](../../ui/frontend/player.md): [`FrontendPlayerTextCommand_PublishConditionalRichText`](../../../../src/ui/frontend/player.c#L1191) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185); [`FrontendPlayerMessageBuffer_PublishTextById`](../../../../src/ui/frontend/player.c#L1473) → [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185)
+- [`ui/frontend/runtime`](../../ui/frontend/runtime.md): [`FrontendDebugOverlay_RefreshCountersAndWorldCoordinates`](../../../../src/ui/frontend/runtime.c#L3440) → [`WideNumber_FormatUtf16`](../../../../src/core/text/string.c#L5)
+- [`ui/ingame/runtime`](../../ui/ingame/runtime.md): [`InGameHud_UpdateStatusCountersAndSessionPrompts`](../../../../src/ui/ingame/runtime.c#L2674) → [`WideNumber_FormatUtf16`](../../../../src/core/text/string.c#L5)

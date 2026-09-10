@@ -1,109 +1,121 @@
 # Call graph: `graphics/backend/software`
 
+[Source](../../../../src/graphics/backend/software.c) · [Header](../../../../include/thandor/graphics/backend/software.h) · [Graphviz](software.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-software)
+
 103 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x00519320` **SoftwareMaskBuffer_AdvancePatternByPercentTick** — local: `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31`, `SoftwareMaskBuffer_Clear`, `SoftwareMaskBuffer_ApplyCircularRegionBit`, `SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit`, `SoftwareMaskBuffer_ApplyHorizontalBandBit`, `SoftwareMaskBuffer_SetAllPixelsBit`
-- `0x00485FD0` **SoftwareRenderer_ClearViewport** — local: `SoftwareRenderer_AdvanceDepthEpoch`
-- `0x004D1560` **SoftwareRenderer_DrawQueue16Bit** — local: `SoftwareRenderer_PrepareTrianglePacket`; cross: `GraphicsPrimitiveQueue_Begin` → `graphics/render/primitives`, `GraphicsPrimitiveQueue_Next` → `graphics/render/primitives`
-- `0x004D15D0` **SoftwareRenderer_DrawQueueNon16Bit** — local: `SoftwareRenderer_PrepareTrianglePacket`; cross: `GraphicsPrimitiveQueue_Begin` → `graphics/render/primitives`, `GraphicsPrimitiveQueue_Next` → `graphics/render/primitives`
-- `0x004D1640` **SoftwareRenderer_DrawQueueAuxiliary** — local: `SoftwareRenderer_PrepareTrianglePacket`; cross: `GraphicsPrimitiveQueue_Begin` → `graphics/render/primitives`, `GraphicsPrimitiveQueue_Next` → `graphics/render/primitives`
-- `0x00486020` **SoftwareRenderer_DrawPrimitiveQueueBridge**
-- `0x00486050` **SoftwareGraphicsDispatch_SuccessNoOp**
-- `0x00486060` **SoftwareGraphicsDispatch_NoOp**
-- `0x004A8F80` **SoftwarePixelFormat_BaseDisplayModeHook**
-- `0x004A9110` **SoftwareFramebuffer_Create**
-- `0x004A9160` **SoftwareFramebuffer_Destroy**
-- `0x004A9180` **SoftwarePixelFormat_BuildChannelPackTables**
-- `0x004A93C0` **SoftwareTextureSource_BlitSourceAlpha16**
-- `0x004A9710` **SoftwareTextureSource_BlitSourceAlpha32**
-- `0x004A9B20` **SoftwareTextureSource_BlitHalfSourceRgb16**
-- `0x004A9E10` **SoftwareTextureSource_BlitHalfSourceRgb32**
-- `0x004AA170` **SoftwareTextureSource_StretchDirectColorBilinear16**
-- `0x004AA3F0` **SoftwareTextureSource_StretchDirectColorBilinear32**
-- `0x004AA630` **SoftwareTextureSource_BlitIntegerScaledSourceAlpha16**
-- `0x004AAA40` **SoftwareTextureSource_BlitIntegerScaledSourceAlpha32**
-- `0x004AADE0` **SoftwareTextureSource_BlitSourceAlphaPaletteBank16**
-- `0x004AB150` **SoftwareTextureSource_BlitSourceAlphaPaletteBank32**
-- `0x004AB4A0` **SoftwareTextureSource_BlitSaturatedAddRgb16**
-- `0x004AB750` **SoftwareTextureSource_BlitSaturatedAddRgb32**
-- `0x004ABA70` **SoftwareTextureSource_BlitHalfRgbSaturatedAdd16**
-- `0x004ABD20` **SoftwareTextureSource_BlitHalfRgbSaturatedAdd32**
-- `0x004AC040` **SoftwareTextureSource_BlitModulatedSourceAlpha16**
-- `0x004AC4C0` **SoftwareTextureSource_BlitModulatedSourceAlpha32**
-- `0x004AD110` **SoftwareFramebuffer_FillRectArgb16**
-- `0x004AD2A0` **SoftwareFramebuffer_FillRectArgb32**
-- `0x004AD410` **SoftwareFramebuffer_CopyRegionToOrigin**
-- `0x004AD520` **SoftwareFramebuffer_CopyOriginToRegion**
-- `0x004D1710` **SoftwareRaster16_Mode16**
-- `0x004D2990` **SoftwareRaster16_Mode22**
-- `0x004D3E90` **SoftwareRaster16_Mode17**
-- `0x004D5310` **SoftwareRaster16_Mode18**
-- `0x004D6690` **SoftwareRaster16_Mode20**
-- `0x004D7B90` **SoftwareRaster16_Mode24**
-- `0x004D8A90` **SoftwareRaster16_Mode30**
-- `0x004D9C10` **SoftwareRaster16_Mode25**
-- `0x004DAD10` **SoftwareRaster16_Mode26**
-- `0x004DBD10` **SoftwareRaster16_Mode28**
-- `0x004DCE90` **SoftwareRaster16_Mode00**
-- `0x004DD700` **SoftwareRaster16_Mode06**
-- `0x004DE0C0` **SoftwareRaster16_Mode01**
-- `0x004DEA40` **SoftwareRaster16_Mode02**
-- `0x004DF2F0` **SoftwareRaster16_Mode04**
-- `0x004DFCB0` **SoftwareRaster16_Mode08**
-- `0x004E0250` **SoftwareRaster16_Mode14**
-- `0x004E0940` **SoftwareRaster16_Mode09**
-- `0x004E0FF0` **SoftwareRaster16_Mode10**
-- `0x004E15D0` **SoftwareRaster16_Mode12**
-- `0x004E1CC0` **SoftwareRasterNon16_Mode16**
-- `0x004E2E00` **SoftwareRasterNon16_Mode22**
-- `0x004E4180` **SoftwareRasterNon16_Mode17**
-- `0x004E5440` **SoftwareRasterNon16_Mode18**
-- `0x004E65C0` **SoftwareRasterNon16_Mode20**
-- `0x004E7940` **SoftwareRasterNon16_Mode24**
-- `0x004E86D0` **SoftwareRasterNon16_Mode30**
-- `0x004E96D0` **SoftwareRasterNon16_Mode25**
-- `0x004EA610` **SoftwareRasterNon16_Mode26**
-- `0x004EB3E0` **SoftwareRasterNon16_Mode28**
-- `0x004EC3E0` **SoftwareRasterNon16_Mode00**
-- `0x004ECB90` **SoftwareRasterNon16_Mode06**
-- `0x004ED440` **SoftwareRasterNon16_Mode01**
-- `0x004EDCB0` **SoftwareRasterNon16_Mode02**
-- `0x004EE4A0` **SoftwareRasterNon16_Mode04**
-- `0x004EED50` **SoftwareRasterNon16_Mode08**
-- `0x004EF230` **SoftwareRasterNon16_Mode14**
-- `0x004EF810` **SoftwareRasterNon16_Mode09**
-- `0x004EFDB0` **SoftwareRasterNon16_Mode10**
-- `0x004F02D0` **SoftwareRasterNon16_Mode12**
-- `0x004F08B0` **SoftwareRasterAux_Mode16**
-- `0x004F19E0` **SoftwareRasterAux_Mode22**
-- `0x004F2BD0` **SoftwareRasterAux_Mode17**
-- `0x004F3D40` **SoftwareRasterAux_Mode18**
-- `0x004F4EB0` **SoftwareRasterAux_Mode20**
-- `0x004F60A0` **SoftwareRasterAux_Mode24**
-- `0x004F6E20` **SoftwareRasterAux_Mode30**
-- `0x004F7C70` **SoftwareRasterAux_Mode25**
-- `0x004F8A30` **SoftwareRasterAux_Mode26**
-- `0x004F97F0` **SoftwareRasterAux_Mode28**
-- `0x004FA640` **SoftwareRasterAux_Mode00**
-- `0x004FADD0` **SoftwareRasterAux_Mode06**
-- `0x004FB5A0` **SoftwareRasterAux_Mode01**
-- `0x004FBD70` **SoftwareRasterAux_Mode02**
-- `0x004FC540` **SoftwareRasterAux_Mode04**
-- `0x004FCD10` **SoftwareRasterAux_Mode08**
-- `0x004FD1E0` **SoftwareRasterAux_Mode14**
-- `0x004FD6F0` **SoftwareRasterAux_Mode09**
-- `0x004FDC00` **SoftwareRasterAux_Mode10**
-- `0x004FE110` **SoftwareRasterAux_Mode12**
-- `0x004FE620` **SoftwareRenderer_DisplayModeHook**
-- `0x004FE7D0` **SoftwareRenderer_InstallDisplayModeHook**
-- `0x00518CE0` **SoftwareTexture_BilinearBlendScaleSubresources**
-- `0x004D16D0` **SoftwareRenderer_AdvanceDepthEpoch**
-- `0x00519210` **SoftwareMaskBuffer_Clear**
-- `0x00519270` **SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31**
-- `0x00519500` **SoftwareMaskBuffer_ApplyCircularRegionBit**
-- `0x005195D0` **SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit**
-- `0x00519670` **SoftwareMaskBuffer_SetAllPixelsBit**
-- `0x005196C0` **SoftwareMaskBuffer_ApplyHorizontalBandBit**
-- `0x004FE840` **SoftwareRenderer_PrepareTrianglePacket**
+- `0x00519320` **[`SoftwareMaskBuffer_AdvancePatternByPercentTick`](../../../../src/graphics/backend/software.c#L5)** — local: [`SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31`](../../../../src/graphics/backend/software.c#L65096), [`SoftwareMaskBuffer_Clear`](../../../../src/graphics/backend/software.c#L65060), [`SoftwareMaskBuffer_ApplyCircularRegionBit`](../../../../src/graphics/backend/software.c#L65187), [`SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit`](../../../../src/graphics/backend/software.c#L65254), [`SoftwareMaskBuffer_ApplyHorizontalBandBit`](../../../../src/graphics/backend/software.c#L65353), [`SoftwareMaskBuffer_SetAllPixelsBit`](../../../../src/graphics/backend/software.c#L65325)
+- `0x00485FD0` **[`SoftwareRenderer_ClearViewport`](../../../../src/graphics/backend/software.c#L99)** — local: [`SoftwareRenderer_AdvanceDepthEpoch`](../../../../src/graphics/backend/software.c#L65034)
+- `0x004D1560` **[`SoftwareRenderer_DrawQueue16Bit`](../../../../src/graphics/backend/software.c#L126)** — local: [`SoftwareRenderer_PrepareTrianglePacket`](../../../../src/graphics/backend/software.c#L65397); cross: [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322) → [`graphics/render/primitives`](../render/primitives.md), [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341) → [`graphics/render/primitives`](../render/primitives.md)
+- `0x004D15D0` **[`SoftwareRenderer_DrawQueueNon16Bit`](../../../../src/graphics/backend/software.c#L159)** — local: [`SoftwareRenderer_PrepareTrianglePacket`](../../../../src/graphics/backend/software.c#L65397); cross: [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322) → [`graphics/render/primitives`](../render/primitives.md), [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341) → [`graphics/render/primitives`](../render/primitives.md)
+- `0x004D1640` **[`SoftwareRenderer_DrawQueueAuxiliary`](../../../../src/graphics/backend/software.c#L192)** — local: [`SoftwareRenderer_PrepareTrianglePacket`](../../../../src/graphics/backend/software.c#L65397); cross: [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322) → [`graphics/render/primitives`](../render/primitives.md), [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341) → [`graphics/render/primitives`](../render/primitives.md)
+- `0x00486020` **[`SoftwareRenderer_DrawPrimitiveQueueBridge`](../../../../src/graphics/backend/software.c#L231)**
+- `0x00486050` **[`SoftwareGraphicsDispatch_SuccessNoOp`](../../../../src/graphics/backend/software.c#L255)**
+- `0x00486060` **[`SoftwareGraphicsDispatch_NoOp`](../../../../src/graphics/backend/software.c#L265)**
+- `0x004A8F80` **[`SoftwarePixelFormat_BaseDisplayModeHook`](../../../../src/graphics/backend/software.c#L275)**
+- `0x004A9110` **[`SoftwareFramebuffer_Create`](../../../../src/graphics/backend/software.c#L335)**
+- `0x004A9160` **[`SoftwareFramebuffer_Destroy`](../../../../src/graphics/backend/software.c#L369)**
+- `0x004A9180` **[`SoftwarePixelFormat_BuildChannelPackTables`](../../../../src/graphics/backend/software.c#L380)**
+- `0x004A93C0` **[`SoftwareTextureSource_BlitSourceAlpha16`](../../../../src/graphics/backend/software.c#L423)**
+- `0x004A9710` **[`SoftwareTextureSource_BlitSourceAlpha32`](../../../../src/graphics/backend/software.c#L717)**
+- `0x004A9B20` **[`SoftwareTextureSource_BlitHalfSourceRgb16`](../../../../src/graphics/backend/software.c#L1011)**
+- `0x004A9E10` **[`SoftwareTextureSource_BlitHalfSourceRgb32`](../../../../src/graphics/backend/software.c#L1286)**
+- `0x004AA170` **[`SoftwareTextureSource_StretchDirectColorBilinear16`](../../../../src/graphics/backend/software.c#L1563)**
+- `0x004AA3F0` **[`SoftwareTextureSource_StretchDirectColorBilinear32`](../../../../src/graphics/backend/software.c#L1889)**
+- `0x004AA630` **[`SoftwareTextureSource_BlitIntegerScaledSourceAlpha16`](../../../../src/graphics/backend/software.c#L2208)**
+- `0x004AAA40` **[`SoftwareTextureSource_BlitIntegerScaledSourceAlpha32`](../../../../src/graphics/backend/software.c#L2496)**
+- `0x004AADE0` **[`SoftwareTextureSource_BlitSourceAlphaPaletteBank16`](../../../../src/graphics/backend/software.c#L2786)**
+- `0x004AB150` **[`SoftwareTextureSource_BlitSourceAlphaPaletteBank32`](../../../../src/graphics/backend/software.c#L3079)**
+- `0x004AB4A0` **[`SoftwareTextureSource_BlitSaturatedAddRgb16`](../../../../src/graphics/backend/software.c#L3372)**
+- `0x004AB750` **[`SoftwareTextureSource_BlitSaturatedAddRgb32`](../../../../src/graphics/backend/software.c#L3613)**
+- `0x004ABA70` **[`SoftwareTextureSource_BlitHalfRgbSaturatedAdd16`](../../../../src/graphics/backend/software.c#L3869)**
+- `0x004ABD20` **[`SoftwareTextureSource_BlitHalfRgbSaturatedAdd32`](../../../../src/graphics/backend/software.c#L4116)**
+- `0x004AC040` **[`SoftwareTextureSource_BlitModulatedSourceAlpha16`](../../../../src/graphics/backend/software.c#L4381)**
+- `0x004AC4C0` **[`SoftwareTextureSource_BlitModulatedSourceAlpha32`](../../../../src/graphics/backend/software.c#L4707)**
+- `0x004AD110` **[`SoftwareFramebuffer_FillRectArgb16`](../../../../src/graphics/backend/software.c#L5036)**
+- `0x004AD2A0` **[`SoftwareFramebuffer_FillRectArgb32`](../../../../src/graphics/backend/software.c#L5177)**
+- `0x004AD410` **[`SoftwareFramebuffer_CopyRegionToOrigin`](../../../../src/graphics/backend/software.c#L5320)**
+- `0x004AD520` **[`SoftwareFramebuffer_CopyOriginToRegion`](../../../../src/graphics/backend/software.c#L5413)**
+- `0x004D1710` **[`SoftwareRaster16_Mode16`](../../../../src/graphics/backend/software.c#L5506)**
+- `0x004D2990` **[`SoftwareRaster16_Mode22`](../../../../src/graphics/backend/software.c#L7057)**
+- `0x004D3E90` **[`SoftwareRaster16_Mode17`](../../../../src/graphics/backend/software.c#L8905)**
+- `0x004D5310` **[`SoftwareRaster16_Mode18`](../../../../src/graphics/backend/software.c#L10729)**
+- `0x004D6690` **[`SoftwareRaster16_Mode20`](../../../../src/graphics/backend/software.c#L12445)**
+- `0x004D7B90` **[`SoftwareRaster16_Mode24`](../../../../src/graphics/backend/software.c#L14293)**
+- `0x004D8A90` **[`SoftwareRaster16_Mode30`](../../../../src/graphics/backend/software.c#L15430)**
+- `0x004D9C10` **[`SoftwareRaster16_Mode25`](../../../../src/graphics/backend/software.c#L16866)**
+- `0x004DAD10` **[`SoftwareRaster16_Mode26`](../../../../src/graphics/backend/software.c#L18278)**
+- `0x004DBD10` **[`SoftwareRaster16_Mode28`](../../../../src/graphics/backend/software.c#L19581)**
+- `0x004DCE90` **[`SoftwareRaster16_Mode00`](../../../../src/graphics/backend/software.c#L21017)**
+- `0x004DD700` **[`SoftwareRaster16_Mode06`](../../../../src/graphics/backend/software.c#L21620)**
+- `0x004DE0C0` **[`SoftwareRaster16_Mode01`](../../../../src/graphics/backend/software.c#L22370)**
+- `0x004DEA40` **[`SoftwareRaster16_Mode02`](../../../../src/graphics/backend/software.c#L23107)**
+- `0x004DF2F0` **[`SoftwareRaster16_Mode04`](../../../../src/graphics/backend/software.c#L23787)**
+- `0x004DFCB0` **[`SoftwareRaster16_Mode08`](../../../../src/graphics/backend/software.c#L24537)**
+- `0x004E0250` **[`SoftwareRaster16_Mode14`](../../../../src/graphics/backend/software.c#L24915)**
+- `0x004E0940` **[`SoftwareRaster16_Mode09`](../../../../src/graphics/backend/software.c#L25442)**
+- `0x004E0FF0` **[`SoftwareRaster16_Mode10`](../../../../src/graphics/backend/software.c#L25956)**
+- `0x004E15D0` **[`SoftwareRaster16_Mode12`](../../../../src/graphics/backend/software.c#L26412)**
+- `0x004E1CC0` **[`SoftwareRasterNon16_Mode16`](../../../../src/graphics/backend/software.c#L26939)**
+- `0x004E2E00` **[`SoftwareRasterNon16_Mode22`](../../../../src/graphics/backend/software.c#L28409)**
+- `0x004E4180` **[`SoftwareRasterNon16_Mode17`](../../../../src/graphics/backend/software.c#L30202)**
+- `0x004E5440` **[`SoftwareRasterNon16_Mode18`](../../../../src/graphics/backend/software.c#L31971)**
+- `0x004E65C0` **[`SoftwareRasterNon16_Mode20`](../../../../src/graphics/backend/software.c#L33569)**
+- `0x004E7940` **[`SoftwareRasterNon16_Mode24`](../../../../src/graphics/backend/software.c#L35362)**
+- `0x004E86D0` **[`SoftwareRasterNon16_Mode30`](../../../../src/graphics/backend/software.c#L36418)**
+- `0x004E96D0` **[`SoftwareRasterNon16_Mode25`](../../../../src/graphics/backend/software.c#L37797)**
+- `0x004EA610` **[`SoftwareRasterNon16_Mode26`](../../../../src/graphics/backend/software.c#L39152)**
+- `0x004EB3E0` **[`SoftwareRasterNon16_Mode28`](../../../../src/graphics/backend/software.c#L40335)**
+- `0x004EC3E0` **[`SoftwareRasterNon16_Mode00`](../../../../src/graphics/backend/software.c#L41714)**
+- `0x004ECB90` **[`SoftwareRasterNon16_Mode06`](../../../../src/graphics/backend/software.c#L42279)**
+- `0x004ED440` **[`SoftwareRasterNon16_Mode01`](../../../../src/graphics/backend/software.c#L43007)**
+- `0x004EDCB0` **[`SoftwareRasterNon16_Mode02`](../../../../src/graphics/backend/software.c#L43722)**
+- `0x004EE4A0` **[`SoftwareRasterNon16_Mode04`](../../../../src/graphics/backend/software.c#L44351)**
+- `0x004EED50` **[`SoftwareRasterNon16_Mode08`](../../../../src/graphics/backend/software.c#L45079)**
+- `0x004EF230` **[`SoftwareRasterNon16_Mode14`](../../../../src/graphics/backend/software.c#L45420)**
+- `0x004EF810` **[`SoftwareRasterNon16_Mode09`](../../../../src/graphics/backend/software.c#L45919)**
+- `0x004EFDB0` **[`SoftwareRasterNon16_Mode10`](../../../../src/graphics/backend/software.c#L46405)**
+- `0x004F02D0` **[`SoftwareRasterNon16_Mode12`](../../../../src/graphics/backend/software.c#L46806)**
+- `0x004F08B0` **[`SoftwareRasterAux_Mode16`](../../../../src/graphics/backend/software.c#L47305)**
+- `0x004F19E0` **[`SoftwareRasterAux_Mode22`](../../../../src/graphics/backend/software.c#L48782)**
+- `0x004F2BD0` **[`SoftwareRasterAux_Mode17`](../../../../src/graphics/backend/software.c#L50259)**
+- `0x004F3D40` **[`SoftwareRasterAux_Mode18`](../../../../src/graphics/backend/software.c#L51728)**
+- `0x004F4EB0` **[`SoftwareRasterAux_Mode20`](../../../../src/graphics/backend/software.c#L53197)**
+- `0x004F60A0` **[`SoftwareRasterAux_Mode24`](../../../../src/graphics/backend/software.c#L54674)**
+- `0x004F6E20` **[`SoftwareRasterAux_Mode30`](../../../../src/graphics/backend/software.c#L55737)**
+- `0x004F7C70` **[`SoftwareRasterAux_Mode25`](../../../../src/graphics/backend/software.c#L56801)**
+- `0x004F8A30` **[`SoftwareRasterAux_Mode26`](../../../../src/graphics/backend/software.c#L57856)**
+- `0x004F97F0` **[`SoftwareRasterAux_Mode28`](../../../../src/graphics/backend/software.c#L58911)**
+- `0x004FA640` **[`SoftwareRasterAux_Mode00`](../../../../src/graphics/backend/software.c#L59975)**
+- `0x004FADD0` **[`SoftwareRasterAux_Mode06`](../../../../src/graphics/backend/software.c#L60543)**
+- `0x004FB5A0` **[`SoftwareRasterAux_Mode01`](../../../../src/graphics/backend/software.c#L61120)**
+- `0x004FBD70` **[`SoftwareRasterAux_Mode02`](../../../../src/graphics/backend/software.c#L61684)**
+- `0x004FC540` **[`SoftwareRasterAux_Mode04`](../../../../src/graphics/backend/software.c#L62248)**
+- `0x004FCD10` **[`SoftwareRasterAux_Mode08`](../../../../src/graphics/backend/software.c#L62825)**
+- `0x004FD1E0` **[`SoftwareRasterAux_Mode14`](../../../../src/graphics/backend/software.c#L63169)**
+- `0x004FD6F0` **[`SoftwareRasterAux_Mode09`](../../../../src/graphics/backend/software.c#L63522)**
+- `0x004FDC00` **[`SoftwareRasterAux_Mode10`](../../../../src/graphics/backend/software.c#L63862)**
+- `0x004FE110` **[`SoftwareRasterAux_Mode12`](../../../../src/graphics/backend/software.c#L64202)**
+- `0x004FE620` **[`SoftwareRenderer_DisplayModeHook`](../../../../src/graphics/backend/software.c#L64555)**
+- `0x004FE7D0` **[`SoftwareRenderer_InstallDisplayModeHook`](../../../../src/graphics/backend/software.c#L64636)**
+- `0x00518CE0` **[`SoftwareTexture_BilinearBlendScaleSubresources`](../../../../src/graphics/backend/software.c#L64669)**
+- `0x004D16D0` **[`SoftwareRenderer_AdvanceDepthEpoch`](../../../../src/graphics/backend/software.c#L65034)**
+- `0x00519210` **[`SoftwareMaskBuffer_Clear`](../../../../src/graphics/backend/software.c#L65060)**
+- `0x00519270` **[`SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31`](../../../../src/graphics/backend/software.c#L65096)**
+- `0x00519500` **[`SoftwareMaskBuffer_ApplyCircularRegionBit`](../../../../src/graphics/backend/software.c#L65187)**
+- `0x005195D0` **[`SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit`](../../../../src/graphics/backend/software.c#L65254)**
+- `0x00519670` **[`SoftwareMaskBuffer_SetAllPixelsBit`](../../../../src/graphics/backend/software.c#L65325)**
+- `0x005196C0` **[`SoftwareMaskBuffer_ApplyHorizontalBandBit`](../../../../src/graphics/backend/software.c#L65353)**
+- `0x004FE840` **[`SoftwareRenderer_PrepareTrianglePacket`](../../../../src/graphics/backend/software.c#L65397)**
+
+## Called by
+
+- [`graphics/backend/glide`](glide.md): [`Glide3_TextureSource_BlitSourceAlpha`](../../../../src/graphics/backend/glide.c#L1648) → [`SoftwareTextureSource_BlitSourceAlpha16`](../../../../src/graphics/backend/software.c#L423); [`Glide3_TextureSource_BlitHalfSourceRgb`](../../../../src/graphics/backend/glide.c#L1952) → [`SoftwareTextureSource_BlitHalfSourceRgb16`](../../../../src/graphics/backend/software.c#L1011); [`Glide3_TextureSource_StretchDirectColorBilinear`](../../../../src/graphics/backend/glide.c#L2237) → [`SoftwareTextureSource_StretchDirectColorBilinear16`](../../../../src/graphics/backend/software.c#L1563); [`Glide3_TextureSource_BlitIntegerScaledSourceAlpha`](../../../../src/graphics/backend/glide.c#L2571) → [`SoftwareTextureSource_BlitHalfSourceRgb16`](../../../../src/graphics/backend/software.c#L1011); [`Glide3_TextureSource_BlitSourceAlphaPaletteBank`](../../../../src/graphics/backend/glide.c#L2870) → [`SoftwareTextureSource_BlitSourceAlphaPaletteBank16`](../../../../src/graphics/backend/software.c#L2786); [`Glide3_TextureSource_BlitSaturatedAddRgb`](../../../../src/graphics/backend/glide.c#L3173) → [`SoftwareTextureSource_BlitSaturatedAddRgb16`](../../../../src/graphics/backend/software.c#L3372); [`Glide3_TextureSource_BlitHalfRgbSaturatedAdd`](../../../../src/graphics/backend/glide.c#L3426) → [`SoftwareTextureSource_BlitHalfRgbSaturatedAdd16`](../../../../src/graphics/backend/software.c#L3869); [`Glide3_TextureSource_BlitModulatedSourceAlpha`](../../../../src/graphics/backend/glide.c#L3684) → [`SoftwareTextureSource_BlitHalfRgbSaturatedAdd16`](../../../../src/graphics/backend/software.c#L3869); [`Glide3_Framebuffer_FillRectArgb`](../../../../src/graphics/backend/glide.c#L4020) → [`SoftwareFramebuffer_FillRectArgb16`](../../../../src/graphics/backend/software.c#L5036)
+- [`graphics/core/runtime`](../core/runtime.md): [`Graphics_SetViewportAndClearDepth`](../../../../src/graphics/core/runtime.c#L751) → [`SoftwareRenderer_ClearViewport`](../../../../src/graphics/backend/software.c#L99); [`Graphics_DrawPrimitiveQueue`](../../../../src/graphics/core/runtime.c#L885) → [`SoftwareRenderer_DrawPrimitiveQueueBridge`](../../../../src/graphics/backend/software.c#L231)
+- [`graphics/render/projection`](../render/projection.md): [`GraphicsOffscreen_RenderModelListToTextureSourceCf`](../../../../src/graphics/render/projection.c#L5) → [`SoftwareRenderer_DrawQueueAuxiliary`](../../../../src/graphics/backend/software.c#L192)
+- [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md): [`GameRuntime_InitializeSpatialAudioAndRenderingCf`](../../../../src/platform/bootstrap/runtime.c#L561) → [`SoftwareRenderer_InstallDisplayModeHook`](../../../../src/graphics/backend/software.c#L64636)
+- [`ui/controls/text`](../../ui/controls/text.md): [`UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren`](../../../../src/ui/controls/text.c#L3697) → [`SoftwareTexture_BilinearBlendScaleSubresources`](../../../../src/graphics/backend/software.c#L64669)
+- [`ui/frontend/scenario`](../../ui/frontend/scenario.md): [`FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState`](../../../../src/ui/frontend/scenario.c#L5) → [`SoftwareMaskBuffer_AdvancePatternByPercentTick`](../../../../src/graphics/backend/software.c#L5)
+- [`ui/support/runtime`](../../ui/support/runtime.md): [`CreditsScreen_Open`](../../../../src/ui/support/runtime.c#L131) → [`SoftwareMaskBuffer_Clear`](../../../../src/graphics/backend/software.c#L65060)

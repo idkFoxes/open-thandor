@@ -1,16 +1,22 @@
 # Call graph: `gameplay/army/audio`
 
+[Source](../../../../src/gameplay/army/audio.c) · [Header](../../../../include/thandor/gameplay/army/audio.h) · [Graphviz](audio.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-audio)
+
 10 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x0051D5F0` **ArmyGraphics_CopyFrontendPlayerPaletteAndTexture**
-- `0x00520740` **ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00520E60` **ArmyRuntimeAudio_DispatchPositionedSoundVariant** — cross: `ArmyRuntimeClass_UpdatePositionedSoundsVariantB` → `gameplay/army/runtime`, `ArmyRuntimeClass_UpdatePositionedSoundsVariantA` → `gameplay/army/runtime`
-- `0x00523240` **ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00523DD0` **ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00524410` **ArmyRuntimeAudio_UpdateConditionalProjectedSound** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00524DA0` **ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00526490` **ArmyRuntimeAudio_UpdateAssetProjectedSound** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00526EB0` **ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds** — cross: `TerrainGrid_TestProjectedCellMaskBits01Cf` → `world/terrain/grid`, `SpatialSound_UpdateDesiredPositionedGains` → `audio/spatial/runtime`
-- `0x00527B20` **ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled** — cross: `ArmyRuntime_UpdateLoopingPositionedSound` → `gameplay/army/runtime`
+- `0x0051D5F0` **[`ArmyGraphics_CopyFrontendPlayerPaletteAndTexture`](../../../../src/gameplay/army/audio.c#L5)**
+- `0x00520740` **[`ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA`](../../../../src/gameplay/army/audio.c#L65)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00520E60` **[`ArmyRuntimeAudio_DispatchPositionedSoundVariant`](../../../../src/gameplay/army/audio.c#L125)** — cross: [`ArmyRuntimeClass_UpdatePositionedSoundsVariantB`](../../../../src/gameplay/army/runtime.c#L2336) → [`gameplay/army/runtime`](runtime.md), [`ArmyRuntimeClass_UpdatePositionedSoundsVariantA`](../../../../src/gameplay/army/runtime.c#L2120) → [`gameplay/army/runtime`](runtime.md)
+- `0x00523240` **[`ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB`](../../../../src/gameplay/army/audio.c#L145)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00523DD0` **[`ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound`](../../../../src/gameplay/army/audio.c#L205)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00524410` **[`ArmyRuntimeAudio_UpdateConditionalProjectedSound`](../../../../src/gameplay/army/audio.c#L243)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00524DA0` **[`ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds`](../../../../src/gameplay/army/audio.c#L282)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00526490` **[`ArmyRuntimeAudio_UpdateAssetProjectedSound`](../../../../src/gameplay/army/audio.c#L336)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00526EB0` **[`ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds`](../../../../src/gameplay/army/audio.c#L372)** — cross: [`TerrainGrid_TestProjectedCellMaskBits01Cf`](../../../../src/world/terrain/grid.c#L2614) → [`world/terrain/grid`](../../world/terrain/grid.md), [`SpatialSound_UpdateDesiredPositionedGains`](../../../../src/audio/spatial/runtime.c#L131) → [`audio/spatial/runtime`](../../audio/spatial/runtime.md)
+- `0x00527B20` **[`ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled`](../../../../src/gameplay/army/audio.c#L428)** — cross: [`ArmyRuntime_UpdateLoopingPositionedSound`](../../../../src/gameplay/army/runtime.c#L2423) → [`gameplay/army/runtime`](runtime.md)
+
+## Called by
+
+- [`gameplay/army/runtime`](runtime.md): [`ArmyRuntime_InitializePoolAndGraphicsCf`](../../../../src/gameplay/army/runtime.c#L1453) → [`ArmyGraphics_CopyFrontendPlayerPaletteAndTexture`](../../../../src/gameplay/army/audio.c#L5)

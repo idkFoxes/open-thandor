@@ -1,42 +1,52 @@
 # Call graph: `graphics/resources/texture`
 
+[Source](../../../../src/graphics/resources/texture.c) · [Header](../../../../include/thandor/graphics/resources/texture.h) · [Graphviz](texture.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-texture)
+
 36 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x0057E970` **GraphicsTextureSet_Create** — local: `GraphicsTextureSet_AllocateMetadata`, `GraphicsTexture_SelectPixelFormat`, `GraphicsTexture_CreateStagingTexture`, `GraphicsTexture_RegisterSlot`, `GraphicsTexture_ReleaseObjects`, `GraphicsTexture_CreateDeviceTexture`; cross: `Glide3_TextureSet_CreateBackend` → `graphics/backend/glide`
-- `0x0057AD30` **GraphicsTexture_RebuildAllStagingTextures** — local: `GraphicsTexture_ReleaseObjects`, `GraphicsTexture_CreateStagingTexture`; cross: `Glide3_TextureResource_ReinitializeAll` → `graphics/backend/glide`
-- `0x0057EAF0` **GraphicsTextureSet_Destroy** — local: `GraphicsTexture_ReleaseObjects`, `GraphicsTextureSet_FreeMetadata`; cross: `Glide3_TextureSet_DestroyBackend` → `graphics/backend/glide`
-- `0x00485E40` **GraphicsTextureSet_LoadPackage** — cross: `Package_LoadEntry` → `assets/package/runtime`, `Resource_Release` → `assets/resource/runtime`
-- `0x00485E80` **GraphicsTextureSet_ReleasePackage** — cross: `Resource_Release` → `assets/resource/runtime`
-- `0x00485FC0` **GraphicsTextureSet_RefreshNoOp**
-- `0x00486070` **GraphicsTexture_RebuildNoOp**
-- `0x004A9270` **GraphicsTextureSource_GetLogicalSizeRegs**
-- `0x004A92C0` **GraphicsTextureSource_TestOpaquePixel**
-- `0x004A9A50` **GraphicsTextureSource_BlitTiledSourceAlpha**
-- `0x004AA0A0` **GraphicsTextureSource_BlitTiledHalfSourceRgb**
-- `0x004AB9A0` **GraphicsTextureSource_BlitTiledSaturatedAddRgb**
-- `0x004ABF70` **GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd**
-- `0x004AD630` **GraphicsTextureSource_LoadPackageAsset** — cross: `Package_LoadEntry` → `assets/package/runtime`, `Resource_Release` → `assets/resource/runtime`
-- `0x004AD670` **GraphicsTextureSource_CloneAsset**
-- `0x004AD6C0` **GraphicsTextureSource_ConvertPaletteEntries**
-- `0x004AD770` **GraphicsTextureSource_ReleasePackageAsset** — cross: `Resource_Release` → `assets/resource/runtime`
-- `0x004AD790` **GraphicsTextureSource_ReleaseClonedAsset**
-- `0x004AD7B0` **GraphicsTextureSource_ResolveAllocationBase**
-- `0x004AD7C0` **GraphicsTextureSource_GetFirstLogicalSizeRegs**
-- `0x0057ADA0` **GraphicsTexture_UploadColor_1x** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057B410` **GraphicsTexture_UploadColor_2x** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057BBE0` **GraphicsTexture_UploadColor_4x** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057C6C0` **GraphicsTexture_UploadAlpha_1x** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057C890` **GraphicsTexture_UploadAlpha_2x** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057CAA0` **GraphicsTexture_UploadAlpha_4x** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057EBB0` **GraphicsTextureSet_RefreshColor** — cross: `Glide3_TextureSet_RefreshColor` → `graphics/backend/glide`
-- `0x0057EC40` **GraphicsTextureSet_RefreshAlpha** — cross: `Glide3_TextureSet_RefreshAlpha` → `graphics/backend/glide`
-- `0x0057AAD0` **GraphicsTexture_CreateDeviceTexture** — local: `GraphicsTexture_EvictOldestDeviceTexture`; cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x00485EA0` **GraphicsTextureSet_AllocateMetadata**
-- `0x00485F90` **GraphicsTextureSet_FreeMetadata**
-- `0x0057A9D0` **GraphicsTexture_EvictOldestDeviceTexture**
-- `0x0057E870` **GraphicsTexture_RegisterSlot**
-- `0x0057E8C0` **GraphicsTexture_SelectPixelFormat**
-- `0x0057A740` **GraphicsTexture_CreateStagingTexture** — cross: `Memory_ZeroDwords` → `core/memory/allocator`
-- `0x0057A900` **GraphicsTexture_ReleaseObjects**
+- `0x0057E970` **[`GraphicsTextureSet_Create`](../../../../src/graphics/resources/texture.c#L5)** — local: [`GraphicsTextureSet_AllocateMetadata`](../../../../src/graphics/resources/texture.c#L3477), [`GraphicsTexture_SelectPixelFormat`](../../../../src/graphics/resources/texture.c#L3649), [`GraphicsTexture_CreateStagingTexture`](../../../../src/graphics/resources/texture.c#L3700), [`GraphicsTexture_RegisterSlot`](../../../../src/graphics/resources/texture.c#L3625), [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792), [`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352); cross: [`Glide3_TextureSet_CreateBackend`](../../../../src/graphics/backend/glide.c#L5) → [`graphics/backend/glide`](../backend/glide.md)
+- `0x0057AD30` **[`GraphicsTexture_RebuildAllStagingTextures`](../../../../src/graphics/resources/texture.c#L89)** — local: [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792), [`GraphicsTexture_CreateStagingTexture`](../../../../src/graphics/resources/texture.c#L3700); cross: [`Glide3_TextureResource_ReinitializeAll`](../../../../src/graphics/backend/glide.c#L74) → [`graphics/backend/glide`](../backend/glide.md)
+- `0x0057EAF0` **[`GraphicsTextureSet_Destroy`](../../../../src/graphics/resources/texture.c#L123)** — local: [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792), [`GraphicsTextureSet_FreeMetadata`](../../../../src/graphics/resources/texture.c#L3548); cross: [`Glide3_TextureSet_DestroyBackend`](../../../../src/graphics/backend/glide.c#L577) → [`graphics/backend/glide`](../backend/glide.md)
+- `0x00485E40` **[`GraphicsTextureSet_LoadPackage`](../../../../src/graphics/resources/texture.c#L174)** — cross: [`Package_LoadEntry`](../../../../src/assets/package/runtime.c#L402) → [`assets/package/runtime`](../../assets/package/runtime.md), [`Resource_Release`](../../../../src/assets/resource/runtime.c#L134) → [`assets/resource/runtime`](../../assets/resource/runtime.md)
+- `0x00485E80` **[`GraphicsTextureSet_ReleasePackage`](../../../../src/graphics/resources/texture.c#L201)** — cross: [`Resource_Release`](../../../../src/assets/resource/runtime.c#L134) → [`assets/resource/runtime`](../../assets/resource/runtime.md)
+- `0x00485FC0` **[`GraphicsTextureSet_RefreshNoOp`](../../../../src/graphics/resources/texture.c#L217)**
+- `0x00486070` **[`GraphicsTexture_RebuildNoOp`](../../../../src/graphics/resources/texture.c#L228)**
+- `0x004A9270` **[`GraphicsTextureSource_GetLogicalSizeRegs`](../../../../src/graphics/resources/texture.c#L239)**
+- `0x004A92C0` **[`GraphicsTextureSource_TestOpaquePixel`](../../../../src/graphics/resources/texture.c#L265)**
+- `0x004A9A50` **[`GraphicsTextureSource_BlitTiledSourceAlpha`](../../../../src/graphics/resources/texture.c#L328)**
+- `0x004AA0A0` **[`GraphicsTextureSource_BlitTiledHalfSourceRgb`](../../../../src/graphics/resources/texture.c#L406)**
+- `0x004AB9A0` **[`GraphicsTextureSource_BlitTiledSaturatedAddRgb`](../../../../src/graphics/resources/texture.c#L484)**
+- `0x004ABF70` **[`GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd`](../../../../src/graphics/resources/texture.c#L561)**
+- `0x004AD630` **[`GraphicsTextureSource_LoadPackageAsset`](../../../../src/graphics/resources/texture.c#L638)** — cross: [`Package_LoadEntry`](../../../../src/assets/package/runtime.c#L402) → [`assets/package/runtime`](../../assets/package/runtime.md), [`Resource_Release`](../../../../src/assets/resource/runtime.c#L134) → [`assets/resource/runtime`](../../assets/resource/runtime.md)
+- `0x004AD670` **[`GraphicsTextureSource_CloneAsset`](../../../../src/graphics/resources/texture.c#L667)**
+- `0x004AD6C0` **[`GraphicsTextureSource_ConvertPaletteEntries`](../../../../src/graphics/resources/texture.c#L702)**
+- `0x004AD770` **[`GraphicsTextureSource_ReleasePackageAsset`](../../../../src/graphics/resources/texture.c#L734)** — cross: [`Resource_Release`](../../../../src/assets/resource/runtime.c#L134) → [`assets/resource/runtime`](../../assets/resource/runtime.md)
+- `0x004AD790` **[`GraphicsTextureSource_ReleaseClonedAsset`](../../../../src/graphics/resources/texture.c#L751)**
+- `0x004AD7B0` **[`GraphicsTextureSource_ResolveAllocationBase`](../../../../src/graphics/resources/texture.c#L767)**
+- `0x004AD7C0` **[`GraphicsTextureSource_GetFirstLogicalSizeRegs`](../../../../src/graphics/resources/texture.c#L779)**
+- `0x0057ADA0` **[`GraphicsTexture_UploadColor_1x`](../../../../src/graphics/resources/texture.c#L805)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057B410` **[`GraphicsTexture_UploadColor_2x`](../../../../src/graphics/resources/texture.c#L1221)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057BBE0` **[`GraphicsTexture_UploadColor_4x`](../../../../src/graphics/resources/texture.c#L1840)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057C6C0` **[`GraphicsTexture_UploadAlpha_1x`](../../../../src/graphics/resources/texture.c#L2910)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057C890` **[`GraphicsTexture_UploadAlpha_2x`](../../../../src/graphics/resources/texture.c#L3024)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057CAA0` **[`GraphicsTexture_UploadAlpha_4x`](../../../../src/graphics/resources/texture.c#L3160)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057EBB0` **[`GraphicsTextureSet_RefreshColor`](../../../../src/graphics/resources/texture.c#L3298)** — cross: [`Glide3_TextureSet_RefreshColor`](../../../../src/graphics/backend/glide.c#L852) → [`graphics/backend/glide`](../backend/glide.md)
+- `0x0057EC40` **[`GraphicsTextureSet_RefreshAlpha`](../../../../src/graphics/resources/texture.c#L3325)** — cross: [`Glide3_TextureSet_RefreshAlpha`](../../../../src/graphics/backend/glide.c#L877) → [`graphics/backend/glide`](../backend/glide.md)
+- `0x0057AAD0` **[`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352)** — local: [`GraphicsTexture_EvictOldestDeviceTexture`](../../../../src/graphics/resources/texture.c#L3565); cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x00485EA0` **[`GraphicsTextureSet_AllocateMetadata`](../../../../src/graphics/resources/texture.c#L3477)**
+- `0x00485F90` **[`GraphicsTextureSet_FreeMetadata`](../../../../src/graphics/resources/texture.c#L3548)**
+- `0x0057A9D0` **[`GraphicsTexture_EvictOldestDeviceTexture`](../../../../src/graphics/resources/texture.c#L3565)**
+- `0x0057E870` **[`GraphicsTexture_RegisterSlot`](../../../../src/graphics/resources/texture.c#L3625)**
+- `0x0057E8C0` **[`GraphicsTexture_SelectPixelFormat`](../../../../src/graphics/resources/texture.c#L3649)**
+- `0x0057A740` **[`GraphicsTexture_CreateStagingTexture`](../../../../src/graphics/resources/texture.c#L3700)** — cross: [`Memory_ZeroDwords`](../../../../src/core/memory/allocator.c#L406) → [`core/memory/allocator`](../../core/memory/allocator.md)
+- `0x0057A900` **[`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792)**
+
+## Called by
+
+- [`graphics/backend/direct3d`](../backend/direct3d.md): [`Direct3D_PrimitiveHandler_TexturedPreset0`](../../../../src/graphics/backend/direct3d.c#L1327) → [`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352); [`Direct3D_PrimitiveHandler_TexturedPreset1`](../../../../src/graphics/backend/direct3d.c#L1530) → [`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352); [`Direct3D_PrimitiveHandler_TexturedPreset2`](../../../../src/graphics/backend/direct3d.c#L1733) → [`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352); [`Direct3D_PrimitiveHandler_TexturedPreset3`](../../../../src/graphics/backend/direct3d.c#L1936) → [`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352); [`Direct3D_PrimitiveHandler_TexturedPreset4`](../../../../src/graphics/backend/direct3d.c#L2140) → [`GraphicsTexture_CreateDeviceTexture`](../../../../src/graphics/resources/texture.c#L3352)
+- [`graphics/backend/directdraw`](../backend/directdraw.md): [`GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf`](../../../../src/graphics/backend/directdraw.c#L180) → [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792); [`GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf`](../../../../src/graphics/backend/directdraw.c#L180) → [`GraphicsTexture_CreateStagingTexture`](../../../../src/graphics/resources/texture.c#L3700)
+- [`graphics/backend/glide`](../backend/glide.md): [`Glide3_TextureSet_CreateBackend`](../../../../src/graphics/backend/glide.c#L5) → [`GraphicsTexture_SelectPixelFormat`](../../../../src/graphics/resources/texture.c#L3649); [`Glide3_TextureSet_CreateBackend`](../../../../src/graphics/backend/glide.c#L5) → [`GraphicsTexture_RegisterSlot`](../../../../src/graphics/resources/texture.c#L3625); [`Glide3_TextureSet_DestroyBackend`](../../../../src/graphics/backend/glide.c#L577) → [`GraphicsTextureSet_FreeMetadata`](../../../../src/graphics/resources/texture.c#L3548); [`Glide3_Shutdown`](../../../../src/graphics/backend/glide.c#L4199) → [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792)
+- [`graphics/core/runtime`](../core/runtime.md): [`Graphics_Shutdown`](../../../../src/graphics/core/runtime.c#L674) → [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792)
+- [`ui/controls/text`](../../ui/controls/text.md): [`UiFormattedContainer_DrawClipped`](../../../../src/ui/controls/text.c#L3471) → [`GraphicsTextureSource_BlitTiledSourceAlpha`](../../../../src/graphics/resources/texture.c#L328)

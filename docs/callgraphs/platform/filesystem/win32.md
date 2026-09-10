@@ -1,32 +1,44 @@
 # Call graph: `platform/filesystem/win32`
 
+[Source](../../../../src/platform/filesystem/win32.c) · [Header](../../../../include/thandor/platform/filesystem/win32.h) · [Graphviz](win32.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-filesystem-win32)
+
 26 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x00575CB0` **FileSystem_Init** — local: `Win32File_OpenCf`, `Win32File_GetSizeCf`, `Win32File_ReadExactCf`, `Win32File_Close`, `Win32File_GetCurrentDirectoryCf`; cross: `Text_CopyNarrowToUtf16Cf` → `core/text/string`, `WidePath_SplitParentAndLeaf` → `core/text/path`, `ArenaHeap_Alloc` → `core/memory/allocator`, `FatalError_Exit` → `core/error/runtime`, `WidePath_CombineDirectoryAndLeaf` → `core/text/path`, `ArenaHeap_Free` → `core/memory/allocator`, `Package_MountLowPriority` → `assets/package/runtime`
-- `0x005762F0` **Win32File_GetLastWriteDosDateCf** — local: `Win32File_OpenCf`, `Win32File_Close`
-- `0x00576360` **Win32File_GetLastWriteTimeHighCf** — local: `Win32File_OpenCf`, `Win32File_Close`
-- `0x005763C0` **Win32Drive_GetVolumeSerialNumberCf** — local: `Win32File_OpenCf`, `Win32File_Close`
-- `0x00575F40` **Win32FileSystem_RestoreInitialDirectory** — local: `Win32File_SetCurrentDirectoryCf`
-- `0x005766F0` **Win32Drive_CheckMediaReadyCf** — local: `Win32Drive_GetEngineTypeCode`
-- `0x0040F1F0` **FileSystem_WriteBufferToPathCf**
-- `0x00576070` **Win32File_WriteExactOrFlushCf**
-- `0x00576140` **Win32File_GetPositionCf**
-- `0x00576180` **Win32File_SeekCf**
-- `0x005761C0` **Win32File_DeleteCf** — cross: `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`
-- `0x00576210` **Win32File_MoveCf** — cross: `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`
-- `0x00576280` **Win32File_CopyCf** — cross: `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`
-- `0x005764E0` **Win32File_CreateDirectoryRecursiveCf** — cross: `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`, `WidePath_SplitParentAndLeaf` → `core/text/path`
-- `0x005765A0` **Win32File_RemoveDirectoryCf** — cross: `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`
-- `0x005765F0` **Win32Drive_GetFreeAndTotalBytesRegs**
-- `0x005766B0` **Win32Drive_EnumerateLetters**
-- `0x00576790` **Win32Path_ValidateDos83Cf**
-- `0x00576910` **Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf** — cross: `Text_CopyNarrowToUtf16Cf` → `core/text/string`, `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`, `Utf16String_CompareAsciiCaseInsensitiveFlags` → `core/text/string`
-- `0x00576020` **Win32File_ReadExactCf**
-- `0x00576100` **Win32File_GetSizeCf**
-- `0x00576430` **Win32File_GetCurrentDirectoryCf** — cross: `Text_CopyNarrowToUtf16Cf` → `core/text/string`
-- `0x00576490` **Win32File_SetCurrentDirectoryCf** — cross: `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`
-- `0x00576650` **Win32Drive_GetEngineTypeCode**
-- `0x00575F60` **Win32File_OpenCf** — cross: `Package_SetLastErrorPath` → `assets/package/runtime`, `RichTextCommandStream_CopyToNarrowCf` → `assets/text/richtext`
-- `0x00576000` **Win32File_Close**
+- `0x00575CB0` **[`FileSystem_Init`](../../../../src/platform/filesystem/win32.c#L5)** — local: [`Win32File_OpenCf`](../../../../src/platform/filesystem/win32.c#L951), [`Win32File_GetSizeCf`](../../../../src/platform/filesystem/win32.c#L864), [`Win32File_ReadExactCf`](../../../../src/platform/filesystem/win32.c#L848), [`Win32File_Close`](../../../../src/platform/filesystem/win32.c#L1006), [`Win32File_GetCurrentDirectoryCf`](../../../../src/platform/filesystem/win32.c#L880); cross: [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md), [`WidePath_SplitParentAndLeaf`](../../../../src/core/text/path.c#L71) → [`core/text/path`](../../core/text/path.md), [`ArenaHeap_Alloc`](../../../../src/core/memory/allocator.c#L183) → [`core/memory/allocator`](../../core/memory/allocator.md), [`FatalError_Exit`](../../../../src/core/error/runtime.c#L168) → [`core/error/runtime`](../../core/error/runtime.md), [`WidePath_CombineDirectoryAndLeaf`](../../../../src/core/text/path.c#L144) → [`core/text/path`](../../core/text/path.md), [`ArenaHeap_Free`](../../../../src/core/memory/allocator.c#L264) → [`core/memory/allocator`](../../core/memory/allocator.md), [`Package_MountLowPriority`](../../../../src/assets/package/runtime.c#L255) → [`assets/package/runtime`](../../assets/package/runtime.md)
+- `0x005762F0` **[`Win32File_GetLastWriteDosDateCf`](../../../../src/platform/filesystem/win32.c#L162)** — local: [`Win32File_OpenCf`](../../../../src/platform/filesystem/win32.c#L951), [`Win32File_Close`](../../../../src/platform/filesystem/win32.c#L1006)
+- `0x00576360` **[`Win32File_GetLastWriteTimeHighCf`](../../../../src/platform/filesystem/win32.c#L194)** — local: [`Win32File_OpenCf`](../../../../src/platform/filesystem/win32.c#L951), [`Win32File_Close`](../../../../src/platform/filesystem/win32.c#L1006)
+- `0x005763C0` **[`Win32Drive_GetVolumeSerialNumberCf`](../../../../src/platform/filesystem/win32.c#L222)** — local: [`Win32File_OpenCf`](../../../../src/platform/filesystem/win32.c#L951), [`Win32File_Close`](../../../../src/platform/filesystem/win32.c#L1006)
+- `0x00575F40` **[`Win32FileSystem_RestoreInitialDirectory`](../../../../src/platform/filesystem/win32.c#L253)** — local: [`Win32File_SetCurrentDirectoryCf`](../../../../src/platform/filesystem/win32.c#L903)
+- `0x005766F0` **[`Win32Drive_CheckMediaReadyCf`](../../../../src/platform/filesystem/win32.c#L267)** — local: [`Win32Drive_GetEngineTypeCode`](../../../../src/platform/filesystem/win32.c#L924)
+- `0x0040F1F0` **[`FileSystem_WriteBufferToPathCf`](../../../../src/platform/filesystem/win32.c#L289)**
+- `0x00576070` **[`Win32File_WriteExactOrFlushCf`](../../../../src/platform/filesystem/win32.c#L316)**
+- `0x00576140` **[`Win32File_GetPositionCf`](../../../../src/platform/filesystem/win32.c#L343)**
+- `0x00576180` **[`Win32File_SeekCf`](../../../../src/platform/filesystem/win32.c#L359)**
+- `0x005761C0` **[`Win32File_DeleteCf`](../../../../src/platform/filesystem/win32.c#L377)** — cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md)
+- `0x00576210` **[`Win32File_MoveCf`](../../../../src/platform/filesystem/win32.c#L398)** — cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md)
+- `0x00576280` **[`Win32File_CopyCf`](../../../../src/platform/filesystem/win32.c#L420)** — cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md)
+- `0x005764E0` **[`Win32File_CreateDirectoryRecursiveCf`](../../../../src/platform/filesystem/win32.c#L443)** — cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md), [`WidePath_SplitParentAndLeaf`](../../../../src/core/text/path.c#L71) → [`core/text/path`](../../core/text/path.md)
+- `0x005765A0` **[`Win32File_RemoveDirectoryCf`](../../../../src/platform/filesystem/win32.c#L488)** — cross: [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md)
+- `0x005765F0` **[`Win32Drive_GetFreeAndTotalBytesRegs`](../../../../src/platform/filesystem/win32.c#L507)**
+- `0x005766B0` **[`Win32Drive_EnumerateLetters`](../../../../src/platform/filesystem/win32.c#L538)**
+- `0x00576790` **[`Win32Path_ValidateDos83Cf`](../../../../src/platform/filesystem/win32.c#L568)**
+- `0x00576910` **[`Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf`](../../../../src/platform/filesystem/win32.c#L724)** — cross: [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md), [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md), [`Utf16String_CompareAsciiCaseInsensitiveFlags`](../../../../src/core/text/string.c#L147) → [`core/text/string`](../../core/text/string.md)
+- `0x00576020` **[`Win32File_ReadExactCf`](../../../../src/platform/filesystem/win32.c#L848)**
+- `0x00576100` **[`Win32File_GetSizeCf`](../../../../src/platform/filesystem/win32.c#L864)**
+- `0x00576430` **[`Win32File_GetCurrentDirectoryCf`](../../../../src/platform/filesystem/win32.c#L880)** — cross: [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md)
+- `0x00576490` **[`Win32File_SetCurrentDirectoryCf`](../../../../src/platform/filesystem/win32.c#L903)** — cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md)
+- `0x00576650` **[`Win32Drive_GetEngineTypeCode`](../../../../src/platform/filesystem/win32.c#L924)**
+- `0x00575F60` **[`Win32File_OpenCf`](../../../../src/platform/filesystem/win32.c#L951)** — cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../../assets/package/runtime.md), [`RichTextCommandStream_CopyToNarrowCf`](../../../../src/assets/text/richtext.c#L598) → [`assets/text/richtext`](../../assets/text/richtext.md)
+- `0x00576000` **[`Win32File_Close`](../../../../src/platform/filesystem/win32.c#L1006)**
+
+## Called by
+
+- [`assets/resource/runtime`](../../assets/resource/runtime.md): [`ResourceRegistration_OpenSourceCf`](../../../../src/assets/resource/runtime.c#L5) → [`FileSystem_WriteBufferToPathCf`](../../../../src/platform/filesystem/win32.c#L289)
+- [`core/memory/synchronization`](../../core/memory/synchronization.md): [`Runtime_Shutdown`](../../../../src/core/memory/synchronization.c#L79) → [`Win32FileSystem_RestoreInitialDirectory`](../../../../src/platform/filesystem/win32.c#L253)
+- [`core/settings/persistent`](../../core/settings/persistent.md): [`PersistentSettings_Flush`](../../../../src/core/settings/persistent.c#L5) → [`FileSystem_WriteBufferToPathCf`](../../../../src/platform/filesystem/win32.c#L289)
+- [`gameplay/session/level`](../../gameplay/session/level.md): [`InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf`](../../../../src/gameplay/session/level.c#L1596) → [`FileSystem_WriteBufferToPathCf`](../../../../src/platform/filesystem/win32.c#L289)
+- [`platform/bootstrap/runtime`](../bootstrap/runtime.md): [`ProcessEntry`](../../../../src/platform/bootstrap/runtime.c#L5) → [`FileSystem_Init`](../../../../src/platform/filesystem/win32.c#L5)
+- [`ui/ingame/runtime`](../../ui/ingame/runtime.md): [`InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf`](../../../../src/ui/ingame/runtime.c#L5) → [`FileSystem_WriteBufferToPathCf`](../../../../src/platform/filesystem/win32.c#L289)
+- [`world/terrain/grid`](../../world/terrain/grid.md): [`FieldGrid_SaveAssetImageFromRuntimeStateCf`](../../../../src/world/terrain/grid.c#L2689) → [`FileSystem_WriteBufferToPathCf`](../../../../src/platform/filesystem/win32.c#L289)

@@ -1,21 +1,39 @@
 # Call graph: `graphics/render/primitives`
 
+[Source](../../../../src/graphics/render/primitives.c) · [Header](../../../../include/thandor/graphics/render/primitives.h) · [Graphviz](primitives.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-render-primitives)
+
 15 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x00486080` **GraphicsPrimitiveQueue_RadixSortForRendering**
-- `0x004D0A10` **GraphicsPrimitiveQueue_AllocateGlobalPool**
-- `0x004D0A40` **GraphicsPrimitiveQueue_ResetGlobal**
-- `0x004D0A70` **GraphicsPrimitiveQueue_Free**
-- `0x004D0A90` **GraphicsPrimitiveQueue_GetCount**
-- `0x004D0AA0` **GraphicsPrimitiveQueue_Begin**
-- `0x004D0AE0` **GraphicsPrimitiveQueue_Next**
-- `0x004D0B20` **GraphicsPrimitiveQueue_AppendTriangle**
-- `0x004D0C80` **GraphicsPrimitiveQueue_SetVertexColors**
-- `0x004D0D00` **GraphicsPrimitiveQueue_SetMaterial**
-- `0x004D0D50` **GraphicsPrimitiveQueue_OffsetTextureCoordinates**
-- `0x004D0DA0` **GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle**
-- `0x004D0F20` **GraphicsPrimitiveQueue_AppendTexturedTriangleRegs**
-- `0x004FFC10` **DepthInterval_BuildBinMask**
-- `0x004FFC50` **DepthBinMasks_OverlapCf**
+- `0x00486080` **[`GraphicsPrimitiveQueue_RadixSortForRendering`](../../../../src/graphics/render/primitives.c#L5)**
+- `0x004D0A10` **[`GraphicsPrimitiveQueue_AllocateGlobalPool`](../../../../src/graphics/render/primitives.c#L260)**
+- `0x004D0A40` **[`GraphicsPrimitiveQueue_ResetGlobal`](../../../../src/graphics/render/primitives.c#L280)**
+- `0x004D0A70` **[`GraphicsPrimitiveQueue_Free`](../../../../src/graphics/render/primitives.c#L301)**
+- `0x004D0A90` **[`GraphicsPrimitiveQueue_GetCount`](../../../../src/graphics/render/primitives.c#L312)**
+- `0x004D0AA0` **[`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322)**
+- `0x004D0AE0` **[`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341)**
+- `0x004D0B20` **[`GraphicsPrimitiveQueue_AppendTriangle`](../../../../src/graphics/render/primitives.c#L361)**
+- `0x004D0C80` **[`GraphicsPrimitiveQueue_SetVertexColors`](../../../../src/graphics/render/primitives.c#L430)**
+- `0x004D0D00` **[`GraphicsPrimitiveQueue_SetMaterial`](../../../../src/graphics/render/primitives.c#L458)**
+- `0x004D0D50` **[`GraphicsPrimitiveQueue_OffsetTextureCoordinates`](../../../../src/graphics/render/primitives.c#L483)**
+- `0x004D0DA0` **[`GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle`](../../../../src/graphics/render/primitives.c#L515)**
+- `0x004D0F20` **[`GraphicsPrimitiveQueue_AppendTexturedTriangleRegs`](../../../../src/graphics/render/primitives.c#L605)**
+- `0x004FFC10` **[`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689)**
+- `0x004FFC50` **[`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716)**
+
+## Called by
+
+- [`gameplay/ai/combat`](../../gameplay/ai/combat.md): [`AiCombatTarget_SelectBestCandidate`](../../../../src/gameplay/ai/combat.c#L133) → [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689); [`AiCombatTarget_EvaluateCandidateScore`](../../../../src/gameplay/ai/combat.c#L218) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716)
+- [`gameplay/army/placement`](../../gameplay/army/placement.md): [`ArmyCollision_TestPointAgainstRuntimeListCf`](../../../../src/gameplay/army/placement.c#L653) → [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689); [`ArmyCollision_TestPointAgainstRuntimeListCf`](../../../../src/gameplay/army/placement.c#L653) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716); [`ArmyCollision_FindBlockingRuntimeForCurrentUnitCf`](../../../../src/gameplay/army/placement.c#L705) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716); [`ArmyPlacementCollision_TestPointAgainstRuntimeListCf`](../../../../src/gameplay/army/placement.c#L794) → [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689); [`ArmyPlacementCollision_TestPointAgainstRuntimeListCf`](../../../../src/gameplay/army/placement.c#L794) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716); [`ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf`](../../../../src/gameplay/army/placement.c#L868) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716)
+- [`graphics/backend/glide`](../backend/glide.md): [`Glide3_DrawPrimitiveQueue`](../../../../src/graphics/backend/glide.c#L328) → [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322); [`Glide3_DrawPrimitiveQueue`](../../../../src/graphics/backend/glide.c#L328) → [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341)
+- [`graphics/backend/software`](../backend/software.md): [`SoftwareRenderer_DrawQueue16Bit`](../../../../src/graphics/backend/software.c#L126) → [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322); [`SoftwareRenderer_DrawQueue16Bit`](../../../../src/graphics/backend/software.c#L126) → [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341); [`SoftwareRenderer_DrawQueueNon16Bit`](../../../../src/graphics/backend/software.c#L159) → [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322); [`SoftwareRenderer_DrawQueueNon16Bit`](../../../../src/graphics/backend/software.c#L159) → [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341); [`SoftwareRenderer_DrawQueueAuxiliary`](../../../../src/graphics/backend/software.c#L192) → [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322); [`SoftwareRenderer_DrawQueueAuxiliary`](../../../../src/graphics/backend/software.c#L192) → [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341)
+- [`graphics/core/runtime`](../core/runtime.md): [`Graphics_DrawPrimitiveQueue`](../../../../src/graphics/core/runtime.c#L885) → [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322); [`Graphics_DrawPrimitiveQueue`](../../../../src/graphics/core/runtime.c#L885) → [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341)
+- [`graphics/render/model`](model.md): [`ModelRender_SubmitTriangle`](../../../../src/graphics/render/model.c#L285) → [`GraphicsPrimitiveQueue_AppendTriangle`](../../../../src/graphics/render/primitives.c#L361); [`ModelRender_SubmitTriangle`](../../../../src/graphics/render/model.c#L285) → [`GraphicsPrimitiveQueue_SetVertexColors`](../../../../src/graphics/render/primitives.c#L430); [`ModelRender_SubmitTriangle`](../../../../src/graphics/render/model.c#L285) → [`GraphicsPrimitiveQueue_SetMaterial`](../../../../src/graphics/render/primitives.c#L458); [`ModelRender_SubmitTriangle`](../../../../src/graphics/render/model.c#L285) → [`GraphicsPrimitiveQueue_OffsetTextureCoordinates`](../../../../src/graphics/render/primitives.c#L483); [`ModelRender_SubmitTriangleAlternatePath`](../../../../src/graphics/render/model.c#L535) → [`GraphicsPrimitiveQueue_AppendTriangle`](../../../../src/graphics/render/primitives.c#L361); [`ModelRender_SubmitTriangleAlternatePath`](../../../../src/graphics/render/model.c#L535) → [`GraphicsPrimitiveQueue_SetVertexColors`](../../../../src/graphics/render/primitives.c#L430); [`ModelRender_SubmitTriangleAlternatePath`](../../../../src/graphics/render/model.c#L535) → [`GraphicsPrimitiveQueue_SetMaterial`](../../../../src/graphics/render/primitives.c#L458)
+- [`graphics/render/projection`](projection.md): [`GraphicsOffscreen_RenderModelListToTextureSourceCf`](../../../../src/graphics/render/projection.c#L5) → [`GraphicsPrimitiveQueue_ResetGlobal`](../../../../src/graphics/render/primitives.c#L280); [`GraphicsOffscreen_RenderModelListToTextureSourceCf`](../../../../src/graphics/render/projection.c#L5) → [`GraphicsPrimitiveQueue_RadixSortForRendering`](../../../../src/graphics/render/primitives.c#L5)
+- [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md): [`GameRuntime_InitializeSpatialAudioAndRenderingCf`](../../../../src/platform/bootstrap/runtime.c#L561) → [`GraphicsPrimitiveQueue_AllocateGlobalPool`](../../../../src/graphics/render/primitives.c#L260)
+- [`ui/frontend/runtime`](../../ui/frontend/runtime.md): [`FrontendModelPointerContext_DrawClipped`](../../../../src/ui/frontend/runtime.c#L806) → [`GraphicsPrimitiveQueue_ResetGlobal`](../../../../src/graphics/render/primitives.c#L280); [`FrontendModelPointerContext_DrawClipped`](../../../../src/ui/frontend/runtime.c#L806) → [`GraphicsPrimitiveQueue_GetCount`](../../../../src/graphics/render/primitives.c#L312)
+- [`world/model/hierarchy`](../../world/model/hierarchy.md): [`ModelNodeRuntime_UpdateDepthBinMasks`](../../../../src/world/model/hierarchy.c#L260) → [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689)
+- [`world/model/runtime`](../../world/model/runtime.md): [`ModelRuntime_RaycastCandidateListNearestCf`](../../../../src/world/model/runtime.c#L254) → [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689); [`ModelRuntime_RaycastCandidateListNearestCf`](../../../../src/world/model/runtime.c#L254) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716)
+- [`world/pathing/grid`](../../world/pathing/grid.md): [`EntityPathing_RebuildOverlappingGroupRoutes`](../../../../src/world/pathing/grid.c#L844) → [`DepthInterval_BuildBinMask`](../../../../src/graphics/render/primitives.c#L689); [`EntityPathing_RebuildOverlappingGroupRoutes`](../../../../src/world/pathing/grid.c#L844) → [`DepthBinMasks_OverlapCf`](../../../../src/graphics/render/primitives.c#L716)
+- [`world/terrain/projection`](../../world/terrain/projection.md): [`TerrainProjectedTriangle_ClipInterpolateAndQueueTextured`](../../../../src/world/terrain/projection.c#L1838) → [`GraphicsPrimitiveQueue_AppendTexturedTriangleRegs`](../../../../src/graphics/render/primitives.c#L605); [`TerrainProjectedTriangle_ClipInterpolateAndQueueTextured`](../../../../src/world/terrain/projection.c#L1838) → [`GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle`](../../../../src/graphics/render/primitives.c#L515)

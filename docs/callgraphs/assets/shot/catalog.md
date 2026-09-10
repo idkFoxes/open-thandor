@@ -1,14 +1,27 @@
 # Call graph: `assets/shot/catalog`
 
+[Source](../../../../src/assets/shot/catalog.c) · [Header](../../../../include/thandor/assets/shot/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-shot-catalog)
+
 8 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x0052B4D0` **ShotAsset_PrepareEntries** — local: `ShotDefinition_RegisterAndResolveReferencesCf`; cross: `Package_SetLastErrorPath` → `assets/package/runtime`
-- `0x0052B7E0` **ShotDefinitions_ValidateTerrainMaterialReferences**
-- `0x0052B860` **ShotDefinitionRegistry_FindByIdWithErrorCf**
-- `0x0052B8C0` **ShotDefinition_ComputeLaunchAnglesRegs** — cross: `FixedMath_Vector2AngleAndLengthRegs` → `core/math/fixed`, `FixedMath_UInt64Sqrt` → `core/math/fixed`, `FixedMath_Atan2Angle16` → `core/math/fixed`, `FixedMath_VectorToAngles3Regs` → `core/math/fixed`
-- `0x0052BCE0` **ShotDefinition_ComputeSelectionRange**
-- `0x0052BD50` **ShotDefinition_GetModeRangeLimitEbx**
-- `0x0052BD80` **ShotDefinition_ComputeMode3LeadAdjustment**
-- `0x0052B350` **ShotDefinition_RegisterAndResolveReferencesCf** — cross: `ShotRuntime_FindDefinitionByIdCf` → `world/shots/runtime`, `WidePath_SetExtensionCode` → `core/text/path`, `Package_LoadEntry` → `assets/package/runtime`, `SpriteAssetRegistry_FindById` → `assets/sprite/catalog`, `SpriteAsset_RegisterAndRelocatePointers` → `assets/sprite/catalog`, `Resource_Release` → `assets/resource/runtime`, `EffectDefinitionRegistry_FindByIdWithErrorCf` → `assets/effect/catalog`
+- `0x0052B4D0` **[`ShotAsset_PrepareEntries`](../../../../src/assets/shot/catalog.c#L5)** — local: [`ShotDefinition_RegisterAndResolveReferencesCf`](../../../../src/assets/shot/catalog.c#L235); cross: [`Package_SetLastErrorPath`](../../../../src/assets/package/runtime.c#L737) → [`assets/package/runtime`](../package/runtime.md)
+- `0x0052B7E0` **[`ShotDefinitions_ValidateTerrainMaterialReferences`](../../../../src/assets/shot/catalog.c#L46)**
+- `0x0052B860` **[`ShotDefinitionRegistry_FindByIdWithErrorCf`](../../../../src/assets/shot/catalog.c#L87)**
+- `0x0052B8C0` **[`ShotDefinition_ComputeLaunchAnglesRegs`](../../../../src/assets/shot/catalog.c#L117)** — cross: [`FixedMath_Vector2AngleAndLengthRegs`](../../../../src/core/math/fixed.c#L111) → [`core/math/fixed`](../../core/math/fixed.md), [`FixedMath_UInt64Sqrt`](../../../../src/core/math/fixed.c#L1243) → [`core/math/fixed`](../../core/math/fixed.md), [`FixedMath_Atan2Angle16`](../../../../src/core/math/fixed.c#L1159) → [`core/math/fixed`](../../core/math/fixed.md), [`FixedMath_VectorToAngles3Regs`](../../../../src/core/math/fixed.c#L1031) → [`core/math/fixed`](../../core/math/fixed.md)
+- `0x0052BCE0` **[`ShotDefinition_ComputeSelectionRange`](../../../../src/assets/shot/catalog.c#L176)**
+- `0x0052BD50` **[`ShotDefinition_GetModeRangeLimitEbx`](../../../../src/assets/shot/catalog.c#L205)**
+- `0x0052BD80` **[`ShotDefinition_ComputeMode3LeadAdjustment`](../../../../src/assets/shot/catalog.c#L217)**
+- `0x0052B350` **[`ShotDefinition_RegisterAndResolveReferencesCf`](../../../../src/assets/shot/catalog.c#L235)** — cross: [`ShotRuntime_FindDefinitionByIdCf`](../../../../src/world/shots/runtime.c#L181) → [`world/shots/runtime`](../../world/shots/runtime.md), [`WidePath_SetExtensionCode`](../../../../src/core/text/path.c#L36) → [`core/text/path`](../../core/text/path.md), [`Package_LoadEntry`](../../../../src/assets/package/runtime.c#L402) → [`assets/package/runtime`](../package/runtime.md), [`SpriteAssetRegistry_FindById`](../../../../src/assets/sprite/catalog.c#L29) → [`assets/sprite/catalog`](../sprite/catalog.md), [`SpriteAsset_RegisterAndRelocatePointers`](../../../../src/assets/sprite/catalog.c#L50) → [`assets/sprite/catalog`](../sprite/catalog.md), [`Resource_Release`](../../../../src/assets/resource/runtime.c#L134) → [`assets/resource/runtime`](../resource/runtime.md), [`EffectDefinitionRegistry_FindByIdWithErrorCf`](../../../../src/assets/effect/catalog.c#L165) → [`assets/effect/catalog`](../effect/catalog.md)
+
+## Called by
+
+- [`assets/effect/catalog`](../effect/catalog.md): [`EffectDefinitions_ResolveCrossReferences`](../../../../src/assets/effect/catalog.c#L46) → [`ShotDefinitionRegistry_FindByIdWithErrorCf`](../../../../src/assets/shot/catalog.c#L87)
+- [`assets/model/definitions`](../model/definitions.md): [`ModelDefinition_RegisterAndResolveReferencesCf`](../../../../src/assets/model/definitions.c#L485) → [`ShotDefinitionRegistry_FindByIdWithErrorCf`](../../../../src/assets/shot/catalog.c#L87)
+- [`gameplay/army/combat`](../../gameplay/army/combat.md): [`ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments`](../../../../src/gameplay/army/combat.c#L5) → [`ShotDefinition_ComputeLaunchAnglesRegs`](../../../../src/assets/shot/catalog.c#L117)
+- [`gameplay/army/movement`](../../gameplay/army/movement.md): [`ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA`](../../../../src/gameplay/army/movement.c#L400) → [`ShotDefinition_ComputeLaunchAnglesRegs`](../../../../src/assets/shot/catalog.c#L117); [`ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB`](../../../../src/gameplay/army/movement.c#L582) → [`ShotDefinition_ComputeLaunchAnglesRegs`](../../../../src/assets/shot/catalog.c#L117)
+- [`gameplay/army/runtime`](../../gameplay/army/runtime.md): [`ArmyRuntime_ResolveShotAimPointCf`](../../../../src/gameplay/army/runtime.c#L1770) → [`ShotDefinition_GetModeRangeLimitEbx`](../../../../src/assets/shot/catalog.c#L205); [`ArmyRuntime_ResolveShotAimPointCf`](../../../../src/gameplay/army/runtime.c#L1770) → [`ShotDefinition_ComputeMode3LeadAdjustment`](../../../../src/assets/shot/catalog.c#L217)
+- [`gameplay/session/level`](../../gameplay/session/level.md): [`InGameLevelRuntime_LoadResourcesAfterDefaultResetCf`](../../../../src/gameplay/session/level.c#L42) → [`ShotAsset_PrepareEntries`](../../../../src/assets/shot/catalog.c#L5); [`InGameLevelRuntime_LoadResourcesAfterDefaultResetCf`](../../../../src/gameplay/session/level.c#L42) → [`ShotDefinitions_ValidateTerrainMaterialReferences`](../../../../src/assets/shot/catalog.c#L46); [`InGameLevelRuntime_LoadResourcesAfterExternalTablesCf`](../../../../src/gameplay/session/level.c#L917) → [`ShotAsset_PrepareEntries`](../../../../src/assets/shot/catalog.c#L5); [`InGameLevelRuntime_LoadResourcesAfterExternalTablesCf`](../../../../src/gameplay/session/level.c#L917) → [`ShotDefinitions_ValidateTerrainMaterialReferences`](../../../../src/assets/shot/catalog.c#L46)
+- [`world/model/hierarchy`](../../world/model/hierarchy.md): [`ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics`](../../../../src/world/model/hierarchy.c#L1187) → [`ShotDefinition_ComputeSelectionRange`](../../../../src/assets/shot/catalog.c#L176)
+- [`world/shots/runtime`](../../world/shots/runtime.md): [`ShotRuntimePool_CreateProjectileFromDefinition`](../../../../src/world/shots/runtime.c#L276) → [`ShotDefinition_ComputeLaunchAnglesRegs`](../../../../src/assets/shot/catalog.c#L117)

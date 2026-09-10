@@ -1,40 +1,49 @@
 # Call graph: `graphics/backend/glide`
 
+[Source](../../../../src/graphics/backend/glide.c) · [Header](../../../../include/thandor/graphics/backend/glide.h) · [Graphviz](glide.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-glide)
+
 34 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x005801B0` **Glide3_TextureSet_CreateBackend** — local: `Glide3_TextureResource_Initialize`, `Glide3_TextureResource_Release`; cross: `GraphicsTexture_SelectPixelFormat` → `graphics/resources/texture`, `GraphicsTexture_RegisterSlot` → `graphics/resources/texture`
-- `0x00580430` **Glide3_TextureResource_ReinitializeAll** — local: `Glide3_TextureResource_Release`, `Glide3_TextureResource_Initialize`
-- `0x0057F0C0` **GlideBackend_ShutdownWrapper** — local: `Glide3_Shutdown`
-- `0x0057F0F0` **GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf** — local: `Glide3_TextureResource_Initialize`; cross: `DynDLL_Load` → `platform/bootstrap/runtime`, `DynAPI_Resolve` → `platform/bootstrap/runtime`, `DynDLL_Unload` → `platform/bootstrap/runtime`
-- `0x0057F7B0` **Glide3_DrawPrimitiveQueue** — local: `Glide3_TextureResource_EnsureResident`; cross: `GraphicsPrimitiveQueue_Begin` → `graphics/render/primitives`, `GraphicsPrimitiveQueue_Next` → `graphics/render/primitives`
-- `0x005802F0` **Glide3_TextureSet_DestroyBackend** — local: `Glide3_TextureResource_Release`; cross: `GraphicsTextureSet_FreeMetadata` → `graphics/resources/texture`
-- `0x00580470` **Glide3_Framebuffer_Present** — local: `Glide3_Cursor_ComposeBeforePresent`
-- `0x0057EE90` **Glide3_InitAndEnumerate** — cross: `DynDLL_Load` → `platform/bootstrap/runtime`, `DynAPI_Resolve` → `platform/bootstrap/runtime`, `DynDLL_Unload` → `platform/bootstrap/runtime`, `Text_CopyNarrowToUtf16Cf` → `core/text/string`
-- `0x0057F0D0` **GlideBackend_BeginSceneNoOp**
-- `0x0057F0E0` **GlideBackend_EndSceneNoOp**
-- `0x0057F740` **Glide3_ClearViewport**
-- `0x00580370` **Glide3_TextureSet_RefreshColor**
-- `0x005803D0` **Glide3_TextureSet_RefreshAlpha**
-- `0x00580540` **Glide3_Framebuffer_CaptureRegion**
-- `0x005806E0` **Glide3_Cursor_RestoreAfterPresentNoOp**
-- `0x005807B0` **Glide3_TextureUpload_1x**
-- `0x00580960` **Glide3_TextureUpload_2x**
-- `0x00580C60` **Glide3_TextureUpload_4x**
-- `0x00581150` **Glide3_TextureSource_BlitSourceAlpha** — cross: `SoftwareTextureSource_BlitSourceAlpha16` → `graphics/backend/software`
-- `0x005814D0` **Glide3_TextureSource_BlitHalfSourceRgb** — cross: `SoftwareTextureSource_BlitHalfSourceRgb16` → `graphics/backend/software`
-- `0x005817F0` **Glide3_TextureSource_StretchDirectColorBilinear** — cross: `SoftwareTextureSource_StretchDirectColorBilinear16` → `graphics/backend/software`
-- `0x00581A90` **Glide3_TextureSource_BlitIntegerScaledSourceAlpha** — cross: `SoftwareTextureSource_BlitHalfSourceRgb16` → `graphics/backend/software`
-- `0x00581EF0` **Glide3_TextureSource_BlitSourceAlphaPaletteBank** — cross: `SoftwareTextureSource_BlitSourceAlphaPaletteBank16` → `graphics/backend/software`
-- `0x00582290` **Glide3_TextureSource_BlitSaturatedAddRgb** — cross: `SoftwareTextureSource_BlitSaturatedAddRgb16` → `graphics/backend/software`
-- `0x00582580` **Glide3_TextureSource_BlitHalfRgbSaturatedAdd** — cross: `SoftwareTextureSource_BlitHalfRgbSaturatedAdd16` → `graphics/backend/software`
-- `0x00582870` **Glide3_TextureSource_BlitModulatedSourceAlpha** — cross: `SoftwareTextureSource_BlitHalfRgbSaturatedAdd16` → `graphics/backend/software`
-- `0x00582D30` **Glide3_Framebuffer_FillRectArgb** — cross: `SoftwareFramebuffer_FillRectArgb16` → `graphics/backend/software`
-- `0x005806F0` **Glide3_Cursor_ComposeBeforePresent** — local: `Glide3_Framebuffer_BeginAccess`, `Glide3_Framebuffer_EndAccess`
-- `0x0057F5C0` **Glide3_Shutdown** — cross: `GraphicsTexture_ReleaseObjects` → `graphics/resources/texture`, `DynDLL_Unload` → `platform/bootstrap/runtime`
-- `0x0057F630` **Glide3_Framebuffer_BeginAccess**
-- `0x0057F6E0` **Glide3_Framebuffer_EndAccess**
-- `0x0057FF50` **Glide3_TextureResource_EnsureResident**
-- `0x0057FD40` **Glide3_TextureResource_Initialize**
-- `0x0057FE80` **Glide3_TextureResource_Release**
+- `0x005801B0` **[`Glide3_TextureSet_CreateBackend`](../../../../src/graphics/backend/glide.c#L5)** — local: [`Glide3_TextureResource_Initialize`](../../../../src/graphics/backend/glide.c#L4392), [`Glide3_TextureResource_Release`](../../../../src/graphics/backend/glide.c#L4463); cross: [`GraphicsTexture_SelectPixelFormat`](../../../../src/graphics/resources/texture.c#L3649) → [`graphics/resources/texture`](../resources/texture.md), [`GraphicsTexture_RegisterSlot`](../../../../src/graphics/resources/texture.c#L3625) → [`graphics/resources/texture`](../resources/texture.md)
+- `0x00580430` **[`Glide3_TextureResource_ReinitializeAll`](../../../../src/graphics/backend/glide.c#L74)** — local: [`Glide3_TextureResource_Release`](../../../../src/graphics/backend/glide.c#L4463), [`Glide3_TextureResource_Initialize`](../../../../src/graphics/backend/glide.c#L4392)
+- `0x0057F0C0` **[`GlideBackend_ShutdownWrapper`](../../../../src/graphics/backend/glide.c#L102)** — local: [`Glide3_Shutdown`](../../../../src/graphics/backend/glide.c#L4199)
+- `0x0057F0F0` **[`GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf`](../../../../src/graphics/backend/glide.c#L115)** — local: [`Glide3_TextureResource_Initialize`](../../../../src/graphics/backend/glide.c#L4392); cross: [`DynDLL_Load`](../../../../src/platform/bootstrap/runtime.c#L294) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md), [`DynAPI_Resolve`](../../../../src/platform/bootstrap/runtime.c#L259) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md), [`DynDLL_Unload`](../../../../src/platform/bootstrap/runtime.c#L321) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md)
+- `0x0057F7B0` **[`Glide3_DrawPrimitiveQueue`](../../../../src/graphics/backend/glide.c#L328)** — local: [`Glide3_TextureResource_EnsureResident`](../../../../src/graphics/backend/glide.c#L4289); cross: [`GraphicsPrimitiveQueue_Begin`](../../../../src/graphics/render/primitives.c#L322) → [`graphics/render/primitives`](../render/primitives.md), [`GraphicsPrimitiveQueue_Next`](../../../../src/graphics/render/primitives.c#L341) → [`graphics/render/primitives`](../render/primitives.md)
+- `0x005802F0` **[`Glide3_TextureSet_DestroyBackend`](../../../../src/graphics/backend/glide.c#L577)** — local: [`Glide3_TextureResource_Release`](../../../../src/graphics/backend/glide.c#L4463); cross: [`GraphicsTextureSet_FreeMetadata`](../../../../src/graphics/resources/texture.c#L3548) → [`graphics/resources/texture`](../resources/texture.md)
+- `0x00580470` **[`Glide3_Framebuffer_Present`](../../../../src/graphics/backend/glide.c#L625)** — local: [`Glide3_Cursor_ComposeBeforePresent`](../../../../src/graphics/backend/glide.c#L4164)
+- `0x0057EE90` **[`Glide3_InitAndEnumerate`](../../../../src/graphics/backend/glide.c#L692)** — cross: [`DynDLL_Load`](../../../../src/platform/bootstrap/runtime.c#L294) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md), [`DynAPI_Resolve`](../../../../src/platform/bootstrap/runtime.c#L259) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md), [`DynDLL_Unload`](../../../../src/platform/bootstrap/runtime.c#L321) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md), [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md)
+- `0x0057F0D0` **[`GlideBackend_BeginSceneNoOp`](../../../../src/graphics/backend/glide.c#L807)**
+- `0x0057F0E0` **[`GlideBackend_EndSceneNoOp`](../../../../src/graphics/backend/glide.c#L818)**
+- `0x0057F740` **[`Glide3_ClearViewport`](../../../../src/graphics/backend/glide.c#L829)**
+- `0x00580370` **[`Glide3_TextureSet_RefreshColor`](../../../../src/graphics/backend/glide.c#L852)**
+- `0x005803D0` **[`Glide3_TextureSet_RefreshAlpha`](../../../../src/graphics/backend/glide.c#L877)**
+- `0x00580540` **[`Glide3_Framebuffer_CaptureRegion`](../../../../src/graphics/backend/glide.c#L902)**
+- `0x005806E0` **[`Glide3_Cursor_RestoreAfterPresentNoOp`](../../../../src/graphics/backend/glide.c#L980)**
+- `0x005807B0` **[`Glide3_TextureUpload_1x`](../../../../src/graphics/backend/glide.c#L991)**
+- `0x00580960` **[`Glide3_TextureUpload_2x`](../../../../src/graphics/backend/glide.c#L1093)**
+- `0x00580C60` **[`Glide3_TextureUpload_4x`](../../../../src/graphics/backend/glide.c#L1371)**
+- `0x00581150` **[`Glide3_TextureSource_BlitSourceAlpha`](../../../../src/graphics/backend/glide.c#L1648)** — cross: [`SoftwareTextureSource_BlitSourceAlpha16`](../../../../src/graphics/backend/software.c#L423) → [`graphics/backend/software`](software.md)
+- `0x005814D0` **[`Glide3_TextureSource_BlitHalfSourceRgb`](../../../../src/graphics/backend/glide.c#L1952)** — cross: [`SoftwareTextureSource_BlitHalfSourceRgb16`](../../../../src/graphics/backend/software.c#L1011) → [`graphics/backend/software`](software.md)
+- `0x005817F0` **[`Glide3_TextureSource_StretchDirectColorBilinear`](../../../../src/graphics/backend/glide.c#L2237)** — cross: [`SoftwareTextureSource_StretchDirectColorBilinear16`](../../../../src/graphics/backend/software.c#L1563) → [`graphics/backend/software`](software.md)
+- `0x00581A90` **[`Glide3_TextureSource_BlitIntegerScaledSourceAlpha`](../../../../src/graphics/backend/glide.c#L2571)** — cross: [`SoftwareTextureSource_BlitHalfSourceRgb16`](../../../../src/graphics/backend/software.c#L1011) → [`graphics/backend/software`](software.md)
+- `0x00581EF0` **[`Glide3_TextureSource_BlitSourceAlphaPaletteBank`](../../../../src/graphics/backend/glide.c#L2870)** — cross: [`SoftwareTextureSource_BlitSourceAlphaPaletteBank16`](../../../../src/graphics/backend/software.c#L2786) → [`graphics/backend/software`](software.md)
+- `0x00582290` **[`Glide3_TextureSource_BlitSaturatedAddRgb`](../../../../src/graphics/backend/glide.c#L3173)** — cross: [`SoftwareTextureSource_BlitSaturatedAddRgb16`](../../../../src/graphics/backend/software.c#L3372) → [`graphics/backend/software`](software.md)
+- `0x00582580` **[`Glide3_TextureSource_BlitHalfRgbSaturatedAdd`](../../../../src/graphics/backend/glide.c#L3426)** — cross: [`SoftwareTextureSource_BlitHalfRgbSaturatedAdd16`](../../../../src/graphics/backend/software.c#L3869) → [`graphics/backend/software`](software.md)
+- `0x00582870` **[`Glide3_TextureSource_BlitModulatedSourceAlpha`](../../../../src/graphics/backend/glide.c#L3684)** — cross: [`SoftwareTextureSource_BlitHalfRgbSaturatedAdd16`](../../../../src/graphics/backend/software.c#L3869) → [`graphics/backend/software`](software.md)
+- `0x00582D30` **[`Glide3_Framebuffer_FillRectArgb`](../../../../src/graphics/backend/glide.c#L4020)** — cross: [`SoftwareFramebuffer_FillRectArgb16`](../../../../src/graphics/backend/software.c#L5036) → [`graphics/backend/software`](software.md)
+- `0x005806F0` **[`Glide3_Cursor_ComposeBeforePresent`](../../../../src/graphics/backend/glide.c#L4164)** — local: [`Glide3_Framebuffer_BeginAccess`](../../../../src/graphics/backend/glide.c#L4233), [`Glide3_Framebuffer_EndAccess`](../../../../src/graphics/backend/glide.c#L4270)
+- `0x0057F5C0` **[`Glide3_Shutdown`](../../../../src/graphics/backend/glide.c#L4199)** — cross: [`GraphicsTexture_ReleaseObjects`](../../../../src/graphics/resources/texture.c#L3792) → [`graphics/resources/texture`](../resources/texture.md), [`DynDLL_Unload`](../../../../src/platform/bootstrap/runtime.c#L321) → [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md)
+- `0x0057F630` **[`Glide3_Framebuffer_BeginAccess`](../../../../src/graphics/backend/glide.c#L4233)**
+- `0x0057F6E0` **[`Glide3_Framebuffer_EndAccess`](../../../../src/graphics/backend/glide.c#L4270)**
+- `0x0057FF50` **[`Glide3_TextureResource_EnsureResident`](../../../../src/graphics/backend/glide.c#L4289)**
+- `0x0057FD40` **[`Glide3_TextureResource_Initialize`](../../../../src/graphics/backend/glide.c#L4392)**
+- `0x0057FE80` **[`Glide3_TextureResource_Release`](../../../../src/graphics/backend/glide.c#L4463)**
+
+## Called by
+
+- [`graphics/backend/directdraw`](directdraw.md): [`GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf`](../../../../src/graphics/backend/directdraw.c#L180) → [`GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf`](../../../../src/graphics/backend/glide.c#L115); [`GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf`](../../../../src/graphics/backend/directdraw.c#L180) → [`Glide3_Shutdown`](../../../../src/graphics/backend/glide.c#L4199)
+- [`graphics/core/runtime`](../core/runtime.md): [`Graphics_Init`](../../../../src/graphics/core/runtime.c#L518) → [`Glide3_InitAndEnumerate`](../../../../src/graphics/backend/glide.c#L692); [`GraphicsBackend_RefreshActiveAdapterIfReady`](../../../../src/graphics/core/runtime.c#L658) → [`Glide3_Shutdown`](../../../../src/graphics/backend/glide.c#L4199); [`Graphics_Shutdown`](../../../../src/graphics/core/runtime.c#L674) → [`GlideBackend_ShutdownWrapper`](../../../../src/graphics/backend/glide.c#L102); [`Graphics_SetViewportAndClearDepth`](../../../../src/graphics/core/runtime.c#L751) → [`Glide3_ClearViewport`](../../../../src/graphics/backend/glide.c#L829); [`Graphics_BeginScene`](../../../../src/graphics/core/runtime.c#L824) → [`GlideBackend_BeginSceneNoOp`](../../../../src/graphics/backend/glide.c#L807); [`Graphics_EndScene`](../../../../src/graphics/core/runtime.c#L863) → [`GlideBackend_EndSceneNoOp`](../../../../src/graphics/backend/glide.c#L818); [`Graphics_DrawPrimitiveQueue`](../../../../src/graphics/core/runtime.c#L885) → [`Glide3_DrawPrimitiveQueue`](../../../../src/graphics/backend/glide.c#L328); [`GraphicsCursor_ComposeBeforePresent`](../../../../src/graphics/core/runtime.c#L930) → [`Glide3_Cursor_ComposeBeforePresent`](../../../../src/graphics/backend/glide.c#L4164); [`GraphicsCursor_RestoreAfterPresent`](../../../../src/graphics/core/runtime.c#L978) → [`Glide3_Cursor_RestoreAfterPresentNoOp`](../../../../src/graphics/backend/glide.c#L980)
+- [`graphics/resources/framebuffer`](../resources/framebuffer.md): [`GraphicsFramebuffer_Present`](../../../../src/graphics/resources/framebuffer.c#L26) → [`Glide3_Framebuffer_Present`](../../../../src/graphics/backend/glide.c#L625); [`GraphicsFramebuffer_CaptureRegion16Bit`](../../../../src/graphics/resources/framebuffer.c#L133) → [`Glide3_Framebuffer_CaptureRegion`](../../../../src/graphics/backend/glide.c#L902); [`GraphicsFramebuffer_BeginAccess`](../../../../src/graphics/resources/framebuffer.c#L367) → [`Glide3_Framebuffer_BeginAccess`](../../../../src/graphics/backend/glide.c#L4233); [`GraphicsFramebuffer_EndAccess`](../../../../src/graphics/resources/framebuffer.c#L414) → [`Glide3_Framebuffer_EndAccess`](../../../../src/graphics/backend/glide.c#L4270)
+- [`graphics/resources/texture`](../resources/texture.md): [`GraphicsTextureSet_Create`](../../../../src/graphics/resources/texture.c#L5) → [`Glide3_TextureSet_CreateBackend`](../../../../src/graphics/backend/glide.c#L5); [`GraphicsTexture_RebuildAllStagingTextures`](../../../../src/graphics/resources/texture.c#L89) → [`Glide3_TextureResource_ReinitializeAll`](../../../../src/graphics/backend/glide.c#L74); [`GraphicsTextureSet_Destroy`](../../../../src/graphics/resources/texture.c#L123) → [`Glide3_TextureSet_DestroyBackend`](../../../../src/graphics/backend/glide.c#L577); [`GraphicsTextureSet_RefreshColor`](../../../../src/graphics/resources/texture.c#L3298) → [`Glide3_TextureSet_RefreshColor`](../../../../src/graphics/backend/glide.c#L852); [`GraphicsTextureSet_RefreshAlpha`](../../../../src/graphics/resources/texture.c#L3325) → [`Glide3_TextureSet_RefreshAlpha`](../../../../src/graphics/backend/glide.c#L877)

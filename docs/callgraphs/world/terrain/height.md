@@ -1,46 +1,53 @@
 # Call graph: `world/terrain/height`
 
+[Source](../../../../src/world/terrain/height.c) · [Header](../../../../include/thandor/world/terrain/height.h) · [Graphviz](height.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-height)
+
 40 functions. Addresses are current V523 executable VAs.
 
 ## Functions
 
-- `0x00508000` **TerrainHeightBand_TestAroundWorldPoint** — local: `TerrainHeightBand_TestWedge0`, `TerrainHeightBand_TestWedge1`, `TerrainHeightBand_TestWedge2`, `TerrainHeightBand_TestWedge3`, `TerrainHeightBand_TestWedge4`, `TerrainHeightBand_TestWedge5`; cross: `FieldGrid_WorldToGridQ12` → `world/terrain/grid`
-- `0x00508920` **TerrainAuxHeightThreshold_TestAroundWorldPoint** — local: `TerrainAuxHeightThreshold_TestWedge0`, `TerrainAuxHeightThreshold_TestWedge1`, `TerrainAuxHeightThreshold_TestWedge2`, `TerrainAuxHeightThreshold_TestWedge3`, `TerrainAuxHeightThreshold_TestWedge4`, `TerrainAuxHeightThreshold_TestWedge5`; cross: `FieldGrid_WorldToGridQ12` → `world/terrain/grid`
-- `0x00508D20` **TerrainHeightDelta_ApplyWedge0** — local: `TerrainHeightDelta_ApplyDirection0`, `TerrainHeightDelta_ApplyDirection1`
-- `0x00508DC0` **TerrainHeightDelta_ApplyWedge1** — local: `TerrainHeightDelta_ApplyDirection1`, `TerrainHeightDelta_ApplyDirection2`
-- `0x00508E60` **TerrainHeightDelta_ApplyWedge2** — local: `TerrainHeightDelta_ApplyDirection2`, `TerrainHeightDelta_ApplyDirection3`
-- `0x00508F00` **TerrainHeightDelta_ApplyWedge3** — local: `TerrainHeightDelta_ApplyDirection3`, `TerrainHeightDelta_ApplyDirection4`
-- `0x00508FA0` **TerrainHeightDelta_ApplyWedge4** — local: `TerrainHeightDelta_ApplyDirection4`, `TerrainHeightDelta_ApplyDirection5`
-- `0x00509040` **TerrainHeightDelta_ApplyWedge5** — local: `TerrainHeightDelta_ApplyDirection5`, `TerrainHeightDelta_ApplyDirection0`
-- `0x00504520` **TerrainTriangle_IntersectRayDistanceCf** — cross: `FixedMath_Length3` → `core/math/fixed`
-- `0x005049E0` **TerrainRay_AdvanceGridTraversalCf**
-- `0x00507AB0` **TerrainHeightBand_TestWedge0** — local: `TerrainHeightBand_TestDirection0`, `TerrainHeightBand_TestDirection1`
-- `0x00507BA0` **TerrainHeightBand_TestWedge1** — local: `TerrainHeightBand_TestDirection1`, `TerrainHeightBand_TestDirection2`
-- `0x00507C80` **TerrainHeightBand_TestWedge2** — local: `TerrainHeightBand_TestDirection2`, `TerrainHeightBand_TestDirection3`
-- `0x00507D60` **TerrainHeightBand_TestWedge3** — local: `TerrainHeightBand_TestDirection3`, `TerrainHeightBand_TestDirection4`
-- `0x00507E40` **TerrainHeightBand_TestWedge4** — local: `TerrainHeightBand_TestDirection4`, `TerrainHeightBand_TestDirection5`
-- `0x00507F20` **TerrainHeightBand_TestWedge5** — local: `TerrainHeightBand_TestDirection5`, `TerrainHeightBand_TestDirection0`
-- `0x00508470` **TerrainAuxHeightThreshold_TestWedge0** — local: `TerrainAuxHeightThreshold_TestDirection0`, `TerrainAuxHeightThreshold_TestDirection1`
-- `0x00508540` **TerrainAuxHeightThreshold_TestWedge1** — local: `TerrainAuxHeightThreshold_TestDirection1`, `TerrainAuxHeightThreshold_TestDirection2`
-- `0x00508600` **TerrainAuxHeightThreshold_TestWedge2** — local: `TerrainAuxHeightThreshold_TestDirection2`, `TerrainAuxHeightThreshold_TestDirection3`
-- `0x005086C0` **TerrainAuxHeightThreshold_TestWedge3** — local: `TerrainAuxHeightThreshold_TestDirection3`, `TerrainAuxHeightThreshold_TestDirection4`
-- `0x00508790` **TerrainAuxHeightThreshold_TestWedge4** — local: `TerrainAuxHeightThreshold_TestDirection4`, `TerrainAuxHeightThreshold_TestDirection5`
-- `0x00508850` **TerrainAuxHeightThreshold_TestWedge5** — local: `TerrainAuxHeightThreshold_TestDirection5`, `TerrainAuxHeightThreshold_TestDirection0`
-- `0x005077F0` **TerrainHeightBand_TestDirection0**
-- `0x00507860` **TerrainHeightBand_TestDirection1**
-- `0x005078E0` **TerrainHeightBand_TestDirection2**
-- `0x00507950` **TerrainHeightBand_TestDirection3**
-- `0x005079C0` **TerrainHeightBand_TestDirection4**
-- `0x00507A40` **TerrainHeightBand_TestDirection5**
-- `0x005081D0` **TerrainAuxHeightThreshold_TestDirection0**
-- `0x00508240` **TerrainAuxHeightThreshold_TestDirection1**
-- `0x005082B0` **TerrainAuxHeightThreshold_TestDirection2**
-- `0x00508320` **TerrainAuxHeightThreshold_TestDirection3**
-- `0x00508390` **TerrainAuxHeightThreshold_TestDirection4**
-- `0x00508400` **TerrainAuxHeightThreshold_TestDirection5**
-- `0x00508AE0` **TerrainHeightDelta_ApplyDirection0**
-- `0x00508B40` **TerrainHeightDelta_ApplyDirection1**
-- `0x00508BA0` **TerrainHeightDelta_ApplyDirection2**
-- `0x00508C00` **TerrainHeightDelta_ApplyDirection3**
-- `0x00508C60` **TerrainHeightDelta_ApplyDirection4**
-- `0x00508CC0` **TerrainHeightDelta_ApplyDirection5**
+- `0x00508000` **[`TerrainHeightBand_TestAroundWorldPoint`](../../../../src/world/terrain/height.c#L5)** — local: [`TerrainHeightBand_TestWedge0`](../../../../src/world/terrain/height.c#L904), [`TerrainHeightBand_TestWedge1`](../../../../src/world/terrain/height.c#L968), [`TerrainHeightBand_TestWedge2`](../../../../src/world/terrain/height.c#L1019), [`TerrainHeightBand_TestWedge3`](../../../../src/world/terrain/height.c#L1081), [`TerrainHeightBand_TestWedge4`](../../../../src/world/terrain/height.c#L1144), [`TerrainHeightBand_TestWedge5`](../../../../src/world/terrain/height.c#L1196); cross: [`FieldGrid_WorldToGridQ12`](../../../../src/world/terrain/grid.c#L3515) → [`world/terrain/grid`](grid.md)
+- `0x00508920` **[`TerrainAuxHeightThreshold_TestAroundWorldPoint`](../../../../src/world/terrain/height.c#L127)** — local: [`TerrainAuxHeightThreshold_TestWedge0`](../../../../src/world/terrain/height.c#L1258), [`TerrainAuxHeightThreshold_TestWedge1`](../../../../src/world/terrain/height.c#L1313), [`TerrainAuxHeightThreshold_TestWedge2`](../../../../src/world/terrain/height.c#L1368), [`TerrainAuxHeightThreshold_TestWedge3`](../../../../src/world/terrain/height.c#L1421), [`TerrainAuxHeightThreshold_TestWedge4`](../../../../src/world/terrain/height.c#L1477), [`TerrainAuxHeightThreshold_TestWedge5`](../../../../src/world/terrain/height.c#L1533); cross: [`FieldGrid_WorldToGridQ12`](../../../../src/world/terrain/grid.c#L3515) → [`world/terrain/grid`](grid.md)
+- `0x00508D20` **[`TerrainHeightDelta_ApplyWedge0`](../../../../src/world/terrain/height.c#L248)** — local: [`TerrainHeightDelta_ApplyDirection0`](../../../../src/world/terrain/height.c#L1892), [`TerrainHeightDelta_ApplyDirection1`](../../../../src/world/terrain/height.c#L1919)
+- `0x00508DC0` **[`TerrainHeightDelta_ApplyWedge1`](../../../../src/world/terrain/height.c#L298)** — local: [`TerrainHeightDelta_ApplyDirection1`](../../../../src/world/terrain/height.c#L1919), [`TerrainHeightDelta_ApplyDirection2`](../../../../src/world/terrain/height.c#L1945)
+- `0x00508E60` **[`TerrainHeightDelta_ApplyWedge2`](../../../../src/world/terrain/height.c#L348)** — local: [`TerrainHeightDelta_ApplyDirection2`](../../../../src/world/terrain/height.c#L1945), [`TerrainHeightDelta_ApplyDirection3`](../../../../src/world/terrain/height.c#L1971)
+- `0x00508F00` **[`TerrainHeightDelta_ApplyWedge3`](../../../../src/world/terrain/height.c#L392)** — local: [`TerrainHeightDelta_ApplyDirection3`](../../../../src/world/terrain/height.c#L1971), [`TerrainHeightDelta_ApplyDirection4`](../../../../src/world/terrain/height.c#L1997)
+- `0x00508FA0` **[`TerrainHeightDelta_ApplyWedge4`](../../../../src/world/terrain/height.c#L441)** — local: [`TerrainHeightDelta_ApplyDirection4`](../../../../src/world/terrain/height.c#L1997), [`TerrainHeightDelta_ApplyDirection5`](../../../../src/world/terrain/height.c#L2023)
+- `0x00509040` **[`TerrainHeightDelta_ApplyWedge5`](../../../../src/world/terrain/height.c#L492)** — local: [`TerrainHeightDelta_ApplyDirection5`](../../../../src/world/terrain/height.c#L2023), [`TerrainHeightDelta_ApplyDirection0`](../../../../src/world/terrain/height.c#L1892)
+- `0x00504520` **[`TerrainTriangle_IntersectRayDistanceCf`](../../../../src/world/terrain/height.c#L536)** — cross: [`FixedMath_Length3`](../../../../src/core/math/fixed.c#L254) → [`core/math/fixed`](../../core/math/fixed.md)
+- `0x005049E0` **[`TerrainRay_AdvanceGridTraversalCf`](../../../../src/world/terrain/height.c#L843)**
+- `0x00507AB0` **[`TerrainHeightBand_TestWedge0`](../../../../src/world/terrain/height.c#L904)** — local: [`TerrainHeightBand_TestDirection0`](../../../../src/world/terrain/height.c#L1586), [`TerrainHeightBand_TestDirection1`](../../../../src/world/terrain/height.c#L1614)
+- `0x00507BA0` **[`TerrainHeightBand_TestWedge1`](../../../../src/world/terrain/height.c#L968)** — local: [`TerrainHeightBand_TestDirection1`](../../../../src/world/terrain/height.c#L1614), [`TerrainHeightBand_TestDirection2`](../../../../src/world/terrain/height.c#L1642)
+- `0x00507C80` **[`TerrainHeightBand_TestWedge2`](../../../../src/world/terrain/height.c#L1019)** — local: [`TerrainHeightBand_TestDirection2`](../../../../src/world/terrain/height.c#L1642), [`TerrainHeightBand_TestDirection3`](../../../../src/world/terrain/height.c#L1670)
+- `0x00507D60` **[`TerrainHeightBand_TestWedge3`](../../../../src/world/terrain/height.c#L1081)** — local: [`TerrainHeightBand_TestDirection3`](../../../../src/world/terrain/height.c#L1670), [`TerrainHeightBand_TestDirection4`](../../../../src/world/terrain/height.c#L1698)
+- `0x00507E40` **[`TerrainHeightBand_TestWedge4`](../../../../src/world/terrain/height.c#L1144)** — local: [`TerrainHeightBand_TestDirection4`](../../../../src/world/terrain/height.c#L1698), [`TerrainHeightBand_TestDirection5`](../../../../src/world/terrain/height.c#L1726)
+- `0x00507F20` **[`TerrainHeightBand_TestWedge5`](../../../../src/world/terrain/height.c#L1196)** — local: [`TerrainHeightBand_TestDirection5`](../../../../src/world/terrain/height.c#L1726), [`TerrainHeightBand_TestDirection0`](../../../../src/world/terrain/height.c#L1586)
+- `0x00508470` **[`TerrainAuxHeightThreshold_TestWedge0`](../../../../src/world/terrain/height.c#L1258)** — local: [`TerrainAuxHeightThreshold_TestDirection0`](../../../../src/world/terrain/height.c#L1754), [`TerrainAuxHeightThreshold_TestDirection1`](../../../../src/world/terrain/height.c#L1777)
+- `0x00508540` **[`TerrainAuxHeightThreshold_TestWedge1`](../../../../src/world/terrain/height.c#L1313)** — local: [`TerrainAuxHeightThreshold_TestDirection1`](../../../../src/world/terrain/height.c#L1777), [`TerrainAuxHeightThreshold_TestDirection2`](../../../../src/world/terrain/height.c#L1800)
+- `0x00508600` **[`TerrainAuxHeightThreshold_TestWedge2`](../../../../src/world/terrain/height.c#L1368)** — local: [`TerrainAuxHeightThreshold_TestDirection2`](../../../../src/world/terrain/height.c#L1800), [`TerrainAuxHeightThreshold_TestDirection3`](../../../../src/world/terrain/height.c#L1823)
+- `0x005086C0` **[`TerrainAuxHeightThreshold_TestWedge3`](../../../../src/world/terrain/height.c#L1421)** — local: [`TerrainAuxHeightThreshold_TestDirection3`](../../../../src/world/terrain/height.c#L1823), [`TerrainAuxHeightThreshold_TestDirection4`](../../../../src/world/terrain/height.c#L1846)
+- `0x00508790` **[`TerrainAuxHeightThreshold_TestWedge4`](../../../../src/world/terrain/height.c#L1477)** — local: [`TerrainAuxHeightThreshold_TestDirection4`](../../../../src/world/terrain/height.c#L1846), [`TerrainAuxHeightThreshold_TestDirection5`](../../../../src/world/terrain/height.c#L1869)
+- `0x00508850` **[`TerrainAuxHeightThreshold_TestWedge5`](../../../../src/world/terrain/height.c#L1533)** — local: [`TerrainAuxHeightThreshold_TestDirection5`](../../../../src/world/terrain/height.c#L1869), [`TerrainAuxHeightThreshold_TestDirection0`](../../../../src/world/terrain/height.c#L1754)
+- `0x005077F0` **[`TerrainHeightBand_TestDirection0`](../../../../src/world/terrain/height.c#L1586)**
+- `0x00507860` **[`TerrainHeightBand_TestDirection1`](../../../../src/world/terrain/height.c#L1614)**
+- `0x005078E0` **[`TerrainHeightBand_TestDirection2`](../../../../src/world/terrain/height.c#L1642)**
+- `0x00507950` **[`TerrainHeightBand_TestDirection3`](../../../../src/world/terrain/height.c#L1670)**
+- `0x005079C0` **[`TerrainHeightBand_TestDirection4`](../../../../src/world/terrain/height.c#L1698)**
+- `0x00507A40` **[`TerrainHeightBand_TestDirection5`](../../../../src/world/terrain/height.c#L1726)**
+- `0x005081D0` **[`TerrainAuxHeightThreshold_TestDirection0`](../../../../src/world/terrain/height.c#L1754)**
+- `0x00508240` **[`TerrainAuxHeightThreshold_TestDirection1`](../../../../src/world/terrain/height.c#L1777)**
+- `0x005082B0` **[`TerrainAuxHeightThreshold_TestDirection2`](../../../../src/world/terrain/height.c#L1800)**
+- `0x00508320` **[`TerrainAuxHeightThreshold_TestDirection3`](../../../../src/world/terrain/height.c#L1823)**
+- `0x00508390` **[`TerrainAuxHeightThreshold_TestDirection4`](../../../../src/world/terrain/height.c#L1846)**
+- `0x00508400` **[`TerrainAuxHeightThreshold_TestDirection5`](../../../../src/world/terrain/height.c#L1869)**
+- `0x00508AE0` **[`TerrainHeightDelta_ApplyDirection0`](../../../../src/world/terrain/height.c#L1892)**
+- `0x00508B40` **[`TerrainHeightDelta_ApplyDirection1`](../../../../src/world/terrain/height.c#L1919)**
+- `0x00508BA0` **[`TerrainHeightDelta_ApplyDirection2`](../../../../src/world/terrain/height.c#L1945)**
+- `0x00508C00` **[`TerrainHeightDelta_ApplyDirection3`](../../../../src/world/terrain/height.c#L1971)**
+- `0x00508C60` **[`TerrainHeightDelta_ApplyDirection4`](../../../../src/world/terrain/height.c#L1997)**
+- `0x00508CC0` **[`TerrainHeightDelta_ApplyDirection5`](../../../../src/world/terrain/height.c#L2023)**
+
+## Called by
+
+- [`gameplay/army/placement`](../../gameplay/army/placement.md): [`ArmyPlacement_TestModelTerrainAndRuntimeClearance`](../../../../src/gameplay/army/placement.c#L69) → [`TerrainAuxHeightThreshold_TestAroundWorldPoint`](../../../../src/world/terrain/height.c#L127); [`ArmyPlacement_TestModelTerrainAndRuntimeClearance`](../../../../src/gameplay/army/placement.c#L69) → [`TerrainHeightBand_TestAroundWorldPoint`](../../../../src/world/terrain/height.c#L5)
+- [`world/terrain/grid`](grid.md): [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf`](../../../../src/world/terrain/grid.c#L750) → [`TerrainHeightDelta_ApplyWedge0`](../../../../src/world/terrain/height.c#L248); [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf`](../../../../src/world/terrain/grid.c#L750) → [`TerrainHeightDelta_ApplyWedge1`](../../../../src/world/terrain/height.c#L298); [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf`](../../../../src/world/terrain/grid.c#L750) → [`TerrainHeightDelta_ApplyWedge2`](../../../../src/world/terrain/height.c#L348); [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf`](../../../../src/world/terrain/grid.c#L750) → [`TerrainHeightDelta_ApplyWedge3`](../../../../src/world/terrain/height.c#L392); [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf`](../../../../src/world/terrain/grid.c#L750) → [`TerrainHeightDelta_ApplyWedge4`](../../../../src/world/terrain/height.c#L441); [`FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf`](../../../../src/world/terrain/grid.c#L750) → [`TerrainHeightDelta_ApplyWedge5`](../../../../src/world/terrain/height.c#L492); [`FieldGrid_RaycastTerrainSurfaceDistanceCf`](../../../../src/world/terrain/grid.c#L2171) → [`TerrainTriangle_IntersectRayDistanceCf`](../../../../src/world/terrain/height.c#L536); [`FieldGrid_RaycastTerrainSurfaceDistanceCf`](../../../../src/world/terrain/grid.c#L2171) → [`TerrainRay_AdvanceGridTraversalCf`](../../../../src/world/terrain/height.c#L843); [`FieldGrid_RaycastSecondarySurfaceDistanceCf`](../../../../src/world/terrain/grid.c#L2260) → [`TerrainTriangle_IntersectRayDistanceCf`](../../../../src/world/terrain/height.c#L536); [`FieldGrid_RaycastSecondarySurfaceDistanceCf`](../../../../src/world/terrain/grid.c#L2260) → [`TerrainRay_AdvanceGridTraversalCf`](../../../../src/world/terrain/height.c#L843); [`FieldGrid_RaycastTerrainTrianglesAlongDirection`](../../../../src/world/terrain/grid.c#L2351) → [`TerrainTriangle_IntersectRayDistanceCf`](../../../../src/world/terrain/height.c#L536); [`FieldGrid_RaycastTerrainTrianglesAlongDirection`](../../../../src/world/terrain/grid.c#L2351) → [`TerrainRay_AdvanceGridTraversalCf`](../../../../src/world/terrain/height.c#L843)
