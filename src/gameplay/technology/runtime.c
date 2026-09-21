@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/technology/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/technology/runtime.h>
 
 /* Implementation ownership: gameplay/technology/runtime. */
@@ -14,28 +21,20 @@
    ModelRuntimeHierarchy_ApplyFactionTechnologyVariants [world/model/hierarchy], UiCatalogGroup48_RebuildGrid
    [ui/ingame/technology], UiCatalogGroup42_RebuildGrid [ui/ingame/technology].
 */
-void Technology_UnlockForFaction
-               (GraphicsWorldCoordinateQ12 notificationXQ12,
-               GraphicsWorldCoordinateQ12 notificationYQ12,TechnologyId technologyIndex,
-               FactionRuntimeIndex factionIndex)
+void __thandor_void_preserve_eax_ecx_edx
+Technology_UnlockForFaction
+          (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,
+          TechnologyId technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
-  UiNodeVtable *pUVar1;
-  InGameRuntimeRootImageC3E4 *pIVar2;
+  WorldOwnerListNode100 *pWVar1;
+  ArmyRuntimeSlot *modelRuntimeHolder;
+  InGameRuntimeRootImageC3E4 *node;
   uint technologyBitMask;
-  FactionRuntimeIndex extraout_ECX;
-  FactionRuntimeIndex extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int factionIndex_00;
-  UiNodeBase *extraout_EDX;
-  UiNodeBase *node;
-  UiNodeBase *node_00;
-  undefined8 uVar3;
   uint *factionTechnologyMaskWord;
   TechnologyAsset *technologyAsset;
   
-  pIVar2 = g_InGameRuntimeRoot;
+  node = g_InGameRuntimeRoot;
   technologyAsset = g_TechnologyAsset;
   technologyBitMask = 1 << ((byte)technologyIndex & 0x1f);
   factionTechnologyMaskWord = (uint *)(factionIndex * 0x740 + 0x50fa20 + (technologyIndex >> 5) * 4)
@@ -43,43 +42,37 @@ void Technology_UnlockForFaction
   if ((*factionTechnologyMaskWord & technologyBitMask) == 0) {
     *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
     if (((g_UiCommandRuntimeFlags & 0x10) == 0) &&
-       (factionIndex == (pIVar2->worldRuntime0A30).activeFactionRuntimeIndex)) {
+       (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex)) {
       if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
         InGameNotificationQueue_InsertPriorityRecord
                   (NONE,0,0,0,0,0,5,
                    g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
-        factionIndex = extraout_ECX;
       }
       else {
         InGameNotificationQueue_InsertPriorityRecord
                   (TECHNOLOGY_UNLOCK_POSITION,0,0,0,notificationXQ12,notificationYQ12,5,
                    g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
-        factionIndex = extraout_ECX_00;
       }
     }
     Technology_UnlockForFaction
               (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex)
     ;
-    factionIndex_00 = extraout_ECX_01;
-    node = extraout_EDX;
-    for (pUVar1 = extraout_EDX[0x25].vtable; pUVar1 != (UiNodeVtable *)0x0;
-        pUVar1 = pUVar1->method04) {
-      if ((pUVar1[2].nonRightRelease == (UiNodeNonRightReleaseCallbackProc *)0x0) &&
-         (factionIndex_00 == (*(ArmyRuntimeSlot **)(pUVar1[1].relocate + 8))->factionIndex)) {
-        uVar3 = ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
-                          (factionIndex_00,node,factionIndex_00,
-                           *(ArmyRuntimeSlot **)(pUVar1[1].relocate + 8));
-        node = (UiNodeBase *)((ulonglong)uVar3 >> 0x20);
-        factionIndex_00 = extraout_ECX_02;
+    for (pWVar1 = (node->worldRuntime0A30).ownerListHead; pWVar1 != (WorldOwnerListNode100 *)0x0;
+        pWVar1 = pWVar1->nextNode) {
+      if ((pWVar1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+         (modelRuntimeHolder = *(ArmyRuntimeSlot **)((int)pWVar1->runtimePayload + 8),
+         factionIndex == modelRuntimeHolder->factionIndex)) {
+        ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(factionIndex,modelRuntimeHolder);
       }
     }
-    if (factionIndex_00 == node[0x23].bottom) {
-      UiCatalogGroup48_RebuildGrid(node);
-      UiCatalogGroup42_RebuildGrid(node_00);
+    if (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex) {
+      UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
+      UiCatalogGroup42_RebuildGrid((UiNodeBase *)node);
     }
   }
   return;
 }
+
 
 /* Address: 0x00513AE0.
    Ownership: gameplay/technology/runtime.
@@ -87,19 +80,18 @@ void Technology_UnlockForFaction
    the result through CF while preserving EAX. Bit test against the faction's eight 32-bit unlock words; CF-style
    result.
 */
-undefined4
+bool __thandor_cf_preserve_eax_ecx_edx
 Technology_IsUnlockedForFactionCf
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
-  undefined4 in_EAX;
-  
   if ((*(uint *)(factionIndex * 0x740 + 0x50fa20 + (technologyIndex >> 5) * 4) &
       1 << ((byte)technologyIndex & 0x1f)) != 0) {
-    return in_EAX;
+    return false;
   }
-  return in_EAX;
+  return true;
 }
+
 
 /* Address: 0x00513B20.
    Ownership: gameplay/technology/runtime.
@@ -110,12 +102,13 @@ Technology_IsUnlockedForFactionCf
    512 records over canonical ids 0..255; localized titles do not prove source-building, tier, direction, or effect
    mappings.
 */
-void Technology_IsAvailableForFactionCf
-               (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+bool __thandor_cf_preserve_eax_ecx_edx
+Technology_IsAvailableForFactionCf
+          (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   WorldRuntimeNode *worldNodeCursor;
-  void *candidateEntityRuntime;
+  ArmyRuntimeSlot *activeResearchArmyRuntime;
   
   if (((((*(uint *)(factionIndex * 0x740 + 0x50fa20 + (technologyIndex >> 5) * 4) &
          1 << ((byte)technologyIndex & 0x1f)) == 0) &&
@@ -143,24 +136,26 @@ void Technology_IsAvailableForFactionCf
       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
        g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[7]) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7])))) {
-    worldNodeCursor = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+    worldNodeCursor = (WorldRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
     do {
       if (worldNodeCursor == (WorldRuntimeNode *)0x0) {
-        return;
+        return true;
       }
       if (worldNodeCursor[2].common.nextNode == (WorldRuntimeNode *)0x0) {
-        candidateEntityRuntime = worldNodeCursor->runtimePayload;
-        if ((((*(uint *)((int)candidateEntityRuntime + 0xec) & 0x40) != 0) &&
-            (factionIndex == *(int *)(*(int *)((int)candidateEntityRuntime + 8) + 0xc))) &&
-           (technologyIndex == *(PckTechnologyIdCatalog *)((int)candidateEntityRuntime + 0x100))) {
-          return;
+        activeResearchArmyRuntime = worldNodeCursor->runtimePayload;
+        if ((((activeResearchArmyRuntime->runtimeFlags & 0x40) != 0) &&
+            (factionIndex ==
+             (activeResearchArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
+           (technologyIndex == activeResearchArmyRuntime->stateOrTechnologyId)) {
+          return false;
         }
       }
       worldNodeCursor = (worldNodeCursor->common).nextNode;
     } while( true );
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x0052AE10.
    Ownership: gameplay/technology/runtime.
@@ -172,8 +167,8 @@ void Technology_IsAvailableForFactionCf
    effect mappings. [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Copies TEC +0x20 Xenite requirement, +0x24
    Energy requirement, and +0x28 duration into the entity technology payload.
 */
-void Technology_ApplyRecordToEntity
-               (PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
+void __thandor_void_preserve_eax_ecx_edx
+Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
 
 {
   uint appliedEntityValue28;
@@ -199,6 +194,7 @@ void Technology_ApplyRecordToEntity
   return;
 }
 
+
 /* Address: 0x00539BB0.
    Ownership: gameplay/technology/runtime.
    Purpose: Rebuilds derived per-class limits from the fixed army registry, computes eight reciprocal scale values,
@@ -209,22 +205,19 @@ void Technology_ApplyRecordToEntity
    titles do not prove source-building, tier, direction, or effect mappings.
    Cross-module calls: ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions].
 */
-undefined8 __fastcall
-TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks
-          (dword registerContext,FactionRuntimeIndex factionIndex)
+void __thandor_void_preserve_eax_ecx_edx
+TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
 
 {
-  undefined4 in_EAX;
   ModelDefinitionRecordPrefix *pMVar1;
   uint technologyBitMask;
   int iVar2;
-  int extraout_ECX;
   int iVar3;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
   undefined4 *categoryReciprocalCursor;
   TechnologyCategoryMasks *categoryMaskClearCursor;
   TechnologyRecord *technologyRecordCursor;
-  bool bVar4;
+  ModelDefinitionLookupEaxCf5 MVar4;
   ArmyAssetRecordPrefix *armyAssetRecord;
   
   g_TechnologyCategoryMaximum0 = 1;
@@ -241,12 +234,12 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks
   do {
     armyAssetRecord = *armyAssetRegistryCursor;
     if ((armyAssetRecord != (ArmyAssetRecordPrefix *)0x0) &&
-       (bVar4 = false, (armyAssetRecord[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-      pMVar1 = ModelDefinitionRegistry_FindByIdWithErrorCf
-                         (*(PckModelDefinitionIdCatalog *)
-                           (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
-      iVar2 = extraout_ECX;
-      if (!bVar4) {
+       ((armyAssetRecord[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+      MVar4 = ModelDefinitionRegistry_FindByIdWithErrorCf
+                        (*(PckModelDefinitionIdCatalog *)
+                          (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
+      pMVar1 = MVar4.modelDefinition;
+      if (!MVar4.carry) {
         if ((int)(&g_TechnologyCategoryMaximum0)[pMVar1[7].definitionId] < (int)pMVar1[8].byteSize)
         {
           (&g_TechnologyCategoryMaximum0)[pMVar1[7].definitionId] = pMVar1[8].byteSize;
@@ -293,5 +286,6 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks
     }
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
-  return CONCAT44(factionIndex,in_EAX);
+  return;
 }
+

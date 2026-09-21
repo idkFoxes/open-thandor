@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/controls/layout.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/controls/layout.h>
 
 /* Implementation ownership: ui/controls/layout. */
@@ -8,29 +15,23 @@
    Local calls: UiWindow_BlitTiledInterior, UiWindow_BlitTiledHorizontalEdge, UiWindow_BlitTiledVerticalEdge,
    UiContainer_DrawIntersectingChildren.
 */
-void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
+  dword dVar1;
   GraphicsSubresourceIndex subresource;
-  UiPixelCoordinate tileEnd;
-  UiPixelCoordinate tileEnd_00;
-  UiPixelCoordinate tileEnd_01;
-  UiPixelCoordinate tileEnd_02;
-  UiPixelCoordinate tileStart;
-  UiPixelCoordinate tileStart_00;
-  UiPixelCoordinate tileStart_01;
-  UiPixelCoordinate tileStart_02;
-  int iVar1;
-  int iVar2;
-  bool bVar3;
-  qword qVar4;
+  dword dVar2;
+  int iVar3;
+  int iVar4;
+  bool bVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar6;
   
-  bVar3 = false;
   if (((uint)control[1].nextSibling & 3) != 0) {
-    (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar3) {
+    bVar5 = (*g_GraphicsFramebufferBeginAccess)();
+    if (!bVar5) {
       if (((uint)control[1].nextSibling & 1) != 0) {
         subresource = 0;
         if (((uint)control[1].nextSibling & 0x200) != 0) {
@@ -41,54 +42,58 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
                    control->layoutWidth,0,0,control);
       }
       if (((uint)control[1].nextSibling & 2) != 0) {
-        qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,g_UiWindowTextureSource);
-        iVar2 = control->layoutWidth - (int)qVar4;
-        iVar1 = control->layoutHeight - (int)(qVar4 >> 0x20);
+        GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,g_UiWindowTextureSource);
+        dVar2 = GVar6.logicalHeightPixels;
+        dVar1 = GVar6.logicalWidthPixels;
+        iVar4 = control->layoutWidth - dVar1;
+        iVar3 = control->layoutHeight - dVar2;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
                   (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x10,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar2 + control->left,0x11,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar4 + control->left,0x11,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar1 + control->top,control->left,0x12,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,control->left,0x12,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar1 + control->top,iVar2 + control->left,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,iVar4 + control->left,
                    0x13,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x14,iVar2,0,tileEnd,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x14,iVar4,0,dVar1,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x15,iVar1,tileStart,0,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x15,iVar3,dVar2,0,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x16,iVar1,tileStart_00,iVar2,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x16,iVar3,dVar2,iVar4,control);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x17,iVar2,iVar1,tileEnd_00,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x17,iVar4,iVar3,dVar1,control);
       }
       if (((uint)control[1].nextSibling & 0x200) != 0) {
-        qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x27,g_UiWindowTextureSource);
-        iVar2 = control->layoutWidth - (int)qVar4;
-        iVar1 = control->layoutHeight - (int)(qVar4 >> 0x20);
+        GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x27,g_UiWindowTextureSource);
+        dVar2 = GVar6.logicalHeightPixels;
+        dVar1 = GVar6.logicalWidthPixels;
+        iVar4 = control->layoutWidth - dVar1;
+        iVar3 = control->layoutHeight - dVar2;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
                   (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x24,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar2 + control->left,0x25,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar4 + control->left,0x25,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar1 + control->top,control->left,0x26,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,control->left,0x26,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar1 + control->top,iVar2 + control->left,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,iVar4 + control->left,
                    0x27,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x28,iVar2,0,tileEnd_01,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x28,iVar4,0,dVar1,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x29,iVar1,tileStart_01,0,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x29,iVar3,dVar2,0,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x2a,iVar1,tileStart_02,iVar2,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x2a,iVar3,dVar2,iVar4,control);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x2b,iVar2,iVar1,tileEnd_02,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x2b,iVar4,iVar3,dVar1,control);
       }
       (*g_GraphicsFramebufferEndAccess)();
     }
@@ -96,6 +101,7 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
   return;
 }
+
 
 /* Address: 0x004B4D40.
    Ownership: ui/controls/layout.
@@ -105,60 +111,54 @@ void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
    [assets/text/richtext].
 */
-void UiResizableWindowControl_DrawFrameTitleAndChildren
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiResizableWindowControl_DrawFrameTitleAndChildren
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  word *commandStream;
-  UiPixelCoordinate tileEnd;
-  UiPixelCoordinate tileEnd_00;
   dword dVar1;
-  dword arg0;
-  int extraout_ECX;
-  dword arg6;
-  int extraout_ECX_00;
-  dword arg6_00;
-  UiPixelCoordinate tileStart;
-  UiPixelCoordinate tileStart_00;
+  dword tileStart;
   int iVar2;
-  int tileStart_01;
-  undefined1 in_CF;
-  qword qVar3;
-  qword qVar4;
+  int tileStart_00;
+  bool bVar3;
+  TextResourceResolveEaxCf5 TVar4;
+  GraphicsTextureSizeEaxEdxCf9 GVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar6;
   
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar3 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar3) {
     if (((uint)control[1].nextSibling & 1) != 0) {
       UiWindow_BlitTiledInterior
                 (clipTop,clipLeft,clipBottom,clipRight,0,control->layoutHeight,control->layoutWidth,
                  0,0,control);
     }
     if (((uint)control[1].nextSibling & 2) != 0) {
-      qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,g_UiWindowTextureSource);
-      tileStart_01 = control->layoutWidth - (int)qVar3;
-      iVar2 = control->layoutHeight - (int)(qVar3 >> 0x20);
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,g_UiWindowTextureSource);
+      tileStart = GVar5.logicalHeightPixels;
+      dVar1 = GVar5.logicalWidthPixels;
+      tileStart_00 = control->layoutWidth - dVar1;
+      iVar2 = control->layoutHeight - tileStart;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x10,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,tileStart_01 + control->left,
+                (clipTop,clipLeft,clipBottom,clipRight,control->top,tileStart_00 + control->left,
                  0x11,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,iVar2 + control->top,control->left,0x12,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,iVar2 + control->top,
-                 tileStart_01 + control->left,0x13,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileStart_00 + control->left,0x13,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x14,tileStart_01,0,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x14,tileStart_00,0,dVar1,control);
       UiWindow_BlitTiledVerticalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,0x15,iVar2,tileStart,0,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x16,iVar2,tileStart_00,tileStart_01,control)
-      ;
+                (clipTop,clipLeft,clipBottom,clipRight,0x16,iVar2,tileStart,tileStart_00,control);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x17,tileStart_01,iVar2,tileEnd_00,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x17,tileStart_00,iVar2,dVar1,control);
     }
     if (((uint)control[1].nextSibling & 4) != 0) {
       dVar1 = 10;
@@ -168,20 +168,20 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,dVar1,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_UiWindowTextureSource);
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar1,g_UiWindowTextureSource);
       iVar2 = control->layoutWidth;
-      qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(extraout_ECX + 4,g_UiWindowTextureSource);
-      iVar2 = iVar2 - (int)qVar4;
+      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar1 + 4,g_UiWindowTextureSource);
+      iVar2 = iVar2 - GVar6.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar2 + control->left,arg6,
+                (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar2 + control->left,dVar1 + 4,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,extraout_ECX_00 - 2,iVar2,0,
-                 (UiPixelCoordinate)qVar3,control);
-      commandStream = TextResource_Resolve((TextResourceId)control[1].vtable);
+                (clipTop,clipLeft,clipBottom,clipRight,dVar1 + 2,iVar2,0,GVar5.logicalWidthPixels,
+                 control);
+      TVar4 = TextResource_Resolve((TextResourceId)control[1].vtable);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_UiResizableWindowTitleTextStyle,
-                 commandStream,g_UiResizableWindowTitleTextTopOffset + control->top,
+                (clipTop,clipLeft,clipBottom,clipRight,g_UiResizableWindowTitleTextStyle,TVar4.eax,
+                 g_UiResizableWindowTitleTextTopOffset + control->top,
                  (control->layoutWidth >> 1) + control->left);
     }
     if (((uint)control[1].nextSibling & 8) != 0) {
@@ -208,10 +208,10 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
         dVar1 = dVar1 + 3;
       }
       iVar2 = control->layoutWidth;
-      qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar1,g_UiWindowTextureSource);
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar1,g_UiWindowTextureSource);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,control->top,
-                 (iVar2 - (int)qVar3) + control->left,arg6_00,g_UiWindowTextureSource,
+                 (iVar2 - GVar5.logicalWidthPixels) + control->left,dVar1,g_UiWindowTextureSource,
                  g_FramebufferAccess);
     }
     (*g_GraphicsFramebufferEndAccess)();
@@ -219,6 +219,7 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
   return;
 }
+
 
 /* Address: 0x004B3420.
    Ownership: ui/controls/layout.
@@ -228,85 +229,87 @@ void UiResizableWindowControl_DrawFrameTitleAndChildren
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureRegs
    [assets/text/richtext], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
 */
-void UiTitledWindowControl_DrawFrameTitleAndChildren
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiTitledWindowControl_DrawFrameTitleAndChildren
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
+  dword tileEnd;
   word *commandStream;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  UiPixelCoordinate edgeX;
-  UiPixelCoordinate edgeX_00;
-  UiPixelCoordinate edgeY;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  UiPixelCoordinate tileStart;
   int iVar1;
+  dword tileStart;
   int iVar2;
-  undefined1 in_CF;
-  qword qVar3;
+  bool bVar3;
   RichTextExtentRegs RVar4;
+  TextResourceResolveEaxCf5 TVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar6;
   int tileStart_00;
   
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar3 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar3) {
     (*g_GraphicsTextureSourceBlitSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x36,
                g_UiWindowTextureSource,g_FramebufferAccess);
     iVar2 = control->layoutWidth;
-    qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x39,g_UiWindowTextureSource);
-    iVar1 = (int)qVar3;
-    iVar2 = iVar2 - iVar1;
+    iVar1 = control->layoutHeight;
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x39,g_UiWindowTextureSource);
+    tileEnd = GVar6.logicalWidthPixels;
+    iVar2 = iVar2 - tileEnd;
+    iVar1 = iVar1 - GVar6.logicalHeightPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar2 + control->left,0x37,
                g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,extraout_ECX + control->top,control->left,0x38,
+              (clipTop,clipLeft,clipBottom,clipRight,iVar1 + control->top,control->left,0x38,
                g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,extraout_ECX_00 + control->top,
-               iVar2 + control->left,0x39,g_UiWindowTextureSource,g_FramebufferAccess);
-    qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
+              (clipTop,clipLeft,clipBottom,clipRight,iVar1 + control->top,iVar2 + control->left,0x39
+               ,g_UiWindowTextureSource,g_FramebufferAccess);
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
     tileStart_00 = iVar2;
     UiWindow_BlitTiledVerticalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3b,edgeX,(UiPixelCoordinate)(qVar3 >> 0x20),0
-               ,control);
+              (clipTop,clipLeft,clipBottom,clipRight,0x3b,iVar1,GVar6.logicalHeightPixels,0,control)
+    ;
     UiWindow_BlitTiledVerticalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3c,edgeX_00,tileStart,iVar2,control);
+              (clipTop,clipLeft,clipBottom,clipRight,0x3c,iVar1,GVar6.logicalHeightPixels,iVar2,
+               control);
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3d,iVar2,edgeY,iVar1,control);
-    commandStream = TextResource_Resolve((TextResourceId)control[1].firstChild);
-    RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
+              (clipTop,clipLeft,clipBottom,clipRight,0x3d,iVar2,iVar1,tileEnd,control);
+    TVar5 = TextResource_Resolve((TextResourceId)control[1].firstChild);
+    commandStream = TVar5.eax;
+    RVar4 = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
+    tileStart = tileEnd;
     if (((uint)control[1].nextSibling & 1) != 0) {
-      qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x3e,g_UiWindowTextureSource);
+      iVar2 = control->layoutWidth;
+      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x3e,g_UiWindowTextureSource);
+      tileStart = ((int)(iVar2 - RVar4.widthPixels) >> 1) - GVar6.logicalWidthPixels;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x3a,extraout_ECX_01 - (int)qVar3,0,iVar1,
-                 control);
-      iVar1 = extraout_ECX_02;
+                (clipTop,clipLeft,clipBottom,clipRight,0x3a,tileStart,0,tileEnd,control);
     }
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar1 + control->left,0x3e,
+              (clipTop,clipLeft,clipBottom,clipRight,control->top,tileStart + control->left,0x3e,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x3e,g_UiWindowTextureSource);
-    iVar1 = iVar1 + (int)qVar3;
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x3e,g_UiWindowTextureSource);
+    iVar2 = tileStart + GVar6.logicalWidthPixels;
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,g_UiWindowTitleTextStyle,commandStream,
-               control->top,iVar1 + control->left);
+               control->top,iVar2 + control->left);
     RVar4 = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
-    iVar1 = iVar1 + RVar4.widthPixels;
+    iVar2 = iVar2 + RVar4.widthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar1 + control->left,0x3f,
+              (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar2 + control->left,0x3f,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    qVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x3f,g_UiWindowTextureSource);
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x3f,g_UiWindowTextureSource);
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3a,tileStart_00,0,iVar1 + (int)qVar3,control)
-    ;
+              (clipTop,clipLeft,clipBottom,clipRight,0x3a,tileStart_00,0,
+               iVar2 + GVar6.logicalWidthPixels,control);
     (*g_GraphicsFramebufferEndAccess)();
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
   return;
 }
+
 
 /* Address: 0x004AF890.
    Ownership: ui/controls/layout.
@@ -319,10 +322,10 @@ void UiTitledWindowControl_DrawFrameTitleAndChildren
 void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
 
 {
-  undefined1 in_CF;
+  bool bVar1;
   
-  (*g_SpinLockTryAcquire)(g_UiRuntimeFrameLock);
-  if (!(bool)in_CF) {
+  bVar1 = (*g_SpinLockTryAcquire)(g_UiRuntimeFrameLock);
+  if (!bVar1) {
     (*g_SpinLockRelease)(g_UiRuntimeFrameLock);
     UiKeyboard_DispatchPendingEvents();
     UiPointer_DispatchPendingEvents();
@@ -343,6 +346,7 @@ void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
   return;
 }
 
+
 /* Address: 0x004AF920.
    Ownership: ui/controls/layout.
    Purpose: Processes keyboard and pointer events, updates the active UI, dispatches queued actions, draws, and
@@ -351,7 +355,7 @@ void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
    Cross-module calls: UiKeyboard_DispatchPendingEvents [ui/controls/input], UiPointer_DispatchPendingEvents
    [ui/controls/input], UiActionQueue_DispatchPending [ui/core/runtime].
 */
-void __cdecl UiFrame_ProcessAndPresent(void)
+void __thandor_void_preserve_eax_ecx_edx UiFrame_ProcessAndPresent(void)
 
 {
   UiKeyboard_DispatchPendingEvents();
@@ -363,6 +367,7 @@ void __cdecl UiFrame_ProcessAndPresent(void)
   return;
 }
 
+
 /* Address: 0x004B48D0.
    Ownership: ui/controls/layout.
    Purpose: Selects a page by index when it is in range and differs from the active child. Deactivates the old
@@ -370,19 +375,22 @@ void __cdecl UiFrame_ProcessAndPresent(void)
    Local calls: UiNodeSubtree_ReleaseKeyboardFocus, UiNodeSubtree_AcquireKeyboardFocusDefaults.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
+void __thandor_void_preserve_eax_ecx_edx
+UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
 
 {
-  UiNodeBase *extraout_EDX;
+  UiNodeBase *pUVar1;
   
-  if ((pageIndex < stack->pageCount) && ((&stack->pages)[pageIndex] != (stack->base).firstChild)) {
+  if ((pageIndex < stack->pageCount) &&
+     (pUVar1 = (&stack->pages)[pageIndex], pUVar1 != (stack->base).firstChild)) {
     UiNodeSubtree_ReleaseKeyboardFocus(&stack->base);
-    (stack->base).firstChild = extraout_EDX;
+    (stack->base).firstChild = pUVar1;
     UiNodeSubtree_AcquireKeyboardFocusDefaults(&stack->base);
     UiNode_InvalidateRoot(&stack->base);
   }
   return;
 }
+
 
 /* Address: 0x004B52D0.
    Ownership: ui/controls/layout.
@@ -390,57 +398,57 @@ void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
    Local calls: UiContainer_LayoutWithOptionalWindowHeaderOffset, UiRootStack_InvalidateAll.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
-void __fastcall
-UiResizableWindowControl_EndMoveResizeAndHandleWindowActions(undefined4 param_1,undefined4 param_2)
+void __thandor_void_preserve_eax_ecx_edx
+UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   sdword sVar1;
   sdword sVar2;
   sdword sVar3;
   dword dVar4;
-  UiNodeBase *in_stack_00000010;
   
-  if (((uint)in_stack_00000010[1].nextSibling & 0x2000) != 0) {
+  if (((uint)control[1].nextSibling & 0x2000) != 0) {
     (*g_GraphicsCursorSetFrame)(0);
   }
-  if ((((uint)in_stack_00000010[1].nextSibling & 0x80000) != 0) &&
-     ((in_stack_00000010->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
-    UiActionQueue_Enqueue(0,in_stack_00000010);
+  if ((((uint)control[1].nextSibling & 0x80000) != 0) &&
+     ((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
+    UiActionQueue_Enqueue(0,control);
   }
-  if (((uint)in_stack_00000010[1].nextSibling & 0x100000) != 0) {
-    in_stack_00000010[1].nextSibling = (UiNodeBase *)((uint)in_stack_00000010[1].nextSibling ^ 0x80)
-    ;
-    if (((uint)in_stack_00000010[1].nextSibling & 0x80) == 0) {
-      sVar1 = in_stack_00000010[1].right;
-      in_stack_00000010->left = in_stack_00000010[1].top;
-      sVar2 = in_stack_00000010[1].bottom;
-      sVar3 = in_stack_00000010[1].leftOffset;
-      in_stack_00000010->top = sVar1;
-      in_stack_00000010->bottom = sVar3;
-      in_stack_00000010->right = sVar2;
-      UiContainer_LayoutWithOptionalWindowHeaderOffset(in_stack_00000010);
+  if (((uint)control[1].nextSibling & 0x100000) != 0) {
+    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling ^ 0x80);
+    if (((uint)control[1].nextSibling & 0x80) == 0) {
+      sVar1 = control[1].right;
+      control->left = control[1].top;
+      sVar2 = control[1].bottom;
+      sVar3 = control[1].leftOffset;
+      control->top = sVar1;
+      control->bottom = sVar3;
+      control->right = sVar2;
+      UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
       UiRootStack_InvalidateAll();
       goto UiResizableWindowControl_ClearInteractionStateAndReturn;
     }
-    in_stack_00000010[1].top = in_stack_00000010->left;
-    sVar1 = in_stack_00000010->right;
-    sVar2 = in_stack_00000010->bottom;
-    in_stack_00000010[1].right = in_stack_00000010->top;
-    in_stack_00000010[1].leftOffset = sVar2;
-    in_stack_00000010[1].bottom = sVar1;
+    control[1].top = control->left;
+    sVar1 = control->right;
+    sVar2 = control->bottom;
+    control[1].right = control->top;
+    control[1].leftOffset = sVar2;
+    control[1].bottom = sVar1;
     dVar4 = g_FramebufferHeight;
-    in_stack_00000010->right = g_FramebufferWidth;
-    in_stack_00000010->left = 0;
-    in_stack_00000010->top = 0;
-    in_stack_00000010->bottom = dVar4;
-    UiContainer_LayoutWithOptionalWindowHeaderOffset(in_stack_00000010);
+    control->right = g_FramebufferWidth;
+    control->left = 0;
+    control->top = 0;
+    control->bottom = dVar4;
+    UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
   }
-  UiNode_InvalidateRoot(in_stack_00000010);
+  UiNode_InvalidateRoot(control);
 UiResizableWindowControl_ClearInteractionStateAndReturn:
-  in_stack_00000010[1].nextSibling =
-       (UiNodeBase *)((uint)in_stack_00000010[1].nextSibling & 0xe787ff);
+  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xe787ff);
   return;
 }
+
 
 /* Address: 0x004B5770.
    Ownership: ui/controls/layout.
@@ -449,15 +457,16 @@ UiResizableWindowControl_ClearInteractionStateAndReturn:
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiActionQueue_Enqueue [ui/core/runtime],
    UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
 */
-void UiResizableWindowControl_HandleWindowHotkeysCf
-               (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-               UiNodeBase *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiResizableWindowControl_HandleWindowHotkeysCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {
   sdword sVar1;
   sdword sVar2;
   sdword sVar3;
   dword dVar4;
+  bool bVar5;
   
   if ((keyboardStateMask & 0x30) != 0) {
     if ((((uint)control[1].nextSibling & 8) == 0) || (keyCode != 99)) {
@@ -494,12 +503,13 @@ void UiResizableWindowControl_HandleWindowHotkeysCf
     else {
       UiActionQueue_Enqueue(0,control);
     }
-    return;
+    return false;
   }
 UiResizableWindowControl_DelegateUnhandledWindowHotkey:
-  UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
-  return;
+  bVar5 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
+  return bVar5;
 }
+
 
 /* Address: 0x004B1000.
    Ownership: ui/controls/layout.
@@ -509,7 +519,8 @@ UiResizableWindowControl_DelegateUnhandledWindowHotkey:
    Local calls: UiSerializedTree_Relocate.
    Cross-module calls: UiKeyboardFocus_SelectInitial [ui/controls/input].
 */
-void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
+void __thandor_void_preserve_eax_ecx_edx
+UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
 
 {
   longlong lVar1;
@@ -553,6 +564,7 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   return;
 }
 
+
 /* Address: 0x004B1110.
    Ownership: ui/controls/layout.
    Purpose: Finds the containing root and invokes callbacks->closeCf when present. CF set vetoes removal and
@@ -560,10 +572,10 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
    Local calls: UiRootStack_InvalidateAll.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiKeyboardFocus_SelectInitial [ui/controls/input].
 */
-void UiRootStack_PopCf(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_PopCf(UiRootNode *root)
 
 {
-  undefined1 closeCallbackVetoed;
+  bool closeCallbackVetoed;
   UiRootNode *node;
   UiNodeBase *parentCursor;
   
@@ -575,11 +587,11 @@ void UiRootStack_PopCf(UiRootNode *root)
   node = root->previousRoot;
   closeCallbackVetoed = false;
   if (root->callbacks->closeCf != (UiRootCloseCallbackCf *)0x0) {
-    (*root->callbacks->closeCf)(root);
+    closeCallbackVetoed = (*root->callbacks->closeCf)(root);
   }
-  if ((bool)closeCallbackVetoed) {
+  if (closeCallbackVetoed) {
     UiNode_InvalidateRoot(&node->base);
-    return;
+    return true;
   }
   g_UiKeyboardFocusNode = (UiNodeBase *)0xffffffff;
   g_UiRootNode = node;
@@ -592,16 +604,18 @@ void UiRootStack_PopCf(UiRootNode *root)
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   g_UiImageControlHoverTarget = (UiImageControl *)0x0;
   UiRootStack_InvalidateAll();
-  return;
+  return false;
 }
+
 
 /* Address: 0x004B2790.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B2740[0]@004B2740.
    Local calls: UiContainer_RelocateChildren.
 */
-void UiWindowControl_RelocateWithFrameInset
-               (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiWindowControl_RelocateWithFrameInset
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
   int frameInset;
@@ -617,6 +631,7 @@ void UiWindowControl_RelocateWithFrameInset
   return;
 }
 
+
 /* Address: 0x004B36C0.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B33D0[3]@004B33D0.
@@ -624,45 +639,46 @@ void UiWindowControl_RelocateWithFrameInset
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureRegs
    [assets/text/richtext].
 */
-void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control)
 
 {
-  word *commandStream;
-  int extraout_EAX;
-  int extraout_EDX;
-  qword qVar1;
-  int iVar2;
-  GraphicsTextureSourceAsset *pGVar3;
-  int iVar4;
+  dword dVar1;
+  dword dVar2;
+  dword dVar3;
+  dword dVar4;
+  RichTextExtentRegs RVar5;
+  TextResourceResolveEaxCf5 TVar6;
+  GraphicsTextureSizeEaxEdxCf9 GVar7;
   
-  commandStream = TextResource_Resolve((TextResourceId)control[1].firstChild);
-  RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
-  iVar4 = 0x36;
-  qVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
-  iVar2 = (int)(qVar1 >> 0x20);
-  if (iVar2 < iVar4) {
-    iVar2 = iVar4;
+  TVar6 = TextResource_Resolve((TextResourceId)control[1].firstChild);
+  RVar5 = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,TVar6.eax);
+  dVar2 = RVar5.heightPixels;
+  GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
+  dVar1 = GVar7.logicalWidthPixels;
+  dVar3 = GVar7.logicalHeightPixels;
+  if ((int)GVar7.logicalHeightPixels < (int)dVar2) {
+    dVar3 = dVar2;
   }
-  control->left = control->left + (int)qVar1;
-  control->top = control->top + iVar2;
-  iVar2 = 0x39;
-  pGVar3 = g_UiWindowTextureSource;
-  qVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(0x39,g_UiWindowTextureSource);
-  control->right = control->right - (int)qVar1;
-  control->bottom = control->bottom - (int)(qVar1 >> 0x20);
+  control->left = control->left + dVar1;
+  control->top = control->top + dVar3;
+  GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(0x39,g_UiWindowTextureSource);
+  dVar4 = GVar7.logicalHeightPixels;
+  dVar2 = GVar7.logicalWidthPixels;
+  control->right = control->right - dVar2;
+  control->bottom = control->bottom - dVar4;
   UiContainer_LayoutChildren(control);
-  control->right = control->right + extraout_EAX;
-  control->bottom = control->bottom + extraout_EDX;
-  control->layoutWidth = control->layoutWidth + extraout_EAX;
-  control->layoutHeight = control->layoutHeight + extraout_EDX;
-  control->left = control->left - iVar2;
-  control->top = control->top - (int)pGVar3;
-  control->layoutWidth = control->layoutWidth + iVar2;
-  control->layoutHeight =
-       (sdword)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 +
-               control->layoutHeight + -0x28);
+  control->right = control->right + dVar2;
+  control->bottom = control->bottom + dVar4;
+  control->layoutWidth = control->layoutWidth + dVar2;
+  control->layoutHeight = control->layoutHeight + dVar4;
+  control->left = control->left - dVar1;
+  control->top = control->top - dVar3;
+  control->layoutWidth = control->layoutWidth + dVar1;
+  control->layoutHeight = control->layoutHeight + dVar3;
   return;
 }
+
 
 /* Address: 0x004B3C00.
    Ownership: ui/controls/layout.
@@ -670,7 +686,7 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control)
    itself is converted to the 0xFFFFFFFF no-hit sentinel.
    Local calls: UiContainer_HitTestChildren.
 */
-UiNodeBase *
+UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildrenOrNoneA
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
@@ -684,78 +700,82 @@ UiContainer_HitTestChildrenOrNoneA
   return hitNode;
 }
 
+
 /* Address: 0x004B3C80.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B3C20[2]@004B3C20.
    Local calls: UiWindow_BlitTiledHorizontalEdge.
    Cross-module calls: RichTextCommandStream_DrawSingleLine [assets/text/richtext].
 */
-undefined8 __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 UiHorizontalGaugeControl_DrawFrameFillAndLabel
-          (undefined4 param_1,undefined4 param_2,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,
-          UiNodeBase *control)
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  undefined4 in_EAX;
-  int tileEnd;
-  UiNodeBase *pUVar1;
-  uint uVar2;
-  int tileEnd_00;
+  ulonglong uVar1;
+  dword tileEnd;
+  UiNodeBase *pUVar2;
   uint uVar3;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
+  int iVar4;
+  uint uVar5;
   int tileStart;
-  int extraout_ECX_02;
-  uint uVar4;
+  uint uVar6;
   word *commandStream;
-  undefined1 in_CF;
-  qword qVar5;
+  bool bVar7;
+  GraphicsTextureSizeEaxEdxCf9 GVar8;
   
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar7 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar7) {
+    iVar4 = control->layoutWidth;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x7c,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x7c,g_UiWindowTextureSource);
-    tileEnd = (int)qVar5;
+    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0x7c,g_UiWindowTextureSource);
+    tileEnd = GVar8.logicalWidthPixels;
+    iVar4 = iVar4 - tileEnd;
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x7d,extraout_ECX - tileEnd,0,tileEnd,control);
+              (clipTop,clipLeft,clipBottom,clipRight,0x7d,iVar4,0,tileEnd,control);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,extraout_ECX_00 + control->left,
-               0x7e,g_UiWindowTextureSource,g_FramebufferAccess);
-    pUVar1 = (UiNodeBase *)control[1].vtable;
-    if (control[1].parent < pUVar1) {
-      pUVar1 = control[1].parent;
+              (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar4 + control->left,0x7e,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+    pUVar2 = (UiNodeBase *)control[1].vtable;
+    if (control[1].parent < pUVar2) {
+      pUVar2 = control[1].parent;
     }
-    uVar2 = (int)pUVar1 - (int)control[1].firstChild;
-    uVar3 = 0;
-    if (uVar2 != 0 && (int)control[1].firstChild <= (int)pUVar1) {
-      qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x7f,g_UiWindowTextureSource);
-      tileStart = extraout_ECX_01 - (int)qVar5;
-      tileEnd_00 = (int)qVar5 + tileEnd;
-      uVar3 = uVar2;
-      if (tileEnd_00 <= tileStart) {
+    uVar3 = (int)pUVar2 - (int)control[1].firstChild;
+    uVar5 = 0;
+    if (uVar3 != 0 && (int)control[1].firstChild <= (int)pUVar2) {
+      uVar1 = (ulonglong)uVar3 * (ulonglong)(iVar4 - tileEnd);
+      uVar5 = (int)control[1].parent - (int)control[1].firstChild;
+      if (uVar5 == 0) {
+        uVar5 = 1;
+      }
+      uVar6 = (uint)(uVar1 % (ulonglong)uVar5);
+      GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0x7f,g_UiWindowTextureSource);
+      tileStart = ((int)(uVar1 / uVar5) + (uint)CARRY4(uVar6,uVar6) + tileEnd) -
+                  GVar8.logicalWidthPixels;
+      iVar4 = GVar8.logicalWidthPixels + tileEnd;
+      uVar5 = uVar3;
+      if (iVar4 <= tileStart) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x80,tileStart,0,tileEnd_00,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x80,tileStart,0,iVar4,control);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
                   (clipTop,clipLeft,clipBottom,clipRight,control->top,tileEnd + control->left,0x7f,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,
-                   extraout_ECX_02 + control->left,0x81,g_UiWindowTextureSource,g_FramebufferAccess)
-        ;
+                  (clipTop,clipLeft,clipBottom,clipRight,control->top,tileStart + control->left,0x81
+                   ,g_UiWindowTextureSource,g_FramebufferAccess);
       }
     }
     if (((uint)control[1].nextSibling & 1) != 0) {
-      uVar2 = (int)control[1].parent - (int)control[1].firstChild;
-      if (uVar2 == 0) {
-        uVar2 = 1;
+      uVar3 = (int)control[1].parent - (int)control[1].firstChild;
+      if (uVar3 == 0) {
+        uVar3 = 1;
       }
-      uVar4 = (uint)(((ulonglong)uVar3 * 100) % (ulonglong)uVar2);
-      uVar3 = (int)(((ulonglong)uVar3 * 100) / (ulonglong)uVar2) + (uint)CARRY4(uVar4,uVar4);
-      if (uVar3 == 100) {
+      uVar6 = (uint)(((ulonglong)uVar5 * 100) % (ulonglong)uVar3);
+      uVar5 = (int)(((ulonglong)uVar5 * 100) / (ulonglong)uVar3) + (uint)CARRY4(uVar6,uVar6);
+      if (uVar5 == 100) {
         g_UiWindowPercentTextUtf16[0] = 0x31;
         g_UiWindowPercentTextUtf16[1] = 0x30;
         g_UiWindowPercentTextUtf16[2] = 0x30;
@@ -763,8 +783,8 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
         g_UiWindowPercentTextUtf16[4] = 0;
       }
       else {
-        g_UiWindowPercentTextUtf16[1] = (short)((ulonglong)uVar3 % 10) + 0x30;
-        g_UiWindowPercentTextUtf16[0] = (short)((ulonglong)uVar3 / 10) + 0x30;
+        g_UiWindowPercentTextUtf16[1] = (short)((ulonglong)uVar5 % 10) + 0x30;
+        g_UiWindowPercentTextUtf16[0] = (short)((ulonglong)uVar5 / 10) + 0x30;
         g_UiWindowPercentTextUtf16[2] = 0x25;
         g_UiWindowPercentTextUtf16[3] = 0;
       }
@@ -779,22 +799,22 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
     }
     (*g_GraphicsFramebufferEndAccess)();
   }
-  return CONCAT44(param_2,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004B46A0.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[0]@004B4650.
    Local calls: UiContainer_RelocateChildren.
 */
-void UiLayoutContainerControl_RelocateChildren
-               (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiLayoutContainerControl_RelocateChildren
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
   UiNodeBase *pUVar1;
-  int extraout_ECX;
   UiNodeBase **ppUVar2;
-  int extraout_EDX;
   UiNodeBase **childPointerCursor;
   
   ppUVar2 = &control[1].firstChild;
@@ -807,38 +827,44 @@ void UiLayoutContainerControl_RelocateChildren
     pUVar1 = (UiNodeBase *)((int)&pUVar1[-1].nodeFlags + 3);
   } while (pUVar1 != (UiNodeBase *)0x0);
   childPointerCursor = &control[1].firstChild;
+  pUVar1 = control[1].nextSibling;
   do {
     control->firstChild = *childPointerCursor;
     UiContainer_RelocateChildren(relocationDelta,control);
-    childPointerCursor = (UiNodeBase **)(extraout_EDX + 4);
-  } while (extraout_ECX != 1);
+    childPointerCursor = childPointerCursor + 1;
+    pUVar1 = (UiNodeBase *)((int)&pUVar1[-1].nodeFlags + 3);
+  } while (pUVar1 != (UiNodeBase *)0x0);
   control->firstChild = control[1].firstChild;
   return;
 }
+
 
 /* Address: 0x004B4700.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[3]@004B4650.
    Local calls: UiContainer_LayoutChildren.
 */
-void UiLayoutContainerControl_LayoutChildren(UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiLayoutContainerControl_LayoutChildren(UiNodeBase *control)
 
 {
-  int extraout_ECX;
-  int extraout_EDX;
+  UiNodeBase *pUVar1;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
   childPointerCursor = &control[1].firstChild;
   savedFirstChild = control->firstChild;
+  pUVar1 = control[1].nextSibling;
   do {
     control->firstChild = *childPointerCursor;
     UiContainer_LayoutChildren(control);
-    childPointerCursor = (UiNodeBase **)(extraout_EDX + 4);
-  } while (extraout_ECX != 1);
+    childPointerCursor = childPointerCursor + 1;
+    pUVar1 = (UiNodeBase *)((int)&pUVar1[-1].nodeFlags + 3);
+  } while (pUVar1 != (UiNodeBase *)0x0);
   control->firstChild = savedFirstChild;
   return;
 }
+
 
 /* Address: 0x004B4790.
    Ownership: ui/controls/layout.
@@ -846,7 +872,7 @@ void UiLayoutContainerControl_LayoutChildren(UiNodeBase *control)
    itself is converted to the 0xFFFFFFFF no-hit sentinel.
    Local calls: UiContainer_HitTestChildren.
 */
-UiNodeBase *
+UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildrenOrNoneB
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
@@ -860,61 +886,69 @@ UiContainer_HitTestChildrenOrNoneB
   return hitNode;
 }
 
+
 /* Address: 0x004B47B0.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[14]@004B4650.
    Local calls: UiContainer_SuppressActionId.
 */
-void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control)
 
 {
-  int extraout_ECX;
-  int extraout_EDX;
+  UiNodeBase *pUVar1;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
   childPointerCursor = &control[1].firstChild;
   savedFirstChild = control->firstChild;
+  pUVar1 = control[1].nextSibling;
   do {
     control->firstChild = *childPointerCursor;
     UiContainer_SuppressActionId(actionId,control);
-    childPointerCursor = (UiNodeBase **)(extraout_EDX + 4);
-  } while (extraout_ECX != 1);
+    childPointerCursor = childPointerCursor + 1;
+    pUVar1 = (UiNodeBase *)((int)&pUVar1[-1].nodeFlags + 3);
+  } while (pUVar1 != (UiNodeBase *)0x0);
   control->firstChild = savedFirstChild;
   return;
 }
+
 
 /* Address: 0x004B4800.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[15]@004B4650.
    Local calls: UiContainer_UnsuppressActionId.
 */
-void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control)
 
 {
-  int extraout_ECX;
-  int extraout_EDX;
+  UiNodeBase *pUVar1;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
   childPointerCursor = &control[1].firstChild;
   savedFirstChild = control->firstChild;
+  pUVar1 = control[1].nextSibling;
   do {
     control->firstChild = *childPointerCursor;
     UiContainer_UnsuppressActionId(actionId,control);
-    childPointerCursor = (UiNodeBase **)(extraout_EDX + 4);
-  } while (extraout_ECX != 1);
+    childPointerCursor = childPointerCursor + 1;
+    pUVar1 = (UiNodeBase *)((int)&pUVar1[-1].nodeFlags + 3);
+  } while (pUVar1 != (UiNodeBase *)0x0);
   control->firstChild = savedFirstChild;
   return;
 }
+
 
 /* Address: 0x004B4D10.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[0]@004B4CC0.
    Local calls: UiContainer_RelocateChildren.
 */
-void UiResizableWindowControl_RelocateAndRefreshInteractionState
-               (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiResizableWindowControl_RelocateAndRefreshInteractionState
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
   UiContainer_RelocateChildren(relocationDelta,control);
@@ -928,33 +962,32 @@ void UiResizableWindowControl_RelocateAndRefreshInteractionState
   return;
 }
 
+
 /* Address: 0x004B53E0.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[8]@004B4CC0.
    Local calls: UiRootStack_InvalidateAll.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiResizableWindowControl_UpdateMoveOrResize
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiResizableWindowControl_UpdateMoveOrResize
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *pUVar1;
   sdword sVar2;
   sdword sVar3;
-  int extraout_ECX;
-  qword qVar9;
   int iVar4;
   int iVar5;
-  int extraout_EDX;
   int iVar6;
   int iVar7;
   bool bVar8;
+  GraphicsTextureSizeEaxEdxCf9 GVar9;
   
   iVar4 = pointerX - control->left;
   iVar6 = pointerY - control->top;
   if (((uint)control[1].nextSibling & 0x2000) == 0) {
-    bVar8 = false;
     if (((uint)control[1].nextSibling & 0x800) == 0) {
       if (((uint)control[1].nextSibling & 0x1000) == 0) {
         if (((uint)control[1].nextSibling & 0x4000) != 0) {
@@ -1022,10 +1055,11 @@ void UiResizableWindowControl_UpdateMoveOrResize
         }
       }
       else {
-        qVar9._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(4,g_UiWindowTextureSource);
-        bVar8 = (uint)qVar9._4_4_ < (uint)(qword)qVar9;
-        (*g_GraphicsTextureSourceTestOpaquePixel)
-                  (iVar6,iVar4,0,(int)qVar9._4_4_ - (int)(qword)qVar9,4,g_UiWindowTextureSource);
+        iVar7 = control->layoutWidth;
+        GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(4,g_UiWindowTextureSource);
+        bVar8 = (*g_GraphicsTextureSourceTestOpaquePixel)
+                          (iVar6,iVar4,0,iVar7 - GVar9.logicalWidthPixels,4,g_UiWindowTextureSource)
+        ;
         if (bVar8) {
           if (((uint)control[1].nextSibling & 0x100000) != 0) {
             return;
@@ -1042,7 +1076,7 @@ void UiResizableWindowControl_UpdateMoveOrResize
       }
     }
     else {
-      (*g_GraphicsTextureSourceTestOpaquePixel)(iVar6,iVar4,0,0,1,g_UiWindowTextureSource);
+      bVar8 = (*g_GraphicsTextureSourceTestOpaquePixel)(iVar6,iVar4,0,0,1,g_UiWindowTextureSource);
       if (bVar8) {
         if (((uint)control[1].nextSibling & 0x80000) != 0) {
           return;
@@ -1059,17 +1093,22 @@ void UiResizableWindowControl_UpdateMoveOrResize
       UiNode_InvalidateRoot(control);
     }
   }
-  else if ((iVar6 != control[1].rightOffset) || (iVar4 != control[1].topOffset)) {
-    UiRootStack_InvalidateAll();
-    control->left = control->left + extraout_ECX;
-    control->top = control->top + extraout_EDX;
-    control->right = control->right + extraout_ECX;
-    control->bottom = control->bottom + extraout_EDX;
-    (*control->vtable->layout)(control);
-    UiNode_InvalidateRoot(control);
+  else {
+    iVar4 = iVar4 - control[1].topOffset;
+    iVar6 = iVar6 - control[1].rightOffset;
+    if ((iVar6 != 0) || (iVar4 != 0)) {
+      UiRootStack_InvalidateAll();
+      control->left = control->left + iVar4;
+      control->top = control->top + iVar6;
+      control->right = control->right + iVar4;
+      control->bottom = control->bottom + iVar6;
+      (*control->vtable->layout)(control);
+      UiNode_InvalidateRoot(control);
+    }
   }
   return;
 }
+
 
 /* Address: 0x004BC660.
    Ownership: ui/controls/layout.
@@ -1077,60 +1116,91 @@ void UiResizableWindowControl_UpdateMoveOrResize
    and stores the parent width and height as the resolved layout size.
    Local calls: UiContainer_LayoutChildren.
 */
-void UiImageControl_LayoutChildrenToParent(UiImageControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiImageControl_LayoutChildrenToParent(UiImageControl *control)
 
 {
   sdword *psVar1;
   int iVar2;
   int iVar3;
-  UiNodeBase *pUVar4;
-  sdword sVar5;
-  sdword sVar6;
+  int iVar4;
+  int iVar5;
+  UiNodeBase *pUVar6;
   sdword sVar7;
-  int extraout_ECX;
-  int extraout_EDX;
+  sdword sVar8;
+  sdword sVar9;
   
-  pUVar4 = (control->selectable).base.parent;
-  sVar5 = pUVar4->top;
-  sVar6 = pUVar4->right;
-  sVar7 = pUVar4->bottom;
+  pUVar6 = (control->selectable).base.parent;
+  sVar7 = pUVar6->top;
+  sVar8 = pUVar6->right;
+  sVar9 = pUVar6->bottom;
   LOCK();
-  (control->selectable).base.left = pUVar4->left;
-  UNLOCK();
-  LOCK();
-  (control->selectable).base.top = sVar5;
-  UNLOCK();
-  LOCK();
-  psVar1 = &(control->selectable).base.right;
+  psVar1 = &(control->selectable).base.left;
   iVar2 = *psVar1;
-  *psVar1 = sVar6;
+  *psVar1 = pUVar6->left;
   UNLOCK();
   LOCK();
-  psVar1 = &(control->selectable).base.bottom;
+  psVar1 = &(control->selectable).base.top;
   iVar3 = *psVar1;
   *psVar1 = sVar7;
   UNLOCK();
+  LOCK();
+  psVar1 = &(control->selectable).base.right;
+  iVar4 = *psVar1;
+  *psVar1 = sVar8;
+  UNLOCK();
+  LOCK();
+  psVar1 = &(control->selectable).base.bottom;
+  iVar5 = *psVar1;
+  *psVar1 = sVar9;
+  UNLOCK();
   UiContainer_LayoutChildren((UiNodeBase *)control);
-  (control->selectable).base.left = extraout_ECX;
-  (control->selectable).base.top = extraout_EDX;
-  (control->selectable).base.right = iVar2;
-  (control->selectable).base.bottom = iVar3;
-  (control->selectable).base.layoutWidth = iVar2 - extraout_ECX;
-  (control->selectable).base.layoutHeight = iVar3 - extraout_EDX;
+  (control->selectable).base.left = iVar2;
+  (control->selectable).base.top = iVar3;
+  (control->selectable).base.right = iVar4;
+  (control->selectable).base.bottom = iVar5;
+  (control->selectable).base.layoutWidth = iVar4 - iVar2;
+  (control->selectable).base.layoutHeight = iVar5 - iVar3;
   return;
 }
+
 
 /* Address: 0x004AF3B0.
    Ownership: ui/controls/layout.
    Purpose: Flushes keyboard and pointer input through their installed service slots, then clears the pending UI
    frame-tick counter.
 */
-void __cdecl UiFrame_FlushInputAndResetPendingTicks(void)
+void __thandor_void_preserve_eax_ecx_edx UiFrame_FlushInputAndResetPendingTicks(void)
 
 {
   (*g_KeyboardFlushEvents)();
   (*g_PointerFlushEvents)();
   g_UiPendingFrameTicks = 0;
+  return;
+}
+
+
+/* Address: 0x004AF950.
+   Ownership: ui/controls/layout.
+   Purpose: Runs the UI frame loop until the root closes and presents the final frame.
+*/
+void __thandor_void_preserve_eax_ecx_edx UiFrame_RunUntilRootClosedAndPresentFinalFrame(void)
+
+{
+  g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+  g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
+  UiFrame_FlushInputAndResetPendingTicks();
+  do {
+    UiKeyboard_DispatchPendingEvents();
+    UiPointer_DispatchPendingEvents();
+    UiFrame_Update(0);
+    UiActionQueue_DispatchPending();
+    UiFrame_Draw();
+    (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+  } while (g_UiRootNode != (UiRootNode *)0xffffffff);
+  g_UiTooltipState.targetNode = (UiNodeBase *)0x0;
+  UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
+  (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   return;
 }
 
@@ -1140,7 +1210,7 @@ void __cdecl UiFrame_FlushInputAndResetPendingTicks(void)
    active/suppressed flags, and invalidates the previous and promoted roots.
    Cross-module calls: UiKeyboardFocus_SelectInitial [ui/controls/input], UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiRootStack_BringToFront(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root)
 
 {
   UiRootNode *pUVar1;
@@ -1168,8 +1238,9 @@ void UiRootStack_BringToFront(UiRootNode *root)
   (*((root->base).vtable)->applyFlags)(1,0xffffffff,&root->base);
   UiNode_InvalidateRoot(&control->base);
   UiNode_InvalidateRoot(&root->base);
-  return;
+  return false;
 }
+
 
 /* Address: 0x004B0F30.
    Ownership: ui/controls/layout.
@@ -1177,33 +1248,33 @@ void UiRootStack_BringToFront(UiRootNode *root)
    installs UI action-handler page zero, and resets the UI root stack to its 0xFFFFFFFF sentinel.
    Cross-module calls: TextResourcePage_Load [assets/text/resources], UiActionHandlers_SetPageCf [ui/core/runtime].
 */
-void UiWindowResources_Init(void)
+void __thandor_preserve_eax UiWindowResources_Init(void)
 
 {
-  dword in_ECX;
-  dword arg0;
-  dword in_EDX;
-  undefined8 uVar1;
+  GraphicsTextureSourceLoadEaxCf5 GVar1;
+  FatalErrorEaxCf5 FVar2;
+  TextResourceLoadEaxCf5 TVar3;
   
-  (*g_GraphicsTextureSourceLoadPackageAsset)(in_ECX,in_EDX,(word *)u_engine_win_gfx_004b0f06);
-  uVar1 = (*g_FatalErrorPrimaryDispatchCf)();
-  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)uVar1;
-  (*g_GraphicsTextureSourceLoadPackageAsset)
-            (arg0,(dword)((ulonglong)uVar1 >> 0x20),(word *)(u__engine_winclass_gfx_004b0eb6 + 1));
-  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)(*g_FatalErrorPrimaryDispatchCf)();
-  TextResourcePage_Load(1,(word *)u_texte_winclass_str_004b0ee0);
-  (*g_FatalErrorPrimaryDispatchCf)();
+  GVar1 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_engine_win_gfx_004b0f06);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)((dword)GVar1.eax,GVar1.carry);
+  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)FVar2.eax;
+  GVar1 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)(u__engine_winclass_gfx_004b0eb6 + 1));
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)((dword)GVar1.eax,GVar1.carry);
+  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)FVar2.eax;
+  TVar3 = TextResourcePage_Load(1,(word *)u_texte_winclass_str_004b0ee0);
+  (*g_FatalErrorPrimaryDispatchCf)(TVar3.errorOrValue,TVar3.carry);
   UiActionHandlers_SetPageCf(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = (UiRootNode *)0xffffffff;
   return;
 }
+
 
 /* Address: 0x004B1240.
    Ownership: ui/controls/layout.
    Purpose: Recomputes every UiRootNode rectangle from framebuffer dimensions, fixed offsets, and Q31 anchors,
    invokes each root layout method, and follows previousRoot toward the back of the stack.
 */
-void UiRootStack_Relayout(void)
+void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
 
 {
   longlong lVar1;
@@ -1235,13 +1306,14 @@ void UiRootStack_Relayout(void)
   return;
 }
 
+
 /* Address: 0x004B3EE0.
    Ownership: ui/controls/layout.
    Purpose: Shared UiNodeVtable pointer-move callback that consumes the three pointer-move arguments and returns
    constant code 6. The current callers ignore EAX, so the name preserves the verified constant rather than
    assigning an unproven status meaning.
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiContainer_PointerMoveReturnCode6
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
@@ -1249,60 +1321,65 @@ UiContainer_PointerMoveReturnCode6
   return 6;
 }
 
+
 /* Address: 0x004B4740.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[13]@004B4650.
    Cross-module calls: UiNode_ApplyFlagsRecursive [ui/core/runtime].
 */
-void UiLayoutContainerControl_ApplyFlagsRecursive
-               (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiLayoutContainerControl_ApplyFlagsRecursive
+          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
 
 {
-  int extraout_ECX;
-  int extraout_EDX;
+  UiNodeBase *pUVar1;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
   childPointerCursor = &control[1].firstChild;
   savedFirstChild = control->firstChild;
+  pUVar1 = control[1].nextSibling;
   do {
     control->firstChild = *childPointerCursor;
     UiNode_ApplyFlagsRecursive(setMask,retainMask,control);
-    childPointerCursor = (UiNodeBase **)(extraout_EDX + 4);
-  } while (extraout_ECX != 1);
+    childPointerCursor = childPointerCursor + 1;
+    pUVar1 = (UiNodeBase *)((int)&pUVar1[-1].nodeFlags + 3);
+  } while (pUVar1 != (UiNodeBase *)0x0);
   control->firstChild = savedFirstChild;
   return;
 }
+
 
 /* Address: 0x004B5120.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[4]@004B4CC0.
 */
-void UiResizableWindowControl_BeginMoveResizeOrWindowAction
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiResizableWindowControl_BeginMoveResizeOrWindowAction
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   int arg1;
   uint arg0;
   uint uVar1;
-  qword qVar4;
   int iVar2;
   bool bVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
   arg1 = pointerX - control->left;
   arg0 = pointerY - control->top;
-  bVar3 = false;
   if ((((uint)control[1].nextSibling & 8) != 0) &&
-     ((*g_GraphicsTextureSourceTestOpaquePixel)(arg0,arg1,0,0,1,g_UiWindowTextureSource), bVar3)) {
+     (bVar3 = (*g_GraphicsTextureSourceTestOpaquePixel)(arg0,arg1,0,0,1,g_UiWindowTextureSource),
+     bVar3)) {
     control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x800);
     return;
   }
   if (((uint)control[1].nextSibling & 0x10) != 0) {
-    qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(4,g_UiWindowTextureSource);
-    bVar3 = (uint)qVar4._4_4_ < (uint)(qword)qVar4;
-    (*g_GraphicsTextureSourceTestOpaquePixel)
-              (arg0,arg1,0,(int)qVar4._4_4_ - (int)(qword)qVar4,4,g_UiWindowTextureSource);
+    iVar2 = control->layoutWidth;
+    GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(4,g_UiWindowTextureSource);
+    bVar3 = (*g_GraphicsTextureSourceTestOpaquePixel)
+                      (arg0,arg1,0,iVar2 - GVar4.logicalWidthPixels,4,g_UiWindowTextureSource);
     if (bVar3) {
       control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x1000);
       return;
@@ -1310,11 +1387,10 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
   }
   if (((uint)control[1].nextSibling & 0x80) == 0) {
     if (((uint)control[1].nextSibling & 0x40) != 0) {
-      qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x10,g_UiWindowTextureSource);
-      iVar2 = (int)(qVar4 >> 0x20);
-      if ((((arg1 < (int)qVar4) || ((int)arg0 < iVar2)) ||
-          (control->layoutWidth - (int)qVar4 <= arg1)) ||
-         (control->layoutHeight - iVar2 <= (int)arg0)) {
+      GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x10,g_UiWindowTextureSource);
+      if ((((arg1 < (int)GVar4.logicalWidthPixels) || ((int)arg0 < (int)GVar4.logicalHeightPixels))
+          || ((int)(control->layoutWidth - GVar4.logicalWidthPixels) <= arg1)) ||
+         ((int)(control->layoutHeight - GVar4.logicalHeightPixels) <= (int)arg0)) {
         iVar2 = control->layoutHeight - g_UiWindowResizeBorderThickness;
         if (arg1 < g_UiWindowResizeBorderThickness) {
           uVar1 = 0x80004000;
@@ -1351,11 +1427,12 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
   return;
 }
 
+
 /* Address: 0x004B5660.
    Ownership: ui/controls/layout.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[10]@004B4CC0.
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiResizableWindowControl_QueryResizeCursorCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
@@ -1364,7 +1441,7 @@ UiResizableWindowControl_QueryResizeCursorCode
   int iVar2;
   int iVar3;
   int iVar4;
-  qword qVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar5;
   
   GVar1 = 0;
   if ((((uint)control[1].nextSibling & 0x40) != 0) && (((uint)control[1].nextSibling & 0x80) == 0))
@@ -1373,10 +1450,10 @@ UiResizableWindowControl_QueryResizeCursorCode
     if ((control->left <= pointerX) &&
        (((iVar3 = pointerY - control->top, control->top <= pointerY &&
          (iVar4 < control->layoutWidth)) && (iVar3 < control->layoutHeight)))) {
-      qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x10,g_UiWindowTextureSource);
-      iVar2 = (int)(qVar5 >> 0x20);
-      if ((((iVar4 < (int)qVar5) || (iVar3 < iVar2)) || (control->layoutWidth - (int)qVar5 <= iVar4)
-          ) || (GVar1 = 0, control->layoutHeight - iVar2 <= iVar3)) {
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x10,g_UiWindowTextureSource);
+      if ((((iVar4 < (int)GVar5.logicalWidthPixels) || (iVar3 < (int)GVar5.logicalHeightPixels)) ||
+          ((int)(control->layoutWidth - GVar5.logicalWidthPixels) <= iVar4)) ||
+         (GVar1 = 0, (int)(control->layoutHeight - GVar5.logicalHeightPixels) <= iVar3)) {
         iVar2 = control->layoutHeight - g_UiWindowResizeBorderThickness;
         if (iVar4 < g_UiWindowResizeBorderThickness) {
           GVar1 = 2;
@@ -1399,6 +1476,7 @@ UiResizableWindowControl_QueryResizeCursorCode
   return GVar1;
 }
 
+
 /* Address: 0x00569A80.
    Ownership: ui/controls/layout.
    Purpose: Computes a compact grid for itemCount with at most maxRows. Typed parameters: p0
@@ -1406,7 +1484,7 @@ UiResizableWindowControl_QueryResizeCursorCode
    explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-UiGridDimensionsEdxEax8
+UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
 
 {
@@ -1432,53 +1510,56 @@ UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
   return CONCAT44(rowCount,columnCount);
 }
 
+
 /* Address: 0x00569AE0.
    Ownership: ui/controls/layout.
    Purpose: Returns one column in EAX and itemCount rows in EDX. Typed parameters: p0
    itemCount→UiControlCount_V338. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-UiGridDimensionsEdxEax8 UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
+UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
+UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 
 {
   return CONCAT44(itemCount,1);
 }
 
+
 /* Address: 0x004B0940.
    Ownership: ui/controls/layout.
    Purpose: Handles ui container suppress action id.
 */
-void UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiActionId extraout_ECX;
   
   for (control_00 = control->firstChild; control_00 != (UiNodeBase *)0xffffffff;
       control_00 = control_00->nextSibling) {
     (*control_00->vtable->suppressActionId)(actionId,control_00);
-    actionId = extraout_ECX;
   }
   return;
 }
+
 
 /* Address: 0x004B0990.
    Ownership: ui/controls/layout.
    Purpose: Handles ui container unsuppress action id.
 */
-void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiActionId extraout_ECX;
   
   for (control_00 = control->firstChild; control_00 != (UiNodeBase *)0xffffffff;
       control_00 = control_00->nextSibling) {
     (*control_00->vtable->unsuppressActionId)(actionId,control_00);
-    actionId = extraout_ECX;
   }
   return;
 }
+
 
 /* Address: 0x004B1420.
    Ownership: ui/controls/layout.
@@ -1487,34 +1568,32 @@ void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
    imageDelta→SerializedImageRelocationDelta_V343. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *firstNode)
+void __thandor_void_preserve_eax_ecx
+UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *firstNode)
 
 {
-  int extraout_ECX;
   int currentImageDelta;
   
-  currentImageDelta = imageDelta;
   for (; (firstNode != (UiNodeBase *)0xffffffff && (firstNode->layoutWidth == -1));
       firstNode = firstNode->nextSibling) {
     firstNode->layoutWidth = ~firstNode->layoutWidth;
     if (firstNode->nextSibling != (UiNodeBase *)0xffffffff) {
       firstNode->nextSibling =
-           (UiNodeBase *)((int)&firstNode->nextSibling->nextSibling + currentImageDelta);
+           (UiNodeBase *)((int)&firstNode->nextSibling->nextSibling + imageDelta);
     }
     if (firstNode->firstChild != (UiNodeBase *)0xffffffff) {
-      firstNode->firstChild =
-           (UiNodeBase *)((int)&firstNode->firstChild->nextSibling + currentImageDelta);
+      firstNode->firstChild = (UiNodeBase *)((int)&firstNode->firstChild->nextSibling + imageDelta);
     }
     if (firstNode->parent != (UiNodeBase *)0xffffffff) {
-      firstNode->parent = (UiNodeBase *)((int)&firstNode->parent->nextSibling + currentImageDelta);
+      firstNode->parent = (UiNodeBase *)((int)&firstNode->parent->nextSibling + imageDelta);
     }
     firstNode->nodeFlags =
          firstNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
     (*firstNode->vtable->relocate)(imageDelta,firstNode);
-    currentImageDelta = extraout_ECX;
   }
   return;
 }
+
 
 /* Address: 0x004B4850.
    Ownership: ui/controls/layout.
@@ -1523,21 +1602,19 @@ void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeB
    currently exists.
    Cross-module calls: UiKeyboardFocus_AcquireIfNone [ui/controls/input].
 */
-void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
+void __thandor_void_preserve_eax_ecx_edx
+UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
 
 {
   UiNodeBase *node;
-  UiNodeBase *root_00;
-  undefined4 *extraout_EDX;
   
-  node = root->firstChild;
-  while (node != (UiNodeBase *)0xffffffff) {
+  for (node = root->firstChild; node != (UiNodeBase *)0xffffffff; node = node->nextSibling) {
     UiKeyboardFocus_AcquireIfNone(node);
-    UiNodeSubtree_AcquireKeyboardFocusDefaults(root_00);
-    node = (UiNodeBase *)*extraout_EDX;
+    UiNodeSubtree_AcquireKeyboardFocusDefaults(node);
   }
   return;
 }
+
 
 /* Address: 0x004B4890.
    Ownership: ui/controls/layout.
@@ -1546,21 +1623,18 @@ void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
    subtree is deactivated.
    Cross-module calls: UiKeyboardFocus_ReleaseNode [ui/controls/input].
 */
-void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
+void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
 
 {
   UiNodeBase *node;
-  UiNodeBase *root_00;
-  undefined4 *extraout_EDX;
   
-  node = root->firstChild;
-  while (node != (UiNodeBase *)0xffffffff) {
+  for (node = root->firstChild; node != (UiNodeBase *)0xffffffff; node = node->nextSibling) {
     UiKeyboardFocus_ReleaseNode(node);
-    UiNodeSubtree_ReleaseKeyboardFocus(root_00);
-    node = (UiNodeBase *)*extraout_EDX;
+    UiNodeSubtree_ReleaseKeyboardFocus(node);
   }
   return;
 }
+
 
 /* Address: 0x004B50D0.
    Ownership: ui/controls/layout.
@@ -1568,26 +1642,27 @@ void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
    logical height of window subresource 0x0C, restores top, and adds that height to layoutHeight.
    Local calls: UiContainer_LayoutChildren.
 */
-undefined8 UiContainer_LayoutWithOptionalWindowHeaderOffset(UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiContainer_LayoutWithOptionalWindowHeaderOffset(UiNodeBase *control)
 
 {
-  undefined4 in_EAX;
-  undefined4 in_EDX;
-  int extraout_EDX;
-  int extraout_EDX_00;
+  dword dVar1;
+  GraphicsTextureSizeEaxEdxCf9 GVar2;
   
   if (((uint)control[1].nextSibling & 4) == 0) {
     UiContainer_LayoutChildren(control);
   }
   else {
-    (*g_GraphicsTextureSourceGetLogicalSize)(0xc,g_UiWindowTextureSource);
-    control->top = control->top + extraout_EDX;
+    GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc,g_UiWindowTextureSource);
+    dVar1 = GVar2.logicalHeightPixels;
+    control->top = control->top + dVar1;
     UiContainer_LayoutChildren(control);
-    control->top = control->top - extraout_EDX_00;
-    control->layoutHeight = control->layoutHeight + extraout_EDX_00;
+    control->top = control->top - dVar1;
+    control->layoutHeight = control->layoutHeight + dVar1;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004AF680.
    Ownership: ui/controls/layout.
@@ -1598,11 +1673,13 @@ undefined8 UiContainer_LayoutWithOptionalWindowHeaderOffset(UiNodeBase *control)
    Cross-module calls: UiTree_AdvanceSpriteButtonAnimations [ui/controls/buttons], UiTooltip_TickCountdown
    [ui/controls/text], DirectInputMouse_RefreshDeviceIfIdle [platform/input/devices].
 */
-void UiFrame_Update(UiStopMessageCode stopMessageCode)
+void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessageCode)
 
 {
+  dword dVar1;
+  UiRootNode *arg0;
+  dword dVar2;
   dword pendingFrameTicks;
-  int extraout_ECX;
   bool hadPendingFrameTicks;
   UiRootNode *rootNode;
   UiRootCallbacks *rootCallbacks;
@@ -1610,29 +1687,30 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   do {
     pendingFrameTicks = (*g_Win32PumpMessages)();
+    dVar2 = pendingFrameTicks;
+    dVar1 = g_UiPendingFrameTicks;
+    arg0 = g_UiRootNode;
     if (pendingFrameTicks == stopMessageCode) break;
+    dVar2 = pendingFrameTicks;
   } while (pendingFrameTicks == g_UiPendingFrameTicks);
-  hadPendingFrameTicks = g_UiPendingFrameTicks != 0;
-  g_UiPendingFrameTicks = pendingFrameTicks;
-  if (hadPendingFrameTicks) {
-    do {
-      rootNode = g_UiRootNode;
-      if (g_UiRootNode != (UiRootNode *)0xffffffff) {
-        UiTree_AdvanceSpriteButtonAnimations(&g_UiRootNode->base);
-        rootCallbacks = rootNode->callbacks;
-        if (rootCallbacks->frameUpdate != (UiRootFrameCallback *)0x0) {
-          (*rootCallbacks->frameUpdate)(rootNode);
-        }
+  for (; g_UiPendingFrameTicks = dVar2, g_UiRootNode = arg0, dVar1 != 0; dVar1 = dVar1 - 1) {
+    if (arg0 != (UiRootNode *)0xffffffff) {
+      UiTree_AdvanceSpriteButtonAnimations(&arg0->base);
+      rootCallbacks = arg0->callbacks;
+      if (rootCallbacks->frameUpdate != (UiRootFrameCallback *)0x0) {
+        (*rootCallbacks->frameUpdate)(arg0);
       }
-      if (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff) {
-        (*g_UiPointerCaptureTarget->vtable->tick)(g_UiPointerCaptureTarget);
-      }
-      if ((g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff) &&
-         (g_UiKeyboardFocusNode != g_UiPointerCaptureTarget)) {
-        (*g_UiKeyboardFocusNode->vtable->tick)(g_UiKeyboardFocusNode);
-      }
-      UiTooltip_TickCountdown();
-    } while (extraout_ECX != 1);
+    }
+    if (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff) {
+      (*g_UiPointerCaptureTarget->vtable->tick)(g_UiPointerCaptureTarget);
+    }
+    if ((g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff) &&
+       (g_UiKeyboardFocusNode != g_UiPointerCaptureTarget)) {
+      (*g_UiKeyboardFocusNode->vtable->tick)(g_UiKeyboardFocusNode);
+    }
+    UiTooltip_TickCountdown();
+    dVar2 = g_UiPendingFrameTicks;
+    arg0 = g_UiRootNode;
   }
   g_DirectInputMouseRefreshCountdown = g_DirectInputMouseRefreshCountdown - 1;
   if (g_DirectInputMouseRefreshCountdown == 0) {
@@ -1644,18 +1722,18 @@ void UiFrame_Update(UiStopMessageCode stopMessageCode)
   return;
 }
 
+
 /* Address: 0x004AF7E0.
    Ownership: ui/controls/layout.
    Purpose: Draws the root stack from back to front using each node's drawClipped method, then draws the visible
    tooltip.
    Cross-module calls: UiTooltip_Draw [ui/controls/text].
 */
-void UiFrame_Draw(void)
+void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
 
 {
   int clipRight;
   int rootsRemaining;
-  int extraout_ECX;
   int clipBottom;
   dword clipTop;
   dword clipLeft;
@@ -1690,7 +1768,6 @@ void UiFrame_Draw(void)
       if ((clipRight < (int)clipLeft) && (clipBottom < (int)clipTop)) {
         (*((control->base).vtable)->drawClipped)
                   (clipTop,clipLeft,clipBottom,clipRight,&control->base);
-        rootsRemaining = extraout_ECX;
       }
       rootsRemaining = rootsRemaining + -1;
     } while (rootsRemaining != 0);
@@ -1699,11 +1776,12 @@ void UiFrame_Draw(void)
   return;
 }
 
+
 /* Address: 0x004B0800.
    Ownership: ui/controls/layout.
    Purpose: Tests eligible children in reverse visual order and calls their hitTest method.
 */
-UiNodeBase *
+UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildren
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
@@ -1738,6 +1816,7 @@ UiContainer_HitTestChildren
   return control;
 }
 
+
 /* Address: 0x004B13B0.
    Ownership: ui/controls/layout.
    Purpose: Forwards a tiled source-alpha interior blit using the shared UI window texture and framebuffer,
@@ -1747,11 +1826,12 @@ UiContainer_HitTestChildren
    data remain unchanged. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297,
    p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297.
 */
-void UiWindow_BlitTiledInterior
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,
-               UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,UiPixelCoordinate tileBottom,
-               UiPixelCoordinate tileRight,void *node)
+void __thandor_void_preserve_eax_ecx_edx
+UiWindow_BlitTiledInterior
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileTop
+          ,UiPixelCoordinate tileLeft,UiPixelCoordinate tileBottom,UiPixelCoordinate tileRight,
+          void *node)
 
 {
   (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
@@ -1762,16 +1842,17 @@ void UiWindow_BlitTiledInterior
   return;
 }
 
+
 /* Address: 0x004B0510.
    Ownership: ui/controls/layout.
    Purpose: Relocates serialized next/child/parent pointers for unresolved children, clears transient node flag
    bits 0x04 and 0x80, and calls each child's vtable relocate method.
 */
-void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  int extraout_ECX;
   
   for (control_00 = control->firstChild;
       (control_00 != (UiNodeBase *)0xffffffff && (control_00->layoutWidth == -1));
@@ -1791,35 +1872,33 @@ void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,Ui
     control_00->nodeFlags =
          control_00->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
     (*control_00->vtable->relocate)(relocationDelta,control_00);
-    relocationDelta = extraout_ECX;
   }
   return;
 }
+
 
 /* Address: 0x004B05B0.
    Ownership: ui/controls/layout.
    Purpose: Handles ui container draw intersecting children.
 */
-void UiContainer_DrawIntersectingChildren
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiContainer_DrawIntersectingChildren
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  int extraout_ECX;
-  int extraout_EDX;
   
   for (control_00 = control->firstChild; control_00 != (UiNodeBase *)0xffffffff;
       control_00 = control_00->nextSibling) {
     if ((((control_00->left <= clipLeft) && (control_00->top <= clipTop)) &&
         (clipRight < control_00->right)) && (clipBottom < control_00->bottom)) {
       (*control_00->vtable->drawClipped)(clipTop,clipLeft,clipBottom,clipRight,control_00);
-      clipRight = extraout_ECX;
-      clipBottom = extraout_EDX;
     }
   }
   return;
 }
+
 
 /* Address: 0x004B1350.
    Ownership: ui/controls/layout.
@@ -1829,11 +1908,11 @@ void UiContainer_DrawIntersectingChildren
    subresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and executable
    data remain unchanged.
 */
-void UiWindow_BlitTiledVerticalEdge
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,
-               UiPixelCoordinate edgeX,UiPixelCoordinate tileStart,UiPixelCoordinate tileEnd,
-               void *node)
+void __thandor_void_preserve_eax_ecx_edx
+UiWindow_BlitTiledVerticalEdge
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,UiPixelCoordinate edgeX,
+          UiPixelCoordinate tileStart,UiPixelCoordinate tileEnd,void *node)
 
 {
   (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
@@ -1843,12 +1922,13 @@ void UiWindow_BlitTiledVerticalEdge
   return;
 }
 
+
 /* Address: 0x004B0640.
    Ownership: ui/controls/layout.
    Purpose: Resolves each child rectangle from fixed offsets plus unsigned Q31 parent-relative anchors, stores
    width/height, then invokes the child layout method.
 */
-void UiContainer_LayoutChildren(UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx UiContainer_LayoutChildren(UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
@@ -1892,6 +1972,7 @@ void UiContainer_LayoutChildren(UiNodeBase *control)
   return;
 }
 
+
 /* Address: 0x004B12F0.
    Ownership: ui/controls/layout.
    Purpose: Forwards a tiled source-alpha blit using the shared UI window texture and framebuffer. Root-relative
@@ -1900,11 +1981,11 @@ void UiContainer_LayoutChildren(UiNodeBase *control)
    subresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and executable
    data remain unchanged.
 */
-void UiWindow_BlitTiledHorizontalEdge
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,
-               UiPixelCoordinate tileStart,UiPixelCoordinate edgeY,UiPixelCoordinate tileEnd,
-               void *node)
+void __thandor_void_preserve_eax_ecx_edx
+UiWindow_BlitTiledHorizontalEdge
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,
+          UiPixelCoordinate tileStart,UiPixelCoordinate edgeY,UiPixelCoordinate tileEnd,void *node)
 
 {
   (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
@@ -1915,25 +1996,24 @@ void UiWindow_BlitTiledHorizontalEdge
   return;
 }
 
+
 /* Address: 0x004B14D0.
    Ownership: ui/controls/layout.
    Purpose: Clears the dirty-rectangle count and appends every UiRootNode in the active stack when invalidation is
    not suppressed.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiRootStack_InvalidateAll(void)
+void __thandor_void_preserve_ecx_edx UiRootStack_InvalidateAll(void)
 
 {
   UiRootNode *node;
-  int extraout_EDX;
   
   if (g_UiInvalidationSuppressed == 0) {
     g_UiDirtyRectCount = 0;
-    node = g_UiRootNode;
-    while (node != (UiRootNode *)0xffffffff) {
+    for (node = g_UiRootNode; node != (UiRootNode *)0xffffffff; node = node->previousRoot) {
       UiNode_InvalidateRoot(&node->base);
-      node = *(UiRootNode **)(extraout_EDX + 0x54);
     }
   }
   return;
 }
+

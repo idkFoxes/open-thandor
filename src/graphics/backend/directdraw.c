@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/backend/directdraw.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/backend/directdraw.h>
 
 /* Implementation ownership: graphics/backend/directdraw. */
@@ -7,15 +14,13 @@
    Purpose: Scans the exact 0x10-byte GraphicsDisplayMode array and compares width, height, bitsPerPixel, and
    adapterIndex. CF clear means an exact tuple exists; CF set means absent; EAX is preserved.
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 GraphicsDisplayMode_IsEnumeratedCf
           (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
-  undefined4 in_EAX;
   GraphicsDisplayModeCount GVar1;
-  undefined4 in_EDX;
   GraphicsDisplayMode *pGVar2;
   
   GVar1 = g_GraphicsDisplayModeCount;
@@ -25,26 +30,25 @@ GraphicsDisplayMode_IsEnumeratedCf
     pGVar2 = pGVar2 + 1;
     GVar1 = GVar1 - 1;
     if (GVar1 == 0) {
-      return CONCAT44(in_EDX,in_EAX);
+      return true;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x0054B0E0.
    Ownership: graphics/backend/directdraw.
    Purpose: Scans the enumerated display-mode table for an exact four-dword mode tuple. CF clear reports a match
    and CF set reports that no entry matched.
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 DisplayModeTable_ContainsExactModeCf
           (FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
 
 {
-  undefined4 in_EAX;
   dword modesRemaining;
-  undefined4 in_EDX;
   GraphicsDisplayMode *modeCursor;
   
   modesRemaining = g_GraphicsDisplayModeCount;
@@ -55,11 +59,12 @@ DisplayModeTable_ContainsExactModeCf
     modeCursor = modeCursor + 1;
     modesRemaining = modesRemaining - 1;
     if (modesRemaining == 0) {
-      return CONCAT44(in_EDX,in_EAX);
+      return true;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x00578080.
    Ownership: graphics/backend/directdraw.
@@ -190,54 +195,61 @@ sdword DirectDraw_EnumDisplayModeCallback
    Glide3_Shutdown [graphics/backend/glide], GraphicsTexture_ReleaseObjects [graphics/resources/texture],
    Memory_ZeroDwords [core/memory/allocator], GraphicsTexture_CreateStagingTexture [graphics/resources/texture].
 */
-void GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
-               (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
-               GraphicsPixelDimension height,GraphicsPixelDimension width)
+DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
+          (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
+          GraphicsPixelDimension height,GraphicsPixelDimension width)
 
 {
   D3DDEVICEDESC_DX6 *pDVar1;
-  dword dVar2;
-  GraphicsAdapterRecord *pGVar3;
-  TH_LEGACY_HRESULT TVar4;
-  int extraout_EAX;
+  GraphicsTextureResource *in_EAX;
+  GraphicsAdapterRecord *pGVar2;
+  TH_LEGACY_HRESULT TVar3;
+  sdword sVar4;
   int iVar5;
-  sdword sVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
+  dword dVar6;
   undefined4 *puVar7;
   GraphicsAdapterRecord *pGVar8;
   undefined4 *puVar9;
   GraphicsTextureResource **ppGVar10;
   bool bVar11;
-  int iVar12;
+  DisplayModeEaxCf5 DVar12;
+  DisplayModeEaxCf5 DVar13;
+  DisplayModeEaxCf5 DVar14;
+  int iStack_1c;
   
-  iVar12 = 0;
+  iStack_1c = 0;
+  DVar12.eax = in_EAX;
   if (g_ActiveGraphicsAdapterIndex == -1) {
 GraphicsDirectDraw_CreateOrSwitchBackend:
     if (g_GraphicsAdapters[adapterIndex].adapterGuid.Data1 == 1) {
-      GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
-                (adapterIndex,bitsPerPixel,height,width);
-      return;
+      bVar11 = GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
+                         (adapterIndex,bitsPerPixel,height,width);
+      goto LAB_005794a3;
     }
     g_ActiveGraphicsAdapterIndex = -1;
-    pGVar3 = g_GraphicsAdapters + adapterIndex;
-    if ((pGVar3->adapterGuid).Data1 == 0) {
-      pGVar3 = (GraphicsAdapterRecord *)0x0;
+    pGVar2 = g_GraphicsAdapters + adapterIndex;
+    if ((pGVar2->adapterGuid).Data1 == 0) {
+      pGVar2 = (GraphicsAdapterRecord *)0x0;
     }
-    TVar4 = (*pDirectDrawCreate)(&pGVar3->adapterGuid,&g_DirectDraw,(TH_LEGACY_LPVOID)0x0);
-    if (TVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-    iVar12 = iVar12 + 1;
-    TVar4 = (*g_DirectDraw->lpVtbl->SetCooperativeLevel)(g_DirectDraw,g_MainWindow,8);
-    if (TVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-    iVar12 = iVar12 + 1;
-    TVar4 = (*g_DirectDraw->lpVtbl->QueryInterface)
+    TVar3 = (*pDirectDrawCreate)(&pGVar2->adapterGuid,&g_DirectDraw,(TH_LEGACY_LPVOID)0x0);
+    dVar6 = 0x19;
+    iVar5 = iStack_1c;
+    if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    TVar3 = (*g_DirectDraw->lpVtbl->SetCooperativeLevel)(g_DirectDraw,g_MainWindow,8);
+    dVar6 = 0x19;
+    iVar5 = 1;
+    if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    TVar3 = (*g_DirectDraw->lpVtbl->QueryInterface)
                       (g_DirectDraw,&IID_IDirectDraw2_Local,&g_DirectDraw2);
-    if (TVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-    iVar12 = iVar12 + 1;
-    TVar4 = (*g_DirectDraw2->lpVtbl->SetCooperativeLevel)(g_DirectDraw2,g_MainWindow,0x11);
-    if (TVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-    iVar12 = iVar12 + 1;
+    dVar6 = 0x19;
+    iVar5 = 2;
+    if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    TVar3 = (*g_DirectDraw2->lpVtbl->SetCooperativeLevel)(g_DirectDraw2,g_MainWindow,0x11);
+    dVar6 = 0x19;
+    iVar5 = 3;
+    if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    iStack_1c = 4;
     g_ActiveGraphicsAdapterIndex = adapterIndex;
   }
   else {
@@ -251,7 +263,6 @@ GraphicsDirectDraw_CreateOrSwitchBackend:
     do {
       if (*ppGVar10 != (GraphicsTextureResource *)0x0) {
         GraphicsTexture_ReleaseObjects(*ppGVar10);
-        iVar5 = extraout_ECX;
       }
       ppGVar10 = ppGVar10 + 1;
       iVar5 = iVar5 + -1;
@@ -261,439 +272,429 @@ GraphicsDirectDraw_CreateOrSwitchBackend:
     g_LastViewportRect.x2 = 0;
     g_LastViewportRect.y2 = 0;
     if (g_Direct3DViewport2 != (IDirect3DViewport2 *)0x0) {
-      (*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
+      DVar12.eax = (GraphicsTextureResource *)
+                   (*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
       g_Direct3DViewport2 = (IDirect3DViewport2 *)0x0;
     }
     if (g_ZSurface3 != (IDirectDrawSurface3 *)0x0) {
-      (*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
+      DVar12.eax = (GraphicsTextureResource *)(*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
       g_ZSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_ZSurfaceBase != (IDirectDrawSurface *)0x0) {
-      (*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
+      DVar12.eax = (GraphicsTextureResource *)(*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
       g_ZSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if (g_Direct3DDevice2 != (IDirect3DDevice2 *)0x0) {
-      (*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
+      DVar12.eax = (GraphicsTextureResource *)
+                   (*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
       g_Direct3DDevice2 = (IDirect3DDevice2 *)0x0;
     }
     if (g_Direct3D2 != (IDirect3D2 *)0x0) {
-      (*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
+      DVar12.eax = (GraphicsTextureResource *)(*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
       g_Direct3D2 = (IDirect3D2 *)0x0;
     }
     g_CursorCurrentVisibilityToken = -1;
     g_CursorAlternateVisibilityToken = -1;
     if (g_BackSurface3 != (IDirectDrawSurface3 *)0x0) {
-      (*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
+      DVar12.eax = (GraphicsTextureResource *)(*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
       g_BackSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_BackSurfaceBase != (IDirectDrawSurface *)0x0) {
-      (*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
+      DVar12.eax = (GraphicsTextureResource *)
+                   (*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
       g_BackSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if (g_PrimarySurface3 != (IDirectDrawSurface3 *)0x0) {
-      (*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
+      DVar12.eax = (GraphicsTextureResource *)
+                   (*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
       g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_PrimarySurfaceBase != (IDirectDrawSurface *)0x0) {
-      (*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
+      DVar12.eax = (GraphicsTextureResource *)
+                   (*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
       g_PrimarySurfaceBase = (IDirectDrawSurface *)0x0;
     }
     bVar11 = g_GraphicsAdapters + adapterIndex == (GraphicsAdapterRecord *)0x0;
     iVar5 = 4;
-    pGVar3 = g_GraphicsAdapters + g_ActiveGraphicsAdapterIndex;
+    pGVar2 = g_GraphicsAdapters + g_ActiveGraphicsAdapterIndex;
     pGVar8 = g_GraphicsAdapters + adapterIndex;
     do {
       if (iVar5 == 0) break;
       iVar5 = iVar5 + -1;
-      bVar11 = (pGVar3->adapterGuid).Data1 == (pGVar8->adapterGuid).Data1;
-      pGVar3 = (GraphicsAdapterRecord *)&(pGVar3->adapterGuid).Data2;
+      bVar11 = (pGVar2->adapterGuid).Data1 == (pGVar8->adapterGuid).Data1;
+      pGVar2 = (GraphicsAdapterRecord *)&(pGVar2->adapterGuid).Data2;
       pGVar8 = (GraphicsAdapterRecord *)&(pGVar8->adapterGuid).Data2;
     } while (bVar11);
     if (!bVar11) {
       g_ActiveGraphicsAdapterIndex = -1;
       if (g_DirectDraw2 != (IDirectDraw2 *)0x0) {
-        (*g_DirectDraw2->lpVtbl->Release)(g_DirectDraw2);
+        DVar12.eax = (GraphicsTextureResource *)(*g_DirectDraw2->lpVtbl->Release)(g_DirectDraw2);
         g_DirectDraw2 = (IDirectDraw2 *)0x0;
       }
       if (g_DirectDraw != (IDirectDraw *)0x0) {
-        (*g_DirectDraw->lpVtbl->Release)(g_DirectDraw);
+        DVar12.eax = (GraphicsTextureResource *)(*g_DirectDraw->lpVtbl->Release)(g_DirectDraw);
         g_DirectDraw = (IDirectDraw *)0x0;
       }
       goto GraphicsDirectDraw_CreateOrSwitchBackend;
     }
   }
-  TVar4 = (*g_DirectDraw2->lpVtbl->SetDisplayMode)(g_DirectDraw2,width,height,bitsPerPixel);
-  pGVar3 = g_GraphicsAdapters;
-  if (TVar4 == 0) {
-    iVar12 = iVar12 + 1;
+  TVar3 = (*g_DirectDraw2->lpVtbl->SetDisplayMode)(g_DirectDraw2,width,height,bitsPerPixel);
+  pGVar2 = g_GraphicsAdapters;
+  dVar6 = 0x1a;
+  iVar5 = iStack_1c;
+  if (TVar3 == 0) {
     Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
     g_SurfaceDesc.dwSize = 0x6c;
     g_SurfaceDesc.dwFlags = 1;
     g_SurfaceDesc.ddsCaps.dwCaps = 0x200;
-    if (*(int *)((pGVar3->deviceGuid).Data4 + extraout_EAX + -8) != 0) {
+    if (pGVar2[adapterIndex].deviceGuid.Data1 != 0) {
       g_SurfaceDesc.dwFlags = 0x21;
       g_SurfaceDesc.ddsCaps.dwCaps = 0x2218;
       g_SurfaceDesc.dwBackBufferCount = 1;
     }
-    TVar4 = (*g_DirectDraw2->lpVtbl->CreateSurface)
+    TVar3 = (*g_DirectDraw2->lpVtbl->CreateSurface)
                       (g_DirectDraw2,&g_SurfaceDesc,&g_PrimarySurfaceBase,(TH_LEGACY_LPVOID)0x0);
-    if (TVar4 == 0) {
-      iVar12 = iVar12 + 1;
-      TVar4 = (*g_PrimarySurfaceBase->lpVtbl->QueryInterface)
+    dVar6 = 0x1b;
+    iVar5 = iStack_1c + 1;
+    if (TVar3 == 0) {
+      TVar3 = (*g_PrimarySurfaceBase->lpVtbl->QueryInterface)
                         (g_PrimarySurfaceBase,&IID_IDirectDrawSurface3_Local,&g_PrimarySurface3);
-      pGVar3 = g_GraphicsAdapters;
-      if (TVar4 == 0) {
-        iVar12 = iVar12 + 1;
+      pGVar2 = g_GraphicsAdapters;
+      dVar6 = 0x1b;
+      iVar5 = iStack_1c + 2;
+      if (TVar3 == 0) {
         Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-        if (*(int *)((pGVar3->deviceGuid).Data4 + extraout_ECX_00 + -8) == 0) {
+        iVar5 = iStack_1c + 3;
+        if (pGVar2[adapterIndex].deviceGuid.Data1 == 0) {
           g_SurfaceDesc.dwSize = 0x6c;
           g_SurfaceDesc.dwFlags = 7;
           g_SurfaceDesc.ddsCaps.dwCaps = 0x840;
           g_SurfaceDesc.dwWidth = width;
           g_SurfaceDesc.dwHeight = height;
-          TVar4 = (*g_DirectDraw2->lpVtbl->CreateSurface)
+          TVar3 = (*g_DirectDraw2->lpVtbl->CreateSurface)
                             (g_DirectDraw2,&g_SurfaceDesc,&g_BackSurfaceBase,(TH_LEGACY_LPVOID)0x0);
-          if (TVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-          iVar12 = iVar12 + 1;
-          iVar5 = (*g_BackSurfaceBase->lpVtbl->QueryInterface)
+          dVar6 = 0x1b;
+          if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          TVar3 = (*g_BackSurfaceBase->lpVtbl->QueryInterface)
                             (g_BackSurfaceBase,&IID_IDirectDrawSurface3_Local,&g_BackSurface3);
+          dVar6 = 0x1b;
+          iVar5 = iStack_1c + 4;
+          if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          iStack_1c = iStack_1c + 5;
         }
         else {
           g_SurfaceDesc.ddsCaps.dwCaps = 4;
-          iVar5 = (*g_PrimarySurface3->lpVtbl->GetAttachedSurface)
-                            (g_PrimarySurface3,(DDSCAPS *)0x577ce8,&g_BackSurface3);
+          TVar3 = (*g_PrimarySurface3->lpVtbl->GetAttachedSurface)
+                            (g_PrimarySurface3,&g_SurfaceDesc.ddsCaps,&g_BackSurface3);
+          dVar6 = 0x1b;
+          if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          iStack_1c = iStack_1c + 4;
         }
-        if (iVar5 == 0) {
-          iVar5 = iVar12 + 1;
-          Memory_ZeroDwords(0x20,&g_SurfaceDesc.ddpfPixelFormat);
-          g_SurfaceDesc.ddpfPixelFormat.dwSize = 0x20;
-          TVar4 = (*g_PrimarySurface3->lpVtbl->GetPixelFormat)
-                            (g_PrimarySurface3,(DDPIXELFORMAT *)0x577cc8);
-          iVar12 = iVar5;
-          if ((((TVar4 == 0) && (iVar12 = iVar5 + 1, g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0))
-              && (iVar12 = iVar5 + 2, g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0)) &&
-             (iVar12 = iVar5 + 3, g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0)) {
-            iVar12 = iVar5 + 4;
-            g_SoftwarePixelFormatConfig.redMask = g_SurfaceDesc.ddpfPixelFormat.dwRBitMask;
-            g_SoftwarePixelFormatConfig.greenMask = g_SurfaceDesc.ddpfPixelFormat.dwGBitMask;
-            g_SoftwarePixelFormatConfig.blueMask = g_SurfaceDesc.ddpfPixelFormat.dwBBitMask;
-            g_SoftwarePixelFormatConfig.redShift = 0;
-            if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
-              for (; (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >>
-                      g_SoftwarePixelFormatConfig.redShift & 1) == 0;
-                  g_SoftwarePixelFormatConfig.redShift = g_SoftwarePixelFormatConfig.redShift + 1) {
-              }
-            }
-            g_SoftwarePixelFormatConfig.greenShift = 0;
-            if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
-              for (; (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >>
-                      g_SoftwarePixelFormatConfig.greenShift & 1) == 0;
-                  g_SoftwarePixelFormatConfig.greenShift =
-                       g_SoftwarePixelFormatConfig.greenShift + 1) {
-              }
-            }
-            g_SoftwarePixelFormatConfig.blueShift = 0;
-            if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
-              for (; (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >>
-                      g_SoftwarePixelFormatConfig.blueShift & 1) == 0;
-                  g_SoftwarePixelFormatConfig.blueShift = g_SoftwarePixelFormatConfig.blueShift + 1)
-              {
-              }
-            }
-            iVar5 = 0x1f;
-            if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
-              for (; g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> iVar5 == 0; iVar5 = iVar5 + -1) {
-              }
-            }
-            g_SoftwarePixelFormatConfig.redBitCount =
-                 (iVar5 + 1) - g_SoftwarePixelFormatConfig.redShift;
-            iVar5 = 0x1f;
-            if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
-              for (; g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >> iVar5 == 0; iVar5 = iVar5 + -1) {
-              }
-            }
-            g_SoftwarePixelFormatConfig.greenBitCount =
-                 (iVar5 + 1) - g_SoftwarePixelFormatConfig.greenShift;
-            iVar5 = 0x1f;
-            if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
-              for (; g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >> iVar5 == 0; iVar5 = iVar5 + -1) {
-              }
-            }
-            g_SoftwarePixelFormatConfig.blueBitCount =
-                 (iVar5 + 1) - g_SoftwarePixelFormatConfig.blueShift;
-            pGVar3 = g_GraphicsAdapters + adapterIndex;
-            if ((pGVar3->deviceGuid).Data1 == 0) {
-GraphicsDirectDraw_CommitFramebufferAndRenderCallbacks:
-              g_FramebufferWidth = width;
-              g_FramebufferHeight = height;
-              g_ActiveGraphicsAdapterIndex = adapterIndex;
-              g_DisplayFramebufferAccess.width = width;
-              g_DisplayFramebufferAccess.height = height;
-              g_DisplayFramebufferAccess.pixels = (byte *)0x0;
-              g_FramebufferAccess = &g_DisplayFramebufferAccess;
-              bVar11 = bitsPerPixel < 0x10;
-              if (bitsPerPixel < 0x11) {
-                g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
-                g_GraphicsFramebufferCaptureRegion = GraphicsFramebuffer_CaptureRegion16Bit;
-                g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha16;
-                g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb16
-                ;
-                g_GraphicsTextureSourceStretchDirectColorBilinear =
-                     SoftwareTextureSource_StretchDirectColorBilinear16;
-                g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha =
-                     SoftwareTextureSource_BlitIntegerScaledSourceAlpha16;
-                g_GraphicsTextureSourceBlitSourceAlphaPaletteBank =
-                     SoftwareTextureSource_BlitSourceAlphaPaletteBank16;
-                g_GraphicsTextureSourceBlitModulatedSourceAlpha =
-                     SoftwareTextureSource_BlitModulatedSourceAlpha16;
-                g_GraphicsTextureSourceBlitSaturatedAddRgb =
-                     SoftwareTextureSource_BlitSaturatedAddRgb16;
-                g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
-                     SoftwareTextureSource_BlitHalfRgbSaturatedAdd16;
-                g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb16;
-              }
-              else {
-                g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
-                g_GraphicsFramebufferCaptureRegion = GraphicsFramebuffer_CaptureRegion32Bit;
-                g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
-                g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb32
-                ;
-                g_GraphicsTextureSourceStretchDirectColorBilinear =
-                     SoftwareTextureSource_StretchDirectColorBilinear32;
-                g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha =
-                     SoftwareTextureSource_BlitIntegerScaledSourceAlpha32;
-                g_GraphicsTextureSourceBlitSourceAlphaPaletteBank =
-                     SoftwareTextureSource_BlitSourceAlphaPaletteBank32;
-                g_GraphicsTextureSourceBlitModulatedSourceAlpha =
-                     SoftwareTextureSource_BlitModulatedSourceAlpha32;
-                g_GraphicsTextureSourceBlitSaturatedAddRgb =
-                     SoftwareTextureSource_BlitSaturatedAddRgb32;
-                g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
-                     SoftwareTextureSource_BlitHalfRgbSaturatedAdd32;
-                g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
-              }
-              g_GraphicsFramebufferPresent = GraphicsFramebuffer_Present;
-              (*(code *)g_GraphicsDisplayModeFinalizeCf)
-                        (adapterIndex,bitsPerPixel,height,width,iVar12);
-              if (!bVar11) {
-                iVar12 = 0x1000;
-                ppGVar10 = g_GraphicsTextureSlots;
-                do {
-                  if (*ppGVar10 != (GraphicsTextureResource *)0x0) {
-                    GraphicsTexture_CreateStagingTexture(*ppGVar10);
-                    iVar12 = extraout_ECX_01;
-                  }
-                  ppGVar10 = ppGVar10 + 1;
-                  iVar12 = iVar12 + -1;
-                } while (iVar12 != 0);
-                return;
-              }
-              return;
-            }
-            TVar4 = (*g_DirectDraw2->lpVtbl->QueryInterface)
-                              (g_DirectDraw2,&IID_IDirect3D2_Local,&g_Direct3D2);
-            if (TVar4 == 0) {
-              iVar12 = iVar12 + 1;
-              pDVar1 = pGVar3->hardwareDesc;
-              Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-              g_SurfaceDesc.dwSize = 0x6c;
-              g_SurfaceDesc.dwFlags = 0x47;
-              g_SurfaceDesc.dwWidth = width;
-              g_SurfaceDesc.dwHeight = height;
-              g_SurfaceDesc.dwMipMapCount = 0x10;
-              if (pDVar1->dcmColorModel == 0) {
-                g_SurfaceDesc.ddsCaps.dwCaps = 0x22800;
-              }
-              else {
-                g_SurfaceDesc.ddsCaps.dwCaps = 0x26000;
-              }
-              TVar4 = (*g_DirectDraw2->lpVtbl->CreateSurface)
-                                (g_DirectDraw2,&g_SurfaceDesc,&g_ZSurfaceBase,(TH_LEGACY_LPVOID)0x0)
-              ;
-              if (TVar4 == 0) {
-                iVar12 = iVar12 + 1;
-                TVar4 = (*g_ZSurfaceBase->lpVtbl->QueryInterface)
-                                  (g_ZSurfaceBase,&IID_IDirectDrawSurface3_Local,&g_ZSurface3);
-                if (TVar4 == 0) {
-                  iVar12 = iVar12 + 1;
-                  TVar4 = (*g_BackSurface3->lpVtbl->AddAttachedSurface)(g_BackSurface3,g_ZSurface3);
-                  if (TVar4 == 0) {
-                    iVar12 = iVar12 + 1;
-                    TVar4 = (*g_Direct3D2->lpVtbl->CreateDevice)
-                                      (g_Direct3D2,&g_GraphicsAdapters[adapterIndex].deviceGuid,
-                                       (IDirectDrawSurface *)g_BackSurface3,&g_Direct3DDevice2);
-                    if (TVar4 == 0) {
-                      iVar12 = iVar12 + 1;
-                      TVar4 = (*g_Direct3D2->lpVtbl->CreateViewport)
-                                        (g_Direct3D2,&g_Direct3DViewport2,(TH_LEGACY_LPVOID)0x0);
-                      if (TVar4 == 0) {
-                        iVar12 = iVar12 + 1;
-                        TVar4 = (*g_Direct3DDevice2->lpVtbl->AddViewport)
-                                          (g_Direct3DDevice2,g_Direct3DViewport2);
-                        if (TVar4 == 0) {
-                          iVar12 = iVar12 + 1;
-                          TVar4 = (*g_Direct3DDevice2->lpVtbl->SetCurrentViewport)
-                                            (g_Direct3DDevice2,g_Direct3DViewport2);
-                          if (TVar4 == 0) {
-                            iVar5 = iVar12 + 1;
-                            Memory_ZeroDwords(0x20,(void *)0x577d90);
-                            Memory_ZeroDwords(0x20,(void *)0x577db0);
-                            TVar4 = (*g_Direct3DDevice2->lpVtbl->EnumTextureFormats)
-                                              (g_Direct3DDevice2,
-                                               GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
-                                               ,(TH_LEGACY_LPVOID)0x0);
-                            iVar12 = iVar5;
-                            if (((TVar4 == 0) &&
-                                (iVar12 = iVar5 + 1, g_Direct3DOpaqueTextureFormatBitsPerPixel != 0)
-                                ) && (iVar12 = iVar5 + 2,
-                                     g_Direct3DAlphaTextureFormatBitsPerPixel != 0)) {
-                              iVar12 = iVar5 + 3;
-                              puVar7 = (undefined4 *)0x577d90;
-                              puVar9 = (undefined4 *)0x577dd0;
-                              for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
-                                *puVar9 = *puVar7;
-                                puVar7 = puVar7 + 1;
-                                puVar9 = puVar9 + 1;
-                              }
-                              puVar7 = (undefined4 *)0x577db0;
-                              puVar9 = (undefined4 *)0x577df0;
-                              for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
-                                *puVar9 = *puVar7;
-                                puVar7 = puVar7 + 1;
-                                puVar9 = puVar9 + 1;
-                              }
-                              (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                        (g_Direct3DDevice2,D3DRENDERSTATE_MONOENABLE,0);
-                              sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                (g_Direct3DDevice2,D3DRENDERSTATE_SHADEMODE,2);
-                              if (sVar6 == 0) {
-                                iVar12 = iVar12 + 1;
-                                sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                  (g_Direct3DDevice2,D3DRENDERSTATE_SPECULARENABLE,0
-                                                  );
-                                if (sVar6 == 0) {
-                                  iVar12 = iVar12 + 1;
-                                  sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                    (g_Direct3DDevice2,D3DRENDERSTATE_CULLMODE,1);
-                                  if (sVar6 == 0) {
-                                    iVar12 = iVar12 + 1;
-                                    (*g_Direct3DDevice2->lpVtbl->GetRenderState)
-                                              (g_Direct3DDevice2,D3DRENDERSTATE_CULLMODE,
-                                               &g_ImmediateVertexCount);
-                                    dVar2 = g_ImmediateVertexCount;
-                                    g_ImmediateVertexCount = 3;
-                                    if (dVar2 != 1) {
-                                      g_ImmediateVertexCount = 4;
-                                    }
-                                    sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                      (g_Direct3DDevice2,D3DRENDERSTATE_ZENABLE,1);
-                                    if (sVar6 == 0) {
-                                      iVar12 = iVar12 + 1;
-                                      sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                        (g_Direct3DDevice2,D3DRENDERSTATE_ZFUNC,4);
-                                      if (sVar6 == 0) {
-                                        iVar12 = iVar12 + 1;
-                                        sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                          (g_Direct3DDevice2,D3DRENDERSTATE_FILLMODE
-                                                           ,3);
-                                        if (sVar6 == 0) {
-                                          iVar12 = iVar12 + 1;
-                                          sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                            (g_Direct3DDevice2,
-                                                             D3DRENDERSTATE_TEXTUREMAPBLEND,4);
-                                          if (sVar6 == 0) {
-                                            iVar12 = iVar12 + 1;
-                                            sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                              (g_Direct3DDevice2,
-                                                               D3DRENDERSTATE_ANTIALIAS,
-                                                               g_Direct3DAntialiasMode);
-                                            if (sVar6 == 0) {
-                                              iVar12 = iVar12 + 1;
-                                              sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                                (g_Direct3DDevice2,
-                                                                 D3DRENDERSTATE_TEXTUREMAG,
-                                                                 g_Direct3DTextureFilterMode);
-                                              if (sVar6 == 0) {
-                                                iVar12 = iVar12 + 1;
-                                                sVar6 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                                  (g_Direct3DDevice2,
-                                                                   D3DRENDERSTATE_TEXTUREMIN,
-                                                                   g_Direct3DTextureFilterMode);
-                                                if (sVar6 == 0) {
-                                                  iVar12 = iVar12 + 1;
-                                                  sVar6 = (*g_Direct3DDevice2->lpVtbl->
-                                                            SetRenderState)(g_Direct3DDevice2,
-                                                                                                                                                        
-                                                  D3DRENDERSTATE_TEXTUREPERSPECTIVE,
-                                                  g_Direct3DTexturePerspectiveEnabled);
-                                                  if (sVar6 == 0) {
-                                                    iVar12 = iVar12 + 1;
-                                                    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                                                              (g_Direct3DDevice2,
-                                                               D3DRENDERSTATE_ZWRITEENABLE,
-                                                               g_PrimitiveRenderStateCache.
-                                                               zWriteEnable);
-                                                    sVar6 = (*g_Direct3DDevice2->lpVtbl->
-                                                              SetRenderState)(g_Direct3DDevice2,
-                                                                                                                                                            
-                                                  D3DRENDERSTATE_ALPHABLENDENABLE,
-                                                  g_PrimitiveRenderStateCache.alphaBlendEnable);
-                                                  if (sVar6 == 0) {
-                                                    iVar12 = iVar12 + 1;
-                                                    sVar6 = (*g_Direct3DDevice2->lpVtbl->
-                                                              SetRenderState)(g_Direct3DDevice2,
-                                                                                                                                                            
-                                                  D3DRENDERSTATE_SRCBLEND,
-                                                  g_PrimitiveRenderStateCache.sourceBlend);
-                                                  if (sVar6 == 0) {
-                                                    iVar12 = iVar12 + 1;
-                                                    sVar6 = (*g_Direct3DDevice2->lpVtbl->
-                                                              SetRenderState)(g_Direct3DDevice2,
-                                                                                                                                                            
-                                                  D3DRENDERSTATE_DESTBLEND,
-                                                  g_PrimitiveRenderStateCache.destinationBlend);
-                                                  if (sVar6 == 0) {
-                                                    iVar12 = iVar12 + 1;
-                                                    g_BoundTextureHandle = 0;
-                                                    sVar6 = (*g_Direct3DDevice2->lpVtbl->
-                                                              SetRenderState)(g_Direct3DDevice2,
-                                                                                                                                                            
-                                                  D3DRENDERSTATE_TEXTUREHANDLE,0);
-                                                  if (sVar6 == 0) {
-                                                    iVar12 = iVar12 + 1;
-                                                    goto 
-                                                  GraphicsDirectDraw_CommitFramebufferAndRenderCallbacks
-                                                  ;
-                                                  }
-                                                  }
-                                                  }
-                                                  }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+        Memory_ZeroDwords(0x20,&g_SurfaceDesc.ddpfPixelFormat);
+        g_SurfaceDesc.ddpfPixelFormat.dwSize = 0x20;
+        TVar3 = (*g_PrimarySurface3->lpVtbl->GetPixelFormat)
+                          (g_PrimarySurface3,&g_SurfaceDesc.ddpfPixelFormat);
+        dVar6 = 0x1c;
+        iVar5 = iStack_1c;
+        if ((((TVar3 == 0) && (iVar5 = iStack_1c + 1, g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0)
+             ) && (iVar5 = iStack_1c + 2, g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0)) &&
+           (iVar5 = iStack_1c + 3, g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0)) {
+          g_SoftwarePixelFormatConfig.redMask = g_SurfaceDesc.ddpfPixelFormat.dwRBitMask;
+          g_SoftwarePixelFormatConfig.greenMask = g_SurfaceDesc.ddpfPixelFormat.dwGBitMask;
+          g_SoftwarePixelFormatConfig.blueMask = g_SurfaceDesc.ddpfPixelFormat.dwBBitMask;
+          g_SoftwarePixelFormatConfig.redShift = 0;
+          if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
+            for (; (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> g_SoftwarePixelFormatConfig.redShift
+                   & 1) == 0;
+                g_SoftwarePixelFormatConfig.redShift = g_SoftwarePixelFormatConfig.redShift + 1) {
             }
           }
+          g_SoftwarePixelFormatConfig.greenShift = 0;
+          if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
+            for (; (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >>
+                    g_SoftwarePixelFormatConfig.greenShift & 1) == 0;
+                g_SoftwarePixelFormatConfig.greenShift = g_SoftwarePixelFormatConfig.greenShift + 1)
+            {
+            }
+          }
+          g_SoftwarePixelFormatConfig.blueShift = 0;
+          if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
+            for (; (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >>
+                    g_SoftwarePixelFormatConfig.blueShift & 1) == 0;
+                g_SoftwarePixelFormatConfig.blueShift = g_SoftwarePixelFormatConfig.blueShift + 1) {
+            }
+          }
+          iVar5 = 0x1f;
+          if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
+            for (; g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> iVar5 == 0; iVar5 = iVar5 + -1) {
+            }
+          }
+          g_SoftwarePixelFormatConfig.redBitCount =
+               (iVar5 + 1) - g_SoftwarePixelFormatConfig.redShift;
+          iVar5 = 0x1f;
+          if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
+            for (; g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >> iVar5 == 0; iVar5 = iVar5 + -1) {
+            }
+          }
+          g_SoftwarePixelFormatConfig.greenBitCount =
+               (iVar5 + 1) - g_SoftwarePixelFormatConfig.greenShift;
+          iVar5 = 0x1f;
+          if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
+            for (; g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >> iVar5 == 0; iVar5 = iVar5 + -1) {
+            }
+          }
+          g_SoftwarePixelFormatConfig.blueBitCount =
+               (iVar5 + 1) - g_SoftwarePixelFormatConfig.blueShift;
+          pGVar2 = g_GraphicsAdapters + adapterIndex;
+          if ((pGVar2->deviceGuid).Data1 != 0) {
+            TVar3 = (*g_DirectDraw2->lpVtbl->QueryInterface)
+                              (g_DirectDraw2,&IID_IDirect3D2_Local,&g_Direct3D2);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 4;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            pDVar1 = pGVar2->hardwareDesc;
+            Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
+            g_SurfaceDesc.dwSize = 0x6c;
+            g_SurfaceDesc.dwFlags = 0x47;
+            g_SurfaceDesc.dwWidth = width;
+            g_SurfaceDesc.dwHeight = height;
+            g_SurfaceDesc.dwMipMapCount = 0x10;
+            if (pDVar1->dcmColorModel == 0) {
+              g_SurfaceDesc.ddsCaps.dwCaps = 0x22800;
+            }
+            else {
+              g_SurfaceDesc.ddsCaps.dwCaps = 0x26000;
+            }
+            TVar3 = (*g_DirectDraw2->lpVtbl->CreateSurface)
+                              (g_DirectDraw2,&g_SurfaceDesc,&g_ZSurfaceBase,(TH_LEGACY_LPVOID)0x0);
+            dVar6 = 0x1e;
+            iVar5 = iStack_1c + 5;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            TVar3 = (*g_ZSurfaceBase->lpVtbl->QueryInterface)
+                              (g_ZSurfaceBase,&IID_IDirectDrawSurface3_Local,&g_ZSurface3);
+            dVar6 = 0x1e;
+            iVar5 = iStack_1c + 6;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            TVar3 = (*g_BackSurface3->lpVtbl->AddAttachedSurface)(g_BackSurface3,g_ZSurface3);
+            dVar6 = 0x1e;
+            iVar5 = iStack_1c + 7;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            TVar3 = (*g_Direct3D2->lpVtbl->CreateDevice)
+                              (g_Direct3D2,&g_GraphicsAdapters[adapterIndex].deviceGuid,
+                               (IDirectDrawSurface *)g_BackSurface3,&g_Direct3DDevice2);
+            dVar6 = 0x1f;
+            iVar5 = iStack_1c + 8;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            TVar3 = (*g_Direct3D2->lpVtbl->CreateViewport)
+                              (g_Direct3D2,&g_Direct3DViewport2,(TH_LEGACY_LPVOID)0x0);
+            dVar6 = 0x20;
+            iVar5 = iStack_1c + 9;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            TVar3 = (*g_Direct3DDevice2->lpVtbl->AddViewport)(g_Direct3DDevice2,g_Direct3DViewport2)
+            ;
+            dVar6 = 0x20;
+            iVar5 = iStack_1c + 10;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            TVar3 = (*g_Direct3DDevice2->lpVtbl->SetCurrentViewport)
+                              (g_Direct3DDevice2,g_Direct3DViewport2);
+            dVar6 = 0x20;
+            iVar5 = iStack_1c + 0xb;
+            if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            Memory_ZeroDwords(0x20,(void *)0x577d90);
+            Memory_ZeroDwords(0x20,(void *)0x577db0);
+            TVar3 = (*g_Direct3DDevice2->lpVtbl->EnumTextureFormats)
+                              (g_Direct3DDevice2,
+                               GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback,
+                               (TH_LEGACY_LPVOID)0x0);
+            dVar6 = 0x21;
+            iVar5 = iStack_1c + 0xc;
+            if (((TVar3 != 0) ||
+                (iVar5 = iStack_1c + 0xd, g_Direct3DOpaqueTextureFormatBitsPerPixel == 0)) ||
+               (iVar5 = iStack_1c + 0xe, g_Direct3DAlphaTextureFormatBitsPerPixel == 0))
+            goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            puVar7 = (undefined4 *)0x577d90;
+            puVar9 = (undefined4 *)0x577dd0;
+            for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
+              *puVar9 = *puVar7;
+              puVar7 = puVar7 + 1;
+              puVar9 = puVar9 + 1;
+            }
+            puVar7 = (undefined4 *)0x577db0;
+            puVar9 = (undefined4 *)0x577df0;
+            for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
+              *puVar9 = *puVar7;
+              puVar7 = puVar7 + 1;
+              puVar9 = puVar9 + 1;
+            }
+            (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_MONOENABLE,0);
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_SHADEMODE,2);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0xf;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_SPECULARENABLE,0);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x10;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_CULLMODE,1);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x11;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            (*g_Direct3DDevice2->lpVtbl->GetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_CULLMODE,&g_ImmediateVertexCount);
+            dVar6 = g_ImmediateVertexCount;
+            g_ImmediateVertexCount = 3;
+            if (dVar6 != 1) {
+              g_ImmediateVertexCount = 4;
+            }
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_ZENABLE,1);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x12;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_ZFUNC,4);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x13;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_FILLMODE,3);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x14;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAPBLEND,4);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x15;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,g_Direct3DAntialiasMode);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x16;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,
+                               g_Direct3DTextureFilterMode);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x17;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,
+                               g_Direct3DTextureFilterMode);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x18;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,
+                               g_Direct3DTexturePerspectiveEnabled);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x19;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
+                       g_PrimitiveRenderStateCache.zWriteEnable);
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
+                               g_PrimitiveRenderStateCache.alphaBlendEnable);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x1a;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
+                               g_PrimitiveRenderStateCache.sourceBlend);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x1b;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
+                               g_PrimitiveRenderStateCache.destinationBlend);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x1c;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            g_BoundTextureHandle = 0;
+            sVar4 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                              (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
+            dVar6 = 0x1d;
+            iVar5 = iStack_1c + 0x1d;
+            if (sVar4 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          }
+          g_FramebufferWidth = width;
+          g_FramebufferHeight = height;
+          g_ActiveGraphicsAdapterIndex = adapterIndex;
+          g_DisplayFramebufferAccess.width = width;
+          g_DisplayFramebufferAccess.height = height;
+          g_DisplayFramebufferAccess.pixels = (byte *)0x0;
+          g_FramebufferAccess = &g_DisplayFramebufferAccess;
+          if (bitsPerPixel < 0x11) {
+            g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
+            g_GraphicsFramebufferCaptureRegion = GraphicsFramebuffer_CaptureRegion16Bit;
+            g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha16;
+            g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb16;
+            g_GraphicsTextureSourceStretchDirectColorBilinear =
+                 SoftwareTextureSource_StretchDirectColorBilinear16;
+            g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha =
+                 SoftwareTextureSource_BlitIntegerScaledSourceAlpha16;
+            g_GraphicsTextureSourceBlitSourceAlphaPaletteBank =
+                 SoftwareTextureSource_BlitSourceAlphaPaletteBank16;
+            g_GraphicsTextureSourceBlitModulatedSourceAlpha =
+                 SoftwareTextureSource_BlitModulatedSourceAlpha16;
+            g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb16
+            ;
+            g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
+                 SoftwareTextureSource_BlitHalfRgbSaturatedAdd16;
+            g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb16;
+          }
+          else {
+            g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT;
+            g_GraphicsFramebufferCaptureRegion = GraphicsFramebuffer_CaptureRegion32Bit;
+            g_GraphicsTextureSourceBlitSourceAlpha = SoftwareTextureSource_BlitSourceAlpha32;
+            g_GraphicsTextureSourceBlitHalfSourceRgb = SoftwareTextureSource_BlitHalfSourceRgb32;
+            g_GraphicsTextureSourceStretchDirectColorBilinear =
+                 SoftwareTextureSource_StretchDirectColorBilinear32;
+            g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha =
+                 SoftwareTextureSource_BlitIntegerScaledSourceAlpha32;
+            g_GraphicsTextureSourceBlitSourceAlphaPaletteBank =
+                 SoftwareTextureSource_BlitSourceAlphaPaletteBank32;
+            g_GraphicsTextureSourceBlitModulatedSourceAlpha =
+                 SoftwareTextureSource_BlitModulatedSourceAlpha32;
+            g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb32
+            ;
+            g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
+                 SoftwareTextureSource_BlitHalfRgbSaturatedAdd32;
+            g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
+          }
+          g_GraphicsFramebufferPresent = GraphicsFramebuffer_Present;
+          DVar12 = (*g_GraphicsDisplayModeFinalizeCf)(adapterIndex,bitsPerPixel,height,width);
+          if (DVar12.carry) {
+            DVar12.carry = true;
+            return DVar12;
+          }
+          iVar5 = 0x1000;
+          ppGVar10 = g_GraphicsTextureSlots;
+          do {
+            if (*ppGVar10 != (GraphicsTextureResource *)0x0) {
+              DVar12.eax = GraphicsTexture_CreateStagingTexture(*ppGVar10);
+            }
+            ppGVar10 = ppGVar10 + 1;
+            iVar5 = iVar5 + -1;
+          } while (iVar5 != 0);
+          bVar11 = false;
+LAB_005794a3:
+          DVar13.carry = bVar11;
+          DVar13.eax = (dword)DVar12.eax;
+          return DVar13;
         }
       }
     }
   }
 GraphicsDirectDraw_ReleasePartialInitializationAfterFailure:
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar12,g_PackageLastErrorPath);
-  return;
+  iStack_1c = iVar5;
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iStack_1c,g_PackageLastErrorPath);
+  DVar14.carry = true;
+  DVar14.eax = dVar6;
+  return DVar14;
 }
+

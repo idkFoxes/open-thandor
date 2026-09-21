@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/settings/persistent.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/settings/persistent.h>
 
 /* Implementation ownership: core/settings/persistent. */
@@ -10,7 +17,7 @@
    Local calls: PersistentSettings_WriteDword.
    Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32].
 */
-void __cdecl PersistentSettings_Flush(void)
+void __thandor_preserve_eax PersistentSettings_Flush(void)
 
 {
   if (g_PersistentSettings.image != (PersistentSettingsImage *)0x0) {
@@ -23,6 +30,7 @@ void __cdecl PersistentSettings_Flush(void)
   return;
 }
 
+
 /* Address: 0x00402B00.
    Ownership: core/settings/persistent.
    Purpose: Releases the previous image, allocates and zeroes a fixed 200-byte replacement, and tries to open the
@@ -34,63 +42,63 @@ void __cdecl PersistentSettings_Flush(void)
    Cross-module calls: Resource_Release [assets/resource/runtime], WidePath_CombineDirectoryAndLeaf
    [core/text/path], RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
 */
-void __cdecl PersistentSettings_Load(void)
+void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
 
 {
   dword *settingsClearCursor;
   void *handle;
-  dword dVar1;
-  uint extraout_ECX;
-  uint uVar2;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
+  int iVar1;
+  uint byteCount;
   PersistentSettingsImage *destination;
-  undefined1 in_CF;
-  undefined1 uVar3;
-  bool bVar4;
+  ArenaAllocEaxCf5 AVar2;
+  FileSystemOpenEaxCf5 FVar3;
+  RichTextCopyExpandedEaxCf5 RVar4;
+  FileSystemSizeEaxCf5 FVar5;
+  FileSystemReadEaxCf5 FVar6;
   
   Resource_Release(g_PersistentSettings.image);
   g_PersistentSettings.image = (PersistentSettingsImage *)0x0;
-  settingsClearCursor = (*g_MemoryApi.alloc)(200);
-  if ((bool)in_CF) {
+  AVar2 = (*g_MemoryApi.alloc)(200);
+  settingsClearCursor = (dword *)AVar2.eax;
+  if (AVar2.carry) {
     return;
   }
-  for (uVar2 = extraout_ECX >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+  for (iVar1 = 0x32; iVar1 != 0; iVar1 = iVar1 + -1) {
     *settingsClearCursor = 0;
     settingsClearCursor = settingsClearCursor + 1;
   }
-  uVar3 = settingsClearCursor < (dword *)0xc8;
   destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
-  handle = (void *)(*g_FileSystemOpenCf)(0,(word *)0x4028dc);
-  if ((bool)uVar3) {
+  FVar3 = (*g_FileSystemOpenCf)(0,g_PersistentSettings.path);
+  handle = (void *)FVar3.eax;
+  if (FVar3.carry) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (word *)&g_ExecutableDirectoryUtf16);
-    (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    if ((bool)uVar3) goto PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure;
-    handle = (void *)RichTextCommandStream_CopyExpandedCf
-                               (0x200,g_PersistentSettings.path,
-                                (word *)&g_FileSystemCombinedPathScratchUtf16);
+    FVar3 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    if (FVar3.carry) goto PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure;
+    RVar4 = RichTextCommandStream_CopyExpandedCf
+                      (0x200,g_PersistentSettings.path,(word *)&g_FileSystemCombinedPathScratchUtf16
+                      );
+    handle = (void *)RVar4.eax;
   }
-  dVar1 = (*g_FileSystemGetSizeCf)(handle);
-  if (!(bool)uVar3) {
-    bVar4 = dVar1 < extraout_ECX_00;
-    uVar2 = extraout_ECX_00;
-    if (bVar4) {
-      uVar2 = dVar1;
+  FVar5 = (*g_FileSystemGetSizeCf)(handle);
+  if (!FVar5.carry) {
+    byteCount = 200;
+    if (FVar5.eax < 200) {
+      byteCount = FVar5.eax;
     }
-    (*g_FileSystemReadExactCf)(uVar2,destination,handle);
-    if (!bVar4) {
+    FVar6 = (*g_FileSystemReadExactCf)(byteCount,destination,handle);
+    if (!FVar6.carry) {
       (*g_FileSystemClose)(handle);
-      if (extraout_ECX_01 < 0x3c) {
+      if (byteCount < 0x3c) {
         g_PersistentSettings.image = destination;
-        g_PersistentSettings.loadedByteCount = extraout_ECX_01;
+        g_PersistentSettings.loadedByteCount = byteCount;
         g_PersistentSettings.dirtyWriteCount = 0;
         return;
       }
       g_LocaleCountryCodeOverride = settingsClearCursor[-0x24];
       g_PersistentSettings.image = destination;
-      g_PersistentSettings.loadedByteCount = extraout_ECX_01;
+      g_PersistentSettings.loadedByteCount = byteCount;
       g_PersistentSettings.dirtyWriteCount = 0;
       return;
     }
@@ -101,6 +109,7 @@ PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure:
   return;
 }
 
+
 /* Address: 0x00402C50.
    Ownership: core/settings/persistent.
    Purpose: Returns the dword at image+offset only when image is non-null and unsigned offset+4 is no greater than
@@ -108,9 +117,10 @@ PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure:
    defaultValue→PersistentSettingsDwordValue_V342. Calling convention, exact VariableStorage serialization,
    function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-dword PersistentSettings_ReadDword
-                (PersistentSettingsDwordValue defaultValue,
-                PersistentSettingsByteOffset settingsOffsetBytes)
+dword __thandor_eax_preserve_ecx_edx
+PersistentSettings_ReadDword
+          (PersistentSettingsDwordValue defaultValue,
+          PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
@@ -121,14 +131,16 @@ dword PersistentSettings_ReadDword
   return defaultValue;
 }
 
+
 /* Address: 0x00402CC0.
    Ownership: core/settings/persistent.
    Purpose: Returns image+offset only when image is non-null and unsigned offset+byteCount is no greater than
    loadedByteCount. Otherwise returns fallback. The returned region is not copied and may be unaligned.
 */
-void * PersistentSettings_GetRegionOrFallback
-                 (PersistentSettingsByteCount regionByteCount,void *fallback,
-                 PersistentSettingsByteOffset settingsOffsetBytes)
+void * __thandor_eax_preserve_ecx_edx
+PersistentSettings_GetRegionOrFallback
+          (PersistentSettingsByteCount regionByteCount,void *fallback,
+          PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
@@ -138,35 +150,39 @@ void * PersistentSettings_GetRegionOrFallback
   return fallback;
 }
 
+
 /* Address: 0x00402CF0.
    Ownership: core/settings/persistent.
    Purpose: When image is non-null and unsigned offset+byteCount is no greater than 200, copies floor(byteCount/4)
    dwords forward from source to image+offset with rep movsd. Trailing one to three bytes are ignored. A nonempty
    copy increments dirtyWriteCount once even when bytes are unchanged. loadedByteCount is not extended.
 */
-void PersistentSettings_WriteDwords
-               (PersistentSettingsByteCount regionByteCount,void *source,
-               PersistentSettingsByteOffset settingsOffsetBytes)
+void __thandor_void_preserve_eax_ecx_edx
+PersistentSettings_WriteDwords
+          (PersistentSettingsByteCount regionByteCount,dword *source,
+          PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   uint dwordsRemaining;
-  byte *destinationCursor;
+  dword *destinationDwordCursor;
   
   if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
      (settingsOffsetBytes + regionByteCount < 0xc9)) {
-    destinationCursor = (g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50);
+    destinationDwordCursor =
+         (dword *)((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50));
     dwordsRemaining = regionByteCount >> 2;
     if (dwordsRemaining != 0) {
       for (; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
-        *(undefined4 *)destinationCursor = *(undefined4 *)source;
-        source = (undefined4 *)((int)source + 4);
-        destinationCursor = destinationCursor + 4;
+        *destinationDwordCursor = *source;
+        source = source + 1;
+        destinationDwordCursor = destinationDwordCursor + 1;
       }
       g_PersistentSettings.dirtyWriteCount = g_PersistentSettings.dirtyWriteCount + 1;
     }
   }
   return;
 }
+
 
 /* Address: 0x00402C80.
    Ownership: core/settings/persistent.
@@ -176,8 +192,9 @@ void PersistentSettings_WriteDwords
    value→PersistentSettingsDwordValue_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void PersistentSettings_WriteDword
-               (PersistentSettingsDwordValue value,PersistentSettingsByteOffset settingsOffsetBytes)
+void __thandor_void_preserve_eax_ecx_edx
+PersistentSettings_WriteDword
+          (PersistentSettingsDwordValue value,PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   if (((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
@@ -190,3 +207,4 @@ void PersistentSettings_WriteDword
   }
   return;
 }
+

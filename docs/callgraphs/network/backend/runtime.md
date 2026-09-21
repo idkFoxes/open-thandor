@@ -1,6 +1,6 @@
 # Call graph: `network/backend/runtime`
 
-[Source](../../../../src/network/backend/runtime.c) · [Header](../../../../include/thandor/network/backend/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-backend-runtime)
+[Source](../../../../src/network/backend/runtime.c) · [Header](../../../../include/thandor/network/backend/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-backend-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-network-backend-runtime)
 
 8 functions. Addresses are current V523 executable VAs.
 

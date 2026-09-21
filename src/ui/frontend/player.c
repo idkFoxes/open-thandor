@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/frontend/player.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/frontend/player.h>
 
 /* Implementation ownership: ui/frontend/player. */
@@ -12,12 +19,11 @@
    RichTextCommandStream_CopyToNarrowCf [assets/text/richtext], FrontendCommandQueue_EnqueueLocalPlayerCommand
    [network/protocol/commands].
 */
-undefined8 FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 
 {
-  undefined4 in_EAX;
   int iVar1;
-  undefined4 in_EDX;
   word *pwVar2;
   
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
@@ -100,8 +106,9 @@ undefined8 FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEdit
       pwVar2 = pwVar2 + 2;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00560750.
    Ownership: ui/frontend/player.
@@ -115,9 +122,10 @@ undefined8 FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEdit
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout],
    InGameTechnologyPanel_ResetAndSelectCurrentArea [ui/ingame/technology].
 */
-void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
-               (FrontendPlayerIndex playerIndex,undefined4 param_2,RuntimeToken armyToken,
-               RuntimeToken modelToken)
+void __thandor_preserve_eax
+FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
+          (FrontendPlayerIndex playerIndex,dword reservedZero,RuntimeToken armyToken,
+          RuntimeToken modelToken)
 
 {
   InGameRuntimeRootImageC3E4 *inGameRoot;
@@ -137,6 +145,7 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
   return;
 }
 
+
 /* Address: 0x00549AF0.
    Ownership: ui/frontend/player.
    Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[66]@00545938. Queued UI action handler
@@ -146,10 +155,10 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
    Local calls: FrontendPlayerRuntime_SetConsensusValueAndRefresh.
    Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
-undefined4 FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
+void __thandor_preserve_eax
+FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
 
 {
-  undefined4 in_EAX;
   uint consensusValue;
   
   consensusValue = *(uint *)(source + 0x4c) & 2;
@@ -160,8 +169,9 @@ undefined4 FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAd
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(0x820,0,0,consensusValue);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054D3A0.
    Ownership: ui/frontend/player.
@@ -169,25 +179,32 @@ undefined4 FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAd
    for FRONTEND_PAGE20[11] (0x200B). Return datatype is preserved for non-queue direct callers.
    Local calls: FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks.
 */
-undefined8 FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
+
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 
 {
   UiNodeBase *pUVar1;
-  undefined4 in_EAX;
-  undefined4 in_EDX;
+  FrontendPlayerRuntimeRecord **selectedPlayerRuntimeSlot;
   
   pUVar1 = (rootNode->base).parent;
   while (pUVar1 != (UiNodeBase *)0xffffffff) {
-    rootNode = (UiRootNode *)(rootNode->base).parent;
-    pUVar1 = (rootNode->base).parent;
+    rootNode = *(UiRootNode **)
+                (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
+    pUVar1 = *(UiNodeBase **)
+              (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
   }
-  pUVar1 = rootNode[0xfb].base.firstChild;
-  if (pUVar1 != (UiNodeBase *)rootNode[0xfa].rootFlags) {
-    pUVar1->nextSibling->left = 1;
-    FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(rootNode);
+  selectedPlayerRuntimeSlot =
+       (((FrontendNetworkListsRuntimeView5650 *)rootNode)->playerRuntimeList).selectedRowSlot;
+  if (selectedPlayerRuntimeSlot !=
+      (((FrontendNetworkListsRuntimeView5650 *)rootNode)->playerRuntimeList).rowSlots) {
+    (*selectedPlayerRuntimeSlot)->heartbeatExpiryTicks = 1;
+    FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
+              ((FrontendNetworkListsRuntimeView5650 *)rootNode);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0054F540.
    Ownership: ui/frontend/player.
@@ -198,17 +215,14 @@ undefined8 FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime],
    UiTransfer_StagePacketAndSendCf [network/protocol/transfer].
 */
-void __cdecl FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 {
   FrontendHeartbeatTickCount *pFVar1;
   FrontendPlayerRuntimeBlockCount FVar2;
-  word *stream;
-  void *replacementPayload;
   int iVar3;
-  FrontendPlayerRuntimeBlockCount extraout_ECX;
   int iVar4;
-  int extraout_EDX;
   int iVar5;
   FrontendPlayerRuntimeRecord *pFVar6;
   FrontendCommandPacketRecord *pFVar7;
@@ -216,36 +230,36 @@ void __cdecl FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   UiTransferEndpointDescriptor *endpoint;
   FrontendPlayerRuntimeRecord *pFVar9;
   FrontendPlayerRuntimeRecord *pFVar10;
-  FrontendCommandPacketRecord *pFVar11;
-  FrontendPlayerRemovalPacket10007 *pFVar12;
+  TextResourceResolveEaxCf5 TVar11;
+  FrontendCommandPacketRecord *pFVar12;
+  FrontendPlayerRemovalPacket10007 *pFVar13;
   FrontendCommandPacketRecord *pFStack_20;
   
   iVar5 = 0;
   pFStack_20 = g_FrontendPlayerCommandRecords;
-  pFVar11 = g_FrontendPlayerCommandRecords;
+  pFVar12 = g_FrontendPlayerCommandRecords;
   iVar4 = g_FrontendPlayerRuntimeBlockCount - 1;
   pFVar6 = g_FrontendPlayerRuntimeBlocks + 1;
   pFVar9 = g_FrontendPlayerRuntimeBlocks + 1;
-  pFVar12 = (FrontendPlayerRemovalPacket10007 *)pFVar11;
+  pFVar13 = (FrontendPlayerRemovalPacket10007 *)pFVar12;
   if (iVar4 != 0 && 0 < (int)g_FrontendPlayerRuntimeBlockCount) {
     do {
       pFVar1 = &pFVar6->heartbeatExpiryTicks;
       *pFVar1 = *pFVar1 - 1;
       if (*pFVar1 == 0) {
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
-        stream = TextResource_Resolve(0xff00);
-        RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-        FrontendRecentTextHistory_InsertAndRebuild5();
-        pFVar11 = (FrontendCommandPacketRecord *)pFVar6->playerRuntimeId;
+        TVar11 = TextResource_Resolve(0xff00);
+        RichTextCommandStream_PatchPayloadBySelector(0,&pFVar6->playerName,TVar11.eax);
+        FrontendRecentTextHistory_InsertAndRebuild5(TVar11.eax);
+        pFVar12 = (FrontendCommandPacketRecord *)pFVar6->playerRuntimeId;
         iVar5 = iVar5 + 1;
         pFVar8 = pFVar6 + 1;
-        iVar4 = extraout_EDX;
         pFVar10 = pFVar9;
       }
       else {
         pFVar8 = pFVar6 + 1;
         pFVar10 = pFVar9 + 1;
-        pFVar11 = (FrontendCommandPacketRecord *)(pFVar12 + 1);
+        pFVar12 = (FrontendCommandPacketRecord *)(pFVar13 + 1);
         iVar3 = 0x4ec;
         if (pFVar10 != pFVar8) {
           for (; pFVar10 = pFVar9, pFVar8 = pFVar6, iVar3 != 0; iVar3 = iVar3 + -1) {
@@ -255,9 +269,9 @@ void __cdecl FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
           }
           pFVar7 = pFStack_20;
           for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
-            (pFVar12->header).packedTypeAndUnitCount = (pFVar7->header).packedTypeAndUnitCount;
+            (pFVar13->header).packedTypeAndUnitCount = (pFVar7->header).packedTypeAndUnitCount;
             pFVar7 = (FrontendCommandPacketRecord *)&(pFVar7->header).sequenceToken;
-            pFVar12 = (FrontendPlayerRemovalPacket10007 *)&(pFVar12->header).sequenceToken;
+            pFVar13 = (FrontendPlayerRemovalPacket10007 *)&(pFVar13->header).sequenceToken;
           }
         }
       }
@@ -265,7 +279,7 @@ void __cdecl FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       iVar4 = iVar4 + -1;
       pFVar6 = pFVar8;
       pFVar9 = pFVar10;
-      pFVar12 = (FrontendPlayerRemovalPacket10007 *)pFVar11;
+      pFVar13 = (FrontendPlayerRemovalPacket10007 *)pFVar12;
     } while (iVar4 != 0);
   }
   if (iVar5 != 0) {
@@ -273,14 +287,13 @@ void __cdecl FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
       g_FrontendPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
            FRONTEND_PACKET_10007_PLAYER_REMOVAL;
-      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)pFVar11;
+      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)pFVar12;
       FVar2 = g_FrontendPlayerRuntimeBlockCount;
-      while (FVar2 != 1) {
-        pFVar12 = &g_FrontendPlayerRemovalPacket10007;
+      while (FVar2 = FVar2 - 1, FVar2 != 0) {
+        pFVar13 = &g_FrontendPlayerRemovalPacket10007;
         UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
         endpoint = endpoint + 0x13b;
-        pFVar11 = (FrontendCommandPacketRecord *)pFVar12;
-        FVar2 = extraout_ECX;
+        pFVar12 = (FrontendCommandPacketRecord *)pFVar13;
       }
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
@@ -289,20 +302,19 @@ void __cdecl FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   return;
 }
 
+
 /* Address: 0x00514EF0.
    Ownership: ui/frontend/player.
    Purpose: CF set reports another matching player; CF clear reports absence. EAX is preserved. Typed parameters:
    p1 excludedPlayerId→PlayerRuntimeId. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
 
 {
-  undefined4 in_EAX;
   FrontendPlayerRuntimeBlockCount FVar1;
-  undefined4 in_EDX;
   FrontendPlayerRuntimeRecord *pFVar2;
   
   FVar1 = g_FrontendPlayerRuntimeBlockCount;
@@ -313,23 +325,23 @@ FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
     pFVar2 = pFVar2 + 1;
     FVar1 = FVar1 - 1;
     if (FVar1 == 0) {
-      return CONCAT44(in_EDX,in_EAX);
+      return false;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return true;
 }
+
 
 /* Address: 0x00514F60.
    Ownership: ui/frontend/player.
    Purpose: EAX and EDX remain preserved. Typed parameters: p0 assignmentToken→RuntimeToken. Calling convention,
    parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined8 FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 
 {
-  undefined4 in_EAX;
   dword playerBlocksRemaining;
-  undefined4 in_EDX;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
@@ -344,8 +356,9 @@ undefined8 FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assign
     playerBlockCursor = playerBlockCursor + 1;
     playerBlocksRemaining = playerBlocksRemaining - 1;
   } while (playerBlocksRemaining != 0);
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00544130.
    Ownership: ui/frontend/player.
@@ -354,8 +367,9 @@ undefined8 FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assign
    preserved. Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
    asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId.
 */
-void FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
-               (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
+          (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
 
 {
   FrontendPlayerRuntimeBlockCount FVar1;
@@ -398,6 +412,7 @@ void FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
   return;
 }
 
+
 /* Address: 0x005442B0.
    Ownership: ui/frontend/player.
    Purpose: Scans the configured frontend player blocks using exact stride 0x13B0, compares playerId against block
@@ -406,8 +421,9 @@ void FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
    endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
    storage, body bytes, control flow, and executable data remain unchanged.
 */
-void FrontendPlayerRuntime_MarkFlag08ById
-               (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_MarkFlag08ById
+          (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
 
 {
   FrontendRoleStateFlags *pFVar1;
@@ -428,31 +444,32 @@ void FrontendPlayerRuntime_MarkFlag08ById
   return;
 }
 
+
 /* Address: 0x00544300.
    Ownership: ui/frontend/player.
    Purpose: Handles frontend player runtime xor state mask by player id.
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_XorStateMaskByPlayerId
-          (int param_1,undefined4 param_2,undefined4 param_3,uint param_4)
+          (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword stateMask)
 
 {
-  undefined4 in_EAX;
   FrontendPlayerRuntimeBlockCount FVar1;
   FrontendPlayerRuntimeRecord *pFVar2;
   
   FVar1 = g_FrontendPlayerRuntimeBlockCount;
   pFVar2 = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (param_1 == pFVar2->playerRuntimeId) {
-      pFVar2->runtimeState64 = pFVar2->runtimeState64 ^ param_4;
-      return in_EAX;
+    if (playerId == pFVar2->playerRuntimeId) {
+      pFVar2->runtimeState64 = pFVar2->runtimeState64 ^ stateMask;
+      return;
     }
     pFVar2 = pFVar2 + 1;
     FVar1 = FVar1 - 1;
   } while (FVar1 != 0);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00544360.
    Ownership: ui/frontend/player.
@@ -462,13 +479,12 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
    endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
    storage, body bytes, control flow, and executable data remain unchanged.
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag04ById
           (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
 
 {
   FrontendRoleStateFlags *pFVar1;
-  undefined4 in_EAX;
   FrontendPlayerRuntimeBlockCount FVar2;
   FrontendPlayerRuntimeRecord *pFVar3;
   
@@ -478,13 +494,14 @@ FrontendPlayerRuntime_MarkFlag04ById
     if (playerId == pFVar3->playerRuntimeId) {
       pFVar1 = &(pFVar3->factionAssignment).roleStateFlags;
       *pFVar1 = *pFVar1 | 4;
-      return in_EAX;
+      return;
     }
     pFVar3 = pFVar3 + 1;
     FVar2 = FVar2 - 1;
   } while (FVar2 != 0);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00544820.
    Ownership: ui/frontend/player.
@@ -494,8 +511,9 @@ FrontendPlayerRuntime_MarkFlag04ById
    endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
    storage, body bytes, control flow, and executable data remain unchanged.
 */
-void FrontendPlayerRuntime_MarkFlag02ById
-               (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_MarkFlag02ById
+          (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
 
 {
   FrontendRoleStateFlags *pFVar1;
@@ -516,6 +534,7 @@ void FrontendPlayerRuntime_MarkFlag02ById
   return;
 }
 
+
 /* Address: 0x00544D50.
    Ownership: ui/frontend/player.
    Purpose: Scans the configured frontend player blocks with exact stride 0x13B0, compares playerId against dword
@@ -524,14 +543,14 @@ void FrontendPlayerRuntime_MarkFlag02ById
    identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage,
    body bytes, control flow, and executable data remain unchanged.
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
-          (PlayerRuntimeId playerId,FrontendPlayerValue8C value8C,FrontendPlayerValue88 value88,
-          FrontendPlayerValue84 value84)
+          (PlayerRuntimeId playerId,FrontendPlayerValue8C scenarioAvailabilityMask2,
+          FrontendPlayerValue88 scenarioAvailabilityMask1,
+          FrontendPlayerValue84 scenarioAvailabilityMask0)
 
 {
   FrontendRoleStateFlags *pFVar1;
-  undefined4 in_EAX;
   FrontendPlayerRuntimeBlockCount FVar2;
   FrontendPlayerRuntimeRecord *pFVar3;
   
@@ -541,44 +560,44 @@ FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
     if (playerId == pFVar3->playerRuntimeId) {
       pFVar1 = &(pFVar3->factionAssignment).roleStateFlags;
       *pFVar1 = *pFVar1 | 1;
-      pFVar3->callbackValue84 = value84;
-      pFVar3->callbackValue88 = value88;
-      pFVar3->callbackValue8C = value8C;
-      return in_EAX;
+      pFVar3->scenarioAvailabilityMask0 = scenarioAvailabilityMask0;
+      pFVar3->scenarioAvailabilityMask1 = scenarioAvailabilityMask1;
+      pFVar3->scenarioAvailabilityMask2 = scenarioAvailabilityMask2;
+      return;
     }
     pFVar3 = pFVar3 + 1;
     FVar2 = FVar2 - 1;
   } while (FVar2 != 0);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00549190.
    Ownership: ui/frontend/player.
    Purpose: Builds faction availability bytes from the active configuration, initializes every 0x13B0-byte player
    block's faction and state fields, and leaves the local zero-based faction slot in EDX while preserving EAX.
 */
-void __fastcall
-FrontendPlayerRuntime_InitializeFactionAssignments(undefined4 param_1,undefined4 param_2)
+void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
 {
-  int iVar1;
-  int iVar2;
+  FrontendLoadedLevelRuntimeImage370 *pFVar1;
+  dword dVar2;
   uint uVar3;
   FrontendPlayerRuntimeBlockCount FVar4;
-  int iVar5;
+  dword dVar5;
   FrontendPlayerRuntimeRecord *pFVar6;
   
-  iVar1 = g_FrontendLoadedLevelAsset;
+  pFVar1 = g_FrontendLoadedLevelAsset;
   uVar3 = 1;
-  iVar2 = *(int *)(g_FrontendLoadedLevelAsset + 0x314);
-  iVar5 = *(int *)(g_FrontendLoadedLevelAsset + 0x310);
+  dVar2 = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
+  dVar5 = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
   do {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    iVar2 = iVar2 + -1;
+    dVar2 = dVar2 - 1;
     uVar3 = uVar3 + 1;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
-  for (; iVar2 != 0; iVar2 = iVar2 + -1) {
+    dVar5 = dVar5 - 1;
+  } while (dVar5 != 0);
+  for (; dVar2 != 0; dVar2 = dVar2 - 1) {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     uVar3 = uVar3 + 1;
   }
@@ -597,13 +616,14 @@ FrontendPlayerRuntime_InitializeFactionAssignments(undefined4 param_1,undefined4
     (pFVar6->factionAssignment).consensusValue = 0;
     uVar3 = uVar3 + 1;
     pFVar6 = pFVar6 + 1;
-    if (*(uint *)(iVar1 + 0x310) < uVar3) {
-      uVar3 = uVar3 - *(int *)(iVar1 + 0x310);
+    if ((pFVar1->runtimeTail2E0).assignableFactionCount < uVar3) {
+      uVar3 = uVar3 - (pFVar1->runtimeTail2E0).assignableFactionCount;
     }
     FVar4 = FVar4 - 1;
   } while (FVar4 != 0);
   return;
 }
+
 
 /* Address: 0x0054D000.
    Ownership: ui/frontend/player.
@@ -613,11 +633,10 @@ FrontendPlayerRuntime_InitializeFactionAssignments(undefined4 param_1,undefined4
    globals, locals, and executable data remain unchanged.
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-undefined4 FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
+void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 
 {
   FrontendPlayerRuntimeRecord *pFVar1;
-  undefined4 in_EAX;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
   uint sessionTickInterval;
   
@@ -639,8 +658,9 @@ undefined4 FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
   (pFVar1->factionAssignment).roleStateFlags = 0;
   pFVar1->runtimeState64 = 0;
   pFVar1->snapshotTransferFlags = 0;
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054D1B0.
    Ownership: ui/frontend/player.
@@ -651,20 +671,20 @@ undefined4 FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpandedCf
    [assets/text/richtext].
 */
-undefined4 FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
+void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
 
 {
-  undefined4 in_EAX;
-  word *source_00;
+  TextResourceResolveEaxCf5 TVar1;
   
   g_SessionNetworkTickInterval = source[1].vtable;
-  source_00 = TextResource_Resolve
-                        ((TextResourceId)((int)&g_SessionNetworkTickInterval[0x75].rightDrag + 1));
+  TVar1 = TextResource_Resolve
+                    ((TextResourceId)((int)&g_SessionNetworkTickInterval[0x75].rightDrag + 1));
   RichTextCommandStream_CopyExpandedCf
-            (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,source_00);
+            (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,TVar1.eax);
   g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054D720.
    Ownership: ui/frontend/player.
@@ -673,7 +693,8 @@ undefined4 FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
    Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists].
 */
-void __cdecl FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
 
 {
   int iVar1;
@@ -699,6 +720,7 @@ void __cdecl FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
   return;
 }
 
+
 /* Address: 0x0055F470.
    Ownership: ui/frontend/player.
    Purpose: Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
@@ -707,9 +729,10 @@ void __cdecl FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
    readyFlagMask→FrontendReadyFlagMask_V343. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FrontendPlayerRuntime_SetReadyFlagById
-               (PlayerRuntimeId playerRuntimeId,dword reservedArg04,dword reservedArg08,
-               FrontendReadyFlagMask readyFlagMask)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_SetReadyFlagById
+          (PlayerRuntimeId playerRuntimeId,dword reservedArg04,dword reservedArg08,
+          FrontendReadyFlagMask readyFlagMask)
 
 {
   byte *readyFlagsField;
@@ -722,6 +745,7 @@ void FrontendPlayerRuntime_SetReadyFlagById
   return;
 }
 
+
 /* Address: 0x0055F5A0.
    Ownership: ui/frontend/player.
    Purpose: Marks the matching frontend player block ready at field +0x54 and updates action 0x101B according to
@@ -732,9 +756,8 @@ void FrontendPlayerRuntime_SetReadyFlagById
    Cross-module calls: UiNodeList_UnsuppressActionId [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists].
 */
-void __fastcall
-FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B
-          (undefined4 param_1,undefined4 param_2,PlayerRuntimeId playerRuntimeId)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRuntimeId)
 
 {
   FrontendPlayerRuntimeBlockCount FVar1;
@@ -775,6 +798,7 @@ FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B
   return;
 }
 
+
 /* Address: 0x0055F680.
    Ownership: ui/frontend/player.
    Purpose: Increments the matching player ready counter, resolves all-player readiness, queues command 0x550 when
@@ -784,9 +808,9 @@ FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B
    executable data remain unchanged.
    Cross-module calls: InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-          (undefined4 param_1,undefined4 param_2,PlayerRuntimeId playerRuntimeId)
+          (PlayerRuntimeId playerRuntimeId,dword reserved0,dword reserved1,dword reserved2)
 
 {
   FrontendPlayerRuntimeBlockCount FVar1;
@@ -836,8 +860,7 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
         InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
         return;
       }
-      FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0,param_2,g_LocalPlayerRuntimeId)
-      ;
+      FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
       return;
     }
   }
@@ -847,6 +870,7 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus_ClearUiCommandReady
   }
   return;
 }
+
 
 /* Address: 0x0055FB90.
    Ownership: ui/frontend/player.
@@ -859,53 +883,40 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus_ClearUiCommandReady
    Cross-module calls: SelectionPointerArray_InsertUniqueAndRecenter [gameplay/selection/runtime],
    InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
 */
-undefined4 __fastcall
+void __thandor_preserve_eax
 FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-          (undefined4 param_1,undefined4 param_2,PlayerRuntimeId playerRuntimeId,
-          ArmyRuntimeSavedOffset armyRuntimeOffset2,ArmyRuntimeSavedOffset armyRuntimeOffset1,
-          ArmyRuntimeSavedOffset armyRuntimeOffset0)
+          (PlayerRuntimeId playerRuntimeId,ArmyRuntimeSavedOffset armyRuntimeOffset2,
+          ArmyRuntimeSavedOffset armyRuntimeOffset1,ArmyRuntimeSavedOffset armyRuntimeOffset0)
 
 {
-  undefined4 in_EAX;
-  undefined4 extraout_ECX;
-  undefined4 extraout_ECX_00;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  
   if ((armyRuntimeOffset0 != 0) &&
      ((((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common).
       ownership.modelNode != (ModelRuntimeNode *)0x0)) {
     SelectionPointerArray_InsertUniqueAndRecenter
-              (param_1,param_2,
-               (GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-    param_1 = extraout_ECX;
-    param_2 = extraout_EDX;
   }
   if ((armyRuntimeOffset1 != 0) &&
      ((((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common).
       ownership.modelNode != (ModelRuntimeNode *)0x0)) {
     SelectionPointerArray_InsertUniqueAndRecenter
-              (param_1,param_2,
-               (GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-    param_1 = extraout_ECX_00;
-    param_2 = extraout_EDX_00;
   }
   if ((armyRuntimeOffset2 != 0) &&
      ((((GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common).
       ownership.modelNode != (ModelRuntimeNode *)0x0)) {
     SelectionPointerArray_InsertUniqueAndRecenter
-              (param_1,param_2,
-               (GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+              ((GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0055FC30.
    Ownership: ui/frontend/player.
@@ -917,14 +928,12 @@ FrontendPlayerSelection_InsertThreeEntriesAndRefresh
    Cross-module calls: SelectionPointerArray_RemoveFirstMatch [gameplay/selection/runtime],
    InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
 */
-undefined4
+void __thandor_preserve_eax
 FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
           (FrontendPlayerIndex playerIndex,RuntimeToken selectionEntryToken2,
           RuntimeToken selectionEntryToken1,RuntimeToken selectionEntryToken0)
 
 {
-  undefined4 in_EAX;
-  
   if ((selectionEntryToken0 != 0) &&
      ((((GameEntityRuntime *)(selectionEntryToken0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common)
       .ownership.modelNode != (ModelRuntimeNode *)0x0)) {
@@ -943,10 +952,9 @@ FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
      (selectionEntryToken2 = selectionEntryToken2 + (int)g_ArmyRuntimeRebaseBaseMinusOne,
      (((GameEntityRuntime *)selectionEntryToken2)->common).ownership.modelNode !=
      (ModelRuntimeNode *)0x0)) {
-    selectionEntryToken2 =
-         SelectionPointerArray_RemoveFirstMatch
-                   ((GameEntityRuntime *)selectionEntryToken2,
-                    &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
+    SelectionPointerArray_RemoveFirstMatch
+              ((GameEntityRuntime *)selectionEntryToken2,
+               &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
   }
   SelectionPointerArray_RemoveFirstMatch
             ((GameEntityRuntime *)selectionEntryToken2,
@@ -955,8 +963,9 @@ FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0055FCD0.
    Ownership: ui/frontend/player.
@@ -966,9 +975,9 @@ FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
    Cross-module calls: SelectionPointerArray_Clear32 [gameplay/selection/runtime],
    InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
 */
-void FrontendPlayerSelection_ClearAndRefreshLocalPanels
-               (FrontendPlayerIndex playerIndex,dword callbackArg1,dword callbackArg2,
-               dword callbackArg3)
+void __thandor_preserve_eax
+FrontendPlayerSelection_ClearAndRefreshLocalPanels
+          (FrontendPlayerIndex playerIndex,dword callbackArg1,dword callbackArg2,dword callbackArg3)
 
 {
   SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
@@ -978,6 +987,7 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
   }
   return;
 }
+
 
 /* Address: 0x0055FD10.
    Ownership: ui/frontend/player.
@@ -992,17 +1002,17 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
    SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf [gameplay/selection/runtime],
    WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
 */
-void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
-               (PlayerRuntimeId playerRuntimeId,FactionRuntimeIndex factionIndex,
-               FrontendSelectionTransferModeFlags transferModeFlags,
-               FrontendFactionAssignmentIndex selectionGroupIndex)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
+          (PlayerRuntimeId playerRuntimeId,FactionRuntimeIndex factionIndex,
+          FrontendSelectionTransferModeFlags transferModeFlags,
+          FrontendFactionAssignmentIndex selectionGroupIndex)
 
 {
   GameEntityRuntime *pGVar1;
   InGameRuntimeRootImageC3E4 *node;
   int iVar2;
   int iVar3;
-  Q12 originY;
   int iVar4;
   ArmyRuntimeSlot **ppAVar5;
   SelectionPlayerRuntimeBlock *pSVar6;
@@ -1010,7 +1020,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   SelectionPlayerRuntimeBlock *pSVar8;
   SelectionPlayerRuntimeBlock *pSVar9;
   bool bVar10;
-  undefined8 uVar11;
+  WorldPositionEaxEcxEdxCf13 WVar11;
   
   pSVar7 = (SelectionPlayerRuntimeBlock *)
            (selectionGroupIndex * 0x80 + 0x50f620 + factionIndex * 0x740);
@@ -1090,20 +1100,20 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDupli
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
-    bVar10 = false;
     if ((transferModeFlags & 4) != 0) {
-      uVar11 = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
-      if (!bVar10) {
+      WVar11 = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
+      if (!WVar11.carry) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                   ((node->worldRuntime0A30).motion.pitchAngle,
                    (node->worldRuntime0A30).motion.headingAngle,
-                   (node->worldRuntime0A30).motion.committedDistanceQ12,
-                   (Q12)((ulonglong)uVar11 >> 0x20),originY,(Q12)uVar11,&node->worldRuntime0A30);
+                   (node->worldRuntime0A30).motion.committedDistanceQ12,WVar11.worldZQ12,
+                   WVar11.worldYQ12,WVar11.worldXQ12,&node->worldRuntime0A30);
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00560830.
    Ownership: ui/frontend/player.
@@ -1115,10 +1125,10 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDupli
    parameters: p2 technologyIndexOrRestore→TechnologyIndexOrRestoreCode_V344.
    Cross-module calls: Technology_ApplyRecordToEntity [gameplay/technology/runtime].
 */
-void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
-               (FrontendPlayerIndex playerIndex,dword arg1,
-               TechnologyIndexOrRestoreCode technologyIndexOrRestore,
-               ArmyRuntimeSavedOffset modelOffset)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
+          (FrontendPlayerIndex playerIndex,dword arg1,
+          TechnologyIndexOrRestoreCode technologyIndexOrRestore,ArmyRuntimeSavedOffset modelOffset)
 
 {
   GameEntityRuntimeFlags *pGVar1;
@@ -1143,18 +1153,21 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
   return;
 }
 
+
 /* Address: 0x005608A0.
    Ownership: ui/frontend/player.
    Purpose: The exact four-argument callback cleanup and preserved EAX result remain intact.
 */
-void FrontendPlayerTextCommand_SetPackedState
-               (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,
-               FrontendPackedTextCommandState packedState)
+void __thandor_preserve_eax_edx
+FrontendPlayerTextCommand_SetPackedState
+          (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,
+          FrontendPackedTextCommandState packedState)
 
 {
   g_SelectionPlayerRuntimeBlockPointers[playerIndex]->packedSelectionState809C = packedState;
   return;
 }
+
 
 /* Address: 0x005608D0.
    Ownership: ui/frontend/player.
@@ -1165,9 +1178,10 @@ void FrontendPlayerTextCommand_SetPackedState
    value0→FrontendTextCommandValue0_V344. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FrontendPlayerTextCommand_AppendTripleClamped
-               (FrontendPlayerIndex playerIndex,FrontendTextCommandValue2 value2,
-               FrontendTextCommandValue1 value1,FrontendTextCommandValue0 value0)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerTextCommand_AppendTripleClamped
+          (FrontendPlayerIndex playerIndex,FrontendTextCommandValue2 value2,
+          FrontendTextCommandValue1 value1,FrontendTextCommandValue0 value0)
 
 {
   SelectionPlayerRuntimeBlock *pSVar1;
@@ -1188,6 +1202,7 @@ void FrontendPlayerTextCommand_AppendTripleClamped
   return;
 }
 
+
 /* Address: 0x00560940.
    Ownership: ui/frontend/player.
    Purpose: Tests two UI-selected packed-state bits and network mode, converts the staged narrow text at +0x80C0 to
@@ -1197,13 +1212,14 @@ void FrontendPlayerTextCommand_AppendTripleClamped
    RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
    [ui/ingame/runtime].
 */
-void FrontendPlayerTextCommand_PublishConditionalRichText
-               (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,dword arg3)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerTextCommand_PublishConditionalRichText
+          (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,dword arg3)
 
 {
   SelectionPlayerRuntimeBlock *pSVar1;
   word *stream;
-  undefined8 uVar2;
+  TextResourceResolveEaxCf5 TVar2;
   
   pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((((pSVar1->packedSelectionState809C &
@@ -1216,14 +1232,15 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
       SESSION_NETWORK_ROLE_LOCAL)) {
     Text_CopyNarrowToUtf16Cf
               (0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,pSVar1->reserved80B0_8117 + 0x10);
-    stream = TextResource_Resolve(0xff07);
-    uVar2 = RichTextCommandStream_PatchPayloadBySelector(0,pSVar1->reserved80B0_8117 + 0x40,stream);
-    RichTextCommandStream_PatchPayloadBySelector
-              (1,&g_FrontendPlayerMessageScratchUtf16,(word *)uVar2);
-    InGameRecentTextHistory_InsertAndRebuild8();
+    TVar2 = TextResource_Resolve(0xff07);
+    stream = TVar2.eax;
+    RichTextCommandStream_PatchPayloadBySelector(0,pSVar1->reserved80B0_8117 + 0x40,stream);
+    RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
+    InGameRecentTextHistory_InsertAndRebuild8(stream);
   }
   return;
 }
+
 
 /* Address: 0x00561F10.
    Ownership: ui/frontend/player.
@@ -1234,28 +1251,23 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
    Cross-module calls: SelectionPointerArray_ContainsCf [gameplay/selection/runtime],
    ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
 */
-void FrontendPlayerSelection_ApplyEntryOrAll
-               (FrontendPlayerIndex playerIndex,undefined4 param_2,undefined4 param_3,
-               RuntimeToken selectionEntryToken)
+void __thandor_void_preserve_eax_ecx
+FrontendPlayerSelection_ApplyEntryOrAll
+          (FrontendPlayerIndex playerIndex,dword reservedZero0,dword reservedZero1,
+          RuntimeToken selectionEntryToken)
 
 {
   GameEntityRuntime *pGVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
   int iVar2;
   WorldRuntimeContext *worldRuntime;
   SelectionPlayerRuntimeBlock *array;
   bool bVar3;
   
   array = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  bVar3 = (InGameRuntimeRootImageC3E4 *)0xfffff5cf < g_InGameRuntimeRoot;
+  pGVar1 = (GameEntityRuntime *)(selectionEntryToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-  pGVar1 = (GameEntityRuntime *)
-           SelectionPointerArray_ContainsCf
-                     ((GameEntityRuntime *)
-                      (selectionEntryToken + (int)g_ArmyRuntimeRebaseBaseMinusOne),&array->selection
-                     );
-  iVar2 = extraout_ECX;
+  iVar2 = 0x20;
+  bVar3 = SelectionPointerArray_ContainsCf(pGVar1,&array->selection);
   if (bVar3) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,pGVar1);
     return;
@@ -1264,13 +1276,13 @@ void FrontendPlayerSelection_ApplyEntryOrAll
     pGVar1 = (array->selection).entries[0];
     if (pGVar1 != (GameEntityRuntime *)0x0) {
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,pGVar1);
-      iVar2 = extraout_ECX_00;
     }
     array = (SelectionPlayerRuntimeBlock *)((array->selection).entries + 1);
     iVar2 = iVar2 + -1;
   } while (iVar2 != 0);
   return;
 }
+
 
 /* Address: 0x00544020.
    Ownership: ui/frontend/player.
@@ -1280,8 +1292,9 @@ void FrontendPlayerSelection_ApplyEntryOrAll
    indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId.
    Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
-void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
-               (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
+void __thandor_void_preserve_eax_ecx
+FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
+          (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
 
 {
   FrontendPlayerRuntimeBlockCount FVar1;
@@ -1343,6 +1356,7 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState_ClearWaitFlagAndResetTickIfP
   return;
 }
 
+
 /* Address: 0x00544770.
    Ownership: ui/frontend/player.
    Purpose: Four-argument frontend callback. EAX is preserved. Kept distinct from frontend slot indices, faction
@@ -1351,9 +1365,10 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState_ClearWaitFlagAndResetTickIfP
    unchanged.
    Cross-module calls: FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls [ui/frontend/settings].
 */
-void FrontendPlayerRuntime_SetConsensusValueAndRefresh
-               (PlayerRuntimeId playerId,dword argument2,dword argument3,
-               FrontendConsensusValue consensusValue)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_SetConsensusValueAndRefresh
+          (PlayerRuntimeId playerId,dword argument2,dword argument3,
+          FrontendConsensusValue consensusValue)
 
 {
   UiAnchorFractionQ31 *pUVar1;
@@ -1394,6 +1409,7 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
   return;
 }
 
+
 /* Address: 0x00545490.
    Ownership: ui/frontend/player.
    Purpose: Scans the active frontend player blocks at exact 0x13B0 stride and resets the matching 0x64-byte
@@ -1401,8 +1417,9 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
    endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
    storage, body bytes, control flow, and executable data remain unchanged.
 */
-void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
-               (PlayerRuntimeId playerId,dword arg1,dword arg2,dword arg3)
+void __thandor_void_preserve_eax_ecx
+FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
+          (PlayerRuntimeId playerId,dword arg1,dword arg2,dword arg3)
 
 {
   FrontendPlayerRuntimeBlockCount FVar1;
@@ -1428,6 +1445,7 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
   return;
 }
 
+
 /* Address: 0x00545500.
    Ownership: ui/frontend/player.
    Purpose: Scans the active frontend player blocks at exact 0x13B0 stride, advances the matching message record
@@ -1437,9 +1455,10 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
    p1 valueA→FrontendMessageValueA_V344, p2 valueB→FrontendMessageValueB_V344, p3
    valueC→FrontendMessageValueC_V344.
 */
-void FrontendPlayerMessageBuffer_AppendTripleById
-               (PlayerRuntimeId playerId,FrontendMessageValueA valueA,FrontendMessageValueB valueB,
-               FrontendMessageValueC valueC)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerMessageBuffer_AppendTripleById
+          (PlayerRuntimeId playerId,FrontendMessageValueA valueA,FrontendMessageValueB valueB,
+          FrontendMessageValueC valueC)
 
 {
   int iVar1;
@@ -1470,6 +1489,7 @@ void FrontendPlayerMessageBuffer_AppendTripleById
   return;
 }
 
+
 /* Address: 0x00545590.
    Ownership: ui/frontend/player.
    Purpose: Finds the player message record, converts up to 0x60 narrow bytes from record +0x04 to UTF-16, patches
@@ -1481,15 +1501,16 @@ void FrontendPlayerMessageBuffer_AppendTripleById
    RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5
    [ui/frontend/runtime].
 */
-void FrontendPlayerMessageBuffer_PublishTextById
-               (PlayerRuntimeId playerId,dword arg1,dword arg2,dword arg3)
+void __thandor_void_preserve_eax_ecx
+FrontendPlayerMessageBuffer_PublishTextById
+          (PlayerRuntimeId playerId,dword arg1,dword arg2,dword arg3)
 
 {
   FrontendPlayerRuntimeBlockCount FVar1;
   FrontendPlayerRuntimeRecord *pFVar2;
   int iVar3;
   word *stream;
-  undefined8 uVar4;
+  TextResourceResolveEaxCf5 TVar4;
   
   pFVar2 = g_FrontendPlayerRuntimeBlocks;
   iVar3 = g_FrontendPlayerMessageBuffers;
@@ -1507,13 +1528,14 @@ void FrontendPlayerMessageBuffer_PublishTextById
     iVar3 = iVar3 + 100;
   }
   Text_CopyNarrowToUtf16Cf(0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,(byte *)(iVar3 + 4));
-  stream = TextResource_Resolve(0xff07);
-  uVar4 = RichTextCommandStream_PatchPayloadBySelector(0,&pFVar2->playerName,stream);
-  RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,(word *)uVar4)
-  ;
-  FrontendRecentTextHistory_InsertAndRebuild5();
+  TVar4 = TextResource_Resolve(0xff07);
+  stream = TVar4.eax;
+  RichTextCommandStream_PatchPayloadBySelector(0,&pFVar2->playerName,stream);
+  RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
+  FrontendRecentTextHistory_InsertAndRebuild5(stream);
   return;
 }
+
 
 /* Address: 0x0054EBD0.
    Ownership: ui/frontend/player.
@@ -1521,69 +1543,75 @@ void FrontendPlayerMessageBuffer_PublishTextById
    state, formats the new count, and refreshes the player list. Preserved EDX:EAX is incidental.
    Cross-module calls: UiPointerList_RefreshSelectionAndQueueAction [ui/controls/lists].
 */
-void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(UiRootNode *frontendRoot)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
+          (FrontendNetworkListsRuntimeView5650 *frontendRoot)
 
 {
   FrontendHeartbeatTickCount *pFVar1;
-  UiNodeBase **ppUVar2;
-  UiNodeBase *pUVar3;
-  UiNodeBase *pUVar4;
-  int iVar5;
-  undefined1 *puVar6;
-  UiPointerListControl *control;
-  FrontendPlayerRuntimeRecord *pFVar7;
-  FrontendPlayerRuntimeRecord *pFVar8;
+  UiListRowCount *pUVar2;
+  void ***pppvVar3;
+  void **ppvVar4;
+  UiListRowCount UVar5;
+  void **ppvVar6;
+  int iVar7;
+  int iVar8;
   FrontendPlayerRuntimeRecord *pFVar9;
   FrontendPlayerRuntimeRecord *pFVar10;
+  FrontendPlayerRuntimeRecord *pFVar11;
+  FrontendPlayerRuntimeRecord *pFVar12;
   
-  puVar6 = (undefined1 *)((int)&frontendRoot[0xfa].callbacks[-1].keyboardFallbackCf + 3);
-  if (puVar6 != (undefined1 *)0x0 && 0 < (int)frontendRoot[0xfa].callbacks) {
-    pUVar4 = (UiNodeBase *)(frontendRoot[0xfa].rootFlags + 4);
-    pFVar7 = g_FrontendPlayerRuntimeBlocks + 1;
+  UVar5 = (frontendRoot->playerRuntimeList).rowCount;
+  iVar8 = UVar5 - 1;
+  if (iVar8 != 0 && 0 < (int)UVar5) {
+    ppvVar6 = (frontendRoot->playerRuntimeList).rowSlots + 1;
     pFVar9 = g_FrontendPlayerRuntimeBlocks + 1;
+    pFVar11 = g_FrontendPlayerRuntimeBlocks + 1;
     do {
-      pFVar1 = &pFVar7->heartbeatExpiryTicks;
+      pFVar1 = &pFVar9->heartbeatExpiryTicks;
       *pFVar1 = *pFVar1 - 1;
-      pFVar10 = pFVar9;
+      pFVar12 = pFVar11;
       if (*pFVar1 == 0) {
-        pFVar8 = pFVar7 + 1;
-        frontendRoot[0xfa].callbacks =
-             (UiRootCallbacks *)((int)&frontendRoot[0xfa].callbacks[-1].keyboardFallbackCf + 3);
+        pFVar10 = pFVar9 + 1;
+        pUVar2 = &(frontendRoot->playerRuntimeList).rowCount;
+        *pUVar2 = *pUVar2 - 1;
         g_FrontendPlayerRuntimeCount = g_FrontendPlayerRuntimeCount + -1;
-        pUVar3 = frontendRoot[0xfb].base.firstChild;
-        if (pUVar4 == pUVar3) {
-          frontendRoot[0xfb].base.firstChild = (UiNodeBase *)frontendRoot[0xfa].rootFlags;
+        ppvVar4 = (frontendRoot->playerRuntimeList).selectedRowSlot;
+        if (ppvVar6 == ppvVar4) {
+          (frontendRoot->playerRuntimeList).selectedRowSlot =
+               (frontendRoot->playerRuntimeList).rowSlots;
         }
-        else if (pUVar4 <= pUVar3) {
-          ppUVar2 = &frontendRoot[0xfb].base.firstChild;
-          *ppUVar2 = (UiNodeBase *)&(*ppUVar2)[-1].nodeFlags;
+        else if (ppvVar6 <= ppvVar4) {
+          pppvVar3 = &(frontendRoot->playerRuntimeList).selectedRowSlot;
+          *pppvVar3 = *pppvVar3 + -1;
         }
       }
       else {
-        pFVar8 = pFVar7 + 1;
         pFVar10 = pFVar9 + 1;
-        pUVar4 = (UiNodeBase *)&pUVar4->firstChild;
-        if (pFVar10 != pFVar8) {
-          pFVar8 = pFVar7;
+        pFVar12 = pFVar11 + 1;
+        ppvVar6 = ppvVar6 + 1;
+        if (pFVar12 != pFVar10) {
           pFVar10 = pFVar9;
-          for (iVar5 = 0x4ec; iVar5 != 0; iVar5 = iVar5 + -1) {
-            pFVar10->runtimeState00 = pFVar8->runtimeState00;
-            pFVar8 = (FrontendPlayerRuntimeRecord *)&pFVar8->peerSequenceToken;
+          pFVar12 = pFVar11;
+          for (iVar7 = 0x4ec; iVar7 != 0; iVar7 = iVar7 + -1) {
+            pFVar12->runtimeState00 = pFVar10->runtimeState00;
             pFVar10 = (FrontendPlayerRuntimeRecord *)&pFVar10->peerSequenceToken;
+            pFVar12 = (FrontendPlayerRuntimeRecord *)&pFVar12->peerSequenceToken;
           }
         }
       }
-      puVar6 = puVar6 + -1;
-      pFVar7 = pFVar8;
+      iVar8 = iVar8 + -1;
       pFVar9 = pFVar10;
-    } while (puVar6 != (undefined1 *)0x0);
+      pFVar11 = pFVar12;
+    } while (iVar8 != 0);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)frontendRoot[0xfa].callbacks,
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(frontendRoot->playerRuntimeList).rowCount,
                (word *)&g_FrontendNetworkRuntimeCountTextUtf16);
-    UiPointerList_RefreshSelectionAndQueueAction(control);
+    UiPointerList_RefreshSelectionAndQueueAction(&frontendRoot->playerRuntimeList);
   }
   return;
 }
+
 
 /* Address: 0x0055FAD0.
    Ownership: ui/frontend/player.
@@ -1593,24 +1621,20 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(UiRootNode *frontendR
    SelectionPointerArray_InsertUniqueAndRecenter [gameplay/selection/runtime], InGameSelectionDetailPanel_Rebuild
    [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
 */
-void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-               (FactionRuntimeIndex playerIndex,undefined4 param_2,undefined4 param_3,
-               RuntimeToken modelToken)
+void __thandor_preserve_eax
+FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
+          (FactionRuntimeIndex playerIndex,dword reservedZero0,dword reservedZero1,
+          RuntimeToken modelToken)
 
 {
   GameEntityRuntime *entityRuntime;
-  undefined4 extraout_ECX;
-  undefined4 extraout_EDX;
   
   if (modelToken != 0) {
-    entityRuntime =
-         (GameEntityRuntime *)
-         SelectionPointerArray_Clear32
-                   (&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
+    entityRuntime = (GameEntityRuntime *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
     if ((entityRuntime->common).ownership.modelNode != (ModelRuntimeNode *)0x0) {
       SelectionPointerArray_InsertUniqueAndRecenter
-                (extraout_ECX,extraout_EDX,entityRuntime,
-                 &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
+                (entityRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
       if (playerIndex == g_LocalPlayerRuntimeId) {
         InGameSelectionDetailPanel_Rebuild();
         UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
@@ -1620,6 +1644,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
   return;
 }
 
+
 /* Address: 0x005607E0.
    Ownership: ui/frontend/player.
    Purpose: Resolves an army token through g_ArmyRuntimeRebaseBaseMinusOne, stores the army pointer for the player,
@@ -1628,9 +1653,9 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
    modelOffset→ArmyRuntimeSavedOffset_V343. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
-               (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,
-               ArmyRuntimeSavedOffset modelOffset)
+void __thandor_void_preserve_eax_ecx
+FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
+          (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,ArmyRuntimeSavedOffset modelOffset)
 
 {
   SelectionPlayerRuntimeBlock *pSVar1;
@@ -1647,3 +1672,4 @@ void FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
   }
   return;
 }
+

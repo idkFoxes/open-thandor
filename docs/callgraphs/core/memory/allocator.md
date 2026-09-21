@@ -1,6 +1,6 @@
 # Call graph: `core/memory/allocator`
 
-[Source](../../../../src/core/memory/allocator.c) · [Header](../../../../include/thandor/core/memory/allocator.h) · [Graphviz](allocator.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-memory-allocator)
+[Source](../../../../src/core/memory/allocator.c) · [Header](../../../../include/thandor/core/memory/allocator.h) · [Graphviz](allocator.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-memory-allocator) · [Developer notes](../../../../CHANGELOG.md#module-core-memory-allocator) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-memory-allocator)
 
 12 functions. Addresses are current V523 executable VAs.
 

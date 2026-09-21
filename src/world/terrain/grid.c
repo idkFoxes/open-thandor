@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/terrain/grid.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/terrain/grid.h>
 
 /* Implementation ownership: world/terrain/grid. */
@@ -10,95 +17,107 @@
    Local calls: FieldGrid_WorldToGridQ12, FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial,
    FieldGridCell_RecomputeTriangleNormalAngles, FieldGridCell_ComputeDirectionalLightColor.
 */
-void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
-               (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
-               FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
-               Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
+          (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
+          FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
+          Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension FVar1;
-  int extraout_EAX;
-  int extraout_EAX_00;
-  int extraout_EAX_01;
-  int extraout_ECX;
   int iVar2;
-  uint uVar3;
-  int iVar4;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
+  int iVar3;
+  uint uVar4;
   int iVar5;
   int iVar6;
+  int iVar7;
   FieldGridCell *cell;
   FieldGridCell *cell_00;
   FieldGridCell *cell_01;
-  qword qVar7;
-  qword qVar8;
-  FieldGridCell *pFVar9;
+  FieldGridCoordinatesEaxEdx8 FVar8;
+  FieldGridCoordinatesEaxEdx8 FVar9;
   FieldGridCell *pFVar10;
+  FieldGridCell *pFVar11;
   
   if (0 < radiusWorldUnits) {
-    uVar3 = (int)((ulonglong)((longlong)radiusWorldUnits * 0x1bb6) >> 0x20) << 0x14 |
+    uVar4 = (int)((ulonglong)((longlong)radiusWorldUnits * 0x1bb6) >> 0x20) << 0x14 |
             (uint)((longlong)radiusWorldUnits * 0x1bb6) >> 0xc;
-    iVar5 = centerWorldXQ12 - uVar3;
-    qVar7 = FieldGrid_WorldToGridQ12(centerWorldYQ12 + radiusWorldUnits,iVar5);
-    qVar8 = FieldGrid_WorldToGridQ12(extraout_ECX + radiusWorldUnits * -2,iVar5 + uVar3 * 2);
+    iVar6 = centerWorldXQ12 - uVar4;
+    FVar8 = FieldGrid_WorldToGridQ12(centerWorldYQ12 + radiusWorldUnits,iVar6);
+    FVar9 = FieldGrid_WorldToGridQ12
+                      (centerWorldYQ12 + radiusWorldUnits + radiusWorldUnits * -2,iVar6 + uVar4 * 2)
+    ;
     FVar1 = fieldGrid->gridWidth;
-    iVar6 = (int)qVar7 >> 0xc;
-    iVar2 = (int)((longlong)qVar7 >> 0x2c);
-    iVar5 = ((int)qVar8 >> 0xc) + 1;
-    iVar4 = (int)((longlong)qVar8 >> 0x2c) + 1;
-    if ((int)FVar1 <= iVar5) {
-      iVar5 = FVar1 - 1;
+    iVar7 = FVar8.columnQ12 >> 0xc;
+    iVar3 = FVar8.rowQ12 >> 0xc;
+    iVar6 = (FVar9.columnQ12 >> 0xc) + 1;
+    iVar5 = (FVar9.rowQ12 >> 0xc) + 1;
+    if ((int)FVar1 <= iVar6) {
+      iVar6 = FVar1 - 1;
     }
-    if (iVar6 < 1) {
-      iVar6 = 1;
+    if (iVar7 < 1) {
+      iVar7 = 1;
     }
-    if (iVar2 < 1) {
-      iVar2 = 1;
+    if (iVar3 < 1) {
+      iVar3 = 1;
     }
-    if ((int)fieldGrid->gridHeight <= iVar4) {
-      iVar4 = fieldGrid->gridHeight - 1;
+    if ((int)fieldGrid->gridHeight <= iVar5) {
+      iVar5 = fieldGrid->gridHeight - 1;
     }
-    if ((iVar6 < iVar5) && (iVar2 < iVar4)) {
+    iVar2 = iVar6 - iVar7;
+    if ((iVar2 != 0 && iVar7 <= iVar6) && (iVar6 = iVar5 - iVar3, iVar6 != 0 && iVar3 <= iVar5)) {
       fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-      cell = (FieldGridCell *)(fieldGrid->cells[iVar6].runtime00_07 + iVar2 * FVar1 * 0x80);
-      pFVar9 = cell;
+      cell = (FieldGridCell *)(fieldGrid->cells[iVar7].runtime0C_3F + iVar3 * FVar1 * 0x80 + -0xc);
+      iVar3 = iVar2;
+      pFVar10 = cell;
       cell_00 = cell;
+      iVar5 = iVar6;
       do {
         do {
           FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
                     (terrainMaterialIndexOrNegativeSentinel,radiusWorldUnits,
                      terrainHeightDeltaAmplitudeQ12,centerWorldYQ12,centerWorldXQ12,cell);
           cell = cell + 1;
-        } while (extraout_EAX != 1);
-        cell = pFVar9 + FVar1;
-        pFVar10 = cell_00;
-        pFVar9 = cell;
+          iVar3 = iVar3 + -1;
+        } while (iVar3 != 0);
+        cell = pFVar10 + FVar1;
+        iVar6 = iVar6 + -1;
+        iVar3 = iVar2;
+        pFVar11 = cell_00;
+        pFVar10 = cell;
         cell_01 = cell_00;
-      } while (extraout_EDX != 1);
+        iVar7 = iVar5;
+      } while (iVar6 != 0);
       do {
         do {
           FieldGridCell_RecomputeTriangleNormalAngles(FVar1 * 0x80,cell_00);
           cell_00 = cell_00 + 1;
-        } while (extraout_EAX_00 != 1);
-        cell_00 = pFVar10 + FVar1;
-        pFVar9 = cell_01;
-        pFVar10 = cell_00;
-      } while (extraout_EDX_00 != 1);
+          iVar2 = iVar2 + -1;
+        } while (iVar2 != 0);
+        cell_00 = pFVar11 + FVar1;
+        iVar5 = iVar5 + -1;
+        iVar2 = iVar3;
+        pFVar10 = cell_01;
+        pFVar11 = cell_00;
+        iVar6 = iVar3;
+      } while (iVar5 != 0);
       do {
         do {
           FieldGridCell_ComputeDirectionalLightColor(cell_01);
           cell_01 = cell_01 + 1;
-        } while (extraout_EAX_01 != 1);
-        cell_01 = pFVar9 + FVar1;
-        pFVar9 = cell_01;
-      } while (extraout_EDX_01 != 1);
+          iVar3 = iVar3 + -1;
+        } while (iVar3 != 0);
+        cell_01 = pFVar10 + FVar1;
+        iVar7 = iVar7 + -1;
+        iVar3 = iVar6;
+        pFVar10 = cell_01;
+      } while (iVar7 != 0);
       return;
     }
   }
   return;
 }
+
 
 /* Address: 0x00562330.
    Ownership: world/terrain/grid.
@@ -108,31 +127,32 @@ void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
    TerrainGrid_RelaxNeighborHeightsReverseWithSignGate, TerrainGrid_RelaxNeighborHeightsForward,
    TerrainGrid_RelaxNeighborHeightsReverse.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RunDirectionalRelaxationPasses
-          (undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+          (FrontendPlayerRuntimeId playerRuntimeId,dword reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode)
 
 {
   FieldGridAsset *fieldGrid;
-  int extraout_ECX;
-  int extraout_ECX_00;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   if ((mode & TERRAIN_RELAXATION_UNGATED_LAND_TOOL) == TERRAIN_RELAXATION_SIGN_GATED) {
     do {
       TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(fieldGrid);
       TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(fieldGrid);
-    } while (extraout_ECX != 1);
+      passCount = passCount - 1;
+    } while (passCount != 0);
   }
   else {
     do {
       TerrainGrid_RelaxNeighborHeightsForward(fieldGrid);
       TerrainGrid_RelaxNeighborHeightsReverse(fieldGrid);
-    } while (extraout_ECX_00 != 1);
+      passCount = passCount - 1;
+    } while (passCount != 0);
   }
   return;
 }
+
 
 /* Address: 0x005610A0.
    Ownership: world/terrain/grid.
@@ -143,211 +163,152 @@ TerrainGrid_RunDirectionalRelaxationPasses
    FieldGrid_ProcessHorizontalSpan.
    Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
 */
-void FieldGrid_ApplyPositiveCellDeltas
-               (PlayerRuntimeId playerRuntimeId,Q12 anchorWorldYQ12,Q12 anchorWorldXQ12,
-               PackedFieldGridDeltaXY16 packedDragDeltaXY16)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyPositiveCellDeltas
+          (PlayerRuntimeId playerRuntimeId,Q12 anchorWorldYQ12,Q12 anchorWorldXQ12,
+          PackedFieldGridDeltaXY16 packedDragDeltaXY16)
 
 {
-  FieldGridCell *cell;
   FieldGridAsset *fieldGrid;
-  int iVar1;
-  int extraout_EAX;
+  FieldGridDimension FVar1;
   int iVar2;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int iVar3;
-  FieldGridHeightDeltaUnits heightDeltaUnits;
-  FieldGridHeightDeltaUnits extraout_ECX_06;
-  int extraout_ECX_07;
-  int extraout_ECX_08;
-  int extraout_ECX_09;
-  int extraout_ECX_10;
-  int extraout_ECX_11;
-  int extraout_ECX_12;
-  int extraout_ECX_13;
+  dword dVar3;
+  int iVar4;
+  int iVar5;
   int rowStrideBytes;
-  FieldGridRowStrideBytes rowStrideBytes_00;
-  FieldGridRowStrideBytes extraout_EDX;
-  int extraout_EDX_00;
-  FieldGridRowStrideBytes extraout_EDX_01;
-  int extraout_EDX_02;
-  FieldGridRowStrideBytes extraout_EDX_03;
-  int extraout_EDX_04;
-  FieldGridAccumulatorValue *accumulatorPlane;
-  FieldGridAccumulatorValue *extraout_EDX_05;
-  FieldGridRowStrideBytes rowStrideBytes_01;
-  FieldGridRowStrideBytes extraout_EDX_06;
-  int extraout_EDX_07;
-  FieldGridRowStrideBytes extraout_EDX_08;
-  int extraout_EDX_09;
-  FieldGridRowStrideBytes extraout_EDX_10;
-  int extraout_EDX_11;
-  int rowStrideBytes_02;
-  FieldGridCell *pFVar4;
-  FieldGridCell *pFVar5;
-  int *piVar6;
-  SelectionPlayerPairRecord *pSVar7;
-  FieldGridAccumulatorValue *pFVar8;
-  bool bVar9;
+  FieldGridCell *cell;
+  FieldGridCell *pFVar6;
+  FieldGridCell *pFVar7;
+  SelectionPlayerPairRecord *pSVar8;
+  int *piVar9;
+  bool bVar10;
+  int *accumulatorPlane;
+  int rowStrideBytes_00;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar6 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
-  iVar2 = fieldGrid->gridWidth * fieldGrid->gridHeight;
-  rowStrideBytes = fieldGrid->gridWidth << 7;
-  pFVar5 = fieldGrid->cells;
-  iVar3 = iVar2;
-  pFVar4 = pFVar5;
-  accumulatorPlane = piVar6;
-  rowStrideBytes_02 = rowStrideBytes;
+  piVar9 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  FVar1 = fieldGrid->gridWidth;
+  iVar4 = FVar1 * fieldGrid->gridHeight;
+  rowStrideBytes = FVar1 * 0x80;
+  pFVar7 = fieldGrid->cells;
+  iVar5 = iVar4;
+  pFVar6 = pFVar7;
+  accumulatorPlane = piVar9;
+  rowStrideBytes_00 = rowStrideBytes;
   do {
-    iVar1 = *piVar6;
-    if (iVar1 != 0) {
-      pFVar4->terrainHeight = pFVar4->terrainHeight - iVar1;
-      pFVar4->waterSurfaceDelta = pFVar4->waterSurfaceDelta + iVar1;
-      if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-        iVar3 = extraout_ECX;
-        rowStrideBytes = rowStrideBytes_00;
-        if (((pFVar4[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + -1);
-          iVar3 = extraout_ECX_00;
-          rowStrideBytes = extraout_EDX;
+    iVar2 = *piVar9;
+    if (iVar2 != 0) {
+      pFVar6->terrainHeight = pFVar6->terrainHeight - iVar2;
+      pFVar6->waterSurfaceDelta = pFVar6->waterSurfaceDelta + iVar2;
+      if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        if (((pFVar6[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + -1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + -1);
         }
-        if (((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-          iVar3 = extraout_ECX_01;
-          rowStrideBytes = extraout_EDX_00;
+        if (((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
         }
-        pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes);
-        if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar3 = extraout_ECX_02;
-          rowStrideBytes = extraout_EDX_01;
+        pFVar6 = pFVar6 + -FVar1;
+        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
         }
-        if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-          iVar3 = extraout_ECX_03;
-          rowStrideBytes = extraout_EDX_02;
+        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
         }
-        cell = (FieldGridCell *)(pFVar4[-1].runtime00_07 + rowStrideBytes * 2);
-        if ((cell->flagsAndMaterial & 0x88006000) == 0) {
+        pFVar6 = pFVar6 + FVar1 * 2 + -1;
+        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        }
+        cell = pFVar6 + 1;
+        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
-          iVar3 = extraout_ECX_04;
-          rowStrideBytes = extraout_EDX_03;
         }
-        pFVar4 = cell + 1;
-        if ((cell[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar3 = extraout_ECX_05;
-          rowStrideBytes = extraout_EDX_04;
-        }
-        pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes);
+        pFVar6 = cell + -FVar1;
       }
     }
-    *piVar6 = pFVar4->terrainHeight;
-    pFVar4 = pFVar4 + 1;
-    bVar9 = (int *)0xfffffffb < piVar6;
-    piVar6 = piVar6 + 1;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
-  heightDeltaUnits = (int)packedDragDeltaXY16 >> 0x10;
-  if (bVar9) {
+    *piVar9 = pFVar6->terrainHeight;
+    pFVar6 = pFVar6 + 1;
+    piVar9 = piVar9 + 1;
+    iVar5 = iVar5 + -1;
+  } while (iVar5 != 0);
+  bVar10 = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
+  if (bVar10) {
     FieldGrid_ProcessHorizontalSpan
-              (anchorWorldYQ12,anchorWorldXQ12,heightDeltaUnits,(int)(short)packedDragDeltaXY16,
-               anchorWorldYQ12,anchorWorldXQ12,accumulatorPlane,fieldGrid);
-    pFVar8 = accumulatorPlane;
+              (anchorWorldYQ12,anchorWorldXQ12,(int)packedDragDeltaXY16 >> 0x10,
+               (int)(short)packedDragDeltaXY16,anchorWorldYQ12,anchorWorldXQ12,accumulatorPlane,
+               fieldGrid);
+    piVar9 = accumulatorPlane;
   }
   else {
-    pSVar7 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
-    pFVar8 = accumulatorPlane;
-    if (g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084 != 0) {
-      do {
-        FieldGrid_ProcessHorizontalSpan
-                  (anchorWorldYQ12,anchorWorldXQ12,heightDeltaUnits,(int)(short)packedDragDeltaXY16,
-                   pSVar7->pairValue,pSVar7->pairKey,accumulatorPlane,fieldGrid);
-        pSVar7 = pSVar7 + 1;
-        heightDeltaUnits = extraout_ECX_06;
-        accumulatorPlane = extraout_EDX_05;
-      } while (extraout_EAX != 1);
+    pSVar8 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
+    piVar9 = accumulatorPlane;
+    for (dVar3 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
+        dVar3 != 0; dVar3 = dVar3 - 1) {
+      FieldGrid_ProcessHorizontalSpan
+                (anchorWorldYQ12,anchorWorldXQ12,(int)packedDragDeltaXY16 >> 0x10,
+                 (int)(short)packedDragDeltaXY16,pSVar8->pairValue,pSVar8->pairKey,accumulatorPlane,
+                 fieldGrid);
+      pSVar8 = pSVar8 + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
   do {
     LOCK();
-    iVar3 = *pFVar8;
-    *pFVar8 = 0;
+    iVar5 = *piVar9;
+    *piVar9 = 0;
     UNLOCK();
-    iVar3 = iVar3 - pFVar5->terrainHeight;
-    if (iVar3 != 0) {
-      pFVar5->terrainHeight = pFVar5->terrainHeight + iVar3;
-      pFVar5->waterSurfaceDelta = pFVar5->waterSurfaceDelta - iVar3;
-      *pFVar8 = iVar3;
-      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-        iVar2 = extraout_ECX_07;
-        rowStrideBytes_02 = rowStrideBytes_01;
-        if (((pFVar5[-1].flagsAndMaterial & 0x88006000) == 0) && (pFVar8[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_01,pFVar5 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + -1);
-          iVar2 = extraout_ECX_08;
-          rowStrideBytes_02 = extraout_EDX_06;
+    iVar5 = iVar5 - pFVar7->terrainHeight;
+    if (iVar5 != 0) {
+      pFVar7->terrainHeight = pFVar7->terrainHeight + iVar5;
+      pFVar7->waterSurfaceDelta = pFVar7->waterSurfaceDelta - iVar5;
+      *piVar9 = iVar5;
+      if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar7);
+        if (((pFVar7[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + -1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + -1);
         }
-        if (((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) && (pFVar8[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
-          iVar2 = extraout_ECX_09;
-          rowStrideBytes_02 = extraout_EDX_07;
+        if (((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
         }
-        pFVar5 = (FieldGridCell *)((int)pFVar5 - rowStrideBytes_02);
-        if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-          iVar2 = extraout_ECX_10;
-          rowStrideBytes_02 = extraout_EDX_08;
+        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
+        if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
         }
-        if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
-          iVar2 = extraout_ECX_11;
-          rowStrideBytes_02 = extraout_EDX_09;
+        if ((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
         }
-        pFVar4 = (FieldGridCell *)(pFVar5[-1].runtime00_07 + rowStrideBytes_02 * 2);
-        if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar2 = extraout_ECX_12;
-          rowStrideBytes_02 = extraout_EDX_10;
+        pFVar6 = (FieldGridCell *)(pFVar7[-1].runtime0C_3F + rowStrideBytes_00 * 2 + -0xc);
+        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar6);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
         }
-        pFVar5 = pFVar4 + 1;
-        if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-          iVar2 = extraout_ECX_13;
-          rowStrideBytes_02 = extraout_EDX_11;
+        pFVar7 = pFVar6 + 1;
+        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
         }
-        pFVar5 = (FieldGridCell *)((int)pFVar5 - rowStrideBytes_02);
+        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
       }
     }
-    pFVar5 = pFVar5 + 1;
-    pFVar8 = pFVar8 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    pFVar7 = pFVar7 + 1;
+    piVar9 = piVar9 + 1;
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   return;
 }
+
 
 /* Address: 0x005613C0.
    Ownership: world/terrain/grid.
@@ -358,206 +319,145 @@ void FieldGrid_ApplyPositiveCellDeltas
    FieldGrid_ProcessVerticalSpan.
    Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
 */
-void FieldGrid_ApplyNegativeCellDeltas
-               (PlayerRuntimeId playerRuntimeId,Q12 anchorWorldYQ12,Q12 anchorWorldXQ12,
-               PackedFieldGridDeltaXY16 packedDragDeltaXY16)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyNegativeCellDeltas
+          (PlayerRuntimeId playerRuntimeId,Q12 anchorWorldYQ12,Q12 anchorWorldXQ12,
+          PackedFieldGridDeltaXY16 packedDragDeltaXY16)
 
 {
-  FieldGridCell *cell;
   FieldGridAsset *fieldGrid;
-  int iVar1;
-  int extraout_EAX;
+  FieldGridDimension FVar1;
   int iVar2;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int iVar3;
-  FieldGridHeightDeltaUnits heightDeltaUnits;
-  FieldGridHeightDeltaUnits extraout_ECX_06;
-  int extraout_ECX_07;
-  int extraout_ECX_08;
-  int extraout_ECX_09;
-  int extraout_ECX_10;
-  int extraout_ECX_11;
-  int extraout_ECX_12;
-  int extraout_ECX_13;
+  dword dVar3;
+  int iVar4;
+  int iVar5;
   int rowStrideBytes;
-  FieldGridRowStrideBytes rowStrideBytes_00;
-  FieldGridRowStrideBytes extraout_EDX;
-  int extraout_EDX_00;
-  FieldGridRowStrideBytes extraout_EDX_01;
-  int extraout_EDX_02;
-  FieldGridRowStrideBytes extraout_EDX_03;
-  int extraout_EDX_04;
-  FieldGridAccumulatorValue *accumulatorPlane;
-  FieldGridAccumulatorValue *extraout_EDX_05;
-  FieldGridRowStrideBytes rowStrideBytes_01;
-  FieldGridRowStrideBytes extraout_EDX_06;
-  int extraout_EDX_07;
-  FieldGridRowStrideBytes extraout_EDX_08;
-  int extraout_EDX_09;
-  FieldGridRowStrideBytes extraout_EDX_10;
-  int extraout_EDX_11;
-  int rowStrideBytes_02;
-  FieldGridCell *pFVar4;
-  FieldGridCell *pFVar5;
-  int *piVar6;
-  SelectionPlayerPairRecord *pSVar7;
-  FieldGridAccumulatorValue *pFVar8;
-  bool bVar9;
+  FieldGridCell *cell;
+  FieldGridCell *pFVar6;
+  FieldGridCell *pFVar7;
+  SelectionPlayerPairRecord *pSVar8;
+  int *piVar9;
+  bool bVar10;
+  int *accumulatorPlane;
+  int rowStrideBytes_00;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar6 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
-  iVar2 = fieldGrid->gridWidth * fieldGrid->gridHeight;
-  rowStrideBytes = fieldGrid->gridWidth << 7;
-  pFVar5 = fieldGrid->cells;
-  iVar3 = iVar2;
-  pFVar4 = pFVar5;
-  accumulatorPlane = piVar6;
-  rowStrideBytes_02 = rowStrideBytes;
+  piVar9 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  FVar1 = fieldGrid->gridWidth;
+  iVar4 = FVar1 * fieldGrid->gridHeight;
+  rowStrideBytes = FVar1 * 0x80;
+  pFVar7 = fieldGrid->cells;
+  iVar5 = iVar4;
+  pFVar6 = pFVar7;
+  accumulatorPlane = piVar9;
+  rowStrideBytes_00 = rowStrideBytes;
   do {
-    iVar1 = *piVar6;
-    if (iVar1 != 0) {
-      pFVar4->terrainHeight = pFVar4->terrainHeight - iVar1;
-      pFVar4->waterSurfaceDelta = pFVar4->waterSurfaceDelta + iVar1;
-      *piVar6 = 0;
-      if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-        iVar3 = extraout_ECX;
-        rowStrideBytes = rowStrideBytes_00;
-        if (((pFVar4[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + -1);
-          iVar3 = extraout_ECX_00;
-          rowStrideBytes = extraout_EDX;
+    iVar2 = *piVar9;
+    if (iVar2 != 0) {
+      pFVar6->terrainHeight = pFVar6->terrainHeight - iVar2;
+      pFVar6->waterSurfaceDelta = pFVar6->waterSurfaceDelta + iVar2;
+      *piVar9 = 0;
+      if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        if (((pFVar6[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + -1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + -1);
         }
-        if (((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-          iVar3 = extraout_ECX_01;
-          rowStrideBytes = extraout_EDX_00;
+        if (((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
         }
-        pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes);
-        if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar3 = extraout_ECX_02;
-          rowStrideBytes = extraout_EDX_01;
+        pFVar6 = pFVar6 + -FVar1;
+        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
         }
-        if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-          iVar3 = extraout_ECX_03;
-          rowStrideBytes = extraout_EDX_02;
+        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
         }
-        cell = (FieldGridCell *)(pFVar4[-1].runtime00_07 + rowStrideBytes * 2);
-        if ((cell->flagsAndMaterial & 0x88006000) == 0) {
+        pFVar6 = pFVar6 + FVar1 * 2 + -1;
+        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        }
+        cell = pFVar6 + 1;
+        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
-          iVar3 = extraout_ECX_04;
-          rowStrideBytes = extraout_EDX_03;
         }
-        pFVar4 = cell + 1;
-        if ((cell[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar3 = extraout_ECX_05;
-          rowStrideBytes = extraout_EDX_04;
-        }
-        pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes);
+        pFVar6 = cell + -FVar1;
       }
     }
-    pFVar4 = pFVar4 + 1;
-    bVar9 = (int *)0xfffffffb < piVar6;
-    piVar6 = piVar6 + 1;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
-  heightDeltaUnits = (int)packedDragDeltaXY16 >> 0x10;
-  if (bVar9) {
+    pFVar6 = pFVar6 + 1;
+    piVar9 = piVar9 + 1;
+    iVar5 = iVar5 + -1;
+  } while (iVar5 != 0);
+  bVar10 = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
+  if (bVar10) {
     FieldGrid_ProcessVerticalSpan
-              (heightDeltaUnits,(int)(short)packedDragDeltaXY16,anchorWorldYQ12,anchorWorldXQ12,
-               accumulatorPlane,fieldGrid);
-    pFVar8 = accumulatorPlane;
+              ((int)packedDragDeltaXY16 >> 0x10,(int)(short)packedDragDeltaXY16,anchorWorldYQ12,
+               anchorWorldXQ12,accumulatorPlane,fieldGrid);
+    piVar9 = accumulatorPlane;
   }
   else {
-    pSVar7 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
-    pFVar8 = accumulatorPlane;
-    if (g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084 != 0) {
-      do {
-        FieldGrid_ProcessVerticalSpan
-                  (heightDeltaUnits,(int)(short)packedDragDeltaXY16,pSVar7->pairValue,
-                   pSVar7->pairKey,accumulatorPlane,fieldGrid);
-        pSVar7 = pSVar7 + 1;
-        heightDeltaUnits = extraout_ECX_06;
-        accumulatorPlane = extraout_EDX_05;
-      } while (extraout_EAX != 1);
+    pSVar8 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
+    piVar9 = accumulatorPlane;
+    for (dVar3 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
+        dVar3 != 0; dVar3 = dVar3 - 1) {
+      FieldGrid_ProcessVerticalSpan
+                ((int)packedDragDeltaXY16 >> 0x10,(int)(short)packedDragDeltaXY16,pSVar8->pairValue,
+                 pSVar8->pairKey,accumulatorPlane,fieldGrid);
+      pSVar8 = pSVar8 + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
   do {
-    iVar3 = *pFVar8;
-    if (iVar3 != 0) {
-      pFVar5->terrainHeight = pFVar5->terrainHeight + iVar3;
-      pFVar5->waterSurfaceDelta = pFVar5->waterSurfaceDelta - iVar3;
-      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-        iVar2 = extraout_ECX_07;
-        rowStrideBytes_02 = rowStrideBytes_01;
-        if (((pFVar5[-1].flagsAndMaterial & 0x88006000) == 0) && (pFVar8[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_01,pFVar5 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + -1);
-          iVar2 = extraout_ECX_08;
-          rowStrideBytes_02 = extraout_EDX_06;
+    iVar5 = *piVar9;
+    if (iVar5 != 0) {
+      pFVar7->terrainHeight = pFVar7->terrainHeight + iVar5;
+      pFVar7->waterSurfaceDelta = pFVar7->waterSurfaceDelta - iVar5;
+      if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar7);
+        if (((pFVar7[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + -1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + -1);
         }
-        if (((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) && (pFVar8[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
-          iVar2 = extraout_ECX_09;
-          rowStrideBytes_02 = extraout_EDX_07;
+        if (((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
         }
-        pFVar5 = (FieldGridCell *)((int)pFVar5 - rowStrideBytes_02);
-        if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-          iVar2 = extraout_ECX_10;
-          rowStrideBytes_02 = extraout_EDX_08;
+        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
+        if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
         }
-        if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
-          iVar2 = extraout_ECX_11;
-          rowStrideBytes_02 = extraout_EDX_09;
+        if ((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
         }
-        pFVar4 = (FieldGridCell *)(pFVar5[-1].runtime00_07 + rowStrideBytes_02 * 2);
-        if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar2 = extraout_ECX_12;
-          rowStrideBytes_02 = extraout_EDX_10;
+        pFVar6 = (FieldGridCell *)(pFVar7[-1].runtime0C_3F + rowStrideBytes_00 * 2 + -0xc);
+        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar6);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
         }
-        pFVar5 = pFVar4 + 1;
-        if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_02,pFVar5);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-          iVar2 = extraout_ECX_13;
-          rowStrideBytes_02 = extraout_EDX_11;
+        pFVar7 = pFVar6 + 1;
+        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
         }
-        pFVar5 = (FieldGridCell *)((int)pFVar5 - rowStrideBytes_02);
+        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
       }
     }
-    pFVar5 = pFVar5 + 1;
-    pFVar8 = pFVar8 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    pFVar7 = pFVar7 + 1;
+    piVar9 = piVar9 + 1;
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   return;
 }
+
 
 /* Address: 0x00561C10.
    Ownership: world/terrain/grid.
@@ -568,113 +468,83 @@ void FieldGrid_ApplyNegativeCellDeltas
    FieldGridCell_ComputeDirectionalLightColor.
    Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
 */
-void FieldGrid_RebuildLocalInfluenceState
-               (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
-               Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_RebuildLocalInfluenceState
+          (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
+          Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  FieldGridCell *cell;
+  SelectionPlayerRuntimeBlock *pSVar1;
   FieldGridAsset *fieldGrid;
-  int extraout_ECX;
-  int iVar1;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int extraout_ECX_06;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
+  FieldGridDimension FVar2;
+  dword dVar3;
+  int iVar4;
   int rowStrideBytes;
-  FieldGridRowStrideBytes rowStrideBytes_00;
-  FieldGridRowStrideBytes extraout_EDX_02;
-  int extraout_EDX_03;
-  FieldGridRowStrideBytes extraout_EDX_04;
-  int extraout_EDX_05;
-  FieldGridRowStrideBytes extraout_EDX_06;
-  int extraout_EDX_07;
-  FieldGridCell *pFVar2;
-  Q12 *pQVar3;
-  int *piVar4;
-  undefined1 in_CF;
+  FieldGridCell *cell;
+  FieldGridCell *pFVar5;
+  SelectionPlayerPairRecord *pSVar6;
+  int *piVar7;
+  bool bVar8;
   
+  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
-  if ((bool)in_CF) {
+  bVar8 = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
+  if (bVar8) {
     FieldGrid_ApplyRectangularTransition(worldYQ12,worldXQ12,fieldGrid);
-    iVar1 = extraout_EDX_01;
   }
   else {
-    pQVar3 = (Q12 *)(extraout_EDX + 0x80);
-    iVar1 = extraout_EDX;
-    if (*(int *)(extraout_EDX + 0x8084) != 0) {
-      do {
-        FieldGrid_ApplyRectangularTransition(pQVar3[1],*pQVar3,fieldGrid);
-        pQVar3 = pQVar3 + 2;
-        iVar1 = extraout_EDX_00;
-      } while (extraout_ECX != 1);
+    pSVar6 = pSVar1->pairRecords80_807F;
+    for (dVar3 = pSVar1->activePairCount8084; dVar3 != 0; dVar3 = dVar3 - 1) {
+      FieldGrid_ApplyRectangularTransition(pSVar6->pairValue,pSVar6->pairKey,fieldGrid);
+      pSVar6 = pSVar6 + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-  piVar4 = *(int **)(iVar1 + 0x8088);
-  iVar1 = fieldGrid->gridWidth * fieldGrid->gridHeight;
-  rowStrideBytes = fieldGrid->gridWidth << 7;
-  pFVar2 = fieldGrid->cells;
+  piVar7 = pSVar1->terrainHeightScratchPlane8088;
+  FVar2 = fieldGrid->gridWidth;
+  iVar4 = FVar2 * fieldGrid->gridHeight;
+  rowStrideBytes = FVar2 * 0x80;
+  pFVar5 = fieldGrid->cells;
   do {
-    if ((*piVar4 != pFVar2->terrainHeight) && ((pFVar2->flagsAndMaterial & 0x88006000) == 0)) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar2);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar2);
-      iVar1 = extraout_ECX_00;
-      rowStrideBytes = rowStrideBytes_00;
-      if (((pFVar2[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar4[-1] == 0)) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar2 + -1);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar2 + -1);
-        iVar1 = extraout_ECX_01;
-        rowStrideBytes = extraout_EDX_02;
+    if ((*piVar7 != pFVar5->terrainHeight) && ((pFVar5->flagsAndMaterial & 0x88006000) == 0)) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
+      FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+      if (((pFVar5[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar7[-1] == 0)) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + -1);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar5 + -1);
       }
-      if (((pFVar2[1].flagsAndMaterial & 0x88006000) == 0) && (piVar4[1] == 0)) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar2 + 1);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar2 + 1);
-        iVar1 = extraout_ECX_02;
-        rowStrideBytes = extraout_EDX_03;
+      if (((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) && (piVar7[1] == 0)) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
       }
-      pFVar2 = (FieldGridCell *)((int)pFVar2 - rowStrideBytes);
-      if ((pFVar2->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar2);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar2);
-        iVar1 = extraout_ECX_03;
-        rowStrideBytes = extraout_EDX_04;
+      pFVar5 = pFVar5 + -FVar2;
+      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
       }
-      if ((pFVar2[1].flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar2 + 1);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar2 + 1);
-        iVar1 = extraout_ECX_04;
-        rowStrideBytes = extraout_EDX_05;
+      if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
       }
-      cell = (FieldGridCell *)(pFVar2[-1].runtime00_07 + rowStrideBytes * 2);
-      if ((cell->flagsAndMaterial & 0x88006000) == 0) {
+      pFVar5 = pFVar5 + FVar2 * 2 + -1;
+      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+      }
+      cell = pFVar5 + 1;
+      if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
         FieldGridCell_ComputeDirectionalLightColor(cell);
-        iVar1 = extraout_ECX_05;
-        rowStrideBytes = extraout_EDX_06;
       }
-      pFVar2 = cell + 1;
-      if ((cell[1].flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar2);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar2);
-        iVar1 = extraout_ECX_06;
-        rowStrideBytes = extraout_EDX_07;
-      }
-      pFVar2 = (FieldGridCell *)((int)pFVar2 - rowStrideBytes);
+      pFVar5 = cell + -FVar2;
     }
-    pFVar2 = pFVar2 + 1;
-    piVar4 = piVar4 + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    pFVar5 = pFVar5 + 1;
+    piVar7 = piVar7 + 1;
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   return;
 }
+
 
 /* Address: 0x00505620.
    Ownership: world/terrain/grid.
@@ -683,32 +553,39 @@ void FieldGrid_RebuildLocalInfluenceState
    returns.
    Local calls: FieldGridCell_RecomputeTriangleNormalAngles.
 */
-void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
 
 {
-  int extraout_ECX;
-  int extraout_EDX;
+  FieldGridDimension FVar1;
+  int iVar2;
+  int iVar3;
   FieldGridCell *cell;
-  int rowStrideBytes;
   FieldGridCell *cellCursor;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    rowStrideBytes = fieldGrid->gridWidth * 0x80;
+    FVar1 = fieldGrid->gridWidth;
+    iVar3 = fieldGrid->gridHeight - 2;
+    iVar2 = FVar1 - 2;
     cellCursor = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 rowStrideBytes + -0x28);
+                 FVar1 * 0x80 + -0x28);
     do {
       do {
         cell = cellCursor;
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
+        FieldGridCell_RecomputeTriangleNormalAngles(FVar1 * 0x80,cell);
+        iVar2 = iVar2 + -1;
         cellCursor = cell + 1;
-      } while (extraout_ECX != 1);
+      } while (iVar2 != 0);
+      iVar2 = FVar1 - 2;
+      iVar3 = iVar3 + -1;
       cellCursor = cell + 3;
-    } while (extraout_EDX != 1);
+    } while (iVar3 != 0);
   }
   return;
 }
+
 
 /* Address: 0x00505700.
    Ownership: world/terrain/grid.
@@ -718,13 +595,14 @@ void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
    Local calls: FieldGridCell_ComputeDirectionalLightColor.
    Cross-module calls: FixedMath_WriteDirectionQ28 [core/math/fixed].
 */
-void FieldGrid_RecomputeInteriorDirectionalLighting
-               (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,
-               FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_RecomputeInteriorDirectionalLighting
+          (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,FieldGridAsset *fieldGrid)
 
 {
-  int extraout_ECX;
-  int extraout_EDX;
+  FieldGridDimension FVar1;
+  int iVar2;
+  int iVar3;
   FieldGridCell *cell;
   FieldGridCell *cellCursor;
   
@@ -732,20 +610,27 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
             ((GraphicsFixedVec3 *)&g_TerrainLightDirectionX,lightElevationAngle,lightAzimuthAngle);
   if (fieldGrid != (FieldGridAsset *)0x0) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+    FVar1 = fieldGrid->gridWidth;
+    iVar3 = fieldGrid->gridHeight - 2;
+    iVar2 = FVar1 - 2;
     cellCursor = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 fieldGrid->gridWidth * 0x80 + -0x28);
+                 FVar1 * 0x80 + -0x28);
     do {
       do {
         cell = cellCursor;
         FieldGridCell_ComputeDirectionalLightColor(cell);
+        iVar2 = iVar2 + -1;
         cellCursor = cell + 1;
-      } while (extraout_ECX != 1);
+      } while (iVar2 != 0);
+      iVar2 = FVar1 - 2;
+      iVar3 = iVar3 + -1;
       cellCursor = cell + 3;
-    } while (extraout_EDX != 1);
+    } while (iVar3 != 0);
   }
   return;
 }
+
 
 /* Address: 0x005090E0.
    Ownership: world/terrain/grid.
@@ -760,9 +645,10 @@ void FieldGrid_RecomputeInteriorDirectionalLighting
    [world/terrain/height], TerrainHeightDelta_ApplyWedge4 [world/terrain/height], TerrainHeightDelta_ApplyWedge5
    [world/terrain/height].
 */
-void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
-               (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
-               Q12 worldXQ12,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
+          (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
+          Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   Q12 *pQVar1;
@@ -775,7 +661,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
   FieldGridCell *pFVar8;
   FieldGridCell *pFVar9;
   FieldGridCell *cell;
-  qword qVar10;
+  FieldGridCoordinatesEaxEdx8 FVar10;
   uint uVar11;
   uint uVar12;
   
@@ -788,12 +674,12 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
       g_TerrainScanStepLimit = 0xff;
     }
     g_TerrainScanReferenceHeight = worldZQ12;
-    qVar10 = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
+    FVar10 = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    uVar2 = (int)qVar10 >> 0xc;
-    uVar11 = (uint)((longlong)qVar10 >> 0x2c);
-    uVar3 = (uint)(qVar10 & 0xfff00000fff);
-    uVar6 = (uint)((qVar10 & 0xfff00000fff) >> 0x20);
+    uVar2 = FVar10.columnQ12 >> 0xc;
+    uVar11 = FVar10.rowQ12 >> 0xc;
+    uVar3 = (uint)((ulonglong)FVar10 & 0xfff00000fff);
+    uVar6 = (uint)(((ulonglong)FVar10 & 0xfff00000fff) >> 0x20);
     uVar5 = uVar6 + uVar3 * 2;
     uVar12 = uVar2;
     if (uVar5 < 0x1000) {
@@ -834,9 +720,9 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
       TerrainHeightDelta_ApplyWedge0(0,pFVar8);
       cell = pFVar9 + -1;
       TerrainHeightDelta_ApplyWedge1(0,pFVar9);
-      pFVar8 = (FieldGridCell *)(cell[-1].runtime00_07 + iVar4);
+      pFVar8 = (FieldGridCell *)(cell[-1].runtime0C_3F + iVar4 + -0xc);
       TerrainHeightDelta_ApplyWedge2(0,cell);
-      pFVar9 = (FieldGridCell *)(pFVar8->runtime00_07 + iVar4);
+      pFVar9 = (FieldGridCell *)(pFVar8->runtime0C_3F + iVar4 + -0xc);
       TerrainHeightDelta_ApplyWedge3(0,pFVar8);
       TerrainHeightDelta_ApplyWedge4(0,pFVar9);
       TerrainHeightDelta_ApplyWedge5(0,pFVar9 + 1);
@@ -846,6 +732,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
   return;
 }
 
+
 /* Address: 0x005618A0.
    Ownership: world/terrain/grid.
    Purpose: Applies one compact local cell update to the active field grid and marks the affected runtime state
@@ -854,34 +741,36 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
    Local calls: FieldGrid_ApplySingleCellTransition.
    Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
 */
-void FieldGrid_ApplyLocalCellUpdate
-               (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,
-               Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyLocalCellUpdate
+          (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,Q12 worldYQ12,
+          Q12 worldXQ12)
 
 {
+  SelectionPlayerRuntimeBlock *pSVar1;
   FieldGridAsset *fieldGrid;
-  int extraout_ECX;
-  int extraout_EDX;
-  Q12 *pQVar1;
-  undefined1 in_CF;
+  dword dVar2;
+  SelectionPlayerPairRecord *pSVar3;
+  bool bVar4;
   
+  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
-  if ((bool)in_CF) {
+  bVar4 = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
+  if (bVar4) {
     FieldGrid_ApplySingleCellTransition(transitionValue,worldYQ12,worldXQ12,fieldGrid);
   }
   else {
-    pQVar1 = (Q12 *)(extraout_EDX + 0x80);
-    if (*(int *)(extraout_EDX + 0x8084) != 0) {
-      do {
-        FieldGrid_ApplySingleCellTransition(transitionValue,pQVar1[1],*pQVar1,fieldGrid);
-        pQVar1 = pQVar1 + 2;
-      } while (extraout_ECX != 1);
+    pSVar3 = pSVar1->pairRecords80_807F;
+    for (dVar2 = pSVar1->activePairCount8084; dVar2 != 0; dVar2 = dVar2 - 1) {
+      FieldGrid_ApplySingleCellTransition
+                (transitionValue,pSVar3->pairValue,pSVar3->pairKey,fieldGrid);
+      pSVar3 = pSVar3 + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
   return;
 }
+
 
 /* Address: 0x00562390.
    Ownership: world/terrain/grid.
@@ -891,9 +780,10 @@ void FieldGrid_ApplyLocalCellUpdate
    consume every slot.
    Local calls: FieldGrid_ApplyEncodedUpdateCore.
 */
-void FieldGrid_ApplyEncodedCellUpdate
-               (PlayerRuntimeId playerRuntimeId,Q12 worldYQ12,Q12 worldXQ12,
-               PackedFieldGridDeltaXY16 packedDragDeltaXY16)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyEncodedCellUpdate
+          (PlayerRuntimeId playerRuntimeId,Q12 worldYQ12,Q12 worldXQ12,
+          PackedFieldGridDeltaXY16 packedDragDeltaXY16)
 
 {
   FieldGridAsset *fieldGrid;
@@ -906,6 +796,7 @@ void FieldGrid_ApplyEncodedCellUpdate
   return;
 }
 
+
 /* Address: 0x005623D0.
    Ownership: world/terrain/grid.
    Purpose: Forwards the caller values with mask 0xDFFFFFFF to the shared masked-region helper and marks the field-
@@ -913,9 +804,9 @@ void FieldGrid_ApplyEncodedCellUpdate
    normal returns. Fixed command-payload slots remain explicit even when this wrapper does not consume every slot.
    Local calls: FieldGrid_ApplyMaskedRegionCore.
 */
-void FieldGrid_ApplyMaskDFFFFFFF
-               (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 worldYQ12,
-               Q12 worldXQ12)
+void __thandor_preserve_eax
+FieldGrid_ApplyMaskDFFFFFFF
+          (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   FieldGridAsset *fieldGrid;
@@ -928,6 +819,7 @@ void FieldGrid_ApplyMaskDFFFFFFF
   return;
 }
 
+
 /* Address: 0x00562410.
    Ownership: world/terrain/grid.
    Purpose: Forwards the caller values with mask 0xBFFFFFFF to the shared masked-region helper and marks the field-
@@ -935,9 +827,9 @@ void FieldGrid_ApplyMaskDFFFFFFF
    normal returns. Fixed command-payload slots remain explicit even when this wrapper does not consume every slot.
    Local calls: FieldGrid_ApplyMaskedRegionCore.
 */
-void FieldGrid_ApplyMaskBFFFFFFF
-               (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 worldYQ12,
-               Q12 worldXQ12)
+void __thandor_preserve_eax
+FieldGrid_ApplyMaskBFFFFFFF
+          (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   FieldGridAsset *fieldGrid;
@@ -950,15 +842,17 @@ void FieldGrid_ApplyMaskBFFFFFFF
   return;
 }
 
+
 /* Address: 0x00562450.
    Ownership: world/terrain/grid.
    Purpose: EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal
    returns. Fixed command-payload slots remain explicit even when this wrapper does not consume every slot.
    Local calls: FieldGrid_ApplyMaskedRegionCore.
 */
-void FieldGrid_ApplyCallerMask
-               (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,
-               Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyCallerMask
+          (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 worldYQ12,
+          Q12 worldXQ12)
 
 {
   FieldGridAsset *fieldGrid;
@@ -978,19 +872,23 @@ void FieldGrid_ApplyCallerMask
   return;
 }
 
+
 /* Address: 0x004FEA80.
    Ownership: world/terrain/grid.
    Purpose: Rounds transformed coordinates to the nearest cell, bounds-checks gridWidth/gridHeight, and returns
    that cell's worldX in EAX, worldY in ECX, and terrainHeight in EDX. CF clear means success; CF set returns the
    original input coordinates and zero height.
 */
-qword FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+FieldGridNearestPointRegsCf13
+FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   int iVar1;
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
   Q12 terrainHeightQ12;
+  undefined1 uVar2;
+  FieldGridNearestPointRegsCf13 FVar3;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
@@ -1003,25 +901,36 @@ qword FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *fie
       ((int)field->gridWidth <= iVar1)) ||
      (iVar1 = field->gridWidth * gridRowIndex + iVar1, (int)field->gridHeight <= gridRowIndex)) {
     terrainHeightQ12 = 0;
+    uVar2 = 1;
   }
   else {
     worldX = field->cells[iVar1].worldX;
+    worldY = field->cells[iVar1].worldY;
     terrainHeightQ12 = field->cells[iVar1].terrainHeight;
+    uVar2 = 0;
   }
-  return CONCAT44(terrainHeightQ12,worldX);
+  FVar3.ecx = worldY;
+  FVar3.eax = worldX;
+  FVar3.carry = (bool)uVar2;
+  FVar3.edx = terrainHeightQ12;
+  return FVar3;
 }
+
 
 /* Address: 0x004FEB10.
    Ownership: world/terrain/grid.
    Purpose: Nearest-cell companion that returns worldX in EAX, worldY in ECX, and terrainHeight + waterSurfaceDelta
    in EDX. CF reports bounds success.
 */
-qword FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+FieldGridSurfacePointEaxEcxEdxCf13
+FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   int iVar1;
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
+  undefined1 uVar2;
+  FieldGridSurfacePointEaxEcxEdxCf13 FVar3;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
@@ -1034,13 +943,21 @@ qword FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *
       ((int)field->gridWidth <= iVar1)) ||
      (iVar1 = field->gridWidth * gridRowIndex + iVar1, (int)field->gridHeight <= gridRowIndex)) {
     iVar1 = 0;
+    uVar2 = 1;
   }
   else {
     worldX = field->cells[iVar1].worldX;
+    worldY = field->cells[iVar1].worldY;
     iVar1 = field->cells[iVar1].waterSurfaceDelta + field->cells[iVar1].terrainHeight;
+    uVar2 = 0;
   }
-  return CONCAT44(iVar1,worldX);
+  FVar3.worldYQ12 = worldY;
+  FVar3.worldXQ12 = worldX;
+  FVar3.carry = (bool)uVar2;
+  FVar3.worldZQ12 = iVar1;
+  return FVar3;
 }
+
 
 /* Address: 0x004FEBA0.
    Ownership: world/terrain/grid.
@@ -1049,7 +966,8 @@ qword FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *
    worldX→Q12, p1 worldY→Q12. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-sdword FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+sdword __thandor_eax_preserve_ecx_edx
+FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   sdword sVar1;
@@ -1070,13 +988,15 @@ sdword FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fiel
   return sVar1;
 }
 
+
 /* Address: 0x004FEC10.
    Ownership: world/terrain/grid.
    Purpose: EAX carries the Q12 result; CF reports failure. EDX is pushed and restored by the body because the sole
    indirect caller carries ModelRuntimeClassId through the call. Five-entry field-grid interpolation table
    callback; EAX is Q12 and CF reports failure.
 */
-Q12 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   longlong lVar1;
@@ -1087,6 +1007,8 @@ Q12 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsse
   uint uVar3;
   int iVar4;
   int triangleDiagonalWeightQ12;
+  bool bVar5;
+  FieldGridHeightEaxCf5 FVar6;
   FieldGridDimension gridWidth;
   longlong weightedHeightAccumulator;
   
@@ -1104,10 +1026,10 @@ Q12 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsse
       iVar4 = iVar4 * gridWidth * 0x80;
       uVar2 = gridColumnCoordinateQ12 & 0xfff;
       uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime58_6F + iVar4 + -8) & 0x88006000) ==
-           0) && ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                                  [gridColumnIndex + gridWidth].producerName + iVar4 + 0x20) &
-                  0x88006000) == 0)) {
+      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x10) & 0x88006000)
+           == 0) &&
+         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
+                          producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
         triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
         if (uVar2 + uVar3 < 0x1000) {
           weightedHeightAccumulator =
@@ -1115,29 +1037,40 @@ Q12 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsse
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
                              producerName + iVar4 + 0x18) * (longlong)(int)uVar2 +
                ((longlong)
-                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar4 + -0x10)
+                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x18)
                 * (longlong)(int)uVar3 -
-               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime58_6F + iVar4 + -0x10) *
+               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x18) *
                (longlong)triangleDiagonalWeightQ12);
-          return (uint)weightedHeightAccumulator >> 0xc |
-                 (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          uVar2 = (uint)weightedHeightAccumulator >> 0xc |
+                  (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          bVar5 = false;
         }
-        lVar1 = (longlong)
-                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                              [gridColumnIndex + gridWidth].producerName + iVar4 + 0x18) *
-                (longlong)triangleDiagonalWeightQ12 -
-                ((longlong)
-                 *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar4 + -0x10
-                         ) * (longlong)(int)(uVar2 - 0x1000) +
-                (longlong)
-                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                              producerName + iVar4 + 0x18) * (longlong)(int)(uVar3 - 0x1000));
-        return (uint)lVar1 >> 0xc | (int)((ulonglong)lVar1 >> 0x20) << 0x14;
+        else {
+          lVar1 = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
+                                [gridColumnIndex + gridWidth].producerName + iVar4 + 0x18) *
+                  (longlong)triangleDiagonalWeightQ12 -
+                  ((longlong)
+                   *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
+                           iVar4 + -0x18) * (longlong)(int)(uVar2 - 0x1000) +
+                  (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
+                                producerName + iVar4 + 0x18) * (longlong)(int)(uVar3 - 0x1000));
+          uVar2 = (uint)lVar1 >> 0xc | (int)((ulonglong)lVar1 >> 0x20) << 0x14;
+          bVar5 = false;
+        }
+        goto LAB_004fed32;
       }
     }
   }
-  return 0;
+  uVar2 = 0;
+  bVar5 = true;
+LAB_004fed32:
+  FVar6.carry = bVar5;
+  FVar6.heightQ12 = uVar2;
+  return FVar6;
 }
+
 
 /* Address: 0x004FED50.
    Ownership: world/terrain/grid.
@@ -1146,7 +1079,8 @@ Q12 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsse
    were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-sdword FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+sdword __thandor_eax_preserve_ecx_edx
+FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   longlong lVar1;
@@ -1174,9 +1108,9 @@ sdword FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
       iVar4 = iVar4 * gridWidth * 0x80;
       uVar2 = gridColumnCoordinateQ12 & 0xfff;
       uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
-      if (((*(uint *)(field->cells[gridColumnIndex].runtime58_6F + iVar4 + -8) & 0x88006000) == 0)
-         && ((*(uint *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
-                             producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
+      if (((*(uint *)(field->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x10) & 0x88006000) == 0
+          ) && ((*(uint *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
+                                producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
         triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
         if (uVar2 + uVar3 < 0x1000) {
           weightedWaterDeltaAccumulator =
@@ -1184,9 +1118,9 @@ sdword FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
                *(int *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex].producerName +
                        iVar4 + 0x1c) * (longlong)(int)uVar2 +
                ((longlong)
-                *(int *)(field->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar4 + -0xc) *
+                *(int *)(field->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x14) *
                 (longlong)(int)uVar3 -
-               (longlong)*(int *)(field->cells[gridColumnIndex].runtime58_6F + iVar4 + -0xc) *
+               (longlong)*(int *)(field->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x14) *
                (longlong)triangleDiagonalWeightQ12);
           return (uint)weightedWaterDeltaAccumulator >> 0xc |
                  (int)((ulonglong)weightedWaterDeltaAccumulator >> 0x20) << 0x14;
@@ -1195,7 +1129,7 @@ sdword FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
                 *(int *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
                               producerName + iVar4 + 0x1c) * (longlong)triangleDiagonalWeightQ12 -
                 ((longlong)
-                 *(int *)(field->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar4 + -0xc) *
+                 *(int *)(field->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x14) *
                  (longlong)(int)(uVar2 - 0x1000) +
                 (longlong)
                 *(int *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex].producerName +
@@ -1207,6 +1141,7 @@ sdword FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
   return 0;
 }
 
+
 /* Address: 0x004FEE90.
    Ownership: world/terrain/grid.
    Purpose: EAX carries the Q12 result; CF reports failure. EDX is pushed and restored by the body because the sole
@@ -1216,16 +1151,20 @@ sdword FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *fie
    cell has flagsAndMaterial & 0x88006000; interpolates (terrainHeight + waterSurfaceDelta) over the triangle half
    selected by fx + fy < 0x1000.
 */
-Q12 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   int cellColumn;
+  uint uVar1;
   Q12 gridRowFixedQ12;
   uint rowFractionQ12;
   Q12 gridColumnFixedQ12;
   uint columnFractionQ12;
-  int iVar1;
+  int iVar2;
   Q12 upperTriangleWeightQ12;
+  bool bVar3;
+  FieldGridHeightEaxCf5 FVar4;
   longlong upperTriangleWeightedHeightAccumulator;
   FieldGridDimension gridWidth;
   longlong weightedHeightAccumulator;
@@ -1238,56 +1177,67 @@ Q12 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGri
        (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - gridColumnFixedQ12;
   gridWidth = fieldGrid->gridWidth;
   cellColumn = gridRowFixedQ12 >> 0xc;
-  if (((-1 < cellColumn) && (iVar1 = gridColumnFixedQ12 * 2 >> 0xc, -1 < iVar1)) &&
+  if (((-1 < cellColumn) && (iVar2 = gridColumnFixedQ12 * 2 >> 0xc, -1 < iVar2)) &&
      (cellColumn < (int)gridWidth)) {
-    if (iVar1 < (int)fieldGrid->gridHeight) {
-      iVar1 = iVar1 * gridWidth * 0x80;
+    if (iVar2 < (int)fieldGrid->gridHeight) {
+      iVar2 = iVar2 * gridWidth * 0x80;
       rowFractionQ12 = gridRowFixedQ12 & 0xfff;
       columnFractionQ12 = gridColumnFixedQ12 * 2 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[cellColumn].runtime58_6F + iVar1 + -8) & 0x88006000) == 0) &&
-         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
-                          producerName + iVar1 + 0x20) & 0x88006000) == 0)) {
+      if (((*(uint *)(fieldGrid->cells[cellColumn].runtime60_6B + iVar2 + -0x10) & 0x88006000) == 0)
+         && ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
+                             producerName + iVar2 + 0x20) & 0x88006000) == 0)) {
         upperTriangleWeightQ12 = (rowFractionQ12 + columnFractionQ12) - 0x1000;
         if (rowFractionQ12 + columnFractionQ12 < 0x1000) {
           weightedHeightAccumulator =
                (longlong)
                (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                        iVar1 + 0x18) +
+                        iVar2 + 0x18) +
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                       iVar1 + 0x1c)) * (longlong)(int)rowFractionQ12 +
+                       iVar2 + 0x1c)) * (longlong)(int)rowFractionQ12 +
                ((longlong)
-                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime58_6F + iVar1 + -0x10) +
-                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime58_6F + iVar1 + -0xc)) *
+                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x18) +
+                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x14)) *
                 (longlong)(int)columnFractionQ12 -
                (longlong)
-               (*(int *)(fieldGrid->cells[cellColumn].runtime58_6F + iVar1 + -0x10) +
-               *(int *)(fieldGrid->cells[cellColumn].runtime58_6F + iVar1 + -0xc)) *
+               (*(int *)(fieldGrid->cells[cellColumn].runtime60_6B + iVar2 + -0x18) +
+               *(int *)(fieldGrid->cells[cellColumn].runtime60_6B + iVar2 + -0x14)) *
                (longlong)upperTriangleWeightQ12);
-          return (uint)weightedHeightAccumulator >> 0xc |
-                 (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          uVar1 = (uint)weightedHeightAccumulator >> 0xc |
+                  (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          bVar3 = false;
         }
-        upperTriangleWeightedHeightAccumulator =
-             (longlong)
-             (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
-                            producerName + iVar1 + 0x18) +
-             *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
-                           producerName + iVar1 + 0x1c)) * (longlong)upperTriangleWeightQ12 -
-             ((longlong)
-              (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime58_6F + iVar1 + -0x10) +
-              *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime58_6F + iVar1 + -0xc)) *
-              (longlong)(int)(rowFractionQ12 - 0x1000) +
-             (longlong)
-             (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                      iVar1 + 0x18) +
-             *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                     iVar1 + 0x1c)) * (longlong)(int)(columnFractionQ12 - 0x1000));
-        return (uint)upperTriangleWeightedHeightAccumulator >> 0xc |
-               (int)((ulonglong)upperTriangleWeightedHeightAccumulator >> 0x20) << 0x14;
+        else {
+          upperTriangleWeightedHeightAccumulator =
+               (longlong)
+               (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
+                              producerName + iVar2 + 0x18) +
+               *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
+                             producerName + iVar2 + 0x1c)) * (longlong)upperTriangleWeightQ12 -
+               ((longlong)
+                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x18) +
+                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x14)) *
+                (longlong)(int)(rowFractionQ12 - 0x1000) +
+               (longlong)
+               (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
+                        iVar2 + 0x18) +
+               *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
+                       iVar2 + 0x1c)) * (longlong)(int)(columnFractionQ12 - 0x1000));
+          uVar1 = (uint)upperTriangleWeightedHeightAccumulator >> 0xc |
+                  (int)((ulonglong)upperTriangleWeightedHeightAccumulator >> 0x20) << 0x14;
+          bVar3 = false;
+        }
+        goto LAB_004fefd6;
       }
     }
   }
-  return 0;
+  uVar1 = 0;
+  bVar3 = true;
+LAB_004fefd6:
+  FVar4.carry = bVar3;
+  FVar4.heightQ12 = uVar1;
+  return FVar4;
 }
+
 
 /* Address: 0x004FEFF0.
    Ownership: world/terrain/grid.
@@ -1295,7 +1245,8 @@ Q12 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGri
    indirect caller carries ModelRuntimeClassId through the call. Five-entry field-grid interpolation table
    callback; EAX is Q12 and CF reports failure.
 */
-Q12 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   longlong lVar1;
@@ -1305,9 +1256,10 @@ Q12 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridA
   uint gridRowCoordinateQ12;
   uint uVar3;
   uint terrainHeightQ12;
-  uint uVar4;
-  int iVar5;
+  int iVar4;
   int triangleDiagonalWeightQ12;
+  bool bVar5;
+  FieldGridHeightEaxCf5 FVar6;
   FieldGridDimension gridWidth;
   longlong weightedSurfaceAccumulator;
   
@@ -1319,72 +1271,84 @@ Q12 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridA
        (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - gridRowCoordinateQ12;
   gridWidth = fieldGrid->gridWidth;
   gridColumnIndex = (int)gridColumnCoordinateQ12 >> 0xc;
-  if ((((-1 < gridColumnIndex) && (iVar5 = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < iVar5)) &&
-      (gridColumnIndex < (int)gridWidth)) && (iVar5 < (int)fieldGrid->gridHeight)) {
-    iVar5 = iVar5 * gridWidth * 0x80;
-    uVar2 = gridColumnCoordinateQ12 & 0xfff;
-    uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
-    if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime58_6F + iVar5 + -8) & 0x88006000) == 0)
-       && ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
-                           producerName + iVar5 + 0x20) & 0x88006000) == 0)) {
-      triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
-      if (0xfff < uVar2 + uVar3) {
-        lVar1 = (longlong)
-                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                              [gridColumnIndex + gridWidth].producerName + iVar5 + 0x18) *
-                (longlong)triangleDiagonalWeightQ12 -
-                ((longlong)
-                 *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar5 + -0x10
-                         ) * (longlong)(int)(uVar2 - 0x1000) +
-                (longlong)
-                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                              producerName + iVar5 + 0x18) * (longlong)(int)(uVar3 - 0x1000));
-        uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-        lVar1 = (longlong)
-                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                              [gridColumnIndex + gridWidth].producerName + iVar5 + 0x1c) *
-                (longlong)triangleDiagonalWeightQ12 -
-                ((longlong)
-                 *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar5 + -0xc)
-                 * (longlong)(int)(uVar2 - 0x1000) +
-                (longlong)
-                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                              producerName + iVar5 + 0x1c) * (longlong)(int)(uVar3 - 0x1000));
-        uVar2 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-        if ((int)uVar2 < 0) {
-          return uVar4;
+  if (((-1 < gridColumnIndex) && (iVar4 = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < iVar4)) &&
+     (gridColumnIndex < (int)gridWidth)) {
+    if (iVar4 < (int)fieldGrid->gridHeight) {
+      iVar4 = iVar4 * gridWidth * 0x80;
+      uVar2 = gridColumnCoordinateQ12 & 0xfff;
+      uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x10) & 0x88006000)
+           == 0) &&
+         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
+                          producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
+        triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
+        if (uVar2 + uVar3 < 0x1000) {
+          weightedSurfaceAccumulator =
+               (longlong)
+               *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
+                             producerName + iVar4 + 0x18) * (longlong)(int)uVar2 +
+               ((longlong)
+                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x18)
+                * (longlong)(int)uVar3 -
+               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x18) *
+               (longlong)triangleDiagonalWeightQ12);
+          terrainHeightQ12 =
+               (int)((ulonglong)weightedSurfaceAccumulator >> 0x20) << 0x14 |
+               (uint)weightedSurfaceAccumulator >> 0xc;
+          lVar1 = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
+                                producerName + iVar4 + 0x1c) * (longlong)(int)uVar2 +
+                  ((longlong)
+                   *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
+                           iVar4 + -0x14) * (longlong)(int)uVar3 -
+                  (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x14)
+                  * (longlong)triangleDiagonalWeightQ12);
+          uVar2 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
+          if (-1 < (int)uVar2) {
+            terrainHeightQ12 = terrainHeightQ12 + uVar2;
+          }
+          bVar5 = false;
         }
-        return uVar4 + uVar2;
+        else {
+          lVar1 = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
+                                [gridColumnIndex + gridWidth].producerName + iVar4 + 0x18) *
+                  (longlong)triangleDiagonalWeightQ12 -
+                  ((longlong)
+                   *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
+                           iVar4 + -0x18) * (longlong)(int)(uVar2 - 0x1000) +
+                  (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
+                                producerName + iVar4 + 0x18) * (longlong)(int)(uVar3 - 0x1000));
+          terrainHeightQ12 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
+          lVar1 = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
+                                [gridColumnIndex + gridWidth].producerName + iVar4 + 0x1c) *
+                  (longlong)triangleDiagonalWeightQ12 -
+                  ((longlong)
+                   *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
+                           iVar4 + -0x14) * (longlong)(int)(uVar2 - 0x1000) +
+                  (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
+                                producerName + iVar4 + 0x1c) * (longlong)(int)(uVar3 - 0x1000));
+          uVar2 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
+          if (-1 < (int)uVar2) {
+            terrainHeightQ12 = terrainHeightQ12 + uVar2;
+          }
+          bVar5 = false;
+        }
+        goto LAB_004ff185;
       }
-      weightedSurfaceAccumulator =
-           (longlong)
-           *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].producerName +
-                   iVar5 + 0x18) * (longlong)(int)uVar2 +
-           ((longlong)
-            *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar5 + -0x10) *
-            (longlong)(int)uVar3 -
-           (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime58_6F + iVar5 + -0x10) *
-           (longlong)triangleDiagonalWeightQ12);
-      terrainHeightQ12 =
-           (int)((ulonglong)weightedSurfaceAccumulator >> 0x20) << 0x14 |
-           (uint)weightedSurfaceAccumulator >> 0xc;
-      lVar1 = (longlong)
-              *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].producerName
-                      + iVar5 + 0x1c) * (longlong)(int)uVar2 +
-              ((longlong)
-               *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime58_6F + iVar5 + -0xc) *
-               (longlong)(int)uVar3 -
-              (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime58_6F + iVar5 + -0xc) *
-              (longlong)triangleDiagonalWeightQ12);
-      uVar2 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-      if ((int)uVar2 < 0) {
-        return terrainHeightQ12;
-      }
-      return terrainHeightQ12 + uVar2;
     }
   }
-  return 0;
+  terrainHeightQ12 = 0;
+  bVar5 = true;
+LAB_004ff185:
+  FVar6.carry = bVar5;
+  FVar6.heightQ12 = terrainHeightQ12;
+  return FVar6;
 }
+
 
 /* Address: 0x004FF1A0.
    Ownership: world/terrain/grid.
@@ -1395,7 +1359,8 @@ Q12 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridA
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-qword FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   FieldGridDimension FVar1;
@@ -1403,102 +1368,109 @@ qword FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGri
   longlong lVar3;
   int iVar4;
   uint uVar5;
-  uint uVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  uint extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  uint extraout_ECX_06;
+  dword dVar6;
   uint uVar7;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int iVar8;
-  int iVar9;
-  int scale;
-  FixedDirectionXZEdxEax8 FVar10;
-  FixedDirectionXZEdxEax8 FVar11;
+  dword dVar8;
+  uint uVar9;
+  dword dVar10;
+  int iVar11;
   int iVar12;
+  int iVar13;
+  bool bVar14;
+  FieldGridHeightNormalEaxEdxCf9 FVar15;
+  FixedMathVectorAnglesRegs8 FVar16;
+  FixedDirectionXyzRegs12 FVar17;
   
-  uVar7 = (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
+  uVar9 = (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  uVar6 = ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - uVar7;
-  uVar7 = uVar7 * 2;
+  uVar7 = ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - uVar9;
+  uVar9 = uVar9 * 2;
   FVar1 = field->gridWidth;
-  iVar4 = (int)uVar6 >> 0xc;
-  if (((-1 < iVar4) && (iVar8 = (int)uVar7 >> 0xc, -1 < iVar8)) && (iVar4 < (int)FVar1)) {
-    if (iVar8 < (int)field->gridHeight) {
-      iVar8 = iVar8 * FVar1 * 0x80;
-      iVar9 = iVar8 + iVar4 * 0x80;
-      uVar6 = uVar6 & 0xfff;
+  iVar4 = (int)uVar7 >> 0xc;
+  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
+    if (iVar11 < (int)field->gridHeight) {
+      iVar11 = iVar11 * FVar1 * 0x80;
+      iVar12 = iVar11 + iVar4 * 0x80;
       uVar7 = uVar7 & 0xfff;
-      if (((*(uint *)(field->cells[iVar4].runtime58_6F + iVar8 + -8) & 0x88006000) == 0) &&
+      uVar9 = uVar9 & 0xfff;
+      if (((*(uint *)(field->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
          ((*(uint *)((int)(&field[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar8 + 0x20) & 0x88006000) == 0)) {
-        scale = (uVar6 + uVar7) - 0x1000;
-        if (uVar6 + uVar7 < 0x1000) {
+                    iVar11 + 0x20) & 0x88006000) == 0)) {
+        iVar13 = (uVar7 + uVar9) - 0x1000;
+        if (uVar7 + uVar9 < 0x1000) {
           lVar3 = (longlong)
                   *(int *)((int)(&field[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar8 + 0x18) * (longlong)(int)uVar6 +
-                  ((longlong)*(int *)(field->cells[iVar4 + FVar1].runtime58_6F + iVar8 + -0x10) *
-                   (longlong)(int)uVar7 -
-                  (longlong)*(int *)(field->cells[iVar4].runtime58_6F + iVar8 + -0x10) *
-                  (longlong)scale);
+                          iVar11 + 0x18) * (longlong)(int)uVar7 +
+                  ((longlong)*(int *)(field->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x18) *
+                   (longlong)(int)uVar9 -
+                  (longlong)*(int *)(field->cells[iVar4].runtime60_6B + iVar11 + -0x18) *
+                  (longlong)iVar13);
           uVar2 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar9 + -0x20);
+                           iVar12 + -0x20);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6);
-          uVar6 = *(uint *)(field->cells[iVar4].runtime0C_3F + iVar8 + -4);
-          iVar12 = extraout_ECX;
-          FVar11 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar6 >> 0x10,uVar6 & 0xffff,scale);
-          iVar9 = (int)FVar10 - (int)FVar11;
-          iVar12 = iVar12 - extraout_ECX_00;
-          uVar6 = *(uint *)(field->cells[iVar4 + FVar1].runtime0C_3F + iVar8 + -4);
-          iVar4 = (int)(FVar10 >> 0x20) - (int)(FVar11 >> 0x20);
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar7);
-          FixedMath_VectorToAngles3Regs
-                    (iVar4 + (int)(FVar10 >> 0x20),iVar12 + extraout_ECX_01,iVar9 + (int)FVar10);
-          uVar7 = extraout_EDX << 0x10 | extraout_ECX_02 & 0xffff;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
+          dVar10 = FVar17.edx;
+          dVar8 = FVar17.ecx;
+          dVar6 = FVar17.eax;
+          uVar7 = *(uint *)(field->cells[iVar4].runtime0C_3F + iVar11 + -4);
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13)
+          ;
+          iVar12 = dVar6 - FVar17.eax;
+          iVar13 = dVar8 - FVar17.ecx;
+          uVar7 = *(uint *)(field->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
+          iVar4 = dVar10 - FVar17.edx;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
+          FVar16 = FixedMath_VectorToAngles3Regs
+                             (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
+          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+          bVar14 = false;
         }
         else {
           lVar3 = (longlong)
                   *(int *)((int)(&field[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                          iVar8 + 0x18) * (longlong)scale -
-                  ((longlong)*(int *)(field->cells[iVar4 + FVar1].runtime58_6F + iVar8 + -0x10) *
-                   (longlong)(int)(uVar6 - 0x1000) +
+                          iVar11 + 0x18) * (longlong)iVar13 -
+                  ((longlong)*(int *)(field->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x18) *
+                   (longlong)(int)(uVar7 - 0x1000) +
                   (longlong)
                   *(int *)((int)(&field[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar8 + 0x18) * (longlong)(int)(uVar7 - 0x1000));
+                          iVar11 + 0x18) * (longlong)(int)(uVar9 - 0x1000));
           uVar2 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           FVar1 * 0x80 + iVar9 + -0x20);
+                           FVar1 * 0x80 + iVar12 + -0x20);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,scale);
-          uVar2 = *(uint *)(field->cells[iVar4 + FVar1].runtime0C_3F + iVar8 + -4);
-          iVar8 = extraout_ECX_03;
-          FVar11 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6 - 0x1000);
-          iVar4 = (int)FVar10 - (int)FVar11;
-          iVar8 = iVar8 - extraout_ECX_04;
-          uVar6 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar9 + -0x20);
-          iVar9 = (int)(FVar10 >> 0x20) - (int)(FVar11 >> 0x20);
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar7 - 0x1000);
-          FixedMath_VectorToAngles3Regs
-                    (iVar9 - (int)(FVar10 >> 0x20),iVar8 - extraout_ECX_05,iVar4 - (int)FVar10);
-          uVar7 = extraout_EDX_00 << 0x10 | extraout_ECX_06 & 0xffff;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar13)
+          ;
+          dVar10 = FVar17.edx;
+          dVar8 = FVar17.ecx;
+          dVar6 = FVar17.eax;
+          uVar2 = *(uint *)(field->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7 - 0x1000);
+          iVar4 = dVar6 - FVar17.eax;
+          iVar11 = dVar8 - FVar17.ecx;
+          uVar7 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           iVar12 + -0x20);
+          iVar12 = dVar10 - FVar17.edx;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9 - 0x1000);
+          FVar16 = FixedMath_VectorToAngles3Regs
+                             (iVar12 - FVar17.edx,iVar11 - FVar17.ecx,iVar4 - FVar17.eax);
+          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+          bVar14 = false;
         }
         goto FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample;
       }
     }
   }
   uVar5 = 0;
+  bVar14 = true;
 FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample:
-  return CONCAT44(uVar7,uVar5);
+  FVar15.packedNormalAngles = uVar9;
+  FVar15.heightQ12 = uVar5;
+  FVar15.carry = bVar14;
+  return FVar15;
 }
+
 
 /* Address: 0x004FF3D0.
    Ownership: world/terrain/grid.
@@ -1506,7 +1478,7 @@ FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample:
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-undefined8
+FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -1516,102 +1488,109 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
   longlong lVar3;
   int iVar4;
   uint uVar5;
-  uint uVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  uint extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  uint extraout_ECX_06;
+  dword dVar6;
   uint uVar7;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int iVar8;
-  int iVar9;
-  int scale;
-  FixedDirectionXZEdxEax8 FVar10;
-  FixedDirectionXZEdxEax8 FVar11;
+  dword dVar8;
+  uint uVar9;
+  dword dVar10;
+  int iVar11;
   int iVar12;
+  int iVar13;
+  bool bVar14;
+  FieldGridHeightNormalEaxEdxCf9 FVar15;
+  FixedMathVectorAnglesRegs8 FVar16;
+  FixedDirectionXyzRegs12 FVar17;
   
-  uVar7 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  uVar9 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  uVar6 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar7;
-  uVar7 = uVar7 * 2;
+  uVar7 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar9;
+  uVar9 = uVar9 * 2;
   FVar1 = fieldGrid->gridWidth;
-  iVar4 = (int)uVar6 >> 0xc;
-  if (((-1 < iVar4) && (iVar8 = (int)uVar7 >> 0xc, -1 < iVar8)) && (iVar4 < (int)FVar1)) {
-    if (iVar8 < (int)fieldGrid->gridHeight) {
-      iVar8 = iVar8 * FVar1 * 0x80;
-      iVar9 = iVar8 + iVar4 * 0x80;
-      uVar6 = uVar6 & 0xfff;
+  iVar4 = (int)uVar7 >> 0xc;
+  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
+    if (iVar11 < (int)fieldGrid->gridHeight) {
+      iVar11 = iVar11 * FVar1 * 0x80;
+      iVar12 = iVar11 + iVar4 * 0x80;
       uVar7 = uVar7 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[iVar4].runtime58_6F + iVar8 + -8) & 0x88006000) == 0) &&
+      uVar9 = uVar9 & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
          ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar8 + 0x20) & 0x88006000) == 0)) {
-        scale = (uVar6 + uVar7) - 0x1000;
-        if (uVar6 + uVar7 < 0x1000) {
+                    iVar11 + 0x20) & 0x88006000) == 0)) {
+        iVar13 = (uVar7 + uVar9) - 0x1000;
+        if (uVar7 + uVar9 < 0x1000) {
           lVar3 = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar8 + 0x1c) * (longlong)(int)uVar6 +
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar8 + -0xc) *
-                   (longlong)(int)uVar7 -
-                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime58_6F + iVar8 + -0xc) *
-                  (longlong)scale);
+                          iVar11 + 0x1c) * (longlong)(int)uVar7 +
+                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
+                   * (longlong)(int)uVar9 -
+                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x14) *
+                  (longlong)iVar13);
           uVar2 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar9 + -0x20);
+                           iVar12 + -0x20);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6);
-          uVar6 = *(uint *)(fieldGrid->cells[iVar4].runtime0C_3F + iVar8 + -4);
-          iVar12 = extraout_ECX;
-          FVar11 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar6 >> 0x10,uVar6 & 0xffff,scale);
-          iVar9 = (int)FVar10 - (int)FVar11;
-          iVar12 = iVar12 - extraout_ECX_00;
-          uVar6 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar8 + -4);
-          iVar4 = (int)(FVar10 >> 0x20) - (int)(FVar11 >> 0x20);
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar7);
-          FixedMath_VectorToAngles3Regs
-                    (iVar4 + (int)(FVar10 >> 0x20),iVar12 + extraout_ECX_01,iVar9 + (int)FVar10);
-          uVar7 = extraout_EDX << 0x10 | extraout_ECX_02 & 0xffff;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
+          dVar10 = FVar17.edx;
+          dVar8 = FVar17.ecx;
+          dVar6 = FVar17.eax;
+          uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime0C_3F + iVar11 + -4);
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13)
+          ;
+          iVar12 = dVar6 - FVar17.eax;
+          iVar13 = dVar8 - FVar17.ecx;
+          uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
+          iVar4 = dVar10 - FVar17.edx;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
+          FVar16 = FixedMath_VectorToAngles3Regs
+                             (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
+          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+          bVar14 = false;
         }
         else {
           lVar3 = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                producerName + iVar8 + 0x1c) * (longlong)scale -
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar8 + -0xc) *
-                   (longlong)(int)(uVar6 - 0x1000) +
+                                producerName + iVar11 + 0x1c) * (longlong)iVar13 -
+                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
+                   * (longlong)(int)(uVar7 - 0x1000) +
                   (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar8 + 0x1c) * (longlong)(int)(uVar7 - 0x1000));
+                          iVar11 + 0x1c) * (longlong)(int)(uVar9 - 0x1000));
           uVar2 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           FVar1 * 0x80 + iVar9 + -0x20);
+                           FVar1 * 0x80 + iVar12 + -0x20);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,scale);
-          uVar2 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar8 + -4);
-          iVar8 = extraout_ECX_03;
-          FVar11 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6 - 0x1000);
-          iVar4 = (int)FVar10 - (int)FVar11;
-          iVar8 = iVar8 - extraout_ECX_04;
-          uVar6 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar9 + -0x20);
-          iVar9 = (int)(FVar10 >> 0x20) - (int)(FVar11 >> 0x20);
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar7 - 0x1000);
-          FixedMath_VectorToAngles3Regs
-                    (iVar9 - (int)(FVar10 >> 0x20),iVar8 - extraout_ECX_05,iVar4 - (int)FVar10);
-          uVar7 = extraout_EDX_00 << 0x10 | extraout_ECX_06 & 0xffff;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar13)
+          ;
+          dVar10 = FVar17.edx;
+          dVar8 = FVar17.ecx;
+          dVar6 = FVar17.eax;
+          uVar2 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7 - 0x1000);
+          iVar4 = dVar6 - FVar17.eax;
+          iVar11 = dVar8 - FVar17.ecx;
+          uVar7 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           iVar12 + -0x20);
+          iVar12 = dVar10 - FVar17.edx;
+          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9 - 0x1000);
+          FVar16 = FixedMath_VectorToAngles3Regs
+                             (iVar12 - FVar17.edx,iVar11 - FVar17.ecx,iVar4 - FVar17.eax);
+          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+          bVar14 = false;
         }
         goto FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefaultSample;
       }
     }
   }
   uVar5 = 0;
+  bVar14 = true;
 FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefaultSample:
-  return CONCAT44(uVar7,uVar5);
+  FVar15.packedNormalAngles = uVar9;
+  FVar15.heightQ12 = uVar5;
+  FVar15.carry = bVar14;
+  return FVar15;
 }
+
 
 /* Address: 0x004FF600.
    Ownership: world/terrain/grid.
@@ -1619,7 +1598,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefault
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-undefined8
+FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -1629,100 +1608,108 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
   longlong lVar3;
   int iVar4;
   uint uVar5;
-  uint uVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  uint extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  uint extraout_ECX_06;
+  dword dVar6;
   uint uVar7;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int iVar8;
-  int iVar9;
-  FixedDirectionXZEdxEax8 FVar10;
-  FixedDirectionXZEdxEax8 FVar11;
+  dword dVar8;
+  uint uVar9;
+  dword dVar10;
+  int iVar11;
   int iVar12;
+  bool bVar13;
+  FieldGridHeightNormalEaxEdxCf9 FVar14;
+  FixedMathVectorAnglesRegs8 FVar15;
+  FixedDirectionXyzRegs12 FVar16;
+  int iVar17;
   
-  uVar7 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  uVar9 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  uVar6 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar7;
-  uVar7 = uVar7 * 2;
+  uVar7 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar9;
+  uVar9 = uVar9 * 2;
   FVar1 = fieldGrid->gridWidth;
-  iVar4 = (int)uVar6 >> 0xc;
-  if (((-1 < iVar4) && (iVar8 = (int)uVar7 >> 0xc, -1 < iVar8)) && (iVar4 < (int)FVar1)) {
-    if (iVar8 < (int)fieldGrid->gridHeight) {
-      iVar8 = iVar8 * FVar1 * 0x80;
-      uVar6 = uVar6 & 0xfff;
+  iVar4 = (int)uVar7 >> 0xc;
+  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
+    if (iVar11 < (int)fieldGrid->gridHeight) {
+      iVar11 = iVar11 * FVar1 * 0x80;
       uVar7 = uVar7 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[iVar4].runtime58_6F + iVar8 + -8) & 0x88006000) == 0) &&
+      uVar9 = uVar9 & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
          ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar8 + 0x20) & 0x88006000) == 0)) {
-        iVar9 = (uVar6 + uVar7) - 0x1000;
-        if (uVar6 + uVar7 < 0x1000) {
+                    iVar11 + 0x20) & 0x88006000) == 0)) {
+        iVar12 = (uVar7 + uVar9) - 0x1000;
+        if (uVar7 + uVar9 < 0x1000) {
           lVar3 = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar8 + 0x1c) * (longlong)(int)uVar6 +
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar8 + -0xc) *
-                   (longlong)(int)uVar7 -
-                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime58_6F + iVar8 + -0xc) *
-                  (longlong)iVar9);
+                          iVar11 + 0x1c) * (longlong)(int)uVar7 +
+                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
+                   * (longlong)(int)uVar9 -
+                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x14) *
+                  (longlong)iVar12);
           uVar2 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                           iVar8 + 8);
+                           iVar11 + 8);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6);
-          uVar6 = *(uint *)(fieldGrid->cells[iVar4].runtime58_6F + iVar8 + 0x20);
-          iVar12 = extraout_ECX;
-          FVar11 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar6 >> 0x10,uVar6 & 0xffff,iVar9);
-          iVar9 = (int)FVar10 - (int)FVar11;
-          iVar12 = iVar12 - extraout_ECX_00;
-          uVar6 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar8 + 0x20);
-          iVar4 = (int)(FVar10 >> 0x20) - (int)(FVar11 >> 0x20);
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar7);
-          FixedMath_VectorToAngles3Regs
-                    (iVar4 + (int)(FVar10 >> 0x20),iVar12 + extraout_ECX_01,iVar9 + (int)FVar10);
-          uVar7 = extraout_EDX << 0x10 | extraout_ECX_02 & 0xffff;
+          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
+          dVar10 = FVar16.edx;
+          dVar8 = FVar16.ecx;
+          dVar6 = FVar16.eax;
+          uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + 0x18);
+          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar12)
+          ;
+          iVar12 = dVar6 - FVar16.eax;
+          iVar17 = dVar8 - FVar16.ecx;
+          uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
+          iVar4 = dVar10 - FVar16.edx;
+          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
+          FVar15 = FixedMath_VectorToAngles3Regs
+                             (iVar4 + FVar16.edx,iVar17 + FVar16.ecx,iVar12 + FVar16.eax);
+          uVar9 = FVar15.edx << 0x10 | FVar15.ecx & 0xffff;
+          bVar13 = false;
         }
         else {
           lVar3 = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                producerName + iVar8 + 0x1c) * (longlong)iVar9 -
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar8 + -0xc) *
-                   (longlong)(int)(uVar6 - 0x1000) +
+                                producerName + iVar11 + 0x1c) * (longlong)iVar12 -
+                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
+                   * (longlong)(int)(uVar7 - 0x1000) +
                   (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar8 + 0x1c) * (longlong)(int)(uVar7 - 0x1000));
+                          iVar11 + 0x1c) * (longlong)(int)(uVar9 - 0x1000));
           uVar2 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                 sourceName + iVar8 + 8);
+                                 sourceName + iVar11 + 8);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar9);
-          uVar2 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar8 + 0x20);
-          iVar12 = extraout_ECX_03;
-          FVar11 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6 - 0x1000);
-          iVar9 = (int)FVar10 - (int)FVar11;
-          iVar12 = iVar12 - extraout_ECX_04;
-          uVar6 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                           iVar8 + 8);
-          iVar4 = (int)(FVar10 >> 0x20) - (int)(FVar11 >> 0x20);
-          FVar10 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar7 - 0x1000);
-          FixedMath_VectorToAngles3Regs
-                    (iVar4 - (int)(FVar10 >> 0x20),iVar12 - extraout_ECX_05,iVar9 - (int)FVar10);
-          uVar7 = extraout_EDX_00 << 0x10 | extraout_ECX_06 & 0xffff;
+          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar12)
+          ;
+          dVar10 = FVar16.edx;
+          dVar8 = FVar16.ecx;
+          dVar6 = FVar16.eax;
+          uVar2 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
+          FVar16 = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7 - 0x1000);
+          iVar12 = dVar6 - FVar16.eax;
+          iVar17 = dVar8 - FVar16.ecx;
+          uVar7 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
+                           iVar11 + 8);
+          iVar4 = dVar10 - FVar16.edx;
+          FVar16 = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9 - 0x1000);
+          FVar15 = FixedMath_VectorToAngles3Regs
+                             (iVar4 - FVar16.edx,iVar17 - FVar16.ecx,iVar12 - FVar16.eax);
+          uVar9 = FVar15.edx << 0x10 | FVar15.ecx & 0xffff;
+          bVar13 = false;
         }
         goto FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefaultSample;
       }
     }
   }
   uVar5 = 0;
+  bVar13 = true;
 FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefaultSample:
-  return CONCAT44(uVar7,uVar5);
+  FVar14.packedNormalAngles = uVar9;
+  FVar14.heightQ12 = uVar5;
+  FVar14.carry = bVar13;
+  return FVar14;
 }
+
 
 /* Address: 0x004FF830.
    Ownership: world/terrain/grid.
@@ -1731,7 +1718,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefault
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-undefined8
+FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -1742,152 +1729,149 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
   longlong lVar3;
   int iVar4;
   uint uVar5;
-  uint uVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  uint extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  uint extraout_ECX_06;
-  int iVar7;
-  int extraout_ECX_07;
-  int extraout_ECX_08;
-  int extraout_ECX_09;
-  uint extraout_ECX_10;
-  int extraout_ECX_11;
-  int extraout_ECX_12;
-  int extraout_ECX_13;
-  uint extraout_ECX_14;
-  uint uVar8;
-  int extraout_EDX;
-  int extraout_EDX_00;
+  dword dVar6;
+  uint uVar7;
+  dword dVar8;
   int scale;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  int iVar9;
-  int iVar10;
+  uint uVar9;
+  dword dVar10;
+  int scale_00;
   int iVar11;
-  FixedDirectionXZEdxEax8 FVar12;
-  FixedDirectionXZEdxEax8 FVar13;
+  int iVar12;
+  int iVar13;
+  bool bVar14;
+  FieldGridHeightNormalEaxEdxCf9 FVar15;
+  FixedMathVectorAnglesRegs8 FVar16;
+  FixedDirectionXyzRegs12 FVar17;
   
-  uVar8 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  uVar9 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  uVar6 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar8;
-  uVar8 = uVar8 * 2;
+  uVar7 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar9;
+  uVar9 = uVar9 * 2;
   FVar1 = fieldGrid->gridWidth;
-  iVar4 = (int)uVar6 >> 0xc;
-  if (((-1 < iVar4) && (iVar9 = (int)uVar8 >> 0xc, -1 < iVar9)) && (iVar4 < (int)FVar1)) {
-    if (iVar9 < (int)fieldGrid->gridHeight) {
-      iVar9 = iVar9 * FVar1 * 0x80;
-      iVar10 = iVar9 + iVar4 * 0x80;
-      uVar6 = uVar6 & 0xfff;
-      uVar8 = uVar8 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[iVar4].runtime58_6F + iVar9 + -8) & 0x88006000) == 0) &&
+  iVar4 = (int)uVar7 >> 0xc;
+  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
+    if (iVar11 < (int)fieldGrid->gridHeight) {
+      iVar11 = iVar11 * FVar1 * 0x80;
+      iVar12 = iVar11 + iVar4 * 0x80;
+      uVar7 = uVar7 & 0xfff;
+      uVar9 = uVar9 & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
          ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar9 + 0x20) & 0x88006000) == 0)) {
-        iVar11 = (uVar6 + uVar8) - 0x1000;
-        if (uVar6 + uVar8 < 0x1000) {
+                    iVar11 + 0x20) & 0x88006000) == 0)) {
+        iVar13 = (uVar7 + uVar9) - 0x1000;
+        if (uVar7 + uVar9 < 0x1000) {
           lVar3 = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar9 + 0x1c) * (longlong)(int)uVar6 +
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar9 + -0xc) *
-                   (longlong)(int)uVar8 -
-                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime58_6F + iVar9 + -0xc) *
-                  (longlong)iVar11);
+                          iVar11 + 0x1c) * (longlong)(int)uVar7 +
+                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
+                   * (longlong)(int)uVar9 -
+                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x14) *
+                  (longlong)iVar13);
           uVar2 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                           iVar9 + 8);
+                           iVar11 + 8);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
           if ((int)uVar5 < 0) {
             uVar2 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                             iVar10 + -0x20);
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6);
-            uVar6 = *(uint *)(fieldGrid->cells[iVar4].runtime0C_3F + iVar9 + -4);
-            iVar7 = extraout_ECX_03;
-            FVar13 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar6 >> 0x10,uVar6 & 0xffff,iVar11);
-            iVar10 = (int)FVar12 - (int)FVar13;
-            iVar7 = iVar7 - extraout_ECX_04;
-            uVar6 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar9 + -4);
-            iVar4 = (int)(FVar12 >> 0x20) - (int)(FVar13 >> 0x20);
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar8);
-            FixedMath_VectorToAngles3Regs
-                      (iVar4 + (int)(FVar12 >> 0x20),iVar7 + extraout_ECX_05,iVar10 + (int)FVar12);
-            uVar8 = extraout_EDX_00 << 0x10 | extraout_ECX_06 & 0xffff;
+                             iVar12 + -0x20);
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
+            dVar10 = FVar17.edx;
+            dVar8 = FVar17.ecx;
+            dVar6 = FVar17.eax;
+            uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime0C_3F + iVar11 + -4);
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13);
+            iVar12 = dVar6 - FVar17.eax;
+            iVar13 = dVar8 - FVar17.ecx;
+            uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
+            iVar4 = dVar10 - FVar17.edx;
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
+            FVar16 = FixedMath_VectorToAngles3Regs
+                               (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
+            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+            bVar14 = false;
           }
           else {
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar6);
-            uVar6 = *(uint *)(fieldGrid->cells[iVar4].runtime58_6F + iVar9 + 0x20);
-            iVar7 = extraout_ECX;
-            FVar13 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar6 >> 0x10,uVar6 & 0xffff,iVar11);
-            iVar10 = (int)FVar12 - (int)FVar13;
-            iVar7 = iVar7 - extraout_ECX_00;
-            uVar6 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar9 + 0x20);
-            iVar4 = (int)(FVar12 >> 0x20) - (int)(FVar13 >> 0x20);
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar6 >> 0x10,uVar6 & 0xffff,uVar8);
-            FixedMath_VectorToAngles3Regs
-                      (iVar4 + (int)(FVar12 >> 0x20),iVar7 + extraout_ECX_01,iVar10 + (int)FVar12);
-            uVar8 = extraout_EDX << 0x10 | extraout_ECX_02 & 0xffff;
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
+            dVar10 = FVar17.edx;
+            dVar8 = FVar17.ecx;
+            dVar6 = FVar17.eax;
+            uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + 0x18);
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13);
+            iVar12 = dVar6 - FVar17.eax;
+            iVar13 = dVar8 - FVar17.ecx;
+            uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
+            iVar4 = dVar10 - FVar17.edx;
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
+            FVar16 = FixedMath_VectorToAngles3Regs
+                               (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
+            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+            bVar14 = false;
           }
         }
         else {
-          iVar7 = uVar6 - 0x1000;
-          scale = uVar8 - 0x1000;
+          scale = uVar7 - 0x1000;
+          scale_00 = uVar9 - 0x1000;
           lVar3 = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                producerName + iVar9 + 0x1c) * (longlong)iVar11 -
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar9 + -0xc) *
-                   (longlong)iVar7 +
+                                producerName + iVar11 + 0x1c) * (longlong)iVar13 -
+                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
+                   * (longlong)scale +
                   (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar9 + 0x1c) * (longlong)scale);
-          uVar8 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                 sourceName + iVar9 + 8);
+                          iVar11 + 0x1c) * (longlong)scale_00);
+          uVar9 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
+                                 sourceName + iVar11 + 8);
           uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
           if ((int)uVar5 < 0) {
-            uVar8 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                             FVar1 * 0x80 + iVar10 + -0x20);
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar8 >> 0x10,uVar8 & 0xffff,iVar11);
-            uVar8 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar9 + -4);
-            iVar9 = extraout_ECX_11;
-            FVar13 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar8 >> 0x10,uVar8 & 0xffff,iVar7);
-            iVar4 = (int)FVar12 - (int)FVar13;
-            iVar9 = iVar9 - extraout_ECX_12;
-            uVar8 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                             iVar10 + -0x20);
-            iVar10 = (int)(FVar12 >> 0x20) - (int)(FVar13 >> 0x20);
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar8 >> 0x10,uVar8 & 0xffff,scale);
-            FixedMath_VectorToAngles3Regs
-                      (iVar10 - (int)(FVar12 >> 0x20),iVar9 - extraout_ECX_13,iVar4 - (int)FVar12);
-            uVar8 = extraout_EDX_02 << 0x10 | extraout_ECX_14 & 0xffff;
+            uVar9 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                             FVar1 * 0x80 + iVar12 + -0x20);
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,iVar13);
+            dVar10 = FVar17.edx;
+            dVar8 = FVar17.ecx;
+            dVar6 = FVar17.eax;
+            uVar9 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale);
+            iVar4 = dVar6 - FVar17.eax;
+            iVar11 = dVar8 - FVar17.ecx;
+            uVar9 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                             iVar12 + -0x20);
+            iVar12 = dVar10 - FVar17.edx;
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale_00);
+            FVar16 = FixedMath_VectorToAngles3Regs
+                               (iVar12 - FVar17.edx,iVar11 - FVar17.ecx,iVar4 - FVar17.eax);
+            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+            bVar14 = false;
           }
           else {
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar8 >> 0x10,uVar8 & 0xffff,iVar11);
-            uVar8 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime58_6F + iVar9 + 0x20);
-            iVar11 = extraout_ECX_07;
-            FVar13 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar8 >> 0x10,uVar8 & 0xffff,iVar7);
-            iVar10 = (int)FVar12 - (int)FVar13;
-            iVar11 = iVar11 - extraout_ECX_08;
-            uVar8 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                             iVar9 + 8);
-            iVar4 = (int)(FVar12 >> 0x20) - (int)(FVar13 >> 0x20);
-            FVar12 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar8 >> 0x10,uVar8 & 0xffff,scale);
-            FixedMath_VectorToAngles3Regs
-                      (iVar4 - (int)(FVar12 >> 0x20),iVar11 - extraout_ECX_09,iVar10 - (int)FVar12);
-            uVar8 = extraout_EDX_01 << 0x10 | extraout_ECX_10 & 0xffff;
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,iVar13);
+            dVar10 = FVar17.edx;
+            dVar8 = FVar17.ecx;
+            dVar6 = FVar17.eax;
+            uVar9 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale);
+            iVar12 = dVar6 - FVar17.eax;
+            iVar13 = dVar8 - FVar17.ecx;
+            uVar9 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
+                             iVar11 + 8);
+            iVar4 = dVar10 - FVar17.edx;
+            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale_00);
+            FVar16 = FixedMath_VectorToAngles3Regs
+                               (iVar4 - FVar17.edx,iVar13 - FVar17.ecx,iVar12 - FVar17.eax);
+            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
+            bVar14 = false;
           }
         }
         goto LAB_004ffb6c;
@@ -1895,9 +1879,14 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
     }
   }
   uVar5 = 0;
+  bVar14 = true;
 LAB_004ffb6c:
-  return CONCAT44(uVar8,uVar5);
+  FVar15.packedNormalAngles = uVar9;
+  FVar15.heightQ12 = uVar5;
+  FVar15.carry = bVar14;
+  return FVar15;
 }
+
 
 /* Address: 0x004FFB80.
    Ownership: world/terrain/grid.
@@ -1906,9 +1895,10 @@ LAB_004ffb6c:
    or incidental caller state and are not synthetic parameters or normal returns. CF=0 reports blocked/matching
    state; CF=1 reports outside or clear.
 */
-void FieldGrid_TestWorldPointBlockedCf
-               (FieldGridByteOffset stateByteOffset,Q12 worldYQ12,Q12 worldXQ12,
-               FieldGridAsset *fieldGrid)
+bool __thandor_cf_preserve_eax_ecx_edx
+FieldGrid_TestWorldPointBlockedCf
+          (FieldGridByteOffset stateByteOffset,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
+          )
 
 {
   int gridColumnIndex;
@@ -1926,12 +1916,13 @@ void FieldGrid_TestWorldPointBlockedCf
        (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 0xc, -1 < gridRowIndex)) &&
       (gridColumnIndex < (int)fieldGrid->gridWidth)) &&
      ((gridRowIndex < (int)fieldGrid->gridHeight &&
-      ((fieldGrid->cells[fieldGrid->gridWidth * gridRowIndex + gridColumnIndex].runtime58_6F
-        [stateByteOffset + 0x18] & 0xf9) != 0)))) {
-    return;
+      ((fieldGrid->cells[fieldGrid->gridWidth * gridRowIndex + gridColumnIndex].runtime60_6B
+        [stateByteOffset + 0x10] & 0xf9) != 0)))) {
+    return false;
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x00503C90.
    Ownership: world/terrain/grid.
@@ -1945,18 +1936,20 @@ void FieldGrid_TestWorldPointBlockedCf
    unresolved 0x8000. This does not build GridScratch terrain-class bands.
    Cross-module calls: Random_NextPrimary [core/math/random].
 */
-void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
 
 {
+  FieldGridDimension FVar1;
   dword randomValue;
   dword materialVariantRandomBits;
-  int extraout_ECX;
+  FieldGridDimension FVar2;
   FieldGridDimension gridWidth;
-  int extraout_EDX;
+  FieldGridDimension FVar3;
   FieldGridDimension rowsRemaining;
   FieldGridDimension topRowCellsRemaining;
   FieldGridCell *initializationCellCursor;
-  int iVar1;
+  int iVar4;
   FieldGridCell *cellCursor;
   FieldGridCell *currentRowFirstCell;
   Q12 currentCellWorldXQ12;
@@ -1964,8 +1957,11 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   undefined4 phaseSeedBitWidth;
   
   phaseSeedBitWidth = *(undefined4 *)((int)g_TerrainSurfacePacketTablePayload + -0x20);
+  FVar3 = fieldGrid->gridHeight;
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+  FVar1 = fieldGrid->gridWidth;
   initializationCellCursor = fieldGrid->cells;
+  FVar2 = FVar1;
   do {
     do {
       currentCellWorldXQ12 = initializationCellCursor->worldX;
@@ -1975,27 +1971,24 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
       randomValue = Random_NextPrimary();
       initializationCellCursor->flagsAndMaterial =
            initializationCellCursor->flagsAndMaterial & ~FIELD_CELL_RANDOM_VARIANT_MASK;
-      *(dword *)initializationCellCursor->runtime00_07 =
+      initializationCellCursor->runtimeState00 =
            randomValue & (1 << ((byte)phaseSeedBitWidth & 0x1f)) - 1U;
       initializationCellCursor->persistedAux54 =
            (FieldCellPersistedAux)
            (g_TerrainDirectionRecordTable256 +
            (currentCellWorldYQ12 & 0xfU) + (currentCellWorldXQ12 & 0xfU) * 0x10);
-      initializationCellCursor->runtime58_6F[0x14] = 0;
-      initializationCellCursor->runtime58_6F[0x15] = 0;
-      initializationCellCursor->runtime58_6F[0x16] = 0;
-      initializationCellCursor->runtime58_6F[0x17] = 0;
+      initializationCellCursor->armyRuntimeSavedOffset6C = 0;
       materialVariantRandomBits = Random_NextPrimary();
-      initializationCellCursor->runtime00_07[4] = 0xff;
-      initializationCellCursor->runtime00_07[5] = 0xff;
-      initializationCellCursor->runtime00_07[6] = 0xff;
-      initializationCellCursor->runtime00_07[7] = 0xff;
+      initializationCellCursor->runtimeOverlayOrHeightValue04 = 0xffffffff;
       initializationCellCursor->flagsAndMaterial =
            initializationCellCursor->flagsAndMaterial |
            materialVariantRandomBits & FIELD_CELL_RANDOM_VARIANT_MASK;
       initializationCellCursor = initializationCellCursor + 1;
-    } while (extraout_ECX != 1);
-  } while (extraout_EDX != 1);
+      FVar2 = FVar2 - 1;
+    } while (FVar2 != 0);
+    FVar3 = FVar3 - 1;
+    FVar2 = FVar1;
+  } while (FVar3 != 0);
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight;
   currentRowFirstCell = fieldGrid->cells;
@@ -2011,19 +2004,20 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
          currentRowFirstCell->flagsAndMaterial | FIELD_CELL_FIRST_COLUMN_BOUNDARY;
     cellCursor[-1].flagsAndMaterial =
          cellCursor[-1].flagsAndMaterial | FIELD_CELL_LAST_COLUMN_BOUNDARY;
-    iVar1 = (int)cellCursor - (int)currentRowFirstCell;
-    currentRowFirstCell = (FieldGridCell *)((int)currentRowFirstCell + iVar1);
-    cellCursor = (FieldGridCell *)(iVar1 + (int)currentRowFirstCell);
+    iVar4 = (int)cellCursor - (int)currentRowFirstCell;
+    currentRowFirstCell = (FieldGridCell *)((int)currentRowFirstCell + iVar4);
+    cellCursor = (FieldGridCell *)(iVar4 + (int)currentRowFirstCell);
     rowsRemaining = rowsRemaining - 1;
   } while (rowsRemaining != 0);
-  iVar1 = (int)currentRowFirstCell * 2 - (int)cellCursor;
+  iVar4 = (int)currentRowFirstCell * 2 - (int)cellCursor;
   do {
-    *(uint *)(iVar1 + 0x50) = *(uint *)(iVar1 + 0x50) | 0x80000000;
-    iVar1 = iVar1 + 0x80;
+    *(uint *)(iVar4 + 0x50) = *(uint *)(iVar4 + 0x50) | 0x80000000;
+    iVar4 = iVar4 + 0x80;
     gridWidth = gridWidth - 1;
   } while (gridWidth != 0);
   return;
 }
+
 
 /* Address: 0x00503DB0.
    Ownership: world/terrain/grid.
@@ -2031,7 +2025,8 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
    cell fields at +0x40 and +0x44. EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic
    parameters or normal returns.
 */
-void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension columnsRemaining;
@@ -2059,6 +2054,7 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   return;
 }
 
+
 /* Address: 0x00503E20.
    Ownership: world/terrain/grid.
    Purpose: For every field cell, combines the byte at +0x70 plus the selected channel offset with the current
@@ -2067,12 +2063,13 @@ void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
    Consumer of the generated clamp LUT; runs on tick-wheel cases 3 and 7 (T5), mapping each cell's +0x68 runtime
    byte through the lookup.
 */
-void FieldGrid_ApplyByteClampLookupToCells
-               (FieldGridByteOffset sourceChannelOffset,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyByteClampLookupToCells
+          (FieldGridByteOffset sourceChannelOffset,FieldGridAsset *fieldGrid)
 
 {
   undefined3 uVar1;
-  undefined4 uVar2;
+  byte *pbVar2;
   FieldGridDimension columnsRemaining;
   FieldGridDimension rowsRemaining;
   FieldGridCell *currentCell;
@@ -2082,15 +2079,15 @@ void FieldGrid_ApplyByteClampLookupToCells
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
-  uVar2 = g_TerrainByteClampLookup;
+  pbVar2 = g_TerrainByteClampLookup;
   columnsRemaining = gridWidth;
   do {
     do {
-      uVar1 = CONCAT21((short)((uint)uVar2 >> 0x10),
-                       currentCell->runtime58_6F[sourceChannelOffset + 0x18]);
-      mappedRuntimeByte = *(byte *)CONCAT31(uVar1,currentCell->runtime58_6F[0x10]);
-      uVar2 = CONCAT31(uVar1,mappedRuntimeByte);
-      currentCell->runtime58_6F[0x10] = mappedRuntimeByte;
+      uVar1 = CONCAT21((short)((uint)pbVar2 >> 0x10),
+                       currentCell->runtime60_6B[sourceChannelOffset + 0x10]);
+      mappedRuntimeByte = *(byte *)CONCAT31(uVar1,currentCell->runtime60_6B[8]);
+      pbVar2 = (byte *)CONCAT31(uVar1,mappedRuntimeByte);
+      currentCell->runtime60_6B[8] = mappedRuntimeByte;
       currentCell = currentCell + 1;
       columnsRemaining = columnsRemaining - 1;
     } while (columnsRemaining != 0);
@@ -2100,6 +2097,7 @@ void FieldGrid_ApplyByteClampLookupToCells
   return;
 }
 
+
 /* Address: 0x00503E80.
    Ownership: world/terrain/grid.
    Purpose: Classifies the selected cell flag byte into runtime byte +0x68: zero for no tested bits, 0x87 when only
@@ -2107,8 +2105,9 @@ void FieldGrid_ApplyByteClampLookupToCells
    cellByteOffset→FieldGridByteOffset. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGrid_ClassifyCellFlagsToRuntimeByte
-               (FieldGridByteOffset cellByteOffset,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ClassifyCellFlagsToRuntimeByte
+          (FieldGridByteOffset cellByteOffset,FieldGridAsset *fieldGrid)
 
 {
   byte classifiedRuntimeByte;
@@ -2119,17 +2118,18 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte
   currentCell = fieldGrid->cells;
   do {
     classifiedRuntimeByte = 0xff;
-    if (((currentCell->runtime58_6F[cellByteOffset + 0x18] & 0x79) == 0) &&
-       (classifiedRuntimeByte = 0x87, (currentCell->runtime58_6F[cellByteOffset + 0x18] & 0x80) == 0
+    if (((currentCell->runtime60_6B[cellByteOffset + 0x10] & 0x79) == 0) &&
+       (classifiedRuntimeByte = 0x87, (currentCell->runtime60_6B[cellByteOffset + 0x10] & 0x80) == 0
        )) {
       classifiedRuntimeByte = 0;
     }
-    currentCell->runtime58_6F[0x10] = classifiedRuntimeByte;
+    currentCell->runtime60_6B[8] = classifiedRuntimeByte;
     currentCell = currentCell + 1;
     cellsRemaining = cellsRemaining + -1;
   } while (cellsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x00503EE0.
    Ownership: world/terrain/grid.
@@ -2137,11 +2137,10 @@ void FieldGrid_ClassifyCellFlagsToRuntimeByte
    scaled sine/cosine vector pairs from the updated angles. Direct call at 00560E09.
    Cross-module calls: FixedMath_SinCosScaled [core/math/fixed].
 */
-void __fastcall
-TerrainDirectionTable_AdvanceAndRebuildVectors(undefined4 param_1,undefined4 param_2)
+void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuildVectors(void)
 
 {
-  int extraout_ECX;
+  uint uVar1;
   TerrainDirectionRecordCount recordsRemaining;
   TerrainDirectionRecord *currentDirectionRecord;
   FixedSinCosEdxEax8 scaledSinCosPair;
@@ -2151,22 +2150,22 @@ TerrainDirectionTable_AdvanceAndRebuildVectors(undefined4 param_1,undefined4 par
   currentDirectionRecord = g_TerrainDirectionRecordTable256;
   recordsRemaining = 0x100;
   do {
-    packedAnglesBeforeAdvance = currentDirectionRecord->packedAngleA_low16_AngleB_high16;
+    uVar1 = currentDirectionRecord->packedAngleA_low16_AngleB_high16;
     currentDirectionRecord->packedAngleA_low16_AngleB_high16 =
          currentDirectionRecord->packedAngleA_low16_AngleB_high16 +
          *(int *)&currentDirectionRecord->rateA;
-    scaledSinCosPair =
-         FixedMath_SinCosScaled(packedAnglesBeforeAdvance & 0xffff,currentDirectionRecord->scaleA);
+    scaledSinCosPair = FixedMath_SinCosScaled(uVar1 & 0xffff,currentDirectionRecord->scaleA);
     currentDirectionRecord->angleAComponent0ScaledQ28 = (int)scaledSinCosPair;
     currentDirectionRecord->angleAComponent1ScaledQ28 = (int)(scaledSinCosPair >> 0x20);
     angleBScaledSinCosPair =
-         FixedMath_SinCosScaled(extraout_ECX >> 0x10,currentDirectionRecord->scaleB);
+         FixedMath_SinCosScaled((int)uVar1 >> 0x10,currentDirectionRecord->scaleB);
     currentDirectionRecord->angleBComponent0ScaledQ28 = (dword)angleBScaledSinCosPair;
     currentDirectionRecord = currentDirectionRecord + 1;
     recordsRemaining = recordsRemaining - 1;
   } while (recordsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x00504B10.
    Ownership: world/terrain/grid.
@@ -2179,83 +2178,92 @@ TerrainDirectionTable_AdvanceAndRebuildVectors(undefined4 param_1,undefined4 par
    TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
    [world/terrain/height].
 */
-ulonglong FieldGrid_RaycastTerrainSurfaceDistanceCf
-                    (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,
-                    Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
+FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+FieldGrid_RaycastTerrainSurfaceDistanceCf
+          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
+          Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
 
 {
-  byte *pbVar1;
-  longlong lVar2;
+  FieldGridCell *currentCell;
+  FieldGridDimension FVar1;
+  FieldGridDimension FVar2;
+  FieldGridDimension FVar3;
+  longlong lVar4;
+  longlong lVar5;
+  ulonglong uVar6;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
-  int extraout_ECX;
   int rayEndCoord1Q12;
-  int extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
+  uint extraout_ECX;
   uint uVar7;
-  int iVar8;
+  uint uVar8;
+  uint currentGridCoord0Q12;
+  int cellLocalCoord1Q12;
+  uint extraout_EDX;
   int iVar9;
   bool bVar10;
-  FixedDirectionXZEdxEax8 FVar11;
-  longlong lVar12;
-  undefined8 uVar13;
+  TerrainDistanceEaxCf5 TVar11;
+  FieldGridRaycastEaxEdxCf9 FVar12;
+  FieldGridRaycastEaxEdxCf9 FVar13;
+  FixedDirectionXyzRegs12 FVar14;
   
-  uVar7 = (fieldGrid->gridWidth - 1) * 0x1000;
-  uVar3 = (fieldGrid->gridHeight - 1) * 0x1000;
-  uVar4 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  FVar1 = fieldGrid->gridWidth;
+  FVar2 = fieldGrid->gridHeight;
+  uVar7 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x15;
   rayStartCoord1Q12 =
        ((int)((ulonglong)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar4;
-  rayStartCoord0Q12 = uVar4 * 2;
-  iVar9 = fieldGrid->gridWidth * 0x80;
-  pbVar1 = fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime00_07 +
-           ((int)rayStartCoord0Q12 >> 0xc) * iVar9;
-  FVar11 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  lVar12 = (longlong)((int)FVar11 + rayOriginYQ12) * 0x1c6e9c;
-  lVar2 = (longlong)(extraout_ECX + rayOriginXQ12) * -0x20c8cc;
-  uVar5 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
-  rayEndCoord1Q12 = ((int)((ulonglong)lVar12 >> 0x20) << 0xc | (uint)lVar12 >> 0x14) - uVar5;
-  rayEndCoord0Q12 = uVar5 * 2;
-  iVar8 = 0x400;
-  uVar5 = rayStartCoord1Q12 & 0xfffff000;
-  uVar6 = rayStartCoord0Q12 & 0xfffff000;
+       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar7;
+  rayStartCoord0Q12 = uVar7 * 2;
+  FVar3 = fieldGrid->gridWidth;
+  currentCell = (FieldGridCell *)
+                (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
+                ((int)rayStartCoord0Q12 >> 0xc) * FVar3 * 0x80 + -0xc);
+  FVar14 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
+  lVar4 = (longlong)(int)(FVar14.eax + rayOriginYQ12) * 0x1c6e9c;
+  lVar5 = (longlong)(int)(FVar14.ecx + rayOriginXQ12) * -0x20c8cc;
+  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 0xb | (uint)lVar5 >> 0x15;
+  rayEndCoord1Q12 = ((int)((ulonglong)lVar4 >> 0x20) << 0xc | (uint)lVar4 >> 0x14) - uVar8;
+  rayEndCoord0Q12 = uVar8 * 2;
+  iVar9 = 0x400;
+  uVar8 = rayStartCoord1Q12 & 0xfffff000;
+  currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
   do {
-    iVar8 = iVar8 + -1;
-    if (iVar8 == 0) break;
-    bVar10 = false;
-    if ((((-1 < (int)uVar5) && (bVar10 = false, -1 < (int)uVar6)) &&
-        (bVar10 = uVar5 < uVar7, (int)uVar5 < (int)uVar7)) &&
-       (bVar10 = uVar6 < uVar3, (int)uVar6 < (int)uVar3)) {
-      bVar10 = uVar6 < rayStartCoord0Q12;
-      lVar12 = TerrainTriangle_IntersectRayDistanceCf
-                         ((Q12)(FVar11 >> 0x20),rayEndCoord0Q12 + uVar4 * -2,
+    iVar9 = iVar9 + -1;
+    if (iVar9 == 0) break;
+    if ((((-1 < (int)uVar8) && (-1 < (int)currentGridCoord0Q12)) &&
+        ((int)uVar8 < (int)((FVar1 - 1) * 0x1000))) &&
+       ((int)currentGridCoord0Q12 < (int)((FVar2 - 1) * 0x1000))) {
+      cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar7 * -2;
+      TVar11 = TerrainTriangle_IntersectRayDistanceCf
+                         (FVar14.edx,rayEndCoord0Q12 + uVar7 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
-                          *(Q12 *)(pbVar1 + iVar9 + 200),*(Q12 *)(pbVar1 + iVar9 + 0x48),
-                          *(Q12 *)(pbVar1 + 200),*(Q12 *)(pbVar1 + 0x48),uVar6 + uVar4 * -2,
-                          uVar5 - rayStartCoord1Q12);
-      uVar6 = (uint)((ulonglong)lVar12 >> 0x20);
-      if (!bVar10) {
-        return CONCAT44(*(FieldCellPackedFlagsAndMaterial *)(pbVar1 + 0x50),(int)lVar12) &
-               0xffffffffff;
+                          currentCell[FVar3 + 1].terrainHeight,currentCell[FVar3].terrainHeight,
+                          currentCell[1].terrainHeight,currentCell->terrainHeight,cellLocalCoord1Q12
+                          ,uVar8 - rayStartCoord1Q12);
+      if (!TVar11.carry) {
+        uVar6 = CONCAT44(currentCell->flagsAndMaterial,TVar11.distanceQ12) & 0xffffffffff;
+        FVar13.carry = true;
+        FVar13.distanceQ12 = (int)uVar6;
+        FVar13.materialOrCellIndex = (int)(uVar6 >> 0x20);
+        return FVar13;
       }
-      uVar5 = extraout_ECX_00 + rayStartCoord1Q12;
-      bVar10 = CARRY4(uVar6,rayStartCoord0Q12);
-      uVar6 = uVar6 + rayStartCoord0Q12;
+      uVar8 = (uVar8 - rayStartCoord1Q12) + rayStartCoord1Q12;
+      currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
     }
-    uVar13 = TerrainRay_AdvanceGridTraversalCf
-                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,iVar9,
-                        pbVar1,uVar6,uVar5);
-    uVar6 = (uint)((ulonglong)uVar13 >> 0x20);
-    uVar5 = extraout_ECX_01;
+    bVar10 = TerrainRay_AdvanceGridTraversalCf
+                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
+                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);
+    uVar8 = extraout_ECX;
+    currentGridCoord0Q12 = extraout_EDX;
   } while (!bVar10);
-  return CONCAT44(uVar6,0x7fffffff);
+  FVar12.materialOrCellIndex = currentGridCoord0Q12;
+  FVar12.distanceQ12 = 0x7fffffff;
+  FVar12.carry = false;
+  return FVar12;
 }
+
 
 /* Address: 0x00504CA0.
    Ownership: world/terrain/grid.
@@ -2268,85 +2276,95 @@ ulonglong FieldGrid_RaycastTerrainSurfaceDistanceCf
    TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
    [world/terrain/height].
 */
-ulonglong FieldGrid_RaycastSecondarySurfaceDistanceCf
-                    (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,
-                    Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
+FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+FieldGrid_RaycastSecondarySurfaceDistanceCf
+          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
+          Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
 
 {
-  byte *pbVar1;
-  longlong lVar2;
+  FieldGridCell *currentCell;
+  FieldGridDimension FVar1;
+  FieldGridDimension FVar2;
+  FieldGridDimension FVar3;
+  longlong lVar4;
+  longlong lVar5;
+  ulonglong uVar6;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
-  int extraout_ECX;
   int rayEndCoord1Q12;
-  int extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
+  uint extraout_ECX;
   uint uVar7;
-  int iVar8;
+  uint uVar8;
+  uint currentGridCoord0Q12;
+  int cellLocalCoord1Q12;
+  uint extraout_EDX;
   int iVar9;
   bool bVar10;
-  FixedDirectionXZEdxEax8 FVar11;
-  longlong lVar12;
-  undefined8 uVar13;
+  TerrainDistanceEaxCf5 TVar11;
+  FieldGridRaycastEaxEdxCf9 FVar12;
+  FieldGridRaycastEaxEdxCf9 FVar13;
+  FixedDirectionXyzRegs12 FVar14;
   
-  uVar7 = (fieldGrid->gridWidth - 1) * 0x1000;
-  uVar3 = (fieldGrid->gridHeight - 1) * 0x1000;
-  uVar4 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  FVar1 = fieldGrid->gridWidth;
+  FVar2 = fieldGrid->gridHeight;
+  uVar7 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x15;
   rayStartCoord1Q12 =
        ((int)((ulonglong)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar4;
-  rayStartCoord0Q12 = uVar4 * 2;
-  iVar9 = fieldGrid->gridWidth * 0x80;
-  pbVar1 = fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime00_07 +
-           ((int)rayStartCoord0Q12 >> 0xc) * iVar9;
-  FVar11 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  lVar12 = (longlong)((int)FVar11 + rayOriginYQ12) * 0x1c6e9c;
-  lVar2 = (longlong)(extraout_ECX + rayOriginXQ12) * -0x20c8cc;
-  uVar5 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
-  rayEndCoord1Q12 = ((int)((ulonglong)lVar12 >> 0x20) << 0xc | (uint)lVar12 >> 0x14) - uVar5;
-  rayEndCoord0Q12 = uVar5 * 2;
-  iVar8 = 0x400;
-  uVar5 = rayStartCoord1Q12 & 0xfffff000;
-  uVar6 = rayStartCoord0Q12 & 0xfffff000;
+       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar7;
+  rayStartCoord0Q12 = uVar7 * 2;
+  FVar3 = fieldGrid->gridWidth;
+  currentCell = (FieldGridCell *)
+                (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
+                ((int)rayStartCoord0Q12 >> 0xc) * FVar3 * 0x80 + -0xc);
+  FVar14 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
+  lVar4 = (longlong)(int)(FVar14.eax + rayOriginYQ12) * 0x1c6e9c;
+  lVar5 = (longlong)(int)(FVar14.ecx + rayOriginXQ12) * -0x20c8cc;
+  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 0xb | (uint)lVar5 >> 0x15;
+  rayEndCoord1Q12 = ((int)((ulonglong)lVar4 >> 0x20) << 0xc | (uint)lVar4 >> 0x14) - uVar8;
+  rayEndCoord0Q12 = uVar8 * 2;
+  iVar9 = 0x400;
+  uVar8 = rayStartCoord1Q12 & 0xfffff000;
+  currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
   do {
-    iVar8 = iVar8 + -1;
-    if (iVar8 == 0) break;
-    bVar10 = false;
-    if ((((-1 < (int)uVar5) && (bVar10 = false, -1 < (int)uVar6)) &&
-        (bVar10 = uVar5 < uVar7, (int)uVar5 < (int)uVar7)) &&
-       (bVar10 = uVar6 < uVar3, (int)uVar6 < (int)uVar3)) {
-      bVar10 = CARRY4(*(uint *)(pbVar1 + iVar9 + 200),*(uint *)(pbVar1 + iVar9 + 0xcc));
-      lVar12 = TerrainTriangle_IntersectRayDistanceCf
-                         ((Q12)(FVar11 >> 0x20),rayEndCoord0Q12 + uVar4 * -2,
+    iVar9 = iVar9 + -1;
+    if (iVar9 == 0) break;
+    if ((((-1 < (int)uVar8) && (-1 < (int)currentGridCoord0Q12)) &&
+        ((int)uVar8 < (int)((FVar1 - 1) * 0x1000))) &&
+       ((int)currentGridCoord0Q12 < (int)((FVar2 - 1) * 0x1000))) {
+      cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar7 * -2;
+      TVar11 = TerrainTriangle_IntersectRayDistanceCf
+                         (FVar14.edx,rayEndCoord0Q12 + uVar7 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
-                          *(uint *)(pbVar1 + iVar9 + 200) + *(uint *)(pbVar1 + iVar9 + 0xcc),
-                          *(int *)(pbVar1 + iVar9 + 0x48) + *(int *)(pbVar1 + iVar9 + 0x4c),
-                          *(int *)(pbVar1 + 200) + *(int *)(pbVar1 + 0xcc),
-                          *(int *)(pbVar1 + 0x4c) + *(int *)(pbVar1 + 0x48),uVar6 + uVar4 * -2,
-                          uVar5 - rayStartCoord1Q12);
-      uVar6 = (uint)((ulonglong)lVar12 >> 0x20);
-      if (!bVar10) {
-        return CONCAT44(*(FieldCellPackedFlagsAndMaterial *)(pbVar1 + 0x50),(int)lVar12) &
-               0xffffffffff;
+                          currentCell[FVar3 + 1].terrainHeight +
+                          currentCell[FVar3 + 1].waterSurfaceDelta,
+                          currentCell[FVar3].terrainHeight + currentCell[FVar3].waterSurfaceDelta,
+                          currentCell[1].terrainHeight + currentCell[1].waterSurfaceDelta,
+                          currentCell->waterSurfaceDelta + currentCell->terrainHeight,
+                          cellLocalCoord1Q12,uVar8 - rayStartCoord1Q12);
+      if (!TVar11.carry) {
+        uVar6 = CONCAT44(currentCell->flagsAndMaterial,TVar11.distanceQ12) & 0xffffffffff;
+        FVar13.carry = true;
+        FVar13.distanceQ12 = (int)uVar6;
+        FVar13.materialOrCellIndex = (int)(uVar6 >> 0x20);
+        return FVar13;
       }
-      uVar5 = extraout_ECX_00 + rayStartCoord1Q12;
-      bVar10 = CARRY4(uVar6,rayStartCoord0Q12);
-      uVar6 = uVar6 + rayStartCoord0Q12;
+      uVar8 = (uVar8 - rayStartCoord1Q12) + rayStartCoord1Q12;
+      currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
     }
-    uVar13 = TerrainRay_AdvanceGridTraversalCf
-                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,iVar9,
-                        pbVar1,uVar6,uVar5);
-    uVar6 = (uint)((ulonglong)uVar13 >> 0x20);
-    uVar5 = extraout_ECX_01;
+    bVar10 = TerrainRay_AdvanceGridTraversalCf
+                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
+                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);
+    uVar8 = extraout_ECX;
+    currentGridCoord0Q12 = extraout_EDX;
   } while (!bVar10);
-  return CONCAT44(uVar6,0x7fffffff);
+  FVar12.materialOrCellIndex = currentGridCoord0Q12;
+  FVar12.distanceQ12 = 0x7fffffff;
+  FVar12.carry = false;
+  return FVar12;
 }
+
 
 /* Address: 0x00504E60.
    Ownership: world/terrain/grid.
@@ -2355,152 +2373,155 @@ ulonglong FieldGrid_RaycastSecondarySurfaceDistanceCf
    TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
    [world/terrain/height].
 */
-ulonglong FieldGrid_RaycastTerrainTrianglesAlongDirection
-                    (AngleTurn32 param_1,AngleTurn32 param_2,FixedMathScale32 param_3,Q12 param_4,
-                    int param_5,int param_6,int param_7)
+FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+FieldGrid_RaycastTerrainTrianglesAlongDirection
+          (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
+          Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
 
 {
-  longlong lVar1;
+  FieldGridDimension FVar1;
+  longlong lVar2;
+  longlong lVar3;
+  ulonglong uVar4;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
-  int extraout_ECX;
   int rayEndCoord1Q12;
-  uint uVar2;
-  uint extraout_ECX_00;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  uint currentGridCoord0Q12;
-  int cellLocalCoord1Q12;
-  uint uVar6;
+  int iVar5;
+  uint extraout_ECX;
+  int iVar6;
   uint uVar7;
   uint uVar8;
+  uint currentGridCoord0Q12;
+  int cellLocalCoord1Q12;
   int iVar9;
-  uint uVar10;
+  uint extraout_EDX;
+  int iVar10;
   int iVar11;
-  bool bVar12;
-  FixedDirectionXZEdxEax8 FVar13;
-  longlong lVar14;
-  undefined8 uVar15;
-  Q12 cornerHeight0Q12;
-  Q12 cornerHeight1Q12;
-  Q12 cornerHeight2Q12;
-  Q12 cornerHeight3Q12;
+  FieldGridCell *currentCell;
+  FieldGridCell *pFVar12;
+  int rowStrideBytes;
+  bool bVar13;
+  TerrainDistanceEaxCf5 TVar14;
+  FieldGridRaycastEaxEdxCf9 FVar15;
+  FieldGridRaycastEaxEdxCf9 FVar16;
+  FixedDirectionXyzRegs12 FVar17;
+  FieldCellPersistedAux cornerHeight0Q12;
+  FieldCellPersistedAux cornerHeight1Q12;
+  FieldCellPersistedAux cornerHeight2Q12;
+  FieldCellPersistedAux cornerHeight3Q12;
   
-  uVar8 = *(int *)(param_7 + 0xb8) - 1;
-  uVar3 = *(int *)(param_7 + 0xbc) - 1;
-  uVar4 = (int)((ulonglong)((longlong)param_5 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)param_5 * -0x20c8cc) >> 0x15;
+  iVar10 = fieldGrid->gridWidth - 1;
+  iVar6 = fieldGrid->gridHeight - 1;
+  uVar7 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x15;
   rayStartCoord1Q12 =
-       ((int)((ulonglong)((longlong)param_6 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint)((longlong)param_6 * 0x1c6e9c) >> 0x14) - uVar4;
-  rayStartCoord0Q12 = uVar4 * 2;
-  iVar11 = *(int *)(param_7 + 0xb8) * 0x80;
-  FVar13 = FixedMath_DirectionFromAnglesScaledRegs(param_1,param_2,param_3);
-  lVar14 = (longlong)((int)FVar13 + param_6) * 0x1c6e9c;
-  lVar1 = (longlong)(extraout_ECX + param_5) * -0x20c8cc;
-  uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0xb | (uint)lVar1 >> 0x15;
-  rayEndCoord1Q12 = ((int)((ulonglong)lVar14 >> 0x20) << 0xc | (uint)lVar14 >> 0x14) - uVar5;
-  rayEndCoord0Q12 = uVar5 * 2;
-  iVar9 = 0x400;
-  uVar5 = rayStartCoord1Q12 & 0xfffff000;
+       ((int)((ulonglong)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar7;
+  rayStartCoord0Q12 = uVar7 * 2;
+  FVar1 = fieldGrid->gridWidth;
+  rowStrideBytes = FVar1 * 0x80;
+  FVar17 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
+  lVar2 = (longlong)(int)(FVar17.eax + rayOriginYQ12) * 0x1c6e9c;
+  lVar3 = (longlong)(int)(FVar17.ecx + rayOriginXQ12) * -0x20c8cc;
+  uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+  rayEndCoord1Q12 = ((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8;
+  rayEndCoord0Q12 = uVar8 * 2;
+  iVar11 = 0x400;
+  uVar8 = rayStartCoord1Q12 & 0xfffff000;
   currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
-  uVar10 = ((int)rayStartCoord0Q12 >> 0xc) * iVar11 + ((int)rayStartCoord1Q12 >> 0xc) * 0x80 + 0x200
-           + param_7;
+  currentCell = (FieldGridCell *)
+                (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
+                ((int)rayStartCoord0Q12 >> 0xc) * rowStrideBytes + -0xc);
   do {
-    iVar9 = iVar9 + -1;
-    if (iVar9 == 0) break;
-    cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar4 * -2;
-    uVar2 = (int)((uVar5 - rayStartCoord1Q12) + rayStartCoord1Q12) >> 0xc;
-    uVar6 = (int)(cellLocalCoord1Q12 + rayStartCoord0Q12) >> 0xc;
-    if ((int)uVar2 < 0) {
-      uVar7 = uVar10 + uVar2 * -0x80;
-      uVar2 = uVar6;
-      if (-1 < (int)uVar6) {
-        bVar12 = uVar6 < uVar3;
-        uVar2 = uVar6 - uVar3;
-        if ((int)uVar6 < (int)uVar3) {
-          cornerHeight3Q12 = *(Q12 *)(uVar7 + 0x48);
-          cornerHeight2Q12 = *(Q12 *)(uVar7 + 0x48 + iVar11);
-          cornerHeight1Q12 = *(Q12 *)(uVar7 + 0x48);
-          cornerHeight0Q12 = *(Q12 *)(uVar7 + 0x48 + iVar11);
-          goto LAB_00504f8a;
-        }
-      }
+    iVar11 = iVar11 + -1;
+    if (iVar11 == 0) break;
+    cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar7 * -2;
+    iVar5 = (int)((uVar8 - rayStartCoord1Q12) + rayStartCoord1Q12) >> 0xc;
+    iVar9 = (int)(cellLocalCoord1Q12 + rayStartCoord0Q12) >> 0xc;
+    if (iVar5 < 0) {
+      pFVar12 = currentCell + -iVar5;
+      iVar5 = iVar9;
+      if ((iVar9 < 0) || (iVar5 = iVar9 - iVar6, iVar6 <= iVar9)) {
 LAB_00505090:
-      bVar12 = uVar7 < uVar2 * iVar11;
-      uVar7 = uVar7 - uVar2 * iVar11;
-      cornerHeight3Q12 = *(Q12 *)(uVar7 + 0x48);
-      cornerHeight2Q12 = *(Q12 *)(uVar7 + 0x48);
-      cornerHeight1Q12 = *(Q12 *)(uVar7 + 0x48);
-      cornerHeight0Q12 = *(Q12 *)(uVar7 + 0x48);
-    }
-    else if ((int)uVar6 < 0) {
-      uVar7 = uVar10 - uVar6 * iVar11;
-      bVar12 = uVar2 < uVar8;
-      if ((int)uVar2 < (int)uVar8) {
-        cornerHeight3Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight2Q12 = *(Q12 *)(uVar7 + 200);
-        cornerHeight1Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight0Q12 = *(Q12 *)(uVar7 + 200);
+        pFVar12 = (FieldGridCell *)((int)pFVar12 - iVar5 * rowStrideBytes);
+        cornerHeight3Q12 = pFVar12->terrainHeight;
+        cornerHeight2Q12 = pFVar12->terrainHeight;
+        cornerHeight1Q12 = pFVar12->terrainHeight;
+        cornerHeight0Q12 = pFVar12->terrainHeight;
       }
       else {
-        bVar12 = uVar7 < (uVar2 - uVar8) * 0x80;
-        uVar7 = uVar7 + (uVar2 - uVar8) * -0x80;
-        cornerHeight3Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight2Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight1Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight0Q12 = *(Q12 *)(uVar7 + 0x48);
+        cornerHeight3Q12 = pFVar12->terrainHeight;
+        cornerHeight2Q12 = pFVar12[FVar1].terrainHeight;
+        cornerHeight1Q12 = pFVar12->terrainHeight;
+        cornerHeight0Q12 = pFVar12[FVar1].terrainHeight;
       }
     }
-    else if ((int)uVar2 < (int)uVar8) {
-      bVar12 = uVar6 < uVar3;
-      if ((int)uVar6 < (int)uVar3) {
-        cornerHeight3Q12 = *(Q12 *)(uVar10 + 0x48);
-        cornerHeight2Q12 = *(Q12 *)(uVar10 + 200);
-        cornerHeight1Q12 = *(Q12 *)(uVar10 + 0x48 + iVar11);
-        cornerHeight0Q12 = *(Q12 *)(uVar10 + 200 + iVar11);
-        uVar7 = uVar10;
+    else if (iVar9 < 0) {
+      pFVar12 = (FieldGridCell *)((int)currentCell - iVar9 * rowStrideBytes);
+      if (iVar5 < iVar10) {
+        cornerHeight3Q12 = pFVar12->terrainHeight;
+        cornerHeight2Q12 = pFVar12[1].terrainHeight;
+        cornerHeight1Q12 = pFVar12->terrainHeight;
+        cornerHeight0Q12 = pFVar12[1].terrainHeight;
       }
       else {
-        uVar7 = (uVar6 - uVar3) * iVar11;
-        bVar12 = uVar10 < uVar7;
-        uVar7 = uVar10 - uVar7;
-        cornerHeight3Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight2Q12 = *(Q12 *)(uVar7 + 200);
-        cornerHeight1Q12 = *(Q12 *)(uVar7 + 0x48);
-        cornerHeight0Q12 = *(Q12 *)(uVar7 + 200);
+        pFVar12 = pFVar12 + -(iVar5 - iVar10);
+        cornerHeight3Q12 = pFVar12->terrainHeight;
+        cornerHeight2Q12 = pFVar12->terrainHeight;
+        cornerHeight1Q12 = pFVar12->terrainHeight;
+        cornerHeight0Q12 = pFVar12->terrainHeight;
+      }
+    }
+    else if (iVar5 < iVar10) {
+      if (iVar9 < iVar6) {
+        cornerHeight3Q12 = currentCell->terrainHeight;
+        cornerHeight2Q12 = currentCell[1].terrainHeight;
+        cornerHeight1Q12 = currentCell[FVar1].terrainHeight;
+        cornerHeight0Q12 = currentCell[FVar1 + 1].terrainHeight;
+        pFVar12 = currentCell;
+      }
+      else {
+        pFVar12 = (FieldGridCell *)((int)currentCell - (iVar9 - iVar6) * rowStrideBytes);
+        cornerHeight3Q12 = pFVar12->terrainHeight;
+        cornerHeight2Q12 = pFVar12[1].terrainHeight;
+        cornerHeight1Q12 = pFVar12->terrainHeight;
+        cornerHeight0Q12 = pFVar12[1].terrainHeight;
       }
     }
     else {
-      uVar7 = uVar10 + (uVar2 - uVar8) * -0x80;
-      bVar12 = uVar6 < uVar3;
-      uVar2 = uVar6 - uVar3;
-      if ((int)uVar3 <= (int)uVar6) goto LAB_00505090;
-      cornerHeight3Q12 = *(Q12 *)(uVar7 + 0x48);
-      cornerHeight2Q12 = *(Q12 *)(uVar7 + 0x48 + iVar11);
-      cornerHeight1Q12 = *(Q12 *)(uVar7 + 0x48);
-      cornerHeight0Q12 = *(Q12 *)(uVar7 + 0x48 + iVar11);
+      pFVar12 = currentCell + -(iVar5 - iVar10);
+      iVar5 = iVar9 - iVar6;
+      if (iVar6 <= iVar9) goto LAB_00505090;
+      cornerHeight3Q12 = pFVar12->terrainHeight;
+      cornerHeight2Q12 = pFVar12[FVar1].terrainHeight;
+      cornerHeight1Q12 = pFVar12->terrainHeight;
+      cornerHeight0Q12 = pFVar12[FVar1].terrainHeight;
     }
-LAB_00504f8a:
-    lVar14 = TerrainTriangle_IntersectRayDistanceCf
-                       ((Q12)(FVar13 >> 0x20),rayEndCoord0Q12 + uVar4 * -2,
-                        rayEndCoord1Q12 - rayStartCoord1Q12,param_4,cornerHeight0Q12,
-                        cornerHeight1Q12,cornerHeight2Q12,cornerHeight3Q12,cellLocalCoord1Q12,
-                        uVar5 - rayStartCoord1Q12);
-    if (!bVar12) {
-      return CONCAT44(*(undefined4 *)(uVar7 + 0x50),(int)lVar14) & 0xffffffffff;
+    TVar14 = TerrainTriangle_IntersectRayDistanceCf
+                       (FVar17.edx,rayEndCoord0Q12 + uVar7 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
+                        rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
+                        cornerHeight3Q12,cellLocalCoord1Q12,uVar8 - rayStartCoord1Q12);
+    if (!TVar14.carry) {
+      uVar4 = CONCAT44(pFVar12->flagsAndMaterial,TVar14.distanceQ12) & 0xffffffffff;
+      FVar15.carry = true;
+      FVar15.distanceQ12 = (int)uVar4;
+      FVar15.materialOrCellIndex = (int)(uVar4 >> 0x20);
+      return FVar15;
     }
-    uVar15 = TerrainRay_AdvanceGridTraversalCf
-                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,iVar11,
-                        uVar10,currentGridCoord0Q12,uVar5);
-    currentGridCoord0Q12 = (uint)((ulonglong)uVar15 >> 0x20);
-    uVar5 = extraout_ECX_00;
-    uVar10 = uVar7;
-  } while (!bVar12);
-  return CONCAT44(currentGridCoord0Q12,0x7fffffff);
+    bVar13 = TerrainRay_AdvanceGridTraversalCf
+                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
+                        rowStrideBytes,currentCell,currentGridCoord0Q12,uVar8);
+    uVar8 = extraout_ECX;
+    currentGridCoord0Q12 = extraout_EDX;
+    currentCell = pFVar12;
+  } while (!bVar13);
+  FVar16.materialOrCellIndex = currentGridCoord0Q12;
+  FVar16.distanceQ12 = 0x7fffffff;
+  FVar16.carry = false;
+  return FVar16;
 }
+
 
 /* Address: 0x00505120.
    Ownership: world/terrain/grid.
@@ -2554,8 +2575,9 @@ void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
    Purpose: Sets bit 0 in one selected occupancyMask byte for every cell in a FieldGridAsset. EAX, ECX, and EDX are
    preserved or incidental caller state and are not synthetic parameters or normal returns.
 */
-void FieldGrid_SetOccupancyMaskByteBit0AllCells
-               (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_SetOccupancyMaskByteBit0AllCells
+          (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension columnsRemaining;
@@ -2569,8 +2591,8 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
   columnsRemaining = gridWidth;
   do {
     do {
-      currentCell->runtime58_6F[occupancyMaskByteIndex + 0x18] =
-           currentCell->runtime58_6F[occupancyMaskByteIndex + 0x18] | 1;
+      currentCell->runtime60_6B[occupancyMaskByteIndex + 0x10] =
+           currentCell->runtime60_6B[occupancyMaskByteIndex + 0x10] | 1;
       currentCell = currentCell + 1;
       columnsRemaining = columnsRemaining - 1;
     } while (columnsRemaining != 0);
@@ -2579,14 +2601,16 @@ void FieldGrid_SetOccupancyMaskByteBit0AllCells
   } while (rowsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x00505290.
    Ownership: world/terrain/grid.
    Purpose: Clears bit 0 in one selected occupancyMask byte for every cell in a FieldGridAsset. EAX, ECX, and EDX
    are preserved or incidental caller state and are not synthetic parameters or normal returns.
 */
-void FieldGrid_ClearOccupancyMaskByteBit0AllCells
-               (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ClearOccupancyMaskByteBit0AllCells
+          (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension columnsRemaining;
@@ -2600,8 +2624,8 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
   columnsRemaining = gridWidth;
   do {
     do {
-      currentCell->runtime58_6F[occupancyMaskByteIndex + 0x18] =
-           currentCell->runtime58_6F[occupancyMaskByteIndex + 0x18] & 0xfe;
+      currentCell->runtime60_6B[occupancyMaskByteIndex + 0x10] =
+           currentCell->runtime60_6B[occupancyMaskByteIndex + 0x10] & 0xfe;
       currentCell = currentCell + 1;
       columnsRemaining = columnsRemaining - 1;
     } while (columnsRemaining != 0);
@@ -2610,6 +2634,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
   } while (rowsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x00507580.
    Ownership: world/terrain/grid.
@@ -2617,15 +2642,13 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
    explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 TerrainGrid_TestProjectedCellMaskBits01Cf
           (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridAsset *pFVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_EDX;
   uint uVar3;
   int iVar4;
   
@@ -2637,32 +2660,34 @@ TerrainGrid_TestProjectedCellMaskBits01Cf
   if ((((-1 < iVar2) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 0xc, -1 < iVar4)) &&
       (iVar2 < (int)pFVar1->gridWidth)) &&
      ((iVar4 < (int)pFVar1->gridHeight &&
-      ((pFVar1->cells[pFVar1->gridWidth * iVar4 + iVar2].runtime58_6F
-        [worldRuntime->activeFactionRuntimeIndex + 0x18] & 3) != 0)))) {
-    return CONCAT44(in_EDX,in_EAX);
+      ((pFVar1->cells[pFVar1->gridWidth * iVar4 + iVar2].runtime60_6B
+        [worldRuntime->activeFactionRuntimeIndex + 0x10] & 3) != 0)))) {
+    return false;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return true;
 }
+
 
 /* Address: 0x005092A0.
    Ownership: world/terrain/grid.
    Purpose: Handles field grid clear cell flag8000 across grid.
 */
-void FieldGrid_ClearCellFlag8000AcrossGrid(int param_1)
+void FieldGrid_ClearCellFlag8000AcrossGrid(FieldGridAsset *fieldGrid)
 
 {
   int iVar1;
-  int iVar2;
+  FieldGridCell *pFVar2;
   
-  iVar1 = *(int *)(param_1 + 0xb8) * *(int *)(param_1 + 0xbc);
-  iVar2 = param_1 + 0x200;
+  iVar1 = fieldGrid->gridWidth * fieldGrid->gridHeight;
+  pFVar2 = fieldGrid->cells;
   do {
-    *(uint *)(iVar2 + 0x50) = *(uint *)(iVar2 + 0x50) & 0xffff7fff;
-    iVar2 = iVar2 + 0x80;
+    pFVar2->flagsAndMaterial = pFVar2->flagsAndMaterial & ~FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15;
+    pFVar2 = pFVar2 + 1;
     iVar1 = iVar1 + -1;
   } while (iVar1 != 0);
   return;
 }
+
 
 /* Address: 0x005092E0.
    Ownership: world/terrain/grid.
@@ -2670,7 +2695,8 @@ void FieldGrid_ClearCellFlag8000AcrossGrid(int param_1)
    p0 argbColor→PackedArgb32. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx
+FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid)
 
 {
   int cellsRemaining;
@@ -2679,12 +2705,13 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
   do {
-    *(PackedArgb32 *)(currentCell->runtime00_07 + 4) = argbColor;
+    currentCell->runtimeOverlayOrHeightValue04 = argbColor;
     currentCell = currentCell + 1;
     cellsRemaining = cellsRemaining + -1;
   } while (cellsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x00532B60.
    Ownership: world/terrain/grid.
@@ -2693,70 +2720,83 @@ void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fi
    with carry semantics outside the C prototype.
    Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32].
 */
-dword FieldGrid_SaveAssetImageFromRuntimeStateCf(dword fieldGridRuntimeImageCarrier)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FieldGrid_SaveAssetImageFromRuntimeStateCf(dword *sourceImageDwords)
 
 {
-  undefined4 *source;
-  dword dVar1;
-  uint extraout_ECX;
+  FieldGridAsset *pFVar1;
+  FieldGridAsset *fieldGridImageCopy;
   uint uVar2;
   int iVar3;
   int iVar4;
-  undefined4 *puVar5;
-  undefined4 *puVar6;
-  undefined1 in_CF;
-  bool bVar7;
+  dword *copyDestinationDwords;
+  FieldGridCellSaveImageView80 *fieldGridCellSaveView;
+  byte *occupancyBytes;
+  ArenaAllocEaxCf5 AVar5;
+  StatusValueEaxCf5 SVar6;
+  ArenaFreeEaxCf5 AVar7;
   
-  source = (*g_MemoryApi.alloc)(*(dword *)(fieldGridRuntimeImageCarrier + 4));
-  if (!(bool)in_CF) {
-    puVar5 = source;
-    for (uVar2 = extraout_ECX >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
-      *puVar5 = *(undefined4 *)fieldGridRuntimeImageCarrier;
-      fieldGridRuntimeImageCarrier = (dword)(fieldGridRuntimeImageCarrier + 4);
-      puVar5 = puVar5 + 1;
+  uVar2 = sourceImageDwords[1];
+  AVar5 = (*g_MemoryApi.alloc)(uVar2);
+  fieldGridImageCopy = (FieldGridAsset *)AVar5.eax;
+  if (!AVar5.carry) {
+    copyDestinationDwords = (dword *)fieldGridImageCopy;
+    for (uVar2 = uVar2 >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+      *copyDestinationDwords = *sourceImageDwords;
+      sourceImageDwords = sourceImageDwords + 1;
+      copyDestinationDwords = copyDestinationDwords + 1;
     }
-    puVar5 = source + 0x80;
-    source[0x2c] = 0;
-    iVar3 = source[0x2e] * source[0x2f];
+    fieldGridCellSaveView = (FieldGridCellSaveImageView80 *)fieldGridImageCopy->cells;
+    fieldGridImageCopy->fieldFlags = 0;
+    iVar3 = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
     do {
-      *puVar5 = 0;
-      puVar5[2] = 0x40000000;
-      puVar5[3] = 0;
-      puVar5[4] = 0;
-      puVar5[5] = 0;
-      puVar5[6] = 0;
-      puVar5[7] = 0;
-      puVar5[0xb] = 0;
-      puVar5[0xc] = 0;
-      puVar5[0xd] = 0;
-      puVar5[0xe] = 0;
-      puVar5[0xf] = 0;
-      puVar5[0x14] = puVar5[0x14] & 0xe80078ff;
-      puVar5[0x15] = 0;
-      puVar5[0x16] = 0;
-      puVar5[0x17] = 0;
-      puVar5[0x18] = 0;
-      puVar5[0x19] = 0;
-      puVar5[0x1a] = 0;
-      source[0x2c] = source[0x2c] | 1 << ((byte)puVar5[0x14] & 0x1f);
-      puVar6 = puVar5 + 0x1c;
+      fieldGridCellSaveView->runtime00 = 0;
+      fieldGridCellSaveView->triangle0NormalAngles = 0x40000000;
+      fieldGridCellSaveView->runtime0C = 0;
+      fieldGridCellSaveView->runtime10 = 0;
+      fieldGridCellSaveView->runtime14 = 0;
+      fieldGridCellSaveView->runtime18 = 0;
+      fieldGridCellSaveView->runtime1C = 0;
+      fieldGridCellSaveView->runtime2C = 0;
+      fieldGridCellSaveView->runtime30 = 0;
+      fieldGridCellSaveView->runtime34 = 0;
+      fieldGridCellSaveView->runtime38 = 0;
+      fieldGridCellSaveView->runtime3C = 0;
+      fieldGridCellSaveView->flagsAndMaterial = fieldGridCellSaveView->flagsAndMaterial & 0xe80078ff
+      ;
+      fieldGridCellSaveView->persistedAux54 = 0;
+      fieldGridCellSaveView->runtime58 = 0;
+      fieldGridCellSaveView->runtime5C = 0;
+      fieldGridCellSaveView->runtime60 = 0;
+      fieldGridCellSaveView->runtime64 = 0;
+      fieldGridCellSaveView->runtime68 = 0;
+      fieldGridImageCopy->fieldFlags =
+           fieldGridImageCopy->fieldFlags |
+           1 << ((byte)fieldGridCellSaveView->flagsAndMaterial & 0x1f);
+      occupancyBytes = (byte *)&fieldGridCellSaveView->occupancyMask;
       for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
-        *(undefined1 *)puVar6 = 0;
-        puVar6 = (undefined4 *)((int)puVar6 + 1);
+        *occupancyBytes = 0;
+        occupancyBytes = occupancyBytes + 1;
       }
-      bVar7 = (undefined4 *)0xffffff7f < puVar5;
-      puVar5 = puVar5 + 0x20;
+      fieldGridCellSaveView = fieldGridCellSaveView + 1;
       iVar3 = iVar3 + -1;
     } while (iVar3 != 0);
-    FileSystem_WriteBufferToPathCf(source[1],source,(word *)&g_LevelResourcePathScratchUtf16);
-    if (!bVar7) {
-      dVar1 = (*g_MemoryApi.free)(source);
-      return dVar1;
+    SVar6 = FileSystem_WriteBufferToPathCf
+                      ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
+                       (word *)&g_LevelResourcePathScratchUtf16);
+    if (!SVar6.carry) {
+      AVar7 = (*g_MemoryApi.free)(fieldGridImageCopy);
+      return (StatusValueEaxCf5)((uint5)AVar7 & 0xffffffff);
     }
-    (*g_MemoryApi.free)(source);
+    pFVar1 = (FieldGridAsset *)SVar6.valueOrError;
+    (*g_MemoryApi.free)(fieldGridImageCopy);
+    fieldGridImageCopy = pFVar1;
   }
-  return (dword)source;
+  SVar6.carry = true;
+  SVar6.valueOrError = (dword)fieldGridImageCopy;
+  return SVar6;
 }
+
 
 /* Address: 0x00561050.
    Ownership: world/terrain/grid.
@@ -2764,9 +2804,10 @@ dword FieldGrid_SaveAssetImageFromRuntimeStateCf(dword fieldGridRuntimeImageCarr
    and EDX are preserved or incidental caller state and are not synthetic parameters or normal returns. Fixed
    command-payload slots remain explicit even when this wrapper does not consume every slot.
 */
-void FieldGrid_ClearPlayerScratchPlane
-               (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
-               Q12 reservedWorldYQ12,Q12 reservedWorldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ClearPlayerScratchPlane
+          (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
+          Q12 reservedWorldYQ12,Q12 reservedWorldXQ12)
 
 {
   int cellsRemaining;
@@ -2784,15 +2825,17 @@ void FieldGrid_ClearPlayerScratchPlane
   return;
 }
 
+
 /* Address: 0x00561BB0.
    Ownership: world/terrain/grid.
    Purpose: Resets one local field-grid influence state block before rebuilding it. EAX, ECX, and EDX are preserved
    or incidental caller state and are not synthetic parameters or normal returns. Fixed command-payload slots
    remain explicit even when this wrapper does not consume every slot.
 */
-void FieldGrid_ResetLocalInfluenceState
-               (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
-               Q12 reservedWorldYQ12,Q12 reservedWorldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ResetLocalInfluenceState
+          (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
+          Q12 reservedWorldYQ12,Q12 reservedWorldXQ12)
 
 {
   int cellsRemaining;
@@ -2814,72 +2857,64 @@ void FieldGrid_ResetLocalInfluenceState
   return;
 }
 
+
 /* Address: 0x00571EC0.
    Ownership: world/terrain/grid.
    Purpose: EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal
    returns.
    Local calls: FieldGridCell_RecomputeTriangleNormalAngles, FieldGridCell_ComputeDirectionalLightColor.
 */
-void FieldGrid_ApplyEncodedUpdateCore
-               (FieldGridHeightDeltaUnits heightDeltaUnits,Q12 worldYQ12,Q12 worldXQ12,
-               FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyEncodedUpdateCore
+          (FieldGridHeightDeltaUnits heightDeltaUnits,Q12 worldYQ12,Q12 worldXQ12,
+          FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension FVar1;
   int iVar2;
   int iVar3;
-  FieldGridRowStrideBytes rowStrideBytes;
-  FieldGridRowStrideBytes extraout_EDX;
-  int extraout_EDX_00;
-  FieldGridRowStrideBytes extraout_EDX_01;
-  int extraout_EDX_02;
-  FieldGridRowStrideBytes extraout_EDX_03;
-  FieldGridRowStrideBytes rowStrideBytes_00;
+  int rowStrideBytes;
   FieldGridCell *pFVar4;
   
   FVar1 = fieldGrid->gridWidth;
   iVar2 = worldXQ12 >> 0xc;
   if ((((-1 < iVar2) && (iVar3 = worldYQ12 >> 0xc, -1 < iVar3)) && (iVar2 < (int)FVar1)) &&
      (iVar3 < (int)fieldGrid->gridHeight)) {
+    rowStrideBytes = FVar1 * 0x80;
     pFVar4 = fieldGrid->cells + iVar2 + iVar3 * FVar1;
     pFVar4->waterSurfaceDelta = pFVar4->waterSurfaceDelta + heightDeltaUnits * -0x40;
-    FieldGridCell_RecomputeTriangleNormalAngles(FVar1 << 7,pFVar4);
+    FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
     FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-    rowStrideBytes_00 = rowStrideBytes;
     if ((pFVar4[-1].flagsAndMaterial & 0x88006000) == 0) {
       FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + -1);
       FieldGridCell_ComputeDirectionalLightColor(pFVar4 + -1);
-      rowStrideBytes_00 = extraout_EDX;
     }
     if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4 + 1);
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
       FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-      rowStrideBytes_00 = extraout_EDX_00;
     }
-    pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes_00);
+    pFVar4 = pFVar4 + -FVar1;
     if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4);
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
       FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-      rowStrideBytes_00 = extraout_EDX_01;
     }
     if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4 + 1);
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
       FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-      rowStrideBytes_00 = extraout_EDX_02;
     }
-    pFVar4 = (FieldGridCell *)(pFVar4[-1].runtime00_07 + rowStrideBytes_00 * 2);
+    pFVar4 = pFVar4 + FVar1 * 2 + -1;
     if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4);
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
       FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-      rowStrideBytes_00 = extraout_EDX_03;
     }
     if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4 + 1);
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
       FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
     }
   }
   return;
 }
+
 
 /* Address: 0x005058A0.
    Ownership: world/terrain/grid.
@@ -2887,10 +2922,11 @@ void FieldGrid_ApplyEncodedUpdateCore
    one FieldGridCell, keeps nonnegative water-surface delta relative to the terrain change, and replaces the
    material byte only when the signed material index is nonnegative.
 */
-void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
-               (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
-               FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
-               Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
+          (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
+          FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
+          Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridCell *cell)
 
 {
   longlong lVar1;
@@ -2926,6 +2962,7 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
   return;
 }
 
+
 /* Address: 0x00505AA0.
    Ownership: world/terrain/grid.
    Purpose: Scans interior field cells forward and relaxes six neighboring height pairs toward the selected source
@@ -2935,12 +2972,11 @@ void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
    namespace: 0x40000000 excludes a source cell; 0x20000000 excludes a receiver/neighbor. These masks are persisted
    FLD flags, not GridScratch class bits.
 */
-undefined8 TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
 
 {
-  undefined4 in_EAX;
   int columnsRemaining;
-  undefined4 in_EDX;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
   FieldGridCell *sourceCell;
@@ -3006,8 +3042,9 @@ undefined8 TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *f
     sourceCell = cellBeforeSource + 2;
     rowsRemaining = rowsRemaining + -1;
   } while (rowsRemaining != 0);
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00505BE0.
    Ownership: world/terrain/grid.
@@ -3017,14 +3054,13 @@ undefined8 TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *f
    [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Reverse scan of the sign-gated fluid relaxation with the same FLD
    source-exclusion 0x40000000 and receiver-exclusion 0x20000000 semantics.
 */
-undefined8 TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
 
 {
   int *piVar1;
   FieldGridDimension FVar2;
-  undefined4 in_EAX;
   int columnsRemaining;
-  undefined4 in_EDX;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
   int sourceCellAddress;
@@ -3090,8 +3126,9 @@ undefined8 TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *f
     sourceCellAddress = cellAfterSourceAddress + -0x100;
     rowsRemaining = rowsRemaining + -1;
   } while (rowsRemaining != 0);
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00505D30.
    Ownership: world/terrain/grid.
@@ -3100,7 +3137,8 @@ undefined8 TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *f
    relaxation still honors FLD 0x40000000 source exclusion and 0x20000000 receiver exclusion; do not reinterpret
    them as GridScratch terrain classes.
 */
-void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
 
 {
   int columnsRemaining;
@@ -3171,6 +3209,7 @@ void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
   return;
 }
 
+
 /* Address: 0x00505E60.
    Ownership: world/terrain/grid.
    Purpose: Performs the reverse interior-cell height relaxation pass without the source sign test, while
@@ -3178,7 +3217,8 @@ void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
    by -0x180 bytes. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Reverse ungated-sign terrain relaxation with the same
    FLD exclusion masks.
 */
-void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
 
 {
   int *piVar1;
@@ -3251,6 +3291,7 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
   return;
 }
 
+
 /* Address: 0x00571090.
    Ownership: world/terrain/grid.
    Purpose: Processes one horizontal field-grid span, updating cell accumulators and refreshing affected
@@ -3258,24 +3299,26 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
    normal returns.
    Cross-module calls: FixedMath_Length2 [core/math/fixed].
 */
-void FieldGrid_ProcessHorizontalSpan
-               (Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
-               FieldGridRadiusUnits radiusUnits,Q12 centerWorldYQ12,Q12 centerWorldXQ12,
-               FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ProcessHorizontalSpan
+          (Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
+          FieldGridRadiusUnits radiusUnits,Q12 centerWorldYQ12,Q12 centerWorldXQ12,
+          FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension FVar1;
   longlong lVar2;
   uint uVar3;
   int iVar4;
-  dword dVar5;
-  int iVar6;
-  int extraout_ECX;
+  int iVar5;
+  dword dVar6;
   int iVar7;
   int iVar8;
   int iVar9;
-  FieldGridCell *pFVar10;
-  int *piVar11;
+  int iVar10;
+  int iVar11;
+  FieldGridCell *pFVar12;
+  int *piVar13;
   FieldGridCell *pFStack_34;
   int *piStack_30;
   int iStack_24;
@@ -3287,73 +3330,78 @@ void FieldGrid_ProcessHorizontalSpan
   if (0x5000 < uVar3) {
     uVar3 = 0x5000;
   }
-  iVar6 = centerWorldXQ12 + uVar3 * -4;
-  iVar7 = centerWorldYQ12 + uVar3 * -4;
-  iVar4 = (int)(iVar6 + 0xfff + uVar3 * 8) >> 0xc;
-  iVar8 = (int)(iVar7 + 0xfff + uVar3 * 8) >> 0xc;
-  iVar6 = iVar6 >> 0xc;
-  if (iVar6 < 0) {
-    iVar6 = 0;
-  }
+  iVar7 = centerWorldXQ12 + uVar3 * -4;
+  iVar8 = centerWorldYQ12 + uVar3 * -4;
+  iVar4 = (int)(iVar7 + 0xfff + uVar3 * 8) >> 0xc;
+  iVar10 = (int)(iVar8 + 0xfff + uVar3 * 8) >> 0xc;
   iVar7 = iVar7 >> 0xc;
   if (iVar7 < 0) {
     iVar7 = 0;
   }
+  iVar8 = iVar8 >> 0xc;
+  if (iVar8 < 0) {
+    iVar8 = 0;
+  }
   if ((int)fieldGrid->gridWidth <= iVar4) {
     iVar4 = fieldGrid->gridWidth - 1;
   }
-  if ((int)fieldGrid->gridHeight <= iVar8) {
-    iVar8 = fieldGrid->gridHeight - 1;
+  if ((int)fieldGrid->gridHeight <= iVar10) {
+    iVar10 = fieldGrid->gridHeight - 1;
   }
-  if ((iVar6 <= iVar4) && (iVar7 <= iVar8)) {
-    iVar6 = iVar7 * fieldGrid->gridWidth + iVar6;
-    iStack_24 = (iVar8 - iVar7) + 1;
-    piVar11 = accumulatorPlane + iVar6;
+  if ((iVar7 <= iVar4) && (iVar8 <= iVar10)) {
+    iVar5 = (iVar4 - iVar7) + 1;
+    iVar7 = iVar8 * fieldGrid->gridWidth + iVar7;
+    iStack_24 = (iVar10 - iVar8) + 1;
+    piVar13 = accumulatorPlane + iVar7;
     FVar1 = fieldGrid->gridWidth;
-    iVar7 = (centerWorldYQ12 >> 0xc) * FVar1 + (centerWorldXQ12 >> 0xc);
-    pFVar10 = fieldGrid->cells + iVar6;
-    iVar4 = fieldGrid->cells[iVar7].worldX;
-    iVar6 = fieldGrid->cells[iVar7].worldY;
-    iVar7 = fieldGrid->cells
+    iVar8 = (centerWorldYQ12 >> 0xc) * FVar1 + (centerWorldXQ12 >> 0xc);
+    pFVar12 = fieldGrid->cells + iVar7;
+    iVar4 = fieldGrid->cells[iVar8].worldX;
+    iVar7 = fieldGrid->cells[iVar8].worldY;
+    iVar8 = fieldGrid->cells
             [(sourceWorldYQ12 >> 0xc) * fieldGrid->gridWidth + (sourceWorldXQ12 >> 0xc)].
             terrainHeight;
-    pFStack_34 = pFVar10;
-    piStack_30 = piVar11;
+    iVar10 = iVar5;
+    pFStack_34 = pFVar12;
+    piStack_30 = piVar13;
     do {
       do {
-        dVar5 = FixedMath_Length2(pFVar10->worldY - iVar6,pFVar10->worldX - iVar4);
-        if (dVar5 <= uVar3 + 1) {
-          iVar9 = (iVar7 + heightDeltaUnits * -0x40) - *piVar11;
+        dVar6 = FixedMath_Length2(pFVar12->worldY - iVar7,pFVar12->worldX - iVar4);
+        if (dVar6 <= uVar3 + 1) {
+          iVar11 = (iVar8 + heightDeltaUnits * -0x40) - *piVar13;
           lVar2 = (longlong)
                   (g_FixedCosQ28
                    [(int)((longlong)
-                          ((((longlong)(int)dVar5 & 0x1ffffffffffffU) >> 0x11) << 0x20 |
-                          (longlong)(int)dVar5 * 0x8000 & 0xffffffffU) / (longlong)(int)(uVar3 + 1))
-                   ] + 0x10000000) * (longlong)iVar9;
-          iVar8 = ((int)((ulonglong)lVar2 >> 0x20) << 3 | (uint)lVar2 >> 0x1d) + *piVar11;
-          if (iVar9 != 0) {
-            if (iVar9 < 0) {
-              if (iVar8 < *piVar11) {
-                *piVar11 = iVar8;
+                          ((((longlong)(int)dVar6 & 0x1ffffffffffffU) >> 0x11) << 0x20 |
+                          (longlong)(int)dVar6 * 0x8000 & 0xffffffffU) / (longlong)(int)(uVar3 + 1))
+                   ] + 0x10000000) * (longlong)iVar11;
+          iVar9 = ((int)((ulonglong)lVar2 >> 0x20) << 3 | (uint)lVar2 >> 0x1d) + *piVar13;
+          if (iVar11 != 0) {
+            if (iVar11 < 0) {
+              if (iVar9 < *piVar13) {
+                *piVar13 = iVar9;
               }
             }
-            else if (*piVar11 < iVar8) {
-              *piVar11 = iVar8;
+            else if (*piVar13 < iVar9) {
+              *piVar13 = iVar9;
             }
           }
         }
-        pFVar10 = pFVar10 + 1;
-        piVar11 = piVar11 + 1;
-      } while (extraout_ECX != 1);
-      piVar11 = piStack_30 + FVar1;
-      pFVar10 = pFStack_34 + FVar1;
+        pFVar12 = pFVar12 + 1;
+        piVar13 = piVar13 + 1;
+        iVar10 = iVar10 + -1;
+      } while (iVar10 != 0);
+      piVar13 = piStack_30 + FVar1;
+      pFVar12 = pFStack_34 + FVar1;
       iStack_24 = iStack_24 + -1;
-      pFStack_34 = pFVar10;
-      piStack_30 = piVar11;
+      iVar10 = iVar5;
+      pFStack_34 = pFVar12;
+      piStack_30 = piVar13;
     } while (iStack_24 != 0);
   }
   return;
 }
+
 
 /* Address: 0x00571250.
    Ownership: world/terrain/grid.
@@ -3361,10 +3409,11 @@ void FieldGrid_ProcessHorizontalSpan
    EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal returns.
    Cross-module calls: FixedMath_Length2 [core/math/fixed].
 */
-void FieldGrid_ProcessVerticalSpan
-               (FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
-               Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAccumulatorValue *accumulatorPlane,
-               FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ProcessVerticalSpan
+          (FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
+          Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAccumulatorValue *accumulatorPlane,
+          FieldGridAsset *fieldGrid)
 
 {
   int iVar1;
@@ -3372,13 +3421,13 @@ void FieldGrid_ProcessVerticalSpan
   longlong lVar3;
   uint uVar4;
   int iVar5;
-  dword dVar6;
-  int iVar7;
-  int extraout_ECX;
+  int iVar6;
+  dword dVar7;
   int iVar8;
   int iVar9;
-  FieldGridCell *pFVar10;
-  int *piVar11;
+  int iVar10;
+  FieldGridCell *pFVar11;
+  int *piVar12;
   FieldGridCell *pFStack_30;
   int *piStack_2c;
   int iStack_24;
@@ -3391,77 +3440,83 @@ void FieldGrid_ProcessVerticalSpan
     uVar4 = 0x5000;
   }
   iVar1 = heightDeltaUnits * -0x40;
-  iVar7 = centerWorldXQ12 + uVar4 * -2;
-  iVar8 = centerWorldYQ12 + uVar4 * -2;
-  iVar5 = (int)(iVar7 + 0xfff + uVar4 * 4) >> 0xc;
-  iVar9 = (int)(iVar8 + 0xfff + uVar4 * 4) >> 0xc;
-  iVar7 = iVar7 >> 0xc;
-  if (iVar7 < 0) {
-    iVar7 = 0;
-  }
+  iVar8 = centerWorldXQ12 + uVar4 * -2;
+  iVar9 = centerWorldYQ12 + uVar4 * -2;
+  iVar5 = (int)(iVar8 + 0xfff + uVar4 * 4) >> 0xc;
+  iVar10 = (int)(iVar9 + 0xfff + uVar4 * 4) >> 0xc;
   iVar8 = iVar8 >> 0xc;
   if (iVar8 < 0) {
     iVar8 = 0;
   }
+  iVar9 = iVar9 >> 0xc;
+  if (iVar9 < 0) {
+    iVar9 = 0;
+  }
   if ((int)fieldGrid->gridWidth <= iVar5) {
     iVar5 = fieldGrid->gridWidth - 1;
   }
-  if ((int)fieldGrid->gridHeight <= iVar9) {
-    iVar9 = fieldGrid->gridHeight - 1;
+  if ((int)fieldGrid->gridHeight <= iVar10) {
+    iVar10 = fieldGrid->gridHeight - 1;
   }
-  if ((iVar7 <= iVar5) && (iVar8 <= iVar9)) {
-    iVar7 = iVar8 * fieldGrid->gridWidth + iVar7;
-    iStack_24 = (iVar9 - iVar8) + 1;
-    piVar11 = accumulatorPlane + iVar7;
+  if ((iVar8 <= iVar5) && (iVar9 <= iVar10)) {
+    iVar6 = (iVar5 - iVar8) + 1;
+    iVar8 = iVar9 * fieldGrid->gridWidth + iVar8;
+    iStack_24 = (iVar10 - iVar9) + 1;
+    piVar12 = accumulatorPlane + iVar8;
     FVar2 = fieldGrid->gridWidth;
-    iVar8 = (centerWorldYQ12 >> 0xc) * FVar2 + (centerWorldXQ12 >> 0xc);
-    pFVar10 = fieldGrid->cells + iVar7;
-    iVar5 = fieldGrid->cells[iVar8].worldX;
-    iVar7 = fieldGrid->cells[iVar8].worldY;
-    pFStack_30 = pFVar10;
-    piStack_2c = piVar11;
+    iVar9 = (centerWorldYQ12 >> 0xc) * FVar2 + (centerWorldXQ12 >> 0xc);
+    pFVar11 = fieldGrid->cells + iVar8;
+    iVar5 = fieldGrid->cells[iVar9].worldX;
+    iVar8 = fieldGrid->cells[iVar9].worldY;
+    iVar9 = iVar6;
+    pFStack_30 = pFVar11;
+    piStack_2c = piVar12;
     do {
       do {
-        dVar6 = FixedMath_Length2(pFVar10->worldY - iVar7,pFVar10->worldX - iVar5);
-        if (dVar6 <= uVar4 + 1) {
+        dVar7 = FixedMath_Length2(pFVar11->worldY - iVar8,pFVar11->worldX - iVar5);
+        if (dVar7 <= uVar4 + 1) {
           lVar3 = (longlong)
                   (g_FixedCosQ28
                    [(int)((longlong)
-                          ((((longlong)(int)dVar6 & 0x1ffffffffffffU) >> 0x11) << 0x20 |
-                          (longlong)(int)dVar6 * 0x8000 & 0xffffffffU) / (longlong)(int)(uVar4 + 1))
+                          ((((longlong)(int)dVar7 & 0x1ffffffffffffU) >> 0x11) << 0x20 |
+                          (longlong)(int)dVar7 * 0x8000 & 0xffffffffU) / (longlong)(int)(uVar4 + 1))
                    ] + 0x10000000) * (longlong)iVar1;
-          iVar8 = ((int)((ulonglong)lVar3 >> 0x20) << 3 | (uint)lVar3 >> 0x1d) + *piVar11;
+          iVar10 = ((int)((ulonglong)lVar3 >> 0x20) << 3 | (uint)lVar3 >> 0x1d) + *piVar12;
           if (iVar1 < 0) {
-            if (iVar8 < iVar1) {
-              iVar8 = iVar1;
+            if (iVar10 < iVar1) {
+              iVar10 = iVar1;
             }
           }
-          else if (iVar1 < iVar8) {
-            iVar8 = iVar1;
+          else if (iVar1 < iVar10) {
+            iVar10 = iVar1;
           }
-          *piVar11 = iVar8;
+          *piVar12 = iVar10;
         }
-        pFVar10 = pFVar10 + 1;
-        piVar11 = piVar11 + 1;
-      } while (extraout_ECX != 1);
-      piVar11 = piStack_2c + FVar2;
-      pFVar10 = pFStack_30 + FVar2;
+        pFVar11 = pFVar11 + 1;
+        piVar12 = piVar12 + 1;
+        iVar9 = iVar9 + -1;
+      } while (iVar9 != 0);
+      piVar12 = piStack_2c + FVar2;
+      pFVar11 = pFStack_30 + FVar2;
       iStack_24 = iStack_24 + -1;
-      pFStack_30 = pFVar10;
-      piStack_2c = piVar11;
+      iVar9 = iVar6;
+      pFStack_30 = pFVar11;
+      piStack_2c = piVar12;
     } while (iStack_24 != 0);
   }
   return;
 }
+
 
 /* Address: 0x005713E0.
    Ownership: world/terrain/grid.
    Purpose: Applies one bounded field-grid cell transition and updates the associated runtime flags. EAX, ECX, and
    EDX are preserved or incidental caller state and are not synthetic parameters or normal returns.
 */
-void FieldGrid_ApplySingleCellTransition
-               (FieldGridTransitionValue transitionValue,Q12 worldYQ12,Q12 worldXQ12,
-               FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplySingleCellTransition
+          (FieldGridTransitionValue transitionValue,Q12 worldYQ12,Q12 worldXQ12,
+          FieldGridAsset *fieldGrid)
 
 {
   int gridRowIndex;
@@ -3477,13 +3532,15 @@ void FieldGrid_ApplySingleCellTransition
   return;
 }
 
+
 /* Address: 0x00571860.
    Ownership: world/terrain/grid.
    Purpose: Applies one rectangular field-grid transition through the established horizontal and vertical span
    helpers. EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal
    returns.
 */
-void FieldGrid_ApplyRectangularTransition(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyRectangularTransition(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   Q12 *pQVar1;
@@ -3512,33 +3569,40 @@ void FieldGrid_ApplyRectangularTransition(Q12 worldYQ12,Q12 worldXQ12,FieldGridA
   return;
 }
 
+
 /* Address: 0x004FEA50.
    Ownership: world/terrain/grid.
    Purpose: Transforms world-plane coordinates into signed Q12 grid coordinates. EAX returns columnQ12 and EDX
    returns rowQ12. The executable uses the constants 0x001C6E9C and -0x0020C8CC for the isometric inverse
    transform.
 */
-qword FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
+FieldGridCoordinatesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx_mm0
+FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
 
 {
   uint gridHalfRowCoordinateQ12;
+  FieldGridCoordinatesEaxEdx8 FVar1;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
        (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  return CONCAT44(gridHalfRowCoordinateQ12 * 2,
-                  ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
-                  (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12);
+  FVar1.rowQ12 = gridHalfRowCoordinateQ12 * 2;
+  FVar1.columnQ12 =
+       ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
+       (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12;
+  return FVar1;
 }
+
 
 /* Address: 0x00571FE0.
    Ownership: world/terrain/grid.
    Purpose: EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal
    returns.
 */
-void FieldGrid_ApplyMaskedRegionCore
-               (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 worldYQ12,
-               Q12 worldXQ12,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGrid_ApplyMaskedRegionCore
+          (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 worldYQ12,Q12 worldXQ12,
+          FieldGridAsset *fieldGrid)
 
 {
   int gridRowIndex;
@@ -3554,6 +3618,7 @@ void FieldGrid_ApplyMaskedRegionCore
   return;
 }
 
+
 /* Address: 0x005052E0.
    Ownership: world/terrain/grid.
    Purpose: Uses the six neighboring cell positions and heights to derive fixed-point normal directions for both
@@ -3561,14 +3626,11 @@ void FieldGrid_ApplyMaskedRegionCore
    preserved or incidental caller state and are not synthetic parameters or normal returns.
    Cross-module calls: FixedMath_VectorToAngles3Regs [core/math/fixed].
 */
-void FieldGridCell_RecomputeTriangleNormalAngles
-               (FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridCell_RecomputeTriangleNormalAngles
+          (FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  int extraout_EDX;
-  int extraout_EDX_00;
   int iVar1;
   int iVar2;
   int iVar3;
@@ -3576,58 +3638,61 @@ void FieldGridCell_RecomputeTriangleNormalAngles
   int iVar5;
   int iVar6;
   int iVar7;
+  FixedMathVectorAnglesRegs8 FVar8;
   
   iVar1 = cell[1].terrainHeight - cell->terrainHeight;
-  iVar2 = *(int *)(cell->runtime58_6F + rowStrideBytes + -0x10) - cell->terrainHeight;
+  iVar2 = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - cell->terrainHeight;
   iVar3 = *(int *)((int)cell + (0x48 - rowStrideBytes)) - cell->terrainHeight;
   iVar4 = cell[-1].terrainHeight - cell->terrainHeight;
-  iVar5 = *(int *)(cell->runtime00_07 + rowStrideBytes + -0x38) - cell->terrainHeight;
+  iVar5 = *(int *)(cell->runtime0C_3F + rowStrideBytes + -0x44) - cell->terrainHeight;
   iVar6 = *(int *)((int)cell + (200 - rowStrideBytes)) - cell->terrainHeight;
-  FixedMath_VectorToAngles3Regs
-            (0xc00000,((((-((*(int *)(cell->runtime58_6F + rowStrideBytes + -0x14) - cell->worldY) *
-                           iVar2) - (cell[1].worldY - cell->worldY) * iVar1) -
-                        (*(int *)((int)cell + (0x44 - rowStrideBytes)) - cell->worldY) * iVar3) -
-                       (cell[-1].worldY - cell->worldY) * iVar4) -
-                      (*(int *)(cell->runtime00_07 + rowStrideBytes + -0x3c) - cell->worldY) * iVar5
-                      ) - (*(int *)((int)cell + (0xc4 - rowStrideBytes)) - cell->worldY) * iVar6,
-             ((((-((*(int *)(cell->runtime58_6F + rowStrideBytes + -0x18) - cell->worldX) * iVar2) -
-                (cell[1].worldX - cell->worldX) * iVar1) -
-               (*(int *)((int)cell + (0x40 - rowStrideBytes)) - cell->worldX) * iVar3) -
-              (cell[-1].worldX - cell->worldX) * iVar4) -
-             (*(int *)(cell->runtime00_07 + rowStrideBytes + -0x40) - cell->worldX) * iVar5) -
-             (*(int *)((int)cell + (0xc0 - rowStrideBytes)) - cell->worldX) * iVar6);
-  cell->triangle0NormalAngles = extraout_ECX | extraout_EDX << 0x10;
+  FVar8 = FixedMath_VectorToAngles3Regs
+                    (0xc00000,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x1c) -
+                                    cell->worldY) * iVar2) - (cell[1].worldY - cell->worldY) * iVar1
+                                 ) - (*(int *)((int)cell + (0x44 - rowStrideBytes)) - cell->worldY)
+                                     * iVar3) - (cell[-1].worldY - cell->worldY) * iVar4) -
+                              (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x48) - cell->worldY)
+                              * iVar5) -
+                              (*(int *)((int)cell + (0xc4 - rowStrideBytes)) - cell->worldY) * iVar6
+                     ,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x20) - cell->worldX) *
+                           iVar2) - (cell[1].worldX - cell->worldX) * iVar1) -
+                        (*(int *)((int)cell + (0x40 - rowStrideBytes)) - cell->worldX) * iVar3) -
+                       (cell[-1].worldX - cell->worldX) * iVar4) -
+                      (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * iVar5
+                      ) - (*(int *)((int)cell + (0xc0 - rowStrideBytes)) - cell->worldX) * iVar6);
+  cell->triangle0NormalAngles = FVar8.ecx | FVar8.edx << 0x10;
   iVar1 = -rowStrideBytes;
   iVar2 = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  iVar3 = ((*(int *)(cell->runtime58_6F + rowStrideBytes + -0x10) +
-           *(int *)(cell->runtime58_6F + rowStrideBytes + -0xc)) - cell->terrainHeight) -
+  iVar3 = ((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) +
+           *(int *)(cell->runtime60_6B + rowStrideBytes + -0x14)) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
   iVar4 = ((*(int *)((int)cell + iVar1 + 0x48) + *(int *)((int)cell + iVar1 + 0x4c)) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
   iVar5 = ((cell[-1].terrainHeight + cell[-1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  iVar6 = ((*(int *)(cell->runtime00_07 + rowStrideBytes + -0x38) +
-           *(int *)(cell->runtime00_07 + rowStrideBytes + -0x34)) - cell->terrainHeight) -
+  iVar6 = ((*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x44) +
+           *(int *)(cell->runtime0C_3F + rowStrideBytes + -0x40)) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
   iVar7 = ((*(int *)((int)cell + iVar1 + 200) + *(int *)((int)cell + iVar1 + 0xcc)) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
-  FixedMath_VectorToAngles3Regs
-            (0xc00000,((((-((*(int *)(cell->runtime58_6F + rowStrideBytes + -0x14) - cell->worldY) *
-                           iVar3) - (cell[1].worldY - cell->worldY) * iVar2) -
-                        (*(int *)((int)cell + iVar1 + 0x44) - cell->worldY) * iVar4) -
-                       (cell[-1].worldY - cell->worldY) * iVar5) -
-                      (*(int *)(cell->runtime00_07 + rowStrideBytes + -0x3c) - cell->worldY) * iVar6
-                      ) - (*(int *)((int)cell + iVar1 + 0xc4) - cell->worldY) * iVar7,
-             ((((-((*(int *)(cell->runtime58_6F + rowStrideBytes + -0x18) - cell->worldX) * iVar3) -
-                (cell[1].worldX - cell->worldX) * iVar2) -
-               (*(int *)((int)cell + iVar1 + 0x40) - cell->worldX) * iVar4) -
-              (cell[-1].worldX - cell->worldX) * iVar5) -
-             (*(int *)(cell->runtime00_07 + rowStrideBytes + -0x40) - cell->worldX) * iVar6) -
-             (*(int *)((int)cell + iVar1 + 0xc0) - cell->worldX) * iVar7);
-  cell->triangle1NormalAngles = extraout_ECX_00 | extraout_EDX_00 << 0x10;
+  FVar8 = FixedMath_VectorToAngles3Regs
+                    (0xc00000,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x1c) -
+                                    cell->worldY) * iVar3) - (cell[1].worldY - cell->worldY) * iVar2
+                                 ) - (*(int *)((int)cell + iVar1 + 0x44) - cell->worldY) * iVar4) -
+                               (cell[-1].worldY - cell->worldY) * iVar5) -
+                              (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x48) - cell->worldY)
+                              * iVar6) - (*(int *)((int)cell + iVar1 + 0xc4) - cell->worldY) * iVar7
+                     ,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x20) - cell->worldX) *
+                           iVar3) - (cell[1].worldX - cell->worldX) * iVar2) -
+                        (*(int *)((int)cell + iVar1 + 0x40) - cell->worldX) * iVar4) -
+                       (cell[-1].worldX - cell->worldX) * iVar5) -
+                      (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * iVar6
+                      ) - (*(int *)((int)cell + iVar1 + 0xc0) - cell->worldX) * iVar7);
+  cell->triangle1NormalAngles = FVar8.ecx | FVar8.edx << 0x10;
   return;
 }
+
 
 /* Address: 0x00505690.
    Ownership: world/terrain/grid.
@@ -3637,26 +3702,24 @@ void FieldGridCell_RecomputeTriangleNormalAngles
    normal returns.
    Cross-module calls: FixedMath_DirectionFromAnglesQ28Regs [core/math/fixed].
 */
-void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 
 {
-  int extraout_ECX;
   FixedDirectionXZEdxEax8 triangleNormalDirectionXZQ28;
-  undefined4 directionalLightColor;
+  FixedDirectionXyzRegs12 FVar1;
+  PackedArgb32 directionalLightColor;
   
-  triangleNormalDirectionXZQ28 =
-       FixedMath_DirectionFromAnglesQ28Regs
-                 ((int)cell->triangle0NormalAngles >> 0x10,cell->triangle0NormalAngles & 0xffff);
+  FVar1 = FixedMath_DirectionFromAnglesQ28Regs
+                    ((int)cell->triangle0NormalAngles >> 0x10,cell->triangle0NormalAngles & 0xffff);
   directionalLightColor =
        (&g_TerrainDirectionalLightColorLut)
-       [(int)((ulonglong)
-              ((longlong)(int)triangleNormalDirectionXZQ28 * (longlong)g_TerrainLightDirectionX) >>
-             0x20) +
-        (int)((ulonglong)((longlong)extraout_ECX * (longlong)g_TerrainLightDirectionY) >> 0x20) +
-        (int)((ulonglong)
-              ((longlong)(int)(triangleNormalDirectionXZQ28 >> 0x20) *
-              (longlong)g_TerrainLightDirectionZ) >> 0x20) >> 0x10];
-  *(undefined4 *)(cell->runtime58_6F + 4) = g_TerrainDirectionalLightSecondaryColor;
-  *(undefined4 *)cell->runtime58_6F = directionalLightColor;
+       [(int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)g_TerrainLightDirectionX) >> 0x20) +
+        (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)g_TerrainLightDirectionY) >> 0x20) +
+        (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)g_TerrainLightDirectionZ) >> 0x20) >>
+        0x10];
+  cell->secondarySurfaceDirectionalLightColor5C = g_TerrainDirectionalLightSecondaryColor;
+  cell->groundDirectionalLightColor58 = directionalLightColor;
   return;
 }
+

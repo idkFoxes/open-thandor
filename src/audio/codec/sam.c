@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/audio/codec/sam.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/audio/codec/sam.h>
 
 /* Implementation ownership: audio/codec/sam. */
@@ -8,7 +15,7 @@
 */
 PreservedEaxEdxRegisterPair64 __fastcall
 SoundCoefficientTransform_ApplyCosineBanksMmx
-          (undefined4 preservedIncomingEcx,undefined4 preservedIncomingEdx,short *outputSamples,
+          (dword preservedIncomingEcx,dword preservedIncomingEdx,short *outputSamples,
           SoundCoefficientBlock256 *coefficientBlock)
 
 {
@@ -938,6 +945,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
   return CONCAT44(preservedIncomingEdx,in_EAX);
 }
 
+
 /* Address: 0x00418560.
    Ownership: audio/codec/sam.
    Purpose: Converts one 256-coefficient block into one 0x400-byte interleaved stereo 16-bit PCM block with the
@@ -947,7 +955,8 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
    SoundSample_DecodeCoefficientBlockToMonoPcmMmx (L27864) is not ported (same structure, SFX path; out of V3
    scope).
 */
-void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients)
+void __thandor_void_preserve_eax_ecx_edx
+SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients)
 
 {
   undefined8 uVar1;
@@ -1867,12 +1876,14 @@ void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *co
   return;
 }
 
+
 /* Address: 0x004193D0.
    Ownership: audio/codec/sam.
    Purpose: Converts one 256-coefficient block into one 0x200-byte mono 16-bit PCM block with the sibling legacy
    MMX transform path.
 */
-void SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coefficients)
+void __thandor_void_preserve_eax_ecx_edx
+SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coefficients)
 
 {
   short *psVar1;
@@ -2857,6 +2868,97 @@ void SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *
   return;
 }
 
+
+/* Address: 0x0041A320.
+   Ownership: audio/codec/sam.
+   Purpose: Encodes a packed sound-sample coefficient block.
+*/
+dword __thandor_eax_preserve_ecx_edx
+SoundSample_EncodePackedCoefficientBlock(byte *encodedBlock,short *inputCoefficients)
+
+{
+  uint uVar1;
+  byte bVar2;
+  uint uVar3;
+  uint uVar4;
+  uint *puVar5;
+  int iStack_18;
+  
+  iStack_18 = 0x100;
+  uVar3 = 0;
+  uVar4 = 0;
+  puVar5 = (uint *)encodedBlock;
+  do {
+    uVar1 = (uint)*inputCoefficients;
+    if (((int)uVar1 < -1) || (1 < (int)uVar1)) {
+      bVar2 = (byte)uVar3;
+      if (((int)uVar1 < -4) || (3 < (int)uVar1)) {
+        if (((int)uVar1 < -0x20) || (0x1f < (int)uVar1)) {
+          if ((int)uVar1 < 0x800) {
+            if ((int)uVar1 < -0x800) {
+              uVar1 = 0x800;
+            }
+            else {
+              uVar1 = uVar1 & 0xfff;
+            }
+          }
+          else {
+            uVar1 = 0x7ff;
+          }
+          uVar3 = uVar3 + 0xf;
+          uVar4 = uVar4 | uVar1 * 8 + 7 << (bVar2 & 0x1f);
+        }
+        else {
+          uVar3 = uVar3 + 9;
+          uVar4 = uVar4 | (uVar1 & 0x3f) * 8 + 3 << (bVar2 & 0x1f);
+        }
+      }
+      else {
+        uVar3 = uVar3 + 5;
+        uVar4 = uVar4 | (uVar1 & 7) * 4 + 1 << (bVar2 & 0x1f);
+      }
+    }
+    else {
+      uVar3 = uVar3 + 1;
+    }
+    if (uVar3 < 0x18) {
+      if (uVar3 < 0x10) {
+        if (7 < uVar3) {
+          *(char *)puVar5 = (char)uVar4;
+          uVar4 = uVar4 >> 8;
+          puVar5 = (uint *)((int)puVar5 + 1);
+          uVar3 = uVar3 - 8;
+        }
+      }
+      else {
+        *(short *)puVar5 = (short)uVar4;
+        uVar4 = uVar4 >> 0x10;
+        puVar5 = (uint *)((int)puVar5 + 2);
+        uVar3 = uVar3 - 0x10;
+      }
+    }
+    else {
+      *puVar5 = uVar4;
+      uVar4 = uVar4 >> 0x18;
+      puVar5 = (uint *)((int)puVar5 + 3);
+      uVar3 = uVar3 - 0x18;
+    }
+    inputCoefficients = inputCoefficients + 1;
+    iStack_18 = iStack_18 + -1;
+  } while (iStack_18 != 0);
+  if (uVar3 < 8) {
+    if (uVar3 != 0) {
+      *(char *)puVar5 = (char)uVar4;
+      puVar5 = (uint *)((int)puVar5 + 1);
+    }
+  }
+  else {
+    *(short *)puVar5 = (short)uVar4;
+    puVar5 = (uint *)((int)puVar5 + 2);
+  }
+  return ((uint)((int)puVar5 + 3U) & 0xfffffffc) - (int)encodedBlock;
+}
+
 /* Address: 0x0041A430.
    Ownership: audio/codec/sam.
    Purpose: Decodes one variable-length packed SAM block into 256 signed 16-bit coefficients and returns the
@@ -2864,7 +2966,8 @@ void SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *
    consumed pointer aligns DOWN to 4 (& 0xFFFFFFFC) — the alignment direction that broke the first Python port.
    Out-of-bounds refill reads behave as zero (portable decoder matches).
 */
-dword SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *encodedBlock)
+dword __thandor_eax_preserve_ecx_edx
+SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *encodedBlock)
 
 {
   ushort uVar1;
@@ -2934,3 +3037,4 @@ dword SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *e
   }
   return ((uint)puVar7 & 0xfffffffc) - (int)encodedBlock;
 }
+

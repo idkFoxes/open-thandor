@@ -1,6 +1,6 @@
 # Call graph: `core/math/fixed`
 
-[Source](../../../../src/core/math/fixed.c) · [Header](../../../../include/thandor/core/math/fixed.h) · [Graphviz](fixed.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-math-fixed)
+[Source](../../../../src/core/math/fixed.c) · [Header](../../../../include/thandor/core/math/fixed.h) · [Graphviz](fixed.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-math-fixed) · [Developer notes](../../../../CHANGELOG.md#module-core-math-fixed) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-math-fixed)
 
 36 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `gameplay/ai/combat`
 
-[Source](../../../../src/gameplay/ai/combat.c) · [Header](../../../../include/thandor/gameplay/ai/combat.h) · [Graphviz](combat.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-combat)
+[Source](../../../../src/gameplay/ai/combat.c) · [Header](../../../../include/thandor/gameplay/ai/combat.h) · [Graphviz](combat.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-combat) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-ai-combat)
 
 4 functions. Addresses are current V523 executable VAs.
 

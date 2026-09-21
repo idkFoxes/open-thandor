@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/memory/allocator.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/memory/allocator.h>
 
 /* Implementation ownership: core/memory/allocator. */
@@ -9,18 +16,16 @@
    Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
 
 {
   EntityPathingPriorityPair *pEVar1;
-  undefined4 in_EAX;
-  undefined4 in_EDX;
   uint parentSearchIndex;
   EntityPathingPriorityPair *currentHeapPair;
-  undefined4 *parentHeapPair;
+  sdword parentPriority;
   int childPriority;
-  undefined *childEntity;
+  GameEntityRuntime *childEntity;
   
   parentSearchIndex = heapSize - 2;
   currentHeapPair = heapBase + heapSize + -1;
@@ -28,7 +33,9 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
     do {
       pEVar1 = heapBase + (parentSearchIndex >> 1);
       childPriority = currentHeapPair->priority;
-      if (childPriority <= pEVar1->priority) break;
+      if (childPriority <= pEVar1->priority) {
+        return;
+      }
       currentHeapPair->priority = pEVar1->priority;
       pEVar1->priority = childPriority;
       childEntity = currentHeapPair->entity;
@@ -38,8 +45,9 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
       currentHeapPair = pEVar1;
     } while (-1 < (int)parentSearchIndex);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00536930.
    Ownership: core/memory/allocator.
@@ -48,16 +56,17 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
+void __thandor_void_preserve_eax_ecx_edx
+PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
 
 {
   int selectedChildPriority;
   uint selectedChildIndex;
-  undefined *selectedChildEntity;
+  GameEntityRuntime *selectedChildEntity;
   EntityPathingPriorityPair *currentHeapPair;
   int leftChildBaseIndex;
   sdword displacedParentPriority;
-  undefined *displacedParentEntity;
+  GameEntityRuntime *displacedParentEntity;
   
   selectedChildIndex = 0;
   currentHeapPair = heapBase;
@@ -91,6 +100,7 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
   return;
 }
 
+
 /* Address: 0x00547D20.
    Ownership: core/memory/allocator.
    Purpose: Scans recordCount consecutive records of exactly 0x40 dwords and compares each against targetRecord. CF
@@ -98,8 +108,9 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
    Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void DwordBlock64Array_ContainsExactRecordCf
-               (DwordBlockRecordCount recordCount,dword *recordArray,dword *candidateRecord)
+bool __thandor_cf_preserve_eax_ecx_edx
+DwordBlock64Array_ContainsExactRecordCf
+          (DwordBlockRecordCount recordCount,dword *recordArray,dword *candidateRecord)
 
 {
   int dwordsRemainingInRecord;
@@ -120,16 +131,17 @@ void DwordBlock64Array_ContainsExactRecordCf
       candidateRecordCursor = candidateRecordCursor + 1;
     } while ((bool)in_ZF);
     if ((bool)in_ZF) {
-      return;
+      return false;
     }
     recordArray = sourceRecordCursor + dwordsRemainingInRecord;
     recordCount = recordCount + -1;
     in_ZF = 0;
     if (recordCount == 0) {
-      return;
+      return true;
     }
   } while( true );
 }
+
 
 /* Address: 0x005863C0.
    Ownership: core/memory/allocator.
@@ -164,21 +176,23 @@ void * __cdecl ArenaHeap_Init(void)
       return rawArenaAllocation;
     }
   }
-                    
-  FatalError_Exit();
+                    // WARNING: Subroutine does not return
+  FatalError_Exit(0x407d84,true);
 }
+
 
 /* Address: 0x00586470.
    Ownership: core/memory/allocator.
    Purpose: Handles arena heap shutdown.
 */
-void __cdecl ArenaHeap_Shutdown(void)
+void __thandor_preserve_eax ArenaHeap_Shutdown(void)
 
 {
   HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
   HeapDestroy(g_Arena.processHeap);
   return;
 }
+
 
 /* Address: 0x005864A0.
    Ownership: core/memory/allocator.
@@ -187,7 +201,7 @@ void __cdecl ArenaHeap_Shutdown(void)
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void * ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
+ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
 
 {
   ArenaBlockHeader *pAVar1;
@@ -195,6 +209,10 @@ void * ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
   ArenaBlockHeader *pAVar3;
   dword dVar4;
   ArenaBlockHeader *pAVar5;
+  ArenaAllocEaxCf5 AVar6;
+  ArenaAllocEaxCf5 AVar7;
+  ArenaAllocEaxCf5 AVar8;
+  ArenaAllocEaxCf5 AVar9;
   
   dVar4 = 1;
   uVar2 = bytes + 0x1f & 0xffffffe0;
@@ -202,7 +220,9 @@ void * ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
   do {
     if (pAVar5->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (pAVar5->stateMagic != ARENA_BLOCK_FREE) {
-        return &k_LowAddressLiteral00000013;
+        AVar7.carry = true;
+        AVar7.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+        return AVar7;
       }
       if (dVar4 < pAVar5->payloadSize) {
         dVar4 = pAVar5->payloadSize;
@@ -210,7 +230,9 @@ void * ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
       if (uVar2 <= pAVar5->payloadSize) {
         pAVar5->stateMagic = ARENA_BLOCK_ALLOCATED;
         if (pAVar5->payloadSize <= uVar2 + 0x40) {
-          return pAVar5 + 1;
+          AVar8.carry = false;
+          AVar8.eax = (dword)(pAVar5 + 1);
+          return AVar8;
         }
         dVar4 = pAVar5->payloadSize;
         pAVar5->payloadSize = uVar2;
@@ -225,16 +247,21 @@ void * ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
         if (pAVar1 != (ArenaBlockHeader *)0xffffffff) {
           pAVar1->previous = pAVar3;
         }
-        return pAVar5 + 1;
+        AVar9.carry = false;
+        AVar9.eax = (dword)(pAVar5 + 1);
+        return AVar9;
       }
     }
     pAVar5 = pAVar5->next;
     if (pAVar5 == (ArenaBlockHeader *)0xffffffff) {
       (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,dVar4,g_PackageLastErrorPath);
-      return (void *)0x12;
+      AVar6.carry = true;
+      AVar6.eax = 0x12;
+      return AVar6;
     }
   } while( true );
 }
+
 
 /* Address: 0x00586570.
    Ownership: core/memory/allocator.
@@ -265,11 +292,14 @@ dword __cdecl ArenaHeap_QueryFreeBytes(void)
    Ownership: core/memory/allocator.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
 */
-void ArenaHeap_Free(void *memory)
+ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
 
 {
   int iVar1;
+  uint in_EAX;
   int *freedBlockHeader;
+  ArenaFreeEaxCf5 AVar2;
+  ArenaFreeEaxCf5 AVar3;
   int *adjacentFreeBlock;
   int nextBlockAddress;
   int *previousAdjacentBlockHeader;
@@ -277,7 +307,9 @@ void ArenaHeap_Free(void *memory)
   if (memory != (void *)0x0) {
     freedBlockHeader = (int *)((int)memory + -0x20);
     if (*(int *)((int)memory + -0x1c) != 0x5a5a5a5a) {
-      return;
+      AVar3.carry = true;
+      AVar3.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+      return AVar3;
     }
     *(undefined4 *)((int)memory + -0x1c) = 0xa5a5a5a5;
     adjacentFreeBlock = *(int **)((int)memory + -0x18);
@@ -300,49 +332,67 @@ void ArenaHeap_Free(void *memory)
       }
     }
   }
-  return;
+  AVar2.carry = false;
+  AVar2.eax = in_EAX;
+  return AVar2;
 }
+
 
 /* Address: 0x00586640.
    Ownership: core/memory/allocator.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Marks the largest
    free block allocated and returns its payload pointer in EAX.
 */
-void * __cdecl ArenaHeap_AllocLargestFreeBlock(void)
+ArenaLargestAllocationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+ArenaHeap_AllocLargestFreeBlock(void)
 
 {
   dword largestFreePayloadBytes;
   ArenaBlockHeader *blockCursor;
-  ArenaBlockHeader *unaff_EDI;
+  ArenaBlockHeader *largestFreeBlock;
+  ArenaLargestAllocationEaxEcxCf9 AVar1;
+  ArenaLargestAllocationEaxEcxCf9 AVar2;
+  ArenaLargestAllocationEaxEcxCf9 AVar3;
   
   largestFreePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
-        return &k_LowAddressLiteral00000013;
+        AVar2.blockSizeOrSentinel = 0xffffffff;
+        AVar2.allocationOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+        AVar2.carry = true;
+        return AVar2;
       }
       if (largestFreePayloadBytes < blockCursor->payloadSize) {
         largestFreePayloadBytes = blockCursor->payloadSize;
-        unaff_EDI = blockCursor;
+        largestFreeBlock = blockCursor;
       }
     }
     blockCursor = blockCursor->next;
   } while (blockCursor != (ArenaBlockHeader *)0xffffffff);
   if (largestFreePayloadBytes == 0) {
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
-    return (void *)0x12;
+    AVar1.carry = true;
+    AVar1.allocationOrError = 0x12;
+    AVar1.blockSizeOrSentinel = 0;
+    return AVar1;
   }
-  unaff_EDI->stateMagic = ARENA_BLOCK_ALLOCATED;
-  return unaff_EDI + 1;
+  largestFreeBlock->stateMagic = ARENA_BLOCK_ALLOCATED;
+  AVar3.blockSizeOrSentinel = largestFreePayloadBytes;
+  AVar3.allocationOrError = (dword)(largestFreeBlock + 1);
+  AVar3.carry = false;
+  return AVar3;
 }
+
 
 /* Address: 0x005866B0.
    Ownership: core/memory/allocator.
    Purpose: Arguments are (newSize, memory). EAX has no stable success value. ABI: CF clear means success. CF set
    means failure and EAX contains an engine error code. Typed parameters: p0 newSize→ArenaPayloadByteCount_V331.
 */
-void ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
+ArenaShrinkEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
   uint uVar1;
@@ -353,11 +403,14 @@ void ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   int *piVar6;
   int iVar7;
   uint *puVar8;
+  ArenaShrinkEaxCf5 AVar9;
+  ArenaShrinkEaxCf5 AVar10;
   
   puVar8 = (uint *)((int)memory + -0x20);
   uVar5 = newSize + 0x1f & 0xffffffe0;
   if ((*(int *)((int)memory + -0x1c) == 0x5a5a5a5a) && (uVar5 <= *puVar8)) {
-    if (uVar5 + 0x40 < *puVar8) {
+    piVar6 = (int *)(uVar5 + 0x40);
+    if (piVar6 < (int *)*puVar8) {
       uVar1 = *puVar8;
       *puVar8 = uVar5;
       iVar7 = uVar1 - (uVar5 + 0x20);
@@ -378,10 +431,15 @@ void ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
         }
       }
     }
-    return;
+    AVar9.carry = false;
+    AVar9.scratchOrError = (dword)piVar6;
+    return AVar9;
   }
-  return;
+  AVar10.carry = true;
+  AVar10.scratchOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+  return AVar10;
 }
+
 
 /* Address: 0x00586750.
    Ownership: core/memory/allocator.
@@ -390,18 +448,27 @@ void ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
    complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
    remain unchanged.
 */
-void * ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
+ArenaLinearReserveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 
 {
+  byte *pbVar1;
   byte *reservedLinearBase;
+  ArenaLinearReserveEaxCf5 AVar2;
+  ArenaLinearReserveEaxCf5 AVar3;
   
-  reservedLinearBase = g_Arena.linearCursor;
+  pbVar1 = g_Arena.linearCursor;
   if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
     g_Arena.linearCursor = g_Arena.linearCursor + bytes;
-    return reservedLinearBase;
+    AVar2.carry = false;
+    AVar2.baseOrError = (dword)pbVar1;
+    return AVar2;
   }
-  return (void *)0x14;
+  AVar3.carry = true;
+  AVar3.baseOrError = 0x14;
+  return AVar3;
 }
+
 
 /* Address: 0x005873A0.
    Ownership: core/memory/allocator.
@@ -410,7 +477,7 @@ void * ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
+void __thandor_void_preserve_eax_ecx_edx Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
 
 {
   uint dwordsRemaining;
@@ -421,3 +488,4 @@ void Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
   }
   return;
 }
+

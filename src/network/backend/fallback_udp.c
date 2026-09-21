@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/network/backend/fallback_udp.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/network/backend/fallback_udp.h>
 
 /* Implementation ownership: network/backend/fallback_udp. */
@@ -7,11 +14,17 @@
    Purpose: Default implementation for network backend slot 0. It returns EAX 0x2B, sets CF, consumes one dword
    argument, and performs no other work.
 */
-dword NetworkBackendFallback_Slot0_ReturnError43Cf(dword argument)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkBackendFallback_Slot0_ReturnError43Cf(dword argument)
 
 {
-  return 0x2b;
+  StatusValueEaxCf5 SVar1;
+  
+  SVar1.carry = true;
+  SVar1.valueOrError = 0x2b;
+  return SVar1;
 }
+
 
 /* Address: 0x0041A590.
    Ownership: network/backend/fallback_udp.
@@ -28,11 +41,17 @@ void __cdecl NetworkBackendFallback_Slot1_NoOp(void)
    Purpose: Default implementation for network backend slot 2. It returns EAX 0x2B, sets CF, consumes one dword
    argument, and performs no other work.
 */
-dword NetworkBackendFallback_Slot2_ReturnError43Cf(dword argument)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkBackendFallback_Slot2_ReturnError43Cf(dword argument)
 
 {
-  return 0x2b;
+  StatusValueEaxCf5 SVar1;
+  
+  SVar1.carry = true;
+  SVar1.valueOrError = 0x2b;
+  return SVar1;
 }
+
 
 /* Address: 0x0041A5B0.
    Ownership: network/backend/fallback_udp.
@@ -74,12 +93,14 @@ void NetworkBackendFallback_Slot5_ThreeArgSuccessCf
    Purpose: Default two-argument implementation for network backend slot 6. It sets CF and performs no backend
    operation.
 */
-void NetworkBackendFallback_Slot6_TwoArgFailureCf
-               (UiTransferEndpointDescriptor *endpoint,char *endpointText)
+bool __thandor_cf_preserve_eax_ecx_edx
+NetworkBackendFallback_Slot6_TwoArgFailureCf
+          (UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
 {
-  return;
+  return true;
 }
+
 
 /* Address: 0x0041A5F0.
    Ownership: network/backend/fallback_udp.
@@ -100,11 +121,12 @@ void NetworkBackendFallback_Slot7_ClearOutput(char *outputText,WinSockAddress *s
    Ownership: network/backend/fallback_udp.
    Purpose: Deliberate no-op network backend cleanup slot.
 */
-void __cdecl NetworkFallback_NoOpBackendCleanup(void)
+void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void)
 
 {
   return;
 }
+
 
 /* Address: 0x00584E80.
    Ownership: network/backend/fallback_udp.
@@ -112,32 +134,31 @@ void __cdecl NetworkFallback_NoOpBackendCleanup(void)
    local port, applies broadcast/nonblocking/event options, and publishes the active fallback socket. CF reports
    failure and EAX carries engine error 0x2A on setup errors.
 */
-dword NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
+NetworkBackendOpenBindEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
 
 {
   byte bVar1;
   byte *pbVar2;
-  dword socket;
-  NetworkIpv4AddressNetworkOrder NVar3;
-  WinSockHostEnt32 *pWVar4;
-  int iVar5;
-  NetworkIpv4AddressNetworkOrder extraout_EDX;
-  int unaff_EBX;
+  WinSockHostEnt32 *pWVar3;
+  int iVar4;
+  NetworkIpv4AddressNetworkOrder NVar5;
   byte *pbVar6;
   byte *pbVar7;
-  bool bVar8;
+  NetworkBackendOpenBindEaxCf5 NVar8;
+  NetworkBackendOpenBindEaxCf5 NVar9;
+  CommandLineFindOptionEbxCf5 CVar10;
   dword dStack_1c;
   
   dStack_1c = 0xffffffff;
-  socket = (*g_WinSock_socket)(2,2,0x11);
-  if (socket != 0xffffffff) {
-    bVar8 = false;
-    (*g_CommandLineFindOption)(3,(char *)0x584078);
-    NVar3 = extraout_EDX;
-    if (!bVar8) {
-      pbVar6 = (byte *)(unaff_EBX + 4);
+  NVar8.eax = (*g_WinSock_socket)(2,2,0x11);
+  if (NVar8.eax != 0xffffffff) {
+    NVar5 = 0;
+    CVar10 = (*g_CommandLineFindOption)(3,(char *)0x584078);
+    if (!CVar10.carry) {
+      pbVar6 = CVar10.ebx + 4;
       pbVar2 = g_PackageScratchBuffer;
-      if (*(char *)(unaff_EBX + 3) == '\"') {
+      if (CVar10.ebx[3] == 0x22) {
         do {
           pbVar7 = pbVar2;
           bVar1 = *pbVar6;
@@ -151,12 +172,12 @@ dword NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
         } while (bVar1 != 0x22);
         if (*pbVar6 == 0) {
           *pbVar7 = 0;
-          NVar3 = (*g_WinSock_inet_addr)(g_PackageScratchBuffer);
-          if (NVar3 == 0xffffffff) {
-            pWVar4 = (*g_WinSock_gethostbyname)(g_PackageScratchBuffer);
-            NVar3 = 0;
-            if (pWVar4 != (WinSockHostEnt32 *)0x0) {
-              NVar3 = *(NetworkIpv4AddressNetworkOrder *)*pWVar4->addressList;
+          NVar5 = (*g_WinSock_inet_addr)(g_PackageScratchBuffer);
+          if (NVar5 == 0xffffffff) {
+            pWVar3 = (*g_WinSock_gethostbyname)(g_PackageScratchBuffer);
+            NVar5 = 0;
+            if (pWVar3 != (WinSockHostEnt32 *)0x0) {
+              NVar5 = *(NetworkIpv4AddressNetworkOrder *)*pWVar3->addressList;
             }
           }
         }
@@ -165,7 +186,7 @@ dword NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
 NetworkFallback_OpenAndBindUdpSocketCf_ConfigureEndpointAfterOptionalBindAddressResolution:
     g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
          (*g_WinSock_htons)((word)localPort);
-    g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = NVar3;
+    g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = NVar5;
     g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NETWORK_ADDRESS_FAMILY_IPV4;
     g_NetworkFallbackBindEndpoint.zeroPadding[0] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[1] = 0;
@@ -177,13 +198,13 @@ NetworkFallback_OpenAndBindUdpSocketCf_ConfigureEndpointAfterOptionalBindAddress
     g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
-    iVar5 = (*g_WinSock_bind)(socket,&g_NetworkFallbackBindEndpoint,0x10);
-    dStack_1c = socket;
-    if (iVar5 == 0) {
-      iVar5 = (*g_WinSock_setsockopt)(socket,0xffff,0x20,(byte *)0x583ef6,4);
-      if (iVar5 == 0) {
-        iVar5 = (*g_WinSock_ioctlsocket)(socket,0x8004667e,(dword *)0x583ef6);
-        if (iVar5 == 0) {
+    iVar4 = (*g_WinSock_bind)(NVar8.eax,&g_NetworkFallbackBindEndpoint,0x10);
+    dStack_1c = NVar8.eax;
+    if (iVar4 == 0) {
+      iVar4 = (*g_WinSock_setsockopt)(NVar8.eax,0xffff,0x20,(byte *)0x583ef6,4);
+      if (iVar4 == 0) {
+        iVar4 = (*g_WinSock_ioctlsocket)(NVar8.eax,0x8004667e,(dword *)0x583ef6);
+        if (iVar4 == 0) {
           g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder = 0xffffffff;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[1] = 0;
@@ -193,89 +214,111 @@ NetworkFallback_OpenAndBindUdpSocketCf_ConfigureEndpointAfterOptionalBindAddress
           g_NetworkLocalEndpointDescriptor16.zeroPadding[5] = 0;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[6] = 0;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[7] = 0;
-          ram0x00583ef2 = socket;
-          return socket;
+          g_NetworkFallbackSocket = NVar8.eax;
+          NVar8.carry = false;
+          return NVar8;
         }
       }
     }
   }
-  iVar5 = (*g_WinSock_WSAGetLastError)();
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar5,g_PackageLastErrorPath);
+  iVar4 = (*g_WinSock_WSAGetLastError)();
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar4,g_PackageLastErrorPath);
   if (dStack_1c != 0xffffffff) {
     (*g_WinSock_closesocket)(dStack_1c);
   }
-  return 0x2a;
+  NVar9.carry = true;
+  NVar9.eax = 0x2a;
+  return NVar9;
 }
+
 
 /* Address: 0x00585030.
    Ownership: network/backend/fallback_udp.
    Purpose: Fallback network-backend close callback. It atomically replaces the active socket with -1 and closes
    the previous socket when present.
 */
-void __cdecl NetworkFallback_CloseActiveSocket(void)
+void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
 
 {
-  dword socket;
+  NetworkSocketHandle32 socket;
   
-  socket = ram0x00583ef2;
-  if (ram0x00583ef2 != 0xffffffff) {
+  socket = g_NetworkFallbackSocket;
+  if (g_NetworkFallbackSocket != 0xffffffff) {
     LOCK();
-    ram0x00583ef2 = 0xffffffff;
+    g_NetworkFallbackSocket = 0xffffffff;
     UNLOCK();
     (*g_WinSock_closesocket)(socket);
   }
   return;
 }
 
+
 /* Address: 0x00585060.
    Ownership: network/backend/fallback_udp.
    Purpose: Fallback UDP receive callback wrapping recvfrom with a fixed 16-byte source-address length. CF is clear
    on nonnegative Winsock result and set on failure.
 */
-dword NetworkFallback_ReceiveDatagramCf
-                (WinSockAddress *sourceAddress,NetworkByteCount byteCount,byte *buffer)
+NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkFallback_ReceiveDatagramCf
+          (WinSockAddress *sourceAddress,NetworkByteCount byteCount,byte *buffer)
 
 {
   dword receivedByteCount;
+  NetworkBackendReceiveEaxCf5 NVar1;
+  NetworkBackendReceiveEaxCf5 NVar2;
   
   g_NetworkFallbackAddressLength = 0x10;
-  receivedByteCount = ram0x00583ef2;
-  if (ram0x00583ef2 != 0xffffffff) {
+  receivedByteCount = g_NetworkFallbackSocket;
+  if (g_NetworkFallbackSocket != 0xffffffff) {
     receivedByteCount =
          (*g_WinSock_recvfrom)
-                   (ram0x00583ef2,buffer,byteCount,0,sourceAddress,
+                   (g_NetworkFallbackSocket,buffer,byteCount,0,sourceAddress,
                     (int *)&g_NetworkFallbackAddressLength);
     if (-1 < (int)receivedByteCount) {
-      return receivedByteCount;
+      NVar1.carry = false;
+      NVar1.eax = receivedByteCount;
+      return NVar1;
     }
   }
-  return receivedByteCount;
+  NVar2.carry = true;
+  NVar2.eax = receivedByteCount;
+  return NVar2;
 }
+
 
 /* Address: 0x005850B0.
    Ownership: network/backend/fallback_udp.
    Purpose: Fallback UDP send callback wrapping sendto with a fixed 16-byte destination-address length. It
    preserves the legacy error-reporting path and returns status through EAX and CF.
 */
-dword NetworkFallback_SendDatagramCf
-                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,byte *buffer)
+NetworkBackendSendEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkFallback_SendDatagramCf
+          (WinSockAddress *destinationAddress,NetworkByteCount byteCount,byte *buffer)
 
 {
   dword sentByteCount;
   int winsockErrorCode;
+  NetworkBackendSendEaxCf5 NVar1;
+  NetworkBackendSendEaxCf5 NVar2;
   
-  sentByteCount = ram0x00583ef2;
-  if (ram0x00583ef2 != 0xffffffff) {
-    sentByteCount = (*g_WinSock_sendto)(ram0x00583ef2,buffer,byteCount,0,destinationAddress,0x10);
+  sentByteCount = g_NetworkFallbackSocket;
+  if (g_NetworkFallbackSocket != 0xffffffff) {
+    sentByteCount =
+         (*g_WinSock_sendto)(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,0x10);
     if ((int)sentByteCount < 0) {
       winsockErrorCode = (*g_WinSock_WSAGetLastError)();
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
-      return 0x2a;
+      NVar2.carry = true;
+      NVar2.eax = 0x2a;
+      return NVar2;
     }
   }
-  return sentByteCount;
+  NVar1.carry = false;
+  NVar1.eax = sentByteCount;
+  return NVar1;
 }
+
 
 /* Address: 0x00585120.
    Ownership: network/backend/fallback_udp.
@@ -283,20 +326,21 @@ dword NetworkFallback_SendDatagramCf
    conversion first and host lookup as fallback. CF reports parse failure.
    Cross-module calls: RichTextCommandStream_CopyToNarrowCf [assets/text/richtext].
 */
-void NetworkFallback_ParsePeerEndpointCf
-               (UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
+bool __thandor_cf_preserve_eax_ecx_edx
+NetworkFallback_ParsePeerEndpointCf
+          (UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
 
 {
   NetworkEndpointAddressHeader4 NVar1;
   NetworkIpv4AddressNetworkOrder ipv4AddressNetworkOrder;
   WinSockHostEnt32 *resolvedHostEntry;
-  undefined1 in_CF;
+  StatusValueEaxCf5 SVar2;
   NetworkPortNetworkOrder portNetworkOrder;
   
-  RichTextCommandStream_CopyToNarrowCf
-            (0xff,(byte *)&g_NetworkEndpointTextScratchA,(word *)endpointText);
-  if ((bool)in_CF) {
-    return;
+  SVar2 = RichTextCommandStream_CopyToNarrowCf
+                    (0xff,(byte *)&g_NetworkEndpointTextScratchA,(word *)endpointText);
+  if (SVar2.carry) {
+    return true;
   }
   ipv4AddressNetworkOrder = g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder;
   if ((g_NetworkEndpointTextScratchA != '\0') &&
@@ -304,7 +348,7 @@ void NetworkFallback_ParsePeerEndpointCf
      ipv4AddressNetworkOrder == 0xffffffff)) {
     resolvedHostEntry = (*g_WinSock_gethostbyname)((byte *)&g_NetworkEndpointTextScratchA);
     if (resolvedHostEntry == (WinSockHostEnt32 *)0x0) {
-      return;
+      return true;
     }
     ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
   }
@@ -319,8 +363,9 @@ void NetworkFallback_ParsePeerEndpointCf
   endpointDescriptor16->zeroPadding[7] = 0;
   endpointDescriptor16->addressHeader = NVar1;
   endpointDescriptor16->ipv4AddressNetworkOrder = ipv4AddressNetworkOrder;
-  return;
+  return false;
 }
+
 
 /* Address: 0x005851C0.
    Ownership: network/backend/fallback_udp.
@@ -328,7 +373,8 @@ void NetworkFallback_ParsePeerEndpointCf
    0x200-byte narrow output string, or writes an empty string when conversion fails.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
+void __thandor_void_preserve_eax_ecx_edx
+NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
 
 {
   byte *source;
@@ -345,71 +391,246 @@ void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAd
   return;
 }
 
+
+/* Address: 0x00585290.
+   Ownership: network/backend/fallback_udp.
+   Purpose: Recovered no-op network-backend cleanup owner.
+*/
+void __thandor_void_preserve_eax_ecx_edx NetworkBackend_NoOpCleanup(void)
+
+{
+  return;
+}
+
+/* Address: 0x005852A0.
+   Ownership: network/backend/fallback_udp.
+   Purpose: Opens and binds the active backend socket with the recovered carry/error contract.
+*/
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
+
+{
+  word wVar1;
+  dword dVar2;
+  undefined2 extraout_var;
+  int iVar3;
+  StatusValueEaxCf5 SVar4;
+  StatusValueEaxCf5 SVar5;
+  dword dStack_20;
+  dword dStack_1c;
+  
+  dStack_1c = 0xffffffff;
+  dVar2 = (*g_Ws2_32_socket)(g_NetworkBackendActiveAddressFamily,g_NetworkBackendActiveSocketType,
+                             g_NetworkBackendActiveProtocol);
+  if (dVar2 != 0xffffffff) {
+    dStack_1c = dVar2;
+    wVar1 = (*g_Ws2_32_htons)(portHostOrder);
+    g_NetworkBackendPortNetworkOrderCarrier = CONCAT22(extraout_var,wVar1);
+    g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
+    g_NetworkBackendBindAddress._8_4_ = 0;
+    g_NetworkBackendBindAddress._12_4_ = 0;
+    g_NetworkBackendBindAddress.ipv4.addressHeader =
+         (NetworkEndpointAddressHeader4)g_NetworkBackendActiveAddressFamily;
+    dVar2 = g_NetworkBackendActiveSocketAddressLength;
+    if (g_NetworkBackendActiveSocketAddressLength < 0x10) {
+      dVar2 = 0x10;
+    }
+    if (g_NetworkBackendActiveAddressFamily == 2) {
+      g_NetworkBackendBindAddress._2_2_ = wVar1;
+      g_NetworkBackendBindAddress.ipx.addressFamily = 2;
+    }
+    else if (g_NetworkBackendActiveAddressFamily == 6) {
+      g_NetworkBackendBindAddress._14_1_ = 0;
+      g_NetworkBackendBindAddress._15_1_ = 0;
+      g_NetworkBackendBindAddress.ipx.socketNetworkOrder = wVar1;
+    }
+    iVar3 = (*g_Ws2_32_bind)(dStack_1c,&g_NetworkBackendBindAddress.ipv4,dVar2);
+    if (iVar3 == 0) {
+      iVar3 = (*g_Ws2_32_setsockopt)(dStack_1c,0xffff,0x20,(byte *)0x583ef6,4);
+      if (iVar3 == 0) {
+        iVar3 = (*g_Ws2_32_WSAIoctl)
+                          (dStack_1c,0x8004667e,(void *)0x583ef6,4,(void *)0x0,0,&dStack_20,
+                           (void *)0x0,(void *)0x0);
+        if (iVar3 == 0) {
+          if (g_NetworkBackendActiveAddressFamily == 2) {
+            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.addressFamily =
+                 NETWORK_ADDRESS_FAMILY_IPV4;
+            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._0_2_ = 0xffff;
+            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._2_2_ = 0xffff;
+            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.portNetworkOrder =
+                 (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
+          }
+          else if (g_NetworkBackendActiveAddressFamily == 6) {
+            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.addressFamily =
+                 NETWORK_ADDRESS_FAMILY_IPX;
+            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.portNetworkOrder = 0;
+            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._0_2_ = 0;
+            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._2_2_ = 0xffff;
+            g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0xff;
+            g_NetworkLocalEndpointDescriptor16.zeroPadding[1] = 0xff;
+            g_NetworkLocalEndpointDescriptor16.zeroPadding[2] = 0xff;
+            g_NetworkLocalEndpointDescriptor16.zeroPadding[3] = 0xff;
+            g_NetworkLocalEndpointDescriptor16.zeroPadding._4_2_ =
+                 (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
+          }
+          g_NetworkFallbackSocket = dStack_1c;
+          SVar4.carry = false;
+          SVar4.valueOrError = dStack_1c;
+          return SVar4;
+        }
+      }
+    }
+  }
+  iVar3 = (*g_Ws2_32_WSAGetLastError)();
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar3,g_PackageLastErrorPath);
+  if (dStack_1c != 0xffffffff) {
+    (*g_Ws2_32_closesocket)(dStack_1c);
+  }
+  SVar5.carry = true;
+  SVar5.valueOrError = 0x2a;
+  return SVar5;
+}
+
 /* Address: 0x00585450.
    Ownership: network/backend/fallback_udp.
    Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
    callable entry.
 */
-undefined8 __fastcall NetworkFallbackUdp_CloseSocket(undefined4 param_1,undefined4 param_2)
+void __thandor_void_preserve_eax_ecx_edx NetworkFallbackUdp_CloseSocket(void)
 
 {
-  dword socket;
-  undefined4 in_EAX;
+  NetworkSocketHandle32 socket;
   
-  socket = ram0x00583ef2;
-  if (ram0x00583ef2 != 0xffffffff) {
+  socket = g_NetworkFallbackSocket;
+  if (g_NetworkFallbackSocket != 0xffffffff) {
     LOCK();
-    ram0x00583ef2 = 0xffffffff;
+    g_NetworkFallbackSocket = 0xffffffff;
     UNLOCK();
     (*g_Ws2_32_closesocket)(socket);
   }
-  return CONCAT44(param_2,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00585480.
    Ownership: network/backend/fallback_udp.
    Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
    callable entry.
 */
-void NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *param_1,int param_2,byte *param_3)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLength,byte *buffer)
 
 {
-  int iVar1;
+  uint uVar1;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   
-  g_NetworkFallbackAddressLength = DAT_00583f12;
-  if (ram0x00583ef2 != 0xffffffff) {
-    iVar1 = (*g_Ws2_32_recvfrom)
-                      (ram0x00583ef2,param_3,param_2,0,param_1,
-                       (int *)&g_NetworkFallbackAddressLength);
-    if (-1 < iVar1) {
-      return;
+  g_NetworkFallbackAddressLength = g_NetworkBackendActiveSocketAddressLength;
+  uVar1 = g_NetworkFallbackSocket;
+  if (g_NetworkFallbackSocket != 0xffffffff) {
+    SVar2.valueOrError =
+         (*g_Ws2_32_recvfrom)
+                   (g_NetworkFallbackSocket,buffer,bufferLength,0,sourceAddress,
+                    (int *)&g_NetworkFallbackAddressLength);
+    uVar1 = SVar2.valueOrError;
+    if (-1 < (int)SVar2.valueOrError) {
+      SVar2.carry = false;
+      return SVar2;
     }
   }
-  return;
+  SVar3.carry = true;
+  SVar3.valueOrError = uVar1;
+  return SVar3;
 }
+
 
 /* Address: 0x005854E0.
    Ownership: network/backend/fallback_udp.
    Purpose: Handles network fallback udp send datagram.
 */
-undefined8 __fastcall
-NetworkFallbackUdp_SendDatagram
-          (undefined4 param_1,undefined4 param_2,WinSockAddress *param_3,int param_4,byte *param_5)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount,byte *buffer)
 
 {
-  dword dVar1;
+  NetworkSocketHandle32 NVar1;
   int arg4;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   
-  dVar1 = ram0x00583ef2;
-  if (ram0x00583ef2 != 0xffffffff) {
-    dVar1 = (*g_Ws2_32_sendto)(ram0x00583ef2,param_5,param_4,0,param_3,DAT_00583f12);
-    if ((int)dVar1 < 0) {
+  NVar1 = g_NetworkFallbackSocket;
+  if (g_NetworkFallbackSocket != 0xffffffff) {
+    NVar1 = (*g_Ws2_32_sendto)(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,
+                               g_NetworkBackendActiveSocketAddressLength);
+    if ((int)NVar1 < 0) {
       arg4 = (*g_Ws2_32_WSAGetLastError)();
       (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,arg4,g_PackageLastErrorPath);
-      return CONCAT44(param_2,0x2a);
+      SVar3.carry = true;
+      SVar3.valueOrError = 0x2a;
+      return SVar3;
     }
   }
-  return CONCAT44(param_2,dVar1);
+  SVar2.carry = false;
+  SVar2.valueOrError = NVar1;
+  return SVar2;
+}
+
+
+/* Address: 0x00585550.
+   Ownership: network/backend/fallback_udp.
+   Purpose: Parses endpoint text into the recovered backend address representation.
+*/
+bool __thandor_cf_preserve_eax_ecx_edx
+NetworkBackend_ParseEndpointTextCf(NetworkEndpointAddressHeader4 *endpointOut,word *addressText)
+
+{
+  NetworkEndpointAddressHeader4 NVar1;
+  NetworkEndpointAddressHeader4 NVar2;
+  int iVar3;
+  WinSockHostEnt32 *pWVar4;
+  uint uVar5;
+  NetworkEndpointAddressHeader4 *pNVar6;
+  StatusValueEaxCf5 SVar7;
+  int iStack_20;
+  
+  SVar7 = RichTextCommandStream_CopyToNarrowCf
+                    (0xff,(byte *)&g_NetworkEndpointTextScratchA,addressText);
+  if (SVar7.carry) {
+    return true;
+  }
+  if (g_NetworkEndpointTextScratchA != '\0') {
+    iVar3 = (*g_Ws2_32_WSAStringToAddressA)
+                      (&g_NetworkEndpointTextScratchA,g_NetworkBackendActiveAddressFamily,
+                       (void *)0x0,(NetworkBackendSocketAddress16 *)endpointOut,&iStack_20);
+    if (iVar3 != 0) {
+      pWVar4 = (*g_Ws2_32_gethostbyname)((byte *)&g_NetworkEndpointTextScratchA);
+      NVar2 = g_NetworkFallbackBindEndpoint.addressHeader;
+      if (pWVar4 == (WinSockHostEnt32 *)0x0) {
+        return true;
+      }
+      NVar1 = *(NetworkEndpointAddressHeader4 *)*pWVar4->addressList;
+      endpointOut[2].packedFamilyAndPort = 0;
+      endpointOut[3].packedFamilyAndPort = 0;
+      *endpointOut = NVar2;
+      endpointOut[1] = NVar1;
+    }
+    if (g_NetworkBackendActiveAddressFamily == 2) {
+      (endpointOut->fields).portNetworkOrder =
+           (NetworkAddressFamily)g_NetworkBackendPortNetworkOrderCarrier;
+    }
+    else if (g_NetworkBackendActiveAddressFamily == 6) {
+      endpointOut[3].fields.addressFamily =
+           (NetworkAddressFamily)g_NetworkBackendPortNetworkOrderCarrier;
+    }
+    return false;
+  }
+  uVar5 = g_NetworkBackendActiveSocketAddressLength >> 2;
+  pNVar6 = &g_NetworkLocalEndpointDescriptor16.addressHeader;
+  for (; uVar5 != 0; uVar5 = uVar5 - 1) {
+    *endpointOut = *pNVar6;
+    pNVar6 = pNVar6 + 1;
+    endpointOut = endpointOut + 1;
+  }
+  return false;
 }
 
 /* Address: 0x00585640.
@@ -417,22 +638,24 @@ NetworkFallbackUdp_SendDatagram
    Purpose: Handles network fallback format address utf16.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-undefined8 __fastcall
-NetworkFallback_FormatAddressUtf16
-          (undefined4 param_1,undefined4 param_2,word *param_3,undefined4 param_4)
+bool __thandor_cf_preserve_eax_ecx_edx
+NetworkFallback_FormatAddressUtf16(word *outputUtf16,WinSockAddress *address)
 
 {
-  undefined4 in_EAX;
   int iVar1;
-  undefined4 uStack_20;
+  StatusValueEaxCf5 SVar2;
+  dword dStack_20;
   
-  uStack_20 = 0xff;
-  iVar1 = (*DAT_00574478)(param_4,DAT_00583f12,0,&g_NetworkEndpointTextScratchA,&uStack_20);
+  dStack_20 = 0xff;
+  iVar1 = (*g_Ws2_32_WSAAddressToStringA)
+                    (address,g_NetworkBackendActiveSocketAddressLength,(void *)0x0,
+                     &g_NetworkEndpointTextScratchA,&dStack_20);
   if (iVar1 == 0) {
-    Text_CopyNarrowToUtf16Cf(0x200,param_3,&g_NetworkEndpointTextScratchA);
-    return CONCAT44(param_2,in_EAX);
+    SVar2 = Text_CopyNarrowToUtf16Cf(0x200,outputUtf16,&g_NetworkEndpointTextScratchA);
+    return SVar2.carry;
   }
-  param_3[0] = 0;
-  param_3[1] = 0;
-  return CONCAT44(param_2,in_EAX);
+  outputUtf16[0] = 0;
+  outputUtf16[1] = 0;
+  return false;
 }
+

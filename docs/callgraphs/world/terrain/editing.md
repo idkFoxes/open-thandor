@@ -1,6 +1,6 @@
 # Call graph: `world/terrain/editing`
 
-[Source](../../../../src/world/terrain/editing.c) · [Header](../../../../include/thandor/world/terrain/editing.h) · [Graphviz](editing.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-editing)
+[Source](../../../../src/world/terrain/editing.c) · [Header](../../../../include/thandor/world/terrain/editing.h) · [Graphviz](editing.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-editing) · [Developer notes](../../../../CHANGELOG.md#module-world-terrain-editing) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-terrain-editing)
 
 11 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `core/error/runtime`
 
-[Source](../../../../src/core/error/runtime.c) · [Header](../../../../include/thandor/core/error/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-error-runtime)
+[Source](../../../../src/core/error/runtime.c) · [Header](../../../../include/thandor/core/error/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-error-runtime) · [Developer notes](../../../../CHANGELOG.md#module-core-error-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-error-runtime)
 
 9 functions. Addresses are current V523 executable VAs.
 

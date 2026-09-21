@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/controls/input.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/controls/input.h>
 
 /* Implementation ownership: ui/controls/input. */
@@ -11,91 +18,71 @@
    Cross-module calls: DirectInputMouse_PollBufferedEvents [platform/input/devices], Random_NextPrimary
    [core/math/random].
 */
-void __cdecl UiPointer_DispatchPendingEvents(void)
+void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
 
 {
   UiNodeBase *control;
-  byte bVar1;
+  char cVar1;
   UiPixelCoordinate pointerX;
-  UiPixelCoordinate pointerX_00;
-  UiPixelCoordinate pointerX_01;
-  UiPixelCoordinate pointerX_02;
   UiPixelCoordinate pointerY;
-  UiPixelCoordinate pointerY_00;
-  UiPixelCoordinate pointerY_01;
-  UiPixelCoordinate pointerY_02;
-  GraphicsCursorButtonState unaff_EBX;
-  UiPointerWheelDelta unaff_ESI;
-  undefined1 uVar2;
+  GraphicsCursorButtonState buttonMask;
+  UiPointerWheelDelta wheelDelta;
+  GraphicsCursorInputEventRegsCf21 GVar2;
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
-  uVar2 = g_PointerSetPosition < DirectInputMouse_SetPosition;
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
     DirectInputMouse_PollBufferedEvents();
   }
   while( true ) {
     control = g_UiPointerCaptureTarget;
-    bVar1 = (*g_GraphicsCursorConsumeEvent)();
-    if ((bool)uVar2) break;
-    if ((char)bVar1 < '\a') {
-      if (bVar1 == 6) {
-        uVar2 = control != (UiNodeBase *)0xffffffff;
+    GVar2 = (*g_GraphicsCursorConsumeEvent)();
+    pointerX = GVar2.pointerX;
+    wheelDelta = GVar2.wheelDelta;
+    pointerY = GVar2.pointerY;
+    buttonMask = GVar2.buttonState;
+    if (GVar2.carry) break;
+    cVar1 = (char)GVar2.eventCode;
+    if (cVar1 < '\a') {
+      if (cVar1 == '\x06') {
         if ((control != (UiNodeBase *)0xffffffff) &&
-           (uVar2 = g_UiPointerCaptureButton == UI_POINTER_CAPTURE_LEFT,
-           g_UiPointerCaptureButton == UI_POINTER_CAPTURE_MIDDLE)) {
-          (*control->vtable->nonRightRelease)(unaff_ESI,pointerY,pointerX,control);
-          uVar2 = 0;
+           (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_MIDDLE)) {
+          (*control->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control);
           g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
           g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
-          UiPointer_DispatchMotionAndWheel(unaff_ESI,pointerY_02,pointerX_02);
+          UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
           Random_NextPrimary();
         }
       }
-      else {
-        uVar2 = bVar1 < 3;
-        if ((char)bVar1 < '\x04') {
-          if (bVar1 == 3) {
-            UiPointer_DispatchRightPress(unaff_EBX,unaff_ESI,pointerY,pointerX);
+      else if (cVar1 < '\x04') {
+        if (cVar1 == '\x03') {
+          UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
+        }
+        else if (cVar1 < '\x02') {
+          if (cVar1 == '\x01') {
+            UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
           }
           else {
-            uVar2 = bVar1 == 0;
-            if ((char)bVar1 < '\x02') {
-              if (bVar1 == 1) {
-                UiPointer_DispatchLeftPress(unaff_EBX,unaff_ESI,pointerY,pointerX);
-              }
-              else {
-                UiPointer_DispatchMotionAndWheel(unaff_ESI,pointerY,pointerX);
-              }
-            }
-            else {
-              UiPointer_DispatchMiddlePress(unaff_EBX,unaff_ESI,pointerY,pointerX);
-            }
+            UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
           }
         }
         else {
-          uVar2 = control != (UiNodeBase *)0xffffffff;
-          if ((control != (UiNodeBase *)0xffffffff) &&
-             (uVar2 = 0, g_UiPointerCaptureButton == UI_POINTER_CAPTURE_LEFT)) {
-            (*control->vtable->nonRightRelease)(unaff_ESI,pointerY,pointerX,control);
-            uVar2 = 0;
-            g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-            g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
-            UiPointer_DispatchMotionAndWheel(unaff_ESI,pointerY_01,pointerX_01);
-          }
+          UiPointer_DispatchMiddlePress(buttonMask,wheelDelta,pointerY,pointerX);
         }
       }
-    }
-    else {
-      uVar2 = control != (UiNodeBase *)0xffffffff;
-      if ((control != (UiNodeBase *)0xffffffff) &&
-         (uVar2 = g_UiPointerCaptureButton < UI_POINTER_CAPTURE_RIGHT,
-         g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT)) {
-        (*control->vtable->rightRelease)(unaff_ESI,pointerY,pointerX,control);
-        uVar2 = 0;
+      else if ((control != (UiNodeBase *)0xffffffff) &&
+              (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_LEFT)) {
+        (*control->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control);
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
         g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
-        UiPointer_DispatchMotionAndWheel(unaff_ESI,pointerY_00,pointerX_00);
+        UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       }
+    }
+    else if ((control != (UiNodeBase *)0xffffffff) &&
+            (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT)) {
+      (*control->vtable->rightRelease)(wheelDelta,pointerY,pointerX,control);
+      g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
+      g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+      UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
     }
   }
   (*g_SpinLockReleaseAndInvoke)
@@ -103,12 +90,13 @@ void __cdecl UiPointer_DispatchPendingEvents(void)
   return;
 }
 
+
 /* Address: 0x004B00F0.
    Ownership: ui/controls/input.
    Purpose: Handles ui keyboard focus release node.
    Local calls: UiKeyboardFocus_MoveNext, UiKeyboardFocus_Set.
 */
-void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 
 {
   if (node == g_UiKeyboardFocusNode) {
@@ -120,6 +108,7 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
   return;
 }
 
+
 /* Address: 0x004AF3D0.
    Ownership: ui/controls/input.
    Purpose: Drains keyboard events under the UI lock, offers each event to the focused node through
@@ -127,59 +116,47 @@ void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
    handler.
    Local calls: UiKeyboardFocus_Set.
 */
-void __cdecl UiKeyboard_DispatchPendingEvents(void)
+void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
 
 {
   UiNodeFlags UVar1;
   bool bVar2;
-  UiKeyboardEventCode extraout_ECX;
   UiKeyboardEventCode keyCode;
-  UiKeyboardEventCode extraout_ECX_00;
-  UiKeyboardStateMask extraout_EDX;
   UiKeyboardStateMask keyboardStateMask;
-  UiKeyboardStateMask extraout_EDX_00;
   UiNodeBase *control;
   UiNodeBase *pUVar3;
-  undefined1 in_CF;
-  qword qVar4;
+  bool bVar4;
+  KeyboardEventEaxEdxCf9 KVar5;
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   do {
     do {
       while( true ) {
         do {
-          qVar4 = (*g_KeyboardReadEvent)();
+          KVar5 = (*g_KeyboardReadEvent)();
           control = g_UiKeyboardFocusNode;
-          if ((bool)in_CF) {
+          keyboardStateMask = KVar5.eventData;
+          keyCode = KVar5.eventCode;
+          if (KVar5.carry) {
             (*g_SpinLockReleaseAndInvoke)
                       ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,
                        g_UiRuntimeFrameLock);
             return;
           }
-          in_CF = g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff;
         } while (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff);
         if (g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff) break;
 UiKeyboard_DispatchEventToRootFallback:
-        in_CF = g_UiRootNode != (UiRootNode *)0xffffffff;
-        if (g_UiRootNode != (UiRootNode *)0xffffffff) {
-          in_CF = 0;
-          if (g_UiRootNode->callbacks->keyboardFallbackCf != (UiRootKeyboardFallbackCf *)0x0) {
-            (*g_UiRootNode->callbacks->keyboardFallbackCf)
-                      ((dword)(qVar4 >> 0x20),(dword)qVar4,g_UiRootNode);
-          }
+        if ((g_UiRootNode != (UiRootNode *)0xffffffff) &&
+           (g_UiRootNode->callbacks->keyboardFallbackCf != (UiRootKeyboardFallbackCf *)0x0)) {
+          (*g_UiRootNode->callbacks->keyboardFallbackCf)(keyboardStateMask,keyCode,g_UiRootNode);
         }
       }
-      in_CF = false;
       bVar2 = false;
-      (*g_UiKeyboardFocusNode->vtable->keyboardEventCf)
-                ((UiKeyboardStateMask)(qVar4 >> 0x20),(UiKeyboardEventCode)qVar4,
-                 g_UiKeyboardFocusNode);
-      keyCode = extraout_ECX;
-      keyboardStateMask = extraout_EDX;
-    } while (!(bool)in_CF);
+      bVar4 = (*g_UiKeyboardFocusNode->vtable->keyboardEventCf)
+                        (keyboardStateMask,keyCode,g_UiKeyboardFocusNode);
+    } while (!bVar4);
     do {
       do {
-        qVar4 = CONCAT44(keyboardStateMask,keyCode);
         pUVar3 = control->firstChild;
         if (pUVar3 == (UiNodeBase *)0xffffffff) {
           do {
@@ -202,15 +179,14 @@ UiKeyboard_DispatchEventToRootFallback:
         }
 joined_r0x004af45a:
       } while ((UVar1 & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0);
-      qVar4 = CONCAT44(keyboardStateMask,keyCode);
       if (control == g_UiKeyboardFocusNode) goto UiKeyboard_DispatchEventToRootFallback;
-      in_CF = false;
     } while (((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
-            ((*control->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control),
-            keyCode = extraout_ECX_00, keyboardStateMask = extraout_EDX_00, (bool)in_CF));
+            (bVar4 = (*control->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control), bVar4))
+    ;
     UiKeyboardFocus_Set(control);
   } while( true );
 }
+
 
 /* Address: 0x004B0030.
    Ownership: ui/controls/input.
@@ -218,7 +194,7 @@ joined_r0x004af45a:
    0x20 as a fallback.
    Local calls: UiKeyboardFocus_Set.
 */
-void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
+void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *root)
 
 {
   UiNodeBase *fallbackFocusNode;
@@ -270,12 +246,13 @@ UiKeyboardFocus_CommitInitialFocusableNode:
   return;
 }
 
+
 /* Address: 0x004B0120.
    Ownership: ui/controls/input.
    Purpose: Handles ui keyboard focus acquire if none.
    Local calls: UiKeyboardFocus_Set.
 */
-void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 
 {
   if ((g_UiKeyboardFocusNode == (UiNodeBase *)0xffffffff) &&
@@ -285,24 +262,26 @@ void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
   return;
 }
 
+
 /* Address: 0x004B4420.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[12]@004B3EF0.
    Local calls: UiNode_DefaultKeyboardEventMoveFocusNextCf.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiRangeSliderControl_HandleKeyboardCf
-               (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-               UiNodeBase *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiRangeSliderControl_HandleKeyboardCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {
   UiNodeBase *increasedSliderValue;
   UiNodeBase *adjustedSliderValue;
+  bool bVar1;
   
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
 UiRangeSliderControl_DelegateUnhandledKeyboardEvent:
-    UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
-    return;
+    bVar1 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
+    return bVar1;
   }
   if (((uint)control[1].nextSibling & 1) == 0) {
     if (keyCode == 0x10014) {
@@ -319,7 +298,7 @@ UiRangeSliderControl_DecreaseValueAndNotify:
       }
       UiActionQueue_Enqueue(control[1].top,control);
       UiNode_InvalidateRoot(control);
-      return;
+      return false;
     }
     if (keyCode != 0x10016) goto UiRangeSliderControl_DelegateUnhandledKeyboardEvent;
   }
@@ -339,8 +318,9 @@ UiRangeSliderControl_DecreaseValueAndNotify:
   }
   UiActionQueue_Enqueue(control[1].top,control);
   UiNode_InvalidateRoot(control);
-  return;
+  return false;
 }
+
 
 /* Address: 0x004B9CB0.
    Ownership: ui/controls/input.
@@ -348,34 +328,35 @@ UiRangeSliderControl_DecreaseValueAndNotify:
    Local calls: UiNode_DefaultKeyboardEventMoveFocusNextCf.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardKeyboardEventToChildCf
-               (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-               UiNodeBase *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiFocusProxyControl_ForwardKeyboardEventToChildCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
   bool childHandledEvent;
+  bool bVar1;
   
   control_00 = control[1].firstChild;
   if ((keyCode & 0xffff0000) == 0) {
     if ((((uint)control[1].nextSibling & 0x8000) != 0) && ((keyCode & 0x30) != 0)) {
-      return;
+      return false;
     }
   }
   else if (keyCode == 0x10002) {
-    UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,0x10002,control);
-    return;
+    bVar1 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,0x10002,control);
+    return bVar1;
   }
-  childHandledEvent = false;
   if (control_00 != (UiNodeBase *)0x0) {
-    (*control_00->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control_00);
-    if (!childHandledEvent) {
+    bVar1 = (*control_00->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control_00);
+    if (!bVar1) {
       UiNode_InvalidateRoot(control);
-      return;
+      return false;
     }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x004B9DA0.
    Ownership: ui/controls/input.
@@ -383,13 +364,13 @@ void UiFocusProxyControl_ForwardKeyboardEventToChildCf
    Local calls: UiNode_ForwardPointerWheelToParent.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardPointerWheelToChildOrParent
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardPointerWheelToChildOrParent
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   if (((uint)control[1].nextSibling & 0x400) == 0) {
     control_00 = control[1].firstChild;
@@ -400,9 +381,9 @@ void UiFocusProxyControl_ForwardPointerWheelToChildOrParent
         control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       }
       (*control_00->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,control_00);
-      if (extraout_EDX == g_UiKeyboardFocusNode) {
+      if (control_00 == g_UiKeyboardFocusNode) {
         g_UiKeyboardFocusNode = control;
-        extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+        control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
       }
       UiNode_InvalidateRoot(control);
     }
@@ -413,42 +394,44 @@ void UiFocusProxyControl_ForwardPointerWheelToChildOrParent
   return;
 }
 
+
 /* Address: 0x004B07F0.
    Ownership: ui/controls/input.
    Purpose: Default pointer-move handler; returns zero in EAX, which callers ignore.
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
   return 0;
 }
 
+
 /* Address: 0x004B42D0.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[8]@004B3EF0.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiRangeSliderControl_UpdateValueFromPointer
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiRangeSliderControl_UpdateValueFromPointer
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   ulonglong uVar1;
   uint uVar2;
   UiNodeBase *pUVar3;
-  qword qVar5;
   uint uVar4;
-  int extraout_EDX;
+  GraphicsTextureSizeEaxEdxCf9 GVar5;
   
   if (((uint)control[1].nextSibling & 2) != 0) {
     if (((uint)control[1].nextSibling & 1) == 0) {
-      qVar5._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
-      uVar4 = control->layoutWidth - (int)(qword)qVar5;
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
+      uVar4 = control->layoutWidth - GVar5.logicalWidthPixels;
       if (uVar4 == 0) {
         uVar4 = 1;
       }
-      uVar2 = (pointerX - ((int)(qword)qVar5 >> 1)) - control->left;
+      uVar2 = (pointerX - ((int)GVar5.logicalWidthPixels >> 1)) - control->left;
       if ((int)uVar2 < 0) {
         uVar2 = 0;
       }
@@ -469,12 +452,12 @@ void UiRangeSliderControl_UpdateValueFromPointer
       UiNode_InvalidateRoot(control);
       return;
     }
-    (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
-    uVar4 = control->layoutHeight - extraout_EDX;
+    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
+    uVar4 = control->layoutHeight - GVar5.logicalHeightPixels;
     if (uVar4 == 0) {
       uVar4 = 1;
     }
-    uVar2 = (control->bottom - pointerY) - (extraout_EDX >> 1);
+    uVar2 = (control->bottom - pointerY) - ((int)GVar5.logicalHeightPixels >> 1);
     if ((int)uVar2 < 0) {
       uVar2 = 0;
     }
@@ -496,14 +479,16 @@ void UiRangeSliderControl_UpdateValueFromPointer
   return;
 }
 
+
 /* Address: 0x004B4570.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[17]@004B3EF0.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiRangeSliderControl_HandlePointerWheel
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx
+UiRangeSliderControl_HandlePointerWheel
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *adjustedSliderValue;
@@ -527,50 +512,51 @@ void UiRangeSliderControl_HandlePointerWheel
   return;
 }
 
+
 /* Address: 0x004B9580.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[0]@004B9530; g_UiNodeVtable_00517FC0[0]@00517FC0.
    Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
 */
-void UiFocusProxyControl_RelocateChild
-               (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiFocusProxyControl_RelocateChild
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control,UiNodeBase *controlReg)
 
 {
-  int extraout_EAX;
-  UiNodeBase *unaff_EBX;
   UiNodeFlags *childNodeFlagsField;
   
-  if (((unaff_EBX->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0)
-     && (unaff_EBX[1].firstChild != (UiNodeBase *)0x0)) {
-    unaff_EBX->nodeFlags = unaff_EBX->nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
+  if (((controlReg->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0
+      ) && (controlReg[1].firstChild != (UiNodeBase *)0x0)) {
+    controlReg->nodeFlags = controlReg->nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
-  UiContainer_RelocateChildren(relocationDelta,unaff_EBX);
-  if (unaff_EBX[1].firstChild != (UiNodeBase *)0x0) {
-    unaff_EBX[1].firstChild =
-         (UiNodeBase *)((int)&(unaff_EBX[1].firstChild)->nextSibling + extraout_EAX);
-    childNodeFlagsField = &(unaff_EBX[1].firstChild)->nodeFlags;
+  UiContainer_RelocateChildren(relocationDelta,controlReg);
+  if (controlReg[1].firstChild != (UiNodeBase *)0x0) {
+    controlReg[1].firstChild =
+         (UiNodeBase *)((int)&(controlReg[1].firstChild)->nextSibling + relocationDelta);
+    childNodeFlagsField = &(controlReg[1].firstChild)->nodeFlags;
     *childNodeFlagsField =
          *childNodeFlagsField & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
   if (((uint)control[1].nextSibling & 0x20) != 0) {
-    control[1].parent = (UiNodeBase *)((int)&(control[1].parent)->nextSibling + extraout_EAX);
+    control[1].parent = (UiNodeBase *)((int)&(control[1].parent)->nextSibling + relocationDelta);
     control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffffdf);
   }
   return;
 }
+
 
 /* Address: 0x004B99A0.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[4]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardNonRightPressToChild
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardNonRightPressToChild
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   control_00 = control[1].firstChild;
   if (control_00 != (UiNodeBase *)0x0) {
@@ -579,27 +565,28 @@ void UiFocusProxyControl_ForwardNonRightPressToChild
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     (*control_00->vtable->nonRightPress)(wheelDelta,pointerY,pointerX,control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
   return;
 }
 
+
 /* Address: 0x004B9A00.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[5]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardNonRightReleaseToChild
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardNonRightReleaseToChild
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   control_00 = control[1].firstChild;
   if (control_00 != (UiNodeBase *)0x0) {
@@ -608,26 +595,27 @@ void UiFocusProxyControl_ForwardNonRightReleaseToChild
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     (*control_00->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
   return;
 }
 
+
 /* Address: 0x004B9A60.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[6]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardRightPressToChild
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardRightPressToChild
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
-  UiNodeBase *extraout_EDX;
   UiNodeBase *control_00;
   
   control_00 = control[1].firstChild;
@@ -638,7 +626,6 @@ void UiFocusProxyControl_ForwardRightPressToChild
     }
     if (control != control_00->parent) {
       (*control_00->vtable->rightPress)(wheelDelta,pointerY,pointerX,control_00);
-      control_00 = extraout_EDX;
     }
     if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
@@ -649,18 +636,19 @@ void UiFocusProxyControl_ForwardRightPressToChild
   return;
 }
 
+
 /* Address: 0x004B9AD0.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[7]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardRightReleaseToChild
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardRightReleaseToChild
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   control_00 = control[1].firstChild;
   if (control_00 != (UiNodeBase *)0x0) {
@@ -669,27 +657,28 @@ void UiFocusProxyControl_ForwardRightReleaseToChild
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     (*control_00->vtable->rightRelease)(wheelDelta,pointerY,pointerX,control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
   return;
 }
 
+
 /* Address: 0x004B9B30.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[8]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardNonRightDragToChild
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardNonRightDragToChild
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   control_00 = control[1].firstChild;
   if (control_00 != (UiNodeBase *)0x0) {
@@ -698,27 +687,28 @@ void UiFocusProxyControl_ForwardNonRightDragToChild
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     (*control_00->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
   return;
 }
 
+
 /* Address: 0x004B9B90.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[9]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardRightDragToChild
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiFocusProxyControl_ForwardRightDragToChild
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   control_00 = control[1].firstChild;
   if (control_00 != (UiNodeBase *)0x0) {
@@ -727,29 +717,28 @@ void UiFocusProxyControl_ForwardRightDragToChild
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     (*control_00->vtable->rightDrag)(wheelDelta,pointerY,pointerX,control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
   return;
 }
 
+
 /* Address: 0x004B9BF0.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[10]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiFocusProxyControl_ForwardPointerMoveToChild
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
   GraphicsCursorFrameIndex GVar1;
-  GraphicsCursorFrameIndex extraout_EAX;
-  UiNodeBase *extraout_EDX;
   
   GVar1 = 0;
   control_00 = control[1].firstChild;
@@ -758,23 +747,23 @@ UiFocusProxyControl_ForwardPointerMoveToChild
       g_UiKeyboardFocusNode = control_00;
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->pointerMove)(pointerY,pointerX,control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    GVar1 = (*control_00->vtable->pointerMove)(pointerY,pointerX,control_00);
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
-    GVar1 = extraout_EAX;
   }
   return GVar1;
 }
+
 
 /* Address: 0x004B9C50.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[11]@004B9530.
    Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
 */
-UiNodeBase *
+UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiFocusProxyControl_HitTestChildProxy
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
@@ -799,16 +788,16 @@ UiFocusProxyControl_HitTestChildProxy
   return returnedNode;
 }
 
+
 /* Address: 0x004B9D40.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[16]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiFocusProxyControl_ForwardTickToChild(UiNodeBase *control)
+void __thandor_preserve_eax_edx UiFocusProxyControl_ForwardTickToChild(UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeBase *extraout_EDX;
   
   control_00 = control[1].firstChild;
   if (control_00 != (UiNodeBase *)0x0) {
@@ -817,14 +806,15 @@ void UiFocusProxyControl_ForwardTickToChild(UiNodeBase *control)
       control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     (*control_00->vtable->tick)(control_00);
-    if (extraout_EDX == g_UiKeyboardFocusNode) {
+    if (control_00 == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      extraout_EDX->nodeFlags = extraout_EDX->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
   return;
 }
+
 
 /* Address: 0x004BCA70.
    Ownership: ui/controls/input.
@@ -832,7 +822,7 @@ void UiFocusProxyControl_ForwardTickToChild(UiNodeBase *control)
    enabled.
    Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiImageControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
 
@@ -840,22 +830,24 @@ UiImageControl_PointerMove
   UiImageControl *control_00;
   GraphicsCursorFrameIndex GVar1;
   bool opaquePixelHit;
+  bool bVar2;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    opaquePixelHit = false;
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      (*g_GraphicsTextureSourceTestOpaquePixel)
-                (pointerY,pointerX,(control->selectable).base.top,(control->selectable).base.left,
-                 control->normalSubresource,control->textureSource);
-      if (opaquePixelHit) {
+      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+                        (pointerY,pointerX,(control->selectable).base.top,
+                         (control->selectable).base.left,control->normalSubresource,
+                         control->textureSource);
+      if (bVar2) {
         return 0;
       }
     }
     else {
-      (*g_GraphicsTextureSourceTestOpaquePixel)
-                (pointerY,pointerX,(control->selectable).base.top,(control->selectable).base.left,
-                 control->alternateSubresource,control->textureSource);
-      if (opaquePixelHit) {
+      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+                        (pointerY,pointerX,(control->selectable).base.top,
+                         (control->selectable).base.left,control->alternateSubresource,
+                         control->textureSource);
+      if (bVar2) {
         return 0;
       }
     }
@@ -875,33 +867,37 @@ UiImageControl_PointerMove
   return 0;
 }
 
+
 /* Address: 0x00515CC0.
    Ownership: ui/controls/input.
    Purpose: Handles ui selection geometry control draw clipped.
 */
-void UiSelectionGeometryControl_DrawClipped
-               (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiSelectionGeometryControl_DrawClipped
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control
+          )
 
 {
-  uint *puVar1;
-  int iVar2;
+  GraphicsTextureSourceAsset *pGVar1;
+  AssetRelativeOffset AVar2;
   int iVar3;
-  longlong lVar4;
-  longlong lVar5;
+  int iVar4;
+  int iVar5;
   longlong lVar6;
-  char cVar7;
-  int iVar11;
-  uint uVar12;
-  uint uVar13;
+  longlong lVar7;
+  longlong lVar8;
+  char cVar9;
+  int iVar13;
   uint uVar14;
-  int iVar15;
-  int iVar16;
+  uint uVar15;
+  uint uVar16;
   int iVar17;
   int iVar18;
   int iVar19;
-  byte *pbVar20;
-  bool bVar21;
-  undefined8 uVar22;
+  int iVar20;
+  byte *pbVar21;
+  bool bVar22;
+  undefined8 extraout_MM0;
   int iVar23;
   undefined1 uVar25;
   undefined1 uVar26;
@@ -941,71 +937,72 @@ void UiSelectionGeometryControl_DrawClipped
   undefined8 uVar45;
   int iStack_2c;
   byte *pbStack_28;
-  char cVar8;
-  char cVar9;
   char cVar10;
+  char cVar11;
+  char cVar12;
   undefined4 uVar37;
   
-  if (clipRight < control->left) {
-    clipRight = control->left;
+  if (clipRight < (control->base).left) {
+    clipRight = (control->base).left;
   }
-  if (clipBottom < control->top) {
-    clipBottom = control->top;
+  if (clipBottom < (control->base).top) {
+    clipBottom = (control->base).top;
   }
-  if (control->right < clipLeft) {
-    clipLeft = control->right;
+  if ((control->base).right < clipLeft) {
+    clipLeft = (control->base).right;
   }
-  if (control->bottom < clipTop) {
-    clipTop = control->bottom;
+  if ((control->base).bottom < clipTop) {
+    clipTop = (control->base).bottom;
   }
-  iVar18 = clipLeft - clipRight;
-  if (((iVar18 != 0 && clipRight <= clipLeft) &&
-      (iVar16 = clipTop - clipBottom, iVar16 != 0 && clipBottom <= clipTop)) &&
-     (control[1].top != 0)) {
-    lVar4 = (longlong)(int)control[1].vtable * (longlong)g_FixedCosQ28[control[1].left];
-    iVar17 = -((int)((ulonglong)lVar4 >> 0x20) << 4 | (uint)lVar4 >> 0x1c);
-    lVar4 = (longlong)(int)control[1].vtable * (longlong)g_FixedSinQ28[control[1].left];
-    uVar12 = (int)((ulonglong)lVar4 >> 0x20) << 4 | (uint)lVar4 >> 0x1c;
-    lVar4 = (longlong)(int)uVar12 * 0x1c6e9c;
-    lVar5 = (longlong)iVar17 * -0x20c8cc;
-    uVar13 = (int)((ulonglong)lVar5 >> 0x20) << 0xb | (uint)lVar5 >> 0x15;
-    lVar5 = (longlong)iVar17 * 0x1c6e9c;
-    lVar6 = (longlong)(int)-uVar12 * -0x20c8cc;
-    uVar14 = (int)((ulonglong)lVar6 >> 0x20) << 0xb | (uint)lVar6 >> 0x15;
-    uVar12 = ((int)((ulonglong)lVar5 >> 0x20) << 0xc | (uint)lVar5 >> 0x14) - uVar14;
-    iVar29 = uVar14 * 2;
-    uVar27 = (ulonglong)uVar12;
+  iVar19 = clipLeft - clipRight;
+  if (((iVar19 != 0 && clipRight <= clipLeft) &&
+      (iVar18 = clipTop - clipBottom, iVar18 != 0 && clipBottom <= clipTop)) &&
+     (control->textureSource != (GraphicsTextureSourceAsset *)0x0)) {
+    lVar6 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
+    iVar29 = -((int)((ulonglong)lVar6 >> 0x20) << 4 | (uint)lVar6 >> 0x1c);
+    lVar6 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
+    uVar14 = (int)((ulonglong)lVar6 >> 0x20) << 4 | (uint)lVar6 >> 0x1c;
+    lVar6 = (longlong)(int)uVar14 * 0x1c6e9c;
+    lVar7 = (longlong)iVar29 * -0x20c8cc;
+    uVar15 = (int)((ulonglong)lVar7 >> 0x20) << 0xb | (uint)lVar7 >> 0x15;
+    lVar7 = (longlong)iVar29 * 0x1c6e9c;
+    lVar8 = (longlong)(int)-uVar14 * -0x20c8cc;
+    uVar16 = (int)((ulonglong)lVar8 >> 0x20) << 0xb | (uint)lVar8 >> 0x15;
+    uVar14 = ((int)((ulonglong)lVar7 >> 0x20) << 0xc | (uint)lVar7 >> 0x14) - uVar16;
+    iVar29 = uVar16 * 2;
+    uVar27 = (ulonglong)uVar14;
     uVar34 = (ulonglong)
-             ((int)control[1].firstChild -
-             (uVar12 * ((control->top + control->bottom >> 1) - clipBottom) +
-             (((int)((ulonglong)lVar4 >> 0x20) << 0xc | (uint)lVar4 >> 0x14) - uVar13) *
-             ((control->left + control->right >> 1) - clipRight)));
-    iVar19 = (int)control[1].parent -
-             (iVar29 * ((control->top + control->bottom >> 1) - clipBottom) +
-             uVar13 * 2 * ((control->left + control->right >> 1) - clipRight));
-    uVar12 = control[1].top;
-    iVar17 = *(int *)(uVar12 + 0xb8);
-    if (*(int *)(iVar17 + 8 + uVar12) < 0) {
-      iVar2 = *(int *)(iVar17 + 0x18 + uVar12);
-      iVar3 = *(int *)(iVar17 + 0x1c + uVar12);
-      puVar1 = (uint *)(iVar17 + 0xc + uVar12);
-      bVar21 = CARRY4(uVar12,*puVar1);
-      iVar17 = uVar12 + *puVar1;
-      uVar22 = (*g_GraphicsFramebufferBeginAccess)();
-      if (!bVar21) {
-        iVar23 = (int)((ulonglong)uVar22 >> 0x20);
+             (control->sourceOriginYQ12 -
+             (uVar14 * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
+             (((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar15) *
+             (((control->base).left + (control->base).right >> 1) - clipRight)));
+    iVar20 = control->sourceOriginXQ12 -
+             (iVar29 * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
+             uVar15 * 2 * (((control->base).left + (control->base).right >> 1) - clipRight));
+    pGVar1 = control->textureSource;
+    AVar2 = (pGVar1->tableDescriptor).subresourceTableOffset;
+    if (*(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0x20)) < 0)
+    {
+      iVar3 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0x10))
+      ;
+      iVar4 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0xc));
+      iVar5 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0x1c))
+      ;
+      bVar22 = (*g_GraphicsFramebufferBeginAccess)();
+      if (!bVar22) {
+        iVar23 = (int)((ulonglong)extraout_MM0 >> 0x20);
         iVar28 = (int)(uVar27 >> 0x20);
-        uVar12 = (uint)uVar34;
-        iVar11 = (int)(uVar34 >> 0x20);
-        clipTop = iVar16;
-        iStack_2c = iVar18;
+        uVar14 = (uint)uVar34;
+        iVar13 = (int)(uVar34 >> 0x20);
+        clipTop = iVar18;
+        iStack_2c = iVar19;
         if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-          pbVar20 = g_FramebufferAccess->pixels +
+          pbVar21 = g_FramebufferAccess->pixels +
                     g_FramebufferRowStrideBytes * clipBottom + clipRight * 2;
-          uVar35 = iVar11 + iVar19;
-          uVar13 = uVar12;
-          uVar14 = uVar35;
-          pbStack_28 = pbVar20;
+          uVar35 = iVar13 + iVar20;
+          uVar15 = uVar14;
+          uVar16 = uVar35;
+          pbStack_28 = pbVar21;
           do {
             do {
               sourcePixelSample0 = 0;
@@ -1015,30 +1012,42 @@ void UiSelectionGeometryControl_DrawClipped
               sourcePixelSample2 = 0;
               sourcePixelSample2 = 0;
               sourcePixelSample3 = 0;
-              iVar15 = (int)uVar35 >> 0xc;
-              iVar11 = (int)uVar12 >> 0xc;
-              iVar19 = iVar2 * iVar15 + iVar11;
-              iVar16 = iVar11 + 1;
-              if (iVar15 < iVar3) {
+              iVar17 = (int)uVar35 >> 0xc;
+              iVar13 = (int)uVar14 >> 0xc;
+              iVar20 = iVar3 * iVar17 + iVar13;
+              iVar18 = iVar13 + 1;
+              if (iVar17 < iVar4) {
                 sourcePixelSample0 = sourcePixelSample0;
                 sourcePixelSample1 = sourcePixelSample1;
-                if ((-1 < iVar15) && (iVar11 < iVar2)) {
+                if ((-1 < iVar17) && (iVar13 < iVar3)) {
                   sourcePixelSample4 = sourcePixelSample0;
-                  if (-1 < iVar11) {
-                    sourcePixelSample4 = *(PackedArgb32 *)(iVar17 + iVar19 * 4);
+                  if (-1 < iVar13) {
+                    sourcePixelSample4 =
+                         *(PackedArgb32 *)
+                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          iVar20 * 4 + iVar5 + -0x28);
                   }
                   sourcePixelSample0 = sourcePixelSample4;
-                  if ((-1 < iVar16) && (iVar16 < iVar2)) {
-                    sourcePixelSample1 = *(PackedArgb32 *)(iVar17 + 4 + iVar19 * 4);
+                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
+                    sourcePixelSample1 =
+                         *(PackedArgb32 *)
+                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          iVar20 * 4 + iVar5 + -0x24);
                   }
                 }
-                if (((-1 < iVar15 + 1) && (iVar15 + 1 < iVar3)) && (iVar11 < iVar2)) {
+                if (((-1 < iVar17 + 1) && (iVar17 + 1 < iVar4)) && (iVar13 < iVar3)) {
                   sourcePixelSample2 = sourcePixelSample2;
-                  if (-1 < iVar11) {
-                    sourcePixelSample2 = *(PackedArgb32 *)(iVar17 + (iVar19 + iVar2) * 4);
+                  if (-1 < iVar13) {
+                    sourcePixelSample2 =
+                         *(PackedArgb32 *)
+                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          (iVar20 + iVar3) * 4 + iVar5 + -0x28);
                   }
-                  if ((-1 < iVar16) && (iVar16 < iVar2)) {
-                    sourcePixelSample3 = *(PackedArgb32 *)(iVar17 + 4 + (iVar19 + iVar2) * 4);
+                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
+                    sourcePixelSample3 =
+                         *(PackedArgb32 *)
+                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          (iVar20 + iVar3) * 4 + iVar5 + -0x24);
                   }
                 }
               }
@@ -1058,36 +1067,36 @@ void UiSelectionGeometryControl_DrawClipped
               uVar50 = CONCAT11(uVar25,uVar25);
               uVar26 = (undefined1)(sourcePixelSample3 >> 0x10);
               uVar25 = (undefined1)(sourcePixelSample3 >> 8);
-              iVar19 = (int)(uVar35 & 0xfff) >> 4;
-              iVar16 = (int)(uVar12 & 0xfff) >> 4;
+              iVar20 = (int)(uVar35 & 0xfff) >> 4;
+              iVar18 = (int)(uVar14 & 0xfff) >> 4;
               mm7PackedValue0 =
                    pmulhw(CONCAT26(uVar41 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,uVar47),uVar47) >> 2,
                                             CONCAT22(CONCAT11(uVar46,uVar46) >> 2,
                                                      CONCAT11((char)sourcePixelSample0,
                                                               (char)sourcePixelSample0) >> 2))),
-                          *(undefined8 *)(iVar16 * 8 + 0x420720));
+                          *(undefined8 *)(iVar18 * 8 + 0x420720));
               mm5PackedValue0 =
                    pmulhw(CONCAT26(uVar48 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar48,uVar40),uVar40) >> 2,
                                             CONCAT22(CONCAT11(uVar39,uVar39) >> 2,
                                                      CONCAT11((char)sourcePixelSample1,
                                                               (char)sourcePixelSample1) >> 2))),
-                          *(undefined8 *)(iVar16 * 8 + 0x41f720));
+                          *(undefined8 *)(iVar18 * 8 + 0x41f720));
               mm3PackedValue0 =
                    pmulhw(CONCAT26(uVar49 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar49,uVar33),uVar33) >> 2,
                                             CONCAT22(CONCAT11(uVar32,uVar32) >> 2,
                                                      CONCAT11((char)sourcePixelSample2,
                                                               (char)sourcePixelSample2) >> 2))),
-                          *(undefined8 *)(iVar16 * 8 + 0x420720));
+                          *(undefined8 *)(iVar18 * 8 + 0x420720));
               mm1PackedValue0 =
                    pmulhw(CONCAT26(uVar50 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar50,uVar26),uVar26) >> 2,
                                             CONCAT22(CONCAT11(uVar25,uVar25) >> 2,
                                                      CONCAT11((char)sourcePixelSample3,
                                                               (char)sourcePixelSample3) >> 2))),
-                          *(undefined8 *)(iVar16 * 8 + 0x41f720));
+                          *(undefined8 *)(iVar18 * 8 + 0x41f720));
               uVar44 = pmulhw(CONCAT26((short)((ulonglong)mm7PackedValue0 >> 0x30) +
                                        (short)((ulonglong)mm5PackedValue0 >> 0x30),
                                        CONCAT24((short)((ulonglong)mm7PackedValue0 >> 0x20) +
@@ -1097,7 +1106,7 @@ void UiSelectionGeometryControl_DrawClipped
                                                                   0x10),
                                                          (short)mm7PackedValue0 +
                                                          (short)mm5PackedValue0))),
-                              *(undefined8 *)(iVar19 * 8 + 0x420720));
+                              *(undefined8 *)(iVar20 * 8 + 0x420720));
               uVar31 = pmulhw(CONCAT26((short)((ulonglong)mm3PackedValue0 >> 0x30) +
                                        (short)((ulonglong)mm1PackedValue0 >> 0x30),
                                        CONCAT24((short)((ulonglong)mm3PackedValue0 >> 0x20) +
@@ -1107,7 +1116,7 @@ void UiSelectionGeometryControl_DrawClipped
                                                                   0x10),
                                                          (short)mm3PackedValue0 +
                                                          (short)mm1PackedValue0))),
-                              *(undefined8 *)(iVar19 * 8 + 0x41f720));
+                              *(undefined8 *)(iVar20 * 8 + 0x41f720));
               uVar41 = (ushort)((short)uVar44 + (short)uVar31) >> 2;
               uVar48 = (ushort)((short)((ulonglong)uVar44 >> 0x10) +
                                (short)((ulonglong)uVar31 >> 0x10)) >> 2;
@@ -1115,41 +1124,41 @@ void UiSelectionGeometryControl_DrawClipped
                                (short)((ulonglong)uVar31 >> 0x20)) >> 2;
               uVar50 = (ushort)((short)((ulonglong)uVar44 >> 0x30) +
                                (short)((ulonglong)uVar31 >> 0x30)) >> 2;
-              cVar7 = (uVar41 != 0) * (uVar41 < 0x100) * (char)uVar41 - (0xff < uVar41);
-              cVar8 = (uVar48 != 0) * (uVar48 < 0x100) * (char)uVar48 - (0xff < uVar48);
-              cVar9 = (uVar49 != 0) * (uVar49 < 0x100) * (char)uVar49 - (0xff < uVar49);
-              cVar10 = (uVar50 != 0) * (uVar50 < 0x100) * (char)uVar50 - (0xff < uVar50);
-              uVar41 = CONCAT11(cVar10,cVar10);
+              cVar9 = (uVar41 != 0) * (uVar41 < 0x100) * (char)uVar41 - (0xff < uVar41);
+              cVar10 = (uVar48 != 0) * (uVar48 < 0x100) * (char)uVar48 - (0xff < uVar48);
+              cVar11 = (uVar49 != 0) * (uVar49 < 0x100) * (char)uVar49 - (0xff < uVar49);
+              cVar12 = (uVar50 != 0) * (uVar50 < 0x100) * (char)uVar50 - (0xff < uVar50);
+              uVar41 = CONCAT11(cVar12,cVar12);
               uVar31 = pmaddwd(CONCAT26(uVar41 >> 4,
-                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,cVar9),cVar9) >> 4
-                                                 ,CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
-                                                           CONCAT11(cVar7,cVar7) >> 4))) &
+                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,cVar11),cVar11) >>
+                                                 4,CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
+                                                            CONCAT11(cVar9,cVar9) >> 4))) &
                                (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
                                g_SoftwarePixelMmxConstants.packWeights);
-              *(short *)pbVar20 =
+              *(short *)pbVar21 =
                    (short)((ulonglong)uVar31 >> 0x28) + (short)((ulonglong)uVar31 >> 8);
-              uVar12 = uVar12 + (int)uVar22;
+              uVar14 = uVar14 + (int)extraout_MM0;
               uVar35 = uVar35 + iVar23 + extraout_MM1_Da;
-              pbVar20 = pbVar20 + 2;
+              pbVar21 = pbVar21 + 2;
               iStack_2c = iStack_2c + -1;
             } while (iStack_2c != 0);
-            uVar12 = uVar13 + (int)uVar27;
-            uVar35 = uVar14 + iVar28 + iVar29;
-            pbVar20 = pbStack_28 + g_FramebufferRowStrideBytes;
+            uVar14 = uVar15 + (int)uVar27;
+            uVar35 = uVar16 + iVar28 + iVar29;
+            pbVar21 = pbStack_28 + g_FramebufferRowStrideBytes;
             clipTop = clipTop + -1;
-            uVar13 = uVar12;
-            uVar14 = uVar35;
-            iStack_2c = iVar18;
-            pbStack_28 = pbVar20;
+            uVar15 = uVar14;
+            uVar16 = uVar35;
+            iStack_2c = iVar19;
+            pbStack_28 = pbVar21;
           } while (clipTop != 0);
         }
         else {
-          pbVar20 = g_FramebufferAccess->pixels +
+          pbVar21 = g_FramebufferAccess->pixels +
                     g_FramebufferRowStrideBytes * clipBottom + clipRight * 4;
-          uVar35 = iVar11 + iVar19;
-          uVar13 = uVar12;
-          uVar14 = uVar35;
-          pbStack_28 = pbVar20;
+          uVar35 = iVar13 + iVar20;
+          uVar15 = uVar14;
+          uVar16 = uVar35;
+          pbStack_28 = pbVar21;
           do {
             do {
               uVar43 = 0;
@@ -1158,29 +1167,37 @@ void UiSelectionGeometryControl_DrawClipped
               uVar36 = 0;
               uVar30 = 0;
               uVar24 = 0;
-              iVar15 = (int)uVar35 >> 0xc;
-              iVar11 = (int)uVar12 >> 0xc;
-              iVar19 = iVar2 * iVar15 + iVar11;
-              iVar16 = iVar11 + 1;
-              if (iVar15 < iVar3) {
+              iVar17 = (int)uVar35 >> 0xc;
+              iVar13 = (int)uVar14 >> 0xc;
+              iVar20 = iVar3 * iVar17 + iVar13;
+              iVar18 = iVar13 + 1;
+              if (iVar17 < iVar4) {
                 uVar42 = uVar43;
                 uVar36 = uVar37;
-                if ((-1 < iVar15) && (iVar11 < iVar2)) {
-                  if (-1 < iVar11) {
-                    uVar43 = *(undefined4 *)(iVar17 + iVar19 * 4);
+                if ((-1 < iVar17) && (iVar13 < iVar3)) {
+                  if (-1 < iVar13) {
+                    uVar43 = *(undefined4 *)
+                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              iVar20 * 4 + iVar5 + -0x28);
                   }
                   uVar42 = uVar43;
-                  if ((-1 < iVar16) && (iVar16 < iVar2)) {
-                    uVar36 = *(undefined4 *)(iVar17 + 4 + iVar19 * 4);
+                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
+                    uVar36 = *(undefined4 *)
+                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              iVar20 * 4 + iVar5 + -0x24);
                   }
                 }
-                if (((-1 < iVar15 + 1) && (iVar15 + 1 < iVar3)) && (iVar11 < iVar2)) {
+                if (((-1 < iVar17 + 1) && (iVar17 + 1 < iVar4)) && (iVar13 < iVar3)) {
                   uVar30 = 0;
-                  if (-1 < iVar11) {
-                    uVar30 = *(undefined4 *)(iVar17 + (iVar19 + iVar2) * 4);
+                  if (-1 < iVar13) {
+                    uVar30 = *(undefined4 *)
+                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              (iVar20 + iVar3) * 4 + iVar5 + -0x28);
                   }
-                  if ((-1 < iVar16) && (iVar16 < iVar2)) {
-                    uVar24 = *(undefined4 *)(iVar17 + 4 + (iVar19 + iVar2) * 4);
+                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
+                    uVar24 = *(undefined4 *)
+                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              (iVar20 + iVar3) * 4 + iVar5 + -0x24);
                   }
                 }
               }
@@ -1200,28 +1217,28 @@ void UiSelectionGeometryControl_DrawClipped
               uVar50 = CONCAT11(uVar25,uVar25);
               uVar26 = (undefined1)((uint)uVar24 >> 0x10);
               uVar25 = (undefined1)((uint)uVar24 >> 8);
-              iVar19 = (int)(uVar35 & 0xfff) >> 4;
-              iVar16 = (int)(uVar12 & 0xfff) >> 4;
+              iVar20 = (int)(uVar35 & 0xfff) >> 4;
+              iVar18 = (int)(uVar14 & 0xfff) >> 4;
               uVar45 = pmulhw(CONCAT26(uVar41 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,uVar47),uVar47) >>
                                                 2,CONCAT22(CONCAT11(uVar46,uVar46) >> 2,
                                                            CONCAT11((char)uVar42,(char)uVar42) >> 2)
-                                               )),*(undefined8 *)(iVar16 * 8 + 0x420720));
+                                               )),*(undefined8 *)(iVar18 * 8 + 0x420720));
               uVar38 = pmulhw(CONCAT26(uVar48 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar48,uVar40),uVar40) >>
                                                 2,CONCAT22(CONCAT11(uVar39,uVar39) >> 2,
                                                            CONCAT11((char)uVar36,(char)uVar36) >> 2)
-                                               )),*(undefined8 *)(iVar16 * 8 + 0x41f720));
+                                               )),*(undefined8 *)(iVar18 * 8 + 0x41f720));
               uVar44 = pmulhw(CONCAT26(uVar49 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar49,uVar33),uVar33) >>
                                                 2,CONCAT22(CONCAT11(uVar32,uVar32) >> 2,
                                                            CONCAT11((char)uVar30,(char)uVar30) >> 2)
-                                               )),*(undefined8 *)(iVar16 * 8 + 0x420720));
+                                               )),*(undefined8 *)(iVar18 * 8 + 0x420720));
               uVar31 = pmulhw(CONCAT26(uVar50 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar50,uVar26),uVar26) >>
                                                 2,CONCAT22(CONCAT11(uVar25,uVar25) >> 2,
                                                            CONCAT11((char)uVar24,(char)uVar24) >> 2)
-                                               )),*(undefined8 *)(iVar16 * 8 + 0x41f720));
+                                               )),*(undefined8 *)(iVar18 * 8 + 0x41f720));
               uVar38 = pmulhw(CONCAT26((short)((ulonglong)uVar45 >> 0x30) +
                                        (short)((ulonglong)uVar38 >> 0x30),
                                        CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
@@ -1229,7 +1246,7 @@ void UiSelectionGeometryControl_DrawClipped
                                                 CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
                                                          (short)((ulonglong)uVar38 >> 0x10),
                                                          (short)uVar45 + (short)uVar38))),
-                              *(undefined8 *)(iVar19 * 8 + 0x420720));
+                              *(undefined8 *)(iVar20 * 8 + 0x420720));
               uVar31 = pmulhw(CONCAT26((short)((ulonglong)uVar44 >> 0x30) +
                                        (short)((ulonglong)uVar31 >> 0x30),
                                        CONCAT24((short)((ulonglong)uVar44 >> 0x20) +
@@ -1237,7 +1254,7 @@ void UiSelectionGeometryControl_DrawClipped
                                                 CONCAT22((short)((ulonglong)uVar44 >> 0x10) +
                                                          (short)((ulonglong)uVar31 >> 0x10),
                                                          (short)uVar44 + (short)uVar31))),
-                              *(undefined8 *)(iVar19 * 8 + 0x41f720));
+                              *(undefined8 *)(iVar20 * 8 + 0x41f720));
               uVar41 = (ushort)((short)uVar38 + (short)uVar31) >> 2;
               uVar48 = (ushort)((short)((ulonglong)uVar38 >> 0x10) +
                                (short)((ulonglong)uVar31 >> 0x10)) >> 2;
@@ -1245,7 +1262,7 @@ void UiSelectionGeometryControl_DrawClipped
                                (short)((ulonglong)uVar31 >> 0x20)) >> 2;
               uVar50 = (ushort)((short)((ulonglong)uVar38 >> 0x30) +
                                (short)((ulonglong)uVar31 >> 0x30)) >> 2;
-              *(uint *)pbVar20 =
+              *(uint *)pbVar21 =
                    CONCAT13((uVar50 != 0) * (uVar50 < 0x100) * (char)uVar50 - (0xff < uVar50),
                             CONCAT12((uVar49 != 0) * (uVar49 < 0x100) * (char)uVar49 -
                                      (0xff < uVar49),
@@ -1253,19 +1270,19 @@ void UiSelectionGeometryControl_DrawClipped
                                               (0xff < uVar48),
                                               (uVar41 != 0) * (uVar41 < 0x100) * (char)uVar41 -
                                               (0xff < uVar41))));
-              uVar12 = uVar12 + (int)uVar22;
+              uVar14 = uVar14 + (int)extraout_MM0;
               uVar35 = uVar35 + iVar23 + extraout_MM1_Da;
-              pbVar20 = pbVar20 + 4;
+              pbVar21 = pbVar21 + 4;
               iStack_2c = iStack_2c + -1;
             } while (iStack_2c != 0);
-            uVar12 = uVar13 + (int)uVar27;
-            uVar35 = uVar14 + iVar28 + iVar29;
-            pbVar20 = pbStack_28 + g_FramebufferRowStrideBytes;
+            uVar14 = uVar15 + (int)uVar27;
+            uVar35 = uVar16 + iVar28 + iVar29;
+            pbVar21 = pbStack_28 + g_FramebufferRowStrideBytes;
             clipTop = clipTop + -1;
-            uVar13 = uVar12;
-            uVar14 = uVar35;
-            iStack_2c = iVar18;
-            pbStack_28 = pbVar20;
+            uVar15 = uVar14;
+            uVar16 = uVar35;
+            iStack_2c = iVar19;
+            pbStack_28 = pbVar21;
           } while (clipTop != 0);
         }
         (*g_GraphicsFramebufferEndAccess)();
@@ -1275,51 +1292,55 @@ void UiSelectionGeometryControl_DrawClipped
   return;
 }
 
+
 /* Address: 0x005161A0.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_00515C70[4]@00515C70.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
-void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiSelectionGeometryControl *control)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
-  longlong lVar4;
+  int iVar4;
   longlong lVar5;
   longlong lVar6;
-  uint uVar7;
+  longlong lVar7;
   uint uVar8;
+  uint uVar9;
   
-  lVar4 = (longlong)(int)control[1].vtable * (longlong)g_FixedCosQ28[control[1].left];
-  iVar1 = -((int)((ulonglong)lVar4 >> 0x20) << 4 | (uint)lVar4 >> 0x1c);
-  lVar4 = (longlong)(int)control[1].vtable * (longlong)g_FixedSinQ28[control[1].left];
-  uVar7 = (int)((ulonglong)lVar4 >> 0x20) << 4 | (uint)lVar4 >> 0x1c;
-  lVar4 = (longlong)(int)uVar7 * 0x1c6e9c;
-  lVar5 = (longlong)iVar1 * -0x20c8cc;
-  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 0xb | (uint)lVar5 >> 0x15;
-  lVar5 = (longlong)iVar1 * 0x1c6e9c;
-  lVar6 = (longlong)(int)-uVar7 * -0x20c8cc;
-  uVar7 = (int)((ulonglong)lVar6 >> 0x20) << 0xb | (uint)lVar6 >> 0x15;
-  iVar1 = control->left;
-  iVar2 = control->right;
-  iVar3 = control->top;
-  control[1].bottom =
-       (int)control[1].firstChild -
-       ((((int)((ulonglong)lVar5 >> 0x20) << 0xc | (uint)lVar5 >> 0x14) - uVar7) *
-        ((control->top + control->bottom >> 1) - pointerY) +
-       (((int)((ulonglong)lVar4 >> 0x20) << 0xc | (uint)lVar4 >> 0x14) - uVar8) *
-       ((control->left + control->right >> 1) - pointerX));
-  control[1].leftOffset =
-       (int)control[1].parent +
-       (-(uVar7 * 2 * ((iVar3 + control->bottom >> 1) - pointerY)) -
-       uVar8 * 2 * ((iVar1 + iVar2 >> 1) - pointerX));
-  UiActionQueue_Enqueue(control[1].right,control);
+  lVar5 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
+  iVar1 = -((int)((ulonglong)lVar5 >> 0x20) << 4 | (uint)lVar5 >> 0x1c);
+  lVar5 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
+  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 4 | (uint)lVar5 >> 0x1c;
+  lVar5 = (longlong)(int)uVar8 * 0x1c6e9c;
+  lVar6 = (longlong)iVar1 * -0x20c8cc;
+  uVar9 = (int)((ulonglong)lVar6 >> 0x20) << 0xb | (uint)lVar6 >> 0x15;
+  lVar6 = (longlong)iVar1 * 0x1c6e9c;
+  lVar7 = (longlong)(int)-uVar8 * -0x20c8cc;
+  uVar8 = (int)((ulonglong)lVar7 >> 0x20) << 0xb | (uint)lVar7 >> 0x15;
+  iVar1 = (control->base).left;
+  iVar2 = (control->base).right;
+  iVar3 = (control->base).top;
+  iVar4 = (control->base).bottom;
+  control->selectedSourceYQ12 =
+       control->sourceOriginYQ12 -
+       ((((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar8) *
+        (((control->base).top + (control->base).bottom >> 1) - pointerY) +
+       (((int)((ulonglong)lVar5 >> 0x20) << 0xc | (uint)lVar5 >> 0x14) - uVar9) *
+       (((control->base).left + (control->base).right >> 1) - pointerX));
+  control->selectedSourceXQ12 =
+       (control->sourceOriginXQ12 - uVar9 * 2 * ((iVar1 + iVar2 >> 1) - pointerX)) -
+       uVar8 * 2 * ((iVar3 + iVar4 >> 1) - pointerY);
+  UiActionQueue_Enqueue(control->actionId,control);
   return;
 }
+
 
 /* Address: 0x004AFA60.
    Ownership: ui/controls/input.
@@ -1329,9 +1350,10 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
    Cross-module calls: UiImageControl_HitTestOpaque [ui/controls/misc], UiRootStack_BringToFront
    [ui/controls/layout].
 */
-void UiPointer_DispatchLeftPress
-               (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
-               UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+void __thandor_void_preserve_eax_ecx_edx
+UiPointer_DispatchLeftPress
+          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
+          UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
   UiSelectableStateFlags *pUVar1;
@@ -1341,20 +1363,12 @@ void UiPointer_DispatchLeftPress
   UiRootNode *pUVar5;
   UiNodeBase *pUVar6;
   UiImageControl *node;
-  UiImageControl *extraout_EAX;
-  UiImageControl *extraout_EAX_00;
-  int iVar7;
-  int extraout_ECX;
-  int iVar8;
-  int extraout_EDX;
   UiRootNode *root;
-  bool bVar9;
+  bool bVar7;
   
   node = g_UiImageControlHoverTarget;
   pUVar5 = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    iVar7 = pointerX;
-    iVar8 = pointerY;
     root = pUVar5;
     if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
       pUVar6 = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
@@ -1375,7 +1389,6 @@ UiPointer_DispatchLeftPressToCapturedTarget:
         if (((node->selectable).base.nodeFlags &
             (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
           UiKeyboardFocus_Set((UiNodeBase *)node);
-          node = extraout_EAX_00;
         }
         (*pUVar4->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
@@ -1390,11 +1403,10 @@ UiPointer_DispatchLeftPressToCapturedTarget:
     }
     while (root != (UiRootNode *)0xffffffff) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-           ((root->base).left <= iVar7)) && ((root->base).top <= iVar8)) &&
-         ((iVar7 < (root->base).right && (iVar8 < (root->base).bottom)))) {
+           ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
+         ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
         node = (UiImageControl *)(*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        bVar9 = root < pUVar5;
-        if ((root != pUVar5) && (UiRootStack_BringToFront(root), node = extraout_EAX, bVar9)) {
+        if ((root != pUVar5) && (bVar7 = UiRootStack_BringToFront(root), bVar7)) {
           return;
         }
         if (node == (UiImageControl *)0xffffffff) {
@@ -1404,15 +1416,15 @@ UiPointer_DispatchLeftPressToCapturedTarget:
       }
       ppUVar3 = &root->callbacks;
       root = root->previousRoot;
-      bVar9 = false;
       if (((*ppUVar3)->method08 != (UiRootMethod08Callback *)0x0) &&
-         ((*(*ppUVar3)->method08)(root), iVar7 = extraout_ECX, iVar8 = extraout_EDX, bVar9)) {
+         (bVar7 = (*(*ppUVar3)->method08)(root), bVar7)) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x004AFBC0.
    Ownership: ui/controls/input.
@@ -1425,9 +1437,10 @@ UiPointer_DispatchLeftPressToCapturedTarget:
    Cross-module calls: UiImageControl_HitTestOpaque [ui/controls/misc], UiRootStack_BringToFront
    [ui/controls/layout].
 */
-void UiPointer_DispatchMiddlePress
-               (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,
-               UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+void __thandor_void_preserve_eax_ecx_edx
+UiPointer_DispatchMiddlePress
+          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          UiPixelCoordinate pointerX)
 
 {
   UiSelectableStateFlags *pUVar1;
@@ -1437,20 +1450,12 @@ void UiPointer_DispatchMiddlePress
   UiRootNode *pUVar5;
   UiNodeBase *pUVar6;
   UiImageControl *node;
-  UiImageControl *extraout_EAX;
-  UiImageControl *extraout_EAX_00;
-  int iVar7;
-  int extraout_ECX;
-  int iVar8;
-  int extraout_EDX;
   UiRootNode *root;
-  bool bVar9;
+  bool bVar7;
   
   node = g_UiImageControlHoverTarget;
   pUVar5 = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    iVar7 = pointerX;
-    iVar8 = pointerY;
     root = pUVar5;
     if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
       pUVar6 = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
@@ -1465,7 +1470,6 @@ UiPointer_DispatchMiddlePressToCapturedTarget:
         if (((node->selectable).base.nodeFlags &
             (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
           UiKeyboardFocus_Set((UiNodeBase *)node);
-          node = extraout_EAX_00;
         }
         (*pUVar4->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
@@ -1480,11 +1484,10 @@ UiPointer_DispatchMiddlePressToCapturedTarget:
     }
     while (root != (UiRootNode *)0xffffffff) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-           ((root->base).left <= iVar7)) && ((root->base).top <= iVar8)) &&
-         ((iVar7 < (root->base).right && (iVar8 < (root->base).bottom)))) {
+           ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
+         ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
         node = (UiImageControl *)(*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        bVar9 = root < pUVar5;
-        if ((root != pUVar5) && (UiRootStack_BringToFront(root), node = extraout_EAX, bVar9)) {
+        if ((root != pUVar5) && (bVar7 = UiRootStack_BringToFront(root), bVar7)) {
           return;
         }
         if (node == (UiImageControl *)0xffffffff) {
@@ -1494,15 +1497,15 @@ UiPointer_DispatchMiddlePressToCapturedTarget:
       }
       ppUVar3 = &root->callbacks;
       root = root->previousRoot;
-      bVar9 = false;
       if (((*ppUVar3)->method08 != (UiRootMethod08Callback *)0x0) &&
-         ((*(*ppUVar3)->method08)(root), iVar7 = extraout_ECX, iVar8 = extraout_EDX, bVar9)) {
+         (bVar7 = (*(*ppUVar3)->method08)(root), bVar7)) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x004AFD10.
    Ownership: ui/controls/input.
@@ -1514,9 +1517,10 @@ UiPointer_DispatchMiddlePressToCapturedTarget:
    Local calls: UiKeyboardFocus_Set.
    Cross-module calls: UiRootStack_BringToFront [ui/controls/layout].
 */
-void UiPointer_DispatchRightPress
-               (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,
-               UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+void __thandor_void_preserve_eax_ecx_edx
+UiPointer_DispatchRightPress
+          (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
+          UiPixelCoordinate pointerX)
 
 {
   UiSelectableStateFlags *pUVar1;
@@ -1524,19 +1528,11 @@ void UiPointer_DispatchRightPress
   UiNodeVtable *pUVar3;
   UiRootNode *pUVar4;
   UiNodeBase *node;
-  UiNodeBase *extraout_EAX;
-  UiNodeBase *extraout_EAX_00;
-  int iVar5;
-  int extraout_ECX;
-  int iVar6;
-  int extraout_EDX;
   UiRootNode *root;
-  bool bVar7;
+  bool bVar5;
   
   pUVar4 = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    iVar5 = pointerX;
-    iVar6 = pointerY;
     root = pUVar4;
     if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
       pUVar1 = &(g_UiImageControlHoverTarget->selectable).stateFlags;
@@ -1544,11 +1540,10 @@ void UiPointer_DispatchRightPress
     }
     while (root != (UiRootNode *)0xffffffff) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-           ((root->base).left <= iVar5)) && ((root->base).top <= iVar6)) &&
-         ((iVar5 < (root->base).right && (iVar6 < (root->base).bottom)))) {
+           ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
+         ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
         node = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        bVar7 = root < pUVar4;
-        if ((root != pUVar4) && (UiRootStack_BringToFront(root), node = extraout_EAX, bVar7)) {
+        if ((root != pUVar4) && (bVar5 = UiRootStack_BringToFront(root), bVar5)) {
           return;
         }
         if (node == (UiNodeBase *)0xffffffff) {
@@ -1566,7 +1561,6 @@ void UiPointer_DispatchRightPress
         if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)
         {
           UiKeyboardFocus_Set(node);
-          node = extraout_EAX_00;
         }
         (*pUVar3->rightPress)(wheelDelta,pointerY,pointerX,node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
@@ -1578,9 +1572,8 @@ void UiPointer_DispatchRightPress
       }
       ppUVar2 = &root->callbacks;
       root = root->previousRoot;
-      bVar7 = false;
       if (((*ppUVar2)->method08 != (UiRootMethod08Callback *)0x0) &&
-         ((*(*ppUVar2)->method08)(root), iVar5 = extraout_ECX, iVar6 = extraout_EDX, bVar7)) {
+         (bVar5 = (*(*ppUVar2)->method08)(root), bVar5)) {
         return;
       }
     }
@@ -1588,13 +1581,14 @@ void UiPointer_DispatchRightPress
   return;
 }
 
+
 /* Address: 0x004AFFA0.
    Ownership: ui/controls/input.
    Purpose: Traverses the UI tree in depth-first order to the next non-suppressed node whose flags include 0x02 or
    0x20, then assigns keyboard focus.
    Local calls: UiKeyboardFocus_Set.
 */
-void __cdecl UiKeyboardFocus_MoveNext(void)
+void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
 
 {
   UiNodeBase *node;
@@ -1636,6 +1630,7 @@ joined_r0x004affea:
   return;
 }
 
+
 /* Address: 0x004AFE40.
    Ownership: ui/controls/input.
    Purpose: Updates tooltip/hover tracking, routes motion to the active capture drag slot or to pointerMove on the
@@ -1643,76 +1638,71 @@ joined_r0x004affea:
    Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiTooltip_UpdateHoverTarget
    [ui/controls/text].
 */
-void UiPointer_DispatchMotionAndWheel
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               )
+void __thandor_void_preserve_eax_ecx_edx
+UiPointer_DispatchMotionAndWheel
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
   UiNodeVtable *pUVar1;
-  UiRootCloseCallbackCf *pUVar2;
-  UiPixelCoordinate pointerX_00;
-  UiPixelCoordinate pointerX_01;
-  int extraout_ECX;
-  UiPixelCoordinate pointerY_00;
-  UiRootNode *arg0;
-  UiNodeBase *pUVar4;
-  undefined8 uVar3;
+  UiRootPointerMissPolicyCallback *pUVar2;
+  UiNodeBase *pUVar3;
+  int iVar4;
+  UiRootNode *root;
   
-  pUVar4 = g_UiPointerCaptureTarget;
+  pUVar3 = g_UiPointerCaptureTarget;
   if (g_UiHoverSelectionRecord != (UiCommandRuntimeRecordPrefix *)0x0) {
     g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)0x0;
     InGameSelectionDetailPanel_Rebuild();
   }
   UiTooltip_UpdateHoverTarget(pointerY,pointerX);
-  arg0 = g_UiRootNode;
-  if (pUVar4 != (UiNodeBase *)0xffffffff) {
+  root = g_UiRootNode;
+  if (pUVar3 != (UiNodeBase *)0xffffffff) {
     if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT) {
-      (*pUVar4->vtable->rightDrag)(wheelDelta,pointerY,pointerX,pUVar4);
+      (*pUVar3->vtable->rightDrag)(wheelDelta,pointerY,pointerX,pUVar3);
     }
     else {
-      (*pUVar4->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,pUVar4);
+      (*pUVar3->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,pUVar3);
     }
     return;
   }
   while( true ) {
-    if (arg0 == (UiRootNode *)0xffffffff) {
+    if (root == (UiRootNode *)0xffffffff) {
       return;
     }
-    if (((((arg0->base).left <= pointerX) && ((arg0->base).top <= pointerY)) &&
-        (pointerX < (arg0->base).right)) && (pointerY < (arg0->base).bottom)) {
-      _pUVar4 = (*((arg0->base).vtable)->hitTest)(pointerY,pointerX,&arg0->base);
-      pUVar4 = SUB84(_pUVar4,0);
-      if (pUVar4 == (UiNodeBase *)0xffffffff) {
+    if (((((root->base).left <= pointerX) && ((root->base).top <= pointerY)) &&
+        (pointerX < (root->base).right)) && (pointerY < (root->base).bottom)) {
+      pUVar3 = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
+      if (pUVar3 == (UiNodeBase *)0xffffffff) {
         return;
       }
-      pUVar1 = pUVar4->vtable;
-      (*pUVar1->pointerMove)((UiPixelCoordinate)((ulonglong)_pUVar4 >> 0x20),pointerX_00,pUVar4);
+      pUVar1 = pUVar3->vtable;
+      (*pUVar1->pointerMove)(pointerY,pointerX,pUVar3);
       if (wheelDelta == 0) {
         return;
       }
-      (*pUVar1->pointerWheel)(wheelDelta,pointerY_00,pointerX_01,pUVar4);
+      (*pUVar1->pointerWheel)(wheelDelta,pointerY,pointerX,pUVar3);
       return;
     }
-    pUVar2 = arg0->callbacks[1].closeCf;
-    if (pUVar2 == (UiRootCloseCallbackCf *)0x0) {
+    pUVar2 = root->callbacks->pointerMissPolicy;
+    if (pUVar2 == (UiRootPointerMissPolicyCallback *)0x0) {
       return;
     }
-    uVar3 = (*pUVar2)(arg0);
-    pointerY = (UiPixelCoordinate)((ulonglong)uVar3 >> 0x20);
-    if (-1 < (int)uVar3) break;
-    pointerX = extraout_ECX;
-    arg0 = arg0->previousRoot;
+    iVar4 = (*pUVar2)(root);
+    if (-1 < iVar4) break;
+    root = root->previousRoot;
   }
   return;
 }
+
 
 /* Address: 0x004B09F0.
    Ownership: ui/controls/input.
    Purpose: Forwards pointerWheel to node->parent when one exists.
 */
-void UiNode_ForwardPointerWheelToParent
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiNode_ForwardPointerWheelToParent
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
@@ -1724,19 +1714,21 @@ void UiNode_ForwardPointerWheelToParent
   return;
 }
 
+
 /* Address: 0x004B08C0.
    Ownership: ui/controls/input.
    Purpose: Shared three-argument keyboard fallback in vtable slot +0x30. Event value 0x00010002 calls
    UiKeyboardFocus_MoveNext and returns CF clear; other values return CF set. EAX and companion registers remain
    untouched by the prototype.
 */
-void UiNode_DefaultKeyboardEventMoveFocusNextCf
-               (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-               UiNodeBase *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiNode_DefaultKeyboardEventMoveFocusNextCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {
-  return;
+  return true;
 }
+
 
 /* Address: 0x004AFF60.
    Ownership: ui/controls/input.
@@ -1744,7 +1736,7 @@ void UiNode_DefaultKeyboardEventMoveFocusNextCf
    invalidates the UI.
    Cross-module calls: UiRootStack_InvalidateAll [ui/controls/layout].
 */
-void UiKeyboardFocus_Set(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_Set(UiNodeBase *node)
 
 {
   if (g_UiKeyboardFocusNode != node) {
@@ -1760,3 +1752,4 @@ void UiKeyboardFocus_Set(UiNodeBase *node)
   UiRootStack_InvalidateAll();
   return;
 }
+

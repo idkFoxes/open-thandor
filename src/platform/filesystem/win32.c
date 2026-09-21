@@ -1,6 +1,112 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/filesystem/win32.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/platform/filesystem/win32.h>
 
 /* Implementation ownership: platform/filesystem/win32. */
+
+/* Address: 0x0040F430.
+   Ownership: platform/filesystem/win32.
+   Purpose: Builds the file-enumeration string table with the recovered carry/error result.
+*/
+FileSystemStringTableEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+FileSystem_BuildEnumerationStringTableCf
+          (FileSystemEnumerationMode enumerationMode,dword reserved,byte *pathOrVolumeText)
+
+{
+  short sVar1;
+  byte *outputRecords;
+  byte *pbVar2;
+  byte *memory;
+  FileSystemOutputCapacityBytes FVar3;
+  FileSystemOutputCapacityBytes outputCapacityBytes;
+  FileSystemOutputCapacityBytes FVar4;
+  byte *pbVar5;
+  byte *pbVar6;
+  byte *pbVar7;
+  byte *pbVar8;
+  bool bVar9;
+  ArenaShrinkEaxCf5 AVar10;
+  ArenaFreeEaxCf5 AVar11;
+  ArenaLargestAllocationEaxEcxCf9 AVar12;
+  FileSystemEnumerationEaxEcxCf9 FVar13;
+  FileSystemStringTableEaxEcxCf9 FVar14;
+  FileSystemStringTableEaxEcxCf9 FVar15;
+  
+  AVar12 = (*g_MemoryApi.allocLargestFreeBlock)();
+  outputCapacityBytes = AVar12.blockSizeOrSentinel;
+  outputRecords = (byte *)AVar12.allocationOrError;
+  if (!AVar12.carry) {
+    FVar13 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                       (enumerationMode,reserved,outputCapacityBytes,outputRecords,pathOrVolumeText)
+    ;
+    FVar3 = FVar13.entryCount;
+    pbVar2 = (byte *)FVar13.recordSizeBytes;
+    memory = pbVar2;
+    outputCapacityBytes = FVar3;
+    if (!FVar13.carry) {
+      if (FVar3 == 0) {
+        (*g_MemoryApi.free)(outputRecords);
+        return (FileSystemStringTableEaxEcxCf9)(unkuint9)0;
+      }
+      outputCapacityBytes = FVar3 * (int)pbVar2;
+      AVar10 = (*g_MemoryApi.shrinkInPlace)(outputCapacityBytes,outputRecords);
+      memory = (byte *)AVar10.scratchOrError;
+      if (!AVar10.carry) {
+        AVar12 = (*g_MemoryApi.allocLargestFreeBlock)();
+        outputCapacityBytes = AVar12.blockSizeOrSentinel;
+        memory = (byte *)AVar12.allocationOrError;
+        if (!AVar12.carry) {
+          pbVar8 = memory + FVar3 * 4;
+          bVar9 = FVar3 * 4 <= outputCapacityBytes;
+          outputCapacityBytes = outputCapacityBytes + FVar3 * -4;
+          FVar4 = FVar3;
+          pbVar5 = memory;
+          pbVar7 = outputRecords;
+          if (bVar9 && outputCapacityBytes != 0) {
+            do {
+              *(byte **)pbVar5 = pbVar8;
+              pbVar6 = pbVar7;
+              do {
+                sVar1 = *(short *)pbVar6;
+                *(short *)pbVar8 = sVar1;
+                pbVar6 = pbVar6 + 2;
+                pbVar8 = pbVar8 + 2;
+                bVar9 = outputCapacityBytes < 2;
+                outputCapacityBytes = outputCapacityBytes - 2;
+                if (bVar9 || outputCapacityBytes == 0) goto LAB_0040f509;
+              } while (sVar1 != 0);
+              pbVar5 = pbVar5 + 4;
+              pbVar7 = pbVar7 + (int)pbVar2;
+              FVar4 = FVar4 - 1;
+              if (FVar4 == 0) {
+                (*g_MemoryApi.shrinkInPlace)((int)pbVar8 - (int)memory,memory);
+                (*g_MemoryApi.free)(outputRecords);
+                FVar14.entryCountOrScratch = FVar3;
+                FVar14.tableOrError = (dword)memory;
+                FVar14.carry = false;
+                return FVar14;
+              }
+            } while( true );
+          }
+LAB_0040f509:
+          AVar11 = (*g_MemoryApi.free)(memory);
+          memory = (byte *)AVar11.eax;
+        }
+      }
+    }
+    (*g_MemoryApi.free)(outputRecords);
+    outputRecords = memory;
+  }
+  FVar15.entryCountOrScratch = outputCapacityBytes;
+  FVar15.tableOrError = (dword)outputRecords;
+  FVar15.carry = true;
+  return FVar15;
+}
 
 /* Address: 0x00575CB0.
    Ownership: platform/filesystem/win32.
@@ -19,34 +125,36 @@ dword __cdecl FileSystem_Init(void)
   byte *pbVar3;
   BOOL BVar4;
   void *handle;
-  dword dVar5;
-  int iVar6;
-  FileIoByteCount byteCount;
-  dword extraout_ECX;
-  byte *pbVar7;
-  word *pwVar8;
-  undefined1 uVar9;
+  int iVar5;
+  ArenaPayloadByteCount bytes;
+  byte *pbVar6;
+  word *pwVar7;
+  ArenaAllocEaxCf5 AVar8;
+  Win32FileOpenEaxCf5 WVar9;
+  Win32FileSizeEaxCf5 WVar10;
+  Win32FileReadEaxCf5 WVar11;
+  StatusValueEaxCf5 SVar12;
   
   pbVar3 = (byte *)GetCommandLineA();
-  pbVar7 = g_Win32PathScratchA;
+  pbVar6 = g_Win32PathScratchA;
   if (*pbVar3 == 0x22) {
     do {
       pbVar3 = pbVar3 + 1;
       bVar1 = *pbVar3;
-      *pbVar7 = bVar1;
-      pbVar7 = pbVar7 + 1;
+      *pbVar6 = bVar1;
+      pbVar6 = pbVar6 + 1;
     } while (bVar1 != 0x22);
   }
   else {
     do {
       bVar1 = *pbVar3;
-      *pbVar7 = bVar1;
+      *pbVar6 = bVar1;
       pbVar3 = pbVar3 + 1;
-      pbVar7 = pbVar7 + 1;
+      pbVar6 = pbVar6 + 1;
       if (bVar1 == 0) break;
     } while (bVar1 != 0x20);
   }
-  pbVar7[-1] = 0;
+  pbVar6[-1] = 0;
   Text_CopyNarrowToUtf16Cf(0x200,g_PackageLastErrorPath,g_Win32PathScratchA);
   WidePath_SplitParentAndLeaf
             ((word *)g_Win32PathScratchA,(word *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath)
@@ -78,86 +186,87 @@ dword __cdecl FileSystem_Init(void)
   g_FileSystemInitComputerNameCapacityOrConfigCursor = (undefined *)0x100;
   BVar4 = GetComputerNameA((LPSTR)g_Win32PathScratchA,
                            (LPDWORD)&g_FileSystemInitComputerNameCapacityOrConfigCursor);
-  uVar9 = 0;
   if (BVar4 != 0) {
-    uVar9 = 0;
-    pwVar8 = g_DefaultComputerLabelUtf16;
-    for (iVar6 = 0x10; iVar6 != 0; iVar6 = iVar6 + -1) {
-      pwVar8[0] = 0;
-      pwVar8[1] = 0;
-      pwVar8 = pwVar8 + 2;
+    pwVar7 = g_DefaultComputerLabelUtf16;
+    for (iVar5 = 0x10; iVar5 != 0; iVar5 = iVar5 + -1) {
+      pwVar7[0] = 0;
+      pwVar7[1] = 0;
+      pwVar7 = pwVar7 + 2;
     }
     Text_CopyNarrowToUtf16Cf(0x40,g_DefaultComputerLabelUtf16,g_Win32PathScratchA);
   }
-  pbVar3 = ArenaHeap_Alloc(0x800000);
-  if ((bool)uVar9) {
-                    
-    FatalError_Exit();
+  AVar8 = ArenaHeap_Alloc(0x800000);
+  if (AVar8.carry) {
+                    // WARNING: Subroutine does not return
+    FatalError_Exit(0x407d40,true);
   }
-  g_PackageScratchBuffer = pbVar3;
-  handle = (void *)Win32File_OpenCf(0,(word *)u_THANDOR_cfg_0040e23d);
-  if ((bool)uVar9) {
+  g_PackageScratchBuffer = (byte *)AVar8.eax;
+  WVar9 = Win32File_OpenCf(0,(word *)u_THANDOR_cfg_0040e23d);
+  handle = (void *)WVar9.eax;
+  if (WVar9.carry) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,(word *)u_THANDOR_cfg_0040e23d,
                (word *)&g_ExecutableDirectoryUtf16);
-    handle = (void *)Win32File_OpenCf(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    if ((bool)uVar9) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
+    WVar9 = Win32File_OpenCf(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    handle = (void *)WVar9.eax;
+    if (WVar9.carry) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
   }
-  dVar5 = Win32File_GetSizeCf(handle);
-  if (((!(bool)uVar9) && (uVar9 = false, dVar5 != 0)) &&
-     (pbVar3 = ArenaHeap_Alloc(dVar5), !(bool)uVar9)) {
-    Win32File_ReadExactCf(byteCount,pbVar3,handle);
-    dVar5 = extraout_ECX;
-    pbVar7 = pbVar3;
-    dVar2 = extraout_ECX;
-    if ((bool)uVar9) {
-      ArenaHeap_Free(pbVar3);
-    }
-    else {
-      do {
-        while( true ) {
-          g_FileSystemConfigRemainingBytes = dVar2;
-          g_FileSystemInitComputerNameCapacityOrConfigCursor = pbVar7;
-          bVar1 = *pbVar3;
-          uVar9 = bVar1 < 0x20;
-          if (0x20 < bVar1) break;
+  WVar10 = Win32File_GetSizeCf(handle);
+  bytes = WVar10.eax;
+  if ((!WVar10.carry) && (bytes != 0)) {
+    AVar8 = ArenaHeap_Alloc(bytes);
+    pbVar3 = (byte *)AVar8.eax;
+    if (!AVar8.carry) {
+      WVar11 = Win32File_ReadExactCf(bytes,pbVar3,handle);
+      pbVar6 = pbVar3;
+      dVar2 = bytes;
+      if (WVar11.carry) {
+        ArenaHeap_Free(pbVar3);
+      }
+      else {
+        do {
+          while( true ) {
+            g_FileSystemConfigRemainingBytes = dVar2;
+            g_FileSystemInitComputerNameCapacityOrConfigCursor = pbVar6;
+            bVar1 = *pbVar3;
+            if (0x20 < bVar1) break;
 FileSystemConfig_TerminateSeparatorOrComment:
-          *pbVar3 = 0;
-          pbVar3 = pbVar3 + 1;
-          dVar5 = dVar5 - 1;
-          pbVar7 = g_FileSystemInitComputerNameCapacityOrConfigCursor;
-          dVar2 = g_FileSystemConfigRemainingBytes;
-          if (dVar5 == 0) goto FileSystemConfig_CloseInput;
-        }
-        uVar9 = bVar1 < 0x5b;
-        if (bVar1 == 0x5b) {
-          do {
             *pbVar3 = 0;
             pbVar3 = pbVar3 + 1;
-            dVar5 = dVar5 - 1;
-            if (dVar5 == 0) goto FileSystemConfig_CloseInput;
-            uVar9 = *pbVar3 < 0x5d;
-          } while (*pbVar3 != 0x5d);
-          goto FileSystemConfig_TerminateSeparatorOrComment;
-        }
-        *pbVar3 = (&g_FileSystemConfigCharacterNormalizationMap)[bVar1];
-        pbVar3 = pbVar3 + 1;
-        dVar5 = dVar5 - 1;
-        pbVar7 = g_FileSystemInitComputerNameCapacityOrConfigCursor;
-        dVar2 = g_FileSystemConfigRemainingBytes;
-      } while (dVar5 != 0);
+            bytes = bytes - 1;
+            pbVar6 = g_FileSystemInitComputerNameCapacityOrConfigCursor;
+            dVar2 = g_FileSystemConfigRemainingBytes;
+            if (bytes == 0) goto FileSystemConfig_CloseInput;
+          }
+          if (bVar1 == 0x5b) {
+            do {
+              *pbVar3 = 0;
+              pbVar3 = pbVar3 + 1;
+              bytes = bytes - 1;
+              if (bytes == 0) goto FileSystemConfig_CloseInput;
+            } while (*pbVar3 != 0x5d);
+            goto FileSystemConfig_TerminateSeparatorOrComment;
+          }
+          *pbVar3 = (&g_FileSystemConfigCharacterNormalizationMap)[bVar1];
+          pbVar3 = pbVar3 + 1;
+          bytes = bytes - 1;
+          pbVar6 = g_FileSystemInitComputerNameCapacityOrConfigCursor;
+          dVar2 = g_FileSystemConfigRemainingBytes;
+        } while (bytes != 0);
+      }
     }
   }
 FileSystemConfig_CloseInput:
   Win32File_Close(handle);
 FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
   Win32File_GetCurrentDirectoryCf(g_InitialWorkingDirectory.codeUnits);
-  dVar5 = Package_MountLowPriority((word *)u_engine_pck_0040e255);
-  if (!(bool)uVar9) {
-    g_EnginePackageLowPriorityMountHandle = dVar5;
+  SVar12 = Package_MountLowPriority((word *)u_engine_pck_0040e255);
+  if (!SVar12.carry) {
+    g_EnginePackageLowPriorityMountHandle = SVar12.valueOrError;
   }
-  return dVar5;
+  return SVar12.valueOrError;
 }
+
 
 /* Address: 0x005762F0.
    Ownership: platform/filesystem/win32.
@@ -165,16 +274,18 @@ FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
    date with CF clear.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-undefined8 Win32File_GetLastWriteDosDateCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDateCf(word *path)
 
 {
-  HANDLE hFile;
   BOOL fileTimeQuerySucceeded;
-  undefined4 in_EDX;
-  undefined1 in_CF;
+  HANDLE hFile;
+  Win32FileOpenEaxCf5 WVar1;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   
-  hFile = (HANDLE)Win32File_OpenCf(0,path);
-  if ((!(bool)in_CF) && (hFile != (HANDLE)0xffffffff)) {
+  WVar1 = Win32File_OpenCf(0,path);
+  hFile = (HANDLE)WVar1.eax;
+  if ((!WVar1.carry) && (hFile != (HANDLE)0xffffffff)) {
     fileTimeQuerySucceeded =
          GetFileTime(hFile,(LPFILETIME)0x0,(LPFILETIME)0x0,
                      (LPFILETIME)&g_Win32FileLastWriteTimeScratch);
@@ -185,11 +296,16 @@ undefined8 Win32File_GetLastWriteDosDateCf(word *path)
                 ((FILETIME *)&g_Win32FileLastWriteTimeScratch,
                  (LPWORD)((int)&g_Win32FileCreationTimeOrDosDateScratch + 2),
                  (LPWORD)&g_Win32FileCreationTimeOrDosDateScratch);
-      return CONCAT44(in_EDX,g_Win32FileCreationTimeOrDosDateScratch);
+      SVar2.carry = false;
+      SVar2.valueOrError = g_Win32FileCreationTimeOrDosDateScratch;
+      return SVar2;
     }
   }
-  return CONCAT44(in_EDX,hFile);
+  SVar3.carry = true;
+  SVar3.valueOrError = (dword)hFile;
+  return SVar3;
 }
+
 
 /* Address: 0x00576360.
    Ownership: platform/filesystem/win32.
@@ -197,27 +313,34 @@ undefined8 Win32File_GetLastWriteDosDateCf(word *path)
    failure.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-undefined8 Win32File_GetLastWriteTimeHighCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHighCf(word *path)
 
 {
-  HANDLE hFile;
   BOOL fileTimeQuerySucceeded;
-  undefined4 in_EDX;
-  undefined1 in_CF;
+  HANDLE hFile;
+  Win32FileOpenEaxCf5 WVar1;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   
-  hFile = (HANDLE)Win32File_OpenCf(0,path);
-  if (!(bool)in_CF) {
+  WVar1 = Win32File_OpenCf(0,path);
+  hFile = (HANDLE)WVar1.eax;
+  if (!WVar1.carry) {
     fileTimeQuerySucceeded =
          GetFileTime(hFile,(LPFILETIME)0x0,(LPFILETIME)0x0,
                      (LPFILETIME)&g_Win32FileLastWriteTimeScratch);
     Win32File_Close(hFile);
     hFile = (HANDLE)0x1;
     if (fileTimeQuerySucceeded != 0) {
-      return CONCAT44(in_EDX,g_Win32FileLastWriteTimeHighScratch);
+      SVar2.carry = false;
+      SVar2.valueOrError = g_Win32FileLastWriteTimeHighScratch;
+      return SVar2;
     }
   }
-  return CONCAT44(in_EDX,hFile);
+  SVar3.carry = true;
+  SVar3.valueOrError = (dword)hFile;
+  return SVar3;
 }
+
 
 /* Address: 0x005763C0.
    Ownership: platform/filesystem/win32.
@@ -228,13 +351,14 @@ undefined8 Win32File_GetLastWriteTimeHighCf(word *path)
 dword Win32Drive_GetVolumeSerialNumberCf(byte *outputLabel,char *path)
 
 {
-  HANDLE hFile;
   BOOL volumeInformationQuerySucceeded;
+  HANDLE hFile;
   dword volumeSerialNumber;
-  undefined1 in_CF;
+  Win32FileOpenEaxCf5 WVar1;
   
-  hFile = (HANDLE)Win32File_OpenCf(0,(word *)path);
-  if (!(bool)in_CF) {
+  WVar1 = Win32File_OpenCf(0,(word *)path);
+  hFile = (HANDLE)WVar1.eax;
+  if (!WVar1.carry) {
     volumeInformationQuerySucceeded =
          GetFileTime(hFile,(LPFILETIME)&g_Win32FileCreationTimeOrDosDateScratch,
                      (LPFILETIME)&g_Win32FileLastAccessTimeScratch,
@@ -249,6 +373,7 @@ dword Win32Drive_GetVolumeSerialNumberCf(byte *outputLabel,char *path)
   }
   return (dword)hFile;
 }
+
 
 /* Address: 0x00575F40.
    Ownership: platform/filesystem/win32.
@@ -272,18 +397,123 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
    function body bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: Win32Drive_GetEngineTypeCode.
 */
-undefined8 Win32Drive_CheckMediaReadyCf(DosDriveLetterCode32 driveLetter)
+bool __thandor_cf_preserve_eax_ecx_edx
+Win32Drive_CheckMediaReadyCf(DosDriveLetterCode32 driveLetter)
 
 {
-  undefined4 in_EAX;
   dword driveTypeCode;
-  undefined4 in_EDX;
   
   driveTypeCode = Win32Drive_GetEngineTypeCode(driveLetter);
   if ((driveTypeCode != 0x28) && (driveTypeCode != 0x2b)) {
-    return CONCAT44(in_EDX,in_EAX);
+    return false;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return true;
+}
+
+
+/* Address: 0x0040EF50.
+   Ownership: platform/filesystem/win32.
+   Purpose: Loads a whole file through the recovered file-system path and returns the carry/error contract.
+*/
+FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(word *pathUtf16)
+
+{
+  void *handle;
+  void *bytes;
+  FileSystemOpenEaxCf5 FVar1;
+  FileSystemSizeEaxCf5 FVar2;
+  ArenaAllocEaxCf5 AVar3;
+  FileSystemReadEaxCf5 FVar4;
+  FileBufferEaxCf5 FVar5;
+  
+  WidePath_CombineDirectoryAndLeaf
+            ((word *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
+             (word *)&g_ExecutableDirectoryUtf16);
+  FVar1 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+  handle = (void *)FVar1.eax;
+  if (FVar1.carry) {
+    FVar1 = (*g_FileSystemOpenCf)(0,pathUtf16);
+    handle = (void *)FVar1.eax;
+    if (FVar1.carry) goto LAB_0040eff4;
+  }
+  FVar2 = (*g_FileSystemGetSizeCf)(handle);
+  bytes = (void *)FVar2.eax;
+  if (!FVar2.carry) {
+    AVar3 = (*g_MemoryApi.alloc)((dword)bytes);
+    if (AVar3.carry) {
+      (*g_WideNumberFormatUtf16)
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
+      bytes = (void *)0x5;
+    }
+    else {
+      FVar4 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)AVar3.eax,handle);
+      bytes = (void *)FVar4.eax;
+      if (!FVar4.carry) {
+        (*g_FileSystemClose)(handle);
+        return (FileBufferEaxCf5)((uint5)AVar3 & 0xffffffff);
+      }
+      (*g_MemoryApi.free)((void *)AVar3.eax);
+    }
+  }
+  (*g_FileSystemClose)(handle);
+  handle = bytes;
+LAB_0040eff4:
+  FVar5.carry = true;
+  FVar5.bufferOrError = handle;
+  return FVar5;
+}
+
+/* Address: 0x0040F120.
+   Ownership: platform/filesystem/win32.
+   Purpose: Loads a whole file through the alternate recovered path and returns the carry/error contract.
+*/
+FileBufferEaxCf5 __thandor_eax_cf_preserve_edx
+FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
+
+{
+  void *handle;
+  void *bytes;
+  FileSystemOpenEaxCf5 FVar1;
+  FileSystemSizeEaxCf5 FVar2;
+  ArenaAllocEaxCf5 AVar3;
+  FileSystemReadEaxCf5 FVar4;
+  FileBufferEaxCf5 FVar5;
+  
+  WidePath_CombineDirectoryAndLeaf
+            ((word *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
+             (word *)&g_ExecutableDirectoryUtf16);
+  FVar1 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+  handle = (void *)FVar1.eax;
+  if (FVar1.carry) {
+    FVar1 = (*g_FileSystemOpenCf)(0,pathUtf16);
+    handle = (void *)FVar1.eax;
+    if (FVar1.carry) goto LAB_0040f1c3;
+  }
+  FVar2 = (*g_FileSystemGetSizeCf)(handle);
+  bytes = (void *)FVar2.eax;
+  if (!FVar2.carry) {
+    AVar3 = (*g_MemoryApi.alloc)((dword)bytes);
+    if (AVar3.carry) {
+      (*g_WideNumberFormatUtf16)
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
+      bytes = (void *)0x5;
+    }
+    else {
+      FVar4 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)AVar3.eax,handle);
+      bytes = (void *)FVar4.eax;
+      if (!FVar4.carry) {
+        (*g_FileSystemClose)(handle);
+        return (FileBufferEaxCf5)((uint5)AVar3 & 0xffffffff);
+      }
+      (*g_MemoryApi.free)((void *)AVar3.eax);
+    }
+  }
+  (*g_FileSystemClose)(handle);
+  handle = bytes;
+LAB_0040f1c3:
+  FVar5.carry = true;
+  FVar5.bufferOrError = handle;
+  return FVar5;
 }
 
 /* Address: 0x0040F1F0.
@@ -291,54 +521,75 @@ undefined8 Win32Drive_CheckMediaReadyCf(DosDriveLetterCode32 driveLetter)
    Purpose: Opens a UTF-16 path with engine mode 3, writes exactly byteCount bytes, and closes the handle. On write
    failure it closes and deletes the partial file. CF clear returns EAX zero; CF set preserves the backend error.
 */
-undefined4 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *source,word *path)
+StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *source,word *path)
 
 {
   void *handle;
-  undefined1 in_CF;
+  void *writeFailureStatusCode;
+  FileSystemOpenEaxCf5 FVar1;
+  FileSystemWriteEaxCf5 FVar2;
+  StatusValueEaxCf5 SVar3;
+  StatusValueEaxCf5 SVar4;
   
-  handle = (void *)(*g_FileSystemOpenCf)
-                             (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,
-                              path);
-  if (!(bool)in_CF) {
-    (*g_FileSystemWriteExactOrFlushCf)(byteCount,source,handle);
-    if (!(bool)in_CF) {
+  FVar1 = (*g_FileSystemOpenCf)
+                    (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path);
+  handle = (void *)FVar1.eax;
+  if (!FVar1.carry) {
+    FVar2 = (*g_FileSystemWriteExactOrFlushCf)(byteCount,source,handle);
+    writeFailureStatusCode = (void *)FVar2.eax;
+    if (!FVar2.carry) {
       (*g_FileSystemClose)(handle);
-      return 0;
+      SVar3.valueOrError = 0;
+      SVar3.carry = false;
+      return SVar3;
     }
     (*g_FileSystemClose)(handle);
-    handle = (void *)0x1;
+    handle = writeFailureStatusCode;
     (*g_FileSystemDeleteCf)(1,path);
   }
-  return handle;
+  SVar4.carry = true;
+  SVar4.valueOrError = (dword)handle;
+  return SVar4;
 }
+
 
 /* Address: 0x00576070.
    Ownership: platform/filesystem/win32.
    Purpose: Writes exactly byteCount bytes, or flushes the handle when byteCount is zero. CF set returns engine
    error 7 or 8.
 */
-dword Win32File_WriteExactOrFlushCf(FileIoByteCount byteCount,void *source,void *handle)
+Win32FileWriteEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_WriteExactOrFlushCf(FileIoByteCount byteCount,void *source,void *handle)
 
 {
   BOOL operationSucceeded;
   dword writeCompletionStatusCode;
   BOOL setEndOfFileSucceeded;
+  Win32FileWriteEaxCf5 WVar1;
+  Win32FileWriteEaxCf5 WVar2;
+  Win32FileWriteEaxCf5 WVar3;
   
   g_Win32FileBytesTransferred = 0;
   if (byteCount == 0) {
     setEndOfFileSucceeded = SetEndOfFile(handle);
-    return setEndOfFileSucceeded;
+    WVar2.carry = false;
+    WVar2.eax = setEndOfFileSucceeded;
+    return WVar2;
   }
   operationSucceeded =
        WriteFile(handle,source,byteCount,&g_Win32FileBytesTransferred,(LPOVERLAPPED)0x0);
   writeCompletionStatusCode = 8;
   if ((operationSucceeded != 0) &&
      (writeCompletionStatusCode = 7, byteCount == g_Win32FileBytesTransferred)) {
-    return writeCompletionStatusCode;
+    WVar1.eax = 7;
+    WVar1.carry = false;
+    return WVar1;
   }
-  return writeCompletionStatusCode;
+  WVar3.carry = true;
+  WVar3.eax = writeCompletionStatusCode;
+  return WVar3;
 }
+
 
 /* Address: 0x00576140.
    Ownership: platform/filesystem/win32.
@@ -362,17 +613,25 @@ dword Win32File_GetPositionCf(void *handle)
    distance→FileSystemFilePosition_V331. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-dword Win32File_SeekCf(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle)
+Win32FileSeekEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_SeekCf(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle)
 
 {
   DWORD newFilePosition;
+  Win32FileSeekEaxCf5 WVar1;
+  Win32FileSeekEaxCf5 WVar2;
   
   newFilePosition = SetFilePointer(handle,distance,(PLONG)0x0,moveMethod);
   if (newFilePosition != 0xffffffff) {
-    return newFilePosition;
+    WVar1.carry = false;
+    WVar1.eax = newFilePosition;
+    return WVar1;
   }
-  return 9;
+  WVar2.carry = true;
+  WVar2.eax = 9;
+  return WVar2;
 }
+
 
 /* Address: 0x005761C0.
    Ownership: platform/filesystem/win32.
@@ -401,21 +660,28 @@ dword Win32File_DeleteCf(dword unusedFlags,word *path)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-undefined8 Win32File_MoveCf(word *destinationPath,word *sourcePath)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_MoveCf(word *destinationPath,word *sourcePath)
 
 {
   BOOL operationSucceeded;
-  undefined4 in_EDX;
+  StatusValueEaxCf5 SVar1;
+  StatusValueEaxCf5 SVar2;
   
   Package_SetLastErrorPath(sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchB,destinationPath);
   operationSucceeded = MoveFileA((LPCSTR)g_Win32PathScratchA,(LPCSTR)g_Win32PathScratchB);
   if (operationSucceeded != 0) {
-    return CONCAT44(in_EDX,operationSucceeded);
+    SVar1.carry = false;
+    SVar1.valueOrError = operationSucceeded;
+    return SVar1;
   }
-  return CONCAT44(in_EDX,1);
+  SVar2.carry = true;
+  SVar2.valueOrError = 1;
+  return SVar2;
 }
+
 
 /* Address: 0x00576280.
    Ownership: platform/filesystem/win32.
@@ -424,21 +690,28 @@ undefined8 Win32File_MoveCf(word *destinationPath,word *sourcePath)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-undefined8 Win32File_CopyCf(word *destinationPath,word *sourcePath)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_CopyCf(word *destinationPath,word *sourcePath)
 
 {
   BOOL operationSucceeded;
-  undefined4 in_EDX;
+  StatusValueEaxCf5 SVar1;
+  StatusValueEaxCf5 SVar2;
   
   Package_SetLastErrorPath(sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchB,destinationPath);
   operationSucceeded = CopyFileA((LPCSTR)g_Win32PathScratchA,(LPCSTR)g_Win32PathScratchB,1);
   if (operationSucceeded != 0) {
-    return CONCAT44(in_EDX,operationSucceeded);
+    SVar1.carry = false;
+    SVar1.valueOrError = operationSucceeded;
+    return SVar1;
   }
-  return CONCAT44(in_EDX,1);
+  SVar2.carry = true;
+  SVar2.valueOrError = 1;
+  return SVar2;
 }
+
 
 /* Address: 0x005764E0.
    Ownership: platform/filesystem/win32.
@@ -450,12 +723,13 @@ undefined8 Win32File_CopyCf(word *destinationPath,word *sourcePath)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext], WidePath_SplitParentAndLeaf [core/text/path].
 */
-undefined8 Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *path)
 
 {
-  BOOL BVar1;
-  undefined4 in_EDX;
-  undefined1 uVar2;
+  uint uVar1;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   word awStack_418 [256];
   word local_218 [248];
   undefined4 uStack_28;
@@ -463,46 +737,56 @@ undefined8 Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags f
   Package_SetLastErrorPath(path);
   uStack_28 = 0x576502;
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
-  BVar1 = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
-  if (BVar1 == 0) {
+  uVar1 = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
+  if (uVar1 == 0) {
     if ((flags & FILESYSTEM_CREATE_DIRECTORY_RECURSIVE) != 0) {
-      uVar2 = &stack0xffffffe8 < (undefined1 *)0x400;
       WidePath_SplitParentAndLeaf(local_218,awStack_418,path);
-      Win32File_CreateDirectoryRecursiveCf(flags,awStack_418);
-      if (!(bool)uVar2) {
+      SVar2 = Win32File_CreateDirectoryRecursiveCf(flags,awStack_418);
+      if (!SVar2.carry) {
         RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
-        BVar1 = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
-        if (BVar1 != 0)
+        uVar1 = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
+        if (uVar1 != 0)
         goto 
         Win32File_CreateDirectoryRecursiveCf_ReturnSuccessWithCarryClearAfterDirectOrRecursiveCreate
         ;
       }
     }
     Package_SetLastErrorPath(path);
-    return CONCAT44(in_EDX,8);
+    SVar3.carry = true;
+    SVar3.valueOrError = 8;
+    return SVar3;
   }
 Win32File_CreateDirectoryRecursiveCf_ReturnSuccessWithCarryClearAfterDirectOrRecursiveCreate:
-  return CONCAT44(in_EDX,BVar1);
+  SVar2.carry = false;
+  SVar2.valueOrError = uVar1;
+  return SVar2;
 }
+
 
 /* Address: 0x005765A0.
    Ownership: platform/filesystem/win32.
    Purpose: Converts one UTF-16 path and calls RemoveDirectoryA. Error 11 is returned with CF set.
    Cross-module calls: RichTextCommandStream_CopyToNarrowCf [assets/text/richtext].
 */
-undefined8 Win32File_RemoveDirectoryCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_RemoveDirectoryCf(word *path)
 
 {
   BOOL operationSucceeded;
-  undefined4 in_EDX;
+  StatusValueEaxCf5 SVar1;
+  StatusValueEaxCf5 SVar2;
   
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
   operationSucceeded = RemoveDirectoryA((LPCSTR)g_Win32PathScratchA);
   if (operationSucceeded != 0) {
-    return CONCAT44(in_EDX,operationSucceeded);
+    SVar1.carry = false;
+    SVar1.valueOrError = operationSucceeded;
+    return SVar1;
   }
-  return CONCAT44(in_EDX,0xb);
+  SVar2.carry = true;
+  SVar2.valueOrError = 0xb;
+  return SVar2;
 }
+
 
 /* Address: 0x005765F0.
    Ownership: platform/filesystem/win32.
@@ -540,13 +824,15 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
    Purpose: Writes uppercase letters for every bit returned by GetLogicalDrives and returns the number of letters
    written.
 */
-dword Win32Drive_EnumerateLetters(byte *lettersOut)
+DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx
+Win32Drive_EnumerateLetters(byte *lettersOut)
 
 {
   uint logicalDriveMask;
   dword enumeratedDriveCount;
   byte currentDriveLetter;
   int driveLettersRemaining;
+  DriveLetterEnumerationEaxEcx8 DVar1;
   
   logicalDriveMask = GetLogicalDrives();
   enumeratedDriveCount = 0;
@@ -562,8 +848,11 @@ dword Win32Drive_EnumerateLetters(byte *lettersOut)
     currentDriveLetter = currentDriveLetter + 1;
     driveLettersRemaining = driveLettersRemaining + -1;
   } while (driveLettersRemaining != 0);
-  return enumeratedDriveCount;
+  DVar1.driveCountMirror = enumeratedDriveCount;
+  DVar1.driveCount = enumeratedDriveCount;
+  return DVar1;
 }
+
 
 /* Address: 0x00576790.
    Ownership: platform/filesystem/win32.
@@ -572,11 +861,11 @@ dword Win32Drive_EnumerateLetters(byte *lettersOut)
    means rejected. Typed parameters: p0 flags→FileSystemDos83ValidationFlags_V331. Nearby but non-identical
    semantic domains were explicitly deferred.
 */
-undefined4 Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *pathAnsi)
+bool __thandor_cf_preserve_eax_ecx_edx
+Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *pathAnsi)
 
 {
   byte bVar1;
-  undefined4 in_EAX;
   int iVar2;
   byte *pbVar3;
   bool bVar4;
@@ -585,30 +874,28 @@ undefined4 Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *
     if (pathAnsi[1] == 0x3a) {
       bVar1 = *pathAnsi;
       if (bVar1 < 0x41) {
-        return in_EAX;
+        return true;
       }
       if (0x7a < bVar1) {
-        return in_EAX;
+        return true;
       }
       if ((bVar1 < 0x61) && (0x5a < bVar1)) {
-        return in_EAX;
+        return true;
       }
       pathAnsi = pathAnsi + 2;
     }
-    bVar4 = *pathAnsi < 0x5c;
     if (*pathAnsi == 0x5c) {
       pathAnsi = pathAnsi + 1;
     }
-    while (Win32Path_ValidateDos83Cf
-                     (flags | (FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION|
-                              FILESYSTEM_DOS83_COMPONENT_ONLY),pathAnsi), !bVar4) {
+    while (bVar4 = Win32Path_ValidateDos83Cf
+                             (flags | (FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION|
+                                      FILESYSTEM_DOS83_COMPONENT_ONLY),pathAnsi), !bVar4) {
       while( true ) {
         bVar1 = *pathAnsi;
         pathAnsi = pathAnsi + 1;
-        bVar4 = bVar1 < 0x5c;
         if (bVar1 == 0x5c) break;
         if (bVar1 == 0) {
-          return in_EAX;
+          return false;
         }
       }
     }
@@ -621,32 +908,32 @@ undefined4 Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *
       if (bVar1 == 0x2a) {
         pathAnsi = pathAnsi + 1;
         if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-          return in_EAX;
+          return true;
         }
         break;
       }
       if (0x2c < bVar1) {
         if (bVar1 < 0x2f) break;
         if (bVar1 == 0x2f) {
-          return in_EAX;
+          return true;
         }
         if (0x39 < bVar1) {
           if (bVar1 == 0x3f) {
             if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-              return in_EAX;
+              return true;
             }
           }
           else {
             if (bVar1 < 0x41) {
-              return in_EAX;
+              return true;
             }
             if (0x5a < bVar1) {
               if (bVar1 == 0x5c) break;
               if (bVar1 < 0x61) {
-                return in_EAX;
+                return true;
               }
               if (0x7a < bVar1) {
-                return in_EAX;
+                return true;
               }
             }
           }
@@ -665,37 +952,37 @@ undefined4 Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *
             pathAnsi = pbVar3 + 1;
             bVar1 = *pathAnsi;
             if (bVar1 == 0) {
-              return in_EAX;
+              return false;
             }
             if (bVar1 == 0x2a) {
               if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-                return in_EAX;
+                return true;
               }
               break;
             }
             if (0x2c < bVar1) {
               if (bVar1 < 0x30) {
-                return in_EAX;
+                return true;
               }
               if (0x39 < bVar1) {
                 if (bVar1 == 0x3f) {
                   if ((flags & FILESYSTEM_DOS83_ALLOW_WILDCARDS) == 0) {
-                    return in_EAX;
+                    return true;
                   }
                 }
                 else {
                   if (bVar1 < 0x41) {
-                    return in_EAX;
+                    return true;
                   }
                   if (0x5a < bVar1) {
                     if (bVar1 == 0x5c) {
-                      return in_EAX;
+                      return false;
                     }
                     if (bVar1 < 0x61) {
-                      return in_EAX;
+                      return true;
                     }
                     if (0x7a < bVar1) {
-                      return in_EAX;
+                      return true;
                     }
                   }
                 }
@@ -705,21 +992,22 @@ undefined4 Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *
           } while (iVar2 != 0);
           bVar1 = pbVar3[2];
           if (bVar1 == 0) {
-            return in_EAX;
+            return false;
           }
         }
         if ((flags & FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION) == 0) {
-          return in_EAX;
+          return true;
         }
         if (bVar1 != 0x5c) {
-          return in_EAX;
+          return true;
         }
       }
-      return in_EAX;
+      return false;
     }
   }
-  return in_EAX;
+  return true;
 }
+
 
 /* Address: 0x00576910.
    Ownership: platform/filesystem/win32.
@@ -731,38 +1019,41 @@ undefined4 Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *
    [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf [assets/text/richtext],
    Utf16String_CompareAsciiCaseInsensitiveFlags [core/text/string].
 */
-dword Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
-                (FileSystemEnumerationMode mode,dword reserved,
-                FileSystemOutputCapacityBytes outputCapacityBytes,byte *outputRecords,
-                byte *pathOrVolumeText)
+FileSystemEnumerationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
+          (FileSystemEnumerationMode mode,dword reserved,
+          FileSystemOutputCapacityBytes outputCapacityBytes,byte *outputRecords,
+          byte *pathOrVolumeText)
 
 {
   HANDLE hFindFile;
   BOOL BVar1;
   uint uVar2;
-  int extraout_ECX;
   int iVar3;
-  int extraout_ECX_00;
   int iVar4;
-  word *pwVar5;
-  word *pwVar6;
-  byte *pbVar7;
-  word *leftText;
-  word *pwVar8;
-  bool bVar9;
-  bool bVar10;
+  dword *rightRecordDwords;
+  dword *pdVar5;
+  word *destination;
+  dword *leftRecordDwords;
+  dword *pdVar6;
+  FileSystemEnumerationEaxEcxCf9 FVar7;
+  FileSystemEnumerationEaxEcxCf9 FVar8;
+  CompareFlagsCfZf2 CVar9;
+  int iVar10;
   
   if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
     g_Win32DriveRootPathScratchA = *pathOrVolumeText;
     BVar1 = GetVolumeInformationA
                       ((LPCSTR)&g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratchA,0x80,
                        (LPDWORD)0x0,(LPDWORD)0x0,(LPDWORD)0x0,(LPSTR)0x0,0);
-    if (BVar1 == 0) {
-      return 0x200;
-    }
+    if (BVar1 == 0) goto LAB_00576af2;
+    uVar2 = 0;
     if (0xff < outputCapacityBytes) {
       Text_CopyNarrowToUtf16Cf(0x200,(word *)outputRecords,g_Win32PathScratchA);
-      return 0x200;
+      FVar8.entryCount = 1;
+      FVar8.recordSizeBytes = 0x200;
+      FVar8.carry = false;
+      return FVar8;
     }
   }
   else {
@@ -771,10 +1062,11 @@ dword Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     hFindFile = FindFirstFileA((LPCSTR)g_Win32PathScratchA,
                                (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
     if (hFindFile == (HANDLE)0xffffffff) {
-      return 0x200;
+LAB_00576af2:
+      return (FileSystemEnumerationEaxEcxCf9)(unkuint9)0x200;
     }
     uVar2 = 0;
-    pwVar5 = (word *)outputRecords;
+    destination = (word *)outputRecords;
     do {
       if (mode == FILESYSTEM_ENUMERATE_FILES) {
         if ((g_Win32FileCreationTimeOrDosDateScratch & 0x18) == 0)
@@ -788,94 +1080,112 @@ dword Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
                  (g_Win32FindDataFileNameThirdCharA != '\0')))))))) {
 Win32FileSystem_AppendCurrentFindEntry:
         if (0x1ff < outputCapacityBytes) {
-          Text_CopyNarrowToUtf16Cf(0x200,pwVar5,(byte *)&g_Win32FindDataFileNameA);
-          pwVar5 = pwVar5 + 0x100;
-          uVar2 = extraout_ECX + 1;
+          Text_CopyNarrowToUtf16Cf(0x200,destination,(byte *)&g_Win32FindDataFileNameA);
+          destination = destination + 0x100;
+          uVar2 = uVar2 + 1;
           outputCapacityBytes = outputCapacityBytes - 0x200;
         }
       }
       BVar1 = FindNextFileA(hFindFile,(LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
     } while (BVar1 != 0);
     FindClose(hFindFile);
-    bVar9 = uVar2 < 2;
-    if (!bVar9) {
+    if (1 < uVar2) {
       iVar3 = uVar2 - 1;
-      bVar10 = iVar3 == 0;
-      pwVar5 = (word *)(outputRecords + 0x200);
-      leftText = (word *)outputRecords;
+      rightRecordDwords = (dword *)(outputRecords + 0x200);
+      leftRecordDwords = (dword *)outputRecords;
+      iVar10 = iVar3;
       do {
         do {
-          Utf16String_CompareAsciiCaseInsensitiveFlags(pwVar5,leftText);
-          if (!bVar9 && !bVar10) {
-            pwVar6 = pwVar5;
-            pbVar7 = g_Win32PathScratchA;
+          CVar9 = Utf16String_CompareAsciiCaseInsensitiveFlags
+                            ((word *)rightRecordDwords,(word *)leftRecordDwords);
+          if (!CVar9.carry && !CVar9.zero) {
+            pdVar5 = rightRecordDwords;
+            pdVar6 = (dword *)g_Win32PathScratchA;
             for (iVar4 = 0x80; iVar4 != 0; iVar4 = iVar4 + -1) {
-              *(undefined4 *)pbVar7 = *(undefined4 *)pwVar6;
-              pwVar6 = pwVar6 + 2;
-              pbVar7 = pbVar7 + 4;
+              *pdVar6 = *pdVar5;
+              pdVar5 = pdVar5 + 1;
+              pdVar6 = pdVar6 + 1;
             }
-            pwVar6 = leftText;
-            pwVar8 = pwVar5;
+            pdVar5 = leftRecordDwords;
+            pdVar6 = rightRecordDwords;
             for (iVar4 = 0x80; iVar4 != 0; iVar4 = iVar4 + -1) {
-              *(undefined4 *)pwVar8 = *(undefined4 *)pwVar6;
-              pwVar6 = pwVar6 + 2;
-              pwVar8 = pwVar8 + 2;
+              *pdVar6 = *pdVar5;
+              pdVar5 = pdVar5 + 1;
+              pdVar6 = pdVar6 + 1;
             }
-            pbVar7 = g_Win32PathScratchA;
-            pwVar6 = leftText;
+            pdVar5 = (dword *)g_Win32PathScratchA;
+            pdVar6 = leftRecordDwords;
             for (iVar4 = 0x80; iVar4 != 0; iVar4 = iVar4 + -1) {
-              *(undefined4 *)pwVar6 = *(undefined4 *)pbVar7;
-              pbVar7 = pbVar7 + 4;
-              pwVar6 = pwVar6 + 2;
+              *pdVar6 = *pdVar5;
+              pdVar5 = pdVar5 + 1;
+              pdVar6 = pdVar6 + 1;
             }
           }
-          pwVar5 = pwVar5 + 0x100;
-          bVar9 = (word *)0xfffffdff < leftText;
-          bVar10 = extraout_ECX_00 == 1;
-          leftText = leftText + 0x100;
-        } while (!bVar10);
-        iVar3 = iVar3 + -1;
-        pwVar5 = (word *)(outputRecords + 0x200);
-        bVar9 = iVar3 == 0;
-        bVar10 = iVar3 == 1;
-        leftText = (word *)outputRecords;
-      } while (!bVar9);
+          rightRecordDwords = rightRecordDwords + 0x80;
+          leftRecordDwords = leftRecordDwords + 0x80;
+          iVar3 = iVar3 + -1;
+        } while (iVar3 != 0);
+        iVar3 = iVar10 + -1;
+        rightRecordDwords = (dword *)(outputRecords + 0x200);
+        leftRecordDwords = (dword *)outputRecords;
+        iVar10 = iVar3;
+      } while (iVar3 != 0);
     }
   }
-  return 0x200;
+  FVar7.entryCount = uVar2;
+  FVar7.recordSizeBytes = 0x200;
+  FVar7.carry = false;
+  return FVar7;
 }
+
 
 /* Address: 0x00576020.
    Ownership: platform/filesystem/win32.
    Purpose: Reads exactly byteCount bytes. CF clear means the requested count was transferred; CF set returns
    engine error 6.
 */
-dword Win32File_ReadExactCf(FileIoByteCount byteCount,void *destination,void *handle)
+Win32FileReadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_ReadExactCf(FileIoByteCount byteCount,void *destination,void *handle)
 
 {
+  Win32FileReadEaxCf5 WVar1;
+  Win32FileReadEaxCf5 WVar2;
+  
   g_Win32FileBytesTransferred = 0;
   ReadFile(handle,destination,byteCount,&g_Win32FileBytesTransferred,(LPOVERLAPPED)0x0);
   if (g_Win32FileBytesTransferred == byteCount) {
-    return g_Win32FileBytesTransferred;
+    WVar1.carry = false;
+    WVar1.eax = g_Win32FileBytesTransferred;
+    return WVar1;
   }
-  return 6;
+  WVar2.carry = true;
+  WVar2.eax = 6;
+  return WVar2;
 }
+
 
 /* Address: 0x00576100.
    Ownership: platform/filesystem/win32.
    Purpose: Returns the low 32-bit file size with CF clear. GetFileSize failure returns zero with CF set.
 */
-dword Win32File_GetSizeCf(void *handle)
+Win32FileSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetSizeCf(void *handle)
 
 {
   DWORD fileSize;
+  Win32FileSizeEaxCf5 WVar1;
+  Win32FileSizeEaxCf5 WVar2;
   
   fileSize = GetFileSize(handle,(LPDWORD)0x0);
   if (fileSize != 0xffffffff) {
-    return fileSize;
+    WVar1.carry = false;
+    WVar1.eax = fileSize;
+    return WVar1;
   }
-  return 0;
+  WVar2.eax = 0;
+  WVar2.carry = true;
+  return WVar2;
 }
+
 
 /* Address: 0x00576430.
    Ownership: platform/filesystem/win32.
@@ -883,22 +1193,26 @@ dword Win32File_GetSizeCf(void *handle)
    failure.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-longlong Win32File_GetCurrentDirectoryCf(word *destination)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_GetCurrentDirectoryCf(word *destination)
 
 {
   DWORD narrowPathLength;
   int copiedPathByteLength;
-  uint in_EDX;
+  StatusValueEaxCf5 SVar1;
   
   narrowPathLength = GetCurrentDirectoryA(0xff,(LPSTR)g_Win32PathScratchA);
   if (narrowPathLength != 0) {
-    copiedPathByteLength = Text_CopyNarrowToUtf16Cf(0x200,destination,g_Win32PathScratchA);
-    return CONCAT44(in_EDX,copiedPathByteLength);
+    SVar1 = Text_CopyNarrowToUtf16Cf(0x200,destination,g_Win32PathScratchA);
+    return (StatusValueEaxCf5)((uint5)SVar1 & 0xffffffff);
   }
   destination[0] = 0;
   destination[1] = 0;
-  return (ulonglong)in_EDX << 0x20;
+  SVar1.valueOrError = 0;
+  SVar1.carry = true;
+  return SVar1;
 }
+
 
 /* Address: 0x00576490.
    Ownership: platform/filesystem/win32.
@@ -906,20 +1220,26 @@ longlong Win32File_GetCurrentDirectoryCf(word *destination)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-undefined8 Win32File_SetCurrentDirectoryCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectoryCf(word *path)
 
 {
   BOOL operationSucceeded;
-  undefined4 in_EDX;
+  StatusValueEaxCf5 SVar1;
+  StatusValueEaxCf5 SVar2;
   
   Package_SetLastErrorPath(path);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
   operationSucceeded = SetCurrentDirectoryA((LPCSTR)g_Win32PathScratchA);
   if (operationSucceeded != 0) {
-    return CONCAT44(in_EDX,operationSucceeded);
+    SVar1.carry = false;
+    SVar1.valueOrError = operationSucceeded;
+    return SVar1;
   }
-  return CONCAT44(in_EDX,10);
+  SVar2.carry = true;
+  SVar2.valueOrError = 10;
+  return SVar2;
 }
+
 
 /* Address: 0x00576650.
    Ownership: platform/filesystem/win32.
@@ -927,7 +1247,8 @@ undefined8 Win32File_SetCurrentDirectoryCf(word *path)
    parameters: p0 driveLetter→DosDriveLetterCode32_V342. Calling convention, exact VariableStorage serialization,
    function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
+EngineDriveTypeCode __thandor_eax_preserve_ecx_edx
+Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
 
 {
   UINT driveTypeCode;
@@ -948,6 +1269,7 @@ EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLette
   return ENGINE_DRIVE_OTHER;
 }
 
+
 /* Address: 0x00575F60.
    Ownership: platform/filesystem/win32.
    Purpose: Converts a UTF-16 path and maps engine open flags to CreateFileA access, sharing, and creation modes.
@@ -957,10 +1279,13 @@ EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLette
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-dword Win32File_OpenCf(FileSystemOpenFlags openFlags,word *path)
+Win32FileOpenEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32File_OpenCf(FileSystemOpenFlags openFlags,word *path)
 
 {
   HANDLE fileHandle;
+  Win32FileOpenEaxCf5 WVar1;
+  Win32FileOpenEaxCf5 WVar2;
   DWORD dwDesiredAccess;
   DWORD dwShareMode;
   DWORD dwCreationDisposition;
@@ -998,18 +1323,24 @@ dword Win32File_OpenCf(FileSystemOpenFlags openFlags,word *path)
   fileHandle = CreateFileA((LPCSTR)g_Win32PathScratchA,dwDesiredAccess,dwShareMode,
                            (LPSECURITY_ATTRIBUTES)0x0,dwCreationDisposition,0x80000080,(HANDLE)0x0);
   if (fileHandle != (HANDLE)0xffffffff) {
-    return (dword)fileHandle;
+    WVar1.carry = false;
+    WVar1.eax = (dword)fileHandle;
+    return WVar1;
   }
-  return 1;
+  WVar2.carry = true;
+  WVar2.eax = 1;
+  return WVar2;
 }
+
 
 /* Address: 0x00576000.
    Ownership: platform/filesystem/win32.
    Purpose: Closes one Win32 file handle.
 */
-void Win32File_Close(void *handle)
+void __thandor_void_preserve_eax_ecx_edx Win32File_Close(void *handle)
 
 {
   CloseHandle(handle);
   return;
 }
+

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/terrain/occupancy.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/terrain/occupancy.h>
 
 /* Implementation ownership: world/terrain/occupancy. */
@@ -14,9 +21,10 @@
    TerrainOccupancyBit2_MarkWedge3, TerrainOccupancyBit2_MarkWedge4, TerrainOccupancyBit2_MarkWedge5.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
-void TerrainOccupancyBit2_MarkAroundWorldPoint
-               (FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
-               FieldGridOccupancyByteIndex occupancyByteOffset,FieldGridAsset *fieldGrid)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkAroundWorldPoint
+          (FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
+          FieldGridOccupancyByteIndex occupancyByteOffset,FieldGridAsset *fieldGrid)
 
 {
   byte *pbVar1;
@@ -28,7 +36,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint
   FieldGridCell *pFVar7;
   FieldGridCell *pFVar8;
   FieldGridCell *cell;
-  qword qVar9;
+  FieldGridCoordinatesEaxEdx8 FVar9;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
     g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
@@ -39,16 +47,16 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint
       g_TerrainScanStepLimit = 0xff;
     }
     g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex = occupancyByteOffset;
-    qVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
-    uVar3 = (int)qVar9 >> 0xc;
+    FVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    uVar3 = FVar9.columnQ12 >> 0xc;
     g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7;
-    uVar5 = (uint)((longlong)qVar9 >> 0x2c);
+    uVar5 = FVar9.rowQ12 >> 0xc;
     if ((((-1 < (int)uVar3) && (uVar4 = fieldGrid->gridWidth & 0x1ffffff, -1 < (int)uVar5)) &&
         (uVar5 < fieldGrid->gridHeight)) &&
        ((uVar3 < uVar4 &&
         (iVar6 = uVar5 * uVar4 + uVar3, (fieldGrid->cells[iVar6].flagsAndMaterial & 0x88006000) == 0
         )))) {
-      pbVar1 = fieldGrid->cells[iVar6].runtime58_6F + occupancyByteOffset + 0x18;
+      pbVar1 = fieldGrid->cells[iVar6].runtime60_6B + occupancyByteOffset + 0x10;
       *pbVar1 = *pbVar1 | 2;
       iVar2 = g_TerrainScanRowStrideBytes;
       pFVar7 = (FieldGridCell *)
@@ -58,9 +66,9 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint
       TerrainOccupancyBit2_MarkWedge0(0,pFVar7);
       cell = pFVar8 + -1;
       TerrainOccupancyBit2_MarkWedge1(0,pFVar8);
-      pFVar7 = (FieldGridCell *)(cell[-1].runtime00_07 + iVar2);
+      pFVar7 = (FieldGridCell *)(cell[-1].runtime0C_3F + iVar2 + -0xc);
       TerrainOccupancyBit2_MarkWedge2(0,cell);
-      pFVar8 = (FieldGridCell *)(pFVar7->runtime00_07 + iVar2);
+      pFVar8 = (FieldGridCell *)(pFVar7->runtime0C_3F + iVar2 + -0xc);
       TerrainOccupancyBit2_MarkWedge3(0,pFVar7);
       TerrainOccupancyBit2_MarkWedge4(0,pFVar8);
       TerrainOccupancyBit2_MarkWedge5(0,pFVar8 + 1);
@@ -68,6 +76,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint
   }
   return;
 }
+
 
 /* Address: 0x00507610.
    Ownership: world/terrain/occupancy.
@@ -78,19 +87,18 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint
    remain unchanged.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
-ulonglong TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                    (int param_1,Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
+dword __thandor_void_preserve_eax_ecx
+TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+          (Q12 neighborhoodRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
 
 {
   uint uVar1;
-  uint in_EAX;
   uint uVar2;
-  int extraout_ECX;
-  uint uVar3;
-  FieldGridCell *pFVar4;
+  int iVar3;
+  uint uVar4;
   FieldGridCell *pFVar5;
   FieldGridCell *pFVar6;
-  int iVar7;
+  FieldGridCell *pFVar7;
   int iVar8;
   int iVar9;
   char cVar11;
@@ -104,66 +112,76 @@ ulonglong TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   undefined8 mm1PackedValue0;
   ulonglong uVar18;
   undefined8 mm2PackedValue0;
-  qword qVar19;
+  FieldGridCoordinatesEaxEdx8 FVar19;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
-    qVar19 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    uVar1 = (neighborhoodRadiusQ12 + 0x7ffU) / 0x901;
+    if (uVar1 == 0) {
+      iVar3 = 2;
+    }
+    else if (uVar1 < 0x100) {
+      iVar3 = uVar1 + 1;
+    }
+    else {
+      iVar3 = 0x100;
+    }
+    FVar19 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     uVar1 = fieldGrid->gridWidth;
-    uVar2 = ((int)qVar19 >> 0xb) + 1 >> 1;
-    uVar3 = (int)((longlong)qVar19 >> 0x2b) + 1 >> 1;
-    if ((((-1 < (int)uVar2) && (-1 < (int)uVar3)) && (uVar3 < fieldGrid->gridHeight)) &&
+    uVar2 = (FVar19.columnQ12 >> 0xb) + 1 >> 1;
+    uVar4 = (FVar19.rowQ12 >> 0xb) + 1 >> 1;
+    if ((((-1 < (int)uVar2) && (-1 < (int)uVar4)) && (uVar4 < fieldGrid->gridHeight)) &&
        (uVar2 < uVar1)) {
-      pFVar6 = fieldGrid->cells + uVar3 * uVar1 + uVar2;
-      uVar10 = pFVar6->occupancyMask;
-      if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-        iVar9 = extraout_ECX + -1;
-        pFVar5 = pFVar6;
-        iVar7 = iVar9;
-        if (iVar9 != 0) {
+      pFVar7 = fieldGrid->cells + uVar4 * uVar1 + uVar2;
+      uVar10 = pFVar7->occupancyMask;
+      if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
+        iVar3 = iVar3 + -1;
+        pFVar6 = pFVar7;
+        iVar8 = iVar3;
+        if (iVar3 != 0) {
           do {
-            uVar10 = uVar10 | *(ulonglong *)((int)(pFVar5 + 1) + 0x70);
-            pFVar4 = pFVar6;
-            iVar8 = iVar9;
-            if ((*(uint *)((int)(pFVar5 + 1) + 0x50) & 0x88006000) != 0) break;
-            iVar7 = iVar7 + -1;
-            pFVar5 = pFVar5 + 1;
-          } while (iVar7 != 0);
-          do {
-            uVar10 = uVar10 | *(ulonglong *)((int)(pFVar4 + -1) + 0x70);
-            pFVar5 = pFVar6;
-            iVar7 = iVar9;
-            if ((*(uint *)((int)(pFVar4 + -1) + 0x50) & 0x88006000) != 0) break;
+            uVar10 = uVar10 | *(ulonglong *)((int)(pFVar6 + 1) + 0x70);
+            pFVar5 = pFVar7;
+            iVar9 = iVar3;
+            if ((*(uint *)((int)(pFVar6 + 1) + 0x50) & 0x88006000) != 0) break;
             iVar8 = iVar8 + -1;
-            pFVar4 = pFVar4 + -1;
+            pFVar6 = pFVar6 + 1;
           } while (iVar8 != 0);
           do {
-            pFVar5 = pFVar5 + (1 - uVar1);
-            uVar10 = uVar10 | pFVar5->occupancyMask;
-            pFVar4 = pFVar6;
-            iVar8 = iVar9;
-            if ((pFVar5->flagsAndMaterial & 0x88006000) != 0) break;
-            iVar7 = iVar7 + -1;
-          } while (iVar7 != 0);
+            uVar10 = uVar10 | *(ulonglong *)((int)(pFVar5 + -1) + 0x70);
+            pFVar6 = pFVar7;
+            iVar8 = iVar3;
+            if ((*(uint *)((int)(pFVar5 + -1) + 0x50) & 0x88006000) != 0) break;
+            iVar9 = iVar9 + -1;
+            pFVar5 = pFVar5 + -1;
+          } while (iVar9 != 0);
           do {
-            pFVar4 = pFVar4 + -uVar1;
-            uVar10 = uVar10 | pFVar4->occupancyMask;
-            pFVar5 = pFVar6;
-            iVar7 = iVar9;
-            if ((pFVar4->flagsAndMaterial & 0x88006000) != 0) break;
-            iVar8 = iVar8 + -1;
-          } while (iVar8 != 0);
-          do {
-            pFVar5 = pFVar5 + (uVar1 - 1);
-            uVar10 = uVar10 | pFVar5->occupancyMask;
-            if ((pFVar5->flagsAndMaterial & 0x88006000) != 0) break;
-            iVar7 = iVar7 + -1;
-          } while (iVar7 != 0);
-          do {
-            pFVar6 = pFVar6 + uVar1;
+            pFVar6 = pFVar6 + (1 - uVar1);
             uVar10 = uVar10 | pFVar6->occupancyMask;
+            pFVar5 = pFVar7;
+            iVar9 = iVar3;
             if ((pFVar6->flagsAndMaterial & 0x88006000) != 0) break;
+            iVar8 = iVar8 + -1;
+          } while (iVar8 != 0);
+          do {
+            pFVar5 = pFVar5 + -uVar1;
+            uVar10 = uVar10 | pFVar5->occupancyMask;
+            pFVar6 = pFVar7;
+            iVar8 = iVar3;
+            if ((pFVar5->flagsAndMaterial & 0x88006000) != 0) break;
             iVar9 = iVar9 + -1;
           } while (iVar9 != 0);
+          do {
+            pFVar6 = pFVar6 + (uVar1 - 1);
+            uVar10 = uVar10 | pFVar6->occupancyMask;
+            if ((pFVar6->flagsAndMaterial & 0x88006000) != 0) break;
+            iVar8 = iVar8 + -1;
+          } while (iVar8 != 0);
+          do {
+            pFVar7 = pFVar7 + uVar1;
+            uVar10 = uVar10 | pFVar7->occupancyMask;
+            if ((pFVar7->flagsAndMaterial & 0x88006000) != 0) break;
+            iVar3 = iVar3 + -1;
+          } while (iVar3 != 0);
         }
         uVar10 = uVar10 & g_TerrainOccupancyMmxClearBits1And2Mask;
         cVar11 = (char)(uVar10 >> 8);
@@ -207,14 +225,14 @@ ulonglong TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                                                   uVar10 == '\0')))))))) ^
                       g_TerrainOccupancyMmxAllBitsMask ^ uVar18) &
                      g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxPackedWeights04_40);
-        return CONCAT44((int)((ulonglong)mm1PackedValue0 >> 0x20) +
-                        (int)((ulonglong)mm2PackedValue0 >> 0x20) |
-                        (uint)((int)mm1PackedValue0 + (int)mm2PackedValue0) >> 8,in_EAX);
+        return (int)((ulonglong)mm1PackedValue0 >> 0x20) + (int)((ulonglong)mm2PackedValue0 >> 0x20)
+               | (uint)((int)mm1PackedValue0 + (int)mm2PackedValue0) >> 8;
       }
     }
   }
-  return (ulonglong)in_EAX;
+  return 0;
 }
+
 
 /* Address: 0x005138F0.
    Ownership: world/terrain/occupancy.
@@ -224,7 +242,7 @@ ulonglong TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
    identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
    flow, globals, locals, and executable data remain unchanged.
 */
-FieldGridRuntimeFlags
+TerrainOccupancyResolvedMasksRegs12
 TerrainOccupancyMask_ResolveRuntimeClassFlags
           (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char runtimeClassIndex)
@@ -233,11 +251,12 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   FieldGridRuntimeFlags resolvedClassFlags;
   uint combinedOccupancyMask;
   uint runtimeClassBit;
+  TerrainOccupancyResolvedMasksRegs12 TVar1;
   
+  TVar1.secondaryOccupancyMask =
+       secondaryOccupancyMask | ((primaryOccupancyMask & 0xaaaaaaaa) >> 1) * 3;
   runtimeClassBit = 1 << (runtimeClassIndex * '\x02' & 0x1fU);
-  combinedOccupancyMask =
-       primaryOccupancyMask &
-       (secondaryOccupancyMask | ((primaryOccupancyMask & 0xaaaaaaaa) >> 1) * 3);
+  combinedOccupancyMask = primaryOccupancyMask & TVar1.secondaryOccupancyMask;
   resolvedClassFlags = 0;
   if ((baseRuntimeFlags & 0x10) == 0) {
     combinedOccupancyMask = combinedOccupancyMask | combinedOccupancyMask * 2 & 0xaaaaaaaa;
@@ -248,8 +267,11 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   if ((primaryOccupancyMask & runtimeClassBit * 2) != 0) {
     resolvedClassFlags = 4;
   }
-  return resolvedClassFlags;
+  TVar1.primaryOccupancyMask = combinedOccupancyMask;
+  TVar1.runtimeFlags = resolvedClassFlags;
+  return TVar1;
 }
+
 
 /* Address: 0x005070A0.
    Ownership: world/terrain/occupancy.
@@ -259,12 +281,11 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainOccupancyBit2_MarkDirection0, TerrainOccupancyBit2_MarkDirection1.
 */
-void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   byte *pbVar1;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   FieldGridCell *cell_00;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -273,12 +294,12 @@ void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       cell_00 = cell + 1;
       TerrainOccupancyBit2_MarkDirection0(scanStep + 4,cell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((*(uint *)((int)cell_00 + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
@@ -288,16 +309,17 @@ void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGr
                        occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
       *pbVar1 = *pbVar1 | 2;
       cell = (FieldGridCell *)((int)cell_00 + (0x80 - rowStrideBytes));
+      scanStep = scanStep + 7;
       TerrainOccupancyBit2_MarkDirection1
-                (extraout_ECX + 3,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00507140.
    Ownership: world/terrain/occupancy.
@@ -307,12 +329,11 @@ void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGr
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainOccupancyBit2_MarkDirection1, TerrainOccupancyBit2_MarkDirection2.
 */
-void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   byte *pbVar1;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   FieldGridCell *cell_00;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -321,12 +342,12 @@ void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       TerrainOccupancyBit2_MarkDirection1
                 (scanStep + 4,(FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((*(uint *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
@@ -336,16 +357,17 @@ void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGr
                        occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
       *pbVar1 = *pbVar1 | 2;
       cell_00 = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
+      scanStep = scanStep + 7;
       cell = cell_00 + 1;
-      TerrainOccupancyBit2_MarkDirection2(extraout_ECX + 3,cell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      TerrainOccupancyBit2_MarkDirection2(scanStep,cell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005071E0.
    Ownership: world/terrain/occupancy.
@@ -355,41 +377,41 @@ void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGr
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainOccupancyBit2_MarkDirection2, TerrainOccupancyBit2_MarkDirection3.
 */
-void TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *cell_00;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
   
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       TerrainOccupancyBit2_MarkDirection2
                 (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime00_07[occupancyMarkByteIndex.occupancyMaskByteIndex + -0x10] =
-           cell->runtime00_07[occupancyMarkByteIndex.occupancyMaskByteIndex + -0x10] | 2;
+      cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex + -0x1c] =
+           cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex + -0x1c] | 2;
       cell_00 = cell + -2;
+      scanStep = scanStep + 7;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
-      TerrainOccupancyBit2_MarkDirection3(extraout_ECX + 3,cell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      TerrainOccupancyBit2_MarkDirection3(scanStep,cell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00507280.
    Ownership: world/terrain/occupancy.
@@ -399,11 +421,12 @@ void TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGr
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainOccupancyBit2_MarkDirection3, TerrainOccupancyBit2_MarkDirection4.
 */
-void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
+  byte *pbVar1;
+  int iVar2;
   FieldGridCell *cell_00;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
   int rowStrideBytes;
@@ -412,32 +435,33 @@ void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
+      pbVar1 = (byte *)((int)cell->runtime60_6B +
+                       occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10);
+      *pbVar1 = *pbVar1 | 2;
+      iVar2 = g_TerrainScanRowStrideBytes;
       cell_00 = cell + -1;
       TerrainOccupancyBit2_MarkDirection3(scanStep + 4,cell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(cell_00->runtime58_6F + rowStrideBytes + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(cell_00->runtime60_6B + iVar2 + -0x10) & 0x88006000) != 0) {
         return;
       }
-      cell_00->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x18] =
-           cell_00->runtime58_6F
-           [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x18] | 2;
-      cell = (FieldGridCell *)(cell_00[-1].runtime00_07 + rowStrideBytes);
+      cell_00->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + iVar2 + 0x10] =
+           cell_00->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + iVar2 + 0x10] | 2;
+      cell = (FieldGridCell *)(cell_00[-1].runtime0C_3F + iVar2 + -0xc);
+      scanStep = scanStep + 7;
       TerrainOccupancyBit2_MarkDirection4
-                (extraout_ECX + 3,
-                 (FieldGridCell *)(cell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc)
+                );
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00507320.
    Ownership: world/terrain/occupancy.
@@ -447,12 +471,11 @@ void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGr
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainOccupancyBit2_MarkDirection4, TerrainOccupancyBit2_MarkDirection5.
 */
-void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   byte *pbVar1;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
   
@@ -460,34 +483,35 @@ void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       TerrainOccupancyBit2_MarkDirection4
-                (scanStep + 4,(FieldGridCell *)(cell[-1].runtime00_07 + g_TerrainScanRowStrideBytes)
-                );
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                (scanStep + 4,
+                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(cell->runtime58_6F + rowStrideBytes + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x18]
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x10]
            | 2;
-      pbVar1 = cell->runtime00_07;
-      cell = (FieldGridCell *)(pbVar1 + g_TerrainScanRowStrideBytes + rowStrideBytes) + -1;
+      pbVar1 = cell->runtime0C_3F;
+      scanStep = scanStep + 7;
+      cell = (FieldGridCell *)(pbVar1 + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) + -1;
       TerrainOccupancyBit2_MarkDirection5
-                (extraout_ECX + 3,
-                 (FieldGridCell *)(pbVar1 + g_TerrainScanRowStrideBytes + rowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)
+                          (pbVar1 + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005073C0.
    Ownership: world/terrain/occupancy.
@@ -497,41 +521,42 @@ void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGr
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainOccupancyBit2_MarkDirection5, TerrainOccupancyBit2_MarkDirection0.
 */
-void TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *cell_00;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
   
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       TerrainOccupancyBit2_MarkDirection5
-                (scanStep + 4,(FieldGridCell *)(cell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                (scanStep + 4,
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell[1].runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell[1].runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       cell_00 = cell + 2;
-      cell = (FieldGridCell *)(cell[1].runtime00_07 + g_TerrainScanRowStrideBytes);
-      TerrainOccupancyBit2_MarkDirection0(extraout_ECX + 3,cell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      scanStep = scanStep + 7;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      TerrainOccupancyBit2_MarkDirection0(scanStep,cell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00506EA0.
    Ownership: world/terrain/occupancy.
@@ -540,7 +565,8 @@ void TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGr
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -552,14 +578,15 @@ void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       scanStep = scanStep + 4;
       cell = cell + 1;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00506EF0.
    Ownership: world/terrain/occupancy.
@@ -568,7 +595,8 @@ void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,Fie
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -580,14 +608,15 @@ void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       scanStep = scanStep + 4;
       cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes));
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00506F50.
    Ownership: world/terrain/occupancy.
@@ -596,7 +625,8 @@ void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,Fie
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -608,14 +638,15 @@ void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       scanStep = scanStep + 4;
       cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00506FA0.
    Ownership: world/terrain/occupancy.
@@ -624,7 +655,8 @@ void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,Fie
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -636,14 +668,15 @@ void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       scanStep = scanStep + 4;
       cell = cell + -1;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00506FF0.
    Ownership: world/terrain/occupancy.
@@ -652,7 +685,8 @@ void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,Fie
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -664,14 +698,15 @@ void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell[-1].runtime00_07 + g_TerrainScanRowStrideBytes);
+      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00507050.
    Ownership: world/terrain/occupancy.
@@ -680,7 +715,8 @@ void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,Fie
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -692,11 +728,12 @@ void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
-      cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] =
-           cell->runtime58_6F[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x18] | 2;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
       scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell->runtime00_07 + g_TerrainScanRowStrideBytes);
+      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+

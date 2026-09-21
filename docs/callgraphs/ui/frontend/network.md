@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/network`
 
-[Source](../../../../src/ui/frontend/network.c) · [Header](../../../../include/thandor/ui/frontend/network.h) · [Graphviz](network.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-network)
+[Source](../../../../src/ui/frontend/network.c) · [Header](../../../../include/thandor/ui/frontend/network.h) · [Graphviz](network.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-network) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-network)
 
 6 functions. Addresses are current V523 executable VAs.
 

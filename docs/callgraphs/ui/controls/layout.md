@@ -1,6 +1,6 @@
 # Call graph: `ui/controls/layout`
 
-[Source](../../../../src/ui/controls/layout.c) · [Header](../../../../include/thandor/ui/controls/layout.h) · [Graphviz](layout.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-layout)
+[Source](../../../../src/ui/controls/layout.c) · [Header](../../../../include/thandor/ui/controls/layout.h) · [Graphviz](layout.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-layout) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-controls-layout)
 
 48 functions. Addresses are current V523 executable VAs.
 

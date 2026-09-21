@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/runtime`
 
-[Source](../../../../src/ui/frontend/runtime.c) · [Header](../../../../include/thandor/ui/frontend/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-runtime)
+[Source](../../../../src/ui/frontend/runtime.c) · [Header](../../../../include/thandor/ui/frontend/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-runtime) · [Developer notes](../../../../CHANGELOG.md#module-ui-frontend-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-runtime)
 
 50 functions. Addresses are current V523 executable VAs.
 

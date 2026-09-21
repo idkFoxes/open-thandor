@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/controls/lists.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/controls/lists.h>
 
 /* Implementation ownership: ui/controls/lists. */
@@ -9,8 +16,8 @@
    UiScrollableControl_ClampOffsetsToViewport.
    Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
 */
-void UiTimedListControl_HandleKeyboardNavigationCf
-               (dword keyCode,dword stateMask,UiNodeBase *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiTimedListControl_HandleKeyboardNavigationCf(dword keyCode,dword stateMask,UiNodeBase *control)
 
 {
   uint *puVar1;
@@ -24,17 +31,17 @@ void UiTimedListControl_HandleKeyboardNavigationCf
   UiNodeBase **ppUVar9;
   uint uVar10;
   int iVar11;
-  int extraout_ECX;
   int iVar12;
   int iVar13;
-  UiScrollableContentDimensionsEdxEax8 UVar14;
+  bool bVar14;
+  UiScrollableContentDimensionsEdxEax8 UVar15;
   
   iVar13 = 1;
   iVar7 = control[1].top;
   if ((stateMask & 0xffff0000) == 0) {
 UiTimedListKeyboard_DelegateUnhandledEvent:
-    UiNode_DefaultKeyboardEventMoveFocusNextCf(keyCode,stateMask,control);
-    return;
+    bVar14 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyCode,stateMask,control);
+    return bVar14;
   }
   if (stateMask == 0x10010) {
     control[1].top = (sdword)&(control[1].firstChild)->left;
@@ -51,8 +58,8 @@ UiTimedListKeyboard_DelegateUnhandledEvent:
     goto UiTimedListKeyboard_CommitSelectionAndScheduleAction;
   }
   if (stateMask == 0x10012) {
-    UVar14 = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)control->parent);
-    iVar11 = (int)((UVar14 >> 0x20) / ZEXT48(control[1].vtable));
+    UVar15 = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)control->parent);
+    iVar11 = (int)((UVar15 >> 0x20) / ZEXT48(control[1].vtable));
     iVar13 = iVar11 + -1;
     if (iVar11 < 1) {
       iVar13 = 1;
@@ -81,8 +88,8 @@ UiTimedListKeyboard_MoveSelectionBackwardLoop:
   }
   else {
     if (stateMask == 0x1001a) {
-      UVar14 = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)control->parent);
-      iVar11 = (int)((UVar14 >> 0x20) / ZEXT48(control[1].vtable));
+      UVar15 = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)control->parent);
+      iVar11 = (int)((UVar15 >> 0x20) / ZEXT48(control[1].vtable));
       iVar13 = iVar11 + -1;
       if (iVar11 < 1) {
         iVar13 = 1;
@@ -93,29 +100,29 @@ UiTimedListKeyboard_MoveSelectionBackwardLoop:
       if (stateMask != 0x10019) {
         if (stateMask == 0x10014) {
           if ((*(uint *)(iVar7 + 0xc) & 1) == 0) {
-            return;
+            return false;
           }
           if ((*(uint *)(iVar7 + 0xc) & 2) == 0) {
-            return;
+            return false;
           }
           if (control[1].right == 0) {
-            return;
+            return false;
           }
           (*(code *)control[1].right)(iVar7,control);
-          return;
+          return false;
         }
         if (stateMask == 0x10016) {
           if ((*(uint *)(iVar7 + 0xc) & 1) == 0) {
-            return;
+            return false;
           }
           if ((*(uint *)(iVar7 + 0xc) & 2) != 0) {
-            return;
+            return false;
           }
           if (control[1].right == 0) {
-            return;
+            return false;
           }
           (*(code *)control[1].right)(iVar7,control);
-          return;
+          return false;
         }
         goto UiTimedListKeyboard_DelegateUnhandledEvent;
       }
@@ -157,7 +164,7 @@ UiTimedListKeyboard_CommitSelectionAndScheduleAction:
       if ((*(uint *)(iVar13 + -4) & 2) != 0) {
         dVar8 = UiTimedListTree_CountRecordArrayAndNestedChildren
                           (*(UiTimedListTreeRecord16 **)(iVar13 + -8));
-        iVar12 = extraout_ECX + dVar8;
+        iVar12 = iVar11 + dVar8;
       }
       iVar13 = iVar7;
       iVar11 = iVar12 + 1;
@@ -172,8 +179,9 @@ UiTimedListKeyboard_CommitSelectionAndScheduleAction:
     control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffff);
     control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | UVar3 << 0x18);
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x004BB100.
    Ownership: ui/controls/lists.
@@ -182,16 +190,17 @@ UiTimedListKeyboard_CommitSelectionAndScheduleAction:
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_DefaultKeyboardEventMoveFocusNextCf
    [ui/controls/input].
 */
-void UiListControl_HandleKeyboardNavigationCf
-               (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-               UiListControl *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiListControl_HandleKeyboardNavigationCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
 
 {
   void **ppvVar1;
   void **ppvVar2;
   int iVar3;
   uint uVar4;
-  UiScrollableContentDimensionsEdxEax8 UVar5;
+  bool bVar5;
+  UiScrollableContentDimensionsEdxEax8 UVar6;
   
   ppvVar1 = control->selectedRowSlot;
   if ((keyCode & 0xffff0000) != 0) {
@@ -206,20 +215,20 @@ void UiListControl_HandleKeyboardNavigationCf
       control->selectedRowSlot = control->rowSlots + (control->rowCount - 1);
     }
     else if (keyCode == 0x10012) {
-      UVar5 = UiScrollableControl_QueryContentSizeRegs
+      UVar6 = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
       iVar3 = ((uint)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) -
-              ((int)((UVar5 >> 0x20) / (ulonglong)control->rowHeight) + -1);
+              ((int)((UVar6 >> 0x20) / (ulonglong)control->rowHeight) + -1);
       if (iVar3 < 0) {
         iVar3 = 0;
       }
       control->selectedRowSlot = control->rowSlots + iVar3;
     }
     else if (keyCode == 0x1001a) {
-      UVar5 = UiScrollableControl_QueryContentSizeRegs
+      UVar6 = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
       uVar4 = ((uint)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) +
-              (int)((UVar5 >> 0x20) / (ulonglong)control->rowHeight) + -1;
+              (int)((UVar6 >> 0x20) / (ulonglong)control->rowHeight) + -1;
       if (control->rowCount <= uVar4) {
         uVar4 = control->rowCount - 1;
       }
@@ -252,12 +261,13 @@ void UiListControl_HandleKeyboardNavigationCf
       control->listStateFlags = control->listStateFlags & 0xffffff;
       control->listStateFlags = control->listStateFlags | iVar3 << 0x18;
     }
-    return;
+    return false;
   }
 UiListControl_DelegateUnhandledKeyboardEvent:
-  UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
-  return;
+  bVar5 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+  return bVar5;
 }
+
 
 /* Address: 0x004BB480.
    Ownership: ui/controls/lists.
@@ -266,22 +276,24 @@ UiListControl_DelegateUnhandledKeyboardEvent:
    Local calls: UiPointerList_GetSelectedIndexVariantBCf, UiPointerList_SelectIndexVariantB.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
-void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
+void __thandor_preserve_eax_edx
+UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
 
 {
   UiNodeBase *control_00;
-  UiListRowIndex index;
+  UiListRowIndexEaxCf5 UVar1;
   UiNodeVtable *parentVtable;
   
   control_00 = (control->base).parent;
   parentVtable = control_00->vtable;
   (control->base).bottomOffset = control->rowHeight * control->rowCount + 1;
   (*parentVtable->layout)(control_00);
-  index = UiPointerList_GetSelectedIndexVariantBCf(control);
-  UiPointerList_SelectIndexVariantB(index,control);
+  UVar1 = UiPointerList_GetSelectedIndexVariantBCf(control);
+  UiPointerList_SelectIndexVariantB(UVar1.rowIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
 }
+
 
 /* Address: 0x004B87A0.
    Ownership: ui/controls/lists.
@@ -289,26 +301,20 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiScrollableControl_BeginPrimaryScrollInteraction
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_BeginPrimaryScrollInteraction
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiScrollableControl *control)
 
 {
-  qword qVar4;
-  int iVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  qword qVar5;
+  dword dVar1;
   int iVar2;
   int iVar3;
+  int iVar4;
+  GraphicsTextureSizeEaxEdxCf9 GVar5;
   
-  iVar3 = pointerX - (control->base).left;
-  iVar2 = pointerY - (control->base).top;
+  iVar4 = pointerX - (control->base).left;
+  iVar3 = pointerY - (control->base).top;
   if ((control->scrollStateFlags &
       (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
 UiScrollableControl_TryVerticalScrollbarInteraction:
@@ -316,41 +322,41 @@ UiScrollableControl_TryVerticalScrollbarInteraction:
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
       return;
     }
-    qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
-      if (iVar3 < 0) {
+      if (iVar4 < 0) {
         return;
       }
-      if ((int)(qword)qVar4 <= iVar3) {
+      if ((int)GVar5.logicalWidthPixels <= iVar4) {
         return;
       }
     }
     else {
-      if ((control->base).layoutWidth <= iVar3) {
+      if ((control->base).layoutWidth <= iVar4) {
         return;
       }
-      if (iVar3 < (control->base).layoutWidth - (int)(qword)qVar4) {
+      if (iVar4 < (int)((control->base).layoutWidth - GVar5.logicalWidthPixels)) {
         return;
       }
     }
-    (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-    iVar3 = extraout_ECX_00;
+    iVar4 = (control->base).layoutHeight;
+    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
-      iVar3 = extraout_ECX_00 - extraout_EDX_00;
+      iVar4 = iVar4 - GVar5.logicalHeightPixels;
     }
-    iVar1 = 0;
+    dVar1 = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      iVar1 = extraout_EDX_00;
+      dVar1 = GVar5.logicalHeightPixels;
     }
-    if (iVar2 < iVar1) {
+    if (iVar3 < (int)dVar1) {
       return;
     }
-    if (iVar3 <= iVar2) {
+    if (iVar4 <= iVar3) {
       return;
     }
-    if (iVar2 < control->verticalThumbTop) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      if (iVar2 - iVar1 < extraout_EDX_01) {
+    if (iVar3 < control->verticalThumbTop) {
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      if ((int)(iVar3 - dVar1) < (int)GVar5.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
              (UI_SCROLL_VERTICAL_DECREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -361,13 +367,13 @@ UiScrollableControl_TryVerticalScrollbarInteraction:
            control->scrollStateFlags | UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE;
     }
     else {
-      if (iVar2 < control->verticalThumbBottom) {
-        control->pointerAnchorY = iVar2 - control->verticalThumbTop;
+      if (iVar3 < control->verticalThumbBottom) {
+        control->pointerAnchorY = iVar3 - control->verticalThumbTop;
         control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_VERTICAL_THUMB_ACTIVE;
         goto UiScrollableControl_InvalidateAfterPrimaryScrollInteraction;
       }
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      if (extraout_ECX_01 <= extraout_EDX_02) {
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      if (iVar4 - iVar3 <= (int)GVar5.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
              (UI_SCROLL_VERTICAL_INCREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -379,30 +385,30 @@ UiScrollableControl_TryVerticalScrollbarInteraction:
     }
   }
   else {
-    (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
-      if ((-1 < iVar2) && (iVar2 < extraout_EDX))
+      if ((-1 < iVar3) && (iVar3 < (int)GVar5.logicalHeightPixels))
       goto UiScrollableControl_BeginHorizontalScrollbarInteraction;
       goto UiScrollableControl_TryVerticalScrollbarInteraction;
     }
-    if (((control->base).layoutHeight <= iVar2) ||
-       (iVar2 < (control->base).layoutHeight - extraout_EDX))
+    if (((control->base).layoutHeight <= iVar3) ||
+       (iVar3 < (int)((control->base).layoutHeight - GVar5.logicalHeightPixels)))
     goto UiScrollableControl_TryVerticalScrollbarInteraction;
 UiScrollableControl_BeginHorizontalScrollbarInteraction:
-    qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-    iVar1 = qVar4._4_4_;
+    iVar2 = (control->base).layoutWidth;
+    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-      iVar1 = qVar4._4_4_ - (int)(qword)qVar4;
+      iVar2 = iVar2 - GVar5.logicalWidthPixels;
     }
-    qVar5._0_4_ = 0;
+    dVar1 = 0;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      qVar5._0_4_ = (qword)qVar4;
+      dVar1 = GVar5.logicalWidthPixels;
     }
-    if ((iVar3 < (int)(qword)qVar5) || (iVar1 <= iVar3))
+    if ((iVar4 < (int)dVar1) || (iVar2 <= iVar4))
     goto UiScrollableControl_TryVerticalScrollbarInteraction;
-    if (iVar3 < control->horizontalThumbLeft) {
-      qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      if (iVar3 - (int)(qword)qVar5 < (int)(qword)qVar4) {
+    if (iVar4 < control->horizontalThumbLeft) {
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      if ((int)(iVar4 - dVar1) < (int)GVar5.logicalWidthPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
              (UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -413,13 +419,13 @@ UiScrollableControl_BeginHorizontalScrollbarInteraction:
            control->scrollStateFlags | UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE;
     }
     else {
-      if (iVar3 < control->horizontalThumbRight) {
-        control->pointerAnchorX = iVar3 - control->horizontalThumbLeft;
+      if (iVar4 < control->horizontalThumbRight) {
+        control->pointerAnchorX = iVar4 - control->horizontalThumbLeft;
         control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_HORIZONTAL_THUMB_ACTIVE;
         goto UiScrollableControl_InvalidateAfterPrimaryScrollInteraction;
       }
-      qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      if (extraout_ECX <= (int)(qword)qVar4) {
+      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      if (iVar2 - iVar4 <= (int)GVar5.logicalWidthPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
              (UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
@@ -436,49 +442,40 @@ UiScrollableControl_InvalidateAfterPrimaryScrollInteraction:
   return;
 }
 
+
 /* Address: 0x004B8A20.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[5]@004B7920.
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void __fastcall
-UiScrollableControl_EndPrimaryScrollInteraction(undefined4 param_1,undefined4 param_2)
+void __thandor_preserve_eax
+UiScrollableControl_EndPrimaryScrollInteraction
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
-  UiScrollableControl *in_stack_00000010;
-  
-  if ((in_stack_00000010->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
-    in_stack_00000010->scrollOffsetX =
-         in_stack_00000010->scrollOffsetX + ((int)in_stack_00000010->viewportWidth >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs(in_stack_00000010);
+  if (((uint)control[1].nextSibling & 0x20000) != 0) {
+    control[1].bottom = control[1].bottom + ((int)control[1].firstChild >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
   }
-  if ((in_stack_00000010->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
-    in_stack_00000010->scrollOffsetX =
-         in_stack_00000010->scrollOffsetX - ((int)in_stack_00000010->viewportWidth >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs(in_stack_00000010);
+  if (((uint)control[1].nextSibling & 0x80000) != 0) {
+    control[1].bottom = control[1].bottom - ((int)control[1].firstChild >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
   }
-  if ((in_stack_00000010->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
-    in_stack_00000010->scrollOffsetY =
-         in_stack_00000010->scrollOffsetY + ((int)in_stack_00000010->viewportHeight >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs(in_stack_00000010);
+  if (((uint)control[1].nextSibling & 0x2000000) != 0) {
+    control[1].leftOffset = control[1].leftOffset + ((int)control[1].parent >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
   }
-  if ((in_stack_00000010->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
-    in_stack_00000010->scrollOffsetY =
-         in_stack_00000010->scrollOffsetY - ((int)in_stack_00000010->viewportHeight >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs(in_stack_00000010);
+  if (((uint)control[1].nextSibling & 0x8000000) != 0) {
+    control[1].leftOffset = control[1].leftOffset - ((int)control[1].parent >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
   }
-  in_stack_00000010->scrollStateFlags =
-       in_stack_00000010->scrollStateFlags &
-       ~(UI_SCROLL_VERTICAL_INCREMENT_ACTIVE|UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE|
-         UI_SCROLL_VERTICAL_THUMB_ACTIVE|UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE|
-         UI_SCROLL_VERTICAL_DECREMENT_ACTIVE|UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE|
-         UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_HORIZONTAL_THUMB_ACTIVE|
-         UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE|UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE|
-        UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
-  UiNode_InvalidateRoot(&in_stack_00000010->base);
+  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xe0e0dfff);
+  UiNode_InvalidateRoot(control);
   return;
 }
+
 
 /* Address: 0x004B8BF0.
    Ownership: ui/controls/lists.
@@ -486,29 +483,18 @@ UiScrollableControl_EndPrimaryScrollInteraction(undefined4 param_1,undefined4 pa
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiScrollableControl_UpdatePrimaryScrollDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_UpdatePrimaryScrollDrag
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiScrollableControl *control)
 
 {
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int extraout_ECX_06;
-  int extraout_ECX_07;
-  int extraout_ECX_08;
   int iVar1;
-  int extraout_EDX;
   int iVar2;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  int iVar3;
-  qword qVar4;
+  dword dVar3;
+  int iVar4;
+  dword dVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar6;
   
   if ((control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE|
@@ -517,43 +503,45 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     return;
   }
   if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) != 0) {
-    iVar1 = (control->base).layoutWidth;
-    qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-    iVar2 = extraout_ECX_04 - (int)qVar4;
-    iVar1 = iVar1 + (int)qVar4 * -2;
+    iVar1 = (control->base).left;
+    iVar2 = control->pointerAnchorX;
+    iVar4 = (control->base).layoutWidth;
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    iVar1 = ((pointerX - iVar1) - iVar2) - GVar6.logicalWidthPixels;
+    iVar4 = iVar4 + GVar6.logicalWidthPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      iVar2 = extraout_ECX_05;
+      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        iVar2 = extraout_ECX_05 - (int)qVar4;
+        iVar1 = iVar1 - GVar6.logicalWidthPixels;
       }
-      iVar1 = iVar1 - (int)qVar4;
+      iVar4 = iVar4 - GVar6.logicalWidthPixels;
     }
     control->scrollOffsetX =
          (UiPixelOffset)
-         (((longlong)(int)(control->contentWidth - control->viewportWidth) * (longlong)iVar2) /
-         (longlong)-((iVar1 - control->horizontalThumbRight) + control->horizontalThumbLeft));
+         (((longlong)(int)(control->contentWidth - control->viewportWidth) * (longlong)iVar1) /
+         (longlong)-((iVar4 - control->horizontalThumbRight) + control->horizontalThumbLeft));
     goto UiScrollableControl_RefreshAfterPrimaryDragUpdate;
   }
   if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) != 0) {
-    iVar1 = (control->base).layoutHeight;
-    (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-    iVar2 = extraout_ECX_06 - extraout_EDX_00;
-    iVar1 = iVar1 + extraout_EDX_00 * -2;
+    iVar1 = (control->base).top;
+    iVar2 = control->pointerAnchorY;
+    iVar4 = (control->base).layoutHeight;
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+    iVar1 = ((pointerY - iVar1) - iVar2) - GVar6.logicalHeightPixels;
+    iVar4 = iVar4 + GVar6.logicalHeightPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      iVar2 = extraout_ECX_07;
+      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-        iVar2 = extraout_ECX_07 - extraout_EDX_01;
+        iVar1 = iVar1 - GVar6.logicalHeightPixels;
       }
-      iVar1 = iVar1 - extraout_EDX_01;
+      iVar4 = iVar4 - GVar6.logicalHeightPixels;
     }
     control->scrollOffsetY =
          (UiPixelOffset)
-         (((longlong)(int)(control->contentHeight - control->viewportHeight) * (longlong)iVar2) /
-         (longlong)-((iVar1 - control->verticalThumbBottom) + control->verticalThumbTop));
+         (((longlong)(int)(control->contentHeight - control->viewportHeight) * (longlong)iVar1) /
+         (longlong)-((iVar4 - control->verticalThumbBottom) + control->verticalThumbTop));
     goto UiScrollableControl_RefreshAfterPrimaryDragUpdate;
   }
   if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) == 0) {
@@ -562,88 +550,88 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
         if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) == 0) {
           return;
         }
-        iVar1 = pointerY - (control->base).top;
-        qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-        iVar2 = (int)(qVar4 >> 0x20);
+        iVar2 = pointerY - (control->base).top;
+        iVar1 = pointerX - (control->base).left;
+        GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        dVar3 = GVar6.logicalHeightPixels;
         if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
-          if ((extraout_ECX < (control->base).layoutWidth) &&
-             ((control->base).layoutWidth - (int)qVar4 <= extraout_ECX))
+          if ((iVar1 < (control->base).layoutWidth) &&
+             ((int)((control->base).layoutWidth - GVar6.logicalWidthPixels) <= iVar1))
           goto UiScrollableControl_ValidateBottomArrowHover;
         }
-        else if ((-1 < extraout_ECX) && (extraout_ECX < (int)qVar4)) {
+        else if ((-1 < iVar1) && (iVar1 < (int)GVar6.logicalWidthPixels)) {
 UiScrollableControl_ValidateBottomArrowHover:
-          iVar3 = (control->base).layoutHeight;
+          iVar1 = (control->base).layoutHeight;
           if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
-            (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-            iVar3 = iVar3 - extraout_EDX;
+            GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+            iVar1 = iVar1 - GVar6.logicalHeightPixels;
           }
-          if ((iVar1 < iVar3) && (iVar3 - iVar2 <= iVar1))
+          if ((iVar2 < iVar1) && ((int)(iVar1 - dVar3) <= iVar2))
           goto UiScrollableControl_SetArrowHoverActive;
         }
       }
       else {
-        iVar1 = pointerY - (control->base).top;
-        qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-        iVar2 = (int)(qVar4 >> 0x20);
+        iVar2 = pointerY - (control->base).top;
+        iVar1 = pointerX - (control->base).left;
+        GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        dVar3 = GVar6.logicalHeightPixels;
         if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
-          if ((extraout_ECX_08 < (control->base).layoutWidth) &&
-             ((control->base).layoutWidth - (int)qVar4 <= extraout_ECX_08))
+          if ((iVar1 < (control->base).layoutWidth) &&
+             ((int)((control->base).layoutWidth - GVar6.logicalWidthPixels) <= iVar1))
           goto UiScrollableControl_ValidateTopArrowHover;
         }
-        else if ((-1 < extraout_ECX_08) && (extraout_ECX_08 < (int)qVar4)) {
+        else if ((-1 < iVar1) && (iVar1 < (int)GVar6.logicalWidthPixels)) {
 UiScrollableControl_ValidateTopArrowHover:
-          iVar3 = 0;
+          dVar5 = 0;
           if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-            (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-            iVar3 = extraout_EDX_02;
+            GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+            dVar5 = GVar6.logicalHeightPixels;
           }
-          if ((iVar3 <= iVar1) && (iVar1 < iVar3 + iVar2))
+          if (((int)dVar5 <= iVar2) && (iVar2 < (int)(dVar5 + dVar3)))
           goto UiScrollableControl_SetArrowHoverActive;
         }
       }
     }
     else {
       iVar2 = pointerY - (control->base).top;
-      qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      iVar3 = (int)(qVar4 >> 0x20);
-      iVar1 = (int)qVar4;
+      iVar1 = pointerX - (control->base).left;
+      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      dVar3 = GVar6.logicalWidthPixels;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
         if ((iVar2 < (control->base).layoutHeight) &&
-           ((control->base).layoutHeight - iVar3 <= iVar2))
+           ((int)((control->base).layoutHeight - GVar6.logicalHeightPixels) <= iVar2))
         goto UiScrollableControl_ValidateRightArrowHover;
       }
-      else if ((-1 < iVar2) && (iVar2 < iVar3)) {
+      else if ((-1 < iVar2) && (iVar2 < (int)GVar6.logicalHeightPixels)) {
 UiScrollableControl_ValidateRightArrowHover:
         iVar2 = (control->base).layoutWidth;
-        iVar3 = extraout_ECX_00;
         if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-          qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-          iVar2 = iVar2 - (int)qVar4;
-          iVar3 = extraout_ECX_01;
+          GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+          iVar2 = iVar2 - GVar6.logicalWidthPixels;
         }
-        if ((iVar3 < iVar2) && (iVar2 - iVar1 <= iVar3))
+        if ((iVar1 < iVar2) && ((int)(iVar2 - dVar3) <= iVar1))
         goto UiScrollableControl_SetArrowHoverActive;
       }
     }
   }
   else {
     iVar2 = pointerY - (control->base).top;
-    qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-    iVar3 = (int)(qVar4 >> 0x20);
-    iVar1 = (int)qVar4;
+    iVar1 = pointerX - (control->base).left;
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    dVar3 = GVar6.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
-      if ((iVar2 < (control->base).layoutHeight) && ((control->base).layoutHeight - iVar3 <= iVar2))
+      if ((iVar2 < (control->base).layoutHeight) &&
+         ((int)((control->base).layoutHeight - GVar6.logicalHeightPixels) <= iVar2))
       goto UiScrollableControl_ValidateLeftArrowHover;
     }
-    else if ((-1 < iVar2) && (iVar2 < iVar3)) {
+    else if ((-1 < iVar2) && (iVar2 < (int)GVar6.logicalHeightPixels)) {
 UiScrollableControl_ValidateLeftArrowHover:
-      qVar4 = 0;
-      iVar2 = extraout_ECX_02;
+      dVar5 = 0;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-        iVar2 = extraout_ECX_03;
+        GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        dVar5 = GVar6.logicalWidthPixels;
       }
-      if (((int)qVar4 <= iVar2) && (iVar2 < (int)qVar4 + iVar1)) {
+      if (((int)dVar5 <= iVar1) && (iVar1 < (int)(dVar5 + dVar3))) {
 UiScrollableControl_SetArrowHoverActive:
         if ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0) {
           return;
@@ -664,15 +652,17 @@ UiScrollableControl_RefreshAfterPrimaryDragUpdate:
   return;
 }
 
+
 /* Address: 0x004B8F90.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[9]@004B7920.
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiScrollableControl_UpdateSecondaryScrollDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_UpdateSecondaryScrollDrag
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiScrollableControl *control)
 
 {
   int pointerDeltaX;
@@ -694,13 +684,15 @@ void UiScrollableControl_UpdateSecondaryScrollDrag
   return;
 }
 
+
 /* Address: 0x004B9070.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[16]@004B7920.
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
+void __thandor_void_preserve_ecx_edx
+UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
 
 {
   UiPixelOffset horizontalScrollStep;
@@ -725,15 +717,17 @@ void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
   return;
 }
 
+
 /* Address: 0x004B90E0.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[17]@004B7920.
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiScrollableControl_HandlePointerWheel
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_HandlePointerWheel
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiScrollableControl *control)
 
 {
   UiNodeBase *pUVar1;
@@ -759,13 +753,15 @@ void UiScrollableControl_HandlePointerWheel
   return;
 }
 
+
 /* Address: 0x004BA500.
    Ownership: ui/controls/lists.
    Purpose: Selects an in-range pointer-list entry by storing base + index*4 at +0x60 and invalidates the
    corresponding fixed-height row. EAX, EDX, and flags remain governed by the original code.
    Local calls: UiScrollableControl_ClampOffsetsToViewport.
 */
-void UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control)
 
 {
   int clipBottom;
@@ -780,15 +776,17 @@ void UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl
   return;
 }
 
+
 /* Address: 0x004BB020.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[4]@004BA590.
    Local calls: UiScrollableControl_ClampOffsetsToViewport.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
-void UiListControl_SelectRowFromPointer
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiListControl_SelectRowFromPointer
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiListControl *control)
 
 {
   uint uVar1;
@@ -820,6 +818,7 @@ void UiListControl_SelectRowFromPointer
   return;
 }
 
+
 /* Address: 0x004BB7A0.
    Ownership: ui/controls/lists.
    Purpose: Bubble-sorts in descending unsigned lexicographic order by two consecutive dwords at fieldOffset, then
@@ -828,7 +827,7 @@ void UiListControl_SelectRowFromPointer
    executable data remain unchanged.
    Local calls: UiScrollableControl_ClampOffsetsToViewport.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SortByDwordPairFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
@@ -837,11 +836,9 @@ UiPointerList_SortByDwordPairFieldDescending
   void *pvVar2;
   uint uVar3;
   uint uVar4;
-  undefined4 in_EAX;
   int iVar5;
   int iVar6;
   UiListRowCount UVar7;
-  undefined4 in_EDX;
   void **ppvVar8;
   void **ppvVar9;
   
@@ -893,8 +890,9 @@ UiPointerList_SortByDwordPairFieldDescending_CommitResolvedSelectedRowSlotAndCla
                  (UiScrollableControl *)(control->base).parent);
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004BB8A0.
    Ownership: ui/controls/lists.
@@ -904,18 +902,16 @@ UiPointerList_SortByDwordPairFieldDescending_CommitResolvedSelectedRowSlotAndCla
    remain unchanged.
    Local calls: UiScrollableControl_ClampOffsetsToViewport.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SortByDwordFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
   void *pvVar1;
   void *pvVar2;
-  undefined4 in_EAX;
   int iVar3;
   int iVar4;
   UiListRowCount UVar5;
-  undefined4 in_EDX;
   void **ppvVar6;
   void **ppvVar7;
   
@@ -961,8 +957,9 @@ UiPointerList_SortByDwordFieldAscending_CommitResolvedSelectedRowSlotAndClampVie
                  (UiScrollableControl *)(control->base).parent);
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004BBCD0.
    Ownership: ui/controls/lists.
@@ -971,8 +968,9 @@ UiPointerList_SortByDwordFieldAscending_CommitResolvedSelectedRowSlotAndClampVie
    Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext], UiActionQueue_Enqueue
    [ui/core/runtime].
 */
-void UiTimedListControl_SelectRowFromPointer
-               (int pointerButton,int pointerY,int pointerX,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiTimedListControl_SelectRowFromPointer
+          (int pointerButton,int pointerY,int pointerX,UiNodeBase *control)
 
 {
   UiNodeBase *pUVar1;
@@ -981,72 +979,69 @@ void UiTimedListControl_SelectRowFromPointer
   UiNodeVtable *pUVar4;
   int iVar5;
   int iVar6;
-  UiAnchorFractionQ31 UVar7;
-  int extraout_ECX;
-  uint uVar8;
+  int iVar7;
+  int iVar8;
   sdword *unaff_EBP;
+  sdword *psVar9;
   sdword *psVar10;
-  sdword *psVar11;
-  UiNodeBase *pUVar12;
-  bool bVar13;
-  RichTextExtentRegs RVar14;
+  UiNodeBase *pUVar11;
+  bool bVar12;
+  RichTextExtentRegs RVar13;
   UiPackedTextStyle aUStack_3c [5];
   UiNodeBase *pUStack_28;
   sdword *psStack_24;
   UiNodeBase *pUStack_20;
-  uint uVar9;
   
   pUStack_20 = (UiNodeBase *)0x0;
   pUVar1 = control[1].firstChild;
   if (pUVar1 != (UiNodeBase *)0x0) {
-    pUVar12 = pUVar1->nextSibling;
+    pUVar11 = pUVar1->nextSibling;
     iVar6 = pointerX - control->left;
     if (((control->left <= pointerX) && (control->top <= pointerY)) &&
-       (pUVar12 != (UiNodeBase *)0x0)) {
-      uVar9 = pointerY - control->top;
-      psVar10 = &pUVar1->left;
-      while (pUVar1 = pUStack_20, uVar8 = uVar9 - (int)control[1].vtable,
-            uVar8 != 0 && (int)control[1].vtable <= (int)uVar9) {
-        psVar11 = psVar10 + 4;
-        pUVar12 = (UiNodeBase *)((int)&pUVar12[-1].nodeFlags + 3);
-        if ((((psVar10[3] & 1U) != 0) && ((psVar10[3] & 2U) != 0)) && (psVar10[2] != 0)) {
+       (pUVar11 != (UiNodeBase *)0x0)) {
+      iVar5 = pointerY - control->top;
+      psVar9 = &pUVar1->left;
+      while (pUVar1 = pUStack_20, iVar8 = iVar5 - (int)control[1].vtable,
+            iVar8 != 0 && (int)control[1].vtable <= iVar5) {
+        psVar10 = psVar9 + 4;
+        pUVar11 = (UiNodeBase *)((int)&pUVar11[-1].nodeFlags + 3);
+        if ((((psVar9[3] & 1U) != 0) && ((psVar9[3] & 2U) != 0)) && (psVar9[2] != 0)) {
           pUStack_20 = (UiNodeBase *)((int)&pUStack_20->nextSibling + 1);
-          psStack_24 = psVar11;
-          pUStack_28 = pUVar12;
-          psVar11 = (int *)psVar10[2] + 4;
-          pUVar12 = *(UiNodeBase **)psVar10[2];
+          psStack_24 = psVar10;
+          pUStack_28 = pUVar11;
+          psVar10 = (int *)psVar9[2] + 4;
+          pUVar11 = *(UiNodeBase **)psVar9[2];
         }
-        while (uVar9 = uVar8, psVar10 = psVar11, pUVar12 == (UiNodeBase *)0x0) {
+        while (iVar5 = iVar8, psVar9 = psVar10, pUVar11 == (UiNodeBase *)0x0) {
           if (pUStack_20 == (UiNodeBase *)0x0) {
             return;
           }
           pUStack_20 = (UiNodeBase *)((int)&pUStack_20[-1].nodeFlags + 3);
-          psVar11 = unaff_EBP;
-          pUVar12 = pUStack_20;
+          psVar10 = unaff_EBP;
+          pUVar11 = pUStack_20;
         }
       }
       iVar5 = (int)pUStack_20 * control[1].topAnchorQ31;
-      UVar7 = iVar6 - iVar5;
+      iVar7 = iVar6 - iVar5;
       if (iVar6 < iVar5) {
-        if (((psVar10[3] & 1U) != 0) && (iVar5 != 0)) {
+        if (((psVar9[3] & 1U) != 0) && (iVar5 != 0)) {
           UVar3 = control[1].topAnchorQ31;
-          bVar13 = CARRY4(uVar8,(uint)control[1].vtable);
           pUVar4 = control[1].vtable;
           (&psStack_24)[(int)pUStack_20 * 2] = (sdword *)control[1].bottom;
           aUStack_3c[(int)pUVar1 * 2 + 5] = control[1].leftOffset;
           aUStack_3c[(int)pUVar1 * 2 + 4] = 0;
           aUStack_3c[(int)pUVar1 * 2 + 3] = 0;
-          aUStack_3c[(int)pUVar1 * 2 + 2] = UVar7 + UVar3;
-          aUStack_3c[(int)pUVar1 * 2 + 1] = uVar8 + (int)pUVar4;
+          aUStack_3c[(int)pUVar1 * 2 + 2] = iVar7 + UVar3;
+          aUStack_3c[(int)pUVar1 * 2 + 1] = iVar8 + (int)pUVar4;
           aUStack_3c[(int)pUVar1 * 2] = 0x4bbe3a;
-          (*g_GraphicsTextureSourceTestOpaquePixel)
-                    (aUStack_3c[(int)pUVar1 * 2 + 1],aUStack_3c[(int)pUVar1 * 2 + 2],
-                     aUStack_3c[(int)pUVar1 * 2 + 3],aUStack_3c[(int)pUVar1 * 2 + 4],
-                     aUStack_3c[(int)pUVar1 * 2 + 5],
-                     (GraphicsTextureSourceAsset *)(&psStack_24)[(int)pUVar1 * 2]);
-          if ((bVar13) && (control[1].right != 0)) {
+          bVar12 = (*g_GraphicsTextureSourceTestOpaquePixel)
+                             (aUStack_3c[(int)pUVar1 * 2 + 1],aUStack_3c[(int)pUVar1 * 2 + 2],
+                              aUStack_3c[(int)pUVar1 * 2 + 3],aUStack_3c[(int)pUVar1 * 2 + 4],
+                              aUStack_3c[(int)pUVar1 * 2 + 5],
+                              (GraphicsTextureSourceAsset *)(&psStack_24)[(int)pUVar1 * 2]);
+          if ((bVar12) && (control[1].right != 0)) {
             (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-            aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar10;
+            aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar9;
             pcVar2 = (code *)control[1].right;
             aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbe4d;
             (*pcVar2)();
@@ -1054,21 +1049,21 @@ void UiTimedListControl_SelectRowFromPointer
         }
       }
       else {
-        if (UVar7 != control[1].rightAnchorQ31 && (int)control[1].rightAnchorQ31 <= (int)UVar7) {
-          (&psStack_24)[(int)pUStack_20 * 2] = (sdword *)*psVar10;
+        iVar6 = iVar7 - control[1].rightAnchorQ31;
+        if (iVar6 != 0 && (int)control[1].rightAnchorQ31 <= iVar7) {
+          (&psStack_24)[(int)pUStack_20 * 2] = (sdword *)*psVar9;
           aUStack_3c[(int)pUVar1 * 2 + 5] = g_UiListTextStyle;
           aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbdb4;
-          RVar14 = RichTextCommandStream_MeasureRegs
+          RVar13 = RichTextCommandStream_MeasureRegs
                              (aUStack_3c[(int)pUVar1 * 2 + 5],(word *)(&psStack_24)[(int)pUVar1 * 2]
                              );
-          if (((int)RVar14.widthPixels < extraout_ECX) &&
-             (6 < (int)(extraout_ECX - RVar14.widthPixels))) {
+          if (((int)RVar13.widthPixels < iVar6) && (6 < (int)(iVar6 - RVar13.widthPixels))) {
             return;
           }
         }
-        if (psVar10 != (int *)control[1].top) {
+        if (psVar9 != (int *)control[1].top) {
           (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar10;
+          aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar9;
           aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbdd0;
           UiTimedListControl_SelectRecordAndScrollIntoView
                     ((UiTimedListTreeRecord16 *)aUStack_3c[(int)pUVar1 * 2 + 5],
@@ -1078,10 +1073,10 @@ void UiTimedListControl_SelectRowFromPointer
           aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbddc;
           UiActionQueue_Enqueue(aUStack_3c[(int)pUVar1 * 2 + 5],(&psStack_24)[(int)pUVar1 * 2]);
         }
-        if ((((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) &&
-            ((psVar10[3] & 1U) != 0)) && (control[1].right != 0)) {
+        if ((((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) && ((psVar9[3] & 1U) != 0)
+            ) && (control[1].right != 0)) {
           (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar10;
+          aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar9;
           pcVar2 = (code *)control[1].right;
           aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbe07;
           (*pcVar2)();
@@ -1092,6 +1087,617 @@ void UiTimedListControl_SelectRowFromPointer
   return;
 }
 
+
+/* Address: 0x0040FF70.
+   Ownership: ui/controls/lists.
+   Purpose: Finds a timed-list tree record by label.
+*/
+UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
+UiTimedListTree_FindRecordByLabel(word *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
+
+{
+  word wVar1;
+  int iVar2;
+  int iVar3;
+  dword dVar4;
+  word *pwVar5;
+  word *pwVar6;
+  bool bVar7;
+  
+  iVar2 = 0x100;
+  pwVar5 = labelUtf16;
+  do {
+    if (iVar2 == 0) break;
+    iVar2 = iVar2 + -1;
+    wVar1 = *pwVar5;
+    pwVar5 = pwVar5 + 1;
+  } while (wVar1 != 0);
+  dVar4 = recordBlock->recordCountOrRowPayload00;
+  do {
+    if (dVar4 == 0) {
+      return (UiTimedListTreeRecord16 *)0x0;
+    }
+    recordBlock = recordBlock + 1;
+    bVar7 = false;
+    iVar3 = 0x100 - iVar2;
+    pwVar5 = (word *)recordBlock->recordCountOrRowPayload00;
+    pwVar6 = labelUtf16;
+    do {
+      if (iVar3 == 0) break;
+      iVar3 = iVar3 + -1;
+      bVar7 = *pwVar5 == *pwVar6;
+      pwVar5 = pwVar5 + 1;
+      pwVar6 = pwVar6 + 1;
+    } while (bVar7);
+    if (bVar7) {
+      return recordBlock;
+    }
+    dVar4 = dVar4 - 1;
+  } while( true );
+}
+
+/* Address: 0x0040FFE0.
+   Ownership: ui/controls/lists.
+   Purpose: Builds a timed-list directory record block and exposes the recovered carry/error contract.
+*/
+Recovered0040FFE0EaxCf5 __thandor_eax_cf_preserve_ecx_edx
+UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
+
+{
+  dword *pdVar1;
+  dword dVar2;
+  dword *pdVar3;
+  dword *pdVar4;
+  dword *outputRecords;
+  uint driveLetter;
+  EngineDriveTypeCode EVar5;
+  dword *pdVar6;
+  int iVar7;
+  dword *pdVar8;
+  uint uVar9;
+  dword dVar10;
+  byte *pbVar11;
+  dword *leaf;
+  dword *pdVar12;
+  uint *puVar13;
+  uint *puVar14;
+  uint *puVar15;
+  bool bVar16;
+  ArenaShrinkEaxCf5 AVar17;
+  Recovered0040FFE0EaxCf5 RVar18;
+  Recovered0040FFE0EaxCf5 RVar19;
+  ArenaAllocEaxCf5 AVar20;
+  ArenaLargestAllocationEaxEcxCf9 AVar21;
+  FileSystemEnumerationEaxEcxCf9 FVar22;
+  DriveLetterEnumerationEaxEcx8 DVar23;
+  
+  if (*pathUtf16 == 0) {
+    AVar20 = (*g_MemoryApi.alloc)(0x220);
+    outputRecords = (dword *)AVar20.eax;
+    if (!AVar20.carry) {
+      *outputRecords = 1;
+      outputRecords[1] = 0;
+      outputRecords[2] = 0;
+      outputRecords[3] = 0x80000000;
+      outputRecords[4] = (dword)(outputRecords + 8);
+      outputRecords[5] = 0x27;
+      outputRecords[6] = 0;
+      outputRecords[7] = 1;
+      (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputRecords + 8));
+      return (Recovered0040FFE0EaxCf5)((uint5)AVar20 & 0xffffffff);
+    }
+  }
+  else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
+    DVar23 = (*g_FileSystemEnumerateDriveLetters)((byte *)0x40f530);
+    dVar10 = DVar23.driveCount;
+    AVar20 = (*g_MemoryApi.alloc)(DVar23.driveCountMirror * 0x210 + 0x10);
+    outputRecords = (dword *)AVar20.eax;
+    if (!AVar20.carry) {
+      RVar18.recordBlockOrError = outputRecords + 4;
+      *outputRecords = dVar10;
+      outputRecords[1] = 0;
+      outputRecords[2] = 0;
+      outputRecords[3] = 0x80000000;
+      puVar13 = RVar18.recordBlockOrError + dVar10 * 4;
+      pbVar11 = (byte *)0x40f530;
+      do {
+        driveLetter = (uint)*pbVar11;
+        *RVar18.recordBlockOrError = (dword)puVar13;
+        uVar9 = driveLetter;
+        EVar5 = (*g_FileSystemGetDriveTypeCode)(driveLetter);
+        RVar18.recordBlockOrError[1] = EVar5;
+        RVar18.recordBlockOrError[2] = 0;
+        RVar18.recordBlockOrError[3] = 0;
+        u________0040ff58[0] = (wchar_t)driveLetter;
+        *puVar13 = driveLetter;
+        ((word *)((int)puVar13 + 2))[0] = 0x3a;
+        ((word *)((int)puVar13 + 2))[1] = 0x5b;
+        ((word *)((int)puVar13 + 6))[0] = 0x5d;
+        ((word *)((int)puVar13 + 6))[1] = 0;
+        bVar16 = (*g_FileSystemCheckDriveMediaReady)(uVar9);
+        if (bVar16) {
+LAB_004102e2:
+          ((word *)((int)puVar13 + 6))[0] = 0x5d;
+          ((word *)((int)puVar13 + 6))[1] = 0;
+        }
+        else {
+          FVar22 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                             (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8,
+                              (byte *)((int)puVar13 + 6),(byte *)u________0040ff58);
+          if (FVar22.carry) goto LAB_004102e2;
+          if (FVar22.entryCount == 0) {
+            ((word *)((int)puVar13 + 6))[0] = 0x5d;
+            ((word *)((int)puVar13 + 6))[1] = 0;
+          }
+          else {
+            iVar7 = 0x100;
+            puVar14 = puVar13;
+            do {
+              puVar15 = puVar14;
+              if (iVar7 == 0) break;
+              iVar7 = iVar7 + -1;
+              puVar15 = (uint *)((int)puVar14 + 2);
+              uVar9 = *puVar14;
+              puVar14 = puVar15;
+            } while ((word)uVar9 != 0);
+            ((word *)((int)puVar15 + -2))[0] = 0x5d;
+            ((word *)((int)puVar15 + -2))[1] = 0;
+          }
+          FVar22 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                             (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
+                              (byte *)g_UiTimedListRecordPathScratch.codeUnits,
+                              (byte *)u________0040ff58);
+          if (FVar22.carry) goto LAB_004102e2;
+          if (FVar22.entryCount != 0) {
+            RVar18.recordBlockOrError[3] = RVar18.recordBlockOrError[3] | 1;
+          }
+        }
+        puVar13 = puVar13 + 0x80;
+        RVar18.recordBlockOrError = RVar18.recordBlockOrError + 4;
+        pbVar11 = pbVar11 + 1;
+        dVar10 = dVar10 - 1;
+        if (dVar10 == 0) {
+          return (Recovered0040FFE0EaxCf5)((uint5)AVar20 & 0xffffffff);
+        }
+      } while( true );
+    }
+  }
+  else {
+    WidePath_SplitParentAndLeaf
+              (g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits,
+               pathUtf16);
+    WidePath_CombineDirectoryAndLeaf
+              (g_UiTimedListRecordPathScratch.codeUnits,(word *)0x40ff50,
+               g_UiTimedListCombinedPathScratch.codeUnits);
+    AVar21 = (*g_MemoryApi.allocLargestFreeBlock)();
+    outputRecords = (dword *)AVar21.allocationOrError;
+    if (!AVar21.carry) {
+      FVar22 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                         (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,AVar21.blockSizeOrSentinel,
+                          (byte *)outputRecords,(byte *)g_UiTimedListRecordPathScratch.codeUnits);
+      dVar10 = FVar22.entryCount;
+      pdVar3 = (dword *)FVar22.recordSizeBytes;
+      RVar18.recordBlockOrError = pdVar3;
+      if (!FVar22.carry) {
+        AVar17 = (*g_MemoryApi.shrinkInPlace)((int)pdVar3 * dVar10,outputRecords);
+        RVar18.recordBlockOrError = (dword *)AVar17.scratchOrError;
+        if (!AVar17.carry) {
+          AVar21 = (*g_MemoryApi.allocLargestFreeBlock)();
+          RVar18.recordBlockOrError = (dword *)AVar21.allocationOrError;
+          if (!AVar21.carry) {
+            iVar7 = dVar10 + 1;
+            pdVar4 = (dword *)0x14;
+            pdVar6 = (dword *)(AVar21.blockSizeOrSentinel + iVar7 * -0x10);
+            if ((uint)(iVar7 * 0x10) <= AVar21.blockSizeOrSentinel && pdVar6 != (dword *)0x0) {
+              *RVar18.recordBlockOrError = dVar10;
+              RVar18.recordBlockOrError[1] = 0;
+              RVar18.recordBlockOrError[2] = 0;
+              RVar18.recordBlockOrError[3] = 0x80000000;
+              pdVar12 = RVar18.recordBlockOrError + iVar7 * 4;
+              leaf = outputRecords;
+              pdVar1 = RVar18.recordBlockOrError;
+              for (; dVar10 != 0; dVar10 = dVar10 - 1) {
+                pdVar1[4] = (dword)pdVar12;
+                pdVar1[5] = 0x26;
+                pdVar1[6] = 0;
+                pdVar1[7] = 0;
+                WidePath_CombineDirectoryAndLeaf
+                          (g_UiTimedListRecordPathScratch.codeUnits,(word *)leaf,
+                           g_UiTimedListCombinedPathScratch.codeUnits);
+                WidePath_CombineDirectoryAndLeaf
+                          (g_UiTimedListSecondaryPathScratch.codeUnits,(word *)0x40ff50,
+                           g_UiTimedListRecordPathScratch.codeUnits);
+                FVar22 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                                   (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
+                                    (byte *)g_UiTimedListRecordPathScratch.codeUnits,
+                                    (byte *)g_UiTimedListSecondaryPathScratch.codeUnits);
+                if ((!FVar22.carry) && (FVar22.entryCount != 0)) {
+                  pdVar1[7] = pdVar1[7] | 1;
+                }
+                iVar7 = 0x100;
+                pdVar4 = leaf;
+                do {
+                  if (iVar7 == 0) break;
+                  iVar7 = iVar7 + -1;
+                  dVar2 = *pdVar4;
+                  pdVar4 = (dword *)((int)pdVar4 + 2);
+                } while ((word)dVar2 != 0);
+                pdVar4 = (dword *)(0x102U - iVar7 & 0xfffffffe);
+                pdVar8 = (dword *)((int)pdVar6 - (int)pdVar4);
+                if ((pdVar6 < pdVar4 || pdVar8 == (dword *)0x0) ||
+                   (pdVar6 = (dword *)((int)pdVar8 - (int)pdVar4),
+                   pdVar8 < pdVar4 || pdVar6 == (dword *)0x0)) goto LAB_004101a4;
+                pdVar4 = leaf;
+                for (uVar9 = 0x102U - iVar7 >> 1; uVar9 != 0; uVar9 = uVar9 - 1) {
+                  *pdVar12 = *pdVar4;
+                  pdVar4 = pdVar4 + 1;
+                  pdVar12 = pdVar12 + 1;
+                }
+                leaf = (dword *)((int)leaf + (int)pdVar3);
+                pdVar1 = pdVar1 + 4;
+              }
+              AVar17 = (*g_MemoryApi.shrinkInPlace)
+                                 ((int)pdVar12 + (0x200 - (int)RVar18.recordBlockOrError),
+                                  RVar18.recordBlockOrError);
+              pdVar4 = (dword *)AVar17.scratchOrError;
+              if (!AVar17.carry) {
+                (*g_MemoryApi.free)(outputRecords);
+                RVar18.carry = false;
+                return RVar18;
+              }
+            }
+LAB_004101a4:
+            (*g_MemoryApi.free)(RVar18.recordBlockOrError);
+            RVar18.recordBlockOrError = pdVar4;
+          }
+        }
+      }
+      (*g_MemoryApi.free)(outputRecords);
+      outputRecords = RVar18.recordBlockOrError;
+    }
+  }
+  RVar19.carry = true;
+  RVar19.recordBlockOrError = outputRecords;
+  return RVar19;
+}
+
+/* Address: 0x00410380.
+   Ownership: ui/controls/lists.
+   Purpose: Builds the timed-list directory hierarchy.
+*/
+UiTimedListDirectoryHierarchyEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
+
+{
+  ushort uVar1;
+  undefined2 uVar2;
+  UiTimedListTreeRecord16 *pUVar3;
+  int iVar4;
+  dword dVar5;
+  int iVar6;
+  UiTimedListTreeRecord16 *unaff_EBP;
+  UiTimedListTreeRecord16 *pUVar7;
+  WidePathBuffer256 *pWVar8;
+  UiTimedListTreeRecord16 *pUVar9;
+  Recovered0040FFE0EaxCf5 RVar10;
+  UiTimedListDirectoryHierarchyEaxEdxCf9 UVar11;
+  UiTimedListDirectoryHierarchyEaxEdxCf9 UVar12;
+  UiTimedListTreeRecord16 *pUVar13;
+  
+  iVar6 = 0;
+  while( true ) {
+    pWVar8 = &g_UiTimedListHierarchyPathScratch;
+    for (iVar4 = 0x80; iVar4 != 0; iVar4 = iVar4 + -1) {
+      pWVar8->firstTwoCodeUnits = *(dword *)selectedPathUtf16;
+      selectedPathUtf16 = (word *)(selectedPathUtf16 + 2);
+      pWVar8 = (WidePathBuffer256 *)(&pWVar8->firstTwoCodeUnits + 1);
+    }
+    if ((g_UiTimedListHierarchyPathScratch.codeUnits[3] == 0) ||
+       (g_UiTimedListHierarchyPathScratch.codeUnits[2] == 0)) break;
+    RVar10 = UiTimedListTree_BuildDirectoryRecordBlockCf
+                       (g_UiTimedListHierarchyPathScratch.codeUnits);
+    UVar11.rootRecordBlockOrError = RVar10.recordBlockOrError;
+    if (RVar10.carry) goto joined_r0x00410484;
+    WidePath_SplitParentAndLeaf
+              (g_UiTimedListRecordPathScratch.codeUnits,
+               g_UiTimedListHierarchyParentPathScratch.codeUnits,
+               g_UiTimedListHierarchyPathScratch.codeUnits);
+    UiTimedListTree_FindRecordByLabel
+              (g_UiTimedListRecordPathScratch.codeUnits,UVar11.rootRecordBlockOrError);
+    iVar6 = iVar6 + 1;
+    selectedPathUtf16 = (word *)&g_UiTimedListHierarchyParentPathScratch;
+    unaff_EBP = UVar11.rootRecordBlockOrError;
+  }
+  RVar10 = UiTimedListTree_BuildDirectoryRecordBlockCf(g_UiTimedListHierarchyPathScratch.codeUnits);
+  pUVar3 = RVar10.recordBlockOrError;
+  UVar11.rootRecordBlockOrError = pUVar3;
+  if (!RVar10.carry) {
+    dVar5 = pUVar3->recordCountOrRowPayload00;
+    uVar2 = g_UiTimedListHierarchyPathScratch.codeUnits[0];
+    pUVar13 = pUVar3;
+    goto LAB_0041040e;
+  }
+  goto joined_r0x00410484;
+  while( true ) {
+    uVar2 = uVar1 ^ *(ushort *)pUVar13->recordCountOrRowPayload00;
+    dVar5 = dVar5 - 1;
+    if (dVar5 == 0) break;
+LAB_0041040e:
+    pUVar13 = pUVar13 + 1;
+    uVar1 = uVar2 ^ *(ushort *)pUVar13->recordCountOrRowPayload00;
+    if ((uVar1 & 0xdf) == 0) {
+      iVar6 = iVar6 + 1;
+      g_UiTimedListHierarchyPathScratch.codeUnits[0] = 0;
+      RVar10 = UiTimedListTree_BuildDirectoryRecordBlockCf
+                         (g_UiTimedListHierarchyPathScratch.codeUnits);
+      UVar11.rootRecordBlockOrError = RVar10.recordBlockOrError;
+      if (!RVar10.carry) {
+        pUVar7 = UVar11.rootRecordBlockOrError + 1;
+        pUVar9 = UVar11.rootRecordBlockOrError;
+        do {
+          if (pUVar3 != (UiTimedListTreeRecord16 *)0x0) {
+            pUVar3->rowPayload04 = (dword)pUVar9;
+            pUVar3->nestedRecordBlockOrParentLink08 = pUVar7;
+          }
+          if (pUVar7 != (UiTimedListTreeRecord16 *)0x0) {
+            pUVar7->recordFlags0C =
+                 pUVar7->recordFlags0C | UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
+            pUVar7->nestedRecordBlockOrParentLink08 = pUVar3;
+          }
+          iVar6 = iVar6 + -1;
+          pUVar7 = pUVar13;
+          pUVar9 = pUVar3;
+        } while (iVar6 != 0);
+        UVar11.selectedRecordOrNull = pUVar13;
+        UVar11.carry = false;
+        return UVar11;
+      }
+      goto joined_r0x00410484;
+    }
+  }
+  UVar11.rootRecordBlockOrError = (UiTimedListTreeRecord16 *)0x0;
+joined_r0x00410484:
+  for (; iVar6 != 0; iVar6 = iVar6 + -1) {
+    (*g_MemoryApi.free)(unaff_EBP);
+  }
+  UVar12.selectedRecordOrNull = (UiTimedListTreeRecord16 *)0x0;
+  UVar12.rootRecordBlockOrError = UVar11.rootRecordBlockOrError;
+  UVar12.carry = true;
+  return UVar12;
+}
+
+/* Address: 0x004104B0.
+   Ownership: ui/controls/lists.
+   Purpose: Recursively frees a timed-list record block while testing containment.
+*/
+bool __thandor_cf_preserve_eax_ecx_edx
+UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+          (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock)
+
+{
+  UiTimedListTreeRecord16 *pUVar1;
+  dword dVar2;
+  int iVar3;
+  bool bVar4;
+  
+  iVar3 = 0;
+  if (recordBlock != (UiTimedListTreeRecord16 *)0x0) {
+    pUVar1 = recordBlock;
+    for (dVar2 = recordBlock->recordCountOrRowPayload00; dVar2 != 0; dVar2 = dVar2 - 1) {
+      if (pUVar1 + 1 == targetRecord) {
+        iVar3 = iVar3 + 1;
+      }
+      if ((((pUVar1[1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
+          ((pUVar1[1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
+         (bVar4 = UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+                            (targetRecord,pUVar1[1].nestedRecordBlockOrParentLink08), bVar4)) {
+        iVar3 = iVar3 + 1;
+      }
+      pUVar1 = pUVar1 + 1;
+    }
+  }
+  (*g_MemoryApi.free)(recordBlock);
+  return iVar3 != 0;
+}
+
+/* Address: 0x00410520.
+   Ownership: ui/controls/lists.
+   Purpose: Attaches a directory record block to the timed-list hierarchy.
+*/
+bool __thandor_cf_preserve_ecx_edx
+UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
+
+{
+  dword *directory;
+  UiTimedListTreeRecord16 *pUVar1;
+  int iVar2;
+  UiTimedListTreeRecord16 *pUVar3;
+  UiTimedListTreeRecord16 *pUVar4;
+  dword *recordPathSourceDwords;
+  dword *combinedPathSourceDwords;
+  dword *recordPathScratchDestDwords;
+  dword *combinedPathScratchDestDwords;
+  Recovered0040FFE0EaxCf5 RVar5;
+  
+  recordPathSourceDwords = (dword *)record->recordCountOrRowPayload00;
+  recordPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+  for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *recordPathScratchDestDwords = *recordPathSourceDwords;
+    recordPathSourceDwords = recordPathSourceDwords + 1;
+    recordPathScratchDestDwords = recordPathScratchDestDwords + 1;
+  }
+  if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+     (record[-1].rowPayload04 != 0)) {
+    pUVar1 = record;
+    if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
+      g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
+      WidePath_CombineDirectoryAndLeaf
+                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)0x40ff50,
+                 g_UiTimedListRecordPathScratch.codeUnits);
+    }
+    else {
+      while( true ) {
+        do {
+          pUVar3 = pUVar1;
+          pUVar1 = pUVar3 + -1;
+        } while ((pUVar3[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+        pUVar1 = pUVar3[-1].nestedRecordBlockOrParentLink08;
+        if (pUVar1 == (UiTimedListTreeRecord16 *)0x0) {
+          return true;
+        }
+        directory = (dword *)pUVar1->recordCountOrRowPayload00;
+        if (*(word *)((int)directory + 2) == 0x3a) break;
+        WidePath_CombineDirectoryAndLeaf
+                  (g_UiTimedListCombinedPathScratch.codeUnits,
+                   g_UiTimedListRecordPathScratch.codeUnits,(word *)directory);
+        combinedPathSourceDwords = (dword *)&g_UiTimedListCombinedPathScratch;
+        combinedPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+        for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
+          *combinedPathScratchDestDwords = *combinedPathSourceDwords;
+          combinedPathSourceDwords = combinedPathSourceDwords + 1;
+          combinedPathScratchDestDwords = combinedPathScratchDestDwords + 1;
+        }
+      }
+      g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
+      g_UiTimedListCombinedPathScratch._4_4_ = 0;
+      WidePath_CombineDirectoryAndLeaf
+                (g_UiTimedListSecondaryPathScratch.codeUnits,
+                 g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
+                );
+      WidePath_CombineDirectoryAndLeaf
+                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)0x40ff50,
+                 g_UiTimedListSecondaryPathScratch.codeUnits);
+    }
+  }
+  else {
+    g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061;
+    g_UiTimedListHierarchyParentPathScratch._4_4_ = 0;
+  }
+  RVar5 = UiTimedListTree_BuildDirectoryRecordBlockCf
+                    (g_UiTimedListHierarchyParentPathScratch.codeUnits);
+  pUVar1 = RVar5.recordBlockOrError;
+  if (RVar5.carry) {
+    return true;
+  }
+  record->nestedRecordBlockOrParentLink08 = pUVar1;
+  pUVar1->nestedRecordBlockOrParentLink08 = record;
+  do {
+    pUVar4 = record + -1;
+    pUVar3 = record + -1;
+    record = pUVar4;
+  } while ((pUVar3->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+  pUVar1->rowPayload04 = (dword)pUVar4;
+  return false;
+}
+
+/* Address: 0x00410670.
+   Ownership: ui/controls/lists.
+   Purpose: Toggles expansion for a timed-list directory record.
+*/
+void __thandor_void_preserve_eax_ecx
+UiTimedListControl_ToggleDirectoryRecordExpansion
+          (UiTimedListTreeRecord16 *record,UiTimedListRuntimeExtendedView88 *control)
+
+{
+  UiTimedListTreeRecord16 *targetRecord;
+  bool bVar1;
+  
+  targetRecord = UiTimedListControl_GetSelectedRecord(control);
+  if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) {
+    if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
+      bVar1 = UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+                        (targetRecord,record->nestedRecordBlockOrParentLink08);
+      if (bVar1) {
+        UiActionQueue_Enqueue((control->base).actionId,control);
+        targetRecord = record;
+      }
+      record->recordFlags0C =
+           record->recordFlags0C & ~UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
+      UiTimedListControl_SetRecordTreeAndRecomputeLayout((control->base).recordTree,control);
+      UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
+      return;
+    }
+    bVar1 = UiTimedListTree_AttachDirectoryRecordBlockCf(record);
+    if (!bVar1) {
+      record->recordFlags0C =
+           record->recordFlags0C | UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
+      UiTimedListControl_SetRecordTreeAndRecomputeLayout((control->base).recordTree,control);
+      UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
+    }
+  }
+  return;
+}
+
+/* Address: 0x00410700.
+   Ownership: ui/controls/lists.
+   Purpose: Builds the recovered path for a timed-list tree record.
+*/
+bool __thandor_cf_preserve_ecx_edx
+UiTimedListTree_BuildRecordPathCf(dword *outputPathDwords,UiTimedListTreeRecord16 *record)
+
+{
+  dword *directory;
+  int iVar1;
+  UiTimedListTreeRecord16 *pUVar2;
+  dword *recordPathSourceDwords;
+  dword *combinedPathSourceDwords;
+  dword *recordPathScratchDestDwords;
+  dword *combinedPathScratchDestDwords;
+  
+  recordPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+  recordPathSourceDwords = (dword *)record->recordCountOrRowPayload00;
+  iVar1 = 0x80;
+  if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+     (record[-1].rowPayload04 != 0)) {
+    for (; iVar1 != 0; iVar1 = iVar1 + -1) {
+      *recordPathScratchDestDwords = *recordPathSourceDwords;
+      recordPathSourceDwords = (dword *)(recordPathSourceDwords + 1);
+      recordPathScratchDestDwords = recordPathScratchDestDwords + 1;
+    }
+    if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
+      g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
+      recordPathSourceDwords = (dword *)&g_UiTimedListRecordPathScratch;
+    }
+    else {
+      while( true ) {
+        do {
+          pUVar2 = record;
+          record = pUVar2 + -1;
+        } while ((pUVar2[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+        record = pUVar2[-1].nestedRecordBlockOrParentLink08;
+        if (record == (UiTimedListTreeRecord16 *)0x0) {
+          return true;
+        }
+        directory = (dword *)record->recordCountOrRowPayload00;
+        if (*(word *)((int)directory + 2) == 0x3a) break;
+        WidePath_CombineDirectoryAndLeaf
+                  (g_UiTimedListCombinedPathScratch.codeUnits,
+                   g_UiTimedListRecordPathScratch.codeUnits,(word *)directory);
+        combinedPathSourceDwords = (dword *)&g_UiTimedListCombinedPathScratch;
+        combinedPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+        for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
+          *combinedPathScratchDestDwords = *combinedPathSourceDwords;
+          combinedPathSourceDwords = combinedPathSourceDwords + 1;
+          combinedPathScratchDestDwords = combinedPathScratchDestDwords + 1;
+        }
+      }
+      g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
+      g_UiTimedListCombinedPathScratch._4_4_ = 0;
+      WidePath_CombineDirectoryAndLeaf
+                (g_UiTimedListSecondaryPathScratch.codeUnits,
+                 g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
+                );
+      recordPathSourceDwords = (dword *)&g_UiTimedListSecondaryPathScratch;
+    }
+  }
+  for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *outputPathDwords = *recordPathSourceDwords;
+    recordPathSourceDwords = (dword *)(recordPathSourceDwords + 1);
+    outputPathDwords = outputPathDwords + 1;
+  }
+  return false;
+}
+
 /* Address: 0x004B11C0.
    Ownership: ui/controls/lists.
    Purpose: Traverses a sibling list and forwards the action ID through vtable slot +0x3C, restoring matching
@@ -1099,7 +1705,8 @@ void UiTimedListControl_SelectRowFromPointer
    actionId→UiActionId_V338. Calling convention, storage, body bytes, control flow, and executable data remain
    unchanged.
 */
-void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
+void __thandor_void_preserve_eax_ecx_edx
+UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
   for (; firstNode != (UiNodeBase *)0xffffffff; firstNode = firstNode->nextSibling) {
@@ -1108,6 +1715,7 @@ void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
   return;
 }
 
+
 /* Address: 0x004B1200.
    Ownership: ui/controls/lists.
    Purpose: Traverses a sibling list and forwards the action ID through vtable slot +0x38, suppressing matching
@@ -1115,7 +1723,8 @@ void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
    actionId→UiActionId_V338. Calling convention, storage, body bytes, control flow, and executable data remain
    unchanged.
 */
-void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
+void __thandor_void_preserve_eax_ecx_edx
+UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
   for (; firstNode != (UiNodeBase *)0xffffffff; firstNode = firstNode->nextSibling) {
@@ -1123,6 +1732,7 @@ void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
   }
   return;
 }
+
 
 /* Address: 0x004B2550.
    Ownership: ui/controls/lists.
@@ -1132,11 +1742,13 @@ void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime],
    UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
 */
-void UiSelectableControl_KeyboardEventCf
-               (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-               UiSelectableControl *control)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiSelectableControl_KeyboardEventCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+          UiSelectableControl *control)
 
 {
+  bool bVar1;
   UiSelectableStateFlags activationKeyBindingFlag;
   
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)
@@ -1164,7 +1776,7 @@ void UiSelectableControl_KeyboardEventCf
     }
     UiActionQueue_Enqueue(control->actionId,control);
     UiNode_InvalidateRoot(&control->base);
-    return;
+    return false;
   }
   if ((control->stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
     if (((control->stateFlags & 0x80) != 0) && (control[1].base.parent != (UiNodeBase *)0x0)) {
@@ -1174,7 +1786,7 @@ void UiSelectableControl_KeyboardEventCf
     control->stateFlags = control->stateFlags ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiActionQueue_Enqueue(control->actionId,control);
     UiNode_InvalidateRoot(&control->base);
-    return;
+    return false;
   }
   if ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     if (((control->stateFlags & 0x80) != 0) && (control[1].base.parent != (UiNodeBase *)0x0)) {
@@ -1184,12 +1796,13 @@ void UiSelectableControl_KeyboardEventCf
     control->stateFlags = control->stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
     UiActionQueue_Enqueue(control->actionId,control);
     UiNode_InvalidateRoot(&control->base);
-    return;
+    return false;
   }
 UiSelectableControl_DelegateUnhandledKeyboardEvent:
-  UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
-  return;
+  bVar1 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+  return bVar1;
 }
+
 
 /* Address: 0x004B26E0.
    Ownership: ui/controls/lists.
@@ -1197,7 +1810,8 @@ UiSelectableControl_DelegateUnhandledKeyboardEvent:
    the newly suppressed control.
    Cross-module calls: UiKeyboardFocus_ReleaseNode [ui/controls/input].
 */
-void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -1210,13 +1824,15 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
   return;
 }
 
+
 /* Address: 0x004B2710.
    Ownership: ui/controls/lists.
    Purpose: When actionId matches control->actionId, clears nodeFlags bit 0x08 and updates focus/activation state
    for the restored control.
    Cross-module calls: UiKeyboardFocus_AcquireIfNone [ui/controls/input].
 */
-void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -1229,6 +1845,7 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
   return;
 }
 
+
 /* Address: 0x004B2D30.
    Ownership: ui/controls/lists.
    Purpose: Variadic group test. CF=0 when at least one non-suppressed control has selected bit 0x02; CF=1 when
@@ -1236,24 +1853,34 @@ void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableCo
    controlCount→UiControlCount_V338. Calling convention, storage, body bytes, control flow, and executable data
    remain unchanged.
 */
-void UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount)
+UiSelectableNodeEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount)
 
 {
+  int iVar1;
   uint controlIndex;
   int controlPointerByteOffset;
+  UiSelectableNodeEaxEcxCf9 UVar2;
+  UiSelectableNodeEaxEcxCf9 UVar3;
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
-  while (((*(uint *)(*(int *)(&stack0x00000008 + controlPointerByteOffset) + 0x48) & 8) != 0 ||
-         ((*(uint *)(*(int *)(&stack0x00000008 + controlPointerByteOffset) + 0x4c) & 2) == 0))) {
+  while ((iVar1 = *(int *)(&stack0x00000008 + controlPointerByteOffset),
+         (*(uint *)(iVar1 + 0x48) & 8) != 0 || ((*(uint *)(iVar1 + 0x4c) & 2) == 0))) {
     controlIndex = controlIndex + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
-      return;
+      UVar2.node = (UiNodeBase *)iVar1;
+      UVar2.carry = true;
+      return UVar2;
     }
   }
-  return;
+  UVar3.controlIndexOrCount = controlIndex;
+  UVar3.node = (UiNodeBase *)iVar1;
+  UVar3.carry = false;
+  return UVar3;
 }
+
 
 /* Address: 0x004B2D70.
    Ownership: ui/controls/lists.
@@ -1262,23 +1889,30 @@ void UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount)
    p0 controlCount→UiControlCount_V338. Calling convention, storage, body bytes, control flow, and executable data
    remain unchanged.
 */
-void UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount)
+UiSelectableGroupIndexEcxCf5 __thandor_eax_ecx_cf_preserve_edx
+UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount)
 
 {
   uint controlIndex;
   int controlPointerByteOffset;
+  UiSelectableGroupIndexEcxCf5 UVar1;
+  UiSelectableGroupIndexEcxCf5 UVar2;
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
     if ((*(uint *)(*(int *)(&stack0x00000008 + controlPointerByteOffset) + 0x4c) & 2) != 0) {
-      return;
+      UVar2.carryNoneSelected = false;
+      UVar2.selectedIndexOrCount = controlIndex;
+      return UVar2;
     }
     controlIndex = controlIndex + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
-  return;
+  UVar1.carryNoneSelected = true;
+  return UVar1;
 }
+
 
 /* Address: 0x004B2DA0.
    Ownership: ui/controls/lists.
@@ -1288,16 +1922,16 @@ void UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount)
    body bytes, control flow, and executable data remain unchanged.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl)
 
 {
   UiNodeBase *node;
-  undefined4 in_EAX;
-  int extraout_ECX;
+  uint uVar1;
   int controlPointerByteOffset;
   
   controlPointerByteOffset = 0;
+  uVar1 = 0;
   do {
     node = *(UiNodeBase **)(&stack0x0000000c + controlPointerByteOffset);
     if (node == selectedControl) {
@@ -1307,25 +1941,29 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
       node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xfffffffd);
     }
     UiNode_InvalidateRoot(node);
+    uVar1 = uVar1 + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
-  } while (extraout_ECX + 1U < controlCount);
-  return in_EAX;
+  } while (uVar1 < controlCount);
+  return;
 }
+
 
 /* Address: 0x004B2DE0.
    Ownership: ui/controls/lists.
    Purpose: Tests one selectable control. CF=1 only when nodeFlags bit 0x08 is clear and stateFlags bit 0x02 is
    set; otherwise CF=0.
 */
-void UiSelectableControl_IsSelectedCf(UiSelectableControl *control)
+byte __thandor_cf_preserve_eax_ecx_edx
+UiSelectableControl_IsSelectedCf(UiSelectableControl *control)
 
 {
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
-    return;
+    return 1;
   }
-  return;
+  return 0;
 }
+
 
 /* Address: 0x004B2E10.
    Ownership: ui/controls/lists.
@@ -1334,7 +1972,8 @@ void UiSelectableControl_IsSelectedCf(UiSelectableControl *control)
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control)
 
 {
   control->stateFlags = control->stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -1345,32 +1984,41 @@ void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableContr
   return;
 }
 
+
 /* Address: 0x004B4920.
    Ownership: ui/controls/lists.
    Purpose: CF=0 when base.firstChild matches an entry in the page array; CF=1 when the active child is absent.
 */
-void UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
 
 {
   uint pageIndex;
+  bool bVar1;
+  StatusValueEaxCf5 SVar2;
   
   pageIndex = 0;
   do {
-    if ((stack->base).firstChild == (&stack->pages)[pageIndex]) {
-      return;
-    }
+    bVar1 = false;
+    if ((stack->base).firstChild == (&stack->pages)[pageIndex]) goto LAB_004b4944;
     pageIndex = pageIndex + 1;
   } while (pageIndex < stack->pageCount);
-  return;
+  bVar1 = true;
+LAB_004b4944:
+  SVar2.carry = bVar1;
+  SVar2.valueOrError = pageIndex;
+  return SVar2;
 }
+
 
 /* Address: 0x004B7970.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[0]@004B7920.
    Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
 */
-void UiScrollableControl_RelocateChildren
-               (UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_RelocateChildren
+          (UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control)
 
 {
   UiNodeBase *contentChild;
@@ -1388,6 +2036,7 @@ void UiScrollableControl_RelocateChildren
   return;
 }
 
+
 /* Address: 0x004B79D0.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[2]@004B7920.
@@ -1395,350 +2044,296 @@ void UiScrollableControl_RelocateChildren
    [ui/controls/layout], UiWindow_BlitTiledInterior [ui/controls/layout], UiContainer_DrawIntersectingChildren
    [ui/controls/layout].
 */
-void UiScrollableControl_DrawFrameContentAndScrollbars
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_DrawFrameContentAndScrollbars
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiScrollableControl *control)
 
 {
+  dword dVar1;
   GraphicsSubresourceIndex subresource;
-  UiPixelCoordinate tileEnd;
-  int extraout_ECX;
-  int iVar1;
-  UiPixelCoordinate extraout_ECX_00;
-  UiPixelCoordinate extraout_ECX_01;
-  UiPixelCoordinate extraout_ECX_02;
-  UiPixelCoordinate extraout_ECX_03;
-  UiPixelCoordinate UVar2;
-  UiPixelCoordinate tileEnd_00;
-  UiPixelCoordinate tileEnd_01;
-  UiPixelCoordinate extraout_ECX_04;
-  UiPixelCoordinate extraout_ECX_05;
-  UiPixelCoordinate extraout_ECX_06;
-  UiPixelCoordinate extraout_ECX_07;
-  UiPixelCoordinate tileStart;
-  UiPixelCoordinate tileStart_00;
-  int extraout_ECX_08;
-  int extraout_ECX_09;
-  int extraout_ECX_10;
-  int extraout_ECX_11;
-  int extraout_ECX_12;
-  int extraout_ECX_13;
-  int extraout_ECX_14;
-  int extraout_ECX_15;
-  int extraout_ECX_16;
-  int extraout_ECX_17;
-  int extraout_ECX_18;
-  UiPixelCoordinate extraout_ECX_19;
-  int extraout_ECX_20;
+  dword tileEnd;
+  dword dVar2;
   int iVar3;
-  int extraout_EDX;
-  UiPixelCoordinate tileStart_01;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  UiPixelCoordinate tileStart_02;
-  UiPixelCoordinate extraout_EDX_02;
-  int extraout_EDX_03;
   int iVar4;
   int iVar5;
   int iVar6;
   int iVar7;
   int iVar8;
-  bool bVar9;
-  qword qVar10;
+  int iVar9;
+  bool bVar10;
+  GraphicsTextureSizeEaxEdxCf9 GVar11;
+  dword dVar12;
   
-  bVar9 = &stack0xffffffe4 < (undefined1 *)0x8;
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar9) {
+  bVar10 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar10) {
     tileEnd = 0;
-    iVar3 = 0;
-    iVar7 = (control->base).layoutWidth;
-    iVar6 = (control->base).layoutHeight;
+    iVar5 = 0;
+    iVar8 = (control->base).layoutWidth;
+    iVar7 = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      tileEnd = 0;
-      iVar3 = 0;
-      iVar8 = iVar7;
+      dVar12 = 0;
+      iVar5 = 0;
+      iVar4 = iVar8;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
-        iVar4 = 0;
-        qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-        iVar3 = iVar3 + (int)(qVar10 >> 0x20);
+        iVar6 = 0;
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+        dVar1 = GVar11.logicalWidthPixels;
+        iVar5 = iVar5 + GVar11.logicalHeightPixels;
       }
       else {
-        iVar1 = iVar6;
-        qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-        iVar5 = (int)(qVar10 >> 0x20);
-        iVar4 = iVar6 - iVar5;
-        iVar6 = iVar1 - iVar5;
+        iVar3 = iVar7;
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+        dVar1 = GVar11.logicalWidthPixels;
+        iVar6 = iVar7 - GVar11.logicalHeightPixels;
+        iVar7 = iVar3 - GVar11.logicalHeightPixels;
       }
-      qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      iVar1 = extraout_ECX;
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      dVar2 = tileEnd;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        iVar1 = extraout_ECX + (int)qVar10;
+        dVar2 = GVar11.logicalWidthPixels;
       }
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-        iVar7 = iVar7 - (int)qVar10;
+        iVar8 = iVar8 - GVar11.logicalWidthPixels;
       }
       if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                            iVar1 + (control->base).left,0x5a,g_UiWindowTextureSource,
-                            g_FramebufferAccess);
-        iVar1 = (int)(qVar10 >> 0x20);
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   dVar2 + (control->base).left,0x5a,g_UiWindowTextureSource,g_FramebufferAccess);
+        tileEnd = dVar12;
       }
       else {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                            iVar1 + (control->base).left,0x62,g_UiWindowTextureSource,
-                            g_FramebufferAccess);
-        iVar1 = (int)(qVar10 >> 0x20);
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   dVar2 + (control->base).left,0x62,g_UiWindowTextureSource,g_FramebufferAccess);
+        tileEnd = dVar12;
       }
-      iVar1 = iVar7 - iVar1;
+      iVar3 = dVar2 + dVar1;
+      iVar9 = iVar8 - dVar1;
       if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                   iVar1 + (control->base).left,0x5b,g_UiWindowTextureSource,g_FramebufferAccess);
-        UVar2 = extraout_ECX_01;
-        iVar7 = iVar8;
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   iVar9 + (control->base).left,0x5b,g_UiWindowTextureSource,g_FramebufferAccess);
+        iVar8 = iVar4;
       }
       else {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                   iVar1 + (control->base).left,99,g_UiWindowTextureSource,g_FramebufferAccess);
-        UVar2 = extraout_ECX_00;
-        iVar7 = iVar8;
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   iVar9 + (control->base).left,99,g_UiWindowTextureSource,g_FramebufferAccess);
+        iVar8 = iVar4;
       }
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x5d,control->horizontalThumbLeft,iVar4,
-                   UVar2,control);
-        UVar2 = extraout_ECX_03;
+                  (clipTop,clipLeft,clipBottom,clipRight,0x5d,control->horizontalThumbLeft,iVar6,
+                   iVar3,control);
       }
       else {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x65,control->horizontalThumbLeft,iVar4,
-                   UVar2,control);
-        UVar2 = extraout_ECX_02;
+                  (clipTop,clipLeft,clipBottom,clipRight,0x65,control->horizontalThumbLeft,iVar6,
+                   iVar3,control);
       }
-      iVar8 = control->horizontalThumbRight;
+      iVar4 = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) == 0) {
-        if (iVar8 < clipRight) {
-          iVar8 = clipRight;
+        if (iVar4 < clipRight) {
+          iVar4 = clipRight;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,iVar8,0x5d,iVar1,iVar4,UVar2,control);
+                  (clipTop,clipLeft,clipBottom,iVar4,0x5d,iVar9,iVar6,iVar3,control);
       }
       else {
-        if (iVar8 < clipRight) {
-          iVar8 = clipRight;
+        if (iVar4 < clipRight) {
+          iVar4 = clipRight;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,iVar8,0x65,iVar1,iVar4,UVar2,control);
+                  (clipTop,clipLeft,clipBottom,iVar4,0x65,iVar9,iVar6,iVar3,control);
       }
-      (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
-      iVar8 = control->horizontalThumbRight;
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
+      dVar12 = GVar11.logicalWidthPixels;
+      iVar4 = control->horizontalThumbLeft;
+      iVar3 = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                            control->horizontalThumbLeft + (control->base).left,0xc0,
-                            g_UiWindowTextureSource,g_FramebufferAccess);
-        iVar8 = iVar8 - (int)(qVar10 >> 0x20);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                   iVar8 + (control->base).left,0xc1,g_UiWindowTextureSource,g_FramebufferAccess);
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   iVar4 + (control->base).left,0xc0,g_UiWindowTextureSource,g_FramebufferAccess);
+        iVar3 = iVar3 - dVar12;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   iVar3 + (control->base).left,0xc1,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x5c,iVar8,iVar4,tileEnd_01,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x5c,iVar3,iVar6,iVar4 + dVar12,control);
       }
       else {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                            control->horizontalThumbLeft + (control->base).left,0xc4,
-                            g_UiWindowTextureSource,g_FramebufferAccess);
-        iVar8 = iVar8 - (int)(qVar10 >> 0x20);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
-                   iVar8 + (control->base).left,0xc5,g_UiWindowTextureSource,g_FramebufferAccess);
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   iVar4 + (control->base).left,0xc4,g_UiWindowTextureSource,g_FramebufferAccess);
+        iVar3 = iVar3 - dVar12;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                   iVar3 + (control->base).left,0xc5,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,100,iVar8,iVar4,tileEnd_00,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,100,iVar3,iVar6,iVar4 + dVar12,control);
       }
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      iVar8 = iVar6;
-      iVar4 = iVar3;
+      iVar4 = iVar7;
+      iVar6 = iVar5;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
-        iVar1 = tileEnd;
-        qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-        iVar1 = iVar1 + (int)qVar10;
+        dVar12 = tileEnd;
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        dVar1 = GVar11.logicalHeightPixels;
+        dVar12 = dVar12 + GVar11.logicalWidthPixels;
       }
       else {
-        iVar5 = iVar7;
-        iVar1 = tileEnd;
-        qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-        tileEnd = iVar7 - (int)qVar10;
-        iVar7 = iVar5 - (int)qVar10;
+        iVar3 = iVar8;
+        dVar12 = tileEnd;
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        dVar1 = GVar11.logicalHeightPixels;
+        tileEnd = iVar8 - GVar11.logicalWidthPixels;
+        iVar8 = iVar3 - GVar11.logicalWidthPixels;
       }
       if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,iVar3 + (control->base).top,
-                            tileEnd + (control->base).left,0x5e,g_UiWindowTextureSource,
-                            g_FramebufferAccess);
-        iVar5 = (int)(qVar10 >> 0x20);
-        iVar3 = iVar4;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                   tileEnd + (control->base).left,0x5e,g_UiWindowTextureSource,g_FramebufferAccess);
       }
       else {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,iVar3 + (control->base).top,
-                            tileEnd + (control->base).left,0x66,g_UiWindowTextureSource,
-                            g_FramebufferAccess);
-        iVar5 = (int)(qVar10 >> 0x20);
-        iVar3 = iVar4;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                   tileEnd + (control->base).left,0x66,g_UiWindowTextureSource,g_FramebufferAccess);
       }
-      iVar5 = iVar6 - iVar5;
+      iVar3 = iVar5 + dVar1;
+      iVar9 = iVar7 - dVar1;
       if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar9 + (control->base).top,
                    tileEnd + (control->base).left,0x5f,g_UiWindowTextureSource,g_FramebufferAccess);
-        UVar2 = extraout_ECX_05;
-        iVar6 = iVar8;
+        iVar7 = iVar4;
+        iVar5 = iVar6;
       }
       else {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar9 + (control->base).top,
                    tileEnd + (control->base).left,0x67,g_UiWindowTextureSource,g_FramebufferAccess);
-        UVar2 = extraout_ECX_04;
-        iVar6 = iVar8;
+        iVar7 = iVar4;
+        iVar5 = iVar6;
       }
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x61,control->verticalThumbTop,UVar2,
+                  (clipTop,clipLeft,clipBottom,clipRight,0x61,control->verticalThumbTop,iVar3,
                    tileEnd,control);
-        UVar2 = extraout_ECX_07;
       }
       else {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x69,control->verticalThumbTop,UVar2,
+                  (clipTop,clipLeft,clipBottom,clipRight,0x69,control->verticalThumbTop,iVar3,
                    tileEnd,control);
-        UVar2 = extraout_ECX_06;
       }
-      iVar8 = control->verticalThumbBottom;
+      iVar4 = control->verticalThumbBottom;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) == 0) {
-        if (iVar8 < clipBottom) {
-          iVar8 = clipBottom;
+        if (iVar4 < clipBottom) {
+          iVar4 = clipBottom;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,iVar8,clipRight,0x61,iVar5,UVar2,tileEnd,control);
+                  (clipTop,clipLeft,iVar4,clipRight,0x61,iVar9,iVar3,tileEnd,control);
       }
       else {
-        if (iVar8 < clipBottom) {
-          iVar8 = clipBottom;
+        if (iVar4 < clipBottom) {
+          iVar4 = clipBottom;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,iVar8,clipRight,0x69,iVar5,UVar2,tileEnd,control);
+                  (clipTop,clipLeft,iVar4,clipRight,0x69,iVar9,iVar3,tileEnd,control);
       }
-      (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
-      iVar8 = control->verticalThumbBottom;
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
+      dVar1 = GVar11.logicalHeightPixels;
+      iVar4 = control->verticalThumbTop;
+      iVar6 = control->verticalThumbBottom;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,
-                            control->verticalThumbTop + (control->base).top,
-                            tileEnd + (control->base).left,0xc2,g_UiWindowTextureSource,
-                            g_FramebufferAccess);
-        iVar8 = iVar8 - (int)(qVar10 >> 0x20);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar8 + (control->base).top,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
+                   tileEnd + (control->base).left,0xc2,g_UiWindowTextureSource,g_FramebufferAccess);
+        iVar6 = iVar6 - dVar1;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
                    tileEnd + (control->base).left,0xc3,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x60,iVar8,tileStart_00,tileEnd,control);
-        tileEnd = iVar1;
+                  (clipTop,clipLeft,clipBottom,clipRight,0x60,iVar6,iVar4 + dVar1,tileEnd,control);
+        tileEnd = dVar12;
       }
       else {
-        qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                           (clipTop,clipLeft,clipBottom,clipRight,
-                            control->verticalThumbTop + (control->base).top,
-                            tileEnd + (control->base).left,0xc6,g_UiWindowTextureSource,
-                            g_FramebufferAccess);
-        iVar8 = iVar8 - (int)(qVar10 >> 0x20);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar8 + (control->base).top,
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar4 + (control->base).top,
+                   tileEnd + (control->base).left,0xc6,g_UiWindowTextureSource,g_FramebufferAccess);
+        iVar6 = iVar6 - dVar1;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
                    tileEnd + (control->base).left,199,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x68,iVar8,tileStart,tileEnd,control);
-        tileEnd = iVar1;
+                  (clipTop,clipLeft,clipBottom,clipRight,0x68,iVar6,iVar4 + dVar1,tileEnd,control);
+        tileEnd = dVar12;
       }
     }
     if ((control->scrollStateFlags & 0x400) != 0) {
-      qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
-      iVar4 = (int)(qVar10 >> 0x20);
-      iVar8 = (int)qVar10;
-      iVar6 = iVar6 - iVar4;
-      iVar7 = iVar7 - iVar8;
-      qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                         (clipTop,clipLeft,clipBottom,clipRight,iVar3 + (control->base).top,
-                          extraout_ECX_08 + (control->base).left,0x6a,g_UiWindowTextureSource,
-                          g_FramebufferAccess);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+      dVar12 = GVar11.logicalWidthPixels;
+      iVar7 = iVar7 - GVar11.logicalHeightPixels;
+      iVar8 = iVar8 - dVar12;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,(int)(qVar10 >> 0x20) + (control->base).top,
-                 iVar7 + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                 tileEnd + (control->base).left,0x6a,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
-                 extraout_ECX_09 + (control->base).left,0x6c,g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                         (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
-                          iVar7 + (control->base).left,0x6d,g_UiWindowTextureSource,
-                          g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                 iVar8 + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
+      (*g_GraphicsTextureSourceBlitSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,iVar7 + (control->base).top,
+                 tileEnd + (control->base).left,0x6c,g_UiWindowTextureSource,g_FramebufferAccess);
+      (*g_GraphicsTextureSourceBlitSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,iVar7 + (control->base).top,
+                 iVar8 + (control->base).left,0x6d,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x6e,iVar7,
-                 (UiPixelCoordinate)(qVar10 >> 0x20),extraout_ECX_10 + iVar8,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x6e,iVar8,iVar5,tileEnd + dVar12,control);
+      iVar5 = iVar5 + GVar11.logicalHeightPixels;
+      iVar4 = (tileEnd + dVar12) - dVar12;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x6f,iVar6,extraout_EDX + iVar4,
-                 extraout_ECX_11 - iVar8,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x6f,iVar7,iVar5,iVar4,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x70,iVar6,tileStart_01,iVar7,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x70,iVar7,iVar5,iVar8,control);
+      tileEnd = iVar4 + dVar12;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x71,iVar7,iVar6,extraout_ECX_12 + iVar8,
-                 control);
-      tileEnd = extraout_ECX_13;
-      iVar3 = extraout_EDX_00;
+                (clipTop,clipLeft,clipBottom,clipRight,0x71,iVar8,iVar7,tileEnd,control);
     }
     if ((control->scrollStateFlags & 0x800) != 0) {
-      qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
-      iVar4 = (int)(qVar10 >> 0x20);
-      iVar8 = (int)qVar10;
-      iVar6 = iVar6 - iVar4;
-      iVar7 = iVar7 - iVar8;
-      qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                         (clipTop,clipLeft,clipBottom,clipRight,iVar3 + (control->base).top,
-                          extraout_ECX_14 + (control->base).left,0x72,g_UiWindowTextureSource,
-                          g_FramebufferAccess);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+      dVar12 = GVar11.logicalWidthPixels;
+      iVar7 = iVar7 - GVar11.logicalHeightPixels;
+      iVar8 = iVar8 - dVar12;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,(int)(qVar10 >> 0x20) + (control->base).top,
-                 iVar7 + (control->base).left,0x73,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                 tileEnd + (control->base).left,0x72,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
-                 extraout_ECX_15 + (control->base).left,0x74,g_UiWindowTextureSource,
-                 g_FramebufferAccess);
-      qVar10 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                         (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
-                          iVar7 + (control->base).left,0x75,g_UiWindowTextureSource,
-                          g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top,
+                 iVar8 + (control->base).left,0x73,g_UiWindowTextureSource,g_FramebufferAccess);
+      (*g_GraphicsTextureSourceBlitSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,iVar7 + (control->base).top,
+                 tileEnd + (control->base).left,0x74,g_UiWindowTextureSource,g_FramebufferAccess);
+      (*g_GraphicsTextureSourceBlitSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,iVar7 + (control->base).top,
+                 iVar8 + (control->base).left,0x75,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x76,iVar7,
-                 (UiPixelCoordinate)(qVar10 >> 0x20),extraout_ECX_16 + iVar8,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x76,iVar8,iVar5,tileEnd + dVar12,control);
+      iVar5 = iVar5 + GVar11.logicalHeightPixels;
+      iVar4 = (tileEnd + dVar12) - dVar12;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x77,iVar6,extraout_EDX_01 + iVar4,
-                 extraout_ECX_17 - iVar8,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x77,iVar7,iVar5,iVar4,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x78,iVar6,tileStart_02,iVar7,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x78,iVar7,iVar5,iVar8,control);
+      tileEnd = iVar4 + dVar12;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x79,iVar7,iVar6,extraout_ECX_18 + iVar8,
-                 control);
-      tileEnd = extraout_ECX_19;
-      iVar3 = extraout_EDX_02;
+                (clipTop,clipLeft,clipBottom,clipRight,0x79,iVar8,iVar7,tileEnd,control);
     }
     if ((control->scrollStateFlags & 0x300) != 0) {
       subresource = 0;
@@ -1746,30 +2341,31 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
         subresource = 0x7a;
       }
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,subresource,iVar6,iVar7,iVar3,tileEnd,control
+                (clipTop,clipLeft,clipBottom,clipRight,subresource,iVar7,iVar8,iVar5,tileEnd,control
                 );
     }
     (*g_GraphicsFramebufferEndAccess)();
-    iVar3 = extraout_ECX_20 + (control->base).left;
-    iVar8 = extraout_EDX_03 + (control->base).top;
-    iVar7 = iVar7 + (control->base).left;
-    iVar6 = iVar6 + (control->base).top;
-    if (iVar3 < clipRight) {
-      iVar3 = clipRight;
+    iVar4 = tileEnd + (control->base).left;
+    iVar5 = iVar5 + (control->base).top;
+    iVar8 = iVar8 + (control->base).left;
+    iVar7 = iVar7 + (control->base).top;
+    if (iVar4 < clipRight) {
+      iVar4 = clipRight;
     }
-    if (iVar8 < clipBottom) {
-      iVar8 = clipBottom;
+    if (iVar5 < clipBottom) {
+      iVar5 = clipBottom;
     }
-    if (clipLeft < iVar7) {
-      iVar7 = clipLeft;
+    if (clipLeft < iVar8) {
+      iVar8 = clipLeft;
     }
-    if (clipTop < iVar6) {
-      iVar6 = clipTop;
+    if (clipTop < iVar7) {
+      iVar7 = clipTop;
     }
-    UiContainer_DrawIntersectingChildren(iVar6,iVar7,iVar8,iVar3,&control->base);
+    UiContainer_DrawIntersectingChildren(iVar7,iVar8,iVar5,iVar4,&control->base);
   }
   return;
 }
+
 
 /* Address: 0x004B8310.
    Ownership: ui/controls/lists.
@@ -1777,80 +2373,72 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
    track bounds, thumb geometry, and clamped content offsets from the control rectangle and active child
    dimensions.
 */
-undefined8 UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
 
 {
   UiNodeBase *pUVar1;
   UiPixelExtent UVar2;
   UiPixelExtent UVar3;
-  undefined4 in_EAX;
-  int iVar4;
-  UiPixelOffset UVar5;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
+  uint uVar4;
+  dword dVar5;
   uint uVar6;
-  undefined4 in_EDX;
-  int extraout_EDX;
-  int extraout_EDX_00;
   UiPixelOffset UVar7;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  UiPixelExtent UVar8;
-  int iVar9;
-  UiPixelExtent UVar10;
-  int iVar11;
-  qword qVar12;
+  UiPixelOffset UVar8;
+  UiPixelExtent UVar9;
+  int iVar10;
+  UiPixelExtent UVar11;
+  int iVar12;
+  GraphicsTextureSizeEaxEdxCf9 GVar13;
   
   pUVar1 = (control->base).firstChild;
-  UVar10 = (control->base).right - (control->base).left;
-  UVar8 = (control->base).bottom - (control->base).top;
+  UVar11 = (control->base).right - (control->base).left;
+  UVar9 = (control->base).bottom - (control->base).top;
   control->scrollStateFlags =
        control->scrollStateFlags &
        ~(UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
          UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
-  (control->base).layoutWidth = UVar10;
-  (control->base).layoutHeight = UVar8;
+  (control->base).layoutWidth = UVar11;
+  (control->base).layoutHeight = UVar9;
   if (pUVar1 != (UiNodeBase *)0xffffffff) {
-    UVar5 = control->scrollOffsetY;
-    iVar11 = (control->base).top;
+    UVar7 = control->scrollOffsetY;
+    iVar12 = (control->base).top;
     pUVar1->left = pUVar1->leftOffset + control->scrollOffsetX + (control->base).left;
-    pUVar1->top = pUVar1->topOffset + UVar5 + iVar11;
+    pUVar1->top = pUVar1->topOffset + UVar7 + iVar12;
     UVar2 = pUVar1->rightOffset;
     UVar3 = pUVar1->bottomOffset;
     control->contentWidth = UVar2;
     control->contentHeight = UVar3;
-    UVar5 = control->scrollOffsetY;
-    iVar11 = (control->base).top;
+    UVar7 = control->scrollOffsetY;
+    iVar12 = (control->base).top;
     pUVar1->right = UVar2 + control->scrollOffsetX + (control->base).left;
-    pUVar1->bottom = UVar3 + UVar5 + iVar11;
+    pUVar1->bottom = UVar3 + UVar7 + iVar12;
     control->contentOriginX = 0;
     control->contentOriginY = 0;
     if ((control->scrollStateFlags & 0x400) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
-      iVar11 = (int)(qVar12 >> 0x20);
-      control->contentOriginX = control->contentOriginX + (int)qVar12;
-      control->contentOriginY = control->contentOriginY + iVar11;
-      UVar10 = UVar10 + (int)qVar12 * -2;
-      UVar8 = UVar8 + iVar11 * -2;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+      control->contentOriginX = control->contentOriginX + GVar13.logicalWidthPixels;
+      control->contentOriginY = control->contentOriginY + GVar13.logicalHeightPixels;
+      UVar11 = UVar11 + GVar13.logicalWidthPixels * -2;
+      UVar9 = UVar9 + GVar13.logicalHeightPixels * -2;
     }
     if ((control->scrollStateFlags & 0x800) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
-      iVar11 = (int)(qVar12 >> 0x20);
-      control->contentOriginX = control->contentOriginX + (int)qVar12;
-      control->contentOriginY = control->contentOriginY + iVar11;
-      UVar10 = UVar10 + (int)qVar12 * -2;
-      UVar8 = UVar8 + iVar11 * -2;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+      control->contentOriginX = control->contentOriginX + GVar13.logicalWidthPixels;
+      control->contentOriginY = control->contentOriginY + GVar13.logicalHeightPixels;
+      UVar11 = UVar11 + GVar13.logicalWidthPixels * -2;
+      UVar9 = UVar9 + GVar13.logicalHeightPixels * -2;
     }
-    control->viewportWidth = UVar10;
-    control->viewportHeight = UVar8;
-    iVar11 = UVar10 - control->contentWidth;
-    if (iVar11 < 0) {
+    control->viewportWidth = UVar11;
+    control->viewportHeight = UVar9;
+    iVar12 = UVar11 - control->contentWidth;
+    if (iVar12 < 0) {
       control->scrollStateFlags =
            control->scrollStateFlags |
            (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
     }
-    iVar9 = UVar8 - control->contentHeight;
-    if (iVar9 < 0) {
+    iVar10 = UVar9 - control->contentHeight;
+    if (iVar10 < 0) {
       control->scrollStateFlags =
            control->scrollStateFlags |
            (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT);
@@ -1863,9 +2451,9 @@ undefined8 UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl 
     if (((control->scrollStateFlags & 0xffffffcf) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0)) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      iVar11 = iVar11 - (int)qVar12;
-      if (iVar11 < 0) {
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      iVar12 = iVar12 - GVar13.logicalWidthPixels;
+      if (iVar12 < 0) {
         control->scrollStateFlags =
              control->scrollStateFlags |
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
@@ -1874,13 +2462,13 @@ undefined8 UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl 
     if (((control->scrollStateFlags & 0xffffff3f) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      if (iVar9 - extraout_EDX < 0) {
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      if ((int)(iVar10 - GVar13.logicalHeightPixels) < 0) {
         if (((control->scrollStateFlags &
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) &&
            ((control->scrollStateFlags & 0xffffffcf) != 0)) {
-          qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-          if (iVar11 - (int)qVar12 < 0) {
+          GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+          if ((int)(iVar12 - GVar13.logicalWidthPixels) < 0) {
             control->scrollStateFlags =
                  control->scrollStateFlags |
                  (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
@@ -1898,123 +2486,128 @@ undefined8 UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl 
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      control->viewportHeight = control->viewportHeight - extraout_EDX_00;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      control->viewportHeight = control->viewportHeight - GVar13.logicalHeightPixels;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-        control->contentOriginY = control->contentOriginY + extraout_EDX_00;
+        control->contentOriginY = control->contentOriginY + GVar13.logicalHeightPixels;
       }
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      control->viewportWidth = control->viewportWidth - (int)qVar12;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      control->viewportWidth = control->viewportWidth - GVar13.logicalWidthPixels;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        control->contentOriginX = control->contentOriginX + (int)qVar12;
+        control->contentOriginX = control->contentOriginX + GVar13.logicalWidthPixels;
       }
     }
-    UVar5 = control->scrollOffsetX;
-    UVar7 = control->scrollOffsetY;
+    UVar7 = control->scrollOffsetX;
+    UVar8 = control->scrollOffsetY;
     pUVar1 = (control->base).firstChild;
-    iVar9 = (control->contentWidth - control->viewportWidth) + UVar5;
-    iVar11 = (control->contentHeight - control->viewportHeight) + UVar7;
-    if (iVar9 < 0) {
-      control->scrollOffsetX = control->scrollOffsetX - iVar9;
-      pUVar1->left = pUVar1->left - iVar9;
-      pUVar1->right = pUVar1->right - iVar9;
-      UVar5 = UVar5 - iVar9;
+    iVar10 = (control->contentWidth - control->viewportWidth) + UVar7;
+    iVar12 = (control->contentHeight - control->viewportHeight) + UVar8;
+    if (iVar10 < 0) {
+      control->scrollOffsetX = control->scrollOffsetX - iVar10;
+      pUVar1->left = pUVar1->left - iVar10;
+      pUVar1->right = pUVar1->right - iVar10;
+      UVar7 = UVar7 - iVar10;
     }
-    if (iVar11 < 0) {
-      control->scrollOffsetY = control->scrollOffsetY - iVar11;
-      pUVar1->top = pUVar1->top - iVar11;
-      pUVar1->bottom = pUVar1->bottom - iVar11;
-      UVar7 = UVar7 - iVar11;
-    }
-    if (-1 < (int)UVar5) {
-      control->scrollOffsetX = 0;
-      pUVar1->left = pUVar1->left - UVar5;
-      pUVar1->right = pUVar1->right - UVar5;
+    if (iVar12 < 0) {
+      control->scrollOffsetY = control->scrollOffsetY - iVar12;
+      pUVar1->top = pUVar1->top - iVar12;
+      pUVar1->bottom = pUVar1->bottom - iVar12;
+      UVar8 = UVar8 - iVar12;
     }
     if (-1 < (int)UVar7) {
-      control->scrollOffsetY = 0;
-      pUVar1->top = pUVar1->top - UVar7;
-      pUVar1->bottom = pUVar1->bottom - UVar7;
+      control->scrollOffsetX = 0;
+      pUVar1->left = pUVar1->left - UVar7;
+      pUVar1->right = pUVar1->right - UVar7;
     }
-    UVar5 = control->contentOriginX;
-    UVar7 = control->contentOriginY;
-    pUVar1->left = pUVar1->left + UVar5;
-    pUVar1->top = pUVar1->top + UVar7;
-    pUVar1->right = pUVar1->right + UVar5;
-    pUVar1->bottom = pUVar1->bottom + UVar7;
+    if (-1 < (int)UVar8) {
+      control->scrollOffsetY = 0;
+      pUVar1->top = pUVar1->top - UVar8;
+      pUVar1->bottom = pUVar1->bottom - UVar8;
+    }
+    UVar7 = control->contentOriginX;
+    UVar8 = control->contentOriginY;
+    pUVar1->left = pUVar1->left + UVar7;
+    pUVar1->top = pUVar1->top + UVar8;
+    pUVar1->right = pUVar1->right + UVar7;
+    pUVar1->bottom = pUVar1->bottom + UVar8;
     (*pUVar1->vtable->layout)(pUVar1);
     control->horizontalThumbLeft = 0;
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      control->verticalThumbTop = control->verticalThumbTop + extraout_EDX_01;
-      control->verticalThumbBottom = control->verticalThumbBottom + extraout_EDX_01;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      control->verticalThumbTop = control->verticalThumbTop + GVar13.logicalHeightPixels;
+      control->verticalThumbBottom = control->verticalThumbBottom + GVar13.logicalHeightPixels;
     }
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      control->horizontalThumbLeft = control->horizontalThumbLeft + (int)qVar12;
-      control->horizontalThumbRight = control->horizontalThumbRight + (int)qVar12;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      control->horizontalThumbLeft = control->horizontalThumbLeft + GVar13.logicalWidthPixels;
+      control->horizontalThumbRight = control->horizontalThumbRight + GVar13.logicalWidthPixels;
     }
-    iVar11 = (control->base).layoutWidth;
-    iVar9 = (control->base).layoutHeight;
+    iVar12 = (control->base).layoutWidth;
+    iVar10 = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      iVar4 = (int)qVar12;
-      control->horizontalThumbLeft = control->horizontalThumbLeft + iVar4;
-      control->horizontalThumbRight = control->horizontalThumbRight + iVar4;
-      iVar11 = iVar11 + iVar4 * -2;
-      iVar9 = iVar9 - (int)(qVar12 >> 0x20);
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      dVar5 = GVar13.logicalWidthPixels;
+      control->horizontalThumbLeft = control->horizontalThumbLeft + dVar5;
+      control->horizontalThumbRight = control->horizontalThumbRight + dVar5;
+      iVar12 = iVar12 + dVar5 * -2;
+      iVar10 = iVar10 - GVar13.logicalHeightPixels;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      iVar4 = (int)(qVar12 >> 0x20);
-      control->verticalThumbTop = control->verticalThumbTop + iVar4;
-      control->verticalThumbBottom = control->verticalThumbBottom + iVar4;
-      iVar9 = iVar9 + iVar4 * -2;
-      iVar11 = iVar11 - (int)qVar12;
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      dVar5 = GVar13.logicalHeightPixels;
+      control->verticalThumbTop = control->verticalThumbTop + dVar5;
+      control->verticalThumbBottom = control->verticalThumbBottom + dVar5;
+      iVar10 = iVar10 + dVar5 * -2;
+      iVar12 = iVar12 - GVar13.logicalWidthPixels;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      qVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
-      uVar6 = extraout_ECX;
-      if (extraout_ECX < (uint)((int)qVar12 * 2)) {
-        uVar6 = (int)qVar12 * 2;
+      uVar6 = (uint)(((longlong)(int)control->viewportWidth * (longlong)iVar12) /
+                    (longlong)(int)control->contentWidth);
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
+      uVar4 = GVar13.logicalWidthPixels * 2;
+      if (uVar6 < uVar4) {
+        uVar6 = uVar4;
       }
       control->horizontalThumbRight = control->horizontalThumbRight + uVar6;
-      iVar11 = (int)(((longlong)(int)-control->scrollOffsetX * (longlong)(int)(iVar11 - uVar6)) /
+      iVar12 = (int)(((longlong)(int)-control->scrollOffsetX * (longlong)(int)(iVar12 - uVar6)) /
                     (longlong)(int)(control->contentWidth - control->viewportWidth));
-      control->horizontalThumbLeft = control->horizontalThumbLeft + iVar11;
-      control->horizontalThumbRight = control->horizontalThumbRight + iVar11;
+      control->horizontalThumbLeft = control->horizontalThumbLeft + iVar12;
+      control->horizontalThumbRight = control->horizontalThumbRight + iVar12;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
-      uVar6 = extraout_ECX_00;
-      if (extraout_ECX_00 < (uint)(extraout_EDX_02 * 2)) {
-        uVar6 = extraout_EDX_02 * 2;
+      uVar6 = (uint)(((longlong)(int)control->viewportHeight * (longlong)iVar10) /
+                    (longlong)(int)control->contentHeight);
+      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
+      uVar4 = GVar13.logicalHeightPixels * 2;
+      if (uVar6 < uVar4) {
+        uVar6 = uVar4;
       }
       control->verticalThumbBottom = control->verticalThumbBottom + uVar6;
-      iVar11 = (int)(((longlong)(int)-control->scrollOffsetY * (longlong)(int)(iVar9 - uVar6)) /
+      iVar12 = (int)(((longlong)(int)-control->scrollOffsetY * (longlong)(int)(iVar10 - uVar6)) /
                     (longlong)(int)(control->contentHeight - control->viewportHeight));
-      control->verticalThumbTop = control->verticalThumbTop + iVar11;
-      control->verticalThumbBottom = control->verticalThumbBottom + iVar11;
+      control->verticalThumbTop = control->verticalThumbTop + iVar12;
+      control->verticalThumbBottom = control->verticalThumbBottom + iVar12;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004B8AC0.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[10]@004B7920.
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiScrollableControl_QueryPointerRegion
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control)
 
@@ -2039,13 +2632,15 @@ UiScrollableControl_QueryPointerRegion
   return GVar1;
 }
 
+
 /* Address: 0x004B8B10.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[6]@004B7920.
 */
-void UiScrollableControl_BeginSecondaryScrollInteraction
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiScrollableControl *control)
+void __thandor_void_preserve_ecx_edx
+UiScrollableControl_BeginSecondaryScrollInteraction
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiScrollableControl *control)
 
 {
   int localPointerX;
@@ -2081,27 +2676,29 @@ void UiScrollableControl_BeginSecondaryScrollInteraction
   return;
 }
 
+
 /* Address: 0x004B8BC0.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[7]@004B7920.
 */
-void UiScrollableControl_EndSecondaryScrollInteraction(void)
+void UiScrollableControl_EndSecondaryScrollInteraction
+               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
+               ,UiNodeBase *control)
 
 {
-  int in_stack_00000010;
-  
   g_CursorUseOverridePosition = 0;
-  *(uint *)(in_stack_00000010 + 0x4c) = *(uint *)(in_stack_00000010 + 0x4c) & 0xffffafff;
+  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffafff);
   (*g_GraphicsCursorSetFrame)(0);
   return;
 }
+
 
 /* Address: 0x004B9000.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[11]@004B7920.
    Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
 */
-UiNodeBase *
+UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiScrollableControl_HitTestContentAndScrollbars
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control)
 
@@ -2121,15 +2718,17 @@ UiScrollableControl_HitTestContentAndScrollbars
   return &control->base;
 }
 
+
 /* Address: 0x004BA4E0.
    Ownership: ui/controls/lists.
    Purpose: Handles ui pointer list get row slots variant a.
 */
-undefined4 UiPointerList_GetRowSlotsVariantA(int param_1)
+void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
 
 {
-  return *(undefined4 *)(param_1 + 0x50);
+  return control->rowSlots;
 }
+
 
 /* Address: 0x004BA560.
    Ownership: ui/controls/lists.
@@ -2153,104 +2752,91 @@ UiListRowIndex UiPointerList_GetSelectedIndexVariantACf(UiPointerListControl *co
    Cross-module calls: UiWindow_BlitTiledHorizontalEdge [ui/controls/layout], RichTextCommandStream_MeasureRegs
    [assets/text/richtext], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
 */
-void UiListControl_DrawRowsAndSelection
-               (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiListControl_DrawRowsAndSelection
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
   int iVar1;
-  UiNodeBase *pUVar2;
-  int iVar3;
-  UiPixelCoordinate extraout_ECX;
-  UiPixelCoordinate edgeY;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  UiPixelCoordinate extraout_ECX_02;
-  UiPixelCoordinate extraout_ECX_03;
-  int extraout_ECX_04;
-  UiPixelCoordinate edgeY_00;
-  int extraout_ECX_05;
-  int extraout_ECX_06;
+  int iVar2;
+  UiNodeBase *pUVar3;
   int iVar4;
   UiNodeBase **ppUVar5;
-  UiNodeBase *pUVar6;
-  UiNodeBase **ppUVar7;
+  int iVar6;
+  UiNodeBase *pUVar7;
+  UiNodeBase **ppUVar8;
   word *commandStream;
-  bool bVar8;
-  qword qVar9;
+  bool bVar9;
   RichTextExtentRegs RVar10;
+  GraphicsTextureSizeEaxEdxCf9 GVar11;
   
   if (control[1].parent != (UiNodeBase *)0x0) {
-    iVar1 = (clipBottom - control->top) / (int)control[1].vtable;
-    if (iVar1 < 0) {
-      iVar1 = 0;
+    iVar2 = (clipBottom - control->top) / (int)control[1].vtable;
+    if (iVar2 < 0) {
+      iVar2 = 0;
     }
-    ppUVar7 = &(control[1].firstChild)->nextSibling + iVar1;
-    pUVar2 = (UiNodeBase *)
+    ppUVar8 = &(control[1].firstChild)->nextSibling + iVar2;
+    pUVar3 = (UiNodeBase *)
              (((clipTop - control->top) + (int)control[1].vtable) / (int)control[1].vtable);
-    if (control[1].parent <= pUVar2) {
-      pUVar2 = (UiNodeBase *)((int)&control[1].parent[-1].nodeFlags + 3);
+    iVar2 = iVar2 * (int)control[1].vtable;
+    if (control[1].parent <= pUVar3) {
+      pUVar3 = (UiNodeBase *)((int)&control[1].parent[-1].nodeFlags + 3);
     }
-    ppUVar5 = &(control[1].firstChild)->nextSibling + (int)pUVar2;
-    bVar8 = ppUVar7 < ppUVar5;
-    if (ppUVar7 <= ppUVar5) {
-      (*g_GraphicsFramebufferBeginAccess)();
-      edgeY_00 = extraout_ECX;
-      if (!bVar8) {
+    ppUVar5 = &(control[1].firstChild)->nextSibling + (int)pUVar3;
+    if (ppUVar8 <= ppUVar5) {
+      bVar9 = (*g_GraphicsFramebufferBeginAccess)();
+      if (!bVar9) {
         do {
-          if (ppUVar7 == (UiNodeBase **)control[1].top) {
-            iVar1 = control->layoutWidth;
+          if (ppUVar8 == (UiNodeBase **)control[1].top) {
+            iVar6 = control->layoutWidth;
             if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x82,iVar1,edgeY_00,0,control);
-              edgeY_00 = extraout_ECX_03;
+                        (clipTop,clipLeft,clipBottom,clipRight,0x82,iVar6,iVar2,0,control);
             }
             else {
-              qVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
-              iVar1 = iVar1 - (int)qVar9;
+              GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+              iVar6 = iVar6 - GVar11.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x84,iVar1,edgeY,(int)qVar9,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,0x84,iVar6,iVar2,
+                         GVar11.logicalWidthPixels,control);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,extraout_ECX_00 + control->top,
-                         control->left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
+                        (clipTop,clipLeft,clipBottom,clipRight,iVar2 + control->top,control->left,
+                         0x83,g_UiWindowTextureSource,g_FramebufferAccess);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,extraout_ECX_01 + control->top,
-                         iVar1 + control->left,0x85,g_UiWindowTextureSource,g_FramebufferAccess);
-              edgeY_00 = extraout_ECX_02;
+                        (clipTop,clipLeft,clipBottom,clipRight,iVar2 + control->top,
+                         iVar6 + control->left,0x85,g_UiWindowTextureSource,g_FramebufferAccess);
             }
           }
-          iVar1 = control[1].right;
-          pUVar2 = *ppUVar7;
-          if (iVar1 != 0) {
-            iVar3 = 3;
-            pUVar6 = control;
+          iVar6 = control[1].right;
+          pUVar3 = *ppUVar8;
+          if (iVar6 != 0) {
+            iVar4 = 3;
+            pUVar7 = control;
             do {
-              iVar4 = pUVar6[1].leftOffset;
-              if (iVar4 < 0) {
-                iVar3 = iVar3 - iVar4;
-                commandStream = (word *)((int)&pUVar2->nextSibling + pUVar6[1].topOffset);
+              iVar1 = pUVar7[1].leftOffset;
+              if (iVar1 < 0) {
+                iVar4 = iVar4 - iVar1;
+                commandStream = (word *)((int)&pUVar3->nextSibling + pUVar7[1].topOffset);
                 RVar10 = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,commandStream);
                 RichTextCommandStream_DrawSingleLine
                           (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,commandStream,
-                           extraout_ECX_05 + 1 + control->top,
-                           (iVar3 - (RVar10.widthPixels + 6)) + control->left);
-                iVar4 = extraout_ECX_06;
+                           iVar2 + 1 + control->top,
+                           (iVar4 - (RVar10.widthPixels + 6)) + control->left);
               }
               else {
-                iVar3 = iVar3 + iVar4;
+                iVar4 = iVar4 + iVar1;
                 RichTextCommandStream_DrawSingleLine
                           (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
-                           (word *)((int)&pUVar2->nextSibling + pUVar6[1].topOffset),
-                           edgeY_00 + 1 + control->top,(iVar3 - iVar4) + control->left);
-                iVar4 = extraout_ECX_04;
+                           (word *)((int)&pUVar3->nextSibling + pUVar7[1].topOffset),
+                           iVar2 + 1 + control->top,(iVar4 - iVar1) + control->left);
               }
-              edgeY_00 = iVar4 + -1;
-              pUVar6 = (UiNodeBase *)&pUVar6->parent;
-              iVar1 = iVar1 + -1;
-            } while (iVar1 != 0);
+              pUVar7 = (UiNodeBase *)&pUVar7->parent;
+              iVar6 = iVar6 + -1;
+            } while (iVar6 != 0);
           }
-          ppUVar7 = ppUVar7 + 1;
-          edgeY_00 = (int)&(control[1].vtable)->relocate + edgeY_00;
-        } while (ppUVar7 <= ppUVar5);
+          ppUVar8 = ppUVar8 + 1;
+          iVar2 = (int)&(control[1].vtable)->relocate + iVar2;
+        } while (ppUVar8 <= ppUVar5);
         (*g_GraphicsFramebufferEndAccess)();
       }
     }
@@ -2258,12 +2844,13 @@ void UiListControl_DrawRowsAndSelection
   return;
 }
 
+
 /* Address: 0x004BB310.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[16]@004BA590.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
-void UiListControl_TickActivationPulse(UiListControl *control)
+void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *control)
 
 {
   if (((control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING) != 0) &&
@@ -2275,12 +2862,14 @@ void UiListControl_TickActivationPulse(UiListControl *control)
   return;
 }
 
+
 /* Address: 0x004BB350.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[15]@004BA590.
    Cross-module calls: UiContainer_UnsuppressActionId [ui/controls/layout].
 */
-void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -2293,12 +2882,14 @@ void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *contr
   return;
 }
 
+
 /* Address: 0x004BB380.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[14]@004BA590.
    Cross-module calls: UiContainer_SuppressActionId [ui/controls/layout].
 */
-void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -2311,71 +2902,79 @@ void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control
   return;
 }
 
+
 /* Address: 0x004BB3B0.
    Ownership: ui/controls/lists.
    Purpose: Initializes a pointer-list control and derives content width from the absolute values of its fixed
    column offsets before clearing scroll state and requesting parent layout.
    Cross-module calls: FontGlyph_GetLogicalSizeForStyleRegs [assets/text/resources].
 */
-void UiPointerList_InitializeColumnLayout
-               (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiPointerList_InitializeColumnLayout
+          (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
 
 {
   UiNodeBase *pUVar1;
   UiNodeVtable *pUVar2;
   UiNodeBase *pUVar3;
-  int extraout_EDX;
-  int iVar4;
-  UiPointerListControl *pUVar5;
+  UiPixelExtent UVar4;
+  int iVar5;
+  UiPointerListControl *pUVar6;
+  FontGlyphSizeEaxEdxCf9 FVar7;
   
-  FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
-  control->rowHeight = extraout_EDX + 1U;
+  FVar7 = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
+  UVar4 = FVar7.lineHeight + 1;
+  control->rowHeight = UVar4;
   control->rowCount = rowCount;
   control->rowSlots = rowPointers;
   control->selectedRowSlot = rowPointers;
-  iVar4 = 6;
+  iVar5 = 6;
   pUVar3 = control[1].base.nextSibling;
-  (control->base).bottomOffset = (extraout_EDX + 1U) * rowCount + 1;
-  pUVar5 = control;
+  (control->base).bottomOffset = UVar4 * rowCount + 1;
+  pUVar6 = control;
   for (; pUVar3 != (UiNodeBase *)0x0; pUVar3 = (UiNodeBase *)((int)&pUVar3[-1].nodeFlags + 3)) {
-    pUVar1 = pUVar5[1].base.parent;
+    pUVar1 = pUVar6[1].base.parent;
     if ((int)pUVar1 < 0) {
       pUVar1 = (UiNodeBase *)-(int)pUVar1;
     }
-    iVar4 = (int)&pUVar1->nextSibling + iVar4;
-    pUVar5 = (UiPointerListControl *)&(pUVar5->base).parent;
+    iVar5 = (int)&pUVar1->nextSibling + iVar5;
+    pUVar6 = (UiPointerListControl *)&(pUVar6->base).parent;
   }
   pUVar3 = (control->base).parent;
   pUVar2 = pUVar3->vtable;
-  (control->base).rightOffset = iVar4;
+  (control->base).rightOffset = iVar5;
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
   (*pUVar2->layout)(pUVar3);
   return;
 }
 
+
 /* Address: 0x004BB460.
    Ownership: ui/controls/lists.
    Purpose: EXACT_DUPLICATE_UI_POINTER_LIST_ROW_SLOT_GETTER_VARIANT_B.
 */
-undefined4 UiPointerList_GetRowSlotsVariantB(int param_1)
+void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control)
 
 {
-  return *(undefined4 *)(param_1 + 0x50);
+  return control->rowSlots;
 }
+
 
 /* Address: 0x004BB9E0.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BB990[0]@004BB990.
    Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
 */
-void UiTimedListControl_RelocateChildren
-               (UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiTimedListControl_RelocateChildren
+          (UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control)
 
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   return;
 }
+
 
 /* Address: 0x004BBA00.
    Ownership: ui/controls/lists.
@@ -2383,144 +2982,114 @@ void UiTimedListControl_RelocateChildren
    Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext], UiWindow_BlitTiledHorizontalEdge
    [ui/controls/layout], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
 */
-void UiTimedListControl_DrawRowsAndSelection
-               (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiTimedListControl_DrawRowsAndSelection
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
-  byte *pbVar1;
-  dword dVar2;
+  dword dVar1;
+  int iVar2;
   int iVar3;
-  sdword arg4;
-  sdword extraout_ECX;
-  sdword arg4_00;
-  sdword extraout_ECX_00;
-  int extraout_ECX_01;
-  UiPixelCoordinate edgeY;
-  UiPixelCoordinate edgeY_00;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int extraout_ECX_06;
-  sdword arg5;
-  int tileEnd;
-  int extraout_EDX;
-  int extraout_EDX_00;
+  int iVar4;
   sdword *unaff_EBP;
-  UiNodeBase *pUVar4;
   UiNodeBase *pUVar5;
-  sdword *psVar6;
+  UiNodeBase *pUVar6;
   sdword *psVar7;
-  bool bVar8;
-  qword qVar9;
+  sdword *psVar8;
+  bool bVar9;
   RichTextExtentRegs RVar10;
+  GraphicsTextureSizeEaxEdxCf9 GVar11;
   UiNodeBase *pUStack_20;
   
-  bVar8 = &stack0xffffffe4 < (undefined1 *)0x4;
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar8) {
+  bVar9 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar9) {
     pUStack_20 = (UiNodeBase *)0x0;
-    pUVar4 = control[1].firstChild;
+    pUVar5 = control[1].firstChild;
     iVar3 = 0;
-    if (pUVar4 != (UiNodeBase *)0x0) {
-      pUVar5 = pUVar4->nextSibling;
-      psVar6 = &pUVar4->left;
-      if (pUVar5 != (UiNodeBase *)0x0) {
+    if (pUVar5 != (UiNodeBase *)0x0) {
+      pUVar6 = pUVar5->nextSibling;
+      psVar7 = &pUVar5->left;
+      if (pUVar6 != (UiNodeBase *)0x0) {
         do {
-          arg5 = control->left;
-          arg4 = iVar3 + control->top;
-          pUVar4 = pUStack_20;
+          iVar4 = control->left;
+          iVar3 = iVar3 + control->top;
+          pUVar5 = pUStack_20;
           if (pUStack_20 != (UiNodeBase *)0x0) {
-            while (pbVar1 = (byte *)((int)&pUVar4[-1].nodeFlags + 3), pbVar1 != (byte *)0x0) {
-              qVar9 = CONCAT44(arg5,pbVar1);
-              if (*(int *)(&stack0xffffffd8 + (int)pbVar1 * 8) != 0) {
-                qVar9 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                                  (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,
-                                   control[1].rightOffset,
-                                   (GraphicsTextureSourceAsset *)control[1].bottom,
-                                   g_FramebufferAccess);
-                arg4 = extraout_ECX;
+            while (pUVar5 = (UiNodeBase *)((int)&pUVar5[-1].nodeFlags + 3),
+                  pUVar5 != (UiNodeBase *)0x0) {
+              if (*(int *)(&stack0xffffffd8 + (int)pUVar5 * 8) != 0) {
+                (*g_GraphicsTextureSourceBlitSourceAlpha)
+                          (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,control[1].rightOffset,
+                           (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
               }
-              arg5 = (int)(qVar9 >> 0x20) + control[1].topAnchorQ31;
-              pUVar4 = (UiNodeBase *)qVar9;
+              iVar4 = iVar4 + control[1].topAnchorQ31;
             }
-            if (pUVar5 < (UiNodeBase *)0x2) {
-              dVar2 = control[1].leftAnchorQ31;
+            if (pUVar6 < (UiNodeBase *)0x2) {
+              dVar1 = control[1].leftAnchorQ31;
             }
             else {
-              dVar2 = control[1].bottomOffset;
+              dVar1 = control[1].bottomOffset;
             }
-            qVar9 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                              (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,dVar2,
-                               (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
-            iVar3 = (int)(qVar9 >> 0x20);
-            arg4 = arg4_00;
-            if ((psVar6[3] & 1U) != 0) {
-              if ((psVar6[3] & 2U) == 0) {
-                dVar2 = control[1].leftOffset;
+            (*g_GraphicsTextureSourceBlitSourceAlpha)
+                      (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,dVar1,
+                       (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
+            if ((psVar7[3] & 1U) != 0) {
+              if ((psVar7[3] & 2U) == 0) {
+                dVar1 = control[1].leftOffset;
               }
               else {
-                dVar2 = control[1].topOffset;
+                dVar1 = control[1].topOffset;
               }
-              qVar9 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                                (clipTop,clipLeft,clipBottom,clipRight,arg4_00,iVar3,dVar2,
-                                 (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess
-                                );
-              iVar3 = (int)(qVar9 >> 0x20);
-              arg4 = extraout_ECX_00;
+              (*g_GraphicsTextureSourceBlitSourceAlpha)
+                        (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,dVar1,
+                         (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
             }
-            arg5 = iVar3 + control[1].topAnchorQ31;
+            iVar4 = iVar4 + control[1].topAnchorQ31;
           }
-          qVar9 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,psVar6[1],
-                             (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
-          iVar3 = extraout_ECX_01 - control->top;
-          tileEnd = ((int)(qVar9 >> 0x20) + control[1].rightAnchorQ31) - control->left;
-          if ((uint *)psVar6 == (uint *)control[1].top) {
-            RVar10 = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)*psVar6);
-            iVar3 = RVar10.widthPixels + 6;
+          (*g_GraphicsTextureSourceBlitSourceAlpha)
+                    (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,psVar7[1],
+                     (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
+          iVar3 = iVar3 - control->top;
+          iVar4 = (iVar4 + control[1].rightAnchorQ31) - control->left;
+          if ((uint *)psVar7 == (uint *)control[1].top) {
+            RVar10 = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)*psVar7);
+            iVar2 = RVar10.widthPixels + 6;
             if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x82,iVar3 + tileEnd,edgeY,tileEnd,
+                        (clipTop,clipLeft,clipBottom,clipRight,0x82,iVar2 + iVar4,iVar3,iVar4,
                          control);
-              iVar3 = extraout_ECX_05;
-              tileEnd = extraout_EDX_00;
             }
             else {
-              qVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
-              iVar3 = (iVar3 - (int)qVar9) + tileEnd;
+              GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+              iVar2 = (iVar2 - GVar11.logicalWidthPixels) + iVar4;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x84,iVar3,edgeY_00,
-                         (int)qVar9 + tileEnd,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,0x84,iVar2,iVar3,
+                         GVar11.logicalWidthPixels + iVar4,control);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,extraout_ECX_02 + control->top,
-                         extraout_EDX + control->left,0x83,g_UiWindowTextureSource,
-                         g_FramebufferAccess);
-              qVar9 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                                (clipTop,clipLeft,clipBottom,clipRight,
-                                 extraout_ECX_03 + control->top,iVar3 + control->left,0x85,
-                                 g_UiWindowTextureSource,g_FramebufferAccess);
-              tileEnd = (int)(qVar9 >> 0x20);
-              iVar3 = extraout_ECX_04;
+                        (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,
+                         iVar4 + control->left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
+              (*g_GraphicsTextureSourceBlitSourceAlpha)
+                        (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,
+                         iVar2 + control->left,0x85,g_UiWindowTextureSource,g_FramebufferAccess);
             }
           }
           RichTextCommandStream_DrawSingleLine
-                    (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,(word *)*psVar6,
-                     iVar3 + 1 + control->top,tileEnd + 3 + control->left);
-          psVar7 = psVar6 + 4;
-          iVar3 = extraout_ECX_06 + -1 + (int)control[1].vtable;
-          pUVar4 = (UiNodeBase *)((int)&pUVar5[-1].nodeFlags + 3);
-          pUVar5 = pUVar4;
-          if ((((psVar6[3] & 1U) != 0) && ((psVar6[3] & 2U) != 0)) && (psVar6[2] != 0)) {
-            pUVar5 = *(UiNodeBase **)psVar6[2];
-            psVar7 = (sdword *)((uint *)psVar6[2] + 4);
-            pUStack_20 = pUVar4;
-          }
-          while (psVar6 = psVar7, pUVar5 == (UiNodeBase *)0x0) {
-            if (pUStack_20 == (UiNodeBase *)0x0) goto UiTimedListDraw_EndFramebufferAccess;
-            pUVar5 = (UiNodeBase *)((int)&pUStack_20[-1].nodeFlags + 3);
-            psVar7 = unaff_EBP;
+                    (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,(word *)*psVar7,
+                     iVar3 + 1 + control->top,iVar4 + 3 + control->left);
+          psVar8 = psVar7 + 4;
+          iVar3 = iVar3 + (int)control[1].vtable;
+          pUVar5 = (UiNodeBase *)((int)&pUVar6[-1].nodeFlags + 3);
+          pUVar6 = pUVar5;
+          if ((((psVar7[3] & 1U) != 0) && ((psVar7[3] & 2U) != 0)) && (psVar7[2] != 0)) {
+            pUVar6 = *(UiNodeBase **)psVar7[2];
+            psVar8 = (sdword *)((uint *)psVar7[2] + 4);
             pUStack_20 = pUVar5;
+          }
+          while (psVar7 = psVar8, pUVar6 == (UiNodeBase *)0x0) {
+            if (pUStack_20 == (UiNodeBase *)0x0) goto UiTimedListDraw_EndFramebufferAccess;
+            pUVar6 = (UiNodeBase *)((int)&pUStack_20[-1].nodeFlags + 3);
+            psVar8 = unaff_EBP;
+            pUStack_20 = pUVar6;
           }
         } while( true );
       }
@@ -2531,12 +3100,13 @@ UiTimedListDraw_EndFramebufferAccess:
   return;
 }
 
+
 /* Address: 0x004BC180.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BB990[16]@004BB990.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
-void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
+void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListControl *control)
 
 {
   if (((control->listStateAndDelay & UI_TIMED_LIST_ACTION_DELAY_PENDING) != 0) &&
@@ -2548,24 +3118,36 @@ void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
   return;
 }
 
+
+/* Address: 0x004BC3F0.
+   Ownership: ui/controls/lists.
+   Purpose: Returns the selected timed-list record.
+*/
+UiTimedListTreeRecord16 *
+UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
+
+{
+  return (control->base).selectedRecord;
+}
+
 /* Address: 0x004BC460.
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BC410[0]@004BC410; g_UiNodeVtable_00517F10[0]@00517F10.
    Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
 */
-void UiListOffsetControl_RelocateAndApplyDeferredOffset
-               (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiListOffsetControl_RelocateAndApplyDeferredOffset
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
-  int extraout_EAX;
-  
   UiContainer_RelocateChildren(relocationDelta,control);
   if (((uint)control[1].nextSibling & 0x20) != 0) {
-    control[1].parent = (UiNodeBase *)((int)&(control[1].parent)->nextSibling + extraout_EAX);
+    control[1].parent = (UiNodeBase *)((int)&(control[1].parent)->nextSibling + relocationDelta);
     control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffffdf);
   }
   return;
 }
+
 
 /* Address: 0x00516580.
    Ownership: ui/controls/lists.
@@ -2574,214 +3156,217 @@ void UiListOffsetControl_RelocateAndApplyDeferredOffset
    Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext],
    RichTextCommandStream_DrawSingleLine [assets/text/richtext].
 */
-void UiCatalogEntryControl_DrawClipped
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiCatalogEntryControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiCatalogEntryControl_DrawClipped
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiCatalogEntryControl *control)
 
 {
-  WorldRuntimeNode *pWVar1;
-  int *piVar2;
-  dword dVar3;
+  ArmyRuntimeSlot *pAVar1;
+  dword dVar2;
+  int iVar3;
   int iVar4;
-  int iVar5;
-  FactionArmyAssetCount FVar6;
-  int iVar7;
-  bool bVar8;
-  RichTextExtentRegs RVar9;
+  FactionArmyAssetCount FVar5;
+  int iVar6;
+  bool bVar7;
+  RichTextExtentRegs RVar8;
   dword arg6;
   GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *pSVar10;
-  PckArmyAssetIdCatalog PVar11;
+  SoftwareFramebufferAccess *pSVar9;
+  PckArmyAssetIdCatalog PVar10;
   UiPackedTextStyle UStack_20;
+  ModelRuntimeNode *modelNode;
+  ArmyRuntimeSlot *armyRuntime;
+  ModelRuntimeNode *modelNodePrimary;
   
-  if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     ((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0 ||
-      (((control->command).sprite.selectable.stateFlags & 0x400) == 0)))) {
-    bVar8 = false;
-    (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar8) {
-      arg7 = (control->command).sprite.primaryTextureSource;
-      pSVar10 = g_FramebufferAccess;
-      if (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0
-         ) {
-        dVar3 = (control->command).sprite.normalSubresourceStartOrDescriptor;
-      }
-      else {
-        if ((((control->command).sprite.selectable.stateFlags & 0x80) == 0) &&
-           (((control->command).sprite.selectable.stateFlags & 0x800) != 0)) {
-          arg7 = (control->command).sprite.alternateTextureSource;
-        }
-        dVar3 = (control->command).sprite.selectedSubresourceStart;
-        if (((control->command).sprite.selectable.stateFlags & 0x40) != 0) {
-          arg6 = (control->command).sprite.normalSubresourceStartOrDescriptor;
-          if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
-            arg6 = arg6 + (control->command).sprite.animationFrameOffset;
-          }
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (control->command).sprite.selectable.base.top,
-                     (control->command).sprite.selectable.base.left,arg6,
-                     (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
-        }
-      }
+  if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
+     (((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0
+       && (((control->command).sprite.selectable.stateFlags & 0x400) != 0)) ||
+      (bVar7 = (*g_GraphicsFramebufferBeginAccess)(), bVar7)))) {
+    return;
+  }
+  arg7 = (control->command).sprite.primaryTextureSource;
+  pSVar9 = g_FramebufferAccess;
+  if (((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+    dVar2 = (control->command).sprite.normalSubresourceStartOrDescriptor;
+  }
+  else {
+    if ((((control->command).sprite.selectable.stateFlags & 0x80) == 0) &&
+       (((control->command).sprite.selectable.stateFlags & 0x800) != 0)) {
+      arg7 = (control->command).sprite.alternateTextureSource;
+    }
+    dVar2 = (control->command).sprite.selectedSubresourceStart;
+    if (((control->command).sprite.selectable.stateFlags & 0x40) != 0) {
+      arg6 = (control->command).sprite.normalSubresourceStartOrDescriptor;
       if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
-        dVar3 = dVar3 + (control->command).sprite.animationFrameOffset;
+        arg6 = arg6 + (control->command).sprite.animationFrameOffset;
       }
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top
-                 ,(control->command).sprite.selectable.base.left,dVar3,arg7,pSVar10);
-      iVar7 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
-      if ((int)g_GameFactionRuntimeImage.records[iVar7].xeniteCurrentQ4 <
-          (int)control->runtimeDisplayValueQ4) {
-        UStack_20 = 0x1050000;
-      }
-      else {
-        UStack_20 = 0x1040000;
-      }
-      g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-      g_UiCatalogEntryRichTextScratchUtf16[1] = 0;
-      dVar3 = (*g_WideNumberFormatUtf16)
-                        (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
-                         g_UiCatalogEntryRichTextScratchUtf16 + 1);
-      *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 2) = 0x20;
-      RVar9 = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
-      RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,UStack_20,
-                 g_UiCatalogEntryRichTextScratchUtf16,
-                 ((control->command).sprite.selectable.base.bottom - RVar9.heightPixels) + -2,
-                 ((int)((control->command).sprite.selectable.base.layoutWidth - RVar9.widthPixels)
-                 >> 1) + (control->command).sprite.selectable.base.left);
-      iVar4 = 0x29;
-      do {
-        if ((int)control - (int)g_InGameRuntimeRoot ==
-            g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][iVar4]) {
-          iVar5 = 0;
-          PVar11 = g_UiCatalogGroup42Records[iVar4]->armyAssetId;
-          for (FVar6 = g_GameFactionRuntimeImage.records[iVar7].secondaryArmyAssetCount; FVar6 != 0;
-              FVar6 = FVar6 - 1) {
-            if (g_UiCatalogGroup42Records[iVar4] ==
-                *(UiCommandRuntimeRecordPrefix **)(iVar7 * 0x740 + 0x50f41c + FVar6 * 4)) {
-              iVar5 = iVar5 + 1;
-            }
-          }
-          if (iVar5 != 0) {
-            g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-            dVar3 = (*g_WideNumberFormatUtf16)
-                              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar5,
-                               g_UiCatalogEntryRichTextScratchUtf16 + 1);
-            iVar7 = (control->command).sprite.selectable.base.top;
-            *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 2) = 0x20;
-            RichTextCommandStream_DrawSingleLine
-                      (clipTop,clipLeft,clipBottom,clipRight,UStack_20,
-                       g_UiCatalogEntryRichTextScratchUtf16,iVar7 + 2,
-                       (control->command).sprite.selectable.base.left);
-          }
-          iVar7 = -1;
-          for (pWVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-              pWVar1 != (WorldRuntimeNode *)0x0; pWVar1 = (pWVar1->common).nextNode) {
-            if ((((pWVar1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
-                 (piVar2 = pWVar1->runtimePayload, *(int *)(*piVar2 + 0x4c) == 0xb)) &&
-                (((piVar2[0x2e] == 1 &&
-                  (((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex ==
-                    *(int *)(piVar2[2] + 0xc) && (PVar11 == piVar2[0x18])))) &&
-                 (iVar4 = (int)(((longlong)piVar2[0x19] * 100) / (longlong)piVar2[0x1a]),
-                 iVar7 <= iVar4)))) &&
-               (UStack_20 = 0x1040000, iVar7 = iVar4, (piVar2[0x3b] & 1U) != 0)) {
-              UStack_20 = 0x1050000;
-            }
-          }
-          if (-1 < iVar7) {
-            g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-            dVar3 = (*g_WideNumberFormatUtf16)
-                              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar7,
-                               g_UiCatalogEntryRichTextScratchUtf16 + 1);
-            *(undefined2 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 2) = 0x25;
-            *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 4) = 0x20;
-            RVar9 = RichTextCommandStream_MeasureRegs
-                              (0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
-            RichTextCommandStream_DrawSingleLine
-                      (clipTop,clipLeft,clipBottom,clipRight,UStack_20,
-                       g_UiCatalogEntryRichTextScratchUtf16,
-                       (control->command).sprite.selectable.base.top + 2,
-                       (control->command).sprite.selectable.base.right - RVar9.widthPixels);
-          }
-          goto UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn;
-        }
-        iVar4 = iVar4 + -1;
-      } while (-1 < iVar4);
-      iVar4 = 0x2f;
-      while ((int)control - (int)g_InGameRuntimeRoot !=
-             g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][iVar4]) {
-        iVar4 = iVar4 + -1;
-        if (iVar4 < 0) goto UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn;
-      }
-      iVar5 = 0;
-      PVar11 = g_UiCatalogGroup48Records[iVar4]->armyAssetId;
-      for (FVar6 = g_GameFactionRuntimeImage.records[iVar7].secondaryArmyAssetCount; FVar6 != 0;
-          FVar6 = FVar6 - 1) {
-        if (g_UiCatalogGroup48Records[iVar4] ==
-            *(UiCommandRuntimeRecordPrefix **)(iVar7 * 0x740 + 0x50f41c + FVar6 * 4)) {
-          iVar5 = iVar5 + 1;
+                 ,(control->command).sprite.selectable.base.left,arg6,
+                 (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
+    }
+  }
+  if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
+    dVar2 = dVar2 + (control->command).sprite.animationFrameOffset;
+  }
+  (*g_GraphicsTextureSourceBlitSourceAlpha)
+            (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top,
+             (control->command).sprite.selectable.base.left,dVar2,arg7,pSVar9);
+  iVar6 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+  if ((int)g_GameFactionRuntimeImage.records[iVar6].xeniteCurrentQ4 <
+      (int)control->runtimeDisplayValueQ4) {
+    UStack_20 = 0x1050000;
+  }
+  else {
+    UStack_20 = 0x1040000;
+  }
+  g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+  g_UiCatalogEntryRichTextScratchUtf16[1] = 0;
+  dVar2 = (*g_WideNumberFormatUtf16)
+                    (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
+                     g_UiCatalogEntryRichTextScratchUtf16 + 1);
+  *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 2) = 0x20;
+  RVar8 = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
+  RichTextCommandStream_DrawSingleLine
+            (clipTop,clipLeft,clipBottom,clipRight,UStack_20,g_UiCatalogEntryRichTextScratchUtf16,
+             ((control->command).sprite.selectable.base.bottom - RVar8.heightPixels) + -2,
+             ((int)((control->command).sprite.selectable.base.layoutWidth - RVar8.widthPixels) >> 1)
+             + (control->command).sprite.selectable.base.left);
+  iVar3 = 0x29;
+  do {
+    if ((int)control - (int)g_InGameRuntimeRoot ==
+        g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][iVar3]) {
+      iVar4 = 0;
+      PVar10 = g_UiCatalogGroup42Records[iVar3]->armyAssetId;
+      for (FVar5 = g_GameFactionRuntimeImage.records[iVar6].secondaryArmyAssetCount; FVar5 != 0;
+          FVar5 = FVar5 - 1) {
+        if (g_UiCatalogGroup42Records[iVar3] ==
+            *(UiCommandRuntimeRecordPrefix **)(iVar6 * 0x740 + 0x50f41c + FVar5 * 4)) {
+          iVar4 = iVar4 + 1;
         }
       }
-      if (iVar5 != 0) {
+      if (iVar4 != 0) {
         g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-        dVar3 = (*g_WideNumberFormatUtf16)
-                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar5,
-                           g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        iVar7 = (control->command).sprite.selectable.base.top;
-        *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 2) = 0x20;
-        RichTextCommandStream_DrawSingleLine
-                  (clipTop,clipLeft,clipBottom,clipRight,UStack_20,
-                   g_UiCatalogEntryRichTextScratchUtf16,iVar7 + 2,
-                   (control->command).sprite.selectable.base.left);
-      }
-      iVar7 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
-      iVar4 = -1;
-      for (pWVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          pWVar1 != (WorldRuntimeNode *)0x0; pWVar1 = (pWVar1->common).nextNode) {
-        if (pWVar1[2].common.nextNode == (WorldRuntimeNode *)0x0) {
-          piVar2 = pWVar1->runtimePayload;
-          if (*(int *)(*piVar2 + 0x4c) == 0x16) {
-            if ((((piVar2[0x2b] == 1) && (iVar7 == *(int *)(piVar2[2] + 0xc))) &&
-                (PVar11 == piVar2[0x18])) &&
-               ((iVar5 = (int)(((longlong)piVar2[0x19] * 100) / (longlong)piVar2[0x1a]),
-                iVar4 <= iVar5 && (UStack_20 = 0x1040000, iVar4 = iVar5, (piVar2[0x3b] & 1U) != 0)))
-               ) {
-              UStack_20 = 0x1050000;
-            }
-          }
-          else if (((*(int *)(*piVar2 + 0x4c) == 0xd) && (piVar2[0x2e] == 1)) &&
-                  ((iVar7 == *(int *)(piVar2[2] + 0xc) &&
-                   (((PVar11 == piVar2[0x18] &&
-                     (iVar5 = (int)(((longlong)piVar2[0x19] * 100) / (longlong)piVar2[0x1a]),
-                     iVar4 <= iVar5)) &&
-                    (UStack_20 = 0x1040000, iVar4 = iVar5, (piVar2[0x3b] & 1U) != 0)))))) {
-            UStack_20 = 0x1050000;
-          }
-        }
-      }
-      if (-1 < iVar4) {
-        g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-        dVar3 = (*g_WideNumberFormatUtf16)
+        dVar2 = (*g_WideNumberFormatUtf16)
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar4,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        *(undefined2 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 2) = 0x25;
-        *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar3 + 4) = 0x20;
-        RVar9 = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
+        iVar6 = (control->command).sprite.selectable.base.top;
+        *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 2) = 0x20;
+        RichTextCommandStream_DrawSingleLine
+                  (clipTop,clipLeft,clipBottom,clipRight,UStack_20,
+                   g_UiCatalogEntryRichTextScratchUtf16,iVar6 + 2,
+                   (control->command).sprite.selectable.base.left);
+      }
+      iVar6 = -1;
+      for (modelNodePrimary =
+                (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+          modelNodePrimary != (ModelRuntimeNode *)0x0;
+          modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
+        if (((modelNodePrimary->ownerClassId == MODEL_RUNTIME_CLASS_00) &&
+            (armyRuntime = (modelNodePrimary->runtimePayload).armyRuntime,
+            ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xb))
+           && (((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1 &&
+               (((((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex ==
+                   (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex &&
+                  (PVar10 == armyRuntime->classState60)) &&
+                 (iVar3 = (int)(((longlong)(int)armyRuntime->ownerValue64 * 100) /
+                               (longlong)(int)armyRuntime->ownerValue68), iVar6 <= iVar3)) &&
+                (UStack_20 = 0x1040000, iVar6 = iVar3, (armyRuntime->runtimeFlags & 1) != 0)))))) {
+          UStack_20 = 0x1050000;
+        }
+      }
+      if (-1 < iVar6) {
+        g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+        dVar2 = (*g_WideNumberFormatUtf16)
+                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar6,
+                           g_UiCatalogEntryRichTextScratchUtf16 + 1);
+        *(undefined2 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 2) = 0x25;
+        *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 4) = 0x20;
+        RVar8 = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,UStack_20,
                    g_UiCatalogEntryRichTextScratchUtf16,
                    (control->command).sprite.selectable.base.top + 2,
-                   (control->command).sprite.selectable.base.right - RVar9.widthPixels);
+                   (control->command).sprite.selectable.base.right - RVar8.widthPixels);
       }
-UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn:
-      (*g_GraphicsFramebufferEndAccess)();
-      return;
+      goto UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn;
+    }
+    iVar3 = iVar3 + -1;
+  } while (-1 < iVar3);
+  iVar3 = 0x2f;
+  while ((int)control - (int)g_InGameRuntimeRoot !=
+         g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][iVar3]) {
+    iVar3 = iVar3 + -1;
+    if (iVar3 < 0) goto UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn;
+  }
+  iVar4 = 0;
+  PVar10 = g_UiCatalogGroup48Records[iVar3]->armyAssetId;
+  for (FVar5 = g_GameFactionRuntimeImage.records[iVar6].secondaryArmyAssetCount; FVar5 != 0;
+      FVar5 = FVar5 - 1) {
+    if (g_UiCatalogGroup48Records[iVar3] ==
+        *(UiCommandRuntimeRecordPrefix **)(iVar6 * 0x740 + 0x50f41c + FVar5 * 4)) {
+      iVar4 = iVar4 + 1;
     }
   }
+  if (iVar4 != 0) {
+    g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+    dVar2 = (*g_WideNumberFormatUtf16)
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar4,
+                       g_UiCatalogEntryRichTextScratchUtf16 + 1);
+    iVar6 = (control->command).sprite.selectable.base.top;
+    *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 2) = 0x20;
+    RichTextCommandStream_DrawSingleLine
+              (clipTop,clipLeft,clipBottom,clipRight,UStack_20,g_UiCatalogEntryRichTextScratchUtf16,
+               iVar6 + 2,(control->command).sprite.selectable.base.left);
+  }
+  iVar6 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+  iVar3 = -1;
+  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+      modelNode != (ModelRuntimeNode *)0x0;
+      modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
+    if (modelNode->ownerClassId == MODEL_RUNTIME_CLASS_00) {
+      pAVar1 = (modelNode->runtimePayload).armyRuntime;
+      if (((pAVar1->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0x16) {
+        if ((((pAVar1->articulatedContact).terrainContactMode ==
+              ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) &&
+            (iVar6 == (pAVar1->linkedEntityRuntime->common).ownership.ownerIndex)) &&
+           ((PVar10 == pAVar1->classState60 &&
+            ((iVar4 = (int)(((longlong)(int)pAVar1->ownerValue64 * 100) /
+                           (longlong)(int)pAVar1->ownerValue68), iVar3 <= iVar4 &&
+             (UStack_20 = 0x1040000, iVar3 = iVar4, (pAVar1->runtimeFlags & 1) != 0)))))) {
+          UStack_20 = 0x1050000;
+        }
+      }
+      else if ((((((pAVar1->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)
+                && ((pAVar1->articulatedContact).fallbackPosition0Q12 == 1)) &&
+               (iVar6 == (pAVar1->linkedEntityRuntime->common).ownership.ownerIndex)) &&
+              (((PVar10 == pAVar1->classState60 &&
+                (iVar4 = (int)(((longlong)(int)pAVar1->ownerValue64 * 100) /
+                              (longlong)(int)pAVar1->ownerValue68), iVar3 <= iVar4)) &&
+               (UStack_20 = 0x1040000, iVar3 = iVar4, (pAVar1->runtimeFlags & 1) != 0)))) {
+        UStack_20 = 0x1050000;
+      }
+    }
+  }
+  if (-1 < iVar3) {
+    g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+    dVar2 = (*g_WideNumberFormatUtf16)
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar3,
+                       g_UiCatalogEntryRichTextScratchUtf16 + 1);
+    *(undefined2 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 2) = 0x25;
+    *(undefined4 *)((int)g_UiCatalogEntryRichTextScratchUtf16 + dVar2 + 4) = 0x20;
+    RVar8 = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
+    RichTextCommandStream_DrawSingleLine
+              (clipTop,clipLeft,clipBottom,clipRight,UStack_20,g_UiCatalogEntryRichTextScratchUtf16,
+               (control->command).sprite.selectable.base.top + 2,
+               (control->command).sprite.selectable.base.right - RVar8.widthPixels);
+  }
+UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn:
+  (*g_GraphicsFramebufferEndAccess)();
   return;
 }
+
 
 /* Address: 0x00516B90.
    Ownership: ui/controls/lists.
@@ -2789,7 +3374,7 @@ UiCatalogEntryControl_DrawClipped_EndFramebufferAccessAndReturn:
    selection, and returns the pointer cursor identifier.
    Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime].
 */
-GraphicsCursorFrameIndex
+GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiCatalogEntryControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiCatalogEntryControl *control)
 
@@ -2828,14 +3413,16 @@ UiCatalogEntryControl_PointerMove_ReturnCursorCodeAfterHoverResolution:
   return GVar1;
 }
 
+
 /* Address: 0x00516C50.
    Ownership: ui/controls/lists.
    Purpose: Handles ui catalog entry control non right release.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiCatalogEntryControl_NonRightRelease
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiCatalogEntryControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiCatalogEntryControl_NonRightRelease
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiCatalogEntryControl *control)
 
 {
   UiSelectableStateFlags *stateFlagsField;
@@ -2859,18 +3446,19 @@ void UiCatalogEntryControl_NonRightRelease
   return;
 }
 
+
 /* Address: 0x004BC360.
    Ownership: ui/controls/lists.
    Purpose: Handles ui timed list control select record and scroll into view.
    Local calls: UiTimedListTree_CountRecordArrayAndNestedChildren, UiScrollableControl_ClampOffsetsToViewport.
 */
-void UiTimedListControl_SelectRecordAndScrollIntoView
-               (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiTimedListControl_SelectRecordAndScrollIntoView
+          (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control)
 
 {
   dword dVar1;
   int iVar2;
-  int extraout_ECX;
   int iVar3;
   UiTimedListTreeRecord16 *pUVar4;
   
@@ -2883,7 +3471,7 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
         0) {
       dVar1 = UiTimedListTree_CountRecordArrayAndNestedChildren
                         (selectedRecord[-1].nestedRecordBlockOrParentLink08);
-      iVar3 = extraout_ECX + dVar1;
+      iVar3 = iVar2 + dVar1;
     }
     selectedRecord = pUVar4;
     iVar2 = iVar3 + 1;
@@ -2897,18 +3485,18 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
   return;
 }
 
+
 /* Address: 0x004BB4E0.
    Ownership: ui/controls/lists.
    Purpose: Selects an in-range pointer-list entry by storing base + index*4 at +0x60 and invalidates the
    corresponding row using the variant-B geometry calculation.
    Local calls: UiScrollableControl_ClampOffsetsToViewport.
 */
-undefined8 UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control)
 
 {
-  undefined4 in_EAX;
   int clipBottom;
-  undefined4 in_EDX;
   
   if (index < control->rowCount) {
     control->selectedRowSlot = control->rowSlots + index;
@@ -2917,24 +3505,33 @@ undefined8 UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListC
               (clipBottom + 1 + control->rowHeight,(control->base).rightOffset,clipBottom,0,
                (UiScrollableControl *)(control->base).parent);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004BB540.
    Ownership: ui/controls/lists.
    Purpose: Returns (+0x60 - +0x50)/4 in EAX. CF mirrors control flag 0x04 exactly.
 */
-UiListRowIndex UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control)
+UiListRowIndexEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;
+  UiListRowIndexEaxCf5 UVar1;
+  UiListRowIndexEaxCf5 UVar2;
   
   selectedRowIndex = (int)control->selectedRowSlot - (int)control->rowSlots >> 2;
   if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
-    return selectedRowIndex;
+    UVar1.carry = false;
+    UVar1.rowIndex = selectedRowIndex;
+    return UVar1;
   }
-  return selectedRowIndex;
+  UVar2.carry = true;
+  UVar2.rowIndex = selectedRowIndex;
+  return UVar2;
 }
+
 
 /* Address: 0x004B9460.
    Ownership: ui/controls/lists.
@@ -2957,173 +3554,266 @@ UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control)
   return CONCAT44(contentHeight,contentWidth);
 }
 
+/* Address: 0x004BC1C0.
+   Ownership: ui/controls/lists.
+   Purpose: Sets the timed-list record tree and recomputes layout.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+UiTimedListControl_SetRecordTreeAndRecomputeLayout
+          (UiTimedListTreeRecord16 *recordTree,UiTimedListRuntimeExtendedView88 *control)
+
+{
+  UiListRowCount *pUVar1;
+  UiNodeBase *control_00;
+  UiListRowCount UVar2;
+  UiNodeVtable *pUVar3;
+  UiPixelExtent UVar4;
+  uint uVar5;
+  dword dVar6;
+  dword dVar7;
+  UiTimedListTreeRecord16 *unaff_EBP;
+  uint uVar8;
+  UiTimedListTreeRecord16 *pUVar9;
+  UiTimedListTreeRecord16 *pUVar10;
+  RichTextExtentRegs RVar11;
+  FontGlyphSizeEaxEdxCf9 FVar12;
+  dword dStack_20;
+  
+  FVar12 = FontGlyph_GetLogicalSizeActiveRegs(0);
+  if (recordTree == (UiTimedListTreeRecord16 *)0x0) {
+    dVar6 = 0;
+  }
+  else {
+    dVar6 = recordTree->recordCountOrRowPayload00;
+  }
+  (control->base).rowHeight = FVar12.lineHeight + 1;
+  (control->base).rowCount = dVar6;
+  (control->base).recordTree = recordTree;
+  (control->base).selectedRecord = recordTree + 1;
+  uVar8 = 0;
+  if (dVar6 != 0) {
+    dStack_20 = 0;
+    pUVar9 = recordTree + 1;
+    do {
+      RVar11 = RichTextCommandStream_MeasureRegs
+                         (g_UiListTextStyle,(word *)pUVar9->recordCountOrRowPayload00);
+      uVar5 = RVar11.widthPixels + control->observedDrawParameter84 +
+              control->observedDrawParameter80 * dStack_20;
+      pUVar10 = pUVar9 + 1;
+      dVar7 = dVar6 - 1;
+      if (uVar8 < uVar5) {
+        uVar8 = uVar5;
+      }
+      dVar6 = dVar7;
+      if ((((pUVar9->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
+          ((pUVar9->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
+         (pUVar9->nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0)) {
+        pUVar9 = pUVar9->nestedRecordBlockOrParentLink08;
+        dVar6 = pUVar9->recordCountOrRowPayload00;
+        pUVar1 = &(control->base).rowCount;
+        *pUVar1 = *pUVar1 + dVar6;
+        pUVar10 = pUVar9 + 1;
+        dStack_20 = dVar7;
+      }
+      while (pUVar9 = pUVar10, dVar6 == 0) {
+        if (dStack_20 == 0) goto LAB_004bc299;
+        dVar6 = dStack_20 - 1;
+        pUVar10 = unaff_EBP;
+        dStack_20 = dVar6;
+      }
+    } while( true );
+  }
+LAB_004bc299:
+  control_00 = (control->base).base.parent;
+  UVar2 = (control->base).rowCount;
+  pUVar3 = control_00->vtable;
+  UVar4 = (control->base).rowHeight;
+  (control->base).base.rightOffset = uVar8 + 6;
+  (control->base).base.leftOffset = 0;
+  (control->base).base.topOffset = 0;
+  (control->base).base.bottomOffset = UVar2 * UVar4 + 1;
+  (*pUVar3->layout)(control_00);
+  return;
+}
+
+/* Address: 0x004BC2F0.
+   Ownership: ui/controls/lists.
+   Purpose: Returns the timed-list record tree.
+*/
+UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *control)
+
+{
+  return control->recordTree;
+}
+
 /* Address: 0x004BC310.
    Ownership: ui/controls/lists.
    Purpose: Handles ui timed list tree count record array and nested children.
 */
-dword UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
+dword __thandor_eax_preserve_ecx_edx
+UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
 
 {
   dword dVar1;
-  int extraout_ECX;
-  dword extraout_EDX;
   dword dVar2;
+  dword dVar3;
   
-  dVar1 = 0;
+  dVar2 = 0;
   if (recordBlock != (UiTimedListTreeRecord16 *)0x0) {
-    dVar1 = recordBlock->recordCountOrRowPayload00;
-    dVar2 = dVar1;
+    dVar2 = recordBlock->recordCountOrRowPayload00;
+    dVar3 = dVar2;
     do {
       if ((recordBlock[1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)
       {
         dVar1 = UiTimedListTree_CountRecordArrayAndNestedChildren
                           (recordBlock[1].nestedRecordBlockOrParentLink08);
-        dVar1 = extraout_ECX + dVar1;
-        dVar2 = extraout_EDX;
+        dVar2 = dVar2 + dVar1;
       }
-      dVar2 = dVar2 - 1;
+      dVar3 = dVar3 - 1;
       recordBlock = recordBlock + 1;
-    } while (dVar2 != 0);
+    } while (dVar3 != 0);
   }
-  return dVar1;
+  return dVar2;
 }
+
 
 /* Address: 0x004B9170.
    Ownership: ui/controls/lists.
    Purpose: Refreshes the active child rectangle from the current scroll offsets and recomputes the enabled
    scrollbar tracks and thumb positions without repeating the complete viewport-selection pass.
 */
-undefined8 UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
 
 {
   UiNodeBase *pUVar1;
   UiPixelExtent UVar2;
   UiPixelExtent UVar3;
-  undefined4 in_EAX;
-  int iVar4;
-  UiPixelOffset UVar5;
-  qword qVar10;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
+  uint uVar4;
+  dword dVar5;
   uint uVar6;
-  undefined4 in_EDX;
   UiPixelOffset UVar7;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int iVar8;
+  UiPixelOffset UVar8;
   int iVar9;
+  int iVar10;
+  GraphicsTextureSizeEaxEdxCf9 GVar11;
   
   pUVar1 = (control->base).firstChild;
   if (pUVar1 != (UiNodeBase *)0xffffffff) {
-    UVar5 = control->scrollOffsetY;
-    iVar8 = (control->base).top;
+    UVar7 = control->scrollOffsetY;
+    iVar9 = (control->base).top;
     pUVar1->left = pUVar1->leftOffset + control->scrollOffsetX + (control->base).left;
-    pUVar1->top = pUVar1->topOffset + UVar5 + iVar8;
+    pUVar1->top = pUVar1->topOffset + UVar7 + iVar9;
     UVar2 = pUVar1->rightOffset;
     UVar3 = pUVar1->bottomOffset;
     control->contentWidth = UVar2;
     control->contentHeight = UVar3;
-    UVar5 = control->scrollOffsetY;
-    iVar8 = (control->base).top;
-    pUVar1->right = UVar2 + control->scrollOffsetX + (control->base).left;
-    pUVar1->bottom = UVar3 + UVar5 + iVar8;
-    UVar5 = control->scrollOffsetX;
     UVar7 = control->scrollOffsetY;
+    iVar9 = (control->base).top;
+    pUVar1->right = UVar2 + control->scrollOffsetX + (control->base).left;
+    pUVar1->bottom = UVar3 + UVar7 + iVar9;
+    UVar7 = control->scrollOffsetX;
+    UVar8 = control->scrollOffsetY;
     pUVar1 = (control->base).firstChild;
-    iVar9 = (control->contentWidth - control->viewportWidth) + UVar5;
-    iVar8 = (control->contentHeight - control->viewportHeight) + UVar7;
+    iVar10 = (control->contentWidth - control->viewportWidth) + UVar7;
+    iVar9 = (control->contentHeight - control->viewportHeight) + UVar8;
+    if (iVar10 < 0) {
+      control->scrollOffsetX = control->scrollOffsetX - iVar10;
+      pUVar1->left = pUVar1->left - iVar10;
+      pUVar1->right = pUVar1->right - iVar10;
+      UVar7 = UVar7 - iVar10;
+    }
     if (iVar9 < 0) {
-      control->scrollOffsetX = control->scrollOffsetX - iVar9;
-      pUVar1->left = pUVar1->left - iVar9;
-      pUVar1->right = pUVar1->right - iVar9;
-      UVar5 = UVar5 - iVar9;
-    }
-    if (iVar8 < 0) {
-      control->scrollOffsetY = control->scrollOffsetY - iVar8;
-      pUVar1->top = pUVar1->top - iVar8;
-      pUVar1->bottom = pUVar1->bottom - iVar8;
-      UVar7 = UVar7 - iVar8;
-    }
-    if (-1 < (int)UVar5) {
-      control->scrollOffsetX = 0;
-      pUVar1->left = pUVar1->left - UVar5;
-      pUVar1->right = pUVar1->right - UVar5;
+      control->scrollOffsetY = control->scrollOffsetY - iVar9;
+      pUVar1->top = pUVar1->top - iVar9;
+      pUVar1->bottom = pUVar1->bottom - iVar9;
+      UVar8 = UVar8 - iVar9;
     }
     if (-1 < (int)UVar7) {
-      control->scrollOffsetY = 0;
-      pUVar1->top = pUVar1->top - UVar7;
-      pUVar1->bottom = pUVar1->bottom - UVar7;
+      control->scrollOffsetX = 0;
+      pUVar1->left = pUVar1->left - UVar7;
+      pUVar1->right = pUVar1->right - UVar7;
     }
-    UVar5 = control->contentOriginX;
-    UVar7 = control->contentOriginY;
-    pUVar1->left = pUVar1->left + UVar5;
-    pUVar1->top = pUVar1->top + UVar7;
-    pUVar1->right = pUVar1->right + UVar5;
-    pUVar1->bottom = pUVar1->bottom + UVar7;
+    if (-1 < (int)UVar8) {
+      control->scrollOffsetY = 0;
+      pUVar1->top = pUVar1->top - UVar8;
+      pUVar1->bottom = pUVar1->bottom - UVar8;
+    }
+    UVar7 = control->contentOriginX;
+    UVar8 = control->contentOriginY;
+    pUVar1->left = pUVar1->left + UVar7;
+    pUVar1->top = pUVar1->top + UVar8;
+    pUVar1->right = pUVar1->right + UVar7;
+    pUVar1->bottom = pUVar1->bottom + UVar8;
     (*pUVar1->vtable->layout)(pUVar1);
     control->horizontalThumbLeft = 0;
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      control->verticalThumbTop = control->verticalThumbTop + extraout_EDX;
-      control->verticalThumbBottom = control->verticalThumbBottom + extraout_EDX;
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      control->verticalThumbTop = control->verticalThumbTop + GVar11.logicalHeightPixels;
+      control->verticalThumbBottom = control->verticalThumbBottom + GVar11.logicalHeightPixels;
     }
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      qVar10._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      control->horizontalThumbLeft = control->horizontalThumbLeft + (int)(qword)qVar10;
-      control->horizontalThumbRight = control->horizontalThumbRight + (int)(qword)qVar10;
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      control->horizontalThumbLeft = control->horizontalThumbLeft + GVar11.logicalWidthPixels;
+      control->horizontalThumbRight = control->horizontalThumbRight + GVar11.logicalWidthPixels;
     }
-    iVar8 = (control->base).layoutWidth;
-    iVar9 = (control->base).layoutHeight;
+    iVar9 = (control->base).layoutWidth;
+    iVar10 = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
-      iVar4 = (int)qVar10;
-      control->horizontalThumbLeft = control->horizontalThumbLeft + iVar4;
-      control->horizontalThumbRight = control->horizontalThumbRight + iVar4;
-      iVar8 = iVar8 + iVar4 * -2;
-      iVar9 = iVar9 - (int)(qVar10 >> 0x20);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      dVar5 = GVar11.logicalWidthPixels;
+      control->horizontalThumbLeft = control->horizontalThumbLeft + dVar5;
+      control->horizontalThumbRight = control->horizontalThumbRight + dVar5;
+      iVar9 = iVar9 + dVar5 * -2;
+      iVar10 = iVar10 - GVar11.logicalHeightPixels;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
-      iVar4 = (int)(qVar10 >> 0x20);
-      control->verticalThumbTop = control->verticalThumbTop + iVar4;
-      control->verticalThumbBottom = control->verticalThumbBottom + iVar4;
-      iVar9 = iVar9 + iVar4 * -2;
-      iVar8 = iVar8 - (int)qVar10;
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      dVar5 = GVar11.logicalHeightPixels;
+      control->verticalThumbTop = control->verticalThumbTop + dVar5;
+      control->verticalThumbBottom = control->verticalThumbBottom + dVar5;
+      iVar10 = iVar10 + dVar5 * -2;
+      iVar9 = iVar9 - GVar11.logicalWidthPixels;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      qVar10._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
-      uVar6 = extraout_ECX;
-      if (extraout_ECX < (uint)((int)(qword)qVar10 * 2)) {
-        uVar6 = (int)(qword)qVar10 * 2;
+      uVar6 = (uint)(((longlong)(int)control->viewportWidth * (longlong)iVar9) /
+                    (longlong)(int)control->contentWidth);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
+      uVar4 = GVar11.logicalWidthPixels * 2;
+      if (uVar6 < uVar4) {
+        uVar6 = uVar4;
       }
       control->horizontalThumbRight = control->horizontalThumbRight + uVar6;
-      iVar8 = (int)(((longlong)(int)-control->scrollOffsetX * (longlong)(int)(iVar8 - uVar6)) /
+      iVar9 = (int)(((longlong)(int)-control->scrollOffsetX * (longlong)(int)(iVar9 - uVar6)) /
                    (longlong)(int)(control->contentWidth - control->viewportWidth));
-      control->horizontalThumbLeft = control->horizontalThumbLeft + iVar8;
-      control->horizontalThumbRight = control->horizontalThumbRight + iVar8;
+      control->horizontalThumbLeft = control->horizontalThumbLeft + iVar9;
+      control->horizontalThumbRight = control->horizontalThumbRight + iVar9;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
-      uVar6 = extraout_ECX_00;
-      if (extraout_ECX_00 < (uint)(extraout_EDX_00 * 2)) {
-        uVar6 = extraout_EDX_00 * 2;
+      uVar6 = (uint)(((longlong)(int)control->viewportHeight * (longlong)iVar10) /
+                    (longlong)(int)control->contentHeight);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
+      uVar4 = GVar11.logicalHeightPixels * 2;
+      if (uVar6 < uVar4) {
+        uVar6 = uVar4;
       }
       control->verticalThumbBottom = control->verticalThumbBottom + uVar6;
-      iVar8 = (int)(((longlong)(int)-control->scrollOffsetY * (longlong)(int)(iVar9 - uVar6)) /
+      iVar9 = (int)(((longlong)(int)-control->scrollOffsetY * (longlong)(int)(iVar10 - uVar6)) /
                    (longlong)(int)(control->contentHeight - control->viewportHeight));
-      control->verticalThumbTop = control->verticalThumbTop + iVar8;
-      control->verticalThumbBottom = control->verticalThumbBottom + iVar8;
+      control->verticalThumbTop = control->verticalThumbTop + iVar9;
+      control->verticalThumbBottom = control->verticalThumbBottom + iVar9;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004B9490.
    Ownership: ui/controls/lists.
@@ -3135,9 +3825,10 @@ undefined8 UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *
    Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void UiScrollableControl_ClampOffsetsToViewport
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiScrollableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiScrollableControl_ClampOffsetsToViewport
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiScrollableControl *control)
 
 {
   char cVar1;
@@ -3186,3 +3877,4 @@ void UiScrollableControl_ClampOffsetsToViewport
   }
   return;
 }
+

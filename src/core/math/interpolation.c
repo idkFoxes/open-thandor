@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/math/interpolation.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/math/interpolation.h>
 
 /* Implementation ownership: core/math/interpolation. */
@@ -13,9 +20,10 @@
    Cross-module calls: WorldRuntime_SetPosition60AndDistanceFromPosition80 [world/runtime/core],
    WorldRuntime_SetMotionParameters6CThrough78Clamped [world/runtime/core].
 */
-void WorldMotionSpline_EvaluateAndApplyAtTime
-               (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
-               WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
+bool __thandor_cf_preserve_eax_ecx_edx
+WorldMotionSpline_EvaluateAndApplyAtTime
+          (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
+          WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 
 {
   sdword positionX;
@@ -24,13 +32,6 @@ void WorldMotionSpline_EvaluateAndApplyAtTime
   UQ12 magnitude;
   uint uVar1;
   AngleTurn32 pitchAngle;
-  float extraout_EAX;
-  float extraout_EAX_00;
-  float extraout_EAX_01;
-  float extraout_EAX_02;
-  float extraout_EAX_03;
-  float extraout_EAX_04;
-  uint extraout_ECX;
   int iVar2;
   CubicSplineSegmentIndex segmentIndex;
   CubicSplineSegmentIndex segmentIndex_00;
@@ -68,38 +69,40 @@ void WorldMotionSpline_EvaluateAndApplyAtTime
                              (timeQ12,segmentIndex_03,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetMotionParameters6CThrough78Clamped
                 ((worldRuntime->motion).motionValue78,pitchAngle,uVar1,magnitude,pWVar4);
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_04,g_WorldMotionSplineCoefficientTables[0]);
-      g_WorldMotionSplineCachedDerivatives[0] = extraout_EAX;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_05,g_WorldMotionSplineCoefficientTables[1]);
-      g_WorldMotionSplineCachedDerivatives[1] = extraout_EAX_00;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_06,g_WorldMotionSplineCoefficientTables[2]);
-      g_WorldMotionSplineCachedDerivatives[2] = extraout_EAX_01;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_07,g_WorldMotionSplineCoefficientTables[3]);
-      g_WorldMotionSplineCachedDerivatives[3] = extraout_EAX_02;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_08,g_WorldMotionSplineCoefficientTables[4]);
-      g_WorldMotionSplineCachedDerivatives[4] = extraout_EAX_03;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_09,g_WorldMotionSplineCoefficientTables[5]);
-      g_WorldMotionSplineCachedDerivatives[5] = extraout_EAX_04;
-      return;
+      g_WorldMotionSplineCachedDerivatives[0] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_04,g_WorldMotionSplineCoefficientTables[0]);
+      g_WorldMotionSplineCachedDerivatives[1] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_05,g_WorldMotionSplineCoefficientTables[1]);
+      g_WorldMotionSplineCachedDerivatives[2] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_06,g_WorldMotionSplineCoefficientTables[2]);
+      g_WorldMotionSplineCachedDerivatives[3] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_07,g_WorldMotionSplineCoefficientTables[3]);
+      g_WorldMotionSplineCachedDerivatives[4] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_08,g_WorldMotionSplineCoefficientTables[4]);
+      g_WorldMotionSplineCachedDerivatives[5] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_09,g_WorldMotionSplineCoefficientTables[5]);
+      return true;
     }
     iVar2 = iVar2 + 1;
     keyframeCount = keyframeCount + -1;
     keyframes = pWVar3 + 1;
   } while (keyframeCount != 0);
+  uVar1 = pWVar3->channel4Q12;
   WorldRuntime_SetPosition60AndDistanceFromPosition80
             (pWVar3->channel2Q12,pWVar3->channel1Q12,pWVar3->channel0Q12,worldRuntime);
   WorldRuntime_SetMotionParameters6CThrough78Clamped
-            ((worldRuntime->motion).motionValue78,pWVar3->channel5Q12,extraout_ECX & 0xffff,
+            ((worldRuntime->motion).motionValue78,pWVar3->channel5Q12,uVar1 & 0xffff,
              pWVar3->channel3Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
-  return;
+  return false;
 }
+
 
 /* Address: 0x0053CBB0.
    Ownership: core/math/interpolation.
@@ -108,26 +111,18 @@ void WorldMotionSpline_EvaluateAndApplyAtTime
    WorldMotionSpline_ClearCachedDerivatives.
    Cross-module calls: WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
 */
-undefined8
+byte __thandor_cf_preserve_eax_ecx_edx
 WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  undefined4 in_EAX;
   sdword originX;
   sdword originY;
   sdword originZ;
   UQ12 distance;
   uint uVar1;
   AngleTurn32 pitchAngle;
-  float extraout_EAX;
-  float extraout_EAX_00;
-  float extraout_EAX_01;
-  float extraout_EAX_02;
-  float extraout_EAX_03;
-  float extraout_EAX_04;
-  undefined4 in_EDX;
   int iVar2;
   CubicSplineSegmentIndex segmentIndex;
   CubicSplineSegmentIndex segmentIndex_00;
@@ -161,25 +156,25 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
                              (timeQ12,segmentIndex_03,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                 (pitchAngle,uVar1,distance,originZ,originY,originX,worldRuntime);
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_04,g_WorldMotionSplineCoefficientTables[0]);
-      g_WorldMotionSplineCachedDerivatives[0] = extraout_EAX;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_05,g_WorldMotionSplineCoefficientTables[1]);
-      g_WorldMotionSplineCachedDerivatives[1] = extraout_EAX_00;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_06,g_WorldMotionSplineCoefficientTables[2]);
-      g_WorldMotionSplineCachedDerivatives[2] = extraout_EAX_01;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_07,g_WorldMotionSplineCoefficientTables[3]);
-      g_WorldMotionSplineCachedDerivatives[3] = extraout_EAX_02;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_08,g_WorldMotionSplineCoefficientTables[4]);
-      g_WorldMotionSplineCachedDerivatives[4] = extraout_EAX_03;
-      CubicSpline_EvaluateDerivativeQ12
-                (timeQ12,segmentIndex_09,g_WorldMotionSplineCoefficientTables[5]);
-      g_WorldMotionSplineCachedDerivatives[5] = extraout_EAX_04;
-      return CONCAT44(in_EDX,in_EAX);
+      g_WorldMotionSplineCachedDerivatives[0] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_04,g_WorldMotionSplineCoefficientTables[0]);
+      g_WorldMotionSplineCachedDerivatives[1] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_05,g_WorldMotionSplineCoefficientTables[1]);
+      g_WorldMotionSplineCachedDerivatives[2] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_06,g_WorldMotionSplineCoefficientTables[2]);
+      g_WorldMotionSplineCachedDerivatives[3] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_07,g_WorldMotionSplineCoefficientTables[3]);
+      g_WorldMotionSplineCachedDerivatives[4] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_08,g_WorldMotionSplineCoefficientTables[4]);
+      g_WorldMotionSplineCachedDerivatives[5] =
+           CubicSpline_EvaluateDerivativeQ12
+                     (timeQ12,segmentIndex_09,g_WorldMotionSplineCoefficientTables[5]);
+      return 1;
     }
     iVar2 = iVar2 + 1;
     keyframeCount = keyframeCount + -1;
@@ -189,8 +184,9 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
             (pWVar3->channel5Q12,pWVar3->channel4Q12 & 0xffff,pWVar3->channel3Q12,
              pWVar3->channel2Q12,pWVar3->channel1Q12,pWVar3->channel0Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
-  return CONCAT44(in_EDX,in_EAX);
+  return 0;
 }
+
 
 /* Address: 0x0053CD10.
    Ownership: core/math/interpolation.
@@ -200,8 +196,9 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
    evaluation.
    Local calls: CubicSpline_BuildNaturalCoefficientSystem, CubicSpline_SolveCoefficientSystem.
 */
-void WorldMotionSpline_BuildSixChannelCurves
-               (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes)
+void __thandor_void_preserve_eax_ecx_edx
+WorldMotionSpline_BuildSixChannelCurves
+          (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes)
 
 {
   WorldMotionSplineKeyframe *pWVar1;
@@ -281,14 +278,16 @@ void WorldMotionSpline_BuildSixChannelCurves
   return;
 }
 
+
 /* Address: 0x004CCC00.
    Ownership: core/math/interpolation.
    Purpose: Stores a negated transition duration in a GraphicsShadingRuntimeRecord or rescales its elapsed
    progress, then clears color/radius state when the transition reaches zero.
 */
-void InterpolationState_SetNegatedTargetAndRescaleProgress
-               (GraphicsTransitionTickCount transitionDurationTicks,
-               GraphicsShadingRuntimeRecord *interpolationState)
+void __thandor_void_preserve_eax_ecx_edx
+InterpolationState_SetNegatedTargetAndRescaleProgress
+          (GraphicsTransitionTickCount transitionDurationTicks,
+          GraphicsShadingRuntimeRecord *interpolationState)
 
 {
   PackedRgb24 PVar1;
@@ -323,12 +322,14 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
   return;
 }
 
+
 /* Address: 0x004CCC80.
    Ownership: core/math/interpolation.
    Purpose: Advances radius transitions for all 256 GraphicsShadingRuntimeRecord entries, recomputes
    squaredRadiusQ24, and clears expired active/color/radius state.
 */
-void InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
+void __thandor_void_preserve_eax_ecx_edx
+InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
 
 {
   int iVar1;
@@ -368,6 +369,7 @@ InterpolationStateTable_Advance256ByTicks_ClearTransitionTimingAfterCompletionOr
   } while( true );
 }
 
+
 /* Address: 0x0053D230.
    Ownership: core/math/interpolation.
    Purpose: Solves the cubic coefficient system. RET 0x0C proves three stack arguments and removes the false
@@ -375,54 +377,47 @@ InterpolationStateTable_Advance256ByTicks_ClearTransitionTimingAfterCompletionOr
    Natural-cubic coefficient system and output coefficient table. Outputs: Solved segment coefficients.
    Local calls: CubicSpline_ForwardEliminateColumn, CubicSpline_BackSubstituteRow.
 */
-void CubicSpline_SolveCoefficientSystem
-               (CubicSplineEquationCount equationCount,float *rhsVector,float *matrix32x32)
+void __thandor_void_preserve_eax_ecx_edx
+CubicSpline_SolveCoefficientSystem
+          (CubicSplineEquationCount equationCount,float *rhsVector,float *matrix32x32)
 
 {
   float pivot;
+  CubicSplineMatrixIndex rowIndex;
   CubicSplineMatrixIndex CVar1;
-  CubicSplineMatrixIndex targetIndex;
-  CubicSplineMatrixIndex extraout_ECX;
-  CubicSplineMatrixIndex extraout_ECX_00;
-  int extraout_ECX_01;
-  uint extraout_EDX;
-  uint rowIndex;
-  uint extraout_EDX_00;
-  CubicSplineMatrixIndex CVar2;
-  CubicSplineMatrixIndex extraout_EDX_01;
+  uint uVar2;
+  uint uVar3;
   
+  rowIndex = 0;
   CVar1 = 0;
-  CVar2 = 0;
   do {
     do {
-      CubicSpline_ForwardEliminateColumn(1.0,CVar1 - 1,CVar2,CVar1,matrix32x32);
-      CVar1 = targetIndex;
-      CVar2 = extraout_EDX;
-    } while (extraout_EDX < equationCount);
-    CubicSpline_BackSubstituteRow(1.0,targetIndex - 1,0,targetIndex,rhsVector,matrix32x32);
-    rowIndex = extraout_ECX + 1;
-    CVar1 = extraout_ECX;
-    if (rowIndex < equationCount) {
-      pivot = matrix32x32[extraout_ECX * 0x21];
+      uVar2 = CVar1 + 1;
+      CubicSpline_ForwardEliminateColumn(1.0,rowIndex - 1,CVar1,rowIndex,matrix32x32);
+      CVar1 = uVar2;
+    } while (uVar2 < equationCount);
+    CubicSpline_BackSubstituteRow(1.0,rowIndex - 1,0,rowIndex,rhsVector,matrix32x32);
+    if (rowIndex + 1 < equationCount) {
+      pivot = matrix32x32[rowIndex * 0x21];
+      uVar2 = rowIndex + 1;
       do {
-        CubicSpline_ForwardEliminateColumn(pivot,CVar1 - 1,CVar1,rowIndex,matrix32x32);
-        CVar1 = extraout_ECX_00;
-        rowIndex = extraout_EDX_00;
-      } while (extraout_EDX_00 < equationCount);
+        uVar3 = uVar2 + 1;
+        CubicSpline_ForwardEliminateColumn(pivot,rowIndex - 1,rowIndex,uVar2,matrix32x32);
+        uVar2 = uVar3;
+      } while (uVar3 < equationCount);
     }
-    CVar1 = CVar1 + 1;
-    CVar2 = CVar1;
-  } while (CVar1 < equationCount);
-  CVar2 = equationCount - 1;
-  CVar1 = CVar2;
+    rowIndex = rowIndex + 1;
+    CVar1 = rowIndex;
+  } while (rowIndex < equationCount);
+  CVar1 = equationCount - 1;
   do {
     CubicSpline_BackSubstituteRow
-              (matrix32x32[CVar2 * 0x21],CVar1,CVar2 + 1,CVar2,rhsVector,matrix32x32);
-    CVar2 = extraout_ECX_01 - 1;
-    CVar1 = extraout_EDX_01;
-  } while (-1 < (int)CVar2);
+              (matrix32x32[CVar1 * 0x21],equationCount - 1,CVar1 + 1,CVar1,rhsVector,matrix32x32);
+    CVar1 = CVar1 - 1;
+  } while (-1 < (int)CVar1);
   return;
 }
+
 
 /* Address: 0x0053CF10.
    Ownership: core/math/interpolation.
@@ -430,12 +425,11 @@ void CubicSpline_SolveCoefficientSystem
    the tridiagonal coefficient system for one Q12 keyframe channel. Inputs: Keyframe times, selected channel offset
    and output work arrays. Outputs: Natural cubic spline matrix/right-hand-side data.
 */
-void CubicSpline_BuildNaturalCoefficientSystem
-               (float endpointDerivative,CubicSplineEquationCount *outEquationCount,
-               float *outCoefficients,float *matrix32x32,
-               WorldMotionSplineKeyframeCount keyframeCount,
-               WorldMotionSplineChannelByteOffset channelByteOffset,
-               WorldMotionSplineKeyframe *keyframes)
+void __thandor_void_preserve_eax_ecx_edx
+CubicSpline_BuildNaturalCoefficientSystem
+          (float endpointDerivative,CubicSplineEquationCount *outEquationCount,
+          float *outCoefficients,float *matrix32x32,WorldMotionSplineKeyframeCount keyframeCount,
+          WorldMotionSplineChannelByteOffset channelByteOffset,WorldMotionSplineKeyframe *keyframes)
 
 {
   float fVar1;
@@ -538,15 +532,17 @@ void CubicSpline_BuildNaturalCoefficientSystem
   return;
 }
 
+
 /* Address: 0x0053D160.
    Ownership: core/math/interpolation.
    Purpose: Performs one forward-elimination column step. RET 0x14 proves five stack arguments. Role: Performs one
    forward-elimination step over the spline coefficient system. Inputs: Coefficient matrix/work column and row
    bounds. Outputs: Partially reduced system.
 */
-void CubicSpline_ForwardEliminateColumn
-               (float pivot,CubicSplineMatrixIndex lastPriorIndex,CubicSplineMatrixIndex columnIndex
-               ,CubicSplineMatrixIndex rowIndex,float *matrix32x32)
+void __thandor_void_preserve_ecx_edx
+CubicSpline_ForwardEliminateColumn
+          (float pivot,CubicSplineMatrixIndex lastPriorIndex,CubicSplineMatrixIndex columnIndex,
+          CubicSplineMatrixIndex rowIndex,float *matrix32x32)
 
 {
   float *pfVar1;
@@ -572,16 +568,18 @@ void CubicSpline_ForwardEliminateColumn
   return;
 }
 
+
 /* Address: 0x0053D1C0.
    Ownership: core/math/interpolation.
    Purpose: Performs one back-substitution row step. RET 0x18 proves six stack arguments. Role: Performs one back-
    substitution step over the spline coefficient system. Inputs: Reduced matrix/work row and solved tail values.
    Outputs: Solved coefficient row.
 */
-void CubicSpline_BackSubstituteRow
-               (float pivot,CubicSplineMatrixIndex lastSolvedIndex,
-               CubicSplineMatrixIndex firstSolvedIndex,CubicSplineMatrixIndex targetIndex,
-               float *rhsVector,float *matrix32x32)
+void __thandor_void_preserve_ecx_edx
+CubicSpline_BackSubstituteRow
+          (float pivot,CubicSplineMatrixIndex lastSolvedIndex,
+          CubicSplineMatrixIndex firstSolvedIndex,CubicSplineMatrixIndex targetIndex,
+          float *rhsVector,float *matrix32x32)
 
 {
   float *solvedRhsCursor;
@@ -600,13 +598,14 @@ void CubicSpline_BackSubstituteRow
   return;
 }
 
+
 /* Address: 0x0053CA10.
    Ownership: core/math/interpolation.
    Purpose: Clears the six cached derivative values used by the world-motion spline evaluator. Role: Clears the six
    cached derivative values used by world-motion spline evaluation. Inputs: Global spline derivative cache.
    Outputs: Zeroed six-channel derivative cache. Edges: Precedes building/evaluating a new motion spline.
 */
-void WorldMotionSpline_ClearCachedDerivatives(void)
+void __thandor_void_preserve_eax_ecx WorldMotionSpline_ClearCachedDerivatives(void)
 
 {
   int derivativesRemaining;
@@ -620,6 +619,7 @@ void WorldMotionSpline_ClearCachedDerivatives(void)
   }
   return;
 }
+
 
 /* Address: 0x0053D2E0.
    Ownership: core/math/interpolation.
@@ -654,7 +654,12 @@ float CubicSpline_EvaluateDerivativeQ12
                 float *coefficients)
 
 {
-  float10 in_ST0;
+  float fVar1;
+  float fVar2;
   
-  return (float)in_ST0;
+  fVar1 = ((float)timeQ12 / g_Q12FloatScale4096) * coefficients[segmentIndex * 4 + 3];
+  fVar2 = fVar1 + coefficients[segmentIndex * 4 + 2];
+  return (fVar2 + fVar2 + fVar1) * ((float)timeQ12 / g_Q12FloatScale4096) +
+         coefficients[segmentIndex * 4 + 1];
 }
+

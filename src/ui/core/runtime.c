@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/core/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/core/runtime.h>
 
 /* Implementation ownership: ui/core/runtime. */
@@ -7,12 +14,15 @@
    Purpose: Binary entry is anchored by g_CodePointerTable_004229A0[0]@004229A0;
    g_CodePointerTable_00424324[0]@00424324. UiRootCallbacks root callback with one stack argument.
 */
-void UiRootCallbacks_FreeCf(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_FreeCf(UiRootNode *root)
 
 {
-  (*g_MemoryApi.free)(root);
-  return;
+  ArenaFreeEaxCf5 AVar1;
+  
+  AVar1 = (*g_MemoryApi.free)(root);
+  return AVar1.carry;
 }
+
 
 /* Address: 0x00422980.
    Ownership: ui/core/runtime.
@@ -20,10 +30,21 @@ void UiRootCallbacks_FreeCf(UiRootNode *root)
    g_CodePointerTable_00424324[2]@00424324. UiRootCallbacks method08; caller-cleanup one-argument convention is
    intentional.
 */
-void __cdecl UiRootCallbacks_NoOpMethod08(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *root)
 
 {
-  return;
+  return true;
+}
+
+
+/* Address: 0x00422990.
+   Ownership: ui/core/runtime.
+   Purpose: Recovered UI root pointer miss-policy helper that returns code 8.
+*/
+int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root)
+
+{
+  return 8;
 }
 
 /* Address: 0x00424270.
@@ -32,7 +53,7 @@ void __cdecl UiRootCallbacks_NoOpMethod08(UiRootNode *root)
    +0xB94. Both calls use width 3, base 10, terminator and signed flags, with exact scale values 0x400000 and
    0x10000. EAX is preserved.
 */
-void UiRuntime_FormatSignedValues140And144(void *runtime)
+void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *runtime)
 
 {
   (*g_WideNumberFormatUtf16)
@@ -44,6 +65,7 @@ void UiRuntime_FormatSignedValues140And144(void *runtime)
   return;
 }
 
+
 /* Address: 0x004244E0.
    Ownership: ui/core/runtime.
    Purpose: Typed parameters: p0 value0→UiPixelCoordinate_V297, p1 value1→UiPixelCoordinate_V297, p2
@@ -52,34 +74,35 @@ void UiRuntime_FormatSignedValues140And144(void *runtime)
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], UiRootStack_Push [ui/controls/layout], UiRootStack_InvalidateAll [ui/controls/layout].
 */
-void UiRuntime_OpenFourValueDialogCf
-               (UiPixelCoordinate value0,UiPixelCoordinate value1,UiPixelCoordinate value2,
-               UiPixelCoordinate value3)
+void __thandor_void_preserve_eax_ecx_edx
+UiRuntime_OpenFourValueDialogCf
+          (UiPixelCoordinate value0,UiPixelCoordinate value1,UiPixelCoordinate value2,
+          UiPixelCoordinate value3)
 
 {
+  sdword *arg5;
   UiRootNode *root;
-  word *stream;
-  uint extraout_ECX;
-  uint uVar1;
-  void *replacementPayload;
-  word *arg5;
+  int iVar1;
   undefined4 *puVar2;
   UiRootNode *pUVar3;
-  undefined1 in_CF;
+  ArenaAllocEaxCf5 AVar4;
+  TextResourceResolveEaxCf5 TVar5;
   
-  root = (*g_MemoryApi.alloc)(0x1a4);
-  if (!(bool)in_CF) {
+  AVar4 = (*g_MemoryApi.alloc)(0x1a4);
+  root = (UiRootNode *)AVar4.eax;
+  if (!AVar4.carry) {
     puVar2 = &g_UiFourValueDialogTemplateImage;
     pUVar3 = root;
-    for (uVar1 = extraout_ECX >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
+    for (iVar1 = 0x69; iVar1 != 0; iVar1 = iVar1 + -1) {
       (pUVar3->base).nextSibling = (UiNodeBase *)*puVar2;
       puVar2 = puVar2 + 1;
       pUVar3 = (UiRootNode *)&(pUVar3->base).firstChild;
     }
-    stream = TextResource_Resolve(0x109);
-    RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)root[4].base.vtable,arg5)
-    ;
+    arg5 = &root[4].base.topOffset;
+    TVar5 = TextResource_Resolve(0x109);
+    RichTextCommandStream_PatchPayloadBySelector(0,arg5,TVar5.eax);
+    (*g_WideNumberFormatUtf16)
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)root[4].base.vtable,(word *)arg5);
     root[4].base.top = value3;
     root[4].base.right = value2;
     root[4].base.bottom = value1;
@@ -91,68 +114,86 @@ void UiRuntime_OpenFourValueDialogCf
   return;
 }
 
+
 /* Address: 0x004AEF00.
    Ownership: ui/core/runtime.
    Purpose: Acquires the UI runtime-ring lock and advances the 256-entry read index. CF clear means one record was
    discarded; CF set means the ring was empty.
 */
-void __cdecl UiRuntimeRecordRing_DiscardOldestCf(void)
+UiRuntimeRecordRingDiscardEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+UiRuntimeRecordRing_DiscardOldestCf(void)
 
 {
+  uint uVar1;
+  dword dVar2;
+  UiRuntimeRecordRingDiscardEaxEdxCf9 UVar3;
+  UiRuntimeRecordRingDiscardEaxEdxCf9 UVar4;
+  
   (*g_SpinLockAcquire)(&g_UiRuntimeRecordRingLock);
+  dVar2 = g_UiRuntimeRecordReadIndex;
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
-    g_UiRuntimeRecordReadIndex = g_UiRuntimeRecordReadIndex + 1;
-    if (0xff < g_UiRuntimeRecordReadIndex) {
+    uVar1 = g_UiRuntimeRecordReadIndex + 1;
+    UVar3.eaxPayloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
+    UVar3.edxEndpointOrReadIndex =
+         g_UiRuntimeRecordReadIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000;
+    g_UiRuntimeRecordReadIndex = uVar1;
+    if (0xff < uVar1) {
       g_UiRuntimeRecordReadIndex = 0;
     }
     (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-    return;
+    UVar3.carryEmpty = false;
+    return UVar3;
   }
   (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-  return;
+  UVar4.edxEndpointOrReadIndex = dVar2;
+  UVar4.eaxPayloadOrReadIndex = dVar2;
+  UVar4.carryEmpty = true;
+  return UVar4;
 }
+
 
 /* Address: 0x004AF020.
    Ownership: ui/core/runtime.
    Purpose: Drops all pending records by copying the write index to the read index.
 */
-void __cdecl UiRuntimeRecordRing_Clear(void)
+void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void)
 
 {
   g_UiRuntimeRecordReadIndex = g_UiRuntimeRecordWriteIndex;
   return;
 }
 
+
 /* Address: 0x004AF030.
    Ownership: ui/core/runtime.
    Purpose: Compares the 256-entry write and read indices. CF set means at least one record is pending; CF clear
    means empty.
 */
-undefined4 __cdecl UiRuntimeRecordRing_HasPendingCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPendingCf(void)
 
 {
-  undefined4 in_EAX;
-  
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
-    return in_EAX;
+    return true;
   }
-  return in_EAX;
+  return false;
 }
+
 
 /* Address: 0x004AF050.
    Ownership: ui/core/runtime.
    Purpose: Try-locks the ring and scans pending 0x100-byte records for recordId. CF set means a match; CF clear
    means absent or lock unavailable.
 */
-void UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
+bool __thandor_cf_preserve_eax_ecx_edx
+UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
 
 {
   dword ringIndex;
   UiRuntimeRecord *recordCursor;
-  undefined1 in_CF;
+  bool bVar1;
   
-  (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
-  if (!(bool)in_CF) {
+  bVar1 = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
+  if (!bVar1) {
     if (g_UiRuntimeRecordReadIndex != g_UiRuntimeRecordWriteIndex) {
       recordCursor = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
       ringIndex = g_UiRuntimeRecordReadIndex;
@@ -160,7 +201,7 @@ void UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
         do {
           if (sequenceToken == (recordCursor->packetHeader).sequenceToken) {
             (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-            return;
+            return true;
           }
           ringIndex = ringIndex + 1;
           recordCursor = recordCursor + 1;
@@ -174,22 +215,25 @@ void UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
 UiRuntimeRecordRing_ContainsIdCf_ReleaseLockAndReturnNotFoundWithCarryClear:
     (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x004AF0F0.
    Ownership: ui/core/runtime.
    Purpose: Installs the runtime frame lock pointer and the optional callback passed to SpinLockReleaseAndInvoke.
    Passing two null pointers disables external synchronization.
 */
-void UiRuntime_SetSynchronizationHooks
-               (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock)
+void __thandor_preserve_eax_edx
+UiRuntime_SetSynchronizationHooks
+          (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock)
 
 {
   g_UiRuntimeFrameLock = frameLock;
   g_UiRuntimePostUnlockCallback = postUnlockCallback;
   return;
 }
+
 
 /* Address: 0x004AF210.
    Ownership: ui/core/runtime.
@@ -198,32 +242,42 @@ void UiRuntime_SetSynchronizationHooks
    Cross-module calls: FontRuntime_Init [assets/text/resources], UiWindowResources_Init [ui/controls/layout],
    ErrorRuntime_InstallUiHandlerAndAllocateState [core/error/runtime].
 */
-void UiRuntime_Initialize(void)
+void __thandor_preserve_eax UiRuntime_Initialize(void)
 
 {
+  ArenaAllocEaxCf5 AVar1;
+  FatalErrorEaxCf5 FVar2;
+  
   (*g_TimerRegisterPeriodic)(0x14,UiRuntime_IncrementPeriodicTickCounter);
   g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + 1;
   FontRuntime_Init();
   UiWindowResources_Init();
-  (*g_MemoryApi.alloc)(0x600);
-  g_UiDirtyRectEntries = (UiDirtyRectEntry *)(*g_FatalErrorPrimaryDispatchCf)();
-  (*g_MemoryApi.alloc)(0x80);
-  g_UiActionQueueEntries = (UiActionQueueEntry *)(*g_FatalErrorPrimaryDispatchCf)();
+  AVar1 = (*g_MemoryApi.alloc)(0x600);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
+  g_UiDirtyRectEntries = (UiDirtyRectEntry *)FVar2.eax;
+  AVar1 = (*g_MemoryApi.alloc)(0x80);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
+  g_UiActionQueueEntries = (UiActionQueueEntry *)FVar2.eax;
   ErrorRuntime_InstallUiHandlerAndAllocateState();
   (*g_TimerRegisterPeriodic)(0x7d,UiTransferMailbox_ServiceAndRetransmitTimer);
-  (*g_MemoryApi.alloc)(0x8000);
-  g_UiRuntimeAuxiliaryBuffer8000 = (*g_FatalErrorPrimaryDispatchCf)();
-  (*g_MemoryApi.alloc)(0x10000);
-  g_UiRuntimeRecordRing = (UiRuntimeRecord *)(*g_FatalErrorPrimaryDispatchCf)();
-  (*g_MemoryApi.alloc)(0x1000);
-  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)(*g_FatalErrorPrimaryDispatchCf)();
-  (*g_MemoryApi.alloc)(0x2000);
-  g_UiTransferDataBuffer = (byte *)(*g_FatalErrorPrimaryDispatchCf)();
+  AVar1 = (*g_MemoryApi.alloc)(0x8000);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
+  g_UiRuntimeAuxiliaryBuffer8000 = FVar2.eax;
+  AVar1 = (*g_MemoryApi.alloc)(0x10000);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
+  g_UiRuntimeRecordRing = (UiRuntimeRecord *)FVar2.eax;
+  AVar1 = (*g_MemoryApi.alloc)(0x1000);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
+  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)FVar2.eax;
+  AVar1 = (*g_MemoryApi.alloc)(0x2000);
+  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
+  g_UiTransferDataBuffer = (byte *)FVar2.eax;
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;
   g_UiTransferUnitCursor = 0;
   return;
 }
+
 
 /* Address: 0x004AF2F0.
    Ownership: ui/core/runtime.
@@ -311,45 +365,51 @@ void __cdecl UiActionQueue_DispatchPending(void)
    7=RIGHT_RELEASE, 8=NON_RIGHT_DRAG, 9=RIGHT_DRAG, 10=POINTER_MOVE, 11=HIT_TEST, 12=KEYBOARD_EVENT_CF,
    13=APPLY_FLAGS, 14=SUPPRESS_ACTION_ID, 15=UNSUPPRESS_ACTION_ID, 16=TICK, 17=POINTER_WHEEL
 */
-void UiNode_DefaultMethod04_NoOp(void *node)
+void __thandor_void_preserve_eax_ecx_edx UiNode_DefaultMethod04_NoOp(void *node)
 
 {
   return;
 }
+
 
 /* Address: 0x004B0750.
    Ownership: ui/core/runtime.
    Purpose: Shared four-argument no-op installed in common UI-node vtable slot +0x10, the non-right pointer-press
    slot. Existing return-register and flag behavior is preserved.
 */
-void UiNode_DefaultNonRightPress
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiNode_DefaultNonRightPress
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   return;
 }
+
 
 /* Address: 0x004B0760.
    Ownership: ui/core/runtime.
    Purpose: Default no-op left/middle release handler.
 */
-void UiNode_DefaultNonRightRelease
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiNode_DefaultNonRightRelease
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   return;
 }
+
 
 /* Address: 0x004B0770.
    Ownership: ui/core/runtime.
    Purpose: Forwards rightPress to node->parent while updating g_UiPointerCaptureTarget. Reaching the root clears
    the capture target and button.
 */
-void UiNode_ForwardRightPressToParent
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiNode_ForwardRightPressToParent
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   g_UiPointerCaptureTarget = control->parent;
@@ -364,17 +424,20 @@ void UiNode_ForwardRightPressToParent
   return;
 }
 
+
 /* Address: 0x004B07C0.
    Ownership: ui/core/runtime.
    Purpose: Default no-op right-button release handler.
 */
-void UiNode_DefaultRightRelease
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiNode_DefaultRightRelease
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   return;
 }
+
 
 /* Address: 0x004B07D0.
    Ownership: ui/core/runtime.
@@ -392,37 +455,36 @@ void UiNode_DefaultNonRightDrag
    Ownership: ui/core/runtime.
    Purpose: Default no-op right-button capture-drag handler.
 */
-void UiNode_DefaultRightDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+void __thandor_preserve_eax_edx
+UiNode_DefaultRightDrag
+          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+          UiNodeBase *control)
 
 {
   return;
 }
+
 
 /* Address: 0x004B08E0.
    Ownership: ui/core/runtime.
    Purpose: Updates nodeFlags as (nodeFlags & retainMask) | setMask and forwards the same masks to direct children
    through vtable slot +0x34.
 */
-void UiNode_ApplyFlagsRecursive
-               (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
+void __thandor_void_preserve_eax_ecx_edx
+UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
 
 {
   UiNodeBase *control_00;
-  UiNodeFlagMask extraout_ECX;
-  UiNodeFlagMask extraout_EDX;
   
   control->nodeFlags = control->nodeFlags & retainMask;
   control->nodeFlags = control->nodeFlags | setMask;
   for (control_00 = control->firstChild; control_00 != (UiNodeBase *)0xffffffff;
       control_00 = control_00->nextSibling) {
     (*control_00->vtable->applyFlags)(setMask,retainMask,control_00);
-    setMask = extraout_EDX;
-    retainMask = extraout_ECX;
   }
   return;
 }
+
 
 /* Address: 0x004B09E0.
    Ownership: ui/core/runtime.
@@ -438,7 +500,8 @@ void UiNode_DefaultTick(UiNodeBase *control)
    Ownership: ui/core/runtime.
    Purpose: Registers one 256-entry action-handler page when pageIndex is below 256.
 */
-void UiActionHandlers_SetPageCf(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
+void __thandor_preserve_eax
+UiActionHandlers_SetPageCf(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
 
 {
   if (pageIndex < 0x100) {
@@ -447,6 +510,7 @@ void UiActionHandlers_SetPageCf(UiActionHandlerPageIndex pageIndex,UiActionHandl
   }
   return;
 }
+
 
 /* Address: 0x004B14B0.
    Ownership: ui/core/runtime.
@@ -471,7 +535,7 @@ UiNodeBase * UiNode_GetRoot(UiNodeBase *node)
    Purpose: Finds a node's control-tree root and appends a 0x18-byte UiDirtyRectEntry when invalidation is enabled
    and fewer than 64 entries are queued.
 */
-void UiNode_InvalidateRoot(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
 
 {
   UiDirtyRectEntry *dirtyRectEntry;
@@ -501,12 +565,13 @@ void UiNode_InvalidateRoot(UiNodeBase *node)
   return;
 }
 
+
 /* Address: 0x004B1590.
    Ownership: ui/core/runtime.
    Purpose: Appends an actionId/source pair to the fixed 0x80-byte queue when space remains and actionId is not -1.
    The queue holds sixteen 8-byte entries.
 */
-void UiActionQueue_Enqueue(UiActionId actionId,void *source)
+void __thandor_void_preserve_eax_ecx_edx UiActionQueue_Enqueue(UiActionId actionId,void *source)
 
 {
   UiActionId *destinationEntry;
@@ -522,6 +587,7 @@ void UiActionQueue_Enqueue(UiActionId actionId,void *source)
   }
   return;
 }
+
 
 /* Address: 0x004BD160.
    Ownership: ui/core/runtime.

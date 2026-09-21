@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/backend/glide.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/backend/glide.h>
 
 /* Implementation ownership: graphics/backend/glide. */
@@ -12,64 +19,59 @@
    Cross-module calls: GraphicsTexture_SelectPixelFormat [graphics/resources/texture], GraphicsTexture_RegisterSlot
    [graphics/resources/texture].
 */
-GraphicsTextureSet * Glide3_TextureSet_CreateBackend(GraphicsTextureSourceAsset *sourceAsset)
+bool __thandor_cf_preserve_eax_ecx_edx
+Glide3_TextureSet_CreateBackend
+          (GraphicsTextureSet *textureSet,GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *sourceAsset_00;
-  uint uVar1;
-  dword dVar2;
-  GraphicsTextureSet *in_EAX;
-  DDPIXELFORMAT *pDVar3;
-  GraphicsTextureResource *pGVar4;
+  dword dVar1;
+  DDPIXELFORMAT *pDVar2;
   GraphicsTextureResource *texture;
-  word *pwVar5;
-  undefined1 uVar6;
+  bool bVar3;
+  ArenaAllocEaxCf5 AVar4;
   GraphicsTextureSetEntry *pGStack_28;
   AssetSubresourceCount AStack_24;
   GraphicsSubresourceIndex GStack_20;
   
-  sourceAsset_00 = in_EAX->sourceAsset;
-  uVar1 = (sourceAsset_00->tableDescriptor).subresourceTableOffset;
+  sourceAsset_00 = textureSet->sourceAsset;
   AStack_24 = (sourceAsset_00->tableDescriptor).subresourceCount;
-  uVar6 = CARRY4(uVar1,(uint)sourceAsset_00);
-  pwVar5 = (word *)((sourceAsset_00->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   (uVar1 - 0x28));
-  pGStack_28 = in_EAX->entries;
+  pGStack_28 = textureSet->entries;
   GStack_20 = 0;
   do {
-    pDVar3 = GraphicsTexture_SelectPixelFormat(GStack_20,sourceAsset_00);
-    pGVar4 = (*g_MemoryApi.alloc)(0x50);
-    if (!(bool)uVar6) {
-      pGVar4->stagingTexture2 = (IDirect3DTexture2 *)0x0;
-      pGVar4->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
-      pGVar4->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
-      pGStack_28->texture = pGVar4;
-      pGVar4->deviceTexture2 = (IDirect3DTexture2 *)0x0;
-      pGVar4->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-      pGVar4->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-      pGVar4->sourceAsset = sourceAsset_00;
-      pGVar4->subresourceIndex = GStack_20;
-      pGVar4->pixelFormat = pDVar3;
-      dVar2 = g_TextureDownsampleShift;
-      pGVar4->lastUsedCounter = 0;
-      pGVar4->textureHandle = 0;
-      pGVar4->downsampleShift = dVar2;
-      pGVar4 = Glide3_TextureResource_Initialize(pGVar4);
-      GraphicsTexture_RegisterSlot(pGVar4);
-      if ((bool)uVar6) {
-        pGVar4 = Glide3_TextureResource_Release(texture);
-        (*g_MemoryApi.free)(pGVar4);
+    pDVar2 = GraphicsTexture_SelectPixelFormat(GStack_20,sourceAsset_00);
+    AVar4 = (*g_MemoryApi.alloc)(0x50);
+    texture = (GraphicsTextureResource *)AVar4.eax;
+    if (!AVar4.carry) {
+      texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
+      texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
+      texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
+      pGStack_28->texture = texture;
+      texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
+      texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
+      texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
+      texture->sourceAsset = sourceAsset_00;
+      texture->subresourceIndex = GStack_20;
+      texture->pixelFormat = pDVar2;
+      dVar1 = g_TextureDownsampleShift;
+      texture->lastUsedCounter = 0;
+      texture->textureHandle = 0;
+      texture->downsampleShift = dVar1;
+      Glide3_TextureResource_Initialize(texture);
+      bVar3 = GraphicsTexture_RegisterSlot(texture);
+      if (bVar3) {
+        Glide3_TextureResource_Release(texture);
+        (*g_MemoryApi.free)(texture);
         pGStack_28->texture = (GraphicsTextureResource *)0x0;
       }
     }
     GStack_20 = GStack_20 + 1;
     pGStack_28 = pGStack_28 + 1;
-    uVar6 = (word *)0xffffffdf < pwVar5;
-    pwVar5 = pwVar5 + 0x10;
     AStack_24 = AStack_24 - 1;
   } while (AStack_24 != 0);
-  return in_EAX;
+  return false;
 }
+
 
 /* Address: 0x00580430.
    Ownership: graphics/backend/glide.
@@ -77,27 +79,27 @@ GraphicsTextureSet * Glide3_TextureSet_CreateBackend(GraphicsTextureSourceAsset 
    initialized again. Used when Glide texture-memory state must be rebuilt.
    Local calls: Glide3_TextureResource_Release, Glide3_TextureResource_Initialize.
 */
-void __cdecl Glide3_TextureResource_ReinitializeAll(void)
+void __thandor_void_preserve_eax_ecx Glide3_TextureResource_ReinitializeAll(void)
 
 {
   GraphicsTextureResource *texture;
   int textureSlotsRemaining;
-  int extraout_ECX;
   GraphicsTextureResource **textureSlotCursor;
   
   textureSlotsRemaining = 0x1000;
   textureSlotCursor = g_GraphicsTextureSlots;
   do {
-    if (*textureSlotCursor != (GraphicsTextureResource *)0x0) {
-      texture = Glide3_TextureResource_Release(*textureSlotCursor);
+    texture = *textureSlotCursor;
+    if (texture != (GraphicsTextureResource *)0x0) {
+      Glide3_TextureResource_Release(texture);
       Glide3_TextureResource_Initialize(texture);
-      textureSlotsRemaining = extraout_ECX;
     }
     textureSlotCursor = textureSlotCursor + 1;
     textureSlotsRemaining = textureSlotsRemaining + -1;
   } while (textureSlotsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x0057F0C0.
    Ownership: graphics/backend/glide.
@@ -123,207 +125,188 @@ void __cdecl GlideBackend_ShutdownWrapper(void)
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
    DynDLL_Unload [platform/bootstrap/runtime].
 */
-void GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
-               (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
-               GraphicsPixelDimension height,GraphicsPixelDimension width)
+bool __thandor_cf_preserve_eax_ecx_edx
+GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
+          (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
+          GraphicsPixelDimension height,GraphicsPixelDimension width)
 
 {
   void **ppvVar1;
-  D3DDEVICEDESC_DX6 *pDVar2;
+  uint uVar2;
   uint uVar3;
   uint uVar4;
-  HINSTANCE module;
-  dword *pdVar5;
-  dword dVar6;
-  undefined4 uVar7;
-  uint extraout_ECX;
-  dword dVar8;
-  int extraout_ECX_00;
-  int iVar9;
-  D3DDEVICEDESC_DX6 *unaff_ESI;
+  dword dVar5;
+  void *output;
+  GraphicsTextureMemoryAddress GVar6;
+  uint uVar7;
+  int iVar8;
+  GraphicsTextureResidentTmuIndex tmuIndex;
+  dword selectedRefreshRateCode;
   void **destination;
-  dword *pdVar10;
-  GraphicsTextureResource **ppGVar11;
-  undefined1 uVar12;
-  bool bVar13;
-  int iVar14;
-  dword *pdVar15;
+  void *pvVar9;
+  GraphicsTextureResource **ppGVar10;
+  DynDllLoadEaxCf5 DVar11;
+  DynApiResolveEaxCf5 DVar12;
+  ArenaAllocEaxCf5 AVar13;
+  DisplayModeEaxCf5 DVar14;
+  dword *output_00;
   dword resolutionQueryCode;
   
   resolutionQueryCode = 7;
   uVar4 = width | height << 0x10;
-  uVar12 = uVar4 < 0x1e00280;
-  if (uVar4 != 0x1e00280) {
-    resolutionQueryCode = 8;
-    uVar12 = uVar4 < 0x2580320;
-    if (uVar4 != 0x2580320) {
-      resolutionQueryCode = 9;
-      uVar12 = uVar4 < 0x2d003c0;
-      if (uVar4 != 0x2d003c0) {
-        resolutionQueryCode = 0xc;
-        uVar12 = uVar4 < 0x3000400;
-        if (uVar4 != 0x3000400) {
-          resolutionQueryCode = 0xd;
-          uVar12 = uVar4 < 0x4000500;
-          if (uVar4 != 0x4000500) {
-            resolutionQueryCode = 0xe;
-            uVar12 = uVar4 < 0x4b00640;
-            if (uVar4 != 0x4b00640) {
-              return;
+  if (((((uVar4 == 0x1e00280) || (resolutionQueryCode = 8, uVar4 == 0x2580320)) ||
+       (resolutionQueryCode = 9, uVar4 == 0x2d003c0)) ||
+      ((resolutionQueryCode = 0xc, uVar4 == 0x3000400 ||
+       (resolutionQueryCode = 0xd, uVar4 == 0x4000500)))) ||
+     (resolutionQueryCode = 0xe, uVar4 == 0x4b00640)) {
+    DVar11 = DynDLL_Load(dynapi_5);
+    if (!DVar11.carry) {
+      g_GlideRuntimeActiveCount = g_GlideRuntimeActiveCount + 1;
+      destination = (void **)&g_GrAADrawTriangle;
+      do {
+        DVar12 = DynAPI_Resolve(destination,DVar11.moduleOrError,destination[1]);
+        if (DVar12.carry) goto Glide3_ReleaseRuntimeAfterInitializationFailure;
+        ppvVar1 = destination + 3;
+        destination = destination + 2;
+      } while (*ppvVar1 != (void *)0x0);
+      (*g_GrGlideInit)();
+      dVar5._0_2_ = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
+      dVar5._2_2_ = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
+      (*g_GrSstSelect)(dVar5);
+      g_GlideSelectedResolutionQuery = resolutionQueryCode;
+      dVar5 = (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,(void *)0x0);
+      output = (void *)0x19;
+      if (0xf < (int)dVar5) {
+        AVar13 = (*g_MemoryApi.alloc)(dVar5);
+        output = (void *)AVar13.eax;
+        if (!AVar13.carry) {
+          uVar7 = dVar5 >> 4;
+          (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,output);
+          uVar4 = 0;
+          pvVar9 = output;
+          do {
+            uVar2 = *(uint *)((int)pvVar9 + 4);
+            if ((uVar2 < 9) && (uVar3 = *(uint *)(uVar2 * 4 + 0x57ecf0), uVar4 <= uVar3)) {
+              uVar4 = uVar3;
+              selectedRefreshRateCode = uVar2;
             }
+            pvVar9 = (void *)((int)pvVar9 + 0x10);
+            uVar7 = uVar7 - 1;
+          } while (uVar7 != 0);
+          (*g_MemoryApi.free)(output);
+          g_GlideWindowContextHandle =
+               (*g_GrSstWinOpen)((dword)g_MainWindow,resolutionQueryCode,selectedRefreshRateCode,0,0
+                                 ,2,1);
+          output = (void *)0x50;
+          output_00 = &g_GraphicsAdapters[adapterIndex].reserved74;
+          if (g_GlideWindowContextHandle != 0) {
+            (*g_GrGet)(GLIDE_QUERY_SELECTOR_0x13,4,output_00);
+            g_GlideTmuCount = *output_00;
+            g_FramebufferWidth = width;
+            g_FramebufferHeight = height;
+            g_ActiveGraphicsAdapterIndex = adapterIndex;
+            if ((int)g_GlideTmuCount < 1) {
+              g_GlideTmuCount = 1;
+            }
+            else if (0x10 < (int)g_GlideTmuCount) {
+              g_GlideTmuCount = 0x10;
+            }
+            g_DisplayFramebufferAccess.width = width;
+            g_DisplayFramebufferAccess.height = height;
+            g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
+            g_DisplayFramebufferAccess.pixels = (byte *)0x0;
+            g_FramebufferAccess = &g_DisplayFramebufferAccess;
+            g_SoftwarePixelFormatConfig.redMask = 0xf800;
+            g_SoftwarePixelFormatConfig.greenMask = 0x7e0;
+            g_SoftwarePixelFormatConfig.blueMask = 0x1f;
+            g_SoftwarePixelFormatConfig.redShift = 0xb;
+            g_SoftwarePixelFormatConfig.greenShift = 5;
+            g_SoftwarePixelFormatConfig.blueShift = 0;
+            g_SoftwarePixelFormatConfig.redBitCount = 5;
+            g_SoftwarePixelFormatConfig.greenBitCount = 6;
+            g_SoftwarePixelFormatConfig.blueBitCount = 5;
+            g_LastViewportRect.x1 = 0;
+            g_LastViewportRect.y1 = 0;
+            g_LastViewportRect.x2 = 0;
+            g_LastViewportRect.y2 = 0;
+            g_GraphicsFramebufferPresent = Glide3_Framebuffer_Present;
+            g_GraphicsFramebufferCaptureRegion = Glide3_Framebuffer_CaptureRegion;
+            g_GraphicsTextureSourceBlitSourceAlpha = Glide3_TextureSource_BlitSourceAlpha;
+            g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha =
+                 Glide3_TextureSource_BlitIntegerScaledSourceAlpha;
+            g_GraphicsTextureSourceBlitSourceAlphaPaletteBank =
+                 Glide3_TextureSource_BlitSourceAlphaPaletteBank;
+            g_GraphicsTextureSourceBlitModulatedSourceAlpha =
+                 Glide3_TextureSource_BlitModulatedSourceAlpha;
+            g_GraphicsTextureSourceBlitSaturatedAddRgb = Glide3_TextureSource_BlitSaturatedAddRgb;
+            g_GraphicsFramebufferFillRectArgb = Glide3_Framebuffer_FillRectArgb;
+            g_GraphicsTextureSourceBlitHalfSourceRgb = Glide3_TextureSource_BlitHalfSourceRgb;
+            g_GraphicsTextureSourceStretchDirectColorBilinear =
+                 Glide3_TextureSource_StretchDirectColorBilinear;
+            g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
+                 Glide3_TextureSource_BlitHalfRgbSaturatedAdd;
+            (*g_GuGammaCorrectionRGB)(0x3f800000,0x3f800000,0x3f800000);
+            (*g_GrCoordinateSpace)(0);
+            (*g_GrVertexLayout)(1,0,1);
+            (*g_GrVertexLayout)(2,8,1);
+            (*g_GrVertexLayout)(4,0xc,1);
+            (*g_GrVertexLayout)(0x40,0x14,1);
+            (*g_GrVertexLayout)(0x30,0x1c,1);
+            (*g_GrCullMode)(0);
+            (*g_GrDepthBufferMode)(1);
+            (*g_GrDepthBufferFunction)(6);
+            (*g_GrDepthMask)(1);
+            g_GlideDepthWriteEnabledState = 1;
+            tmuIndex = GRAPHICS_TEXTURE_RESIDENT_TMU0;
+            dVar5 = g_GlideTmuCount;
+            do {
+              (*g_GrTexMipMapMode)(tmuIndex,0,0);
+              (*g_GrTexClampMode)(tmuIndex,0,0);
+              (*g_GrTexFilterMode)(tmuIndex,1,1);
+              (*g_GrTexCombine)(tmuIndex,1,1,1,1,0,0);
+              GVar6 = (*g_GrTexMinAddress)(tmuIndex);
+              g_GlideTmuMinAddress[tmuIndex] = GVar6;
+              GVar6 = (*g_GrTexMaxAddress)(tmuIndex);
+              g_GlideTmuMaxAddress[tmuIndex] = GVar6;
+              tmuIndex = tmuIndex + 1;
+              dVar5 = dVar5 - 1;
+            } while (dVar5 != 0);
+            (*g_GrColorCombine)(3,1,0,1,0);
+            (*g_GrAlphaCombine)(3,1,0,1,0);
+            g_GlideTexturingDisabledState = 1;
+            (*g_GrAlphaBlendFunction)(1,7,4,0);
+            g_GlideBlendModeState = 0;
+            g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
+            g_GlideResidentTextureHead = (GraphicsTextureResource *)0x0;
+            g_GlideResidentTextureTail = (GraphicsTextureResource *)g_GlideTmuMinAddress[0];
+            g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
+            DVar14 = (*g_GraphicsDisplayModeFinalizeCf)(adapterIndex,bitsPerPixel,height,width);
+            output = (void *)DVar14.eax;
+            if (!DVar14.carry) {
+              iVar8 = 0x1000;
+              ppGVar10 = g_GraphicsTextureSlots;
+              do {
+                if (*ppGVar10 != (GraphicsTextureResource *)0x0) {
+                  Glide3_TextureResource_Initialize(*ppGVar10);
+                }
+                ppGVar10 = ppGVar10 + 1;
+                iVar8 = iVar8 + -1;
+              } while (iVar8 != 0);
+              return false;
+            }
+            (*g_GrSstWinClose)(g_GlideWindowContextHandle);
           }
         }
       }
-    }
-  }
-  module = DynDLL_Load(dynapi_5);
-  if (!(bool)uVar12) {
-    g_GlideRuntimeActiveCount = g_GlideRuntimeActiveCount + 1;
-    destination = (void **)&g_GrAADrawTriangle;
-    do {
-      DynAPI_Resolve(destination,module,destination[1]);
-      if ((bool)uVar12) goto Glide3_ReleaseRuntimeAfterInitializationFailure;
-      ppvVar1 = destination + 3;
-      uVar12 = 0;
-      destination = destination + 2;
-    } while (*ppvVar1 != (void *)0x0);
-    (*g_GrGlideInit)();
-    uVar7._0_2_ = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
-    uVar7._2_2_ = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
-    (*g_GrSstSelect)(uVar7);
-    g_GlideSelectedResolutionQuery = resolutionQueryCode;
-    uVar4 = (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,0);
-    pdVar5 = (dword *)0x19;
-    bVar13 = uVar4 < 0x10;
-    if ((0xf < (int)uVar4) && (pdVar5 = (*g_MemoryApi.alloc)(uVar4), !bVar13)) {
-      pdVar15 = &g_GlideSelectedResolutionQuery;
-      (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,pdVar5,extraout_ECX >> 4,pdVar5);
-      uVar4 = 0;
-      pdVar10 = pdVar5;
-      do {
-        pDVar2 = (D3DDEVICEDESC_DX6 *)pdVar10[1];
-        if ((pDVar2 < (D3DDEVICEDESC_DX6 *)0x9) &&
-           (uVar3 = *(uint *)((int)pDVar2 * 4 + 0x57ecf0), uVar4 <= uVar3)) {
-          uVar4 = uVar3;
-          unaff_ESI = pDVar2;
-        }
-        pdVar10 = pdVar10 + 4;
-        pdVar15 = (dword *)((int)pdVar15 + -1);
-      } while (pdVar15 != (dword *)0x0);
-      (*g_MemoryApi.free)(pdVar5);
-      g_GlideWindowContextHandle =
-           (*g_GrSstWinOpen)(g_MainWindow,resolutionQueryCode,unaff_ESI,0,0,2,1);
-      pdVar5 = (dword *)0x50;
-      pdVar10 = &g_GraphicsAdapters[adapterIndex].reserved74;
-      if (g_GlideWindowContextHandle != 0) {
-        pdVar5 = (dword *)&k_LowAddressLiteral00000013;
-        (*g_GrGet)(GLIDE_QUERY_SELECTOR_0x13,4,pdVar10,pdVar10);
-        g_GlideTmuCount = *pdVar5;
-        g_FramebufferWidth = width;
-        g_FramebufferHeight = height;
-        g_ActiveGraphicsAdapterIndex = adapterIndex;
-        if ((int)g_GlideTmuCount < 1) {
-          g_GlideTmuCount = 1;
-        }
-        else if (0x10 < (int)g_GlideTmuCount) {
-          g_GlideTmuCount = 0x10;
-        }
-        g_DisplayFramebufferAccess.width = width;
-        g_DisplayFramebufferAccess.height = height;
-        g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
-        g_DisplayFramebufferAccess.pixels = (byte *)0x0;
-        g_FramebufferAccess = &g_DisplayFramebufferAccess;
-        g_SoftwarePixelFormatConfig.redMask = 0xf800;
-        g_SoftwarePixelFormatConfig.greenMask = 0x7e0;
-        g_SoftwarePixelFormatConfig.blueMask = 0x1f;
-        g_SoftwarePixelFormatConfig.redShift = 0xb;
-        g_SoftwarePixelFormatConfig.greenShift = 5;
-        g_SoftwarePixelFormatConfig.blueShift = 0;
-        g_SoftwarePixelFormatConfig.redBitCount = 5;
-        g_SoftwarePixelFormatConfig.greenBitCount = 6;
-        g_SoftwarePixelFormatConfig.blueBitCount = 5;
-        g_LastViewportRect.x1 = 0;
-        g_LastViewportRect.y1 = 0;
-        g_LastViewportRect.x2 = 0;
-        g_LastViewportRect.y2 = 0;
-        g_GraphicsFramebufferPresent = Glide3_Framebuffer_Present;
-        g_GraphicsFramebufferCaptureRegion = Glide3_Framebuffer_CaptureRegion;
-        g_GraphicsTextureSourceBlitSourceAlpha = Glide3_TextureSource_BlitSourceAlpha;
-        g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha =
-             Glide3_TextureSource_BlitIntegerScaledSourceAlpha;
-        g_GraphicsTextureSourceBlitSourceAlphaPaletteBank =
-             Glide3_TextureSource_BlitSourceAlphaPaletteBank;
-        g_GraphicsTextureSourceBlitModulatedSourceAlpha =
-             Glide3_TextureSource_BlitModulatedSourceAlpha;
-        g_GraphicsTextureSourceBlitSaturatedAddRgb = Glide3_TextureSource_BlitSaturatedAddRgb;
-        g_GraphicsFramebufferFillRectArgb = Glide3_Framebuffer_FillRectArgb;
-        g_GraphicsTextureSourceBlitHalfSourceRgb = Glide3_TextureSource_BlitHalfSourceRgb;
-        g_GraphicsTextureSourceStretchDirectColorBilinear =
-             Glide3_TextureSource_StretchDirectColorBilinear;
-        g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
-             Glide3_TextureSource_BlitHalfRgbSaturatedAdd;
-        (*g_GuGammaCorrectionRGB)(0x3f800000,0x3f800000,0x3f800000);
-        (*g_GrCoordinateSpace)(0);
-        (*g_GrVertexLayout)(1,0,1);
-        (*g_GrVertexLayout)(2,8,1);
-        (*g_GrVertexLayout)(4,0xc,1);
-        (*g_GrVertexLayout)(0x40,0x14,1);
-        (*g_GrVertexLayout)(0x30,0x1c,1);
-        (*g_GrCullMode)(0);
-        (*g_GrDepthBufferMode)(1);
-        (*g_GrDepthBufferFunction)(6);
-        (*g_GrDepthMask)(1);
-        g_GlideDepthWriteEnabledState = 1;
-        uVar12 = 0;
-        iVar9 = 0;
-        dVar8 = g_GlideTmuCount;
-        pdVar5 = pdVar10;
-        do {
-          iVar14 = iVar9;
-          (*g_GrTexMipMapMode)(iVar9,0,0);
-          (*g_GrTexClampMode)(iVar9,0,0);
-          (*g_GrTexFilterMode)(iVar9,1,1);
-          (*g_GrTexCombine)(iVar9,1,1,1,1,0,0);
-          dVar6 = (*g_GrTexMinAddress)();
-          g_GlideTmuMinAddress[iVar9] = dVar6;
-          dVar6 = (*g_GrTexMaxAddress)(iVar9);
-          g_GlideTmuMaxAddress[iVar14] = dVar6;
-          iVar9 = iVar14 + 1;
-          dVar8 = dVar8 - 1;
-        } while (dVar8 != 0);
-        (*(code *)g_GrColorCombine)(3,1,0,1,0);
-        (*(code *)g_GrAlphaCombine)(3,1,0,1,0);
-        g_GlideTexturingDisabledState = 1;
-        (*(code *)g_GrAlphaBlendFunction)(1,7,4,0);
-        g_GlideBlendModeState = 0;
-        g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
-        g_GlideResidentTextureHead = (GraphicsTextureResource *)0x0;
-        g_GlideResidentTextureTail = (GraphicsTextureResource *)g_GlideTmuMinAddress[0];
-        g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
-        uVar7 = (*(code *)g_GraphicsDisplayModeFinalizeCf)(adapterIndex,bitsPerPixel,height,width);
-        if (!(bool)uVar12) {
-          iVar9 = 0x1000;
-          ppGVar11 = g_GraphicsTextureSlots;
-          do {
-            if (*ppGVar11 != (GraphicsTextureResource *)0x0) {
-              Glide3_TextureResource_Initialize(*ppGVar11);
-              iVar9 = extraout_ECX_00;
-            }
-            ppGVar11 = ppGVar11 + 1;
-            iVar9 = iVar9 + -1;
-          } while (iVar9 != 0);
-          return;
-        }
-        (*g_GrSstWinClose)(g_GlideWindowContextHandle,uVar7);
-      }
-    }
-    (*g_GrGlideShutdown)(pdVar5);
+      (*g_GrGlideShutdown)(output);
 Glide3_ReleaseRuntimeAfterInitializationFailure:
-    DynDLL_Unload(dynapi_5);
-    g_GlideRuntimeActiveCount = 0;
+      DynDLL_Unload(dynapi_5);
+      g_GlideRuntimeActiveCount = 0;
+    }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0057F7B0.
    Ownership: graphics/backend/glide.
@@ -333,106 +316,106 @@ Glide3_ReleaseRuntimeAfterInitializationFailure:
    Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
    [graphics/render/primitives].
 */
-void Glide3_DrawPrimitiveQueue
-               (sdword coordinate0,sdword coordinate1,sdword coordinate2,sdword coordinate3,
-               GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_DrawPrimitiveQueue
+          (sdword coordinate0,sdword coordinate1,sdword coordinate2,sdword coordinate3,
+          GraphicsPrimitiveQueue *queue)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
   GraphicsTextureSetEntry *pGVar2;
   uint uVar3;
   GraphicsTextureResource *texture;
-  sdword sVar4;
-  GraphicsPrimitivePacket *pGVar5;
+  GraphicsPrimitivePacket *pGVar4;
+  sdword sVar5;
   byte bVar6;
   uint uVar7;
   uint uVar8;
-  undefined1 uVar9;
+  GraphicsPrimitivePacketEaxCf5 GVar9;
   
-  sVar4 = g_GraphicsBackendAccessState;
+  sVar5 = g_GraphicsBackendAccessState;
   LOCK();
   g_GraphicsBackendAccessState = 1;
   UNLOCK();
-  uVar9 = 0;
-  if (sVar4 == 0) {
-    pGVar5 = GraphicsPrimitiveQueue_Begin(queue);
-    while (!(bool)uVar9) {
-      if (pGVar5->vertices[0].screenX < 0x7f0001) {
-        if (pGVar5->vertices[0].screenX < -0x7f0000) {
-          pGVar5->vertices[0].screenX = -0x7f0000;
+  if (sVar5 == 0) {
+    GVar9 = GraphicsPrimitiveQueue_Begin(queue);
+    while (pGVar4 = GVar9.packet, !GVar9.carry) {
+      if (pGVar4->vertices[0].screenX < 0x7f0001) {
+        if (pGVar4->vertices[0].screenX < -0x7f0000) {
+          pGVar4->vertices[0].screenX = -0x7f0000;
         }
       }
       else {
-        pGVar5->vertices[0].screenX = 0x7f0000;
+        pGVar4->vertices[0].screenX = 0x7f0000;
       }
-      if (pGVar5->vertices[1].screenX < 0x7f0001) {
-        if (pGVar5->vertices[1].screenX < -0x7f0000) {
-          pGVar5->vertices[1].screenX = -0x7f0000;
+      if (pGVar4->vertices[1].screenX < 0x7f0001) {
+        if (pGVar4->vertices[1].screenX < -0x7f0000) {
+          pGVar4->vertices[1].screenX = -0x7f0000;
         }
       }
       else {
-        pGVar5->vertices[1].screenX = 0x7f0000;
+        pGVar4->vertices[1].screenX = 0x7f0000;
       }
-      if (pGVar5->vertices[2].screenX < 0x7f0001) {
-        if (pGVar5->vertices[2].screenX < -0x7f0000) {
-          pGVar5->vertices[2].screenX = -0x7f0000;
+      if (pGVar4->vertices[2].screenX < 0x7f0001) {
+        if (pGVar4->vertices[2].screenX < -0x7f0000) {
+          pGVar4->vertices[2].screenX = -0x7f0000;
         }
       }
       else {
-        pGVar5->vertices[2].screenX = 0x7f0000;
+        pGVar4->vertices[2].screenX = 0x7f0000;
       }
-      if (pGVar5->vertices[0].screenY < 0x7f0001) {
-        if (pGVar5->vertices[0].screenY < -0x7f0000) {
-          pGVar5->vertices[0].screenY = -0x7f0000;
+      if (pGVar4->vertices[0].screenY < 0x7f0001) {
+        if (pGVar4->vertices[0].screenY < -0x7f0000) {
+          pGVar4->vertices[0].screenY = -0x7f0000;
         }
       }
       else {
-        pGVar5->vertices[0].screenY = 0x7f0000;
+        pGVar4->vertices[0].screenY = 0x7f0000;
       }
-      if (pGVar5->vertices[1].screenY < 0x7f0001) {
-        if (pGVar5->vertices[1].screenY < -0x7f0000) {
-          pGVar5->vertices[1].screenY = -0x7f0000;
+      if (pGVar4->vertices[1].screenY < 0x7f0001) {
+        if (pGVar4->vertices[1].screenY < -0x7f0000) {
+          pGVar4->vertices[1].screenY = -0x7f0000;
         }
       }
       else {
-        pGVar5->vertices[1].screenY = 0x7f0000;
+        pGVar4->vertices[1].screenY = 0x7f0000;
       }
-      if (pGVar5->vertices[2].screenY < 0x7f0001) {
-        if (pGVar5->vertices[2].screenY < -0x7f0000) {
-          pGVar5->vertices[2].screenY = -0x7f0000;
+      if (pGVar4->vertices[2].screenY < 0x7f0001) {
+        if (pGVar4->vertices[2].screenY < -0x7f0000) {
+          pGVar4->vertices[2].screenY = -0x7f0000;
         }
       }
       else {
-        pGVar5->vertices[2].screenY = 0x7f0000;
+        pGVar4->vertices[2].screenY = 0x7f0000;
       }
-      g_GlideVertex0ScreenX = (dword)(float)pGVar5->vertices[0].screenX;
-      g_GlideVertex0ScreenY = (dword)(float)pGVar5->vertices[0].screenY;
+      g_GlideVertex0ScreenX = (dword)(float)pGVar4->vertices[0].screenX;
+      g_GlideVertex0ScreenY = (dword)(float)pGVar4->vertices[0].screenY;
       if ((float)g_GlideVertex0ScreenX != 0.0) {
         g_GlideVertex0ScreenX = g_GlideVertex0ScreenX + 0xfa000000;
       }
       if ((float)g_GlideVertex0ScreenY != 0.0) {
         g_GlideVertex0ScreenY = g_GlideVertex0ScreenY + 0xfa000000;
       }
-      g_GlideVertex1ScreenX = (dword)(float)pGVar5->vertices[1].screenX;
-      g_GlideVertex1ScreenY = (dword)(float)pGVar5->vertices[1].screenY;
+      g_GlideVertex1ScreenX = (dword)(float)pGVar4->vertices[1].screenX;
+      g_GlideVertex1ScreenY = (dword)(float)pGVar4->vertices[1].screenY;
       if ((float)g_GlideVertex1ScreenX != 0.0) {
         g_GlideVertex1ScreenX = g_GlideVertex1ScreenX + 0xfa000000;
       }
       if ((float)g_GlideVertex1ScreenY != 0.0) {
         g_GlideVertex1ScreenY = g_GlideVertex1ScreenY + 0xfa000000;
       }
-      g_GlideVertex2ScreenX = (dword)(float)pGVar5->vertices[2].screenX;
-      g_GlideVertex2ScreenY = (dword)(float)pGVar5->vertices[2].screenY;
+      g_GlideVertex2ScreenX = (dword)(float)pGVar4->vertices[2].screenX;
+      g_GlideVertex2ScreenY = (dword)(float)pGVar4->vertices[2].screenY;
       if ((float)g_GlideVertex2ScreenX != 0.0) {
         g_GlideVertex2ScreenX = g_GlideVertex2ScreenX + 0xfa000000;
       }
       if ((float)g_GlideVertex2ScreenY != 0.0) {
         g_GlideVertex2ScreenY = g_GlideVertex2ScreenY + 0xfa000000;
       }
-      g_GlideVertex0DiffuseColor = pGVar5->vertices[0].diffuseColor;
-      g_GlideVertex1DiffuseColor = pGVar5->vertices[1].diffuseColor;
-      g_GlideVertex2DiffuseColor = pGVar5->vertices[2].diffuseColor;
-      pGVar2 = pGVar5->textureEntry;
+      g_GlideVertex0DiffuseColor = pGVar4->vertices[0].diffuseColor;
+      g_GlideVertex1DiffuseColor = pGVar4->vertices[1].diffuseColor;
+      g_GlideVertex2DiffuseColor = pGVar4->vertices[2].diffuseColor;
+      pGVar2 = pGVar4->textureEntry;
       if (pGVar2 != (GraphicsTextureSetEntry *)0x0) {
         uVar8 = pGVar2->widthLog2;
         uVar3 = pGVar2->heightLog2;
@@ -441,28 +424,28 @@ void Glide3_DrawPrimitiveQueue
           uVar7 = uVar3;
         }
         bVar6 = (char)uVar7 - (char)uVar8;
-        pGVar1 = &pGVar5->vertices[0].textureU;
+        pGVar1 = &pGVar4->vertices[0].textureU;
         *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-        pGVar1 = &pGVar5->vertices[1].textureU;
+        pGVar1 = &pGVar4->vertices[1].textureU;
         *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-        pGVar1 = &pGVar5->vertices[2].textureU;
+        pGVar1 = &pGVar4->vertices[2].textureU;
         *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
         bVar6 = (char)uVar7 - (char)uVar3;
-        pGVar1 = &pGVar5->vertices[0].textureV;
+        pGVar1 = &pGVar4->vertices[0].textureV;
         *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-        pGVar1 = &pGVar5->vertices[1].textureV;
+        pGVar1 = &pGVar4->vertices[1].textureV;
         *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-        pGVar1 = &pGVar5->vertices[2].textureV;
+        pGVar1 = &pGVar4->vertices[2].textureV;
         *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
       }
-      g_GlideVertex0ReciprocalDepth = (dword)(1.0 / (float)pGVar5->vertices[0].depth);
-      g_GlideVertex1ReciprocalDepth = (dword)(1.0 / (float)pGVar5->vertices[1].depth);
-      g_GlideVertex2ReciprocalDepth = (dword)(1.0 / (float)pGVar5->vertices[2].depth);
-      g_GlideVertex0PerspectiveScale = (dword)(4096.0 / ((float)pGVar5->vertices[0].depth + 4096.0))
+      g_GlideVertex0ReciprocalDepth = (dword)(1.0 / (float)pGVar4->vertices[0].depth);
+      g_GlideVertex1ReciprocalDepth = (dword)(1.0 / (float)pGVar4->vertices[1].depth);
+      g_GlideVertex2ReciprocalDepth = (dword)(1.0 / (float)pGVar4->vertices[2].depth);
+      g_GlideVertex0PerspectiveScale = (dword)(4096.0 / ((float)pGVar4->vertices[0].depth + 4096.0))
       ;
-      g_GlideVertex1PerspectiveScale = (dword)(4096.0 / ((float)pGVar5->vertices[1].depth + 4096.0))
+      g_GlideVertex1PerspectiveScale = (dword)(4096.0 / ((float)pGVar4->vertices[1].depth + 4096.0))
       ;
-      g_GlideVertex2PerspectiveScale = (dword)(4096.0 / ((float)pGVar5->vertices[2].depth + 4096.0))
+      g_GlideVertex2PerspectiveScale = (dword)(4096.0 / ((float)pGVar4->vertices[2].depth + 4096.0))
       ;
       if ((float)g_GlideVertex0ReciprocalDepth != 0.0) {
         g_GlideVertex0ReciprocalDepth = g_GlideVertex0ReciprocalDepth + 0xf000000;
@@ -474,9 +457,9 @@ void Glide3_DrawPrimitiveQueue
         g_GlideVertex2ReciprocalDepth = g_GlideVertex2ReciprocalDepth + 0xf000000;
       }
       g_GlideVertex0ProjectedTextureU =
-           (dword)((float)pGVar5->vertices[0].textureU * (float)g_GlideVertex0PerspectiveScale);
+           (dword)((float)pGVar4->vertices[0].textureU * (float)g_GlideVertex0PerspectiveScale);
       g_GlideVertex0ProjectedTextureV =
-           (dword)((float)pGVar5->vertices[0].textureV * (float)g_GlideVertex0PerspectiveScale);
+           (dword)((float)pGVar4->vertices[0].textureV * (float)g_GlideVertex0PerspectiveScale);
       if ((float)g_GlideVertex0ProjectedTextureU != 0.0) {
         g_GlideVertex0ProjectedTextureU = g_GlideVertex0ProjectedTextureU + 0xfa000000;
       }
@@ -484,9 +467,9 @@ void Glide3_DrawPrimitiveQueue
         g_GlideVertex0ProjectedTextureV = g_GlideVertex0ProjectedTextureV + 0xfa000000;
       }
       g_GlideVertex1ProjectedTextureU =
-           (dword)((float)pGVar5->vertices[1].textureU * (float)g_GlideVertex1PerspectiveScale);
+           (dword)((float)pGVar4->vertices[1].textureU * (float)g_GlideVertex1PerspectiveScale);
       g_GlideVertex1ProjectedTextureV =
-           (dword)((float)pGVar5->vertices[1].textureV * (float)g_GlideVertex1PerspectiveScale);
+           (dword)((float)pGVar4->vertices[1].textureV * (float)g_GlideVertex1PerspectiveScale);
       if ((float)g_GlideVertex1ProjectedTextureU != 0.0) {
         g_GlideVertex1ProjectedTextureU = g_GlideVertex1ProjectedTextureU + 0xfa000000;
       }
@@ -494,37 +477,37 @@ void Glide3_DrawPrimitiveQueue
         g_GlideVertex1ProjectedTextureV = g_GlideVertex1ProjectedTextureV + 0xfa000000;
       }
       g_GlideVertex2ProjectedTextureU =
-           (dword)((float)pGVar5->vertices[2].textureU * (float)g_GlideVertex2PerspectiveScale);
+           (dword)((float)pGVar4->vertices[2].textureU * (float)g_GlideVertex2PerspectiveScale);
       g_GlideVertex2ProjectedTextureV =
-           (dword)((float)pGVar5->vertices[2].textureV * (float)g_GlideVertex2PerspectiveScale);
+           (dword)((float)pGVar4->vertices[2].textureV * (float)g_GlideVertex2PerspectiveScale);
       if ((float)g_GlideVertex2ProjectedTextureU != 0.0) {
         g_GlideVertex2ProjectedTextureU = g_GlideVertex2ProjectedTextureU + 0xfa000000;
       }
       if ((float)g_GlideVertex2ProjectedTextureV != 0.0) {
         g_GlideVertex2ProjectedTextureV = g_GlideVertex2ProjectedTextureV + 0xfa000000;
       }
-      uVar8 = pGVar5->renderFlags;
-      if (((uVar8 & 0x10000) == 0) || (pGVar5->textureEntry == (GraphicsTextureSetEntry *)0x0)) {
+      uVar8 = pGVar4->renderFlags;
+      if (((uVar8 & 0x10000) == 0) || (pGVar4->textureEntry == (GraphicsTextureSetEntry *)0x0)) {
         if (g_GlideTexturingDisabledState != 0)
         goto Glide3_DrawPrimitiveQueue_ConfigureUntexturedColorAndAlphaCombine;
       }
       else {
-        texture = pGVar5->textureEntry->texture;
+        texture = pGVar4->textureEntry->texture;
         if (((int)texture->residentTmuIndex < 0) &&
            (Glide3_TextureResource_EnsureResident(texture), (int)texture->residentTmuIndex < 0)) {
 Glide3_DrawPrimitiveQueue_ConfigureUntexturedColorAndAlphaCombine:
-          (*(code *)g_GrColorCombine)(1,0,0,2,0);
-          (*(code *)g_GrAlphaCombine)(1,0,0,2,0);
+          (*g_GrColorCombine)(1,0,0,2,0);
+          (*g_GrAlphaCombine)(1,0,0,2,0);
         }
         else {
           if (g_GlideBoundTexture != texture) {
             g_GlideBoundTexture = texture;
-            (*(code *)g_GrTexSource)
-                      (texture->residentTmuIndex,texture->residentAddress,3,&texture->glideInfo);
+            (*g_GrTexSource)(texture->residentTmuIndex,texture->residentAddress,3,
+                             &texture->glideInfo);
           }
           if (g_GlideTexturingDisabledState == 0) {
-            (*(code *)g_GrColorCombine)(3,1,0,1,0);
-            (*(code *)g_GrAlphaCombine)(3,1,0,1,0);
+            (*g_GrColorCombine)(3,1,0,1,0);
+            (*g_GrAlphaCombine)(3,1,0,1,0);
           }
         }
       }
@@ -536,43 +519,39 @@ Glide3_DrawPrimitiveQueue_ConfigureUntexturedColorAndAlphaCombine:
       }
       if (uVar8 == 0x2000) {
         if (g_GlideBlendModeState != 1) {
-          (*(code *)g_GrAlphaBlendFunction)(4,4,4,0);
+          (*g_GrAlphaBlendFunction)(4,4,4,0);
           g_GlideBlendModeState = 1;
         }
       }
       else if (uVar8 == 0) {
         if (g_GlideBlendModeState != 2) {
-          (*(code *)g_GrAlphaBlendFunction)(4,0,4,0);
+          (*g_GrAlphaBlendFunction)(4,0,4,0);
           g_GlideBlendModeState = 2;
         }
       }
       else if (g_GlideBlendModeState != 0) {
-        (*(code *)g_GrAlphaBlendFunction)(1,5,4,0);
+        (*g_GrAlphaBlendFunction)(1,5,4,0);
         g_GlideBlendModeState = 0;
       }
       if ((uVar8 == 0x2000) || (uVar8 == 0x1000)) {
-        uVar9 = 0;
         if (g_GlideDepthWriteEnabledState != 0) {
           (*g_GrDepthMask)(0);
           g_GlideDepthWriteEnabledState = 0;
         }
       }
-      else {
-        uVar9 = 0;
-        if (g_GlideDepthWriteEnabledState == 0) {
-          (*g_GrDepthMask)(1);
-          g_GlideDepthWriteEnabledState = 1;
-        }
+      else if (g_GlideDepthWriteEnabledState == 0) {
+        (*g_GrDepthMask)(1);
+        g_GlideDepthWriteEnabledState = 1;
       }
-      (*(code *)g_GrDrawTriangle)
-                (&g_GlideVertex2ScreenX,&g_GlideVertex1ScreenX,&g_GlideVertex0ScreenX);
+      (*g_GrDrawTriangle)(&g_GlideVertex2ScreenX,&g_GlideVertex1ScreenX,&g_GlideVertex0ScreenX);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
-      pGVar5 = GraphicsPrimitiveQueue_Next(queue);
+      GVar9 = GraphicsPrimitiveQueue_Next(queue);
     }
     g_GraphicsBackendAccessState = 0;
   }
   return;
 }
+
 
 /* Address: 0x005802F0.
    Ownership: graphics/backend/glide.
@@ -582,45 +561,45 @@ Glide3_DrawPrimitiveQueue_ConfigureUntexturedColorAndAlphaCombine:
    Local calls: Glide3_TextureResource_Release.
    Cross-module calls: GraphicsTextureSet_FreeMetadata [graphics/resources/texture].
 */
-GraphicsTextureSourceAsset * Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
+Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsTextureSet *set)
 
 {
+  GraphicsTextureResource *texture;
   GraphicsTextureResource **ppGVar1;
   GraphicsTextureSourceAsset *pGVar2;
-  GraphicsTextureResource *pGVar3;
-  int iVar4;
-  int extraout_EDX;
-  int unaff_EBX;
-  undefined4 *puVar5;
+  int iVar3;
+  dword dVar4;
+  GraphicsTextureSetEntry *pGVar5;
   GraphicsTextureResource **ppGVar6;
   
   pGVar2 = (GraphicsTextureSourceAsset *)0x0;
-  if (unaff_EBX != 0) {
-    iVar4 = *(int *)(unaff_EBX + 4);
-    puVar5 = (undefined4 *)(unaff_EBX + 8);
+  if (setRegisterMirror != (GraphicsTextureSet *)0x0) {
+    dVar4 = setRegisterMirror->subresourceCount;
+    pGVar5 = setRegisterMirror->entries;
     do {
-      pGVar3 = (GraphicsTextureResource *)*puVar5;
-      if (pGVar3 != (GraphicsTextureResource *)0x0) {
-        iVar4 = 0x1000;
+      texture = pGVar5->texture;
+      if (texture != (GraphicsTextureResource *)0x0) {
+        iVar3 = 0x1000;
         ppGVar1 = g_GraphicsTextureSlots;
         do {
           ppGVar6 = ppGVar1;
-          if (pGVar3 == *ppGVar6) break;
-          iVar4 = iVar4 + -1;
+          if (texture == *ppGVar6) break;
+          iVar3 = iVar3 + -1;
           ppGVar1 = ppGVar6 + 1;
-        } while (iVar4 != 0);
+        } while (iVar3 != 0);
         *ppGVar6 = (GraphicsTextureResource *)0x0;
-        pGVar3 = Glide3_TextureResource_Release(pGVar3);
-        (*g_MemoryApi.free)(pGVar3);
-        iVar4 = extraout_EDX;
+        Glide3_TextureResource_Release(texture);
+        (*g_MemoryApi.free)(texture);
       }
-      puVar5 = puVar5 + 8;
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      pGVar5 = pGVar5 + 1;
+      dVar4 = dVar4 - 1;
+    } while (dVar4 != 0);
     pGVar2 = GraphicsTextureSet_FreeMetadata(set);
   }
   return pGVar2;
 }
+
 
 /* Address: 0x00580470.
    Ownership: graphics/backend/glide.
@@ -628,7 +607,8 @@ GraphicsTextureSourceAsset * Glide3_TextureSet_DestroyBackend(GraphicsTextureSet
    and serializes access through g_GraphicsBackendAccessState.
    Local calls: Glide3_Cursor_ComposeBeforePresent.
 */
-void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 {
   SoftwareFramebufferAccess *pSVar1;
@@ -663,7 +643,7 @@ void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   UNLOCK();
   if (sVar2 == 0) {
     (*g_GrFinish)();
-    (*(code *)g_GrBufferSwap)(1);
+    (*g_GrBufferSwap)(1);
     g_GraphicsBackendAccessState = g_GraphicsBackendAccessState + -1;
   }
   sVar4 = g_CursorCurrentDrawY;
@@ -689,47 +669,44 @@ void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   return;
 }
 
+
 /* Address: 0x0057EE90.
    Ownership: graphics/backend/glide.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
    DynDLL_Unload [platform/bootstrap/runtime], Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-dword __cdecl Glide3_InitAndEnumerate(void)
+bool __thandor_void_preserve_ecx_edx Glide3_InitAndEnumerate(void)
 
 {
   void **ppvVar1;
-  HINSTANCE module;
-  void *pvVar2;
-  undefined4 uVar3;
   byte *source;
-  dword dVar4;
-  int *memory;
-  FrontendDisplayDimensionPixels FVar5;
-  uint extraout_ECX;
-  uint uVar6;
-  FrontendDisplayDimensionPixels FVar7;
-  int *piVar8;
-  void **destination;
-  GraphicsAdapterRecord *pGVar9;
-  GraphicsDisplayMode *pGVar10;
-  bool bVar11;
   byte *source_00;
-  int local_20;
+  dword dVar2;
+  int *output;
+  FrontendDisplayDimensionPixels FVar3;
+  uint uVar4;
+  FrontendDisplayDimensionPixels FVar5;
+  int *piVar6;
+  void **destination;
+  GraphicsAdapterRecord *pGVar7;
+  GraphicsDisplayMode *pGVar8;
+  DynDllLoadEaxCf5 DVar9;
+  DynApiResolveEaxCf5 DVar10;
+  ArenaAllocEaxCf5 AVar11;
+  dword local_20;
   int local_1c;
   
-  bVar11 = &stack0xffffffe8 < (undefined1 *)0x8;
-  module = DynDLL_Load(dynapi_5);
-  if (bVar11) {
-    return (dword)module;
+  DVar9 = DynDLL_Load(dynapi_5);
+  if (DVar9.carry) {
+    return true;
   }
   destination = (void **)&g_GrAADrawTriangle;
   do {
-    bVar11 = false;
-    pvVar2 = DynAPI_Resolve(destination,module,destination[1]);
-    if (bVar11) {
+    DVar10 = DynAPI_Resolve(destination,DVar9.moduleOrError,destination[1]);
+    if (DVar10.carry) {
       DynDLL_Unload(dynapi_5);
-      return (dword)pvVar2;
+      return true;
     }
     ppvVar1 = destination + 3;
     destination = destination + 2;
@@ -741,58 +718,60 @@ dword __cdecl Glide3_InitAndEnumerate(void)
       if (0xf < g_GraphicsAdapterCount) break;
       (*g_GrGlideInit)();
       (*g_GrSstSelect)(local_20);
-      uVar3 = (*g_GrGetString)(0xa2);
-      source_00 = (byte *)0xa1;
-      source = (byte *)(*g_GrGetString)(0xa1,uVar3);
-      pGVar9 = g_GraphicsAdapters + g_GraphicsAdapterCount;
-      Text_CopyNarrowToUtf16Cf(0x28,pGVar9->driverDescriptionUtf16,source);
-      Text_CopyNarrowToUtf16Cf(0x28,pGVar9->deviceNameUtf16,source_00);
-      (pGVar9->adapterGuid).Data1 = 1;
-      (pGVar9->adapterGuid).Data2 = (undefined2)local_20;
-      (pGVar9->adapterGuid).Data3 = local_20._2_2_;
-      (pGVar9->deviceGuid).Data1 = 1;
-      dVar4 = (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,0);
-      bVar11 = false;
-      if ((dVar4 != 0) && (memory = (*g_MemoryApi.alloc)(dVar4), !bVar11)) {
-        uVar6 = extraout_ECX >> 4;
-        (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,memory);
-        pGVar10 = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
-        piVar8 = memory;
-        do {
-          if (0xff < g_GraphicsDisplayModeCount) break;
-          FVar5 = 0x280;
-          FVar7 = 0x1e0;
-          if (*piVar8 == 7) {
+      source = (byte *)(*g_GrGetString)(0xa2);
+      source_00 = (byte *)(*g_GrGetString)(0xa1);
+      pGVar7 = g_GraphicsAdapters + g_GraphicsAdapterCount;
+      Text_CopyNarrowToUtf16Cf(0x28,pGVar7->driverDescriptionUtf16,source_00);
+      Text_CopyNarrowToUtf16Cf(0x28,pGVar7->deviceNameUtf16,source);
+      (pGVar7->adapterGuid).Data1 = 1;
+      (pGVar7->adapterGuid).Data2 = (undefined2)local_20;
+      (pGVar7->adapterGuid).Data3 = local_20._2_2_;
+      (pGVar7->deviceGuid).Data1 = 1;
+      dVar2 = (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,(void *)0x0);
+      if (dVar2 != 0) {
+        AVar11 = (*g_MemoryApi.alloc)(dVar2);
+        output = (int *)AVar11.eax;
+        if (!AVar11.carry) {
+          uVar4 = dVar2 >> 4;
+          (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,output);
+          pGVar8 = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
+          piVar6 = output;
+          do {
+            if (0xff < g_GraphicsDisplayModeCount) break;
+            FVar3 = 0x280;
+            FVar5 = 0x1e0;
+            if (*piVar6 == 7) {
 Glide3_AppendEnumeratedDisplayMode:
-            pGVar10->width = FVar5;
-            pGVar10->height = FVar7;
-            dVar4 = g_GraphicsAdapterCount;
-            pGVar10->bitsPerPixel = 0x10;
-            pGVar10->adapterIndex = dVar4;
-            g_GraphicsDisplayModeCount = g_GraphicsDisplayModeCount + 1;
-            pGVar10 = pGVar10 + 1;
-          }
-          else {
-            FVar5 = 800;
-            FVar7 = 600;
-            if (*piVar8 == 8) goto Glide3_AppendEnumeratedDisplayMode;
-            FVar5 = 0x3c0;
-            FVar7 = 0x2d0;
-            if (*piVar8 == 9) goto Glide3_AppendEnumeratedDisplayMode;
-            FVar5 = 0x400;
-            FVar7 = 0x300;
-            if (*piVar8 == 0xc) goto Glide3_AppendEnumeratedDisplayMode;
-            FVar5 = 0x500;
-            FVar7 = 0x400;
-            if (*piVar8 == 0xd) goto Glide3_AppendEnumeratedDisplayMode;
-            FVar5 = 0x640;
-            FVar7 = 0x4b0;
-            if (*piVar8 == 0xe) goto Glide3_AppendEnumeratedDisplayMode;
-          }
-          piVar8 = piVar8 + 4;
-          uVar6 = uVar6 - 1;
-        } while (uVar6 != 0);
-        (*g_MemoryApi.free)(memory);
+              pGVar8->width = FVar3;
+              pGVar8->height = FVar5;
+              dVar2 = g_GraphicsAdapterCount;
+              pGVar8->bitsPerPixel = 0x10;
+              pGVar8->adapterIndex = dVar2;
+              g_GraphicsDisplayModeCount = g_GraphicsDisplayModeCount + 1;
+              pGVar8 = pGVar8 + 1;
+            }
+            else {
+              FVar3 = 800;
+              FVar5 = 600;
+              if (*piVar6 == 8) goto Glide3_AppendEnumeratedDisplayMode;
+              FVar3 = 0x3c0;
+              FVar5 = 0x2d0;
+              if (*piVar6 == 9) goto Glide3_AppendEnumeratedDisplayMode;
+              FVar3 = 0x400;
+              FVar5 = 0x300;
+              if (*piVar6 == 0xc) goto Glide3_AppendEnumeratedDisplayMode;
+              FVar3 = 0x500;
+              FVar5 = 0x400;
+              if (*piVar6 == 0xd) goto Glide3_AppendEnumeratedDisplayMode;
+              FVar3 = 0x640;
+              FVar5 = 0x4b0;
+              if (*piVar6 == 0xe) goto Glide3_AppendEnumeratedDisplayMode;
+            }
+            piVar6 = piVar6 + 4;
+            uVar4 = uVar4 - 1;
+          } while (uVar4 != 0);
+          (*g_MemoryApi.free)(output);
+        }
       }
       (*g_GrGlideShutdown)();
       g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
@@ -800,31 +779,34 @@ Glide3_AppendEnumeratedDisplayMode:
       local_1c = local_1c + -1;
     } while (local_1c != 0);
   }
-  dVar4 = DynDLL_Unload(dynapi_5);
-  return dVar4;
+  DynDLL_Unload(dynapi_5);
+  return false;
 }
+
 
 /* Address: 0x0057F0D0.
    Ownership: graphics/backend/glide.
    Purpose: Glide backend begin-scene wrapper. It saves and restores EAX, EBX, ECX, EDX, EDI, and ESI, performs no
    operation, and preserves incoming flags.
 */
-void __cdecl GlideBackend_BeginSceneNoOp(void)
+void __thandor_void_preserve_eax_ecx_edx GlideBackend_BeginSceneNoOp(void)
 
 {
   return;
 }
+
 
 /* Address: 0x0057F0E0.
    Ownership: graphics/backend/glide.
    Purpose: Glide backend end-scene wrapper recovered from a missed function slot. It saves and restores EAX, EBX,
    ECX, EDX, EDI, and ESI, performs no operation, and preserves incoming flags.
 */
-void __cdecl GlideBackend_EndSceneNoOp(void)
+void __thandor_void_preserve_eax_ecx_edx GlideBackend_EndSceneNoOp(void)
 
 {
   return;
 }
+
 
 /* Address: 0x0057F740.
    Ownership: graphics/backend/glide.
@@ -833,21 +815,22 @@ void __cdecl GlideBackend_EndSceneNoOp(void)
    coordinate3→GraphicsScreenCoordinate_V307. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void Glide3_ClearViewport
-               (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
-               GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_ClearViewport
+          (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
+          GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3)
 
 {
   if (g_GlideDepthWriteEnabledState == 0) {
     (*g_GrDepthMask)(1);
     g_GlideDepthWriteEnabledState = 1;
   }
-  (*g_GrViewport)(coordinate3,coordinate2,coordinate1 - coordinate3,coordinate0 - coordinate2,
-                  coordinate3,coordinate2,coordinate1,coordinate0);
-  (*g_GrClipWindow)();
+  (*g_GrViewport)(coordinate3,coordinate2,coordinate1 - coordinate3,coordinate0 - coordinate2);
+  (*g_GrClipWindow)(coordinate3,coordinate2,coordinate1,coordinate0);
   (*g_GrBufferClear)(0,0,0);
   return;
 }
+
 
 /* Address: 0x00580370.
    Ownership: graphics/backend/glide.
@@ -855,24 +838,22 @@ void Glide3_ClearViewport
    subresourceIndex is mirrored in ECX and on the stack. The implementation consumes ECX and reads set from the
    second stack argument.
 */
-void Glide3_TextureSet_RefreshColor
-               (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
-  int in_ECX;
-  int extraout_EDX;
+  GraphicsTextureResource *arg0;
   GraphicsTextureResource *textureResource;
   
-  textureResource = set->entries[in_ECX].texture;
-  (*g_GlideTextureColorUpload[textureResource->downsampleShift])(textureResource);
-  if (-1 < *(int *)(extraout_EDX + 0x44)) {
-    (*g_GrTexDownloadMipMap)
-              (*(undefined4 *)(extraout_EDX + 0x44),*(undefined4 *)(extraout_EDX + 0x48),3,
-               extraout_EDX + 0x30);
+  arg0 = set->entries[subresourceIndex].texture;
+  (*g_GlideTextureColorUpload[arg0->downsampleShift])(arg0);
+  if (-1 < (int)arg0->residentTmuIndex) {
+    (*g_GrTexDownloadMipMap)(arg0->residentTmuIndex,arg0->residentAddress,3,&arg0->glideInfo);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
 }
+
 
 /* Address: 0x005803D0.
    Ownership: graphics/backend/glide.
@@ -880,24 +861,22 @@ void Glide3_TextureSet_RefreshColor
    subresourceIndex is mirrored in ECX and on the stack. The implementation consumes ECX and reads set from the
    second stack argument.
 */
-void Glide3_TextureSet_RefreshAlpha
-               (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
-  int in_ECX;
-  int extraout_EDX;
+  GraphicsTextureResource *arg0;
   GraphicsTextureResource *textureResource;
   
-  textureResource = set->entries[in_ECX].texture;
-  (*g_GlideTextureAlphaUpload[textureResource->downsampleShift])(textureResource);
-  if (-1 < *(int *)(extraout_EDX + 0x44)) {
-    (*g_GrTexDownloadMipMap)
-              (*(undefined4 *)(extraout_EDX + 0x44),*(undefined4 *)(extraout_EDX + 0x48),3,
-               extraout_EDX + 0x30);
+  arg0 = set->entries[subresourceIndex].texture;
+  (*g_GlideTextureAlphaUpload[arg0->downsampleShift])(arg0);
+  if (-1 < (int)arg0->residentTmuIndex) {
+    (*g_GrTexDownloadMipMap)(arg0->residentTmuIndex,arg0->residentAddress,3,&arg0->glideInfo);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
 }
+
 
 /* Address: 0x00580540.
    Ownership: graphics/backend/glide.
@@ -906,7 +885,7 @@ void Glide3_TextureSet_RefreshAlpha
    0x220. sourceEntry uses paletteIndex=-1, dataOffset=0x220, originX=originY=0, and logical/pixel dimensions equal
    to the capture dimensions. ABI: CF clear means success. CF set means failure.
 */
-GraphicsCapturedTextureSourceAsset *
+GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 Glide3_Framebuffer_CaptureRegion
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
@@ -916,27 +895,33 @@ Glide3_Framebuffer_CaptureRegion
   GraphicsCapturedTextureSourceAsset *pGVar2;
   dword dVar3;
   int iVar4;
-  int extraout_ECX;
-  int iVar5;
   AssetAllocationSizeBytes extraout_EDX;
+  ushort *puVar5;
   GraphicsCapturedTextureSourceAsset *pGVar6;
   dword *pdVar7;
-  bool bVar8;
-  ushort *puVar9;
+  GraphicsFramebufferCaptureEaxCf5 GVar8;
+  dword buffer;
+  GraphicsPixelDimension width;
+  GraphicsPixelDimension height;
+  ushort *destinationPixels;
   
-  iVar4 = (int)((longlong)(int)captureWidth * (longlong)(int)captureHeight);
-  bVar8 = (longlong)iVar4 != (longlong)(int)captureWidth * (longlong)(int)captureHeight;
-  pGVar2 = (*g_MemoryApi.alloc)(iVar4 * 4 + 0x220);
-  if (!bVar8) {
-    iVar4 = (int)pGVar2->argb8888Pixels + extraout_ECX * 2;
+  iVar4 = captureWidth * captureHeight;
+  GVar8 = (GraphicsFramebufferCaptureEaxCf5)(*g_MemoryApi.alloc)(iVar4 * 4 + 0x220);
+  pGVar2 = GVar8.eax;
+  if (!GVar8.carry) {
+    destinationPixels = (ushort *)((int)pGVar2->argb8888Pixels + iVar4 * 2);
+    dVar3 = captureWidth * 2;
     pGVar6 = pGVar2;
-    for (iVar5 = extraout_ECX + 0x88; iVar5 != 0; iVar5 = iVar5 + -1) {
+    for (iVar4 = iVar4 + 0x88; iVar4 != 0; iVar4 = iVar4 + -1) {
       (pGVar6->common).magic = 0;
       pGVar6 = (GraphicsCapturedTextureSourceAsset *)&(pGVar6->common).allocationSizeBytes;
     }
-    puVar9 = (ushort *)0x1;
-    (*g_GrFinish)(1,sourceX,sourceY,captureWidth,captureHeight,captureWidth * 2,iVar4,iVar4);
-    (*(code *)g_GrLfbReadRegion)();
+    buffer = 1;
+    width = captureWidth;
+    height = captureHeight;
+    puVar5 = destinationPixels;
+    (*g_GrFinish)();
+    (*g_GrLfbReadRegion)(buffer,sourceX,sourceY,width,height,dVar3,destinationPixels);
     (pGVar2->common).magic = ASSET_MAGIC_GFX;
     (pGVar2->common).allocationSizeBytes = extraout_EDX;
     (pGVar2->common).formatVersion = 1;
@@ -966,16 +951,18 @@ Glide3_Framebuffer_CaptureRegion
     pdVar7 = pGVar2->argb8888Pixels;
     iVar4 = captureWidth * captureHeight;
     do {
-      uVar1 = *puVar9;
+      uVar1 = *puVar5;
       *pdVar7 = (((((uVar1 >> 0xb | 0x1fe0) << 3 | (uint)(uVar1 >> 0xd)) << 6 | (uVar1 & 0x7ff) >> 5
                   ) << 2 | (uVar1 & 0x7ff) >> 9) << 5 | uVar1 & 0x1f) << 3 | (uVar1 & 0x1f) >> 2;
-      puVar9 = puVar9 + 1;
+      puVar5 = puVar5 + 1;
       pdVar7 = pdVar7 + 1;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
+    GVar8 = (GraphicsFramebufferCaptureEaxCf5)((uint5)GVar8 & 0xffffffff);
   }
-  return pGVar2;
+  return GVar8;
 }
+
 
 /* Address: 0x005806E0.
    Ownership: graphics/backend/glide.
@@ -995,7 +982,7 @@ void Glide3_Cursor_RestoreAfterPresentNoOp(IDirectDrawSurface3 *backSurfaceSenti
    0x0A selects RGB565-style packing and 0x0C selects ARGB4444-style packing. This variant preserves the source
    dimensions.
 */
-void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *pGVar1;
@@ -1090,6 +1077,7 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
   return;
 }
 
+
 /* Address: 0x00580960.
    Ownership: graphics/backend/glide.
    Purpose: Converts the selected gfx subresource into the two-byte Glide CPU upload buffer. Indexed entries read
@@ -1097,7 +1085,7 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
    0x0A selects RGB565-style packing and 0x0C selects ARGB4444-style packing. This variant reduces each dimension
    by 2 and averages each 2x2 source block before packing.
 */
-void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *pGVar1;
@@ -1368,6 +1356,7 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
   return;
 }
 
+
 /* Address: 0x00580C60.
    Ownership: graphics/backend/glide.
    Purpose: Converts the selected gfx subresource into the two-byte Glide CPU upload buffer. Indexed entries read
@@ -1375,7 +1364,7 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
    0x0A selects RGB565-style packing and 0x0C selects ARGB4444-style packing. This variant reduces each dimension
    by 4 and averages each 4x4 source block before packing.
 */
-void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *pGVar1;
@@ -1645,6 +1634,142 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
   return;
 }
 
+
+/* Address: 0x00580F60.
+   Ownership: graphics/backend/glide.
+   Purpose: Fills Glide texture data with the recovered constant 0x0FFF pattern.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture)
+
+{
+  GraphicsTextureSourceAsset *pGVar1;
+  int iVar2;
+  int iVar3;
+  ushort *glideDataCursor;
+  ushort *nextGlideDataCursor;
+  int iStack_28;
+  int iStack_24;
+  
+  pGVar1 = texture->sourceAsset;
+  glideDataCursor = (texture->glideInfo).data;
+  iVar3 = texture->subresourceIndex * 0x20 + (pGVar1->tableDescriptor).subresourceTableOffset;
+  iVar2 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + iVar3 + -0x10);
+  iStack_24 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + iVar3 + -0xc);
+  iStack_28 = iVar2;
+  do {
+    do {
+      nextGlideDataCursor = glideDataCursor + 1;
+      *glideDataCursor = 0xfff;
+      iStack_28 = iStack_28 + -1;
+      glideDataCursor = nextGlideDataCursor;
+    } while (iStack_28 != 0);
+    iStack_24 = iStack_24 + -1;
+    iStack_28 = iVar2;
+  } while (iStack_24 != 0);
+  return;
+}
+
+/* Address: 0x00580FF0.
+   Ownership: graphics/backend/glide.
+   Purpose: Downsamples alpha samples into white ARGB4444 texels in the dormant Glide path.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
+
+{
+  GraphicsTextureSourceAsset *pGVar1;
+  byte bVar2;
+  uint downsampledWidth;
+  int subresourceRecordOffset;
+  ushort *sourcePairCursor;
+  ushort *glideDataCursor;
+  uint remainingColumns;
+  uint remainingRows;
+  
+  pGVar1 = texture->sourceAsset;
+  glideDataCursor = (texture->glideInfo).data;
+  subresourceRecordOffset =
+       texture->subresourceIndex * 0x20 + (pGVar1->tableDescriptor).subresourceTableOffset;
+  sourcePairCursor =
+       (ushort *)
+       ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+       *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+               subresourceRecordOffset + -0x1c) + -0x28);
+  downsampledWidth =
+       *(uint *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                subresourceRecordOffset + -0x10) >> 1;
+  remainingRows =
+       *(uint *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                subresourceRecordOffset + -0xc) >> 1;
+  remainingColumns = downsampledWidth;
+  do {
+    do {
+      bVar2 = (byte)*sourcePairCursor >> 2;
+      *glideDataCursor =
+           CONCAT11((byte)(*sourcePairCursor >> 10) + bVar2 +
+                    (byte)(sourcePairCursor[downsampledWidth] >> 10) +
+                    ((byte)sourcePairCursor[downsampledWidth] >> 2),bVar2) | 0xfff;
+      sourcePairCursor = sourcePairCursor + 1;
+      glideDataCursor = glideDataCursor + 1;
+      remainingColumns = remainingColumns - 1;
+    } while (remainingColumns != 0);
+    sourcePairCursor = sourcePairCursor + downsampledWidth;
+    remainingRows = remainingRows - 1;
+    remainingColumns = downsampledWidth;
+  } while (remainingRows != 0);
+  return;
+}
+
+/* Address: 0x005810A0.
+   Ownership: graphics/backend/glide.
+   Purpose: Downsamples alternating alpha samples into white ARGB4444 texels in the dormant Glide path.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureResource *texture)
+
+{
+  GraphicsTextureSourceAsset *pGVar1;
+  uint downsampledWidth;
+  int subresourceRecordOffset;
+  byte *sourceByteCursor;
+  ushort *glideDataCursor;
+  uint remainingColumns;
+  uint remainingRows;
+  
+  pGVar1 = texture->sourceAsset;
+  glideDataCursor = (texture->glideInfo).data;
+  subresourceRecordOffset =
+       texture->subresourceIndex * 0x20 + (pGVar1->tableDescriptor).subresourceTableOffset;
+  sourceByteCursor =
+       (pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+       *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+               subresourceRecordOffset + -0x1c) + -0x28;
+  downsampledWidth =
+       *(uint *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                subresourceRecordOffset + -0x10) >> 1;
+  remainingRows =
+       *(uint *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+                subresourceRecordOffset + -0xc) >> 1;
+  remainingColumns = downsampledWidth;
+  do {
+    do {
+      *glideDataCursor =
+           CONCAT11((*sourceByteCursor >> 2) + (sourceByteCursor[2] >> 2) +
+                    (sourceByteCursor[downsampledWidth * 8] >> 2) +
+                    (sourceByteCursor[downsampledWidth * 8 + 2] >> 2),sourceByteCursor[2] >> 2) |
+           0xfff;
+      sourceByteCursor = sourceByteCursor + 4;
+      glideDataCursor = glideDataCursor + 1;
+      remainingColumns = remainingColumns - 1;
+    } while (remainingColumns != 0);
+    sourceByteCursor = sourceByteCursor + downsampledWidth * 0xc;
+    remainingRows = remainingRows - 1;
+    remainingColumns = downsampledWidth;
+  } while (remainingRows != 0);
+  return;
+}
+
 /* Address: 0x00581150.
    Ownership: graphics/backend/glide.
    Purpose: Glide3-selected source-alpha blitter. It falls back to SoftwareTextureSource_BlitSourceAlpha16 for
@@ -1653,12 +1778,13 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
    not a semantic API result. CF is cleared before normal return.
    Cross-module calls: SoftwareTextureSource_BlitSourceAlpha16 [graphics/backend/software].
 */
-qword Glide3_TextureSource_BlitSourceAlpha
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitSourceAlpha
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -1666,10 +1792,8 @@ qword Glide3_TextureSource_BlitSourceAlpha
   int iVar3;
   int iVar4;
   uint uVar5;
-  undefined4 in_EAX;
   int iVar6;
   GraphicsPixelDimension GVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -1816,7 +1940,7 @@ qword Glide3_TextureSource_BlitSourceAlpha
             clipMinY = clipMinY + -1;
             iVar6 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -1946,8 +2070,9 @@ qword Glide3_TextureSource_BlitSourceAlpha
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,subresourceIndex,sourceAsset,
                framebuffer);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x005814D0.
    Ownership: graphics/backend/glide.
@@ -1957,12 +2082,13 @@ qword Glide3_TextureSource_BlitSourceAlpha
    not imply sprite, model, or effect identity.
    Cross-module calls: SoftwareTextureSource_BlitHalfSourceRgb16 [graphics/backend/software].
 */
-qword Glide3_TextureSource_BlitHalfSourceRgb
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitHalfSourceRgb
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -1970,10 +2096,8 @@ qword Glide3_TextureSource_BlitHalfSourceRgb
   int iVar3;
   int iVar4;
   uint uVar5;
-  undefined4 in_EAX;
   int iVar6;
   GraphicsPixelDimension GVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -2109,7 +2233,7 @@ qword Glide3_TextureSource_BlitHalfSourceRgb
             clipMinY = clipMinY + -1;
             iVar6 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -2231,8 +2355,9 @@ qword Glide3_TextureSource_BlitHalfSourceRgb
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,subresourceIndex,sourceAsset,
                framebuffer);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x005817F0.
    Ownership: graphics/backend/glide.
@@ -2243,11 +2368,12 @@ qword Glide3_TextureSource_BlitHalfSourceRgb
    through g_SoftwareBilinearForwardFactors and g_SoftwareBilinearInverseFactors.
    Cross-module calls: SoftwareTextureSource_StretchDirectColorBilinear16 [graphics/backend/software].
 */
-void Glide3_TextureSource_StretchDirectColorBilinear
-               (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
-               GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureSource_StretchDirectColorBilinear
+          (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
+          GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -2568,6 +2694,7 @@ void Glide3_TextureSource_StretchDirectColorBilinear
   return;
 }
 
+
 /* Address: 0x00581A90.
    Ownership: graphics/backend/glide.
    Purpose: Glide3 display implementation of the integer-scaled source-alpha compositor. The display path reads
@@ -2577,12 +2704,13 @@ void Glide3_TextureSource_StretchDirectColorBilinear
    sourceEntry.paletteIndex and framebufferPixel is read at palette-entry offset +4.
    Cross-module calls: SoftwareTextureSource_BlitHalfSourceRgb16 [graphics/backend/software].
 */
-void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
-               GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitIntegerScaledSourceAlpha
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -2867,6 +2995,7 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
   return;
 }
 
+
 /* Address: 0x00581EF0.
    Ownership: graphics/backend/glide.
    Purpose: Glide3-selected source-alpha blitter with explicit palette-bank selection. Ordinary framebuffer objects
@@ -2876,12 +3005,13 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
    are copied, and partial alpha uses the verified source-alpha blend tables.
    Cross-module calls: SoftwareTextureSource_BlitSourceAlphaPaletteBank16 [graphics/backend/software].
 */
-void Glide3_TextureSource_BlitSourceAlphaPaletteBank
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
-               GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitSourceAlphaPaletteBank
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -3170,6 +3300,7 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
   return;
 }
 
+
 /* Address: 0x00582290.
    Ownership: graphics/backend/glide.
    Purpose: Glide3-selected saturated-additive RGB compositor. Ordinary framebuffer objects fall back to
@@ -3179,12 +3310,13 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
    byte does not participate in the operation.
    Cross-module calls: SoftwareTextureSource_BlitSaturatedAddRgb16 [graphics/backend/software].
 */
-qword Glide3_TextureSource_BlitSaturatedAddRgb
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitSaturatedAddRgb
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -3192,10 +3324,8 @@ qword Glide3_TextureSource_BlitSaturatedAddRgb
   int iVar3;
   int iVar4;
   uint uVar5;
-  undefined4 in_EAX;
   int iVar6;
   GraphicsPixelDimension GVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -3312,7 +3442,7 @@ qword Glide3_TextureSource_BlitSaturatedAddRgb
             clipMinY = clipMinY + -1;
             iVar6 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -3420,8 +3550,9 @@ qword Glide3_TextureSource_BlitSaturatedAddRgb
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,subresourceIndex,sourceAsset,
                framebuffer);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x00582580.
    Ownership: graphics/backend/glide.
@@ -3431,12 +3562,13 @@ qword Glide3_TextureSource_BlitSaturatedAddRgb
    The source alpha byte does not participate in the operation.
    Cross-module calls: SoftwareTextureSource_BlitHalfRgbSaturatedAdd16 [graphics/backend/software].
 */
-qword Glide3_TextureSource_BlitHalfRgbSaturatedAdd
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitHalfRgbSaturatedAdd
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -3445,10 +3577,8 @@ qword Glide3_TextureSource_BlitHalfRgbSaturatedAdd
   int iVar4;
   uint uVar5;
   ushort uVar6;
-  undefined4 in_EAX;
   int iVar7;
   GraphicsPixelDimension GVar8;
-  undefined4 in_EDX;
   int iVar9;
   GraphicsPixelDimension GVar10;
   int iVar11;
@@ -3567,7 +3697,7 @@ qword Glide3_TextureSource_BlitHalfRgbSaturatedAdd
             clipMinY = clipMinY + -1;
             iVar7 = iVar11;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -3678,8 +3808,9 @@ qword Glide3_TextureSource_BlitHalfRgbSaturatedAdd
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,subresourceIndex,sourceAsset,
                framebuffer);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x00582870.
    Ownership: graphics/backend/glide.
@@ -3690,19 +3821,19 @@ qword Glide3_TextureSource_BlitHalfRgbSaturatedAdd
    Both indexed palette pixels and direct ARGB8888 pixels are supported.
    Cross-module calls: SoftwareTextureSource_BlitHalfRgbSaturatedAdd16 [graphics/backend/software].
 */
-qword Glide3_TextureSource_BlitModulatedSourceAlpha
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
-                GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+Glide3_TextureSource_BlitModulatedSourceAlpha
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
   undefined2 uVar2;
   int iVar3;
   int iVar4;
-  undefined4 in_EAX;
   int iVar5;
   uint uVar6;
   uint uVar7;
@@ -3710,7 +3841,6 @@ qword Glide3_TextureSource_BlitModulatedSourceAlpha
   uint uVar9;
   GraphicsPixelDimension GVar10;
   uint uVar11;
-  undefined4 in_EDX;
   int iVar12;
   uint uVar13;
   uint uVar14;
@@ -3873,7 +4003,7 @@ qword Glide3_TextureSource_BlitModulatedSourceAlpha
             clipMinY = clipMinY + -1;
             iVar5 = iVar17;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -4014,8 +4144,9 @@ qword Glide3_TextureSource_BlitModulatedSourceAlpha
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,subresourceIndex,sourceAsset,
                framebuffer);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x00582D30.
    Ownership: graphics/backend/glide.
@@ -4026,12 +4157,13 @@ qword Glide3_TextureSource_BlitModulatedSourceAlpha
    direct-fill path; values 1-254 take the source-alpha blend path.
    Cross-module calls: SoftwareFramebuffer_FillRectArgb16 [graphics/backend/software].
 */
-void Glide3_Framebuffer_FillRectArgb
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
-               GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,
-               PackedArgb32 argb8888,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_Framebuffer_FillRectArgb
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
+          GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   undefined2 uVar1;
@@ -4161,6 +4293,7 @@ void Glide3_Framebuffer_FillRectArgb
   return;
 }
 
+
 /* Address: 0x005806F0.
    Ownership: graphics/backend/glide.
    Purpose: Draws the selected cursor gfx subresource directly into the shared Glide framebuffer. The argument is
@@ -4168,33 +4301,44 @@ void Glide3_Framebuffer_FillRectArgb
    calls the source-alpha blitter, and releases access.
    Local calls: Glide3_Framebuffer_BeginAccess, Glide3_Framebuffer_EndAccess.
 */
-void Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
 
 {
-  sdword arg5;
-  dword arg6;
+  UiPixelOffset UVar1;
+  UiPixelCoordinate UVar2;
+  GraphicsSubresourceIndex arg6;
+  GraphicsCursorFrameRecord *pGVar3;
   UiPixelCoordinate cursorY;
-  bool bVar1;
+  bool bVar4;
   UiPixelOffset cursorHotspotY;
   
   g_CursorCurrentVisibilityToken = g_CursorVisibilityToken;
   if ((-1 < g_CursorVisibilityToken) && (backSurfaceSentinel == (IDirectDrawSurface3 *)0x1)) {
+    UVar2 = g_MouseX;
     cursorY = g_MouseY;
     if (g_CursorUseOverridePosition != 0) {
+      UVar2 = g_CursorOverrideX;
       cursorY = g_CursorOverrideY;
     }
-    cursorHotspotY = g_CursorFrameRecords[g_CursorFrameIndex].hotspotY;
-    bVar1 = false;
-    Glide3_Framebuffer_BeginAccess();
-    if (!bVar1) {
+    pGVar3 = g_CursorFrameRecords + g_CursorFrameIndex;
+    UVar1 = pGVar3->hotspotX;
+    cursorHotspotY = pGVar3->hotspotY;
+    arg6 = pGVar3->activeSubresourceIndex;
+    if ((g_CursorButtonState & 7) == 0) {
+      arg6 = pGVar3->idleSubresourceIndex;
+    }
+    bVar4 = Glide3_Framebuffer_BeginAccess();
+    if (!bVar4) {
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (g_FramebufferHeight,g_FramebufferWidth,0,0,cursorY - cursorHotspotY,arg5,arg6,
-                 g_CursorSourceAsset,g_FramebufferAccess);
+                (g_FramebufferHeight,g_FramebufferWidth,0,0,cursorY - cursorHotspotY,UVar2 - UVar1,
+                 arg6,g_CursorSourceAsset,g_FramebufferAccess);
       Glide3_Framebuffer_EndAccess();
     }
   }
   return;
 }
+
 
 /* Address: 0x0057F5C0.
    Ownership: graphics/backend/glide.
@@ -4202,11 +4346,10 @@ void Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel
    Cross-module calls: GraphicsTexture_ReleaseObjects [graphics/resources/texture], DynDLL_Unload
    [platform/bootstrap/runtime].
 */
-void __cdecl Glide3_Shutdown(void)
+void __thandor_void_preserve_eax_ecx_edx Glide3_Shutdown(void)
 
 {
   int textureSlotsRemaining;
-  int extraout_ECX;
   GraphicsTextureResource **textureSlotCursor;
   
   g_CursorCurrentVisibilityToken = -1;
@@ -4217,7 +4360,6 @@ void __cdecl Glide3_Shutdown(void)
     do {
       if (*textureSlotCursor != (GraphicsTextureResource *)0x0) {
         GraphicsTexture_ReleaseObjects(*textureSlotCursor);
-        textureSlotsRemaining = extraout_ECX;
       }
       textureSlotCursor = textureSlotCursor + 1;
       textureSlotsRemaining = textureSlotsRemaining + -1;
@@ -4230,13 +4372,14 @@ void __cdecl Glide3_Shutdown(void)
   return;
 }
 
+
 /* Address: 0x0057F630.
    Ownership: graphics/backend/glide.
    Purpose: Acquires the shared backend access state, locks the Glide front/read buffer, updates
    g_GlideFramebufferAccess.width and pixels, and optionally locks a second buffer with the same row stride. ABI:
    CF clear means success. CF set means failure.
 */
-void __cdecl Glide3_Framebuffer_BeginAccess(void)
+bool __thandor_cf_preserve_eax_ecx_edx Glide3_Framebuffer_BeginAccess(void)
 
 {
   int lfbLockSucceeded;
@@ -4261,18 +4404,19 @@ void __cdecl Glide3_Framebuffer_BeginAccess(void)
         g_GlideSecondBufferOffset =
              (int)g_GlidePrimaryLfbPixels - (int)g_DisplayFramebufferAccess.pixels;
       }
-      return;
+      return false;
     }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0057F6E0.
    Ownership: graphics/backend/glide.
    Purpose: Unlocks the optional second Glide buffer, unlocks the primary buffer, clears
    g_GlideFramebufferAccess.pixels, and releases the shared backend access state.
 */
-void __cdecl Glide3_Framebuffer_EndAccess(void)
+void __thandor_void_preserve_eax_ecx_edx Glide3_Framebuffer_EndAccess(void)
 
 {
   if (g_GlideSecondBufferBase != (byte *)0x0) {
@@ -4286,6 +4430,7 @@ void __cdecl Glide3_Framebuffer_EndAccess(void)
   return;
 }
 
+
 /* Address: 0x0057FF50.
    Ownership: graphics/backend/glide.
    Purpose: Places an unresident texture into available TMU address space, maintaining the address-ordered resident
@@ -4293,7 +4438,8 @@ void __cdecl Glide3_Framebuffer_EndAccess(void)
    the embedded GlideTextureInfo with the selected TMU index and residentAddress. Resources without a CPU upload
    buffer remain unresident.
 */
-void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *pGVar1;
@@ -4389,6 +4535,7 @@ Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
   return;
 }
 
+
 /* Address: 0x0057FD40.
    Ownership: graphics/backend/glide.
    Purpose: Builds the embedded GlideTextureInfo, selects RGB565-style or ARGB4444-style output, allocates a two-
@@ -4396,43 +4543,42 @@ Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
    texture->downsampleShift. The function preserves EAX. Existing callers that pass the same pointer in EAX use
    that preservation as a pointer result. Allocation failure is reported through CF.
 */
-GraphicsTextureResource * Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
 
 {
   GrAspectRatio_t *pGVar1;
   GrLOD_t *pGVar2;
   DDPIXELFORMAT *pDVar3;
   GraphicsTextureDownsampleShift GVar4;
-  GraphicsTextureResource *in_EAX;
-  int iVar5;
-  void *pvVar6;
-  byte extraout_CL;
-  GraphicsTextureDownsampleShift extraout_ECX;
-  int extraout_ECX_00;
-  int iVar7;
-  uint uVar8;
-  bool bVar9;
-  qword qVar10;
+  dword dVar5;
+  dword dVar6;
+  dword dVar7;
+  ArenaAllocEaxCf5 AVar8;
+  GraphicsTextureSizeEaxEdxCf9 GVar9;
   
-  qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
-  texture->downsampleShift = extraout_ECX;
+  dVar5 = g_TextureDownsampleShift;
+  GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
+  dVar7 = GVar9.logicalHeightPixels;
+  dVar6 = GVar9.logicalWidthPixels;
+  texture->downsampleShift = dVar5;
   (texture->glideInfo).aspectRatioLog2 = 0;
-  while (iVar7 = (int)(qVar10 >> 0x20), iVar5 = (int)qVar10, iVar5 != iVar7) {
-    if (iVar5 < iVar7) {
+  while (dVar6 != dVar7) {
+    if ((int)dVar6 < (int)dVar7) {
       pGVar1 = &(texture->glideInfo).aspectRatioLog2;
       *pGVar1 = *pGVar1 + -1;
-      qVar10 = CONCAT44(iVar7,iVar5 * 2);
+      dVar6 = dVar6 * 2;
     }
     else {
       pGVar1 = &(texture->glideInfo).aspectRatioLog2;
       *pGVar1 = *pGVar1 + 1;
-      qVar10 = CONCAT44(iVar7 * 2,iVar5);
+      dVar7 = dVar7 * 2;
     }
   }
   (texture->glideInfo).smallLodLog2 = 0;
   (texture->glideInfo).largeLodLog2 = 0;
   pDVar3 = texture->pixelFormat;
-  for (iVar5 = 1; iVar5 != iVar7; iVar5 = iVar5 * 2) {
+  for (dVar6 = 1; dVar6 != dVar7; dVar6 = dVar6 * 2) {
     (texture->glideInfo).smallLodLog2 = (texture->glideInfo).smallLodLog2 + 1;
     pGVar2 = &(texture->glideInfo).largeLodLog2;
     *pGVar2 = *pGVar2 + 1;
@@ -4445,30 +4591,31 @@ GraphicsTextureResource * Glide3_TextureResource_Initialize(GraphicsTextureResou
   (texture->glideInfo).smallLodLog2 = (texture->glideInfo).smallLodLog2 - GVar4;
   pGVar2 = &(texture->glideInfo).largeLodLog2;
   *pGVar2 = *pGVar2 - GVar4;
-  qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
+  GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
   (texture->glideInfo).data = (void *)0x0;
   texture->residentNext = (GraphicsTextureResource *)0x0;
-  uVar8 = ((uint)(qVar10 >> 0x20) >> (extraout_CL & 0x1f)) * ((uint)qVar10 >> (extraout_CL & 0x1f));
   texture->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
-  bVar9 = CARRY4(uVar8,uVar8);
   texture->residentAddress = 0;
-  pvVar6 = (*g_MemoryApi.alloc)(uVar8 * 2);
-  if (!bVar9) {
-    (texture->glideInfo).data = pvVar6;
-    (*g_GlideTextureColorUpload[extraout_ECX_00])(texture);
+  AVar8 = (*g_MemoryApi.alloc)
+                    ((GVar9.logicalHeightPixels >> ((byte)GVar4 & 0x1f)) *
+                     (GVar9.logicalWidthPixels >> ((byte)GVar4 & 0x1f)) * 2);
+  if (!AVar8.carry) {
+    (texture->glideInfo).data = (void *)AVar8.eax;
+    (*g_GlideTextureColorUpload[GVar4])(texture);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0057FE80.
    Ownership: graphics/backend/glide.
    Purpose: Removes a resident texture from the address-ordered linked list, updates the list head/tail and bound-
    texture cache, resets TMU state, frees glideInfo.data, and returns the preserved input pointer in EAX.
 */
-GraphicsTextureResource * Glide3_TextureResource_Release(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+Glide3_TextureResource_Release(GraphicsTextureResource *texture)
 
 {
-  GraphicsTextureResource *in_EAX;
   GraphicsTextureResource *previousResidentTexture;
   GraphicsTextureResource *pGVar1;
   GraphicsTextureResource *replacementListHead;
@@ -4502,5 +4649,6 @@ GraphicsTextureResource * Glide3_TextureResource_Release(GraphicsTextureResource
   texture->residentAddress = 0;
   (*g_MemoryApi.free)((texture->glideInfo).data);
   (texture->glideInfo).data = (void *)0x0;
-  return in_EAX;
+  return;
 }
+

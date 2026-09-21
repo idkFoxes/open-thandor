@@ -1,6 +1,6 @@
 # Call graph: `world/model/slots`
 
-[Source](../../../../src/world/model/slots.c) · [Header](../../../../include/thandor/world/model/slots.h) · [Graphviz](slots.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-model-slots)
+[Source](../../../../src/world/model/slots.c) · [Header](../../../../include/thandor/world/model/slots.h) · [Graphviz](slots.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-model-slots) · [Developer notes](../../../../CHANGELOG.md#module-world-model-slots) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-model-slots)
 
 20 functions. Addresses are current V523 executable VAs.
 

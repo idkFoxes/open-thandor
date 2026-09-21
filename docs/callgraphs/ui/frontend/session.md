@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/session`
 
-[Source](../../../../src/ui/frontend/session.c) · [Header](../../../../include/thandor/ui/frontend/session.h) · [Graphviz](session.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-session)
+[Source](../../../../src/ui/frontend/session.c) · [Header](../../../../include/thandor/ui/frontend/session.h) · [Graphviz](session.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-session) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-session)
 
 14 functions. Addresses are current V523 executable VAs.
 

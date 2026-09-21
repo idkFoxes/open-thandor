@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/player`
 
-[Source](../../../../src/ui/frontend/player.c) · [Header](../../../../include/thandor/ui/frontend/player.h) · [Graphviz](player.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-player)
+[Source](../../../../src/ui/frontend/player.c) · [Header](../../../../include/thandor/ui/frontend/player.h) · [Graphviz](player.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-player) · [Developer notes](../../../../CHANGELOG.md#module-ui-frontend-player) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-player)
 
 37 functions. Addresses are current V523 executable VAs.
 

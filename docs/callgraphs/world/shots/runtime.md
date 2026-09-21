@@ -1,6 +1,6 @@
 # Call graph: `world/shots/runtime`
 
-[Source](../../../../src/world/shots/runtime.c) · [Header](../../../../include/thandor/world/shots/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-shots-runtime)
+[Source](../../../../src/world/shots/runtime.c) · [Header](../../../../include/thandor/world/shots/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-shots-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-shots-runtime)
 
 7 functions. Addresses are current V523 executable VAs.
 

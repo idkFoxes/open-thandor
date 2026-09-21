@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/army/audio.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/army/audio.h>
 
 /* Implementation ownership: gameplay/army/audio. */
@@ -9,17 +16,15 @@
    armyGraphicsAsset→ArmyGraphicsAssetAddress32_V345. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
           (FrontendPlayerRuntimeId frontendPlayerRuntimeId,
           ArmyGraphicsAssetAddress32 armyGraphicsAsset)
 
 {
   int iVar1;
-  undefined4 in_EAX;
   uint uVar2;
   FrontendPlayerRuntimeBlockCount FVar3;
-  undefined4 in_EDX;
   int iVar4;
   FrontendPlayerRuntimeRecord *pFVar5;
   byte *pbVar6;
@@ -31,8 +36,9 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
          ((pFVar5->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
     pFVar5 = pFVar5 + 1;
     FVar3 = FVar3 - 1;
-    if (FVar3 == 0)
-    goto ArmyGraphics_CopyFrontendPlayerPaletteAndTexture_ReturnAfterCopyOrPlayerLookupMiss;
+    if (FVar3 == 0) {
+      return;
+    }
   }
   pbVar6 = pFVar5->snapshotPayloadB0_13AF;
   iVar1 = *(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe2c + armyGraphicsAsset);
@@ -58,9 +64,9 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
     pbVar6 = pbVar6 + 4;
     puVar7 = puVar7 + 1;
   }
-ArmyGraphics_CopyFrontendPlayerPaletteAndTexture_ReturnAfterCopyOrPlayerLookupMiss:
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00520740.
    Ownership: gameplay/army/audio.
@@ -70,57 +76,61 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture_ReturnAfterCopyOrPlayerLookupMi
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   uint uVar1;
-  void *pvVar2;
-  bool bVar3;
-  undefined8 uVar4;
-  ModelRuntimeNode *modelNode1;
+  SpatialSoundSlot *pSVar2;
+  GraphicsFixedVec3 *pGVar3;
+  ModelRuntimeSlot *pMVar4;
+  bool bVar5;
   
-  pvVar2 = armyRuntime->definitionOrAsset;
+  pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    pvVar2 = armyRuntime->definitionOrAsset;
+    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
     if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
   else {
-    uVar1 = *(uint *)((int)pvVar2 + 0xd8);
-    if ((((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
-        (worldRuntime->dwordArray != (dword *)0x0)) &&
-       (modelNode1 = armyRuntime->modelNodeRuntime, worldRuntime->dwordArray[uVar1] != 0)) {
-      bVar3 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-      uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                        ((modelNode1->worldTransform).translation.y,
-                         (modelNode1->worldTransform).translation.x,worldRuntime);
-      if (!bVar3) {
-        SpatialSound_UpdateDesiredPositionedGains
-                  (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar2 + 0x7c),
-                   *(SpatialSoundGainQ15 *)((int)pvVar2 + 0x78),
-                   (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+    uVar1 = *(uint *)((pMVar4->classState).reservedD4_DB + 4);
+    if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
+       (worldRuntime->dwordArray != (dword *)0x0)) {
+      pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
+      if (pSVar2 != (SpatialSoundSlot *)0x0) {
+        pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+        bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+                           worldRuntime);
+        if (!bVar5) {
+          SpatialSound_UpdateDesiredPositionedGains
+                    ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
+                     pGVar3,pSVar2);
+        }
       }
     }
   }
-  uVar1 = *(uint *)((int)pvVar2 + 0xd0);
+  uVar1 = (pMVar4->classState).classStateD0;
   if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
-     ((worldRuntime->dwordArray != (dword *)0x0 &&
-      (modelNode1 = armyRuntime->modelNodeRuntime, worldRuntime->dwordArray[uVar1] != 0)))) {
-    bVar3 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-    uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar3) {
-      SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar2 + 0x7c),
-                 *(SpatialSoundGainQ15 *)((int)pvVar2 + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+     (worldRuntime->dwordArray != (dword *)0x0)) {
+    pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
+    if (pSVar2 != (SpatialSoundSlot *)0x0) {
+      pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+                         worldRuntime);
+      if (!bVar5) {
+        SpatialSound_UpdateDesiredPositionedGains
+                  ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
+                   pGVar3,pSVar2);
+      }
     }
   }
   return;
 }
+
 
 /* Address: 0x00520E60.
    Ownership: gameplay/army/audio.
@@ -129,18 +139,23 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
    Cross-module calls: ArmyRuntimeClass_UpdatePositionedSoundsVariantB [gameplay/army/runtime],
    ArmyRuntimeClass_UpdatePositionedSoundsVariantA [gameplay/army/runtime].
 */
-void ArmyRuntimeAudio_DispatchPositionedSoundVariant
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_DispatchPositionedSoundVariant
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  if (*(int *)((int)armyRuntime->definitionOrAsset + 0x278) == 1) {
-    ArmyRuntimeClass_UpdatePositionedSoundsVariantB(worldRuntime,armyRuntime);
+  if (*(int *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x278) == 1) {
+    ArmyRuntimeClass_UpdatePositionedSoundsVariantB
+              (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView120 *)armyRuntime);
   }
   else {
-    ArmyRuntimeClass_UpdatePositionedSoundsVariantA(worldRuntime,armyRuntime);
+    ArmyRuntimeClass_UpdatePositionedSoundsVariantA
+              (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView120 *)armyRuntime);
   }
   return;
 }
+
 
 /* Address: 0x00523240.
    Ownership: gameplay/army/audio.
@@ -150,57 +165,61 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   uint uVar1;
-  void *pvVar2;
-  bool bVar3;
-  undefined8 uVar4;
-  ModelRuntimeNode *modelNode1;
+  SpatialSoundSlot *pSVar2;
+  GraphicsFixedVec3 *pGVar3;
+  ModelRuntimeSlot *pMVar4;
+  bool bVar5;
   
-  pvVar2 = armyRuntime->definitionOrAsset;
+  pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    pvVar2 = armyRuntime->definitionOrAsset;
+    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
     if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
   else {
-    uVar1 = *(uint *)((int)pvVar2 + 0xd8);
-    if ((((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
-        (worldRuntime->dwordArray != (dword *)0x0)) &&
-       (modelNode1 = armyRuntime->modelNodeRuntime, worldRuntime->dwordArray[uVar1] != 0)) {
-      bVar3 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-      uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                        ((modelNode1->worldTransform).translation.y,
-                         (modelNode1->worldTransform).translation.x,worldRuntime);
-      if (!bVar3) {
-        SpatialSound_UpdateDesiredPositionedGains
-                  (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar2 + 0x7c),
-                   *(SpatialSoundGainQ15 *)((int)pvVar2 + 0x78),
-                   (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+    uVar1 = *(uint *)((pMVar4->classState).reservedD4_DB + 4);
+    if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
+       (worldRuntime->dwordArray != (dword *)0x0)) {
+      pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
+      if (pSVar2 != (SpatialSoundSlot *)0x0) {
+        pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+        bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+                           worldRuntime);
+        if (!bVar5) {
+          SpatialSound_UpdateDesiredPositionedGains
+                    ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
+                     pGVar3,pSVar2);
+        }
       }
     }
   }
-  uVar1 = *(uint *)((int)pvVar2 + 0xd0);
+  uVar1 = (pMVar4->classState).classStateD0;
   if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
-     ((worldRuntime->dwordArray != (dword *)0x0 &&
-      (modelNode1 = armyRuntime->modelNodeRuntime, worldRuntime->dwordArray[uVar1] != 0)))) {
-    bVar3 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-    uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar3) {
-      SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar2 + 0x7c),
-                 *(SpatialSoundGainQ15 *)((int)pvVar2 + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+     (worldRuntime->dwordArray != (dword *)0x0)) {
+    pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
+    if (pSVar2 != (SpatialSoundSlot *)0x0) {
+      pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+                         worldRuntime);
+      if (!bVar5) {
+        SpatialSound_UpdateDesiredPositionedGains
+                  ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
+                   pGVar3,pSVar2);
+      }
     }
   }
   return;
 }
+
 
 /* Address: 0x00523DD0.
    Ownership: gameplay/army/audio.
@@ -210,35 +229,38 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  void *pvVar1;
+  ModelRuntimeSlot *pMVar1;
   uint uVar2;
+  SpatialSoundSlot *slot;
+  GraphicsFixedVec3 *worldPosition;
   bool bVar3;
-  undefined8 uVar4;
-  ModelRuntimeNode *modelNode1;
   
-  pvVar1 = armyRuntime->definitionOrAsset;
+  pMVar1 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->movementStateFlags != 0) ||
        ((armyRuntime->movementControl).turnVelocityAngle16 != 0)) &&
-      (uVar2 = *(uint *)((int)pvVar1 + 0xd8), uVar2 != 0)) &&
-     (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (modelNode1 = armyRuntime->modelNodeRuntime, worldRuntime->dwordArray[uVar2] != 0)))) {
-    bVar3 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-    uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar3) {
-      SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar1 + 0x7c),
-                 *(SpatialSoundGainQ15 *)((int)pvVar1 + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+      (uVar2 = *(uint *)((pMVar1->classState).reservedD4_DB + 4), uVar2 != 0)) &&
+     ((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)))) {
+    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2];
+    if (slot != (SpatialSoundSlot *)0x0) {
+      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      bVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
+                         worldPosition->x,worldRuntime);
+      if (!bVar3) {
+        SpatialSound_UpdateDesiredPositionedGains
+                  ((pMVar1->classLinkState).classState7C,(pMVar1->classLinkState).classState78,
+                   worldPosition,slot);
+      }
     }
   }
   return;
 }
+
 
 /* Address: 0x00524410.
    Ownership: gameplay/army/audio.
@@ -247,37 +269,38 @@ void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdateConditionalProjectedSound
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateConditionalProjectedSound
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  uint uVar1;
+  ModelRuntimeSlot *pMVar1;
+  uint uVar2;
   SpatialSoundSlot *slot;
-  int extraout_ECX;
   GraphicsFixedVec3 *worldPosition;
-  bool bVar2;
-  ModelRuntimeNode *modelNode1;
+  bool bVar3;
   
-  modelNode1 = armyRuntime->modelNodeRuntime;
+  pMVar1 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
       ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
         ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-       (uVar1 = *(uint *)((int)armyRuntime->definitionOrAsset + 0x1ac), uVar1 != 0)))) &&
-     (((uVar1 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (worldRuntime->dwordArray[uVar1] != 0)))) {
-    bVar2 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-    worldPosition = &(modelNode1->worldTransform).translation;
-    slot = (SpatialSoundSlot *)
-           TerrainGrid_TestProjectedCellMaskBits01Cf
-                     ((modelNode1->worldTransform).translation.y,worldPosition->x,worldRuntime);
-    if (!bVar2) {
+       (uVar2 = pMVar1->attachments140[3].childNodeIndex0C, uVar2 != 0)))) &&
+     (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2], slot != (SpatialSoundSlot *)0x0))
+     )) {
+    worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+    bVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
+                       worldPosition->x,worldRuntime);
+    if (!bVar3) {
       SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)(extraout_ECX + 0x7c),
-                 *(SpatialSoundGainQ15 *)(extraout_ECX + 0x78),worldPosition,slot);
+                ((pMVar1->classLinkState).classState7C,(pMVar1->classLinkState).classState78,
+                 worldPosition,slot);
     }
   }
   return;
 }
+
 
 /* Address: 0x00524DA0.
    Ownership: gameplay/army/audio.
@@ -286,52 +309,56 @@ void ArmyRuntimeAudio_UpdateConditionalProjectedSound
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  uint uVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  bool bVar2;
-  undefined8 uVar3;
+  GraphicsFixedVec3 *pGVar1;
+  ModelRuntimeSlot *pMVar2;
+  uint uVar3;
+  SpatialSoundSlot *pSVar4;
+  bool bVar5;
   ModelRuntimeNode *modelNode1;
   
   modelNode1 = armyRuntime->modelNodeRuntime;
+  pMVar2 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
       ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
         ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-       (uVar1 = *(uint *)((int)armyRuntime->definitionOrAsset + 0x1ac), uVar1 != 0)))) &&
-     (((uVar1 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (bVar2 = false, worldRuntime->dwordArray[uVar1] != 0)))) {
-    uVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar2) {
+       (uVar3 = pMVar2->attachments140[3].childNodeIndex0C, uVar3 != 0)))) &&
+     (((uVar3 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (pSVar4 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar3],
+      pSVar4 != (SpatialSoundSlot *)0x0)))) {
+    pGVar1 = &(modelNode1->worldTransform).translation;
+    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((modelNode1->worldTransform).translation.y,pGVar1->x,worldRuntime);
+    if (!bVar5) {
       SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)(extraout_ECX + 0x7c),
-                 *(SpatialSoundGainQ15 *)(extraout_ECX + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar3 >> 0x20),(SpatialSoundSlot *)uVar3);
+                ((pMVar2->classLinkState).classState7C,(pMVar2->classLinkState).classState78,pGVar1,
+                 pSVar4);
     }
   }
+  pMVar2 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->articulatedContact).fallbackPosition0Q12 != 1) &&
-      (uVar1 = *(uint *)((int)armyRuntime->definitionOrAsset + 0x274),
+      (uVar3 = pMVar2[1].classLinkState.classState74,
       (armyRuntime->articulatedContact).fallbackPosition0Q12 != 0)) &&
-     ((uVar1 != 0 &&
-      (((uVar1 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-       (bVar2 = false, worldRuntime->dwordArray[uVar1] != 0)))))) {
-    uVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar2) {
+     ((uVar3 != 0 &&
+      (((uVar3 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+       (pSVar4 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar3],
+       pSVar4 != (SpatialSoundSlot *)0x0)))))) {
+    pGVar1 = &(modelNode1->worldTransform).translation;
+    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((modelNode1->worldTransform).translation.y,pGVar1->x,worldRuntime);
+    if (!bVar5) {
       SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)(extraout_ECX_00 + 0x7c),
-                 *(SpatialSoundGainQ15 *)(extraout_ECX_00 + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar3 >> 0x20),(SpatialSoundSlot *)uVar3);
+                ((pMVar2->classLinkState).classState7C,(pMVar2->classLinkState).classState78,pGVar1,
+                 pSVar4);
     }
   }
   return;
 }
+
 
 /* Address: 0x00526490.
    Ownership: gameplay/army/audio.
@@ -340,34 +367,37 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdateAssetProjectedSound
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateAssetProjectedSound
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  void *pvVar1;
+  ModelRuntimeSlot *pMVar1;
   uint uVar2;
+  SpatialSoundSlot *slot;
+  GraphicsFixedVec3 *worldPosition;
   bool bVar3;
-  undefined8 uVar4;
-  ModelRuntimeNode *modelNode1;
   
-  pvVar1 = armyRuntime->definitionOrAsset;
-  uVar2 = *(uint *)((int)pvVar1 + 0x1ac);
-  if ((((worldRuntime->dwordArray != (dword *)0x0) && (uVar2 != 0)) &&
-      (uVar2 < worldRuntime->dwordArrayCount)) &&
-     (modelNode1 = armyRuntime->modelNodeRuntime, worldRuntime->dwordArray[uVar2] != 0)) {
-    bVar3 = (ModelRuntimeNode *)0xffffff6b < modelNode1;
-    uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar3) {
-      SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar1 + 0x7c),
-                 *(SpatialSoundGainQ15 *)((int)pvVar1 + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+  pMVar1 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  uVar2 = pMVar1->attachments140[3].childNodeIndex0C;
+  if (((worldRuntime->dwordArray != (dword *)0x0) && (uVar2 != 0)) &&
+     (uVar2 < worldRuntime->dwordArrayCount)) {
+    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2];
+    if (slot != (SpatialSoundSlot *)0x0) {
+      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      bVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
+                         worldPosition->x,worldRuntime);
+      if (!bVar3) {
+        SpatialSound_UpdateDesiredPositionedGains
+                  ((pMVar1->classLinkState).classState7C,(pMVar1->classLinkState).classState78,
+                   worldPosition,slot);
+      }
     }
   }
   return;
 }
+
 
 /* Address: 0x00526EB0.
    Ownership: gameplay/army/audio.
@@ -377,53 +407,57 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  uint uVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  bool bVar2;
-  undefined8 uVar3;
-  ModelRuntimeNode *modelNode1;
+  ModelRuntimeNode *pMVar1;
+  uint uVar2;
+  SpatialSoundSlot *pSVar3;
+  ModelRuntimeSlot *pMVar4;
+  bool bVar5;
   
-  modelNode1 = armyRuntime->modelNodeRuntime;
+  pMVar1 = armyRuntime->modelNodeRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
       ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
         ((armyRuntime->articulatedContact).terrainContactMode ==
          ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE)) &&
-       (uVar1 = *(uint *)((int)armyRuntime->definitionOrAsset + 0x1ac), uVar1 != 0)))) &&
-     (((uVar1 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (bVar2 = false, worldRuntime->dwordArray[uVar1] != 0)))) {
-    uVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar2) {
+       (uVar2 = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
+                childNodeIndex0C, uVar2 != 0)))) &&
+     (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (pSVar3 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2],
+      pSVar3 != (SpatialSoundSlot *)0x0)))) {
+    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((pMVar1->worldTransform).translation.y,(pMVar1->worldTransform).translation.x
+                       ,worldRuntime);
+    if (!bVar5) {
       SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)(extraout_ECX + 0x7c),
-                 *(SpatialSoundGainQ15 *)(extraout_ECX + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar3 >> 0x20),(SpatialSoundSlot *)uVar3);
+                ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
+                 &(pMVar1->worldTransform).translation,pSVar3);
     }
   }
   if ((((armyRuntime->articulatedContact).lateralOffsetQ12 != 6) &&
-      (uVar1 = *(uint *)((int)armyRuntime->definitionOrAsset + 0x274),
+      (uVar2 = *(uint *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x274),
       (armyRuntime->articulatedContact).lateralOffsetQ12 != 0)) &&
-     ((uVar1 != 0 &&
-      (((uVar1 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-       (bVar2 = false, worldRuntime->dwordArray[uVar1] != 0)))))) {
-    uVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x,worldRuntime);
-    if (!bVar2) {
+     ((uVar2 != 0 &&
+      (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+       (pSVar3 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2],
+       pSVar3 != (SpatialSoundSlot *)0x0)))))) {
+    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((pMVar1->worldTransform).translation.y,(pMVar1->worldTransform).translation.x
+                       ,worldRuntime);
+    if (!bVar5) {
       SpatialSound_UpdateDesiredPositionedGains
-                (*(SpatialSoundMaximumDistanceQ12 *)(extraout_ECX_00 + 0x7c),
-                 *(SpatialSoundGainQ15 *)(extraout_ECX_00 + 0x78),
-                 (GraphicsFixedVec3 *)((ulonglong)uVar3 >> 0x20),(SpatialSoundSlot *)uVar3);
+                ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
+                 &(pMVar1->worldTransform).translation,pSVar3);
     }
   }
   return;
 }
+
 
 /* Address: 0x00527B20.
    Ownership: gameplay/army/audio.
@@ -431,8 +465,9 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
    24-47 receive (worldRuntime, armyRuntime).
    Cross-module calls: ArmyRuntime_UpdateLoopingPositionedSound [gameplay/army/runtime].
 */
-void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled
-               (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled
+          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   if ((armyRuntime->runtimeFlags & 0x40) != 0) {
@@ -440,3 +475,4 @@ void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled
   }
   return;
 }
+

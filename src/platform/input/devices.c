@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/input/devices.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/platform/input/devices.h>
 
 /* Implementation ownership: platform/input/devices. */
@@ -11,28 +18,33 @@
    rightCodeUnit→KeyboardCharacterCode_V308. Nearby but non-identical semantic domains were explicitly deferred.
    Local calls: Keyboard_ToUpperAscii.
 */
-void Keyboard_CompareAsciiCaseInsensitiveFlags
-               (KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
+bool __thandor_cf_preserve_eax_ecx_edx
+Keyboard_CompareAsciiCaseInsensitiveFlags
+          (KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
   uint asciiCodeUnit;
+  dword dVar1;
+  dword dVar2;
   
   asciiCodeUnit = leftCodeUnit & 0xffff;
-  Keyboard_ToUpperAscii(rightCodeUnit & 0xffff);
-  Keyboard_ToUpperAscii(asciiCodeUnit);
-  return;
+  dVar1 = Keyboard_ToUpperAscii(rightCodeUnit & 0xffff);
+  dVar2 = Keyboard_ToUpperAscii(asciiCodeUnit);
+  return dVar1 < dVar2;
 }
+
 
 /* Address: 0x00417230.
    Ownership: platform/input/devices.
    Purpose: Discards all queued keyboard events by copying g_KeyboardReadIndex into g_KeyboardWriteIndex.
 */
-void __cdecl Keyboard_FlushEvents(void)
+void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
 
 {
   g_KeyboardWriteIndex = g_KeyboardReadIndex;
   return;
 }
+
 
 /* Address: 0x00417240.
    Ownership: platform/input/devices.
@@ -40,12 +52,14 @@ void __cdecl Keyboard_FlushEvents(void)
    was returned; CF set means the ring was empty. The qword return type models the preserved register pair, not a
    source-level 64-bit API.
 */
-qword __cdecl Keyboard_ReadNextEventRegs(void)
+KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
 
 {
   undefined4 in_EAX;
   uint nextReadIndex;
   qword eventRegisterPair;
+  KeyboardEventEaxEdxCf9 KVar1;
+  KeyboardEventEaxEdxCf9 KVar2;
   KeyboardInputEvent *eventRecord;
   
   nextReadIndex = g_KeyboardReadIndex + 1;
@@ -55,12 +69,17 @@ qword __cdecl Keyboard_ReadNextEventRegs(void)
     }
     eventRecord = g_KeyboardEvents + g_KeyboardReadIndex;
     g_KeyboardReadIndex = nextReadIndex;
+    KVar1.carry = false;
     eventRegisterPair._0_4_ = eventRecord->keyCode00;
     eventRegisterPair._4_4_ = eventRecord->stateMask04;
-    return eventRegisterPair;
+    return KVar1;
   }
-  return CONCAT44(nextReadIndex,in_EAX);
+  KVar2.eventData = nextReadIndex;
+  KVar2.eventCode = in_EAX;
+  KVar2.carry = true;
+  return KVar2;
 }
+
 
 /* Address: 0x004172D0.
    Ownership: platform/input/devices.
@@ -69,7 +88,7 @@ qword __cdecl Keyboard_ReadNextEventRegs(void)
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-dword Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
+dword __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
   if ((0x40 < asciiCodeUnit) && (asciiCodeUnit < 0x5b)) {
@@ -78,6 +97,7 @@ dword Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
   return asciiCodeUnit;
 }
 
+
 /* Address: 0x00576CF0.
    Ownership: platform/input/devices.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
@@ -85,51 +105,50 @@ dword Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
    TimerSystem_RegisterPeriodic [platform/system/time_locale], Package_LoadEntry [assets/package/runtime],
    Resource_Load [assets/resource/runtime].
 */
-dword __cdecl DirectInputMouse_Init(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
 
 {
-  ushort uVar1;
-  HINSTANCE module;
-  TH_LEGACY_HRESULT TVar2;
-  GraphicsTextureSourceAsset *arg1;
-  GraphicsCursorFrameRecord *pGVar3;
+  GraphicsSubresourceIndex GVar1;
+  ushort uVar2;
+  TH_LEGACY_HRESULT TVar3;
   undefined2 extraout_var;
-  GraphicsTextureSourceAsset *extraout_ECX;
-  uint extraout_ECX_00;
+  GraphicsTextureSourceAsset *arg1;
   uint uVar4;
-  dword dVar5;
   dword arg0;
+  dword dVar5;
   dword dVar6;
-  dword dVar7;
-  undefined1 uVar8;
-  bool bVar9;
-  qword qVar10;
-  undefined8 uVar11;
+  DynDllLoadEaxCf5 DVar7;
+  FatalErrorEaxCf5 FVar8;
+  DynApiResolveEaxCf5 DVar9;
+  PackageLoadEntryEaxCf5 PVar10;
+  StatusValueEaxCf5 SVar11;
+  StatusValueEaxCf5 SVar12;
+  ResourceLoadEaxEcxCf9 RVar13;
+  GraphicsTextureSizeEaxEdxCf9 GVar14;
   sdword local_1c;
   
   local_1c = 0;
-  DynDLL_Load(dynapi_3);
-  module = (HINSTANCE)(*g_FatalErrorPrimaryDispatchCf)();
-  DynAPI_Resolve(&pDirectInputCreateA,module,dynapi_19);
-  (*g_FatalErrorPrimaryDispatchCf)();
+  DVar7 = DynDLL_Load(dynapi_3);
+  FVar8 = (*g_FatalErrorPrimaryDispatchCf)((dword)DVar7.moduleOrError,DVar7.carry);
+  DVar9 = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)FVar8.eax,dynapi_19);
+  (*g_FatalErrorPrimaryDispatchCf)((dword)DVar9.procedureOrError,DVar9.carry);
   SetCursor((HCURSOR)0x0);
-  TVar2 = (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
-  if (TVar2 == 0) {
+  TVar3 = (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
+  if (TVar3 == 0) {
     local_1c = 1;
-    TVar2 = (*g_DirectInput->lpVtbl->CreateDevice)
+    TVar3 = (*g_DirectInput->lpVtbl->CreateDevice)
                       (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,(TH_LEGACY_LPVOID)0x0);
-    if (TVar2 == 0) {
+    if (TVar3 == 0) {
       local_1c = 2;
-      TVar2 = (*g_MouseDevice->lpVtbl->SetDataFormat)(g_MouseDevice,&MouseDataFormat);
-      if (TVar2 == 0) {
+      TVar3 = (*g_MouseDevice->lpVtbl->SetDataFormat)(g_MouseDevice,&MouseDataFormat);
+      if (TVar3 == 0) {
         local_1c = 3;
-        TVar2 = (*g_MouseDevice->lpVtbl->SetCooperativeLevel)(g_MouseDevice,g_MainWindow,5);
-        if (TVar2 == 0) {
+        TVar3 = (*g_MouseDevice->lpVtbl->SetCooperativeLevel)(g_MouseDevice,g_MainWindow,5);
+        if (TVar3 == 0) {
           local_1c = 4;
-          TVar2 = (*g_MouseDevice->lpVtbl->SetProperty)
+          TVar3 = (*g_MouseDevice->lpVtbl->SetProperty)
                             (g_MouseDevice,(TH_LEGACY_GUID *)0x1,&MouseBufferProperty.diph);
-          uVar8 = 0;
-          if (TVar2 == 0) {
+          if (TVar3 == 0) {
             (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
             g_DirectInputMousePreviousDisplayModeHookCf = g_GraphicsDisplayModeHook;
             LOCK();
@@ -140,64 +159,70 @@ dword __cdecl DirectInputMouse_Init(void)
             TimerSystem_RegisterPeriodic(0x40,DirectInputMouse_PollBufferedEvents);
             g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
             g_PointerSetPosition = DirectInputMouse_SetPosition;
-            arg1 = Package_LoadEntry((word *)u_engine_mouse_gfx_00416864);
-            if ((bool)uVar8) {
-              return (dword)arg1;
-            }
-            dVar7 = 0;
-            dVar6 = 0;
-            arg0 = 0;
-            g_CursorSourceAsset = arg1;
-            do {
-              qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,arg1);
-              dVar5 = (dword)(qVar10 >> 0x20);
-              arg0 = arg0 + 1;
-              if ((int)dVar7 < (int)(dword)qVar10) {
-                dVar7 = (dword)qVar10;
+            PVar10 = Package_LoadEntry((word *)u_engine_mouse_gfx_00416864);
+            arg1 = PVar10.bufferOrError;
+            if (!PVar10.carry) {
+              dVar6 = 0;
+              dVar5 = 0;
+              arg0 = 0;
+              g_CursorSourceAsset = arg1;
+              do {
+                GVar14 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,arg1);
+                arg0 = arg0 + 1;
+                if ((int)dVar6 < (int)GVar14.logicalWidthPixels) {
+                  dVar6 = GVar14.logicalWidthPixels;
+                }
+                if ((int)dVar5 < (int)GVar14.logicalHeightPixels) {
+                  dVar5 = GVar14.logicalHeightPixels;
+                }
+              } while (arg0 < (arg1->tableDescriptor).subresourceCount);
+              g_CursorMaxWidth = dVar6;
+              g_CursorMaxHeight = dVar5;
+              RVar13 = Resource_Load((word *)u_engine_mouse_dat_00416886);
+              arg1 = (GraphicsTextureSourceAsset *)RVar13.eax;
+              if (!RVar13.carry) {
+                uVar4 = RVar13.ecx >> 5;
+                g_CursorFrameRecords = (GraphicsCursorFrameRecord *)arg1;
+                g_CursorFrameCount = uVar4;
+                do {
+                  GVar1 = (arg1->common).buildMetadata.timestamps.dateValue0;
+                  (arg1->common).buildMetadata.timestamps.dateValue1 = (arg1->common).formatVersion;
+                  (arg1->common).buildMetadata.timestamps.timeValue1 = GVar1;
+                  arg1 = (GraphicsTextureSourceAsset *)
+                         &(arg1->common).buildMetadata.timestamps.dateValue2;
+                  uVar4 = uVar4 - 1;
+                } while (uVar4 != 0);
+                uVar2 = GetKeyState(0x90);
+                if ((uVar2 & 1) != 0) {
+                  g_KeyboardStateMask = g_KeyboardStateMask | 0x10000;
+                }
+                uVar2 = GetKeyState(0x91);
+                if ((uVar2 & 1) != 0) {
+                  g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
+                }
+                SVar11.valueOrError._0_2_ = GetKeyState(0x14);
+                SVar11.valueOrError._2_2_ = extraout_var;
+                if (((ushort)SVar11.valueOrError & 1) != 0) {
+                  g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
+                }
+                SVar11.carry = false;
+                return SVar11;
               }
-              if ((int)dVar6 < (int)dVar5) {
-                dVar6 = dVar5;
-              }
-              bVar9 = arg0 < (extraout_ECX->tableDescriptor).subresourceCount;
-              arg1 = extraout_ECX;
-            } while (bVar9);
-            g_CursorMaxWidth = dVar7;
-            g_CursorMaxHeight = dVar6;
-            uVar11 = Resource_Load(extraout_ECX,dVar5,(word *)u_engine_mouse_dat_00416886);
-            pGVar3 = (GraphicsCursorFrameRecord *)uVar11;
-            if (bVar9) {
-              return (dword)pGVar3;
             }
-            uVar4 = extraout_ECX_00 >> 5;
-            g_CursorFrameRecords = pGVar3;
-            g_CursorFrameCount = uVar4;
-            do {
-              pGVar3->idleSubresourceIndex = pGVar3->idleAnimationFirstSubresourceIndex;
-              pGVar3->activeSubresourceIndex = pGVar3->activeAnimationFirstSubresourceIndex;
-              pGVar3 = pGVar3 + 1;
-              uVar4 = uVar4 - 1;
-            } while (uVar4 != 0);
-            uVar1 = GetKeyState(0x90);
-            if ((uVar1 & 1) != 0) {
-              g_KeyboardStateMask = g_KeyboardStateMask | 0x10000;
-            }
-            uVar1 = GetKeyState(0x91);
-            if ((uVar1 & 1) != 0) {
-              g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
-            }
-            uVar1 = GetKeyState(0x14);
-            if ((uVar1 & 1) != 0) {
-              g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
-            }
-            return CONCAT22(extraout_var,uVar1);
+            goto LAB_00576f08;
           }
         }
       }
     }
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,local_1c,g_PackageLastErrorPath);
-  return 0x25;
+  arg1 = (GraphicsTextureSourceAsset *)0x25;
+LAB_00576f08:
+  SVar12.carry = true;
+  SVar12.valueOrError = (dword)arg1;
+  return SVar12;
 }
+
 
 /* Address: 0x00576F20.
    Ownership: platform/input/devices.
@@ -205,7 +230,7 @@ dword __cdecl DirectInputMouse_Init(void)
    recreates it, reapplies data format, cooperative level, and buffer property, then reacquires it. g_MousePollBusy
    brackets the refresh.
 */
-void __cdecl DirectInputMouse_RefreshDeviceIfIdle(void)
+void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(void)
 
 {
   TH_LEGACY_HRESULT mouseDeviceSetupResult;
@@ -243,12 +268,13 @@ void __cdecl DirectInputMouse_RefreshDeviceIfIdle(void)
   return;
 }
 
+
 /* Address: 0x00577000.
    Ownership: platform/input/devices.
    Purpose: Handles direct input mouse shutdown.
    Cross-module calls: TimerSystem_UnregisterPeriodic [platform/system/time_locale].
 */
-void __cdecl DirectInputMouse_Shutdown(void)
+void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void)
 
 {
   HCURSOR hCursor;
@@ -268,12 +294,13 @@ void __cdecl DirectInputMouse_Shutdown(void)
   return;
 }
 
+
 /* Address: 0x00577080.
    Ownership: platform/input/devices.
    Purpose: The routine retries acquisition after DIERR_INPUTLOST and limits repeated polling errors to 16
    attempts.
 */
-void __cdecl DirectInputMouse_PollBufferedEvents(void)
+void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(void)
 
 {
   dword dVar1;
@@ -409,6 +436,7 @@ DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry:
   return;
 }
 
+
 /* Address: 0x005772F0.
    Ownership: platform/input/devices.
    Purpose: Display-mode hook that releases three cursor surfaces, invokes the previous graphics hook, recreates
@@ -417,15 +445,18 @@ DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry:
    semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-void DirectInputMouse_DisplayModeHookCf
-               (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
-               GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
+DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DirectInputMouse_DisplayModeHookCf
+          (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
+          GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
 
 {
+  SoftwareFramebufferAccess *pSVar1;
   SoftwareFramebufferAccess *newCursorFramebuffer;
   SoftwareFramebufferAccess *newCompositeFramebuffer;
-  SoftwareFramebufferAccess *pSVar1;
-  undefined1 in_CF;
+  DisplayModeEaxCf5 DVar3;
+  DisplayModeEaxCf5 DVar4;
+  bool bVar2;
   
   g_GraphicsBackendAccessState = -1;
   (*g_MemoryApi.free)(g_CursorSavedBackground);
@@ -434,38 +465,46 @@ void DirectInputMouse_DisplayModeHookCf
   g_CursorSavedBackground = (SoftwareFramebufferAccess *)0x0;
   g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
   g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
-  (*g_DirectInputMousePreviousDisplayModeHookCf)
-            (hookArg0,hookArg1,framebufferHeight,framebufferWidth);
+  DVar3 = (*g_DirectInputMousePreviousDisplayModeHookCf)
+                    (hookArg0,hookArg1,framebufferHeight,framebufferWidth);
   pSVar1 = g_FramebufferAccess;
-  if (!(bool)in_CF) {
+  bVar2 = DVar3.carry;
+  newCursorFramebuffer = (SoftwareFramebufferAccess *)DVar3.eax;
+  if (!bVar2) {
     newCursorFramebuffer =
          (*g_SoftwareFramebufferCreate)
                    (g_FramebufferAccess->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
-    if (!(bool)in_CF) {
+    if (!bVar2) {
       g_CursorSavedBackground = newCursorFramebuffer;
       newCompositeFramebuffer =
            (*g_SoftwareFramebufferCreate)(pSVar1->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
-      if (!(bool)in_CF) {
+      newCursorFramebuffer = newCompositeFramebuffer;
+      if (!bVar2) {
         g_CursorCompositeBuffer = newCompositeFramebuffer;
-        pSVar1 = (*g_SoftwareFramebufferCreate)
-                           (pSVar1->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
-        if (!(bool)in_CF) {
-          g_CursorAlternateSavedBackground = pSVar1;
+        newCursorFramebuffer =
+             (*g_SoftwareFramebufferCreate)
+                       (pSVar1->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
+        if (!bVar2) {
+          g_CursorAlternateSavedBackground = newCursorFramebuffer;
           (*g_GraphicsTextureSourceConvertPaletteEntries)
                     ((GraphicsPaletteTextureSourceAsset *)g_CursorSourceAsset);
           g_CursorOverrideX = framebufferWidth >> 1;
           g_CursorOverrideY = framebufferHeight >> 1;
           g_MouseX = g_CursorOverrideX;
           g_MouseY = g_CursorOverrideY;
-          (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+          DVar4.eax = (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
           g_GraphicsBackendAccessState = 0;
-          return;
+          DVar4.carry = false;
+          return DVar4;
         }
       }
     }
   }
-  return;
+  DVar3.carry = true;
+  DVar3.eax = (dword)newCursorFramebuffer;
+  return DVar3;
 }
+
 
 /* Address: 0x00577420.
    Ownership: platform/input/devices.
@@ -475,8 +514,8 @@ void DirectInputMouse_DisplayModeHookCf
    semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-void DirectInputMouse_SetPosition
-               (Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX)
+void __thandor_void_preserve_eax_ecx
+DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX)
 
 {
   g_CursorOverrideX = positionX;
@@ -488,12 +527,13 @@ void DirectInputMouse_SetPosition
   return;
 }
 
+
 /* Address: 0x00577460.
    Ownership: platform/input/devices.
    Purpose: Copies the current DirectInput coordinates and wheel delta into the published cursor state, then drops
    pending cursor events by copying the write index to the read index.
 */
-void __cdecl DirectInputMouse_FlushBufferedEvents(void)
+void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_FlushBufferedEvents(void)
 
 {
   g_CursorOverrideX = g_MouseX;
@@ -503,6 +543,7 @@ void __cdecl DirectInputMouse_FlushBufferedEvents(void)
   return;
 }
 
+
 /* Address: 0x005774A0.
    Ownership: platform/input/devices.
    Purpose: Handles WM_KEYDOWN and WM_SYSKEYDOWN virtual keys. Left/right Shift, Ctrl, and Alt update low state
@@ -510,7 +551,7 @@ void __cdecl DirectInputMouse_FlushBufferedEvents(void)
    through g_KeyboardToggleLatchMask. Mapped non-modifier keys append an encoded KeyboardInputEvent. CF clear means
    an event was queued; CF set means no event was queued.
 */
-void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
+void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 
 {
   KeyboardInputEvent *pKVar1;
@@ -608,13 +649,14 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
   return;
 }
 
+
 /* Address: 0x00577880.
    Ownership: platform/input/devices.
    Purpose: Handles WM_KEYUP and WM_SYSKEYUP. Modifier bits and toggle latches are cleared directly. Engine
    special-key codes in family 0x0001 clear g_KeyboardSpecialKeyDown[lowWord]. No keyboard event is appended. CF
    clear means a recognized non-modifier key was processed; CF set covers modifier/toggle or unmapped keys.
 */
-void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
+void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
   uint mappedKeyStateCode;
@@ -686,12 +728,13 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
   return;
 }
 
+
 /* Address: 0x00577B30.
    Ownership: platform/input/devices.
    Purpose: Handles WM_CHAR and WM_SYSCHAR by appending the low 16-bit character plus the current keyboard state.
    When either Ctrl bit is active, control characters 1-26 are normalized to lowercase ASCII a-z by adding 0x60.
 */
-void Keyboard_OnChar(KeyboardCharacterCode character)
+void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode character)
 
 {
   KeyboardInputEvent *pKVar1;
@@ -715,6 +758,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
   return;
 }
 
+
 /* Address: 0x004172B0.
    Ownership: platform/input/devices.
    Purpose: Converts ASCII a-z to A-Z and leaves all other values unchanged. Keyboard ASCII case-transform
@@ -722,7 +766,7 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-dword Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
+dword __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
   if ((0x60 < asciiCodeUnit) && (asciiCodeUnit < 0x7b)) {
@@ -730,3 +774,4 @@ dword Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
   }
   return asciiCodeUnit;
 }
+

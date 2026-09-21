@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/faction/relations.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/faction/relations.h>
 
 /* Implementation ownership: gameplay/faction/relations. */
@@ -10,63 +17,45 @@
    GameFactionRelations_MaybeResetPairState, GameFactionRelations_MaybeAdvancePairStateRare,
    GameFactionRelations_MaybeAdvancePairStateCommon.
 */
-AiPreservedFactionIndexEdxResult
+void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_UpdateAllPairsForFaction
           (FactionRuntimeIndex sourceFactionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  FactionRuntimeIndex targetFactionIndex;
-  FactionRuntimeIndex targetFactionIndex_00;
-  uint extraout_EAX;
-  uint extraout_EAX_00;
-  uint sourceFactionIndex_04;
-  FactionRuntimeIndex sourceFactionIndex_05;
-  uint sourceFactionIndex_06;
-  uint extraout_ECX;
+  int sourceFactionIndex_04;
   FactionRuntimeIndex sourceFactionIndex_03;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
-  FactionRuntimeIndex in_EDX;
   bool bVar1;
   
   sourceFactionIndex_04 = 7;
   do {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[sourceFactionIndex_04] ==
-         FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-       (bVar1 = (uint)sourceFactionIndex < sourceFactionIndex_04,
-       sourceFactionIndex != sourceFactionIndex_04)) {
-      GameFactionRelations_TestPairTransitionAllowedCf(sourceFactionIndex_04,sourceFactionIndex);
+         FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (sourceFactionIndex != sourceFactionIndex_04)) {
+      bVar1 = GameFactionRelations_TestPairTransitionAllowedCf
+                        (sourceFactionIndex_04,sourceFactionIndex);
       if (bVar1) {
-        sourceFactionIndex =
-             GameFactionRelations_IsResetEligibleStateCf(sourceFactionIndex_05,targetFactionIndex);
-        sourceFactionIndex_04 = sourceFactionIndex_06;
+        bVar1 = GameFactionRelations_IsResetEligibleStateCf
+                          (sourceFactionIndex_04,sourceFactionIndex);
         if (!bVar1) {
-          sourceFactionIndex =
-               GameFactionRelations_MaybeResetPairState(sourceFactionIndex_06,sourceFactionIndex);
-          sourceFactionIndex_04 = extraout_ECX;
+          GameFactionRelations_MaybeResetPairState(sourceFactionIndex_04,sourceFactionIndex);
         }
       }
       else {
-        targetFactionIndex_00 =
-             GameFactionRelations_IsResetEligibleStateCf(sourceFactionIndex_05,targetFactionIndex);
+        bVar1 = GameFactionRelations_IsResetEligibleStateCf
+                          (sourceFactionIndex_04,sourceFactionIndex);
         if (bVar1) {
-          GameFactionRelations_MaybeAdvancePairStateRare
-                    (sourceFactionIndex_03,targetFactionIndex_00);
-          sourceFactionIndex = extraout_EAX;
-          sourceFactionIndex_04 = extraout_ECX_00;
+          GameFactionRelations_MaybeAdvancePairStateRare(sourceFactionIndex_04,sourceFactionIndex);
         }
         else {
-          GameFactionRelations_MaybeAdvancePairStateCommon
-                    (sourceFactionIndex_03,targetFactionIndex_00);
-          sourceFactionIndex = extraout_EAX_00;
-          sourceFactionIndex_04 = extraout_ECX_01;
+          GameFactionRelations_MaybeAdvancePairStateCommon(sourceFactionIndex_04,sourceFactionIndex)
+          ;
         }
       }
     }
-    sourceFactionIndex_04 = sourceFactionIndex_04 - 1;
+    sourceFactionIndex_04 = sourceFactionIndex_04 + -1;
   } while (sourceFactionIndex_04 != 0);
-  return (AiPreservedFactionIndexEdxResult)in_EDX;
+  return;
 }
+
 
 /* Address: 0x00560E30.
    Ownership: gameplay/faction/relations.
@@ -76,25 +65,18 @@ GameFactionRelations_UpdateAllPairsForFaction
    control flow, and executable data remain unchanged. Typed parameters: p4 pairValue→SelectionPlayerPairValue.
    Local calls: PlayerPairList_InsertUnique.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertRange
           (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue endKey,
           SelectionPlayerPairValue pairValue,SelectionPlayerPairValue startKey)
 
 {
-  undefined4 in_EAX;
-  SelectionPlayerPairValue extraout_ECX;
-  undefined4 in_EDX;
-  undefined8 operationResultPair;
-  
-  while ((int)startKey <= (int)endKey) {
-    operationResultPair = PlayerPairList_InsertUnique(playerRuntimeId,0,pairValue,startKey);
-    playerRuntimeId = (PlayerRuntimeId)((ulonglong)operationResultPair >> 0x20);
-    endKey = extraout_ECX;
-    startKey = (int)operationResultPair + 0x1000;
+  for (; (int)startKey <= (int)endKey; startKey = startKey + 0x1000) {
+    PlayerPairList_InsertUnique(playerRuntimeId,0,pairValue,startKey);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00560E70.
    Ownership: gameplay/faction/relations.
@@ -105,25 +87,18 @@ PlayerPairList_InsertRange
    pairValue→SelectionPlayerPairValue.
    Local calls: PlayerPairList_RemoveFirstMatch.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveRange
           (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue endKey,
           SelectionPlayerPairValue pairValue,SelectionPlayerPairValue startKey)
 
 {
-  undefined4 in_EAX;
-  SelectionPlayerPairValue extraout_ECX;
-  undefined4 in_EDX;
-  undefined8 operationResultPair;
-  
-  while ((int)startKey <= (int)endKey) {
-    operationResultPair = PlayerPairList_RemoveFirstMatch(playerRuntimeId,0,pairValue,startKey);
-    playerRuntimeId = (PlayerRuntimeId)((ulonglong)operationResultPair >> 0x20);
-    endKey = extraout_ECX;
-    startKey = (int)operationResultPair + 0x1000;
+  for (; (int)startKey <= (int)endKey; startKey = startKey + 0x1000) {
+    PlayerPairList_RemoveFirstMatch(playerRuntimeId,0,pairValue,startKey);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0053C3D0.
    Ownership: gameplay/faction/relations.
@@ -132,15 +107,15 @@ PlayerPairList_RemoveRange
    Local calls: GameFactionRelations_BuildEligibleFactionMask, GameFactionRelations_EvaluateTransitionRulesCf.
    Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
 */
-void GameFactionRelations_TestPairTransitionAllowedCf
-               (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
+bool __thandor_cf_preserve_eax_ecx_edx
+GameFactionRelations_TestPairTransitionAllowedCf
+          (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
   FactionRelationState FVar1;
   FactionActiveMask FVar2;
-  FactionActiveMask activeFactionMask;
-  uint extraout_EDX;
-  bool bVar3;
+  FactionActiveMask FVar3;
+  bool bVar4;
   
   FVar1 = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   if (((((FVar1 != 2) && (FVar1 != 5)) && (FVar1 != 9)) &&
@@ -149,20 +124,20 @@ void GameFactionRelations_TestPairTransitionAllowedCf
       (((g_GameFactionRuntimeImage.tail.relationUiFlags & 2) == 0 &&
        ((FVar1 < 8 || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) == 0)))))))) {
     if (3 < FVar1) {
-      return;
+      return false;
     }
-    GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
-    FVar2 = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
-    bVar3 = false;
-    GameFactionRelations_EvaluateTransitionRulesCf(targetFactionIndex,FVar2 | extraout_EDX);
-    if ((!bVar3) &&
-       (GameFactionRelations_EvaluateTransitionRulesCf(sourceFactionIndex,activeFactionMask), !bVar3
-       )) {
-      return;
+    FVar2 = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
+    FVar3 = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
+    bVar4 = GameFactionRelations_EvaluateTransitionRulesCf(targetFactionIndex,FVar3 | FVar2);
+    if ((!bVar4) &&
+       (bVar4 = GameFactionRelations_EvaluateTransitionRulesCf(sourceFactionIndex,FVar3 | FVar2),
+       !bVar4)) {
+      return false;
     }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0053C090.
    Ownership: gameplay/faction/relations.
@@ -170,14 +145,12 @@ void GameFactionRelations_TestPairTransitionAllowedCf
    a packed pairwise relation state below four.
    Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
 */
-FactionActiveMask
+FactionActiveMask __thandor_eax_preserve_ecx_edx
 GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex)
 
 {
   dword relationStateNibble;
   int factionIndex;
-  int extraout_ECX;
-  int extraout_EDX;
   uint eligibleFactionMask;
   uint currentFactionBit;
   
@@ -190,8 +163,6 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
       if (factionIndex != sourceFactionIndex) {
         relationStateNibble =
              GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex);
-        factionIndex = extraout_ECX;
-        sourceFactionIndex = extraout_EDX;
         if (relationStateNibble < 4)
         goto GameFactionRelations_BuildEligibleFactionMask_AdvanceAfterEligibilityDecision;
       }
@@ -206,24 +177,29 @@ GameFactionRelations_BuildEligibleFactionMask_AdvanceAfterEligibilityDecision:
   } while( true );
 }
 
+
 /* Address: 0x0053C0F0.
    Ownership: gameplay/faction/relations.
    Purpose: Handles game faction relations evaluate transition rules carry-flag result.
 */
-void GameFactionRelations_EvaluateTransitionRulesCf
-               (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
+
+bool __thandor_cf_preserve_eax_ecx_edx
+GameFactionRelations_EvaluateTransitionRulesCf
+          (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
   byte bVar1;
-  InGameConditionRuntime *pIVar2;
+  InGameLevelConditionStorageView800 *pIVar2;
   uint uVar3;
   int iVar4;
   uint uVar5;
-  byte *pbVar6;
-  byte bVar7;
-  byte *pbVar8;
+  InGameScheduledConditionKind IVar6;
+  byte *pbVar7;
+  byte bVar8;
+  InGameConditionScheduleImageView480 *pIVar9;
+  InGameEndConditionTriggerRecord8ReferenceView *pIVar10;
   
-  pIVar2 = g_InGameConditionRuntime;
+  pIVar2 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   uVar3 = 0;
   uVar5 = 0x80;
   iVar4 = 7;
@@ -237,102 +213,112 @@ void GameFactionRelations_EvaluateTransitionRulesCf
   } while (iVar4 != 0);
   if (uVar3 != activeFactionMask) {
     iVar4 = 0x40;
-    pbVar8 = g_InGameConditionRuntime[4].reserved00_4F;
+    pIVar9 = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
     do {
-      pbVar8 = pbVar8 + 0x10;
-      uVar3 = *(uint *)pbVar8;
-      *(uint *)pbVar8 = *(uint *)pbVar8 & 0xfffffffe;
-                    
-      switch(uVar3 & 0xfe) {
-      case 2:
-        if ((activeFactionMask & 1 << ((byte)*(uint *)(pbVar8 + 4) & 0x1f)) == 0) {
-          *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      IVar6 = pIVar9->conditions[0].statusAndKind.kind;
+      pIVar9->conditions[0].statusAndKind.kind =
+           pIVar9->conditions[0].statusAndKind.kind & 0xfffffffe;
+                    // WARNING: Switch is manually overridden
+      switch(IVar6 & 0xfe) {
+      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
+        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+           ) {
+          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         }
         break;
-      case 4:
-        if ((activeFactionMask & 1 << ((byte)*(uint *)(pbVar8 + 4) & 0x1f)) == 0) {
-          *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_CLASS_COMMAND_GROUP_A:
+        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+           ) {
+          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         }
         break;
-      case 6:
-        if ((activeFactionMask & 1 << ((byte)*(uint *)(pbVar8 + 4) & 0x1f)) == 0) {
-          *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_RUNTIME_ID:
+        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+           ) {
+          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         }
         break;
-      case 8:
-        *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
+        pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         break;
-      case 0x10:
-        if ((activeFactionMask & 1 << ((byte)*(uint *)(pbVar8 + 4) & 0x1f)) != 0) {
-          *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case 
+      INGAME_SCHEDULED_CONDITION_MATCHING_DEFINITION_AND_RUNTIME_ID_ACTIVE_ENTITY_COUNT_AT_LEAST:
+        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) != 0
+           ) {
+          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         }
         break;
-      case 0x12:
-        *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
+        pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         break;
-      case 0x14:
-        if (*(uint *)(pbVar8 + 8) == 0) {
-          *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
+        if (pIVar9->conditions[0].payload.operands[1] == 0) {
+          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         }
         break;
-      case 0x16:
-        *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_PRIMARY_RESOURCE_LIMIT_AT_MOST_0FA0:
+        pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         break;
-      case 0x18:
-        if ((activeFactionMask & 1 << ((byte)*(uint *)(pbVar8 + 4) & 0x1f)) == 0) {
-          *(uint *)pbVar8 = *(uint *)pbVar8 | 1;
+      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_CLASS_ID_OUTSIDE_CLASS_COMMAND_GROUP_A:
+        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+           ) {
+          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
         }
         break;
-      case 0x1a:
-        pbVar6 = pbVar8 + 1;
-        uVar3 = 0;
+      case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
+        pbVar7 = (byte *)((int)&pIVar9->conditions[0].statusAndKind.kind + 1);
+        IVar6 = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
         while( true ) {
           while( true ) {
             while( true ) {
               while( true ) {
-                bVar1 = *pbVar6;
-                pbVar6 = pbVar6 + 1;
+                bVar1 = *pbVar7;
+                pbVar7 = pbVar7 + 1;
                 if (bVar1 != 0xff) break;
-                uVar3 = uVar3 >> 1 | uVar3 & 1;
+                IVar6 = IVar6 >> 1 | IVar6 & 1;
               }
               if (bVar1 != 0xfe) break;
-              uVar3 = uVar3 >> 1 & (uVar3 | 0xfffffffe);
+              IVar6 = IVar6 >> 1 & (IVar6 | 0xfffffffe);
             }
             if (bVar1 != 0xfd) break;
-            uVar3 = uVar3 ^ 1;
+            IVar6 = IVar6 ^ 1;
           }
           if (bVar1 == 0xfc) break;
-          uVar3 = (*(uint *)(pIVar2[4].reserved00_4F + (uint)bVar1 * 0x10 + 0x10) & 1) + uVar3 * 2;
+          IVar6 = ((pIVar2->schedule).conditions[bVar1].statusAndKind.kind & 1) + IVar6 * 2;
         }
-        *(uint *)pbVar8 = *(uint *)pbVar8 | uVar3 & 1;
+        pIVar9->conditions[0].statusAndKind.kind =
+             pIVar9->conditions[0].statusAndKind.kind | IVar6 & 1;
       }
+      pIVar9 = (InGameConditionScheduleImageView480 *)(pIVar9->conditions + 1);
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
-    pbVar8 = pIVar2[8].reserved5C_AB + 0x44;
+    pIVar10 = (pIVar2->schedule).triggers;
     iVar4 = 0x10;
     do {
-      if ((*pbVar8 == 1) &&
-         ((*(uint *)(pIVar2[4].reserved00_4F + (uint)pbVar8[6] * 0x10 + 0x10) & 1) != 0)) {
-        bVar1 = pbVar8[4];
+      if ((pIVar10->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
+         (((pIVar2->schedule).conditions[pIVar10->conditionIndex].statusAndKind.kind & 1) !=
+          INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED)) {
+        bVar1 = pIVar10->factionRuntimeIndex;
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[bVar1] ==
             FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-          bVar7 = pbVar8[1];
+          bVar8 = pIVar10->movieVariantSelector;
           if ((focalFactionIndex != (uint)bVar1) && ((activeFactionMask & 1 << (bVar1 & 0x1f)) == 0)
              ) {
-            bVar7 = bVar7 ^ 1;
+            bVar8 = bVar8 ^ 1;
           }
-          if (bVar7 == 0) {
-            return;
+          if (bVar8 == 0) {
+            return true;
           }
-          return;
+          return false;
         }
       }
-      pbVar8 = pbVar8 + 8;
+      pIVar10 = pIVar10 + 1;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0053C490.
    Ownership: gameplay/faction/relations.
@@ -340,21 +326,21 @@ void GameFactionRelations_EvaluateTransitionRulesCf
    result through carry.
    Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
 */
-undefined4
+bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRelations_IsResetEligibleStateCf
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  undefined4 in_EAX;
   dword relationStateNibble;
   
   relationStateNibble =
        GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   if (((relationStateNibble != 3) && (relationStateNibble != 6)) && (relationStateNibble != 10)) {
-    return in_EAX;
+    return true;
   }
-  return in_EAX;
+  return false;
 }
+
 
 /* Address: 0x0053C4D0.
    Ownership: gameplay/faction/relations.
@@ -363,19 +349,17 @@ GameFactionRelations_IsResetEligibleStateCf
    faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
    Cross-module calls: GameFactionRuntime_AdvancePairwiseRelationState [gameplay/faction/runtime].
 */
-void GameFactionRelations_MaybeAdvancePairStateRare
-               (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
+void __thandor_void_preserve_eax_ecx_edx
+GameFactionRelations_MaybeAdvancePairStateRare
+          (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
   uint uVar1;
   dword dVar2;
   uint uVar3;
-  int extraout_ECX;
-  int extraout_EDX;
   
   dVar2 = (*g_RandomGeneratorState.next)();
-  uVar1 = *(uint *)((int)g_GameDataAuxState.pairPressureMatrix8x8 + extraout_ECX * 4 + extraout_EDX)
-  ;
+  uVar1 = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (uVar1 == 0) {
     uVar3 = dVar2 & 0x17f;
   }
@@ -395,6 +379,7 @@ void GameFactionRelations_MaybeAdvancePairStateRare
   return;
 }
 
+
 /* Address: 0x0053C540.
    Ownership: gameplay/faction/relations.
    Purpose: Uses the current pair pressure and a random threshold to invoke pairwise relation advancement through
@@ -402,19 +387,17 @@ void GameFactionRelations_MaybeAdvancePairStateRare
    faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
    Cross-module calls: GameFactionRuntime_AdvancePairwiseRelationState [gameplay/faction/runtime].
 */
-void GameFactionRelations_MaybeAdvancePairStateCommon
-               (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
+void __thandor_void_preserve_eax_ecx_edx
+GameFactionRelations_MaybeAdvancePairStateCommon
+          (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
   uint uVar1;
   dword dVar2;
   uint uVar3;
-  int extraout_ECX;
-  int extraout_EDX;
   
   dVar2 = (*g_RandomGeneratorState.next)();
-  uVar1 = *(uint *)((int)g_GameDataAuxState.pairPressureMatrix8x8 + extraout_ECX * 4 + extraout_EDX)
-  ;
+  uVar1 = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (uVar1 == 0) {
     uVar3 = dVar2 & 0x7f;
   }
@@ -434,6 +417,7 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
   return;
 }
 
+
 /* Address: 0x0053C5B0.
    Ownership: gameplay/faction/relations.
    Purpose: Randomly invokes the shared pairwise relation reset helper when the verified random mask equals 0x80.
@@ -441,12 +425,11 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
    ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
    Cross-module calls: GameFactionRuntime_ResetPairwiseRelationState [gameplay/faction/runtime].
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_MaybeResetPairState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  undefined4 in_EAX;
   dword dVar1;
   
   dVar1 = (*g_RandomGeneratorState.next)();
@@ -454,8 +437,9 @@ GameFactionRelations_MaybeResetPairState
     GameFactionRuntime_ResetPairwiseRelationState
               (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00560EB0.
    Ownership: gameplay/faction/relations.
@@ -465,14 +449,12 @@ GameFactionRelations_MaybeResetPairState
    storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p4
    pairValue→SelectionPlayerPairValue.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertUnique
-          (PlayerRuntimeId playerRuntimeId,undefined4 param_2,SelectionPlayerPairValue pairValue,
+          (PlayerRuntimeId playerRuntimeId,dword reservedZero,SelectionPlayerPairValue pairValue,
           SelectionPlayerPairValue pairKey)
 
 {
-  undefined4 in_EAX;
-  undefined4 in_EDX;
   SelectionPlayerPairRecord *pairRecordCursor;
   uint recordsRemaining;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
@@ -485,8 +467,9 @@ PlayerPairList_InsertUnique
   pairRecordCursor = playerRuntimeBlock->pairRecords80_807F;
   if (recordsRemaining < 0x1000) {
     for (; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
-      if ((pairKey == pairRecordCursor->pairKey) && (pairValue == pairRecordCursor->pairValue))
-      goto PlayerPairList_InsertUnique_ReturnAfterDuplicateCapacityOrAppendDecision;
+      if ((pairKey == pairRecordCursor->pairKey) && (pairValue == pairRecordCursor->pairValue)) {
+        return;
+      }
       pairRecordCursor = pairRecordCursor + 1;
     }
     appendRecordIndex = playerRuntimeBlock->activePairCount8084;
@@ -497,9 +480,9 @@ PlayerPairList_InsertUnique
       inGameRuntimeRoot->localPlayerPairCount0BA4 = inGameRuntimeRoot->localPlayerPairCount0BA4 + 1;
     }
   }
-PlayerPairList_InsertUnique_ReturnAfterDuplicateCapacityOrAppendDecision:
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00560F50.
    Ownership: gameplay/faction/relations.
@@ -509,15 +492,13 @@ PlayerPairList_InsertUnique_ReturnAfterDuplicateCapacityOrAppendDecision:
    storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p4
    pairValue→SelectionPlayerPairValue.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveFirstMatch
-          (PlayerRuntimeId playerRuntimeId,undefined4 param_2,SelectionPlayerPairValue pairValue,
+          (PlayerRuntimeId playerRuntimeId,dword reservedZero,SelectionPlayerPairValue pairValue,
           SelectionPlayerPairValue pairKey)
 
 {
-  undefined4 in_EAX;
   int trailingDwordsToMove;
-  undefined4 in_EDX;
   SelectionPlayerPairRecord *copySourceCursor;
   uint recordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
@@ -545,10 +526,11 @@ PlayerPairList_RemoveFirstMatch
           inGameRuntimeRoot->localPlayerPairCount0BA4 =
                inGameRuntimeRoot->localPlayerPairCount0BA4 - 1;
         }
-        return CONCAT44(in_EDX,in_EAX);
+        return;
       }
       pairRecordCursor = pairRecordCursor + 1;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+

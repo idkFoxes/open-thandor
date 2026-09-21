@@ -1,6 +1,6 @@
 # Call graph: `world/terrain/projection`
 
-[Source](../../../../src/world/terrain/projection.c) · [Header](../../../../include/thandor/world/terrain/projection.h) · [Graphviz](projection.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-projection)
+[Source](../../../../src/world/terrain/projection.c) · [Header](../../../../include/thandor/world/terrain/projection.h) · [Graphviz](projection.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-projection) · [Developer notes](../../../../CHANGELOG.md#module-world-terrain-projection) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-terrain-projection)
 
 45 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `world/terrain/visuals`
 
-[Source](../../../../src/world/terrain/visuals.c) · [Header](../../../../include/thandor/world/terrain/visuals.h) · [Graphviz](visuals.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-visuals)
+[Source](../../../../src/world/terrain/visuals.c) · [Header](../../../../include/thandor/world/terrain/visuals.h) · [Graphviz](visuals.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-visuals) · [Developer notes](../../../../CHANGELOG.md#module-world-terrain-visuals) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-terrain-visuals)
 
 11 functions. Addresses are current V523 executable VAs.
 

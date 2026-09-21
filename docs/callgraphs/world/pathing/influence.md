@@ -1,6 +1,6 @@
 # Call graph: `world/pathing/influence`
 
-[Source](../../../../src/world/pathing/influence.c) · [Header](../../../../include/thandor/world/pathing/influence.h) · [Graphviz](influence.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-pathing-influence)
+[Source](../../../../src/world/pathing/influence.c) · [Header](../../../../include/thandor/world/pathing/influence.h) · [Graphviz](influence.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-pathing-influence) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-pathing-influence)
 
 19 functions. Addresses are current V523 executable VAs.
 

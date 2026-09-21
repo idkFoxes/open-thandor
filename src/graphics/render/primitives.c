@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/render/primitives.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/render/primitives.h>
 
 /* Implementation ownership: graphics/render/primitives. */
@@ -10,8 +17,9 @@
    preserves alpha and halves each vertex RGB channel with MMX. Typed parameters: p0
    halveVertexRgb→GraphicsBooleanState_V307. Nearby but non-identical semantic domains were explicitly deferred.
 */
-void GraphicsPrimitiveQueue_RadixSortForRendering
-               (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsPrimitiveQueue_RadixSortForRendering
+          (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
 
 {
   int *piVar1;
@@ -257,6 +265,7 @@ void GraphicsPrimitiveQueue_RadixSortForRendering
   return;
 }
 
+
 /* Address: 0x004D0A10.
    Ownership: graphics/render/primitives.
    Purpose: Allocates 0x20 + capacity * 0xA0 bytes for the global primitive queue pool. ABI: CF clear means
@@ -267,85 +276,106 @@ void GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity pa
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
   bool allocationSizeOverflow;
+  ArenaAllocEaxCf5 AVar1;
   
   g_PrimitiveQueuePoolCapacity = packetCapacity;
-  allocationSizeOverflow = 0xffffffdf < packetCapacity * 0xa0;
-  allocatedQueueStorage = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
-  if (!allocationSizeOverflow) {
+  AVar1 = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
+  allocatedQueueStorage = (GraphicsPrimitiveQueue *)AVar1.eax;
+  if (!AVar1.carry) {
     g_PrimitiveQueueStorage = allocatedQueueStorage;
   }
   return;
 }
+
 
 /* Address: 0x004D0A40.
    Ownership: graphics/render/primitives.
    Purpose: Initializes the global variable-length queue: primaryNodes follow the 0x20-byte header,
    radixScratchPool follows primaryNodes, and packetPool follows the scratch nodes.
 */
-GraphicsPrimitiveQueue * __cdecl GraphicsPrimitiveQueue_ResetGlobal(void)
+GraphicsPrimitiveQueueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsPrimitiveQueue_ResetGlobal(void)
 
 {
+  GraphicsPrimitiveQueue *pGVar1;
+  GraphicsPrimitiveQueueEaxCf5 GVar2;
   GraphicsPrimitiveQueue *queueStorage;
   dword poolCapacity;
   
   poolCapacity = g_PrimitiveQueuePoolCapacity;
-  queueStorage = g_PrimitiveQueueStorage;
+  pGVar1 = g_PrimitiveQueueStorage;
   g_PrimitiveQueueStorage->capacity = g_PrimitiveQueuePoolCapacity;
-  queueStorage->count = 0;
-  queueStorage->radixScratchPool = queueStorage->primaryNodes + poolCapacity;
-  queueStorage->packetPool =
-       (GraphicsPrimitivePacket *)(queueStorage->primaryNodes + poolCapacity + poolCapacity);
-  return queueStorage;
+  pGVar1->count = 0;
+  pGVar1->radixScratchPool = pGVar1->primaryNodes + poolCapacity;
+  pGVar1->packetPool =
+       (GraphicsPrimitivePacket *)(pGVar1->primaryNodes + poolCapacity + poolCapacity);
+  GVar2.carry = false;
+  GVar2.queue = pGVar1;
+  return GVar2;
 }
+
 
 /* Address: 0x004D0A70.
    Ownership: graphics/render/primitives.
    Purpose: Frees a primitive queue allocation.
 */
-void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
+void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
 
 {
   (*g_MemoryApi.free)(queue);
   return;
 }
 
+
 /* Address: 0x004D0A90.
    Ownership: graphics/render/primitives.
    Purpose: Returns queue->count.
 */
-dword GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
+dword __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
 
 {
   return queue->count;
 }
+
 
 /* Address: 0x004D0AA0.
    Ownership: graphics/render/primitives.
    Purpose: Returns traversalCursor->packet and advances traversalCursor to node->next. ABI: CF clear means
    success. CF set means failure or end of iteration.
 */
-GraphicsPrimitivePacket * GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
+GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
   GraphicsPrimitivePacket *in_EAX;
+  GraphicsPrimitivePacketEaxCf5 GVar1;
+  GraphicsPrimitivePacketEaxCf5 GVar2;
   GraphicsPrimitivePacket *currentTraversalPacket;
   
   if (queue->count != 0) {
     currentTraversalPacket = queue->traversalCursor->packet;
     queue->traversalCursor = queue->traversalCursor->next;
-    return currentTraversalPacket;
+    GVar1.carry = false;
+    GVar1.packet = currentTraversalPacket;
+    return GVar1;
   }
-  return in_EAX;
+  GVar2.carry = true;
+  GVar2.packet = in_EAX;
+  return GVar2;
 }
+
 
 /* Address: 0x004D0AE0.
    Ownership: graphics/render/primitives.
    Purpose: Returns traversalCursor->packet and advances until the 0xFFFFFFFF sentinel. ABI: CF clear means
    success. CF set means failure or end of iteration.
 */
-GraphicsPrimitivePacket * GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
+GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
 
 {
+  GraphicsPrimitivePacketEaxCf5 GVar1;
+  GraphicsPrimitivePacketEaxCf5 GVar2;
   GraphicsPrimitiveQueueNode *currentTraversalNode;
   GraphicsPrimitivePacket *currentTraversalPacket;
   
@@ -353,10 +383,15 @@ GraphicsPrimitivePacket * GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *qu
   if (currentTraversalNode != (GraphicsPrimitiveQueueNode *)0xffffffff) {
     currentTraversalPacket = currentTraversalNode->packet;
     queue->traversalCursor = currentTraversalNode->next;
-    return currentTraversalPacket;
+    GVar1.carry = false;
+    GVar1.packet = currentTraversalPacket;
+    return GVar1;
   }
-  return (GraphicsPrimitivePacket *)0xffffffff;
+  GVar2.carry = true;
+  GVar2.packet = (GraphicsPrimitivePacket *)0xffffffff;
+  return GVar2;
 }
+
 
 /* Address: 0x004D0B20.
    Ownership: graphics/render/primitives.
@@ -364,10 +399,11 @@ GraphicsPrimitivePacket * GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *qu
    success. CF set means failure or end of iteration. No individual bit meaning is promoted beyond the established
    mask role. Typed parameters: p0 renderFlags→GraphicsRenderFlagMask_V338.
 */
-void GraphicsPrimitiveQueue_AppendTriangle
-               (GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
-               GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
-               GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
+bool __thandor_cf_preserve_eax_ecx_edx
+GraphicsPrimitiveQueue_AppendTriangle
+          (GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+          GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
+          GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
 {
   GraphicsPrimitiveScreenCoordinate GVar1;
@@ -422,19 +458,21 @@ void GraphicsPrimitiveQueue_AppendTriangle
     destinationPacket->vertices[1].textureV = GVar3;
     destinationPacket->vertices[2].textureV = GVar4;
     destinationPacket->renderFlags = renderFlags;
-    return;
+    return false;
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x004D0C80.
    Ownership: graphics/render/primitives.
    Purpose: Writes three diffuse colors to the most recently appended packet and adjusts shading/alpha handler
    bits.
 */
-void GraphicsPrimitiveQueue_SetVertexColors
-               (PackedArgb32 vertex2Color,PackedArgb32 vertex1Color,PackedArgb32 vertex0Color,
-               GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsPrimitiveQueue_SetVertexColors
+          (PackedArgb32 vertex2Color,PackedArgb32 vertex1Color,PackedArgb32 vertex0Color,
+          GraphicsPrimitiveQueue *queue)
 
 {
   uint existingBlendModeFlags;
@@ -455,14 +493,16 @@ void GraphicsPrimitiveQueue_SetVertexColors
   return;
 }
 
+
 /* Address: 0x004D0D00.
    Ownership: graphics/render/primitives.
    Purpose: Writes modulationColor and an optional GraphicsTextureSetEntry pointer to the most recently appended
    packet.
 */
-void GraphicsPrimitiveQueue_SetMaterial
-               (PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
-               GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsPrimitiveQueue_SetMaterial
+          (PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
+          GraphicsPrimitiveQueue *queue)
 
 {
   dword queuedPacketCount;
@@ -480,13 +520,15 @@ void GraphicsPrimitiveQueue_SetMaterial
   return;
 }
 
+
 /* Address: 0x004D0D50.
    Ownership: graphics/render/primitives.
    Purpose: Offsets all three texture-coordinate pairs in the most recently appended packet.
 */
-void GraphicsPrimitiveQueue_OffsetTextureCoordinates
-               (GraphicsPrimitiveTextureCoordinateFixed deltaV,
-               GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsPrimitiveQueue_OffsetTextureCoordinates
+          (GraphicsPrimitiveTextureCoordinateFixed deltaV,
+          GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
@@ -512,95 +554,110 @@ void GraphicsPrimitiveQueue_OffsetTextureCoordinates
   return;
 }
 
+
 /* Address: 0x004D0DA0.
    Ownership: graphics/render/primitives.
    Purpose: Handles graphics primitive queue append terrain textured triangle.
 */
-undefined8
-GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-          (undefined4 *param_1,uint param_2,uint param_3,uint param_4,int param_5,int param_6,
-          int param_7,int param_8)
+GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
+          (dword *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
+          GraphicsProjectedVertexSource *vertex2Projected,
+          GraphicsProjectedVertexSource *vertex1Projected,
+          GraphicsProjectedVertexSource *vertex0Projected,
+          FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  uint *puVar1;
-  uint uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  GraphicsTextureSet *pGVar5;
-  undefined4 in_EAX;
+  GraphicsPrimitiveQueue *pGVar1;
+  dword dVar2;
+  GraphicsPrimitiveScreenCoordinate GVar3;
+  GraphicsPrimitiveBackendCoordinate GVar4;
+  GraphicsPrimitiveDepthFixed GVar5;
   dword dVar6;
-  undefined4 in_EDX;
-  undefined4 *puVar7;
+  uint uVar7;
+  GraphicsTextureSet *pGVar8;
+  GraphicsPrimitivePacket *in_EAX;
+  PackedArgb32 PVar9;
+  GraphicsPrimitivePacket *pGVar10;
+  GraphicsPrimitivePacketEaxCf5 GVar11;
+  GraphicsPrimitivePacketEaxCf5 GVar12;
   
-  puVar1 = *(uint **)(param_8 + 200);
-  uVar2 = puVar1[1];
-  if (uVar2 + 1 < *puVar1) {
-    puVar1[1] = uVar2 + 1;
-    puVar7 = (undefined4 *)(uVar2 * 0x80 + puVar1[2]);
-    puVar1[uVar2 * 4 + 9] = (uint)puVar7;
-    uVar3 = *(undefined4 *)(param_7 + 0x30);
-    if (*(int *)(param_7 + 0x4c) < 0) {
-      param_4 = param_4 & g_UiCommandModeGColorVariantLimit;
+  pGVar1 = renderContext->activePrimitiveQueue;
+  dVar2 = pGVar1->count;
+  if (dVar2 + 1 < pGVar1->capacity) {
+    pGVar1->count = dVar2 + 1;
+    pGVar10 = pGVar1->packetPool + dVar2;
+    pGVar1->primaryNodes[dVar2].packet = pGVar10;
+    GVar3 = vertex0Projected->screenX;
+    if ((int)vertex0Projected[1].texturedPacketAttributes[2] < 0) {
+      vertex0DiffuseColor = vertex0DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    *puVar7 = *(undefined4 *)(param_7 + 0x2c);
-    puVar7[1] = uVar3;
-    puVar7[7] = param_4;
-    uVar3 = *(undefined4 *)(param_7 + 0x38);
-    uVar4 = *(undefined4 *)(param_7 + 0x3c);
-    puVar7[2] = *(undefined4 *)(param_7 + 0x34);
-    puVar7[3] = uVar3;
-    puVar7[4] = uVar4;
-    uVar3 = *(undefined4 *)(param_6 + 0x30);
-    if (*(int *)(param_6 + 0x4c) < 0) {
-      param_3 = param_3 & g_UiCommandModeGColorVariantLimit;
+    pGVar10->vertices[0].screenX = vertex0Projected->vertexColorArgb;
+    pGVar10->vertices[0].screenY = GVar3;
+    pGVar10->vertices[0].diffuseColor = vertex0DiffuseColor;
+    GVar4 = *(GraphicsPrimitiveBackendCoordinate *)vertex0Projected[1].reserved00_0B;
+    GVar5 = *(GraphicsPrimitiveDepthFixed *)(vertex0Projected[1].reserved00_0B + 4);
+    pGVar10->vertices[0].backendCoord0 = vertex0Projected->screenY;
+    pGVar10->vertices[0].backendCoord1 = GVar4;
+    pGVar10->vertices[0].depth = GVar5;
+    GVar3 = vertex1Projected->screenX;
+    if ((int)vertex1Projected[1].texturedPacketAttributes[2] < 0) {
+      vertex1DiffuseColor = vertex1DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    puVar7[8] = *(undefined4 *)(param_6 + 0x2c);
-    puVar7[9] = uVar3;
-    puVar7[0xf] = param_3;
-    uVar3 = *(undefined4 *)(param_6 + 0x38);
-    uVar4 = *(undefined4 *)(param_6 + 0x3c);
-    puVar7[10] = *(undefined4 *)(param_6 + 0x34);
-    puVar7[0xb] = uVar3;
-    puVar7[0xc] = uVar4;
-    uVar3 = *(undefined4 *)(param_5 + 0x30);
-    if (*(int *)(param_5 + 0x4c) < 0) {
-      param_2 = param_2 & g_UiCommandModeGColorVariantLimit;
+    pGVar10->vertices[1].screenX = vertex1Projected->vertexColorArgb;
+    pGVar10->vertices[1].screenY = GVar3;
+    pGVar10->vertices[1].diffuseColor = vertex1DiffuseColor;
+    GVar4 = *(GraphicsPrimitiveBackendCoordinate *)vertex1Projected[1].reserved00_0B;
+    GVar5 = *(GraphicsPrimitiveDepthFixed *)(vertex1Projected[1].reserved00_0B + 4);
+    pGVar10->vertices[1].backendCoord0 = vertex1Projected->screenY;
+    pGVar10->vertices[1].backendCoord1 = GVar4;
+    pGVar10->vertices[1].depth = GVar5;
+    GVar3 = vertex2Projected->screenX;
+    if ((int)vertex2Projected[1].texturedPacketAttributes[2] < 0) {
+      vertex2DiffuseColor = vertex2DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    puVar7[0x10] = *(undefined4 *)(param_5 + 0x2c);
-    puVar7[0x11] = uVar3;
-    puVar7[0x17] = param_2;
-    uVar3 = *(undefined4 *)(param_5 + 0x38);
-    uVar4 = *(undefined4 *)(param_5 + 0x3c);
-    puVar7[0x12] = *(undefined4 *)(param_5 + 0x34);
-    puVar7[0x13] = uVar3;
-    puVar7[0x14] = uVar4;
-    uVar3 = param_1[2];
-    uVar4 = param_1[4];
-    puVar7[5] = *param_1;
-    puVar7[0xd] = uVar3;
-    puVar7[0x15] = uVar4;
-    uVar3 = param_1[3];
-    uVar4 = param_1[5];
-    puVar7[6] = param_1[1];
-    puVar7[0xe] = uVar3;
-    puVar7[0x16] = uVar4;
-    dVar6 = 0;
+    pGVar10->vertices[2].screenX = vertex2Projected->vertexColorArgb;
+    pGVar10->vertices[2].screenY = GVar3;
+    pGVar10->vertices[2].diffuseColor = vertex2DiffuseColor;
+    GVar4 = *(GraphicsPrimitiveBackendCoordinate *)vertex2Projected[1].reserved00_0B;
+    GVar5 = *(GraphicsPrimitiveDepthFixed *)(vertex2Projected[1].reserved00_0B + 4);
+    pGVar10->vertices[2].backendCoord0 = vertex2Projected->screenY;
+    pGVar10->vertices[2].backendCoord1 = GVar4;
+    pGVar10->vertices[2].depth = GVar5;
+    dVar2 = textureAndMaterialIndices[2];
+    dVar6 = textureAndMaterialIndices[4];
+    pGVar10->vertices[0].textureU = *textureAndMaterialIndices;
+    pGVar10->vertices[1].textureU = dVar2;
+    pGVar10->vertices[2].textureU = dVar6;
+    dVar2 = textureAndMaterialIndices[3];
+    dVar6 = textureAndMaterialIndices[5];
+    pGVar10->vertices[0].textureV = textureAndMaterialIndices[1];
+    pGVar10->vertices[1].textureV = dVar2;
+    pGVar10->vertices[2].textureV = dVar6;
+    PVar9 = 0;
     if (g_TerrainPrimaryPalette != (GraphicsPaletteAsset *)0x0) {
-      dVar6 = g_TerrainPrimaryPalette->paletteEntries[param_1[7]].reserved04;
+      PVar9 = g_TerrainPrimaryPalette->paletteEntries[textureAndMaterialIndices[7]].
+              alternateModulationColorArgb;
     }
-    puVar7[0x1a] = 0x6000;
-    puVar7[0x18] = dVar6;
-    pGVar5 = g_TerrainPrimaryTextureSet;
-    uVar2 = param_1[6];
-    puVar7[0x19] = 0;
-    if ((pGVar5 != (GraphicsTextureSet *)0x0) && (uVar2 < pGVar5->subresourceCount)) {
-      puVar7[0x1a] = puVar7[0x1a] | 0x10000;
-      puVar7[0x19] = pGVar5->entries + uVar2;
+    pGVar10->renderFlags = 0x6000;
+    pGVar10->modulationColor = PVar9;
+    pGVar8 = g_TerrainPrimaryTextureSet;
+    uVar7 = textureAndMaterialIndices[6];
+    pGVar10->textureEntry = (GraphicsTextureSetEntry *)0x0;
+    if ((pGVar8 != (GraphicsTextureSet *)0x0) && (uVar7 < pGVar8->subresourceCount)) {
+      pGVar10->renderFlags = pGVar10->renderFlags | 0x10000;
+      pGVar10->textureEntry = pGVar8->entries + uVar7;
     }
-    return CONCAT44(in_EDX,puVar7);
+    GVar11.carry = false;
+    GVar11.packet = pGVar10;
+    return GVar11;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  GVar12.carry = true;
+  GVar12.packet = in_EAX;
+  return GVar12;
 }
+
 
 /* Address: 0x004D0F20.
    Ownership: graphics/render/primitives.
@@ -612,79 +669,87 @@ GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
    Typed parameters: p6 vertex2Projected→GraphicsProjectedVertexSource *, p7
    vertex1Projected→GraphicsProjectedVertexSource *, p8 vertex0Projected→GraphicsProjectedVertexSource *.
 */
-undefined8 __fastcall
+GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-          (undefined4 incomingEcxValue,undefined4 preservedEdxValue,dword *textureAndMaterialIndices
-          ,PackedArgb32 vertex2DiffuseColor,PackedArgb32 vertex1DiffuseColor,
-          PackedArgb32 vertex0DiffuseColor,GraphicsProjectedVertexSource *vertex2Projected,
+          (dword *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
+          GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
-          GraphicsProjectedVertexSource *vertex0Projected,GraphicsPrimitiveQueue *primitiveQueue)
+          GraphicsProjectedVertexSource *vertex0Projected,
+          FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  GraphicsPrimitivePacket *pGVar1;
-  int iVar2;
+  GraphicsPrimitiveQueue *pGVar1;
+  dword dVar2;
   dword dVar3;
   GraphicsTextureSet *pGVar4;
-  undefined4 in_EAX;
-  dword dVar5;
+  GraphicsPrimitivePacket *in_EAX;
+  PackedArgb32 PVar5;
   dword *vertexFieldWriteCursor;
+  GraphicsPrimitivePacketEaxCf5 GVar6;
+  GraphicsPrimitivePacketEaxCf5 GVar7;
   
-  pGVar1 = primitiveQueue[4].packetPool;
-  iVar2 = pGVar1->vertices[0].screenY;
-  if (iVar2 + 1U < (uint)pGVar1->vertices[0].screenX) {
-    pGVar1->vertices[0].screenY = iVar2 + 1U;
-    vertexFieldWriteCursor = (dword *)(iVar2 * 0x80 + pGVar1->vertices[0].backendCoord0);
-    (&pGVar1->vertices[1].screenY)[iVar2 * 4] =
-         (GraphicsPrimitiveScreenCoordinate)vertexFieldWriteCursor;
-    dVar5 = vertex0Projected->texturedPacketAttributes[1];
+  pGVar1 = renderContext->activePrimitiveQueue;
+  dVar2 = pGVar1->count;
+  if (dVar2 + 1 < pGVar1->capacity) {
+    pGVar1->count = dVar2 + 1;
+    vertexFieldWriteCursor = (dword *)(pGVar1->packetPool + dVar2);
+    pGVar1->primaryNodes[dVar2].packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
+    dVar2 = vertex0Projected->texturedPacketAttributes[1];
     *vertexFieldWriteCursor = vertex0Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[1] = dVar5;
+    vertexFieldWriteCursor[1] = dVar2;
     vertexFieldWriteCursor[7] = vertex0DiffuseColor;
-    dVar5 = vertex0Projected->texturedPacketAttributes[3];
+    dVar2 = vertex0Projected->texturedPacketAttributes[3];
     dVar3 = vertex0Projected->texturedPacketAttributes[4];
     vertexFieldWriteCursor[2] = vertex0Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[3] = dVar5;
+    vertexFieldWriteCursor[3] = dVar2;
     vertexFieldWriteCursor[4] = dVar3;
-    dVar5 = vertex1Projected->texturedPacketAttributes[1];
+    dVar2 = vertex1Projected->texturedPacketAttributes[1];
     vertexFieldWriteCursor[8] = vertex1Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[9] = dVar5;
+    vertexFieldWriteCursor[9] = dVar2;
     vertexFieldWriteCursor[0xf] = vertex1DiffuseColor;
-    dVar5 = vertex1Projected->texturedPacketAttributes[3];
+    dVar2 = vertex1Projected->texturedPacketAttributes[3];
     dVar3 = vertex1Projected->texturedPacketAttributes[4];
     vertexFieldWriteCursor[10] = vertex1Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[0xb] = dVar5;
+    vertexFieldWriteCursor[0xb] = dVar2;
     vertexFieldWriteCursor[0xc] = dVar3;
-    dVar5 = vertex2Projected->texturedPacketAttributes[1];
+    dVar2 = vertex2Projected->texturedPacketAttributes[1];
     vertexFieldWriteCursor[0x10] = vertex2Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[0x11] = dVar5;
+    vertexFieldWriteCursor[0x11] = dVar2;
     vertexFieldWriteCursor[0x17] = vertex2DiffuseColor;
-    dVar5 = vertex2Projected->texturedPacketAttributes[3];
+    dVar2 = vertex2Projected->texturedPacketAttributes[3];
     dVar3 = vertex2Projected->texturedPacketAttributes[4];
     vertexFieldWriteCursor[0x12] = vertex2Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[0x13] = dVar5;
+    vertexFieldWriteCursor[0x13] = dVar2;
     vertexFieldWriteCursor[0x14] = dVar3;
-    dVar5 = textureAndMaterialIndices[2];
+    dVar2 = textureAndMaterialIndices[2];
     dVar3 = textureAndMaterialIndices[4];
     vertexFieldWriteCursor[5] = *textureAndMaterialIndices;
-    vertexFieldWriteCursor[0xd] = dVar5;
+    vertexFieldWriteCursor[0xd] = dVar2;
     vertexFieldWriteCursor[0x15] = dVar3;
-    dVar5 = textureAndMaterialIndices[3];
+    dVar2 = textureAndMaterialIndices[3];
     dVar3 = textureAndMaterialIndices[5];
     vertexFieldWriteCursor[6] = textureAndMaterialIndices[1];
-    vertexFieldWriteCursor[0xe] = dVar5;
+    vertexFieldWriteCursor[0xe] = dVar2;
     vertexFieldWriteCursor[0x16] = dVar3;
-    dVar5 = 0;
+    PVar5 = 0;
     if (g_TerrainSecondaryPalette != (GraphicsPaletteAsset *)0x0) {
-      dVar5 = g_TerrainSecondaryPalette->paletteEntries[textureAndMaterialIndices[7]].reserved04;
+      PVar5 = g_TerrainSecondaryPalette->paletteEntries[textureAndMaterialIndices[7]].
+              alternateModulationColorArgb;
     }
-    vertexFieldWriteCursor[0x18] = dVar5;
+    vertexFieldWriteCursor[0x18] = PVar5;
     pGVar4 = g_TerrainMaterialTextureSets[textureAndMaterialIndices[6]];
     vertexFieldWriteCursor[0x1a] = g_UiCommandModeGColorVariantFlags;
     vertexFieldWriteCursor[0x19] = (dword)pGVar4->entries;
-    return CONCAT44(preservedEdxValue,vertexFieldWriteCursor);
+    GVar6.carry = false;
+    GVar6.packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
+    return GVar6;
   }
-  return CONCAT44(preservedEdxValue,in_EAX);
+  GVar7.carry = true;
+  GVar7.packet = in_EAX;
+  return GVar7;
 }
+
 
 /* Address: 0x004FFC10.
    Ownership: graphics/render/primitives.
@@ -693,13 +758,12 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
    centerDepth→DepthIntervalCenter32_V343. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-DepthBinMaskEaxPreservedEdxCarrier64
+DepthBinMask32 __thandor_eax_preserve_ecx_edx
 DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCenter32 centerDepth)
 
 {
   uint binMask;
   int binIndex;
-  undefined4 in_EDX;
   uint currentBinBit;
   
   binMask = 0;
@@ -710,8 +774,9 @@ DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCen
     binIndex = binIndex + 1;
     currentBinBit = currentBinBit * 2 + (uint)CARRY4(currentBinBit,currentBinBit);
   } while (binIndex <= (centerDepth - intervalRadius) + intervalRadius * 2 >> 0xe);
-  return CONCAT44(in_EDX,binMask);
+  return binMask;
 }
+
 
 /* Address: 0x004FFC50.
    Ownership: graphics/render/primitives.
@@ -721,13 +786,15 @@ DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCen
    secondMaskLow→DepthBinMask32_V338, p5 secondMaskHigh→DepthBinMask32_V338. Calling convention, storage, body
    bytes, control flow, and executable data remain unchanged.
 */
-void DepthBinMasks_OverlapCf
-               (DepthBinMask32 firstMaskLow,DepthBinMask32 firstMaskHigh,
-               DepthBinMask32 secondMaskLow,DepthBinMask32 secondMaskHigh)
+bool __thandor_cf_preserve_eax_ecx_edx
+DepthBinMasks_OverlapCf
+          (DepthBinMask32 firstMaskLow,DepthBinMask32 firstMaskHigh,DepthBinMask32 secondMaskLow,
+          DepthBinMask32 secondMaskHigh)
 
 {
   if (((firstMaskHigh & secondMaskHigh) != 0) && ((firstMaskLow & secondMaskLow) != 0)) {
-    return;
+    return true;
   }
-  return;
+  return false;
 }
+

@@ -1,6 +1,6 @@
 # Call graph: `assets/sprite/catalog`
 
-[Source](../../../../src/assets/sprite/catalog.c) · [Header](../../../../include/thandor/assets/sprite/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-sprite-catalog)
+[Source](../../../../src/assets/sprite/catalog.c) · [Header](../../../../include/thandor/assets/sprite/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-sprite-catalog) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-sprite-catalog)
 
 4 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/results`
 
-[Source](../../../../src/ui/frontend/results.c) · [Header](../../../../include/thandor/ui/frontend/results.h) · [Graphviz](results.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-results)
+[Source](../../../../src/ui/frontend/results.c) · [Header](../../../../include/thandor/ui/frontend/results.h) · [Graphviz](results.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-results) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-results)
 
 9 functions. Addresses are current V523 executable VAs.
 

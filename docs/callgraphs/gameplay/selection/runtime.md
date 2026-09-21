@@ -1,6 +1,6 @@
 # Call graph: `gameplay/selection/runtime`
 
-[Source](../../../../src/gameplay/selection/runtime.c) · [Header](../../../../include/thandor/gameplay/selection/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-selection-runtime)
+[Source](../../../../src/gameplay/selection/runtime.c) · [Header](../../../../include/thandor/gameplay/selection/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-selection-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-selection-runtime)
 
 55 functions. Addresses are current V523 executable VAs.
 

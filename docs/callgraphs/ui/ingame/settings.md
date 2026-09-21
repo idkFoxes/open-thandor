@@ -1,6 +1,6 @@
 # Call graph: `ui/ingame/settings`
 
-[Source](../../../../src/ui/ingame/settings.c) · [Header](../../../../include/thandor/ui/ingame/settings.h) · [Graphviz](settings.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-settings)
+[Source](../../../../src/ui/ingame/settings.c) · [Header](../../../../include/thandor/ui/ingame/settings.h) · [Graphviz](settings.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-settings) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-ingame-settings)
 
 30 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/effects/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/effects/runtime.h>
 
 /* Implementation ownership: world/effects/runtime. */
@@ -9,29 +16,36 @@
    returns error 0x48 with CF set. The stock corpus contains 140 unique EffectDefinition ids; serialized ids remain
    distinct from relocated EffectDefinition pointers and consumer-specific union facets.
 */
-EffectDefinition * EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
+EffectDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *arg4;
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
+  EffectDefinitionLookupEaxCf5 EVar1;
+  EffectDefinitionLookupEaxCf5 EVar2;
   EffectDefinition *candidateDefinition;
   
   registryCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = 0x100;
-  while( true ) {
-    arg4 = *registryCursor;
-    if ((arg4 != (EffectDefinition *)0x0) && (arg4->definitionId == definitionId)) break;
+  while ((arg4 = *registryCursor, arg4 == (EffectDefinition *)0x0 ||
+         (arg4->definitionId != definitionId))) {
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)arg4,g_PackageLastErrorPath);
-      return (EffectDefinition *)0x48;
+      EVar1.carry = true;
+      EVar1.definitionOrError = (EffectDefinition *)0x48;
+      return EVar1;
     }
   }
-  return arg4;
+  EVar2.carry = false;
+  EVar2.definitionOrError = arg4;
+  return EVar2;
 }
+
 
 /* Address: 0x0051E190.
    Ownership: world/effects/runtime.
@@ -39,29 +53,28 @@ EffectDefinition * EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatal
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
    [movie/runtime/playback].
 */
-void EffectRuntime_InitGraphicsResources(word *mutableBasePath)
+StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(word *mutableBasePath)
 
 {
   EffectRuntimeSlot *runtimeSlotCursor;
-  dword arg0;
   int runtimeSlotsRemaining;
-  dword arg1;
-  undefined1 in_CF;
-  undefined8 uVar1;
+  ArenaAllocEaxCf5 AVar1;
+  StatusValueEaxCf5 SVar2;
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  (*(code *)g_GraphicsTextureSetLoadPackageCf)(mutableBasePath);
-  if (!(bool)in_CF) {
-    uVar1 = MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_EffectTextureSet = (GraphicsTextureSet *)uVar1;
+  AVar1 = (ArenaAllocEaxCf5)(*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath);
+  if (!AVar1.carry) {
+    MoviePlayback_AdvanceScheduledFrameAndTick();
+    g_EffectTextureSet = (GraphicsTextureSet *)AVar1.eax;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    (*g_GraphicsPaletteAssetLoadPackage)(arg0,arg1,mutableBasePath);
-    if (!(bool)in_CF) {
-      uVar1 = MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_EffectPalette = (GraphicsPaletteAsset *)uVar1;
-      runtimeSlotCursor = (*g_MemoryApi.alloc)(0x40000);
-      if (!(bool)in_CF) {
+    AVar1 = (ArenaAllocEaxCf5)(*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath);
+    if (!AVar1.carry) {
+      MoviePlayback_AdvanceScheduledFrameAndTick();
+      g_EffectPalette = (GraphicsPaletteAsset *)AVar1.eax;
+      AVar1 = (*g_MemoryApi.alloc)(0x40000);
+      runtimeSlotCursor = (EffectRuntimeSlot *)AVar1.eax;
+      if (!AVar1.carry) {
         g_EffectRuntimeRebaseBaseMinusOne = (byte *)((int)&runtimeSlotCursor[-1].effectAgeTicks + 3)
         ;
         g_EffectRuntimeSlots = runtimeSlotCursor;
@@ -70,11 +83,16 @@ void EffectRuntime_InitGraphicsResources(word *mutableBasePath)
           (runtimeSlotCursor->definitionOrSavedId).definition = (EffectDefinition *)0x0;
           runtimeSlotCursor = (EffectRuntimeSlot *)&runtimeSlotCursor->modelNodeOrSavedOffset;
         }
+        AVar1.eax = 0;
+        AVar1.carry = false;
       }
     }
   }
-  return;
+  SVar2.valueOrError = AVar1.eax;
+  SVar2.carry = AVar1.carry;
+  return SVar2;
 }
+
 
 /* Address: 0x0051E210.
    Ownership: world/effects/runtime.
@@ -82,18 +100,17 @@ void EffectRuntime_InitGraphicsResources(word *mutableBasePath)
    the registry, and has no semantic normal return.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void EffectRuntime_ShutdownGraphicsResources(void)
+void __thandor_void_preserve_eax_ecx EffectRuntime_ShutdownGraphicsResources(void)
 
 {
   int registrySlotsRemaining;
-  int extraout_ECX;
   EffectDefinition **registryCursor;
   EffectDefinition *currentDefinition;
   
   (*g_MemoryApi.free)(g_EffectRuntimeSlots);
   g_EffectRuntimeSlots = (EffectRuntimeSlot *)0x0;
   if (g_EffectTextureSet != (GraphicsTextureSet *)0x0) {
-    (*(code *)g_GraphicsTextureSetReleasePackageCf)(g_EffectTextureSet);
+    (*g_GraphicsTextureSetReleasePackageCf)(g_EffectTextureSet);
     g_EffectTextureSet = (GraphicsTextureSet *)0x0;
   }
   if (g_EffectPalette != (GraphicsPaletteAsset *)0x0) {
@@ -107,7 +124,6 @@ void EffectRuntime_ShutdownGraphicsResources(void)
     if ((currentDefinition != (EffectDefinition *)0x0) &&
        (currentDefinition->ownedNestedResourcePresent != 0)) {
       Resource_Release(currentDefinition->ownedNestedResource);
-      registrySlotsRemaining = extraout_ECX;
     }
     *registryCursor = (EffectDefinition *)0x0;
     registryCursor = registryCursor + 1;
@@ -116,13 +132,14 @@ void EffectRuntime_ShutdownGraphicsResources(void)
   return;
 }
 
+
 /* Address: 0x0051E340.
    Ownership: world/effects/runtime.
    Purpose: Rebases all 4096 live effect slots after a serialized image is restored and resolves each saved
    definitionId through the effect registry. Serialized ids and relocated EffectDefinition pointers remain
    separate; consumer-specific union facets are not generalized.
 */
-void __cdecl EffectRuntime_RebaseSlotsAfterLoad(void)
+void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void)
 
 {
   EffectRuntimeCompletionAction EVar1;
@@ -181,6 +198,7 @@ EffectRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance:
   } while( true );
 }
 
+
 /* Address: 0x0051E4A0.
    Ownership: world/effects/runtime.
    Purpose: Allocates one EffectRuntimeSlot and model node from a typed EffectDefinition; creationFlags select
@@ -195,189 +213,174 @@ EffectRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance:
    GraphicsShadingRuntime_AllocateRecordRegs [graphics/render/shading],
    TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy].
 */
-undefined8 __fastcall
+EffectRuntimeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 EffectRuntimePool_CreateInstanceFromDefinitionCf
-          (undefined4 param_1,undefined4 param_2,EffectRuntimeCompletionAction completionAction,
-          EffectRuntimeOwnerReference4 ownerRuntime,AngleTurn32 orientationAngle0,
-          AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,Q12 worldZQ12,Q12 worldXQ12,
-          Q12 worldYQ12,EffectDefinition *effectDefinition,WorldRuntimeContext *worldRuntime)
+          (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
+          AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
+          Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,
+          WorldRuntimeContext *worldRuntime)
 
 {
+  GraphicsFixedVec3 *worldPosition;
   ModelResourceHitTestAndRenderView210 *pMVar1;
   Q12 QVar2;
-  GameEntityRuntime *pGVar3;
+  EffectAnimationFrameCount EVar3;
   DefinitionReferencePresentFlag DVar4;
   DefinitionReferencePresentFlag DVar5;
   int iVar6;
   int iVar7;
   EffectShadingCountdownTicks EVar8;
   EffectShadingCountdownTicks EVar9;
+  DirectSoundVoiceSet **voiceSetRef;
   EffectRuntimeSlot *pEVar10;
-  WorldRuntimeNode *node;
-  ModelRuntimeNode *modelNodeRuntime;
+  EffectModelRuntimeNodeClassView100 *effectModelNode;
   dword dVar11;
   GraphicsTextureSet *pGVar12;
-  ModelPackedPointRecord *localPointRecord;
-  uint uVar13;
-  EffectRuntimeSlot *pEVar14;
-  AngleTurn32 extraout_ECX;
-  GraphicsPaletteAsset *pGVar15;
-  undefined4 extraout_ECX_00;
-  GraphicsWorldCoordinateQ12 worldYQ12_00;
-  dword *extraout_ECX_01;
-  dword *extraout_ECX_02;
-  dword *extraout_ECX_03;
-  dword *pdVar16;
-  uint extraout_EDX;
-  GraphicsFixedVec3 *worldPosition;
-  ArmyRuntimeSlot *armySlot1;
-  bool bVar17;
-  longlong lVar18;
-  ulonglong uVar19;
-  undefined8 uVar20;
+  EffectRuntimeSlot *pEVar13;
+  GraphicsPaletteAsset *pGVar14;
+  EffectRuntimeSlot *effectRuntimeCursor;
+  bool bVar15;
+  WorldObjectRecordEaxCf5 WVar16;
+  ModelLookupEntryEaxCf5 MVar17;
+  GraphicsShadingRuntimeRecordEaxCf5 GVar18;
+  EffectRuntimeCreateEaxCf5 EVar19;
+  EffectRuntimeCreateEaxCf5 EVar20;
+  ModelLocalPointRegs12 MVar21;
+  TerrainOccupancyResolvedMasksRegs12 TVar22;
   char runtimeClassIndex;
+  uint uVar23;
   
-  node = (WorldRuntimeNode *)0x14;
-  pEVar14 = (EffectRuntimeSlot *)0x1000;
-  armySlot1 = (ArmyRuntimeSlot *)g_EffectRuntimeSlots;
+  effectModelNode = (EffectModelRuntimeNodeClassView100 *)0x14;
+  pEVar13 = (EffectRuntimeSlot *)0x1000;
+  effectRuntimeCursor = g_EffectRuntimeSlots;
   pEVar10 = g_EffectRuntimeSlots;
   if (effectDefinition == (EffectDefinition *)0x0) {
 EffectRuntimePool_CreateInstance_ReturnEffectSlotResult:
-    return CONCAT44(param_2,armySlot1);
+    EVar19.carry = false;
+    EVar19.effectRuntime = effectRuntimeCursor;
+    return EVar19;
   }
   do {
     if (pEVar10 == (EffectRuntimeSlot *)0x0) {
 EffectRuntimePool_CreateInstance_ReturnAllocationFailure:
-      return CONCAT44(param_2,node);
+      EVar20.carry = true;
+      EVar20.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
+      return EVar20;
     }
-    bVar17 = false;
-    if (((EffectModelNodeReferenceOrSavedOffset4 *)&armySlot1->modelNodeRuntime)->modelNode ==
-        (ModelRuntimeNode *)0x0) {
-      node = (WorldRuntimeNode *)WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
-      if (!bVar17) {
-        modelNodeRuntime = (ModelRuntimeNode *)WorldRuntime_LinkNodeIntoOwnerListD8(node);
-        ((EffectModelNodeReferenceOrSavedOffset4 *)&armySlot1->modelNodeRuntime)->modelNode =
-             modelNodeRuntime;
-        ((EffectDefinitionReferenceOrSavedId4 *)&armySlot1->definitionOrAsset)->definition =
-             effectDefinition;
-        modelNodeRuntime->ownerClassId = MODEL_RUNTIME_CLASS_02_TRACKED;
-        (modelNodeRuntime->runtimePayload).armyRuntime = armySlot1;
-        modelNodeRuntime->renderDepthBiasOrState = 0;
-        (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
-        (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
-        (modelNodeRuntime->worldTransform).translation.z = worldZQ12;
+    if ((effectRuntimeCursor->modelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) {
+      WVar16 = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
+      effectModelNode = (EffectModelRuntimeNodeClassView100 *)WVar16.recordOrError;
+      if (!WVar16.carry) {
+        WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)effectModelNode);
+        (effectRuntimeCursor->modelNodeOrSavedOffset).modelNode =
+             (ModelRuntimeNode *)effectModelNode;
+        (effectRuntimeCursor->definitionOrSavedId).definition = effectDefinition;
+        effectModelNode->ownerClassId = MODEL_RUNTIME_CLASS_02_TRACKED;
+        effectModelNode->effectRuntime = effectRuntimeCursor;
+        effectModelNode->renderDepthBiasOrState = 0;
+        (effectModelNode->worldTransform).translation.x = worldYQ12;
+        (effectModelNode->worldTransform).translation.y = worldXQ12;
+        (effectModelNode->worldTransform).translation.z = worldZQ12;
         if ((effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION) != 0) {
           dVar11 = (*g_RandomGeneratorState.next)();
-          orientationAngle0 = extraout_EDX & dVar11;
-          orientationAngle1 = extraout_ECX;
+          orientationAngle0 = dVar11 & 0xffff;
         }
-        (modelNodeRuntime->modelPayload).worldRotationAngle0 = orientationAngle2;
-        (modelNodeRuntime->modelPayload).worldRotationAngle1 = orientationAngle1;
-        (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle0;
+        (effectModelNode->modelPayload).worldRotationAngle0 = orientationAngle2;
+        (effectModelNode->modelPayload).worldRotationAngle1 = orientationAngle1;
+        (effectModelNode->modelPayload).worldRotationAngle2 = orientationAngle0;
         pGVar12 = g_EffectTextureSet;
-        pGVar15 = g_EffectPalette;
+        pGVar14 = g_EffectPalette;
         if ((effectDefinition->creationFlags & EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET) !=
             0) {
           pGVar12 = g_ArmyGraphicsBindings[0].textureSet;
-          pGVar15 = g_ArmyGraphicsBindings[0].paletteAsset;
+          pGVar14 = g_ArmyGraphicsBindings[0].paletteAsset;
         }
         pMVar1 = effectDefinition->ownedNestedResource;
-        (modelNodeRuntime->modelPayload).textureSet = pGVar12;
+        (effectModelNode->modelPayload).textureSet = pGVar12;
         QVar2 = pMVar1->boundingRadiusQ12;
-        (modelNodeRuntime->modelPayload).paletteAsset = pGVar15;
-        modelNodeRuntime->subtreeBoundingRadiusQ12 = QVar2;
-        (modelNodeRuntime->modelPayload).modelResource = pMVar1;
-        pGVar3 = (GameEntityRuntime *)effectDefinition->animationFrameCount;
+        (effectModelNode->modelPayload).paletteAsset = pGVar14;
+        effectModelNode->subtreeBoundingRadiusQ12 = QVar2;
+        (effectModelNode->modelPayload).modelResource = pMVar1;
+        EVar3 = effectDefinition->animationFrameCount;
         DVar4 = effectDefinition->linkedEffectPresent;
         DVar5 = effectDefinition->linkedShotPresent;
-        (modelNodeRuntime->modelPayload).meshGroupMask = 0xffffffff;
-        modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 0x801;
-        modelNodeRuntime->textureSubresourceBaseIndex = 0;
-        modelNodeRuntime->modelRuntimeLinkOrSavedOffset = (void *)0x0;
-        modelNodeRuntime->parentNode = (ModelRuntimeNode *)0x0;
-        modelNodeRuntime->childCount = 0;
-        armySlot1->linkedEntityRuntime = pGVar3;
-        armySlot1->factionIndex = DVar4;
-        (armySlot1->movementControl).movementAdvancePerTickQ12 = DVar5;
+        (effectModelNode->modelPayload).meshGroupMask = 0xffffffff;
+        effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | 0x801;
+        effectModelNode->textureSubresourceBaseIndex = 0;
+        effectModelNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
+        effectModelNode->parentNode = (ModelRuntimeNode *)0x0;
+        effectModelNode->childCount = 0;
+        effectRuntimeCursor->animationFramesRemaining = EVar3;
+        effectRuntimeCursor->linkedEffectPresent = DVar4;
+        effectRuntimeCursor->linkedShotPresent = DVar5;
         iVar6 = effectDefinition->modelScaleStartQ12;
         iVar7 = effectDefinition->modelScaleEndQ12;
-        modelNodeRuntime->modelScaleQ12 = iVar6;
+        effectModelNode->modelScaleQ12 = iVar6;
         if ((iVar6 == 0x1000) && (iVar7 == 0x1000)) {
-          modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & 0xfffff7ff;
+          effectModelNode->runtimeFlags = effectModelNode->runtimeFlags & 0xfffff7ff;
         }
         EVar8 = effectDefinition->shadingStartCountdownTicks;
         EVar9 = effectDefinition->shadingStopCountdownTicks;
-        armySlot1->commandCoordinate2Q12 = EVar8;
-        armySlot1->commandModeFlags = EVar9;
-        armySlot1->actionVector1Q12 = 0xffffff;
-        armySlot1->actionVector2Q12 = 0;
-        bVar17 = false;
-        if ((EVar8 != 0) ||
-           (localPointRecord =
-                 (ModelPackedPointRecord *)
-                 ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource),
-           bVar17)) {
-          modelNodeRuntime->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
-        }
-        else {
-          uVar20 = ModelNodeRuntime_TransformLocalPointRegs
-                             (extraout_ECX_00,localPointRecord,modelNodeRuntime);
-          lVar18 = GraphicsShadingRuntime_AllocateRecordRegs
+        effectRuntimeCursor->shadingStartCountdownTicksRemaining = EVar8;
+        effectRuntimeCursor->shadingStopCountdownTicksRemaining = EVar9;
+        effectRuntimeCursor->stateTintArgb = 0xffffff;
+        effectRuntimeCursor->effectAgeTicks = 0;
+        if (EVar8 == 0) {
+          MVar17 = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
+          if (MVar17.carry) goto LAB_0051e672;
+          MVar21 = ModelNodeRuntime_TransformLocalPointRegs
+                             (MVar17.entry,(ModelRuntimeNode *)effectModelNode);
+          GVar18 = GraphicsShadingRuntime_AllocateRecordRegs
                              (effectDefinition->shadingTransitionDurationTicks,
                               (effectDefinition->shadingColorArgb >> 0x18) << 8,
-                              effectDefinition->shadingColorArgb,
-                              (GraphicsWorldCoordinateQ12)((ulonglong)uVar20 >> 0x20),worldYQ12_00,
-                              (GraphicsWorldCoordinateQ12)uVar20);
-          modelNodeRuntime->shadingRecord = (GraphicsShadingRuntimeRecord *)lVar18;
+                              effectDefinition->shadingColorArgb,MVar21.edx,MVar21.ecx,MVar21.eax);
+          effectModelNode->shadingRecord = GVar18.record;
+        }
+        else {
+LAB_0051e672:
+          effectModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
         }
         dVar11 = effectDefinition->runtimeValue24;
-        worldPosition = (GraphicsFixedVec3 *)effectDefinition->terrainGridMaskIndex;
-        ((EffectRuntimeLifecycleState10 *)&(armySlot1->movementControl).turnVelocityAngle16)->
-        runtimeState14 = 0;
-        armySlot1->movementStateFlags = 0;
-        ((EffectRuntimeOwnerAndDefinitionState8 *)&armySlot1->commandTargetArmyRuntime)->owner =
-             ownerRuntime;
-        armySlot1->commandCoordinate0Q12 = dVar11;
+        uVar23 = effectDefinition->terrainGridMaskIndex;
+        (effectRuntimeCursor->lifecycleOwnerAndDefinition).runtimeState14 = 0;
+        (effectRuntimeCursor->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 = 0;
+        (effectRuntimeCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner = ownerRuntime;
+        (effectRuntimeCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24 =
+             dVar11;
         runtimeClassIndex = (char)worldRuntime->activeFactionRuntimeIndex;
-        armySlot1->commandCoordinate1Q12 = completionAction;
-        uVar19 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                           (0x1000,(modelNodeRuntime->worldTransform).translation.y,
-                            (modelNodeRuntime->worldTransform).translation.x,worldRuntime->fieldGrid
-                           );
-        uVar13 = TerrainOccupancyMask_ResolveRuntimeClassFlags
-                           (0x10,0,(FieldGridRegionMask)(uVar19 >> 0x20),runtimeClassIndex);
-        armySlot1->actionVector0Q12 = (Q12)extraout_ECX_01;
-        modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | uVar13 | 0x10;
-        modelNodeRuntime->tintArgb = 0xffffff;
-        pdVar16 = extraout_ECX_01;
-        if ((((worldPosition != (GraphicsFixedVec3 *)0x0) &&
-             (pdVar16 = worldRuntime->dwordArray,
-             worldPosition < (GraphicsFixedVec3 *)worldRuntime->dwordArrayCount)) &&
-            (pdVar16 != (dword *)0x0)) && (bVar17 = false, pdVar16[(int)worldPosition] != 0)) {
-          uVar20 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                             ((modelNodeRuntime->worldTransform).translation.y,
-                              (modelNodeRuntime->worldTransform).translation.x,worldRuntime);
-          worldPosition = (GraphicsFixedVec3 *)((ulonglong)uVar20 >> 0x20);
-          pdVar16 = extraout_ECX_02;
-          if (!bVar17) {
-            uVar20 = SpatialSound_PlayPositionedOneShot
-                               (((EffectDefinitionReferenceOrSavedId4 *)
-                                &armySlot1->definitionOrAsset)->definition->
-                                positionedSoundMaximumDistanceQ12,
-                                ((EffectDefinitionReferenceOrSavedId4 *)
-                                &armySlot1->definitionOrAsset)->definition->positionedSoundGainQ15,
-                                worldPosition,(DirectSoundVoiceSet **)uVar20);
-            worldPosition = (GraphicsFixedVec3 *)((ulonglong)uVar20 >> 0x20);
-            pdVar16 = extraout_ECX_03;
+        effectRuntimeCursor->completionAction = completionAction;
+        dVar11 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+                           (0x1000,(effectModelNode->worldTransform).translation.y,
+                            (effectModelNode->worldTransform).translation.x,worldRuntime->fieldGrid)
+        ;
+        TVar22 = TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,dVar11,runtimeClassIndex);
+        effectRuntimeCursor->terrainRuntimeClassState = TVar22.primaryOccupancyMask;
+        effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | TVar22.runtimeFlags | 0x10;
+        effectModelNode->tintArgb = 0xffffff;
+        if ((((uVar23 != 0) && (uVar23 < worldRuntime->dwordArrayCount)) &&
+            (worldRuntime->dwordArray != (dword *)0x0)) &&
+           (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[uVar23],
+           voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
+          worldPosition = &(effectModelNode->worldTransform).translation;
+          bVar15 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                             ((effectModelNode->worldTransform).translation.y,worldPosition->x,
+                              worldRuntime);
+          if (!bVar15) {
+            SpatialSound_PlayPositionedOneShot
+                      (((effectRuntimeCursor->definitionOrSavedId).definition)->
+                       positionedSoundMaximumDistanceQ12,
+                       ((effectRuntimeCursor->definitionOrSavedId).definition)->
+                       positionedSoundGainQ15,worldPosition,voiceSetRef);
           }
         }
-        ModelNodeRuntime_RebuildTransformsFromRoot(pdVar16,worldPosition,modelNodeRuntime);
+        ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)effectModelNode);
         goto EffectRuntimePool_CreateInstance_ReturnEffectSlotResult;
       }
       goto EffectRuntimePool_CreateInstance_ReturnAllocationFailure;
     }
-    pEVar14 = (EffectRuntimeSlot *)((int)&pEVar14[-1].effectAgeTicks + 3);
-    armySlot1 = (ArmyRuntimeSlot *)&armySlot1->runtimeState40;
-    pEVar10 = pEVar14;
+    effectRuntimeCursor = effectRuntimeCursor + 1;
+    pEVar13 = (EffectRuntimeSlot *)((int)&pEVar13[-1].effectAgeTicks + 3);
+    pEVar10 = pEVar13;
   } while( true );
 }
+

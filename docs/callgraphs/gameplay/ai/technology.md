@@ -1,6 +1,6 @@
 # Call graph: `gameplay/ai/technology`
 
-[Source](../../../../src/gameplay/ai/technology.c) · [Header](../../../../include/thandor/gameplay/ai/technology.h) · [Graphviz](technology.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-technology)
+[Source](../../../../src/gameplay/ai/technology.c) · [Header](../../../../include/thandor/gameplay/ai/technology.h) · [Graphviz](technology.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-technology) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-ai-technology) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-ai-technology)
 
 9 functions. Addresses are current V523 executable VAs.
 

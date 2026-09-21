@@ -1,6 +1,6 @@
 # Call graph: `gameplay/army/placement`
 
-[Source](../../../../src/gameplay/army/placement.c) · [Header](../../../../include/thandor/gameplay/army/placement.h) · [Graphviz](placement.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-placement)
+[Source](../../../../src/gameplay/army/placement.c) · [Header](../../../../include/thandor/gameplay/army/placement.h) · [Graphviz](placement.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-placement) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-army-placement) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-army-placement)
 
 25 functions. Addresses are current V523 executable VAs.
 

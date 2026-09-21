@@ -1,6 +1,6 @@
 # Call graph: `world/terrain/grid`
 
-[Source](../../../../src/world/terrain/grid.c) · [Header](../../../../include/thandor/world/terrain/grid.h) · [Graphviz](grid.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-grid)
+[Source](../../../../src/world/terrain/grid.c) · [Header](../../../../include/thandor/world/terrain/grid.h) · [Graphviz](grid.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-grid) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-terrain-grid)
 
 56 functions. Addresses are current V523 executable VAs.
 

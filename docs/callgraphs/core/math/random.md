@@ -1,6 +1,6 @@
 # Call graph: `core/math/random`
 
-[Source](../../../../src/core/math/random.c) · [Header](../../../../include/thandor/core/math/random.h) · [Graphviz](random.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-math-random)
+[Source](../../../../src/core/math/random.c) · [Header](../../../../include/thandor/core/math/random.h) · [Graphviz](random.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-math-random) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-math-random)
 
 6 functions. Addresses are current V523 executable VAs.
 

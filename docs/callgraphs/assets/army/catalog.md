@@ -1,6 +1,6 @@
 # Call graph: `assets/army/catalog`
 
-[Source](../../../../src/assets/army/catalog.c) · [Header](../../../../include/thandor/assets/army/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-army-catalog)
+[Source](../../../../src/assets/army/catalog.c) · [Header](../../../../include/thandor/assets/army/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-army-catalog) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-army-catalog)
 
 23 functions. Addresses are current V523 executable VAs.
 

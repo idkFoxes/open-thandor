@@ -1,6 +1,6 @@
 # Call graph: `assets/fnc/runtime`
 
-[Source](../../../../src/assets/fnc/runtime.c) · [Header](../../../../include/thandor/assets/fnc/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-fnc-runtime)
+[Source](../../../../src/assets/fnc/runtime.c) · [Header](../../../../include/thandor/assets/fnc/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-fnc-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-fnc-runtime)
 
 3 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/movie/runtime/playback.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/movie/runtime/playback.h>
 
 /* Implementation ownership: movie/runtime/playback. */
@@ -7,30 +14,26 @@
    Purpose: Handles movie encode flm buffer from frame provider carry-flag result.
    Local calls: Movie_EncodeFrame4x4Keyframe, Movie_EncodeFrame4x4Delta.
 */
-undefined8 __fastcall
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 Movie_EncodeFlmBufferFromFrameProviderCf
-          (undefined4 param_1,undefined4 param_2,undefined4 param_3,uint param_4,uint *param_5,
-          undefined *param_6)
+          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+          uint *outputBuffer,MovieFrameProviderCfProc *frameProvider)
 
 {
   dword dVar1;
-  int iVar2;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_EDX;
-  undefined4 uVar3;
-  uint *puVar4;
+  void *frameToReleaseOrNull;
+  uint uVar2;
+  int iVar3;
+  uint uVar4;
+  uint *sourcePixels;
   uint *puVar5;
-  uint uVar6;
-  bool bVar7;
-  undefined1 uVar8;
-  undefined8 uVar9;
-  ulonglong uVar10;
-  int iVar11;
+  MovieFrameProviderEaxCf5 MVar6;
+  StatusValueEaxCf5 SVar7;
+  StatusValueEaxCf5 SVar8;
+  void *frameToReleaseOrNull_00;
   
-  puVar5 = param_5;
-  for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
+  puVar5 = outputBuffer;
+  for (iVar3 = 0x80; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar5 = 0;
     puVar5 = puVar5 + 1;
   }
@@ -49,45 +52,51 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(puVar5 + -0x74));
   (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(puVar5 + -100));
   *(undefined1 *)(puVar5 + -0x40) = 0;
-  puVar5[-0x54] = param_4;
-  puVar5[-0x53] = extraout_EDX;
+  puVar5[-0x54] = frameWidthPixels;
+  puVar5[-0x53] = frameHeightPixels;
   puVar5[-0x52] = 0;
   puVar5[-0x51] = 0;
-  bVar7 = (uint *)0xfffffdff < puVar5 + -0x80;
-  uVar9 = (*(code *)param_6)(0);
-  uVar3 = (undefined4)((ulonglong)uVar9 >> 0x20);
-  iVar2 = (int)uVar9;
-  if (!bVar7) {
-    puVar4 = (uint *)(iVar2 + *(int *)(iVar2 + *(int *)(iVar2 + 0xb8) + 0xc));
-    uVar9 = Movie_EncodeFrame4x4Keyframe(extraout_ECX + 1,uVar3,uVar3,param_4,puVar5,puVar4);
-    uVar8 = CARRY4((uint)puVar5,(uint)uVar9);
-    puVar5 = (uint *)((int)puVar5 + (uint)uVar9);
-    iVar11 = iVar2;
+  MVar6 = (*frameProvider)((void *)0x0);
+  frameToReleaseOrNull = MVar6.frameOrError;
+  if (!MVar6.carry) {
+    uVar4 = 1;
+    sourcePixels = (uint *)((int)frameToReleaseOrNull +
+                           *(int *)((int)frameToReleaseOrNull +
+                                   *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc));
+    uVar2 = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,puVar5,sourcePixels);
+    puVar5 = (uint *)((int)puVar5 + uVar2);
+    frameToReleaseOrNull_00 = frameToReleaseOrNull;
     while( true ) {
-      uVar9 = (*(code *)param_6)(0,iVar11);
-      uVar3 = (undefined4)((ulonglong)uVar9 >> 0x20);
-      iVar2 = (int)uVar9;
-      if ((bool)uVar8) break;
-      uVar10 = Movie_EncodeFrame4x4Delta
-                         (extraout_ECX_00 + 1,uVar3,uVar3,param_4,puVar5,(int)puVar4,
-                          (ulonglong *)(*(int *)(iVar2 + *(int *)(iVar2 + 0xb8) + 0xc) + iVar2));
-      uVar8 = CARRY4((uint)puVar5,(uint)uVar10);
-      puVar5 = (uint *)((int)puVar5 + (uint)uVar10);
-      (*(code *)param_6)();
+      MVar6 = (*frameProvider)((void *)0x0);
+      frameToReleaseOrNull = MVar6.frameOrError;
+      if (MVar6.carry) break;
+      uVar4 = uVar4 + 1;
+      uVar2 = Movie_EncodeFrame4x4Delta
+                        (frameHeightPixels,frameWidthPixels,puVar5,sourcePixels,
+                         (uint *)(*(int *)((int)frameToReleaseOrNull +
+                                          *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc) +
+                                 (int)frameToReleaseOrNull));
+      puVar5 = (uint *)((int)puVar5 + uVar2);
+      (*frameProvider)(frameToReleaseOrNull);
     }
-    (*(code *)param_6)();
-    uVar6 = (int)puVar5 - (int)param_5;
-    param_5[0x2e] = extraout_ECX_01;
-    param_5[0x3f] = 0x10;
-    param_5[1] = uVar6;
-    param_5[0x30] = uVar6;
-    if (iVar2 == -1) {
-      param_5[0x30] = param_5[0x30] - 0x200;
-      return CONCAT44(param_2,uVar6);
+    (*frameProvider)(frameToReleaseOrNull_00);
+    uVar2 = (int)puVar5 - (int)outputBuffer;
+    outputBuffer[0x2e] = uVar4;
+    outputBuffer[0x3f] = 0x10;
+    outputBuffer[1] = uVar2;
+    outputBuffer[0x30] = uVar2;
+    if (frameToReleaseOrNull == (void *)0xffffffff) {
+      outputBuffer[0x30] = outputBuffer[0x30] - 0x200;
+      SVar7.carry = false;
+      SVar7.valueOrError = uVar2;
+      return SVar7;
     }
   }
-  return CONCAT44(param_2,iVar2);
+  SVar8.carry = true;
+  SVar8.valueOrError = (dword)frameToReleaseOrNull;
+  return SVar8;
 }
+
 
 /* Address: 0x00563FF0.
    Ownership: movie/runtime/playback.
@@ -97,15 +106,11 @@ Movie_EncodeFlmBufferFromFrameProviderCf
    Local calls: MoviePlayback_AdvanceToFrameAndPresent.
    Cross-module calls: InGameRuntime_UpdateSimulationAndNetworkTick [gameplay/session/runtime].
 */
-undefined8 __cdecl MoviePlayback_AdvanceScheduledFrameAndTick(void)
+void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void)
 
 {
-  undefined4 in_EAX;
   uint targetFrame;
   uint targetFrame_00;
-  uint extraout_ECX;
-  undefined4 in_EDX;
-  undefined8 uVar1;
   
   g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + 1;
   if (g_MoviePlaybackScheduleSpan != 0) {
@@ -113,9 +118,7 @@ undefined8 __cdecl MoviePlayback_AdvanceScheduledFrameAndTick(void)
                   g_MoviePlaybackBaseFrameGroup * 8;
     for (targetFrame_00 = 8; targetFrame_00 < targetFrame; targetFrame_00 = targetFrame_00 + 8) {
       if (g_MoviePlaybackCurrentFrame < targetFrame_00) {
-        uVar1 = MoviePlayback_AdvanceToFrameAndPresent(targetFrame_00);
-        targetFrame = (uint)uVar1;
-        targetFrame_00 = extraout_ECX;
+        MoviePlayback_AdvanceToFrameAndPresent(targetFrame_00);
       }
     }
     if (targetFrame != g_MoviePlaybackCurrentFrame) {
@@ -123,8 +126,9 @@ undefined8 __cdecl MoviePlayback_AdvanceScheduledFrameAndTick(void)
     }
   }
   InGameRuntime_UpdateSimulationAndNetworkTick();
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004A8590.
    Ownership: movie/runtime/playback.
@@ -134,41 +138,33 @@ undefined8 __cdecl MoviePlayback_AdvanceScheduledFrameAndTick(void)
    Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], Package_FindEntryAcrossMounts
    [assets/package/runtime], Random_NextPrimary [core/math/random].
 */
-dword Movie_Open(MovieOpenFlags movieOpenFlags,word *path)
+MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,word *path)
 
 {
   MovieFileHeader *pMVar1;
   uint uVar2;
   MovieSubresourceCount MVar3;
-  longlong lVar4;
+  MoviePaletteBankCount MVar4;
   MovieAudioGainQ15 MVar5;
-  PckEntryHeader *pPVar6;
+  MovieRuntime *pMVar6;
   MovieRuntime *pMVar7;
-  MovieRuntime *pMVar8;
-  HANDLE pvVar9;
-  dword dVar10;
-  int iVar11;
+  HANDLE pvVar8;
+  dword dVar9;
+  int iVar10;
   MovieFileHeader *byteCount;
-  uint uVar12;
-  dword bytes;
-  FileIoByteCount byteCount_00;
-  AssetAllocationSizeBytes extraout_ECX;
-  AssetAllocationSizeBytes extraout_ECX_00;
-  AssetAllocationSizeBytes AVar13;
-  uint extraout_EDX;
-  uint extraout_EDX_00;
-  SoundSampleAsset *arg0;
-  SoundSampleAsset *memory;
-  DirectSoundVoiceSet *extraout_EDX_01;
-  DirectSoundVoiceSet *extraout_EDX_02;
-  DirectSoundVoiceSet *pDVar14;
-  AssetDimension extraout_EDX_03;
-  SoundSampleAsset *memory_00;
-  MovieRuntime *unaff_EBX;
-  AssetMagic *pAVar15;
-  undefined1 uVar16;
-  undefined1 uVar17;
-  bool bVar18;
+  uint uVar11;
+  MovieRuntime *pMVar12;
+  MovieRuntime *handle;
+  AssetMagic *pAVar13;
+  bool bVar14;
+  FileSystemOpenEaxCf5 FVar15;
+  FileSystemSeekEaxCf5 FVar16;
+  FileSystemReadEaxCf5 FVar17;
+  ArenaAllocEaxCf5 AVar18;
+  SoundCreateSampleVoiceSetEaxCf5 SVar19;
+  MovieOpenEaxCf5 MVar20;
+  MovieOpenEaxCf5 MVar21;
+  PackageFindEntryEaxEbxCf9 PVar22;
   LPSECURITY_ATTRIBUTES lpThreadAttributes;
   SIZE_T dwStackSize;
   code *lpStartAddress;
@@ -183,202 +179,213 @@ dword Movie_Open(MovieOpenFlags movieOpenFlags,word *path)
   MovieRuntime *local_18;
   
   local_1c = 0;
-  if (((movieOpenFlags & 0x80000000) == 0) &&
-     (uVar16 = 0, g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
+  if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    unaff_EBX = (MovieRuntime *)
-                (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    uVar17 = 0;
-    if ((bool)uVar16) goto Movie_OpenResolvePackageOrFallbackStream;
+    FVar15 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    handle = (MovieRuntime *)FVar15.eax;
+    if (FVar15.carry) goto Movie_OpenResolvePackageOrFallbackStream;
   }
   else {
 Movie_OpenResolvePackageOrFallbackStream:
-    uVar17 = false;
     movieOpenFlags = movieOpenFlags & 0x7fffffff;
-    pPVar6 = Package_FindEntryAcrossMounts(path);
-    if (!(bool)uVar17) {
-      uVar17 = CARRY4(extraout_EDX,pPVar6->runtimePayloadOffset);
-      (*g_FileSystemSeekCf)
-                (FILESYSTEM_SEEK_BEGIN,extraout_EDX + pPVar6->runtimePayloadOffset,unaff_EBX);
-      if (!(bool)uVar17) {
-        local_1c = local_1c + 1;
-        goto Movie_OpenReadHeaderFromResolvedStream;
+    PVar22 = Package_FindEntryAcrossMounts(path);
+    if ((PVar22.carry) ||
+       (FVar16 = (*g_FileSystemSeekCf)
+                           (FILESYSTEM_SEEK_BEGIN,*(int *)(PVar22.eax + 0x1ec) + 0x200,
+                            (MovieRuntime *)PVar22.ebx), FVar16.carry)) {
+      WidePath_CombineDirectoryAndLeaf
+                ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
+                 (word *)&g_ExecutableDirectoryUtf16);
+      FVar15 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+      handle = (MovieRuntime *)FVar15.eax;
+      if (FVar15.carry) {
+        FVar15 = (*g_FileSystemOpenCf)(0,path);
+        pMVar6 = (MovieRuntime *)FVar15.eax;
+        handle = pMVar6;
+        if (FVar15.carry) goto LAB_004a8a0b;
       }
     }
-    WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
-               (word *)&g_ExecutableDirectoryUtf16);
-    unaff_EBX = (MovieRuntime *)
-                (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    if (((bool)uVar17) && (unaff_EBX = (MovieRuntime *)(*g_FileSystemOpenCf)(0,path), (bool)uVar17))
-    {
-      return (dword)unaff_EBX;
+    else {
+      local_1c = local_1c + 1;
+      handle = (MovieRuntime *)PVar22.ebx;
     }
-    uVar17 = 0;
   }
-Movie_OpenReadHeaderFromResolvedStream:
-  pAVar15 = (AssetMagic *)g_PackageScratchBuffer;
-  pMVar7 = (MovieRuntime *)(*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,unaff_EBX);
-  if ((bool)uVar17) goto Movie_OpenCloseStandaloneStreamAndReturnFailure;
-  pMVar7 = (MovieRuntime *)0x30;
-  if ((*pAVar15 != 0x6d6c66) ||
-     (dVar10 = *(int *)((int)pAVar15 + 0xc0) + 0x200, *(int *)((int)pAVar15 + 0xc) != 0x20001))
-  goto Movie_OpenCloseStandaloneStreamAndReturnFailure;
-  bVar18 = dVar10 < 0x3c0000;
-  if ((0x3c0000 < dVar10) && (bVar18 = false, movieOpenFlags != 0)) {
-    dVar10 = 0x3c0000;
-  }
-  pMVar7 = (*g_MemoryApi.alloc)(dVar10);
-  if (bVar18) goto Movie_OpenCloseStandaloneStreamAndReturnFailure;
-  pMVar8 = pMVar7;
-  for (iVar11 = 0x80; iVar11 != 0; iVar11 = iVar11 + -1) {
-    (pMVar8->textureCommon).magic = *pAVar15;
-    pAVar15 = pAVar15 + 1;
-    pMVar8 = (MovieRuntime *)&(pMVar8->textureCommon).allocationSizeBytes;
-  }
-  pMVar1 = pMVar7->fileHeader;
-  byteCount = pMVar1;
-  if (((MovieFileHeader *)0x3a2000 < pMVar1) && (movieOpenFlags != 0)) {
-    byteCount = (MovieFileHeader *)0x3a2000;
-  }
-  local_2c = (int)pMVar1 - (int)byteCount;
-  bVar18 = CARRY4((uint)pMVar8,(uint)byteCount);
-  local_28 = (byte *)((int)(pMVar8->textureCommon).buildMetadata.names.sourceName +
-                     (int)(byteCount[-1].reserved100_1FF + 0x90));
-  local_20 = unaff_EBX;
-  local_18 = pMVar7;
-  pMVar8 = (MovieRuntime *)(*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,pMVar8,unaff_EBX);
-  if ((bVar18) || (pMVar8 = (MovieRuntime *)(*g_FileSystemGetPositionCf)(unaff_EBX), bVar18))
-  goto Movie_OpenReleaseHeaderAllocationAfterFailure;
-  uVar2 = pMVar7->reservedBC;
-  uVar12 = 0;
-  local_24 = pMVar8;
-  if ((uVar2 == 0) || (0xe < uVar2)) {
+  pAVar13 = (AssetMagic *)g_PackageScratchBuffer;
+  FVar17 = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
+  pMVar6 = (MovieRuntime *)FVar17.eax;
+  if (!FVar17.carry) {
+    pMVar6 = (MovieRuntime *)0x30;
+    if ((*pAVar13 == 0x6d6c66) &&
+       (dVar9 = *(int *)((int)pAVar13 + 0xc0) + 0x200, *(int *)((int)pAVar13 + 0xc) == 0x20001)) {
+      if ((0x3c0000 < dVar9) && (movieOpenFlags != 0)) {
+        dVar9 = 0x3c0000;
+      }
+      AVar18 = (*g_MemoryApi.alloc)(dVar9);
+      pMVar6 = (MovieRuntime *)AVar18.eax;
+      if (!AVar18.carry) {
+        pMVar7 = pMVar6;
+        for (iVar10 = 0x80; iVar10 != 0; iVar10 = iVar10 + -1) {
+          (pMVar7->textureCommon).magic = *pAVar13;
+          pAVar13 = pAVar13 + 1;
+          pMVar7 = (MovieRuntime *)&(pMVar7->textureCommon).allocationSizeBytes;
+        }
+        pMVar1 = pMVar6->fileHeader;
+        byteCount = pMVar1;
+        if (((MovieFileHeader *)0x3a2000 < pMVar1) && (movieOpenFlags != 0)) {
+          byteCount = (MovieFileHeader *)0x3a2000;
+        }
+        local_2c = (int)pMVar1 - (int)byteCount;
+        local_28 = byteCount[-1].reserved100_1FF +
+                   (int)(&(pMVar7->textureCommon).buildMetadata + 1) + 0x50;
+        local_20 = handle;
+        local_18 = pMVar6;
+        FVar17 = (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,pMVar7,handle);
+        bVar14 = FVar17.carry;
+        pMVar7 = (MovieRuntime *)FVar17.eax;
+        if ((bVar14) || (pMVar7 = (MovieRuntime *)(*g_FileSystemGetPositionCf)(handle), bVar14))
+        goto Movie_OpenReleaseHeaderAllocationAfterFailure;
+        uVar2 = pMVar6->reservedBC;
+        uVar11 = 0;
+        local_24 = pMVar7;
+        if ((uVar2 == 0) || (0xe < uVar2)) {
+LAB_004a87c0:
+          pMVar12 = (MovieRuntime *)0x0;
 Movie_OpenAllocateAndInitializeRuntime:
-    lVar4 = (longlong)(int)pMVar7->subresourceCount * (longlong)(int)pMVar7->paletteBankCount;
-    iVar11 = (int)lVar4;
-    bVar18 = iVar11 != lVar4;
-    pMVar8 = (*g_MemoryApi.alloc)(iVar11 * 4 + 0x220);
-    if (!bVar18) {
-      AVar13 = extraout_ECX;
-      pDVar14 = extraout_EDX_01;
-      g_ActiveMovie = pMVar8;
-      if ((local_1c == 0) && (local_2c == 0)) {
-        (*g_FileSystemClose)(unaff_EBX);
-        AVar13 = extraout_ECX_00;
-        pDVar14 = extraout_EDX_02;
-      }
-      (pMVar8->textureCommon).magic = ASSET_MAGIC_GFX;
-      (pMVar8->textureCommon).allocationSizeBytes = AVar13;
-      (pMVar8->textureCommon).formatVersion = 1;
-      (pMVar8->textureCommon).converterVersion = 0;
-      pMVar8->audioVoiceSet = pDVar14;
-      pMVar8->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
-      MVar3 = pMVar7->subresourceCount;
-      dVar10 = (*g_LocaleGetPackedCurrentTime)();
-      (pMVar8->textureCommon).buildMetadata.timestamps.dateValue0 = dVar10;
-      (pMVar8->textureCommon).buildMetadata.timestamps.dateValue1 = dVar10;
-      (pMVar8->textureCommon).buildMetadata.timestamps.dateValue2 = dVar10;
-      dVar10 = (*g_LocaleGetPackedCurrentDate)();
-      (pMVar8->textureCommon).buildMetadata.timestamps.timeValue0 = dVar10;
-      (pMVar8->textureCommon).buildMetadata.timestamps.timeValue1 = dVar10;
-      (pMVar8->textureCommon).buildMetadata.timestamps.timeValue2 = dVar10;
-      (*g_LocaleCopyDefaultComputerLabelUtf16)
-                ((pMVar8->textureCommon).buildMetadata.names.producerName);
-      (*g_LocaleCopyDefaultComputerLabelUtf16)
-                ((pMVar8->textureCommon).buildMetadata.names.sourceName);
-      pMVar8->reserved100_1FF[0] = 0;
-      pMVar8->subresourceTableOffset = 0x200;
-      pMVar8->paletteBankCount = 0;
-      pMVar8->subresourceCount = 1;
-      pMVar8->fileHeader = (MovieFileHeader *)pMVar7;
-      pMVar8->currentFrameIndex = 0;
-      pMVar8->videoStreamOffset = 0x200;
-      (pMVar8->sourceEntry).dataOffset = 0x220;
-      (pMVar8->sourceEntry).pixelWidth = MVar3;
-      (pMVar8->sourceEntry).pixelHeight = extraout_EDX_03;
-      (pMVar8->sourceEntry).logicalWidth = MVar3;
-      (pMVar8->sourceEntry).logicalHeight = extraout_EDX_03;
-      (pMVar8->sourceEntry).paletteIndex = -1;
-      (pMVar8->sourceEntry).originX = 0;
-      (pMVar8->sourceEntry).originY = 0;
-      pMVar8->remainingVideoBytes = local_2c;
-      pMVar8->streamHandle = local_20;
-      pMVar8->loadedVideoEnd = local_28;
-      MVar5 = g_MovieDefaultAudioGainQ15;
-      pMVar8->streamHandleIsSharedPackage = local_1c;
-      pMVar8->openFlags = movieOpenFlags;
-      pMVar8->streamFileOffset = (MovieStreamFileOffset)local_24;
-      pMVar8->audioGainQ15 = MVar5;
-      lpThreadId = &local_2c;
-      pMVar8->workerActive = 0;
-      pMVar8->streamState = MOVIE_STREAM_IDLE;
-      pMVar8->refillSemaphore = (void *)0x0;
-      if ((local_2c != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
-        pMVar8->workerActive = pMVar8->workerActive + 1;
-        dwCreationFlags = 0;
-        lpParameter = (LPVOID)0x0;
-        lpStartAddress = Movie_StreamWorkerThread;
-        dwStackSize = 0;
-        lpThreadAttributes = (LPSECURITY_ATTRIBUTES)0x0;
-        pvVar9 = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
-        pMVar8->refillSemaphore = pvVar9;
-        pvVar9 = CreateThread(lpThreadAttributes,dwStackSize,lpStartAddress,lpParameter,
-                              dwCreationFlags,lpThreadId);
-        if (pvVar9 == (HANDLE)0x0) {
-          pMVar8->workerActive = pMVar8->workerActive - 1;
+          dVar9 = pMVar6->subresourceCount * pMVar6->paletteBankCount * 4 + 0x220;
+          AVar18 = (*g_MemoryApi.alloc)(dVar9);
+          pMVar7 = (MovieRuntime *)AVar18.eax;
+          if (!AVar18.carry) {
+            g_ActiveMovie = pMVar7;
+            if ((local_1c == 0) && (local_2c == 0)) {
+              (*g_FileSystemClose)(handle);
+            }
+            (pMVar7->textureCommon).magic = ASSET_MAGIC_GFX;
+            (pMVar7->textureCommon).allocationSizeBytes = dVar9;
+            (pMVar7->textureCommon).formatVersion = 1;
+            (pMVar7->textureCommon).converterVersion = 0;
+            pMVar7->audioVoiceSet = (DirectSoundVoiceSet *)pMVar12;
+            pMVar7->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
+            MVar3 = pMVar6->subresourceCount;
+            MVar4 = pMVar6->paletteBankCount;
+            dVar9 = (*g_LocaleGetPackedCurrentTime)();
+            (pMVar7->textureCommon).buildMetadata.timestamps.dateValue0 = dVar9;
+            (pMVar7->textureCommon).buildMetadata.timestamps.dateValue1 = dVar9;
+            (pMVar7->textureCommon).buildMetadata.timestamps.dateValue2 = dVar9;
+            dVar9 = (*g_LocaleGetPackedCurrentDate)();
+            (pMVar7->textureCommon).buildMetadata.timestamps.timeValue0 = dVar9;
+            (pMVar7->textureCommon).buildMetadata.timestamps.timeValue1 = dVar9;
+            (pMVar7->textureCommon).buildMetadata.timestamps.timeValue2 = dVar9;
+            (*g_LocaleCopyDefaultComputerLabelUtf16)
+                      ((pMVar7->textureCommon).buildMetadata.names.producerName);
+            (*g_LocaleCopyDefaultComputerLabelUtf16)
+                      ((pMVar7->textureCommon).buildMetadata.names.sourceName);
+            pMVar7->reserved100_1FF[0] = 0;
+            pMVar7->subresourceTableOffset = 0x200;
+            pMVar7->paletteBankCount = 0;
+            pMVar7->subresourceCount = 1;
+            pMVar7->fileHeader = (MovieFileHeader *)pMVar6;
+            pMVar7->currentFrameIndex = 0;
+            pMVar7->videoStreamOffset = 0x200;
+            (pMVar7->sourceEntry).dataOffset = 0x220;
+            (pMVar7->sourceEntry).pixelWidth = MVar3;
+            (pMVar7->sourceEntry).pixelHeight = MVar4;
+            (pMVar7->sourceEntry).logicalWidth = MVar3;
+            (pMVar7->sourceEntry).logicalHeight = MVar4;
+            (pMVar7->sourceEntry).paletteIndex = -1;
+            (pMVar7->sourceEntry).originX = 0;
+            (pMVar7->sourceEntry).originY = 0;
+            pMVar7->remainingVideoBytes = local_2c;
+            pMVar7->streamHandle = local_20;
+            pMVar7->loadedVideoEnd = local_28;
+            MVar5 = g_MovieDefaultAudioGainQ15;
+            pMVar7->streamHandleIsSharedPackage = local_1c;
+            pMVar7->openFlags = movieOpenFlags;
+            pMVar7->streamFileOffset = (MovieStreamFileOffset)local_24;
+            pMVar7->audioGainQ15 = MVar5;
+            lpThreadId = &local_2c;
+            pMVar7->workerActive = 0;
+            pMVar7->streamState = MOVIE_STREAM_IDLE;
+            pMVar7->refillSemaphore = (void *)0x0;
+            if ((local_2c != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
+              pMVar7->workerActive = pMVar7->workerActive + 1;
+              dwCreationFlags = 0;
+              lpParameter = (LPVOID)0x0;
+              lpStartAddress = Movie_StreamWorkerThread;
+              dwStackSize = 0;
+              lpThreadAttributes = (LPSECURITY_ATTRIBUTES)0x0;
+              pvVar8 = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
+              pMVar7->refillSemaphore = pvVar8;
+              pvVar8 = CreateThread(lpThreadAttributes,dwStackSize,lpStartAddress,lpParameter,
+                                    dwCreationFlags,lpThreadId);
+              if (pvVar8 == (HANDLE)0x0) {
+                pMVar7->workerActive = pMVar7->workerActive - 1;
+              }
+              else {
+                CloseHandle(pvVar8);
+              }
+            }
+            MVar20.carry = false;
+            MVar20.eax = pMVar6->subresourceTableOffset;
+            return MVar20;
+          }
         }
         else {
-          CloseHandle(pvVar9);
+          if (1 < uVar2) {
+            dVar9 = Random_NextPrimary();
+            uVar11 = (dVar9 & 0xffff) % uVar2;
+          }
+          iVar10 = 0;
+          pMVar7 = pMVar6;
+          for (; uVar11 != 0; uVar11 = uVar11 - 1) {
+            iVar10 = iVar10 + pMVar7->currentFrameIndex;
+            pMVar7 = (MovieRuntime *)&(pMVar7->textureCommon).allocationSizeBytes;
+          }
+          dVar9 = pMVar7->currentFrameIndex;
+          if (dVar9 == 0) goto LAB_004a87c0;
+          FVar16 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,iVar10 + local_2c,handle);
+          pMVar7 = (MovieRuntime *)FVar16.eax;
+          if (!FVar16.carry) {
+            AVar18 = (*g_MemoryApi.alloc)(dVar9);
+            pMVar7 = (MovieRuntime *)AVar18.eax;
+            if (AVar18.carry) goto Movie_OpenReleaseHeaderAllocationAfterFailure;
+            FVar17 = (*g_FileSystemReadExactCf)(dVar9,pMVar7,handle);
+            pMVar12 = (MovieRuntime *)FVar17.eax;
+            if (FVar17.carry) {
+LAB_004a89e8:
+              (*g_MemoryApi.free)(pMVar7);
+              pMVar7 = pMVar12;
+              goto Movie_OpenReleaseHeaderAllocationAfterFailure;
+            }
+            SVar19 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)pMVar7);
+            pMVar12 = (MovieRuntime *)SVar19.eax;
+            if (SVar19.carry) goto LAB_004a89e8;
+            (*g_MemoryApi.free)(pMVar7);
+            goto Movie_OpenAllocateAndInitializeRuntime;
+          }
         }
-      }
-      return pMVar7->subresourceTableOffset;
-    }
-  }
-  else {
-    if (1 < uVar2) {
-      dVar10 = Random_NextPrimary();
-      uVar12 = (dVar10 & 0xffff) % extraout_EDX_00;
-    }
-    iVar11 = 0;
-    pMVar8 = pMVar7;
-    for (; uVar12 != 0; uVar12 = uVar12 - 1) {
-      iVar11 = iVar11 + pMVar8->currentFrameIndex;
-      pMVar8 = (MovieRuntime *)&(pMVar8->textureCommon).allocationSizeBytes;
-    }
-    bVar18 = false;
-    if (pMVar8->currentFrameIndex == 0) goto Movie_OpenAllocateAndInitializeRuntime;
-    pMVar8 = (MovieRuntime *)
-             (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,iVar11 + local_2c,unaff_EBX);
-    if ((!bVar18) && (pMVar8 = (*g_MemoryApi.alloc)(bytes), !bVar18)) {
-      pMVar8 = (MovieRuntime *)(*g_FileSystemReadExactCf)(byteCount_00,pMVar8,unaff_EBX);
-      memory_00 = arg0;
-      if ((!bVar18) &&
-         (pMVar8 = (MovieRuntime *)(*g_SoundCreateSampleVoiceSet)(arg0), memory_00 = memory, !bVar18
-         )) {
-        (*g_MemoryApi.free)(memory);
-        goto Movie_OpenAllocateAndInitializeRuntime;
-      }
-      (*g_MemoryApi.free)(memory_00);
-    }
-  }
 Movie_OpenReleaseHeaderAllocationAfterFailure:
-  pMVar7 = pMVar8;
-  (*g_MemoryApi.free)(local_18);
-Movie_OpenCloseStandaloneStreamAndReturnFailure:
-  if (local_1c == 0) {
-    (*g_FileSystemClose)(unaff_EBX);
+        pMVar6 = pMVar7;
+        (*g_MemoryApi.free)(local_18);
+      }
+    }
   }
-  return (dword)pMVar7;
+  if (local_1c == 0) {
+    (*g_FileSystemClose)(handle);
+  }
+LAB_004a8a0b:
+  MVar21.carry = true;
+  MVar21.eax = (dword)pMVar6;
+  return MVar21;
 }
+
 
 /* Address: 0x004A8A20.
    Ownership: movie/runtime/playback.
    Purpose: Returns the active movie source entry's logical width in EAX and logical height in EDX. Both are zero
    when no movie is open.
 */
-MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void)
+MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDimensions(void)
 
 {
   AssetDimension frameWidth;
@@ -393,11 +400,12 @@ MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void)
   return CONCAT44(frameHeight,frameWidth);
 }
 
+
 /* Address: 0x004A8A40.
    Ownership: movie/runtime/playback.
    Purpose: Updates the active movie's equal-channel Q15 one-shot audio gain. Does nothing when no movie is open.
 */
-void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
+void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 
 {
   if (g_ActiveMovie != (MovieRuntime *)0x0) {
@@ -405,6 +413,7 @@ void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
   }
   return;
 }
+
 
 /* Address: 0x004A8C00.
    Ownership: movie/runtime/playback.
@@ -417,37 +426,42 @@ dword Movie_StreamWorkerThread(void *unusedThreadContext)
 {
   void *handle;
   MovieRuntime *pMVar1;
-  FileIoByteCount byteCount;
-  int extraout_ECX;
-  undefined1 uVar2;
+  uint byteCount;
+  FileSystemReadEaxCf5 FVar2;
   
   do {
     do {
-      if ((((g_ActiveMovie == (MovieRuntime *)0x0) ||
-           (MsgWaitForMultipleObjects(1,&g_ActiveMovie->refillSemaphore,0,0x100,0),
-           pMVar1 = g_ActiveMovie, g_ActiveMovie == (MovieRuntime *)0x0)) ||
-          (g_ActiveMovie->streamState == MOVIE_STREAM_SHUTDOWN)) ||
-         ((g_ActiveMovie->workerActive == 0 || (g_ActiveMovie->remainingVideoBytes == 0))))
-      goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
-    } while (g_ActiveMovie->streamState == MOVIE_STREAM_IDLE);
-    if ((uint)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200) {
-      handle = g_ActiveMovie->streamHandle;
-      uVar2 = g_ActiveMovie->remainingVideoBytes < 0x1e000;
-      (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,g_ActiveMovie->streamFileOffset,handle);
-      (*g_FileSystemReadExactCf)(byteCount,pMVar1->loadedVideoEnd,handle);
-      if ((bool)uVar2) {
-        if (pMVar1->streamState != MOVIE_STREAM_SHUTDOWN) {
-          pMVar1->streamState = MOVIE_STREAM_READ_FAILED;
-        }
+      if (g_ActiveMovie == (MovieRuntime *)0x0) {
 Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
         if (g_ActiveMovie != (MovieRuntime *)0x0) {
           g_ActiveMovie->workerActive = 0;
         }
         return 0;
       }
-      pMVar1->remainingVideoBytes = pMVar1->remainingVideoBytes - extraout_ECX;
-      pMVar1->streamFileOffset = pMVar1->streamFileOffset + extraout_ECX;
-      pMVar1->loadedVideoEnd = pMVar1->loadedVideoEnd + extraout_ECX;
+      MsgWaitForMultipleObjects(1,&g_ActiveMovie->refillSemaphore,0,0x100,0);
+      pMVar1 = g_ActiveMovie;
+      if ((((g_ActiveMovie == (MovieRuntime *)0x0) ||
+           (g_ActiveMovie->streamState == MOVIE_STREAM_SHUTDOWN)) ||
+          (g_ActiveMovie->workerActive == 0)) || (g_ActiveMovie->remainingVideoBytes == 0))
+      goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
+    } while (g_ActiveMovie->streamState == MOVIE_STREAM_IDLE);
+    byteCount = g_ActiveMovie->remainingVideoBytes;
+    if ((uint)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200) {
+      handle = g_ActiveMovie->streamHandle;
+      if (0x1e000 < byteCount) {
+        byteCount = 0x1e000;
+      }
+      (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,g_ActiveMovie->streamFileOffset,handle);
+      FVar2 = (*g_FileSystemReadExactCf)(byteCount,pMVar1->loadedVideoEnd,handle);
+      if (FVar2.carry) {
+        if (pMVar1->streamState != MOVIE_STREAM_SHUTDOWN) {
+          pMVar1->streamState = MOVIE_STREAM_READ_FAILED;
+        }
+        goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
+      }
+      pMVar1->remainingVideoBytes = pMVar1->remainingVideoBytes - byteCount;
+      pMVar1->streamFileOffset = pMVar1->streamFileOffset + byteCount;
+      pMVar1->loadedVideoEnd = pMVar1->loadedVideoEnd + byteCount;
       if ((pMVar1->remainingVideoBytes == 0) && (pMVar1->streamHandleIsSharedPackage == 0)) {
         (*g_FileSystemClose)(handle);
       }
@@ -457,6 +471,7 @@ Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
     pMVar1->streamState = MOVIE_STREAM_IDLE;
   } while( true );
 }
+
 
 /* Address: 0x004A8D50.
    Ownership: movie/runtime/playback.
@@ -485,7 +500,7 @@ void Movie_Rewind(void)
    Purpose: Signals worker shutdown, waits for workerActive to clear, closes the semaphore and owned stream,
    releases the selected audio voice set, frees the FLM buffer and MovieRuntime, and clears g_ActiveMovie.
 */
-void Movie_Close(void)
+void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
 
 {
   MovieRuntime *memory;
@@ -520,6 +535,7 @@ void Movie_Close(void)
   return;
 }
 
+
 /* Address: 0x005657D0.
    Ownership: movie/runtime/playback.
    Purpose: End-movie UI callback. Checks frontend/session mode flags and invokes the corresponding transition or
@@ -527,7 +543,7 @@ void Movie_Close(void)
    Cross-module calls: FrontendClientSession_DecrementTimeoutsAndCompactPlayers [ui/frontend/session],
    FrontendHostSession_TickShutdownOrReadyConsensus [ui/frontend/session].
 */
-void EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime)
+void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -541,6 +557,7 @@ void EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime)
   return;
 }
 
+
 /* Address: 0x00565810.
    Ownership: movie/runtime/playback.
    Purpose: End-movie command dispatcher selected by command code and modifier flags. Typed parameters: p0
@@ -548,8 +565,9 @@ void EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime)
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-void EndMovieUiRuntime_DispatchCommandByFlagsCf
-               (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+EndMovieUiRuntime_DispatchCommandByFlagsCf
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime)
 
 {
   uint uVar1;
@@ -592,6 +610,7 @@ void EndMovieUiRuntime_DispatchCommandByFlagsCf
   return;
 }
 
+
 /* Address: 0x005739C0.
    Ownership: movie/runtime/playback.
    Purpose: Periodic timer callback that increments g_IntroMoviePendingTicks. The intro loop decodes at most three
@@ -609,731 +628,1311 @@ void IntroMovie_TimerTick(void)
    Purpose: Handles movie encode frame4x4 keyframe.
    Local calls: MovieColor_ComputeLuma5FromRgb888, MovieColor_ComputeChromaCodeFromRgb888.
 */
-undefined8 __fastcall
+uint __thandor_eax_preserve_ecx_edx
 Movie_EncodeFrame4x4Keyframe
-          (undefined4 param_1,undefined4 param_2,uint param_3,uint param_4,uint *param_5,
-          uint *param_6)
+          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+          uint *encodedOutput,uint *sourcePixels)
 
 {
-  uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int iVar5;
-  uint *puVar6;
-  uint *puVar7;
-  undefined1 uVar8;
-  undefined1 uVar9;
-  undefined1 uVar10;
-  undefined1 uVar11;
-  undefined1 uVar12;
-  undefined1 uVar13;
-  undefined1 uVar14;
-  undefined1 uVar15;
-  ushort uVar16;
-  ushort uVar19;
+  PackedRgb24 PVar1;
+  PackedRgb24 PVar2;
+  PackedRgb24 PVar3;
+  uint uVar4;
+  uint uVar5;
+  uint uVar6;
+  uint uVar7;
+  int iVar8;
+  int iVar9;
+  int iVar10;
+  int iVar11;
+  int iVar12;
+  int iVar13;
+  int iVar14;
+  int iVar15;
+  int iVar16;
   uint uVar17;
-  ushort uVar20;
-  undefined8 uVar18;
-  ushort uVar21;
-  undefined8 uVar22;
+  uint uVar18;
+  uint uVar19;
+  uint uVar20;
+  uint uVar21;
+  uint uVar22;
+  PackedRgb24 *pPVar23;
+  uint *puVar24;
+  undefined1 uVar25;
+  undefined1 uVar26;
+  undefined1 uVar27;
+  undefined1 uVar28;
+  undefined1 uVar29;
+  undefined1 uVar30;
+  undefined1 uVar31;
+  undefined1 uVar32;
+  ushort uVar33;
+  ushort uVar36;
+  PackedRgb24 PVar34;
+  ushort uVar37;
+  undefined8 uVar35;
+  ushort uVar38;
   uint uStack_24;
   uint uStack_20;
   
-  uStack_20 = param_3 >> 2;
-  puVar7 = param_5;
-  uStack_24 = param_4 >> 2;
+  uStack_20 = frameHeightPixels >> 2;
+  puVar24 = encodedOutput;
+  uStack_24 = frameWidthPixels >> 2;
   do {
     do {
-      uVar3 = *param_6;
-      uVar17 = param_6[1];
-      uVar1 = param_6[2];
-      uVar2 = param_6[3];
-      uVar8 = (undefined1)(uVar3 >> 0x18);
-      uVar16 = CONCAT11(uVar8,uVar8);
-      uVar9 = (undefined1)(uVar3 >> 0x10);
-      uVar8 = (undefined1)(uVar3 >> 8);
-      uVar10 = (undefined1)(uVar17 >> 0x18);
-      uVar19 = CONCAT11(uVar10,uVar10);
-      uVar11 = (undefined1)(uVar17 >> 0x10);
-      uVar10 = (undefined1)(uVar17 >> 8);
-      uVar12 = (undefined1)(uVar1 >> 0x18);
-      uVar20 = CONCAT11(uVar12,uVar12);
-      uVar13 = (undefined1)(uVar1 >> 0x10);
-      uVar12 = (undefined1)(uVar1 >> 8);
-      uVar14 = (undefined1)(uVar2 >> 0x18);
-      uVar21 = CONCAT11(uVar14,uVar14);
-      uVar15 = (undefined1)(uVar2 >> 0x10);
-      uVar14 = (undefined1)(uVar2 >> 8);
-      uVar22 = CONCAT26((uVar21 >> 6) + (uVar20 >> 6) + (uVar16 >> 6) + (uVar19 >> 6),
-                        CONCAT24(((ushort)(CONCAT35(CONCAT21(uVar21,uVar15),CONCAT14(uVar15,uVar2))
+      PVar34 = *sourcePixels;
+      PVar1 = sourcePixels[1];
+      PVar2 = sourcePixels[2];
+      PVar3 = sourcePixels[3];
+      uVar25 = (undefined1)(PVar34 >> 0x18);
+      uVar33 = CONCAT11(uVar25,uVar25);
+      uVar26 = (undefined1)(PVar34 >> 0x10);
+      uVar25 = (undefined1)(PVar34 >> 8);
+      uVar27 = (undefined1)(PVar1 >> 0x18);
+      uVar36 = CONCAT11(uVar27,uVar27);
+      uVar28 = (undefined1)(PVar1 >> 0x10);
+      uVar27 = (undefined1)(PVar1 >> 8);
+      uVar29 = (undefined1)(PVar2 >> 0x18);
+      uVar37 = CONCAT11(uVar29,uVar29);
+      uVar30 = (undefined1)(PVar2 >> 0x10);
+      uVar29 = (undefined1)(PVar2 >> 8);
+      uVar31 = (undefined1)(PVar3 >> 0x18);
+      uVar38 = CONCAT11(uVar31,uVar31);
+      uVar32 = (undefined1)(PVar3 >> 0x10);
+      uVar31 = (undefined1)(PVar3 >> 8);
+      uVar35 = CONCAT26((uVar38 >> 6) + (uVar37 >> 6) + (uVar33 >> 6) + (uVar36 >> 6),
+                        CONCAT24(((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar20,uVar13),CONCAT14(uVar13,uVar1))
+                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar16,uVar9),CONCAT14(uVar9,uVar3)) >>
-                                          0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar19,uVar11),CONCAT14(uVar11,uVar17))
+                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
                                           >> 0x20) >> 6),
-                                 CONCAT22((CONCAT11(uVar14,uVar14) >> 6) +
-                                          (CONCAT11(uVar12,uVar12) >> 6) +
-                                          (CONCAT11(uVar8,uVar8) >> 6) +
-                                          (CONCAT11(uVar10,uVar10) >> 6),
-                                          (CONCAT11((char)uVar2,(char)uVar2) >> 6) +
-                                          (CONCAT11((char)uVar1,(char)uVar1) >> 6) +
-                                          (CONCAT11((char)uVar3,(char)uVar3) >> 6) +
-                                          (CONCAT11((char)uVar17,(char)uVar17) >> 6))));
-      MovieColor_ComputeLuma5FromRgb888(*param_6);
-      MovieColor_ComputeLuma5FromRgb888(param_6[1]);
-      MovieColor_ComputeLuma5FromRgb888(param_6[2]);
-      MovieColor_ComputeLuma5FromRgb888(param_6[3]);
-      puVar6 = param_6 + param_4;
-      uVar3 = *puVar6;
-      uVar17 = puVar6[1];
-      uVar1 = puVar6[2];
-      uVar2 = puVar6[3];
-      uVar8 = (undefined1)(uVar3 >> 0x18);
-      uVar16 = CONCAT11(uVar8,uVar8);
-      uVar9 = (undefined1)(uVar3 >> 0x10);
-      uVar8 = (undefined1)(uVar3 >> 8);
-      uVar10 = (undefined1)(uVar17 >> 0x18);
-      uVar19 = CONCAT11(uVar10,uVar10);
-      uVar11 = (undefined1)(uVar17 >> 0x10);
-      uVar10 = (undefined1)(uVar17 >> 8);
-      uVar12 = (undefined1)(uVar1 >> 0x18);
-      uVar20 = CONCAT11(uVar12,uVar12);
-      uVar13 = (undefined1)(uVar1 >> 0x10);
-      uVar12 = (undefined1)(uVar1 >> 8);
-      uVar14 = (undefined1)(uVar2 >> 0x18);
-      uVar21 = CONCAT11(uVar14,uVar14);
-      uVar15 = (undefined1)(uVar2 >> 0x10);
-      uVar14 = (undefined1)(uVar2 >> 8);
-      uVar22 = CONCAT26((short)((ulonglong)uVar22 >> 0x30) + (uVar16 >> 6) + (uVar19 >> 6) +
-                        (uVar20 >> 6) + (uVar21 >> 6),
-                        CONCAT24((short)((ulonglong)uVar22 >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar16,uVar9),CONCAT14(uVar9,uVar3)) >>
-                                          0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar19,uVar11),CONCAT14(uVar11,uVar17))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar20,uVar13),CONCAT14(uVar13,uVar1))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar21,uVar15),CONCAT14(uVar15,uVar2))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)uVar22 >> 0x10) +
-                                          (CONCAT11(uVar8,uVar8) >> 6) +
-                                          (CONCAT11(uVar10,uVar10) >> 6) +
-                                          (CONCAT11(uVar12,uVar12) >> 6) +
-                                          (CONCAT11(uVar14,uVar14) >> 6),
-                                          (short)uVar22 +
-                                          (CONCAT11((char)uVar3,(char)uVar3) >> 6) +
-                                          (CONCAT11((char)uVar17,(char)uVar17) >> 6) +
-                                          (CONCAT11((char)uVar1,(char)uVar1) >> 6) +
-                                          (CONCAT11((char)uVar2,(char)uVar2) >> 6))));
-      MovieColor_ComputeLuma5FromRgb888(*puVar6);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-      puVar6 = puVar6 + param_4;
-      uVar3 = *puVar6;
-      uVar17 = puVar6[1];
-      uVar1 = puVar6[2];
-      uVar2 = puVar6[3];
-      uVar8 = (undefined1)(uVar3 >> 0x18);
-      uVar16 = CONCAT11(uVar8,uVar8);
-      uVar9 = (undefined1)(uVar3 >> 0x10);
-      uVar8 = (undefined1)(uVar3 >> 8);
-      uVar10 = (undefined1)(uVar17 >> 0x18);
-      uVar19 = CONCAT11(uVar10,uVar10);
-      uVar11 = (undefined1)(uVar17 >> 0x10);
-      uVar10 = (undefined1)(uVar17 >> 8);
-      uVar12 = (undefined1)(uVar1 >> 0x18);
-      uVar20 = CONCAT11(uVar12,uVar12);
-      uVar13 = (undefined1)(uVar1 >> 0x10);
-      uVar12 = (undefined1)(uVar1 >> 8);
-      uVar14 = (undefined1)(uVar2 >> 0x18);
-      uVar21 = CONCAT11(uVar14,uVar14);
-      uVar15 = (undefined1)(uVar2 >> 0x10);
-      uVar14 = (undefined1)(uVar2 >> 8);
-      uVar22 = CONCAT26((short)((ulonglong)uVar22 >> 0x30) + (uVar16 >> 6) + (uVar19 >> 6) +
-                        (uVar20 >> 6) + (uVar21 >> 6),
-                        CONCAT24((short)((ulonglong)uVar22 >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar16,uVar9),CONCAT14(uVar9,uVar3)) >>
-                                          0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar19,uVar11),CONCAT14(uVar11,uVar17))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar20,uVar13),CONCAT14(uVar13,uVar1))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar21,uVar15),CONCAT14(uVar15,uVar2))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)uVar22 >> 0x10) +
-                                          (CONCAT11(uVar8,uVar8) >> 6) +
-                                          (CONCAT11(uVar10,uVar10) >> 6) +
-                                          (CONCAT11(uVar12,uVar12) >> 6) +
-                                          (CONCAT11(uVar14,uVar14) >> 6),
-                                          (short)uVar22 +
-                                          (CONCAT11((char)uVar3,(char)uVar3) >> 6) +
-                                          (CONCAT11((char)uVar17,(char)uVar17) >> 6) +
-                                          (CONCAT11((char)uVar1,(char)uVar1) >> 6) +
-                                          (CONCAT11((char)uVar2,(char)uVar2) >> 6))));
-      MovieColor_ComputeLuma5FromRgb888(*puVar6);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-      puVar6 = puVar6 + param_4;
-      uVar3 = *puVar6;
-      uVar17 = puVar6[1];
-      uVar1 = puVar6[2];
-      uVar2 = puVar6[3];
-      uVar8 = (undefined1)(uVar3 >> 0x18);
-      uVar16 = CONCAT11(uVar8,uVar8);
-      uVar9 = (undefined1)(uVar3 >> 0x10);
-      uVar8 = (undefined1)(uVar3 >> 8);
-      uVar10 = (undefined1)(uVar17 >> 0x18);
-      uVar19 = CONCAT11(uVar10,uVar10);
-      uVar11 = (undefined1)(uVar17 >> 0x10);
-      uVar10 = (undefined1)(uVar17 >> 8);
-      uVar12 = (undefined1)(uVar1 >> 0x18);
-      uVar20 = CONCAT11(uVar12,uVar12);
-      uVar13 = (undefined1)(uVar1 >> 0x10);
-      uVar12 = (undefined1)(uVar1 >> 8);
-      uVar14 = (undefined1)(uVar2 >> 0x18);
-      uVar21 = CONCAT11(uVar14,uVar14);
-      uVar15 = (undefined1)(uVar2 >> 0x10);
-      uVar14 = (undefined1)(uVar2 >> 8);
-      uVar18 = CONCAT26((short)((ulonglong)uVar22 >> 0x30) + (uVar16 >> 6) + (uVar19 >> 6) +
-                        (uVar20 >> 6) + (uVar21 >> 6),
-                        CONCAT24((short)((ulonglong)uVar22 >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar16,uVar9),CONCAT14(uVar9,uVar3)) >>
-                                          0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar19,uVar11),CONCAT14(uVar11,uVar17))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar20,uVar13),CONCAT14(uVar13,uVar1))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar21,uVar15),CONCAT14(uVar15,uVar2))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)uVar22 >> 0x10) +
-                                          (CONCAT11(uVar8,uVar8) >> 6) +
-                                          (CONCAT11(uVar10,uVar10) >> 6) +
-                                          (CONCAT11(uVar12,uVar12) >> 6) +
-                                          (CONCAT11(uVar14,uVar14) >> 6),
-                                          (short)uVar22 +
-                                          (CONCAT11((char)uVar3,(char)uVar3) >> 6) +
-                                          (CONCAT11((char)uVar17,(char)uVar17) >> 6) +
-                                          (CONCAT11((char)uVar1,(char)uVar1) >> 6) +
-                                          (CONCAT11((char)uVar2,(char)uVar2) >> 6))));
-      MovieColor_ComputeLuma5FromRgb888(*puVar6);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-      MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-      uVar22 = MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-      iVar5 = (int)((ulonglong)uVar22 >> 0x20);
-      iVar4 = (int)uVar22;
-      if ((extraout_ECX <= iVar4) && (uVar22 = CONCAT44(iVar5,extraout_ECX), iVar5 < iVar4)) {
-        uVar22 = CONCAT44(iVar4,extraout_ECX);
+                                 CONCAT22((CONCAT11(uVar31,uVar31) >> 6) +
+                                          (CONCAT11(uVar29,uVar29) >> 6) +
+                                          (CONCAT11(uVar25,uVar25) >> 6) +
+                                          (CONCAT11(uVar27,uVar27) >> 6),
+                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6) +
+                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
+                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
+                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6))));
+      uVar4 = MovieColor_ComputeLuma5FromRgb888(*sourcePixels);
+      uVar5 = MovieColor_ComputeLuma5FromRgb888(sourcePixels[1]);
+      uVar7 = uVar5;
+      if (((int)uVar4 <= (int)uVar5) && (uVar7 = uVar4, (int)uVar4 < (int)uVar5)) {
+        uVar4 = uVar5;
       }
-      iVar4 = (int)((ulonglong)uVar22 >> 0x20);
-      uVar16 = (ushort)uVar18 >> 6;
-      uVar19 = (ushort)((ulonglong)uVar18 >> 0x10) >> 6;
-      uVar20 = (ushort)((ulonglong)uVar18 >> 0x20) >> 6;
-      uVar21 = (ushort)((ulonglong)uVar18 >> 0x36);
-      uVar17 = CONCAT13((uVar21 != 0) * (uVar21 < 0x100) * (char)uVar21 - (0xff < uVar21),
-                        CONCAT12((uVar20 != 0) * (uVar20 < 0x100) * (char)uVar20 - (0xff < uVar20),
-                                 CONCAT11((uVar19 != 0) * (uVar19 < 0x100) * (char)uVar19 -
-                                          (0xff < uVar19),
-                                          (uVar16 != 0) * (uVar16 < 0x100) * (char)uVar16 -
-                                          (0xff < uVar16))));
-      uVar3 = (int)uVar22 + -8 + iVar4 >> 1;
-      if ((int)uVar3 < 0) {
-        uVar3 = 0;
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(sourcePixels[2]);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
       }
-      else if (0x18 < (int)uVar3) {
-        uVar3 = 0x18;
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(sourcePixels[3]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
       }
-      if ((uint)(iVar4 - (int)uVar22) < 0xc) {
-        *puVar7 = uVar3;
-        MovieColor_ComputeChromaCodeFromRgb888(uVar17);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        puVar6 = puVar6 + -param_4;
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        uVar22 = MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        puVar7[1] = (uint)((ulonglong)uVar22 >> 0x20);
-        puVar6 = puVar6 + -param_4;
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        puVar6 = puVar6 + -param_4;
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        uVar22 = MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        iVar4 = (int)uVar22 - extraout_ECX_00;
-        if (iVar4 < 0) {
-          iVar4 = 0;
+      pPVar23 = sourcePixels + frameWidthPixels;
+      PVar34 = *pPVar23;
+      PVar1 = pPVar23[1];
+      PVar2 = pPVar23[2];
+      PVar3 = pPVar23[3];
+      uVar25 = (undefined1)(PVar34 >> 0x18);
+      uVar33 = CONCAT11(uVar25,uVar25);
+      uVar26 = (undefined1)(PVar34 >> 0x10);
+      uVar25 = (undefined1)(PVar34 >> 8);
+      uVar27 = (undefined1)(PVar1 >> 0x18);
+      uVar36 = CONCAT11(uVar27,uVar27);
+      uVar28 = (undefined1)(PVar1 >> 0x10);
+      uVar27 = (undefined1)(PVar1 >> 8);
+      uVar29 = (undefined1)(PVar2 >> 0x18);
+      uVar37 = CONCAT11(uVar29,uVar29);
+      uVar30 = (undefined1)(PVar2 >> 0x10);
+      uVar29 = (undefined1)(PVar2 >> 8);
+      uVar31 = (undefined1)(PVar3 >> 0x18);
+      uVar38 = CONCAT11(uVar31,uVar31);
+      uVar32 = (undefined1)(PVar3 >> 0x10);
+      uVar31 = (undefined1)(PVar3 >> 8);
+      uVar35 = CONCAT26((short)((ulonglong)uVar35 >> 0x30) + (uVar33 >> 6) + (uVar36 >> 6) +
+                        (uVar37 >> 6) + (uVar38 >> 6),
+                        CONCAT24((short)((ulonglong)uVar35 >> 0x20) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+                                          >> 0x20) >> 6),
+                                 CONCAT22((short)((ulonglong)uVar35 >> 0x10) +
+                                          (CONCAT11(uVar25,uVar25) >> 6) +
+                                          (CONCAT11(uVar27,uVar27) >> 6) +
+                                          (CONCAT11(uVar29,uVar29) >> 6) +
+                                          (CONCAT11(uVar31,uVar31) >> 6),
+                                          (short)uVar35 +
+                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
+                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6) +
+                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
+                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6))));
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      pPVar23 = pPVar23 + frameWidthPixels;
+      PVar34 = *pPVar23;
+      PVar1 = pPVar23[1];
+      PVar2 = pPVar23[2];
+      PVar3 = pPVar23[3];
+      uVar25 = (undefined1)(PVar34 >> 0x18);
+      uVar33 = CONCAT11(uVar25,uVar25);
+      uVar26 = (undefined1)(PVar34 >> 0x10);
+      uVar25 = (undefined1)(PVar34 >> 8);
+      uVar27 = (undefined1)(PVar1 >> 0x18);
+      uVar36 = CONCAT11(uVar27,uVar27);
+      uVar28 = (undefined1)(PVar1 >> 0x10);
+      uVar27 = (undefined1)(PVar1 >> 8);
+      uVar29 = (undefined1)(PVar2 >> 0x18);
+      uVar37 = CONCAT11(uVar29,uVar29);
+      uVar30 = (undefined1)(PVar2 >> 0x10);
+      uVar29 = (undefined1)(PVar2 >> 8);
+      uVar31 = (undefined1)(PVar3 >> 0x18);
+      uVar38 = CONCAT11(uVar31,uVar31);
+      uVar32 = (undefined1)(PVar3 >> 0x10);
+      uVar31 = (undefined1)(PVar3 >> 8);
+      uVar35 = CONCAT26((short)((ulonglong)uVar35 >> 0x30) + (uVar33 >> 6) + (uVar36 >> 6) +
+                        (uVar37 >> 6) + (uVar38 >> 6),
+                        CONCAT24((short)((ulonglong)uVar35 >> 0x20) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+                                          >> 0x20) >> 6),
+                                 CONCAT22((short)((ulonglong)uVar35 >> 0x10) +
+                                          (CONCAT11(uVar25,uVar25) >> 6) +
+                                          (CONCAT11(uVar27,uVar27) >> 6) +
+                                          (CONCAT11(uVar29,uVar29) >> 6) +
+                                          (CONCAT11(uVar31,uVar31) >> 6),
+                                          (short)uVar35 +
+                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
+                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6) +
+                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
+                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6))));
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      pPVar23 = pPVar23 + frameWidthPixels;
+      PVar34 = *pPVar23;
+      PVar1 = pPVar23[1];
+      PVar2 = pPVar23[2];
+      PVar3 = pPVar23[3];
+      uVar25 = (undefined1)(PVar34 >> 0x18);
+      uVar33 = CONCAT11(uVar25,uVar25);
+      uVar26 = (undefined1)(PVar34 >> 0x10);
+      uVar25 = (undefined1)(PVar34 >> 8);
+      uVar27 = (undefined1)(PVar1 >> 0x18);
+      uVar36 = CONCAT11(uVar27,uVar27);
+      uVar28 = (undefined1)(PVar1 >> 0x10);
+      uVar27 = (undefined1)(PVar1 >> 8);
+      uVar29 = (undefined1)(PVar2 >> 0x18);
+      uVar37 = CONCAT11(uVar29,uVar29);
+      uVar30 = (undefined1)(PVar2 >> 0x10);
+      uVar29 = (undefined1)(PVar2 >> 8);
+      uVar31 = (undefined1)(PVar3 >> 0x18);
+      uVar38 = CONCAT11(uVar31,uVar31);
+      uVar32 = (undefined1)(PVar3 >> 0x10);
+      uVar31 = (undefined1)(PVar3 >> 8);
+      uVar35 = CONCAT26((short)((ulonglong)uVar35 >> 0x30) + (uVar33 >> 6) + (uVar36 >> 6) +
+                        (uVar37 >> 6) + (uVar38 >> 6),
+                        CONCAT24((short)((ulonglong)uVar35 >> 0x20) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                          >> 0x20) >> 6) +
+                                 ((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+                                          >> 0x20) >> 6),
+                                 CONCAT22((short)((ulonglong)uVar35 >> 0x10) +
+                                          (CONCAT11(uVar25,uVar25) >> 6) +
+                                          (CONCAT11(uVar27,uVar27) >> 6) +
+                                          (CONCAT11(uVar29,uVar29) >> 6) +
+                                          (CONCAT11(uVar31,uVar31) >> 6),
+                                          (short)uVar35 +
+                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
+                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6) +
+                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
+                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6))));
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+      uVar5 = uVar6;
+      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+      uVar7 = uVar6;
+      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
+        uVar4 = uVar6;
+      }
+      uVar33 = (ushort)uVar35 >> 6;
+      uVar36 = (ushort)((ulonglong)uVar35 >> 0x10) >> 6;
+      uVar37 = (ushort)((ulonglong)uVar35 >> 0x20) >> 6;
+      uVar38 = (ushort)((ulonglong)uVar35 >> 0x36);
+      PVar34 = CONCAT13((uVar38 != 0) * (uVar38 < 0x100) * (char)uVar38 - (0xff < uVar38),
+                        CONCAT12((uVar37 != 0) * (uVar37 < 0x100) * (char)uVar37 - (0xff < uVar37),
+                                 CONCAT11((uVar36 != 0) * (uVar36 < 0x100) * (char)uVar36 -
+                                          (0xff < uVar36),
+                                          (uVar33 != 0) * (uVar33 < 0x100) * (char)uVar33 -
+                                          (0xff < uVar33))));
+      uVar5 = (int)((uVar7 - 8) + uVar4) >> 1;
+      if ((int)uVar5 < 0) {
+        uVar5 = 0;
+      }
+      else if (0x18 < (int)uVar5) {
+        uVar5 = 0x18;
+      }
+      if (uVar4 - uVar7 < 0xc) {
+        *puVar24 = uVar5;
+        uVar7 = MovieColor_ComputeChromaCodeFromRgb888(PVar34);
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        iVar8 = uVar4 - uVar5;
+        if (iVar8 < 0) {
+          iVar8 = 0;
         }
-        else if (7 < iVar4) {
-          iVar4 = 7;
+        else if (7 < iVar8) {
+          iVar8 = 7;
         }
-        *puVar7 = *puVar7 | (uint)((ulonglong)uVar22 >> 0x20) | iVar4 << 5;
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        iVar9 = uVar4 - uVar5;
+        if (iVar9 < 0) {
+          iVar9 = 0;
+        }
+        else if (7 < iVar9) {
+          iVar9 = 7;
+        }
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        iVar10 = uVar4 - uVar5;
+        if (iVar10 < 0) {
+          iVar10 = 0;
+        }
+        else if (7 < iVar10) {
+          iVar10 = 7;
+        }
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        iVar11 = uVar4 - uVar5;
+        if (iVar11 < 0) {
+          iVar11 = 0;
+        }
+        else if (7 < iVar11) {
+          iVar11 = 7;
+        }
+        pPVar23 = pPVar23 + -frameWidthPixels;
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        iVar12 = uVar4 - uVar5;
+        if (iVar12 < 0) {
+          iVar12 = 0;
+        }
+        else if (7 < iVar12) {
+          iVar12 = 7;
+        }
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        iVar13 = uVar4 - uVar5;
+        if (iVar13 < 0) {
+          iVar13 = 0;
+        }
+        else if (7 < iVar13) {
+          iVar13 = 7;
+        }
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        uVar4 = uVar4 - uVar5;
+        if ((int)uVar4 < 0) {
+          uVar4 = 0;
+        }
+        else if (7 < (int)uVar4) {
+          uVar4 = 7;
+        }
+        uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        puVar24[1] = (uVar7 & 0x7fe0) << 0x10 | iVar8 << 0x12 | iVar9 << 0xf | iVar10 << 0xc |
+                     iVar11 << 9 | iVar12 << 6 | iVar13 << 3 | uVar4;
+        iVar8 = uVar6 - uVar5;
+        if (iVar8 < 0) {
+          iVar8 = 0;
+        }
+        else if (7 < iVar8) {
+          iVar8 = 7;
+        }
+        pPVar23 = pPVar23 + -frameWidthPixels;
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        iVar9 = uVar7 - uVar5;
+        if (iVar9 < 0) {
+          iVar9 = 0;
+        }
+        else if (7 < iVar9) {
+          iVar9 = 7;
+        }
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        iVar10 = uVar7 - uVar5;
+        if (iVar10 < 0) {
+          iVar10 = 0;
+        }
+        else if (7 < iVar10) {
+          iVar10 = 7;
+        }
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        iVar11 = uVar7 - uVar5;
+        if (iVar11 < 0) {
+          iVar11 = 0;
+        }
+        else if (7 < iVar11) {
+          iVar11 = 7;
+        }
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        iVar12 = uVar7 - uVar5;
+        if (iVar12 < 0) {
+          iVar12 = 0;
+        }
+        else if (7 < iVar12) {
+          iVar12 = 7;
+        }
+        pPVar23 = pPVar23 + -frameWidthPixels;
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        iVar13 = uVar7 - uVar5;
+        if (iVar13 < 0) {
+          iVar13 = 0;
+        }
+        else if (7 < iVar13) {
+          iVar13 = 7;
+        }
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        iVar14 = uVar7 - uVar5;
+        if (iVar14 < 0) {
+          iVar14 = 0;
+        }
+        else if (7 < iVar14) {
+          iVar14 = 7;
+        }
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        iVar15 = uVar7 - uVar5;
+        if (iVar15 < 0) {
+          iVar15 = 0;
+        }
+        else if (7 < iVar15) {
+          iVar15 = 7;
+        }
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        iVar16 = uVar7 - uVar5;
+        if (iVar16 < 0) {
+          iVar16 = 0;
+        }
+        else if (7 < iVar16) {
+          iVar16 = 7;
+        }
+        *puVar24 = *puVar24 |
+                   iVar8 << 0x1d | iVar9 << 0x1a | iVar10 << 0x17 | iVar11 << 0x14 | iVar12 << 0x11
+                   | iVar13 << 0xe | iVar14 << 0xb | iVar15 << 8 | iVar16 << 5;
       }
       else {
-        uVar3 = uVar3 - 4;
-        if ((int)uVar3 < 0) {
-          uVar3 = 0;
+        uVar5 = uVar5 - 4;
+        if ((int)uVar5 < 0) {
+          uVar5 = 0;
         }
-        else if (0x10 < (int)uVar3) {
-          uVar3 = 0x10;
+        else if (0x10 < (int)uVar5) {
+          uVar5 = 0x10;
         }
-        *puVar7 = uVar3;
-        MovieColor_ComputeChromaCodeFromRgb888(uVar17);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        puVar6 = puVar6 + -param_4;
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        uVar22 = MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        puVar7[1] = (uint)((ulonglong)uVar22 >> 0x20);
-        puVar6 = puVar6 + -param_4;
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        puVar6 = puVar6 + -param_4;
-        MovieColor_ComputeLuma5FromRgb888(puVar6[3]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar6[1]);
-        uVar22 = MovieColor_ComputeLuma5FromRgb888(*puVar6);
-        uVar3 = (int)uVar22 - extraout_ECX_01;
-        if ((int)uVar3 < 0) {
-          uVar3 = 0;
+        *puVar24 = uVar5;
+        uVar7 = MovieColor_ComputeChromaCodeFromRgb888(PVar34);
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        uVar4 = uVar4 - uVar5;
+        if ((int)uVar4 < 0) {
+          uVar4 = 0;
         }
-        else if (0xf < (int)uVar3) {
-          uVar3 = 0xf;
+        else if (0xf < (int)uVar4) {
+          uVar4 = 0xf;
         }
-        *puVar7 = *puVar7 | (uint)((ulonglong)uVar22 >> 0x20) | (uVar3 >> 1) << 5;
+        uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        uVar6 = uVar6 - uVar5;
+        if ((int)uVar6 < 0) {
+          uVar6 = 0;
+        }
+        else if (0xf < (int)uVar6) {
+          uVar6 = 0xf;
+        }
+        uVar17 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        uVar17 = uVar17 - uVar5;
+        if ((int)uVar17 < 0) {
+          uVar17 = 0;
+        }
+        else if (0xf < (int)uVar17) {
+          uVar17 = 0xf;
+        }
+        uVar18 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        uVar18 = uVar18 - uVar5;
+        if ((int)uVar18 < 0) {
+          uVar18 = 0;
+        }
+        else if (0xf < (int)uVar18) {
+          uVar18 = 0xf;
+        }
+        pPVar23 = pPVar23 + -frameWidthPixels;
+        uVar19 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        uVar19 = uVar19 - uVar5;
+        if ((int)uVar19 < 0) {
+          uVar19 = 0;
+        }
+        else if (0xf < (int)uVar19) {
+          uVar19 = 0xf;
+        }
+        uVar20 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        uVar20 = uVar20 - uVar5;
+        if ((int)uVar20 < 0) {
+          uVar20 = 0;
+        }
+        else if (0xf < (int)uVar20) {
+          uVar20 = 0xf;
+        }
+        uVar21 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        uVar21 = uVar21 - uVar5;
+        if ((int)uVar21 < 0) {
+          uVar21 = 0;
+        }
+        else if (0xf < (int)uVar21) {
+          uVar21 = 0xf;
+        }
+        uVar22 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        puVar24[1] = (uVar7 & 0x7fe0) * 0x10000 + 0x80000000 | (uVar4 >> 1) << 0x12 |
+                     (uVar6 >> 1) << 0xf | (uVar17 >> 1) << 0xc | (uVar18 >> 1) << 9 |
+                     (uVar19 >> 1) << 6 | (uVar20 >> 1) << 3 | uVar21 >> 1;
+        uVar22 = uVar22 - uVar5;
+        if ((int)uVar22 < 0) {
+          uVar22 = 0;
+        }
+        else if (0xf < (int)uVar22) {
+          uVar22 = 0xf;
+        }
+        pPVar23 = pPVar23 + -frameWidthPixels;
+        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        uVar7 = uVar7 - uVar5;
+        if ((int)uVar7 < 0) {
+          uVar7 = 0;
+        }
+        else if (0xf < (int)uVar7) {
+          uVar7 = 0xf;
+        }
+        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        uVar4 = uVar4 - uVar5;
+        if ((int)uVar4 < 0) {
+          uVar4 = 0;
+        }
+        else if (0xf < (int)uVar4) {
+          uVar4 = 0xf;
+        }
+        uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        uVar6 = uVar6 - uVar5;
+        if ((int)uVar6 < 0) {
+          uVar6 = 0;
+        }
+        else if (0xf < (int)uVar6) {
+          uVar6 = 0xf;
+        }
+        uVar17 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        uVar17 = uVar17 - uVar5;
+        if ((int)uVar17 < 0) {
+          uVar17 = 0;
+        }
+        else if (0xf < (int)uVar17) {
+          uVar17 = 0xf;
+        }
+        pPVar23 = pPVar23 + -frameWidthPixels;
+        uVar18 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
+        uVar18 = uVar18 - uVar5;
+        if ((int)uVar18 < 0) {
+          uVar18 = 0;
+        }
+        else if (0xf < (int)uVar18) {
+          uVar18 = 0xf;
+        }
+        uVar19 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
+        uVar19 = uVar19 - uVar5;
+        if ((int)uVar19 < 0) {
+          uVar19 = 0;
+        }
+        else if (0xf < (int)uVar19) {
+          uVar19 = 0xf;
+        }
+        uVar20 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
+        uVar20 = uVar20 - uVar5;
+        if ((int)uVar20 < 0) {
+          uVar20 = 0;
+        }
+        else if (0xf < (int)uVar20) {
+          uVar20 = 0xf;
+        }
+        uVar21 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
+        uVar21 = uVar21 - uVar5;
+        if ((int)uVar21 < 0) {
+          uVar21 = 0;
+        }
+        else if (0xf < (int)uVar21) {
+          uVar21 = 0xf;
+        }
+        *puVar24 = *puVar24 |
+                   (uVar22 >> 1) << 0x1d | (uVar7 >> 1) << 0x1a | (uVar4 >> 1) << 0x17 |
+                   (uVar6 >> 1) << 0x14 | (uVar17 >> 1) << 0x11 | (uVar18 >> 1) << 0xe |
+                   (uVar19 >> 1) << 0xb | (uVar20 >> 1) << 8 | (uVar21 >> 1) << 5;
       }
-      param_6 = puVar6 + 4;
-      puVar7 = puVar7 + 2;
+      sourcePixels = pPVar23 + 4;
+      puVar24 = puVar24 + 2;
       uStack_24 = uStack_24 - 1;
     } while (uStack_24 != 0);
-    param_6 = param_6 + param_4 * 3;
+    sourcePixels = sourcePixels + frameWidthPixels * 3;
     uStack_20 = uStack_20 - 1;
-    uStack_24 = param_4 >> 2;
+    uStack_24 = frameWidthPixels >> 2;
   } while (uStack_20 != 0);
-  return CONCAT44(param_2,(int)puVar7 - (int)param_5);
+  return (int)puVar24 - (int)encodedOutput;
 }
+
 
 /* Address: 0x004A7770.
    Ownership: movie/runtime/playback.
    Purpose: Handles movie encode frame4x4 delta.
    Local calls: MovieColor_ComputeLuma5FromRgb888, MovieColor_ComputeChromaCodeFromRgb888.
 */
-ulonglong __fastcall
+uint __thandor_eax_preserve_ecx_edx
 Movie_EncodeFrame4x4Delta
-          (undefined4 param_1,undefined4 param_2,uint param_3,uint param_4,uint *param_5,int param_6
-          ,ulonglong *param_7)
+          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+          uint *encodedOutput,uint *previousFramePixels,uint *currentFramePixels)
 
 {
   int iVar1;
-  undefined4 uVar2;
+  undefined8 uVar2;
   undefined4 uVar3;
   undefined4 uVar4;
   undefined4 uVar5;
-  uint uVar6;
-  uint uVar7;
-  ulonglong *puVar8;
-  uint uVar9;
-  int iVar10;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int iVar11;
-  uint *puVar12;
-  ulonglong *puVar13;
-  uint *puVar14;
-  undefined1 uVar16;
-  undefined1 uVar17;
-  ulonglong uVar15;
-  undefined1 uVar18;
-  undefined1 uVar19;
-  undefined1 uVar20;
-  undefined1 uVar21;
-  undefined1 uVar22;
-  undefined1 uVar23;
-  ushort uVar24;
-  ushort uVar27;
+  undefined4 uVar6;
+  PackedRgb24 PVar7;
+  PackedRgb24 PVar8;
+  PackedRgb24 PVar9;
+  ulonglong *puVar10;
+  uint uVar11;
+  uint uVar12;
+  uint uVar13;
+  uint uVar14;
+  int iVar15;
+  int iVar16;
+  int iVar17;
+  int iVar18;
+  int iVar19;
+  int iVar20;
+  uint uVar21;
+  int iVar22;
+  int iVar23;
+  int iVar24;
   uint uVar25;
-  ushort uVar28;
-  undefined8 uVar26;
-  ushort uVar29;
-  undefined8 uVar30;
+  uint uVar26;
+  uint uVar27;
+  uint uVar28;
+  uint uVar29;
+  uint uVar30;
+  PackedRgb24 *pPVar31;
+  ulonglong *puVar32;
+  uint *puVar33;
+  undefined1 uVar35;
+  undefined1 uVar36;
+  ulonglong uVar34;
+  undefined1 uVar37;
+  undefined1 uVar38;
+  undefined1 uVar39;
+  undefined1 uVar40;
+  undefined1 uVar41;
+  undefined1 uVar42;
+  ushort uVar43;
+  ushort uVar46;
+  PackedRgb24 PVar44;
+  ushort uVar47;
+  undefined8 uVar45;
+  ushort uVar48;
   uint uStack_28;
   uint uStack_24;
   uint uStack_1c;
   
-  iVar1 = param_4 * 4;
-  uStack_24 = param_3 >> 2;
+  iVar1 = frameWidthPixels * 4;
+  uStack_24 = frameHeightPixels >> 2;
   uStack_1c = 0;
-  puVar13 = param_7;
-  puVar14 = param_5;
-  uStack_28 = param_4 >> 2;
+  puVar32 = (ulonglong *)currentFramePixels;
+  puVar33 = encodedOutput;
+  uStack_28 = frameWidthPixels >> 2;
   do {
     do {
-      puVar8 = (ulonglong *)((int)puVar13 + (param_6 - (int)param_7));
-      uVar15 = _DAT_004a6d90 &
-               (*puVar13 & _DAT_004a6d90 ^ *puVar8 | puVar13[1] & _DAT_004a6d90 ^ puVar8[1] |
-                *(ulonglong *)(iVar1 + (int)puVar13) & _DAT_004a6d90 ^
-                *(ulonglong *)((int)puVar8 + iVar1) |
-                *(ulonglong *)(iVar1 + 8 + (int)puVar13) & _DAT_004a6d90 ^
-                *(ulonglong *)((int)puVar8 + iVar1 + 8) |
-                puVar13[param_4] & _DAT_004a6d90 ^ puVar8[param_4] |
-                puVar13[param_4 + 1] & _DAT_004a6d90 ^ puVar8[param_4 + 1] |
-               *(ulonglong *)((int)puVar13 + param_4 * 0xc) & _DAT_004a6d90 ^
-               *(ulonglong *)((int)puVar8 + param_4 * 0xc) |
-               *(ulonglong *)((int)puVar13 + param_4 * 0xc + 8) & _DAT_004a6d90 ^
-               *(ulonglong *)((int)puVar8 + param_4 * 0xc + 8));
-      uVar6 = uStack_1c + 1;
-      if ((int)(uVar15 >> 0x20) != 0 || (int)uVar15 != 0) {
+      puVar10 = (ulonglong *)(((int)previousFramePixels + (int)puVar32) - (int)currentFramePixels);
+      uVar34 = g_MovieDeltaRgbHighNibbleMask2Pixels &
+               (*puVar32 & g_MovieDeltaRgbHighNibbleMask2Pixels ^ *puVar10 |
+                puVar32[1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^ puVar10[1] |
+                *(ulonglong *)(iVar1 + (int)puVar32) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                *(ulonglong *)((int)puVar10 + iVar1) |
+                *(ulonglong *)(iVar1 + 8 + (int)puVar32) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                *(ulonglong *)((int)puVar10 + iVar1 + 8) |
+                puVar32[frameWidthPixels] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                puVar10[frameWidthPixels] |
+                puVar32[frameWidthPixels + 1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                puVar10[frameWidthPixels + 1] |
+               *(ulonglong *)((int)puVar32 + frameWidthPixels * 0xc) &
+               g_MovieDeltaRgbHighNibbleMask2Pixels ^
+               *(ulonglong *)((int)puVar10 + frameWidthPixels * 0xc) |
+               *(ulonglong *)((int)puVar32 + frameWidthPixels * 0xc + 8) &
+               g_MovieDeltaRgbHighNibbleMask2Pixels ^
+               *(ulonglong *)((int)puVar10 + frameWidthPixels * 0xc + 8));
+      uVar14 = uStack_1c + 1;
+      if ((int)(uVar34 >> 0x20) != 0 || (int)uVar34 != 0) {
         if (uStack_1c != 0) {
           if (uStack_1c < 9) {
-            *(byte *)puVar14 = ((char)uStack_1c + -1) * ' ' | 0x19;
-            puVar14 = (uint *)((int)puVar14 + 1);
+            *(byte *)puVar33 = ((char)uStack_1c + -1) * ' ' | 0x19;
+            puVar33 = (uint *)((int)puVar33 + 1);
           }
           else if (uStack_1c < 0x809) {
-            *(ushort *)puVar14 = ((short)uStack_1c + -9) * 0x20 | 0x1a;
-            puVar14 = (uint *)((int)puVar14 + 2);
+            *(ushort *)puVar33 = ((short)uStack_1c + -9) * 0x20 | 0x1a;
+            puVar33 = (uint *)((int)puVar33 + 2);
           }
           else {
-            *puVar14 = (uStack_1c - 0x809) * 0x20 | 0x1b;
-            puVar14 = puVar14 + 1;
+            *puVar33 = (uStack_1c - 0x809) * 0x20 | 0x1b;
+            puVar33 = puVar33 + 1;
           }
           uStack_1c = 0;
         }
-        puVar8 = (ulonglong *)((int)puVar13 + (param_6 - (int)param_7));
-        uVar15 = puVar13[1];
-        uVar30 = *(undefined8 *)((int)puVar13 + param_4 * 4);
-        uVar26 = *(undefined8 *)((int)puVar13 + (param_4 + 2) * 4);
-        *puVar8 = *puVar13;
-        puVar8[1] = uVar15;
-        *(undefined8 *)((int)puVar8 + iVar1) = uVar30;
-        *(undefined8 *)((int)puVar8 + iVar1 + 8) = uVar26;
-        uVar15 = puVar13[param_4 + 1];
-        uVar30 = *(undefined8 *)((int)puVar13 + param_4 * 0xc);
-        uVar26 = *(undefined8 *)((int)puVar13 + (param_4 * 3 + 2) * 4);
-        puVar8[param_4] = puVar13[param_4];
-        puVar8[param_4 + 1] = uVar15;
-        *(undefined8 *)((int)puVar8 + param_4 * 0xc) = uVar30;
-        *(undefined8 *)((int)puVar8 + param_4 * 0xc + 8) = uVar26;
-        uVar2 = (undefined4)*puVar13;
-        uVar3 = *(undefined4 *)((int)puVar13 + 4);
-        uVar4 = (undefined4)puVar13[1];
-        uVar5 = *(undefined4 *)((int)puVar13 + 0xc);
-        uVar16 = (undefined1)((uint)uVar2 >> 0x18);
-        uVar24 = CONCAT11(uVar16,uVar16);
-        uVar17 = (undefined1)((uint)uVar2 >> 0x10);
-        uVar16 = (undefined1)((uint)uVar2 >> 8);
-        uVar18 = (undefined1)((uint)uVar3 >> 0x18);
-        uVar27 = CONCAT11(uVar18,uVar18);
-        uVar19 = (undefined1)((uint)uVar3 >> 0x10);
-        uVar18 = (undefined1)((uint)uVar3 >> 8);
-        uVar20 = (undefined1)((uint)uVar4 >> 0x18);
-        uVar28 = CONCAT11(uVar20,uVar20);
-        uVar21 = (undefined1)((uint)uVar4 >> 0x10);
-        uVar20 = (undefined1)((uint)uVar4 >> 8);
-        uVar22 = (undefined1)((uint)uVar5 >> 0x18);
-        uVar29 = CONCAT11(uVar22,uVar22);
-        uVar23 = (undefined1)((uint)uVar5 >> 0x10);
-        uVar22 = (undefined1)((uint)uVar5 >> 8);
-        uVar30 = CONCAT26((uVar29 >> 6) + (uVar28 >> 6) + (uVar24 >> 6) + (uVar27 >> 6),
-                          CONCAT24(((ushort)(CONCAT35(CONCAT21(uVar29,uVar23),CONCAT14(uVar23,uVar5)
+        puVar10 = (ulonglong *)(((int)previousFramePixels + (int)puVar32) - (int)currentFramePixels)
+        ;
+        uVar34 = puVar32[1];
+        uVar45 = *(undefined8 *)((int)puVar32 + frameWidthPixels * 4);
+        uVar2 = *(undefined8 *)((int)puVar32 + (frameWidthPixels + 2) * 4);
+        *puVar10 = *puVar32;
+        puVar10[1] = uVar34;
+        *(undefined8 *)((int)puVar10 + iVar1) = uVar45;
+        *(undefined8 *)((int)puVar10 + iVar1 + 8) = uVar2;
+        uVar34 = puVar32[frameWidthPixels + 1];
+        uVar45 = *(undefined8 *)((int)puVar32 + frameWidthPixels * 0xc);
+        uVar2 = *(undefined8 *)((int)puVar32 + (frameWidthPixels * 3 + 2) * 4);
+        puVar10[frameWidthPixels] = puVar32[frameWidthPixels];
+        puVar10[frameWidthPixels + 1] = uVar34;
+        *(undefined8 *)((int)puVar10 + frameWidthPixels * 0xc) = uVar45;
+        *(undefined8 *)((int)puVar10 + frameWidthPixels * 0xc + 8) = uVar2;
+        uVar3 = (undefined4)*puVar32;
+        uVar4 = *(undefined4 *)((int)puVar32 + 4);
+        uVar5 = (undefined4)puVar32[1];
+        uVar6 = *(undefined4 *)((int)puVar32 + 0xc);
+        uVar35 = (undefined1)((uint)uVar3 >> 0x18);
+        uVar43 = CONCAT11(uVar35,uVar35);
+        uVar36 = (undefined1)((uint)uVar3 >> 0x10);
+        uVar35 = (undefined1)((uint)uVar3 >> 8);
+        uVar37 = (undefined1)((uint)uVar4 >> 0x18);
+        uVar46 = CONCAT11(uVar37,uVar37);
+        uVar38 = (undefined1)((uint)uVar4 >> 0x10);
+        uVar37 = (undefined1)((uint)uVar4 >> 8);
+        uVar39 = (undefined1)((uint)uVar5 >> 0x18);
+        uVar47 = CONCAT11(uVar39,uVar39);
+        uVar40 = (undefined1)((uint)uVar5 >> 0x10);
+        uVar39 = (undefined1)((uint)uVar5 >> 8);
+        uVar41 = (undefined1)((uint)uVar6 >> 0x18);
+        uVar48 = CONCAT11(uVar41,uVar41);
+        uVar42 = (undefined1)((uint)uVar6 >> 0x10);
+        uVar41 = (undefined1)((uint)uVar6 >> 8);
+        uVar45 = CONCAT26((uVar48 >> 6) + (uVar47 >> 6) + (uVar43 >> 6) + (uVar46 >> 6),
+                          CONCAT24(((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,uVar6)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar28,uVar21),CONCAT14(uVar21,uVar4)
+                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,uVar5)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar24,uVar17),CONCAT14(uVar17,uVar2)
+                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),CONCAT14(uVar36,uVar3)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar27,uVar19),CONCAT14(uVar19,uVar3)
+                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,uVar4)
                                                      ) >> 0x20) >> 6),
-                                   CONCAT22((CONCAT11(uVar22,uVar22) >> 6) +
-                                            (CONCAT11(uVar20,uVar20) >> 6) +
-                                            (CONCAT11(uVar16,uVar16) >> 6) +
-                                            (CONCAT11(uVar18,uVar18) >> 6),
+                                   CONCAT22((CONCAT11(uVar41,uVar41) >> 6) +
+                                            (CONCAT11(uVar39,uVar39) >> 6) +
+                                            (CONCAT11(uVar35,uVar35) >> 6) +
+                                            (CONCAT11(uVar37,uVar37) >> 6),
+                                            (CONCAT11((char)uVar6,(char)uVar6) >> 6) +
                                             (CONCAT11((char)uVar5,(char)uVar5) >> 6) +
-                                            (CONCAT11((char)uVar4,(char)uVar4) >> 6) +
-                                            (CONCAT11((char)uVar2,(char)uVar2) >> 6) +
-                                            (CONCAT11((char)uVar3,(char)uVar3) >> 6))));
-        MovieColor_ComputeLuma5FromRgb888((uint)*puVar13);
-        MovieColor_ComputeLuma5FromRgb888(*(uint *)((int)puVar13 + 4));
-        MovieColor_ComputeLuma5FromRgb888((uint)puVar13[1]);
-        MovieColor_ComputeLuma5FromRgb888(*(uint *)((int)puVar13 + 0xc));
-        puVar12 = (uint *)((int)puVar13 + param_4 * 4);
-        uVar6 = *puVar12;
-        uVar9 = puVar12[1];
-        uVar25 = puVar12[2];
-        uVar7 = puVar12[3];
-        uVar16 = (undefined1)(uVar6 >> 0x18);
-        uVar24 = CONCAT11(uVar16,uVar16);
-        uVar17 = (undefined1)(uVar6 >> 0x10);
-        uVar16 = (undefined1)(uVar6 >> 8);
-        uVar18 = (undefined1)(uVar9 >> 0x18);
-        uVar27 = CONCAT11(uVar18,uVar18);
-        uVar19 = (undefined1)(uVar9 >> 0x10);
-        uVar18 = (undefined1)(uVar9 >> 8);
-        uVar20 = (undefined1)(uVar25 >> 0x18);
-        uVar28 = CONCAT11(uVar20,uVar20);
-        uVar21 = (undefined1)(uVar25 >> 0x10);
-        uVar20 = (undefined1)(uVar25 >> 8);
-        uVar22 = (undefined1)(uVar7 >> 0x18);
-        uVar29 = CONCAT11(uVar22,uVar22);
-        uVar23 = (undefined1)(uVar7 >> 0x10);
-        uVar22 = (undefined1)(uVar7 >> 8);
-        uVar30 = CONCAT26((short)((ulonglong)uVar30 >> 0x30) + (uVar24 >> 6) + (uVar27 >> 6) +
-                          (uVar28 >> 6) + (uVar29 >> 6),
-                          CONCAT24((short)((ulonglong)uVar30 >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar24,uVar17),CONCAT14(uVar17,uVar6)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar27,uVar19),CONCAT14(uVar19,uVar9)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar28,uVar21),
-                                                      CONCAT14(uVar21,uVar25)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar29,uVar23),CONCAT14(uVar23,uVar7)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)uVar30 >> 0x10) +
-                                            (CONCAT11(uVar16,uVar16) >> 6) +
-                                            (CONCAT11(uVar18,uVar18) >> 6) +
-                                            (CONCAT11(uVar20,uVar20) >> 6) +
-                                            (CONCAT11(uVar22,uVar22) >> 6),
-                                            (short)uVar30 +
-                                            (CONCAT11((char)uVar6,(char)uVar6) >> 6) +
-                                            (CONCAT11((char)uVar9,(char)uVar9) >> 6) +
-                                            (CONCAT11((char)uVar25,(char)uVar25) >> 6) +
-                                            (CONCAT11((char)uVar7,(char)uVar7) >> 6))));
-        MovieColor_ComputeLuma5FromRgb888(*puVar12);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-        puVar12 = puVar12 + param_4;
-        uVar6 = *puVar12;
-        uVar9 = puVar12[1];
-        uVar25 = puVar12[2];
-        uVar7 = puVar12[3];
-        uVar16 = (undefined1)(uVar6 >> 0x18);
-        uVar24 = CONCAT11(uVar16,uVar16);
-        uVar17 = (undefined1)(uVar6 >> 0x10);
-        uVar16 = (undefined1)(uVar6 >> 8);
-        uVar18 = (undefined1)(uVar9 >> 0x18);
-        uVar27 = CONCAT11(uVar18,uVar18);
-        uVar19 = (undefined1)(uVar9 >> 0x10);
-        uVar18 = (undefined1)(uVar9 >> 8);
-        uVar20 = (undefined1)(uVar25 >> 0x18);
-        uVar28 = CONCAT11(uVar20,uVar20);
-        uVar21 = (undefined1)(uVar25 >> 0x10);
-        uVar20 = (undefined1)(uVar25 >> 8);
-        uVar22 = (undefined1)(uVar7 >> 0x18);
-        uVar29 = CONCAT11(uVar22,uVar22);
-        uVar23 = (undefined1)(uVar7 >> 0x10);
-        uVar22 = (undefined1)(uVar7 >> 8);
-        uVar30 = CONCAT26((short)((ulonglong)uVar30 >> 0x30) + (uVar24 >> 6) + (uVar27 >> 6) +
-                          (uVar28 >> 6) + (uVar29 >> 6),
-                          CONCAT24((short)((ulonglong)uVar30 >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar24,uVar17),CONCAT14(uVar17,uVar6)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar27,uVar19),CONCAT14(uVar19,uVar9)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar28,uVar21),
-                                                      CONCAT14(uVar21,uVar25)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar29,uVar23),CONCAT14(uVar23,uVar7)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)uVar30 >> 0x10) +
-                                            (CONCAT11(uVar16,uVar16) >> 6) +
-                                            (CONCAT11(uVar18,uVar18) >> 6) +
-                                            (CONCAT11(uVar20,uVar20) >> 6) +
-                                            (CONCAT11(uVar22,uVar22) >> 6),
-                                            (short)uVar30 +
-                                            (CONCAT11((char)uVar6,(char)uVar6) >> 6) +
-                                            (CONCAT11((char)uVar9,(char)uVar9) >> 6) +
-                                            (CONCAT11((char)uVar25,(char)uVar25) >> 6) +
-                                            (CONCAT11((char)uVar7,(char)uVar7) >> 6))));
-        MovieColor_ComputeLuma5FromRgb888(*puVar12);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-        puVar12 = puVar12 + param_4;
-        uVar6 = *puVar12;
-        uVar9 = puVar12[1];
-        uVar25 = puVar12[2];
-        uVar7 = puVar12[3];
-        uVar16 = (undefined1)(uVar6 >> 0x18);
-        uVar24 = CONCAT11(uVar16,uVar16);
-        uVar17 = (undefined1)(uVar6 >> 0x10);
-        uVar16 = (undefined1)(uVar6 >> 8);
-        uVar18 = (undefined1)(uVar9 >> 0x18);
-        uVar27 = CONCAT11(uVar18,uVar18);
-        uVar19 = (undefined1)(uVar9 >> 0x10);
-        uVar18 = (undefined1)(uVar9 >> 8);
-        uVar20 = (undefined1)(uVar25 >> 0x18);
-        uVar28 = CONCAT11(uVar20,uVar20);
-        uVar21 = (undefined1)(uVar25 >> 0x10);
-        uVar20 = (undefined1)(uVar25 >> 8);
-        uVar22 = (undefined1)(uVar7 >> 0x18);
-        uVar29 = CONCAT11(uVar22,uVar22);
-        uVar23 = (undefined1)(uVar7 >> 0x10);
-        uVar22 = (undefined1)(uVar7 >> 8);
-        uVar26 = CONCAT26((short)((ulonglong)uVar30 >> 0x30) + (uVar24 >> 6) + (uVar27 >> 6) +
-                          (uVar28 >> 6) + (uVar29 >> 6),
-                          CONCAT24((short)((ulonglong)uVar30 >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar24,uVar17),CONCAT14(uVar17,uVar6)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar27,uVar19),CONCAT14(uVar19,uVar9)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar28,uVar21),
-                                                      CONCAT14(uVar21,uVar25)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar29,uVar23),CONCAT14(uVar23,uVar7)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)uVar30 >> 0x10) +
-                                            (CONCAT11(uVar16,uVar16) >> 6) +
-                                            (CONCAT11(uVar18,uVar18) >> 6) +
-                                            (CONCAT11(uVar20,uVar20) >> 6) +
-                                            (CONCAT11(uVar22,uVar22) >> 6),
-                                            (short)uVar30 +
-                                            (CONCAT11((char)uVar6,(char)uVar6) >> 6) +
-                                            (CONCAT11((char)uVar9,(char)uVar9) >> 6) +
-                                            (CONCAT11((char)uVar25,(char)uVar25) >> 6) +
-                                            (CONCAT11((char)uVar7,(char)uVar7) >> 6))));
-        MovieColor_ComputeLuma5FromRgb888(*puVar12);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-        MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-        uVar30 = MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-        iVar11 = (int)((ulonglong)uVar30 >> 0x20);
-        iVar10 = (int)uVar30;
-        if ((extraout_ECX <= iVar10) && (uVar30 = CONCAT44(iVar11,extraout_ECX), iVar11 < iVar10)) {
-          uVar30 = CONCAT44(iVar10,extraout_ECX);
+                                            (CONCAT11((char)uVar3,(char)uVar3) >> 6) +
+                                            (CONCAT11((char)uVar4,(char)uVar4) >> 6))));
+        uVar11 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*puVar32);
+        uVar12 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 4));
+        uVar14 = uVar12;
+        if (((int)uVar11 <= (int)uVar12) && (uVar14 = uVar11, (int)uVar11 < (int)uVar12)) {
+          uVar11 = uVar12;
         }
-        iVar10 = (int)((ulonglong)uVar30 >> 0x20);
-        uVar24 = (ushort)uVar26 >> 6;
-        uVar27 = (ushort)((ulonglong)uVar26 >> 0x10) >> 6;
-        uVar28 = (ushort)((ulonglong)uVar26 >> 0x20) >> 6;
-        uVar29 = (ushort)((ulonglong)uVar26 >> 0x36);
-        uVar25 = CONCAT13((uVar29 != 0) * (uVar29 < 0x100) * (char)uVar29 - (0xff < uVar29),
-                          CONCAT12((uVar28 != 0) * (uVar28 < 0x100) * (char)uVar28 - (0xff < uVar28)
-                                   ,CONCAT11((uVar27 != 0) * (uVar27 < 0x100) * (char)uVar27 -
-                                             (0xff < uVar27),
-                                             (uVar24 != 0) * (uVar24 < 0x100) * (char)uVar24 -
-                                             (0xff < uVar24))));
-        uVar9 = (int)uVar30 + -8 + iVar10 >> 1;
-        if ((int)uVar9 < 0) {
-          uVar9 = 0;
+        uVar13 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)puVar32[1]);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
         }
-        else if (0x18 < uVar9) {
-          uVar9 = 0x18;
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 0xc));
+        uVar14 = uVar13;
+        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
         }
-        uVar6 = uStack_1c;
-        if ((uint)(iVar10 - (int)uVar30) < 0xc) {
-          *puVar14 = uVar9;
-          MovieColor_ComputeChromaCodeFromRgb888(uVar25);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-          MovieColor_ComputeLuma5FromRgb888(*puVar12);
-          puVar12 = puVar12 + -param_4;
-          MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-          uVar30 = MovieColor_ComputeLuma5FromRgb888(*puVar12);
-          puVar14[1] = (uint)((ulonglong)uVar30 >> 0x20);
-          puVar12 = puVar12 + -param_4;
-          MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-          MovieColor_ComputeLuma5FromRgb888(*puVar12);
-          puVar13 = (ulonglong *)(puVar12 + -param_4);
-          MovieColor_ComputeLuma5FromRgb888(*(uint *)((int)puVar13 + 0xc));
-          MovieColor_ComputeLuma5FromRgb888((uint)puVar13[1]);
-          MovieColor_ComputeLuma5FromRgb888(*(uint *)((int)puVar13 + 4));
-          uVar30 = MovieColor_ComputeLuma5FromRgb888((uint)*puVar13);
-          iVar10 = (int)uVar30 - extraout_ECX_00;
-          if (iVar10 < 0) {
-            iVar10 = 0;
+        pPVar31 = (PackedRgb24 *)((int)puVar32 + frameWidthPixels * 4);
+        PVar44 = *pPVar31;
+        PVar7 = pPVar31[1];
+        PVar8 = pPVar31[2];
+        PVar9 = pPVar31[3];
+        uVar35 = (undefined1)(PVar44 >> 0x18);
+        uVar43 = CONCAT11(uVar35,uVar35);
+        uVar36 = (undefined1)(PVar44 >> 0x10);
+        uVar35 = (undefined1)(PVar44 >> 8);
+        uVar37 = (undefined1)(PVar7 >> 0x18);
+        uVar46 = CONCAT11(uVar37,uVar37);
+        uVar38 = (undefined1)(PVar7 >> 0x10);
+        uVar37 = (undefined1)(PVar7 >> 8);
+        uVar39 = (undefined1)(PVar8 >> 0x18);
+        uVar47 = CONCAT11(uVar39,uVar39);
+        uVar40 = (undefined1)(PVar8 >> 0x10);
+        uVar39 = (undefined1)(PVar8 >> 8);
+        uVar41 = (undefined1)(PVar9 >> 0x18);
+        uVar48 = CONCAT11(uVar41,uVar41);
+        uVar42 = (undefined1)(PVar9 >> 0x10);
+        uVar41 = (undefined1)(PVar9 >> 8);
+        uVar45 = CONCAT26((short)((ulonglong)uVar45 >> 0x30) + (uVar43 >> 6) + (uVar46 >> 6) +
+                          (uVar47 >> 6) + (uVar48 >> 6),
+                          CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),
+                                                      CONCAT14(uVar36,PVar44)) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,PVar7)
+                                                     ) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,PVar8)
+                                                     ) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,PVar9)
+                                                     ) >> 0x20) >> 6),
+                                   CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
+                                            (CONCAT11(uVar35,uVar35) >> 6) +
+                                            (CONCAT11(uVar37,uVar37) >> 6) +
+                                            (CONCAT11(uVar39,uVar39) >> 6) +
+                                            (CONCAT11(uVar41,uVar41) >> 6),
+                                            (short)uVar45 +
+                                            (CONCAT11((char)PVar44,(char)PVar44) >> 6) +
+                                            (CONCAT11((char)PVar7,(char)PVar7) >> 6) +
+                                            (CONCAT11((char)PVar8,(char)PVar8) >> 6) +
+                                            (CONCAT11((char)PVar9,(char)PVar9) >> 6))));
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+        uVar14 = uVar13;
+        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+        uVar14 = uVar13;
+        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        pPVar31 = pPVar31 + frameWidthPixels;
+        PVar44 = *pPVar31;
+        PVar7 = pPVar31[1];
+        PVar8 = pPVar31[2];
+        PVar9 = pPVar31[3];
+        uVar35 = (undefined1)(PVar44 >> 0x18);
+        uVar43 = CONCAT11(uVar35,uVar35);
+        uVar36 = (undefined1)(PVar44 >> 0x10);
+        uVar35 = (undefined1)(PVar44 >> 8);
+        uVar37 = (undefined1)(PVar7 >> 0x18);
+        uVar46 = CONCAT11(uVar37,uVar37);
+        uVar38 = (undefined1)(PVar7 >> 0x10);
+        uVar37 = (undefined1)(PVar7 >> 8);
+        uVar39 = (undefined1)(PVar8 >> 0x18);
+        uVar47 = CONCAT11(uVar39,uVar39);
+        uVar40 = (undefined1)(PVar8 >> 0x10);
+        uVar39 = (undefined1)(PVar8 >> 8);
+        uVar41 = (undefined1)(PVar9 >> 0x18);
+        uVar48 = CONCAT11(uVar41,uVar41);
+        uVar42 = (undefined1)(PVar9 >> 0x10);
+        uVar41 = (undefined1)(PVar9 >> 8);
+        uVar45 = CONCAT26((short)((ulonglong)uVar45 >> 0x30) + (uVar43 >> 6) + (uVar46 >> 6) +
+                          (uVar47 >> 6) + (uVar48 >> 6),
+                          CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),
+                                                      CONCAT14(uVar36,PVar44)) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,PVar7)
+                                                     ) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,PVar8)
+                                                     ) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,PVar9)
+                                                     ) >> 0x20) >> 6),
+                                   CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
+                                            (CONCAT11(uVar35,uVar35) >> 6) +
+                                            (CONCAT11(uVar37,uVar37) >> 6) +
+                                            (CONCAT11(uVar39,uVar39) >> 6) +
+                                            (CONCAT11(uVar41,uVar41) >> 6),
+                                            (short)uVar45 +
+                                            (CONCAT11((char)PVar44,(char)PVar44) >> 6) +
+                                            (CONCAT11((char)PVar7,(char)PVar7) >> 6) +
+                                            (CONCAT11((char)PVar8,(char)PVar8) >> 6) +
+                                            (CONCAT11((char)PVar9,(char)PVar9) >> 6))));
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+        uVar14 = uVar13;
+        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+        uVar14 = uVar13;
+        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        pPVar31 = pPVar31 + frameWidthPixels;
+        PVar44 = *pPVar31;
+        PVar7 = pPVar31[1];
+        PVar8 = pPVar31[2];
+        PVar9 = pPVar31[3];
+        uVar35 = (undefined1)(PVar44 >> 0x18);
+        uVar43 = CONCAT11(uVar35,uVar35);
+        uVar36 = (undefined1)(PVar44 >> 0x10);
+        uVar35 = (undefined1)(PVar44 >> 8);
+        uVar37 = (undefined1)(PVar7 >> 0x18);
+        uVar46 = CONCAT11(uVar37,uVar37);
+        uVar38 = (undefined1)(PVar7 >> 0x10);
+        uVar37 = (undefined1)(PVar7 >> 8);
+        uVar39 = (undefined1)(PVar8 >> 0x18);
+        uVar47 = CONCAT11(uVar39,uVar39);
+        uVar40 = (undefined1)(PVar8 >> 0x10);
+        uVar39 = (undefined1)(PVar8 >> 8);
+        uVar41 = (undefined1)(PVar9 >> 0x18);
+        uVar48 = CONCAT11(uVar41,uVar41);
+        uVar42 = (undefined1)(PVar9 >> 0x10);
+        uVar41 = (undefined1)(PVar9 >> 8);
+        uVar45 = CONCAT26((short)((ulonglong)uVar45 >> 0x30) + (uVar43 >> 6) + (uVar46 >> 6) +
+                          (uVar47 >> 6) + (uVar48 >> 6),
+                          CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),
+                                                      CONCAT14(uVar36,PVar44)) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,PVar7)
+                                                     ) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,PVar8)
+                                                     ) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,PVar9)
+                                                     ) >> 0x20) >> 6),
+                                   CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
+                                            (CONCAT11(uVar35,uVar35) >> 6) +
+                                            (CONCAT11(uVar37,uVar37) >> 6) +
+                                            (CONCAT11(uVar39,uVar39) >> 6) +
+                                            (CONCAT11(uVar41,uVar41) >> 6),
+                                            (short)uVar45 +
+                                            (CONCAT11((char)PVar44,(char)PVar44) >> 6) +
+                                            (CONCAT11((char)PVar7,(char)PVar7) >> 6) +
+                                            (CONCAT11((char)PVar8,(char)PVar8) >> 6) +
+                                            (CONCAT11((char)PVar9,(char)PVar9) >> 6))));
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+        uVar14 = uVar13;
+        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+        uVar12 = uVar13;
+        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
+          uVar11 = uVar13;
+        }
+        uVar14 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+        uVar13 = uVar14;
+        if (((int)uVar12 <= (int)uVar14) && (uVar13 = uVar12, (int)uVar11 < (int)uVar14)) {
+          uVar11 = uVar14;
+        }
+        uVar43 = (ushort)uVar45 >> 6;
+        uVar46 = (ushort)((ulonglong)uVar45 >> 0x10) >> 6;
+        uVar47 = (ushort)((ulonglong)uVar45 >> 0x20) >> 6;
+        uVar48 = (ushort)((ulonglong)uVar45 >> 0x36);
+        PVar44 = CONCAT13((uVar48 != 0) * (uVar48 < 0x100) * (char)uVar48 - (0xff < uVar48),
+                          CONCAT12((uVar47 != 0) * (uVar47 < 0x100) * (char)uVar47 - (0xff < uVar47)
+                                   ,CONCAT11((uVar46 != 0) * (uVar46 < 0x100) * (char)uVar46 -
+                                             (0xff < uVar46),
+                                             (uVar43 != 0) * (uVar43 < 0x100) * (char)uVar43 -
+                                             (0xff < uVar43))));
+        uVar12 = (int)((uVar13 - 8) + uVar11) >> 1;
+        if ((int)uVar12 < 0) {
+          uVar12 = 0;
+        }
+        else if (0x18 < uVar12) {
+          uVar12 = 0x18;
+        }
+        uVar14 = uStack_1c;
+        if (uVar11 - uVar13 < 0xc) {
+          *puVar33 = uVar12;
+          uVar11 = MovieColor_ComputeChromaCodeFromRgb888(PVar44);
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+          iVar15 = uVar13 - uVar12;
+          if (iVar15 < 0) {
+            iVar15 = 0;
           }
-          else if (7 < iVar10) {
-            iVar10 = 7;
+          else if (7 < iVar15) {
+            iVar15 = 7;
           }
-          *puVar14 = *puVar14 | (uint)((ulonglong)uVar30 >> 0x20) | iVar10 << 5;
-          puVar14 = puVar14 + 2;
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+          iVar16 = uVar13 - uVar12;
+          if (iVar16 < 0) {
+            iVar16 = 0;
+          }
+          else if (7 < iVar16) {
+            iVar16 = 7;
+          }
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+          iVar17 = uVar13 - uVar12;
+          if (iVar17 < 0) {
+            iVar17 = 0;
+          }
+          else if (7 < iVar17) {
+            iVar17 = 7;
+          }
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+          iVar18 = uVar13 - uVar12;
+          if (iVar18 < 0) {
+            iVar18 = 0;
+          }
+          else if (7 < iVar18) {
+            iVar18 = 7;
+          }
+          pPVar31 = pPVar31 + -frameWidthPixels;
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+          iVar19 = uVar13 - uVar12;
+          if (iVar19 < 0) {
+            iVar19 = 0;
+          }
+          else if (7 < iVar19) {
+            iVar19 = 7;
+          }
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+          iVar20 = uVar13 - uVar12;
+          if (iVar20 < 0) {
+            iVar20 = 0;
+          }
+          else if (7 < iVar20) {
+            iVar20 = 7;
+          }
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+          uVar13 = uVar13 - uVar12;
+          if ((int)uVar13 < 0) {
+            uVar13 = 0;
+          }
+          else if (7 < (int)uVar13) {
+            uVar13 = 7;
+          }
+          uVar21 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+          puVar33[1] = (uVar11 & 0x7fe0) << 0x10 | iVar15 << 0x12 | iVar16 << 0xf | iVar17 << 0xc |
+                       iVar18 << 9 | iVar19 << 6 | iVar20 << 3 | uVar13;
+          iVar15 = uVar21 - uVar12;
+          if (iVar15 < 0) {
+            iVar15 = 0;
+          }
+          else if (7 < iVar15) {
+            iVar15 = 7;
+          }
+          pPVar31 = pPVar31 + -frameWidthPixels;
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+          iVar16 = uVar11 - uVar12;
+          if (iVar16 < 0) {
+            iVar16 = 0;
+          }
+          else if (7 < iVar16) {
+            iVar16 = 7;
+          }
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+          iVar17 = uVar11 - uVar12;
+          if (iVar17 < 0) {
+            iVar17 = 0;
+          }
+          else if (7 < iVar17) {
+            iVar17 = 7;
+          }
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+          iVar18 = uVar11 - uVar12;
+          if (iVar18 < 0) {
+            iVar18 = 0;
+          }
+          else if (7 < iVar18) {
+            iVar18 = 7;
+          }
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+          iVar19 = uVar11 - uVar12;
+          if (iVar19 < 0) {
+            iVar19 = 0;
+          }
+          else if (7 < iVar19) {
+            iVar19 = 7;
+          }
+          puVar32 = (ulonglong *)(pPVar31 + -frameWidthPixels);
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 0xc));
+          iVar20 = uVar11 - uVar12;
+          if (iVar20 < 0) {
+            iVar20 = 0;
+          }
+          else if (7 < iVar20) {
+            iVar20 = 7;
+          }
+          uVar11 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)puVar32[1]);
+          iVar22 = uVar11 - uVar12;
+          if (iVar22 < 0) {
+            iVar22 = 0;
+          }
+          else if (7 < iVar22) {
+            iVar22 = 7;
+          }
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 4));
+          iVar23 = uVar11 - uVar12;
+          if (iVar23 < 0) {
+            iVar23 = 0;
+          }
+          else if (7 < iVar23) {
+            iVar23 = 7;
+          }
+          uVar11 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*puVar32);
+          iVar24 = uVar11 - uVar12;
+          if (iVar24 < 0) {
+            iVar24 = 0;
+          }
+          else if (7 < iVar24) {
+            iVar24 = 7;
+          }
+          *puVar33 = *puVar33 |
+                     iVar15 << 0x1d | iVar16 << 0x1a | iVar17 << 0x17 | iVar18 << 0x14 |
+                     iVar19 << 0x11 | iVar20 << 0xe | iVar22 << 0xb | iVar23 << 8 | iVar24 << 5;
+          puVar33 = puVar33 + 2;
         }
         else {
-          uVar9 = uVar9 - 4;
-          if ((int)uVar9 < 0) {
-            uVar9 = 0;
+          uVar12 = uVar12 - 4;
+          if ((int)uVar12 < 0) {
+            uVar12 = 0;
           }
-          else if (0x10 < (int)uVar9) {
-            uVar9 = 0x10;
+          else if (0x10 < (int)uVar12) {
+            uVar12 = 0x10;
           }
-          *puVar14 = uVar9;
-          MovieColor_ComputeChromaCodeFromRgb888(uVar25);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-          MovieColor_ComputeLuma5FromRgb888(*puVar12);
-          puVar12 = puVar12 + -param_4;
-          MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-          uVar30 = MovieColor_ComputeLuma5FromRgb888(*puVar12);
-          puVar14[1] = (uint)((ulonglong)uVar30 >> 0x20);
-          puVar12 = puVar12 + -param_4;
-          MovieColor_ComputeLuma5FromRgb888(puVar12[3]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[2]);
-          MovieColor_ComputeLuma5FromRgb888(puVar12[1]);
-          MovieColor_ComputeLuma5FromRgb888(*puVar12);
-          puVar13 = (ulonglong *)(puVar12 + -param_4);
-          MovieColor_ComputeLuma5FromRgb888(*(uint *)((int)puVar13 + 0xc));
-          MovieColor_ComputeLuma5FromRgb888((uint)puVar13[1]);
-          MovieColor_ComputeLuma5FromRgb888(*(uint *)((int)puVar13 + 4));
-          uVar30 = MovieColor_ComputeLuma5FromRgb888((uint)*puVar13);
-          uVar9 = (int)uVar30 - extraout_ECX_01;
-          if ((int)uVar9 < 0) {
-            uVar9 = 0;
+          *puVar33 = uVar12;
+          uVar11 = MovieColor_ComputeChromaCodeFromRgb888(PVar44);
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+          uVar13 = uVar13 - uVar12;
+          if ((int)uVar13 < 0) {
+            uVar13 = 0;
           }
-          else if (0xf < (int)uVar9) {
-            uVar9 = 0xf;
+          else if (0xf < (int)uVar13) {
+            uVar13 = 0xf;
           }
-          *puVar14 = *puVar14 | (uint)((ulonglong)uVar30 >> 0x20) | (uVar9 >> 1) << 5;
-          puVar14 = puVar14 + 2;
+          uVar21 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+          uVar21 = uVar21 - uVar12;
+          if ((int)uVar21 < 0) {
+            uVar21 = 0;
+          }
+          else if (0xf < (int)uVar21) {
+            uVar21 = 0xf;
+          }
+          uVar25 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+          uVar25 = uVar25 - uVar12;
+          if ((int)uVar25 < 0) {
+            uVar25 = 0;
+          }
+          else if (0xf < (int)uVar25) {
+            uVar25 = 0xf;
+          }
+          uVar26 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+          uVar26 = uVar26 - uVar12;
+          if ((int)uVar26 < 0) {
+            uVar26 = 0;
+          }
+          else if (0xf < (int)uVar26) {
+            uVar26 = 0xf;
+          }
+          pPVar31 = pPVar31 + -frameWidthPixels;
+          uVar27 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+          uVar27 = uVar27 - uVar12;
+          if ((int)uVar27 < 0) {
+            uVar27 = 0;
+          }
+          else if (0xf < (int)uVar27) {
+            uVar27 = 0xf;
+          }
+          uVar28 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+          uVar28 = uVar28 - uVar12;
+          if ((int)uVar28 < 0) {
+            uVar28 = 0;
+          }
+          else if (0xf < (int)uVar28) {
+            uVar28 = 0xf;
+          }
+          uVar29 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+          uVar29 = uVar29 - uVar12;
+          if ((int)uVar29 < 0) {
+            uVar29 = 0;
+          }
+          else if (0xf < (int)uVar29) {
+            uVar29 = 0xf;
+          }
+          uVar30 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+          puVar33[1] = (uVar11 & 0x7fe0) * 0x10000 + 0x80000000 | (uVar13 >> 1) << 0x12 |
+                       (uVar21 >> 1) << 0xf | (uVar25 >> 1) << 0xc | (uVar26 >> 1) << 9 |
+                       (uVar27 >> 1) << 6 | (uVar28 >> 1) << 3 | uVar29 >> 1;
+          uVar30 = uVar30 - uVar12;
+          if ((int)uVar30 < 0) {
+            uVar30 = 0;
+          }
+          else if (0xf < (int)uVar30) {
+            uVar30 = 0xf;
+          }
+          pPVar31 = pPVar31 + -frameWidthPixels;
+          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
+          uVar11 = uVar11 - uVar12;
+          if ((int)uVar11 < 0) {
+            uVar11 = 0;
+          }
+          else if (0xf < (int)uVar11) {
+            uVar11 = 0xf;
+          }
+          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
+          uVar13 = uVar13 - uVar12;
+          if ((int)uVar13 < 0) {
+            uVar13 = 0;
+          }
+          else if (0xf < (int)uVar13) {
+            uVar13 = 0xf;
+          }
+          uVar21 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
+          uVar21 = uVar21 - uVar12;
+          if ((int)uVar21 < 0) {
+            uVar21 = 0;
+          }
+          else if (0xf < (int)uVar21) {
+            uVar21 = 0xf;
+          }
+          uVar25 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
+          uVar25 = uVar25 - uVar12;
+          if ((int)uVar25 < 0) {
+            uVar25 = 0;
+          }
+          else if (0xf < (int)uVar25) {
+            uVar25 = 0xf;
+          }
+          puVar32 = (ulonglong *)(pPVar31 + -frameWidthPixels);
+          uVar26 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 0xc));
+          uVar26 = uVar26 - uVar12;
+          if ((int)uVar26 < 0) {
+            uVar26 = 0;
+          }
+          else if (0xf < (int)uVar26) {
+            uVar26 = 0xf;
+          }
+          uVar27 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)puVar32[1]);
+          uVar27 = uVar27 - uVar12;
+          if ((int)uVar27 < 0) {
+            uVar27 = 0;
+          }
+          else if (0xf < (int)uVar27) {
+            uVar27 = 0xf;
+          }
+          uVar28 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 4));
+          uVar28 = uVar28 - uVar12;
+          if ((int)uVar28 < 0) {
+            uVar28 = 0;
+          }
+          else if (0xf < (int)uVar28) {
+            uVar28 = 0xf;
+          }
+          uVar29 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*puVar32);
+          uVar29 = uVar29 - uVar12;
+          if ((int)uVar29 < 0) {
+            uVar29 = 0;
+          }
+          else if (0xf < (int)uVar29) {
+            uVar29 = 0xf;
+          }
+          *puVar33 = *puVar33 |
+                     (uVar30 >> 1) << 0x1d | (uVar11 >> 1) << 0x1a | (uVar13 >> 1) << 0x17 |
+                     (uVar21 >> 1) << 0x14 | (uVar25 >> 1) << 0x11 | (uVar26 >> 1) << 0xe |
+                     (uVar27 >> 1) << 0xb | (uVar28 >> 1) << 8 | (uVar29 >> 1) << 5;
+          puVar33 = puVar33 + 2;
         }
       }
-      uStack_1c = uVar6;
-      puVar13 = puVar13 + 2;
+      uStack_1c = uVar14;
+      puVar32 = puVar32 + 2;
       uStack_28 = uStack_28 - 1;
     } while (uStack_28 != 0);
-    puVar13 = (ulonglong *)((int)puVar13 + param_4 * 0xc);
+    puVar32 = (ulonglong *)((int)puVar32 + frameWidthPixels * 0xc);
     uStack_24 = uStack_24 - 1;
-    uStack_28 = param_4 >> 2;
+    uStack_28 = frameWidthPixels >> 2;
   } while (uStack_24 != 0);
   if (uStack_1c != 0) {
     if (uStack_1c < 9) {
-      *(byte *)puVar14 = ((char)uStack_1c + -1) * ' ' | 0x19;
-      puVar14 = (uint *)((int)puVar14 + 1);
+      *(byte *)puVar33 = ((char)uStack_1c + -1) * ' ' | 0x19;
+      puVar33 = (uint *)((int)puVar33 + 1);
     }
     else if (uStack_1c < 0x809) {
-      *(ushort *)puVar14 = ((short)uStack_1c + -9) * 0x20 | 0x1a;
-      puVar14 = (uint *)((int)puVar14 + 2);
+      *(ushort *)puVar33 = ((short)uStack_1c + -9) * 0x20 | 0x1a;
+      puVar33 = (uint *)((int)puVar33 + 2);
     }
     else {
-      *puVar14 = (uStack_1c - 0x809) * 0x20 | 0x1b;
-      puVar14 = puVar14 + 1;
+      *puVar33 = (uStack_1c - 0x809) * 0x20 | 0x1b;
+      puVar33 = puVar33 + 1;
     }
   }
-  return CONCAT44(param_2,(int)puVar14 + (7 - (int)param_5)) & 0xfffffffffffffff8;
+  return (int)puVar33 + (7 - (int)encodedOutput) & 0xfffffff8;
 }
+
 
 /* Address: 0x004A8A60.
    Ownership: movie/runtime/playback.
@@ -1342,29 +1941,29 @@ Movie_EncodeFrame4x4Delta
    MovieRuntime in EAX; CF set reports end-of-movie or read failure.
    Local calls: Movie_DecodeFrame4x4Delta.
 */
-MovieRuntime * Movie_AdvanceFrame(void)
+MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 {
   MovieFileHeader *pMVar1;
-  MovieRuntime *pMVar2;
+  MovieFrameIndex MVar2;
   MovieRuntime *pMVar3;
-  IDirectSoundBuffer *pIVar4;
+  uint uVar4;
   dword dVar5;
-  MovieFrameIndex extraout_ECX;
-  MovieFrameIndex MVar6;
-  MovieFrameIndex extraout_ECX_00;
-  uint uVar7;
-  uint uVar8;
+  uint uVar6;
   void *unaff_EBX;
-  undefined4 *puVar9;
-  byte *pbVar10;
+  undefined4 *puVar7;
+  byte *pbVar8;
+  SoundPlayVoiceEaxCf5 SVar9;
+  MovieAdvanceFrameEaxCf5 MVar10;
+  MovieAdvanceFrameEaxCf5 MVar11;
+  MovieAdvanceFrameEaxCf5 MVar12;
   
-  pMVar2 = g_ActiveMovie;
-  pMVar3 = (MovieRuntime *)0x30;
+  pMVar3 = g_ActiveMovie;
+  uVar4 = 0x30;
   if (g_ActiveMovie != (MovieRuntime *)0x0) {
     if (g_ActiveMovie->streamState == MOVIE_STREAM_READ_FAILED) {
-      pMVar3 = (MovieRuntime *)(*g_FileSystemClose)(unaff_EBX);
-      pMVar2->remainingVideoBytes = 0;
+      (*g_FileSystemClose)(unaff_EBX);
+      pMVar3->remainingVideoBytes = 0;
     }
     else {
       if (((g_ActiveMovie->streamState == MOVIE_STREAM_IDLE) && (g_ActiveMovie->workerActive != 0))
@@ -1372,50 +1971,57 @@ MovieRuntime * Movie_AdvanceFrame(void)
         if ((uint)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200)
         {
           g_ActiveMovie->streamState = MOVIE_STREAM_FILL_REQUESTED;
-          ReleaseSemaphore(pMVar2->refillSemaphore,1,(LPLONG)0x0);
+          ReleaseSemaphore(pMVar3->refillSemaphore,1,(LPLONG)0x0);
         }
       }
-      pMVar1 = pMVar2->fileHeader;
-      MVar6 = pMVar2->currentFrameIndex;
-      pbVar10 = (pMVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                (pMVar2->videoStreamOffset - 0x28);
-      if ((MVar6 == 0) && (pMVar2->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
-        pIVar4 = (*g_SoundPlayOneShot)
-                           (pMVar2->audioGainQ15,pMVar2->audioGainQ15,pMVar2->audioVoiceSet);
-        pMVar2->activeAudioBuffer = pIVar4;
-        MVar6 = extraout_ECX;
+      pMVar1 = pMVar3->fileHeader;
+      MVar2 = pMVar3->currentFrameIndex;
+      pbVar8 = (pMVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
+               (pMVar3->videoStreamOffset - 0x28);
+      if ((MVar2 == 0) && (pMVar3->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
+        SVar9 = (*g_SoundPlayOneShot)
+                          (pMVar3->audioGainQ15,pMVar3->audioGainQ15,pMVar3->audioVoiceSet);
+        pMVar3->activeAudioBuffer = SVar9.eax;
       }
-      pMVar3 = (MovieRuntime *)(pMVar2->loadedVideoEnd + -(int)pbVar10);
-      if (MVar6 + 1 <= pMVar1->frameCount) {
-        if ((pMVar2->remainingVideoBytes != 0) && (pMVar3 < (MovieRuntime *)0x1e000)) {
-          return (MovieRuntime *)&pMVar2[-1].textureCommon.allocationSizeBytes;
+      uVar6 = MVar2 + 1;
+      uVar4 = (int)pMVar3->loadedVideoEnd - (int)pbVar8;
+      if (uVar6 <= pMVar1->frameCount) {
+        if ((pMVar3->remainingVideoBytes != 0) && (uVar4 < 0x1e000)) {
+          MVar11.carry = false;
+          MVar11.eax = (dword)&pMVar3[-1].textureCommon.allocationSizeBytes;
+          return MVar11;
         }
         dVar5 = Movie_DecodeFrame4x4Delta
-                          (pMVar1->heightPixels,pMVar1->widthPixels,pMVar2->argbPixels,pbVar10);
-        pMVar2->currentFrameIndex = extraout_ECX_00;
-        pMVar2->videoStreamOffset = pMVar2->videoStreamOffset + dVar5;
-        if ((pMVar2->openFlags != 0) && (pMVar2->streamState == MOVIE_STREAM_IDLE)) {
-          uVar8 = pMVar2->videoStreamOffset;
-          uVar7 = (int)pMVar2->loadedVideoEnd - (int)pMVar2->fileHeader;
-          if ((0x1e01ff < uVar8) && (uVar8 < uVar7)) {
-            pMVar2->videoStreamOffset = pMVar2->videoStreamOffset - 0x1e0000;
-            pbVar10 = pMVar2->fileHeader[-0xf00].common.buildMetadata.assetRelativeAddressAnchor28 +
-                      (uVar8 - 0x28);
-            pMVar2->loadedVideoEnd = pMVar2->loadedVideoEnd + -0x1e0000;
-            puVar9 = (undefined4 *)(pbVar10 + 0x1e0000);
-            for (uVar8 = uVar7 - uVar8 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
-              *(undefined4 *)pbVar10 = *puVar9;
-              puVar9 = puVar9 + 1;
-              pbVar10 = pbVar10 + 4;
+                          (pMVar1->heightPixels,pMVar1->widthPixels,pMVar3->argbPixels,pbVar8);
+        pMVar3->currentFrameIndex = uVar6;
+        pMVar3->videoStreamOffset = pMVar3->videoStreamOffset + dVar5;
+        if ((pMVar3->openFlags != 0) && (pMVar3->streamState == MOVIE_STREAM_IDLE)) {
+          uVar4 = pMVar3->videoStreamOffset;
+          uVar6 = (int)pMVar3->loadedVideoEnd - (int)pMVar3->fileHeader;
+          if ((0x1e01ff < uVar4) && (uVar4 < uVar6)) {
+            pMVar3->videoStreamOffset = pMVar3->videoStreamOffset - 0x1e0000;
+            pbVar8 = pMVar3->fileHeader[-0xf00].common.buildMetadata.assetRelativeAddressAnchor28 +
+                     (uVar4 - 0x28);
+            pMVar3->loadedVideoEnd = pMVar3->loadedVideoEnd + -0x1e0000;
+            puVar7 = (undefined4 *)(pbVar8 + 0x1e0000);
+            for (uVar4 = uVar6 - uVar4 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
+              *(undefined4 *)pbVar8 = *puVar7;
+              puVar7 = puVar7 + 1;
+              pbVar8 = pbVar8 + 4;
             }
           }
         }
-        return pMVar2;
+        MVar10.carry = false;
+        MVar10.eax = (dword)pMVar3;
+        return MVar10;
       }
     }
   }
-  return pMVar3;
+  MVar12.carry = true;
+  MVar12.eax = uVar4;
+  return MVar12;
 }
+
 
 /* Address: 0x00564080.
    Ownership: movie/runtime/playback.
@@ -1427,30 +2033,30 @@ MovieRuntime * Movie_AdvanceFrame(void)
    Local calls: Movie_AdvanceFrame.
    Cross-module calls: UiRootStack_InvalidateAll [ui/controls/layout], UiFrame_Draw [ui/controls/layout].
 */
-undefined8 MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
+void __thandor_void_preserve_eax_ecx_edx
+MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 {
-  undefined4 in_EAX;
-  uint extraout_ECX;
-  undefined4 in_EDX;
-  bool bVar1;
+  uint uVar1;
+  MovieAdvanceFrameEaxCf5 MVar2;
   
+  uVar1 = g_MoviePlaybackCurrentFrame;
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
     do {
-      bVar1 = true;
-      Movie_AdvanceFrame();
-      if (bVar1)
-      goto 
-      MoviePlayback_AdvanceToFrameAndPresent_ReturnAfterAlreadyReachedAdvanceFailureOrPresentation;
-    } while (extraout_ECX < targetFrame);
-    g_MoviePlaybackCurrentFrame = extraout_ECX;
+      uVar1 = uVar1 + 1;
+      MVar2 = Movie_AdvanceFrame();
+      if (MVar2.carry) {
+        return;
+      }
+    } while (uVar1 < targetFrame);
+    g_MoviePlaybackCurrentFrame = uVar1;
     UiRootStack_InvalidateAll();
     UiFrame_Draw();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-MoviePlayback_AdvanceToFrameAndPresent_ReturnAfterAlreadyReachedAdvanceFailureOrPresentation:
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004A81C0.
    Ownership: movie/runtime/playback.
@@ -1458,9 +2064,10 @@ MoviePlayback_AdvanceToFrameAndPresent_ReturnAfterAlreadyReachedAdvanceFailureOr
    g_MovieChromaLumaToArgb, while tokens 25-31 skip runs and preserve pixels from the previous frame. Returns
    encoded bytes consumed rounded up to eight.
 */
-dword Movie_DecodeFrame4x4Delta
-                (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,
-                dword *destinationArgb,byte *encodedFrame)
+dword __thandor_eax_preserve_ecx_edx
+Movie_DecodeFrame4x4Delta
+          (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,dword *destinationArgb,
+          byte *encodedFrame)
 
 {
   uint uVar1;
@@ -1590,34 +2197,34 @@ dword Movie_DecodeFrame4x4Delta
   return (int)puVar7 + (7 - (int)encodedFrame) & 0xfffffff8;
 }
 
+
 /* Address: 0x004A6FB0.
    Ownership: movie/runtime/playback.
    Purpose: Handles movie color compute chroma code from rgb888.
    Cross-module calls: FixedMath_Vector2AngleAndLengthRegs [core/math/fixed].
 */
-undefined8 MovieColor_ComputeChromaCodeFromRgb888(uint param_1)
+uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 
 {
   uint uVar1;
-  undefined4 in_EDX;
-  FixedLengthAngleEdxEax8 FVar2;
+  FixedLengthAngleEaxEdx8 FVar2;
   
-  uVar1 = param_1 >> 8 & 0xff;
+  uVar1 = rgb888 >> 8 & 0xff;
   FVar2 = FixedMath_Vector2AngleAndLengthRegs
-                    (((param_1 & 0xff) - uVar1) * 0xddb4,
-                     (uVar1 + (param_1 & 0xff) + (param_1 >> 0x10 & 0xff) * -2) * 0x8000);
-  return CONCAT44(in_EDX,(uint)FVar2 >> 9 & 0x7c00 | (uint)(FVar2 >> 0x26) & 0x3e0);
+                    (((rgb888 & 0xff) - uVar1) * 0xddb4,
+                     (uVar1 + (rgb888 & 0xff) + (rgb888 >> 0x10 & 0xff) * -2) * 0x8000);
+  return FVar2.length >> 9 & 0x7c00 | FVar2.angle >> 6 & 0x3e0;
 }
+
 
 /* Address: 0x004A7000.
    Ownership: movie/runtime/playback.
    Purpose: Handles movie color compute luma5 from rgb888.
 */
-undefined8 MovieColor_ComputeLuma5FromRgb888(uint param_1)
+uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 {
-  undefined4 in_EDX;
-  
-  return CONCAT44(in_EDX,((param_1 & 0xff) + (param_1 >> 8 & 0xff) + (param_1 >> 0x10 & 0xff)) *
-                         0x5555 + 0x40000 >> 0x13);
+  return ((rgb888 & 0xff) + (rgb888 >> 8 & 0xff) + (rgb888 >> 0x10 & 0xff)) * 0x5555 + 0x40000 >>
+         0x13;
 }
+

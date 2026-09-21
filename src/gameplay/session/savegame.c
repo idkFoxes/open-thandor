@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/savegame.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/session/savegame.h>
 
 /* Implementation ownership: gameplay/session/savegame. */
@@ -10,82 +17,67 @@
    [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], UiNode_GetRoot [ui/core/runtime], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
-void InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr catalogList)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr catalogList)
 
 {
   void **ppvVar1;
   void *pvVar2;
+  TextResourceId resourceId;
   UiListRowIndex UVar3;
-  int extraout_EAX;
-  word *pwVar4;
-  UiNodeBase *pUVar5;
-  UiNodeBase *extraout_EAX_00;
-  int extraout_EAX_01;
   UiNodeBase *firstNode;
-  UiListRowIndex extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  UiPageIndex extraout_EDX;
-  UiPageIndex UVar6;
-  word *stream;
-  word *stream_00;
-  UiTextResourceId extraout_EDX_00;
-  bool bVar7;
+  UiListRowIndex UVar4;
+  UiListRowIndexEaxCf5 UVar5;
+  TextResourceResolveEaxCf5 TVar6;
+  TextResourceResolveEaxCf5 TVar7;
   
   ppvVar1 = catalogList->rowSlots;
-  bVar7 = false;
-  UVar3 = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
+  UVar4 = catalogList->rowCount - 1;
+  UVar5 = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
+  UVar3 = UVar5.rowIndex;
   pvVar2 = ppvVar1[UVar3];
-  if (bVar7) {
-    UVar6 = extraout_EDX;
-    if (UVar3 == extraout_ECX) {
-      UVar6 = extraout_EDX + 1;
-    }
-    UiPageStack_SetActiveIndex(UVar6,&ADJ(catalogList)->detailPageStack);
-    if (extraout_EAX_01 != extraout_ECX_01) {
+  if (UVar5.carry) {
+    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&ADJ(catalogList)->detailPageStack);
+    if (UVar3 != UVar4) {
       InGameSaveGame_SaveSelectedOrTypedName(ADJ(catalogList));
       return;
     }
   }
   else {
-    UVar6 = extraout_EDX;
-    if (UVar3 == extraout_ECX) {
-      UVar6 = extraout_EDX + 1;
-    }
-    UiPageStack_SetActiveIndex(UVar6,&ADJ(catalogList)->detailPageStack);
+    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&ADJ(catalogList)->detailPageStack);
     ADJ(catalogList)->activeDetailTextResourceId = 0x215d;
-    if (extraout_EAX != extraout_ECX_00) {
+    if (UVar3 != UVar4) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        pwVar4 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x70));
-        *pwVar4 = 0x8000;
-        ADJ(catalogList)->activeDetailTextResourceId = extraout_EDX_00;
+        resourceId = *(TextResourceId *)((int)pvVar2 + 0x70);
+        TVar6 = TextResource_Resolve(resourceId);
+        *TVar6.eax = 0x8000;
+        ADJ(catalogList)->activeDetailTextResourceId = resourceId;
       }
       else {
-        TextResource_Resolve(0x215e);
-        pwVar4 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x70));
-        *pwVar4 = 0x8000;
-        RichTextCommandStream_PatchPayloadBySelector(1,pwVar4,stream);
-        pwVar4 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x90));
-        RichTextCommandStream_PatchPayloadBySelector(0,pwVar4,stream_00);
+        TVar6 = TextResource_Resolve(0x215e);
+        TVar7 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x70));
+        *TVar7.eax = 0x8000;
+        RichTextCommandStream_PatchPayloadBySelector(1,TVar7.eax,TVar6.eax);
+        TVar7 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x90));
+        RichTextCommandStream_PatchPayloadBySelector(0,TVar7.eax,TVar6.eax);
         ADJ(catalogList)->activeDetailTextResourceId = 0x215e;
       }
-      pUVar5 = UiNode_GetRoot(&(ADJ(catalogList)->detailPageStack).base);
-      UiNodeList_UnsuppressActionId(0x1219,pUVar5);
-      pUVar5 = extraout_EAX_00;
+      firstNode = UiNode_GetRoot(&(ADJ(catalogList)->detailPageStack).base);
+      UiNodeList_UnsuppressActionId(0x1219,firstNode);
       goto InGameUiAction120F_Handler_UnsuppressAction1210AndReturn;
     }
   }
-  pUVar5 = UiNode_GetRoot(&catalogList->base);
-  UiNodeList_SuppressActionId(0x1219,pUVar5);
-  pUVar5 = firstNode;
+  firstNode = UiNode_GetRoot(&catalogList->base);
+  UiNodeList_SuppressActionId(0x1219,firstNode);
   if (((ADJ(catalogList)->action1210Control).nodeFlags & 1) == 0) {
     UiNodeList_SuppressActionId(0x1210,firstNode);
     return;
   }
 InGameUiAction120F_Handler_UnsuppressAction1210AndReturn:
-  UiNodeList_UnsuppressActionId(0x1210,pUVar5);
+  UiNodeList_UnsuppressActionId(0x1210,firstNode);
   return;
 }
+
 
 /* Address: 0x0056C190.
    Ownership: gameplay/session/savegame.
@@ -97,35 +89,37 @@ InGameUiAction120F_Handler_UnsuppressAction1210AndReturn:
    Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
    WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode [core/text/path].
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
           (InGameSaveGamePageControlAddress32 saveGamePageControl)
 
 {
   word *leaf;
-  undefined4 in_EAX;
-  UiListRowIndex UVar1;
-  undefined4 in_EDX;
-  int extraout_EDX;
+  int iVar1;
+  dword errorOrValue;
+  bool carryIn;
+  UiListRowIndexEaxCf5 UVar2;
   
   (*g_GraphicsCursorSetFrame)(6);
-  UVar1 = UiPointerList_GetSelectedIndexVariantBCf
+  UVar2 = UiPointerList_GetSelectedIndexVariantBCf
                     ((UiPointerListControl *)(saveGamePageControl + 0xf0));
-  if (UVar1 + 1 != *(int *)(extraout_EDX + 0x54)) {
-    leaf = *(word **)(*(int *)(extraout_EDX + 0x50) + -4 + (UVar1 + 1) * 4);
+  iVar1 = UVar2.rowIndex + 1;
+  if (iVar1 != *(int *)(saveGamePageControl + 0x144)) {
+    leaf = *(word **)(*(int *)(saveGamePageControl + 0x140) + -4 + iVar1 * 4);
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
                (word *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                (word *)&g_ScenarioCatalogPathScratchUtf16);
-    WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
-    (*g_FileSystemDeleteCf)(0,(word *)&g_ScenarioCatalogPathScratchUtf16);
-    (*g_FatalErrorRuntimeDispatchCf)();
+    carryIn = WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
+    errorOrValue = (*g_FileSystemDeleteCf)(0,(word *)&g_ScenarioCatalogPathScratchUtf16);
+    (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,carryIn);
     InGameSaveGamePage_RebuildCatalog((UiRootNode *)(saveGamePageControl + -0x760));
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0056BDD0.
    Ownership: gameplay/session/savegame.
@@ -139,150 +133,129 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
    UiPointerList_InitializeColumnLayout [ui/controls/lists], UiPointerList_SortByDwordPairFieldDescending
    [ui/controls/lists], UiPointerList_SelectIndexVariantB [ui/controls/lists].
 */
-undefined8 InGameSaveGamePage_RebuildCatalog(UiRootNode *savePageRoot)
+void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRootNode *savePageRoot)
 
 {
+  UiNodeBase *pUVar1;
   UiRootNode *firstNode;
-  longlong lVar1;
-  undefined4 in_EAX;
-  ScenarioCatalogHeader *pSVar2;
+  UiNodeVtable *pUVar2;
+  TextResourceId resourceId;
+  ScenarioCatalogHeader *pSVar3;
   void *handle;
-  UiPointerListControl *control;
-  UiPointerListControl *control_00;
-  UiNodeBase *firstNode_00;
-  int extraout_EAX;
-  UiNodeBase *pUVar3;
-  UiListRowIndex UVar4;
-  int extraout_ECX;
-  int iVar5;
-  UiListRowCount extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  UiListRowIndex extraout_ECX_05;
-  undefined4 in_EDX;
-  uint extraout_EDX;
-  uint extraout_EDX_00;
-  uint uVar6;
-  word *stream;
-  word *stream_00;
-  UiAnchorFractionQ31 extraout_EDX_01;
-  word *pwVar7;
+  sdword *psVar4;
+  dword dVar5;
+  int iVar6;
+  word *leaf;
   ScenarioCatalogByteOffset *destination;
-  dword bytes;
-  ScenarioCatalogByteOffset *pSVar8;
-  undefined1 in_CF;
-  undefined1 uVar9;
-  undefined8 uVar10;
+  ScenarioCatalogByteOffset *pSVar7;
+  ArenaAllocEaxCf5 AVar8;
+  FileSystemOpenEaxCf5 FVar9;
+  TextResourceResolveEaxCf5 TVar10;
+  UiListRowIndexEaxCf5 UVar11;
+  TextResourceResolveEaxCf5 TVar12;
+  FileSystemEnumerationEaxEcxCf9 FVar13;
   void *handle_00;
-  UiListRowCount rowCount;
+  dword rowCount;
   
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save___sve_0050d9c8,
              (word *)&g_ExecutableDirectoryUtf16);
-  (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
-            (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
-             &g_ScenarioCatalogPathScratchUtf16);
-  iVar5 = extraout_ECX;
-  if ((bool)in_CF) {
-    iVar5 = 0;
+  FVar13 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                     (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
+                      &g_ScenarioCatalogPathScratchUtf16);
+  dVar5 = FVar13.entryCount;
+  if (FVar13.carry) {
+    dVar5 = 0;
   }
-  lVar1 = (longlong)(iVar5 + 1) * 0x104;
-  bytes = (dword)lVar1;
-  uVar9 = (int)bytes != lVar1;
   (*g_MemoryApi.free)(g_ScenarioCatalog);
   g_ScenarioCatalog = (ScenarioCatalogHeader *)0x0;
-  pSVar2 = (*g_MemoryApi.alloc)(bytes);
-  if (!(bool)uVar9) {
-    destination = &pSVar2->campaignRecordsOffset + extraout_ECX_00;
-    uVar9 = false;
-    pwVar7 = (word *)g_PackageScratchBuffer;
-    g_ScenarioCatalog = pSVar2;
-    rowCount = extraout_ECX_00;
-    if (extraout_ECX_00 != 0) {
-      do {
-        pSVar2->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
-        *destination = 0;
-        WidePath_CombineDirectoryAndLeaf
-                  ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
-                   (word *)&g_ExecutableDirectoryUtf16);
-        WidePath_CombineDirectoryAndLeaf
-                  ((word *)&g_ScenarioCatalogPathScratchUtf16,pwVar7,
-                   (word *)&g_ScenarioCatalogPathScratchUtf16);
-        handle = (void *)(*g_FileSystemOpenCf)
-                                   (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,
-                                    (word *)&g_ScenarioCatalogPathScratchUtf16);
-        iVar5 = extraout_ECX_01;
-        uVar6 = extraout_EDX;
-        if (!(bool)uVar9) {
-          handle_00 = handle;
-          (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
-          (*g_FileSystemReadExactCf)(0x100,destination,handle);
-          (*g_FileSystemClose)(handle_00);
-          destination[0x1c] = destination[0x1c] + 0x2230;
-          destination[0x24] = destination[0x24] + 0x2220;
-          iVar5 = extraout_ECX_02;
-          uVar6 = extraout_EDX_00;
-        }
-        pSVar2 = (ScenarioCatalogHeader *)&pSVar2->campaignRecordsOffset;
-        destination = destination + 0x40;
-        uVar9 = CARRY4((uint)pwVar7,uVar6);
-        pwVar7 = (word *)((int)pwVar7 + uVar6);
-      } while (iVar5 != 1);
+  AVar8 = (*g_MemoryApi.alloc)((dVar5 + 1) * 0x104);
+  pSVar3 = (ScenarioCatalogHeader *)AVar8.eax;
+  if (!AVar8.carry) {
+    destination = &pSVar3->campaignRecordsOffset + dVar5;
+    g_ScenarioCatalog = pSVar3;
+    rowCount = dVar5;
+    leaf = (word *)g_PackageScratchBuffer;
+    for (; dVar5 != 0; dVar5 = dVar5 - 1) {
+      pSVar3->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
+      *destination = 0;
+      WidePath_CombineDirectoryAndLeaf
+                ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
+                 (word *)&g_ExecutableDirectoryUtf16);
+      WidePath_CombineDirectoryAndLeaf
+                ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
+                 (word *)&g_ScenarioCatalogPathScratchUtf16);
+      FVar9 = (*g_FileSystemOpenCf)
+                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16)
+      ;
+      handle = (void *)FVar9.eax;
+      if (!FVar9.carry) {
+        handle_00 = handle;
+        (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
+        (*g_FileSystemReadExactCf)(0x100,destination,handle);
+        (*g_FileSystemClose)(handle_00);
+        destination[0x1c] = destination[0x1c] + 0x2230;
+        destination[0x24] = destination[0x24] + 0x2220;
+      }
+      pSVar3 = (ScenarioCatalogHeader *)&pSVar3->campaignRecordsOffset;
+      destination = destination + 0x40;
+      leaf = (word *)((int)leaf + FVar13.recordSizeBytes);
     }
-    pSVar2->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
-    pSVar8 = destination;
-    for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *pSVar8 = 0;
-      pSVar8 = pSVar8 + 1;
+    pSVar3->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
+    pSVar7 = destination;
+    for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
+      *pSVar7 = 0;
+      pSVar7 = pSVar7 + 1;
     }
-    pwVar7 = TextResource_Resolve(0x2151);
-    RichTextCommandStream_CopyExpandedCf(0x100,(word *)destination,pwVar7);
+    TVar10 = TextResource_Resolve(0x2151);
+    RichTextCommandStream_CopyExpandedCf(0x100,(word *)destination,TVar10.eax);
+    psVar4 = &savePageRoot[0x18].base.left;
     UiPointerList_InitializeColumnLayout
-              (rowCount,(void **)g_ScenarioCatalog,
-               (UiPointerListControl *)&savePageRoot[0x18].base.left);
-    uVar10 = UiPointerList_SortByDwordPairFieldDescending(0xf0,control);
+              (rowCount,(void **)g_ScenarioCatalog,(UiPointerListControl *)psVar4);
+    UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)psVar4);
     UiPointerList_InitializeColumnLayout
-              (extraout_ECX_03 + 1,(void **)g_ScenarioCatalog,(UiPointerListControl *)uVar10);
-    UiPointerList_SelectIndexVariantB(extraout_ECX_04 - 1,control_00);
+              (rowCount + 1,(void **)g_ScenarioCatalog,(UiPointerListControl *)psVar4);
+    UiPointerList_SelectIndexVariantB(rowCount,(UiPointerListControl *)psVar4);
     UiPageStack_SetActiveIndex(5,(UiPageStackControl *)&savePageRoot[-0x4b].base.nodeFlags);
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&savePageRoot[0x1b].base.bottomAnchorQ31);
-    pUVar3 = (savePageRoot->base).parent;
+    pUVar1 = (savePageRoot->base).parent;
     firstNode = savePageRoot;
-    while (pUVar3 != (UiNodeBase *)0xffffffff) {
+    while (pUVar1 != (UiNodeBase *)0xffffffff) {
       firstNode = (UiRootNode *)(firstNode->base).parent;
-      pUVar3 = (firstNode->base).parent;
+      pUVar1 = (firstNode->base).parent;
     }
     UiNodeList_SuppressActionId(0x1210,&firstNode->base);
-    UiNodeList_SuppressActionId(0x1219,firstNode_00);
-    pUVar3 = (UiNodeBase *)
-             UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)(extraout_EAX + 0x2f2c));
-    InGameSaveName_UpdateSaveActionValidity(pUVar3);
-    pUVar3 = savePageRoot[0x19].base.parent;
-    UVar4 = UiPointerList_GetSelectedIndexVariantBCf
-                      ((UiPointerListControl *)&savePageRoot[0x18].base.left);
-    pUVar3 = (&pUVar3->nextSibling)[UVar4];
+    UiNodeList_SuppressActionId(0x1219,&firstNode->base);
+    psVar4 = &firstNode[0x89].base.top;
+    UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)psVar4);
+    InGameSaveName_UpdateSaveActionValidity((UiNodeBase *)psVar4);
+    pUVar2 = savePageRoot[0x19].base.vtable;
+    pUVar1 = savePageRoot[0x19].base.parent;
+    UVar11 = UiPointerList_GetSelectedIndexVariantBCf
+                       ((UiPointerListControl *)&savePageRoot[0x18].base.left);
+    pUVar1 = (&pUVar1->nextSibling)[(int)UVar11.rowIndex];
     savePageRoot[0x1b].base.topAnchorQ31 = 0x215d;
-    if (extraout_ECX_05 != UVar4) {
+    if ((undefined1 *)((int)&pUVar2[-1].pointerWheel + 3U) != (undefined1 *)UVar11.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        pwVar7 = TextResource_Resolve(pUVar3[1].topOffset);
-        *pwVar7 = 0x8000;
-        savePageRoot[0x1b].base.topAnchorQ31 = extraout_EDX_01;
+        resourceId = pUVar1[1].topOffset;
+        TVar10 = TextResource_Resolve(resourceId);
+        *TVar10.eax = 0x8000;
+        savePageRoot[0x1b].base.topAnchorQ31 = resourceId;
       }
       else {
-        TextResource_Resolve(0x215e);
-        pwVar7 = TextResource_Resolve(pUVar3[1].topOffset);
-        *pwVar7 = 0x8000;
-        RichTextCommandStream_PatchPayloadBySelector(1,pwVar7,stream);
-        pwVar7 = TextResource_Resolve(pUVar3[1].layoutHeight);
-        RichTextCommandStream_PatchPayloadBySelector(0,pwVar7,stream_00);
+        TVar10 = TextResource_Resolve(0x215e);
+        TVar12 = TextResource_Resolve(pUVar1[1].topOffset);
+        *TVar12.eax = 0x8000;
+        RichTextCommandStream_PatchPayloadBySelector(1,TVar12.eax,TVar10.eax);
+        TVar12 = TextResource_Resolve(pUVar1[1].layoutHeight);
+        RichTextCommandStream_PatchPayloadBySelector(0,TVar12.eax,TVar10.eax);
         savePageRoot[0x1b].base.topAnchorQ31 = 0x215e;
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0056C230.
    Ownership: gameplay/session/savegame.
@@ -292,18 +265,21 @@ undefined8 InGameSaveGamePage_RebuildCatalog(UiRootNode *savePageRoot)
    InGameUiAction1210_ResourceRegistrationHelper [ui/ingame/runtime], UiSelectableControl_SetSelected
    [ui/controls/lists], InGameSettingsPage_ToggleAndSynchronizeControls [ui/ingame/settings].
 */
-void InGameSaveGame_SaveSelectedOrTypedName(void *source)
+void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(void *source)
 
 {
-  UiListRowIndex UVar1;
-  int extraout_EDX;
+  dword errorOrValue;
   word *leaf;
+  byte bVar1;
+  UiListRowIndexEaxCf5 UVar2;
+  uint uVar3;
   
   (*g_GraphicsCursorSetFrame)(6);
-  UVar1 = UiPointerList_GetSelectedIndexVariantBCf((UiPointerListControl *)((int)source + 0x150));
+  UVar2 = UiPointerList_GetSelectedIndexVariantBCf((UiPointerListControl *)((int)source + 0x150));
+  errorOrValue = UVar2.rowIndex + 1;
   leaf = (word *)((int)source + 0x348);
-  if (UVar1 + 1 != *(int *)(extraout_EDX + 0x54)) {
-    leaf = *(word **)(*(int *)(extraout_EDX + 0x50) + -4 + (UVar1 + 1) * 4);
+  if (errorOrValue != *(dword *)((int)source + 0x1a4)) {
+    leaf = *(word **)(*(int *)((int)source + 0x1a0) + -4 + errorOrValue * 4);
   }
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
@@ -311,15 +287,17 @@ void InGameSaveGame_SaveSelectedOrTypedName(void *source)
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
              (word *)&g_ScenarioCatalogPathScratchUtf16);
-  WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
+  bVar1 = WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
   InGameUiAction1210_ResourceRegistrationHelper
             ((void *)((int)source + -0x2220),&g_ScenarioCatalogPathScratchUtf16);
+  uVar3 = (uint)(bVar1 & 1);
   (*g_GraphicsCursorSetFrame)(0);
-  (*g_FatalErrorRuntimeDispatchCf)();
+  (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(uVar3 & 1) != 0);
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)((int)source + 0x1738));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)((int)source + 0x1738));
   return;
 }
+
 
 /* Address: 0x0056C2F0.
    Ownership: gameplay/session/savegame.
@@ -329,15 +307,14 @@ void InGameSaveGame_SaveSelectedOrTypedName(void *source)
    Cross-module calls: UiNodeList_UnsuppressActionId [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists].
 */
-undefined8 InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
 
 {
   UiNodeBase *pUVar1;
   UiNodeBase *firstNode;
-  undefined4 in_EAX;
   UiNodeVtable *pUVar2;
   uint uVar3;
-  undefined4 in_EDX;
   uint uVar4;
   sdword *psVar5;
   sdword *psVar6;
@@ -454,8 +431,7 @@ undefined8 InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                         } while (!bVar7);
                         if (!bVar7) {
                           UiNodeList_UnsuppressActionId(0x1210,firstNode);
-                          goto 
-                          FrontendSaveName_UpdateActionValidity_ReturnAfterAction1210ValidityUpdate;
+                          return;
                         }
                       }
                     }
@@ -469,6 +445,6 @@ undefined8 InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
     }
   }
   UiNodeList_SuppressActionId(0x1210,firstNode);
-FrontendSaveName_UpdateActionValidity_ReturnAfterAction1210ValidityUpdate:
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+

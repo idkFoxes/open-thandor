@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/render/model.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/render/model.h>
 
 /* Implementation ownership: graphics/render/model. */
@@ -13,97 +20,80 @@
    Cross-module calls: ModelNodeRuntime_BuildViewFacingRotation [world/model/hierarchy],
    ModelNodeRuntime_BuildBillboardRotation [world/model/hierarchy].
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 ModelRender_DrawMeshGroupsWithTemporaryTransform
-          (undefined4 param_1,undefined4 param_2,Q12 facingThresholdQ12,
-          ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
+          (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  AngleTurn32 AVar1;
+  uint uVar1;
   AngleTurn32 AVar2;
   AngleTurn32 AVar3;
-  sdword sVar4;
+  AngleTurn32 AVar4;
   sdword sVar5;
   sdword sVar6;
-  GraphicsWorldCoordinateQ12 GVar7;
-  sdword sVar8;
+  sdword sVar7;
+  GraphicsWorldCoordinateQ12 GVar8;
   sdword sVar9;
   sdword sVar10;
-  GraphicsWorldCoordinateQ12 GVar11;
-  sdword sVar12;
+  sdword sVar11;
+  GraphicsWorldCoordinateQ12 GVar12;
   sdword sVar13;
   sdword sVar14;
-  GraphicsWorldCoordinateQ12 GVar15;
-  uint extraout_EAX;
-  uint extraout_EAX_00;
-  uint uVar16;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int incomingEcxValue;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  undefined4 extraout_EDX_01;
+  sdword sVar15;
+  GraphicsWorldCoordinateQ12 GVar16;
+  int iVar17;
   int *meshGroup_00;
   
-  uVar16 = *(uint *)(meshGroup + 0xc);
-  incomingEcxValue = *(int *)(meshGroup + 4);
-  AVar1 = (modelNode->modelPayload).worldRotationAngle0;
-  AVar2 = (modelNode->modelPayload).worldRotationAngle1;
-  AVar3 = (modelNode->modelPayload).worldRotationAngle2;
-  sVar4 = (modelNode->worldTransform).basisRow0[0];
-  sVar5 = (modelNode->worldTransform).basisRow0[1];
-  sVar6 = (modelNode->worldTransform).basisRow0[2];
-  GVar7 = (modelNode->worldTransform).translation.x;
-  sVar8 = (modelNode->worldTransform).basisRow1[0];
-  sVar9 = (modelNode->worldTransform).basisRow1[1];
-  sVar10 = (modelNode->worldTransform).basisRow1[2];
-  GVar11 = (modelNode->worldTransform).translation.y;
-  sVar12 = (modelNode->worldTransform).basisRow2[0];
-  sVar13 = (modelNode->worldTransform).basisRow2[1];
-  sVar14 = (modelNode->worldTransform).basisRow2[2];
-  GVar15 = (modelNode->worldTransform).translation.z;
-  if ((uVar16 & 1) != 0) {
+  uVar1 = *(uint *)(meshGroup + 0xc);
+  iVar17 = *(int *)(meshGroup + 4);
+  AVar2 = (modelNode->modelPayload).worldRotationAngle0;
+  AVar3 = (modelNode->modelPayload).worldRotationAngle1;
+  AVar4 = (modelNode->modelPayload).worldRotationAngle2;
+  sVar5 = (modelNode->worldTransform).basisRow0[0];
+  sVar6 = (modelNode->worldTransform).basisRow0[1];
+  sVar7 = (modelNode->worldTransform).basisRow0[2];
+  GVar8 = (modelNode->worldTransform).translation.x;
+  sVar9 = (modelNode->worldTransform).basisRow1[0];
+  sVar10 = (modelNode->worldTransform).basisRow1[1];
+  sVar11 = (modelNode->worldTransform).basisRow1[2];
+  GVar12 = (modelNode->worldTransform).translation.y;
+  sVar13 = (modelNode->worldTransform).basisRow2[0];
+  sVar14 = (modelNode->worldTransform).basisRow2[1];
+  sVar15 = (modelNode->worldTransform).basisRow2[2];
+  GVar16 = (modelNode->worldTransform).translation.z;
+  if ((uVar1 & 1) != 0) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
-    uVar16 = extraout_EAX;
-    incomingEcxValue = extraout_ECX;
-    param_2 = extraout_EDX;
   }
-  if ((uVar16 & 2) != 0) {
+  if ((uVar1 & 2) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
-    incomingEcxValue = extraout_ECX_00;
-    param_2 = extraout_EDX_00;
   }
   meshGroup_00 = (int *)(meshGroup + 0x20);
-  uVar16 = (modelNode->modelPayload).meshGroupMask;
-  for (; incomingEcxValue != 0; incomingEcxValue = incomingEcxValue + -1) {
-    if ((meshGroup_00[1] & uVar16) != 0) {
+  uVar1 = (modelNode->modelPayload).meshGroupMask;
+  for (; iVar17 != 0; iVar17 = iVar17 + -1) {
+    if ((meshGroup_00[1] & uVar1) != 0) {
       ModelRender_SubmitMeshTriangles
-                (incomingEcxValue,param_2,facingThresholdQ12,(ModelMeshGroupAddress32)meshGroup_00,
-                 modelNode);
-      uVar16 = extraout_EAX_00;
-      incomingEcxValue = extraout_ECX_01;
-      param_2 = extraout_EDX_01;
+                (facingThresholdQ12,(ModelMeshGroupAddress32)meshGroup_00,modelNode);
     }
     meshGroup_00 = (int *)((int)meshGroup_00 + *meshGroup_00);
   }
-  (modelNode->worldTransform).translation.z = GVar15;
-  (modelNode->worldTransform).basisRow2[2] = sVar14;
-  (modelNode->worldTransform).basisRow2[1] = sVar13;
-  (modelNode->worldTransform).basisRow2[0] = sVar12;
-  (modelNode->worldTransform).translation.y = GVar11;
-  (modelNode->worldTransform).basisRow1[2] = sVar10;
-  (modelNode->worldTransform).basisRow1[1] = sVar9;
-  (modelNode->worldTransform).basisRow1[0] = sVar8;
-  (modelNode->worldTransform).translation.x = GVar7;
-  (modelNode->worldTransform).basisRow0[2] = sVar6;
-  (modelNode->worldTransform).basisRow0[1] = sVar5;
-  (modelNode->worldTransform).basisRow0[0] = sVar4;
-  (modelNode->modelPayload).worldRotationAngle2 = AVar3;
-  (modelNode->modelPayload).worldRotationAngle1 = AVar2;
-  (modelNode->modelPayload).worldRotationAngle0 = AVar1;
+  (modelNode->worldTransform).translation.z = GVar16;
+  (modelNode->worldTransform).basisRow2[2] = sVar15;
+  (modelNode->worldTransform).basisRow2[1] = sVar14;
+  (modelNode->worldTransform).basisRow2[0] = sVar13;
+  (modelNode->worldTransform).translation.y = GVar12;
+  (modelNode->worldTransform).basisRow1[2] = sVar11;
+  (modelNode->worldTransform).basisRow1[1] = sVar10;
+  (modelNode->worldTransform).basisRow1[0] = sVar9;
+  (modelNode->worldTransform).translation.x = GVar8;
+  (modelNode->worldTransform).basisRow0[2] = sVar7;
+  (modelNode->worldTransform).basisRow0[1] = sVar6;
+  (modelNode->worldTransform).basisRow0[0] = sVar5;
+  (modelNode->modelPayload).worldRotationAngle2 = AVar4;
+  (modelNode->modelPayload).worldRotationAngle1 = AVar3;
+  (modelNode->modelPayload).worldRotationAngle0 = AVar2;
   return;
 }
+
 
 /* Address: 0x004BE1F0.
    Ownership: graphics/render/model.
@@ -112,81 +102,57 @@ ModelRender_DrawMeshGroupsWithTemporaryTransform
    Cross-module calls: ModelNodeRuntime_BuildViewFacingRotation [world/model/hierarchy],
    ModelNodeRuntime_BuildBillboardRotation [world/model/hierarchy].
 */
-undefined4 __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 ModelRender_DrawMeshGroupsAlternatePath
-          (undefined4 param_1,undefined4 param_2,int param_3,ModelRuntimeNode *param_4)
+          (ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  undefined4 in_EAX;
-  uint extraout_EAX;
-  uint extraout_EAX_00;
   uint uVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
   int iVar2;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  undefined4 extraout_EDX_01;
-  int *piVar3;
+  int *meshGroup_00;
   
-  uVar1 = *(uint *)(param_3 + 0xc);
-  iVar2 = *(int *)(param_3 + 4);
+  uVar1 = *(uint *)(meshGroup + 0xc);
+  iVar2 = *(int *)(meshGroup + 4);
   if ((uVar1 & 1) != 0) {
-    ModelNodeRuntime_BuildViewFacingRotation(param_4);
-    uVar1 = extraout_EAX;
-    iVar2 = extraout_ECX;
-    param_2 = extraout_EDX;
+    ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
   if ((uVar1 & 2) != 0) {
-    ModelNodeRuntime_BuildBillboardRotation(param_4);
-    iVar2 = extraout_ECX_00;
-    param_2 = extraout_EDX_00;
+    ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  piVar3 = (int *)(param_3 + 0x20);
-  uVar1 = (param_4->modelPayload).meshGroupMask;
+  meshGroup_00 = (int *)(meshGroup + 0x20);
+  uVar1 = (modelNode->modelPayload).meshGroupMask;
   for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-    if ((piVar3[1] & uVar1) != 0) {
-      ModelRender_SubmitMeshTrianglesAlternatePath(iVar2,param_2,(int)piVar3,param_4);
-      uVar1 = extraout_EAX_00;
-      iVar2 = extraout_ECX_01;
-      param_2 = extraout_EDX_01;
+    if ((meshGroup_00[1] & uVar1) != 0) {
+      ModelRender_SubmitMeshTrianglesAlternatePath((ModelMeshGroupAddress32)meshGroup_00,modelNode);
     }
-    piVar3 = (int *)((int)piVar3 + *piVar3);
+    meshGroup_00 = (int *)((int)meshGroup_00 + *meshGroup_00);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0050A5C0.
    Ownership: graphics/render/model.
    Purpose: Handles model projected bounds accumulate hierarchy recursive.
    Local calls: ModelProjectedBounds_AccumulateNode.
 */
-undefined4 __fastcall
+void __thandor_void_preserve_eax_ecx
 ModelProjectedBounds_AccumulateHierarchyRecursive
-          (undefined4 param_1,undefined4 param_2,int *param_3,int param_4)
+          (ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
 
 {
-  undefined4 in_EAX;
-  int extraout_ECX;
-  int iVar1;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  undefined4 uVar2;
+  dword dVar1;
   
-  ModelProjectedBounds_AccumulateNode(param_1,param_2,param_3,param_4);
-  uVar2 = extraout_EDX;
-  for (iVar1 = *(int *)(param_4 + 200); iVar1 != 0; iVar1 = iVar1 + -1) {
-    if (*(int *)(param_4 + 0xcc) != 0) {
-      ModelProjectedBounds_AccumulateHierarchyRecursive
-                (iVar1,uVar2,param_3,*(int *)(param_4 + 0xcc));
-      iVar1 = extraout_ECX;
-      uVar2 = extraout_EDX_00;
+  ModelProjectedBounds_AccumulateNode(bounds,modelNode);
+  for (dVar1 = modelNode->childCount; dVar1 != 0; dVar1 = dVar1 - 1) {
+    if (modelNode->childNodes[0] != (ModelRuntimeNode *)0x0) {
+      ModelProjectedBounds_AccumulateHierarchyRecursive(bounds,modelNode->childNodes[0]);
     }
-    param_4 = param_4 + 4;
+    modelNode = (ModelRuntimeNode *)&(modelNode->common).nextNode;
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x004BD4B0.
    Ownership: graphics/render/model.
@@ -200,87 +166,86 @@ ModelProjectedBounds_AccumulateHierarchyRecursive
    Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
    [graphics/core/runtime].
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 ModelRender_PrepareProjectedVertex
           (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 meshGroup,GraphicsFixedVec3 *vertex)
 
 {
-  longlong lVar1;
-  undefined4 in_EAX;
-  PackedArgb32 PVar2;
-  uint uVar3;
-  uint extraout_ECX;
-  undefined4 in_EDX;
-  GraphicsFixedVec3 *viewPoint;
+  uint uVar1;
+  longlong lVar2;
+  PackedArgb32 PVar3;
+  uint uVar4;
   GraphicsFixedVec3 *surfaceNormalQ12;
   GraphicsProjectedPointEdxEax8 projectedScreenCoordinatePair;
-  GraphicsWorldCoordinateQ12 GVar4;
+  GraphicsWorldCoordinateQ12 GVar5;
   longlong scaledVertexCoordinateProduct;
   GraphicsWorldCoordinateQ12 savedVertexZQ12;
   GraphicsWorldCoordinateQ12 savedVertexYQ12;
   
-  uVar3 = *(uint *)(meshGroup + 0x34) & 0x8e00;
+  uVar1 = *(uint *)(meshGroup + 0x34);
   if (vertex[4].x == -0x80000000) {
-    GVar4 = vertex->x;
+    GVar5 = vertex->x;
     savedVertexYQ12 = vertex->y;
     savedVertexZQ12 = vertex->z;
-    uVar3 = (uint)modelNode->renderDepthBiasOrState >> 1;
+    uVar4 = (uint)modelNode->renderDepthBiasOrState >> 1;
     if (-1 < vertex->z) {
       if (vertex->z != 0) {
-        vertex->z = vertex->z + uVar3;
+        vertex->z = vertex->z + uVar4;
       }
-      vertex->z = vertex->z + uVar3;
+      vertex->z = vertex->z + uVar4;
     }
     if ((modelNode->runtimeFlags & 0x800) != 0) {
       scaledVertexCoordinateProduct = (longlong)vertex->x * (longlong)modelNode->modelScaleQ12;
       vertex->x = (int)((ulonglong)scaledVertexCoordinateProduct >> 0x20) << 0x14 |
                   (uint)scaledVertexCoordinateProduct >> 0xc;
-      lVar1 = (longlong)vertex->y * (longlong)modelNode->modelScaleQ12;
-      vertex->y = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-      lVar1 = (longlong)vertex->z * (longlong)modelNode->modelScaleQ12;
-      vertex->z = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
+      lVar2 = (longlong)vertex->y * (longlong)modelNode->modelScaleQ12;
+      vertex->y = (int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc;
+      lVar2 = (longlong)vertex->z * (longlong)modelNode->modelScaleQ12;
+      vertex->z = (int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc;
     }
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
-    projectedScreenCoordinatePair = Graphics_ProjectViewPoint(viewPoint);
+    projectedScreenCoordinatePair =
+         (GraphicsProjectedPointEdxEax8)Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z)
+    ;
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;
-    vertex->x = GVar4;
+    vertex->x = GVar5;
     vertex[4].x = (int)projectedScreenCoordinatePair;
     vertex[4].y = (int)(projectedScreenCoordinatePair >> 0x20);
-    uVar3 = extraout_ECX;
   }
-  else if ((uVar3 == vertex[4].z) && ((*(uint *)(meshGroup + 0x34) & 0x8000) == 0)) {
-    return CONCAT44(in_EDX,in_EAX);
+  else if (((uVar1 & 0x8e00) == vertex[4].z) && ((uVar1 & 0x8000) == 0)) {
+    return;
   }
-  vertex[4].z = uVar3;
-  PVar2 = modelNode->tintArgb;
+  vertex[4].z = uVar1 & 0x8e00;
+  PVar3 = modelNode->tintArgb;
   surfaceNormalQ12 = (GraphicsFixedVec3 *)&vertex[1].y;
-  if ((uVar3 & 0x200) != 0) {
-    vertex[3].z = PVar2;
-    return CONCAT44(in_EDX,in_EAX);
+  if ((uVar1 & 0x200) != 0) {
+    vertex[3].z = PVar3;
+    return;
   }
-  if ((uVar3 & 0x800) == 0) {
-    if ((uVar3 & 0x8000) != 0) {
+  if ((uVar1 & 0x800) == 0) {
+    if ((uVar1 & 0x8000) != 0) {
       surfaceNormalQ12 = (GraphicsFixedVec3 *)(meshGroup + 0x24);
     }
-    PVar2 = ModelRender_ComputeVertexIntensityDefaultPath
+    PVar3 = ModelRender_ComputeVertexIntensityDefaultPath
                       (vertex[2].y,&vertex[2].z,0x4cb1a0,g_SceneBoundsFixed.bound5,
                        g_SceneBoundsFixed.bound4,
-                       (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,PVar2,
+                       (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,PVar3,
                        surfaceNormalQ12);
-    vertex[3].z = PVar2;
-    return CONCAT44(in_EDX,in_EAX);
+    vertex[3].z = PVar3;
+    return;
   }
-  PVar2 = ModelRender_ComputeVertexIntensityScaledPath
+  PVar3 = ModelRender_ComputeVertexIntensityScaledPath
                     (vertex[2].y,&vertex[2].z,
                      ((modelNode->modelPayload).modelResource)->lightingScaleQ12,
                      g_SceneBoundsFixed.bound7,g_SceneBoundsFixed.bound6,
-                     (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,PVar2,vertex);
-  vertex[3].z = PVar2;
-  return CONCAT44(in_EDX,in_EAX);
+                     (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,PVar3,vertex);
+  vertex[3].z = PVar3;
+  return;
 }
+
 
 /* Address: 0x004BD9B0.
    Ownership: graphics/render/model.
@@ -291,87 +256,72 @@ ModelRender_PrepareProjectedVertex
    GraphicsPrimitiveQueue_SetVertexColors [graphics/render/primitives], GraphicsPrimitiveQueue_SetMaterial
    [graphics/render/primitives], GraphicsPrimitiveQueue_OffsetTextureCoordinates [graphics/render/primitives].
 */
-undefined8 __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitTriangle
-          (undefined4 incomingEcxValue,undefined4 preservedEdxValue,Q12 facingThresholdQ12,
-          GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
+          (Q12 facingThresholdQ12,GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
 
 {
   GraphicsProjectedVertexSource *vertex;
-  int iVar1;
-  uint uVar2;
-  uint uVar3;
-  GraphicsTextureSet *pGVar4;
-  GraphicsPaletteAsset *pGVar5;
-  undefined4 in_EAX;
-  uint uVar6;
-  GraphicsFixedVec3 *vertex_00;
-  int extraout_ECX;
-  GraphicsSubresourceIndex extraout_ECX_00;
-  GraphicsSubresourceIndex GVar7;
-  GraphicsSubresourceIndex extraout_ECX_01;
-  int iVar8;
-  bool bVar9;
-  undefined8 uVar10;
+  GraphicsProjectedVertexSource *vertex_00;
+  GraphicsProjectedVertexSource *vertex_01;
+  GraphicsTextureSet *pGVar1;
+  GraphicsPaletteAsset *pGVar2;
+  GraphicsSubresourceIndex GVar3;
+  sdword sVar4;
+  uint uVar5;
+  bool bVar6;
   GraphicsTextureSetEntry *textureEntry;
   
-  uVar10 = ModelRender_ComputeFacingDotQ12(triangle);
-  if (((triangle->renderFlags & 0x400) != 0) || ((int)uVar10 < facingThresholdQ12)) {
+  sVar4 = ModelRender_ComputeFacingDotQ12(triangle);
+  if (((triangle->renderFlags & 0x400) != 0) || (sVar4 < facingThresholdQ12)) {
     vertex = triangle->vertex0;
+    vertex_00 = triangle->vertex1;
+    vertex_01 = triangle->vertex2;
     ModelRender_PrepareProjectedVertex
               (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)vertex);
-    uVar10 = ModelRender_PrepareProjectedVertex
-                       (modelNode,(ModelMeshGroupAddress32)triangle,vertex_00);
-    uVar10 = ModelRender_PrepareProjectedVertex
-                       (modelNode,(ModelMeshGroupAddress32)triangle,
-                        (GraphicsFixedVec3 *)((ulonglong)uVar10 >> 0x20));
-    iVar8 = (int)((ulonglong)uVar10 >> 0x20);
-    iVar1 = *(int *)(iVar8 + 0x30);
+    ModelRender_PrepareProjectedVertex
+              (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)vertex_00);
+    ModelRender_PrepareProjectedVertex
+              (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)vertex_01);
     if (((g_ProjectionClipRect.minX <= vertex->screenX) ||
-        ((g_ProjectionClipRect.minX <= *(int *)(extraout_ECX + 0x30) ||
-         (g_ProjectionClipRect.minX <= iVar1)))) &&
+        ((g_ProjectionClipRect.minX <= vertex_00->screenX ||
+         (g_ProjectionClipRect.minX <= vertex_01->screenX)))) &&
        ((vertex->screenX < g_ProjectionClipRect.maxX ||
-        ((*(int *)(extraout_ECX + 0x30) < g_ProjectionClipRect.maxX ||
-         (iVar1 < g_ProjectionClipRect.maxX)))))) {
-      uVar6 = vertex->screenY;
-      uVar2 = *(uint *)(extraout_ECX + 0x34);
-      uVar3 = *(uint *)(iVar8 + 0x34);
-      if (((g_ProjectionClipRect.minY <= (int)uVar6) ||
-          ((g_ProjectionClipRect.minY <= (int)uVar2 || (g_ProjectionClipRect.minY <= (int)uVar3))))
-         && ((bVar9 = uVar6 < (uint)g_ProjectionClipRect.maxY,
-             (int)uVar6 < g_ProjectionClipRect.maxY ||
-             ((bVar9 = uVar2 < (uint)g_ProjectionClipRect.maxY,
-              (int)uVar2 < g_ProjectionClipRect.maxY ||
-              (bVar9 = uVar3 < (uint)g_ProjectionClipRect.maxY,
-              (int)uVar3 < g_ProjectionClipRect.maxY)))))) {
-        GraphicsPrimitiveQueue_AppendTriangle
-                  (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
-                   triangle->vertex0,g_ActivePrimitiveQueue);
-        if (!bVar9) {
+        ((vertex_00->screenX < g_ProjectionClipRect.maxX ||
+         (vertex_01->screenX < g_ProjectionClipRect.maxX)))))) {
+      if (((g_ProjectionClipRect.minY <= vertex->screenY) ||
+          ((g_ProjectionClipRect.minY <= vertex_00->screenY ||
+           (g_ProjectionClipRect.minY <= vertex_01->screenY)))) &&
+         ((vertex->screenY < g_ProjectionClipRect.maxY ||
+          ((vertex_00->screenY < g_ProjectionClipRect.maxY ||
+           (vertex_01->screenY < g_ProjectionClipRect.maxY)))))) {
+        bVar6 = GraphicsPrimitiveQueue_AppendTriangle
+                          (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
+                           triangle->vertex0,g_ActivePrimitiveQueue);
+        if (!bVar6) {
           GraphicsPrimitiveQueue_SetVertexColors
-                    (triangle->vertex2->reserved2C,triangle->vertex1->reserved2C,
-                     triangle->vertex0->reserved2C,g_ActivePrimitiveQueue);
-          pGVar4 = (modelNode->modelPayload).textureSet;
+                    (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
+                     triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
+          pGVar1 = (modelNode->modelPayload).textureSet;
           textureEntry = (GraphicsTextureSetEntry *)0x0;
-          if ((pGVar4 != (GraphicsTextureSet *)0x0) &&
-             (triangle->subresourceIndex < pGVar4->subresourceCount)) {
-            textureEntry = pGVar4->entries +
+          if ((pGVar1 != (GraphicsTextureSet *)0x0) &&
+             (triangle->subresourceIndex < pGVar1->subresourceCount)) {
+            textureEntry = pGVar1->entries +
                            triangle->subresourceIndex + modelNode->textureSubresourceBaseIndex;
           }
-          pGVar5 = (modelNode->modelPayload).paletteAsset;
-          if ((pGVar5 == (GraphicsPaletteAsset *)0x0) ||
-             (uVar6 = triangle->renderFlags & 0x1ff, pGVar5->paletteBankCount <= uVar6)) {
+          pGVar2 = (modelNode->modelPayload).paletteAsset;
+          if ((pGVar2 == (GraphicsPaletteAsset *)0x0) ||
+             (uVar5 = triangle->renderFlags & 0x1ff, pGVar2->paletteBankCount <= uVar5)) {
             GraphicsPrimitiveQueue_SetMaterial(0xffffffff,textureEntry,g_ActivePrimitiveQueue);
-            GVar7 = triangle->subresourceIndex;
+            GVar3 = triangle->subresourceIndex;
             if ((modelNode->runtimeFlags & 0x80) != 0) {
-              if (GVar7 == modelNode->primaryAnimatedSubresourceIndex) {
+              if (GVar3 == modelNode->primaryAnimatedSubresourceIndex) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,
                            g_ActivePrimitiveQueue);
-                GVar7 = extraout_ECX_01;
               }
               if (((modelNode->runtimeFlags & 0x400) != 0) &&
-                 (GVar7 == modelNode->secondaryAnimatedSubresourceIndex)) {
+                 (GVar3 == modelNode->secondaryAnimatedSubresourceIndex)) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,
                            g_ActivePrimitiveQueue);
@@ -380,21 +330,20 @@ ModelRender_SubmitTriangle
           }
           else {
             GraphicsPrimitiveQueue_SetMaterial
-                      (pGVar5->paletteEntries[uVar6].argb8888,textureEntry,g_ActivePrimitiveQueue);
-            GVar7 = triangle->subresourceIndex;
+                      (pGVar2->paletteEntries[uVar5].argb8888,textureEntry,g_ActivePrimitiveQueue);
+            GVar3 = triangle->subresourceIndex;
             if ((modelNode->runtimeFlags & 0x80) != 0) {
-              if (GVar7 == modelNode->primaryAnimatedSubresourceIndex) {
+              if (GVar3 == modelNode->primaryAnimatedSubresourceIndex) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,
                            g_ActivePrimitiveQueue);
-                GVar7 = extraout_ECX_00;
               }
               if (((modelNode->runtimeFlags & 0x400) != 0) &&
-                 (GVar7 == modelNode->secondaryAnimatedSubresourceIndex)) {
+                 (GVar3 == modelNode->secondaryAnimatedSubresourceIndex)) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,
                            g_ActivePrimitiveQueue);
-                return CONCAT44(preservedEdxValue,in_EAX);
+                return;
               }
             }
           }
@@ -402,8 +351,9 @@ ModelRender_SubmitTriangle
       }
     }
   }
-  return CONCAT44(preservedEdxValue,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004BDC20.
    Ownership: graphics/render/model.
@@ -413,65 +363,56 @@ ModelRender_SubmitTriangle
    unchanged.
    Local calls: ModelRender_PrepareViewDirections, ModelRender_SubmitTriangle.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitMeshTriangles
-          (undefined4 incomingEcxValue,undefined4 preservedEdxValue,Q12 facingThresholdQ12,
-          ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
+          (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  int extraout_ECX;
   int iVar1;
-  int extraout_ECX_00;
   GraphicsTriangleInput *triangle;
-  undefined8 uVar2;
   
+  iVar1 = *(int *)(meshGroup + 8);
   ModelRender_PrepareViewDirections(modelNode);
   triangle = (GraphicsTriangleInput *)(meshGroup + 0x20);
-  for (iVar1 = extraout_ECX; iVar1 != 0; iVar1 = iVar1 + -1) {
+  for (; iVar1 != 0; iVar1 = iVar1 + -1) {
     triangle->subresourceIndex = 0x80000000;
     triangle = (GraphicsTriangleInput *)&triangle[1].textureV0;
   }
-  iVar1 = *(int *)(meshGroup + 0xc);
-  while (iVar1 != 0) {
-    uVar2 = ModelRender_SubmitTriangle(iVar1,modelNode,facingThresholdQ12,triangle,modelNode);
-    modelNode = (ModelRuntimeNode *)((ulonglong)uVar2 >> 0x20);
+  for (iVar1 = *(int *)(meshGroup + 0xc); iVar1 != 0; iVar1 = iVar1 + -1) {
+    ModelRender_SubmitTriangle(facingThresholdQ12,triangle,modelNode);
     triangle = (GraphicsTriangleInput *)&triangle[1].textureV0;
-    iVar1 = extraout_ECX_00 + -1;
   }
   return;
 }
+
 
 /* Address: 0x004BE180.
    Ownership: graphics/render/model.
    Purpose: Handles model render submit mesh triangles alternate path.
    Local calls: ModelRender_PrepareViewDirections, ModelRender_SubmitTriangleAlternatePath.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitMeshTrianglesAlternatePath
-          (undefined4 param_1,undefined4 param_2,int param_3,ModelRuntimeNode *param_4)
+          (ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
-  int extraout_ECX;
   int iVar1;
-  int extraout_ECX_00;
-  GraphicsTriangleInput *pGVar2;
-  undefined8 uVar3;
+  GraphicsTriangleInput *triangle;
   
-  ModelRender_PrepareViewDirections(param_4);
-  pGVar2 = (GraphicsTriangleInput *)(param_3 + 0x20);
-  for (iVar1 = extraout_ECX; iVar1 != 0; iVar1 = iVar1 + -1) {
-    pGVar2->subresourceIndex = 0x80000000;
-    pGVar2 = (GraphicsTriangleInput *)&pGVar2[1].textureV0;
+  iVar1 = *(int *)(meshGroup + 8);
+  ModelRender_PrepareViewDirections(modelNode);
+  triangle = (GraphicsTriangleInput *)(meshGroup + 0x20);
+  for (; iVar1 != 0; iVar1 = iVar1 + -1) {
+    triangle->subresourceIndex = 0x80000000;
+    triangle = (GraphicsTriangleInput *)&triangle[1].textureV0;
   }
-  if (*(int *)(param_3 + 0xc) != 0) {
-    do {
-      uVar3 = ModelRender_SubmitTriangleAlternatePath(pGVar2,(int)param_4);
-      param_4 = (ModelRuntimeNode *)((ulonglong)uVar3 >> 0x20);
-      pGVar2 = (GraphicsTriangleInput *)&pGVar2[1].textureV0;
-    } while (extraout_ECX_00 != 1);
+  for (iVar1 = *(int *)(meshGroup + 0xc); iVar1 != 0; iVar1 = iVar1 + -1) {
+    ModelRender_SubmitTriangleAlternatePath(triangle,modelNode);
+    triangle = (GraphicsTriangleInput *)&triangle[1].textureV0;
   }
   return;
 }
+
 
 /* Address: 0x004BD6B0.
    Ownership: graphics/render/model.
@@ -480,57 +421,54 @@ ModelRender_SubmitMeshTrianglesAlternatePath
    Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
    [graphics/core/runtime].
 */
-undefined8
-ModelRender_PrepareProjectedVertexAlternatePath(int param_1,int param_2,GraphicsFixedVec3 *param_3)
+bool __thandor_cf_preserve_eax_ecx_edx
+ModelRender_PrepareProjectedVertexAlternatePath
+          (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex)
 
 {
   uint uVar1;
-  undefined4 in_EAX;
+  uint materialPackedColor;
   PackedArgb32 PVar2;
-  uint uVar3;
-  uint extraout_ECX;
-  undefined4 in_EDX;
-  GraphicsFixedVec3 *viewPoint;
-  GraphicsFixedVec3 *pGVar4;
-  GraphicsProjectedPointEdxEax8 GVar5;
+  GraphicsFixedVec3 *surfaceNormalQ12;
+  GraphicsProjectedPointPair GVar3;
   
-  uVar3 = *(uint *)(param_2 + 0x34) & 0x8e00;
-  if (param_3[4].x == -0x80000000) {
+  uVar1 = triangle->renderFlags;
+  if (vertex[4].x == -0x80000000) {
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)&param_3[2].z,param_3,
+              ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
-    if (viewPoint->z < (int)g_ProjectionScaleFixed) {
+    if (vertex[3].y < (int)g_ProjectionScaleFixed) {
 LAB_004bd788:
-      param_3[4].x = 0x7fffffff;
-      return CONCAT44(in_EDX,in_EAX);
+      vertex[4].x = 0x7fffffff;
+      return true;
     }
-    GVar5 = Graphics_ProjectViewPoint(viewPoint);
-    param_3[4].x = (int)GVar5;
-    param_3[4].y = (int)(GVar5 >> 0x20);
-    uVar3 = extraout_ECX;
+    GVar3 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z);
+    vertex[4].x = GVar3.projectedX;
+    vertex[4].y = GVar3.projectedY;
   }
   else {
-    if (param_3[4].x == 0x7fffffff) goto LAB_004bd788;
-    if ((uVar3 == param_3[4].z) && ((*(uint *)(param_2 + 0x34) & 0x8000) == 0)) {
-      return CONCAT44(in_EDX,in_EAX);
+    if (vertex[4].x == 0x7fffffff) goto LAB_004bd788;
+    if (((uVar1 & 0x8e00) == vertex[4].z) && ((uVar1 & 0x8000) == 0)) {
+      return false;
     }
   }
-  uVar1 = *(uint *)(param_1 + 0x58);
-  param_3[4].z = uVar3;
-  if ((uVar3 & 0x200) == 0) {
-    pGVar4 = (GraphicsFixedVec3 *)&param_3[1].y;
-    if ((uVar3 & 0x8000) != 0) {
-      pGVar4 = (GraphicsFixedVec3 *)(param_2 + 0x24);
+  materialPackedColor = modelNode->tintArgb;
+  vertex[4].z = uVar1 & 0x8e00;
+  if ((uVar1 & 0x200) == 0) {
+    surfaceNormalQ12 = (GraphicsFixedVec3 *)&vertex[1].y;
+    if ((uVar1 & 0x8000) != 0) {
+      surfaceNormalQ12 = (GraphicsFixedVec3 *)&triangle->planeNormalXQ12;
     }
     PVar2 = ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
-                      (param_3[2].y,(GraphicsFixedVec3 *)&param_3[2].z,g_SceneBoundsFixed.bound5,
-                       uVar1,pGVar4);
-    param_3[3].z = PVar2;
-    return CONCAT44(in_EDX,in_EAX);
+                      (vertex[2].y,(GraphicsFixedVec3 *)&vertex[2].z,g_SceneBoundsFixed.bound5,
+                       materialPackedColor,surfaceNormalQ12);
+    vertex[3].z = PVar2;
+    return false;
   }
-  param_3[3].z = uVar1 | 0xffffff;
-  return CONCAT44(in_EDX,in_EAX);
+  vertex[3].z = materialPackedColor | 0xffffff;
+  return false;
 }
+
 
 /* Address: 0x004BDFB0.
    Ownership: graphics/render/model.
@@ -540,73 +478,63 @@ LAB_004bd788:
    GraphicsPrimitiveQueue_SetVertexColors [graphics/render/primitives], GraphicsPrimitiveQueue_SetMaterial
    [graphics/render/primitives].
 */
-undefined8 ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *param_1,int param_2)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
 
 {
-  GraphicsProjectedVertexSource *pGVar1;
-  int iVar2;
+  GraphicsProjectedVertexSource *vertex;
+  GraphicsProjectedVertexSource *vertex_00;
+  GraphicsProjectedVertexSource *vertex_01;
+  GraphicsTextureSet *pGVar1;
+  GraphicsPaletteAsset *pGVar2;
   uint uVar3;
-  uint uVar4;
-  undefined4 in_EAX;
-  uint uVar5;
-  GraphicsFixedVec3 *extraout_ECX;
-  int extraout_ECX_00;
-  undefined4 in_EDX;
-  int iVar6;
-  undefined1 in_CF;
-  bool bVar7;
-  undefined8 uVar8;
+  bool bVar4;
   GraphicsTextureSetEntry *textureEntry;
   
-  pGVar1 = param_1->vertex0;
-  ModelRender_PrepareProjectedVertexAlternatePath(param_2,(int)param_1,(GraphicsFixedVec3 *)pGVar1);
-  if (!(bool)in_CF) {
-    uVar8 = ModelRender_PrepareProjectedVertexAlternatePath(param_2,(int)param_1,extraout_ECX);
-    if (!(bool)in_CF) {
-      uVar8 = ModelRender_PrepareProjectedVertexAlternatePath
-                        (param_2,(int)param_1,(GraphicsFixedVec3 *)((ulonglong)uVar8 >> 0x20));
-      iVar6 = (int)((ulonglong)uVar8 >> 0x20);
-      if (!(bool)in_CF) {
-        iVar2 = *(int *)(iVar6 + 0x30);
-        if ((((g_ProjectionClipRect.minX <= pGVar1->screenX) ||
-             (g_ProjectionClipRect.minX <= *(int *)(extraout_ECX_00 + 0x30))) ||
-            (g_ProjectionClipRect.minX <= iVar2)) &&
-           (((pGVar1->screenX < g_ProjectionClipRect.maxX ||
-             (*(int *)(extraout_ECX_00 + 0x30) < g_ProjectionClipRect.maxX)) ||
-            (iVar2 < g_ProjectionClipRect.maxX)))) {
-          uVar5 = pGVar1->screenY;
-          uVar3 = *(uint *)(extraout_ECX_00 + 0x34);
-          uVar4 = *(uint *)(iVar6 + 0x34);
-          if ((((g_ProjectionClipRect.minY <= (int)uVar5) ||
-               (g_ProjectionClipRect.minY <= (int)uVar3)) ||
-              (g_ProjectionClipRect.minY <= (int)uVar4)) &&
-             (((bVar7 = uVar5 < (uint)g_ProjectionClipRect.maxY,
-               (int)uVar5 < g_ProjectionClipRect.maxY ||
-               (bVar7 = uVar3 < (uint)g_ProjectionClipRect.maxY,
-               (int)uVar3 < g_ProjectionClipRect.maxY)) ||
-              (bVar7 = uVar4 < (uint)g_ProjectionClipRect.maxY,
-              (int)uVar4 < g_ProjectionClipRect.maxY)))) {
-            GraphicsPrimitiveQueue_AppendTriangle
-                      (param_1->renderFlags,param_1,param_1->vertex2,param_1->vertex1,
-                       param_1->vertex0,g_ActivePrimitiveQueue);
-            if (!bVar7) {
+  vertex = triangle->vertex0;
+  vertex_00 = triangle->vertex1;
+  vertex_01 = triangle->vertex2;
+  bVar4 = ModelRender_PrepareProjectedVertexAlternatePath
+                    (modelNode,triangle,(GraphicsFixedVec3 *)vertex);
+  if (!bVar4) {
+    bVar4 = ModelRender_PrepareProjectedVertexAlternatePath
+                      (modelNode,triangle,(GraphicsFixedVec3 *)vertex_00);
+    if (!bVar4) {
+      bVar4 = ModelRender_PrepareProjectedVertexAlternatePath
+                        (modelNode,triangle,(GraphicsFixedVec3 *)vertex_01);
+      if (!bVar4) {
+        if ((((g_ProjectionClipRect.minX <= vertex->screenX) ||
+             (g_ProjectionClipRect.minX <= vertex_00->screenX)) ||
+            (g_ProjectionClipRect.minX <= vertex_01->screenX)) &&
+           (((vertex->screenX < g_ProjectionClipRect.maxX ||
+             (vertex_00->screenX < g_ProjectionClipRect.maxX)) ||
+            (vertex_01->screenX < g_ProjectionClipRect.maxX)))) {
+          if ((((g_ProjectionClipRect.minY <= vertex->screenY) ||
+               (g_ProjectionClipRect.minY <= vertex_00->screenY)) ||
+              (g_ProjectionClipRect.minY <= vertex_01->screenY)) &&
+             (((vertex->screenY < g_ProjectionClipRect.maxY ||
+               (vertex_00->screenY < g_ProjectionClipRect.maxY)) ||
+              (vertex_01->screenY < g_ProjectionClipRect.maxY)))) {
+            bVar4 = GraphicsPrimitiveQueue_AppendTriangle
+                              (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
+                               triangle->vertex0,g_ActivePrimitiveQueue);
+            if (!bVar4) {
               GraphicsPrimitiveQueue_SetVertexColors
-                        (param_1->vertex2->reserved2C,param_1->vertex1->reserved2C,
-                         param_1->vertex0->reserved2C,g_ActivePrimitiveQueue);
-              uVar5 = param_1->subresourceIndex;
+                        (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
+                         triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
+              pGVar1 = (modelNode->modelPayload).textureSet;
+              uVar3 = triangle->subresourceIndex;
               textureEntry = (GraphicsTextureSetEntry *)0x0;
-              if ((uVar5 != 0xffffffff) && (uVar5 < *(uint *)(*(int *)(param_2 + 0x34) + 4))) {
-                textureEntry = (GraphicsTextureSetEntry *)
-                               (*(int *)(param_2 + 0x34) + 8 +
-                               (uVar5 + *(int *)(param_2 + 0x50)) * 0x20);
+              if ((uVar3 != 0xffffffff) && (uVar3 < pGVar1->subresourceCount)) {
+                textureEntry = pGVar1->entries + uVar3 + modelNode->textureSubresourceBaseIndex;
               }
-              iVar6 = *(int *)(param_2 + 0x30);
-              if ((iVar6 != 0) &&
-                 (uVar5 = param_1->renderFlags & 0xffff01ff, uVar5 < *(uint *)(iVar6 + 0xb0))) {
+              pGVar2 = (modelNode->modelPayload).paletteAsset;
+              if ((pGVar2 != (GraphicsPaletteAsset *)0x0) &&
+                 (uVar3 = triangle->renderFlags & 0xffff01ff, uVar3 < pGVar2->paletteBankCount)) {
                 GraphicsPrimitiveQueue_SetMaterial
-                          (*(PackedArgb32 *)(iVar6 + 0x204 + uVar5 * 8),textureEntry,
+                          (pGVar2->paletteEntries[uVar3].alternateModulationColorArgb,textureEntry,
                            g_ActivePrimitiveQueue);
-                return CONCAT44(in_EDX,in_EAX);
+                return;
               }
               GraphicsPrimitiveQueue_SetMaterial(0,textureEntry,g_ActivePrimitiveQueue);
             }
@@ -615,8 +543,9 @@ undefined8 ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *param_
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0050A4A0.
    Ownership: graphics/render/model.
@@ -624,61 +553,65 @@ undefined8 ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *param_
    Local calls: ModelProjectedBounds_ExpandWithCurrentScratchPoint.
    Cross-module calls: FixedTransform_Compose [core/math/fixed].
 */
-void __fastcall
-ModelProjectedBounds_AccumulateNode(undefined4 param_1,undefined4 param_2,int *param_3,int param_4)
+void __thandor_void_preserve_eax_ecx_edx
+ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
 
 {
-  int iVar1;
+  ModelResourceHitTestAndRenderView210 *pMVar1;
   GraphicsWorldCoordinateQ12 GVar2;
-  undefined8 uVar3;
+  GraphicsWorldCoordinateQ12 GVar3;
   
-  iVar1 = *(int *)(param_4 + 0x40);
-  if ((*(int *)(iVar1 + 0xd8) != 0) && ((*(uint *)(iVar1 + 0x20c) & 4) == 0)) {
+  pMVar1 = (modelNode->modelPayload).modelResource;
+  if ((pMVar1->boundingRadiusQ12 != 0) &&
+     ((pMVar1->hitTestFlags20C & MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST) == 0)) {
     FixedTransform_Compose
-              (&g_GraphicsTransformScratchMatrix3x4,(GraphicsFixedMatrix3x4 *)(param_4 + 0x70),
+              (&g_GraphicsTransformScratchMatrix3x4,&modelNode->worldTransform,
                &g_ViewProjectionMatrixFixed);
-    g_GraphicsTransformInputScratchVec3.x = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 0xc0);
-    GVar2 = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 0xc4);
-    g_GraphicsTransformInputScratchVec3.y = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 200);
-    g_GraphicsTransformInputScratchVec3.z = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 0xd0);
-    ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
+    GVar2 = pMVar1->localBoundsX0Q12;
+    GVar3 = pMVar1->localBoundsX1Q12;
+    g_GraphicsTransformInputScratchVec3.y = pMVar1->localBoundsY0Q12;
+    g_GraphicsTransformInputScratchVec3.z = pMVar1->localBoundsZ0Q12;
     g_GraphicsTransformInputScratchVec3.x = GVar2;
-    uVar3 = ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
-    g_GraphicsTransformInputScratchVec3.x = (GraphicsWorldCoordinateQ12)uVar3;
-    g_GraphicsTransformInputScratchVec3.y = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 0xcc);
-    ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.x = GVar3;
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.y = pMVar1->localBoundsY1Q12;
     g_GraphicsTransformInputScratchVec3.x = GVar2;
-    uVar3 = ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
-    g_GraphicsTransformInputScratchVec3.x = (GraphicsWorldCoordinateQ12)uVar3;
-    g_GraphicsTransformInputScratchVec3.y = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 200);
-    g_GraphicsTransformInputScratchVec3.z = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 0xd4);
-    ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.x = GVar3;
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.y = pMVar1->localBoundsY0Q12;
+    g_GraphicsTransformInputScratchVec3.z = pMVar1->localBoundsZ1Q12;
     g_GraphicsTransformInputScratchVec3.x = GVar2;
-    uVar3 = ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
-    g_GraphicsTransformInputScratchVec3.x = (GraphicsWorldCoordinateQ12)uVar3;
-    g_GraphicsTransformInputScratchVec3.y = *(GraphicsWorldCoordinateQ12 *)(iVar1 + 0xcc);
-    ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.x = GVar3;
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.y = pMVar1->localBoundsY1Q12;
     g_GraphicsTransformInputScratchVec3.x = GVar2;
-    ModelProjectedBounds_ExpandWithCurrentScratchPoint(param_3);
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
+    g_GraphicsTransformInputScratchVec3.x = GVar3;
+    ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
   }
   return;
 }
+
 
 /* Address: 0x004BD7E0.
    Ownership: graphics/render/model.
    Purpose: Returns the Q12 dot product between a triangle direction vector and the prepared view direction.
    Cross-module calls: FixedVec3_DotQ12 [core/math/fixed].
 */
-undefined8 ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *modelNodeRuntime)
+sdword __thandor_eax_preserve_ecx_edx
+ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *modelNodeRuntime)
 
 {
   sdword facingDotQ12;
-  undefined4 extraout_EDX;
   
   facingDotQ12 = FixedVec3_DotQ12((GraphicsFixedVec3 *)&modelNodeRuntime->planeNormalXQ12,
                                   (GraphicsFixedVec3 *)&g_ModelViewDirectionLocal);
-  return CONCAT44(extraout_EDX,facingDotQ12);
+  return facingDotQ12;
 }
+
 
 /* Address: 0x004CC710.
    Ownership: graphics/render/model.
@@ -996,115 +929,130 @@ ModelRender_ComputeVertexIntensityScaledPath
 */
 PackedArgb32
 ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
-          (PackedArgb32 param_1,GraphicsFixedVec3 *param_2,PackedArgb32 param_3,PackedArgb32 param_4
-          ,GraphicsFixedVec3 *param_5)
+          (PackedArgb32 vertexPackedColor,GraphicsFixedVec3 *vertexPositionQ12,
+          PackedArgb32 scenePackedColor0,PackedArgb32 materialPackedColor,
+          GraphicsFixedVec3 *surfaceNormalQ12)
 
 {
-  uint uVar1;
-  PackedRgb24 PVar2;
-  longlong lVar3;
-  short sVar4;
+  int iVar1;
+  uint uVar2;
+  PackedRgb24 PVar3;
+  longlong lVar4;
   short sVar5;
   short sVar6;
   short sVar7;
-  ushort uVar8;
-  sdword sVar9;
-  int extraout_ECX;
-  GraphicsShadingRecordCount GVar10;
-  uint extraout_EDX;
-  uint uVar11;
-  int iVar12;
+  short sVar8;
+  ushort uVar9;
+  sdword sVar10;
+  GraphicsShadingRecordCount GVar11;
+  uint uVar12;
+  int iVar13;
   GraphicsShadingRuntimeRecord *shadingRecord1;
-  undefined1 uVar14;
   undefined1 uVar15;
-  undefined8 uVar13;
-  undefined8 extraout_MM0;
   undefined1 uVar16;
+  undefined8 uVar14;
+  undefined8 extraout_MM0;
   undefined1 uVar17;
-  ulonglong uVar18;
+  undefined1 uVar18;
+  ulonglong uVar19;
   
   FixedTransform_ApplyDirection
-            ((GraphicsFixedVec3 *)0x4cc704,param_5,
+            (&g_ModelLightingTransformedSurfaceNormalScratch,surfaceNormalQ12,
              (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
-  uVar15 = (undefined1)(param_3 >> 0x10);
-  uVar14 = (undefined1)(param_3 >> 8);
-  uVar16 = (undefined1)(param_4 >> 0x18);
-  uVar8 = CONCAT11(uVar16,uVar16);
-  uVar17 = (undefined1)(param_4 >> 0x10);
-  uVar16 = (undefined1)(param_4 >> 8);
+  uVar16 = (undefined1)(scenePackedColor0 >> 0x10);
+  uVar15 = (undefined1)(scenePackedColor0 >> 8);
+  uVar17 = (undefined1)(materialPackedColor >> 0x18);
+  uVar9 = CONCAT11(uVar17,uVar17);
+  uVar18 = (undefined1)(materialPackedColor >> 0x10);
+  uVar17 = (undefined1)(materialPackedColor >> 8);
   shadingRecord1 = g_GraphicsShadingNearbyRecords;
-  uVar13 = pmulhw(CONCAT26(0x1fff,CONCAT24((ushort)(CONCAT15(uVar15,CONCAT14(uVar15,param_3)) >>
-                                                   0x23),
-                                           CONCAT22(CONCAT11(uVar14,uVar14) >> 3,
-                                                    CONCAT11((char)param_3,(char)param_3) >> 3))),
-                  CONCAT26(uVar8 >> 3,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(uVar8,uVar17),
-                                                      CONCAT14(uVar17,param_4)) >> 0x20) >> 3,
-                                    CONCAT22(CONCAT11(uVar16,uVar16) >> 3,
-                                             CONCAT11((char)param_4,(char)param_4) >> 3))));
-  uVar18 = (ulonglong)param_1;
-  for (GVar10 = g_GraphicsShadingNearbyRecordCount; GVar10 != 0; GVar10 = GVar10 - 1) {
+  uVar14 = pmulhw(CONCAT26(0x1fff,CONCAT24((ushort)(CONCAT15(uVar16,CONCAT14(uVar16,
+                                                  scenePackedColor0)) >> 0x23),
+                                           CONCAT22(CONCAT11(uVar15,uVar15) >> 3,
+                                                    CONCAT11((char)scenePackedColor0,
+                                                             (char)scenePackedColor0) >> 3))),
+                  CONCAT26(uVar9 >> 3,
+                           CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar18),
+                                                      CONCAT14(uVar18,materialPackedColor)) >> 0x20)
+                                    >> 3,CONCAT22(CONCAT11(uVar17,uVar17) >> 3,
+                                                  CONCAT11((char)materialPackedColor,
+                                                           (char)materialPackedColor) >> 3))));
+  uVar19 = (ulonglong)vertexPackedColor;
+  for (GVar11 = g_GraphicsShadingNearbyRecordCount; GVar11 != 0; GVar11 = GVar11 - 1) {
     if (shadingRecord1->targetRadiusQ12 != 0) {
-      DAT_004cc6f8 = shadingRecord1->worldXQ12 - param_2->x;
-      DAT_004cc6fc = shadingRecord1->worldYQ12 - param_2->y;
-      DAT_004cc700 = shadingRecord1->worldZQ12 - param_2->z;
-      lVar3 = (longlong)DAT_004cc6fc * (longlong)DAT_004cc6fc +
-              (longlong)DAT_004cc6f8 * (longlong)DAT_004cc6f8 +
-              (longlong)DAT_004cc700 * (longlong)DAT_004cc700;
-      uVar1 = (uint)shadingRecord1->squaredRadiusQ24;
-      if ((lVar3 < (longlong)shadingRecord1->squaredRadiusQ24) &&
-         (uVar11 = (uint)lVar3 * 8,
-         (((int)((ulonglong)lVar3 >> 0x20) << 3 | (uint)lVar3 >> 0x1d) +
-          *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) + (uint)CARRY4(uVar11,uVar1) &
-         0xfffff) != 0 || uVar11 + uVar1 >> 0x14 != 0)) {
-        FixedVec3_NormalizeQ28
-                  ((GraphicsFixedVec3 *)&DAT_004cc6f8,(GraphicsFixedVec3 *)&DAT_004cc6f8);
-        sVar9 = FixedVec3_DotQ12((GraphicsFixedVec3 *)&DAT_004cc6f8,(GraphicsFixedVec3 *)0x4cc704);
-        iVar12 = 0;
-        if (-1 < sVar9) {
-          iVar12 = sVar9;
+      g_ModelLightingVertexToLightVectorScratch.x = shadingRecord1->worldXQ12 - vertexPositionQ12->x
+      ;
+      g_ModelLightingVertexToLightVectorScratch.y = shadingRecord1->worldYQ12 - vertexPositionQ12->y
+      ;
+      g_ModelLightingVertexToLightVectorScratch.z = shadingRecord1->worldZQ12 - vertexPositionQ12->z
+      ;
+      lVar4 = (longlong)g_ModelLightingVertexToLightVectorScratch.y *
+              (longlong)g_ModelLightingVertexToLightVectorScratch.y +
+              (longlong)g_ModelLightingVertexToLightVectorScratch.x *
+              (longlong)g_ModelLightingVertexToLightVectorScratch.x +
+              (longlong)g_ModelLightingVertexToLightVectorScratch.z *
+              (longlong)g_ModelLightingVertexToLightVectorScratch.z;
+      iVar1 = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4);
+      uVar2 = (uint)shadingRecord1->squaredRadiusQ24;
+      if (lVar4 < (longlong)shadingRecord1->squaredRadiusQ24) {
+        uVar12 = (uint)lVar4 * 8;
+        uVar12 = (((int)((ulonglong)lVar4 >> 0x20) << 3 | (uint)lVar4 >> 0x1d) + iVar1 +
+                 (uint)CARRY4(uVar12,uVar2)) * 0x1000 | uVar12 + uVar2 >> 0x14;
+        if (uVar12 != 0) {
+          FixedVec3_NormalizeQ28
+                    (&g_ModelLightingVertexToLightVectorScratch,
+                     &g_ModelLightingVertexToLightVectorScratch);
+          sVar10 = FixedVec3_DotQ12(&g_ModelLightingVertexToLightVectorScratch,
+                                    &g_ModelLightingTransformedSurfaceNormalScratch);
+          iVar13 = 0;
+          if (-1 < sVar10) {
+            iVar13 = sVar10;
+          }
+          PVar3 = shadingRecord1->packedColorRgbActive;
+          uVar15 = (undefined1)(PVar3 >> 0x18);
+          uVar9 = CONCAT11(uVar15,uVar15);
+          uVar16 = (undefined1)(PVar3 >> 0x10);
+          uVar15 = (undefined1)(PVar3 >> 8);
+          lVar4 = (longlong)
+                  (int)((longlong)(ulonglong)((iVar1 << 0x11 | uVar2 >> 0xf) * 9) /
+                       (longlong)(int)uVar12) * (longlong)iVar13;
+          uVar14 = pmulhw(CONCAT26(uVar9 >> 2,
+                                   CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar16),
+                                                              CONCAT14(uVar16,PVar3)) >> 0x20) >> 2,
+                                            CONCAT22(CONCAT11(uVar15,uVar15) >> 2,
+                                                     CONCAT11((char)PVar3,(char)PVar3) >> 2))),
+                          *(undefined8 *)
+                           (&g_PackedLightingLookupTable +
+                           ((uint)lVar4 >> 0x1c | (int)((ulonglong)lVar4 >> 0x20) << 4) * 8));
+          uVar14 = paddsw(extraout_MM0,uVar14);
         }
-        PVar2 = shadingRecord1->packedColorRgbActive;
-        uVar14 = (undefined1)(PVar2 >> 0x18);
-        uVar8 = CONCAT11(uVar14,uVar14);
-        uVar15 = (undefined1)(PVar2 >> 0x10);
-        uVar14 = (undefined1)(PVar2 >> 8);
-        lVar3 = (longlong)(int)((longlong)(ulonglong)extraout_EDX / (longlong)extraout_ECX) *
-                (longlong)iVar12;
-        uVar13 = pmulhw(CONCAT26(uVar8 >> 2,
-                                 CONCAT24((ushort)(CONCAT35(CONCAT21(uVar8,uVar15),
-                                                            CONCAT14(uVar15,PVar2)) >> 0x20) >> 2,
-                                          CONCAT22(CONCAT11(uVar14,uVar14) >> 2,
-                                                   CONCAT11((char)PVar2,(char)PVar2) >> 2))),
-                        *(undefined8 *)
-                         (&g_PackedLightingLookupTable +
-                         ((uint)lVar3 >> 0x1c | (int)((ulonglong)lVar3 >> 0x20) << 4) * 8));
-        uVar13 = paddsw(extraout_MM0,uVar13);
       }
     }
-    param_1 = (PackedArgb32)uVar18;
+    vertexPackedColor = (PackedArgb32)uVar19;
     shadingRecord1 = shadingRecord1 + 1;
   }
-  uVar14 = (undefined1)(param_1 >> 0x18);
-  uVar8 = CONCAT11(uVar14,uVar14);
-  uVar15 = (undefined1)(param_1 >> 0x10);
-  uVar14 = (undefined1)(param_1 >> 8);
-  uVar13 = pmulhw(uVar13,CONCAT26(uVar8 >> 2,
-                                  CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,uVar15),uVar15) >> 2,
-                                           CONCAT22(CONCAT11(uVar14,uVar14) >> 2,
-                                                    CONCAT11((char)param_1,(char)param_1) >> 2))));
-  sVar4 = (short)uVar13;
-  sVar5 = (short)((ulonglong)uVar13 >> 0x10);
-  sVar6 = (short)((ulonglong)uVar13 >> 0x20);
-  sVar7 = (short)((ulonglong)uVar13 >> 0x30);
-  return CONCAT13((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar13 >> 0x30) - (0xff < sVar7)
-                  ,CONCAT12((0 < sVar6) * (sVar6 < 0x100) * (char)((ulonglong)uVar13 >> 0x20) -
-                            (0xff < sVar6),
-                            CONCAT11((0 < sVar5) * (sVar5 < 0x100) *
-                                     (char)((ulonglong)uVar13 >> 0x10) - (0xff < sVar5),
-                                     (0 < sVar4) * (sVar4 < 0x100) * (char)uVar13 - (0xff < sVar4)))
+  uVar15 = (undefined1)(vertexPackedColor >> 0x18);
+  uVar9 = CONCAT11(uVar15,uVar15);
+  uVar16 = (undefined1)(vertexPackedColor >> 0x10);
+  uVar15 = (undefined1)(vertexPackedColor >> 8);
+  uVar14 = pmulhw(uVar14,CONCAT26(uVar9 >> 2,
+                                  CONCAT24((ushort)CONCAT31(CONCAT21(uVar9,uVar16),uVar16) >> 2,
+                                           CONCAT22(CONCAT11(uVar15,uVar15) >> 2,
+                                                    CONCAT11((char)vertexPackedColor,
+                                                             (char)vertexPackedColor) >> 2))));
+  sVar5 = (short)uVar14;
+  sVar6 = (short)((ulonglong)uVar14 >> 0x10);
+  sVar7 = (short)((ulonglong)uVar14 >> 0x20);
+  sVar8 = (short)((ulonglong)uVar14 >> 0x30);
+  return CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar14 >> 0x30) - (0xff < sVar8)
+                  ,CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar14 >> 0x20) -
+                            (0xff < sVar7),
+                            CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
+                                     (char)((ulonglong)uVar14 >> 0x10) - (0xff < sVar6),
+                                     (0 < sVar5) * (sVar5 < 0x100) * (char)uVar14 - (0xff < sVar5)))
                  );
 }
+
 
 /* Address: 0x0050A430.
    Ownership: graphics/render/model.
@@ -1112,37 +1060,37 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
    Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
    [graphics/core/runtime].
 */
-undefined8 ModelProjectedBounds_ExpandWithCurrentScratchPoint(int *param_1)
+void __thandor_preserve_eax_edx
+ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *bounds)
 
 {
-  undefined4 in_EAX;
   int iVar1;
-  undefined4 in_EDX;
   int iVar2;
-  GraphicsProjectedPointEdxEax8 GVar3;
+  GraphicsProjectedPointPair GVar3;
   
   FixedTransform_ApplyPoint
             (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
              &g_GraphicsTransformScratchMatrix3x4);
   if ((int)g_ProjectionScaleFixed < g_GraphicsTransformOutputScratchVec3.z) {
     GVar3 = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-    iVar1 = (int)GVar3 >> 0xc;
-    iVar2 = (int)((longlong)GVar3 >> 0x2c);
-    if (iVar1 < *param_1) {
-      *param_1 = iVar1;
+    iVar1 = GVar3.projectedX >> 0xc;
+    iVar2 = GVar3.projectedY >> 0xc;
+    if (iVar1 < bounds->minX) {
+      bounds->minX = iVar1;
     }
-    if (iVar2 < param_1[1]) {
-      param_1[1] = iVar2;
+    if (iVar2 < bounds->minY) {
+      bounds->minY = iVar2;
     }
-    if (param_1[2] < iVar1) {
-      param_1[2] = iVar1;
+    if (bounds->maxX < iVar1) {
+      bounds->maxX = iVar1;
     }
-    if (param_1[3] < iVar2) {
-      param_1[3] = iVar2;
+    if (bounds->maxY < iVar2) {
+      bounds->maxY = iVar2;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004BD800.
    Ownership: graphics/render/model.
@@ -1151,25 +1099,27 @@ undefined8 ModelProjectedBounds_ExpandWithCurrentScratchPoint(int *param_1)
    Cross-module calls: FixedTransform_Compose [core/math/fixed], FixedMath_VectorToAngles3Regs [core/math/fixed],
    FixedMath_WriteDirectionQ28 [core/math/fixed], FixedTransform_ApplyTransposeDirection [core/math/fixed].
 */
-void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  int extraout_EAX;
-  int extraout_ECX;
-  AngleTurn32 azimuthAngle;
-  int extraout_EDX;
-  AngleTurn32 elevationAngle;
+  int iVar1;
+  int iVar2;
+  int iVar3;
   GraphicsFixedMatrix3x4 *transformA;
+  FixedMathVectorAnglesRegs8 FVar4;
   
+  iVar1 = (modelNodeRuntime->worldTransform).translation.x;
+  iVar2 = (modelNodeRuntime->worldTransform).translation.y;
+  iVar3 = (modelNodeRuntime->worldTransform).translation.z;
   transformA = &modelNodeRuntime->worldTransform;
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform,transformA,
              &g_ViewProjectionMatrixFixed);
-  FixedMath_VectorToAngles3Regs
-            (extraout_EDX - g_ViewOriginFixed.z,extraout_ECX - g_ViewOriginFixed.y,
-             extraout_EAX - g_ViewOriginFixed.x);
-  FixedMath_WriteDirectionQ28
-            ((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,elevationAngle,azimuthAngle);
+  FVar4 = FixedMath_VectorToAngles3Regs
+                    (iVar3 - g_ViewOriginFixed.z,iVar2 - g_ViewOriginFixed.y,
+                     iVar1 - g_ViewOriginFixed.x);
+  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,FVar4.edx,FVar4.ecx);
   FixedTransform_ApplyTransposeDirection
             ((GraphicsFixedVec3 *)&g_ModelViewDirectionLocal,transformA,
              (GraphicsFixedVec3 *)&g_ModelViewDirectionWorld);
@@ -1178,3 +1128,4 @@ void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
              &g_AuxiliaryForwardDirectionFixed);
   return;
 }
+

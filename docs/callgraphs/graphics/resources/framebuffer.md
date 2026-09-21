@@ -1,6 +1,6 @@
 # Call graph: `graphics/resources/framebuffer`
 
-[Source](../../../../src/graphics/resources/framebuffer.c) · [Header](../../../../include/thandor/graphics/resources/framebuffer.h) · [Graphviz](framebuffer.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-framebuffer)
+[Source](../../../../src/graphics/resources/framebuffer.c) · [Header](../../../../include/thandor/graphics/resources/framebuffer.h) · [Graphviz](framebuffer.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-framebuffer) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-resources-framebuffer)
 
 7 functions. Addresses are current V523 executable VAs.
 

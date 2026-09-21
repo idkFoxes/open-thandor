@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/frontend/network.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/frontend/network.h>
 
 /* Implementation ownership: ui/frontend/network. */
@@ -13,32 +20,30 @@
    [ui/controls/lists], RichTextCommandStream_CopyExpandedCf [assets/text/richtext],
    UiTransfer_SendPlayerDescriptorPacket20002Cf [network/protocol/transfer].
 */
-void FrontendNetworkSetupPage_InitializeBackendMode
-               (FrontendNetworkSettingsControlView250 *networkPage)
+void __thandor_void_preserve_eax_ecx
+FrontendNetworkSetupPage_InitializeBackendMode(FrontendNetworkSettingsControlView250 *networkPage)
 
 {
   byte bVar1;
   FrontendPlayerRuntimeRecord *pFVar2;
   UiListRowIndex returnValue;
-  UiPageStackControl *stack;
-  UiPageStackControl *stack_00;
-  UiPointerListControl *control;
-  UiListRowIndex extraout_ECX;
-  dword dVar3;
-  int extraout_ECX_00;
-  UiListRowIndex extraout_ECX_01;
-  int extraout_ECX_02;
-  UiListRowIndex index;
-  int iVar4;
+  dword errorOrValue;
+  int iVar3;
   word *destination;
-  UiTransferEndpointDescriptor *pUVar5;
-  undefined4 *puVar6;
+  byte *commandLineOptionBytes;
+  byte *secondaryCommandLineOptionBytes;
+  UiTransferEndpointDescriptor *pUVar4;
+  dword *localPlayerNameDwordCursor;
   dword *endpointSourceDwordCursor;
   dword *endpointDestinationDwordCursor;
-  byte *pbVar7;
+  byte *pbVar5;
   dword *localPlayerRecordDwordCursor;
-  undefined1 uVar8;
-  FrontendNetworkSettingsControlView250 *firstNode;
+  bool bVar6;
+  NetworkBackendSetSessionEaxCf5 NVar7;
+  NetworkBackendOpenBindEaxCf5 NVar8;
+  CommandLineFindOptionEbxCf5 CVar9;
+  UiListRowIndex UVar10;
+  dword dVar11;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
     (*g_NetworkBackendSlot7)
@@ -47,7 +52,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode
     UiNodeList_UnsuppressActionId(0x2001,(UiNodeBase *)&networkPage->commonState);
     UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&networkPage->commonState);
     UiNodeList_SuppressActionId(0x200b,(UiNodeBase *)&networkPage->commonState);
-    UiPageStack_SetActiveIndex(3,stack_00);
+    UiPageStack_SetActiveIndex(3,(UiPageStackControl *)((int)networkPage + 0x508));
     if ((int)g_FramebufferWidth < 0x281) {
       *(uint *)((int)networkPage + 0x3b4) = *(uint *)((int)networkPage + 0x3b4) | 0x2000;
     }
@@ -59,20 +64,20 @@ void FrontendNetworkSetupPage_InitializeBackendMode
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(word *)&g_FrontendNetworkRuntimeCountTextUtf16
               );
     pFVar2 = g_FrontendPlayerRuntimeBlocks;
-    dVar3 = g_UiTransferSequenceToken;
+    dVar11 = g_UiTransferSequenceToken;
     g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff;
-    pFVar2->peerSequenceToken = dVar3;
-    puVar6 = &g_FrontendLocalPlayerNameUtf16;
+    pFVar2->peerSequenceToken = dVar11;
+    localPlayerNameDwordCursor = &g_FrontendLocalPlayerNameUtf16;
     localPlayerRecordDwordCursor = (dword *)&pFVar2->playerName;
-    for (iVar4 = 10; iVar4 != 0; iVar4 = iVar4 + -1) {
-      *(undefined4 *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 =
-           *puVar6;
-      puVar6 = puVar6 + 1;
+    for (iVar3 = 10; iVar3 != 0; iVar3 = iVar3 + -1) {
+      *(dword *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 =
+           *localPlayerNameDwordCursor;
+      localPlayerNameDwordCursor = localPlayerNameDwordCursor + 1;
       localPlayerRecordDwordCursor =
            (dword *)(((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 + 2);
     }
     endpointSourceDwordCursor = (dword *)&g_NetworkLocalEndpointDescriptor16;
-    for (iVar4 = 4; iVar4 != 0; iVar4 = iVar4 + -1) {
+    for (iVar3 = 4; iVar3 != 0; iVar3 = iVar3 + -1) {
       *localPlayerRecordDwordCursor = *endpointSourceDwordCursor;
       endpointSourceDwordCursor = endpointSourceDwordCursor + 1;
       localPlayerRecordDwordCursor = localPlayerRecordDwordCursor + 1;
@@ -84,7 +89,6 @@ void FrontendNetworkSetupPage_InitializeBackendMode
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_HOST;
     return;
   }
-  uVar8 = 0;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     (*g_NetworkBackendSlot7)
               (&g_FrontendNetworkEndpointTextUtf16,
@@ -99,7 +103,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode
     g_FrontendNetworkState = 1;
     UiNodeList_UnsuppressActionId(0x2001,(UiNodeBase *)&networkPage->commonState);
     UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&networkPage->commonState);
-    UiPointerList_InitializeColumnLayout(0,g_FrontendSessionListRows,control);
+    UiPointerList_InitializeColumnLayout
+              (0,g_FrontendSessionListRows,(UiPointerListControl *)((int)networkPage + 0x4b68));
     pFVar2 = g_FrontendPlayerRuntimeBlocks;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_CLIENT;
     g_FrontendPlayerRuntimeBlockCount = 1;
@@ -117,73 +122,73 @@ void FrontendNetworkSetupPage_InitializeBackendMode
   UiTransferMailbox_RandomizeSequenceToken();
   returnValue = UiPointerList_GetSelectedIndexVariantACf
                           ((UiPointerListControl *)((int)networkPage + 0x4a70));
-  (*g_NetworkBackendSlot0)(returnValue);
-  if (!(bool)uVar8) {
-    (*g_NetworkBackendSlot2)(0x3a1);
-    index = extraout_ECX;
-    if (!(bool)uVar8) {
+  UVar10 = returnValue;
+  NVar7 = (*g_NetworkBackendSlot0)(returnValue);
+  if (!NVar7.carry) {
+    NVar8 = (*g_NetworkBackendSlot2)(0x3a1);
+    if (!NVar8.carry) {
 FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
-      UiPointerList_SelectIndexVariantA(index,(UiPointerListControl *)((int)networkPage + 0x4a70));
-      pUVar5 = &g_NetworkLocalEndpointDescriptor16;
+      UiPointerList_SelectIndexVariantA
+                (returnValue,(UiPointerListControl *)((int)networkPage + 0x4a70));
+      pUVar4 = &g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (dword *)&g_FrontendNetworkEndpointScratch;
-      for (iVar4 = 4; iVar4 != 0; iVar4 = iVar4 + -1) {
-        *endpointDestinationDwordCursor = (dword)pUVar5->addressHeader;
-        pUVar5 = (UiTransferEndpointDescriptor *)&pUVar5->ipv4AddressNetworkOrder;
+      for (iVar3 = 4; iVar3 != 0; iVar3 = iVar3 + -1) {
+        *endpointDestinationDwordCursor = (dword)pUVar4->addressHeader;
+        pUVar4 = (UiTransferEndpointDescriptor *)&pUVar4->ipv4AddressNetworkOrder;
         endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
       }
-      firstNode = networkPage;
-      (*g_CommandLineFindOption)(6,s_NAME__CLIENT__KARTE___00545e91);
-      if (!(bool)uVar8) {
-        pbVar7 = networkPage->raw + 6;
-        iVar4 = 0x13;
+      CVar9 = (*g_CommandLineFindOption)(6,s_NAME__CLIENT__KARTE___00545e91);
+      commandLineOptionBytes = CVar9.ebx;
+      if (!CVar9.carry) {
+        pbVar5 = commandLineOptionBytes + 6;
+        iVar3 = 0x13;
         while( true ) {
-          bVar1 = *pbVar7;
+          bVar1 = *pbVar5;
           if ((bVar1 == 0) || (bVar1 < 0x20))
           goto FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery;
           if (bVar1 == 0x22) break;
-          iVar4 = iVar4 + -1;
-          if (iVar4 == 0) goto FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery;
-          pbVar7 = pbVar7 + 1;
+          iVar3 = iVar3 + -1;
+          if (iVar3 == 0) goto FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery;
+          pbVar5 = pbVar5 + 1;
         }
         destination = (word *)(g_FrontendRootNode + 0x4eb4);
-        *pbVar7 = 0;
-        if (pbVar7[1] == 0) {
-          networkPage->raw[0] = 0x6e;
-          Text_CopyNarrowToUtf16Cf(0x28,destination,networkPage->raw + 6);
+        *pbVar5 = 0;
+        if (pbVar5[1] == 0) {
+          *commandLineOptionBytes = 0x6e;
+          Text_CopyNarrowToUtf16Cf(0x28,destination,commandLineOptionBytes + 6);
           Text_CopyNarrowToUtf16Cf
-                    (0x28,(word *)&g_FrontendLocalPlayerNameUtf16,networkPage->raw + 6);
-          *pbVar7 = 0x22;
+                    (0x28,(word *)&g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
+          *pbVar5 = 0x22;
         }
       }
 FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
-      stack = (UiPageStackControl *)
-              (*g_NetworkBackendSlot7)
-                        (&g_FrontendNetworkEndpointTextUtf16,
-                         (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
-      UiPageStack_SetActiveIndex(1,stack);
+      (*g_NetworkBackendSlot7)
+                (&g_FrontendNetworkEndpointTextUtf16,
+                 (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
+      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)((int)networkPage + 0x508));
       if ((int)g_FramebufferWidth < 0x281) {
-        *(uint *)((int)firstNode + 0x3b4) = *(uint *)((int)firstNode + 0x3b4) | 0x2000;
+        *(uint *)((int)networkPage + 0x3b4) = *(uint *)((int)networkPage + 0x3b4) | 0x2000;
       }
       g_FrontendNetworkState = 1;
-      uVar8 = 0;
       if ((short)g_FrontendLocalPlayerNameUtf16 == 0) {
-        UiNodeList_SuppressActionId(0x2001,(UiNodeBase *)&firstNode->commonState);
+        UiNodeList_SuppressActionId(0x2001,(UiNodeBase *)&networkPage->commonState);
       }
       else {
-        UiNodeList_UnsuppressActionId(0x2001,(UiNodeBase *)&firstNode->commonState);
+        UiNodeList_UnsuppressActionId(0x2001,(UiNodeBase *)&networkPage->commonState);
       }
-      UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&firstNode->commonState);
+      UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&networkPage->commonState);
       UiPointerList_InitializeColumnLayout
-                (0,g_FrontendSessionListRows,(UiPointerListControl *)((int)firstNode + 0x4b68));
+                (0,g_FrontendSessionListRows,(UiPointerListControl *)((int)networkPage + 0x4b68));
       UiTransfer_SendPacketType10000Value2931Cf();
-      (*g_CommandLineFindOption)(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
-      if ((bool)uVar8) {
-        (*g_CommandLineFindOption)(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
-        if (!(bool)uVar8) {
-          iVar4 = 0x7fffff;
-          pbVar7 = firstNode->raw + 8;
+      CVar9 = (*g_CommandLineFindOption)(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
+      if (CVar9.carry) {
+        CVar9 = (*g_CommandLineFindOption)(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
+        secondaryCommandLineOptionBytes = CVar9.ebx;
+        if (!CVar9.carry) {
+          iVar3 = 0x7fffff;
+          pbVar5 = secondaryCommandLineOptionBytes + 8;
           while( true ) {
-            bVar1 = *pbVar7;
+            bVar1 = *pbVar5;
             if (bVar1 == 0) {
               return;
             }
@@ -191,60 +196,58 @@ FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
               return;
             }
             if (bVar1 == 0x22) break;
-            iVar4 = iVar4 + -1;
-            if (iVar4 == 0) {
+            iVar3 = iVar3 + -1;
+            if (iVar3 == 0) {
               return;
             }
-            pbVar7 = pbVar7 + 1;
+            pbVar5 = pbVar5 + 1;
           }
-          *pbVar7 = 0;
-          uVar8 = 0;
-          if (pbVar7[1] == 0) {
-            firstNode->raw[0] = 99;
-            Text_CopyNarrowToUtf16Cf(0x800000,(word *)g_PackageScratchBuffer,firstNode->raw + 8);
-            (*g_NetworkBackendSlot6)
-                      (&g_FrontendSelectedNetworkEndpoint,(char *)g_PackageScratchBuffer);
-            if (!(bool)uVar8) {
+          *pbVar5 = 0;
+          if (pbVar5[1] == 0) {
+            *secondaryCommandLineOptionBytes = 99;
+            Text_CopyNarrowToUtf16Cf
+                      (0x800000,(word *)g_PackageScratchBuffer,secondaryCommandLineOptionBytes + 8);
+            bVar6 = (*g_NetworkBackendSlot6)
+                              (&g_FrontendSelectedNetworkEndpoint,(char *)g_PackageScratchBuffer);
+            if (!bVar6) {
               (*g_NetworkBackendSlot6)
                         (&g_FrontendNetworkEndpointScratch,(char *)g_PackageScratchBuffer);
               g_FrontendSessionToken = 0x12340000;
               g_FrontendSelectedPlayerToken = 0xffffffff;
               UiTransfer_SendPlayerDescriptorPacket20002Cf();
-              iVar4 = g_FrontendRootNode;
+              iVar3 = g_FrontendRootNode;
               (*g_NetworkBackendSlot7)
                         (&g_FrontendNetworkEndpointTextUtf16,
                          (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
               RichTextCommandStream_CopyExpandedCf
-                        (0x80,(word *)(iVar4 + 0x4dc8),(word *)&g_FrontendNetworkEndpointTextUtf16);
+                        (0x80,(word *)(iVar3 + 0x4dc8),(word *)&g_FrontendNetworkEndpointTextUtf16);
             }
           }
         }
       }
       else {
-        firstNode->raw[0] = 0x68;
+        *CVar9.ebx = 0x68;
         FrontendNetworkSetupPage_InitializeFromCommandLine
-                  ((FrontendNetworkSettingsControlView250 *)((int)firstNode + 0x4920));
+                  ((FrontendNetworkSettingsControlView250 *)((int)networkPage + 0x4920));
       }
       return;
     }
-    (*g_NetworkBackendSlot1)(returnValue);
+    (*g_NetworkBackendSlot1)(UVar10);
   }
-  uVar8 = false;
-  dVar3 = 0;
+  returnValue = 0;
   do {
-    (*g_NetworkBackendSlot0)(dVar3);
-    iVar4 = extraout_ECX_00;
-    if (!(bool)uVar8) {
-      (*g_NetworkBackendSlot2)(0x3a1);
-      index = extraout_ECX_01;
-      if (!(bool)uVar8) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
-      (*g_NetworkBackendSlot1)();
-      iVar4 = extraout_ECX_02;
+    dVar11 = returnValue;
+    NVar7 = (*g_NetworkBackendSlot0)(returnValue);
+    errorOrValue = NVar7.eax;
+    if (!NVar7.carry) {
+      NVar8 = (*g_NetworkBackendSlot2)(0x3a1);
+      errorOrValue = NVar8.eax;
+      if (!NVar8.carry) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
+      (*g_NetworkBackendSlot1)(dVar11);
     }
-    dVar3 = iVar4 + 1;
-    uVar8 = dVar3 < g_NetworkBackendInstanceCount;
-    if (!(bool)uVar8) {
-      (*g_FatalErrorRuntimeDispatchCf)();
+    returnValue = returnValue + 1;
+    if (g_NetworkBackendInstanceCount <= returnValue) {
+      (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,true);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
@@ -257,11 +260,12 @@ FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
   } while( true );
 }
 
+
 /* Address: 0x005474A0.
    Ownership: ui/frontend/network.
    Purpose: Handles frontend teardown save root state snapshot80.
 */
-void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
+void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
 
 {
   int dwordsRemaining;
@@ -280,6 +284,7 @@ void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
   return;
 }
 
+
 /* Address: 0x0054C7D0.
    Ownership: ui/frontend/network.
    Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[13]@00545938. Queued UI action handler
@@ -288,20 +293,18 @@ void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: UiTransfer_SendPacketType10000Value2931Cf [network/protocol/transfer].
 */
-undefined8
+void __thandor_preserve_eax_edx
 FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferPageControl)
 
 {
-  undefined4 in_EAX;
-  undefined4 in_EDX;
-  undefined1 in_CF;
+  bool bVar1;
   
-  (*g_NetworkBackendSlot6)
-            (&g_FrontendNetworkEndpointScratch,(char *)transferPageControl->textPrefix6C);
-  if ((bool)in_CF) {
+  bVar1 = (*g_NetworkBackendSlot6)
+                    (&g_FrontendNetworkEndpointScratch,(char *)transferPageControl->textPrefix6C);
+  if (bVar1) {
     transferPageControl->editStateFlags =
          transferPageControl->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
-    return CONCAT44(in_EDX,in_EAX);
+    return;
   }
   transferPageControl->editStateFlags =
        transferPageControl->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
@@ -309,8 +312,9 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
   (*g_NetworkBackendSlot7)
             (&g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
             );
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0054CE10.
    Ownership: ui/frontend/network.
@@ -322,22 +326,21 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
    [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
    UiTransfer_SendPacketType10000Value2931Cf [network/protocol/transfer].
 */
-undefined4 FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
+void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
 
 {
-  undefined4 in_EAX;
-  UiPointerListControl *control;
-  
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&source[-0xfc].layoutHeight);
   if ((int)g_FramebufferWidth < 0x281) {
     source[-0x100].leftOffset = source[-0x100].leftOffset | 0x2000;
   }
   g_FrontendNetworkState = 1;
   UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&source[-0x10d].nodeFlags);
-  UiPointerList_InitializeColumnLayout(0,g_FrontendSessionListRows,control);
+  UiPointerList_InitializeColumnLayout
+            (0,g_FrontendSessionListRows,(UiPointerListControl *)&source[-0xf].nodeFlags);
   UiTransfer_SendPacketType10000Value2931Cf();
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054C830.
    Ownership: ui/frontend/network.
@@ -350,74 +353,63 @@ undefined4 FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
    [assets/text/richtext], UiTextControl_UpdateNonEmptyValidity [ui/controls/text],
    FrontendNetworkSettings_SetGameName [ui/frontend/settings].
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 FrontendNetworkSetupPage_InitializeFromCommandLine
           (FrontendNetworkSettingsControlView250 *networkPage)
 
 {
   byte bVar1;
-  undefined4 in_EAX;
   uint uVar2;
-  word *pwVar3;
-  UiTextEditControl *control;
+  int iVar3;
+  word *destination;
   int iVar4;
-  undefined4 in_EDX;
-  uint extraout_EDX;
-  int extraout_EDX_00;
-  byte *unaff_EBX;
-  byte *source;
   byte *pbVar5;
-  undefined1 uVar6;
+  byte *pbVar6;
+  TextResourceResolveEaxCf5 TVar7;
+  CommandLineFindOptionEbxCf5 CVar8;
   
-  uVar6 = false;
-  (*g_CommandLineFindOption)(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
-  if (!(bool)uVar6) {
-    uVar6 = unaff_EBX[10] < 0x22;
-    if (unaff_EBX[10] == 0x22) {
-      uVar6 = unaff_EBX[9] < 0x30;
-      uVar2 = unaff_EBX[9] - 0x30;
-      if ((((!(bool)uVar6 && uVar2 != 0) && (uVar6 = 0, unaff_EBX[0xb] == 0)) &&
-          (uVar6 = uVar2 < 8, uVar2 < 9)) && (uVar6 = uVar2 < 2, !(bool)uVar6)) {
-        *unaff_EBX = 0x73;
-        unaff_EBX = g_FrontendRootNode;
-        *(uint *)(g_FrontendRootNode + 0x5140) = uVar2;
-      }
-    }
+  iVar4 = 0;
+  CVar8 = (*g_CommandLineFindOption)(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
+  pbVar5 = CVar8.ebx;
+  if ((((!CVar8.carry) && (pbVar5[10] == 0x22)) &&
+      (uVar2 = pbVar5[9] - 0x30, 0x2f < pbVar5[9] && uVar2 != 0)) &&
+     (((pbVar5[0xb] == 0 && (uVar2 < 9)) && (1 < uVar2)))) {
+    *pbVar5 = 0x73;
+    iVar4 = 1;
+    *(uint *)(g_FrontendRootNode + 0x5140) = uVar2;
   }
-  (*g_CommandLineFindOption)(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
-  source = unaff_EBX;
-  if (!(bool)uVar6) {
-    pbVar5 = unaff_EBX + 7;
-    iVar4 = 0x13;
+  CVar8 = (*g_CommandLineFindOption)(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
+  pbVar5 = CVar8.ebx;
+  if (!CVar8.carry) {
+    pbVar6 = pbVar5 + 7;
+    iVar3 = 0x13;
     while( true ) {
-      bVar1 = *pbVar5;
-      uVar6 = 0;
-      if ((bVar1 == 0) || (uVar6 = 1, bVar1 < 0x20))
+      bVar1 = *pbVar6;
+      if ((bVar1 == 0) || (bVar1 < 0x20))
       goto FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage;
-      uVar6 = bVar1 < 0x22;
       if (bVar1 == 0x22) break;
-      iVar4 = iVar4 + -1;
-      if (iVar4 == 0) goto FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage;
-      pbVar5 = pbVar5 + 1;
+      iVar3 = iVar3 + -1;
+      if (iVar3 == 0) goto FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage;
+      pbVar6 = pbVar6 + 1;
     }
-    source = unaff_EBX + 7;
-    pwVar3 = (word *)(g_FrontendRootNode + 0x50c0);
-    *pbVar5 = 0;
-    uVar6 = 0;
-    if (pbVar5[1] == 0) {
-      *unaff_EBX = 0x73;
-      Text_CopyNarrowToUtf16Cf(0x28,pwVar3,source);
-      *pbVar5 = 0x22;
-      uVar6 = 0xfffffffd < extraout_EDX;
+    destination = (word *)(g_FrontendRootNode + 0x50c0);
+    *pbVar6 = 0;
+    if (pbVar6[1] == 0) {
+      *pbVar5 = 0x73;
+      Text_CopyNarrowToUtf16Cf(0x28,destination,pbVar5 + 7);
+      *pbVar6 = 0x22;
+      iVar4 = iVar4 + 2;
     }
   }
 FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage:
-  (*g_CommandLineFindOption)(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
-  if (((!(bool)uVar6) && (source[0xb] == 0x22)) &&
-     ((uVar2 = source[10] - 0x30, 0x2f < source[10] && uVar2 != 0 &&
-      (((source[0xc] == 0 && (uVar2 < 8)) && (uVar2 != 0)))))) {
-    *source = 0x6e;
+  CVar8 = (*g_CommandLineFindOption)(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
+  pbVar5 = CVar8.ebx;
+  if (((((!CVar8.carry) && (pbVar5[0xb] == 0x22)) &&
+       (uVar2 = pbVar5[10] - 0x30, 0x2f < pbVar5[10] && uVar2 != 0)) &&
+      ((pbVar5[0xc] == 0 && (uVar2 < 8)))) && (uVar2 != 0)) {
+    *pbVar5 = 0x6e;
     *(uint *)(g_FrontendRootNode + 0x5204) = uVar2;
+    iVar4 = iVar4 + 4;
     g_SessionNetworkTickInterval = uVar2 * 2;
   }
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)((int)networkPage + -0x4418));
@@ -430,17 +422,18 @@ FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage:
              (word *)&g_FrontendNetworkPlayerCountTextUtf16);
   uVar2 = g_SessionNetworkTickInterval >> 1;
   *(uint *)((int)networkPage + 0x8e4) = uVar2;
-  pwVar3 = TextResource_Resolve(uVar2 + 0x210d);
-  RichTextCommandStream_CopyExpandedCf(0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,pwVar3);
-  control = (UiTextEditControl *)
-            UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)((int)networkPage + 0x734));
-  FrontendNetworkSettings_SetGameName(control);
-  if (extraout_EDX_00 == 7) {
+  TVar7 = TextResource_Resolve(uVar2 + 0x210d);
+  RichTextCommandStream_CopyExpandedCf
+            (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,TVar7.eax);
+  UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)((int)networkPage + 0x734));
+  FrontendNetworkSettings_SetGameName((UiTextEditControl *)((int)networkPage + 0x734));
+  if (iVar4 == 7) {
     FrontendNetworkSetupPage_InitializeSingleLocalPlayer
               ((FrontendNetworkSettingsControlView250 *)((int)networkPage + 0x6d4));
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0054CE80.
    Ownership: ui/frontend/network.
@@ -452,15 +445,13 @@ FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage:
    PcxPreview_Load64x64PaletteAndPixelsCf [ui/support/runtime],
    FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction [ui/frontend/player].
 */
-undefined4
+void __thandor_void_preserve_eax_ecx
 FrontendNetworkSetupPage_InitializeSingleLocalPlayer
           (FrontendNetworkSettingsControlView250 *networkPage)
 
 {
   dword dVar1;
   FrontendPlayerRuntimeRecord *pFVar2;
-  undefined4 in_EAX;
-  UiPageStackControl *stack;
   int iVar3;
   undefined4 *puVar4;
   dword *localEndpointDwordCursor;
@@ -468,7 +459,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer
   bool bVar5;
   
   UiNodeList_SuppressActionId(0x200b,(UiNodeBase *)((int)networkPage + -0x4ff4));
-  UiPageStack_SetActiveIndex(3,stack);
+  UiPageStack_SetActiveIndex(3,(UiPageStackControl *)((int)networkPage + -0x4aec));
   if ((int)g_FramebufferWidth < 0x281) {
     *(uint *)((int)networkPage + -0x4c40) = *(uint *)((int)networkPage + -0x4c40) | 0x2000;
   }
@@ -504,11 +495,10 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer
   g_LocalPlayerRuntimeId = 0;
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_HOST;
-  bVar5 = (dword *)0xffffff9f < localPlayerRecordDwordCursor;
   localPlayerRecordDwordCursor[6] = 0;
-  PcxPreview_Load64x64PaletteAndPixelsCf
-            ((PcxPreview64 *)(localPlayerRecordDwordCursor + 0x18),
-             (word *)(localPlayerRecordDwordCursor + -0xe));
+  bVar5 = PcxPreview_Load64x64PaletteAndPixelsCf
+                    ((PcxPreview64 *)(localPlayerRecordDwordCursor + 0x18),
+                     (word *)(localPlayerRecordDwordCursor + -0xe));
   if (!bVar5) {
     localPlayerRecordDwordCursor[6] = 3;
   }
@@ -520,5 +510,6 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer
   localPlayerRecordDwordCursor[0xb] = 0;
   localPlayerRecordDwordCursor[10] = 0x440043;
   FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
-  return in_EAX;
+  return;
 }
+

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/network/backend/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/network/backend/runtime.h>
 
 /* Implementation ownership: network/backend/runtime. */
@@ -9,10 +16,10 @@
    Cross-module calls: Random_GetSecondarySeed [core/math/random], UiTransfer_StagePacketAndSendCf
    [network/protocol/transfer].
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 FrontendNetwork_HandleHandshakeAndPlayerStatePackets
-          (undefined4 param_1,undefined4 param_2,UiTransferEndpointDescriptor *senderEndpoint,
-          FrontendTransferPacketUnion *packet)
+          (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
+          dword unusedDispatchArg)
 
 {
   NetworkIpv4AddressNetworkOrder NVar1;
@@ -139,6 +146,7 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
   return;
 }
 
+
 /* Address: 0x0054F240.
    Ownership: network/backend/runtime.
    Purpose: Handles frontend network host tick command and snapshot transfer.
@@ -147,190 +155,177 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
    [assets/package/codec], UiTransferMailbox_SetOutgoingBuffer [network/protocol/transfer],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
-undefined8 __fastcall
-FrontendNetwork_HostTickCommandAndSnapshotTransfer(undefined4 param_1,undefined4 param_2)
+bool __thandor_cf_preserve_eax_ecx_edx
+FrontendNetwork_HostTickCommandAndSnapshotTransfer(dword callbackArg)
 
 {
-  uint uVar1;
-  FrontendSnapshotTransferFlags FVar2;
-  undefined4 in_EAX;
-  uint uVar3;
-  dword dVar4;
-  int iVar5;
-  int iVar6;
-  FrontendPlayerRuntimeBlockCount extraout_ECX;
-  uint uVar7;
-  uint extraout_ECX_00;
-  FrontendPlayerRuntimeBlockCount FVar8;
-  uint extraout_ECX_01;
-  FrontendPlayerRuntimeBlockCount extraout_ECX_02;
-  FrontendPlayerRuntimeBlockCount extraout_ECX_03;
-  UiTransferPacketPackedType UVar9;
-  FrontendPlayerRuntimeBlockCount FVar10;
-  FrontendSnapshotTransferFlags FVar11;
+  FrontendSnapshotTransferFlags FVar1;
+  uint uVar2;
+  int iVar3;
+  FrontendPlayerRuntimeBlockCount FVar4;
+  uint uVar5;
+  uint uVar6;
+  FrontendPlayerRuntimeBlockCount FVar7;
+  FrontendSnapshotTransferFlags FVar8;
   FrontendSnapshotTransferFlags sourceSizeBytes;
-  FrontendCommandPacketRecord *pFVar12;
-  UiTransferEndpointDescriptor *pUVar13;
-  FrontendPlayerRuntimeRecord *pFVar14;
-  FrontendPlayerRuntimeRecord *pFVar15;
-  byte *pbVar16;
-  FrontendSnapshotTransferFlags *pFVar17;
-  FrontendCommandPacketRecord *pFVar18;
-  FrontendSnapshotTransferFlags *pFVar19;
-  bool bVar20;
-  void *pvVar22;
-  undefined8 uVar21;
+  FrontendCommandPacketRecord *pFVar9;
+  UiTransferEndpointDescriptor *pUVar10;
+  FrontendPlayerRuntimeRecord *pFVar11;
+  FrontendPlayerRuntimeRecord *pFVar12;
+  byte *pbVar13;
+  FrontendSnapshotTransferFlags *pFVar14;
+  FrontendCommandPacketRecord *pFVar15;
+  FrontendSnapshotTransferFlags *pFVar16;
+  PckCodecEaxCf5 PVar17;
+  ArenaAllocEaxCf5 AVar18;
   
-  iVar5 = g_FrontendPlayerRuntimeBlockCount - 1;
-  pFVar15 = g_FrontendPlayerRuntimeBlocks;
-  if (iVar5 != 0) {
+  iVar3 = g_FrontendPlayerRuntimeBlockCount - 1;
+  pFVar12 = g_FrontendPlayerRuntimeBlocks;
+  if (iVar3 != 0) {
     do {
-      if (pFVar15[1].commandSyncPending == FRONTEND_COMMAND_SYNC_CLEAR) {
-        pUVar13 = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-        FVar10 = g_FrontendPlayerRuntimeBlockCount;
-        while (FVar10 != 1) {
-          if (pUVar13[1].addressHeader.packedFamilyAndPort == 0) {
-            UiTransfer_StagePacketAndSendCf(pUVar13,&g_FrontendCommandBatchPacketBuffer[0].header);
-            FVar10 = extraout_ECX_02;
+      if (pFVar12[1].commandSyncPending == FRONTEND_COMMAND_SYNC_CLEAR) {
+        pUVar10 = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
+        FVar7 = g_FrontendPlayerRuntimeBlockCount;
+        while (FVar7 = FVar7 - 1, FVar7 != 0) {
+          if (pUVar10[1].addressHeader.packedFamilyAndPort == 0) {
+            UiTransfer_StagePacketAndSendCf(pUVar10,&g_FrontendCommandBatchPacketBuffer[0].header);
           }
           else {
             g_FrontendPacket10012Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10012;
-            UiTransfer_StagePacketAndSendCf(pUVar13,&g_FrontendPacket10012Buffer.header);
-            FVar10 = extraout_ECX_03;
+            UiTransfer_StagePacketAndSendCf(pUVar10,&g_FrontendPacket10012Buffer.header);
           }
-          pUVar13 = pUVar13 + 0x13b;
+          pUVar10 = pUVar10 + 0x13b;
         }
-        return CONCAT44(param_2,in_EAX);
+        return true;
       }
-      iVar5 = iVar5 + -1;
-      pFVar15 = pFVar15 + 1;
-    } while (iVar5 != 0);
-    iVar5 = g_FrontendPlayerRuntimeBlockCount - 1;
-    pFVar15 = g_FrontendPlayerRuntimeBlocks;
+      iVar3 = iVar3 + -1;
+      pFVar12 = pFVar12 + 1;
+    } while (iVar3 != 0);
+    iVar3 = g_FrontendPlayerRuntimeBlockCount - 1;
+    pFVar12 = g_FrontendPlayerRuntimeBlocks;
     do {
-      pFVar15[1].commandSyncPending = FRONTEND_COMMAND_SYNC_CLEAR;
-      iVar5 = iVar5 + -1;
-      pFVar15 = pFVar15 + 1;
-    } while (iVar5 != 0);
+      pFVar12[1].commandSyncPending = FRONTEND_COMMAND_SYNC_CLEAR;
+      iVar3 = iVar3 + -1;
+      pFVar12 = pFVar12 + 1;
+    } while (iVar3 != 0);
   }
   g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
   FrontendCommandQueue_DequeueFirstIntoRecord(g_FrontendPlayerCommandRecords);
-  iVar5 = 0;
-  pFVar12 = g_FrontendPlayerCommandRecords;
-  pFVar18 = g_FrontendCommandBatchPacketBuffer;
-  FVar10 = g_FrontendPlayerRuntimeBlockCount;
-FrontendNetwork_HostTick_ScanNextPlayerCommandRecord:
-  FVar8 = FVar10;
-  if (((pFVar12->command).packedCommandAndPlayerId & 0xffffff00) == 0) {
-    pFVar12 = pFVar12 + 1;
-    goto FrontendNetwork_HostTick_AdvanceCommandScanOrRestartUntilBatchNonempty;
-  }
-  while( true ) {
-    for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
-      (pFVar18->header).packedTypeAndUnitCount = (pFVar12->header).packedTypeAndUnitCount;
-      pFVar12 = (FrontendCommandPacketRecord *)&(pFVar12->header).sequenceToken;
-      pFVar18 = (FrontendCommandPacketRecord *)&(pFVar18->header).sequenceToken;
-    }
-    iVar5 = iVar5 + 1;
-FrontendNetwork_HostTick_AdvanceCommandScanOrRestartUntilBatchNonempty:
-    FVar10 = FVar8 - 1;
-    if (FVar8 - 1 != 0) goto FrontendNetwork_HostTick_ScanNextPlayerCommandRecord;
-    if (iVar5 << 0x10 != 0) break;
-    pFVar12 = g_FrontendPlayerCommandRecords;
-    iVar5 = 0;
-  }
-  UVar9 = iVar5 << 0x10 | 0x10;
-  pUVar13 = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-  g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount = UVar9;
-  FVar10 = g_FrontendPlayerRuntimeBlockCount;
-  while (FVar10 != 1) {
-    uVar21 = UiTransfer_StagePacketAndSendCf(pUVar13,&g_FrontendCommandBatchPacketBuffer[0].header);
-    UVar9 = (UiTransferPacketPackedType)((ulonglong)uVar21 >> 0x20);
-    pUVar13 = pUVar13 + 0x13b;
-    FVar10 = extraout_ECX;
-  }
-  pFVar12 = g_FrontendCommandBatchPacketBuffer;
-  uVar7 = UVar9 >> 0x10;
+  uVar6 = 0;
+  pFVar9 = g_FrontendPlayerCommandRecords;
+  pFVar15 = g_FrontendCommandBatchPacketBuffer;
+  FVar7 = g_FrontendPlayerRuntimeBlockCount;
   do {
-    uVar1 = (pFVar12->command).packedCommandAndPlayerId;
-    uVar3 = uVar1 >> 8;
-    if (uVar3 != 0) {
-      if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar3 < &g_FrontendRootNode) {
-        (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar3))
-                  (uVar1 & 0xff,(pFVar12->command).payloadDword0C,(pFVar12->command).payloadDword08,
-                   (pFVar12->command).payloadDword04);
-        uVar7 = extraout_ECX_00;
-      }
+    FVar4 = FVar7;
+    if (((pFVar9->command).packedCommandAndPlayerId & 0xffffff00) == 0) {
+      pFVar9 = pFVar9 + 1;
+      goto FrontendNetwork_HostTick_AdvanceCommandScanOrRestartUntilBatchNonempty;
     }
-    FVar10 = g_FrontendPlayerRuntimeBlockCount;
-    pFVar15 = g_FrontendPlayerRuntimeBlocks;
-    pFVar12 = pFVar12 + 1;
-    uVar7 = uVar7 - 1;
-  } while (uVar7 != 0);
-  if ((g_FrontendHostSnapshotTransferCountdown != 0) &&
-     (g_FrontendHostSnapshotTransferCountdown = g_FrontendHostSnapshotTransferCountdown + -1,
-     FVar8 = g_FrontendPlayerRuntimeBlockCount, pFVar14 = g_FrontendPlayerRuntimeBlocks,
-     g_FrontendHostSnapshotTransferCountdown == 0)) {
-    do {
-      if (((pFVar14->snapshotTransferFlags & FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) != 0) &&
-         ((pFVar14->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0)) {
-        g_FrontendPacket10009Buffer.snapshotChunkOffset = pFVar14->snapshotChunkOffset;
-        g_FrontendPacket10009Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10009;
-        UiTransfer_StagePacketAndSendCf(&pFVar14->endpoint,&g_FrontendPacket10009Buffer.header);
-        g_FrontendHostSnapshotTransferCountdown = 4;
-        goto FrontendNetwork_HostTick_ReturnAfterSnapshotTransferStep;
+    while( true ) {
+      for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
+        (pFVar15->header).packedTypeAndUnitCount = (pFVar9->header).packedTypeAndUnitCount;
+        pFVar9 = (FrontendCommandPacketRecord *)&(pFVar9->header).sequenceToken;
+        pFVar15 = (FrontendCommandPacketRecord *)&(pFVar15->header).sequenceToken;
       }
-      FVar8 = FVar8 - 1;
-      pFVar14 = pFVar14 + 1;
-    } while (FVar8 != 0);
-    g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags =
-         g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags |
-         FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
-    FVar11 = 0;
-    pFVar17 = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
-    if (1 < FVar10) {
-      do {
-        FVar2 = pFVar15->snapshotTransferFlags;
-        *pFVar17 = FVar2;
-        sourceSizeBytes = FVar11 + FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
-        pFVar17 = pFVar17 + 1;
-        if ((FVar2 & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
-          pbVar16 = pFVar15->snapshotPayloadB0_13AF;
-          for (iVar5 = 0x4c0; iVar5 != 0; iVar5 = iVar5 + -1) {
-            *pFVar17 = *(FrontendSnapshotTransferFlags *)pbVar16;
-            pbVar16 = pbVar16 + 4;
-            pFVar17 = pFVar17 + 1;
-          }
-          sourceSizeBytes = FVar11 + 0x1304;
+      uVar6 = uVar6 + 1;
+FrontendNetwork_HostTick_AdvanceCommandScanOrRestartUntilBatchNonempty:
+      FVar7 = FVar4 - 1;
+      if (FVar4 - 1 != 0) break;
+      if (uVar6 << 0x10 != 0) {
+        g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount = uVar6 << 0x10 | 0x10;
+        pUVar10 = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
+        FVar7 = g_FrontendPlayerRuntimeBlockCount;
+        while (FVar7 = FVar7 - 1, FVar7 != 0) {
+          UiTransfer_StagePacketAndSendCf(pUVar10,&g_FrontendCommandBatchPacketBuffer[0].header);
+          pUVar10 = pUVar10 + 0x13b;
         }
-        pFVar15 = pFVar15 + 1;
-        FVar10 = FVar10 - 1;
-        FVar11 = sourceSizeBytes;
-      } while (FVar10 != 0);
-      bVar20 = 0x7ffffc < sourceSizeBytes;
-      dVar4 = PckCodec_EncodeHuffmanRle
-                        (0x7ffffc - sourceSizeBytes,(byte *)(pFVar17 + 1),sourceSizeBytes,
-                         g_PackageScratchBuffer);
-      if (!bVar20) {
-        *pFVar17 = sourceSizeBytes;
-        _pvVar22 = (*g_MemoryApi.alloc)(dVar4 + 4);
-        if (!bVar20) {
-          pFVar19 = SUB84(_pvVar22,0);
-          for (uVar7 = extraout_ECX_01 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-            *pFVar19 = *pFVar17;
-            pFVar17 = pFVar17 + 1;
-            pFVar19 = pFVar19 + 1;
+        pFVar9 = g_FrontendCommandBatchPacketBuffer;
+        uVar6 = uVar6 & 0xffff;
+        do {
+          uVar5 = (pFVar9->command).packedCommandAndPlayerId;
+          uVar2 = uVar5 >> 8;
+          if (uVar2 != 0) {
+            if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar2 < &g_FrontendRootNode) {
+              (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar2))
+                        (uVar5 & 0xff,(pFVar9->command).payloadDword0C,
+                         (pFVar9->command).payloadDword08,(pFVar9->command).payloadDword04);
+            }
           }
-          UiTransferMailbox_SetOutgoingBuffer
-                    ((UiTransferPayloadByteCount)((ulonglong)_pvVar22 >> 0x20),SUB84(_pvVar22,0));
-          FrontendCommandQueue_EnqueueLocalPlayerCommand(0x16f0,0,0,0);
+          FVar7 = g_FrontendPlayerRuntimeBlockCount;
+          pFVar12 = g_FrontendPlayerRuntimeBlocks;
+          pFVar9 = pFVar9 + 1;
+          uVar6 = uVar6 - 1;
+        } while (uVar6 != 0);
+        if ((g_FrontendHostSnapshotTransferCountdown != 0) &&
+           (g_FrontendHostSnapshotTransferCountdown = g_FrontendHostSnapshotTransferCountdown + -1,
+           FVar4 = g_FrontendPlayerRuntimeBlockCount, pFVar11 = g_FrontendPlayerRuntimeBlocks,
+           g_FrontendHostSnapshotTransferCountdown == 0)) {
+          do {
+            if (((pFVar11->snapshotTransferFlags & FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) != 0) &&
+               ((pFVar11->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0)) {
+              g_FrontendPacket10009Buffer.snapshotChunkOffset = pFVar11->snapshotChunkOffset;
+              g_FrontendPacket10009Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10009;
+              UiTransfer_StagePacketAndSendCf
+                        (&pFVar11->endpoint,&g_FrontendPacket10009Buffer.header);
+              g_FrontendHostSnapshotTransferCountdown = 4;
+              return false;
+            }
+            FVar4 = FVar4 - 1;
+            pFVar11 = pFVar11 + 1;
+          } while (FVar4 != 0);
+          g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags =
+               g_FrontendPlayerRuntimeBlocks->snapshotTransferFlags |
+               FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
+          FVar8 = 0;
+          pFVar14 = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
+          if (1 < FVar7) {
+            do {
+              FVar1 = pFVar12->snapshotTransferFlags;
+              *pFVar14 = FVar1;
+              sourceSizeBytes = FVar8 + FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY;
+              pFVar14 = pFVar14 + 1;
+              if ((FVar1 & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) != 0) {
+                pbVar13 = pFVar12->snapshotPayloadB0_13AF;
+                for (iVar3 = 0x4c0; iVar3 != 0; iVar3 = iVar3 + -1) {
+                  *pFVar14 = *(FrontendSnapshotTransferFlags *)pbVar13;
+                  pbVar13 = pbVar13 + 4;
+                  pFVar14 = pFVar14 + 1;
+                }
+                sourceSizeBytes = FVar8 + 0x1304;
+              }
+              pFVar12 = pFVar12 + 1;
+              FVar7 = FVar7 - 1;
+              FVar8 = sourceSizeBytes;
+            } while (FVar7 != 0);
+            PVar17 = PckCodec_EncodeHuffmanRle
+                               (0x7ffffc - sourceSizeBytes,(byte *)(pFVar14 + 1),sourceSizeBytes,
+                                g_PackageScratchBuffer);
+            if (!PVar17.carry) {
+              *pFVar14 = sourceSizeBytes;
+              uVar6 = PVar17.eax + 4;
+              AVar18 = (*g_MemoryApi.alloc)(uVar6);
+              if (!AVar18.carry) {
+                pFVar16 = (FrontendSnapshotTransferFlags *)AVar18.eax;
+                for (uVar5 = uVar6 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+                  *pFVar16 = *pFVar14;
+                  pFVar14 = pFVar14 + 1;
+                  pFVar16 = pFVar16 + 1;
+                }
+                UiTransferMailbox_SetOutgoingBuffer
+                          (uVar6,(FrontendSnapshotTransferFlags *)AVar18.eax);
+                FrontendCommandQueue_EnqueueLocalPlayerCommand(0x16f0,0,0,0);
+              }
+            }
+          }
         }
+        return false;
       }
+      pFVar9 = g_FrontendPlayerCommandRecords;
+      uVar6 = 0;
     }
-  }
-FrontendNetwork_HostTick_ReturnAfterSnapshotTransferStep:
-  return CONCAT44(param_2,in_EAX);
+  } while( true );
 }
+
 
 /* Address: 0x0054FA10.
    Ownership: network/backend/runtime.
@@ -341,16 +336,15 @@ FrontendNetwork_HostTick_ReturnAfterSnapshotTransferStep:
    [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext],
    FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime].
 */
-void __cdecl FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
+void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
 
 {
   uint *puVar1;
   FrontendPlayerRuntimeRecord *pFVar2;
   int iVar3;
-  word *stream;
-  void *replacementPayload;
   FrontendPlayerRuntimeBlockCount FVar4;
   FrontendPlayerRuntimeRecord *pFVar5;
+  TextResourceResolveEaxCf5 TVar6;
   
   g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks - 1;
   if (g_SessionTransferTimeoutTicks == 0) {
@@ -369,9 +363,9 @@ void __cdecl FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
       g_FrontendRomTransitionContextValue = 0;
       FrontendRomTransition_ActivateRecordByIdCf(1,(WorldRuntimeContext *)(iVar3 + 0x368));
     }
-    stream = TextResource_Resolve(0xff01);
-    RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-    FrontendRecentTextHistory_InsertAndRebuild5();
+    TVar6 = TextResource_Resolve(0xff01);
+    RichTextCommandStream_PatchPayloadBySelector(0,&pFVar5->playerName,TVar6.eax);
+    FrontendRecentTextHistory_InsertAndRebuild5(TVar6.eax);
     pFVar2 = g_FrontendPlayerRuntimeBlocks;
     for (FVar4 = g_FrontendPlayerRuntimeBlockCount; FVar4 != 0; FVar4 = FVar4 - 1) {
       if ((pFVar5->factionAssignment).readyOrWaitState == 0) {
@@ -408,6 +402,7 @@ void __cdecl FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
   return;
 }
 
+
 /* Address: 0x00572710.
    Ownership: network/backend/runtime.
    Purpose: Handles validated frontend packet types 0x20, 0x10022, and 0x10007. It dispatches bounded 0x20-byte
@@ -419,24 +414,19 @@ void __cdecl FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
    RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
    [ui/ingame/runtime].
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet)
 
 {
   UiTransferSenderContext UVar1;
-  undefined4 in_EAX;
   uint uVar2;
-  word *stream;
   uint uVar3;
-  uint extraout_ECX;
   FrontendPlayerRuntimeBlockCount FVar4;
-  int extraout_ECX_00;
   int iVar5;
-  undefined4 in_EDX;
-  void *replacementPayload;
   FrontendPlayerRuntimeRecord *pFVar6;
   FrontendPlayerRuntimeRecord *pFVar7;
+  TextResourceResolveEaxCf5 TVar8;
   
   if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & 0xffff) == 0x20) &&
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
@@ -456,8 +446,7 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
                       ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                        (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                        (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
-                       (packet->packet50001SessionAdvertisement).joinAvailableFlag);
-            uVar3 = extraout_ECX;
+                       (packet->packet20002PlayerDescriptor).reserved14);
           }
         }
         packet = (FrontendTransferPacketUnion *)
@@ -466,11 +455,11 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
       } while (uVar3 != 0);
       FrontendTransfer_SendCommandBatchRequest10021();
       g_FrontendTransferResponsePending = 1;
-      return CONCAT44(in_EDX,in_EAX);
+      return true;
     }
     UiTransfer_StagePacketAndSendCf
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
-    return CONCAT44(in_EDX,in_EAX);
+    return false;
   }
   if ((((packet->packet10000Handshake).header.packedTypeAndUnitCount == FRONTEND_PACKET_10022) &&
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
@@ -480,7 +469,7 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
     g_FrontendPacket10023Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10023;
     UiTransfer_StagePacketAndSendCf
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10023Buffer.header);
-    return CONCAT44(in_EDX,in_EAX);
+    return false;
   }
   if ((((packet->packet10000Handshake).header.packedTypeAndUnitCount ==
         FRONTEND_PACKET_10007_PLAYER_REMOVAL) &&
@@ -491,26 +480,57 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
     pFVar7 = g_FrontendPlayerRuntimeBlocks;
     do {
       if ((packet->packet10000Handshake).protocolMagic2931 == pFVar7->playerRuntimeId) {
-        stream = TextResource_Resolve(0xff00);
-        RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-        InGameRecentTextHistory_InsertAndRebuild8();
-        if (extraout_ECX_00 + -1 != 0) {
+        TVar8 = TextResource_Resolve(0xff00);
+        RichTextCommandStream_PatchPayloadBySelector(0,&pFVar7->playerName,TVar8.eax);
+        InGameRecentTextHistory_InsertAndRebuild8(TVar8.eax);
+        if (FVar4 - 1 != 0) {
           pFVar6 = pFVar7 + 1;
-          for (iVar5 = (extraout_ECX_00 + -1) * 0x4ec; iVar5 != 0; iVar5 = iVar5 + -1) {
+          for (iVar5 = (FVar4 - 1) * 0x4ec; iVar5 != 0; iVar5 = iVar5 + -1) {
             pFVar7->runtimeState00 = pFVar6->runtimeState00;
             pFVar6 = (FrontendPlayerRuntimeRecord *)&pFVar6->peerSequenceToken;
             pFVar7 = (FrontendPlayerRuntimeRecord *)&pFVar7->peerSequenceToken;
           }
         }
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
-        return CONCAT44(in_EDX,in_EAX);
+        return false;
       }
       pFVar7 = pFVar7 + 1;
       FVar4 = FVar4 - 1;
     } while (FVar4 != 0);
-    return CONCAT44(in_EDX,in_EAX);
+    return false;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
+}
+
+
+/* Address: 0x00583D10.
+   Ownership: network/backend/runtime.
+   Purpose: Proven unreferenced trivial stub that preserves its recovered register set and returns zero.
+*/
+dword __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
+
+{
+  return 0;
+}
+
+/* Address: 0x00583D30.
+   Ownership: network/backend/runtime.
+   Purpose: Proven unreferenced trivial no-op stub with the recovered register-preservation contract.
+*/
+void __thandor_void_preserve_eax_ecx_edx Unreferenced_NoOpPreserveRegs_00583D30(void)
+
+{
+  return;
+}
+
+/* Address: 0x00583D40.
+   Ownership: network/backend/runtime.
+   Purpose: Proven unreferenced trivial stub that preserves its recovered register set and returns zero.
+*/
+dword __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
+
+{
+  return 0;
 }
 
 /* Address: 0x00584080.
@@ -523,160 +543,203 @@ dword __cdecl Network_Init(void)
 {
   HINSTANCE module;
   HINSTANCE pHVar1;
-  bool bVar2;
+  DynDllLoadEaxCf5 DVar2;
+  DynApiResolveEaxCf5 DVar3;
   
-  bVar2 = &stack0xffffffe8 < (undefined1 *)0x4;
-  module = DynDLL_Load(s_Wsock32ModuleName);
+  DVar2 = DynDLL_Load(s_Wsock32ModuleName);
+  module = DVar2.moduleOrError;
   pHVar1 = module;
-  if (!bVar2) {
-    pHVar1 = DynAPI_Resolve(&g_WinSock_accept,module,s_Wsock32Export_accept);
-    if (!bVar2) {
-      pHVar1 = DynAPI_Resolve(&g_WinSock_bind,module,s_Wsock32Export_bind);
-      if (!bVar2) {
-        pHVar1 = DynAPI_Resolve(&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
-        if (!bVar2) {
-          pHVar1 = DynAPI_Resolve(&g_WinSock_connect,module,s_Wsock32Export_connect);
-          if (!bVar2) {
-            pHVar1 = DynAPI_Resolve(&g_WinSock_getpeername,module,s_Wsock32Export_getpeername);
-            if (!bVar2) {
-              pHVar1 = DynAPI_Resolve(&g_WinSock_getsockname,module,s_Wsock32Export_getsockname);
-              if (!bVar2) {
-                pHVar1 = DynAPI_Resolve(&g_WinSock_getsockopt,module,s_Wsock32Export_getsockopt);
-                if (!bVar2) {
-                  pHVar1 = DynAPI_Resolve(&g_WinSock_htonl,module,s_Wsock32Export_htonl);
-                  if (!bVar2) {
-                    pHVar1 = DynAPI_Resolve(&g_WinSock_htons,module,s_Wsock32Export_htons);
-                    if (!bVar2) {
-                      pHVar1 = DynAPI_Resolve(&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr)
-                      ;
-                      if (!bVar2) {
-                        pHVar1 = DynAPI_Resolve(&g_WinSock_inet_ntoa,module,
-                                                s_Wsock32Export_inet_ntoa);
-                        if (!bVar2) {
-                          pHVar1 = DynAPI_Resolve(&g_WinSock_ioctlsocket,module,
-                                                  s_Wsock32Export_ioctlsocket);
-                          if (!bVar2) {
-                            pHVar1 = DynAPI_Resolve(&g_WinSock_listen,module,s_Wsock32Export_listen)
-                            ;
-                            if (!bVar2) {
-                              pHVar1 = DynAPI_Resolve(&g_WinSock_ntohl,module,s_Wsock32Export_ntohl)
-                              ;
-                              if (!bVar2) {
-                                pHVar1 = DynAPI_Resolve(&g_WinSock_ntohs,module,
-                                                        s_Wsock32Export_ntohs);
-                                if (!bVar2) {
-                                  pHVar1 = DynAPI_Resolve(&g_WinSock_recv,module,
-                                                          s_Wsock32Export_recv);
-                                  if (!bVar2) {
-                                    pHVar1 = DynAPI_Resolve(&g_WinSock_recvfrom,module,
-                                                            s_Wsock32Export_recvfrom);
-                                    if (!bVar2) {
-                                      pHVar1 = DynAPI_Resolve(&g_WinSock_select,module,
-                                                              s_Wsock32Export_select);
-                                      if (!bVar2) {
-                                        pHVar1 = DynAPI_Resolve(&g_WinSock_send,module,
-                                                                s_Wsock32Export_send);
-                                        if (!bVar2) {
-                                          pHVar1 = DynAPI_Resolve(&g_WinSock_sendto,module,
-                                                                  s_Wsock32Export_sendto);
-                                          if (!bVar2) {
-                                            pHVar1 = DynAPI_Resolve(&g_WinSock_setsockopt,module,
-                                                                    s_Wsock32Export_setsockopt);
-                                            if (!bVar2) {
-                                              pHVar1 = DynAPI_Resolve(&g_WinSock_shutdown,module,
-                                                                      s_Wsock32Export_shutdown);
-                                              if (!bVar2) {
-                                                pHVar1 = DynAPI_Resolve(&g_WinSock_socket,module,
-                                                                        s_Wsock32Export_socket);
-                                                if (!bVar2) {
-                                                  pHVar1 = DynAPI_Resolve(&g_WinSock_gethostbyaddr,
-                                                                          module,
+  if (!DVar2.carry) {
+    DVar3 = DynAPI_Resolve(&g_WinSock_accept,module,s_Wsock32Export_accept);
+    pHVar1 = DVar3.procedureOrError;
+    if (!DVar3.carry) {
+      DVar3 = DynAPI_Resolve(&g_WinSock_bind,module,s_Wsock32Export_bind);
+      pHVar1 = DVar3.procedureOrError;
+      if (!DVar3.carry) {
+        DVar3 = DynAPI_Resolve(&g_WinSock_closesocket,module,s_Wsock32Export_closesocket);
+        pHVar1 = DVar3.procedureOrError;
+        if (!DVar3.carry) {
+          DVar3 = DynAPI_Resolve(&g_WinSock_connect,module,s_Wsock32Export_connect);
+          pHVar1 = DVar3.procedureOrError;
+          if (!DVar3.carry) {
+            DVar3 = DynAPI_Resolve(&g_WinSock_getpeername,module,s_Wsock32Export_getpeername);
+            pHVar1 = DVar3.procedureOrError;
+            if (!DVar3.carry) {
+              DVar3 = DynAPI_Resolve(&g_WinSock_getsockname,module,s_Wsock32Export_getsockname);
+              pHVar1 = DVar3.procedureOrError;
+              if (!DVar3.carry) {
+                DVar3 = DynAPI_Resolve(&g_WinSock_getsockopt,module,s_Wsock32Export_getsockopt);
+                pHVar1 = DVar3.procedureOrError;
+                if (!DVar3.carry) {
+                  DVar3 = DynAPI_Resolve(&g_WinSock_htonl,module,s_Wsock32Export_htonl);
+                  pHVar1 = DVar3.procedureOrError;
+                  if (!DVar3.carry) {
+                    DVar3 = DynAPI_Resolve(&g_WinSock_htons,module,s_Wsock32Export_htons);
+                    pHVar1 = DVar3.procedureOrError;
+                    if (!DVar3.carry) {
+                      DVar3 = DynAPI_Resolve(&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr);
+                      pHVar1 = DVar3.procedureOrError;
+                      if (!DVar3.carry) {
+                        DVar3 = DynAPI_Resolve(&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa
+                                              );
+                        pHVar1 = DVar3.procedureOrError;
+                        if (!DVar3.carry) {
+                          DVar3 = DynAPI_Resolve(&g_WinSock_ioctlsocket,module,
+                                                 s_Wsock32Export_ioctlsocket);
+                          pHVar1 = DVar3.procedureOrError;
+                          if (!DVar3.carry) {
+                            DVar3 = DynAPI_Resolve(&g_WinSock_listen,module,s_Wsock32Export_listen);
+                            pHVar1 = DVar3.procedureOrError;
+                            if (!DVar3.carry) {
+                              DVar3 = DynAPI_Resolve(&g_WinSock_ntohl,module,s_Wsock32Export_ntohl);
+                              pHVar1 = DVar3.procedureOrError;
+                              if (!DVar3.carry) {
+                                DVar3 = DynAPI_Resolve(&g_WinSock_ntohs,module,s_Wsock32Export_ntohs
+                                                      );
+                                pHVar1 = DVar3.procedureOrError;
+                                if (!DVar3.carry) {
+                                  DVar3 = DynAPI_Resolve(&g_WinSock_recv,module,s_Wsock32Export_recv
+                                                        );
+                                  pHVar1 = DVar3.procedureOrError;
+                                  if (!DVar3.carry) {
+                                    DVar3 = DynAPI_Resolve(&g_WinSock_recvfrom,module,
+                                                           s_Wsock32Export_recvfrom);
+                                    pHVar1 = DVar3.procedureOrError;
+                                    if (!DVar3.carry) {
+                                      DVar3 = DynAPI_Resolve(&g_WinSock_select,module,
+                                                             s_Wsock32Export_select);
+                                      pHVar1 = DVar3.procedureOrError;
+                                      if (!DVar3.carry) {
+                                        DVar3 = DynAPI_Resolve(&g_WinSock_send,module,
+                                                               s_Wsock32Export_send);
+                                        pHVar1 = DVar3.procedureOrError;
+                                        if (!DVar3.carry) {
+                                          DVar3 = DynAPI_Resolve(&g_WinSock_sendto,module,
+                                                                 s_Wsock32Export_sendto);
+                                          pHVar1 = DVar3.procedureOrError;
+                                          if (!DVar3.carry) {
+                                            DVar3 = DynAPI_Resolve(&g_WinSock_setsockopt,module,
+                                                                   s_Wsock32Export_setsockopt);
+                                            pHVar1 = DVar3.procedureOrError;
+                                            if (!DVar3.carry) {
+                                              DVar3 = DynAPI_Resolve(&g_WinSock_shutdown,module,
+                                                                     s_Wsock32Export_shutdown);
+                                              pHVar1 = DVar3.procedureOrError;
+                                              if (!DVar3.carry) {
+                                                DVar3 = DynAPI_Resolve(&g_WinSock_socket,module,
+                                                                       s_Wsock32Export_socket);
+                                                pHVar1 = DVar3.procedureOrError;
+                                                if (!DVar3.carry) {
+                                                  DVar3 = DynAPI_Resolve(&g_WinSock_gethostbyaddr,
+                                                                         module,
                                                   s_Wsock32Export_gethostbyaddr);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_gethostbyname
-                                                                            ,module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_gethostbyname,
+                                                                           module,
                                                   s_Wsock32Export_gethostbyname);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_gethostname,
-                                                                            module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_gethostname,
+                                                                           module,
                                                   s_Wsock32Export_gethostname);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
-                                                  g_WinSock_getprotobyname,module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_getprotobyname
+                                                                           ,module,
                                                   s_Wsock32Export_getprotobyname);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_getprotobynumber,module,
                                                   s_Wsock32Export_getprotobynumber);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_getservbyname
-                                                                            ,module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_getservbyname,
+                                                                           module,
                                                   s_Wsock32Export_getservbyname);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_getservbyport
-                                                                            ,module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_getservbyport,
+                                                                           module,
                                                   s_Wsock32Export_getservbyport);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAAsyncGetHostByAddr,module,
                                                   s_Wsock32Export_WSAAsyncGetHostByAddr);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAAsyncGetHostByName,module,
                                                   s_Wsock32Export_WSAAsyncGetHostByName);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAAsyncGetProtoByName,module,
                                                   s_Wsock32Export_WSAAsyncGetProtoByName);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAAsyncGetProtoByNumber,module,
                                                   s_Wsock32Export_WSAAsyncGetProtoByNumber);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAAsyncGetServByName,module,
                                                   s_Wsock32Export_WSAAsyncGetServByName);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAAsyncGetServByPort,module,
                                                   s_Wsock32Export_WSAAsyncGetServByPort);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncSelect,module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_WSAAsyncSelect
+                                                                           ,module,
                                                   s_Wsock32Export_WSAAsyncSelect);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSACancelAsyncRequest,module,
                                                   s_Wsock32Export_WSACancelAsyncRequest);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSACancelBlockingCall,module,
                                                   s_Wsock32Export_WSACancelBlockingCall);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_WSACleanup,
-                                                                            module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_WSACleanup,
+                                                                           module,
                                                   s_Wsock32Export_WSACleanup);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAGetLastError,module,
                                                   s_Wsock32Export_WSAGetLastError);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_WSAIsBlocking
-                                                                            ,module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_WSAIsBlocking,
+                                                                           module,
                                                   s_Wsock32Export_WSAIsBlocking);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSASetBlockingHook,module,
                                                   s_Wsock32Export_WSASetBlockingHook);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&g_WinSock_WSAStartup,
-                                                                            module,
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&g_WinSock_WSAStartup,
+                                                                           module,
                                                   s_Wsock32Export_WSAStartup);
-                                                  if (!bVar2) {
-                                                    pHVar1 = DynAPI_Resolve(&
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
+                                                    DVar3 = DynAPI_Resolve(&
                                                   g_WinSock_WSAUnhookBlockingHook,module,
                                                   s_Wsock32Export_WSAUnhookBlockingHook);
-                                                  if (!bVar2) {
+                                                  pHVar1 = DVar3.procedureOrError;
+                                                  if (!DVar3.carry) {
                                                     pHVar1 = (HINSTANCE)
                                                              (*g_WinSock_WSAStartup)
                                                                        (0x101,&g_WinSockStartupData)
@@ -754,11 +817,12 @@ dword __cdecl Network_Init(void)
   return (dword)pHVar1;
 }
 
+
 /* Address: 0x00584DF0.
    Ownership: network/backend/runtime.
    Purpose: Handles network shutdown.
 */
-void __cdecl Network_Shutdown(void)
+void __thandor_preserve_eax Network_Shutdown(void)
 
 {
   if (g_NetworkBackendMode == 1) {
@@ -776,40 +840,47 @@ void __cdecl Network_Shutdown(void)
   return;
 }
 
+
 /* Address: 0x00584E50.
    Ownership: network/backend/runtime.
    Purpose: Typed parameters: p1 returnValue→NetworkBackendSessionReturnValue32_V345. Calling convention, complete
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-NetworkBackendSessionReturnValue32 __thiscall
+NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx
 NetworkBackend_SetSessionContextCf(void *this,NetworkBackendSessionReturnValue32 returnValue)
 
 {
+  NetworkBackendSetSessionEaxCf5 NVar1;
+  
   g_NetworkBackendSessionContext = this;
-  return returnValue;
+  NVar1.carry = false;
+  NVar1.eax = returnValue;
+  return NVar1;
 }
+
 
 /* Address: 0x00585210.
    Ownership: network/backend/runtime.
    Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
    callable entry.
 */
-undefined8 NetworkBackend_SelectInstanceByIndex(NetworkSessionContext *param_1)
+bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(dword instanceIndex)
 
 {
-  undefined4 in_EAX;
-  undefined4 in_EDX;
-  undefined4 *puVar1;
+  NetworkBackendInstanceDescriptorPrefix *selectedBackendDescriptor;
   
-  if (param_1 < g_NetworkBackendInstanceCount) {
-    g_NetworkBackendSessionContext = param_1;
-    puVar1 = (undefined4 *)((int)g_NetworkBackendInstanceTable + (int)param_1 * 0x100);
-    DAT_00583f0e = *puVar1;
-    DAT_00583f12 = puVar1[1];
-    DAT_00583f16 = puVar1[2];
-    DAT_00583f1a = puVar1[3];
-    return CONCAT44(in_EDX,in_EAX);
+  if (instanceIndex < g_NetworkBackendInstanceCount) {
+    g_NetworkBackendSessionContext = (NetworkSessionContext *)instanceIndex;
+    selectedBackendDescriptor =
+         (NetworkBackendInstanceDescriptorPrefix *)
+         ((int)g_NetworkBackendInstanceTable + instanceIndex * 0x100);
+    g_NetworkBackendActiveAddressFamily = selectedBackendDescriptor->addressFamily;
+    g_NetworkBackendActiveSocketAddressLength = selectedBackendDescriptor->socketAddressLength;
+    g_NetworkBackendActiveSocketType = selectedBackendDescriptor->socketType;
+    g_NetworkBackendActiveProtocol = selectedBackendDescriptor->protocol;
+    return false;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return true;
 }
+

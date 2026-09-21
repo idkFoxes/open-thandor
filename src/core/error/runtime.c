@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/error/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/error/runtime.h>
 
 /* Implementation ownership: core/error/runtime. */
@@ -11,48 +18,52 @@
 void __cdecl ErrorSystem_Init(void)
 
 {
+  TextResourceLoadEaxCf5 TVar1;
+  
   g_FatalErrorPrimaryDispatchCf = FatalError_Exit;
   g_FatalErrorRuntimeDispatchCf = FatalError_Exit;
   g_FatalErrorExitFallbackDispatchCf = FatalError_Exit;
-  TextResourcePage_Load(0,(word *)u_texte_error_str_00407d20);
-                    
-  FatalError_Exit();
+  TVar1 = TextResourcePage_Load(0,(word *)u_texte_error_str_00407d20);
+                    // WARNING: Subroutine does not return
+  FatalError_Exit(0x407d40,TVar1.carry);
 }
+
 
 /* Address: 0x00407F50.
    Ownership: core/error/runtime.
    Purpose: Fallback error callback that sets carry and returns after consuming one stack argument.
 */
-void ErrorRuntime_CallbackAlwaysFailCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFailCf(UiRootNode *root)
 
 {
-  return;
+  return true;
 }
+
 
 /* Address: 0x00407F60.
    Ownership: core/error/runtime.
    Purpose: Fallback error callback that returns code 8 in EAX after consuming one stack argument.
 */
-undefined4 ErrorRuntime_CallbackReturnCode8(void)
+int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *root)
 
 {
   return 8;
 }
+
 
 /* Address: 0x00407F70.
    Ownership: core/error/runtime.
    Purpose: Handles fatal error dialog dismiss and pop root.
    Cross-module calls: UiRootStack_PopCf [ui/controls/layout].
 */
-undefined4 FatalErrorDialog_DismissAndPopRoot(UiRootNode *param_1)
+void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 
 {
-  undefined4 in_EAX;
-  
-  UiRootStack_PopCf(param_1);
+  UiRootStack_PopCf(rootNode);
   g_FatalErrorDialogDismissed = g_FatalErrorDialogDismissed + 1;
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00407F90.
    Ownership: core/error/runtime.
@@ -64,48 +75,53 @@ undefined4 FatalErrorDialog_DismissAndPopRoot(UiRootNode *param_1)
    [ui/controls/layout], UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout], UiRootStack_InvalidateAll
    [ui/controls/layout].
 */
-void __cdecl FatalErrorRuntime_DispatchPendingErrorCf(void)
+FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
+FatalErrorRuntime_DispatchPendingErrorCf(dword errorOrValue,bool carryIn)
 
 {
   sdword *psVar1;
   UiRootNode *pUVar2;
-  word *in_EAX;
   word *stream;
   int iVar3;
   undefined4 *puVar4;
   UiRootNode *pUVar5;
-  bool in_CF;
-  undefined8 uVar6;
-  RichTextExtentRegs RVar7;
+  RichTextExtentRegs RVar6;
+  FatalErrorEaxCf5 FVar7;
+  FatalErrorEaxCf5 FVar8;
+  TextResourceResolveEaxCf5 TVar9;
   
-  if (!in_CF) {
-    return;
+  if (!carryIn) {
+    FVar7.carry = false;
+    FVar7.eax = errorOrValue;
+    return FVar7;
   }
   if (g_FatalErrorUiRootTemplate == (UiRootNode *)0x0) {
-    in_EAX = (word *)(*g_FatalErrorPrimaryDispatchCf)();
+    FVar8 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
+    errorOrValue = FVar8.eax;
   }
-  if (((uint)in_EAX & 0xffffff00) == 0) {
-    stream = TextResource_Resolve((TextResourceId)in_EAX);
-    uVar6 = RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
-    uVar6 = RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(word *)uVar6);
-    uVar6 = RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,(word *)uVar6);
-    uVar6 = RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,(word *)uVar6);
-    in_EAX = (word *)uVar6;
+  stream = (word *)errorOrValue;
+  if ((errorOrValue & 0xffffff00) == 0) {
+    TVar9 = TextResource_Resolve(errorOrValue);
+    stream = TVar9.eax;
+    RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
+    RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,stream);
+    RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,stream);
+    RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,stream);
   }
   puVar4 = &g_FatalErrorUiRootTemplateImage;
   pUVar5 = g_FatalErrorUiRootTemplate;
-  g_FatalErrorRichTextStream = in_EAX;
+  g_FatalErrorRichTextStream = stream;
   for (iVar3 = 0x44; pUVar2 = g_FatalErrorUiRootTemplate, iVar3 != 0; iVar3 = iVar3 + -1) {
     (pUVar5->base).nextSibling = (UiNodeBase *)*puVar4;
     puVar4 = puVar4 + 1;
     pUVar5 = (UiRootNode *)&(pUVar5->base).firstChild;
   }
-  RVar7 = RichTextCommandStream_MeasureWrappedBlockRegs
+  RVar6 = RichTextCommandStream_MeasureWrappedBlockRegs
                     (g_UiTextStyleNormal,g_FatalErrorRichTextStream,
                      ((g_FatalErrorRichTextRight - g_FatalErrorRichTextLeft) +
                      g_FatalErrorRichTextBottom) - g_FatalErrorRichTextTop);
   psVar1 = &(pUVar2->base).topOffset;
-  *psVar1 = *psVar1 - RVar7.heightPixels;
+  *psVar1 = *psVar1 - RVar6.heightPixels;
   UiRootStack_Push(&g_UiRootCallbacks_00407E28,g_FatalErrorUiRootTemplate);
   g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
@@ -116,8 +132,11 @@ void __cdecl FatalErrorRuntime_DispatchPendingErrorCf(void)
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresentWithLockTransition();
   } while (g_FatalErrorDialogDismissed == 0);
-  return;
+  FVar8.carry = true;
+  FVar8.eax = errorOrValue;
+  return FVar8;
 }
+
 
 /* Address: 0x00408090.
    Ownership: core/error/runtime.
@@ -128,42 +147,52 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 {
   void *allocatedFatalErrorUiRootTemplate;
-  undefined1 in_CF;
+  ArenaAllocEaxCf5 AVar1;
   
-  allocatedFatalErrorUiRootTemplate = (*g_MemoryApi.alloc)(0x110);
-  if (!(bool)in_CF) {
+  AVar1 = (*g_MemoryApi.alloc)(0x110);
+  allocatedFatalErrorUiRootTemplate = (void *)AVar1.eax;
+  if (!AVar1.carry) {
     g_FatalErrorRuntimeDispatchCf = FatalErrorRuntime_DispatchPendingErrorCf;
     g_FatalErrorUiRootTemplate = allocatedFatalErrorUiRootTemplate;
   }
   return;
 }
 
+
 /* Address: 0x0041BC50.
    Ownership: core/error/runtime.
    Purpose: EXACT_DUPLICATE_FATAL_DIALOG_NARROW_TO_UTF16_TWIN.
 */
-int FatalError_CopyNarrowToUtf16Cf(uint param_1,ushort *param_2,byte *param_3)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination,byte *source)
 
 {
   byte bVar1;
-  uint uVar2;
+  TextOutputCapacityBytes TVar2;
   bool bVar3;
+  StatusValueEaxCf5 SVar4;
+  StatusValueEaxCf5 SVar5;
   
-  uVar2 = param_1;
+  TVar2 = capacityBytes;
   do {
-    bVar1 = *param_3;
-    bVar3 = uVar2 < 2;
-    uVar2 = uVar2 - 2;
-    if (bVar3 || uVar2 == 0) {
-      param_2[-1] = 0;
-      return 0x14;
+    bVar1 = *source;
+    bVar3 = TVar2 < 2;
+    TVar2 = TVar2 - 2;
+    if (bVar3 || TVar2 == 0) {
+      destination[-1] = 0;
+      SVar5.carry = true;
+      SVar5.valueOrError = 0x14;
+      return SVar5;
     }
-    *param_2 = (ushort)bVar1;
-    param_3 = param_3 + 1;
-    param_2 = param_2 + 1;
+    *destination = (ushort)bVar1;
+    source = source + 1;
+    destination = destination + 1;
   } while (bVar1 != 0);
-  return param_1 - uVar2;
+  SVar4.valueOrError = capacityBytes - TVar2;
+  SVar4.carry = false;
+  return SVar4;
 }
+
 
 /* Address: 0x005758D0.
    Ownership: core/error/runtime.
@@ -172,30 +201,34 @@ int FatalError_CopyNarrowToUtf16Cf(uint param_1,ushort *param_2,byte *param_3)
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], Runtime_Shutdown [core/memory/synchronization].
 */
-void __cdecl FatalError_Exit(void)
+FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
+FatalError_Exit(dword errorOrValue,bool carryIn)
 
 {
-  word *in_EAX;
-  bool in_CF;
-  undefined8 uVar1;
+  FatalErrorEaxCf5 FVar1;
+  TextResourceResolveEaxCf5 TVar2;
   
-  if (!in_CF) {
-    return;
+  if (!carryIn) {
+    FVar1.carry = false;
+    FVar1.eax = errorOrValue;
+    return FVar1;
   }
-  if (((uint)in_EAX & 0xffffff00) == 0) {
-    in_EAX = TextResource_Resolve((TextResourceId)in_EAX);
+  if ((errorOrValue & 0xffffff00) == 0) {
+    TVar2 = TextResource_Resolve(errorOrValue);
+    errorOrValue = (dword)TVar2.eax;
   }
-  uVar1 = RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,in_EAX);
-  uVar1 = RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(word *)uVar1);
-  uVar1 = RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,(word *)uVar1);
-  uVar1 = RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,(word *)uVar1);
-  FatalError_CopyRichTextToNarrowCf(0x400,g_FatalErrorNarrowBuffer,(word *)uVar1);
+  RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,(word *)errorOrValue);
+  RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(word *)errorOrValue);
+  RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,(word *)errorOrValue);
+  RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,(word *)errorOrValue);
+  FatalError_CopyRichTextToNarrowCf(0x400,g_FatalErrorNarrowBuffer,(word *)errorOrValue);
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
   MessageBoxA((HWND)0x0,(LPCSTR)g_FatalErrorNarrowBuffer,(LPCSTR)0x0,0x30);
-                    
+                    // WARNING: Subroutine does not return
   ExitProcess(0);
 }
+
 
 /* Address: 0x0041BB00.
    Ownership: core/error/runtime.

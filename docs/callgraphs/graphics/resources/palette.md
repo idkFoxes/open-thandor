@@ -1,6 +1,6 @@
 # Call graph: `graphics/resources/palette`
 
-[Source](../../../../src/graphics/resources/palette.c) · [Header](../../../../include/thandor/graphics/resources/palette.h) · [Graphviz](palette.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-palette)
+[Source](../../../../src/graphics/resources/palette.c) · [Header](../../../../include/thandor/graphics/resources/palette.h) · [Graphviz](palette.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-palette) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-resources-palette)
 
 13 functions. Addresses are current V523 executable VAs.
 

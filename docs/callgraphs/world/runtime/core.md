@@ -1,6 +1,6 @@
 # Call graph: `world/runtime/core`
 
-[Source](../../../../src/world/runtime/core.c) · [Header](../../../../include/thandor/world/runtime/core.h) · [Graphviz](core.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-runtime-core)
+[Source](../../../../src/world/runtime/core.c) · [Header](../../../../include/thandor/world/runtime/core.h) · [Graphviz](core.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-runtime-core) · [Developer notes](../../../../CHANGELOG.md#module-world-runtime-core) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-runtime-core)
 
 50 functions. Addresses are current V523 executable VAs.
 

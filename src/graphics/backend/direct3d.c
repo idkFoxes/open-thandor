@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/backend/direct3d.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/backend/direct3d.h>
 
 /* Implementation ownership: graphics/backend/direct3d. */
@@ -16,13 +23,12 @@ sdword Direct3D_EnumDeviceCallback
   GraphicsAdapterRecord *pGVar1;
   dword dVar2;
   dword dVar3;
-  dword *pdVar4;
-  int iVar5;
-  int extraout_EDX;
+  int iVar4;
+  GraphicsAdapterRecord *pGVar5;
   GraphicsAdapterRecord *pGVar6;
-  GraphicsAdapterRecord *pGVar7;
-  TH_LEGACY_GUID *pTVar8;
-  bool bVar9;
+  TH_LEGACY_GUID *pTVar7;
+  D3DDEVICEDESC_DX6 *pDVar8;
+  ArenaAllocEaxCf5 AVar9;
   
   dVar2 = g_GraphicsAdapterCount;
   if ((g_GraphicsAdapterCount < 0x10) &&
@@ -44,54 +50,55 @@ sdword Direct3D_EnumDeviceCallback
         (((((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x4000) != 0 ||
           (((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x8000) != 0)) ||
          (((hardwareDesc->dpcTriCaps).dwRasterCaps & 0x200) != 0)))))))))) {
-    bVar9 = false;
-    pdVar4 = (*g_MemoryApi.alloc)(0x198);
+    AVar9 = (*g_MemoryApi.alloc)(0x198);
     dVar3 = g_GraphicsAdapterCount;
-    if (!bVar9) {
-      pGVar6 = g_GraphicsAdapters + dVar2;
-      iVar5 = 0x20;
+    if (!AVar9.carry) {
+      pGVar5 = g_GraphicsAdapters + dVar2;
+      iVar4 = 0x20;
       g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
-      pGVar7 = pGVar6;
+      pGVar6 = pGVar5;
       if ((g_GraphicsEnumerateAllDevicesFlag == 0) ||
          (pGVar1 = adapterContext, (adapterContext->deviceGuid).Data1 != 0)) {
-        for (; pGVar1 = pGVar6, dVar3 = g_GraphicsAdapterCount, iVar5 != 0; iVar5 = iVar5 + -1) {
-          (pGVar7->adapterGuid).Data1 = (adapterContext->adapterGuid).Data1;
+        for (; pGVar1 = pGVar5, dVar3 = g_GraphicsAdapterCount, iVar4 != 0; iVar4 = iVar4 + -1) {
+          (pGVar6->adapterGuid).Data1 = (adapterContext->adapterGuid).Data1;
           adapterContext = (GraphicsAdapterRecord *)&(adapterContext->adapterGuid).Data2;
-          pGVar7 = (GraphicsAdapterRecord *)&(pGVar7->adapterGuid).Data2;
+          pGVar6 = (GraphicsAdapterRecord *)&(pGVar6->adapterGuid).Data2;
         }
       }
       g_GraphicsAdapterCount = dVar3;
-      pTVar8 = &pGVar1->deviceGuid;
-      for (iVar5 = 4; iVar5 != 0; iVar5 = iVar5 + -1) {
-        pTVar8->Data1 = deviceGuid->Data1;
+      pTVar7 = &pGVar1->deviceGuid;
+      for (iVar4 = 4; iVar4 != 0; iVar4 = iVar4 + -1) {
+        pTVar7->Data1 = deviceGuid->Data1;
         deviceGuid = (TH_LEGACY_GUID *)&deviceGuid->Data2;
-        pTVar8 = (TH_LEGACY_GUID *)&pTVar8->Data2;
+        pTVar7 = (TH_LEGACY_GUID *)&pTVar7->Data2;
       }
       Text_CopyNarrowToUtf16Cf(0x28,pGVar1->deviceNameUtf16,(byte *)deviceName);
-      *(dword **)(extraout_EDX + 0x2e) = pdVar4;
-      for (iVar5 = 0x33; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *pdVar4 = hardwareDesc->dwSize;
+      pGVar1->hardwareDesc = (D3DDEVICEDESC_DX6 *)AVar9.eax;
+      pDVar8 = (D3DDEVICEDESC_DX6 *)AVar9.eax;
+      for (iVar4 = 0x33; iVar4 != 0; iVar4 = iVar4 + -1) {
+        pDVar8->dwSize = hardwareDesc->dwSize;
         hardwareDesc = (D3DDEVICEDESC_DX6 *)&hardwareDesc->dwFlags;
-        pdVar4 = pdVar4 + 1;
+        pDVar8 = (D3DDEVICEDESC_DX6 *)&pDVar8->dwFlags;
       }
-      *(dword **)(extraout_EDX + 0x32) = pdVar4;
-      for (iVar5 = 0x33; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *pdVar4 = softwareDesc->dwSize;
+      pGVar1->softwareDesc = pDVar8;
+      for (iVar4 = 0x33; iVar4 != 0; iVar4 = iVar4 + -1) {
+        pDVar8->dwSize = softwareDesc->dwSize;
         softwareDesc = (D3DDEVICEDESC_DX6 *)&softwareDesc->dwFlags;
-        pdVar4 = pdVar4 + 1;
+        pDVar8 = (D3DDEVICEDESC_DX6 *)&pDVar8->dwFlags;
       }
     }
   }
   return 1;
 }
 
+
 /* Address: 0x00578820.
    Ownership: graphics/backend/direct3d.
    Purpose: Semantic ABI remains deferred.
 */
-undefined8 __fastcall
+sdword __thandor_eax_preserve_ecx_edx
 GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
-          (undefined4 param_1,undefined4 param_2,int param_3)
+          (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context)
 
 {
   uint uVar1;
@@ -101,34 +108,42 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   uint uVar5;
   int iVar6;
   uint uVar7;
-  undefined4 *puVar8;
-  undefined4 *puVar9;
+  DDPIXELFORMAT *pDVar8;
+  TH_LEGACY_DWORD *pTVar9;
   
-  uVar5 = *(uint *)(param_3 + 0x54);
-  uVar1 = *(uint *)(param_3 + 0x4c);
-  if ((((uVar5 < 8) || (uVar5 == 8)) || ((uVar5 != 0x10 && (uVar5 != 0x20)))) ||
-     ((uVar1 & 0x40) == 0)) goto LAB_00578910;
-  if (g_Direct3DOpaqueTextureFormatBitsPerPixel == 0) {
-LAB_005788ba:
-    puVar8 = (undefined4 *)(param_3 + 0x48);
-    puVar9 = (undefined4 *)0x577d90;
-    for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *puVar9 = *puVar8;
-      puVar8 = puVar8 + 1;
-      puVar9 = puVar9 + 1;
-    }
+  uVar5 = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
+  uVar1 = (surfaceDesc->ddpfPixelFormat).dwFlags;
+  if (uVar5 < 8) {
+    return 1;
   }
-  else if (uVar5 <= g_Direct3DOpaqueTextureFormatBitsPerPixel) {
+  if (uVar5 == 8) {
+    return 1;
+  }
+  if ((uVar5 != 0x10) && (uVar5 != 0x20)) {
+    return 1;
+  }
+  if ((uVar1 & 0x40) == 0) {
+    return 1;
+  }
+  if (g_Direct3DOpaqueTextureFormatBitsPerPixel != 0) {
+    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < uVar5) goto LAB_005788c0;
     if (g_Direct3DOpaqueTextureFormatBitsPerPixel == uVar5) {
-      uVar7 = *(uint *)(param_3 + 0x58) | *(uint *)(param_3 + 0x5c) | *(uint *)(param_3 + 0x60);
+      uVar7 = (surfaceDesc->ddpfPixelFormat).dwRBitMask | (surfaceDesc->ddpfPixelFormat).dwGBitMask
+              | (surfaceDesc->ddpfPixelFormat).dwBBitMask;
       uVar5 = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
               | _g_Direct3DOpaqueTextureFormatBlueBitMask) ^ uVar7;
       if ((uVar5 == 0) || ((uVar5 & uVar7) == 0)) goto LAB_005788c0;
     }
-    goto LAB_005788ba;
+  }
+  pDVar8 = &surfaceDesc->ddpfPixelFormat;
+  pTVar9 = (TH_LEGACY_DWORD *)0x577d90;
+  for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
+    *pTVar9 = pDVar8->dwSize;
+    pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;
+    pTVar9 = pTVar9 + 1;
   }
 LAB_005788c0:
-  if (((uVar1 & 1) != 0) && (8 < *(uint *)(param_3 + 0x54))) {
+  if (((uVar1 & 1) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
     iVar6 = 0x1f;
     if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
       for (; _g_Direct3DAlphaTextureFormatAlphaBitMask >> iVar6 == 0; iVar6 = iVar6 + -1) {
@@ -139,103 +154,119 @@ LAB_005788c0:
       for (; (_g_Direct3DAlphaTextureFormatAlphaBitMask >> iVar2 & 1) == 0; iVar2 = iVar2 + 1) {
       }
     }
+    pTVar9 = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
     iVar4 = 0x1f;
-    if (*(uint *)(param_3 + 100) != 0) {
-      for (; *(uint *)(param_3 + 100) >> iVar4 == 0; iVar4 = iVar4 + -1) {
+    if (*pTVar9 != 0) {
+      for (; *pTVar9 >> iVar4 == 0; iVar4 = iVar4 + -1) {
       }
     }
+    pTVar9 = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
     iVar3 = 0;
-    if (*(uint *)(param_3 + 100) != 0) {
-      for (; (*(uint *)(param_3 + 100) >> iVar3 & 1) == 0; iVar3 = iVar3 + 1) {
+    if (*pTVar9 != 0) {
+      for (; (*pTVar9 >> iVar3 & 1) == 0; iVar3 = iVar3 + 1) {
       }
     }
     if ((uint)(iVar2 - iVar6) < (uint)(iVar3 - iVar4)) {
-      puVar8 = (undefined4 *)(param_3 + 0x48);
-      puVar9 = (undefined4 *)0x577db0;
+      pDVar8 = &surfaceDesc->ddpfPixelFormat;
+      pTVar9 = (TH_LEGACY_DWORD *)0x577db0;
       for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *puVar9 = *puVar8;
-        puVar8 = puVar8 + 1;
-        puVar9 = puVar9 + 1;
+        *pTVar9 = pDVar8->dwSize;
+        pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;
+        pTVar9 = pTVar9 + 1;
       }
     }
   }
-LAB_00578910:
-  return CONCAT44(param_2,1);
+  return 1;
 }
+
 
 /* Address: 0x0057A450.
    Ownership: graphics/backend/direct3d.
    Purpose: Handles direct3 drenderer set antialias mode.
 */
-undefined8 __fastcall
-Direct3DRenderer_SetAntialiasMode(undefined4 param_1,undefined4 param_2,dword param_3)
+Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Direct3DRenderer_SetAntialiasMode(dword antialiasMode)
 
 {
   sdword sVar1;
-  undefined4 extraout_EDX;
-  sdword arg4;
+  Direct3DRenderStateApplyEaxCf5 DVar2;
+  Direct3DRenderStateApplyEaxCf5 DVar3;
   
-  arg4 = 100;
   sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                    (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,param_3);
+                    (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,antialiasMode);
   if (sVar1 == 0) {
-    g_Direct3DAntialiasMode = param_3;
-    return CONCAT44(param_2,param_3);
+    g_Direct3DAntialiasMode = antialiasMode;
+    DVar2.carry = false;
+    DVar2.appliedValueOrError = antialiasMode;
+    return DVar2;
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,arg4,g_PackageLastErrorPath);
-  return CONCAT44(param_2,extraout_EDX);
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
+  DVar3.carry = true;
+  DVar3.appliedValueOrError = 0x1d;
+  return DVar3;
 }
+
 
 /* Address: 0x0057A4C0.
    Ownership: graphics/backend/direct3d.
    Purpose: Handles direct3 drenderer set texture filter mode.
 */
-undefined8 __fastcall
-Direct3DRenderer_SetTextureFilterMode(undefined4 param_1,undefined4 param_2,dword param_3)
+Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Direct3DRenderer_SetTextureFilterMode(dword textureFilterMode)
 
 {
   sdword sVar1;
-  undefined4 extraout_EDX;
-  int arg4;
+  Direct3DRenderStateApplyEaxCf5 DVar2;
+  Direct3DRenderStateApplyEaxCf5 DVar3;
+  sdword sStack_1c;
   
-  arg4 = 0x6e;
+  sStack_1c = 0x6e;
   sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                    (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,param_3);
+                    (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,textureFilterMode);
   if (sVar1 == 0) {
-    arg4 = arg4 + 1;
+    sStack_1c = 0x6f;
     sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,param_3);
+                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,textureFilterMode);
     if (sVar1 == 0) {
-      g_Direct3DTextureFilterMode = param_3;
-      return CONCAT44(param_2,param_3);
+      g_Direct3DTextureFilterMode = textureFilterMode;
+      DVar2.carry = false;
+      DVar2.appliedValueOrError = textureFilterMode;
+      return DVar2;
     }
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,arg4,g_PackageLastErrorPath);
-  return CONCAT44(param_2,extraout_EDX);
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,sStack_1c,g_PackageLastErrorPath);
+  DVar3.carry = true;
+  DVar3.appliedValueOrError = 0x1d;
+  return DVar3;
 }
+
 
 /* Address: 0x0057A550.
    Ownership: graphics/backend/direct3d.
    Purpose: Handles direct3 drenderer set texture perspective enabled.
 */
-undefined8 __fastcall
-Direct3DRenderer_SetTexturePerspectiveEnabled(undefined4 param_1,undefined4 param_2,dword param_3)
+Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Direct3DRenderer_SetTexturePerspectiveEnabled(dword texturePerspectiveEnabled)
 
 {
   sdword sVar1;
-  undefined4 extraout_EDX;
-  sdword arg4;
+  Direct3DRenderStateApplyEaxCf5 DVar2;
+  Direct3DRenderStateApplyEaxCf5 DVar3;
   
-  arg4 = 0x78;
   sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                    (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,param_3);
+                    (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,texturePerspectiveEnabled);
   if (sVar1 == 0) {
-    g_Direct3DTexturePerspectiveEnabled = param_3;
-    return CONCAT44(param_2,param_3);
+    g_Direct3DTexturePerspectiveEnabled = texturePerspectiveEnabled;
+    DVar2.carry = false;
+    DVar2.appliedValueOrError = texturePerspectiveEnabled;
+    return DVar2;
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,arg4,g_PackageLastErrorPath);
-  return CONCAT44(param_2,extraout_EDX);
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x78,g_PackageLastErrorPath);
+  DVar3.carry = true;
+  DVar3.appliedValueOrError = 0x1d;
+  return DVar3;
 }
+
 
 /* Address: 0x0057CCB0.
    Ownership: graphics/backend/direct3d.
@@ -244,7 +275,8 @@ Direct3DRenderer_SetTexturePerspectiveEnabled(undefined4 param_1,undefined4 para
    screen/depth values into g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second vertex into
    slot four when g_ImmediateVertexCount is four, and binds texture handle zero.
 */
-void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 PVar1;
@@ -495,6 +527,7 @@ void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet
   return;
 }
 
+
 /* Address: 0x0057CF20.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate primitive handler using render-state preset 2: SRCALPHA/INVSRCALPHA, alpha blending
@@ -502,7 +535,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet
    screen/depth values into g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second vertex into
    slot four when g_ImmediateVertexCount is four, and binds texture handle zero.
 */
-void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 PVar1;
@@ -771,6 +805,7 @@ void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet
   return;
 }
 
+
 /* Address: 0x0057D1D0.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate primitive handler using render-state preset 3: SRCALPHA/INVSRCALPHA, alpha blending
@@ -779,7 +814,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet
    g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second vertex into slot four when
    g_ImmediateVertexCount is four, and binds texture handle zero.
 */
-void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 PVar1;
@@ -1048,6 +1084,7 @@ void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet
   return;
 }
 
+
 /* Address: 0x0057D480.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate primitive handler using render-state preset 4: ONE/ONE additive blending, alpha
@@ -1055,7 +1092,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet
    converts screen/depth values into g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second
    vertex into slot four when g_ImmediateVertexCount is four, and binds texture handle zero.
 */
-void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 PVar1;
@@ -1324,6 +1362,7 @@ void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet
   return;
 }
 
+
 /* Address: 0x0057D730.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate textured primitive handler using render-state preset 0: ONE/ZERO, alpha blending
@@ -1333,7 +1372,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet
    and binds its D3DTEXTUREHANDLE.
    Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
 */
-void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
@@ -1347,7 +1387,6 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   uint uVar7;
   int iVar8;
   D3DDEVICEDESC_DX6 *pDVar9;
-  int extraout_EDX;
   D3DTLVERTEX_DX6 *pDVar10;
   D3DTLVERTEX_DX6 *pDVar11;
   IDirect3DDevice2 *pIVar12;
@@ -1511,7 +1550,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
     if (arg2 == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = *(dword *)(extraout_EDX + 0x18);
+      arg2 = texture->textureHandle;
     }
   }
   if (arg2 != g_BoundTextureHandle) {
@@ -1527,6 +1566,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   return;
 }
 
+
 /* Address: 0x0057DA50.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate textured primitive handler using render-state preset 1: SRCALPHA/INVSRCALPHA, alpha
@@ -1536,7 +1576,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
    texture, and binds its D3DTEXTUREHANDLE.
    Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
 */
-void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
@@ -1550,7 +1591,6 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   uint uVar7;
   int iVar8;
   D3DDEVICEDESC_DX6 *pDVar9;
-  int extraout_EDX;
   D3DTLVERTEX_DX6 *pDVar10;
   D3DTLVERTEX_DX6 *pDVar11;
   IDirect3DDevice2 *pIVar12;
@@ -1714,7 +1754,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
     if (arg2 == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = *(dword *)(extraout_EDX + 0x18);
+      arg2 = texture->textureHandle;
     }
   }
   if (arg2 != g_BoundTextureHandle) {
@@ -1730,6 +1770,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   return;
 }
 
+
 /* Address: 0x0057DD70.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate textured primitive handler using render-state preset 2: SRCALPHA/INVSRCALPHA, alpha
@@ -1739,7 +1780,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
    texture, and binds its D3DTEXTUREHANDLE.
    Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
 */
-void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
@@ -1753,7 +1795,6 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   uint uVar7;
   int iVar8;
   D3DDEVICEDESC_DX6 *pDVar9;
-  int extraout_EDX;
   D3DTLVERTEX_DX6 *pDVar10;
   D3DTLVERTEX_DX6 *pDVar11;
   IDirect3DDevice2 *pIVar12;
@@ -1917,7 +1958,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
     if (arg2 == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = *(dword *)(extraout_EDX + 0x18);
+      arg2 = texture->textureHandle;
     }
   }
   if (arg2 != g_BoundTextureHandle) {
@@ -1933,6 +1974,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   return;
 }
 
+
 /* Address: 0x0057E090.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate textured primitive handler using render-state preset 3: SRCALPHA/INVSRCALPHA, alpha
@@ -1943,7 +1985,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
    D3DTEXTUREHANDLE.
    Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
 */
-void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
@@ -1957,7 +2000,6 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   uint uVar7;
   int iVar8;
   D3DDEVICEDESC_DX6 *pDVar9;
-  int extraout_EDX;
   D3DTLVERTEX_DX6 *pDVar10;
   D3DTLVERTEX_DX6 *pDVar11;
   IDirect3DDevice2 *pIVar12;
@@ -2121,7 +2163,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
     if (arg2 == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = *(dword *)(extraout_EDX + 0x18);
+      arg2 = texture->textureHandle;
     }
   }
   if (arg2 != g_BoundTextureHandle) {
@@ -2137,6 +2179,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   return;
 }
 
+
 /* Address: 0x0057E3B0.
    Ownership: graphics/backend/direct3d.
    Purpose: Direct3D immediate textured primitive handler using render-state preset 4: ONE/ONE additive blending,
@@ -2146,7 +2189,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
    texture, and binds its D3DTEXTUREHANDLE.
    Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
 */
-void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
@@ -2160,7 +2204,6 @@ void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   uint uVar7;
   int iVar8;
   D3DDEVICEDESC_DX6 *pDVar9;
-  int extraout_EDX;
   D3DTLVERTEX_DX6 *pDVar10;
   D3DTLVERTEX_DX6 *pDVar11;
   IDirect3DDevice2 *pIVar12;
@@ -2324,7 +2367,7 @@ void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
     if (arg2 == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = *(dword *)(extraout_EDX + 0x18);
+      arg2 = texture->textureHandle;
     }
   }
   if (arg2 != g_BoundTextureHandle) {
@@ -2339,3 +2382,4 @@ void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   return;
 }
+

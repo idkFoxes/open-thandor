@@ -1,6 +1,6 @@
 # Call graph: `gameplay/input/world`
 
-[Source](../../../../src/gameplay/input/world.c) · [Header](../../../../include/thandor/gameplay/input/world.h) · [Graphviz](world.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-input-world)
+[Source](../../../../src/gameplay/input/world.c) · [Header](../../../../include/thandor/gameplay/input/world.h) · [Graphviz](world.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-input-world) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-input-world) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-input-world)
 
 8 functions. Addresses are current V523 executable VAs.
 

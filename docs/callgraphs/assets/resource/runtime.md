@@ -1,6 +1,6 @@
 # Call graph: `assets/resource/runtime`
 
-[Source](../../../../src/assets/resource/runtime.c) · [Header](../../../../include/thandor/assets/resource/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-resource-runtime)
+[Source](../../../../src/assets/resource/runtime.c) · [Header](../../../../include/thandor/assets/resource/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-resource-runtime) · [Developer notes](../../../../CHANGELOG.md#module-assets-resource-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-resource-runtime)
 
 8 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/terrain/visuals.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/terrain/visuals.h>
 
 /* Implementation ownership: world/terrain/visuals. */
@@ -10,58 +17,57 @@
    Local calls: TerrainCompositeTexture_FillPlane1, TerrainCompositeTexture_FillPlane2,
    TerrainCompositeTexture_RebuildPlane0.
 */
-TerrainCompositeTextureRuntime * TerrainCompositeTexture_Create(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void)
 
 {
   FieldGridAsset *pFVar1;
-  InGameRuntimeRootImageC3E4 *pIVar2;
-  uint uVar3;
-  AssetRelativeOffset AVar4;
-  TerrainCompositeTextureRuntime *extraout_EAX;
+  AssetDimension AVar2;
+  AssetDimension AVar3;
+  InGameRuntimeRootImageC3E4 *pIVar4;
+  AssetRelativeOffset AVar6;
+  uint uVar7;
+  int iVar8;
+  ArenaAllocEaxCf5 AVar9;
+  StatusValueEaxCf5 SVar10;
   TerrainCompositeTextureRuntime *pTVar5;
-  AssetDimension extraout_ECX;
-  AssetDimension AVar6;
-  int iVar7;
-  bool bVar8;
-  void *pvVar9;
   
-  pIVar2 = g_InGameRuntimeRoot;
+  pIVar4 = g_InGameRuntimeRoot;
   pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  uVar3 = pFVar1->gridWidth * 0xc * pFVar1->gridHeight;
-  bVar8 = 0xfffffd9f < uVar3;
-  _pvVar9 = (*g_MemoryApi.alloc)(uVar3 + 0x260);
-  AVar6 = (AssetDimension)((ulonglong)_pvVar9 >> 0x20);
-  pTVar5 = SUB84(_pvVar9,0);
-  if (!bVar8) {
+  AVar2 = pFVar1->gridWidth;
+  AVar3 = pFVar1->gridHeight;
+  AVar9 = (*g_MemoryApi.alloc)(AVar2 * 0xc * AVar3 + 0x260);
+  pTVar5 = (TerrainCompositeTextureRuntime *)AVar9.eax;
+  if (!AVar9.carry) {
     g_TerrainCompositeTexture = pTVar5;
-    *(TerrainCompositeTextureRuntime **)(pIVar2->opaque9A74_9B4B + 8) = pTVar5;
-    pTVar5->sourceEntries[0].pixelWidth = extraout_ECX;
-    pTVar5->sourceEntries[0].pixelHeight = AVar6;
+    *(TerrainCompositeTextureRuntime **)(pIVar4->opaque9A74_9B4B + 8) = pTVar5;
+    pTVar5->sourceEntries[0].pixelWidth = AVar2;
+    pTVar5->sourceEntries[0].pixelHeight = AVar3;
     pTVar5->sourceEntries[0].originX = 0;
     pTVar5->sourceEntries[0].originY = 0;
-    iVar7 = extraout_ECX * 4 * AVar6;
+    iVar8 = AVar2 * 4 * AVar3;
     pTVar5->sourceEntries[0].paletteIndex = -1;
-    pTVar5->sourceEntries[0].logicalWidth = extraout_ECX;
-    pTVar5->sourceEntries[0].logicalHeight = AVar6;
+    pTVar5->sourceEntries[0].logicalWidth = AVar2;
+    pTVar5->sourceEntries[0].logicalHeight = AVar3;
     pTVar5->sourceEntries[0].dataOffset = 0x260;
-    pTVar5->sourceEntries[1].pixelWidth = extraout_ECX;
-    pTVar5->sourceEntries[1].pixelHeight = AVar6;
+    pTVar5->sourceEntries[1].pixelWidth = AVar2;
+    pTVar5->sourceEntries[1].pixelHeight = AVar3;
     pTVar5->sourceEntries[1].originX = 0;
     pTVar5->sourceEntries[1].originY = 0;
     pTVar5->sourceEntries[1].paletteIndex = -1;
-    pTVar5->sourceEntries[1].logicalWidth = extraout_ECX;
-    pTVar5->sourceEntries[1].logicalHeight = AVar6;
-    pTVar5->sourceEntries[1].dataOffset = iVar7 + 0x260U;
-    pTVar5->sourceEntries[2].pixelWidth = extraout_ECX;
-    pTVar5->sourceEntries[2].pixelHeight = AVar6;
+    pTVar5->sourceEntries[1].logicalWidth = AVar2;
+    pTVar5->sourceEntries[1].logicalHeight = AVar3;
+    pTVar5->sourceEntries[1].dataOffset = iVar8 + 0x260U;
+    pTVar5->sourceEntries[2].pixelWidth = AVar2;
+    pTVar5->sourceEntries[2].pixelHeight = AVar3;
     pTVar5->sourceEntries[2].originX = 0;
     pTVar5->sourceEntries[2].originY = 0;
-    AVar4 = iVar7 + 0x260U + iVar7;
+    AVar6 = iVar8 + 0x260U + iVar8;
     pTVar5->sourceEntries[2].paletteIndex = -1;
-    pTVar5->sourceEntries[2].logicalWidth = extraout_ECX;
-    pTVar5->sourceEntries[2].logicalHeight = AVar6;
-    pTVar5->sourceEntries[2].dataOffset = AVar4;
+    pTVar5->sourceEntries[2].logicalWidth = AVar2;
+    pTVar5->sourceEntries[2].logicalHeight = AVar3;
+    pTVar5->sourceEntries[2].dataOffset = AVar6;
     (pTVar5->textureSource).common.magic = ASSET_MAGIC_GFX;
+    uVar7 = AVar6 + iVar8;
     (pTVar5->textureSource).tableDescriptor.subresourceCount = 3;
     (pTVar5->textureSource).tableDescriptor.paletteBankCount = 0;
     (pTVar5->textureSource).tableDescriptor.subresourceTableOffset = 0x200;
@@ -69,21 +75,25 @@ TerrainCompositeTextureRuntime * TerrainCompositeTexture_Create(void)
     (pTVar5->textureSource).opaqueTablePayloadBC_1FF[1] = 0;
     (pTVar5->textureSource).opaqueTablePayloadBC_1FF[2] = 0;
     (pTVar5->textureSource).opaqueTablePayloadBC_1FF[3] = 0;
-    (pTVar5->textureSource).common.allocationSizeBytes = AVar4 + iVar7;
+    (pTVar5->textureSource).common.allocationSizeBytes = uVar7;
     TerrainCompositeTexture_FillPlane1();
     TerrainCompositeTexture_FillPlane2();
     TerrainCompositeTexture_RebuildPlane0();
-    pTVar5 = extraout_EAX;
+    AVar9.carry = false;
+    AVar9.eax = uVar7;
   }
-  return pTVar5;
+  SVar10.valueOrError = AVar9.eax;
+  SVar10.carry = AVar9.carry;
+  return SVar10;
 }
+
 
 /* Address: 0x00503B10.
    Ownership: world/terrain/visuals.
    Purpose: Allocates and 64-KiB-aligns the shared terrain byte lookup and fills its clamp/offset tables using
    delta 0x15 with verified caps 0x87 and 0xFF.
 */
-void TerrainByteClampLookup_Initialize(void)
+bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
 
 {
   void *lookupAllocationBase;
@@ -93,11 +103,12 @@ void TerrainByteClampLookup_Initialize(void)
   uint clampInputValue;
   uint uVar3;
   byte *lookupWriteCursor;
-  undefined1 in_CF;
+  ArenaAllocEaxCf5 AVar4;
   
-  lookupAllocationBase = (*g_MemoryApi.alloc)(0x20000);
-  if ((bool)in_CF) {
-    return;
+  AVar4 = (*g_MemoryApi.alloc)(0x20000);
+  lookupAllocationBase = (void *)AVar4.eax;
+  if (AVar4.carry) {
+    return true;
   }
   clampInputValue = 0;
   lookupWriteCursor = (byte *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
@@ -222,8 +233,9 @@ void TerrainByteClampLookup_Initialize(void)
     bVar2 = (char)uVar3 + 1;
     uVar3 = (uint)bVar2;
   } while ((bVar2 != 0) || (iVar1 = iVar1 + -1, iVar1 != 0));
-  return;
+  return false;
 }
+
 
 /* Address: 0x00503F30.
    Ownership: world/terrain/visuals.
@@ -234,7 +246,7 @@ void TerrainByteClampLookup_Initialize(void)
    FieldGrid_InitializeRuntimeCellsAndBoundaryFlags [world/terrain/grid], Random_NextPrimary [core/math/random],
    TerrainDirectionTable_AdvanceAndRebuildVectors [world/terrain/grid].
 */
-undefined8
+StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
 TerrainVisualResources_LoadPrimary
           (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field)
 
@@ -242,29 +254,20 @@ TerrainVisualResources_LoadPrimary
   GraphicsPaletteAsset *pGVar1;
   GraphicsTextureSet *pGVar2;
   dword dVar3;
-  undefined4 extraout_EAX;
   int iVar4;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  dword arg0;
-  dword arg0_00;
-  int extraout_ECX_01;
-  undefined4 extraout_ECX_02;
-  word extraout_DX;
-  word wVar5;
-  word extraout_DX_00;
-  undefined4 in_EDX;
-  uint uVar6;
+  int iVar5;
+  word wVar6;
   uint uVar7;
-  dword arg1;
-  dword arg1_00;
   TerrainMaterialSuffixEntry *pTVar8;
   word *pwVar9;
   word *pwVar10;
   GraphicsTextureSet **ppGVar12;
   TerrainDirectionRecord *pTVar13;
-  undefined1 uVar14;
-  undefined8 uVar15;
+  GraphicsTextureSetEaxCf5 GVar14;
+  PackageLoadEntryEaxCf5 PVar15;
+  GraphicsPaletteAssetEaxCf5 GVar16;
+  StatusValueEaxCf5 SVar17;
+  StatusValueEaxCf5 SVar18;
   TerrainMaterialSuffixEntry *pTVar11;
   
   iVar4 = 0x100;
@@ -274,119 +277,123 @@ TerrainVisualResources_LoadPrimary
     if (iVar4 == 0) break;
     iVar4 = iVar4 + -1;
     pwVar10 = pwVar9 + 1;
-    wVar5 = *pwVar9;
+    wVar6 = *pwVar9;
     pwVar9 = pwVar10;
-  } while (wVar5 != 0);
+  } while (wVar6 != 0);
   pTVar11 = (TerrainMaterialSuffixEntry *)(pwVar10 + -1);
   pGVar1 = (GraphicsPaletteAsset *)0x38;
   if (((field->common).magic == ASSET_MAGIC_FLD) &&
      ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    uVar6 = field->fieldFlags;
+    uVar7 = field->fieldFlags;
     iVar4 = 0;
     do {
-      if ((uVar6 & 1) != 0) {
+      if ((uVar7 & 1) != 0) {
         iVar4 = iVar4 + 1;
       }
-      uVar6 = uVar6 >> 1;
-    } while (uVar6 != 0);
-    uVar6 = field->fieldFlags;
+      uVar7 = uVar7 >> 1;
+    } while (uVar7 != 0);
+    iVar5 = 0x1a;
+    uVar7 = field->fieldFlags;
     g_MoviePlaybackScheduleSpan = iVar4 * 2 + 10;
     pTVar8 = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
     ppGVar12 = g_TerrainMaterialTextureSets;
     do {
-      uVar14 = 0;
-      if ((uVar6 & 1) == 0) {
+      if ((uVar7 & 1) == 0) {
         *pTVar11 = *pTVar8;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
-        uVar15 = (*(code *)g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        uVar7 = (uint)((ulonglong)uVar15 >> 0x20);
-        pGVar2 = (GraphicsTextureSet *)uVar15;
-        if ((bool)uVar14) {
+        GVar14 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        pGVar2 = GVar14.textureSet;
+        if (GVar14.carry) {
           pGVar2 = (GraphicsTextureSet *)0x0;
         }
         *ppGVar12 = pGVar2;
-        iVar4 = extraout_ECX_00;
       }
       else {
         *pTVar11 = *pTVar8;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        pGVar1 = (GraphicsPaletteAsset *)
-                 (*(code *)g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        if ((bool)uVar14)
+        GVar14 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        pGVar1 = (GraphicsPaletteAsset *)GVar14.textureSet;
+        if (GVar14.carry)
         goto TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus;
-        uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-        uVar7 = (uint)((ulonglong)uVar15 >> 0x20);
-        *ppGVar12 = (GraphicsTextureSet *)uVar15;
-        iVar4 = extraout_ECX;
+        MoviePlayback_AdvanceScheduledFrameAndTick();
+        *ppGVar12 = (GraphicsTextureSet *)pGVar1;
       }
       pTVar8 = pTVar8 + 1;
       ppGVar12 = ppGVar12 + 1;
-      uVar6 = uVar7 >> 1;
-      uVar14 = (uVar7 & 1) != 0;
-    } while (iVar4 != 1);
+      uVar7 = uVar7 >> 1;
+      iVar5 = iVar5 + -1;
+    } while (iVar5 != 0);
     WidePath_SetExtensionCode(0x746164,primaryResourcePath);
-    pGVar1 = Package_LoadEntry(primaryResourcePath);
-    if (!(bool)uVar14) {
-      uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-      uVar14 = 0xffffffdf < (uint)uVar15;
-      g_TerrainSurfacePacketTablePayload = (void *)((uint)uVar15 + 0x20);
+    PVar15 = Package_LoadEntry(primaryResourcePath);
+    pGVar1 = PVar15.bufferOrError;
+    if (!PVar15.carry) {
+      MoviePlayback_AdvanceScheduledFrameAndTick();
+      g_TerrainSurfacePacketTablePayload =
+           &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
       WidePath_SetExtensionCode(0x786667,primaryResourcePath);
-      pGVar1 = (GraphicsPaletteAsset *)
-               (*(code *)g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
-      if (!(bool)uVar14) {
-        uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)uVar15;
+      GVar14 = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
+      pGVar1 = (GraphicsPaletteAsset *)GVar14.textureSet;
+      if (!GVar14.carry) {
+        MoviePlayback_AdvanceScheduledFrameAndTick();
+        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)pGVar1;
         WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
-        pGVar1 = (*g_GraphicsPaletteAssetLoadPackage)(arg0,arg1,primaryResourcePath);
-        if (!(bool)uVar14) {
-          uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-          g_TerrainPrimaryPalette = (GraphicsPaletteAsset *)uVar15;
+        GVar16 = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
+        pGVar1 = GVar16.paletteAsset;
+        if (!GVar16.carry) {
+          MoviePlayback_AdvanceScheduledFrameAndTick();
+          g_TerrainPrimaryPalette = pGVar1;
           pTVar11->lowercaseLetterUtf16 = 0;
           pTVar11->terminator = 0;
           WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
-          pGVar1 = (*g_GraphicsPaletteAssetLoadPackage)(arg0_00,arg1_00,secondaryResourcePath);
-          if (!(bool)uVar14) {
-            uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-            g_TerrainSecondaryPalette = (GraphicsPaletteAsset *)uVar15;
+          GVar16 = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
+          pGVar1 = GVar16.paletteAsset;
+          if (!GVar16.carry) {
+            MoviePlayback_AdvanceScheduledFrameAndTick();
+            g_TerrainSecondaryPalette = pGVar1;
             pTVar11->lowercaseLetterUtf16 = 0;
             pTVar11->terminator = 0;
             WidePath_SetExtensionCode(0x746164,secondaryResourcePath);
-            pGVar1 = Package_LoadEntry(secondaryResourcePath);
-            if (!(bool)uVar14) {
-              uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              g_TerrainSoilPacketTablePayload = (void *)uVar15;
+            PVar15 = Package_LoadEntry(secondaryResourcePath);
+            pGVar1 = PVar15.bufferOrError;
+            if (!PVar15.carry) {
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              g_TerrainSoilPacketTablePayload =
+                   &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
               FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
+              iVar4 = 0x100;
               pTVar13 = g_TerrainDirectionRecordTable256;
               do {
                 dVar3 = Random_NextPrimary();
                 pTVar13->scaleA = (dVar3 & 0x1f) + 0x80;
+                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
                 dVar3 = Random_NextPrimary();
-                wVar5 = extraout_DX;
                 if ((int)dVar3 < 0) {
-                  wVar5 = -extraout_DX;
+                  wVar6 = -wVar6;
                 }
-                pTVar13->rateA = wVar5;
+                pTVar13->rateA = wVar6;
                 *(short *)&pTVar13->packedAngleA_low16_AngleB_high16 = (short)dVar3;
                 dVar3 = Random_NextPrimary();
                 pTVar13->scaleB = (dVar3 & 0x1f) + 0x80;
-                dVar3 = Random_NextPrimary();
-                wVar5 = extraout_DX_00;
-                if ((int)dVar3 < 0) {
-                  wVar5 = -extraout_DX_00;
+                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
+                SVar17.valueOrError = Random_NextPrimary();
+                if ((int)SVar17.valueOrError < 0) {
+                  wVar6 = -wVar6;
                 }
-                pTVar13->rateB = wVar5;
-                *(short *)((int)&pTVar13->packedAngleA_low16_AngleB_high16 + 2) = (short)dVar3;
+                pTVar13->rateB = wVar6;
+                *(short *)((int)&pTVar13->packedAngleA_low16_AngleB_high16 + 2) =
+                     (short)SVar17.valueOrError;
                 pTVar13->angleAComponent0ScaledQ28 = 0;
                 pTVar13->angleAComponent1ScaledQ28 = 0;
                 pTVar13->angleBComponent0ScaledQ28 = 0;
                 pTVar13 = pTVar13 + 1;
-              } while (extraout_ECX_01 != 1);
-              uVar15 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              TerrainDirectionTable_AdvanceAndRebuildVectors
-                        (extraout_ECX_02,(int)((ulonglong)uVar15 >> 0x20));
-              return CONCAT44(in_EDX,extraout_EAX);
+                iVar4 = iVar4 + -1;
+              } while (iVar4 != 0);
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              TerrainDirectionTable_AdvanceAndRebuildVectors();
+              SVar17.carry = false;
+              return SVar17;
             }
           }
         }
@@ -394,8 +401,11 @@ TerrainVisualResources_LoadPrimary
     }
   }
 TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus:
-  return CONCAT44(in_EDX,pGVar1);
+  SVar18.carry = true;
+  SVar18.valueOrError = (dword)pGVar1;
+  return SVar18;
 }
+
 
 /* Address: 0x005041C0.
    Ownership: world/terrain/visuals.
@@ -409,7 +419,7 @@ TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus:
    [world/terrain/grid], Random_NextPrimary [core/math/random], TerrainDirectionTable_AdvanceAndRebuildVectors
    [world/terrain/grid].
 */
-undefined8
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 TerrainVisualResources_LoadAndClearCellOverlayFlags
           (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field)
 
@@ -417,29 +427,21 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
   GraphicsPaletteAsset *pGVar1;
   GraphicsTextureSet *pGVar2;
   dword dVar3;
-  undefined4 extraout_EAX;
   int iVar4;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  dword arg0;
-  dword arg0_00;
-  int extraout_ECX_01;
-  word extraout_DX;
-  word wVar5;
-  word extraout_DX_00;
-  undefined4 in_EDX;
-  uint uVar6;
+  int iVar5;
+  word wVar6;
   uint uVar7;
-  dword arg1;
-  dword arg1_00;
   TerrainMaterialSuffixEntry *pTVar8;
   FieldGridCell *pFVar9;
   word *pwVar10;
   word *pwVar11;
   GraphicsTextureSet **ppGVar13;
   TerrainDirectionRecord *pTVar14;
-  undefined1 uVar15;
-  undefined8 uVar16;
+  GraphicsTextureSetEaxCf5 GVar15;
+  PackageLoadEntryEaxCf5 PVar16;
+  GraphicsPaletteAssetEaxCf5 GVar17;
+  StatusValueEaxCf5 SVar18;
+  StatusValueEaxCf5 SVar19;
   TerrainMaterialSuffixEntry *pTVar12;
   
   iVar4 = 0x100;
@@ -449,117 +451,121 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
     if (iVar4 == 0) break;
     iVar4 = iVar4 + -1;
     pwVar11 = pwVar10 + 1;
-    wVar5 = *pwVar10;
+    wVar6 = *pwVar10;
     pwVar10 = pwVar11;
-  } while (wVar5 != 0);
+  } while (wVar6 != 0);
   pTVar12 = (TerrainMaterialSuffixEntry *)(pwVar11 + -1);
   pGVar1 = (GraphicsPaletteAsset *)0x38;
   if (((field->common).magic == ASSET_MAGIC_FLD) &&
      ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    uVar6 = field->fieldFlags;
+    uVar7 = field->fieldFlags;
     iVar4 = 0;
     do {
-      if ((uVar6 & 1) != 0) {
+      if ((uVar7 & 1) != 0) {
         iVar4 = iVar4 + 1;
       }
-      uVar6 = uVar6 >> 1;
-    } while (uVar6 != 0);
-    uVar6 = field->fieldFlags;
+      uVar7 = uVar7 >> 1;
+    } while (uVar7 != 0);
+    iVar5 = 0x1a;
+    uVar7 = field->fieldFlags;
     g_MoviePlaybackScheduleSpan = iVar4 * 2 + 10;
     pTVar8 = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
     ppGVar13 = g_TerrainMaterialTextureSets;
     do {
-      uVar15 = 0;
-      if ((uVar6 & 1) == 0) {
+      if ((uVar7 & 1) == 0) {
         *pTVar12 = *pTVar8;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
-        uVar16 = (*(code *)g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        uVar7 = (uint)((ulonglong)uVar16 >> 0x20);
-        pGVar2 = (GraphicsTextureSet *)uVar16;
-        if ((bool)uVar15) {
+        GVar15 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        pGVar2 = GVar15.textureSet;
+        if (GVar15.carry) {
           pGVar2 = (GraphicsTextureSet *)0x0;
         }
         *ppGVar13 = pGVar2;
-        iVar4 = extraout_ECX_00;
       }
       else {
         *pTVar12 = *pTVar8;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        pGVar1 = (GraphicsPaletteAsset *)
-                 (*(code *)g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        if ((bool)uVar15)
+        GVar15 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        pGVar1 = (GraphicsPaletteAsset *)GVar15.textureSet;
+        if (GVar15.carry)
         goto 
         TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFailureStatus;
-        uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
-        uVar7 = (uint)((ulonglong)uVar16 >> 0x20);
-        *ppGVar13 = (GraphicsTextureSet *)uVar16;
-        iVar4 = extraout_ECX;
+        MoviePlayback_AdvanceScheduledFrameAndTick();
+        *ppGVar13 = (GraphicsTextureSet *)pGVar1;
       }
       pTVar8 = pTVar8 + 1;
       ppGVar13 = ppGVar13 + 1;
-      uVar6 = uVar7 >> 1;
-      uVar15 = (uVar7 & 1) != 0;
-    } while (iVar4 != 1);
+      uVar7 = uVar7 >> 1;
+      iVar5 = iVar5 + -1;
+    } while (iVar5 != 0);
     WidePath_SetExtensionCode(0x746164,primaryResourcePath);
-    pGVar1 = Package_LoadEntry(primaryResourcePath);
-    if (!(bool)uVar15) {
-      uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
-      uVar15 = 0xffffffdf < (uint)uVar16;
-      g_TerrainSurfacePacketTablePayload = (void *)((uint)uVar16 + 0x20);
+    PVar16 = Package_LoadEntry(primaryResourcePath);
+    pGVar1 = PVar16.bufferOrError;
+    if (!PVar16.carry) {
+      MoviePlayback_AdvanceScheduledFrameAndTick();
+      g_TerrainSurfacePacketTablePayload =
+           &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
       WidePath_SetExtensionCode(0x786667,primaryResourcePath);
-      pGVar1 = (GraphicsPaletteAsset *)
-               (*(code *)g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
-      if (!(bool)uVar15) {
-        uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
-        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)uVar16;
+      GVar15 = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
+      pGVar1 = (GraphicsPaletteAsset *)GVar15.textureSet;
+      if (!GVar15.carry) {
+        MoviePlayback_AdvanceScheduledFrameAndTick();
+        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)pGVar1;
         WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
-        pGVar1 = (*g_GraphicsPaletteAssetLoadPackage)(arg0,arg1,primaryResourcePath);
-        if (!(bool)uVar15) {
-          uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
-          g_TerrainPrimaryPalette = (GraphicsPaletteAsset *)uVar16;
+        GVar17 = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
+        pGVar1 = GVar17.paletteAsset;
+        if (!GVar17.carry) {
+          MoviePlayback_AdvanceScheduledFrameAndTick();
+          g_TerrainPrimaryPalette = pGVar1;
           pTVar12->lowercaseLetterUtf16 = 0;
           pTVar12->terminator = 0;
           WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
-          pGVar1 = (*g_GraphicsPaletteAssetLoadPackage)(arg0_00,arg1_00,secondaryResourcePath);
-          if (!(bool)uVar15) {
-            uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
-            g_TerrainSecondaryPalette = (GraphicsPaletteAsset *)uVar16;
+          GVar17 = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
+          pGVar1 = GVar17.paletteAsset;
+          if (!GVar17.carry) {
+            MoviePlayback_AdvanceScheduledFrameAndTick();
+            g_TerrainSecondaryPalette = pGVar1;
             pTVar12->lowercaseLetterUtf16 = 0;
             pTVar12->terminator = 0;
             WidePath_SetExtensionCode(0x746164,secondaryResourcePath);
-            pGVar1 = Package_LoadEntry(secondaryResourcePath);
-            if (!(bool)uVar15) {
-              uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              g_TerrainSoilPacketTablePayload = (void *)uVar16;
+            PVar16 = Package_LoadEntry(secondaryResourcePath);
+            pGVar1 = PVar16.bufferOrError;
+            if (!PVar16.carry) {
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              g_TerrainSoilPacketTablePayload =
+                   &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
               FieldGrid_RebuildCellLookupPointers(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
+              iVar4 = 0x100;
               pTVar14 = g_TerrainDirectionRecordTable256;
               do {
                 dVar3 = Random_NextPrimary();
                 pTVar14->scaleA = (dVar3 & 0x1f) + 0x80;
+                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
                 dVar3 = Random_NextPrimary();
-                wVar5 = extraout_DX;
                 if ((int)dVar3 < 0) {
-                  wVar5 = -extraout_DX;
+                  wVar6 = -wVar6;
                 }
-                pTVar14->rateA = wVar5;
+                pTVar14->rateA = wVar6;
                 *(short *)&pTVar14->packedAngleA_low16_AngleB_high16 = (short)dVar3;
                 dVar3 = Random_NextPrimary();
                 pTVar14->scaleB = (dVar3 & 0x1f) + 0x80;
-                dVar3 = Random_NextPrimary();
-                wVar5 = extraout_DX_00;
-                if ((int)dVar3 < 0) {
-                  wVar5 = -extraout_DX_00;
+                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
+                SVar18.valueOrError = Random_NextPrimary();
+                if ((int)SVar18.valueOrError < 0) {
+                  wVar6 = -wVar6;
                 }
-                pTVar14->rateB = wVar5;
-                *(short *)((int)&pTVar14->packedAngleA_low16_AngleB_high16 + 2) = (short)dVar3;
+                pTVar14->rateB = wVar6;
+                *(short *)((int)&pTVar14->packedAngleA_low16_AngleB_high16 + 2) =
+                     (short)SVar18.valueOrError;
                 pTVar14->angleAComponent0ScaledQ28 = 0;
                 pTVar14->angleAComponent1ScaledQ28 = 0;
                 pTVar14->angleBComponent0ScaledQ28 = 0;
                 pTVar14 = pTVar14 + 1;
-              } while (extraout_ECX_01 != 1);
-              uVar16 = MoviePlayback_AdvanceScheduledFrameAndTick();
+                iVar4 = iVar4 + -1;
+              } while (iVar4 != 0);
+              MoviePlayback_AdvanceScheduledFrameAndTick();
               iVar4 = field->gridWidth * field->gridHeight;
               pFVar9 = field->cells;
               do {
@@ -569,8 +575,9 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
                 pFVar9 = pFVar9 + 1;
                 iVar4 = iVar4 + -1;
               } while (iVar4 != 0);
-              TerrainDirectionTable_AdvanceAndRebuildVectors(0,(int)((ulonglong)uVar16 >> 0x20));
-              return CONCAT44(in_EDX,extraout_EAX);
+              TerrainDirectionTable_AdvanceAndRebuildVectors();
+              SVar18.carry = false;
+              return SVar18;
             }
           }
         }
@@ -578,8 +585,11 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
     }
   }
 TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFailureStatus:
-  return CONCAT44(in_EDX,pGVar1);
+  SVar19.carry = true;
+  SVar19.valueOrError = (dword)pGVar1;
+  return SVar19;
 }
+
 
 /* Address: 0x00504470.
    Ownership: world/terrain/visuals.
@@ -588,11 +598,10 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFai
    addresses before Resource_Release.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-GraphicsTextureSet * TerrainVisualResources_Shutdown(void)
+void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void)
 
 {
   int materialTextureSetsRemaining;
-  int extraout_ECX;
   GraphicsTextureSet **materialTextureSetCursor;
   void *surfacePacketTablePayload;
   GraphicsTextureSet *releasedPrimaryTextureSet;
@@ -601,15 +610,13 @@ GraphicsTextureSet * TerrainVisualResources_Shutdown(void)
   materialTextureSetsRemaining = 0x1a;
   do {
     if (*materialTextureSetCursor != (GraphicsTextureSet *)0x0) {
-      (*(code *)g_GraphicsTextureSetReleasePackageCf)(*materialTextureSetCursor);
+      (*g_GraphicsTextureSetReleasePackageCf)(*materialTextureSetCursor);
       *materialTextureSetCursor = (GraphicsTextureSet *)0x0;
-      materialTextureSetsRemaining = extraout_ECX;
     }
     materialTextureSetCursor = materialTextureSetCursor + 1;
     materialTextureSetsRemaining = materialTextureSetsRemaining + -1;
   } while (materialTextureSetsRemaining != 0);
-  releasedPrimaryTextureSet = g_TerrainPrimaryTextureSet;
-  (*(code *)g_GraphicsTextureSetReleasePackageCf)();
+  (*g_GraphicsTextureSetReleasePackageCf)(g_TerrainPrimaryTextureSet);
   (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)(g_TerrainSecondaryPalette);
   (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
@@ -624,8 +631,9 @@ GraphicsTextureSet * TerrainVisualResources_Shutdown(void)
   g_TerrainPrimaryPalette = (GraphicsPaletteAsset *)0x0;
   g_TerrainSoilPacketTablePayload = (void *)0x0;
   g_TerrainSurfacePacketTablePayload = (void *)0x0;
-  return releasedPrimaryTextureSet;
+  return;
 }
+
 
 /* Address: 0x00505780.
    Ownership: world/terrain/visuals.
@@ -633,9 +641,10 @@ GraphicsTextureSet * TerrainVisualResources_Shutdown(void)
    rampStepColorArgb→PackedArgb32. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainLighting_BuildColorRampAndSetBaseColor
-               (PackedArgb32 secondaryColorArgb,PackedArgb32 baseColorArgb,
-               PackedArgb32 rampStepColorArgb)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainLighting_BuildColorRampAndSetBaseColor
+          (PackedArgb32 secondaryColorArgb,PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb
+          )
 
 {
   uint uVar1;
@@ -692,12 +701,13 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
   return;
 }
 
+
 /* Address: 0x0053D4D0.
    Ownership: world/terrain/visuals.
    Purpose: Resolves the allocation base for the global terrain composite texture and frees it. This helper does
    not clear the published pointer.
 */
-void TerrainCompositeTexture_Destroy(void)
+void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
 
 {
   GraphicsTextureSourceAsset *memory;
@@ -708,13 +718,15 @@ void TerrainCompositeTexture_Destroy(void)
   return;
 }
 
+
 /* Address: 0x00561EA0.
    Ownership: world/terrain/visuals.
    Purpose: Handles terrain lighting adjust direction and recompute field.
    Cross-module calls: WorldRuntime_RecomputeFieldRegionNormalsAndLighting [world/runtime/core].
 */
-void TerrainLighting_AdjustDirectionAndRecomputeField
-               (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+void __thandor_preserve_eax_edx
+TerrainLighting_AdjustDirectionAndRecomputeField
+          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
   Q12 originWorldYQ12;
@@ -734,12 +746,13 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
   return;
 }
 
+
 /* Address: 0x0053D560.
    Ownership: world/terrain/visuals.
    Purpose: Rebuilds sourceEntries[1] using field-grid terrain height, material selection, active palette data, and
    the verified height-dependent shading table.
 */
-void TerrainCompositeTexture_FillPlane1(void)
+void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void)
 
 {
   AssetDimension AVar1;
@@ -871,12 +884,13 @@ void TerrainCompositeTexture_FillPlane1(void)
   return;
 }
 
+
 /* Address: 0x0053D680.
    Ownership: world/terrain/visuals.
    Purpose: Rebuilds sourceEntries[2] using secondary field flags, palette data, terrain height, and the verified
    shading paths.
 */
-void TerrainCompositeTexture_FillPlane2(void)
+void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void)
 
 {
   AssetDimension AVar1;
@@ -1109,6 +1123,7 @@ void TerrainCompositeTexture_FillPlane2(void)
   return;
 }
 
+
 /* Address: 0x0053D840.
    Ownership: world/terrain/visuals.
    Purpose: Copies either plane one or plane two into sourceEntries[0] according to active mode bit 1, applies per-
@@ -1116,96 +1131,98 @@ void TerrainCompositeTexture_FillPlane2(void)
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid], SelectionInfo_FindEntryCf
    [gameplay/selection/runtime].
 */
-void TerrainCompositeTexture_RebuildPlane0(void)
+
+void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(void)
 
 {
   byte bVar1;
   AssetDimension AVar2;
   AssetDimension AVar3;
-  WorldRuntimeNode *pWVar4;
+  WorldOwnerListNode100 *pWVar4;
   GameEntityRuntime *entry;
   InGameRuntimeRootImageC3E4 *pIVar5;
-  uint uVar6;
-  int iVar7;
+  GraphicsTextureSourceAsset *pGVar6;
+  uint uVar7;
   int iVar8;
-  int extraout_ECX;
   int iVar9;
-  int extraout_EDX;
-  AssetRelativeOffset AVar10;
-  byte *pbVar11;
-  FieldGridCell *pFVar12;
+  int iVar10;
+  dword dVar11;
+  AssetRelativeOffset AVar12;
   byte *pbVar13;
-  byte *pbVar14;
-  bool bVar15;
-  qword qVar16;
+  FieldGridCell *pFVar14;
+  byte *pbVar15;
+  byte *pbVar16;
+  bool bVar17;
+  FieldGridCoordinatesEaxEdx8 FVar18;
   
   pIVar5 = g_InGameRuntimeRoot;
   if ((g_InGameRuntimeRoot->observedTerrainCompositeFlags4938 & 2) == 0) {
-    AVar10 = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
+    AVar12 = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {
-    AVar10 = g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
+    AVar12 = g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
   }
   AVar2 = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   AVar3 = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  pbVar13 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
+  pbVar15 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
             assetRelativeAddressAnchor28 +
             (g_TerrainCompositeTexture->sourceEntries[0].dataOffset - 0x28);
-  iVar7 = AVar2 * AVar3;
-  pbVar11 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
-            assetRelativeAddressAnchor28 + (AVar10 - 0x28);
-  pbVar14 = pbVar13;
-  for (iVar8 = iVar7; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *(uint *)pbVar14 = *(uint *)pbVar11;
-    pbVar11 = pbVar11 + 4;
-    pbVar14 = pbVar14 + 4;
+  iVar8 = AVar2 * AVar3;
+  pbVar13 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
+            assetRelativeAddressAnchor28 + (AVar12 - 0x28);
+  pbVar16 = pbVar15;
+  for (iVar9 = iVar8; iVar9 != 0; iVar9 = iVar9 + -1) {
+    *(uint *)pbVar16 = *(uint *)pbVar13;
+    pbVar13 = pbVar13 + 4;
+    pbVar16 = pbVar16 + 4;
   }
-  iVar8 = (pIVar5->worldRuntime0A30).activeFactionRuntimeIndex;
-  pFVar12 = ((pIVar5->worldRuntime0A30).fieldGrid)->cells;
-  pbVar11 = pbVar13;
+  iVar9 = (pIVar5->worldRuntime0A30).activeFactionRuntimeIndex;
+  pFVar14 = ((pIVar5->worldRuntime0A30).fieldGrid)->cells;
+  pbVar13 = pbVar15;
   do {
-    bVar1 = pFVar12->runtime58_6F[iVar8 + 0x18];
-    uVar6 = (uint)bVar1;
+    bVar1 = pFVar14->runtime60_6B[iVar9 + 0x10];
+    uVar7 = (uint)bVar1;
     if ((bVar1 & 0x79) == 0) {
       if ((bVar1 & 0xf9) != 0) {
-        uVar6 = (*(uint *)pbVar11 & 0xfefefefe) >> 1;
+        uVar7 = (*(uint *)pbVar13 & 0xfefefefe) >> 1;
       }
-      *(uint *)pbVar11 = uVar6;
+      *(uint *)pbVar13 = uVar7;
     }
-    pFVar12 = pFVar12 + 1;
-    pbVar11 = pbVar11 + 4;
-    iVar7 = iVar7 + -1;
-  } while (iVar7 != 0);
-  for (pWVar4 = (pIVar5->worldRuntime0A30).ownerListHead; pWVar4 != (WorldRuntimeNode *)0x0;
-      pWVar4 = (pWVar4->common).nextNode) {
-    if ((pWVar4[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
-       ((WorldRuntimeContext *)0xffffff < pWVar4[1].common.ownerWorld)) {
-      qVar16 = FieldGrid_WorldToGridQ12
-                         ((Q12)pWVar4[1].runtimePayload,pWVar4[1].classPayload.model.meshGroupMask);
-      iVar7 = (int)(qVar16 >> 0x20);
-      iVar8 = (int)qVar16 + 0x800 >> 0xc;
-      if ((SCARRY4(iVar7,0x800) == iVar8 < 0) &&
-         (((iVar9 = iVar7 + 0x800 >> 0xc, SCARRY4(iVar7,0x800) == iVar9 < 0 && (iVar8 < (int)AVar2))
-          && (iVar9 < (int)AVar3)))) {
+    pFVar14 = pFVar14 + 1;
+    pbVar13 = pbVar13 + 4;
+    iVar8 = iVar8 + -1;
+  } while (iVar8 != 0);
+  for (pWVar4 = (pIVar5->worldRuntime0A30).ownerListHead; pWVar4 != (WorldOwnerListNode100 *)0x0;
+      pWVar4 = pWVar4->nextNode) {
+    if ((pWVar4->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < pWVar4->modelTintArgb)) {
+      FVar18 = FieldGrid_WorldToGridQ12(pWVar4->worldYQ12,pWVar4->worldXQ12);
+      pGVar6 = g_InGamePanelTextureSource;
+      iVar8 = FVar18.rowQ12;
+      iVar9 = FVar18.columnQ12 + 0x800 >> 0xc;
+      if ((SCARRY4(iVar8,0x800) == iVar9 < 0) &&
+         (((iVar10 = iVar8 + 0x800 >> 0xc, SCARRY4(iVar8,0x800) == iVar10 < 0 &&
+           (iVar9 < (int)AVar2)) && (iVar10 < (int)AVar3)))) {
         entry = *(GameEntityRuntime **)((int)pWVar4->runtimePayload + 8);
-        bVar15 = false;
-        if (g_GameFactionRuntimeImage.records[(entry->common).ownership.ownerIndex].
-            factionClassOrMode != 0) {
-          SelectionInfo_FindEntryCf(entry);
-          iVar7 = extraout_EDX;
-          if (!bVar15) {
-            iVar7 = 0;
+        dVar11 = g_GameFactionRuntimeImage.records[(entry->common).ownership.ownerIndex].
+                 factionClassOrMode;
+        AVar12 = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
+        if (dVar11 != 0) {
+          bVar17 = SelectionInfo_FindEntryCf(entry);
+          if (!bVar17) {
+            dVar11 = 0;
           }
-          uVar6 = *(uint *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
-                           *(int *)(extraout_ECX + 0x488) * 0x20 + iVar7 * 8 + 0x44);
-          if (pWVar4[1].common.ownerWorld < (WorldRuntimeContext *)0xff000000) {
-            uVar6 = (uVar6 & 0xfefefefe) +
-                    (*(uint *)(pbVar13 + (iVar9 * AVar2 + iVar8) * 4) & 0xfefefefe) >> 1;
+          uVar7 = *(uint *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
+                           *(int *)((int)pGVar6[2].common.buildMetadata.names.sourceName +
+                                   AVar12 + 0x18) * 0x20 + dVar11 * 8 + 0x44);
+          if (pWVar4->modelTintArgb < 0xff000000) {
+            uVar7 = (uVar7 & 0xfefefefe) +
+                    (*(uint *)(pbVar15 + (iVar10 * AVar2 + iVar9) * 4) & 0xfefefefe) >> 1;
           }
-          *(uint *)(pbVar13 + (iVar9 * AVar2 + iVar8) * 4) = uVar6;
+          *(uint *)(pbVar15 + (iVar10 * AVar2 + iVar9) * 4) = uVar7;
         }
       }
     }
   }
   return;
 }
+

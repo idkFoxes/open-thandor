@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/math/fixed.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/math/fixed.h>
 
 /* Implementation ownership: core/math/fixed. */
@@ -12,14 +19,15 @@
    unchanged.
    Local calls: FixedTransform_BuildRotationBasis, FixedTransform_Compose, FixedTransform_ExtractEulerAnglesRegs.
 */
-undefined8
+FixedEulerAnglesEaxEbxEdx12 __thandor_eax_edx_cf_preserve_ecx
 FixedTransform_ComposeEulerAnglesRegs
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2)
 
 {
-  undefined4 extraout_ECX;
   FixedEulerPairEdxEax8 composedEulerAnglePair;
+  FixedEulerAnglesEaxEcxEdx12 FVar1;
+  FixedEulerAnglesEaxEbxEdx12 FVar2;
   
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,basisAngle0,basisAngle1,
@@ -31,11 +39,14 @@ FixedTransform_ComposeEulerAnglesRegs
             ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch,
              (GraphicsFixedMatrix3x4 *)&g_FixedTransformInputRotationScratch,
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
-  composedEulerAnglePair =
-       FixedTransform_ExtractEulerAnglesRegs
-                 ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch);
-  return CONCAT44((int)composedEulerAnglePair,extraout_ECX);
+  FVar1 = FixedTransform_ExtractEulerAnglesRegs
+                    ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch);
+  FVar2.angle2 = FVar1.eaxAngle;
+  FVar2.angle0 = (int)FVar1._4_8_;
+  FVar2.angle1 = (int)((ulonglong)FVar1._4_8_ >> 0x20);
+  return FVar2;
 }
+
 
 /* Address: 0x00484930.
    Ownership: core/math/fixed.
@@ -46,14 +57,17 @@ FixedTransform_ComposeEulerAnglesRegs
    executable data remain unchanged.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-FixedLengthElevationEdxEax8
+FixedLengthAnglesEaxEcxEdx12
 FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
+  ulonglong uVar1;
   dword elevationAngle16;
-  dword dVar1;
+  dword dVar2;
+  dword dVar3;
   dword vectorLengthQ12;
+  FixedLengthAnglesEaxEcxEdx12 FVar4;
   longlong squaredLengthAccumulatorQ24;
   longlong totalSquaredLengthQ24;
   
@@ -62,15 +76,20 @@ FixedMath_VectorToAnglesAndLength3Regs
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
-  dVar1 = FixedMath_Atan2Angle16(x,elevationAngle16);
-  FixedMath_Atan2Angle16(y,z);
+  dVar2 = FixedMath_Atan2Angle16(x,elevationAngle16);
+  dVar3 = FixedMath_Atan2Angle16(y,z);
   totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (longlong)x * (longlong)x;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
-  return CONCAT44(dVar1,vectorLengthQ12);
+  uVar1 = CONCAT44(dVar3,vectorLengthQ12) & 0xffffffffffff;
+  FVar4.elevationAngle = dVar2;
+  FVar4.lengthQ12 = (int)uVar1;
+  FVar4.azimuthAngle = (int)(uVar1 >> 0x20);
+  return FVar4;
 }
+
 
 /* Address: 0x00484A10.
    Ownership: core/math/fixed.
@@ -78,12 +97,15 @@ FixedMath_VectorToAnglesAndLength3Regs
    angle.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-FixedLengthElevationEdxEax8 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
+FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
 
 {
+  ulonglong uVar1;
   dword elevationAngle16;
-  dword dVar1;
+  dword dVar2;
+  dword dVar3;
   dword vectorLengthQ12;
+  FixedLengthAnglesEaxEcxEdx12 FVar4;
   int y;
   int x;
   longlong totalSquaredLengthQ24;
@@ -98,15 +120,20 @@ FixedLengthElevationEdxEax8 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFi
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
-  dVar1 = FixedMath_Atan2Angle16(vector->z,elevationAngle16);
-  FixedMath_Atan2Angle16(y,x);
+  dVar2 = FixedMath_Atan2Angle16(vector->z,elevationAngle16);
+  dVar3 = FixedMath_Atan2Angle16(y,x);
   totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (longlong)inputZQ12 * (longlong)inputZQ12;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
-  return CONCAT44(dVar1,vectorLengthQ12);
+  uVar1 = CONCAT44(dVar3,vectorLengthQ12) & 0xffffffffffff;
+  FVar4.elevationAngle = dVar2;
+  FVar4.lengthQ12 = (int)uVar1;
+  FVar4.azimuthAngle = (int)(uVar1 >> 0x20);
+  return FVar4;
 }
+
 
 /* Address: 0x00484B70.
    Ownership: core/math/fixed.
@@ -116,20 +143,19 @@ FixedLengthElevationEdxEax8 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFi
    remain unchanged.
    Local calls: FixedMath_Atan2Angle16, FixedMath_Length2.
 */
-FixedLengthAngleEdxEax8
+FixedLengthAngleEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedMath_Vector2AngleAndLengthRegs
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1)
 
 {
+  dword dVar1;
   dword vectorLengthQ12;
-  FixedMathVectorComponent32 x;
-  FixedMathVectorComponent32 y;
-  undefined4 extraout_EDX;
   
-  FixedMath_Atan2Angle16(component0,component1);
-  vectorLengthQ12 = FixedMath_Length2(x,y);
-  return CONCAT44(extraout_EDX,vectorLengthQ12);
+  dVar1 = FixedMath_Atan2Angle16(component0,component1);
+  vectorLengthQ12 = FixedMath_Length2(component0,component1);
+  return (FixedLengthAngleEaxEdx8)(CONCAT44(dVar1,vectorLengthQ12) & 0xffffffffffff);
 }
+
 
 /* Address: 0x004BEB20.
    Ownership: core/math/fixed.
@@ -140,12 +166,14 @@ FixedMath_Vector2AngleAndLengthRegs
    inputYQ12→Q12, p4 inputXQ12→Q12.
    Local calls: FixedTransform_BuildRotationBasis, FixedTransform_ApplyPoint.
 */
-undefined8
+FixedVectorEaxEcxEdx12
 FixedTransform_ApplyEulerRotationToVectorRegs
           (Q12 inputZQ12,Q12 inputYQ12,Q12 inputXQ12,AngleTurn32 rotationAngle0,
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
+  FixedVectorEaxEcxEdx12 FVar1;
+  
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,
              rotationAngle2);
@@ -156,8 +184,12 @@ FixedTransform_ApplyEulerRotationToVectorRegs
             ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,
              (GraphicsFixedVec3 *)&g_ModelTransformInputX,
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
-  return CONCAT44(g_ModelTransformOutputZ,g_ModelTransformOutputX);
+  FVar1.yQ12 = g_ModelTransformOutputY;
+  FVar1.xQ12 = g_ModelTransformOutputX;
+  FVar1.zQ12 = g_ModelTransformOutputZ;
+  return FVar1;
 }
+
 
 /* Address: 0x004BED10.
    Ownership: core/math/fixed.
@@ -168,27 +200,24 @@ FixedTransform_ApplyEulerRotationToVectorRegs
    unchanged.
    Local calls: FixedMath_VectorToAnglesVec3Regs, FixedMath_DirectionFromAnglesScaledRegs.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 FixedVector_StepBackwardAlongOwnDirection
-          (undefined4 param_1,undefined4 param_2,FixedVectorStepMultiplier32 stepMultiplier,
-          FixedMathScale32 directionScale,FixedVectorStateAddress32 vectorState)
+          (FixedVectorStepMultiplier32 stepMultiplier,FixedMathScale32 directionScale,
+          FixedVectorStateAddress32 vectorState)
 
 {
-  AngleTurn32 azimuthAngle;
-  int extraout_ECX;
-  AngleTurn32 elevationAngle;
   FixedDirectionXZEdxEax8 stepDirectionXZQ12;
+  FixedDirectionXyzRegs12 FVar1;
+  FixedMathVectorAnglesRegs8 FVar2;
   
-  FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
-  stepDirectionXZQ12 =
-       FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,directionScale);
-  *(int *)(vectorState + 0x18) =
-       *(int *)(vectorState + 0x18) - (int)stepDirectionXZQ12 * stepMultiplier;
-  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - extraout_ECX * stepMultiplier;
-  *(int *)(vectorState + 0x20) =
-       *(int *)(vectorState + 0x20) - (int)(stepDirectionXZQ12 >> 0x20) * stepMultiplier;
+  FVar2 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
+  FVar1 = FixedMath_DirectionFromAnglesScaledRegs(FVar2.ecx,FVar2.edx,directionScale);
+  *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - FVar1.eax * stepMultiplier;
+  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - FVar1.ecx * stepMultiplier;
+  *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - FVar1.edx * stepMultiplier;
   return;
 }
+
 
 /* Address: 0x00521FA0.
    Ownership: core/math/fixed.
@@ -198,7 +227,7 @@ FixedVector_StepBackwardAlongOwnDirection
    body bytes, control flow, and executable data remain unchanged.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-undefined8
+FixedTriangleJointAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
@@ -210,11 +239,13 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
   int iVar6;
   uint uVar7;
   dword dVar8;
-  undefined4 uVar9;
-  int extraout_EDX;
-  undefined4 uVar10;
-  uint uVar11;
-  longlong lVar12;
+  dword dVar9;
+  AngleTurn32 AVar10;
+  AngleTurn32 AVar11;
+  uint uVar12;
+  FixedTriangleJointAnglesEaxEdx8 FVar13;
+  FixedTriangleJointAnglesEaxEdx8 FVar14;
+  longlong lVar15;
   
   iVar6 = (int)(((longlong)sideLength0Q12 * (longlong)sideLength0Q12 -
                 (longlong)sideLength1Q12 * (longlong)sideLength1Q12) / (longlong)sideLength2Q12);
@@ -222,34 +253,39 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
   iVar6 = (int)lVar1;
   uVar5 = -iVar6;
   lVar2 = (longlong)sideLength2Q12 * (longlong)sideLength2Q12;
-  uVar11 = uVar5 - (uint)lVar2;
+  uVar12 = uVar5 - (uint)lVar2;
   lVar3 = (longlong)sideLength1Q12 * (longlong)sideLength1Q12;
   uVar7 = (uint)lVar3;
   lVar4 = (longlong)sideLength0Q12 * (longlong)sideLength0Q12;
-  lVar12 = (lVar2 - lVar3) + lVar4;
+  lVar15 = (lVar2 - lVar3) + lVar4;
   lVar1 = lVar4 * 2 +
           CONCAT44((((-(uint)(iVar6 != 0) - (int)((ulonglong)lVar1 >> 0x20)) -
                     (int)((ulonglong)lVar2 >> 0x20)) - (uint)(uVar5 < (uint)lVar2)) +
                    (int)((ulonglong)lVar3 >> 0x20) * 2 + (uint)CARRY4(uVar7,uVar7) +
-                   (uint)CARRY4(uVar11,uVar7 * 2),uVar11 + uVar7 * 2);
+                   (uint)CARRY4(uVar12,uVar7 * 2),uVar12 + uVar7 * 2);
   if ((-1 < lVar1) && (0x10 < sideLength2Q12)) {
     dVar8 = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)lVar1 >> 0x20),(UInt64Half32)lVar1);
-    FixedMath_Atan2Angle16((int)dVar8 >> 1,(int)(lVar12 / (longlong)sideLength2Q12) >> 1);
-    dVar8 = FixedMath_Atan2Angle16
-                      ((int)dVar8 >> 1,
-                       (int)(((lVar3 + lVar2) - lVar4) / (longlong)sideLength2Q12) >> 1);
-    return CONCAT44(extraout_EDX + dVar8,dVar8);
+    dVar9 = FixedMath_Atan2Angle16((int)dVar8 >> 1,(int)(lVar15 / (longlong)sideLength2Q12) >> 1);
+    FVar13.jointAngle0 =
+         FixedMath_Atan2Angle16
+                   ((int)dVar8 >> 1,(int)(((lVar3 + lVar2) - lVar4) / (longlong)sideLength2Q12) >> 1
+                   );
+    FVar13.jointAngle1 = dVar9 + FVar13.jointAngle0;
+    return FVar13;
   }
   if ((uint)sideLength0Q12 < (uint)sideLength2Q12) {
-    uVar9 = 0;
-    uVar10 = 0;
+    AVar10 = 0;
+    AVar11 = 0;
   }
   else {
-    uVar9 = 0x8000;
-    uVar10 = 0x8000;
+    AVar10 = 0x8000;
+    AVar11 = 0x8000;
   }
-  return CONCAT44(uVar10,uVar9);
+  FVar14.jointAngle1 = AVar11;
+  FVar14.jointAngle0 = AVar10;
+  return FVar14;
 }
+
 
 /* Address: 0x004849D0.
    Ownership: core/math/fixed.
@@ -259,8 +295,9 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
    unchanged.
    Local calls: FixedMath_UInt64Sqrt.
 */
-dword FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
-                       FixedMathVectorComponent32 z)
+dword __thandor_eax_preserve_ecx_edx
+FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
+                 FixedMathVectorComponent32 z)
 
 {
   dword vectorLengthQ12;
@@ -275,26 +312,32 @@ dword FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 
   return vectorLengthQ12;
 }
 
+
 /* Address: 0x00484E50.
    Ownership: core/math/fixed.
    Purpose: Extracts the two direction angles from the transform's third basis column. EDX=elevation angle and
    ECX=azimuth angle.
    Local calls: FixedMath_VectorToAngles3Regs.
 */
-void FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
+FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
-  FixedMath_VectorToAngles3Regs
-            (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  return;
+  FixedMathVectorAnglesRegs8 FVar1;
+  
+  FVar1 = FixedMath_VectorToAngles3Regs
+                    (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
+  return FVar1;
 }
+
 
 /* Address: 0x004857A0.
    Ownership: core/math/fixed.
    Purpose: Normalizes the input vector to Q28. Vectors with integer length below 2 produce {0,0,0}.
    Local calls: FixedMath_LengthVec3.
 */
-void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
+void __thandor_void_preserve_eax_ecx_edx
+FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
 
 {
   dword inputLengthQ12;
@@ -324,6 +367,7 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
   return;
 }
 
+
 /* Address: 0x004BEC20.
    Ownership: core/math/fixed.
    Purpose: Thin register-preserving wrapper around the fixed-transform direction rotation core. Kept distinct from
@@ -333,21 +377,25 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
    flow, and executable data remain unchanged. Typed parameters: p2 directionScale→FixedMathScale32_V342.
    Local calls: FixedTransform_RotateDirectionScaledCoreRegs.
 */
-undefined8 __fastcall
+FixedVectorEaxEcxEdx12
 FixedTransform_RotateDirectionScaledRegs
-          (undefined4 param_1,undefined4 param_2,FixedMathScale32 directionScale,
-          AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,AngleTurn32 rotationAngle0,
-          AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
+          (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
+          AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  undefined8 rotatedDirectionPairQ12;
+  FixedVectorEaxEcxEdx12 FVar1;
+  FixedVectorXEaxYEbxZEdx12 FVar2;
+  undefined8 uVar3;
   
-  rotatedDirectionPairQ12 =
-       FixedTransform_RotateDirectionScaledCoreRegs
-                 (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
-                  rotationAngle2);
-  return rotatedDirectionPairQ12;
+  FVar2 = FixedTransform_RotateDirectionScaledCoreRegs
+                    (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
+                     rotationAngle2);
+  FVar1.xQ12 = FVar2.xQ12;
+  uVar3._4_4_ = FVar2.yQ12;
+  register0x00000008 = FVar2.zQ12;
+  return FVar1;
 }
+
 
 /* Address: 0x00417620.
    Ownership: core/math/fixed.
@@ -364,10 +412,11 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
   int iVar2;
   uint angleIndex16;
   uint uVar3;
-  undefined1 in_CF;
+  ArenaAllocEaxCf5 AVar4;
   
-  outputCursor = (*g_MemoryApi.alloc)(0x40000);
-  if (!(bool)in_CF) {
+  AVar4 = (*g_MemoryApi.alloc)(0x40000);
+  outputCursor = (short *)AVar4.eax;
+  if (!AVar4.carry) {
     g_CosineDerivedLookupAllocation = outputCursor;
     for (entriesRemainingInRow = 0x80; entriesRemainingInRow != 0;
         entriesRemainingInRow = entriesRemainingInRow + -1) {
@@ -413,6 +462,7 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
   return;
 }
 
+
 /* Address: 0x004848C0.
    Ownership: core/math/fixed.
    Purpose: Writes a Q28 unit direction vector from two wrapping 16-bit angles. Kept distinct from Q12 coordinates,
@@ -420,8 +470,9 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
    elevationAngle→AngleTurn32, p2 azimuthAngle→AngleTurn32. Calling convention, storage, body bytes, control flow,
    and executable data remain unchanged.
 */
-void FixedMath_WriteDirectionQ28
-               (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
+void __thandor_void_preserve_eax_ecx_edx
+FixedMath_WriteDirectionQ28
+          (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
   uint azimuthPlusElevationAngle16;
@@ -443,6 +494,7 @@ void FixedMath_WriteDirectionQ28
   return;
 }
 
+
 /* Address: 0x00484B00.
    Ownership: core/math/fixed.
    Purpose: Returns EAX=cos(angle)*scale and EDX=sin(angle)*scale, both using Q28 table multiplication. angle16 ->
@@ -451,7 +503,8 @@ void FixedMath_WriteDirectionQ28
    parameters: p0 angle→AngleTurn32. Calling convention, storage, body bytes, control flow, and executable data
    remain unchanged.
 */
-FixedSinCosEdxEax8 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
+FixedSinCosEdxEax8 __thandor_eax_edx_cf_preserve_ecx
+FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 
 {
   return CONCAT44((int)((ulonglong)((longlong)g_FixedSinQ28[angle & 0xffff] * (longlong)scale) >>
@@ -461,6 +514,7 @@ FixedSinCosEdxEax8 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 sca
                        0x20) << 4 |
                   (uint)((longlong)g_FixedCosQ28[angle & 0xffff] * (longlong)scale) >> 0x1c);
 }
+
 
 /* Address: 0x00484B40.
    Ownership: core/math/fixed.
@@ -478,9 +532,9 @@ FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle)
    Ownership: core/math/fixed.
    Purpose: Applies only the 3x3 Q28 basis and ignores transform->translation.
 */
-void FixedTransform_ApplyDirection
-               (GraphicsFixedVec3 *output,GraphicsFixedVec3 *direction,
-               GraphicsFixedMatrix3x4 *transform)
+void __thandor_void_preserve_eax_ecx_edx
+FixedTransform_ApplyDirection
+          (GraphicsFixedVec3 *output,GraphicsFixedVec3 *direction,GraphicsFixedMatrix3x4 *transform)
 
 {
   int iVar1;
@@ -510,13 +564,14 @@ void FixedTransform_ApplyDirection
   return;
 }
 
+
 /* Address: 0x00485090.
    Ownership: core/math/fixed.
    Purpose: Multiplies a direction by the transpose of the transform's 3x3 Q28 basis. Translation is ignored.
 */
-void FixedTransform_ApplyTransposeDirection
-               (GraphicsFixedVec3 *output,GraphicsFixedMatrix3x4 *transform,
-               GraphicsFixedVec3 *direction)
+void __thandor_void_preserve_eax_ecx_edx
+FixedTransform_ApplyTransposeDirection
+          (GraphicsFixedVec3 *output,GraphicsFixedMatrix3x4 *transform,GraphicsFixedVec3 *direction)
 
 {
   int iVar1;
@@ -546,11 +601,13 @@ void FixedTransform_ApplyTransposeDirection
   return;
 }
 
+
 /* Address: 0x00485520.
    Ownership: core/math/fixed.
    Purpose: It assumes the basis is a rotation matrix.
 */
-void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
+void __thandor_void_preserve_eax_ecx_edx
+FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
 
 {
   longlong lVar1;
@@ -639,11 +696,13 @@ void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedM
   return;
 }
 
+
 /* Address: 0x004856B0.
    Ownership: core/math/fixed.
    Purpose: Returns (left.x*right.x + left.y*right.y + left.z*right.z) shifted right by 12.
 */
-sdword FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
+sdword __thandor_eax_preserve_ecx_edx
+FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
   longlong dotProductAccumulatorQ24;
@@ -655,11 +714,13 @@ sdword FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
          (int)((ulonglong)dotProductAccumulatorQ24 >> 0x20) << 0x14;
 }
 
+
 /* Address: 0x004856F0.
    Ownership: core/math/fixed.
    Purpose: Returns (left.x*right.x + left.y*right.y + left.z*right.z) shifted right by 28.
 */
-sdword FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
+sdword __thandor_eax_preserve_ecx_edx
+FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
   longlong dotProductAccumulatorQ56;
@@ -671,13 +732,15 @@ sdword FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
          (int)((ulonglong)dotProductAccumulatorQ56 >> 0x20) << 4;
 }
 
+
 /* Address: 0x00485730.
    Ownership: core/math/fixed.
    Purpose: Writes leftOperand cross rightOperand, shifted right by 12. The executable's stack order is output,
    rightOperand, leftOperand.
 */
-void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
-                       GraphicsFixedVec3 *leftOperand)
+void __thandor_void_preserve_eax_ecx_edx
+FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
+                  GraphicsFixedVec3 *leftOperand)
 
 {
   int iVar1;
@@ -703,6 +766,7 @@ void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperan
   output->z = (int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc;
   return;
 }
+
 
 /* Address: 0x0052AD50.
    Ownership: core/math/fixed.
@@ -736,12 +800,14 @@ FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 
    flow, and executable data remain unchanged. Typed parameters: p2 directionScale→FixedMathScale32_V342.
    Local calls: FixedTransform_BuildRotationBasis, FixedMath_WriteDirectionScaled, FixedTransform_ApplyPoint.
 */
-undefined8
+FixedVectorXEaxYEbxZEdx12 __thandor_eax_edx_cf_preserve_ecx
 FixedTransform_RotateDirectionScaledCoreRegs
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
+  FixedVectorXEaxYEbxZEdx12 FVar1;
+  
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,
              rotationAngle2);
@@ -752,33 +818,39 @@ FixedTransform_RotateDirectionScaledCoreRegs
             ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,
              (GraphicsFixedVec3 *)&g_ModelTransformInputX,
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
-  return CONCAT44(g_ModelTransformOutputZ,g_ModelTransformOutputX);
+  FVar1.yQ12 = g_ModelTransformOutputY;
+  FVar1.xQ12 = g_ModelTransformOutputX;
+  FVar1.zQ12 = g_ModelTransformOutputZ;
+  return FVar1;
 }
+
 
 /* Address: 0x00484A70.
    Ownership: core/math/fixed.
    Purpose: Pointer form of FixedMath_VectorToAngles3Regs. EDX=elevation angle and ECX=azimuth angle.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-void FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
+FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  dword x;
+  dword dVar1;
+  dword dVar2;
   int y;
-  int x_00;
+  int x;
   longlong horizontalSquaredLengthAccumulatorQ24;
   
-  x_00 = vector->x;
+  x = vector->x;
   y = vector->y;
-  horizontalSquaredLengthAccumulatorQ24 =
-       (longlong)y * (longlong)y + (longlong)x_00 * (longlong)x_00;
-  x = FixedMath_UInt64Sqrt
-                ((UInt64Half32)((ulonglong)horizontalSquaredLengthAccumulatorQ24 >> 0x20),
-                 (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
-  FixedMath_Atan2Angle16(vector->z,x);
-  FixedMath_Atan2Angle16(y,x_00);
-  return;
+  horizontalSquaredLengthAccumulatorQ24 = (longlong)y * (longlong)y + (longlong)x * (longlong)x;
+  dVar1 = FixedMath_UInt64Sqrt
+                    ((UInt64Half32)((ulonglong)horizontalSquaredLengthAccumulatorQ24 >> 0x20),
+                     (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
+  dVar1 = FixedMath_Atan2Angle16(vector->z,dVar1);
+  dVar2 = FixedMath_Atan2Angle16(y,x);
+  return (FixedMathVectorAnglesRegs8)(CONCAT44(dVar2,dVar1) & 0xffffffffffff);
 }
+
 
 /* Address: 0x00484E00.
    Ownership: core/math/fixed.
@@ -786,42 +858,41 @@ void FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
    results. The declared 64-bit return models EDX:EAX; ECX remains an extra output.
    Local calls: FixedMath_VectorToAngles3Regs, FixedMath_Atan2Angle16.
 */
-FixedEulerPairEdxEax8 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform)
+FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
   dword extractedRotationAngle2;
   dword dVar1;
-  int extraout_ECX;
-  int extraout_EDX;
-  undefined4 extraout_EDX_00;
-  undefined4 extraout_EDX_01;
-  undefined4 extractedRotationAngle1;
+  FixedMathVectorAnglesRegs8 FVar2;
+  FixedEulerAnglesEaxEcxEdx12 FVar3;
   
-  FixedMath_VectorToAngles3Regs
-            (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  if (extraout_EDX < 0) {
+  FVar2 = FixedMath_VectorToAngles3Regs
+                    (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
+  FVar3.edxAngle = FVar2.edx;
+  FVar3.ecxAngle = FVar2.ecx;
+  if ((longlong)FVar2 < 0) {
     dVar1 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
                        transform->basisRow1[1] - transform->basisRow0[0]);
-    extractedRotationAngle2 = dVar1 + extraout_ECX * 2 & 0xffff;
-    extractedRotationAngle1 = extraout_EDX_01;
+    extractedRotationAngle2 = dVar1 + FVar3.ecxAngle * 2 & 0xffff;
   }
   else {
     extractedRotationAngle2 =
          FixedMath_Atan2Angle16
                    (transform->basisRow1[0] - transform->basisRow0[1],
                     transform->basisRow1[1] + transform->basisRow0[0]);
-    extractedRotationAngle1 = extraout_EDX_00;
   }
-  return CONCAT44(extractedRotationAngle1,extractedRotationAngle2);
+  FVar3.eaxAngle = extractedRotationAngle2;
+  return FVar3;
 }
+
 
 /* Address: 0x00484AC0.
    Ownership: core/math/fixed.
    Purpose: Returns floor(sqrt(vector->x^2 + vector->y^2 + vector->z^2)).
    Local calls: FixedMath_UInt64Sqrt.
 */
-dword FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
+dword __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
 
 {
   dword vectorLengthQ12;
@@ -837,6 +908,7 @@ dword FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
   return vectorLengthQ12;
 }
 
+
 /* Address: 0x00484CF0.
    Ownership: core/math/fixed.
    Purpose: Returns floor(sqrt(x*x + y*y)). Typed parameters: p0 x→FixedMathVectorComponent32_V342, p1
@@ -844,7 +916,8 @@ dword FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
    control flow, globals, locals, and executable data remain unchanged.
    Local calls: FixedMath_UInt64Sqrt.
 */
-dword FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
+dword __thandor_eax_preserve_ecx_edx
+FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
 
 {
   dword vectorLengthQ12;
@@ -858,6 +931,7 @@ dword FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 
   return vectorLengthQ12;
 }
 
+
 /* Address: 0x00484770.
    Ownership: core/math/fixed.
    Purpose: Builds a scaled direction vector. Register outputs are EAX=x, ECX=y, EDX=z. The declared 64-bit C
@@ -865,25 +939,33 @@ dword FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 
    velocity seeding in the shot creator. Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment
    ordinals, and raw renderer flags.
 */
-FixedDirectionXZEdxEax8
+FixedDirectionXyzRegs12
 FixedMath_DirectionFromAnglesScaledRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale)
 
 {
+  longlong lVar1;
+  uint uVar2;
   uint elevationAngle16;
+  uint uVar3;
+  FixedDirectionXyzRegs12 FVar4;
   longlong scaledHorizontalComponentProduct;
   
   elevationAngle16 = elevationAngle & 0xffff;
+  uVar2 = elevationAngle16 + azimuthAngle & 0xffff;
+  uVar3 = azimuthAngle - elevationAngle16 & 0xffff;
   scaledHorizontalComponentProduct =
-       (longlong)
-       (g_FixedCosQ28[elevationAngle16 + azimuthAngle & 0xffff] +
-       g_FixedCosQ28[azimuthAngle - elevationAngle16 & 0xffff]) * (longlong)scale;
-  return CONCAT44((int)((ulonglong)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >>
-                       0x20) << 4 |
-                  (uint)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x1c,
-                  (int)((ulonglong)scaledHorizontalComponentProduct >> 0x20) << 3 |
-                  (uint)scaledHorizontalComponentProduct >> 0x1d);
+       (longlong)(g_FixedCosQ28[uVar2] + g_FixedCosQ28[uVar3]) * (longlong)scale;
+  lVar1 = (longlong)(g_FixedSinQ28[uVar2] + g_FixedSinQ28[uVar3]) * (longlong)scale;
+  FVar4.edx = (int)((ulonglong)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x20
+                   ) << 4 |
+              (uint)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x1c;
+  FVar4.ecx = (int)((ulonglong)lVar1 >> 0x20) << 3 | (uint)lVar1 >> 0x1d;
+  FVar4.eax = (int)((ulonglong)scaledHorizontalComponentProduct >> 0x20) << 3 |
+              (uint)scaledHorizontalComponentProduct >> 0x1d;
+  return FVar4;
 }
+
 
 /* Address: 0x004847E0.
    Ownership: core/math/fixed.
@@ -892,17 +974,24 @@ FixedMath_DirectionFromAnglesScaledRegs
    rotation-basis row builder. Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and
    raw renderer flags.
 */
-FixedDirectionXZEdxEax8
+FixedDirectionXyzRegs12
 FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
+  uint uVar1;
   uint elevationAngle16;
+  uint uVar2;
+  FixedDirectionXyzRegs12 FVar3;
   
   elevationAngle16 = elevationAngle & 0xffff;
-  return CONCAT44(g_FixedSinQ28[elevationAngle16],
-                  g_FixedCosQ28[elevationAngle16 + azimuthAngle & 0xffff] +
-                  g_FixedCosQ28[azimuthAngle - elevationAngle16 & 0xffff] >> 1);
+  uVar1 = elevationAngle16 + azimuthAngle & 0xffff;
+  uVar2 = azimuthAngle - elevationAngle16 & 0xffff;
+  FVar3.eax = g_FixedCosQ28[uVar1] + g_FixedCosQ28[uVar2] >> 1;
+  FVar3.ecx = g_FixedSinQ28[uVar1] + g_FixedSinQ28[uVar2] >> 1;
+  FVar3.edx = g_FixedSinQ28[elevationAngle16];
+  return FVar3;
 }
+
 
 /* Address: 0x00484840.
    Ownership: core/math/fixed.
@@ -911,9 +1000,10 @@ FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azim
    parameters: p1 elevationAngle→AngleTurn32, p2 azimuthAngle→AngleTurn32. Calling convention, storage, body bytes,
    control flow, and executable data remain unchanged. Typed parameters: p3 scale→FixedMathScale32_V342.
 */
-void FixedMath_WriteDirectionScaled
-               (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
-               FixedMathScale32 scale)
+void __thandor_void_preserve_eax_ecx_edx
+FixedMath_WriteDirectionScaled
+          (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
+          FixedMathScale32 scale)
 
 {
   uint azimuthPlusElevationAngle16;
@@ -944,15 +1034,17 @@ void FixedMath_WriteDirectionScaled
   return;
 }
 
+
 /* Address: 0x00485120.
    Ownership: core/math/fixed.
    Purpose: Composes two Q28 transforms. The executable calculates output = transformB * transformA, including
    translation. Fixed 3x4 transform concatenation (basis multiply + translation accumulate), Q12 rounding via >>
    12.
 */
-void FixedTransform_Compose
-               (GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *transformA,
-               GraphicsFixedMatrix3x4 *transformB)
+void __thandor_void_preserve_eax_ecx_edx
+FixedTransform_Compose
+          (GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *transformA,
+          GraphicsFixedMatrix3x4 *transformB)
 
 {
   int iVar1;
@@ -1028,6 +1120,7 @@ void FixedTransform_Compose
   return;
 }
 
+
 /* Address: 0x00484990.
    Ownership: core/math/fixed.
    Purpose: Calculates two wrapping 16-bit vector angles. EDX=elevation angle and ECX=azimuth angle; EAX is
@@ -1037,12 +1130,14 @@ void FixedTransform_Compose
    control flow, globals, locals, and executable data remain unchanged.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-void FixedMath_VectorToAngles3Regs
-               (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
-               FixedMathVectorComponent32 z)
+FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedMath_VectorToAngles3Regs
+          (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
   dword horizontalMagnitudeQ12;
+  dword dVar1;
+  dword dVar2;
   longlong horizontalMagnitudeSquaredQ24;
   
   horizontalMagnitudeSquaredQ24 = (longlong)y * (longlong)y + (longlong)z * (longlong)z;
@@ -1050,19 +1145,20 @@ void FixedMath_VectorToAngles3Regs
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)horizontalMagnitudeSquaredQ24 >> 0x20),
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
-  FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
-  FixedMath_Atan2Angle16(y,z);
-  return;
+  dVar1 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
+  dVar2 = FixedMath_Atan2Angle16(y,z);
+  return (FixedMathVectorAnglesRegs8)(CONCAT44(dVar1,dVar2) & 0xffffffff0000ffff);
 }
+
 
 /* Address: 0x00484E70.
    Ownership: core/math/fixed.
    Purpose: Applies the 3x3 Q28 basis and then adds transform->translation. Point through 3x4 fixed transform
    (rotate + translate).
 */
-void FixedTransform_ApplyPoint
-               (GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform
-               )
+void __thandor_void_preserve_eax_ecx_edx
+FixedTransform_ApplyPoint
+          (GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
   int iVar1;
@@ -1091,6 +1187,7 @@ void FixedTransform_ApplyPoint
   return;
 }
 
+
 /* Address: 0x00484D20.
    Ownership: core/math/fixed.
    Purpose: Writes the nine contiguous Q28 basis coefficients. The caller initializes the following translation
@@ -1099,34 +1196,33 @@ void FixedTransform_ApplyPoint
    renderer flags. Typed parameters: p1 angle0→AngleTurn32, p2 angle1→AngleTurn32, p3 angle2→AngleTurn32.
    Local calls: FixedMath_DirectionFromAnglesQ28Regs.
 */
-void FixedTransform_BuildRotationBasis
-               (GraphicsFixedMatrix3x4 *output,AngleTurn32 angle0,AngleTurn32 angle1,
-               AngleTurn32 angle2)
+void __thandor_void_preserve_eax_ecx_edx
+FixedTransform_BuildRotationBasis
+          (GraphicsFixedMatrix3x4 *output,AngleTurn32 angle0,AngleTurn32 angle1,AngleTurn32 angle2)
 
 {
   longlong lVar1;
   int currentSymmetricComponentQ28;
   int iVar2;
-  sdword extraout_ECX;
-  sdword extraout_ECX_00;
   uint uVar3;
   uint secondarySymmetricAngleIndex16;
   uint primarySymmetricAngleIndex16;
   FixedDirectionXZEdxEax8 directionSamplePairQ28;
   FixedDirectionXZEdxEax8 secondaryDirectionSamplePairQ28;
+  FixedDirectionXyzRegs12 FVar4;
   longlong currentComponentTimesVerticalSinProduct;
   int verticalSinQ28;
   longlong componentTimesVerticalSinProduct;
   longlong secondaryComponentTimesVerticalSinProduct;
   
-  directionSamplePairQ28 = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle2);
-  output->basisRow0[2] = (sdword)directionSamplePairQ28;
-  output->basisRow1[2] = extraout_ECX;
-  output->basisRow2[2] = (sdword)(directionSamplePairQ28 >> 0x20);
-  secondaryDirectionSamplePairQ28 = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle0 - angle2);
+  FVar4 = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle2);
+  output->basisRow0[2] = FVar4.eax;
+  output->basisRow1[2] = FVar4.ecx;
+  output->basisRow2[2] = FVar4.edx;
+  FVar4 = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle0 - angle2);
   secondarySymmetricAngleIndex16 = (angle0 - angle2) + angle2;
-  output->basisRow2[1] = extraout_ECX_00;
-  output->basisRow2[0] = -(int)secondaryDirectionSamplePairQ28;
+  output->basisRow2[1] = FVar4.ecx;
+  output->basisRow2[0] = -FVar4.eax;
   primarySymmetricAngleIndex16 = secondarySymmetricAngleIndex16 & 0xffff;
   uVar3 = secondarySymmetricAngleIndex16 + angle2 * -2 & 0xffff;
   currentSymmetricComponentQ28 =
@@ -1156,6 +1252,7 @@ void FixedTransform_BuildRotationBasis
   return;
 }
 
+
 /* Address: 0x00484BA0.
    Ownership: core/math/fixed.
    Purpose: Approximates atan2(y, x) as a wrapping 16-bit engine angle. Fixed-point atan2 -> angle16; euler
@@ -1163,7 +1260,8 @@ void FixedTransform_BuildRotationBasis
    Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-dword FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
+dword __thandor_eax_preserve_ecx_edx
+FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
   dword angle16Result;
@@ -1240,6 +1338,37 @@ dword FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorCompone
   return angle16Result;
 }
 
+
+/* Address: 0x004846A0.
+   Ownership: core/math/fixed.
+   Purpose: Computes the recovered Q12 fixed-point square-root approximation.
+*/
+dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue)
+
+{
+  int iVar1;
+  uint uVar2;
+  
+  iVar1 = 0x1f;
+  if (inputValue != 0) {
+    for (; inputValue >> iVar1 == 0; iVar1 = iVar1 + -1) {
+    }
+  }
+  if (inputValue != 0) {
+    uVar2 = 0x1cU - iVar1 & 0x1e;
+    iVar1 = inputValue << (sbyte)uVar2;
+    return (int)((ulonglong)
+                 ((longlong)iVar1 *
+                 (longlong)
+                 ((int)((ulonglong)
+                        ((longlong)iVar1 *
+                        (longlong)
+                        ((int)((ulonglong)((longlong)iVar1 * 0x25ed098) >> 0x20) + -0x1c71c71)) >>
+                       0x20) + 0xb1c71c)) >> 0x20) + 0x66b75U >> (sbyte)(uVar2 >> 1);
+  }
+  return 0;
+}
+
 /* Address: 0x00484700.
    Ownership: core/math/fixed.
    Purpose: Returns floor(sqrt((high << 32) | low)) using three Newton iterations. 64-bit integer square root
@@ -1247,7 +1376,7 @@ dword FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorCompone
    low→UInt64Half32_V342. Calling convention, exact VariableStorage serialization, function body bytes, control
    flow, globals, locals, and executable data remain unchanged.
 */
-dword FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
+dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 
 {
   byte initialRootShift;
@@ -1283,3 +1412,4 @@ dword FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
        refinedRootEstimate + (int)(CONCAT44(high,low) / (ulonglong)refinedRootEstimate) >> 1;
   return (int)(CONCAT44(high,low) / (ulonglong)secondRootEstimate) + secondRootEstimate >> 1;
 }
+

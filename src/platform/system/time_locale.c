@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/system/time_locale.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/platform/system/time_locale.h>
 
 /* Implementation ownership: platform/system/time_locale. */
@@ -8,7 +15,7 @@
    clears the callback and calls timeKillEvent for the paired WinMM timer ID.
    Local calls: TimerSystem_UnregisterPeriodic.
 */
-void __cdecl TimerSystem_Shutdown(void)
+void __thandor_preserve_eax TimerSystem_Shutdown(void)
 
 {
   uint callbackSlotByteOffset;
@@ -25,6 +32,7 @@ void __cdecl TimerSystem_Shutdown(void)
   return;
 }
 
+
 /* Address: 0x00586BA0.
    Ownership: platform/system/time_locale.
    Purpose: Detects CPU features, installs nine locale/system services, queries LOCALE_USER_DEFAULT fields through
@@ -33,7 +41,7 @@ void __cdecl TimerSystem_Shutdown(void)
    Cross-module calls: CPU_DetectFeatures [platform/bootstrap/runtime], Text_CopyNarrowToUtf16Cf
    [core/text/string].
 */
-void __cdecl Locale_Init(void)
+void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
 
 {
   CPU_DetectFeatures();
@@ -72,55 +80,58 @@ void __cdecl Locale_Init(void)
   return;
 }
 
+
 /* Address: 0x00402F70.
    Ownership: platform/system/time_locale.
    Purpose: Maps a telephone country code to the engine packed ASCII region tag used by locale-dependent resource
    selection. Verified mappings include generic, Germany, Great Britain, France, Denmark, Italy, Belgium, Canada,
    Netherlands, Spain, and USA, with a dash fallback.
 */
-undefined * Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode)
+LocaleRegionTagPacked __thandor_eax_preserve_ecx_edx
+Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode)
 
 {
-  undefined *packedRegionTag;
+  LocaleRegionTagPacked packedRegionTag;
   
   if (countryCode == LOCALE_COUNTRY_GENERIC) {
-    packedRegionTag = (undefined *)0x6e6547;
+    packedRegionTag = LOCALE_REGION_TAG_GENERIC;
   }
   else if (countryCode == LOCALE_COUNTRY_GERMANY) {
-    packedRegionTag = (undefined *)0x44;
+    packedRegionTag = LOCALE_REGION_TAG_GERMANY;
   }
   else if (countryCode == LOCALE_COUNTRY_GREAT_BRITAIN) {
-    packedRegionTag = (undefined *)0x4247;
+    packedRegionTag = LOCALE_REGION_TAG_GREAT_BRITAIN;
   }
   else if (countryCode == LOCALE_COUNTRY_FRANCE) {
-    packedRegionTag = (undefined *)0x46;
+    packedRegionTag = LOCALE_REGION_TAG_FRANCE;
   }
   else if (countryCode == LOCALE_COUNTRY_DENMARK) {
-    packedRegionTag = (undefined *)0x4b44;
+    packedRegionTag = LOCALE_REGION_TAG_DENMARK;
   }
   else if (countryCode == LOCALE_COUNTRY_ITALY) {
-    packedRegionTag = (undefined *)0x49;
+    packedRegionTag = LOCALE_REGION_TAG_ITALY;
   }
   else if (countryCode == LOCALE_COUNTRY_BELGIUM) {
-    packedRegionTag = (undefined *)0x42;
+    packedRegionTag = LOCALE_REGION_TAG_BELGIUM;
   }
   else if (countryCode == LOCALE_COUNTRY_CANADA) {
-    packedRegionTag = (undefined *)0x4e4443;
+    packedRegionTag = LOCALE_REGION_TAG_CANADA;
   }
   else if (countryCode == LOCALE_COUNTRY_NETHERLANDS) {
-    packedRegionTag = (undefined *)0x4c4e;
+    packedRegionTag = LOCALE_REGION_TAG_NETHERLANDS;
   }
   else if (countryCode == LOCALE_COUNTRY_SPAIN) {
-    packedRegionTag = (undefined *)0x45;
+    packedRegionTag = LOCALE_REGION_TAG_SPAIN;
   }
   else if (countryCode == LOCALE_COUNTRY_USA) {
-    packedRegionTag = &k_LocaleRegionTagPackedUSA;
+    packedRegionTag = LOCALE_REGION_TAG_USA;
   }
   else {
-    packedRegionTag = (undefined *)0x2d;
+    packedRegionTag = LOCALE_REGION_TAG_FALLBACK_DASH;
   }
   return packedRegionTag;
 }
+
 
 /* Address: 0x00586790.
    Ownership: platform/system/time_locale.
@@ -143,9 +154,10 @@ void __cdecl TimerSystem_Init(void)
    without arguments. Typed parameters: p0 timerId→WinMmTimerId_V331, p2
    slotOffset→TimerCallbackSlotByteOffset_V331. Nearby but non-identical semantic domains were explicitly deferred.
 */
-void WinMM_TimerDispatchCallback
-               (WinMmTimerId timerId,dword message,TimerCallbackSlotByteOffset slotOffset,
-               dword callbackData0,dword callbackData1)
+void __thandor_void_preserve_eax_ecx_edx
+WinMM_TimerDispatchCallback
+          (WinMmTimerId timerId,dword message,TimerCallbackSlotByteOffset slotOffset,
+          dword callbackData0,dword callbackData1)
 
 {
   if ((((slotOffset & 3) == 0) && (slotOffset < 0x80)) &&
@@ -155,6 +167,7 @@ void WinMM_TimerDispatchCallback
   return;
 }
 
+
 /* Address: 0x00586820.
    Ownership: platform/system/time_locale.
    Purpose: Registers an engine callback in the first free one of 32 slots. The requested frequency is converted
@@ -162,7 +175,8 @@ void WinMM_TimerDispatchCallback
    WinMM_TimerDispatchCallback, the slot byte offset as dwUser, and TIME_PERIODIC. The returned timer ID is stored
    in the paired ID array. A full table silently leaves the request unregistered.
 */
-void TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback)
+void __thandor_void_preserve_eax_ecx_edx
+TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback)
 
 {
   WinMmTimerPeriodMilliseconds intervalMilliseconds;
@@ -186,6 +200,7 @@ void TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc
   } while (callbackSlotSearchByteOffset < 0x80);
   return;
 }
+
 
 /* Address: 0x00586DD0.
    Ownership: platform/system/time_locale.
@@ -267,7 +282,7 @@ dword Locale_FormatCurrentDateUtf16(word *destination)
   if (g_LocaleSystemState.longDateOrder == 0) {
     currentAppendByteLength =
          (*g_WideNumberFormatUtf16)
-                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)g_LocaleSystemState.localTime.month,
+                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month,
                     destination);
     separatorByteLength =
          Utf16_CopyAndReturnByteLength
@@ -277,7 +292,7 @@ dword Locale_FormatCurrentDateUtf16(word *destination)
     ;
     branchAppendByteLength =
          (*g_WideNumberFormatUtf16)
-                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)g_LocaleSystemState.localTime.day,
+                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
                     outputCursor);
     branchSeparatorByteLength =
          Utf16_CopyAndReturnByteLength
@@ -286,60 +301,62 @@ dword Locale_FormatCurrentDateUtf16(word *destination)
     branchOutputCursor =
          (word *)((int)((int)outputCursor + branchAppendByteLength) + branchSeparatorByteLength);
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                       (sdword)g_LocaleSystemState.localTime.year,branchOutputCursor);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
+                       branchOutputCursor);
     completedByteOffset = (int)branchOutputCursor + dVar1;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)g_LocaleSystemState.localTime.day
-                       ,destination);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
+                       destination);
     dVar2 = Utf16_CopyAndReturnByteLength
                       ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
     pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                       (sdword)g_LocaleSystemState.localTime.month,pwVar3);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month
+                       ,pwVar3);
     pwVar3 = (word *)((int)pwVar3 + dVar1);
     dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
     pwVar3 = (word *)((int)pwVar3 + dVar1);
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                       (sdword)g_LocaleSystemState.localTime.year,pwVar3);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
+                       pwVar3);
     completedByteOffset = (int)pwVar3 + dVar1;
   }
   else {
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                       (sdword)g_LocaleSystemState.localTime.year,destination);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
+                       destination);
     dVar2 = Utf16_CopyAndReturnByteLength
                       ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
     pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                       (sdword)g_LocaleSystemState.localTime.month,pwVar3);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month
+                       ,pwVar3);
     pwVar3 = (word *)((int)pwVar3 + dVar1);
     dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
     pwVar3 = (word *)((int)pwVar3 + dVar1);
     dVar1 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)g_LocaleSystemState.localTime.day
-                       ,pwVar3);
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
+                       pwVar3);
     completedByteOffset = (int)pwVar3 + dVar1;
   }
   return completedByteOffset - (int)destination;
 }
 
+
 /* Address: 0x00587080.
    Ownership: platform/system/time_locale.
    Purpose: Calls GetLocalTime and returns (year << 16) | (month << 8) | day.
 */
-dword __cdecl Locale_GetPackedCurrentDate(void)
+dword __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentDate(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   return (uint)g_LocaleSystemState.localTime.day | (uint)g_LocaleSystemState.localTime.month << 8 |
          (uint)g_LocaleSystemState.localTime.year << 0x10;
 }
+
 
 /* Address: 0x005870C0.
    Ownership: platform/system/time_locale.
@@ -408,8 +425,7 @@ dword Locale_FormatTimeFieldsUtf16
 dword Locale_FormatCurrentTimeUtf16(word *destination)
 
 {
-  Win32Minute16 WVar1;
-  uint arg4;
+  uint uVar1;
   dword currentAppendByteLength;
   dword dVar2;
   dword dVar3;
@@ -421,58 +437,57 @@ dword Locale_FormatCurrentTimeUtf16(word *destination)
   Win32Minute16 localMinute;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
-  localHour = g_LocaleSystemState.localTime.hour;
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
-    arg4 = (uint)g_LocaleSystemState.localTime.hour;
-    if (0xb < arg4) {
-      arg4 = arg4 - 0xc;
+    uVar1 = (uint)g_LocaleSystemState.localTime.hour;
+    if (0xb < uVar1) {
+      uVar1 = uVar1 - 0xc;
     }
     currentAppendByteLength =
-         (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,arg4,destination);
+         (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,destination);
     dVar2 = Utf16_CopyAndReturnByteLength
                       ((word *)((int)destination + currentAppendByteLength),
                        g_LocaleSystemState.timeSeparator);
-    localMinute = g_LocaleSystemState.localTime.minute;
     outputCursor = (word *)((int)((int)destination + currentAppendByteLength) + dVar2);
-    if (g_LocaleSystemState.localTime.minute < 10) {
+    uVar1 = (uint)g_LocaleSystemState.localTime.minute;
+    if (uVar1 < 10) {
       outputCursor[0] = 0x30;
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
-    dVar2 = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)localMinute,outputCursor);
+    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,outputCursor);
     dVar3 = Utf16_CopyAndReturnByteLength((word *)((int)outputCursor + dVar2),source);
     completedByteOffset = (int)((int)outputCursor + dVar2) + dVar3;
   }
   else {
+    uVar1 = (uint)g_LocaleSystemState.localTime.hour;
     pwVar4 = destination;
-    if (g_LocaleSystemState.localTime.hour < 10) {
+    if (uVar1 < 10) {
       destination[0] = 0x30;
       destination[1] = 0;
       pwVar4 = destination + 1;
     }
-    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)localHour,pwVar4)
-    ;
+    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,pwVar4);
     dVar3 = Utf16_CopyAndReturnByteLength
                       ((word *)((int)pwVar4 + dVar2),g_LocaleSystemState.timeSeparator);
-    WVar1 = g_LocaleSystemState.localTime.minute;
     pwVar4 = (word *)((int)((int)pwVar4 + dVar2) + dVar3);
-    if (g_LocaleSystemState.localTime.minute < 10) {
+    uVar1 = (uint)g_LocaleSystemState.localTime.minute;
+    if (uVar1 < 10) {
       pwVar4[0] = 0x30;
       pwVar4[1] = 0;
       pwVar4 = pwVar4 + 1;
     }
-    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)WVar1,pwVar4);
+    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,pwVar4);
     completedByteOffset = (int)pwVar4 + dVar2;
   }
   return completedByteOffset - (int)destination;
 }
 
+
 /* Address: 0x005872B0.
    Ownership: platform/system/time_locale.
    Purpose: Calls GetLocalTime and returns (hour << 16) | (minute << 8) | second.
 */
-dword __cdecl Locale_GetPackedCurrentTime(void)
+dword __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -481,12 +496,13 @@ dword __cdecl Locale_GetPackedCurrentTime(void)
          (uint)g_LocaleSystemState.localTime.hour << 0x10;
 }
 
+
 /* Address: 0x005872F0.
    Ownership: platform/system/time_locale.
    Purpose: Masks GetUserDefaultLCID with 0x1FF and maps English, German, French, Italian, Spanish, and Russian
    primary-language values to telephone country codes 44, 49, 33, 39, 34, and 7. Other values return zero.
 */
-dword __cdecl Locale_GetDefaultTelephoneCountryCode(void)
+dword __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(void)
 
 {
   LCID userLocaleId;
@@ -519,12 +535,13 @@ dword __cdecl Locale_GetDefaultTelephoneCountryCode(void)
   return telephoneCountryCode;
 }
 
+
 /* Address: 0x00587350.
    Ownership: platform/system/time_locale.
    Purpose: Copies exactly 0x40 bytes from the fixed UTF-16 label L"Computer", including trailing zero padding,
    into destination.
 */
-void Locale_CopyDefaultComputerLabelUtf16(word *destination)
+void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(word *destination)
 
 {
   int copyDwordsRemaining;
@@ -540,13 +557,14 @@ void Locale_CopyDefaultComputerLabelUtf16(word *destination)
   return;
 }
 
+
 /* Address: 0x00586880.
    Ownership: platform/system/time_locale.
    Purpose: Finds the first timer slot whose callback pointer matches, clears that callback, and calls
    timeKillEvent with the paired timer ID. The stored timer ID is left unchanged. A missing callback is silently
    ignored.
 */
-void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
+void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
 
 {
   int callbackSlotByteOffset;
@@ -564,6 +582,7 @@ void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
   } while (callbackSlotByteOffset != 0x80);
   return;
 }
+
 
 /* Address: 0x00586B70.
    Ownership: platform/system/time_locale.

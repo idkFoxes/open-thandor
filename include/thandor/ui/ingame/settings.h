@@ -1,100 +1,127 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/ui/ingame/settings.h
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #ifndef THANDOR_UI_INGAME_SETTINGS_H
 #define THANDOR_UI_INGAME_SETTINGS_H
 
-#include <thandor/generated/v523_types.h>
+#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/settings. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056AB50 */
-undefined4 InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source);
+void __thandor_preserve_eax InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source);
 
 /* 0x0056AB90 */
-undefined4 InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source);
+void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source);
 
 /* 0x0056ABF0 */
-undefined4 InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source);
+void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source);
 
 /* 0x0056C5E0 */
-void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source);
+void __thandor_preserve_eax InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source);
 
 /* 0x0056C620 */
-void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source);
+void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source);
 
 /* 0x0055F520 */
-undefined8 InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks (int param_1,undefined4 param_2,undefined4 param_3,int param_4);
+void __thandor_void_preserve_eax_ecx_edx
+InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
+          (FrontendPlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          int stepDelta);
 
 /* 0x0056AA90 */
-undefined8 InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode);
+void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode);
 
 /* 0x0056AAD0 */
-undefined8 InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode);
+void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode);
 
 /* 0x0056AB10 */
-undefined8 InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode);
+void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode);
 
 /* 0x0056BAF0 */
-void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control);
 
 /* 0x0056BBB0 */
-void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control);
+void __thandor_preserve_eax
+InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control);
 
 /* 0x0056BBD0 */
-void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control);
 
 /* 0x0056BC20 */
-void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control);
 
 /* 0x0056BC70 */
-void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control);
 
 /* 0x0056BCF0 */
-void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control);
 
 /* 0x0056BD70 */
-void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetHidePanel(UiSelectableControl *control);
 
 /* 0x0056C6D0 */
-void InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState12D0 *source);
+void __thandor_void_preserve_eax_ecx_edx
+InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState12D0 *source);
 
 /* 0x0056C860 */
-void InGameAudioSettings_OpenAndSynchronize (InGamePersistentSettingsPageSourceNodePtr settingsSourceNode);
+void __thandor_void_preserve_eax_ecx_edx
+InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr settingsSourceNode);
 
 /* 0x0056C9C0 */
-void InGameShadingSettings_SetEnabled(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectableControl *control);
 
 /* 0x0056CA30 */
-void InGameShadingSettings_ApplyLevel(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameShadingSettings_ApplyLevel(UiSelectableControl *control);
 
 /* 0x0056CB60 */
-void InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control);
+void __thandor_preserve_eax
+InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control);
 
 /* 0x0056CB90 */
-void InGameTextureSettings_SetQuality(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameTextureSettings_SetQuality(UiSelectableControl *control);
 
 /* 0x0056CC20 */
-void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx
+InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control);
 
 /* 0x0056CD80 */
-void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx
+InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control);
 
 /* 0x0056CE80 */
-void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control);
+void __thandor_void_preserve_eax_ecx_edx
+InGameAudioSettings_SetReverseStereo(UiSelectableControl *control);
 
 /* 0x0056CED0 */
-void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control);
+void __thandor_preserve_eax InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control);
 
 /* 0x0056CF10 */
-void InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control);
+void __thandor_preserve_eax InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control);
 
 /* 0x0056CF40 */
-void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control);
+void __thandor_preserve_eax InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control);
 
 /* 0x0056CF70 */
-void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control);
+void __thandor_preserve_eax
+InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control);
 
 /* 0x0056C440 */
-void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle);
+void __thandor_void_preserve_eax_ecx_edx
+InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle);
 
 #endif /* THANDOR_UI_INGAME_SETTINGS_H */

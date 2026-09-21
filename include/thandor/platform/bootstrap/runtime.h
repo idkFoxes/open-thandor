@@ -1,7 +1,14 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/platform/bootstrap/runtime.h
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #ifndef THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H
 #define THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H
 
-#include <thandor/generated/v523_types.h>
+#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/bootstrap/runtime. */
@@ -11,25 +18,27 @@
 void __cdecl ProcessEntry(void);
 
 /* 0x00512E70 */
-void GameData_ResetDefaults(void);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void);
 
 /* 0x00512F60 */
-undefined8 GameData_LoadExternalTables(void);
+bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void);
 
 /* 0x00573BC0 */
-void * DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
+DynApiResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
 
 /* 0x00573C50 */
-HINSTANCE DynDLL_Load(char *moduleName);
+DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName);
 
 /* 0x00573CD0 */
 dword DynDLL_Unload(char *moduleName);
 
 /* 0x00573D40 */
-undefined8 BootstrapApi_ResolveBindingByDestination(void **param_1);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+BootstrapApi_ResolveBindingByDestination(void **destination);
 
 /* 0x00573EB0 */
-void __cdecl DynDLL_UnloadAll(void);
+void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void);
 
 /* 0x00585F50 */
 LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
@@ -47,15 +56,16 @@ void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
 dword __cdecl Game_LoadCoreAssets(void);
 
 /* 0x005739D0 */
-void Game_PlayIntroMovies(void);
+void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void);
 
 /* 0x00573DB0 */
-dword __cdecl DynAPI_Bootstrap(void);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void);
 
 /* 0x00586110 */
-void CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
+CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
+CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
 /* 0x00586170 */
-void __cdecl CommandLine_Parse(void);
+void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void);
 
 #endif /* THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H */

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/bootstrap/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/platform/bootstrap/runtime.h>
 
 /* Implementation ownership: platform/bootstrap/runtime. */
@@ -19,9 +26,16 @@ void __cdecl ProcessEntry(void)
   undefined2 extraout_var;
   int nHeight;
   int nWidth;
-  dword arg1;
+  dword errorOrValue;
+  dword dVar4;
+  dword errorOrValue_00;
   dword arg0;
-  undefined1 uVar4;
+  bool bVar5;
+  undefined1 carryIn;
+  StatusValueEaxCf5 SVar6;
+  FatalErrorEaxCf5 FVar7;
+  DisplayModeEaxCf5 DVar8;
+  CommandLineFindOptionEbxCf5 CVar9;
   HMENU hMenu;
   HINSTANCE hInstance;
   dword arg2;
@@ -36,10 +50,9 @@ void __cdecl ProcessEntry(void)
   CommandLine_Parse();
   pHVar3 = FindWindowA(sz_MainWindowClass,(LPCSTR)0x0);
   if (pHVar3 == (HWND)0x0) {
-    g_MainWindowClassInstanceHandle = (undefined *)g_hInstance;
-    g_MainWindowClassIconHandle = (undefined *)LoadIconA(g_hInstance,(LPCSTR)0x1);
-    g_MainWindowClassCursorHandle =
-         (undefined *)LoadCursorA((HINSTANCE)0x0,&k_LowAddressLiteral00007F00);
+    g_MainWindowClassInstanceHandle = g_hInstance;
+    g_MainWindowClassIconHandle = LoadIconA(g_hInstance,(LPCSTR)0x1);
+    g_MainWindowClassCursorHandle = LoadCursorA((HINSTANCE)0x0,&k_LowAddressLiteral00007F00);
     AVar1 = RegisterClassA((WNDCLASSA *)&g_MainMessage.pointY);
     if (CONCAT22(extraout_var,AVar1) != 0) {
       lpParam = (LPVOID)0x0;
@@ -57,38 +70,41 @@ void __cdecl ProcessEntry(void)
         FileSystem_Init();
         Locale_Init();
         ErrorSystem_Init();
-        uVar4 = 0;
         if (g_CpuFeatureFlags == 0) {
-          uVar4 = 1;
-          (*g_FatalErrorPrimaryDispatchCf)();
+          (*g_FatalErrorPrimaryDispatchCf)(0x51,true);
         }
-        DynAPI_Bootstrap();
-        (*g_FatalErrorPrimaryDispatchCf)();
+        SVar6 = DynAPI_Bootstrap();
+        FVar7 = (*g_FatalErrorPrimaryDispatchCf)(SVar6.valueOrError,SVar6.carry);
+        bVar5 = FVar7.carry;
         TimerSystem_Init();
-        (*g_FatalErrorPrimaryDispatchCf)();
-        Graphics_Init();
-        (*g_FatalErrorPrimaryDispatchCf)();
-        DirectInputMouse_Init();
-        (*g_FatalErrorPrimaryDispatchCf)();
-        DirectSound_Init();
-        if ((bool)uVar4) {
-          CommandLine_FindOption(6,s_SOUND_00582f28);
-          if (!(bool)uVar4) {
-            (*g_FatalErrorPrimaryDispatchCf)();
+        FVar7 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,bVar5);
+        bVar5 = FVar7.carry;
+        dVar4 = Graphics_Init();
+        (*g_FatalErrorPrimaryDispatchCf)(dVar4,bVar5);
+        SVar6 = DirectInputMouse_Init();
+        (*g_FatalErrorPrimaryDispatchCf)(SVar6.valueOrError,SVar6.carry);
+        bVar5 = DirectSound_Init();
+        carryIn = 0;
+        if (bVar5) {
+          CVar9 = CommandLine_FindOption(6,s_SOUND_00582f28);
+          carryIn = CVar9.carry;
+          if (!(bool)carryIn) {
+            FVar7 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue_00,true);
+            carryIn = FVar7.carry;
           }
         }
-        Network_Init();
-        (*g_FatalErrorPrimaryDispatchCf)();
+        dVar4 = Network_Init();
+        (*g_FatalErrorPrimaryDispatchCf)(dVar4,(bool)carryIn);
         PersistentSettings_Load();
         arg3 = 0x280;
         arg2 = 0x1e0;
-        arg1 = PersistentSettings_ReadDword(0x10,0xc);
+        dVar4 = PersistentSettings_ReadDword(0x10,0xc);
         arg0 = PersistentSettings_ReadDword(0,0);
         if (g_GraphicsAdapterCount <= arg0) {
           arg0 = 0;
         }
-        (*g_GraphicsDisplayModeHook)(arg0,arg1,arg2,arg3);
-        (*g_FatalErrorPrimaryDispatchCf)();
+        DVar8 = (*g_GraphicsDisplayModeHook)(arg0,dVar4,arg2,arg3);
+        (*g_FatalErrorPrimaryDispatchCf)(DVar8.eax,DVar8.carry);
         UiRuntime_Initialize();
         Game_Run();
         Runtime_Shutdown();
@@ -96,9 +112,10 @@ void __cdecl ProcessEntry(void)
       }
     }
   }
-                    
+                    // WARNING: Subroutine does not return
   ExitProcess(0);
 }
+
 
 /* Address: 0x00512E70.
    Ownership: platform/bootstrap/runtime.
@@ -109,75 +126,81 @@ void __cdecl ProcessEntry(void)
    limits are 0xFA0 Q4; baseline Energy supply and initial Energy generation-capacity ceiling are both 0x280 Q4
    (40). These are separate resource/fuel/utility domains.
 */
-void GameData_ResetDefaults(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
 
 {
   FactionCapabilityFlags *pFVar1;
   void *memory;
-  undefined4 *puVar2;
-  int iVar3;
+  int iVar2;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
-  GameFactionRuntimeImage *pGVar6;
-  dword *pdVar7;
-  bool bVar8;
+  GameFactionRuntimeImage *pGVar5;
+  dword *pdVar6;
+  undefined4 *puVar7;
+  ArenaAllocEaxCf5 AVar8;
+  StatusValueEaxCf5 SVar9;
   
-  iVar3 = 0x40;
-  pdVar7 = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pdVar7 = 0;
-    pdVar7 = pdVar7 + 1;
+  iVar2 = 0x40;
+  pdVar6 = g_GameDataAuxState.pairPressureMatrix8x8;
+  for (; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *pdVar6 = 0;
+    pdVar6 = pdVar6 + 1;
   }
-  pGVar6 = &g_GameFactionRuntimeImage;
-  for (iVar3 = 0xe80; iVar3 != 0; iVar3 = iVar3 + -1) {
-    pGVar6->records[0].xeniteCurrentQ4 = 0;
-    pGVar6 = (GameFactionRuntimeImage *)&pGVar6->records[0].xeniteStorageLimitQ4;
+  pGVar5 = &g_GameFactionRuntimeImage;
+  for (iVar2 = 0xe80; iVar2 != 0; iVar2 = iVar2 + -1) {
+    pGVar5->records[0].xeniteCurrentQ4 = 0;
+    pGVar5 = (GameFactionRuntimeImage *)&pGVar5->records[0].xeniteStorageLimitQ4;
   }
-  pGVar6 = &g_GameFactionRuntimeImage;
-  iVar3 = 8;
-  uVar5 = 1;
-  uVar4 = 0x1111111f;
+  pGVar5 = &g_GameFactionRuntimeImage;
+  iVar2 = 8;
+  uVar4 = 1;
+  uVar3 = 0x1111111f;
   do {
-    pFVar1 = &pGVar6->records[0].capabilityFlags;
-    *pFVar1 = *pFVar1 | uVar5;
-    pdVar7 = pGVar6->records[0].technologyMasks256Bits;
-    *pdVar7 = *pdVar7 | 1;
-    pFVar1 = &pGVar6->records[0].capabilityFlags;
+    pFVar1 = &pGVar5->records[0].capabilityFlags;
+    *pFVar1 = *pFVar1 | uVar4;
+    pdVar6 = pGVar5->records[0].technologyMasks256Bits;
+    *pdVar6 = *pdVar6 | 1;
+    pFVar1 = &pGVar5->records[0].capabilityFlags;
     *pFVar1 = *pFVar1 | 1;
-    pGVar6->records[0].packedRelationStates = uVar4;
-    pGVar6->records[0].relationCapabilityState = 0;
-    pGVar6->records[0].primaryAnchorYQ12 = -0xc000;
-    pGVar6->records[0].primaryAnchorXQ12 = 0;
-    pGVar6->records[0].secondaryAnchorYQ12 = -0xc000;
-    pGVar6->records[0].secondaryAnchorXQ12 = 0;
-    pGVar6->records[0].relationTransitionTick = 0x11;
-    pGVar6->records[0].energyGenerationCapacityQ4 = 0x280;
-    pGVar6->records[0].baselineEnergySupplyQ4 = 0x280;
-    pGVar6->records[0].xeniteStorageLimitQ4 = 4000;
-    pGVar6->records[0].tritiumStorageLimitQ4 = 4000;
-    pGVar6->records[0].terrainContributionScaleQ8 = 0x100;
-    uVar5 = uVar5 * 2;
-    uVar4 = uVar4 << 4 | uVar4 >> 0x1c;
-    bVar8 = (GameFactionRuntimeImage *)0xfffff8bf < pGVar6;
-    pGVar6 = (GameFactionRuntimeImage *)(pGVar6->records + 1);
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  puVar2 = (*g_MemoryApi.alloc)(0x38000);
+    pGVar5->records[0].packedRelationStates = uVar3;
+    pGVar5->records[0].relationCapabilityState = 0;
+    pGVar5->records[0].primaryAnchorYQ12 = -0xc000;
+    pGVar5->records[0].primaryAnchorXQ12 = 0;
+    pGVar5->records[0].secondaryAnchorYQ12 = -0xc000;
+    pGVar5->records[0].secondaryAnchorXQ12 = 0;
+    pGVar5->records[0].relationTransitionTick = 0x11;
+    pGVar5->records[0].energyGenerationCapacityQ4 = 0x280;
+    pGVar5->records[0].baselineEnergySupplyQ4 = 0x280;
+    pGVar5->records[0].xeniteStorageLimitQ4 = 4000;
+    pGVar5->records[0].tritiumStorageLimitQ4 = 4000;
+    pGVar5->records[0].terrainContributionScaleQ8 = 0x100;
+    uVar4 = uVar4 * 2;
+    uVar3 = uVar3 << 4 | uVar3 >> 0x1c;
+    pGVar5 = (GameFactionRuntimeImage *)(pGVar5->records + 1);
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
+  AVar8 = (*g_MemoryApi.alloc)(0x38000);
   memory = g_GameStatTableImage;
-  if (!bVar8) {
+  if (!AVar8.carry) {
     LOCK();
     UNLOCK();
-    g_GameStatTableImage = puVar2;
+    g_GameStatTableImage = (undefined4 *)AVar8.eax;
     (*g_MemoryApi.free)(memory);
-    for (iVar3 = 0xe000; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *puVar2 = 0;
-      puVar2 = puVar2 + 1;
+    puVar7 = (undefined4 *)AVar8.eax;
+    for (iVar2 = 0xe000; iVar2 != 0; iVar2 = iVar2 + -1) {
+      *puVar7 = 0;
+      puVar7 = puVar7 + 1;
     }
-    puVar2[-1] = 0xffffffff;
+    puVar7[-1] = 0xffffffff;
     g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
+    AVar8.eax = 0;
+    AVar8.carry = false;
   }
-  return;
+  SVar9.valueOrError = AVar8.eax;
+  SVar9.carry = AVar8.carry;
+  return SVar9;
 }
+
 
 /* Address: 0x00512F60.
    Ownership: platform/bootstrap/runtime.
@@ -188,73 +211,70 @@ void GameData_ResetDefaults(void)
    Cross-module calls: Package_LoadEntryIntoBuffer [assets/package/runtime], Package_LoadEntry
    [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-undefined8 GameData_LoadExternalTables(void)
+bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
 
 {
   void *memory;
-  undefined4 in_EAX;
-  void *pvVar1;
-  dword *pdVar2;
-  undefined4 in_ECX;
-  int iVar3;
-  undefined4 in_EDX;
+  dword *pdVar1;
+  int iVar2;
+  dword *pdVar3;
   dword *pdVar4;
-  undefined4 unaff_EDI;
-  dword *pdVar5;
-  undefined1 uVar6;
+  StatusValueEaxCf5 SVar5;
+  PackageLoadEntryEaxCf5 PVar6;
   
-  uVar6 = false;
-  iVar3 = 0x40;
-  pdVar2 = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pdVar2 = 0;
-    pdVar2 = pdVar2 + 1;
+  iVar2 = 0x40;
+  pdVar1 = g_GameDataAuxState.pairPressureMatrix8x8;
+  for (; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *pdVar1 = 0;
+    pdVar1 = pdVar1 + 1;
   }
-  Package_LoadEntryIntoBuffer
-            (0x3a20,(byte *)&g_GameFactionRuntimeImage,(word *)u_daten_hex_0050e054);
-  if (!(bool)uVar6) {
-    pvVar1 = Package_LoadEntry((word *)u_stat_hex_0050e082);
+  SVar5 = Package_LoadEntryIntoBuffer
+                    (0x3a20,(byte *)&g_GameFactionRuntimeImage,(word *)u_daten_hex_0050e054);
+  if (!SVar5.carry) {
+    PVar6 = Package_LoadEntry((word *)u_stat_hex_0050e082);
     memory = g_GameStatTableImage;
-    if (!(bool)uVar6) {
+    if (!PVar6.carry) {
       LOCK();
       UNLOCK();
-      g_GameStatTableImage = pvVar1;
+      g_GameStatTableImage = PVar6.bufferOrError;
       (*g_MemoryApi.free)(memory);
-      pdVar2 = Package_LoadEntry((word *)u_oldunit_hex_0050e094);
-      if ((bool)uVar6) {
-        pdVar2 = g_OldUnitPrimaryTable;
-        for (iVar3 = 0x1000; iVar3 != 0; iVar3 = iVar3 + -1) {
-          *pdVar2 = 0;
-          pdVar2 = pdVar2 + 1;
+      PVar6 = Package_LoadEntry((word *)u_oldunit_hex_0050e094);
+      pdVar1 = PVar6.bufferOrError;
+      if (PVar6.carry) {
+        pdVar1 = g_OldUnitPrimaryTable;
+        for (iVar2 = 0x1000; iVar2 != 0; iVar2 = iVar2 + -1) {
+          *pdVar1 = 0;
+          pdVar1 = pdVar1 + 1;
         }
-        pdVar2 = g_OldUnitSecondaryTable;
-        for (iVar3 = 0x40; iVar3 != 0; iVar3 = iVar3 + -1) {
-          *pdVar2 = 0;
-          pdVar2 = pdVar2 + 1;
+        pdVar1 = g_OldUnitSecondaryTable;
+        for (iVar2 = 0x40; iVar2 != 0; iVar2 = iVar2 + -1) {
+          *pdVar1 = 0;
+          pdVar1 = pdVar1 + 1;
         }
         g_OldUnitRecordCount = 0;
       }
       else {
-        g_OldUnitRecordCount = *pdVar2;
-        pdVar5 = g_OldUnitPrimaryTable;
-        pdVar4 = pdVar2;
-        for (iVar3 = 0x1000; pdVar4 = pdVar4 + 1, iVar3 != 0; iVar3 = iVar3 + -1) {
-          *pdVar5 = *pdVar4;
-          pdVar5 = pdVar5 + 1;
-        }
-        pdVar5 = g_OldUnitSecondaryTable;
-        for (iVar3 = 0x40; iVar3 != 0; iVar3 = iVar3 + -1) {
-          *pdVar5 = *pdVar4;
+        g_OldUnitRecordCount = *pdVar1;
+        pdVar4 = g_OldUnitPrimaryTable;
+        pdVar3 = pdVar1;
+        for (iVar2 = 0x1000; pdVar3 = pdVar3 + 1, iVar2 != 0; iVar2 = iVar2 + -1) {
+          *pdVar4 = *pdVar3;
           pdVar4 = pdVar4 + 1;
-          pdVar5 = pdVar5 + 1;
         }
-        Resource_Release(pdVar2);
+        pdVar4 = g_OldUnitSecondaryTable;
+        for (iVar2 = 0x40; iVar2 != 0; iVar2 = iVar2 + -1) {
+          *pdVar4 = *pdVar3;
+          pdVar3 = pdVar3 + 1;
+          pdVar4 = pdVar4 + 1;
+        }
+        Resource_Release(pdVar1);
       }
-      return CONCAT44(unaff_EDI,in_ECX);
+      return false;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return true;
 }
+
 
 /* Address: 0x00573BC0.
    Ownership: platform/bootstrap/runtime.
@@ -262,34 +282,43 @@ undefined8 GameData_LoadExternalTables(void)
    function pointer in EAX.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-void * DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
+DynApiResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 
 {
   FARPROC resolvedProcedure;
   dword modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
+  DynApiResolveEaxCf5 DVar1;
+  DynApiResolveEaxCf5 DVar2;
   
   Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != (FARPROC)0x0) {
     *destination = resolvedProcedure;
-    return resolvedProcedure;
+    DVar1.carry = false;
+    DVar1.procedureOrError = resolvedProcedure;
+    return DVar1;
   }
   moduleEntryCursor = g_DynamicModules;
   g_FatalErrorDetail1Utf16[0] = 0;
   modulesRemaining = g_DynamicModuleCount;
-  while( true ) {
+  do {
     if (modulesRemaining == 0) {
-      g_FatalErrorDetail1Utf16[0] = 0;
-      return (void *)0x10;
+LAB_00573c3e:
+      DVar2.carry = true;
+      DVar2.procedureOrError = (void *)0x10;
+      return DVar2;
     }
-    if (module == moduleEntryCursor->module) break;
+    if (module == moduleEntryCursor->module) {
+      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)moduleEntryCursor->name);
+      goto LAB_00573c3e;
+    }
     moduleEntryCursor = moduleEntryCursor + 1;
     modulesRemaining = modulesRemaining - 1;
-  }
-  Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)moduleEntryCursor->name);
-  return (void *)0x10;
+  } while( true );
 }
+
 
 /* Address: 0x00573C50.
    Ownership: platform/bootstrap/runtime.
@@ -297,10 +326,12 @@ void * DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
    EAX.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-HINSTANCE DynDLL_Load(char *moduleName)
+DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 
 {
   HINSTANCE loadedModule;
+  DynDllLoadEaxCf5 DVar1;
+  DynDllLoadEaxCf5 DVar2;
   dword moduleSlotIndex;
   
   Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
@@ -312,11 +343,16 @@ HINSTANCE DynDLL_Load(char *moduleName)
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
       g_DynamicModules[moduleSlotIndex].name = moduleName;
       g_DynamicModuleCount = g_DynamicModuleCount + 1;
-      return loadedModule;
+      DVar1.carry = false;
+      DVar1.moduleOrError = loadedModule;
+      return DVar1;
     }
   }
-  return (HINSTANCE)0x11;
+  DVar2.carry = true;
+  DVar2.moduleOrError = (HINSTANCE)0x11;
+  return DVar2;
 }
+
 
 /* Address: 0x00573CD0.
    Ownership: platform/bootstrap/runtime.
@@ -354,27 +390,33 @@ DynDLL_ReportModuleNotLoaded:
    Purpose: Handles bootstrap api resolve binding by destination.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-undefined8 BootstrapApi_ResolveBindingByDestination(void **param_1)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+BootstrapApi_ResolveBindingByDestination(void **destination)
 
 {
   void *pvVar1;
   dword dVar2;
-  undefined4 in_EDX;
   DynamicApiBinding *pDVar3;
+  StatusValueEaxCf5 SVar4;
+  StatusValueEaxCf5 SVar5;
   
   pDVar3 = g_BootstrapApiBindings;
   dVar2 = g_DynamicModuleCount;
   do {
     if (dVar2 == 0) {
 LAB_00573d6a:
-      return CONCAT44(in_EDX,0xf);
+      SVar4.carry = true;
+      SVar4.valueOrError = 0xf;
+      return SVar4;
     }
-    if (param_1 == pDVar3->destination) {
-      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)param_1);
-      pvVar1 = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(param_1,pDVar3);
+    if (destination == pDVar3->destination) {
+      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)destination);
+      pvVar1 = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(destination,pDVar3);
       if (pvVar1 != (void *)0x0) {
-        *param_1 = pvVar1;
-        return CONCAT44(in_EDX,0xf);
+        *destination = pvVar1;
+        SVar5.valueOrError = 0xf;
+        SVar5.carry = false;
+        return SVar5;
       }
       goto LAB_00573d6a;
     }
@@ -383,11 +425,12 @@ LAB_00573d6a:
   } while( true );
 }
 
+
 /* Address: 0x00573EB0.
    Ownership: platform/bootstrap/runtime.
    Purpose: Releases all cached dynamic modules.
 */
-void __cdecl DynDLL_UnloadAll(void)
+void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
 
 {
   dword modulesRemaining;
@@ -406,6 +449,7 @@ void __cdecl DynDLL_UnloadAll(void)
   }
   return;
 }
+
 
 /* Address: 0x00585F50.
    Ownership: platform/bootstrap/runtime.
@@ -434,7 +478,7 @@ LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPAR
         (*g_MouseDevice->lpVtbl->Unacquire)(g_MouseDevice);
       }
       if (g_WindowDestroyDepth == 0) {
-        (*(code *)g_GraphicsBackendRefreshActiveAdapterCf)();
+        (*g_GraphicsBackendRefreshActiveAdapterCf)();
       }
     }
     else {
@@ -443,7 +487,7 @@ LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPAR
       if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
         (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
       }
-      if (-1 < (int)g_ActiveGraphicsAdapterIndex) {
+      if (-1 < g_ActiveGraphicsAdapterIndex) {
         (*g_GraphicsDisplayModeHook)
                   (g_ActiveGraphicsAdapterIndex,
                    g_SoftwarePixelFormatConfig.redBitCount +
@@ -488,6 +532,7 @@ LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPAR
   return 0;
 }
 
+
 /* Address: 0x00587370.
    Ownership: platform/bootstrap/runtime.
    Purpose: Executes CPUID leaf 1, sets g_CpuFeatureFlags bit 0 when EDX bit 23 reports MMX support, and returns
@@ -516,47 +561,48 @@ dword __cdecl CPU_DetectFeatures(void)
 void __cdecl Game_Run(void)
 
 {
-  dword arg3;
+  dword errorOrValue;
+  dword dVar1;
   dword arg2;
   dword arg1;
   dword arg0;
-  undefined4 extraout_ECX;
-  undefined4 extraout_ECX_00;
-  undefined4 uVar1;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  undefined4 uVar2;
+  bool bVar2;
+  GraphicsCursorFrameEaxCf5 GVar3;
+  FatalErrorEaxCf5 FVar4;
+  DisplayModeEaxCf5 DVar5;
+  FrontendMainLoopEaxCf5 FVar6;
   
-  (*g_GraphicsCursorSetFrame)(0);
-  (*g_FatalErrorPrimaryDispatchCf)();
+  GVar3 = (*g_GraphicsCursorSetFrame)(0);
+  FVar4 = (*g_FatalErrorPrimaryDispatchCf)(GVar3.eax,GVar3.carry);
+  bVar2 = FVar4.carry;
   GameRuntime_InitializeSpatialAudioAndRenderingCf();
-  (*g_FatalErrorPrimaryDispatchCf)();
-  Game_LoadCoreAssets();
-  (*g_FatalErrorPrimaryDispatchCf)();
+  FVar4 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,bVar2);
+  bVar2 = FVar4.carry;
+  dVar1 = Game_LoadCoreAssets();
+  FVar4 = (*g_FatalErrorPrimaryDispatchCf)(dVar1,bVar2);
+  bVar2 = FVar4.carry;
   Game_PlayIntroMovies();
-  (*g_FatalErrorPrimaryDispatchCf)();
+  (*g_FatalErrorPrimaryDispatchCf)(FVar4.eax,bVar2);
   PersistentSettings_Load();
-  arg3 = PersistentSettings_ReadDword(0x280,4);
+  dVar1 = PersistentSettings_ReadDword(0x280,4);
   arg2 = PersistentSettings_ReadDword(0x1e0,8);
   arg1 = PersistentSettings_ReadDword(0x10,0xc);
-  if (((arg3 != 0x280) || (arg2 != 0x1e0)) ||
-     (uVar1 = extraout_ECX, uVar2 = extraout_EDX, arg1 != 0x10)) {
+  if (((dVar1 != 0x280) || (arg2 != 0x1e0)) || (arg1 != 0x10)) {
     arg0 = PersistentSettings_ReadDword(0,0);
     if (g_GraphicsAdapterCount <= arg0) {
       arg0 = 0;
     }
-    (*g_GraphicsDisplayModeHook)(arg0,arg1,arg2,arg3);
-    (*g_FatalErrorPrimaryDispatchCf)();
+    DVar5 = (*g_GraphicsDisplayModeHook)(arg0,arg1,arg2,dVar1);
+    (*g_FatalErrorPrimaryDispatchCf)(DVar5.eax,DVar5.carry);
     PersistentSettings_WriteDword(g_ActiveGraphicsAdapterIndex,0);
-    uVar1 = extraout_ECX_00;
-    uVar2 = extraout_EDX_00;
   }
-  Frontend_MainLoop(uVar1,uVar2,1);
-  (*g_FatalErrorPrimaryDispatchCf)();
+  FVar6 = Frontend_MainLoop(1);
+  (*g_FatalErrorPrimaryDispatchCf)(FVar6.errorOrValue,FVar6.carry);
   (*g_NetworkBackendSlot3)();
   (*g_NetworkBackendSlot1)();
   return;
 }
+
 
 /* Address: 0x0050BB10.
    Ownership: platform/bootstrap/runtime.
@@ -572,16 +618,16 @@ void __cdecl Game_Run(void)
 void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
 
 {
-  undefined1 in_CF;
+  bool bVar1;
   
-  SpatialSoundPool_Init();
-  if (!(bool)in_CF) {
-    TerrainByteClampLookup_Initialize();
-    if (!(bool)in_CF) {
-      GraphicsIntensityClampTable_InitializeCf();
-      if (!(bool)in_CF) {
-        SoftwareRenderer_InstallDisplayModeHook();
-        if (!(bool)in_CF) {
+  bVar1 = SpatialSoundPool_Init();
+  if (!bVar1) {
+    bVar1 = TerrainByteClampLookup_Initialize();
+    if (!bVar1) {
+      bVar1 = GraphicsIntensityClampTable_InitializeCf();
+      if (!bVar1) {
+        bVar1 = SoftwareRenderer_InstallDisplayModeHook();
+        if (!bVar1) {
           GraphicsPrimitiveQueue_AllocateGlobalPool(0xa000);
         }
       }
@@ -589,6 +635,7 @@ void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
   }
   return;
 }
+
 
 /* Address: 0x00573140.
    Ownership: platform/bootstrap/runtime.
@@ -602,59 +649,29 @@ dword __cdecl Game_LoadCoreAssets(void)
 {
   wchar_t wVar1;
   int iVar2;
-  dword dVar3;
-  DirectSoundVoiceSet *pDVar4;
-  void *pvVar5;
-  word *pwVar6;
-  AudioMixerGainQ15 AVar7;
-  MovieAudioGainQ15 MVar8;
-  MovieAudioGainQ15 MVar9;
-  dword extraout_EAX;
-  FncModuleHeader *pFVar10;
-  GraphicsTextureSourceAsset *pGVar11;
-  RecentTextHistorySlot *pRVar12;
-  dword *pdVar13;
-  RomRegistrySlot *pRVar14;
-  FrontendSessionDiscoveryRecordB0 **ppFVar15;
-  FrontendSessionDiscoveryRecordB0 *pFVar16;
-  undefined *puVar17;
-  float *pfVar18;
-  SelectionPlayerRuntimeBlock *pSVar19;
-  FrontendPlayerRuntimeRecord *pFVar20;
-  byte *pbVar21;
-  undefined4 extraout_ECX;
-  undefined4 extraout_ECX_00;
-  undefined4 extraout_ECX_01;
-  undefined4 extraout_ECX_02;
-  undefined4 extraout_ECX_03;
-  undefined4 extraout_ECX_04;
-  undefined4 extraout_ECX_05;
-  uint uVar22;
-  uint extraout_ECX_06;
-  uint extraout_ECX_07;
-  uint extraout_ECX_08;
-  uint extraout_ECX_09;
-  dword arg0;
-  undefined4 extraout_EDX;
-  void *allocation;
-  undefined4 extraout_EDX_00;
-  void *allocation_00;
-  undefined4 extraout_EDX_01;
-  void *allocation_01;
-  undefined4 extraout_EDX_02;
-  void *allocation_02;
-  undefined4 extraout_EDX_03;
-  void *allocation_03;
-  undefined4 extraout_EDX_04;
-  void *allocation_04;
-  undefined4 extraout_EDX_05;
-  void *allocation_05;
-  undefined4 extraout_EDX_06;
-  dword arg1;
+  SoundSampleAsset *arg0;
+  FncModuleHeader *module;
+  word *pwVar3;
+  dword dVar4;
+  AudioMixerGainQ15 AVar5;
+  MovieAudioGainQ15 MVar6;
+  MovieAudioGainQ15 MVar7;
+  float *pfVar8;
+  FrontendPlayerRuntimeRecord *pFVar9;
+  byte *pbVar10;
+  TextResourceId resourceId;
+  SoundSampleAsset *allocation;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
-  undefined1 uVar23;
-  bool bVar24;
-  undefined8 uVar25;
+  StatusValueEaxCf5 SVar11;
+  SoundCreateSampleVoiceSetEaxCf5 SVar12;
+  FileSystemOpenEaxCf5 FVar13;
+  TextResourceResolveEaxCf5 TVar14;
+  TextResourceLoadEaxCf5 TVar15;
+  PackageLoadEntryEaxCf5 PVar16;
+  FncModuleLoadEaxCf5 FVar17;
+  GraphicsTextureSourceLoadEaxCf5 GVar18;
+  ArenaAllocEaxCf5 AVar19;
+  ResourceLoadEaxEcxCf9 RVar20;
   
   if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
      (iVar2 = (*(code *)g_BootstrapApiBindings[5].destination)
@@ -692,143 +709,149 @@ dword __cdecl Game_LoadCoreAssets(void)
     } while (0x2f < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
-    uVar23 = g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0] < 0x30;
-  } while (!(bool)uVar23);
-  dVar3 = Package_Mount((word *)u_daten_pck_00572e56);
-  if (!(bool)uVar23) {
-    g_DataPackageHandle = dVar3;
+  } while (0x2f < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
+  SVar11 = Package_Mount((word *)u_daten_pck_00572e56);
+  if (!SVar11.carry) {
+    g_DataPackageHandle = SVar11.valueOrError;
   }
-  dVar3 = Package_Mount((word *)u_modelle_pck_00572e6a);
-  if (!(bool)uVar23) {
-    g_ModelPackageHandle = dVar3;
+  SVar11 = Package_Mount((word *)u_modelle_pck_00572e6a);
+  if (!SVar11.carry) {
+    g_ModelPackageHandle = SVar11.valueOrError;
   }
-  dVar3 = Package_Mount((word *)u_graphik_pck_00572e82);
-  if (!(bool)uVar23) {
-    g_GraphicsPackageHandle = dVar3;
+  SVar11 = Package_Mount((word *)u_graphik_pck_00572e82);
+  if (!SVar11.carry) {
+    g_GraphicsPackageHandle = SVar11.valueOrError;
   }
-  dVar3 = Package_Mount((word *)u_sound_pck_00572e9a);
-  if (!(bool)uVar23) {
-    g_SoundPackageHandle = dVar3;
+  SVar11 = Package_Mount((word *)u_sound_pck_00572e9a);
+  if (!SVar11.carry) {
+    g_SoundPackageHandle = SVar11.valueOrError;
   }
-  dVar3 = Package_Mount((word *)u_filme_pck_00572eae);
-  if (!(bool)uVar23) {
-    g_MoviePackageHandle = dVar3;
+  SVar11 = Package_Mount((word *)u_filme_pck_00572eae);
+  if (!SVar11.carry) {
+    g_MoviePackageHandle = SVar11.valueOrError;
   }
-  dVar3 = Package_Mount((word *)u_level_pck_00572ec2);
-  if (!(bool)uVar23) {
-    g_LevelPackageHandle = dVar3;
+  SVar11 = Package_Mount((word *)u_level_pck_00572ec2);
+  if (!SVar11.carry) {
+    g_LevelPackageHandle = SVar11.valueOrError;
   }
-  uVar25 = Resource_Load(extraout_ECX,extraout_EDX,(word *)u_sound_button0_sam_00572f06);
-  if ((bool)uVar23) {
-    return (dword)(SoundSampleAsset *)uVar25;
+  RVar20 = Resource_Load((word *)u_sound_button0_sam_00572f06);
+  arg0 = (SoundSampleAsset *)RVar20.eax;
+  if (RVar20.carry) {
+    return (dword)arg0;
   }
-  pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-  uVar25 = CONCAT44(allocation,pDVar4);
-  if (!(bool)uVar23) {
-    g_UiButtonSoundVoiceSets7[0] = (undefined *)Resource_Release(allocation);
-    uVar25 = Resource_Load(extraout_ECX_00,extraout_EDX_00,(word *)u_sound_button1_sam_00572f2a);
-    if ((bool)uVar23) {
-      return (dword)(SoundSampleAsset *)uVar25;
+  SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+  module = (FncModuleHeader *)SVar12.eax;
+  if (!SVar12.carry) {
+    Resource_Release(arg0);
+    g_UiButtonSoundVoiceSets7[0] = (DirectSoundVoiceSet *)module;
+    RVar20 = Resource_Load((word *)u_sound_button1_sam_00572f2a);
+    arg0 = (SoundSampleAsset *)RVar20.eax;
+    if (RVar20.carry) {
+      return (dword)arg0;
     }
-    pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-    uVar25 = CONCAT44(allocation_00,pDVar4);
-    if (!(bool)uVar23) {
-      g_UiButtonSoundVoiceSets7[1] = (undefined *)Resource_Release(allocation_00);
-      uVar25 = Resource_Load(extraout_ECX_01,extraout_EDX_01,(word *)u_sound_button2_sam_00572f4e);
-      if ((bool)uVar23) {
-        return (dword)(SoundSampleAsset *)uVar25;
+    SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+    module = (FncModuleHeader *)SVar12.eax;
+    if (!SVar12.carry) {
+      Resource_Release(arg0);
+      g_UiButtonSoundVoiceSets7[1] = (DirectSoundVoiceSet *)module;
+      RVar20 = Resource_Load((word *)u_sound_button2_sam_00572f4e);
+      arg0 = (SoundSampleAsset *)RVar20.eax;
+      if (RVar20.carry) {
+        return (dword)arg0;
       }
-      pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-      uVar25 = CONCAT44(allocation_01,pDVar4);
-      if (!(bool)uVar23) {
-        g_UiButtonSoundVoiceSets7[2] = (undefined *)Resource_Release(allocation_01);
-        uVar25 = Resource_Load(extraout_ECX_02,extraout_EDX_02,(word *)u_sound_button3_sam_00572f72)
-        ;
-        if ((bool)uVar23) {
-          return (dword)(SoundSampleAsset *)uVar25;
+      SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+      module = (FncModuleHeader *)SVar12.eax;
+      if (!SVar12.carry) {
+        Resource_Release(arg0);
+        g_UiButtonSoundVoiceSets7[2] = (DirectSoundVoiceSet *)module;
+        RVar20 = Resource_Load((word *)u_sound_button3_sam_00572f72);
+        arg0 = (SoundSampleAsset *)RVar20.eax;
+        if (RVar20.carry) {
+          return (dword)arg0;
         }
-        pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-        uVar25 = CONCAT44(allocation_02,pDVar4);
-        if (!(bool)uVar23) {
-          g_UiButtonSoundVoiceSets7[3] = (undefined *)Resource_Release(allocation_02);
-          uVar25 = Resource_Load(extraout_ECX_03,extraout_EDX_03,
-                                 (word *)u_sound_button4_sam_00572f96);
-          if ((bool)uVar23) {
-            return (dword)(SoundSampleAsset *)uVar25;
+        SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+        module = (FncModuleHeader *)SVar12.eax;
+        if (!SVar12.carry) {
+          Resource_Release(arg0);
+          g_UiButtonSoundVoiceSets7[3] = (DirectSoundVoiceSet *)module;
+          RVar20 = Resource_Load((word *)u_sound_button4_sam_00572f96);
+          arg0 = (SoundSampleAsset *)RVar20.eax;
+          if (RVar20.carry) {
+            return (dword)arg0;
           }
-          pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-          uVar25 = CONCAT44(allocation_03,pDVar4);
-          if (!(bool)uVar23) {
-            g_UiButtonSoundVoiceSets7[4] = (undefined *)Resource_Release(allocation_03);
-            uVar25 = Resource_Load(extraout_ECX_04,extraout_EDX_04,
-                                   (word *)u_sound_button5_sam_00572fba);
-            if ((bool)uVar23) {
-              return (dword)(SoundSampleAsset *)uVar25;
+          SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+          module = (FncModuleHeader *)SVar12.eax;
+          if (!SVar12.carry) {
+            Resource_Release(arg0);
+            g_UiButtonSoundVoiceSets7[4] = (DirectSoundVoiceSet *)module;
+            RVar20 = Resource_Load((word *)u_sound_button5_sam_00572fba);
+            arg0 = (SoundSampleAsset *)RVar20.eax;
+            if (RVar20.carry) {
+              return (dword)arg0;
             }
-            pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-            uVar25 = CONCAT44(allocation_04,pDVar4);
-            if (!(bool)uVar23) {
-              g_UiButtonSoundVoiceSets7[5] = (undefined *)Resource_Release(allocation_04);
-              uVar25 = Resource_Load(extraout_ECX_05,extraout_EDX_05,
-                                     (word *)u_sound_button6_sam_00572fde);
-              if ((bool)uVar23) {
-                return (dword)(SoundSampleAsset *)uVar25;
+            SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+            module = (FncModuleHeader *)SVar12.eax;
+            if (!SVar12.carry) {
+              Resource_Release(arg0);
+              g_UiButtonSoundVoiceSets7[5] = (DirectSoundVoiceSet *)module;
+              RVar20 = Resource_Load((word *)u_sound_button6_sam_00572fde);
+              arg0 = (SoundSampleAsset *)RVar20.eax;
+              if (RVar20.carry) {
+                return (dword)arg0;
               }
-              pDVar4 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)uVar25);
-              uVar25 = CONCAT44(allocation_05,pDVar4);
-              if (!(bool)uVar23) {
-                g_UiButtonSoundVoiceSets7[6] = (undefined *)Resource_Release(allocation_05);
+              SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+              module = (FncModuleHeader *)SVar12.eax;
+              if (!SVar12.carry) {
+                Resource_Release(arg0);
+                g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
                 do {
                   do {
-                    pvVar5 = (void *)(*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1))
-                    ;
-                    if ((bool)uVar23)
+                    FVar13 = (*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1));
+                    if (FVar13.carry)
                     goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
-                    (*g_FileSystemClose)(pvVar5);
+                    (*g_FileSystemClose)((void *)FVar13.eax);
                     wVar1 = u_Dscreen00_pcx_00572e3a[7];
-                    uVar23 = (ushort)u_Dscreen00_pcx_00572e3a[8] < 0x39;
                   } while ((ushort)u_Dscreen00_pcx_00572e3a[8] < 0x3a);
                   u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + L'\x01';
                   u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\xfff6';
-                  uVar23 = (ushort)u_Dscreen00_pcx_00572e3a[7] < 0x39;
                 } while ((ushort)u_Dscreen00_pcx_00572e3a[7] < 0x3a);
                 u_Dscreen00_pcx_00572e3a[7] = wVar1 + L'\xfff7';
 Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
-                uVar22 = 0x112;
+                resourceId = 0x112;
                 do {
-                  pwVar6 = TextResource_Resolve(uVar22);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (0,g_FrontendDebugOverlayTextSlot00Utf16,pwVar6);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (1,g_FrontendDebugOverlayTextSlot01Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (2,g_FrontendDebugOverlayTextSlot02Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (3,g_FrontendDebugOverlayTextSlot03Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (4,g_FrontendDebugOverlayTextSlot04Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (5,g_FrontendDebugOverlayTextSlot05Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (6,g_FrontendDebugOverlayTextSlot06Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (7,g_FrontendDebugOverlayTextSlot07Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (8,g_FrontendDebugOverlayTextSlot08Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (9,g_FrontendDebugOverlayTextSlot09Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (10,g_FrontendDebugOverlayTextSlot10Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (0xb,g_FrontendDebugOverlayTextSlot11Utf16,(word *)uVar25);
-                  uVar25 = RichTextCommandStream_PatchPayloadBySelector
-                                     (0xc,g_FrontendDebugOverlayTextSlot12Utf16,(word *)uVar25);
+                  TVar14 = TextResource_Resolve(resourceId);
+                  pwVar3 = TVar14.eax;
+                  resourceId = resourceId + 1;
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xd,g_FrontendDebugOverlayTextSlot13Utf16,(word *)uVar25);
-                  uVar23 = extraout_ECX_06 < 0x117;
-                  uVar22 = extraout_ECX_06;
-                } while (extraout_ECX_06 < 0x118);
+                            (0,g_FrontendDebugOverlayTextSlot00Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (1,g_FrontendDebugOverlayTextSlot01Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (2,g_FrontendDebugOverlayTextSlot02Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (3,g_FrontendDebugOverlayTextSlot03Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (4,g_FrontendDebugOverlayTextSlot04Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (5,g_FrontendDebugOverlayTextSlot05Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (6,g_FrontendDebugOverlayTextSlot06Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (7,g_FrontendDebugOverlayTextSlot07Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (8,g_FrontendDebugOverlayTextSlot08Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (9,g_FrontendDebugOverlayTextSlot09Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (10,g_FrontendDebugOverlayTextSlot10Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (0xb,g_FrontendDebugOverlayTextSlot11Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (0xc,g_FrontendDebugOverlayTextSlot12Utf16,pwVar3);
+                  RichTextCommandStream_PatchPayloadBySelector
+                            (0xd,g_FrontendDebugOverlayTextSlot13Utf16,pwVar3);
+                } while (resourceId < 0x118);
                 UiActionHandlers_SetPageCf
                           (0x10,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
                 UiActionHandlers_SetPageCf
@@ -837,227 +860,229 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                           (0x12,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPageCf
                           (0x20,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
-                dVar3 = TextResourcePage_Load(0xff,(word *)u_texte_neterror_str_0050f104);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0xff,(word *)u_texte_neterror_str_0050f104);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x18,(word *)u_texte_help_str_00563170);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x18,(word *)u_texte_help_str_00563170);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x20,(word *)u_texte_hilfe_str_00545b34);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x20,(word *)u_texte_hilfe_str_00545b34);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x21,(word *)u_texte_menue_str_00545ba0);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x21,(word *)u_texte_menue_str_00545ba0);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x30,(word *)u_texte_techno_str_0050dec4);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x30,(word *)u_texte_techno_str_0050dec4);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x22,(word *)u_texte_level_str_00545bc0);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x22,(word *)u_texte_level_str_00545bc0);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x23,(word *)u_texte_inhalt_str_00545be0);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x23,(word *)u_texte_inhalt_str_00545be0);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                dVar3 = TextResourcePage_Load(0x24,(word *)u_texte_tastatur_str_005631b8);
-                if ((bool)uVar23) {
-                  return dVar3;
+                TVar15 = TextResourcePage_Load(0x24,(word *)u_texte_tastatur_str_005631b8);
+                if (TVar15.carry) {
+                  return TVar15.errorOrValue;
                 }
-                pwVar6 = TextResource_Resolve(0x2402);
-                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,pwVar6);
-                uVar22 = PersistentSettings_ReadDword(3,0x20);
-                AVar7 = 0;
-                if ((uVar22 & 1) != 0) {
-                  AVar7 = PersistentSettings_ReadDword(0x8000,0x24);
-                  uVar22 = extraout_ECX_07;
+                TVar14 = TextResource_Resolve(0x2402);
+                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TVar14.eax);
+                dVar4 = PersistentSettings_ReadDword(3,0x20);
+                AVar5 = 0;
+                if ((dVar4 & 1) != 0) {
+                  AVar5 = PersistentSettings_ReadDword(0x8000,0x24);
                 }
-                MVar8 = 0;
-                g_UiSoundGainQ15 = AVar7;
-                g_SoundEffectsGainQ15 = AVar7;
-                if ((uVar22 & 1) != 0) {
-                  MVar8 = PersistentSettings_ReadDword(0x8000,0x28);
-                  uVar22 = extraout_ECX_08;
+                MVar6 = 0;
+                g_UiSoundGainQ15 = AVar5;
+                g_SoundEffectsGainQ15 = AVar5;
+                if ((dVar4 & 1) != 0) {
+                  MVar6 = PersistentSettings_ReadDword(0x8000,0x28);
                 }
-                MVar9 = 0;
-                g_MovieDefaultAudioGainQ15 = MVar8;
-                if ((uVar22 & 1) != 0) {
-                  MVar9 = PersistentSettings_ReadDword(0x8000,0x4c);
-                  uVar22 = extraout_ECX_09;
+                MVar7 = 0;
+                g_MovieDefaultAudioGainQ15 = MVar6;
+                if ((dVar4 & 1) != 0) {
+                  MVar7 = PersistentSettings_ReadDword(0x8000,0x4c);
                 }
                 g_ReverseStereoMask = 0;
-                uVar23 = 0;
-                if ((uVar22 & 4) != 0) {
+                if ((dVar4 & 4) != 0) {
                   g_ReverseStereoMask = 0xffffffff;
                 }
-                g_MovieAlternateAudioGainQ15 = MVar9;
+                g_MovieAlternateAudioGainQ15 = MVar7;
                 g_ModelLodDepthThresholdQ8 = PersistentSettings_ReadDword(g_ReverseStereoMask,0x34);
-                AiRuntime_InitWorkspace();
-                if ((bool)uVar23) {
-                  return extraout_EAX;
+                SVar11 = AiRuntime_InitWorkspace();
+                if (SVar11.carry) {
+                  return SVar11.valueOrError;
                 }
-                pFVar10 = Package_LoadEntry((word *)u_engine_pcx_fnc_00573028);
-                if ((bool)uVar23) {
-                  return (dword)pFVar10;
+                PVar16 = Package_LoadEntry((word *)u_engine_pcx_fnc_00573028);
+                if (PVar16.carry) {
+                  return (dword)PVar16.bufferOrError;
                 }
-                pFVar10 = (FncModuleHeader *)FncModule_LoadAndRelocateCf(pFVar10);
-                uVar25 = CONCAT44(extraout_EDX_06,pFVar10);
-                if (!(bool)uVar23) {
-                  g_PcxFunctionModule = pFVar10;
-                  uVar25 = FncModule_GetExportByIndexCf(3,pFVar10);
-                  if (!(bool)uVar23) {
-                    g_PcxFunctionExport3 = (void *)uVar25;
-                    uVar25 = FncModule_GetExportByIndexCf(2,g_PcxFunctionModule);
-                    if (!(bool)uVar23) {
-                      g_PcxFunctionExport2 = (void *)uVar25;
-                      Resource_Release((void *)((ulonglong)uVar25 >> 0x20));
-                      pGVar11 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                                          (arg0,arg1,(word *)u_gfx_panel_stat_gfx_00573002);
-                      if ((bool)uVar23) {
-                        return (dword)pGVar11;
+                FVar17 = FncModule_LoadAndRelocateCf(PVar16.bufferOrError);
+                module = (FncModuleHeader *)FVar17.moduleBase;
+                arg0 = allocation;
+                if (!FVar17.carry) {
+                  g_PcxFunctionModule = module;
+                  SVar11 = FncModule_GetExportByIndexCf(3,module);
+                  module = (FncModuleHeader *)SVar11.valueOrError;
+                  if (!SVar11.carry) {
+                    g_PcxFunctionExport3 = (PcxEncodeProc *)module;
+                    SVar11 = FncModule_GetExportByIndexCf(2,g_PcxFunctionModule);
+                    module = (FncModuleHeader *)SVar11.valueOrError;
+                    if (!SVar11.carry) {
+                      g_PcxFunctionExport2 = (PcxDecodeProc *)module;
+                      Resource_Release(allocation);
+                      GVar18 = (*g_GraphicsTextureSourceLoadPackageAsset)
+                                         ((word *)u_gfx_panel_stat_gfx_00573002);
+                      if (GVar18.carry) {
+                        return (dword)GVar18.eax;
                       }
-                      g_InGameStatusPanelTextureSource = (undefined *)pGVar11;
-                      pRVar12 = (*g_MemoryApi.alloc)(0x800);
-                      if ((bool)uVar23) {
-                        return (dword)pRVar12;
+                      g_InGameStatusPanelTextureSource = GVar18.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x800);
+                      if (AVar19.carry) {
+                        return (dword)(RecentTextHistorySlot *)AVar19.eax;
                       }
-                      g_RecentTextSlotStorage = pRVar12;
-                      pdVar13 = (*g_MemoryApi.alloc)(0x100);
-                      if ((bool)uVar23) {
-                        return (dword)pdVar13;
+                      g_RecentTextSlotStorage = (RecentTextHistorySlot *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x100);
+                      if (AVar19.carry) {
+                        return (dword)(dword *)AVar19.eax;
                       }
-                      g_OldUnitSecondaryTable = pdVar13;
-                      pdVar13 = (*g_MemoryApi.alloc)(0x4000);
-                      if ((bool)uVar23) {
-                        return (dword)pdVar13;
+                      g_OldUnitSecondaryTable = (dword *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x4000);
+                      if (AVar19.carry) {
+                        return (dword)(dword *)AVar19.eax;
                       }
-                      g_OldUnitPrimaryTable = pdVar13;
-                      pvVar5 = (*g_MemoryApi.alloc)(0x400);
-                      if ((bool)uVar23) {
-                        return (dword)pvVar5;
+                      g_OldUnitPrimaryTable = (dword *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x400);
+                      dVar4 = AVar19.eax;
+                      if (AVar19.carry) {
+                        return dVar4;
                       }
-                      g_FrontendPlayerListRow1 = (int)pvVar5 + 0x80;
-                      g_FrontendPlayerListRow2 = (int)pvVar5 + 0x100;
-                      g_FrontendPlayerListRow3 = (int)pvVar5 + 0x180;
-                      g_FrontendPlayerListRow4 = (int)pvVar5 + 0x200;
-                      g_FrontendPlayerListRow5 = (int)pvVar5 + 0x280;
-                      g_FrontendPlayerListRow6 = (int)pvVar5 + 0x300;
-                      bVar24 = 0xffffff7f < g_FrontendPlayerListRow6;
-                      g_FrontendPlayerListRow7 = (int)pvVar5 + 0x380;
-                      g_FrontendPlayerListRows = (dword)pvVar5;
-                      pRVar14 = (*g_MemoryApi.alloc)(0x800);
-                      if (bVar24) {
-                        return (dword)pRVar14;
+                      g_FrontendPlayerListRow1 = dVar4 + 0x80;
+                      g_FrontendPlayerListRow2 = dVar4 + 0x100;
+                      g_FrontendPlayerListRow3 = dVar4 + 0x180;
+                      g_FrontendPlayerListRow4 = dVar4 + 0x200;
+                      g_FrontendPlayerListRow5 = dVar4 + 0x280;
+                      g_FrontendPlayerListRow6 = dVar4 + 0x300;
+                      g_FrontendPlayerListRow7 = dVar4 + 0x380;
+                      g_FrontendPlayerListRows = dVar4;
+                      AVar19 = (*g_MemoryApi.alloc)(0x800);
+                      if (AVar19.carry) {
+                        return (dword)(RomRegistrySlot *)AVar19.eax;
                       }
-                      g_RomRegistrySlots = pRVar14;
-                      ppFVar15 = (*g_MemoryApi.alloc)(0x80);
-                      if (bVar24) {
-                        return (dword)ppFVar15;
+                      g_RomRegistrySlots = (RomRegistrySlot *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x80);
+                      if (AVar19.carry) {
+                        return (dword)(FrontendSessionDiscoveryRecordB0 **)AVar19.eax;
                       }
-                      g_FrontendSessionListRows = ppFVar15;
-                      pFVar16 = (*g_MemoryApi.alloc)(0x1600);
-                      if (bVar24) {
-                        return (dword)pFVar16;
+                      g_FrontendSessionListRows = (FrontendSessionDiscoveryRecordB0 **)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x1600);
+                      if (AVar19.carry) {
+                        return (dword)(FrontendSessionDiscoveryRecordB0 *)AVar19.eax;
                       }
-                      g_FrontendSessionDiscoveryRecords = pFVar16;
-                      puVar17 = (*g_MemoryApi.alloc)(0x2000);
-                      if (bVar24) {
-                        return (dword)puVar17;
+                      g_FrontendSessionDiscoveryRecords =
+                           (FrontendSessionDiscoveryRecordB0 *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x2000);
+                      pwVar3 = (word *)AVar19.eax;
+                      if (AVar19.carry) {
+                        return (dword)pwVar3;
                       }
-                      g_InGameFactionStatusTextScratchUtf16 = puVar17;
-                      g_InGameFactionStatusTextScratchUtf16Mirror = puVar17;
-                      puVar17 = (*g_MemoryApi.alloc)(0x160);
-                      if (bVar24) {
-                        return (dword)puVar17;
+                      g_InGameFactionStatusTextScratchUtf16 = pwVar3;
+                      g_InGameFactionStatusTextScratchUtf16Mirror = pwVar3;
+                      AVar19 = (*g_MemoryApi.alloc)(0x160);
+                      if (AVar19.carry) {
+                        return (dword)(word *)AVar19.eax;
                       }
-                      g_InGamePlayerListTextScratchUtf16 = puVar17;
-                      pfVar18 = (*g_MemoryApi.alloc)(0x6000);
-                      if (bVar24) {
-                        return (dword)pfVar18;
+                      g_InGamePlayerListTextScratchUtf16 = (word *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x6000);
+                      pfVar8 = (float *)AVar19.eax;
+                      if (AVar19.carry) {
+                        return (dword)pfVar8;
                       }
-                      g_WorldMotionSplineMatrixWorkspaces[1] = pfVar18 + 0x400;
-                      g_WorldMotionSplineMatrixWorkspaces[2] = pfVar18 + 0x800;
-                      g_WorldMotionSplineMatrixWorkspaces[3] = pfVar18 + 0xc00;
-                      g_WorldMotionSplineMatrixWorkspaces[4] = pfVar18 + 0x1000;
-                      bVar24 = (float *)0xffffefff < g_WorldMotionSplineMatrixWorkspaces[4];
-                      g_WorldMotionSplineMatrixWorkspaces[5] = pfVar18 + 0x1400;
-                      g_WorldMotionSplineMatrixWorkspaces[0] = pfVar18;
-                      pfVar18 = (*g_MemoryApi.alloc)(0x300);
-                      if (bVar24) {
-                        return (dword)pfVar18;
+                      g_WorldMotionSplineMatrixWorkspaces[1] = pfVar8 + 0x400;
+                      g_WorldMotionSplineMatrixWorkspaces[2] = pfVar8 + 0x800;
+                      g_WorldMotionSplineMatrixWorkspaces[3] = pfVar8 + 0xc00;
+                      g_WorldMotionSplineMatrixWorkspaces[4] = pfVar8 + 0x1000;
+                      g_WorldMotionSplineMatrixWorkspaces[5] = pfVar8 + 0x1400;
+                      g_WorldMotionSplineMatrixWorkspaces[0] = pfVar8;
+                      AVar19 = (*g_MemoryApi.alloc)(0x300);
+                      pfVar8 = (float *)AVar19.eax;
+                      if (AVar19.carry) {
+                        return (dword)pfVar8;
                       }
-                      g_WorldMotionSplineCoefficientTables[1] = pfVar18 + 0x20;
-                      g_WorldMotionSplineCoefficientTables[2] = pfVar18 + 0x40;
-                      g_WorldMotionSplineCoefficientTables[3] = pfVar18 + 0x60;
-                      g_WorldMotionSplineCoefficientTables[4] = pfVar18 + 0x80;
-                      bVar24 = (float *)0xffffff7f < g_WorldMotionSplineCoefficientTables[4];
-                      g_WorldMotionSplineCoefficientTables[5] = pfVar18 + 0xa0;
-                      g_WorldMotionSplineCoefficientTables[0] = pfVar18;
-                      pSVar19 = (*g_MemoryApi.alloc)(0x408c0);
-                      if (bVar24) {
-                        return (dword)pSVar19;
+                      g_WorldMotionSplineCoefficientTables[1] = pfVar8 + 0x20;
+                      g_WorldMotionSplineCoefficientTables[2] = pfVar8 + 0x40;
+                      g_WorldMotionSplineCoefficientTables[3] = pfVar8 + 0x60;
+                      g_WorldMotionSplineCoefficientTables[4] = pfVar8 + 0x80;
+                      g_WorldMotionSplineCoefficientTables[5] = pfVar8 + 0xa0;
+                      g_WorldMotionSplineCoefficientTables[0] = pfVar8;
+                      AVar19 = (*g_MemoryApi.alloc)(0x408c0);
+                      if (AVar19.carry) {
+                        return (dword)(SelectionPlayerRuntimeBlock *)AVar19.eax;
                       }
-                      g_SelectionPlayerBlocks = pSVar19;
-                      pvVar5 = (*g_MemoryApi.alloc)(0x1300);
-                      if (bVar24) {
-                        return (dword)pvVar5;
+                      g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x1300);
+                      if (AVar19.carry) {
+                        return AVar19.eax;
                       }
-                      g_FrontendLocalPlayerPcxPreview = pvVar5;
-                      pvVar5 = (*g_MemoryApi.alloc)(0x4000);
-                      if (bVar24) {
-                        return (dword)pvVar5;
+                      g_FrontendLocalPlayerPcxPreview = AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x4000);
+                      if (AVar19.carry) {
+                        return AVar19.eax;
                       }
-                      g_TerrainRegionCollectionEntries = pvVar5;
-                      pvVar5 = (*g_MemoryApi.alloc)(800);
-                      if (bVar24) {
-                        return (dword)pvVar5;
+                      g_TerrainRegionCollectionEntries = AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(800);
+                      if (AVar19.carry) {
+                        return AVar19.eax;
                       }
-                      g_FrontendPlayerMessageBuffers = pvVar5;
-                      pFVar20 = (*g_MemoryApi.alloc)(0x9d80);
-                      if (bVar24) {
-                        return (dword)pFVar20;
+                      g_FrontendPlayerMessageBuffers = AVar19.eax;
+                      AVar19 = (*g_MemoryApi.alloc)(0x9d80);
+                      pFVar9 = (FrontendPlayerRuntimeRecord *)AVar19.eax;
+                      if (AVar19.carry) {
+                        return (dword)pFVar9;
                       }
                       playerRuntimePointerTableWriteCursor =
                            (FrontendPlayerRuntimeRecord **)&g_FrontendPlayerRuntimeRecordPointers32;
                       g_FrontendPlayerRuntimeBlockCount = 1;
                       g_LocalPlayerRuntimeId = 0;
-                      g_FrontendPlayerRuntimeBlocks = pFVar20;
-                      (pFVar20->playerName).textUtf16[0] = 0;
-                      (pFVar20->playerName).textUtf16[1] = 0;
-                      pFVar20->playerRuntimeId = 0;
-                      (pFVar20->factionAssignment).roleStateFlags = 0;
-                      pFVar20->snapshotTransferFlags = 0;
+                      g_FrontendPlayerRuntimeBlocks = pFVar9;
+                      (pFVar9->playerName).textUtf16[0] = 0;
+                      (pFVar9->playerName).textUtf16[1] = 0;
+                      pFVar9->playerRuntimeId = 0;
+                      (pFVar9->factionAssignment).roleStateFlags = 0;
+                      pFVar9->snapshotTransferFlags = 0;
                       iVar2 = 0x20;
                       do {
-                        *playerRuntimePointerTableWriteCursor = pFVar20;
+                        *playerRuntimePointerTableWriteCursor = pFVar9;
                         playerRuntimePointerTableWriteCursor =
                              playerRuntimePointerTableWriteCursor + 1;
-                        bVar24 = (FrontendPlayerRuntimeRecord *)0xffffec4f < pFVar20;
-                        pFVar20 = pFVar20 + 1;
+                        pFVar9 = pFVar9 + 1;
                         iVar2 = iVar2 + -1;
                       } while (iVar2 != 0);
-                      pbVar21 = (*g_MemoryApi.alloc)(0xe00);
-                      if (bVar24) {
-                        return (dword)pbVar21;
+                      AVar19 = (*g_MemoryApi.alloc)(0xe00);
+                      pbVar10 = (byte *)AVar19.eax;
+                      if (AVar19.carry) {
+                        return (dword)pbVar10;
                       }
-                      g_CoreAssetScratchSlice1 = pbVar21 + 0x200;
-                      g_CoreAssetScratchSlice2 = pbVar21 + 0x400;
-                      g_CoreAssetScratchSlice3 = pbVar21 + 0x600;
-                      g_CoreAssetScratchSlice4 = pbVar21 + 0x800;
-                      g_CoreAssetScratchSlice5 = pbVar21 + 0xa00;
-                      g_CoreAssetScratchSlice6 = pbVar21 + 0xc00;
-                      g_CoreAssetScratchSlice0 = pbVar21;
+                      g_CoreAssetScratchSlice1 = pbVar10 + 0x200;
+                      g_CoreAssetScratchSlice2 = pbVar10 + 0x400;
+                      g_CoreAssetScratchSlice3 = pbVar10 + 0x600;
+                      g_CoreAssetScratchSlice4 = pbVar10 + 0x800;
+                      g_CoreAssetScratchSlice5 = pbVar10 + 0xa00;
+                      g_CoreAssetScratchSlice6 = pbVar10 + 0xc00;
+                      g_CoreAssetScratchSlice0 = pbVar10;
                       for (iVar2 = 0x380; iVar2 != 0; iVar2 = iVar2 + -1) {
-                        pbVar21[0] = 0;
-                        pbVar21[1] = 0;
-                        pbVar21[2] = 0;
-                        pbVar21[3] = 0;
-                        pbVar21 = pbVar21 + 4;
+                        pbVar10[0] = 0;
+                        pbVar10[1] = 0;
+                        pbVar10[2] = 0;
+                        pbVar10[3] = 0;
+                        pbVar10 = pbVar10 + 4;
                       }
                       return 0;
                     }
@@ -1070,10 +1095,10 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
       }
     }
   }
-  dVar3 = (dword)uVar25;
-  Resource_Release((void *)((ulonglong)uVar25 >> 0x20));
-  return dVar3;
+  Resource_Release(arg0);
+  return (dword)module;
 }
+
 
 /* Address: 0x005739D0.
    Ownership: platform/bootstrap/runtime.
@@ -1085,43 +1110,45 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
    Movie_Close [movie/runtime/playback], UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout],
    Movie_GetFrameDimensions [movie/runtime/playback].
 */
-void Game_PlayIntroMovies(void)
+void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 
 {
   dword dVar1;
-  MovieRuntime *arg7;
-  uint uVar2;
   dword arg0;
-  uint extraout_ECX;
-  int extraout_EDX;
-  undefined1 in_CF;
-  undefined1 uVar3;
+  uint uVar2;
+  int iVar3;
   bool bVar4;
-  qword qVar5;
-  MovieFrameDimensionsEdxEax8 MVar6;
+  MovieFrameDimensionsEdxEax8 MVar5;
+  MovieOpenEaxCf5 MVar6;
+  MovieAdvanceFrameEaxCf5 MVar7;
+  MovieAdvanceFrameEaxCf5 MVar8;
+  KeyboardEventEaxEdxCf9 KVar9;
+  CommandLineFindOptionEbxCf5 CVar10;
+  GraphicsCursorInputEventRegsCf21 GVar11;
   
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar4 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar4) {
     (*g_GraphicsFramebufferFillRectArgb)
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar4 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar4) {
     (*g_GraphicsFramebufferFillRectArgb)
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-  (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
-  uVar3 = 1;
-  if ((bool)in_CF) {
-    while (Movie_Open(1,(word *)u_flm_intro0_flm_00573046), !(bool)uVar3) {
-      arg7 = Movie_AdvanceFrame();
-      if ((bool)uVar3) {
+  CVar10 = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
+  if (CVar10.carry) {
+    while( true ) {
+      MVar6 = Movie_Open(1,(word *)u_flm_intro0_flm_00573046);
+      if (MVar6.carry) break;
+      MVar7 = Movie_AdvanceFrame();
+      if (MVar7.carry) {
         Movie_Close();
         return;
       }
@@ -1130,38 +1157,32 @@ void Game_PlayIntroMovies(void)
       (*g_TimerRegisterPeriodic)(arg0,IntroMovie_TimerTick);
       while( true ) {
         (*g_Win32PumpMessages)();
-        qVar5 = (*g_KeyboardReadEvent)();
-        if (!(bool)uVar3) break;
-        uVar2 = (*g_GraphicsCursorConsumeEvent)();
-        if ((!(bool)uVar3) && (uVar3 = uVar2 < 4, !(bool)uVar3))
-        goto GameIntroMovies_StopCurrentPlayback;
-        uVar3 = 0;
+        KVar9 = (*g_KeyboardReadEvent)();
+        if (!KVar9.carry) break;
+        GVar11 = (*g_GraphicsCursorConsumeEvent)();
+        if ((!GVar11.carry) && (3 < GVar11.eventCode)) goto GameIntroMovies_StopCurrentPlayback;
         if (g_IntroMoviePendingTicks != 0) {
+          iVar3 = 3;
           do {
-            bVar4 = false;
-            Movie_AdvanceFrame();
+            MVar8 = Movie_AdvanceFrame();
             dVar1 = g_FramebufferHeight;
-            uVar3 = true;
-            if (bVar4) goto GameIntroMovies_StopCurrentPlayback;
+            if (MVar8.carry) goto GameIntroMovies_StopCurrentPlayback;
             g_IntroMoviePendingTicks = g_IntroMoviePendingTicks - 1;
-          } while ((g_IntroMoviePendingTicks != 0) && (extraout_EDX != 1));
-          bVar4 = (g_FramebufferHeight >> 1 & 1) != 0;
-          (*g_GraphicsFramebufferBeginAccess)();
-          uVar3 = true;
+          } while ((g_IntroMoviePendingTicks != 0) && (iVar3 = iVar3 + -1, iVar3 != 0));
+          uVar2 = g_FramebufferHeight >> 2;
+          bVar4 = (*g_GraphicsFramebufferBeginAccess)();
           if (bVar4) goto GameIntroMovies_StopCurrentPlayback;
-          MVar6 = Movie_GetFrameDimensions();
-          uVar2 = (int)((dVar1 - extraout_ECX) - (int)(MVar6 >> 0x20)) >> 1;
-          uVar3 = CARRY4(uVar2,extraout_ECX >> 1);
+          MVar5 = Movie_GetFrameDimensions();
           (*g_GraphicsTextureSourceBlitSourceAlpha)
-                    (g_FramebufferHeight,g_FramebufferWidth,0,0,uVar2 + (extraout_ECX >> 1),
-                     (int)(g_FramebufferWidth - (int)MVar6) >> 1,0,
-                     (GraphicsTextureSourceAsset *)arg7,g_FramebufferAccess);
+                    (g_FramebufferHeight,g_FramebufferWidth,0,0,
+                     ((int)((dVar1 - uVar2) - (int)(MVar5 >> 0x20)) >> 1) + (dVar1 >> 3),
+                     (int)(g_FramebufferWidth - (int)MVar5) >> 1,0,
+                     (GraphicsTextureSourceAsset *)MVar7.eax,g_FramebufferAccess);
           (*g_GraphicsFramebufferEndAccess)();
           (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
         }
       }
-      uVar3 = (uint)qVar5 < 0x10000;
-      if ((uint)qVar5 == 0x10000) {
+      if (KVar9.eventCode == 0x10000) {
         u_flm_intro0_flm_00573046[9] = L'8';
       }
 GameIntroMovies_StopCurrentPlayback:
@@ -1173,18 +1194,23 @@ GameIntroMovies_StopCurrentPlayback:
   return;
 }
 
+
 /* Address: 0x00573DB0.
    Ownership: platform/bootstrap/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Resolves the
    bootstrap API table.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-dword __cdecl DynAPI_Bootstrap(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
 
 {
   void **in_EAX;
   HINSTANCE hModule;
   DynamicApiBinding *bindingCursor;
+  StatusValueEaxCf5 SVar1;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
+  StatusValueEaxCf5 SVar4;
   void **lpProcName;
   char *moduleName;
   dword moduleSlotIndex;
@@ -1192,21 +1218,27 @@ dword __cdecl DynAPI_Bootstrap(void)
   bindingCursor = g_BootstrapApiBindings;
   do {
     if (bindingCursor->destination == (void **)0x0) {
-      return (dword)in_EAX;
+      SVar1.carry = false;
+      SVar1.valueOrError = (dword)in_EAX;
+      return SVar1;
     }
     lpProcName = bindingCursor->destination;
     hModule = GetModuleHandleA(bindingCursor->moduleName);
     if (hModule == (HMODULE)0x0) {
       if (bindingCursor->destination == (void **)dynapi_9) {
         Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);
-        return 0xf;
+        SVar3.carry = true;
+        SVar3.valueOrError = 0xf;
+        return SVar3;
       }
       hModule = (HINSTANCE)
                 (*(code *)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (hModule == (HINSTANCE)0x0) {
         Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);
-        return 0x11;
+        SVar2.carry = true;
+        SVar2.valueOrError = 0x11;
+        return SVar2;
       }
       g_DynamicModuleCount = g_DynamicModuleCount + 1;
       moduleName = bindingCursor->moduleName;
@@ -1218,12 +1250,15 @@ dword __cdecl DynAPI_Bootstrap(void)
     if (in_EAX == (void **)0x0) {
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->destination);
       Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)bindingCursor->moduleName);
-      return 0x10;
+      SVar4.carry = true;
+      SVar4.valueOrError = 0x10;
+      return SVar4;
     }
     bindingCursor->destination = in_EAX;
     bindingCursor = bindingCursor + 1;
   } while( true );
 }
+
 
 /* Address: 0x00586110.
    Ownership: platform/bootstrap/runtime.
@@ -1232,21 +1267,27 @@ dword __cdecl DynAPI_Bootstrap(void)
    stored entry to end at length. CF clear means found and EBX points to the matching stored option. CF set means
    not found. EAX is preserved and is not a scalar result.
 */
-void CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
+CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
+CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 
 {
   dword compareBytesRemaining;
   int optionBufferCapacityRemaining;
+  byte *in_EBX;
   char *pcVar1;
   char *optionBufferCursor;
   char *storedOptionCompareCursor;
   bool comparedBytesEqual;
+  CommandLineFindOptionEbxCf5 CVar2;
+  CommandLineFindOptionEbxCf5 CVar3;
   char currentOptionBufferByte;
   
   optionBufferCursor = g_CommandLine.optionBuffer;
   do {
     if (*optionBufferCursor == '\0') {
-      return;
+      CVar3.carry = true;
+      CVar3.ebx = in_EBX;
+      return CVar3;
     }
     comparedBytesEqual = false;
     compareBytesRemaining = length;
@@ -1260,7 +1301,9 @@ void CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
       storedOptionCompareCursor = storedOptionCompareCursor + 1;
     } while (comparedBytesEqual);
     if (comparedBytesEqual) {
-      return;
+      CVar2.carry = false;
+      CVar2.ebx = (byte *)optionBufferCursor;
+      return CVar2;
     }
     optionBufferCapacityRemaining = (int)sz_MainWindowTitle - (int)optionBufferCursor;
     pcVar1 = optionBufferCursor;
@@ -1275,6 +1318,7 @@ void CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
   } while( true );
 }
 
+
 /* Address: 0x00586170.
    Ownership: platform/bootstrap/runtime.
    Purpose: Installs CommandLine_FindOption, reads GetCommandLineA, stores a quote-stripped executable path, up to
@@ -1283,7 +1327,7 @@ void CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
    verbatim. Extra positional arguments are skipped. The fixed 256-byte buffers have no explicit bounds checks.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-void __cdecl CommandLine_Parse(void)
+void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
 
 {
   byte *pbVar1;
@@ -1438,3 +1482,4 @@ CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot:
     *pcVar8 = 0;
   } while( true );
 }
+

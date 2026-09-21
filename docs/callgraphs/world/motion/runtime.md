@@ -1,6 +1,6 @@
 # Call graph: `world/motion/runtime`
 
-[Source](../../../../src/world/motion/runtime.c) · [Header](../../../../include/thandor/world/motion/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-motion-runtime)
+[Source](../../../../src/world/motion/runtime.c) · [Header](../../../../include/thandor/world/motion/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-motion-runtime) · [Developer notes](../../../../CHANGELOG.md#module-world-motion-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-motion-runtime)
 
 11 functions. Addresses are current V523 executable VAs.
 

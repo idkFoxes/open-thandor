@@ -1,6 +1,6 @@
 # Call graph: `gameplay/ai/workspaces`
 
-[Source](../../../../src/gameplay/ai/workspaces.c) · [Header](../../../../include/thandor/gameplay/ai/workspaces.h) · [Graphviz](workspaces.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-workspaces)
+[Source](../../../../src/gameplay/ai/workspaces.c) · [Header](../../../../include/thandor/gameplay/ai/workspaces.h) · [Graphviz](workspaces.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-workspaces) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-ai-workspaces) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-ai-workspaces)
 
 26 functions. Addresses are current V523 executable VAs.
 

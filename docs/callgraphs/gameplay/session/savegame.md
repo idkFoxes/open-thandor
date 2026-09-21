@@ -1,6 +1,6 @@
 # Call graph: `gameplay/session/savegame`
 
-[Source](../../../../src/gameplay/session/savegame.c) · [Header](../../../../include/thandor/gameplay/session/savegame.h) · [Graphviz](savegame.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-session-savegame)
+[Source](../../../../src/gameplay/session/savegame.c) · [Header](../../../../include/thandor/gameplay/session/savegame.h) · [Graphviz](savegame.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-session-savegame) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-session-savegame)
 
 5 functions. Addresses are current V523 executable VAs.
 

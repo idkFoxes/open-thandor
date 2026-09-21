@@ -1,6 +1,6 @@
 # Call graph: `assets/text/richtext`
 
-[Source](../../../../src/assets/text/richtext.c) · [Header](../../../../include/thandor/assets/text/richtext.h) · [Graphviz](richtext.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-text-richtext)
+[Source](../../../../src/assets/text/richtext.c) · [Header](../../../../include/thandor/assets/text/richtext.h) · [Graphviz](richtext.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-text-richtext) · [Developer notes](../../../../CHANGELOG.md#module-assets-text-richtext) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-text-richtext)
 
 18 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `world/shots/maintenance`
 
-[Source](../../../../src/world/shots/maintenance.c) · [Header](../../../../include/thandor/world/shots/maintenance.h) · [Graphviz](maintenance.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-shots-maintenance)
+[Source](../../../../src/world/shots/maintenance.c) · [Header](../../../../include/thandor/world/shots/maintenance.h) · [Graphviz](maintenance.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-shots-maintenance) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-shots-maintenance)
 
 4 functions. Addresses are current V523 executable VAs.
 

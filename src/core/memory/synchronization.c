@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/memory/synchronization.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/memory/synchronization.h>
 
 /* Implementation ownership: core/memory/synchronization. */
@@ -8,7 +15,7 @@
    until the previous value was zero. The loop has no pause, yield, timeout, ownership tracking, or recursion
    support. CF is clear on return.
 */
-void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
+void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
 
 {
   RuntimeSpinLockValue *previousLockValue;
@@ -23,13 +30,14 @@ void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
   return;
 }
 
+
 /* Address: 0x004074A0.
    Ownership: core/memory/synchronization.
    Purpose: Treats null as success. For a non-null lock, performs one atomic xchg(lock,-1). CF clear means the
    previous value was zero and the lock was acquired. CF set means it was already nonzero. EAX is preserved and is
    not a scalar result.
 */
-void SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
+bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 {
   RuntimeSpinLockValue previousLockValue;
@@ -40,18 +48,19 @@ void SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
     *lockValue = SPIN_LOCK_LOCKED;
     UNLOCK();
     if (previousLockValue != SPIN_LOCK_UNLOCKED) {
-      return;
+      return true;
     }
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x004074D0.
    Ownership: core/memory/synchronization.
    Purpose: Treats null as a no-op. For a non-null lock, writes zero with a plain non-atomic store. CF is clear on
    return.
 */
-void SpinLock_Release(RuntimeSpinLockValue *lockValue)
+void __thandor_void_preserve_eax_ecx_edx SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
 {
   if (lockValue != (RuntimeSpinLockValue *)0x0) {
@@ -60,13 +69,14 @@ void SpinLock_Release(RuntimeSpinLockValue *lockValue)
   return;
 }
 
+
 /* Address: 0x004074F0.
    Ownership: core/memory/synchronization.
    Purpose: When lockValue is non-null, writes zero first and then invokes callback when callback is non-null. When
    lockValue is null, callback is not invoked. The callback receives no arguments. CF is clear on return.
 */
-void SpinLock_ReleaseAndInvoke
-               (SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
+void __thandor_void_preserve_eax_ecx_edx
+SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
 
 {
   if ((lockValue != (RuntimeSpinLockValue *)0x0) &&
@@ -76,6 +86,7 @@ void SpinLock_ReleaseAndInvoke
   return;
 }
 
+
 /* Address: 0x00585F00.
    Ownership: core/memory/synchronization.
    Purpose: Central reverse-order subsystem shutdown.
@@ -83,7 +94,7 @@ void SpinLock_ReleaseAndInvoke
    DirectInputMouse_Shutdown [platform/input/devices], Graphics_Shutdown [graphics/core/runtime], Network_Shutdown
    [network/backend/runtime], DirectSound_Shutdown [audio/backend/runtime].
 */
-void __cdecl Runtime_Shutdown(void)
+void __thandor_preserve_eax Runtime_Shutdown(void)
 
 {
   HANDLE hProcess;
@@ -103,3 +114,4 @@ void __cdecl Runtime_Shutdown(void)
   SetPriorityClass(hProcess,0x20);
   return;
 }
+

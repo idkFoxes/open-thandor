@@ -1,6 +1,6 @@
 # Call graph: `ui/controls/text`
 
-[Source](../../../../src/ui/controls/text.c) · [Header](../../../../include/thandor/ui/controls/text.h) · [Graphviz](text.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-text)
+[Source](../../../../src/ui/controls/text.c) · [Header](../../../../include/thandor/ui/controls/text.h) · [Graphviz](text.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-text) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-controls-text)
 
 63 functions. Addresses are current V523 executable VAs.
 

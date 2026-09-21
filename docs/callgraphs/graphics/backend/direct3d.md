@@ -1,6 +1,6 @@
 # Call graph: `graphics/backend/direct3d`
 
-[Source](../../../../src/graphics/backend/direct3d.c) · [Header](../../../../include/thandor/graphics/backend/direct3d.h) · [Graphviz](direct3d.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-direct3d)
+[Source](../../../../src/graphics/backend/direct3d.c) · [Header](../../../../include/thandor/graphics/backend/direct3d.h) · [Graphviz](direct3d.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-direct3d) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-backend-direct3d)
 
 14 functions. Addresses are current V523 executable VAs.
 

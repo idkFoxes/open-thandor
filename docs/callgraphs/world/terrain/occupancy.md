@@ -1,6 +1,6 @@
 # Call graph: `world/terrain/occupancy`
 
-[Source](../../../../src/world/terrain/occupancy.c) · [Header](../../../../include/thandor/world/terrain/occupancy.h) · [Graphviz](occupancy.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-occupancy)
+[Source](../../../../src/world/terrain/occupancy.c) · [Header](../../../../include/thandor/world/terrain/occupancy.h) · [Graphviz](occupancy.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-occupancy) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-terrain-occupancy)
 
 15 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `gameplay/faction/runtime`
 
-[Source](../../../../src/gameplay/faction/runtime.c) · [Header](../../../../include/thandor/gameplay/faction/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-faction-runtime)
+[Source](../../../../src/gameplay/faction/runtime.c) · [Header](../../../../include/thandor/gameplay/faction/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-faction-runtime) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-faction-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-faction-runtime)
 
 28 functions. Addresses are current V523 executable VAs.
 

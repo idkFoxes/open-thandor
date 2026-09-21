@@ -1,6 +1,6 @@
 # Call graph: `ui/controls/lists`
 
-[Source](../../../../src/ui/controls/lists.c) · [Header](../../../../include/thandor/ui/controls/lists.h) · [Graphviz](lists.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-lists)
+[Source](../../../../src/ui/controls/lists.c) · [Header](../../../../include/thandor/ui/controls/lists.h) · [Graphviz](lists.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-lists) · [Developer notes](../../../../CHANGELOG.md#module-ui-controls-lists) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-controls-lists)
 
 54 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `core/text/string`
 
-[Source](../../../../src/core/text/string.c) · [Header](../../../../include/thandor/core/text/string.h) · [Graphviz](string.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-text-string)
+[Source](../../../../src/core/text/string.c) · [Header](../../../../include/thandor/core/text/string.h) · [Graphviz](string.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-text-string) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-text-string)
 
 5 functions. Addresses are current V523 executable VAs.
 

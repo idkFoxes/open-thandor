@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/support/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/support/runtime.h>
 
 /* Implementation ownership: ui/support/runtime. */
@@ -10,13 +17,13 @@
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: RecentTextHistory_SwapSlots.
 */
-void RecentTextHistory_SortAndBuildPointerList
-               (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output)
+void __thandor_void_preserve_eax_ecx_edx
+RecentTextHistory_SortAndBuildPointerList
+          (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output)
 
 {
   dword currentSerial;
   RecentTextHistorySlot *slotCursor;
-  UiListRowIndex extraout_EDX;
   UiListRowIndex firstIndex;
   UiListRowIndex secondIndex;
   uint outputIndex;
@@ -30,7 +37,6 @@ void RecentTextHistory_SortAndBuildPointerList
       if (currentSerial < g_RecentTextEntrySerials[firstIndex]) {
         RecentTextHistory_SwapSlots(firstIndex,secondIndex);
         currentSerial = g_RecentTextEntrySerials[secondIndex];
-        firstIndex = extraout_EDX;
       }
       slotCursor = g_RecentTextSlotStorage;
       firstIndex = firstIndex + 1;
@@ -58,13 +64,14 @@ RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
   return;
 }
 
+
 /* Address: 0x0050F130.
    Ownership: ui/support/runtime.
    Purpose: Finds the slot with the lowest serial, assigns the current serial counter, and copies up to 0x100 bytes
    of UTF-16 text into that slot.
    Cross-module calls: RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
 */
-void RecentTextHistory_Insert(word *text)
+void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(word *text)
 
 {
   uint oldestSerial;
@@ -94,12 +101,13 @@ void RecentTextHistory_Insert(word *text)
   return;
 }
 
+
 /* Address: 0x0050F2E0.
    Ownership: ui/support/runtime.
    Purpose: Finds the smallest nonzero recent-text serial and clears that slot's serial, leaving the text storage
    unchanged.
 */
-void __cdecl RecentTextHistory_RemoveOldest(void)
+void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
 
 {
   uint oldestSerial;
@@ -128,6 +136,7 @@ void __cdecl RecentTextHistory_RemoveOldest(void)
   return;
 }
 
+
 /* Address: 0x00548EC0.
    Ownership: ui/support/runtime.
    Purpose: Switches to the busy cursor, loads gfx\panel\credits.gfx, allocates two width*height work buffers,
@@ -136,59 +145,52 @@ void __cdecl RecentTextHistory_RemoveOldest(void)
    Cross-module calls: UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout], SoftwareMaskBuffer_Clear
    [graphics/backend/software], UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-void CreditsScreen_Open(void *creditsUiState)
+void __thandor_void_preserve_eax_ecx_edx
+CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 {
-  longlong lVar1;
-  GraphicsTextureSourceAsset *arg1;
-  void *pvVar2;
-  dword arg0;
-  dword arg1_00;
   dword bytes;
-  dword bytes_00;
-  undefined1 in_CF;
-  bool bVar3;
-  qword qVar4;
+  GraphicsTextureSourceLoadEaxCf5 GVar1;
+  ArenaAllocEaxCf5 AVar2;
+  GraphicsTextureSizeEaxEdxCf9 GVar3;
   
   (*g_GraphicsCursorSetFrame)(6);
-  *(undefined4 *)((int)creditsUiState + 0x224) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x234) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x238) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x228) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x22c) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x23c) = 0;
-  arg1 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                   (arg0,arg1_00,(word *)u_gfx_panel_credits_gfx_00545c22);
-  if (!(bool)in_CF) {
-    *(GraphicsTextureSourceAsset **)((int)creditsUiState + 0x224) = arg1;
-    qVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0,arg1);
-    lVar1 = (longlong)(int)(qVar4 >> 0x20) * (longlong)(int)qVar4;
-    bytes = (dword)lVar1;
-    bVar3 = (int)bytes != lVar1;
-    pvVar2 = (*g_MemoryApi.alloc)(bytes);
-    if (!bVar3) {
-      *(void **)((int)creditsUiState + 0x234) = pvVar2;
-      pvVar2 = (*g_MemoryApi.alloc)(bytes_00);
-      if (!bVar3) {
-        *(void **)((int)creditsUiState + 0x238) = pvVar2;
+  (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
+  (frontendCreditsView->creditsMaskRuntime).patternState54 = 0;
+  (frontendCreditsView->creditsMaskRuntime).patternState58 = 0;
+  (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
+  GVar1 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_credits_gfx_00545c22);
+  if (!GVar1.carry) {
+    (frontendCreditsView->creditsMaskRuntime).textureSource = GVar1.eax;
+    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0,GVar1.eax);
+    bytes = GVar3.logicalHeightPixels * GVar3.logicalWidthPixels;
+    AVar2 = (*g_MemoryApi.alloc)(bytes);
+    if (!AVar2.carry) {
+      (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)AVar2.eax;
+      AVar2 = (*g_MemoryApi.alloc)(bytes);
+      if (!AVar2.carry) {
+        (frontendCreditsView->creditsMaskRuntime).unresolved64 = AVar2.eax;
         UiFrame_FlushInputAndResetPendingTicks();
-        SoftwareMaskBuffer_Clear((SoftwareMaskRuntimeView *)((int)creditsUiState + 0x1d4));
-        UiPageStack_SetActiveIndex(1,(UiPageStackControl *)((int)creditsUiState + 0x58));
+        SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
+        UiPageStack_SetActiveIndex(1,&frontendCreditsView->pageStack);
         g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
         return;
       }
     }
   }
   (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)
-            (*(GraphicsTextureSourceAsset **)((int)creditsUiState + 0x224));
-  (*g_MemoryApi.free)(*(void **)((int)creditsUiState + 0x234));
-  (*g_MemoryApi.free)(*(void **)((int)creditsUiState + 0x238));
-  *(undefined4 *)((int)creditsUiState + 0x224) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x234) = 0;
-  *(undefined4 *)((int)creditsUiState + 0x238) = 0;
+            ((frontendCreditsView->creditsMaskRuntime).textureSource);
+  (*g_MemoryApi.free)((frontendCreditsView->creditsMaskRuntime).maskPixels);
+  (*g_MemoryApi.free)((void *)(frontendCreditsView->creditsMaskRuntime).unresolved64);
+  (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
   (*g_GraphicsCursorSetFrame)(0);
   return;
 }
+
 
 /* Address: 0x0054D5D0.
    Ownership: ui/support/runtime.
@@ -197,31 +199,26 @@ void CreditsScreen_Open(void *creditsUiState)
    Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode
    [core/text/path], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
 */
-void PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourcePath)
+bool __thandor_cf_preserve_eax_ecx_edx
+PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourcePath)
 
 {
   word wVar1;
   int iVar2;
+  void *sourceBytes;
   void *memory;
-  undefined4 extraout_ECX;
-  undefined4 extraout_ECX_00;
   int iVar3;
-  undefined4 extraout_EDX;
-  void *allocation;
-  void *extraout_EDX_00;
-  void *allocation_00;
   dword *pcxDwordReadCursor;
   undefined4 *puVar4;
   word *pwVar5;
-  undefined1 uVar6;
-  undefined8 uVar7;
+  PcxDecodeEaxCf5 PVar6;
+  ResourceLoadEaxEcxCf9 RVar7;
   
   pwVar5 = g_LevelEndingMovieSourcePath;
   while( true ) {
     wVar1 = *sourcePath;
     *pwVar5 = wVar1;
     sourcePath = sourcePath + 1;
-    uVar6 = 0;
     if (wVar1 == 0) break;
     if ((((wVar1 != 0x2a) && (wVar1 != 0x2e)) &&
         ((wVar1 != 0x3f && ((wVar1 != 0x2f && (wVar1 != 0x5c)))))) &&
@@ -234,12 +231,12 @@ void PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *so
             ((word *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (word *)&g_ExecutableDirectoryUtf16);
   WidePath_SetExtensionCode(0x786370,(word *)&g_LevelResourcePathScratchUtf16);
-  uVar7 = Resource_Load(extraout_ECX,extraout_EDX,(word *)&g_LevelResourcePathScratchUtf16);
-  if (!(bool)uVar6) {
-    uVar7 = (*g_PcxFunctionExport2)(g_PcxFunctionModule,extraout_ECX_00,(int)uVar7);
-    allocation_00 = (void *)((ulonglong)uVar7 >> 0x20);
-    memory = (void *)uVar7;
-    if (!(bool)uVar6) {
+  RVar7 = Resource_Load((word *)&g_LevelResourcePathScratchUtf16);
+  sourceBytes = (void *)RVar7.eax;
+  if (!RVar7.carry) {
+    PVar6 = (*g_PcxFunctionExport2)(g_PcxFunctionModule,RVar7.ecx,sourceBytes);
+    memory = PVar6.decodedImageOrError;
+    if (!PVar6.carry) {
       iVar2 = *(int *)((int)memory + 0xb8);
       if (((*(int *)((int)memory + iVar2 + 8) == 0) &&
           (*(int *)((int)memory + iVar2 + 0x18) == 0x40)) &&
@@ -260,16 +257,16 @@ void PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *so
           outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
         }
         (*g_MemoryApi.free)(memory);
-        Resource_Release(allocation);
-        return;
+        Resource_Release(sourceBytes);
+        return false;
       }
       (*g_MemoryApi.free)(memory);
-      allocation_00 = extraout_EDX_00;
     }
-    Resource_Release(allocation_00);
+    Resource_Release(sourceBytes);
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0050F1A0.
    Ownership: ui/support/runtime.
@@ -278,38 +275,39 @@ void PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *so
    non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes,
    control flow, globals, locals, and executable data remain unchanged.
 */
-void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
+void __thandor_void_preserve_eax_ecx_edx
+RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
 
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
+  dword dVar1;
+  dword dVar2;
   dword dVar3;
-  undefined4 uVar4;
-  int iVar5;
-  word *pwVar6;
-  word *pwVar7;
+  int iVar4;
+  dword *firstSlotDwords;
+  dword *secondSlotDwords;
   
-  dVar3 = g_RecentTextEntrySerials[secondIndex];
+  dVar2 = g_RecentTextEntrySerials[secondIndex];
   g_RecentTextEntrySerials[secondIndex] = g_RecentTextEntrySerials[firstIndex];
-  g_RecentTextEntrySerials[firstIndex] = dVar3;
-  pwVar7 = g_RecentTextSlotStorage[secondIndex].text;
-  pwVar6 = g_RecentTextSlotStorage[firstIndex].text;
-  iVar5 = 0x20;
+  g_RecentTextEntrySerials[firstIndex] = dVar2;
+  secondSlotDwords = (dword *)(g_RecentTextSlotStorage + secondIndex);
+  firstSlotDwords = (dword *)(g_RecentTextSlotStorage + firstIndex);
+  iVar4 = 0x20;
   do {
-    uVar4 = *(undefined4 *)(pwVar7 + 2);
+    dVar3 = secondSlotDwords[1];
     LOCK();
-    uVar1 = *(undefined4 *)pwVar6;
-    *(undefined4 *)pwVar6 = *(undefined4 *)pwVar7;
+    dVar2 = *firstSlotDwords;
+    *firstSlotDwords = *secondSlotDwords;
     UNLOCK();
     LOCK();
-    uVar2 = *(undefined4 *)(pwVar6 + 2);
-    *(undefined4 *)(pwVar6 + 2) = uVar4;
+    dVar1 = firstSlotDwords[1];
+    firstSlotDwords[1] = dVar3;
     UNLOCK();
-    *(undefined4 *)pwVar7 = uVar1;
-    *(undefined4 *)(pwVar7 + 2) = uVar2;
-    pwVar6 = pwVar6 + 4;
-    pwVar7 = pwVar7 + 4;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
+    *secondSlotDwords = dVar2;
+    secondSlotDwords[1] = dVar1;
+    firstSlotDwords = firstSlotDwords + 2;
+    secondSlotDwords = secondSlotDwords + 2;
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   return;
 }
+

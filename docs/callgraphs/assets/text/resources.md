@@ -1,6 +1,6 @@
 # Call graph: `assets/text/resources`
 
-[Source](../../../../src/assets/text/resources.c) · [Header](../../../../include/thandor/assets/text/resources.h) · [Graphviz](resources.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-text-resources)
+[Source](../../../../src/assets/text/resources.c) · [Header](../../../../include/thandor/assets/text/resources.h) · [Graphviz](resources.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-text-resources) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-text-resources)
 
 11 functions. Addresses are current V523 executable VAs.
 

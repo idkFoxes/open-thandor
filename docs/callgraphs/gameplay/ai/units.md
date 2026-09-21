@@ -1,6 +1,6 @@
 # Call graph: `gameplay/ai/units`
 
-[Source](../../../../src/gameplay/ai/units.c) · [Header](../../../../include/thandor/gameplay/ai/units.h) · [Graphviz](units.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-units)
+[Source](../../../../src/gameplay/ai/units.c) · [Header](../../../../include/thandor/gameplay/ai/units.h) · [Graphviz](units.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-units) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-ai-units)
 
 9 functions. Addresses are current V523 executable VAs.
 

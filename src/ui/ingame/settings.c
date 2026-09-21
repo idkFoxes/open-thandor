@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/ingame/settings.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/ingame/settings.h>
 
 /* Implementation ownership: ui/ingame/settings. */
@@ -11,10 +18,9 @@
    Local calls: InGameSettingsPage_ToggleAndSynchronizeControls.
    Cross-module calls: UiSelectableControl_SetSelected [ui/controls/lists].
 */
-undefined4 InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
+void __thandor_preserve_eax InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
 
 {
-  undefined4 in_EAX;
   int parentNodeAddress;
   
   parentNodeAddress = (int)source->parent;
@@ -24,8 +30,9 @@ undefined4 InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)&source[0xe5].firstChild);
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe5].firstChild);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0056AB90.
    Ownership: ui/ingame/settings.
@@ -38,10 +45,9 @@ undefined4 InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
    InGameCommand150_HandlePlayerDepartureAndOwnership [ui/ingame/commands],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
 */
-undefined4 InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
+void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
 
 {
-  undefined4 in_EAX;
   int parentNodeAddress;
   
   parentNodeAddress = (int)source->parent;
@@ -58,8 +64,9 @@ undefined4 InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(0x150,0,0,0);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0056ABF0.
    Ownership: ui/ingame/settings.
@@ -72,10 +79,9 @@ undefined4 InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
    InGameCommand150_HandlePlayerDepartureAndOwnership [ui/ingame/commands],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
 */
-undefined4 InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
+void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
 
 {
-  undefined4 in_EAX;
   int parentNodeAddress;
   
   parentNodeAddress = (int)source->parent;
@@ -92,8 +98,9 @@ undefined4 InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(0x150,0,0,1);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0056C5E0.
    Ownership: ui/ingame/settings.
@@ -103,7 +110,7 @@ undefined4 InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
    Local calls: InGameSettingsPage_ToggleAndSynchronizeControls.
    Cross-module calls: UiSelectableControl_SetSelected [ui/controls/lists].
 */
-void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
+void __thandor_preserve_eax InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -118,6 +125,7 @@ void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
   return;
 }
 
+
 /* Address: 0x0056C620.
    Ownership: ui/ingame/settings.
    Purpose: Finds the UI root, sets the shared settings toggle at root+0x4388, and delegates to
@@ -126,7 +134,7 @@ void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
    Local calls: InGameSettingsPage_ToggleAndSynchronizeControls.
    Cross-module calls: UiSelectableControl_SetSelected [ui/controls/lists].
 */
-void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
+void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -141,24 +149,24 @@ void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
   return;
 }
 
+
 /* Address: 0x0055F520.
    Ownership: ui/ingame/settings.
    Purpose: Handles in game simulation speed adjust player and recompute minimum ticks.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
-          (int param_1,undefined4 param_2,undefined4 param_3,int param_4)
+          (FrontendPlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          int stepDelta)
 
 {
-  undefined4 in_EAX;
   FrontendPlayerRuntimeBlockCount FVar1;
-  undefined4 in_EDX;
   FrontendPlayerRuntimeRecord *pFVar2;
   InGameSimulationStepBatchTicks IVar3;
   
-  IVar3 = g_SelectionPlayerRuntimeBlockPointers[param_1]->simulationStepTicks + param_4;
+  IVar3 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->simulationStepTicks + stepDelta;
   if ((IVar3 != 0) && (IVar3 < 6)) {
-    g_SelectionPlayerRuntimeBlockPointers[param_1]->simulationStepTicks = IVar3;
+    g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->simulationStepTicks = IVar3;
     FVar1 = g_FrontendPlayerRuntimeBlockCount;
     pFVar2 = g_FrontendPlayerRuntimeBlocks;
     do {
@@ -171,8 +179,9 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
       g_InGameSimulationStepTicks = IVar3;
     } while (FVar1 != 0);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0056AA90.
    Ownership: ui/ingame/settings.
@@ -181,17 +190,14 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-undefined8 InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode)
+void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode)
 
 {
-  undefined4 in_EAX;
-  UiPageStackControl *stack;
-  undefined4 in_EDX;
-  
   UiSelectableGroup_SelectExclusive(3,sourceNode);
-  UiPageStack_SetActiveIndex(0,stack);
-  return CONCAT44(in_EDX,in_EAX);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&sourceNode[3].bottomAnchorQ31);
+  return;
 }
+
 
 /* Address: 0x0056AAD0.
    Ownership: ui/ingame/settings.
@@ -200,17 +206,14 @@ undefined8 InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode)
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-undefined8 InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode)
+void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode)
 
 {
-  undefined4 in_EAX;
-  UiPageStackControl *stack;
-  undefined4 in_EDX;
-  
   UiSelectableGroup_SelectExclusive(3,sourceNode);
-  UiPageStack_SetActiveIndex(1,stack);
-  return CONCAT44(in_EDX,in_EAX);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&sourceNode[2].rightOffset);
+  return;
 }
+
 
 /* Address: 0x0056AB10.
    Ownership: ui/ingame/settings.
@@ -219,17 +222,14 @@ undefined8 InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode)
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-undefined8 InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode)
+void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode)
 
 {
-  undefined4 in_EAX;
-  UiPageStackControl *stack;
-  undefined4 in_EDX;
-  
   UiSelectableGroup_SelectExclusive(3,sourceNode);
-  UiPageStack_SetActiveIndex(2,stack);
-  return CONCAT44(in_EDX,in_EAX);
+  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&sourceNode[1].top);
+  return;
 }
+
 
 /* Address: 0x0056BAF0.
    Ownership: ui/ingame/settings.
@@ -240,27 +240,30 @@ undefined8 InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode)
    [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout], UiContainer_LayoutChildren
    [ui/controls/layout], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
+  sdword *stack;
+  dword dVar1;
   PersistentSettingsDwordValue value;
-  UiPageStackControl *stack;
-  UiPageStackControl *stack_00;
-  UiPageStackControl *stack_01;
-  undefined1 in_CF;
+  bool bVar2;
   
-  PersistentSettings_ReadDword(0,0x40);
-  UiSelectableControl_IsSelectedCf(control);
-  if ((bool)in_CF) {
-    UiPageStack_SetActiveIndex(1,stack);
+  dVar1 = PersistentSettings_ReadDword(0,0x40);
+  stack = &control[0x4e].base.layoutHeight;
+  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar2) {
+    value = dVar1 | 4;
+    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5c].base.leftAnchorQ31);
-    UiPageStack_SetActiveIndex(0,stack_00);
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5f].base.nodeFlags);
     control[-0x58].base.top = 0;
   }
   else {
-    UiPageStack_SetActiveIndex(0,stack);
+    value = dVar1 & 0xfffffffb;
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)stack);
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5c].base.leftAnchorQ31);
-    UiPageStack_SetActiveIndex(0,stack_01);
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5f].base.nodeFlags);
     control[-0x58].base.top = control[0x50].base.top;
   }
   UiContainer_LayoutChildren((UiNodeBase *)&control[-0x77].base.bottomAnchorQ31);
@@ -268,18 +271,21 @@ void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *con
   return;
 }
 
+
 /* Address: 0x0056BBB0.
    Ownership: ui/ingame/settings.
    Purpose: Persists control+0x58 as cameraScrollStep at settings offset 0x48. Queued UI action handler for
    INGAME_PAGE12[23] (0x1217). Return datatype is preserved for non-queue direct callers.
    Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
+void __thandor_preserve_eax
+InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
   PersistentSettings_WriteDword(control->boundValue,0x48);
   return;
 }
+
 
 /* Address: 0x0056BBD0.
    Ownership: ui/ingame/settings.
@@ -289,25 +295,27 @@ void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
    Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
-  uint extraout_ECX;
+  dword dVar1;
   PersistentSettingsDwordValue value;
-  undefined1 in_CF;
+  bool bVar2;
   
-  PersistentSettings_ReadDword(0,0x40);
-  UiSelectableControl_IsSelectedCf(control);
-  if ((bool)in_CF) {
-    value = extraout_ECX | 1;
+  dVar1 = PersistentSettings_ReadDword(0,0x40);
+  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar2) {
+    value = dVar1 | 1;
     control[0x159].base.layoutWidth = 0x800;
   }
   else {
-    value = extraout_ECX & 0xfffffffe;
+    value = dVar1 & 0xfffffffe;
   }
   PersistentSettings_WriteDword(value,0x40);
   return;
 }
+
 
 /* Address: 0x0056BC20.
    Ownership: ui/ingame/settings.
@@ -317,25 +325,27 @@ void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
    Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
-  uint extraout_ECX;
+  dword dVar1;
   PersistentSettingsDwordValue value;
-  undefined1 in_CF;
+  bool bVar2;
   
-  PersistentSettings_ReadDword(0,0x40);
-  UiSelectableControl_IsSelectedCf(control);
-  if ((bool)in_CF) {
-    value = extraout_ECX | 2;
+  dVar1 = PersistentSettings_ReadDword(0,0x40);
+  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar2) {
+    value = dVar1 | 2;
     control[0x158].base.rightAnchorQ31 = 0x2000;
   }
   else {
-    value = extraout_ECX & 0xfffffffd;
+    value = dVar1 & 0xfffffffd;
   }
   PersistentSettings_WriteDword(value,0x40);
   return;
 }
+
 
 /* Address: 0x0056BC70.
    Ownership: ui/ingame/settings.
@@ -346,32 +356,33 @@ void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   UiAnchorFractionQ31 *pUVar1;
-  PersistentSettingsDwordValue extraout_ECX;
-  PersistentSettingsDwordValue extraout_ECX_00;
+  dword dVar2;
   PersistentSettingsDwordValue value;
-  undefined1 in_CF;
+  bool bVar3;
   
-  PersistentSettings_ReadDword(0,0x5c);
-  UiSelectableControl_IsSelectedCf(control);
-  if ((bool)in_CF) {
+  dVar2 = PersistentSettings_ReadDword(0,0x5c);
+  bVar3 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar3) {
+    value = dVar2 | 1;
     pUVar1 = &control[-0x61].base.bottomAnchorQ31;
     *pUVar1 = *pUVar1 | 0x40000000;
     UiNodeList_SuppressActionId(0x1215,(control->base).parent);
-    value = extraout_ECX;
   }
   else {
+    value = dVar2 & 0xfffffffe;
     pUVar1 = &control[-0x61].base.bottomAnchorQ31;
     *pUVar1 = *pUVar1 & 0xbfffffff;
     UiNodeList_UnsuppressActionId(0x1215,(control->base).parent);
-    value = extraout_ECX_00;
   }
   PersistentSettings_WriteDword(value,0x5c);
   return;
 }
+
 
 /* Address: 0x0056BCF0.
    Ownership: ui/ingame/settings.
@@ -382,32 +393,33 @@ void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   UiAnchorFractionQ31 *pUVar1;
-  PersistentSettingsDwordValue extraout_ECX;
-  PersistentSettingsDwordValue extraout_ECX_00;
+  dword dVar2;
   PersistentSettingsDwordValue value;
-  undefined1 in_CF;
+  bool bVar3;
   
-  PersistentSettings_ReadDword(0,0x5c);
-  UiSelectableControl_IsSelectedCf(control);
-  if ((bool)in_CF) {
+  dVar2 = PersistentSettings_ReadDword(0,0x5c);
+  bVar3 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar3) {
+    value = dVar2 | 2;
     pUVar1 = &control[-0x62].base.leftAnchorQ31;
     *pUVar1 = *pUVar1 | 0x80000000;
     UiNodeList_SuppressActionId(0x1214,(control->base).parent);
-    value = extraout_ECX;
   }
   else {
+    value = dVar2 & 0xfffffffd;
     pUVar1 = &control[-0x62].base.leftAnchorQ31;
     *pUVar1 = *pUVar1 & 0x7fffffff;
     UiNodeList_UnsuppressActionId(0x1214,(control->base).parent);
-    value = extraout_ECX_00;
   }
   PersistentSettings_WriteDword(value,0x5c);
   return;
 }
+
 
 /* Address: 0x0056BD70.
    Ownership: ui/ingame/settings.
@@ -417,29 +429,31 @@ void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
    Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
   sdword *psVar1;
-  uint extraout_ECX;
+  dword dVar2;
   PersistentSettingsDwordValue value;
-  undefined1 in_CF;
+  bool bVar3;
   
-  PersistentSettings_ReadDword(0,0x5c);
-  UiSelectableControl_IsSelectedCf(control);
-  if ((bool)in_CF) {
-    value = extraout_ECX | 4;
+  dVar2 = PersistentSettings_ReadDword(0,0x5c);
+  bVar3 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar3) {
+    value = dVar2 | 4;
     psVar1 = &control[-99].base.topOffset;
     *psVar1 = *psVar1 | 0x4000000;
   }
   else {
-    value = extraout_ECX & 0xfffffffb;
+    value = dVar2 & 0xfffffffb;
     psVar1 = &control[-99].base.topOffset;
     *psVar1 = *psVar1 & 0xfbffffff;
   }
   PersistentSettings_WriteDword(value,0x5c);
   return;
 }
+
 
 /* Address: 0x0056C6D0.
    Ownership: ui/ingame/settings.
@@ -449,79 +463,76 @@ void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
    [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], UiSelectableGroup_SelectExclusive
    [ui/controls/lists].
 */
-void InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState12D0 *source)
+void __thandor_void_preserve_eax_ecx_edx
+InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState12D0 *source)
 
 {
   InGameGraphicsRuntimeSettingsPageState12D0 *firstNode;
   dword dVar1;
-  UiNodeBase *extraout_EAX;
-  UiNodeBase *extraout_EAX_00;
-  UiNodeBase *pUVar2;
+  dword dVar2;
   int iVar3;
-  int extraout_ECX;
-  int extraout_ECX_00;
+  UiNodeBase *pUVar4;
   
   UiPageStack_SetActiveIndex(6,(UiPageStackControl *)(source[-2].reserved4C_CBB + 0xb14));
   dVar1 = PersistentSettings_ReadDword(1,0x1c);
   UiSelectableControl_SetSelected(dVar1,&source->shadingEnabledControl);
-  pUVar2 = (source->base).parent;
+  pUVar4 = (source->base).parent;
   firstNode = source;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  while (pUVar4 != (UiNodeBase *)0xffffffff) {
     firstNode = (InGameGraphicsRuntimeSettingsPageState12D0 *)(firstNode->base).parent;
-    pUVar2 = (firstNode->base).parent;
+    pUVar4 = (firstNode->base).parent;
   }
-  if (extraout_ECX == 0) {
+  if (dVar1 == 0) {
     UiNodeList_SuppressActionId(0x1205,&firstNode->base);
-    pUVar2 = extraout_EAX_00;
   }
   else {
     UiNodeList_UnsuppressActionId(0x1205,&firstNode->base);
-    pUVar2 = extraout_EAX;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiNodeList_UnsuppressActionId(0x1207,pUVar2);
+    UiNodeList_UnsuppressActionId(0x1207,&firstNode->base);
   }
   else {
-    UiNodeList_SuppressActionId(0x1207,pUVar2);
+    UiNodeList_SuppressActionId(0x1207,&firstNode->base);
   }
-  PersistentSettings_ReadDword(0x20,0x10);
-  dVar1 = PersistentSettings_ReadDword(0x10,0x18);
-  iVar3 = dVar1 * 4;
-  if (extraout_ECX_00 == 0x20) {
-    pUVar2 = (UiNodeBase *)&source->shadingResolutionRows;
+  dVar1 = PersistentSettings_ReadDword(0x20,0x10);
+  dVar2 = PersistentSettings_ReadDword(0x10,0x18);
+  iVar3 = dVar2 * 4;
+  if (dVar1 == 0x20) {
+    pUVar4 = (UiNodeBase *)&source->shadingResolutionRows;
     if (iVar3 == 0x40) {
-      pUVar2 = (UiNodeBase *)((source->shadingResolutionRows).rows + 1);
+      pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 1);
     }
     else if (iVar3 == 0x80) {
-      pUVar2 = (UiNodeBase *)((source->shadingResolutionRows).rows + 2);
+      pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 2);
     }
   }
-  else if (extraout_ECX_00 == 0x40) {
-    pUVar2 = (UiNodeBase *)((source->shadingResolutionRows).rows + 3);
+  else if (dVar1 == 0x40) {
+    pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 3);
     if (iVar3 == 0x80) {
-      pUVar2 = (UiNodeBase *)((source->shadingResolutionRows).rows + 4);
+      pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 4);
     }
   }
   else {
-    pUVar2 = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
+    pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
   }
-  UiSelectableGroup_SelectExclusive(6,pUVar2);
+  UiSelectableGroup_SelectExclusive(6,pUVar4);
   dVar1 = PersistentSettings_ReadDword(1,0x30);
   if (dVar1 == 0) {
-    pUVar2 = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
+    pUVar4 = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
   }
   else if (dVar1 == 1) {
-    pUVar2 = (UiNodeBase *)((source->textureResolutionRows).rows + 1);
+    pUVar4 = (UiNodeBase *)((source->textureResolutionRows).rows + 1);
   }
   else {
-    pUVar2 = (UiNodeBase *)&source->textureResolutionRows;
+    pUVar4 = (UiNodeBase *)&source->textureResolutionRows;
   }
-  UiSelectableGroup_SelectExclusive(3,pUVar2);
+  UiSelectableGroup_SelectExclusive(3,pUVar4);
   dVar1 = PersistentSettings_ReadDword(0x10000,0x34);
   source->polygonResolutionLodThresholdQ8 = dVar1;
   return;
 }
+
 
 /* Address: 0x0056C860.
    Ownership: ui/ingame/settings.
@@ -530,80 +541,57 @@ void InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPage
    [core/settings/persistent], UiSelectableControl_SetSelected [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
-void InGameAudioSettings_OpenAndSynchronize
-               (InGamePersistentSettingsPageSourceNodePtr settingsSourceNode)
+void __thandor_void_preserve_eax_ecx_edx
+InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr settingsSourceNode)
 
 {
-  dword dVar1;
-  UiNodeBase *firstNode;
-  UiNodeBase *firstNode_00;
-  UiNodeBase *extraout_EAX;
-  UiNodeBase *firstNode_01;
-  UiNodeBase *firstNode_02;
-  UiNodeBase *extraout_EAX_00;
-  UiNodeBase *extraout_EAX_01;
-  UiNodeBase *extraout_EAX_02;
-  UiNodeBase *pUVar2;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_ECX_02;
-  uint extraout_ECX_03;
-  uint extraout_ECX_04;
-  uint extraout_ECX_05;
-  uint uVar3;
+  UiNodeBase *pUVar1;
+  dword dVar2;
+  dword dVar3;
   
   UiPageStack_SetActiveIndex(7,&ADJ(settingsSourceNode).settingsPageStack);
-  dVar1 = PersistentSettings_ReadDword(3,0x20);
-  UiSelectableControl_SetSelected(dVar1 & 1,&ADJ(settingsSourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(extraout_ECX & 2,&ADJ(settingsSourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected
-            (extraout_ECX_00 & 4,&ADJ(settingsSourceNode)->reverseStereoControl);
-  dVar1 = PersistentSettings_ReadDword(0x8000,0x24);
-  (ADJ(settingsSourceNode)->soundEffectsGainControl).currentValue = dVar1;
-  dVar1 = PersistentSettings_ReadDword(0x8000,0x28);
-  (ADJ(settingsSourceNode)->movieDefaultAudioGainControl).currentValue = dVar1;
-  dVar1 = PersistentSettings_ReadDword(0x8000,0x4c);
-  (ADJ(settingsSourceNode)->movieAlternateAudioGainControl).currentValue = dVar1;
-  dVar1 = PersistentSettings_ReadDword(0x8000,0x2c);
-  (ADJ(settingsSourceNode)->musicGainControl).currentValue = dVar1;
-  pUVar2 = settingsSourceNode->parent;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  dVar2 = PersistentSettings_ReadDword(3,0x20);
+  UiSelectableControl_SetSelected(dVar2 & 1,&ADJ(settingsSourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(dVar2 & 2,&ADJ(settingsSourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(dVar2 & 4,&ADJ(settingsSourceNode)->reverseStereoControl);
+  dVar3 = PersistentSettings_ReadDword(0x8000,0x24);
+  (ADJ(settingsSourceNode)->soundEffectsGainControl).currentValue = dVar3;
+  dVar3 = PersistentSettings_ReadDword(0x8000,0x28);
+  (ADJ(settingsSourceNode)->movieDefaultAudioGainControl).currentValue = dVar3;
+  dVar3 = PersistentSettings_ReadDword(0x8000,0x4c);
+  (ADJ(settingsSourceNode)->movieAlternateAudioGainControl).currentValue = dVar3;
+  dVar3 = PersistentSettings_ReadDword(0x8000,0x2c);
+  (ADJ(settingsSourceNode)->musicGainControl).currentValue = dVar3;
+  pUVar1 = settingsSourceNode->parent;
+  while (pUVar1 != (UiNodeBase *)0xffffffff) {
     settingsSourceNode = settingsSourceNode->parent;
-    pUVar2 = settingsSourceNode->parent;
+    pUVar1 = settingsSourceNode->parent;
   }
-  if ((extraout_ECX_01 & 1) == 0) {
+  if ((dVar2 & 1) == 0) {
     UiNodeList_SuppressActionId(0x120b,settingsSourceNode);
-    UiNodeList_SuppressActionId(0x120c,firstNode_01);
-    UiNodeList_SuppressActionId(0x121a,firstNode_02);
-    pUVar2 = extraout_EAX_00;
-    uVar3 = extraout_ECX_03;
+    UiNodeList_SuppressActionId(0x120c,settingsSourceNode);
+    UiNodeList_SuppressActionId(0x121a,settingsSourceNode);
   }
   else {
     UiNodeList_UnsuppressActionId(0x120b,settingsSourceNode);
-    UiNodeList_UnsuppressActionId(0x120c,firstNode);
-    UiNodeList_UnsuppressActionId(0x121a,firstNode_00);
-    pUVar2 = extraout_EAX;
-    uVar3 = extraout_ECX_02;
+    UiNodeList_UnsuppressActionId(0x120c,settingsSourceNode);
+    UiNodeList_UnsuppressActionId(0x121a,settingsSourceNode);
   }
-  if ((uVar3 & 2) == 0) {
-    UiNodeList_SuppressActionId(0x120d,pUVar2);
-    pUVar2 = extraout_EAX_02;
-    uVar3 = extraout_ECX_05;
+  if ((dVar2 & 2) == 0) {
+    UiNodeList_SuppressActionId(0x120d,settingsSourceNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x120d,pUVar2);
-    pUVar2 = extraout_EAX_01;
-    uVar3 = extraout_ECX_04;
+    UiNodeList_UnsuppressActionId(0x120d,settingsSourceNode);
   }
-  if ((uVar3 & 3) == 0) {
-    UiNodeList_SuppressActionId(0x120a,pUVar2);
+  if ((dVar2 & 3) == 0) {
+    UiNodeList_SuppressActionId(0x120a,settingsSourceNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x120a,pUVar2);
+    UiNodeList_UnsuppressActionId(0x120a,settingsSourceNode);
   }
   return;
 }
+
 
 /* Address: 0x0056C9C0.
    Ownership: ui/ingame/settings.
@@ -614,36 +602,30 @@ void InGameAudioSettings_OpenAndSynchronize
    [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], PersistentSettings_WriteDword
    [core/settings/persistent].
 */
-void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
-  int extraout_EAX;
-  int extraout_EAX_00;
-  PersistentSettingsDwordValue extraout_ECX;
-  PersistentSettingsDwordValue extraout_ECX_00;
-  PersistentSettingsDwordValue value;
-  byte in_CF;
+  byte bVar1;
   UiNodeBase *parentCursor;
   
-  UiSelectableControl_IsSelectedCf(control);
+  bVar1 = UiSelectableControl_IsSelectedCf(control);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
     parentCursor = (control->base).parent;
   }
-  if ((in_CF & 1) == 0) {
+  if ((bVar1 & 1) == 0) {
     UiNodeList_SuppressActionId(0x1205,&control->base);
-    *(uint *)(extraout_EAX_00 + 0xa7c) = *(uint *)(extraout_EAX_00 + 0xa7c) & 0xfffdffff;
-    value = extraout_ECX_00;
+    control[0x1f].actionId = control[0x1f].actionId & 0xfffdffff;
   }
   else {
     UiNodeList_UnsuppressActionId(0x1205,&control->base);
-    *(uint *)(extraout_EAX + 0xa7c) = *(uint *)(extraout_EAX + 0xa7c) | 0x20000;
-    value = extraout_ECX;
+    control[0x1f].actionId = control[0x1f].actionId | 0x20000;
   }
-  PersistentSettings_WriteDword(value,0x1c);
+  PersistentSettings_WriteDword(bVar1 & 1,0x1c);
   return;
 }
+
 
 /* Address: 0x0056CA30.
    Ownership: ui/ingame/settings.
@@ -655,57 +637,52 @@ void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
    [core/settings/persistent], UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent].
 */
-void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
-  uint uVar1;
-  UiNodeBase *pUVar2;
-  uint uVar3;
-  GraphicsAssetSubresourceCount subresourceCount;
-  PersistentSettingsDwordValue value;
-  int extraout_EAX;
-  int iVar4;
+  UiNodeBase *pUVar1;
+  uint subresourceCount;
+  int iVar2;
   dword textureDimension;
   dword gridHalfSize;
   dword subresourceCount_00;
-  GraphicsPixelDimension gridHalfSize_00;
-  PersistentSettingsDwordValue value_00;
-  int extraout_ECX;
-  GraphicsPixelDimension textureDimension_00;
-  PersistentSettingsDwordValue value_01;
+  PersistentSettingsDwordValue gridHalfSize_00;
+  PersistentSettingsDwordValue textureDimension_00;
   UiNodeBase *selectedControl;
-  undefined1 uVar5;
+  StatusValueEaxCf5 SVar3;
+  FatalErrorEaxCf5 FVar4;
+  uint value;
   
-  uVar1 = control[1].base.left;
-  uVar3 = uVar1 >> 2;
-  uVar5 = (uVar1 >> 1 & 1) != 0;
-  subresourceCount = GraphicsShadingRuntime_Shutdown();
-  GraphicsShadingRuntime_InitializeGeneratedTextureCf
-            (subresourceCount,gridHalfSize_00,textureDimension_00);
-  (*g_FatalErrorRuntimeDispatchCf)(uVar3);
-  if (!(bool)uVar5) {
-    PersistentSettings_WriteDword(value_01,0x14);
-    PersistentSettings_WriteDword(value_00,0x10);
+  subresourceCount = (uint)control[1].base.left >> 2;
+  value = subresourceCount;
+  GraphicsShadingRuntime_Shutdown();
+  SVar3 = GraphicsShadingRuntime_InitializeGeneratedTextureCf
+                    (subresourceCount,gridHalfSize_00,textureDimension_00);
+  FVar4 = (*g_FatalErrorRuntimeDispatchCf)(SVar3.valueOrError,SVar3.carry);
+  if (!FVar4.carry) {
+    PersistentSettings_WriteDword(textureDimension_00,0x14);
+    PersistentSettings_WriteDword(gridHalfSize_00,0x10);
     PersistentSettings_WriteDword(value,0x18);
-    iVar4 = extraout_EAX * 4;
-    pUVar2 = (control->base).parent;
-    if (extraout_ECX == 0x20) {
-      selectedControl = (UiNodeBase *)&pUVar2[1].parent;
-      if (iVar4 == 0x40) {
-        selectedControl = (UiNodeBase *)&pUVar2[2].topOffset;
+    iVar2 = value << 2;
+    pUVar1 = (control->base).parent;
+    if (gridHalfSize_00 == 0x20) {
+      selectedControl = (UiNodeBase *)&pUVar1[1].parent;
+      if (iVar2 == 0x40) {
+        selectedControl = (UiNodeBase *)&pUVar1[2].topOffset;
       }
-      else if (iVar4 == 0x80) {
-        selectedControl = (UiNodeBase *)&pUVar2[3].layoutWidth;
+      else if (iVar2 == 0x80) {
+        selectedControl = (UiNodeBase *)&pUVar1[3].layoutWidth;
       }
     }
-    else if (extraout_ECX == 0x40) {
-      selectedControl = (UiNodeBase *)&pUVar2[5].left;
-      if (iVar4 == 0x80) {
-        selectedControl = (UiNodeBase *)&pUVar2[6].bottomOffset;
+    else if (gridHalfSize_00 == 0x40) {
+      selectedControl = (UiNodeBase *)&pUVar1[5].left;
+      if (iVar2 == 0x80) {
+        selectedControl = (UiNodeBase *)&pUVar1[6].bottomOffset;
       }
     }
     else {
-      selectedControl = (UiNodeBase *)&pUVar2[7].nodeFlags;
+      selectedControl = (UiNodeBase *)&pUVar1[7].nodeFlags;
     }
     UiSelectableGroup_SelectExclusive(6,selectedControl);
     return;
@@ -718,6 +695,7 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   return;
 }
 
+
 /* Address: 0x0056CB60.
    Ownership: ui/ingame/settings.
    Purpose: Persists the custom-slider Q8 model-LOD depth threshold at settings offset 0x34 and mirrors it to
@@ -725,15 +703,18 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
    for non-queue direct callers.
    Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
+void __thandor_preserve_eax
+InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
-  sdword extraout_EAX;
+  PersistentSettingsDwordValue value;
   
-  PersistentSettings_WriteDword(control->boundValue,0x34);
-  g_ModelLodDepthThresholdQ8 = extraout_EAX;
+  value = control->boundValue;
+  PersistentSettings_WriteDword(value,0x34);
+  g_ModelLodDepthThresholdQ8 = value;
   return;
 }
+
 
 /* Address: 0x0056CB90.
    Ownership: ui/ingame/settings.
@@ -743,32 +724,36 @@ void InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_WriteDword
    [core/settings/persistent].
 */
-void InGameTextureSettings_SetQuality(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
-  PersistentSettingsDwordValue value;
-  dword extraout_EDX;
-  UiNodeBase *unaff_EDI;
+  PersistentTextureQualityLevel qualityLevel;
+  UiNodeBase *selectedQualityControl;
   UiNodeBase *graphicsSettingsRoot;
   
   (*g_GraphicsCursorSetFrame)(6);
   graphicsSettingsRoot = (control->base).parent;
   if ((UiSelectableControl *)&graphicsSettingsRoot[1].parent == control) {
-    unaff_EDI = (UiNodeBase *)&graphicsSettingsRoot[1].parent;
+    qualityLevel = TEXTURE_QUALITY_LOW;
+    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[1].parent;
   }
   if ((UiSelectableControl *)&graphicsSettingsRoot[2].bottom == control) {
-    unaff_EDI = (UiNodeBase *)&graphicsSettingsRoot[2].bottom;
+    qualityLevel = TEXTURE_QUALITY_MEDIUM;
+    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[2].bottom;
   }
   if ((UiSelectableControl *)&graphicsSettingsRoot[3].leftAnchorQ31 == control) {
-    unaff_EDI = (UiNodeBase *)&graphicsSettingsRoot[3].leftAnchorQ31;
+    qualityLevel = TEXTURE_QUALITY_HIGH;
+    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[3].leftAnchorQ31;
   }
-  UiSelectableGroup_SelectExclusive(3,unaff_EDI);
-  PersistentSettings_WriteDword(value,0x30);
-  g_TextureDownsampleShift = extraout_EDX;
+  UiSelectableGroup_SelectExclusive(3,selectedQualityControl);
+  PersistentSettings_WriteDword(qualityLevel,0x30);
+  g_TextureDownsampleShift = qualityLevel;
   (*g_GraphicsRebuildAllStagingTextures)();
   (*g_GraphicsCursorSetFrame)(0);
   return;
 }
+
 
 /* Address: 0x0056CC20.
    Ownership: ui/ingame/settings.
@@ -779,100 +764,71 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
-void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx
+InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
-  dword dVar1;
-  UiNodeBase *firstNode;
-  UiNodeBase *firstNode_00;
-  UiNodeBase *extraout_EAX;
-  UiNodeBase *firstNode_01;
-  UiNodeBase *firstNode_02;
-  UiNodeBase *extraout_EAX_00;
-  UiNodeBase *extraout_EAX_01;
-  UiNodeBase *extraout_EAX_02;
-  UiNodeBase *pUVar2;
+  UiNodeBase *pUVar1;
+  dword dVar2;
   AudioMixerGainQ15 AVar3;
   MovieAudioGainQ15 MVar4;
   MovieAudioGainQ15 MVar5;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_ECX_02;
-  uint extraout_ECX_03;
-  uint extraout_ECX_04;
-  uint extraout_ECX_05;
-  uint extraout_ECX_06;
-  uint extraout_ECX_07;
-  uint extraout_ECX_08;
-  uint uVar6;
-  bool bVar7;
+  bool bVar6;
   
-  bVar7 = false;
-  UiSelectableControl_IsSelectedCf(control);
-  if (!bVar7) {
+  bVar6 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (!bVar6) {
     (*g_SoundStopVoice)(g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = (IDirectSoundBuffer *)0x0;
   }
-  dVar1 = PersistentSettings_ReadDword(3,0x20);
-  PersistentSettings_WriteDword(extraout_ECX | dVar1 & 0xfffffffe,0x20);
-  pUVar2 = (control->base).parent;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  bVar6 = bVar6;
+  dVar2 = PersistentSettings_ReadDword(3,0x20);
+  PersistentSettings_WriteDword((uint)bVar6 | dVar2 & 0xfffffffe,0x20);
+  pUVar1 = (control->base).parent;
+  while (pUVar1 != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
-    pUVar2 = (control->base).parent;
+    pUVar1 = (control->base).parent;
   }
-  if ((extraout_ECX_00 & 1) == 0) {
-    UiNodeList_SuppressActionId(0x120b,&control->base);
-    UiNodeList_SuppressActionId(0x120c,firstNode_01);
-    UiNodeList_SuppressActionId(0x121a,firstNode_02);
-    pUVar2 = extraout_EAX_00;
-    uVar6 = extraout_ECX_02;
-  }
-  else {
+  if (bVar6) {
     UiNodeList_UnsuppressActionId(0x120b,&control->base);
-    UiNodeList_UnsuppressActionId(0x120c,firstNode);
-    UiNodeList_UnsuppressActionId(0x121a,firstNode_00);
-    pUVar2 = extraout_EAX;
-    uVar6 = extraout_ECX_01;
-  }
-  if ((uVar6 & 2) == 0) {
-    UiNodeList_SuppressActionId(0x120d,pUVar2);
-    pUVar2 = extraout_EAX_02;
-    uVar6 = extraout_ECX_04;
+    UiNodeList_UnsuppressActionId(0x120c,&control->base);
+    UiNodeList_UnsuppressActionId(0x121a,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x120d,pUVar2);
-    pUVar2 = extraout_EAX_01;
-    uVar6 = extraout_ECX_03;
+    UiNodeList_SuppressActionId(0x120b,&control->base);
+    UiNodeList_SuppressActionId(0x120c,&control->base);
+    UiNodeList_SuppressActionId(0x121a,&control->base);
   }
-  if ((uVar6 & 3) == 0) {
-    UiNodeList_SuppressActionId(0x120a,pUVar2);
-    uVar6 = extraout_ECX_06;
+  if ((dVar2 & 2) == 0) {
+    UiNodeList_SuppressActionId(0x120d,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x120a,pUVar2);
-    uVar6 = extraout_ECX_05;
+    UiNodeList_UnsuppressActionId(0x120d,&control->base);
+  }
+  if (bVar6 == 0 && (dVar2 & 2) == 0) {
+    UiNodeList_SuppressActionId(0x120a,&control->base);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(0x120a,&control->base);
   }
   AVar3 = 0;
-  if ((uVar6 & 1) != 0) {
+  if (bVar6) {
     AVar3 = PersistentSettings_ReadDword(0x8000,0x24);
-    uVar6 = extraout_ECX_07;
   }
   MVar4 = 0;
   g_UiSoundGainQ15 = AVar3;
   g_SoundEffectsGainQ15 = AVar3;
-  if ((uVar6 & 1) != 0) {
+  if (bVar6) {
     MVar4 = PersistentSettings_ReadDword(0x8000,0x28);
-    uVar6 = extraout_ECX_08;
   }
   MVar5 = 0;
   g_MovieDefaultAudioGainQ15 = MVar4;
-  if ((uVar6 & 1) != 0) {
+  if (bVar6) {
     MVar5 = PersistentSettings_ReadDword(0x8000,0x4c);
   }
   g_MovieAlternateAudioGainQ15 = MVar5;
   return;
 }
+
 
 /* Address: 0x0056CD80.
    Ownership: ui/ingame/settings.
@@ -883,74 +839,57 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
-void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx
+InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
-  dword dVar1;
-  UiNodeBase *firstNode;
-  UiNodeBase *firstNode_00;
-  UiNodeBase *extraout_EAX;
-  UiNodeBase *firstNode_01;
-  UiNodeBase *firstNode_02;
-  UiNodeBase *extraout_EAX_00;
-  UiNodeBase *extraout_EAX_01;
-  UiNodeBase *extraout_EAX_02;
-  UiNodeBase *pUVar2;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_ECX_02;
-  uint extraout_ECX_03;
-  uint extraout_ECX_04;
+  UiNodeBase *pUVar1;
+  dword dVar2;
   uint uVar3;
   bool bVar4;
   
-  bVar4 = false;
-  UiSelectableControl_IsSelectedCf(control);
-  if (!bVar4) {
+  uVar3 = 0;
+  bVar4 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar4) {
+    uVar3 = 2;
+  }
+  else {
     (*g_SoundStopVoice)(g_InGameActiveMusicVoice);
     g_InGameActiveMusicVoice = (IDirectSoundBuffer *)0x0;
     g_InGameMusicEnabled = 1;
   }
-  dVar1 = PersistentSettings_ReadDword(3,0x20);
-  PersistentSettings_WriteDword(extraout_ECX | dVar1 & 0xfffffffd,0x20);
-  pUVar2 = (control->base).parent;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  dVar2 = PersistentSettings_ReadDword(3,0x20);
+  PersistentSettings_WriteDword(uVar3 | dVar2 & 0xfffffffd,0x20);
+  pUVar1 = (control->base).parent;
+  while (pUVar1 != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
-    pUVar2 = (control->base).parent;
+    pUVar1 = (control->base).parent;
   }
-  if ((extraout_ECX_00 & 1) == 0) {
+  if ((dVar2 & 1) == 0) {
     UiNodeList_SuppressActionId(0x120b,&control->base);
-    UiNodeList_SuppressActionId(0x120c,firstNode_01);
-    UiNodeList_SuppressActionId(0x121a,firstNode_02);
-    pUVar2 = extraout_EAX_00;
-    uVar3 = extraout_ECX_02;
+    UiNodeList_SuppressActionId(0x120c,&control->base);
+    UiNodeList_SuppressActionId(0x121a,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(0x120b,&control->base);
-    UiNodeList_UnsuppressActionId(0x120c,firstNode);
-    UiNodeList_UnsuppressActionId(0x121a,firstNode_00);
-    pUVar2 = extraout_EAX;
-    uVar3 = extraout_ECX_01;
+    UiNodeList_UnsuppressActionId(0x120c,&control->base);
+    UiNodeList_UnsuppressActionId(0x121a,&control->base);
   }
-  if ((uVar3 & 2) == 0) {
-    UiNodeList_SuppressActionId(0x120d,pUVar2);
-    pUVar2 = extraout_EAX_02;
-    uVar3 = extraout_ECX_04;
+  if (uVar3 == 0) {
+    UiNodeList_SuppressActionId(0x120d,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x120d,pUVar2);
-    pUVar2 = extraout_EAX_01;
-    uVar3 = extraout_ECX_03;
+    UiNodeList_UnsuppressActionId(0x120d,&control->base);
   }
-  if ((uVar3 & 3) == 0) {
-    UiNodeList_SuppressActionId(0x120a,pUVar2);
+  if (uVar3 == 0 && (dVar2 & 1) == 0) {
+    UiNodeList_SuppressActionId(0x120a,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x120a,pUVar2);
+    UiNodeList_UnsuppressActionId(0x120a,&control->base);
   }
   return;
 }
+
 
 /* Address: 0x0056CE80.
    Ownership: ui/ingame/settings.
@@ -959,19 +898,28 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
    Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
   dword currentAudioFlags;
-  uint extraout_ECX;
-  sdword extraout_EDX;
+  uint uVar1;
+  sdword sVar2;
+  bool bVar3;
   
-  UiSelectableControl_IsSelectedCf(control);
+  uVar1 = 0;
+  sVar2 = 0;
+  bVar3 = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (bVar3) {
+    uVar1 = 4;
+    sVar2 = -1;
+  }
   currentAudioFlags = PersistentSettings_ReadDword(3,0x20);
-  g_ReverseStereoMask = extraout_EDX;
-  PersistentSettings_WriteDword(extraout_ECX | currentAudioFlags & 0xfffffffb,0x20);
+  g_ReverseStereoMask = sVar2;
+  PersistentSettings_WriteDword(uVar1 | currentAudioFlags & 0xfffffffb,0x20);
   return;
 }
+
 
 /* Address: 0x0056CED0.
    Ownership: ui/ingame/settings.
@@ -980,17 +928,20 @@ void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
    datatype is preserved for non-queue direct callers.
    Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
+void __thandor_preserve_eax InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 
 {
+  PersistentSettingsDwordValue value;
   dword effectsGainQ15;
   
-  PersistentSettings_WriteDword(control->boundValue,0x24);
-  g_UiSoundGainQ15 = effectsGainQ15;
-  g_SoundEffectsGainQ15 = effectsGainQ15;
-  (*g_SoundSetVoiceGains)(effectsGainQ15,effectsGainQ15,g_InGameActiveEffectVoice);
+  value = control->boundValue;
+  PersistentSettings_WriteDword(value,0x24);
+  g_UiSoundGainQ15 = value;
+  g_SoundEffectsGainQ15 = value;
+  (*g_SoundSetVoiceGains)(value,value,g_InGameActiveEffectVoice);
   return;
 }
+
 
 /* Address: 0x0056CF10.
    Ownership: ui/ingame/settings.
@@ -998,15 +949,17 @@ void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
    INGAME_PAGE12[12] (0x120C). Return datatype is preserved for non-queue direct callers.
    Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
+void __thandor_preserve_eax InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
-  MovieAudioGainQ15 extraout_EAX;
+  PersistentSettingsDwordValue value;
   
-  PersistentSettings_WriteDword(control->boundValue,0x28);
-  g_MovieDefaultAudioGainQ15 = extraout_EAX;
+  value = control->boundValue;
+  PersistentSettings_WriteDword(value,0x28);
+  g_MovieDefaultAudioGainQ15 = value;
   return;
 }
+
 
 /* Address: 0x0056CF40.
    Ownership: ui/ingame/settings.
@@ -1015,15 +968,18 @@ void InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
    direct callers.
    Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
+void __thandor_preserve_eax InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 
 {
+  PersistentSettingsDwordValue value;
   dword musicGainQ15;
   
-  PersistentSettings_WriteDword(control->boundValue,0x2c);
-  (*g_SoundSetVoiceGains)(musicGainQ15,musicGainQ15,g_InGameActiveMusicVoice);
+  value = control->boundValue;
+  PersistentSettings_WriteDword(value,0x2c);
+  (*g_SoundSetVoiceGains)(value,value,g_InGameActiveMusicVoice);
   return;
 }
+
 
 /* Address: 0x0056CF70.
    Ownership: ui/ingame/settings.
@@ -1032,15 +988,18 @@ void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
    queue direct callers.
    Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
 */
-void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
+void __thandor_preserve_eax
+InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
-  MovieAudioGainQ15 extraout_EAX;
+  PersistentSettingsDwordValue value;
   
-  PersistentSettings_WriteDword(control->boundValue,0x4c);
-  g_MovieAlternateAudioGainQ15 = extraout_EAX;
+  value = control->boundValue;
+  PersistentSettings_WriteDword(value,0x4c);
+  g_MovieAlternateAudioGainQ15 = value;
   return;
 }
+
 
 /* Address: 0x0056C440.
    Ownership: ui/ingame/settings.
@@ -1055,42 +1014,25 @@ void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
    [ui/controls/input], PersistentSettings_ReadDword [core/settings/persistent], UiNodeList_SuppressActionId
    [ui/controls/lists].
 */
-void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
 
 {
   UiNodeBase *pUVar1;
-  UiSelectableControl *pUVar2;
-  UiPageStackControl *stack;
-  UiPageStackControl *stack_00;
-  dword dVar3;
-  UiBooleanState32 extraout_EAX;
-  UiBooleanState32 UVar4;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
-  UiBooleanState32 extraout_ECX_02;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  int extraout_EDX_03;
-  UiNodeBase *firstNode;
-  UiNodeBase *firstNode_00;
-  UiNodeBase *firstNode_01;
-  int extraout_EDX_04;
-  bool bVar5;
+  UiSelectableControl *firstNode;
+  dword dVar2;
+  bool bVar3;
   
   pUVar1 = (settingsToggle->base).parent;
-  pUVar2 = settingsToggle;
+  firstNode = settingsToggle;
   while (pUVar1 != (UiNodeBase *)0xffffffff) {
-    pUVar2 = (UiSelectableControl *)(pUVar2->base).parent;
-    pUVar1 = (pUVar2->base).parent;
+    firstNode = (UiSelectableControl *)(firstNode->base).parent;
+    pUVar1 = (firstNode->base).parent;
   }
-  bVar5 = (UiSelectableControl *)0xfffff42f < pUVar2;
-  UiSelectableControl_IsSelectedCf(settingsToggle);
-  if (!bVar5) {
-    UiPageStack_SetActiveIndex(0,stack);
-    *(uint *)(extraout_EDX_04 + 0xa78) = *(uint *)(extraout_EDX_04 + 0xa78) & 0xfffffff7;
+  bVar3 = (bool)UiSelectableControl_IsSelectedCf(settingsToggle);
+  if (!bVar3) {
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(firstNode + 0x24));
+    firstNode[0x1f].stateFlags = firstNode[0x1f].stateFlags & 0xfffffff7;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if ((g_UiCommandRuntimeFlags & 0x400) == 0) {
@@ -1102,31 +1044,26 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
     }
     return;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)(extraout_EDX + 0x4400));
-  *(uint *)(extraout_EDX_00 + 0xa78) = *(uint *)(extraout_EDX_00 + 0xa78) | 8;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)(extraout_EDX_00 + 0xa30));
-  UiPageStack_SetActiveIndex(3,stack_00);
-  dVar3 = PersistentSettings_ReadDword(0,0x40);
-  UiSelectableControl_SetSelected(dVar3 & 1,(UiSelectableControl *)(extraout_EDX_01 + 0x2900));
-  UiSelectableControl_SetSelected
-            (extraout_ECX & 2,(UiSelectableControl *)(extraout_EDX_02 + 0x2960));
-  UiSelectableControl_SetSelected
-            (extraout_ECX_00 & 4,(UiSelectableControl *)(extraout_EDX_03 + 0x26d0));
-  dVar3 = PersistentSettings_ReadDword(0,0x5c);
-  UVar4 = 0;
-  if ((dVar3 & 1) != 0) {
-    UiNodeList_SuppressActionId(0x1215,firstNode);
-    UVar4 = extraout_EAX;
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&firstNode[0xcf].base.top);
+  firstNode[0x1f].stateFlags = firstNode[0x1f].stateFlags | 8;
+  UiKeyboardFocus_ReleaseNode((UiNodeBase *)&firstNode[0x1f].base.firstChild);
+  UiPageStack_SetActiveIndex(3,(UiPageStackControl *)(firstNode + 0x24));
+  dVar2 = PersistentSettings_ReadDword(0,0x40);
+  UiSelectableControl_SetSelected(dVar2 & 1,(UiSelectableControl *)&firstNode[0x7c].actionId);
+  UiSelectableControl_SetSelected(dVar2 & 2,(UiSelectableControl *)&firstNode[0x7e].base.parent);
+  UiSelectableControl_SetSelected(dVar2 & 4,(UiSelectableControl *)&firstNode[0x76].base.right);
+  dVar2 = PersistentSettings_ReadDword(0,0x5c);
+  if ((dVar2 & 1) != 0) {
+    UiNodeList_SuppressActionId(0x1215,&firstNode->base);
   }
-  UiSelectableControl_SetSelected(UVar4,(UiSelectableControl *)&firstNode[0x8d].rightAnchorQ31);
-  UVar4 = 0;
-  if ((extraout_ECX_01 & 2) != 0) {
-    UiNodeList_SuppressActionId(0x1214,firstNode_00);
-    UVar4 = extraout_ECX_02;
+  UiSelectableControl_SetSelected(dVar2 & 1,(UiSelectableControl *)&firstNode[0x80].base.top);
+  if ((dVar2 & 2) != 0) {
+    UiNodeList_SuppressActionId(0x1214,&firstNode->base);
   }
-  UiSelectableControl_SetSelected(UVar4,(UiSelectableControl *)(firstNode_00 + 0x8f));
-  dVar3 = PersistentSettings_ReadDword(0x20,0x48);
-  firstNode_01[0x88].bottomAnchorQ31 = dVar3;
+  UiSelectableControl_SetSelected(dVar2 & 2,(UiSelectableControl *)&firstNode[0x81].base.leftOffset)
+  ;
+  dVar2 = PersistentSettings_ReadDword(0x20,0x48);
+  firstNode[0x7b].base.layoutWidth = dVar2;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_UiCommandRuntimeFlags & 0x4000) == 0) {
@@ -1137,7 +1074,8 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
     }
   }
   else {
-    UiNodeList_SuppressActionId(0x120e,firstNode_01);
+    UiNodeList_SuppressActionId(0x120e,&firstNode->base);
   }
   return;
 }
+

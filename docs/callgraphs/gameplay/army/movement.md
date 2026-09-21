@@ -1,6 +1,6 @@
 # Call graph: `gameplay/army/movement`
 
-[Source](../../../../src/gameplay/army/movement.c) · [Header](../../../../include/thandor/gameplay/army/movement.h) · [Graphviz](movement.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-movement)
+[Source](../../../../src/gameplay/army/movement.c) · [Header](../../../../include/thandor/gameplay/army/movement.h) · [Graphviz](movement.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-movement) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-army-movement) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-army-movement)
 
 32 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `gameplay/ai/planning`
 
-[Source](../../../../src/gameplay/ai/planning.c) · [Header](../../../../include/thandor/gameplay/ai/planning.h) · [Graphviz](planning.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-planning)
+[Source](../../../../src/gameplay/ai/planning.c) · [Header](../../../../include/thandor/gameplay/ai/planning.h) · [Graphviz](planning.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-planning) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-ai-planning)
 
 24 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `network/protocol/transfer`
 
-[Source](../../../../src/network/protocol/transfer.c) · [Header](../../../../include/thandor/network/protocol/transfer.h) · [Graphviz](transfer.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-protocol-transfer)
+[Source](../../../../src/network/protocol/transfer.c) · [Header](../../../../include/thandor/network/protocol/transfer.h) · [Graphviz](transfer.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-protocol-transfer) · [Full changelog](../../../../CHANGELOG_FULL.md#module-network-protocol-transfer)
 
 27 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `core/settings/persistent`
 
-[Source](../../../../src/core/settings/persistent.c) · [Header](../../../../include/thandor/core/settings/persistent.h) · [Graphviz](persistent.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-settings-persistent)
+[Source](../../../../src/core/settings/persistent.c) · [Header](../../../../include/thandor/core/settings/persistent.h) · [Graphviz](persistent.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-settings-persistent) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-settings-persistent)
 
 6 functions. Addresses are current V523 executable VAs.
 

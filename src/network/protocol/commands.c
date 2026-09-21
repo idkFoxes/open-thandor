@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/network/protocol/commands.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/network/protocol/commands.h>
 
 /* Implementation ownership: network/protocol/commands. */
@@ -9,9 +16,10 @@
    The 0x1540 chat RPC enqueues here (L3 closure — not an entity base). Typed parameters: p0
    commandCode→UiActionId_V338.
 */
-void FrontendCommandQueue_EnqueueLocalPlayerCommand
-               (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendCommandQueue_EnqueueLocalPlayerCommand
+          (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
 
 {
   uint packedCommandAndPlayerId;
@@ -29,12 +37,14 @@ void FrontendCommandQueue_EnqueueLocalPlayerCommand
   return;
 }
 
+
 /* Address: 0x00543FB0.
    Ownership: network/protocol/commands.
    Purpose: Writes one UiCommandQueueRecord into FrontendCommandPacketRecord.command at +0x10, or clears the packed
    command dword when the queue is empty. Lobby stack dequeue into a FrontendCommandPacketRecord (0x20 batch unit).
 */
-void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
+void __thandor_void_preserve_ecx_edx
+FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
 
 {
   int firstRecordDwordsRemaining;
@@ -70,6 +80,7 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
   return;
 }
 
+
 /* Address: 0x0055F130.
    Ownership: network/protocol/commands.
    Purpose: Appends one 0x10-byte local-player command record to the bounded sixteen-record in-game queue. RET 0x10
@@ -77,9 +88,10 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
    phase split). Typed parameters: p0 commandCode→UiActionId_V338. Nearby but non-identical semantic domains were
    explicitly deferred.
 */
-void InGameCommandQueue_AppendLocalPlayerCommand
-               (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
+void __thandor_void_preserve_eax_ecx_edx
+InGameCommandQueue_AppendLocalPlayerCommand
+          (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
 
 {
   uint packedCommandAndPlayerId;
@@ -97,12 +109,14 @@ void InGameCommandQueue_AppendLocalPlayerCommand
   return;
 }
 
+
 /* Address: 0x0055F190.
    Ownership: network/protocol/commands.
    Purpose: Writes one UiCommandQueueRecord into FrontendCommandPacketRecord.command at +0x10, or clears the packed
    command dword when the queue is empty. In-game stack dequeue.
 */
-void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
+void __thandor_void_preserve_ecx_edx
+InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
 
 {
   int firstRecordDwordsRemaining;
@@ -138,6 +152,7 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
   return;
 }
 
+
 /* Address: 0x0055F200.
    Ownership: network/protocol/commands.
    Purpose: Scans the fixed 0x10-byte queued-command records for one packed player/key value and any of three
@@ -146,15 +161,13 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
    commandHandlerAddress→InGameCommandHandlerAddress32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 InGameCommandQueue_ContainsTripletValueCf
           (InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {
   UiCommandQueueRecord *pUVar1;
-  undefined4 in_EAX;
-  undefined4 in_EDX;
   UiCommandQueueRecord *pUVar2;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -166,9 +179,10 @@ InGameCommandQueue_ContainsTripletValueCf
            pUVar2->packedCommandAndPlayerId) &&
          (((payloadValue == pUVar2->payloadDword04 || (payloadValue == pUVar2->payloadDword08)) ||
           (payloadValue == pUVar2->payloadDword0C)))) {
-        return CONCAT44(in_EDX,in_EAX);
+        return true;
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+

@@ -1,6 +1,6 @@
 # Call graph: `graphics/render/model`
 
-[Source](../../../../src/graphics/render/model.c) · [Header](../../../../include/thandor/graphics/render/model.h) · [Graphviz](model.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-render-model)
+[Source](../../../../src/graphics/render/model.c) · [Header](../../../../include/thandor/graphics/render/model.h) · [Graphviz](model.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-render-model) · [Developer notes](../../../../CHANGELOG.md#module-graphics-render-model) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-render-model)
 
 16 functions. Addresses are current V523 executable VAs.
 

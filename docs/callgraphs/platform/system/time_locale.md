@@ -1,6 +1,6 @@
 # Call graph: `platform/system/time_locale`
 
-[Source](../../../../src/platform/system/time_locale.c) · [Header](../../../../include/thandor/platform/system/time_locale.h) · [Graphviz](time_locale.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-system-time-locale)
+[Source](../../../../src/platform/system/time_locale.c) · [Header](../../../../include/thandor/platform/system/time_locale.h) · [Graphviz](time_locale.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-system-time-locale) · [Developer notes](../../../../CHANGELOG.md#module-platform-system-time-locale) · [Full changelog](../../../../CHANGELOG_FULL.md#module-platform-system-time-locale)
 
 16 functions. Addresses are current V523 executable VAs.
 

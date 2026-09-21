@@ -1,6 +1,6 @@
 # Call graph: `assets/effect/catalog`
 
-[Source](../../../../src/assets/effect/catalog.c) · [Header](../../../../include/thandor/assets/effect/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-effect-catalog)
+[Source](../../../../src/assets/effect/catalog.c) · [Header](../../../../include/thandor/assets/effect/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-effect-catalog) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-effect-catalog)
 
 4 functions. Addresses are current V523 executable VAs.
 

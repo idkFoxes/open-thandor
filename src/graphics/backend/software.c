@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/backend/software.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/backend/software.h>
 
 /* Implementation ownership: graphics/backend/software. */
@@ -9,24 +16,22 @@
    SoftwareMaskBuffer_ApplyCircularRegionBit, SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit,
    SoftwareMaskBuffer_ApplyHorizontalBandBit, SoftwareMaskBuffer_SetAllPixelsBit.
 */
-void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  int extraout_ECX;
-  undefined4 extraout_ECX_00;
-  undefined4 extraout_ECX_01;
+  uint uVar1;
+  int iVar2;
   uint radiusStep;
-  int iVar1;
   UiBooleanState32 reverseRows;
-  qword qVar2;
-  SoftwareMaskThresholdStep thresholdStep;
-  TerrainGridMaskIndex bandIndex;
-  GraphicsTextureSourceAsset *pGVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar3;
   
+  iVar2 = maskRuntime->tickCounter;
   maskRuntime->tickCounter = maskRuntime->tickCounter + 1;
   if (maskRuntime->maskPixels != (byte *)0x0) {
     SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(maskRuntime);
-    radiusStep = (extraout_ECX + 0x14U) % 100;
+    uVar1 = iVar2 + 0x14;
+    radiusStep = uVar1 % 100;
     if (radiusStep == 0) {
       if (maskRuntime->patternState58 != 0) {
         maskRuntime->patternState54 = maskRuntime->patternState54 + 1;
@@ -41,52 +46,40 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
       }
     }
     else {
-      switch((extraout_ECX + 0x14U) / 100) {
+      switch(uVar1 / 100) {
       case 1:
-        SoftwareMaskBuffer_ApplyCircularRegionBit(100,radiusStep,0,0x50,0xa0,radiusStep,maskRuntime)
-        ;
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x50,0xa0,radiusStep,maskRuntime);
         break;
       case 2:
-        pGVar3 = maskRuntime->textureSource;
-        thresholdStep = 0;
-        qVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar3);
-        iVar1 = (int)(qVar2 >> 0x20);
+        GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
         SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
-                  (extraout_ECX_00,iVar1,(int)qVar2 + iVar1,thresholdStep,
-                   (SoftwareMaskRuntimeView *)pGVar3);
+                  (GVar3.logicalWidthPixels + GVar3.logicalHeightPixels,radiusStep,maskRuntime);
         break;
       case 3:
       case 7:
-        SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit(100,radiusStep,0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit(0,radiusStep,maskRuntime);
         break;
       case 4:
       case 9:
-        pGVar3 = maskRuntime->textureSource;
-        bandIndex = 0;
-        (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar3);
-        SoftwareMaskBuffer_ApplyHorizontalBandBit
-                  (extraout_ECX_01,reverseRows,reverseRows,bandIndex,
-                   (SoftwareMaskRuntimeView *)pGVar3);
+        GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+        reverseRows = GVar3.logicalHeightPixels;
+        SoftwareMaskBuffer_ApplyHorizontalBandBit(reverseRows,radiusStep,maskRuntime);
         break;
       case 5:
-        SoftwareMaskBuffer_ApplyHorizontalBandBit(100,radiusStep,0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyHorizontalBandBit(0,radiusStep,maskRuntime);
         break;
       case 6:
-        SoftwareMaskBuffer_ApplyCircularRegionBit
-                  (100,radiusStep,0,0x118,0xa0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x118,0xa0,radiusStep,maskRuntime);
         break;
       case 8:
-        SoftwareMaskBuffer_ApplyCircularRegionBit
-                  (100,radiusStep,0,0x20,0x140,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x20,0x140,radiusStep,maskRuntime);
         break;
       case 10:
       case 0xd:
-        SoftwareMaskBuffer_ApplyCircularRegionBit
-                  (100,radiusStep,0,0xb4,0x140,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0xb4,0x140,radiusStep,maskRuntime);
         break;
       case 0xb:
-        SoftwareMaskBuffer_ApplyCircularRegionBit
-                  (100,radiusStep,1,0xb4,0x140,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(1,0xb4,0x140,radiusStep,maskRuntime);
         break;
       case 0xc:
         SoftwareMaskBuffer_SetAllPixelsBit(maskRuntime);
@@ -95,6 +88,7 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
   }
   return;
 }
+
 
 /* Address: 0x00485FD0.
    Ownership: graphics/backend/software.
@@ -105,15 +99,16 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
    unchanged.
    Local calls: SoftwareRenderer_AdvanceDepthEpoch.
 */
-void SoftwareRenderer_ClearViewport
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareRenderer_ClearViewport
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
-  undefined1 in_CF;
+  bool bVar1;
   
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar1 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar1) {
     (*g_GraphicsFramebufferFillRectArgb)
               (clipMaxY,clipMaxX,clipMinY,clipMinX,clipMaxY,clipMaxX,clipMinY,clipMinX,0xff000000,
                g_FramebufferAccess);
@@ -122,6 +117,7 @@ void SoftwareRenderer_ClearViewport
   SoftwareRenderer_AdvanceDepthEpoch();
   return;
 }
+
 
 /* Address: 0x004D1560.
    Ownership: graphics/backend/software.
@@ -134,27 +130,28 @@ void SoftwareRenderer_ClearViewport
    Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
    [graphics/render/primitives].
 */
-void SoftwareRenderer_DrawQueue16Bit
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareRenderer_DrawQueue16Bit
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsPrimitiveQueue *queue)
 
 {
+  GraphicsPrimitivePacket *packet;
   GraphicsPrimitivePacket *currentPacket;
-  GraphicsPrimitivePacket *pGVar1;
-  undefined1 in_CF;
+  GraphicsPrimitivePacketEaxCf5 GVar1;
   
-  currentPacket = GraphicsPrimitiveQueue_Begin(queue);
-  while (!(bool)in_CF) {
-    pGVar1 = SoftwareRenderer_PrepareTrianglePacket(currentPacket);
-    in_CF = 0;
-    (**(code **)((int)g_SoftwareRasterHandlers16Bit + ((pGVar1->renderFlags & 0x3f000) >> 10)))
-              (clipMaxY,clipMaxX,clipMinY,clipMinX,pGVar1);
+  GVar1 = GraphicsPrimitiveQueue_Begin(queue);
+  while (packet = GVar1.packet, !GVar1.carry) {
+    SoftwareRenderer_PrepareTrianglePacket(packet);
+    (**(code **)((int)g_SoftwareRasterHandlers16Bit + ((packet->renderFlags & 0x3f000) >> 10)))
+              (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
-    currentPacket = GraphicsPrimitiveQueue_Next(queue);
+    GVar1 = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
 }
+
 
 /* Address: 0x004D15D0.
    Ownership: graphics/backend/software.
@@ -167,27 +164,28 @@ void SoftwareRenderer_DrawQueue16Bit
    Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
    [graphics/render/primitives].
 */
-void SoftwareRenderer_DrawQueueNon16Bit
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareRenderer_DrawQueueNon16Bit
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsPrimitiveQueue *queue)
 
 {
+  GraphicsPrimitivePacket *packet;
   GraphicsPrimitivePacket *currentPacket;
-  GraphicsPrimitivePacket *pGVar1;
-  undefined1 in_CF;
+  GraphicsPrimitivePacketEaxCf5 GVar1;
   
-  currentPacket = GraphicsPrimitiveQueue_Begin(queue);
-  while (!(bool)in_CF) {
-    pGVar1 = SoftwareRenderer_PrepareTrianglePacket(currentPacket);
-    in_CF = 0;
-    (**(code **)((int)g_SoftwareRasterHandlersNon16Bit + ((pGVar1->renderFlags & 0x3f000) >> 10)))
-              (clipMaxY,clipMaxX,clipMinY,clipMinX,pGVar1);
+  GVar1 = GraphicsPrimitiveQueue_Begin(queue);
+  while (packet = GVar1.packet, !GVar1.carry) {
+    SoftwareRenderer_PrepareTrianglePacket(packet);
+    (**(code **)((int)g_SoftwareRasterHandlersNon16Bit + ((packet->renderFlags & 0x3f000) >> 10)))
+              (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
-    currentPacket = GraphicsPrimitiveQueue_Next(queue);
+    GVar1 = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
 }
+
 
 /* Address: 0x004D1640.
    Ownership: graphics/backend/software.
@@ -199,34 +197,33 @@ void SoftwareRenderer_DrawQueueNon16Bit
    Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
    [graphics/render/primitives].
 */
-void SoftwareRenderer_DrawQueueAuxiliary
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,void *targetBase
-               ,GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareRenderer_DrawQueueAuxiliary
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,void *targetBase,
+          GraphicsPrimitiveQueue *queue)
 
 {
-  uint uVar1;
+  GraphicsPrimitivePacket *packet;
   GraphicsPrimitivePacket *currentPacket;
-  GraphicsPrimitivePacket *pGVar2;
-  undefined1 in_CF;
+  GraphicsPrimitivePacketEaxCf5 GVar1;
   uint textureSubresourceIndex;
   
   g_SoftwareAuxiliaryTargetBase = targetBase;
-  currentPacket = GraphicsPrimitiveQueue_Begin(queue);
-  while (!(bool)in_CF) {
-    pGVar2 = SoftwareRenderer_PrepareTrianglePacket(currentPacket);
-    if (((pGVar2->renderFlags & 0x10000) == 0) ||
-       ((textureSubresourceIndex = pGVar2->textureEntry->subresourceIndex,
-        in_CF = textureSubresourceIndex < 99, textureSubresourceIndex != 99 &&
-        (uVar1 = pGVar2->textureEntry->subresourceIndex, in_CF = uVar1 < 0x71, uVar1 != 0x71)))) {
-      in_CF = 0;
-      (**(code **)((int)g_SoftwareRasterHandlersAuxiliary + ((pGVar2->renderFlags & 0x3f000) >> 10))
-      )(clipMaxY,clipMaxX,0,0,pGVar2);
+  GVar1 = GraphicsPrimitiveQueue_Begin(queue);
+  while (packet = GVar1.packet, !GVar1.carry) {
+    SoftwareRenderer_PrepareTrianglePacket(packet);
+    if (((packet->renderFlags & 0x10000) == 0) ||
+       ((packet->textureEntry->subresourceIndex != 99 &&
+        (packet->textureEntry->subresourceIndex != 0x71)))) {
+      (**(code **)((int)g_SoftwareRasterHandlersAuxiliary + ((packet->renderFlags & 0x3f000) >> 10))
+      )(clipMaxY,clipMaxX,0,0,packet);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
     }
-    currentPacket = GraphicsPrimitiveQueue_Next(queue);
+    GVar1 = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
 }
+
 
 /* Address: 0x00486020.
    Ownership: graphics/backend/software.
@@ -236,21 +233,23 @@ void SoftwareRenderer_DrawQueueAuxiliary
    VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void SoftwareRenderer_DrawPrimitiveQueueBridge
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsPrimitiveQueue *queue)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareRenderer_DrawPrimitiveQueueBridge
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsPrimitiveQueue *queue)
 
 {
-  undefined1 in_CF;
+  bool bVar1;
   
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar1 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar1) {
     (*g_SoftwareDrawQueueProc)(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
 }
+
 
 /* Address: 0x00486050.
    Ownership: graphics/backend/software.
@@ -266,11 +265,12 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void)
    Ownership: graphics/backend/software.
    Purpose: Archived body is RET and is referenced from software graphics dispatch storage at 00485824.
 */
-void SoftwareGraphicsDispatch_NoOp(void)
+void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void)
 
 {
   return;
 }
+
 
 /* Address: 0x004A8F80.
    Ownership: graphics/backend/software.
@@ -278,112 +278,128 @@ void SoftwareGraphicsDispatch_NoOp(void)
    g_SoftwareBuildPixelPackTables, and derives the runtime MMX pack/unpack constants from
    g_SoftwarePixelFormatConfig. ABI: CF clear means success. CF set means failure.
 */
-void SoftwarePixelFormat_BaseDisplayModeHook
-               (dword modeArg0,dword modeArg1,FrontendDisplayDimensionPixels height,
-               FrontendDisplayDimensionPixels width)
+DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoftwarePixelFormat_BaseDisplayModeHook
+          (dword modeArg0,dword modeArg1,FrontendDisplayDimensionPixels height,
+          FrontendDisplayDimensionPixels width)
 
 {
-  SoftwarePixelPackTables *pSVar1;
-  byte bVar2;
-  byte bVar3;
+  DisplayModeEaxCf5 DVar1;
+  SoftwarePixelPackTables *pSVar2;
+  uint uVar3;
   byte bVar4;
-  bool bVar5;
+  byte bVar5;
+  byte bVar6;
+  ArenaAllocEaxCf5 AVar7;
+  DisplayModeEaxCf5 DVar8;
   
-  bVar5 = false;
-  pSVar1 = g_SoftwarePixelPackTables;
-  if ((g_SoftwarePixelPackTables != (SoftwarePixelPackTables *)0x0) ||
-     (pSVar1 = (*g_MemoryApi.alloc)(0xc00), !bVar5)) {
-    g_SoftwarePixelPackTables = pSVar1;
-    (*g_SoftwareBuildPixelPackTables)(g_SoftwareColorScaleQ16,g_SoftwareColorBiasQ16);
-    bVar2 = (byte)g_SoftwarePixelFormatConfig.redBitCount;
-    g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
-         (SoftwareColorLaneFixed16)((1 << (bVar2 & 0x1f)) + -1 << (0xc - bVar2 & 0x1f));
-    bVar3 = (byte)g_SoftwarePixelFormatConfig.greenBitCount;
-    g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
-         (SoftwareColorLaneFixed16)((1 << (bVar3 & 0x1f)) + -1 << (0xc - bVar3 & 0x1f));
-    bVar4 = (byte)g_SoftwarePixelFormatConfig.blueBitCount;
-    g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
-         (SoftwareColorLaneFixed16)((1 << (bVar4 & 0x1f)) + -1 << (0xc - bVar4 & 0x1f));
-    g_SoftwarePixelMmxConstants.packWeights.red =
-         (SoftwareColorLaneFixed16)
-         (1 << ((bVar2 + (char)g_SoftwarePixelFormatConfig.redShift) - 4 & 0x1f));
-    g_SoftwarePixelMmxConstants.packWeights.green =
-         (SoftwareColorLaneFixed16)
-         (1 << ((bVar3 + (char)g_SoftwarePixelFormatConfig.greenShift) - 4 & 0x1f));
-    g_SoftwarePixelMmxConstants.packWeights.blue =
-         (SoftwareColorLaneFixed16)
-         (1 << ((bVar4 + (char)g_SoftwarePixelFormatConfig.blueShift) - 4 & 0x1f));
-    g_SoftwarePixelMmxConstants.packedPixelMasks.red =
-         (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.redMask;
-    g_SoftwarePixelMmxConstants.packedPixelMasks.green =
-         (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.greenMask;
-    g_SoftwarePixelMmxConstants.packedPixelMasks.blue =
-         (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.blueMask;
-    g_SoftwarePixelMmxConstants.unpackScales.red =
-         (SoftwareColorLaneFixed16)
-         (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.redShift) - bVar2 & 0x1f));
-    g_SoftwarePixelMmxConstants.unpackScales.green =
-         (SoftwareColorLaneFixed16)
-         (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.greenShift) - bVar3 & 0x1f));
-    g_SoftwarePixelMmxConstants.unpackScales.blue =
-         (SoftwareColorLaneFixed16)
-         (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - bVar4 & 0x1f));
+  pSVar2 = g_SoftwarePixelPackTables;
+  if (g_SoftwarePixelPackTables == (SoftwarePixelPackTables *)0x0) {
+    AVar7 = (*g_MemoryApi.alloc)(0xc00);
+    pSVar2 = (SoftwarePixelPackTables *)AVar7.eax;
+    if (AVar7.carry) {
+      DVar8.eax = AVar7.eax;
+      DVar8.carry = AVar7.carry;
+      return DVar8;
+    }
   }
-  return;
+  g_SoftwarePixelPackTables = pSVar2;
+  (*g_SoftwareBuildPixelPackTables)(g_SoftwareColorScaleQ16,g_SoftwareColorBiasQ16);
+  bVar4 = (byte)g_SoftwarePixelFormatConfig.redBitCount;
+  bVar5 = (byte)g_SoftwarePixelFormatConfig.greenBitCount;
+  bVar6 = (byte)g_SoftwarePixelFormatConfig.blueBitCount;
+  uVar3 = 1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - bVar6 & 0x1f);
+  DVar1.carry = false;
+  DVar1.eax = uVar3;
+  g_SoftwarePixelMmxConstants.packedPixelMasks.red =
+       (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.redMask;
+  g_SoftwarePixelMmxConstants.packedPixelMasks.green =
+       (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.greenMask;
+  g_SoftwarePixelMmxConstants.packedPixelMasks.blue =
+       (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.blueMask;
+  g_SoftwarePixelMmxConstants.unpackScales.red =
+       (SoftwareColorLaneFixed16)
+       (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.redShift) - bVar4 & 0x1f));
+  g_SoftwarePixelMmxConstants.unpackScales.green =
+       (SoftwareColorLaneFixed16)
+       (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.greenShift) - bVar5 & 0x1f));
+  g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)uVar3;
+  g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
+       (SoftwareColorLaneFixed16)((1 << (bVar4 & 0x1f)) + -1 << (0xc - bVar4 & 0x1f));
+  g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
+       (SoftwareColorLaneFixed16)((1 << (bVar5 & 0x1f)) + -1 << (0xc - bVar5 & 0x1f));
+  g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
+       (SoftwareColorLaneFixed16)((1 << (bVar6 & 0x1f)) + -1 << (0xc - bVar6 & 0x1f));
+  g_SoftwarePixelMmxConstants.packWeights.red =
+       (SoftwareColorLaneFixed16)
+       (1 << ((bVar4 + (char)g_SoftwarePixelFormatConfig.redShift) - 4 & 0x1f));
+  g_SoftwarePixelMmxConstants.packWeights.green =
+       (SoftwareColorLaneFixed16)
+       (1 << ((bVar5 + (char)g_SoftwarePixelFormatConfig.greenShift) - 4 & 0x1f));
+  g_SoftwarePixelMmxConstants.packWeights.blue =
+       (SoftwareColorLaneFixed16)
+       (1 << ((bVar6 + (char)g_SoftwarePixelFormatConfig.blueShift) - 4 & 0x1f));
+  return DVar1;
 }
+
 
 /* Address: 0x004A9110.
    Ownership: graphics/backend/software.
    Purpose: Allocates 0x10 + width * height * bytesPerPixel bytes, stores the inline framebuffer header, points
    pixels at header + 0x10, and zeroes the complete pixel area. ABI: CF clear means success. CF set means failure.
 */
-SoftwareFramebufferAccess *
+SoftwareFramebufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
           GraphicsPixelDimension width)
 
 {
-  SoftwareFramebufferAccess *pSVar1;
+  GraphicsPixelDimension *pGVar1;
   uint uVar2;
-  int extraout_ECX;
-  SoftwareFramebufferAccess *pSVar3;
-  bool bVar4;
+  ArenaAllocEaxCf5 AVar3;
+  SoftwareFramebufferEaxCf5 SVar4;
   
   uVar2 = width * height * bytesPerPixel;
-  bVar4 = 0xffffffef < uVar2;
-  pSVar1 = (*g_MemoryApi.alloc)(uVar2 + 0x10);
-  if (!bVar4) {
-    pSVar1->bytesPerPixel = bytesPerPixel;
-    pSVar1->width = width;
-    pSVar1->height = height;
-    pSVar1->pixels = (byte *)(pSVar1 + 1);
-    pSVar3 = pSVar1 + 1;
-    for (uVar2 = extraout_ECX - 0x10U >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
-      pSVar3->width = 0;
-      pSVar3 = (SoftwareFramebufferAccess *)&pSVar3->height;
+  AVar3 = (*g_MemoryApi.alloc)(uVar2 + 0x10);
+  pGVar1 = (GraphicsPixelDimension *)AVar3.eax;
+  if (!AVar3.carry) {
+    pGVar1[2] = bytesPerPixel;
+    *pGVar1 = width;
+    pGVar1[1] = height;
+    pGVar1[3] = (GraphicsPixelDimension)(pGVar1 + 4);
+    pGVar1 = pGVar1 + 4;
+    for (uVar2 = uVar2 >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+      *pGVar1 = 0;
+      pGVar1 = pGVar1 + 1;
     }
+    AVar3 = (ArenaAllocEaxCf5)((uint5)AVar3 & 0xffffffff);
   }
-  return pSVar1;
+  SVar4.framebuffer = (SoftwareFramebufferAccess *)AVar3.eax;
+  SVar4.carry = AVar3.carry;
+  return SVar4;
 }
+
 
 /* Address: 0x004A9160.
    Ownership: graphics/backend/software.
    Purpose: Frees one inline SoftwareFramebufferAccess allocation.
 */
-void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
+void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
 
 {
   (*g_MemoryApi.free)(framebuffer);
   return;
 }
 
+
 /* Address: 0x004A9180.
    Ownership: graphics/backend/software.
    Purpose: Builds the blue, green, and red 256-entry framebuffer packing tables from a signed Q16 linear color
    scale and bias.
 */
-void SoftwarePixelFormat_BuildChannelPackTables
-               (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwarePixelFormat_BuildChannelPackTables
+          (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16)
 
 {
   uint transformedChannelValueQ16;
@@ -420,6 +436,7 @@ void SoftwarePixelFormat_BuildChannelPackTables
   return;
 }
 
+
 /* Address: 0x004A93C0.
    Ownership: graphics/backend/software.
    Purpose: Clips and draws one source subresource into a two-byte framebuffer. Transparent pixels are skipped,
@@ -427,23 +444,22 @@ void SoftwarePixelFormat_BuildChannelPackTables
    implementation preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior,
    not a semantic API result. CF is cleared before normal return.
 */
-qword SoftwareTextureSource_BlitSourceAlpha16
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitSourceAlpha16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
   int iVar2;
   int iVar3;
   uint uVar4;
-  undefined4 in_EAX;
   int iVar5;
   GraphicsPixelDimension GVar6;
   int iVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -588,7 +604,7 @@ qword SoftwareTextureSource_BlitSourceAlpha16
             clipMinY = clipMinY + -1;
             iVar7 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -711,8 +727,9 @@ qword SoftwareTextureSource_BlitSourceAlpha16
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004A9710.
    Ownership: graphics/backend/software.
@@ -721,12 +738,13 @@ qword SoftwareTextureSource_BlitSourceAlpha16
    implementation preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior,
    not a semantic API result. CF is cleared before normal return.
 */
-qword SoftwareTextureSource_BlitSourceAlpha32
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitSourceAlpha32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -738,11 +756,9 @@ qword SoftwareTextureSource_BlitSourceAlpha32
   ushort uVar15;
   byte mm0PackedValue1ByteLane3;
   byte mm0PackedValue0ByteLane2;
-  undefined4 in_EAX;
   int iVar4;
   GraphicsPixelDimension GVar5;
   int iVar6;
-  undefined4 in_EDX;
   int iVar7;
   GraphicsPixelDimension GVar8;
   int iVar9;
@@ -883,7 +899,7 @@ qword SoftwareTextureSource_BlitSourceAlpha32
             clipMinY = clipMinY + -1;
             iVar6 = iVar9;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -1005,8 +1021,9 @@ qword SoftwareTextureSource_BlitSourceAlpha32
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004A9B20.
    Ownership: graphics/backend/software.
@@ -1015,23 +1032,22 @@ qword SoftwareTextureSource_BlitSourceAlpha32
    preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior, not a semantic
    API result. CF is cleared before normal return.
 */
-qword SoftwareTextureSource_BlitHalfSourceRgb16
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitHalfSourceRgb16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
   int iVar2;
   int iVar3;
   uint uVar4;
-  undefined4 in_EAX;
   int iVar5;
   GraphicsPixelDimension GVar6;
   int iVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -1165,7 +1181,7 @@ qword SoftwareTextureSource_BlitHalfSourceRgb16
             clipMinY = clipMinY + -1;
             iVar7 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -1280,8 +1296,9 @@ qword SoftwareTextureSource_BlitHalfSourceRgb16
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004A9E10.
    Ownership: graphics/backend/software.
@@ -1290,12 +1307,13 @@ qword SoftwareTextureSource_BlitHalfSourceRgb16
    not a semantic API result. CF is cleared before normal return. It selects an existing resource facet and does
    not imply sprite, model, or effect identity.
 */
-qword SoftwareTextureSource_BlitHalfSourceRgb32
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitHalfSourceRgb32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -1313,11 +1331,9 @@ qword SoftwareTextureSource_BlitHalfSourceRgb32
   byte mm0PackedValue0ByteLane3;
   ushort uVar16;
   byte mm0PackedValue1ByteLane3;
-  undefined4 in_EAX;
   int iVar5;
   GraphicsPixelDimension GVar6;
   int iVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -1444,7 +1460,7 @@ qword SoftwareTextureSource_BlitHalfSourceRgb32
             clipMinY = clipMinY + -1;
             iVar7 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -1557,8 +1573,9 @@ qword SoftwareTextureSource_BlitHalfSourceRgb32
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004AA170.
    Ownership: graphics/backend/software.
@@ -1568,11 +1585,12 @@ qword SoftwareTextureSource_BlitHalfSourceRgb32
    neighboring ARGB8888 pixels are blended horizontally and vertically through g_SoftwareBilinearForwardFactors and
    g_SoftwareBilinearInverseFactors. The routine performs no clipping.
 */
-void SoftwareTextureSource_StretchDirectColorBilinear16
-               (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
-               GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTextureSource_StretchDirectColorBilinear16
+          (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
+          GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -1886,6 +1904,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
   return;
 }
 
+
 /* Address: 0x004AA3F0.
    Ownership: graphics/backend/software.
    Purpose: Stretches one direct-color source subresource into a four-byte framebuffer using two-dimensional linear
@@ -1894,11 +1913,12 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
    neighboring ARGB8888 pixels are blended horizontally and vertically through g_SoftwareBilinearForwardFactors and
    g_SoftwareBilinearInverseFactors. The routine performs no clipping.
 */
-void SoftwareTextureSource_StretchDirectColorBilinear32
-               (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
-               GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTextureSource_StretchDirectColorBilinear32
+          (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
+          GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -2205,6 +2225,7 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   return;
 }
 
+
 /* Address: 0x004AA630.
    Ownership: graphics/backend/software.
    Purpose: Nearest-neighbor integer-scale source-alpha compositor for a two-byte framebuffer. Every source pixel
@@ -2213,12 +2234,13 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
    indexed palette entries and direct ARGB8888 entries are supported. For indexed entries, the active palette bank
    comes from sourceEntry.paletteIndex and framebufferPixel is read at palette-entry offset +4.
 */
-void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
-               GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -2493,6 +2515,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
   return;
 }
 
+
 /* Address: 0x004AAA40.
    Ownership: graphics/backend/software.
    Purpose: Nearest-neighbor integer-scale source-alpha compositor for a four-byte framebuffer. Every source pixel
@@ -2501,12 +2524,13 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
    supported. For indexed entries, the active palette bank comes from sourceEntry.paletteIndex and framebufferPixel
    is read at palette-entry offset +4.
 */
-void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
-               GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsIntegerScale integerScale,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -2783,6 +2807,7 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
   return;
 }
 
+
 /* Address: 0x004AADE0.
    Ownership: graphics/backend/software.
    Purpose: Clipped source-alpha blitter for a two-byte framebuffer. Indexed sources use the explicit
@@ -2791,12 +2816,13 @@ void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
    0x200 + paletteBankIndex*0x800 instead of using sourceEntry.paletteIndex. Transparent pixels are skipped, opaque
    pixels are copied, and partial alpha uses the verified source-alpha blend tables.
 */
-void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
-               GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitSourceAlphaPaletteBank16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
@@ -3076,6 +3102,7 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
   return;
 }
 
+
 /* Address: 0x004AB150.
    Ownership: graphics/backend/software.
    Purpose: Clipped source-alpha blitter for a four-byte framebuffer. Indexed sources use the explicit
@@ -3084,12 +3111,13 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
    using sourceEntry.paletteIndex. Transparent pixels are skipped, opaque pixels are copied, and partial alpha uses
    the verified source-alpha blend tables.
 */
-void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
-               GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitSourceAlphaPaletteBank32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          PaletteBankIndex paletteBankIndex,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -3369,29 +3397,29 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
   return;
 }
 
+
 /* Address: 0x004AB4A0.
    Ownership: graphics/backend/software.
    Purpose: Two-byte framebuffer compositor. Non-black source RGB is added to destination RGB with unsigned
    saturation. Source alpha is ignored. Pixels whose source RGB value is exactly 0x000000 are skipped, regardless
    of source alpha. For each drawn channel: destination = min(255, destination + sourceContribution).
 */
-qword SoftwareTextureSource_BlitSaturatedAddRgb16
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitSaturatedAddRgb16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
   int iVar2;
   int iVar3;
   uint uVar4;
-  undefined4 in_EAX;
   int iVar5;
   GraphicsPixelDimension GVar6;
   int iVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -3506,7 +3534,7 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb16
             clipMinY = clipMinY + -1;
             iVar7 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -3607,8 +3635,9 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb16
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004AB750.
    Ownership: graphics/backend/software.
@@ -3616,12 +3645,13 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb16
    saturation. Source alpha is ignored. Pixels whose source RGB value is exactly 0x000000 are skipped, regardless
    of source alpha. For each drawn channel: destination = min(255, destination + sourceContribution).
 */
-qword SoftwareTextureSource_BlitSaturatedAddRgb32
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitSaturatedAddRgb32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -3636,11 +3666,9 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb32
   ushort uVar15;
   byte mm0PackedValue1ByteLane3;
   byte mm0PackedValue0ByteLane3;
-  undefined4 in_EAX;
   int iVar5;
   GraphicsPixelDimension GVar6;
   int iVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -3758,7 +3786,7 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb32
             clipMinY = clipMinY + -1;
             iVar7 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -3863,8 +3891,9 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb32
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004ABA70.
    Ownership: graphics/backend/software.
@@ -3872,12 +3901,13 @@ qword SoftwareTextureSource_BlitSaturatedAddRgb32
    saturation. Source alpha is ignored. Pixels whose source RGB value is exactly 0x000000 are skipped, regardless
    of source alpha. For each drawn channel: destination = min(255, destination + sourceContribution).
 */
-qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
@@ -3885,11 +3915,9 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
   int iVar3;
   uint uVar4;
   ushort uVar5;
-  undefined4 in_EAX;
   int iVar6;
   GraphicsPixelDimension GVar7;
   int iVar8;
-  undefined4 in_EDX;
   int iVar9;
   GraphicsPixelDimension GVar10;
   int iVar11;
@@ -4006,7 +4034,7 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
             clipMinY = clipMinY + -1;
             iVar8 = iVar11;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -4110,8 +4138,9 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004ABD20.
    Ownership: graphics/backend/software.
@@ -4119,12 +4148,13 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
    saturation. Source alpha is ignored. Pixels whose source RGB value is exactly 0x000000 are skipped, regardless
    of source alpha. For each drawn channel: destination = min(255, destination + sourceContribution).
 */
-qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-                SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -4136,11 +4166,9 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
   byte directDestinationUnpackedByteLane1;
   byte paletteDestinationUnpackedByteLane1;
   byte mm0PackedValue0ByteLane2;
-  undefined4 in_EAX;
   int iVar5;
   GraphicsPixelDimension GVar6;
   int iVar7;
-  undefined4 in_EDX;
   int iVar8;
   GraphicsPixelDimension GVar9;
   int iVar10;
@@ -4266,7 +4294,7 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
             clipMinY = clipMinY + -1;
             iVar7 = iVar10;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -4375,8 +4403,9 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004AC040.
    Ownership: graphics/backend/software.
@@ -4386,12 +4415,13 @@ qword SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
    modulated alpha then selects transparent, opaque, or partial source-alpha blending. Both indexed palette pixels
    and direct ARGB8888 pixels are supported.
 */
-qword SoftwareTextureSource_BlitModulatedSourceAlpha16
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
-                GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitModulatedSourceAlpha16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
@@ -4402,7 +4432,6 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha16
   byte mm1PackedValue1ByteLane1;
   byte mm1PackedValue0ByteLane2;
   byte mm1PackedValue1ByteLane2;
-  undefined4 in_EAX;
   int iVar4;
   uint uVar5;
   uint uVar6;
@@ -4411,7 +4440,6 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha16
   GraphicsPixelDimension GVar9;
   uint uVar10;
   int iVar11;
-  undefined4 in_EDX;
   int iVar12;
   uint uVar13;
   uint uVar14;
@@ -4567,7 +4595,7 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha16
             clipMinY = clipMinY + -1;
             iVar11 = iVar17;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -4701,8 +4729,9 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha16
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004AC4C0.
    Ownership: graphics/backend/software.
@@ -4711,12 +4740,13 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha16
    outputChannel = (sourceChannel * modulationChannel) >> 8. The modulated alpha then selects transparent, opaque,
    or partial source-alpha blending. Both indexed palette pixels and direct ARGB8888 pixels are supported.
 */
-qword SoftwareTextureSource_BlitModulatedSourceAlpha32
-                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-                GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-                PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
-                GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
+bool __thandor_cf_preserve_eax_ecx_edx
+SoftwareTextureSource_BlitModulatedSourceAlpha32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
+          GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -4725,7 +4755,6 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha32
   ushort uVar22;
   byte mm0PackedValue1ByteLane1;
   byte mm0PackedValue0ByteLane2;
-  undefined4 in_EAX;
   int iVar3;
   uint uVar4;
   uint uVar5;
@@ -4734,7 +4763,6 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha32
   GraphicsPixelDimension GVar8;
   uint uVar9;
   int iVar10;
-  undefined4 in_EDX;
   int iVar11;
   uint uVar12;
   uint uVar13;
@@ -4897,7 +4925,7 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha32
             clipMinY = clipMinY + -1;
             iVar10 = iVar17;
           } while (clipMinY != 0);
-          return CONCAT44(in_EDX,in_EAX);
+          return false;
         }
       }
       else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -5030,8 +5058,9 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha32
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return false;
 }
+
 
 /* Address: 0x004AD110.
    Ownership: graphics/backend/software.
@@ -5044,12 +5073,13 @@ qword SoftwareTextureSource_BlitModulatedSourceAlpha32
    rectMaxY→GraphicsScreenCoordinate_V307, p5 rectMaxX→GraphicsScreenCoordinate_V307, p6
    rectMinY→GraphicsScreenCoordinate_V307, p7 rectMinX→GraphicsScreenCoordinate_V307, p8 argb8888→PackedArgb32.
 */
-void SoftwareFramebuffer_FillRectArgb16
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
-               GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,
-               PackedArgb32 argb8888,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareFramebuffer_FillRectArgb16
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
+          GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   short sVar1;
@@ -5174,6 +5204,7 @@ void SoftwareFramebuffer_FillRectArgb16
   return;
 }
 
+
 /* Address: 0x004AD2A0.
    Ownership: graphics/backend/software.
    Purpose: Opaque pixels are written directly after RGB packing and partial alpha is blended in 8-bit RGB lanes.
@@ -5185,12 +5216,13 @@ void SoftwareFramebuffer_FillRectArgb16
    rectMaxX→GraphicsScreenCoordinate_V307, p6 rectMinY→GraphicsScreenCoordinate_V307, p7
    rectMinX→GraphicsScreenCoordinate_V307, p8 argb8888→PackedArgb32.
 */
-void SoftwareFramebuffer_FillRectArgb32
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
-               GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,
-               PackedArgb32 argb8888,SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareFramebuffer_FillRectArgb32
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
+          GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
   int iVar1;
@@ -5317,6 +5349,7 @@ void SoftwareFramebuffer_FillRectArgb32
   return;
 }
 
+
 /* Address: 0x004AD410.
    Ownership: graphics/backend/software.
    Purpose: Copies a rectangle beginning at sourceX/sourceY in source into destination beginning at (0,0). source
@@ -5324,10 +5357,11 @@ void SoftwareFramebuffer_FillRectArgb32
    copyHeight. The source coordinates are clipped against source bounds. Negative source coordinates shift the
    destination start so relative alignment is preserved.
 */
-void SoftwareFramebuffer_CopyRegionToOrigin
-               (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
-               GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX,
-               SoftwareFramebufferAccess *destination,SoftwareFramebufferAccess *source)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareFramebuffer_CopyRegionToOrigin
+          (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
+          GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX,
+          SoftwareFramebufferAccess *destination,SoftwareFramebufferAccess *source)
 
 {
   SoftwareFramebufferPixelSize SVar1;
@@ -5410,6 +5444,7 @@ void SoftwareFramebuffer_CopyRegionToOrigin
   return;
 }
 
+
 /* Address: 0x004AD520.
    Ownership: graphics/backend/software.
    Purpose: Copies a rectangle beginning at source (0,0) into destination beginning at destinationX/destinationY.
@@ -5417,10 +5452,11 @@ void SoftwareFramebuffer_CopyRegionToOrigin
    copyHeight. The destination coordinates are clipped against destination bounds. Negative destination coordinates
    shift the source start so relative alignment is preserved.
 */
-void SoftwareFramebuffer_CopyOriginToRegion
-               (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
-               GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
-               SoftwareFramebufferAccess *source,SoftwareFramebufferAccess *destination)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareFramebuffer_CopyOriginToRegion
+          (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
+          GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
+          SoftwareFramebufferAccess *source,SoftwareFramebufferAccess *destination)
 
 {
   SoftwareFramebufferPixelSize SVar1;
@@ -5502,6 +5538,7 @@ void SoftwareFramebuffer_CopyOriginToRegion
   }
   return;
 }
+
 
 /* Address: 0x004D1710.
    Ownership: graphics/backend/software.
@@ -64560,39 +64597,34 @@ void SoftwareRasterAux_Mode12
    modeArg1→DisplayModeHookArgument1_V345. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void SoftwareRenderer_DisplayModeHook
-               (DisplayModeHookArgument0 modeArg0,DisplayModeHookArgument1 modeArg1,
-               FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
+DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoftwareRenderer_DisplayModeHook
+          (DisplayModeHookArgument0 modeArg0,DisplayModeHookArgument1 modeArg1,
+          FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
   sdword *memory;
-  sdword *psVar1;
+  uint uVar1;
   byte bVar2;
   byte bVar3;
   byte bVar4;
-  int extraout_ECX;
-  dword bytes;
-  undefined1 in_CF;
-  bool bVar5;
+  DisplayModeEaxCf5 DVar5;
   
-  (*g_SoftwarePreviousDisplayModeHook)(modeArg0,modeArg1,height,width);
-  if (!(bool)in_CF) {
-    g_SoftwareDepthRowStrideBytes = extraout_ECX << 2;
+  DVar5 = (*g_SoftwarePreviousDisplayModeHook)(modeArg0,modeArg1,height,width);
+  if (!DVar5.carry) {
+    g_SoftwareDepthRowStrideBytes = width * 4;
     if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
       g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueue16Bit;
     }
     else {
       g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueueNon16Bit;
     }
-    bytes = (dword)((longlong)(int)g_SoftwareDepthRowStrideBytes * (longlong)(int)height);
-    bVar5 = (longlong)(int)bytes !=
-            (longlong)(int)g_SoftwareDepthRowStrideBytes * (longlong)(int)height;
-    psVar1 = (*g_MemoryApi.alloc)(bytes);
+    DVar5 = (DisplayModeEaxCf5)(*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * height);
     memory = g_SoftwareDepthBuffer;
-    if (!bVar5) {
+    if (!DVar5.carry) {
       LOCK();
       UNLOCK();
-      g_SoftwareDepthBuffer = psVar1;
+      g_SoftwareDepthBuffer = (sdword *)DVar5.eax;
       (*g_MemoryApi.free)(memory);
       g_SoftwareDepthEpoch = 0;
       bVar2 = (byte)g_SoftwarePixelFormatConfig.redBitCount;
@@ -64625,46 +64657,49 @@ void SoftwareRenderer_DisplayModeHook
       g_SoftwarePixelMmxConstants.unpackScales.green =
            (SoftwareColorLaneFixed16)
            (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.greenShift) - bVar3 & 0x1f));
-      g_SoftwarePixelMmxConstants.unpackScales.blue =
-           (SoftwareColorLaneFixed16)
-           (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - bVar4 & 0x1f));
+      uVar1 = 1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - bVar4 & 0x1f);
+      g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)uVar1;
+      DVar5.carry = false;
+      DVar5.eax = uVar1;
     }
   }
-  return;
+  return DVar5;
 }
+
 
 /* Address: 0x004FE7D0.
    Ownership: graphics/backend/software.
    Purpose: Installs SoftwareRenderer_DisplayModeHook after SoftwarePixelFormat_BaseDisplayModeHook and allocates
    the initial software depth buffer. ABI: CF clear means success. CF set means failure.
 */
-void __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
+bool __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 
 {
   sdword *allocatedDepthBuffer;
   bool framebufferPixelFormatTooNarrow;
+  ArenaAllocEaxCf5 AVar1;
   
   g_SoftwarePreviousDisplayModeHook = g_GraphicsDisplayModeHook;
   g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
   LOCK();
   g_GraphicsDisplayModeHook = SoftwareRenderer_DisplayModeHook;
   UNLOCK();
-  framebufferPixelFormatTooNarrow =
-       g_FramebufferAccess->bytesPerPixel < SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
   if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
     g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueue16Bit;
   }
   else {
     g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueueNon16Bit;
   }
-  allocatedDepthBuffer = (*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight);
-  if (!framebufferPixelFormatTooNarrow) {
+  AVar1 = (*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight);
+  allocatedDepthBuffer = (sdword *)AVar1.eax;
+  if (!AVar1.carry) {
     g_SoftwareDepthBuffer = allocatedDepthBuffer;
     g_SoftwareDepthEpoch = 0;
-    return;
+    return false;
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x00518CE0.
    Ownership: graphics/backend/software.
@@ -64675,13 +64710,14 @@ void __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
    sourceSubresourceIndexB→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow,
    and executable data remain unchanged. Typed parameters: p2 destinationHeight→GraphicsPixelDimension_V302.
 */
-void SoftwareTexture_BilinearBlendScaleSubresources
-               (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
-               GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
-               qword *blendedSourcePixels,qword *blendFactorPixels,
-               GraphicsSubresourceIndex sourceSubresourceIndexA,
-               GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
-               int *framebufferAccess)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareTexture_BilinearBlendScaleSubresources
+          (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
+          GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
+          qword *blendedSourcePixels,qword *blendFactorPixels,
+          GraphicsSubresourceIndex sourceSubresourceIndexA,
+          GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
+          int *framebufferAccess)
 
 {
   undefined8 uVar1;
@@ -65031,12 +65067,13 @@ void SoftwareTexture_BilinearBlendScaleSubresources
   return;
 }
 
+
 /* Address: 0x004D16D0.
    Ownership: graphics/backend/software.
    Purpose: Subtracts 0x01000000 from the depth epoch. On unsigned underflow or zero, fills the width*height depth
    buffer with 0xFFFFFFFF and resets the epoch to 0xFF000000.
 */
-void __cdecl SoftwareRenderer_AdvanceDepthEpoch(void)
+void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
 
 {
   int pixelsRemaining;
@@ -65057,6 +65094,7 @@ void __cdecl SoftwareRenderer_AdvanceDepthEpoch(void)
   return;
 }
 
+
 /* Address: 0x00519210.
    Ownership: graphics/backend/software.
    Purpose: Clears the complete software mask buffer at runtime offset 0x60 using the logical dimensions of the
@@ -65064,19 +65102,19 @@ void __cdecl SoftwareRenderer_AdvanceDepthEpoch(void)
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 {
-  qword *extraout_ECX;
   qword *maskQwordWriteCursor;
   uint qwordBlocksRemaining;
   qword maskLogicalSizePair;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
   
-  if (maskControl->maskPixels != (byte *)0x0) {
-    maskLogicalSizePair = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
-    qwordBlocksRemaining =
-         (uint)((int)(maskLogicalSizePair >> 0x20) * (int)maskLogicalSizePair) >> 6;
-    maskQwordWriteCursor = extraout_ECX;
+  maskQwordWriteCursor = (qword *)maskControl->maskPixels;
+  if (maskQwordWriteCursor != (qword *)0x0) {
+    GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
+    qwordBlocksRemaining = GVar1.logicalHeightPixels * GVar1.logicalWidthPixels >> 6;
     do {
       *maskQwordWriteCursor = 0;
       maskQwordWriteCursor[1] = 0;
@@ -65093,32 +65131,33 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
   return;
 }
 
+
 /* Address: 0x00519270.
    Ownership: graphics/backend/software.
    Purpose: Advances every nonzero software-mask pixel by one and saturates values at 31 using the runtime texture
    dimensions.
 */
-void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
 
 {
   undefined8 uVar1;
   undefined8 uVar2;
-  undefined8 *extraout_ECX;
-  undefined8 *puVar3;
+  byte *pbVar3;
   uint uVar4;
   undefined8 mm0PackedValue0;
   undefined8 mm0PackedValue1;
   undefined8 mm1PackedValue0;
   undefined8 mm1PackedValue1;
-  qword qVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar5;
   
-  if (maskRuntime->maskPixels != (byte *)0x0) {
-    qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
-    uVar4 = (uint)((int)(qVar5 >> 0x20) * (int)qVar5) >> 5;
-    puVar3 = extraout_ECX;
+  pbVar3 = maskRuntime->maskPixels;
+  if (pbVar3 != (byte *)0x0) {
+    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+    uVar4 = GVar5.logicalHeightPixels * GVar5.logicalWidthPixels >> 5;
     do {
-      uVar1 = *puVar3;
-      uVar2 = puVar3[1];
+      uVar1 = *(undefined8 *)pbVar3;
+      uVar2 = *(undefined8 *)(pbVar3 + 8);
       mm0PackedValue0 =
            paddusb(CONCAT17(-((char)((ulonglong)uVar1 >> 0x38) == '\0'),
                             CONCAT16(-((char)((ulonglong)uVar1 >> 0x30) == '\0'),
@@ -65145,10 +65184,10 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
                                                   ulonglong)uVar2 >> 8) == '\0'),
                                                   -((char)uVar2 == '\0')))))))) & 0x1f1f1f1f1f1f1f1f
                    ^ 0x1f1f1f1f1f1f1f1f,uVar2);
-      *puVar3 = mm0PackedValue0;
-      puVar3[1] = mm1PackedValue0;
-      uVar1 = puVar3[2];
-      uVar2 = puVar3[3];
+      *(undefined8 *)pbVar3 = mm0PackedValue0;
+      *(undefined8 *)(pbVar3 + 8) = mm1PackedValue0;
+      uVar1 = *(undefined8 *)(pbVar3 + 0x10);
+      uVar2 = *(undefined8 *)(pbVar3 + 0x18);
       mm0PackedValue1 =
            paddusb(CONCAT17(-((char)((ulonglong)uVar1 >> 0x38) == '\0'),
                             CONCAT16(-((char)((ulonglong)uVar1 >> 0x30) == '\0'),
@@ -65175,14 +65214,15 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
                                                   ulonglong)uVar2 >> 8) == '\0'),
                                                   -((char)uVar2 == '\0')))))))) & 0x1f1f1f1f1f1f1f1f
                    ^ 0x1f1f1f1f1f1f1f1f,uVar2);
-      puVar3[2] = mm0PackedValue1;
-      puVar3[3] = mm1PackedValue1;
-      puVar3 = puVar3 + 4;
+      *(undefined8 *)(pbVar3 + 0x10) = mm0PackedValue1;
+      *(undefined8 *)(pbVar3 + 0x18) = mm1PackedValue1;
+      pbVar3 = pbVar3 + 0x20;
       uVar4 = uVar4 - 1;
     } while (uVar4 != 0);
   }
   return;
 }
+
 
 /* Address: 0x00519500.
    Ownership: graphics/backend/software.
@@ -65192,32 +65232,32 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged. Typed parameters: p5 radiusStep→SoftwareMaskRadiusStep_V344.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_ApplyCircularRegionBit
-          (undefined4 param_1,undefined4 param_2,UiBooleanState32 invertSelection,
-          GraphicsScreenCoordinate centerY,GraphicsScreenCoordinate centerX,
-          SoftwareMaskRadiusStep radiusStep,SoftwareMaskRuntimeView *maskRuntime)
+          (UiBooleanState32 invertSelection,GraphicsScreenCoordinate centerY,
+          GraphicsScreenCoordinate centerX,SoftwareMaskRadiusStep radiusStep,
+          SoftwareMaskRuntimeView *maskRuntime)
 
 {
   uint uVar1;
   int iVar2;
   int iVar3;
-  int iVar4;
+  dword dVar4;
   uint uVar5;
   byte *pbVar6;
-  qword qVar7;
-  int iStackY_28;
+  GraphicsTextureSizeEaxEdxCf9 GVar7;
+  int iVar8;
   
-  qVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
-  iVar4 = (int)(qVar7 >> 0x20);
-  uVar1 = (uint)qVar7;
+  GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  dVar4 = GVar7.logicalHeightPixels;
+  uVar1 = GVar7.logicalWidthPixels;
   iVar2 = radiusStep * 0x1c;
   pbVar6 = maskRuntime->maskPixels;
-  if ((invertSelection != 0) && (iVar2 = radiusStep * -0x1c + uVar1 + iVar4, iVar2 < 0)) {
+  if ((invertSelection != 0) && (iVar2 = radiusStep * -0x1c + uVar1 + dVar4, iVar2 < 0)) {
     iVar2 = 0;
   }
   uVar5 = 0;
-  iStackY_28 = 0;
+  iVar8 = 0;
   iVar3 = -centerY * -centerY;
   if (invertSelection == 0) {
     do {
@@ -65228,11 +65268,11 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
         uVar5 = uVar5 + 1;
         pbVar6 = pbVar6 + 1;
       } while (uVar5 < uVar1);
-      iStackY_28 = iStackY_28 + 1;
+      iVar8 = iVar8 + 1;
       uVar5 = 0;
-      iVar3 = (iStackY_28 - centerY) * (iStackY_28 - centerY);
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      iVar3 = (iVar8 - centerY) * (iVar8 - centerY);
+      dVar4 = dVar4 - 1;
+    } while (dVar4 != 0);
     return;
   }
   do {
@@ -65243,13 +65283,14 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
       uVar5 = uVar5 + 1;
       pbVar6 = pbVar6 + 1;
     } while (uVar5 < uVar1);
-    iStackY_28 = iStackY_28 + 1;
+    iVar8 = iVar8 + 1;
     uVar5 = 0;
-    iVar3 = (iStackY_28 - centerY) * (iStackY_28 - centerY);
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    iVar3 = (iVar8 - centerY) * (iVar8 - centerY);
+    dVar4 = dVar4 - 1;
+  } while (dVar4 != 0);
   return;
 }
+
 
 /* Address: 0x005195D0.
    Ownership: graphics/backend/software.
@@ -65260,67 +65301,66 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
-          (undefined4 param_1,undefined4 param_2,UiBooleanState32 invertSelection,
-          SoftwareMaskThresholdStep thresholdStep,SoftwareMaskRuntimeView *maskRuntime)
+          (UiBooleanState32 invertSelection,SoftwareMaskThresholdStep thresholdStep,
+          SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  int iVar1;
-  int iVar2;
+  dword dVar1;
+  dword dVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
+  dword dVar5;
   int iVar6;
   byte *pbVar7;
-  qword qVar8;
+  GraphicsTextureSizeEaxEdxCf9 GVar8;
   
-  qVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
-  iVar1 = (int)qVar8;
+  GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  dVar5 = GVar8.logicalHeightPixels;
+  dVar1 = GVar8.logicalWidthPixels;
   iVar3 = thresholdStep * 0x28;
   pbVar7 = maskRuntime->maskPixels;
   if (invertSelection != 0) {
-    iVar3 = thresholdStep * -0x28 + iVar1 + (int)(qVar8 >> 0x20);
+    iVar3 = thresholdStep * -0x28 + dVar1 + dVar5;
   }
   iVar4 = 0;
+  dVar2 = dVar1;
   iVar6 = 0;
   if (invertSelection == 0) {
     do {
       do {
-        iVar5 = (int)(qVar8 >> 0x20);
         if (iVar6 < iVar3) {
           *pbVar7 = *pbVar7 | 1;
         }
         pbVar7 = pbVar7 + 1;
-        iVar2 = (int)qVar8 + -1;
-        qVar8 = CONCAT44(iVar5,iVar2);
+        dVar2 = dVar2 - 1;
         iVar6 = iVar6 + 1;
-      } while (iVar2 != 0);
+      } while (dVar2 != 0);
       iVar4 = iVar4 + 1;
-      iVar5 = iVar5 + -1;
-      qVar8 = CONCAT44(iVar5,iVar1);
+      dVar5 = dVar5 - 1;
+      dVar2 = dVar1;
       iVar6 = iVar4;
-    } while (iVar5 != 0);
+    } while (dVar5 != 0);
     return;
   }
   do {
     do {
-      iVar5 = (int)(qVar8 >> 0x20);
       if (iVar3 < iVar6) {
         *pbVar7 = *pbVar7 | 1;
       }
       pbVar7 = pbVar7 + 1;
-      iVar2 = (int)qVar8 + -1;
-      qVar8 = CONCAT44(iVar5,iVar2);
+      dVar2 = dVar2 - 1;
       iVar6 = iVar6 + 1;
-    } while (iVar2 != 0);
+    } while (dVar2 != 0);
     iVar4 = iVar4 + 1;
-    iVar5 = iVar5 + -1;
-    qVar8 = CONCAT44(iVar5,iVar1);
+    dVar5 = dVar5 - 1;
+    dVar2 = dVar1;
     iVar6 = iVar4;
-  } while (iVar5 != 0);
+  } while (dVar5 != 0);
   return;
 }
+
 
 /* Address: 0x00519670.
    Ownership: graphics/backend/software.
@@ -65329,16 +65369,18 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
+void __thandor_preserve_eax_edx
+SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
 
 {
   uint maskBlocksRemaining;
   uint *maskWordCursor;
   qword maskLogicalSizePair;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
   
-  maskLogicalSizePair = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
+  GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
   maskWordCursor = (uint *)maskControl->maskPixels;
-  maskBlocksRemaining = (uint)((int)(maskLogicalSizePair >> 0x20) * (int)maskLogicalSizePair) >> 4;
+  maskBlocksRemaining = GVar1.logicalHeightPixels * GVar1.logicalWidthPixels >> 4;
   do {
     *maskWordCursor = *maskWordCursor | 0x1010101;
     maskWordCursor[1] = maskWordCursor[1] | 0x1010101;
@@ -65350,6 +65392,7 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
   return;
 }
 
+
 /* Address: 0x005196C0.
    Ownership: graphics/backend/software.
    Purpose: Sets bit zero in one 15-row horizontal band selected from 25 positions, with forward or reverse row
@@ -65358,19 +65401,20 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
    flow, globals, locals, and executable data remain unchanged. Typed parameters: p2
    reverseRows→UiBooleanState32_V342.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_ApplyHorizontalBandBit
-          (undefined4 param_1,undefined4 param_2,UiBooleanState32 reverseRows,
-          TerrainGridMaskIndex bandIndex,SoftwareMaskRuntimeView *maskRuntime)
+          (UiBooleanState32 reverseRows,TerrainGridMaskIndex bandIndex,
+          SoftwareMaskRuntimeView *maskRuntime)
 
 {
   uint uVar1;
-  qword qVar4;
   int iVar2;
   uint *puVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
-  qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
   if ((uint)bandIndex < 0x19) {
+    uVar1 = GVar4.logicalWidthPixels * 0xf;
     if (reverseRows == 0) {
       iVar2 = bandIndex + -1;
       if (iVar2 < 0) {
@@ -65380,8 +65424,8 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
     else {
       iVar2 = 0x18 - bandIndex;
     }
-    puVar3 = (uint *)(maskRuntime->maskPixels + iVar2 * (int)(qword)qVar4 * 0xf);
-    uVar1 = (uint)((int)(qword)qVar4 * 0xf) >> 4;
+    puVar3 = (uint *)(maskRuntime->maskPixels + iVar2 * uVar1);
+    uVar1 = uVar1 >> 4;
     do {
       *puVar3 = *puVar3 | 0x1010101;
       puVar3[1] = puVar3[1] | 0x1010101;
@@ -65394,13 +65438,15 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
   return;
 }
 
+
 /* Address: 0x004FE840.
    Ownership: graphics/backend/software.
    Purpose: Reorders the three 0x20-byte vertices by screen Y, truncates screen X/Y to Q12 pixel boundaries, adds
    the current depth epoch, updates flat-shading flags, and rescales texture coordinates from textureEntry
    widthLog2/heightLog2.
 */
-GraphicsPrimitivePacket * SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
+void __thandor_void_preserve_eax_ecx_edx
+SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitivePacket *pGVar1;
@@ -65428,7 +65474,6 @@ GraphicsPrimitivePacket * SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimiti
   GraphicsPrimitiveTextureCoordinateFixed GVar23;
   GraphicsPrimitiveTextureCoordinateFixed GVar24;
   sdword sVar25;
-  GraphicsPrimitivePacket *in_EAX;
   byte bVar26;
   GraphicsPrimitivePacket *pGVar27;
   GraphicsPrimitivePacket *pGVar28;
@@ -65575,5 +65620,6 @@ SoftwareRenderer_PrepareTrianglePacket_QuantizeOrderedVerticesAndPrepareFlags:
     pGVar4 = &packet->vertices[2].textureV;
     *pGVar4 = *pGVar4 >> (bVar26 & 0x1f);
   }
-  return in_EAX;
+  return;
 }
+

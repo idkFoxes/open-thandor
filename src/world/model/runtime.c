@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/model/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/model/runtime.h>
 
 /* Implementation ownership: world/model/runtime. */
@@ -11,12 +18,11 @@
    ModelRuntimePool_CreateInstanceByDefinitionIdCf.
    Local calls: ModelRuntimePool_CreateInstanceByDefinitionIdCf.
 */
-void __fastcall
+ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_RepairDeferredChild
-          (undefined4 param_1,undefined4 param_2,GraphicsPaletteAsset *paletteAsset,
-          GraphicsTextureSet *textureSet,ModelRuntimeAttachmentIndex attachmentIndex,
-          PckModelDefinitionIdCatalog childDefinitionId,ModelRuntimeSlot *modelRuntime,
-          WorldRuntimeContext *worldRuntime)
+          (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
+          ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
+          ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime)
 
 {
   ModelAttachmentTransformRecord *pMVar1;
@@ -25,43 +31,48 @@ ModelRuntimePool_RepairDeferredChild
   AngleTurn32 AVar4;
   Q12 QVar5;
   Q12 QVar6;
-  int extraout_ECX;
-  bool bVar7;
-  undefined8 uVar8;
+  ModelRuntimeSlot *in_EAX;
+  ModelNodeCreateEaxCf5 MVar7;
+  ModelNodeCreateEaxCf5 MVar8;
   ModelRuntimeNode *modelNode1;
   ModelRuntimeNode *modelNode2;
   
-  bVar7 = attachmentIndex < modelRuntime->attachmentCount0C;
-  if (bVar7) {
-    uVar8 = ModelRuntimePool_CreateInstanceByDefinitionIdCf
+  if (attachmentIndex < modelRuntime->attachmentCount0C) {
+    MVar7 = ModelRuntimePool_CreateInstanceByDefinitionIdCf
                       (paletteAsset,textureSet,
                        (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime,childDefinitionId,
                        worldRuntime);
-    if (bVar7) {
-      return;
+    if (MVar7.carry) {
+      MVar7.carry = true;
+      return MVar7;
     }
-    modelRuntime->attachments140[extraout_ECX].childModelRuntimeOrSavedOffset00 =
-         (ModelRuntimeSlot *)uVar8;
-    modelNode1 = modelRuntime->attachments140[extraout_ECX].parentModelNodeOrSavedOffset08;
-    pMVar1 = modelRuntime->attachments140[extraout_ECX].sourceTransform04;
-    modelNode2 = (((ModelRuntimeSlot *)uVar8)->rootModelNodeOrSavedOffset).modelNode;
-    AVar2 = modelRuntime->attachments140[extraout_ECX].childLocalRotationAngle0;
-    AVar3 = modelRuntime->attachments140[extraout_ECX].childLocalRotationAngle1;
-    AVar4 = modelRuntime->attachments140[extraout_ECX].childLocalRotationAngle2;
-    modelNode1->childNodes[modelRuntime->attachments140[extraout_ECX].childNodeIndex0C] = modelNode2
+    modelRuntime->attachments140[attachmentIndex].childModelRuntimeOrSavedOffset00 = MVar7.modelNode
     ;
-    (modelNode2->modelPayload).localRotationAngle2 = AVar4;
-    (modelNode2->modelPayload).localRotationAngle1 = AVar3;
-    (modelNode2->modelPayload).localRotationAngle0 = AVar2;
+    modelNode1 = modelRuntime->attachments140[attachmentIndex].parentModelNodeOrSavedOffset08;
+    pMVar1 = modelRuntime->attachments140[attachmentIndex].sourceTransform04;
+    modelNode2 = ((MVar7.modelNode)->rootModelNodeOrSavedOffset).modelNode;
+    AVar2 = modelRuntime->attachments140[attachmentIndex].childLocalRotationAngle0;
+    AVar3 = modelRuntime->attachments140[attachmentIndex].childLocalRotationAngle1;
+    AVar4 = modelRuntime->attachments140[attachmentIndex].childLocalRotationAngle2;
+    modelNode1->childNodes[modelRuntime->attachments140[attachmentIndex].childNodeIndex0C] =
+         modelNode2;
+    (((WorldRuntimeNodePayload *)&modelNode2->modelPayload)->model).localRotationAngle2 = AVar4;
+    (((WorldRuntimeNodePayload *)&modelNode2->modelPayload)->model).localRotationAngle1 = AVar3;
+    (((WorldRuntimeNodePayload *)&modelNode2->modelPayload)->model).localRotationAngle0 = AVar2;
     modelNode2->parentNode = modelNode1;
     QVar5 = pMVar1->localTranslationXQ12;
     QVar6 = pMVar1->localTranslationYQ12;
-    (modelNode2->modelPayload).localTranslationZQ12 = pMVar1->localTranslationZQ12;
-    (modelNode2->modelPayload).localTranslationYQ12 = QVar6;
-    (modelNode2->modelPayload).localTranslationXQ12 = QVar5;
+    (((WorldRuntimeNodePayload *)&modelNode2->modelPayload)->model).localTranslationZQ12 =
+         pMVar1->localTranslationZQ12;
+    (((WorldRuntimeNodePayload *)&modelNode2->modelPayload)->model).localTranslationYQ12 = QVar6;
+    (((WorldRuntimeNodePayload *)&modelNode2->modelPayload)->model).localTranslationXQ12 = QVar5;
+    in_EAX = MVar7.modelNode;
   }
-  return;
+  MVar8.carry = false;
+  MVar8.modelNode = (ModelRuntimeNode *)in_EAX;
+  return MVar8;
 }
+
 
 /* Address: 0x004BDDB0.
    Ownership: world/model/runtime.
@@ -71,33 +82,18 @@ ModelRuntimePool_RepairDeferredChild
    FixedTransform_ApplyPoint [core/math/fixed], GraphicsShadingRuntime_CollectNearbyRecords
    [graphics/render/shading], ModelRender_DrawMeshGroupsWithTemporaryTransform [graphics/render/model].
 */
-undefined8 ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  ModelResourceHitTestAndRenderView210 *pMVar1;
-  uint uVar2;
-  ModelRuntimeNode *modelNodeRuntime_00;
-  undefined4 in_EAX;
-  sdword sVar3;
-  dword dVar4;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int modelNode;
-  int extraout_ECX_04;
-  int iVar5;
-  int extraout_ECX_05;
-  undefined4 in_EDX;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  int *piVar6;
+  Q12 *pQVar1;
+  ModelResourceHitTestAndRenderView210 *pMVar2;
+  uint uVar3;
+  sdword sVar4;
+  dword dVar5;
+  int iVar6;
+  ModelMeshGroupRelativeOffset *meshGroup;
   int iVar7;
-  int iVar8;
-  undefined8 uVar9;
   Q12 local_20;
   
   if (modelNodeRuntime != (ModelRuntimeNode *)0x0) {
@@ -108,98 +104,88 @@ undefined8 ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelN
          (modelNodeRuntime->worldTransform).translation.y - g_ViewOriginFixed.y;
     g_ModelCullViewRelativeZ =
          (modelNodeRuntime->worldTransform).translation.z - g_ViewOriginFixed.z;
-    pMVar1 = (modelNodeRuntime->modelPayload).modelResource;
-    iVar7 = pMVar1->boundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
-    sVar3 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
+    pMVar2 = (modelNodeRuntime->modelPayload).modelResource;
+    iVar6 = modelNodeRuntime->subtreeBoundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
+    iVar7 = pMVar2->boundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
+    sVar4 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
                              (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-    if (sVar3 <= extraout_EDX) {
-      iVar5 = extraout_ECX;
-      if (sVar3 <= iVar7) {
-        sVar3 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,
+    if (sVar4 <= iVar6) {
+      if (sVar4 <= iVar7) {
+        sVar4 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,
                                  (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-        if (extraout_EDX_00 < sVar3)
-        goto 
-        ModelRuntime_CullAndRenderHierarchyRecursive_ReturnAfterCullRejectRenderOrChildTraversal;
-        iVar5 = extraout_ECX_00;
-        if (sVar3 <= iVar7) {
-          sVar3 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 2,
+        if (iVar6 < sVar4) {
+          return;
+        }
+        if (sVar4 <= iVar7) {
+          sVar4 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 2,
                                    (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-          if (extraout_EDX_01 < sVar3)
-          goto 
-          ModelRuntime_CullAndRenderHierarchyRecursive_ReturnAfterCullRejectRenderOrChildTraversal;
-          iVar5 = extraout_ECX_01;
-          if (sVar3 <= iVar7) {
-            sVar3 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 3,
+          if (iVar6 < sVar4) {
+            return;
+          }
+          if (sVar4 <= iVar7) {
+            sVar4 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 3,
                                      (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-            if (extraout_EDX_02 < sVar3)
-            goto 
-            ModelRuntime_CullAndRenderHierarchyRecursive_ReturnAfterCullRejectRenderOrChildTraversal
-            ;
-            iVar5 = extraout_ECX_02;
-            if (sVar3 <= iVar7) {
-              dVar4 = FixedMath_Length3(g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
+            if (iVar6 < sVar4) {
+              return;
+            }
+            if (sVar4 <= iVar7) {
+              dVar5 = FixedMath_Length3(g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
                                         g_ModelCullViewRelativeX);
-              uVar2 = pMVar1->boundingRadiusQ12;
-              if ((int)dVar4 < (int)uVar2) {
+              uVar3 = pMVar2->boundingRadiusQ12;
+              if ((int)dVar5 < (int)uVar3) {
                 local_20 = 0x10000000;
               }
               else {
-                local_20 = (Q12)(CONCAT44(uVar2 >> 4,uVar2 << 0x1c) / (ulonglong)dVar4);
+                local_20 = (Q12)(CONCAT44(uVar3 >> 4,uVar3 << 0x1c) / (ulonglong)dVar5);
               }
               FixedTransform_ApplyPoint
                         ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
                          &(modelNodeRuntime->worldTransform).translation,
                          &g_ViewProjectionMatrixFixed);
-              if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed)
-              goto 
-              ModelRuntime_CullAndRenderHierarchyRecursive_ReturnAfterCullRejectRenderOrChildTraversal
-              ;
-              piVar6 = (int *)(*(int *)(extraout_ECX_03 + 0x40) + 0xd8);
-              iVar5 = extraout_ECX_03;
-              if (g_ModelCullViewRelativeZ - g_ProjectionScaleFixed != *piVar6 &&
-                  *piVar6 <= (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed)) {
-                *(uint *)(extraout_ECX_03 + 0x4c) = *(uint *)(extraout_ECX_03 + 0x4c) | 2;
+              pMVar2 = (modelNodeRuntime->modelPayload).modelResource;
+              if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed) {
+                return;
+              }
+              pQVar1 = &pMVar2->boundingRadiusQ12;
+              if (g_ModelCullViewRelativeZ - g_ProjectionScaleFixed != *pQVar1 &&
+                  *pQVar1 <= (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed)) {
+                modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 2;
                 g_GraphicsShadingNearbyRecordCount = 0;
                 GraphicsShadingRuntime_CollectNearbyRecords
-                          (*(GraphicsRadiusQ12 *)(*(int *)(extraout_ECX_03 + 0x40) + 0xd8),
-                           g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
-                           g_ModelCullViewRelativeX);
-                uVar2 = *(uint *)(*(int *)(modelNode + 0x40) + 0xb0);
-                piVar6 = (int *)(*(int *)(modelNode + 0x40) + 0x200);
-                if (((((uint)g_ModelLodDepthThresholdQ8 < g_ModelCullViewRelativeZ) && (1 < uVar2))
-                    && (piVar6 = (int *)((int)piVar6 + *piVar6),
+                          (pMVar2->boundingRadiusQ12,g_ModelCullViewRelativeZ,
+                           g_ModelCullViewRelativeY,g_ModelCullViewRelativeX);
+                pMVar2 = (modelNodeRuntime->modelPayload).modelResource;
+                uVar3 = pMVar2->meshGroupCount;
+                meshGroup = &pMVar2->firstMeshGroupRelativeOffset;
+                if (((((uint)g_ModelLodDepthThresholdQ8 < g_ModelCullViewRelativeZ) && (1 < uVar3))
+                    && (meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup),
                        (uint)g_ModelLodDepthThresholdQ8 < (uint)((int)g_ModelCullViewRelativeZ >> 1)
-                       )) && (2 < uVar2)) {
-                  piVar6 = (int *)((int)piVar6 + *piVar6);
+                       )) && (2 < uVar3)) {
+                  meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup);
                 }
                 ModelRender_DrawMeshGroupsWithTemporaryTransform
-                          (modelNode,piVar6,local_20,(ModelMeshGroupAddress32)piVar6,
-                           (ModelRuntimeNode *)modelNode);
-                iVar5 = extraout_ECX_04;
+                          (local_20,(ModelMeshGroupAddress32)meshGroup,modelNodeRuntime);
               }
             }
           }
         }
       }
-      iVar7 = *(int *)(iVar5 + 200);
-      if (iVar7 != 0) {
-        iVar8 = 0;
+      dVar5 = modelNodeRuntime->childCount;
+      if (dVar5 != 0) {
+        iVar6 = 0;
         do {
-          modelNodeRuntime_00 = *(ModelRuntimeNode **)(iVar5 + 0xcc + iVar8 * 4);
-          if (modelNodeRuntime_00 != (ModelRuntimeNode *)0x0) {
-            uVar9 = ModelRuntime_CullAndRenderHierarchyRecursive(modelNodeRuntime_00);
-            iVar7 = (int)((ulonglong)uVar9 >> 0x20);
-            iVar5 = extraout_ECX_05;
+          if (modelNodeRuntime->childNodes[iVar6] != (ModelRuntimeNode *)0x0) {
+            ModelRuntime_CullAndRenderHierarchyRecursive(modelNodeRuntime->childNodes[iVar6]);
           }
-          iVar8 = iVar8 + 1;
-          iVar7 = iVar7 + -1;
-        } while (iVar7 != 0);
+          iVar6 = iVar6 + 1;
+          dVar5 = dVar5 - 1;
+        } while (dVar5 != 0);
       }
     }
   }
-ModelRuntime_CullAndRenderHierarchyRecursive_ReturnAfterCullRejectRenderOrChildTraversal:
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x004BE270.
    Ownership: world/model/runtime.
@@ -208,22 +194,17 @@ ModelRuntime_CullAndRenderHierarchyRecursive_ReturnAfterCullRejectRenderOrChildT
    GraphicsShadingRuntime_CollectNearbyRecords [graphics/render/shading], ModelRender_DrawMeshGroupsAlternatePath
    [graphics/render/model].
 */
-undefined8 ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *param_1)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
 
 {
   ModelResourceHitTestAndRenderView210 *pMVar1;
-  undefined4 in_EAX;
   dword dVar2;
-  undefined4 extraout_ECX;
   int iVar3;
-  int extraout_ECX_00;
-  undefined4 in_EDX;
-  undefined4 extraout_EDX;
-  dword extraout_EDX_00;
   
-  pMVar1 = (param_1->modelPayload).modelResource;
-  if (param_1 != (ModelRuntimeNode *)0x0) {
-    param_1->runtimeFlags = param_1->runtimeFlags | 2;
+  pMVar1 = (modelNode->modelPayload).modelResource;
+  if (modelNode != (ModelRuntimeNode *)0x0) {
+    modelNode->runtimeFlags = modelNode->runtimeFlags | 2;
     iRam004bcf50 = pMVar1->localBoundsX0Q12 + pMVar1->localBoundsX1Q12 >> 1;
     iRam004bcf54 = pMVar1->localBoundsY0Q12 + pMVar1->localBoundsY1Q12 >> 1;
     iRam004bcf58 = pMVar1->localBoundsZ0Q12 + pMVar1->localBoundsZ1Q12 >> 1;
@@ -236,20 +217,18 @@ undefined8 ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *
     GraphicsShadingRuntime_CollectNearbyRecords
               ((int)dVar2 >> 1,g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
                g_ModelCullViewRelativeX);
-    ModelRender_DrawMeshGroupsAlternatePath
-              (extraout_ECX,extraout_EDX,param_1->runtimeStateA0,param_1);
+    ModelRender_DrawMeshGroupsAlternatePath(modelNode->runtimeStateA0,modelNode);
     iVar3 = 0;
-    for (dVar2 = param_1->childCount; dVar2 != 0; dVar2 = dVar2 - 1) {
-      if (param_1->childNodes[iVar3] != (ModelRuntimeNode *)0x0) {
-        ModelRuntime_RenderHierarchyRecursiveAlternatePath(param_1->childNodes[iVar3]);
-        iVar3 = extraout_ECX_00;
-        dVar2 = extraout_EDX_00;
+    for (dVar2 = modelNode->childCount; dVar2 != 0; dVar2 = dVar2 - 1) {
+      if (modelNode->childNodes[iVar3] != (ModelRuntimeNode *)0x0) {
+        ModelRuntime_RenderHierarchyRecursiveAlternatePath(modelNode->childNodes[iVar3]);
       }
       iVar3 = iVar3 + 1;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0050B440.
    Ownership: world/model/runtime.
@@ -262,7 +241,7 @@ undefined8 ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *
    [core/math/fixed], DepthBinMasks_OverlapCf [graphics/render/primitives],
    ModelNodeRuntime_RaycastHierarchyNearestCf [world/model/hierarchy].
 */
-ModelRaycastNearestHitCfRegisterResult
+ModelRaycastNearestHitEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 ModelRuntime_RaycastCandidateListNearestCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,ModelRuntimeClassId requiredOwnerId,
@@ -270,53 +249,61 @@ ModelRuntime_RaycastCandidateListNearestCf
 
 {
   ModelRuntimeNode *modelNodeRuntime;
-  ModelRaycastNearestHitCfRegisterResult MVar1;
+  DepthBinMask32 secondMaskHigh;
+  DepthBinMask32 secondMaskLow;
   DepthIntervalCenter32 centerDepth;
+  int iVar1;
+  ModelRuntimeNode *nearestModelNode;
   bool bVar2;
-  DepthBinMaskEaxPreservedEdxCarrier64 DVar3;
-  DepthBinMaskEaxPreservedEdxCarrier64 DVar4;
-  ModelRaycastNearestHitCfRegisterResult MVar5;
+  ModelRaycastNearestHitEaxEdxCf9 MVar3;
   
   g_ModelRaycastOriginX = originXQ12;
   g_ModelRaycastOriginY = originYQ12;
   g_ModelRaycastOriginZ = originZQ12;
   g_ModelRaycastMaximumDistance = maximumDistanceQ12;
-  DVar3 = DepthInterval_BuildBinMask(maximumDistanceQ12,originXQ12);
-  DVar4 = DepthInterval_BuildBinMask(maximumDistanceQ12,centerDepth);
+  secondMaskHigh = DepthInterval_BuildBinMask(maximumDistanceQ12,originXQ12);
+  secondMaskLow = DepthInterval_BuildBinMask(maximumDistanceQ12,originYQ12);
   FixedMath_WriteDirectionQ28
             ((GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,elevationAngle,azimuthAngle);
-  MVar1.nearestDistanceQ12 = 0x7fffffff;
-  MVar1.nearestModelNode = (ModelRuntimeNode *)0x0;
+  nearestModelNode = (ModelRuntimeNode *)0x0;
+  iVar1 = 0x7fffffff;
   for (modelNodeRuntime = (ModelRuntimeNode *)worldRuntime->ownerListHead;
       modelNodeRuntime != (ModelRuntimeNode *)0x0;
       modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
     if ((((modelNodeRuntime != excludedNode) && (modelNodeRuntime->ownerClassId == requiredOwnerId))
-        && (bVar2 = false, (modelNodeRuntime->runtimeFlags & 0x2000) == 0)) &&
-       ((DepthBinMasks_OverlapCf
-                   (modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
-                    (DepthBinMask32)DVar4,(DepthBinMask32)DVar3), bVar2 &&
-        (MVar5 = ModelNodeRuntime_RaycastHierarchyNearestCf(modelNodeRuntime),
-        MVar5.nearestDistanceQ12 <= MVar1.nearestDistanceQ12)))) {
-      MVar1 = MVar5;
+        && ((modelNodeRuntime->runtimeFlags & 0x2000) == 0)) &&
+       (bVar2 = DepthBinMasks_OverlapCf
+                          (modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
+                           secondMaskLow,secondMaskHigh), bVar2)) {
+      MVar3 = ModelNodeRuntime_RaycastHierarchyNearestCf(modelNodeRuntime);
+      if (MVar3.nearestDistanceQ12 <= iVar1) {
+        iVar1 = MVar3.nearestDistanceQ12;
+        nearestModelNode = MVar3.edxCarrier.nearestModelNode;
+      }
     }
   }
-  return MVar1;
+  MVar3.edxCarrier.nearestModelNode = nearestModelNode;
+  MVar3.nearestDistanceQ12 = iVar1;
+  MVar3.carry = iVar1 != 0x7fffffff;
+  return MVar3;
 }
+
 
 /* Address: 0x0051C240.
    Ownership: world/model/runtime.
    Purpose: EXACT_SCALAR_TWIN_OF_MODEL_SCALE_RATIO_REGISTER_WRAPPER.
    Cross-module calls: ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs [world/model/hierarchy].
 */
-undefined8 __fastcall
-ModelRuntime_QueryHierarchyScaleRatioQ12(undefined4 param_1,undefined4 param_2,undefined4 *param_3)
+Q12 __thandor_eax_preserve_ecx_edx
+ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   ModelRuntimeScaleRatioRegisterPairQ12 MVar1;
   
-  MVar1 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs((ModelRuntimeSlot *)*param_3);
-  return CONCAT44(param_2,(int)MVar1);
+  MVar1 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
+  return (Q12)MVar1;
 }
+
 
 /* Address: 0x0051C260.
    Ownership: world/model/runtime.
@@ -325,16 +312,17 @@ ModelRuntime_QueryHierarchyScaleRatioQ12(undefined4 param_1,undefined4 param_2,u
    register pair returned in EDX:EAX.
    Cross-module calls: ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs [world/model/hierarchy].
 */
-ModelRuntimeScaleRatioRegisterPairQ12
-ModelRuntime_QueryHierarchyScaleRatioQ12Regs(ArmyRuntimeSlot *modelRuntimeHolder)
+ModelRuntimeScaleRatioRegisterPairQ12 __thandor_eax_edx_cf_preserve_ecx
+ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   ModelRuntimeScaleRatioRegisterPairQ12 hierarchyScaleRatioPairQ12;
   
   hierarchyScaleRatioPairQ12 =
-       ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(modelRuntimeHolder->definitionOrAsset);
+       ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
   return hierarchyScaleRatioPairQ12;
 }
+
 
 /* Address: 0x0051C280.
    Ownership: world/model/runtime.
@@ -344,16 +332,18 @@ ModelRuntime_QueryHierarchyScaleRatioQ12Regs(ArmyRuntimeSlot *modelRuntimeHolder
    synthetic.
    Cross-module calls: ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs [world/model/hierarchy].
 */
-int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *modelRuntimeHolder)
+int __thandor_eax_preserve_ecx_edx
+ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *modelRuntimeHolder)
 
 {
   ModelRuntimeActiveTotalMetricRegisterPair activeHierarchyMetricPair;
   
   activeHierarchyMetricPair =
-       ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(modelRuntimeHolder->definitionOrAsset)
-  ;
+       ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs
+                 ((modelRuntimeHolder->modelRuntimeOrSavedOffset).modelRuntime);
   return (int)activeHierarchyMetricPair;
 }
+
 
 /* Address: 0x0051C2A0.
    Ownership: world/model/runtime.
@@ -363,31 +353,33 @@ int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *modelRuntimeHolder)
    Cross-module calls: ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs [world/model/hierarchy].
 */
 ModelRuntimeActiveTotalMetricRegisterPair
-ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(ArmyRuntimeSlot *modelRuntimeHolder)
+ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   ModelRuntimeActiveTotalMetricRegisterPair activeTotalMetrics;
   
   activeTotalMetrics =
-       ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(modelRuntimeHolder->definitionOrAsset)
-  ;
+       ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(runtimeEntry->modelRuntime);
   return activeTotalMetrics;
 }
+
 
 /* Address: 0x00528A40.
    Ownership: world/model/runtime.
    Purpose: Allocates and zeroes the exact 0x400000-byte model runtime pool, equal to 8192 ModelRuntimeSlot
    records.
 */
-void __cdecl ModelRuntimePool_Init(void)
+StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void)
 
 {
   ModelRuntimeSlot *modelRuntimeStorageCursor;
   int allocationDwordsRemaining;
-  undefined1 in_CF;
+  ArenaAllocEaxCf5 AVar1;
+  StatusValueEaxCf5 SVar2;
   
-  modelRuntimeStorageCursor = (*g_MemoryApi.alloc)(0x400000);
-  if (!(bool)in_CF) {
+  AVar1 = (*g_MemoryApi.alloc)(0x400000);
+  modelRuntimeStorageCursor = (ModelRuntimeSlot *)AVar1.eax;
+  if (!AVar1.carry) {
     g_ModelRuntimeRebaseDelta = (int)&modelRuntimeStorageCursor[-1].attachments140[5].reserved1C + 3
     ;
     g_ModelRuntimeSlots = modelRuntimeStorageCursor;
@@ -398,9 +390,14 @@ void __cdecl ModelRuntimePool_Init(void)
       modelRuntimeStorageCursor =
            (ModelRuntimeSlot *)&modelRuntimeStorageCursor->rootModelNodeOrSavedOffset;
     }
+    AVar1.eax = 0;
+    AVar1.carry = false;
   }
-  return;
+  SVar2.valueOrError = AVar1.eax;
+  SVar2.carry = AVar1.carry;
+  return SVar2;
 }
+
 
 /* Address: 0x00528A70.
    Ownership: world/model/runtime.
@@ -408,51 +405,46 @@ void __cdecl ModelRuntimePool_Init(void)
    semantic value.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void __cdecl ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
+void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
 
 {
   int iVar1;
-  int extraout_ECX;
   int iVar2;
   int iVar3;
-  int extraout_EDX;
-  int iVar4;
-  ModelDefinitionRecordPrefix **ppMVar5;
-  dword dVar6;
+  ModelDefinitionRecordPrefix **ppMVar4;
+  dword dVar5;
   
   (*g_MemoryApi.free)(g_ModelRuntimeSlots);
   g_ModelRuntimeSlots = (ModelRuntimeSlot *)0x0;
-  ppMVar5 = g_ModelDefinitionRegistry;
-  iVar1 = 0x300;
+  ppMVar4 = g_ModelDefinitionRegistry;
+  iVar2 = 0x300;
   while( true ) {
-    if ((*ppMVar5 != (ModelDefinitionRecordPrefix *)0x0) &&
-       (dVar6 = (*ppMVar5)[8].flags, dVar6 != 0)) break;
+    if ((*ppMVar4 != (ModelDefinitionRecordPrefix *)0x0) &&
+       (dVar5 = (*ppMVar4)[8].flags, dVar5 != 0)) break;
 ModelRuntimePool_Shutdown_ClearDefinitionEntryAndAdvance:
-    *ppMVar5 = (ModelDefinitionRecordPrefix *)0x0;
-    ppMVar5 = ppMVar5 + 1;
-    iVar1 = iVar1 + -1;
-    if (iVar1 == 0) {
+    *ppMVar4 = (ModelDefinitionRecordPrefix *)0x0;
+    ppMVar4 = ppMVar4 + 1;
+    iVar2 = iVar2 + -1;
+    if (iVar2 == 0) {
       return;
     }
   }
-  iVar4 = 0;
+  iVar3 = 0;
   do {
-    iVar2 = *(int *)(dVar6 + 0x14);
-    iVar3 = 0;
-    if (((*(uint *)(dVar6 + 4) & 0xf) == 0) && (*(int *)(dVar6 + 0x34) != 0)) {
-      Resource_Release(*(void **)(dVar6 + 0x30));
-      iVar2 = extraout_ECX;
-      iVar3 = extraout_EDX;
+    iVar1 = *(int *)(dVar5 + 0x14);
+    if (((*(uint *)(dVar5 + 4) & 0xf) == 0) && (*(int *)(dVar5 + 0x34) != 0)) {
+      Resource_Release(*(void **)(dVar5 + 0x30));
     }
-    iVar4 = iVar4 + 1;
+    iVar3 = iVar3 + 1;
     while( true ) {
-      if (iVar2 != 0) break;
-      iVar4 = iVar4 + -1;
-      if (iVar4 == 0) goto ModelRuntimePool_Shutdown_ClearDefinitionEntryAndAdvance;
+      if (iVar1 != 0) break;
+      iVar3 = iVar3 + -1;
+      if (iVar3 == 0) goto ModelRuntimePool_Shutdown_ClearDefinitionEntryAndAdvance;
     }
-    dVar6 = *(dword *)(dVar6 + 0x18 + iVar3 * 4);
+    dVar5 = *(dword *)(dVar5 + 0x18);
   } while( true );
 }
+
 
 /* Address: 0x00528B30.
    Ownership: world/model/runtime.
@@ -470,7 +462,6 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
   dword dVar2;
   int iVar3;
   int iVar4;
-  int extraout_EDX;
   ModelNodePoolRelativeOffset MVar5;
   ModelRuntimeSlotUnrebaseSemanticView200 *pMVar6;
   ModelRuntimeSlotUnrebaseSemanticView200 *modelRuntime;
@@ -526,10 +517,11 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
       pMVar6 = (ModelRuntimeSlotUnrebaseSemanticView200 *)(pMVar6->reserved10_37 + 0x10);
     }
     modelRuntime = modelRuntime + 1;
-    iVar4 = extraout_EDX + -1;
+    iVar4 = iVar4 + -1;
   } while (iVar4 != 0);
   return;
 }
+
 
 /* Address: 0x00528CF0.
    Ownership: world/model/runtime.
@@ -538,7 +530,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
    remain separate.
    Cross-module calls: ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive [world/model/hierarchy].
 */
-void __cdecl ModelRuntimePool_RebaseAfterLoad(void)
+void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
 
 {
   ModelRuntimeSlot *modelSlot3;
@@ -548,11 +540,9 @@ void __cdecl ModelRuntimePool_RebaseAfterLoad(void)
   int iVar1;
   dword dVar2;
   int iVar3;
-  int extraout_EDX;
   ModelRuntimeNode *modelNode2;
   ModelDefinitionRecordPrefix **ppMVar4;
   ModelRuntimeSlot *modelRuntime;
-  ModelRuntimeAttachmentCollectionRegisterPair MVar5;
   ModelDefinitionRecordPrefix *modelDefinition1;
   ModelRuntimeNode *modelNode1;
   ModelRuntimeSlot *modelSlot1;
@@ -563,7 +553,7 @@ void __cdecl ModelRuntimePool_RebaseAfterLoad(void)
     if ((modelRuntime->rootModelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
       armySlot2 = (ArmyRuntimeSlot *)
                   ((int)&((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->
-                         definitionOrAsset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+                         modelRuntimeOrSavedOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
       (modelRuntime->rootModelNodeOrSavedOffset).modelNode =
            (ModelRuntimeNode *)
            (g_RuntimeObjectRebaseBaseMinusOne +
@@ -580,7 +570,8 @@ void __cdecl ModelRuntimePool_RebaseAfterLoad(void)
       armySlot1 = (ArmyRuntimeSlot *)0x0;
       if (armySlot2 != (ArmyRuntimeSlot *)0x0) {
         armySlot1 = (ArmyRuntimeSlot *)
-                    ((int)&armySlot2->definitionOrAsset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+                    ((int)&armySlot2->modelRuntimeOrSavedOffset +
+                    (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
       (modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = modelSlot3;
       (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = armySlot1;
@@ -596,7 +587,6 @@ void __cdecl ModelRuntimePool_RebaseAfterLoad(void)
           (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[dVar2])
                     (modelRuntime);
           dVar2 = modelRuntime->attachmentCount0C;
-          iVar3 = extraout_EDX;
           modelSlot3 = modelRuntime;
           if (dVar2 != 0) {
             do {
@@ -619,11 +609,10 @@ void __cdecl ModelRuntimePool_RebaseAfterLoad(void)
               dVar2 = dVar2 - 1;
             } while (dVar2 != 0);
             modelRuntime->attachmentCount0C = 0;
-            MVar5 = ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
-                              (modelRuntime,
-                               *(MdlSerializedNodeHeader38 **)
-                                ((modelRuntime->definitionOrSavedId).savedIdOrOffset + 100));
-            iVar3 = (int)(MVar5 >> 0x20);
+            ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+                      (modelRuntime,modelRuntime,
+                       *(MdlSerializedNodeHeader38 **)
+                        ((modelRuntime->definitionOrSavedId).savedIdOrOffset + 100));
           }
           goto ModelRuntimePool_RebaseAfterLoad_AdvanceAfterDefinitionResolution;
         }
@@ -641,6 +630,7 @@ ModelRuntimePool_RebaseAfterLoad_AdvanceAfterDefinitionResolution:
   } while( true );
 }
 
+
 /* Address: 0x00529560.
    Ownership: world/model/runtime.
    Purpose: Recursively destroys child model runtimes, releases owned world nodes, detaches the hierarchy from its
@@ -652,46 +642,47 @@ ModelRuntimePool_RebaseAfterLoad_AdvanceAfterDefinitionResolution:
    ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime], ArmyRuntime_RebuildDerivedSelectionMetrics
    [gameplay/army/runtime].
 */
-void ModelRuntimePool_DestroyHierarchyAndDetach
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimePool_DestroyHierarchyAndDetach
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   int *piVar1;
+  ModelDefinitionRecordPrefix *modelDefinition;
   ModelRuntimeSlot *modelRuntime_00;
   ModelRuntimeNode *node;
+  GameEntityRuntime *entityRuntime;
   Q12 worldYQ12;
   Q12 worldXQ12;
   AngleTurn32 orientationAngle;
   int iVar2;
-  dword extraout_ECX;
   dword dVar3;
-  GameEntityRuntime *entityRuntime;
-  GameEntityRuntime *extraout_EDX;
   ModelRuntimeSlot *modelSlot1;
-  undefined8 uVar4;
   ModelRuntimeNode *modelNode1;
   
-  uVar4 = FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[(int)uVar4])
-            ((ModelDefinitionRecordPrefix *)((ulonglong)uVar4 >> 0x20),modelRuntime);
+  modelDefinition =
+       (ModelDefinitionRecordPrefix *)(modelRuntime->definitionOrSavedId).savedIdOrOffset;
+  dVar3 = modelDefinition[6].flags;
+  FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
+  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[dVar3])
+            (modelDefinition,modelRuntime);
   modelSlot1 = modelRuntime;
   for (dVar3 = modelRuntime->attachmentCount0C; dVar3 != 0; dVar3 = dVar3 - 1) {
     modelRuntime_00 = modelSlot1->attachments140[0].childModelRuntimeOrSavedOffset00;
     if (modelRuntime_00 != (ModelRuntimeSlot *)0x0) {
       ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,modelRuntime_00);
-      dVar3 = extraout_ECX;
     }
     modelSlot1 = (ModelRuntimeSlot *)(modelSlot1->reserved10_37 + 0x10);
   }
   node = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
+  entityRuntime = (GameEntityRuntime *)(modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
   worldYQ12 = (node->worldTransform).translation.x;
   worldXQ12 = (node->worldTransform).translation.y;
   orientationAngle = (node->modelPayload).worldRotationAngle2;
   modelNode1 = node->parentNode;
   WorldRuntime_ForEachNodeInOwnerListD8
             (modelRuntime,WorldRuntimeNode_ClearDetachedEntityReferencesCallback,worldRuntime);
-  uVar4 = ModelRuntimeNode_ReleaseRecursiveAndDetachParent(node);
-  entityRuntime = (GameEntityRuntime *)((ulonglong)uVar4 >> 0x20);
+  ModelRuntimeNode_ReleaseRecursiveAndDetachParent(node);
   (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
   if (modelNode1 == (ModelRuntimeNode *)0x0) {
     if ((entityRuntime->common).ownership.definitionOrClassRecord != (void *)0x0) {
@@ -704,7 +695,6 @@ void ModelRuntimePool_DestroyHierarchyAndDetach
         ArmyRuntime_CreateInstanceFromAssetCf
                   (0,orientationAngle,worldXQ12,worldYQ12,0,*(PckArmyAssetIdCatalog *)(iVar2 + 0x74)
                    ,worldRuntime);
-        entityRuntime = extraout_EDX;
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
     }
@@ -722,6 +712,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach
   return;
 }
 
+
 /* Address: 0x00529690.
    Ownership: world/model/runtime.
    Purpose: Eight stack arguments are authoritative from RET 0x20; prior EAX/EDX synthetic parameters and return
@@ -733,51 +724,42 @@ void ModelRuntimePool_DestroyHierarchyAndDetach
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], ShotRuntimePool_CreateProjectileFromDefinition
    [world/shots/runtime].
 */
-void ModelRuntime_EmitProjectilesFromAttachmentPoints
-               (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
-               Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime
-               ,MdlSerializedNodeHeader38 *definitionNode,WorldRuntimeContext *worldRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntime_EmitProjectilesFromAttachmentPoints
+          (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
+          Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
+          MdlSerializedNodeHeader38 *definitionNode,WorldRuntimeContext *worldRuntime)
 
 {
-  undefined4 in_ECX;
-  undefined4 extraout_ECX;
-  int launchWorldYQ12;
-  undefined4 extraout_ECX_00;
-  undefined4 uVar1;
-  undefined4 in_EDX;
   int modelPointRecordsRemaining;
   ModelPackedPointRecord *localPointRecord;
   WorldPositionXYRegisterPairQ12 attachmentWorldPointPairQ12;
+  ModelLocalPointRegs12 MVar1;
   AssetRecordByteCount modelPointTableBase;
   
-  ModelNodeRuntime_RebuildTransformsFromRoot(in_ECX,in_EDX,modelNodeRuntime);
+  ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   modelPointTableBase = (definitionNode->spriteAssetReference).savedId;
   localPointRecord =
        (ModelPackedPointRecord *)(modelPointTableBase + *(int *)(modelPointTableBase + 0xe4));
-  uVar1 = extraout_ECX;
   for (modelPointRecordsRemaining = *(int *)(modelPointTableBase + 0xe8);
       modelPointRecordsRemaining != 0; modelPointRecordsRemaining = modelPointRecordsRemaining + -1)
   {
     if ((localPointRecord->packedLookupKey & 0xf) == 2) {
-      attachmentWorldPointPairQ12 =
-           ModelNodeRuntime_TransformLocalPointRegs(uVar1,localPointRecord,modelNodeRuntime);
+      MVar1 = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
       ShotRuntimePool_CreateProjectileFromDefinition
                 (shotRuntimeState14,
                  (ArmyRuntimeSlot *)
                  ((modelNodeRuntime->runtimePayload).armyRuntime)->linkedEntityRuntime,
                  targetWorldZQ12,
-                 (launchWorldYQ12 - (modelNodeRuntime->worldTransform).translation.y) +
-                 targetWorldYQ12,
-                 ((int)attachmentWorldPointPairQ12 -
-                 (modelNodeRuntime->worldTransform).translation.x) + targetWorldXQ12,
-                 (Q12)(attachmentWorldPointPairQ12 >> 0x20),launchWorldYQ12,
-                 (int)attachmentWorldPointPairQ12,shotDefinition,worldRuntime);
-      uVar1 = extraout_ECX_00;
+                 (MVar1.ecx - (modelNodeRuntime->worldTransform).translation.y) + targetWorldYQ12,
+                 (MVar1.eax - (modelNodeRuntime->worldTransform).translation.x) + targetWorldXQ12,
+                 MVar1.edx,MVar1.ecx,MVar1.eax,shotDefinition,worldRuntime);
     }
     localPointRecord = localPointRecord + 1;
   }
   return;
 }
+
 
 /* Address: 0x00529140.
    Ownership: world/model/runtime.
@@ -791,31 +773,25 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
    ModelNodeRuntime_RecomputeSubtreeBoundingRadius [world/model/hierarchy],
    ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
 */
-undefined8
+ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_CreateInstanceByDefinitionIdCf
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
           WorldRuntimeContext *worldRuntime)
 
 {
-  uint *puVar1;
-  dword dVar2;
+  dword dVar1;
+  uint uVar2;
   uint uVar3;
-  uint uVar4;
+  dword dVar4;
   dword dVar5;
-  dword dVar6;
-  ArmyRuntimeReferenceOrSavedOffset4 AVar7;
   ModelRuntimeNode *modelNodeRuntime;
   ModelRuntimeSlot *modelSlot2;
-  undefined4 extraout_ECX;
-  undefined4 in_EDX;
-  int iVar8;
-  ModelDefinitionRecordPrefix **ppMVar9;
+  int iVar6;
+  ModelDefinitionRecordPrefix **ppMVar7;
   ModelRuntimeSlot *modelRuntime;
-  bool bVar10;
-  longlong lVar11;
-  undefined8 uVar12;
-  ulonglong uVar13;
+  ModelNodeCreateEaxCf5 MVar8;
+  ModelNodeCreateEaxCf5 MVar9;
   ModelDefinitionRuntimeSemanticView280 *pMVar2;
   ModelRuntimeSlot *modelSlot1;
   
@@ -825,8 +801,8 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
   modelSlot1 = g_ModelRuntimeSlots;
   while (modelSlot1 != (ModelRuntimeSlot *)0x0) {
     if ((modelRuntime->rootModelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) {
-      ppMVar9 = g_ModelDefinitionRegistry;
-      iVar8 = 0x300;
+      ppMVar7 = g_ModelDefinitionRegistry;
+      iVar6 = 0x300;
       goto ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry;
     }
     modelRuntime = modelRuntime + 1;
@@ -835,26 +811,26 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
   }
   goto ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure;
   while( true ) {
-    ppMVar9 = ppMVar9 + 1;
-    iVar8 = iVar8 + -1;
-    if (iVar8 == 0) break;
+    ppMVar7 = ppMVar7 + 1;
+    iVar6 = iVar6 + -1;
+    if (iVar6 == 0) break;
 ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry:
-    pMVar2 = (ModelDefinitionRuntimeSemanticView280 *)*ppMVar9;
+    pMVar2 = (ModelDefinitionRuntimeSemanticView280 *)*ppMVar7;
     if ((pMVar2 != (ModelDefinitionRuntimeSemanticView280 *)0x0) &&
        (pMVar2->definitionId == modelDefinitionId)) {
       (modelRuntime->definitionOrSavedId).definition = (ModelDefinitionRecordPrefix *)pMVar2;
-      dVar2 = pMVar2->runtimeValue60;
-      uVar3 = pMVar2->runtimeValue48;
-      uVar4 = pMVar2->runtimeValue27C;
+      dVar1 = pMVar2->runtimeValue60;
+      uVar2 = pMVar2->runtimeValue48;
+      uVar3 = pMVar2->runtimeValue27C;
       (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
       (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime = armyRuntime;
       modelRuntime->attachmentCount0C = 0;
-      modelRuntime->definitionValue60_3C = dVar2;
-      if (armyRuntime->runtimeState44 < uVar3) {
-        armyRuntime->runtimeState44 = uVar3;
+      modelRuntime->definitionValue60_3C = dVar1;
+      if (armyRuntime->runtimeState44 < uVar2) {
+        armyRuntime->runtimeState44 = uVar2;
       }
-      if (armyRuntime->runtimeState90 < uVar4) {
-        armyRuntime->runtimeState90 = uVar4;
+      if (armyRuntime->runtimeState90 < uVar3) {
+        armyRuntime->runtimeState90 = uVar3;
       }
       modelRuntime->reserved10_37[0] = 0;
       modelRuntime->reserved10_37[1] = 0;
@@ -889,60 +865,60 @@ ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry:
       modelRuntime->reserved10_37[0x1e] = 0;
       modelRuntime->reserved10_37[0x1f] = 0;
       (modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)0x0;
-      dVar2 = pMVar2->runtimeValue8C;
-      dVar5 = pMVar2->runtimeValue94;
-      dVar6 = pMVar2->runtimeValue9C;
+      dVar1 = pMVar2->runtimeValue8C;
+      dVar4 = pMVar2->runtimeValue94;
+      dVar5 = pMVar2->runtimeValue9C;
       modelRuntime->definitionValue84_40 = pMVar2->runtimeValue84;
-      modelRuntime->definitionValue88_44 = dVar2;
-      modelRuntime->definitionValue94_48 = dVar5;
-      modelRuntime->definitionValue9C_4C = dVar6;
-      dVar2 = pMVar2->runtimeValueAC;
-      dVar5 = pMVar2->runtimeValueB4;
-      dVar6 = pMVar2->runtimeValueBC;
+      modelRuntime->definitionValue88_44 = dVar1;
+      modelRuntime->definitionValue94_48 = dVar4;
+      modelRuntime->definitionValue9C_4C = dVar5;
+      dVar1 = pMVar2->runtimeValueAC;
+      dVar4 = pMVar2->runtimeValueB4;
+      dVar5 = pMVar2->runtimeValueBC;
       modelRuntime->definitionValueA4_50 = pMVar2->runtimeValueA4;
-      modelRuntime->definitionValueAC_54 = dVar2;
-      modelRuntime->definitionValueB4_58 = dVar5;
-      modelRuntime->definitionValueBC_5C = dVar6;
-      AVar7 = modelRuntime->ownerArmyRuntimeOrSavedOffset;
-      dVar2 = pMVar2->runtimeValue18C;
+      modelRuntime->definitionValueAC_54 = dVar1;
+      modelRuntime->definitionValueB4_58 = dVar4;
+      modelRuntime->definitionValueBC_5C = dVar5;
+      dVar1 = pMVar2->runtimeValue18C;
       (modelRuntime->classState).enabledStateE4 = 1;
       (modelRuntime->classState).enabledStateE8 = 1;
       (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = (ArmyRuntimeSlot *)0x0
       ;
-      (modelRuntime->classState).definitionDerivedValueF4 = dVar2;
+      (modelRuntime->classState).definitionDerivedValueF4 = dVar1;
       (modelRuntime->classState).classStateEC = 0;
       (modelRuntime->classState).classStateF8 = 0;
       (modelRuntime->classState).classStateFC = 0;
       modelRuntime->classState118 = 0;
-      bVar10 = false;
+      uVar2 = pMVar2->runtimeValue68;
       if ((MdlSerializedNodeHeader38 *)pMVar2->serializedNodeOffsetOrPointer64 !=
           (MdlSerializedNodeHeader38 *)0x0) {
-        lVar11 = ModelNodeRuntime_CreateHierarchyRecursiveCf
-                           (AVar7,pMVar2->runtimeValue68,paletteAsset,textureSet,modelRuntime,
-                            (MdlSerializedNodeHeader38 *)pMVar2->serializedNodeOffsetOrPointer64,
-                            worldRuntime);
-        modelNodeRuntime = (ModelRuntimeNode *)lVar11;
-        if (bVar10) goto ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure;
+        MVar9 = ModelNodeRuntime_CreateHierarchyRecursiveCf
+                          (paletteAsset,textureSet,modelRuntime,
+                           (MdlSerializedNodeHeader38 *)pMVar2->serializedNodeOffsetOrPointer64,
+                           worldRuntime);
+        modelNodeRuntime = MVar9.modelNode;
+        if (MVar9.carry) goto ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure;
         (modelRuntime->rootModelNodeOrSavedOffset).modelNode = modelNodeRuntime;
-        uVar12 = ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
-        uVar13 = ModelNodeRuntime_RebuildTransformsFromRoot
-                           (extraout_ECX,(int)((ulonglong)uVar12 >> 0x20),(ModelRuntimeNode *)uVar12
-                           );
-        if ((uVar13 & 0x10000000000) != 0) {
-          puVar1 = (uint *)((int)uVar13 + 0x4c);
-          *puVar1 = *puVar1 | 0x2000;
+        ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
+        ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+        if ((uVar2 & 0x100) != 0) {
+          modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 0x2000;
         }
       }
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
-        [((ModelDefinitionRecordPrefix *)(modelRuntime->definitionOrSavedId).savedIdOrOffset)[6].
-         flags])((ModelDefinitionRecordPrefix *)(modelRuntime->definitionOrSavedId).savedIdOrOffset,
-                 modelRuntime);
-      return CONCAT44(in_EDX,modelRuntime);
+        [(modelRuntime->definitionOrSavedId).definition[6].flags])
+                ((modelRuntime->definitionOrSavedId).definition,modelRuntime);
+      MVar9.carry = false;
+      MVar9.modelNode = (ModelRuntimeNode *)modelRuntime;
+      return MVar9;
     }
   }
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
   modelNodeRuntime = (ModelRuntimeNode *)0x3e;
 ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure:
-  return CONCAT44(in_EDX,modelNodeRuntime);
+  MVar8.carry = true;
+  MVar8.modelNode = modelNodeRuntime;
+  return MVar8;
 }
+

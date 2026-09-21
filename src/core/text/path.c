@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/core/text/path.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/core/text/path.h>
 
 /* Implementation ownership: core/text/path. */
@@ -39,10 +46,10 @@ dword WidePath_GetExtensionCode(word *path)
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-undefined4 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,word *path)
+bool __thandor_cf_preserve_eax_ecx_edx
+WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,word *path)
 
 {
-  undefined4 in_EAX;
   uint *extensionWriteCursor;
   short currentCodeUnit;
   
@@ -57,7 +64,7 @@ undefined4 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,wor
         }
         *extensionWriteCursor = ((extensionCode & 0xff) << 8 | (extensionCode >> 8) << 0x18) >> 8;
         extensionWriteCursor[1] = extensionCode >> 0x10;
-        return in_EAX;
+        return false;
       }
       path = (word *)((int)path + 2);
       if (currentCodeUnit == 0x5c) break;
@@ -68,19 +75,19 @@ undefined4 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,wor
   } while( true );
 }
 
+
 /* Address: 0x0040F320.
    Ownership: core/text/path.
    Purpose: Splits a bounded UTF-16 path at its final backslash into leaf and parent outputs. When no separator
    exists, parent receives the complete path and leaf is cleared.
 */
-undefined8 WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path)
+bool __thandor_cf_preserve_eax_ecx_edx
+WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path)
 
 {
-  undefined4 in_EAX;
   int iVar1;
   uint copyCount;
   uint uVar2;
-  undefined4 in_EDX;
   word *pwVar3;
   word *componentStartCursor;
   bool bVar4;
@@ -124,7 +131,7 @@ code_r0x0040f351:
         }
       }
       *parentOut = 0;
-      return CONCAT44(in_EDX,in_EAX);
+      return false;
     }
     bVar4 = false;
     componentStartCursor = componentStartCursor;
@@ -136,20 +143,21 @@ code_r0x0040f351:
       }
       leafOut[0] = 0;
       leafOut[1] = 0;
-      return CONCAT44(in_EDX,in_EAX);
+      return false;
     }
   } while( true );
 }
+
 
 /* Address: 0x0040F3C0.
    Ownership: core/text/path.
    Purpose: Copies a bounded directory, appends a backslash when needed, then appends a bounded leaf name into the
    destination.
 */
-undefined4 WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
+void __thandor_void_preserve_eax_ecx_edx
+WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
 
 {
-  undefined4 in_EAX;
   int codeUnitsRemaining;
   int copyCodeUnitsRemaining;
   int iVar1;
@@ -197,8 +205,9 @@ undefined4 WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *d
       }
     }
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00531170.
    Ownership: core/text/path.
@@ -206,35 +215,47 @@ undefined4 WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *d
    contiguous decimal digits immediately preceding the extension. The parsed value is returned in ECX while EAX is
    preserved.
 */
-undefined8 WidePath_ParseTrailingNumberBeforeExtensionRegs(word *path)
+dword __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(word *path)
 
 {
-  undefined4 in_EAX;
-  int iVar1;
-  uint uVar2;
-  undefined4 in_EDX;
+  dword dVar1;
+  int iVar2;
+  uint uVar3;
+  uint uVar4;
   word *terminatorCursor;
   ushort *digitScanCursor;
   word currentCodeUnit;
   ushort digitCodeUnit;
   
-  iVar1 = 0x20;
+  iVar2 = 0x20;
   do {
     terminatorCursor = path;
-    if (iVar1 == 0) break;
-    iVar1 = iVar1 + -1;
+    if (iVar2 == 0) break;
+    iVar2 = iVar2 + -1;
     terminatorCursor = path + 1;
     currentCodeUnit = *path;
     path = terminatorCursor;
   } while (currentCodeUnit != 0);
   terminatorCursor = terminatorCursor + -6;
-  uVar2 = iVar1 + 6;
+  dVar1 = 0;
+  uVar3 = iVar2 + 6;
+  iVar2 = 1;
   digitScanCursor = terminatorCursor;
-  do {
+  while( true ) {
     digitCodeUnit = *digitScanCursor;
-    uVar2 = uVar2 + 1;
+    uVar3 = uVar3 + 1;
     digitScanCursor = digitScanCursor + -1;
-    if ((digitCodeUnit < 0x30) || (9 < digitCodeUnit - 0x30)) break;
-  } while (uVar2 < 0x20);
-  return CONCAT44(in_EDX,in_EAX);
+    uVar4 = digitCodeUnit - 0x30;
+    if (digitCodeUnit < 0x30) {
+      return dVar1;
+    }
+    if (9 < uVar4) break;
+    dVar1 = dVar1 + uVar4 * iVar2;
+    iVar2 = iVar2 * 10;
+    if (0x1f < uVar3) {
+      return dVar1;
+    }
+  }
+  return dVar1;
 }
+

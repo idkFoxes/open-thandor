@@ -1,26 +1,36 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/movie/runtime/playback.h
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #ifndef THANDOR_MOVIE_RUNTIME_PLAYBACK_H
 #define THANDOR_MOVIE_RUNTIME_PLAYBACK_H
 
-#include <thandor/generated/v523_types.h>
+#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: movie/runtime/playback. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */
-undefined8 __fastcall Movie_EncodeFlmBufferFromFrameProviderCf (undefined4 param_1,undefined4 param_2,undefined4 param_3,uint param_4,uint *param_5, undefined *param_6);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Movie_EncodeFlmBufferFromFrameProviderCf
+          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+          uint *outputBuffer,MovieFrameProviderCfProc *frameProvider);
 
 /* 0x00563FF0 */
-undefined8 __cdecl MoviePlayback_AdvanceScheduledFrameAndTick(void);
+void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void);
 
 /* 0x004A8590 */
-dword Movie_Open(MovieOpenFlags movieOpenFlags,word *path);
+MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,word *path);
 
 /* 0x004A8A20 */
-MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void);
+MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDimensions(void);
 
 /* 0x004A8A40 */
-void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);
+void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);
 
 /* 0x004A8C00 */
 dword Movie_StreamWorkerThread(void *unusedThreadContext);
@@ -29,36 +39,48 @@ dword Movie_StreamWorkerThread(void *unusedThreadContext);
 void Movie_Rewind(void);
 
 /* 0x004A8D90 */
-void Movie_Close(void);
+void __thandor_void_preserve_eax_ecx_edx Movie_Close(void);
 
 /* 0x005657D0 */
-void EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime);
+void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime);
 
 /* 0x00565810 */
-void EndMovieUiRuntime_DispatchCommandByFlagsCf (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime);
+void __thandor_void_preserve_eax_ecx_edx
+EndMovieUiRuntime_DispatchCommandByFlagsCf
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime);
 
 /* 0x005739C0 */
 void IntroMovie_TimerTick(void);
 
 /* 0x004A7030 */
-undefined8 __fastcall Movie_EncodeFrame4x4Keyframe (undefined4 param_1,undefined4 param_2,uint param_3,uint param_4,uint *param_5, uint *param_6);
+uint __thandor_eax_preserve_ecx_edx
+Movie_EncodeFrame4x4Keyframe
+          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+          uint *encodedOutput,uint *sourcePixels);
 
 /* 0x004A7770 */
-ulonglong __fastcall Movie_EncodeFrame4x4Delta (undefined4 param_1,undefined4 param_2,uint param_3,uint param_4,uint *param_5,int param_6 ,ulonglong *param_7);
+uint __thandor_eax_preserve_ecx_edx
+Movie_EncodeFrame4x4Delta
+          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+          uint *encodedOutput,uint *previousFramePixels,uint *currentFramePixels);
 
 /* 0x004A8A60 */
-MovieRuntime * Movie_AdvanceFrame(void);
+MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void);
 
 /* 0x00564080 */
-undefined8 MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
+void __thandor_void_preserve_eax_ecx_edx
+MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame);
 
 /* 0x004A81C0 */
-dword Movie_DecodeFrame4x4Delta (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels, dword *destinationArgb,byte *encodedFrame);
+dword __thandor_eax_preserve_ecx_edx
+Movie_DecodeFrame4x4Delta
+          (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,dword *destinationArgb,
+          byte *encodedFrame);
 
 /* 0x004A6FB0 */
-undefined8 MovieColor_ComputeChromaCodeFromRgb888(uint param_1);
+uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888);
 
 /* 0x004A7000 */
-undefined8 MovieColor_ComputeLuma5FromRgb888(uint param_1);
+uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888);
 
 #endif /* THANDOR_MOVIE_RUNTIME_PLAYBACK_H */

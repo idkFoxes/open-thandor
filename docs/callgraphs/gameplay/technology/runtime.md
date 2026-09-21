@@ -1,6 +1,6 @@
 # Call graph: `gameplay/technology/runtime`
 
-[Source](../../../../src/gameplay/technology/runtime.c) · [Header](../../../../include/thandor/gameplay/technology/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-technology-runtime)
+[Source](../../../../src/gameplay/technology/runtime.c) · [Header](../../../../include/thandor/gameplay/technology/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-technology-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-technology-runtime)
 
 5 functions. Addresses are current V523 executable VAs.
 

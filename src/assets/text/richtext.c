@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/text/richtext.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/text/richtext.h>
 
 /* Implementation ownership: assets/text/richtext. */
@@ -10,35 +17,34 @@
    locals, and executable data remain unchanged.
    Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_MeasureNextWrappedLineCf.
 */
-RichTextExtentRegs
+RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
 RichTextCommandStream_MeasureWrappedBlockRegs
           (dword packedStyle,word *commandStream,UiPixelExtent maximumWidth)
 
 {
-  uint extraout_ECX;
   uint uVar1;
-  bool bVar2;
-  undefined8 uVar3;
-  RichTextExtentRegs RVar4;
+  int iVar2;
+  RichTextExtentRegs RVar3;
+  RichTextLineAdvanceEaxCf5 RVar4;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
-  uVar1 = extraout_ECX >> 0x10 & 7;
-  g_ActiveFontIndex = extraout_ECX >> 0x18 & 7;
+  uVar1 = packedStyle >> 0x10 & 7;
+  g_ActiveFontIndex = packedStyle >> 0x18 & 7;
   g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
-  bVar2 = false;
+  iVar2 = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
-    uVar3 = RichTextCommandStream_MeasureNextWrappedLineCf(maximumWidth);
-    uVar1 = (uint)((ulonglong)uVar3 >> 0x20);
-    if (bVar2) break;
-    bVar2 = CARRY4(uVar1,(uint)uVar3);
+    RVar4 = RichTextCommandStream_MeasureNextWrappedLineCf(maximumWidth);
+    if (RVar4.carry) break;
+    iVar2 = iVar2 + RVar4.lineAdvancePixels;
   }
-  RVar4.heightPixels = uVar1 + (uint)uVar3;
-  RVar4.widthPixels = maximumWidth;
-  return RVar4;
+  RVar3.heightPixels = iVar2 + RVar4.lineAdvancePixels;
+  RVar3.widthPixels = maximumWidth;
+  return RVar3;
 }
+
 
 /* Address: 0x0041D7C0.
    Ownership: assets/text/richtext.
@@ -49,34 +55,32 @@ RichTextCommandStream_MeasureWrappedBlockRegs
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_DrawNextWrappedLineCf.
 */
-void RichTextCommandStream_DrawWrappedBlockCf
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,dword packedStyle,word *commandStream,
-               UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
+void __thandor_void_preserve_eax_ecx_edx
+RichTextCommandStream_DrawWrappedBlockCf
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,dword packedStyle,word *commandStream,
+          UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
 
 {
-  uint extraout_ECX;
   uint uVar1;
-  bool bVar2;
-  undefined8 uVar3;
+  RichTextLineAdvanceEaxCf5 RVar2;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
-  uVar1 = extraout_ECX >> 0x10 & 7;
-  bVar2 = false;
-  g_ActiveFontIndex = extraout_ECX >> 0x18 & 7;
+  uVar1 = packedStyle >> 0x10 & 7;
+  g_ActiveFontIndex = packedStyle >> 0x18 & 7;
   g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
-    uVar3 = RichTextCommandStream_DrawNextWrappedLineCf
+    RVar2 = RichTextCommandStream_DrawNextWrappedLineCf
                       (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX);
-    if (bVar2) break;
-    bVar2 = CARRY4(drawY,(uint)uVar3);
-    drawY = drawY + (uint)uVar3;
+    if (RVar2.carry) break;
+    drawY = drawY + RVar2.lineAdvancePixels;
   }
   return;
 }
+
 
 /* Address: 0x0041D4A0.
    Ownership: assets/text/richtext.
@@ -89,7 +93,7 @@ void RichTextCommandStream_DrawWrappedBlockCf
    Local calls: RichTextCommandStream_MeasureRegs.
    Cross-module calls: FontGlyph_DrawBottomAligned [assets/text/resources].
 */
-undefined8
+bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,word *commandStream,
@@ -97,29 +101,27 @@ RichTextCommandStream_DrawSingleLine
 
 {
   int baselineY_00;
-  undefined4 in_EAX;
   uint uVar1;
   GraphicsSubresourceIndex glyphSubresource;
   int iVar2;
-  uint extraout_ECX;
-  undefined4 in_EDX;
-  word *pwVar3;
-  RichTextExtentRegs RVar4;
-  qword qVar5;
+  dword dVar3;
+  word *pwVar4;
+  RichTextExtentRegs RVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar6;
   byte *local_1c;
   
-  RVar4 = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
-  uVar1 = RVar4.widthPixels;
-  baselineY_00 = drawX + RVar4.heightPixels;
-  if ((extraout_ECX & 1) == 0) {
-    if ((extraout_ECX & 2) == 0)
+  RVar5 = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
+  uVar1 = RVar5.widthPixels;
+  baselineY_00 = drawX + RVar5.heightPixels;
+  if ((packedStyle & 1) == 0) {
+    if ((packedStyle & 2) == 0)
     goto RichTextCommandStream_DrawSingleLine_InitializeStyleAndBeginDrawing;
     uVar1 = uVar1 >> 1;
   }
   baselineY = baselineY - uVar1;
 RichTextCommandStream_DrawSingleLine_InitializeStyleAndBeginDrawing:
-  uVar1 = extraout_ECX >> 0x10 & 7;
-  g_ActiveFontIndex = extraout_ECX >> 0x18 & 7;
+  uVar1 = packedStyle >> 0x10 & 7;
+  g_ActiveFontIndex = packedStyle >> 0x18 & 7;
   g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
   local_1c = (byte *)0x0;
@@ -127,12 +129,12 @@ RichTextCommandStream_DrawSingleLine_InitializeStyleAndBeginDrawing:
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
 switchD_0041d537_caseD_7:
   while( true ) {
-    pwVar3 = commandStream;
-    glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar3;
-    commandStream = pwVar3 + 1;
+    pwVar4 = commandStream;
+    glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar4;
+    commandStream = pwVar4 + 1;
     if (glyphSubresource != 0) break;
     if (local_1c == (byte *)0x0) {
-      return CONCAT44(in_EDX,in_EAX);
+      return false;
     }
     commandStream = (word *)(local_1c + 8);
     local_1c = local_1c + -1;
@@ -167,11 +169,11 @@ code_r0x0041d534:
     break;
   case 6:
     g_RichTextCurrentColorArgb =
-         ((((((((byte)pwVar3[2] & 0xf) << 0x18 | (uint)(byte)*commandStream << 0x1c) >> 4 |
-             (uint)(byte)pwVar3[4] << 0x1c) >> 4 | (uint)(byte)pwVar3[3] << 0x1c) >> 4 |
-           (uint)(byte)pwVar3[6] << 0x1c) >> 4 | (uint)(byte)pwVar3[5] << 0x1c) >> 4 |
-         (uint)(byte)pwVar3[8] << 0x1c) >> 4 | (uint)(byte)pwVar3[7] << 0x1c;
-    commandStream = pwVar3 + 9;
+         ((((((((byte)pwVar4[2] & 0xf) << 0x18 | (uint)(byte)*commandStream << 0x1c) >> 4 |
+             (uint)(byte)pwVar4[4] << 0x1c) >> 4 | (uint)(byte)pwVar4[3] << 0x1c) >> 4 |
+           (uint)(byte)pwVar4[6] << 0x1c) >> 4 | (uint)(byte)pwVar4[5] << 0x1c) >> 4 |
+         (uint)(byte)pwVar4[8] << 0x1c) >> 4 | (uint)(byte)pwVar4[7] << 0x1c;
+    commandStream = pwVar4 + 9;
     break;
   case 8:
   case 9:
@@ -192,32 +194,33 @@ RichTextCommandStream_DrawSingleLine_DrawGlyphAndAdvanceX:
     baselineY = baselineY + iVar2;
     break;
   case 0x12:
-    return CONCAT44(in_EDX,in_EAX);
+    return false;
   case 0x14:
   case 0x15:
   case 0x16:
-    commandStream = pwVar3 + 3;
+    commandStream = pwVar4 + 3;
     break;
   case 0x18:
-    local_1c = (byte *)((int)pwVar3 + 3);
+    local_1c = (byte *)((int)pwVar4 + 3);
     commandStream = *(word **)commandStream;
     break;
   case 0x19:
     commandStream = *(word **)commandStream;
     break;
   case 0x1a:
-    qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)
-                      (*(dword *)(pwVar3 + 3),*(GraphicsTextureSourceAsset **)commandStream);
-    iVar2 = (int)qVar5;
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)
+                      (*(dword *)(pwVar4 + 3),*(GraphicsTextureSourceAsset **)commandStream);
+    dVar3 = GVar6.logicalWidthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,baselineY_00 - (int)(qVar5 >> 0x20),baselineY,
-               *(dword *)(pwVar3 + 3),*(GraphicsTextureSourceAsset **)commandStream,
+              (clipTop,clipLeft,clipBottom,clipRight,baselineY_00 - GVar6.logicalHeightPixels,
+               baselineY,*(dword *)(pwVar4 + 3),*(GraphicsTextureSourceAsset **)commandStream,
                g_FramebufferAccess);
-    baselineY = baselineY + iVar2;
-    commandStream = pwVar3 + 5;
+    baselineY = baselineY + dVar3;
+    commandStream = pwVar4 + 5;
   }
   goto switchD_0041d537_caseD_7;
 }
+
 
 /* Address: 0x0041B100.
    Ownership: assets/text/richtext.
@@ -226,14 +229,12 @@ RichTextCommandStream_DrawSingleLine_DrawGlyphAndAdvanceX:
    VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-undefined8
+void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,word *stream)
 
 {
   ushort uVar1;
-  undefined4 in_EAX;
-  undefined4 in_EDX;
   ushort *puVar2;
   
   while( true ) {
@@ -263,14 +264,16 @@ RichTextCommandStream_PatchPayloadBySelector
       }
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0041B200.
    Ownership: assets/text/richtext.
    Purpose: Handles rich text command stream bind texture source.
 */
-void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,word *stream)
+void __thandor_void_preserve_eax_ecx
+RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,word *stream)
 
 {
   ushort *commandCursor;
@@ -306,6 +309,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
   return;
 }
 
+
 /* Address: 0x0041B300.
    Ownership: assets/text/richtext.
    Purpose: Physical RET cleanup=12 stack bytes. This function object claims Listing ownership for a previously
@@ -315,47 +319,48 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-undefined8 __fastcall
+bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_FindNthCommandPayloadPair
-          (undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,ushort *param_5)
+          (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
+          ushort *commandStream)
 
 {
   ushort uVar1;
-  undefined4 in_EAX;
   int iVar2;
   ushort *puVar3;
   
-  iVar2 = param_3 + 1;
+  iVar2 = commandOrdinal + 1;
   do {
     do {
-      puVar3 = param_5;
+      puVar3 = commandStream;
       uVar1 = *puVar3;
       if (uVar1 == 0) {
-        return CONCAT44(param_2,in_EAX);
+        return true;
       }
-      param_5 = puVar3 + 1;
+      commandStream = puVar3 + 1;
     } while (-1 < (short)uVar1);
     switch(uVar1 & 0x1f) {
     case 6:
-      param_5 = puVar3 + 9;
+      commandStream = puVar3 + 9;
       break;
     case 0x14:
     case 0x15:
     case 0x16:
       iVar2 = iVar2 + -1;
-      param_5 = puVar3 + 3;
+      commandStream = puVar3 + 3;
       if (iVar2 == 0) {
-        *(undefined4 *)(puVar3 + 1) = param_4;
-        return CONCAT44(param_2,in_EAX);
+        *(RichTextCommandPayload32 *)(puVar3 + 1) = payloadValue;
+        return false;
       }
       break;
     case 0x18:
     case 0x19:
     case 0x1a:
-      param_5 = puVar3 + 5;
+      commandStream = puVar3 + 5;
     }
   } while( true );
 }
+
 
 /* Address: 0x0041B420.
    Ownership: assets/text/richtext.
@@ -366,42 +371,44 @@ RichTextCommandStream_FindNthCommandPayloadPair
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-undefined4 RichTextCommandStream_FindNestedStreamPointer(undefined4 param_1,ushort *param_2)
+void __thandor_void_preserve_eax_ecx_edx
+RichTextCommandStream_PatchNestedStreamPointerPayloads
+          (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,ushort *commandStream)
 
 {
-  undefined4 in_EAX;
   ushort *commandCursor;
-  ushort *puVar1;
+  RichTextNestedStreamPointerValue32 *pRVar1;
   ushort commandCodeUnit;
   
-  puVar1 = param_2;
+  pRVar1 = (RichTextNestedStreamPointerValue32 *)commandStream;
   while( true ) {
-    commandCursor = puVar1;
+    commandCursor = (ushort *)pRVar1;
     commandCodeUnit = *commandCursor;
-    puVar1 = commandCursor + 1;
+    pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        puVar1 = commandCursor + 9;
+        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 9);
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        puVar1 = commandCursor + 3;
+        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 3);
         break;
       case 0x18:
       case 0x19:
-        *(undefined4 *)puVar1 = param_1;
-        puVar1 = commandCursor + 5;
+        *pRVar1 = nestedStreamPointerValue;
+        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
         break;
       case 0x1a:
-        puVar1 = commandCursor + 5;
+        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
       }
     }
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0041B520.
    Ownership: assets/text/richtext.
@@ -411,44 +418,46 @@ undefined4 RichTextCommandStream_FindNestedStreamPointer(undefined4 param_1,usho
    Typed parameters: p0 param_1→RichTextOpcode1APayloadValue32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined4
-RichTextCommandStream_FindOpcode1APayloadPair(undefined4 param_1,undefined4 param_2,ushort *param_3)
+void __thandor_void_preserve_eax_ecx_edx
+RichTextCommandStream_PatchOpcode1APayloadPair
+          (RichTextOpcode1APayloadValue32 opcode1APayloadValue,
+          RichTextCommandPayload32 leadingPayloadValue,ushort *commandStream)
 
 {
-  undefined4 in_EAX;
   ushort *commandCursor;
-  ushort *puVar1;
+  RichTextCommandPayload32 *pRVar1;
   ushort commandCodeUnit;
   
-  puVar1 = param_3;
+  pRVar1 = (RichTextCommandPayload32 *)commandStream;
   while( true ) {
-    commandCursor = puVar1;
+    commandCursor = (ushort *)pRVar1;
     commandCodeUnit = *commandCursor;
-    puVar1 = commandCursor + 1;
+    pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        puVar1 = commandCursor + 9;
+        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 9);
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        puVar1 = commandCursor + 3;
+        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 3);
         break;
       case 0x18:
       case 0x19:
-        puVar1 = commandCursor + 5;
+        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 5);
         break;
       case 0x1a:
-        *(undefined4 *)puVar1 = param_2;
-        *(undefined4 *)(commandCursor + 3) = param_1;
-        puVar1 = commandCursor + 5;
+        *pRVar1 = leadingPayloadValue;
+        *(RichTextOpcode1APayloadValue32 *)(commandCursor + 3) = opcode1APayloadValue;
+        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 5);
       }
     }
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0041B620.
    Ownership: assets/text/richtext.
@@ -458,40 +467,42 @@ RichTextCommandStream_FindOpcode1APayloadPair(undefined4 param_1,undefined4 para
    Typed parameters: p0 param_1→RichTextInlinePayloadValue32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined4 RichTextCommandStream_FindInlinePayloadPair(undefined4 param_1,ushort *param_2)
+void __thandor_void_preserve_eax_ecx_edx
+RichTextCommandStream_PatchInlinePayloads
+          (RichTextInlinePayloadValue32 inlinePayloadValue,ushort *commandStream)
 
 {
-  undefined4 in_EAX;
   ushort *commandCursor;
-  ushort *puVar1;
+  RichTextInlinePayloadValue32 *pRVar1;
   ushort commandCodeUnit;
   
-  puVar1 = param_2;
+  pRVar1 = (RichTextInlinePayloadValue32 *)commandStream;
   while( true ) {
-    commandCursor = puVar1;
+    commandCursor = (ushort *)pRVar1;
     commandCodeUnit = *commandCursor;
-    puVar1 = commandCursor + 1;
+    pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        puVar1 = commandCursor + 9;
+        pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 9);
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        *(undefined4 *)puVar1 = param_1;
-        puVar1 = commandCursor + 3;
+        *pRVar1 = inlinePayloadValue;
+        pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 3);
         break;
       case 0x18:
       case 0x19:
       case 0x1a:
-        puVar1 = commandCursor + 5;
+        pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 5);
       }
     }
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0041B720.
    Ownership: assets/text/richtext.
@@ -502,25 +513,23 @@ undefined4 RichTextCommandStream_FindInlinePayloadPair(undefined4 param_1,ushort
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-undefined8 __fastcall
-RichTextCommandStream_FindNthCommandFlagsPair
-          (undefined4 param_1,undefined4 param_2,int param_3,uint param_4,uint *param_5)
+bool __thandor_cf_preserve_eax_ecx_edx
+RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint flagBits,uint *commandStream)
 
 {
   uint *puVar1;
-  undefined4 in_EAX;
   int iVar2;
   uint *commandCursor;
   ushort commandCodeUnit;
   
-  iVar2 = param_3 + 1;
-  puVar1 = param_5;
+  iVar2 = commandOrdinal + 1;
+  puVar1 = commandStream;
   do {
     do {
       commandCursor = puVar1;
       commandCodeUnit = (ushort)*commandCursor;
       if (commandCodeUnit == 0) {
-        return CONCAT44(param_2,in_EAX);
+        return true;
       }
       puVar1 = (uint *)((int)commandCursor + 2);
     } while (-1 < (short)commandCodeUnit);
@@ -535,8 +544,8 @@ RichTextCommandStream_FindNthCommandFlagsPair
       puVar1 = (uint *)((int)commandCursor + 6);
       if (iVar2 == 0) {
         *commandCursor = *commandCursor & 0xffff8014;
-        *commandCursor = *commandCursor | param_4;
-        return CONCAT44(param_2,in_EAX);
+        *commandCursor = *commandCursor | flagBits;
+        return false;
       }
       break;
     case 0x18:
@@ -547,6 +556,7 @@ RichTextCommandStream_FindNthCommandFlagsPair
   } while( true );
 }
 
+
 /* Address: 0x0041B840.
    Ownership: assets/text/richtext.
    Purpose: Physical RET cleanup=8 stack bytes. This function object claims Listing ownership for a previously
@@ -555,45 +565,51 @@ RichTextCommandStream_FindNthCommandFlagsPair
    Typed parameters: p1 param_2→RichTextCommandOrdinal_V342. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-ulonglong __fastcall
-RichTextCommandStream_QueryNthCommandFlags
-          (undefined4 param_1,uint param_2,int param_3,ushort *param_4)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,ushort *commandStream)
 
 {
   ushort uVar1;
   int iVar2;
-  ushort *puVar3;
+  uint *puVar3;
+  StatusValueEaxCf5 SVar4;
+  StatusValueEaxCf5 SVar5;
   
-  iVar2 = param_3 + 1;
+  iVar2 = commandOrdinal + 1;
   do {
     do {
-      puVar3 = param_4;
-      uVar1 = *puVar3;
+      puVar3 = (uint *)commandStream;
+      uVar1 = (ushort)*puVar3;
       if (uVar1 == 0) {
-        return (ulonglong)param_2 << 0x20;
+        SVar5.valueOrError = 0;
+        SVar5.carry = true;
+        return SVar5;
       }
-      param_4 = puVar3 + 1;
+      commandStream = (ushort *)((int)puVar3 + 2);
     } while (-1 < (short)uVar1);
     switch(uVar1 & 0x1f) {
     case 6:
-      param_4 = puVar3 + 9;
+      commandStream = (ushort *)((int)puVar3 + 0x12);
       break;
     case 0x14:
     case 0x15:
     case 0x16:
       iVar2 = iVar2 + -1;
-      param_4 = puVar3 + 3;
+      commandStream = (ushort *)((int)puVar3 + 6);
       if (iVar2 == 0) {
-        return CONCAT44(param_2,*(undefined4 *)puVar3) & 0xffffffff00000003;
+        SVar4.valueOrError = *puVar3 & 3;
+        SVar4.carry = false;
+        return SVar4;
       }
       break;
     case 0x18:
     case 0x19:
     case 0x1a:
-      param_4 = puVar3 + 5;
+      commandStream = (ushort *)((int)puVar3 + 10);
     }
   } while( true );
 }
+
 
 /* Address: 0x0041B950.
    Ownership: assets/text/richtext.
@@ -602,8 +618,9 @@ RichTextCommandStream_QueryNthCommandFlags
    Typed parameters: p0 capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-int RichTextCommandStream_CopyToNarrowCf
-              (TextOutputCapacityBytes capacityBytes,byte *destination,word *source)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RichTextCommandStream_CopyToNarrowCf
+          (TextOutputCapacityBytes capacityBytes,byte *destination,word *source)
 
 {
   word *pwVar1;
@@ -611,6 +628,8 @@ int RichTextCommandStream_CopyToNarrowCf
   ushort *commandCursor;
   word *streamCursor;
   bool newlineCapacityUnderflow;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   int nestedReturnCursor;
   ushort commandOrCodeUnit;
   
@@ -681,12 +700,17 @@ int RichTextCommandStream_CopyToNarrowCf
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
-    return capacityBytes - (remainingCapacityBytes - 1);
+    SVar2.valueOrError = capacityBytes - (remainingCapacityBytes - 1);
+    SVar2.carry = false;
+    return SVar2;
   }
 RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
   destination[-1] = 0;
-  return 0x14;
+  SVar3.carry = true;
+  SVar3.valueOrError = 0x14;
+  return SVar3;
 }
+
 
 /* Address: 0x0041BCB0.
    Ownership: assets/text/richtext.
@@ -696,51 +720,55 @@ RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
    Typed parameters: p0 param_1→RichTextMarkupCapacityCodeUnits_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-undefined8 __fastcall
-RichTextMarkup_ParseAndBuildStringAsset(undefined4 param_1,undefined4 param_2,byte *param_3)
+RichTextStringAssetEaxCf5 __thandor_eax_cf_preserve_edx
+RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
 
 {
   byte bVar1;
   ushort uVar2;
   wchar_t *memory;
-  int *memory_00;
   uint uVar3;
-  uint extraout_ECX;
   uint uVar4;
-  uint extraout_ECX_00;
   int iVar5;
   int *piVar6;
   int iVar7;
   int iVar8;
   short sVar9;
-  byte *pbVar10;
-  byte *pbVar11;
-  int *piVar12;
-  wchar_t *pwVar13;
+  undefined1 *puVar10;
+  undefined1 *puVar11;
+  byte *pbVar12;
+  byte *pbVar13;
   int *piVar14;
-  dword dVar15;
+  wchar_t *pwVar15;
   int *piVar16;
-  bool bVar17;
-  bool bVar18;
+  dword dVar17;
+  int *piVar18;
+  bool bVar19;
+  bool bVar20;
+  RichTextStringAssetEaxCf5 RVar21;
+  RichTextStringAssetEaxCf5 RVar22;
+  ArenaShrinkEaxCf5 AVar23;
+  RichTextStringAssetEaxCf5 RVar24;
+  ArenaLargestAllocationEaxEcxCf9 AVar25;
   WideNumberFormatFlags aWStackY_44 [2];
   dword dStackY_3c;
   int iStack_24;
   int iStack_20;
   
-  bVar17 = &stack0xffffffec < (undefined1 *)0x14;
-  memory = (*g_MemoryApi.allocLargestFreeBlock)();
-  if (!bVar17) {
+  AVar25 = (*g_MemoryApi.allocLargestFreeBlock)();
+  uVar4 = AVar25.blockSizeOrSentinel;
+  memory = (wchar_t *)AVar25.allocationOrError;
+  if (!AVar25.carry) {
     sVar9 = 0;
     iStack_20 = 0;
-    uVar4 = extraout_ECX;
-    pbVar11 = param_3;
-    pwVar13 = memory;
-    bVar17 = false;
+    pbVar13 = markupBytes;
+    pwVar15 = memory;
+    bVar20 = false;
 RichTextMarkup_ParseAndBuildStringAsset:
-    pbVar10 = pbVar11;
-    uVar2 = (ushort)*pbVar10;
-    pbVar11 = pbVar10 + 1;
-    switch(*pbVar10) {
+    pbVar12 = pbVar13;
+    uVar2 = (ushort)*pbVar12;
+    pbVar13 = pbVar12 + 1;
+    switch(*pbVar12) {
     case 0:
     case 1:
     case 2:
@@ -776,37 +804,37 @@ RichTextMarkup_ParseAndBuildStringAsset:
     case 10:
       goto RichTextMarkup_ParseAndBuildStringAsset;
     case 0xd:
-      if (bVar17) {
-        bVar18 = uVar4 < 2;
+      if (bVar20) {
+        bVar19 = uVar4 < 2;
         uVar4 = uVar4 - 2;
-        if (bVar18 || uVar4 == 0)
+        if (bVar19 || uVar4 == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *pwVar13 = L'耒';
-        pwVar13 = pwVar13 + 1;
+        *pwVar15 = L'耒';
+        pwVar15 = pwVar15 + 1;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset;
     default:
 switchD_0041c155_caseD_23:
-      if (bVar17) {
-        bVar18 = uVar4 < 2;
+      if (bVar20) {
+        bVar19 = uVar4 < 2;
         uVar4 = uVar4 - 2;
-        if (bVar18 || uVar4 == 0)
+        if (bVar19 || uVar4 == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *pwVar13 = uVar2 + sVar9;
-        pwVar13 = pwVar13 + 1;
+        *pwVar15 = uVar2 + sVar9;
+        pwVar15 = pwVar15 + 1;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset;
     case 0x23:
-      bVar1 = *pbVar11;
+      bVar1 = *pbVar13;
       uVar2 = (ushort)bVar1;
-      pbVar11 = pbVar10 + 2;
+      pbVar13 = pbVar12 + 2;
       switch(bVar1) {
       default:
         goto switchD_0041c155_caseD_0;
       case 10:
       case 0xd:
-        while (bVar1 = *pbVar11, bVar1 < 0x20) {
-          pbVar11 = pbVar11 + 1;
+        while (bVar1 = *pbVar13, bVar1 < 0x20) {
+          pbVar13 = pbVar13 + 1;
           if ((bVar1 != 10) && (bVar1 != 0xd)) goto switchD_0041c155_caseD_0;
         }
         break;
@@ -816,119 +844,125 @@ switchD_0041c155_caseD_23:
       case 0x23:
         goto switchD_0041c155_caseD_23;
       case 0x2d:
-        bVar18 = uVar4 < 2;
+        bVar19 = uVar4 < 2;
         uVar4 = uVar4 - 2;
-        if (bVar18 || uVar4 == 0)
+        if (bVar19 || uVar4 == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *pwVar13 = L'耑';
-        pwVar13 = pwVar13 + 1;
+        *pwVar15 = L'耑';
+        pwVar15 = pwVar15 + 1;
         break;
       case 0x2e:
-        if ((iStack_20 != 0) && (!bVar17)) {
+        if ((iStack_20 != 0) && (!bVar20)) {
           iStack_20 = iStack_20 + 1;
-          bVar17 = pwVar13 < memory;
           dStackY_3c = 0x41c70a;
-          (*g_MemoryApi.shrinkInPlace)((int)pwVar13 - (int)memory,memory);
-          if ((!bVar17) && (memory_00 = (*g_MemoryApi.allocLargestFreeBlock)(), !bVar17)) {
-            uVar4 = extraout_ECX_00 - 0x200;
-            if (0x1ff < extraout_ECX_00 && uVar4 != 0) {
-              iStack_24 = 0;
-              piVar16 = memory_00;
-              for (iVar5 = 0x80; iVar7 = iStack_20, iVar5 != 0; iVar5 = iVar5 + -1) {
-                *piVar16 = 0;
-                piVar16 = piVar16 + 1;
-              }
-              while( true ) {
-                while (piVar14 = piVar16, iVar5 = *(int *)(&stack0xffffffd0 + iVar7 * 8),
-                      iVar5 == -1) {
-                  iVar7 = iVar7 + -1;
-                  piVar16 = piVar14;
-                  if (iVar7 == 0) {
-                    (*g_MemoryApi.free)(memory);
-                    dVar15 = (int)piVar14 - (int)memory_00;
-                    (*g_MemoryApi.shrinkInPlace)(dVar15,memory_00);
-                    iStack_20 = iStack_20 * 8;
-                    *(dword *)(&stack0xffffffd4 + iStack_20) = dVar15;
-                    memory_00[0x2c] = iStack_24;
-                    memory_00[1] = dVar15;
-                    *memory_00 = 0x727473;
-                    memory_00[2] = 1;
-                    memory_00[3] = 0;
-                    *(undefined4 *)(&stack0xffffffd0 + iStack_20) = 0x41c7b5;
-                    dVar15 = (*g_LocaleGetPackedCurrentTime)();
-                    memory_00[4] = dVar15;
-                    memory_00[6] = dVar15;
-                    memory_00[8] = dVar15;
-                    *(undefined4 *)(&stack0xffffffd0 + iStack_20) = 0x41c7cd;
-                    dVar15 = (*g_LocaleGetPackedCurrentDate)();
-                    memory_00[5] = dVar15;
-                    memory_00[7] = dVar15;
-                    memory_00[9] = dVar15;
-                    *(int **)(&stack0xffffffd0 + iStack_20) = memory_00 + 0xc;
-                    *(undefined4 *)(&stack0xffffffcc + iStack_20) = 0x41c7ec;
-                    (*g_LocaleCopyDefaultComputerLabelUtf16)
-                              (*(word **)(&stack0xffffffd0 + iStack_20));
-                    *(int **)(&stack0xffffffd0 + iStack_20) = memory_00 + 0x1c;
-                    *(undefined4 *)(&stack0xffffffcc + iStack_20) = 0x41c7f9;
-                    (*g_LocaleCopyDefaultComputerLabelUtf16)
-                              (*(word **)(&stack0xffffffd0 + iStack_20));
-                    return CONCAT44(param_2,memory_00);
-                  }
+          AVar23 = (*g_MemoryApi.shrinkInPlace)((int)pwVar15 - (int)memory,memory);
+          if (!AVar23.carry) {
+            AVar25 = (*g_MemoryApi.allocLargestFreeBlock)();
+            RVar24.assetOrError = (int *)AVar25.allocationOrError;
+            if (!AVar25.carry) {
+              uVar4 = AVar25.blockSizeOrSentinel - 0x200;
+              if (0x1ff < AVar25.blockSizeOrSentinel && uVar4 != 0) {
+                iStack_24 = 0;
+                piVar18 = RVar24.assetOrError;
+                for (iVar5 = 0x80; iVar7 = iStack_20, iVar5 != 0; iVar5 = iVar5 + -1) {
+                  *piVar18 = 0;
+                  piVar18 = piVar18 + 1;
                 }
-                bVar17 = uVar4 < 0x10;
-                uVar4 = uVar4 - 0x10;
-                if (bVar17 || uVar4 == 0) break;
-                piVar14[2] = iVar5;
-                *piVar14 = 0x10;
-                piVar14[1] = 0;
-                do {
-                  if (iVar5 == *(int *)(&stack0xffffffd0 + iVar7 * 8)) {
-                    iVar8 = *(int *)(&stack0xffffffcc + iVar7 * 8);
-                    piVar14[1] = piVar14[1] + 1;
-                    uVar3 = (iVar8 - *(int *)(&stack0xffffffd4 + iVar7 * 8)) + 4;
-                    *piVar14 = *piVar14 + uVar3;
-                    bVar17 = uVar4 < uVar3;
-                    uVar4 = uVar4 - uVar3;
-                    if (bVar17 || uVar4 == 0)
-                    goto 
-                    RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError
-                    ;
-                  }
-                  iVar7 = iVar7 + -1;
-                } while (iVar7 != 0);
-                piVar6 = piVar14 + 4;
-                iStack_24 = iStack_24 + 1;
-                piVar16 = piVar6 + piVar14[1];
-                iVar8 = iStack_20;
-                do {
-                  if (iVar5 == *(int *)(&stack0xffffffd0 + iVar8 * 8)) {
-                    *(undefined4 *)(&stack0xffffffd0 + iVar8 * 8) = 0xffffffff;
-                    iVar7 = (int)piVar16 - (int)piVar14;
-                    piVar12 = *(int **)(&stack0xffffffd4 + iVar8 * 8);
-                    for (uVar3 = (uint)(*(int *)(&stack0xffffffcc + iVar8 * 8) -
-                                       (int)*(int **)(&stack0xffffffd4 + iVar8 * 8)) >> 2;
-                        uVar3 != 0; uVar3 = uVar3 - 1) {
-                      *piVar16 = *piVar12;
-                      piVar12 = piVar12 + 1;
-                      piVar16 = piVar16 + 1;
+                while( true ) {
+                  while (piVar16 = piVar18, iVar5 = *(int *)(&stack0xffffffd0 + iVar7 * 8),
+                        iVar5 == -1) {
+                    iVar7 = iVar7 + -1;
+                    piVar18 = piVar16;
+                    if (iVar7 == 0) {
+                      (*g_MemoryApi.free)(memory);
+                      dVar17 = (int)piVar16 - (int)RVar24.assetOrError;
+                      (*g_MemoryApi.shrinkInPlace)(dVar17,RVar24.assetOrError);
+                      iStack_20 = iStack_20 * 8;
+                      *(dword *)(&stack0xffffffd4 + iStack_20) = dVar17;
+                      RVar24.assetOrError[0x2c] = iStack_24;
+                      RVar24.assetOrError[1] = dVar17;
+                      *RVar24.assetOrError = 0x727473;
+                      RVar24.assetOrError[2] = 1;
+                      RVar24.assetOrError[3] = 0;
+                      puVar10 = &stack0xffffffd0 + iStack_20;
+                      *(undefined4 *)(&stack0xffffffd0 + iStack_20) = 0x41c7b5;
+                      dVar17 = (*g_LocaleGetPackedCurrentTime)();
+                      RVar24.assetOrError[4] = dVar17;
+                      RVar24.assetOrError[6] = dVar17;
+                      RVar24.assetOrError[8] = dVar17;
+                      puVar11 = puVar10 + -4;
+                      *(undefined4 *)(puVar10 + -4) = 0x41c7cd;
+                      dVar17 = (*g_LocaleGetPackedCurrentDate)();
+                      RVar24.assetOrError[5] = dVar17;
+                      RVar24.assetOrError[7] = dVar17;
+                      RVar24.assetOrError[9] = dVar17;
+                      *(int **)(puVar11 + -4) = RVar24.assetOrError + 0xc;
+                      *(undefined4 *)(puVar11 + -8) = 0x41c7ec;
+                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(puVar11 + -4));
+                      *(int **)(puVar11 + -4) = RVar24.assetOrError + 0x1c;
+                      *(undefined4 *)(puVar11 + -8) = 0x41c7f9;
+                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(puVar11 + -4));
+                      RVar24.carry = false;
+                      return RVar24;
                     }
-                    *piVar6 = iVar7;
-                    piVar6 = piVar6 + 1;
                   }
-                  iVar8 = iVar8 + -1;
-                  iVar7 = iStack_20;
-                } while (iVar8 != 0);
+                  bVar20 = uVar4 < 0x10;
+                  uVar4 = uVar4 - 0x10;
+                  if (bVar20 || uVar4 == 0) break;
+                  piVar16[2] = iVar5;
+                  *piVar16 = 0x10;
+                  piVar16[1] = 0;
+                  do {
+                    if (iVar5 == *(int *)(&stack0xffffffd0 + iVar7 * 8)) {
+                      iVar8 = *(int *)(&stack0xffffffcc + iVar7 * 8);
+                      piVar16[1] = piVar16[1] + 1;
+                      uVar3 = (iVar8 - *(int *)(&stack0xffffffd4 + iVar7 * 8)) + 4;
+                      *piVar16 = *piVar16 + uVar3;
+                      bVar20 = uVar4 < uVar3;
+                      uVar4 = uVar4 - uVar3;
+                      if (bVar20 || uVar4 == 0)
+                      goto 
+                      RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError
+                      ;
+                    }
+                    iVar7 = iVar7 + -1;
+                  } while (iVar7 != 0);
+                  piVar6 = piVar16 + 4;
+                  iStack_24 = iStack_24 + 1;
+                  piVar18 = piVar6 + piVar16[1];
+                  iVar8 = iStack_20;
+                  do {
+                    if (iVar5 == *(int *)(&stack0xffffffd0 + iVar8 * 8)) {
+                      *(undefined4 *)(&stack0xffffffd0 + iVar8 * 8) = 0xffffffff;
+                      iVar7 = (int)piVar18 - (int)piVar16;
+                      piVar14 = *(int **)(&stack0xffffffd4 + iVar8 * 8);
+                      for (uVar3 = (uint)(*(int *)(&stack0xffffffcc + iVar8 * 8) -
+                                         (int)*(int **)(&stack0xffffffd4 + iVar8 * 8)) >> 2;
+                          uVar3 != 0; uVar3 = uVar3 - 1) {
+                        *piVar18 = *piVar14;
+                        piVar14 = piVar14 + 1;
+                        piVar18 = piVar18 + 1;
+                      }
+                      *piVar6 = iVar7;
+                      piVar6 = piVar6 + 1;
+                    }
+                    iVar8 = iVar8 + -1;
+                    iVar7 = iStack_20;
+                  } while (iVar8 != 0);
+                }
               }
-            }
 RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError:
-            (*g_MemoryApi.free)(memory_00);
+              (*g_MemoryApi.free)(RVar24.assetOrError);
+            }
           }
 RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           iStack_20 = iStack_20 * 8;
           *(wchar_t **)(&stack0xffffffd4 + iStack_20) = memory;
           *(undefined4 *)(&stack0xffffffd0 + iStack_20) = 0x41c5e3;
           (*g_MemoryApi.free)(*(void **)(&stack0xffffffd4 + iStack_20));
-          return CONCAT44(param_2,0x14);
+          RVar22.carry = true;
+          RVar22.assetOrError = (void *)0x14;
+          return RVar22;
         }
         goto switchD_0041c155_caseD_0;
       case 0x30:
@@ -941,35 +975,35 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
       case 0x37:
       case 0x38:
       case 0x39:
-        if ((((*pbVar11 < 0x30) || (0x39 < *pbVar11)) || (pbVar10[3] < 0x30)) || (0x39 < pbVar10[3])
+        if ((((*pbVar13 < 0x30) || (0x39 < *pbVar13)) || (pbVar12[3] < 0x30)) || (0x39 < pbVar12[3])
            ) goto switchD_0041c155_caseD_0;
-        pbVar11 = pbVar10 + 4;
+        pbVar13 = pbVar12 + 4;
         break;
       case 0x3c:
-        if (bVar17) goto switchD_0041c155_caseD_0;
+        if (bVar20) goto switchD_0041c155_caseD_0;
         iStack_20 = iStack_20 + 1;
-        bVar17 = true;
+        bVar20 = true;
         break;
       case 0x3e:
-        if (!bVar17) goto switchD_0041c155_caseD_0;
-        bVar17 = false;
-        if (((uint)pwVar13 & 2) == 0) {
-          bVar17 = uVar4 < 4;
+        if (!bVar20) goto switchD_0041c155_caseD_0;
+        bVar20 = false;
+        if (((uint)pwVar15 & 2) == 0) {
+          bVar20 = uVar4 < 4;
           uVar4 = uVar4 - 4;
-          if (bVar17 || uVar4 == 0)
+          if (bVar20 || uVar4 == 0)
           goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-          pwVar13[0] = L'\0';
-          pwVar13[1] = L'\0';
-          pwVar13 = pwVar13 + 2;
-          bVar17 = false;
+          pwVar15[0] = L'\0';
+          pwVar15[1] = L'\0';
+          pwVar15 = pwVar15 + 2;
+          bVar20 = false;
         }
         else {
-          bVar18 = uVar4 < 2;
+          bVar19 = uVar4 < 2;
           uVar4 = uVar4 - 2;
-          if (bVar18 || uVar4 == 0)
+          if (bVar19 || uVar4 == 0)
           goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-          *pwVar13 = L'\0';
-          pwVar13 = pwVar13 + 1;
+          *pwVar15 = L'\0';
+          pwVar15 = pwVar15 + 1;
         }
         break;
       case 0x40:
@@ -1041,14 +1075,16 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
     }
   }
 LAB_0041c5c0:
-  return CONCAT44(param_2,memory);
+  RVar21.carry = true;
+  RVar21.assetOrError = memory;
+  return RVar21;
 switchD_0041c155_caseD_0:
   iVar5 = iStack_20 * 8;
   *(wchar_t **)(&stack0xffffffd4 + iVar5) = memory;
   *(undefined4 *)(&stack0xffffffd0 + iVar5) = 0x41c5a2;
   (*g_MemoryApi.free)(*(void **)(&stack0xffffffd4 + iVar5));
   *(wchar_t **)(&stack0xffffffd4 + iVar5) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
-  *(int *)(&stack0xffffffd0 + iVar5) = (int)pbVar11 - (int)param_3;
+  *(int *)(&stack0xffffffd0 + iVar5) = (int)pbVar13 - (int)markupBytes;
   *(undefined4 *)(&stack0xffffffcc + iVar5) = 1;
   *(undefined4 *)(&stack0xffffffc8 + iVar5) = 10;
   (&dStackY_3c)[iStack_20 * 2] = 0;
@@ -1062,6 +1098,7 @@ switchD_0041c155_caseD_0:
   goto LAB_0041c5c0;
 }
 
+
 /* Address: 0x0041C8D0.
    Ownership: assets/text/richtext.
    Purpose: Copies a command stream into a bounded destination, follows tag 0x18/0x19 nested stream references,
@@ -1069,8 +1106,9 @@ switchD_0041c155_caseD_0:
    capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage serialization, function
    body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-int RichTextCommandStream_CopyExpandedCf
-              (TextOutputCapacityBytes capacityBytes,word *destination,word *source)
+RichTextCopyExpandedEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RichTextCommandStream_CopyExpandedCf
+          (TextOutputCapacityBytes capacityBytes,word *destination,word *source)
 
 {
   ushort uVar1;
@@ -1078,6 +1116,8 @@ int RichTextCommandStream_CopyExpandedCf
   ushort *puVar3;
   ushort *puVar4;
   bool bVar5;
+  RichTextCopyExpandedEaxCf5 RVar6;
+  RichTextCopyExpandedEaxCf5 RVar7;
   int local_14;
   
   local_14 = 0;
@@ -1157,12 +1197,17 @@ int RichTextCommandStream_CopyExpandedCf
   }
   if (1 < (int)capacityBytes) {
     *puVar4 = 0;
-    return (int)puVar4 - (int)destination;
+    RVar6.eax = (int)puVar4 - (int)destination;
+    RVar6.carry = false;
+    return RVar6;
   }
 RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
   puVar4[-1] = 0;
-  return 0x14;
+  RVar7.carry = true;
+  RVar7.eax = 0x14;
+  return RVar7;
 }
+
 
 /* Address: 0x0041CF30.
    Ownership: assets/text/richtext.
@@ -1172,38 +1217,34 @@ RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
    locals, and executable data remain unchanged.
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources].
 */
-RichTextExtentRegs
+RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
 RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,word *commandStream)
 
 {
   GraphicsSubresourceIndex glyphSubresource;
-  int iVar1;
-  dword dVar2;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  uint extraout_EDX;
+  dword dVar1;
+  word *pwVar2;
   uint uVar3;
-  word *pwVar4;
-  uint uVar5;
-  qword qVar6;
-  RichTextExtentRegs RVar7;
-  RichTextExtentRegs RVar8;
+  RichTextExtentRegs RVar4;
+  RichTextExtentRegs RVar5;
+  FontGlyphSizeEaxEdxCf9 FVar6;
+  GraphicsTextureSizeEaxEdxCf9 GVar7;
   int local_18;
   
-  dVar2 = 0;
+  dVar1 = 0;
   g_ActiveFontIndex = packedStyle >> 0x18 & 7;
   local_18 = 0;
-  uVar5 = 0;
+  uVar3 = 0;
 switchD_0041cf77_caseD_0:
   while( true ) {
-    pwVar4 = commandStream;
-    glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar4;
-    commandStream = pwVar4 + 1;
+    pwVar2 = commandStream;
+    glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar2;
+    commandStream = pwVar2 + 1;
     if (glyphSubresource != 0) break;
     if (local_18 == 0) {
-      RVar8.heightPixels = uVar5;
-      RVar8.widthPixels = dVar2;
-      return RVar8;
+      RVar5.heightPixels = uVar3;
+      RVar5.widthPixels = dVar1;
+      return RVar5;
     }
     commandStream = (word *)(local_18 + 8);
     local_18 = local_18 + -1;
@@ -1213,7 +1254,7 @@ switchD_0041cf77_caseD_0:
 code_r0x0041cf74:
   switch(glyphSubresource & 0x1f) {
   case 6:
-    commandStream = pwVar4 + 9;
+    commandStream = pwVar2 + 9;
     break;
   case 8:
   case 9:
@@ -1228,40 +1269,40 @@ code_r0x0041cf74:
   case 0x10:
     glyphSubresource = 0x20;
 RichTextCommandStream_Measure_AccumulateGlyphExtent:
-    iVar1 = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
-    dVar2 = extraout_ECX + iVar1;
-    if (uVar5 < extraout_EDX) {
-      uVar5 = extraout_EDX;
+    FVar6 = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
+    dVar1 = dVar1 + FVar6.width;
+    if (uVar3 < FVar6.lineHeight) {
+      uVar3 = FVar6.lineHeight;
     }
     break;
   case 0x12:
-    RVar7.heightPixels = uVar5;
-    RVar7.widthPixels = dVar2;
-    return RVar7;
+    RVar4.heightPixels = uVar3;
+    RVar4.widthPixels = dVar1;
+    return RVar4;
   case 0x14:
   case 0x15:
   case 0x16:
-    commandStream = pwVar4 + 3;
+    commandStream = pwVar2 + 3;
     break;
   case 0x18:
-    local_18 = (int)pwVar4 + 3;
+    local_18 = (int)pwVar2 + 3;
     commandStream = *(word **)commandStream;
     break;
   case 0x19:
     commandStream = *(word **)commandStream;
     break;
   case 0x1a:
-    qVar6 = (*g_GraphicsTextureSourceGetLogicalSize)
-                      (*(dword *)(pwVar4 + 3),*(GraphicsTextureSourceAsset **)commandStream);
-    uVar3 = (uint)(qVar6 >> 0x20);
-    dVar2 = extraout_ECX_00 + (int)qVar6;
-    commandStream = pwVar4 + 5;
-    if (uVar5 < uVar3) {
-      uVar5 = uVar3;
+    GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)
+                      (*(dword *)(pwVar2 + 3),*(GraphicsTextureSourceAsset **)commandStream);
+    dVar1 = dVar1 + GVar7.logicalWidthPixels;
+    commandStream = pwVar2 + 5;
+    if (uVar3 < GVar7.logicalHeightPixels) {
+      uVar3 = GVar7.logicalHeightPixels;
     }
   }
   goto switchD_0041cf77_caseD_0;
 }
+
 
 /* Address: 0x0041D0F0.
    Ownership: assets/text/richtext.
@@ -1271,45 +1312,39 @@ RichTextCommandStream_Measure_AccumulateGlyphExtent:
    globals, locals, and executable data remain unchanged.
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources].
 */
-undefined8 RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
+RichTextLineAdvanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
 
 {
   byte *pbVar1;
   GraphicsSubresourceIndex glyphSubresource;
-  int iVar2;
+  uint uVar2;
   uint uVar3;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_ECX_02;
-  undefined4 in_EDX;
-  uint extraout_EDX;
-  uint extraout_EDX_00;
-  uint uVar4;
-  uint uVar5;
-  byte *pbVar6;
-  byte *pbVar7;
-  qword qVar8;
+  byte *pbVar4;
+  byte *pbVar5;
+  RichTextLineAdvanceEaxCf5 RVar6;
+  FontGlyphSizeEaxEdxCf9 FVar7;
+  GraphicsTextureSizeEaxEdxCf9 GVar8;
   byte *local_1c;
   
-  FontGlyph_GetLogicalSizeActiveRegs(0);
-  uVar3 = 0;
+  FVar7 = FontGlyph_GetLogicalSizeActiveRegs(0);
+  uVar2 = 0;
   local_1c = (byte *)0x0;
-  uVar5 = extraout_EDX;
-  pbVar7 = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
+  uVar3 = FVar7.lineHeight;
+  pbVar5 = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
   pbVar1 = local_1c;
 switchD_0041d140_caseD_0:
   while( true ) {
     local_1c = pbVar1;
-    pbVar6 = pbVar7;
-    glyphSubresource = (GraphicsSubresourceIndex)*(short *)pbVar6;
-    pbVar7 = pbVar6 + 2;
+    pbVar4 = pbVar5;
+    glyphSubresource = (GraphicsSubresourceIndex)*(short *)pbVar4;
+    pbVar5 = pbVar4 + 2;
     if (glyphSubresource != 0x20) break;
-    iVar2 = FontGlyph_GetLogicalSizeActiveRegs(0x20);
-    if (maximumWidth < extraout_ECX_02)
+    FVar7 = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    if (maximumWidth < uVar2)
     goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight;
-    uVar3 = extraout_ECX_02 + iVar2;
-    pbVar1 = pbVar7;
+    uVar2 = uVar2 + FVar7.width;
+    pbVar1 = pbVar5;
   }
   if (glyphSubresource != 0) {
     pbVar1 = local_1c;
@@ -1320,7 +1355,7 @@ switchD_0041d140_caseD_0:
 code_r0x0041d13d:
   switch(glyphSubresource & 0x1f) {
   case 6:
-    pbVar7 = pbVar6 + 0x12;
+    pbVar5 = pbVar4 + 0x12;
     break;
   case 8:
   case 9:
@@ -1335,42 +1370,43 @@ code_r0x0041d13d:
   case 0x10:
     glyphSubresource = 0x20;
 RichTextCommandStream_MeasureNextWrappedLine_AccumulateGlyphExtent:
-    iVar2 = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
-    uVar3 = extraout_ECX + iVar2;
-    if (uVar5 < extraout_EDX_00) {
-      uVar5 = extraout_EDX_00;
+    FVar7 = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
+    uVar2 = uVar2 + FVar7.width;
+    if (uVar3 < FVar7.lineHeight) {
+      uVar3 = FVar7.lineHeight;
     }
     break;
   case 0x11:
-    iVar2 = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
-    uVar3 = extraout_ECX_01;
-    pbVar1 = pbVar7;
-    if (maximumWidth < iVar2 + extraout_ECX_01)
+    FVar7 = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
+    pbVar1 = pbVar5;
+    if (maximumWidth < FVar7.width + uVar2)
     goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight;
     break;
   case 0x12:
 switchD_0041d140_caseD_12:
-    if (uVar3 <= maximumWidth) {
-      local_1c = pbVar7;
+    if (uVar2 <= maximumWidth) {
+      local_1c = pbVar5;
     }
 RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight:
     if (local_1c == (byte *)0x0) {
-      local_1c = pbVar7;
+      local_1c = pbVar5;
     }
     g_RichTextRuntimeBufferUsedWords = (uint)((int)local_1c - (int)g_FontRuntimeBuffer) >> 1;
-    return CONCAT44(in_EDX,uVar5);
+    RVar6.carry = *(short *)(local_1c + -2) == 0;
+    RVar6.lineAdvancePixels = uVar3;
+    return RVar6;
   case 0x1a:
-    qVar8 = (*g_GraphicsTextureSourceGetLogicalSize)
-                      (*(dword *)(pbVar6 + 6),*(GraphicsTextureSourceAsset **)pbVar7);
-    uVar4 = (uint)(qVar8 >> 0x20);
-    uVar3 = extraout_ECX_00 + (int)qVar8;
-    pbVar7 = pbVar6 + 10;
-    if (uVar5 < uVar4) {
-      uVar5 = uVar4;
+    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)
+                      (*(dword *)(pbVar4 + 6),*(GraphicsTextureSourceAsset **)pbVar5);
+    uVar2 = uVar2 + GVar8.logicalWidthPixels;
+    pbVar5 = pbVar4 + 10;
+    if (uVar3 < GVar8.logicalHeightPixels) {
+      uVar3 = GVar8.logicalHeightPixels;
     }
   }
   goto switchD_0041d140_caseD_0;
 }
+
 
 /* Address: 0x0041D9F0.
    Ownership: assets/text/richtext.
@@ -1383,54 +1419,49 @@ RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight:
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources], FontGlyph_DrawVerticallyCentered
    [assets/text/resources].
 */
-undefined8
+RichTextLineAdvanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_DrawNextWrappedLineCf
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX)
 
 {
+  int lineBottom;
   byte *pbVar1;
   GraphicsSubresourceIndex GVar2;
   int iVar3;
-  int iVar4;
+  dword dVar4;
   uint uVar5;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_ECX_02;
-  undefined4 in_EDX;
-  uint extraout_EDX;
-  uint extraout_EDX_00;
-  uint uVar6;
   uint lineTop;
+  byte *pbVar6;
   byte *pbVar7;
   byte *pbVar8;
-  byte *pbVar9;
-  qword qVar10;
-  dword dVar11;
+  RichTextLineAdvanceEaxCf5 RVar9;
+  RichTextLineAdvanceEaxCf5 RVar10;
+  FontGlyphSizeEaxEdxCf9 FVar11;
+  GraphicsTextureSizeEaxEdxCf9 GVar12;
   byte *local_1c;
   
-  FontGlyph_GetLogicalSizeActiveRegs(0);
+  FVar11 = FontGlyph_GetLogicalSizeActiveRegs(0);
   uVar5 = 0;
-  pbVar9 = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
+  pbVar8 = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
   local_1c = (byte *)0x0;
-  lineTop = extraout_EDX;
-  pbVar8 = pbVar9;
-  dVar11 = g_ActiveFontIndex;
+  lineTop = FVar11.lineHeight;
+  pbVar7 = pbVar8;
+  dVar4 = g_ActiveFontIndex;
   pbVar1 = local_1c;
 switchD_0041da40_caseD_0:
   while( true ) {
     local_1c = pbVar1;
-    pbVar7 = pbVar8;
-    GVar2 = (GraphicsSubresourceIndex)*(short *)pbVar7;
-    pbVar8 = pbVar7 + 2;
+    pbVar6 = pbVar7;
+    GVar2 = (GraphicsSubresourceIndex)*(short *)pbVar6;
+    pbVar7 = pbVar6 + 2;
     if (GVar2 != 0x20) break;
-    iVar3 = FontGlyph_GetLogicalSizeActiveRegs(0x20);
-    if (maximumWidth < extraout_ECX_02)
+    FVar11 = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    if (maximumWidth < uVar5)
     goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
-    uVar5 = extraout_ECX_02 + iVar3;
-    pbVar1 = pbVar8;
+    uVar5 = uVar5 + FVar11.width;
+    pbVar1 = pbVar7;
   }
   if (GVar2 != 0) {
     pbVar1 = local_1c;
@@ -1441,7 +1472,7 @@ switchD_0041da40_caseD_0:
 code_r0x0041da3d:
   switch(GVar2 & 0x1f) {
   case 6:
-    pbVar8 = pbVar7 + 0x12;
+    pbVar7 = pbVar6 + 0x12;
     break;
   case 8:
   case 9:
@@ -1456,55 +1487,55 @@ code_r0x0041da3d:
   case 0x10:
     GVar2 = 0x20;
 RichTextCommandStream_DrawNextWrappedLine_AccumulateGlyphExtent:
-    iVar3 = FontGlyph_GetLogicalSizeActiveRegs(GVar2);
-    uVar5 = extraout_ECX + iVar3;
-    if (lineTop < extraout_EDX_00) {
-      lineTop = extraout_EDX_00;
+    FVar11 = FontGlyph_GetLogicalSizeActiveRegs(GVar2);
+    uVar5 = uVar5 + FVar11.width;
+    if (lineTop < FVar11.lineHeight) {
+      lineTop = FVar11.lineHeight;
     }
     break;
   case 0x11:
-    iVar3 = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
-    uVar5 = extraout_ECX_01;
-    pbVar1 = pbVar8;
-    if (maximumWidth < iVar3 + extraout_ECX_01)
+    FVar11 = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
+    pbVar1 = pbVar7;
+    if (maximumWidth < FVar11.width + uVar5)
     goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
     break;
   case 0x12:
     goto switchD_0041da40_caseD_12;
   case 0x1a:
-    qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)
-                       (*(dword *)(pbVar7 + 6),*(GraphicsTextureSourceAsset **)pbVar8);
-    uVar6 = (uint)(qVar10 >> 0x20);
-    uVar5 = extraout_ECX_00 + (int)qVar10;
-    pbVar8 = pbVar7 + 10;
-    if (lineTop < uVar6) {
-      lineTop = uVar6;
+    GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)
+                       (*(dword *)(pbVar6 + 6),*(GraphicsTextureSourceAsset **)pbVar7);
+    uVar5 = uVar5 + GVar12.logicalWidthPixels;
+    pbVar7 = pbVar6 + 10;
+    if (lineTop < GVar12.logicalHeightPixels) {
+      lineTop = GVar12.logicalHeightPixels;
     }
   }
   goto switchD_0041da40_caseD_0;
 switchD_0041da40_caseD_12:
   if (uVar5 <= maximumWidth) {
-    local_1c = pbVar8;
+    local_1c = pbVar7;
   }
 RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
-  g_ActiveFontIndex = dVar11;
+  g_ActiveFontIndex = dVar4;
   if (local_1c == (byte *)0x0) {
-    local_1c = pbVar8;
+    local_1c = pbVar7;
   }
-  iVar3 = drawY + lineTop;
+  lineBottom = drawY + lineTop;
 switchD_0041dbd0_caseD_7:
-  pbVar8 = pbVar9;
-  GVar2 = (GraphicsSubresourceIndex)*(short *)pbVar8;
-  pbVar9 = pbVar8 + 2;
+  pbVar7 = pbVar8;
+  GVar2 = (GraphicsSubresourceIndex)*(short *)pbVar7;
+  pbVar8 = pbVar7 + 2;
   if (GVar2 != 0x20) {
     if (GVar2 == 0) {
-      g_RichTextRuntimeBufferUsedWords = (uint)((int)pbVar9 - (int)g_FontRuntimeBuffer) >> 1;
-      return CONCAT44(in_EDX,lineTop);
+      g_RichTextRuntimeBufferUsedWords = (uint)((int)pbVar8 - (int)g_FontRuntimeBuffer) >> 1;
+      RVar10.carry = true;
+      RVar10.lineAdvancePixels = lineTop;
+      return RVar10;
     }
     if (-1 < (int)GVar2) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
     goto code_r0x0041dbcd;
   }
-  if (pbVar9 < local_1c) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
+  if (pbVar8 < local_1c) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
   goto switchD_0041dbd0_caseD_12;
 code_r0x0041dbcd:
   switch(GVar2 & 0x1f) {
@@ -1534,11 +1565,11 @@ code_r0x0041dbcd:
     break;
   case 6:
     g_RichTextCurrentColorArgb =
-         (((((((pbVar8[4] & 0xf) << 0x18 | (uint)*pbVar9 << 0x1c) >> 4 | (uint)pbVar8[8] << 0x1c) >>
-             4 | (uint)pbVar8[6] << 0x1c) >> 4 | (uint)pbVar8[0xc] << 0x1c) >> 4 |
-          (uint)pbVar8[10] << 0x1c) >> 4 | (uint)pbVar8[0x10] << 0x1c) >> 4 |
-         (uint)pbVar8[0xe] << 0x1c;
-    pbVar9 = pbVar8 + 0x12;
+         (((((((pbVar7[4] & 0xf) << 0x18 | (uint)*pbVar8 << 0x1c) >> 4 | (uint)pbVar7[8] << 0x1c) >>
+             4 | (uint)pbVar7[6] << 0x1c) >> 4 | (uint)pbVar7[0xc] << 0x1c) >> 4 |
+          (uint)pbVar7[10] << 0x1c) >> 4 | (uint)pbVar7[0x10] << 0x1c) >> 4 |
+         (uint)pbVar7[0xe] << 0x1c;
+    pbVar8 = pbVar7 + 0x12;
     break;
   case 8:
   case 9:
@@ -1553,40 +1584,44 @@ code_r0x0041dbcd:
   case 0x10:
     GVar2 = 0x20;
 RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX:
-    iVar4 = FontGlyph_DrawVerticallyCentered
-                      (clipTop,clipLeft,clipBottom,clipRight,GVar2,lineTop,iVar3,drawX);
-    drawX = drawX + iVar4;
+    iVar3 = FontGlyph_DrawVerticallyCentered
+                      (clipTop,clipLeft,clipBottom,clipRight,GVar2,lineTop,lineBottom,drawX);
+    drawX = drawX + iVar3;
     break;
   case 0x11:
-    if (local_1c <= pbVar9) {
+    if (local_1c <= pbVar8) {
       FontGlyph_DrawVerticallyCentered
-                (clipTop,clipLeft,clipBottom,clipRight,0x2d,lineTop,iVar3,drawX);
+                (clipTop,clipLeft,clipBottom,clipRight,0x2d,lineTop,lineBottom,drawX);
       goto switchD_0041dbd0_caseD_12;
     }
     break;
   case 0x12:
 switchD_0041dbd0_caseD_12:
-    g_RichTextRuntimeBufferUsedWords = (uint)((int)pbVar9 - (int)g_FontRuntimeBuffer) >> 1;
-    return CONCAT44(in_EDX,lineTop);
+    g_RichTextRuntimeBufferUsedWords = (uint)((int)pbVar8 - (int)g_FontRuntimeBuffer) >> 1;
+    RVar9.carry = false;
+    RVar9.lineAdvancePixels = lineTop;
+    return RVar9;
   case 0x1a:
-    qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)
-                       (*(dword *)(pbVar8 + 6),*(GraphicsTextureSourceAsset **)pbVar9);
-    iVar4 = (int)qVar10;
+    GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)
+                       (*(dword *)(pbVar7 + 6),*(GraphicsTextureSourceAsset **)pbVar8);
+    dVar4 = GVar12.logicalWidthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar3 - (int)(qVar10 >> 0x20),drawX,
-               *(dword *)(pbVar8 + 6),*(GraphicsTextureSourceAsset **)pbVar9,g_FramebufferAccess);
-    drawX = drawX + iVar4;
-    pbVar9 = pbVar8 + 10;
+              (clipTop,clipLeft,clipBottom,clipRight,lineBottom - GVar12.logicalHeightPixels,drawX,
+               *(dword *)(pbVar7 + 6),*(GraphicsTextureSourceAsset **)pbVar8,g_FramebufferAccess);
+    drawX = drawX + dVar4;
+    pbVar8 = pbVar7 + 10;
   }
   goto switchD_0041dbd0_caseD_7;
 }
+
 
 /* Address: 0x0041D840.
    Ownership: assets/text/richtext.
    Purpose: Flattens nested rich-text command streams into the exact 0x2000-word runtime buffer, copies fixed color
    and image commands, follows nested stream pointers, writes a terminator, and resets the shared word index.
 */
-void RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
+void __thandor_void_preserve_eax_ecx_edx
+RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
 
 {
   ushort uVar1;
@@ -1666,3 +1701,4 @@ switchD_0041d87b_caseD_0:
   }
   goto switchD_0041d87b_caseD_7;
 }
+

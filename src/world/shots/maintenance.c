@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/shots/maintenance.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/shots/maintenance.h>
 
 /* Implementation ownership: world/shots/maintenance. */
@@ -12,74 +19,74 @@
    FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], TerrainOccupancyMask_ResolveRuntimeClassFlags
    [world/terrain/occupancy], UiModelControl_RefreshStateTint [ui/controls/misc].
 */
-void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeNode *modelNode)
+void __thandor_void_preserve_eax_ecx_edx
+ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
+          (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNodeClassView100 *modelNode)
 
 {
   PackedArgb32 PVar1;
-  undefined4 uVar2;
+  PackedArgb32 PVar2;
   short sVar3;
   short sVar4;
   short sVar5;
   short sVar6;
   ushort uVar7;
   ushort uVar8;
-  uint uVar9;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  GameEntityRuntime *extraout_ECX_01;
   FieldGridRegionMask primaryOccupancyMask;
+  dword dVar9;
   undefined1 mm0PackedValue0ByteLane1;
   undefined1 mm0PackedValue0ByteLane2;
   undefined8 mm0PackedValue0;
   undefined1 uVar10;
   undefined1 uVar11;
-  ulonglong uVar12;
-  FixedDirectionXZEdxEax8 FVar13;
-  ArmyRuntimeSlot *armySlot1;
+  FixedDirectionXyzRegs12 FVar12;
+  TerrainOccupancyResolvedMasksRegs12 TVar13;
+  uint uVar14;
+  ShotRuntimeSlot *shotRuntime;
   
-  armySlot1 = (modelNode->runtimePayload).armyRuntime;
-  uVar12 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                     (0x1000,(modelNode->worldTransform).translation.y,
-                      (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-  primaryOccupancyMask = (FieldGridRegionMask)(uVar12 >> 0x20);
-  if ((*(int *)armySlot1->definitionOrAsset == 0) && (modelNode->renderDepthBiasOrState != 0)) {
-    FVar13 = FixedMath_DirectionFromAnglesScaledRegs
+  shotRuntime = modelNode->shotRuntime;
+  primaryOccupancyMask =
+       TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+                 (0x1000,(modelNode->worldTransform).translation.y,
+                  (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+  if ((((shotRuntime->definitionOrSavedId).definition)->trajectoryMode ==
+       SHOT_TRAJECTORY_DIRECT_LINE) && (modelNode->renderDepthBiasOrState != 0)) {
+    FVar12 = FixedMath_DirectionFromAnglesScaledRegs
                        ((modelNode->modelPayload).worldRotationAngle1,
                         (modelNode->modelPayload).worldRotationAngle0,
                         modelNode->renderDepthBiasOrState >> 1);
-    uVar12 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                       (0x1000,extraout_ECX + (modelNode->worldTransform).translation.y,
-                        (int)FVar13 + (modelNode->worldTransform).translation.x,
-                        worldRuntime->fieldGrid);
-    uVar9 = primaryOccupancyMask | (uint)(uVar12 >> 0x20);
-    FVar13 = FixedMath_DirectionFromAnglesScaledRegs
+    dVar9 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+                      (0x1000,FVar12.ecx + (modelNode->worldTransform).translation.y,
+                       FVar12.eax + (modelNode->worldTransform).translation.x,
+                       worldRuntime->fieldGrid);
+    uVar14 = primaryOccupancyMask | dVar9;
+    FVar12 = FixedMath_DirectionFromAnglesScaledRegs
                        ((modelNode->modelPayload).worldRotationAngle1,
                         (modelNode->modelPayload).worldRotationAngle0,
                         modelNode->renderDepthBiasOrState);
-    uVar12 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                       (0x1000,extraout_ECX_00 + (modelNode->worldTransform).translation.y,
-                        (int)FVar13 + (modelNode->worldTransform).translation.x,
-                        worldRuntime->fieldGrid);
-    primaryOccupancyMask = (uint)(uVar12 >> 0x20) | uVar9;
+    dVar9 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+                      (0x1000,FVar12.ecx + (modelNode->worldTransform).translation.y,
+                       FVar12.eax + (modelNode->worldTransform).translation.x,
+                       worldRuntime->fieldGrid);
+    primaryOccupancyMask = dVar9 | uVar14;
   }
   modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffff3;
-  uVar9 = TerrainOccupancyMask_ResolveRuntimeClassFlags
-                    (modelNode->runtimeFlags,0,primaryOccupancyMask,
-                     (char)worldRuntime->activeFactionRuntimeIndex);
-  modelNode->runtimeFlags = modelNode->runtimeFlags | uVar9;
-  armySlot1->linkedEntityRuntime = extraout_ECX_01;
-  UiModelControl_RefreshStateTint(modelNode);
+  TVar13 = TerrainOccupancyMask_ResolveRuntimeClassFlags
+                     (modelNode->runtimeFlags,0,primaryOccupancyMask,
+                      (char)worldRuntime->activeFactionRuntimeIndex);
+  modelNode->runtimeFlags = modelNode->runtimeFlags | TVar13.runtimeFlags;
+  shotRuntime->terrainRuntimeClassState = TVar13.primaryOccupancyMask;
+  UiModelControl_RefreshStateTint((ModelRuntimeNode *)modelNode);
   PVar1 = modelNode->tintArgb;
-  uVar2 = *(undefined4 *)((int)armySlot1->definitionOrAsset + 0x284);
+  PVar2 = ((shotRuntime->definitionOrSavedId).definition)->stateTintArgb;
   mm0PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
   uVar7 = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
   mm0PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  uVar10 = (undefined1)((uint)uVar2 >> 0x18);
+  uVar10 = (undefined1)(PVar2 >> 0x18);
   uVar8 = CONCAT11(uVar10,uVar10);
-  uVar11 = (undefined1)((uint)uVar2 >> 0x10);
-  uVar10 = (undefined1)((uint)uVar2 >> 8);
+  uVar11 = (undefined1)(PVar2 >> 0x10);
+  uVar10 = (undefined1)(PVar2 >> 8);
   mm0PackedValue0 =
        pmulhw(CONCAT26(uVar7 >> 4,
                        CONCAT24((ushort)(CONCAT35(CONCAT21(uVar7,mm0PackedValue0ByteLane2),
@@ -88,10 +95,10 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
                                                        mm0PackedValue0ByteLane1) >> 4,
                                               CONCAT11((char)PVar1,(char)PVar1) >> 4))),
               CONCAT26(uVar8 >> 4,
-                       CONCAT24((ushort)(CONCAT35(CONCAT21(uVar8,uVar11),CONCAT14(uVar11,uVar2)) >>
+                       CONCAT24((ushort)(CONCAT35(CONCAT21(uVar8,uVar11),CONCAT14(uVar11,PVar2)) >>
                                         0x20) >> 4,
                                 CONCAT22(CONCAT11(uVar10,uVar10) >> 4,
-                                         CONCAT11((char)uVar2,(char)uVar2) >> 4))));
+                                         CONCAT11((char)PVar2,(char)PVar2) >> 4))));
   sVar3 = (short)mm0PackedValue0;
   sVar4 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
   sVar5 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
@@ -108,6 +115,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   return;
 }
 
+
 /* Address: 0x0052C1A0.
    Ownership: world/shots/maintenance.
    Purpose: Two-argument no-op callback selected from the mixed army, shot, and effect runtime dispatch table for
@@ -116,12 +124,13 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
    occupancyRebuild, object kind shot. The 4x3 table bytes, target body, calling convention, and RET 0x08 contract
    remain unchanged.
 */
-void ShotRuntimeMaintenance_OccupancyRebuildNoOp
-               (WorldRuntimeContext *worldRuntime,void *runtimeObject)
+void __thandor_void_preserve_eax_ecx_edx
+ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
   return;
 }
+
 
 /* Address: 0x0052C1B0.
    Ownership: world/shots/maintenance.
@@ -132,36 +141,38 @@ void ShotRuntimeMaintenance_OccupancyRebuildNoOp
    Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
-void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeNode *modelNodeRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
+          (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNodeClassView100 *modelNode)
 
 {
+  GraphicsFixedVec3 *worldPosition;
   uint uVar1;
-  void *pvVar2;
-  bool bVar3;
-  undefined8 uVar4;
-  ArmyRuntimeSlot *armySlot1;
+  SpatialSoundSlot *slot;
+  bool bVar2;
+  ShotRuntimeSlot *shotRuntime;
   
-  armySlot1 = (modelNodeRuntime->runtimePayload).armyRuntime;
+  shotRuntime = modelNode->shotRuntime;
   if ((worldRuntime->dwordArray != (dword *)0x0) &&
-     (uVar1 = *(uint *)((int)armySlot1->definitionOrAsset + 0x280),
+     (uVar1 = ((shotRuntime->definitionOrSavedId).definition)->terrainGridMaskIndex,
      uVar1 < worldRuntime->dwordArrayCount)) {
-    bVar3 = false;
-    if (worldRuntime->dwordArray[uVar1] != 0) {
-      uVar4 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                        ((modelNodeRuntime->worldTransform).translation.y,
-                         (modelNodeRuntime->worldTransform).translation.x,worldRuntime);
-      if (!bVar3) {
-        pvVar2 = armySlot1->definitionOrAsset;
+    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
+    worldPosition = &(modelNode->worldTransform).translation;
+    if (slot != (SpatialSoundSlot *)0x0) {
+      bVar2 = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
+      if (!bVar2) {
         SpatialSound_UpdateDesiredPositionedGains
-                  (*(SpatialSoundMaximumDistanceQ12 *)((int)pvVar2 + 0x28c),
-                   *(SpatialSoundGainQ15 *)((int)pvVar2 + 0x288),
-                   (GraphicsFixedVec3 *)((ulonglong)uVar4 >> 0x20),(SpatialSoundSlot *)uVar4);
+                  (((shotRuntime->definitionOrSavedId).definition)->
+                   positionedSoundMaximumDistanceQ12,
+                   ((shotRuntime->definitionOrSavedId).definition)->positionedSoundGainQ15,
+                   worldPosition,slot);
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x0052C230.
    Ownership: world/shots/maintenance.
@@ -177,112 +188,79 @@ void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
    ModelRuntime_RaycastCandidateListNearestCf [world/model/runtime], FieldGrid_RaycastTerrainSurfaceDistanceCf
    [world/terrain/grid], FieldGrid_RaycastSecondarySurfaceDistanceCf [world/terrain/grid].
 */
-void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeNode *modelNode)
+void __thandor_void_preserve_eax_ecx_edx
+ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
+          (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNodeClassView100 *modelNode)
 
 {
   ShotAnimationFrameIndex *pSVar1;
   ShotLifetimeRemainingTicks *pSVar2;
   ShotSecondaryEffectCountdownTicks *pSVar3;
   Q12 *pQVar4;
-  ModelTextureSubresourceIndex *pMVar5;
-  GraphicsFixedVec3 *pGVar6;
-  GraphicsWorldCoordinateQ12 *pGVar7;
-  AngleTurn32 *pAVar8;
-  ShotFrameAdvanceThresholdQ4 SVar9;
-  int *piVar10;
-  longlong lVar11;
-  ModelRaycastNearestHitCfRegisterResult MVar12;
-  uint uVar13;
-  ModelPackedPointRecord *localPointRecord;
-  Q12 QVar14;
+  GraphicsFixedVec3 *pGVar5;
+  GraphicsWorldCoordinateQ12 *pGVar6;
+  AngleTurn32 *pAVar7;
+  ShotFrameAdvanceThresholdQ4 SVar8;
+  int *piVar9;
+  uint uVar10;
+  uint uVar11;
   dword mixedScalarOrPointerCarrier;
-  ShotDefinition *shotDefinition2;
-  uint uVar15;
-  int iVar16;
-  int extraout_EAX;
-  FixedMathScale32 scale;
-  int extraout_EAX_00;
+  int iVar12;
+  int iVar13;
   ModelRuntimeNode *modelNode1;
-  ShotDefinition *shotDefinition1;
-  int extraout_EAX_01;
-  undefined4 extraout_ECX;
+  uint scale;
+  uint scale_00;
   Q12 worldXQ12;
-  dword extraout_ECX_00;
-  int extraout_ECX_17;
-  ShotDefinition *shotDefinition4;
-  dword extraout_ECX_02;
-  undefined4 extraout_ECX_18;
-  int extraout_ECX_19;
-  int extraout_ECX_20;
-  int extraout_ECX_21;
-  int extraout_ECX_22;
-  int extraout_ECX_23;
-  int extraout_ECX_24;
-  int extraout_ECX_25;
-  int extraout_ECX_26;
-  dword extraout_ECX_12;
-  int extraout_ECX_27;
-  dword extraout_ECX_14;
-  int extraout_ECX_28;
-  dword extraout_ECX_16;
-  undefined4 worldZQ12;
-  int extraout_EDX;
-  ShotDefinition *shotDefinition3;
-  FixedMathScale32 scale_00;
-  int iVar17;
-  int extraout_EDX_00;
-  FixedMathScale32 scale_01;
-  int iVar18;
-  Q12 extraout_EDX_01;
-  FactionRuntimeIndex FVar19;
+  Q12 trajectoryStepYQ12;
+  AngleTurn16Stored32 headingTurnDeltaAngle16;
+  AngleTurn32 ballisticAzimuthAngle;
+  ModelRaycastNearestNodeOrScratch4 MVar14;
+  dword dVar15;
+  AngleTurn16Stored32 elevationTurnDeltaAngle16;
+  ShotDefinition *pSVar16;
+  FactionRuntimeIndex FVar17;
   ShotRuntimeSlot *shotRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  bool bVar20;
-  undefined8 uVar21;
-  ModelRaycastNearestHitCfRegisterResult MVar22;
-  ulonglong uVar23;
-  FixedLengthElevationEdxEax8 FVar24;
-  FixedDirectionXZEdxEax8 FVar25;
-  ModelRaycastNearestHitCfRegisterResult MVar26;
+  ModelLookupEntryEaxCf5 MVar18;
+  ModelRaycastNearestHitEaxEdxCf9 MVar19;
+  FieldGridRaycastEaxEdxCf9 FVar20;
+  FixedMathVectorAnglesRegs8 FVar21;
+  ModelLocalPointRegs12 MVar22;
+  FixedLengthAnglesEaxEcxEdx12 FVar23;
+  FixedDirectionXyzRegs12 FVar24;
+  EffectDefinition *pEVar25;
+  WorldRuntimeContext *pWVar26;
   AngleTurn32 AVar27;
-  ImpactDamageValue32 impactValue;
+  Q12 impactValue;
   InGameSimulationStepBatchTicks IStack_38;
   int iStack_24;
   ArmyRuntimeSlot *armySlot1;
   ArmyRuntimeSlot *armySlot2;
-  EffectDefinition *effectDefinition1;
   GraphicsShadingRuntimeRecord *shadingRecord1;
-  WorldRuntimeContext *worldContext1;
   
   IStack_38 = g_InGameSimulationStepTicks;
   do {
-    shotRuntime = (modelNode->runtimePayload).shotRuntime;
-    shotDefinition3 = (shotRuntime->definitionOrSavedId).definition;
+    shotRuntime = modelNode->shotRuntime;
+    pSVar16 = (shotRuntime->definitionOrSavedId).definition;
     shotRuntime->projectileAgeTicks = shotRuntime->projectileAgeTicks + 1;
-    uVar13 = shotRuntime->animationFrameAccumulatorQ4 + 0x10;
-    uVar15 = shotDefinition3->animationFrameCount;
-    shotRuntime->animationFrameAccumulatorQ4 = uVar13;
-    bVar20 = uVar13 < shotDefinition3->animationFrameAdvanceThresholdQ4;
-    SVar9 = shotDefinition3->animationFrameAdvanceThresholdQ4;
-    if (!bVar20) {
+    uVar10 = shotRuntime->animationFrameAccumulatorQ4 + 0x10;
+    uVar11 = pSVar16->animationFrameCount;
+    shotRuntime->animationFrameAccumulatorQ4 = uVar10;
+    SVar8 = pSVar16->animationFrameAdvanceThresholdQ4;
+    if (pSVar16->animationFrameAdvanceThresholdQ4 <= uVar10) {
       pSVar1 = &(shotRuntime->ownerAndTrajectory).animationFrameIndex;
       *pSVar1 = *pSVar1 + 1;
       modelNode->textureSubresourceBaseIndex = modelNode->textureSubresourceBaseIndex + 1;
-      shotRuntime->animationFrameAccumulatorQ4 = uVar13 - SVar9;
-      uVar13 = (shotRuntime->ownerAndTrajectory).animationFrameIndex;
-      bVar20 = uVar15 < uVar13;
-      if (uVar15 <= uVar13) {
+      shotRuntime->animationFrameAccumulatorQ4 = uVar10 - SVar8;
+      if (uVar11 <= (shotRuntime->ownerAndTrajectory).animationFrameIndex) {
         pSVar1 = &(shotRuntime->ownerAndTrajectory).animationFrameIndex;
-        *pSVar1 = *pSVar1 - uVar15;
-        pMVar5 = &modelNode->textureSubresourceBaseIndex;
-        bVar20 = (uint)*pMVar5 < uVar15;
-        *pMVar5 = *pMVar5 - uVar15;
+        *pSVar1 = *pSVar1 - uVar11;
+        modelNode->textureSubresourceBaseIndex = modelNode->textureSubresourceBaseIndex - uVar11;
       }
     }
     pSVar2 = &shotRuntime->lifetimeTicksRemaining;
     *pSVar2 = *pSVar2 - 1;
-    modelNodeRuntime = modelNode;
+    modelNodeRuntime = (ModelRuntimeNode *)modelNode;
     if (*pSVar2 == 0)
     goto 
     ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_UnlinkExpiredOrOrphanedProjectileAndReturn
@@ -291,267 +269,229 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
     *pSVar3 = *pSVar3 - 1;
     if (*pSVar3 == 0) {
       (shotRuntime->ownerAndTrajectory).secondaryEffectCountdownTicks =
-           shotDefinition3->secondaryEffectIntervalTicks;
-      localPointRecord =
-           (ModelPackedPointRecord *)
-           ModelLookupTable_ContainsPackedKeyCf(1,3,shotDefinition3->ownedNestedResource);
-      if (!bVar20) {
-        effectDefinition1 = shotDefinition3->secondaryEffectDefinition;
-        worldContext1 = worldRuntime;
-        uVar21 = ModelNodeRuntime_TransformLocalPointRegs(extraout_ECX,localPointRecord,modelNode);
-        worldZQ12 = (undefined4)((ulonglong)uVar21 >> 0x20);
+           pSVar16->secondaryEffectIntervalTicks;
+      MVar18 = ModelLookupTable_ContainsPackedKeyCf(1,3,pSVar16->ownedNestedResource);
+      if (!MVar18.carry) {
+        pEVar25 = pSVar16->secondaryEffectDefinition;
+        pWVar26 = worldRuntime;
+        MVar22 = ModelNodeRuntime_TransformLocalPointRegs
+                           (MVar18.entry,(ModelRuntimeNode *)modelNode);
+        worldXQ12 = MVar22.ecx;
         EffectRuntimePool_CreateInstanceFromDefinitionCf
-                  (worldXQ12,worldZQ12,EFFECT_RUNTIME_COMPLETION_NONE,0,0,0x4000,0,worldZQ12,
-                   worldXQ12,(Q12)uVar21,effectDefinition1,worldContext1);
+                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                   MVar22.edx,worldXQ12,MVar22.eax,pEVar25,pWVar26);
       }
     }
-    if (shotDefinition3->trajectoryMode == SHOT_TRAJECTORY_DIRECT_LINE) {
+    if (pSVar16->trajectoryMode == SHOT_TRAJECTORY_DIRECT_LINE) {
       armySlot2 = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
-      shotDefinition3 =
-           (ShotDefinition *)
-           (shotDefinition3->projectileLifetimeTicks * shotDefinition3->launchSpeedQ12);
-      uVar15 = (modelNode->modelPayload).worldRotationAngle1;
-      modelNode->renderDepthBiasOrState = (int)shotDefinition3;
+      uVar11 = pSVar16->projectileLifetimeTicks * pSVar16->launchSpeedQ12;
+      AVar27 = (modelNode->modelPayload).worldRotationAngle1;
+      modelNode->renderDepthBiasOrState = uVar11;
       modelNode1 = (ModelRuntimeNode *)0x0;
       if (armySlot2 != (ArmyRuntimeSlot *)0x0) {
         modelNode1 = armySlot2->modelNodeRuntime;
       }
-      bVar20 = uVar15 < (uint)shotRuntime->elevationOffsetAngle16;
-      MVar26 = ModelRuntime_RaycastCandidateListNearestCf
-                         (uVar15 - shotRuntime->elevationOffsetAngle16,
-                          (modelNode->modelPayload).worldRotationAngle0,(Q12)shotDefinition3,
+      MVar19 = ModelRuntime_RaycastCandidateListNearestCf
+                         (AVar27 - shotRuntime->elevationOffsetAngle16,
+                          (modelNode->modelPayload).worldRotationAngle0,uVar11,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,MODEL_RUNTIME_CLASS_00,
                           modelNode1,worldRuntime);
-      QVar14 = MVar26.nearestDistanceQ12;
-      if (bVar20) {
-        iStack_24 = *(int *)((int)(((MVar26.nearestModelNode)->runtimePayload).armyRuntime)->
-                                  definitionOrAsset + 0x5c);
-        if (((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
-            [iStack_24] == (EffectDefinition *)0x0) {
-          QVar14 = 0x7fffffff;
-        }
-        MVar26.nearestModelNode = MVar26.nearestModelNode;
-        MVar26.nearestDistanceQ12 = QVar14;
+      MVar14 = MVar19.edxCarrier;
+      uVar10 = MVar19.nearestDistanceQ12;
+      if ((MVar19.carry) &&
+         (iStack_24 = *(int *)(((((MVar14.nearestModelNode)->runtimePayload).modelRuntime)->
+                               definitionOrSavedId).savedIdOrOffset + 0x5c),
+         ((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
+         [iStack_24] == (EffectDefinition *)0x0)) {
+        uVar10 = 0x7fffffff;
       }
-      modelNode1 = MVar26.nearestModelNode;
-      shotDefinition1 = (ShotDefinition *)MVar26.nearestDistanceQ12;
-      uVar15 = (modelNode->modelPayload).worldRotationAngle1;
-      bVar20 = uVar15 < (uint)shotRuntime->elevationOffsetAngle16;
-      uVar23 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                         (uVar15 - shotRuntime->elevationOffsetAngle16,
-                          (modelNode->modelPayload).worldRotationAngle0,(Q12)shotDefinition3,
+      FVar20 = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                         ((modelNode->modelPayload).worldRotationAngle1 -
+                          shotRuntime->elevationOffsetAngle16,
+                          (modelNode->modelPayload).worldRotationAngle0,uVar11,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-      iVar16 = (int)(uVar23 >> 0x20);
-      mixedScalarOrPointerCarrier = (dword)uVar23;
-      if ((bVar20) &&
-         (((shotRuntime->definitionOrSavedId).definition)->terrainImpactEffectDefinitions31[iVar16]
+      dVar15 = FVar20.materialOrCellIndex;
+      scale = FVar20.distanceQ12;
+      if ((FVar20.carry) &&
+         (((shotRuntime->definitionOrSavedId).definition)->terrainImpactEffectDefinitions31[dVar15]
           == (EffectDefinition *)0x0)) {
-        mixedScalarOrPointerCarrier = 0x7fffffff;
+        scale = 0x7fffffff;
       }
-      uVar15 = (modelNode->modelPayload).worldRotationAngle1;
-      bVar20 = uVar15 < (uint)shotRuntime->elevationOffsetAngle16;
-      uVar23 = FieldGrid_RaycastSecondarySurfaceDistanceCf
-                         (uVar15 - shotRuntime->elevationOffsetAngle16,
-                          (modelNode->modelPayload).worldRotationAngle0,(Q12)shotDefinition3,
+      FVar20 = FieldGrid_RaycastSecondarySurfaceDistanceCf
+                         ((modelNode->modelPayload).worldRotationAngle1 -
+                          shotRuntime->elevationOffsetAngle16,
+                          (modelNode->modelPayload).worldRotationAngle0,uVar11,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-      shotDefinition2 = (ShotDefinition *)uVar23;
-      if ((bVar20) &&
+      scale_00 = FVar20.distanceQ12;
+      if ((FVar20.carry) &&
          (((shotRuntime->definitionOrSavedId).definition)->primaryEffectDefinition ==
           (EffectDefinition *)0x0)) {
-        shotDefinition2 = (ShotDefinition *)0x7fffffff;
+        scale_00 = 0x7fffffff;
       }
-      if (shotDefinition2 < mixedScalarOrPointerCarrier) {
-        if (shotDefinition2 < shotDefinition1) {
-          mixedScalarOrPointerCarrier = (dword)(shotRuntime->definitionOrSavedId).definition;
-          if ((shotDefinition2 <= shotDefinition3) &&
-             (modelNode->renderDepthBiasOrState = (int)shotDefinition2,
+      if (scale_00 < scale) {
+        if (scale_00 < uVar10) {
+          pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+          if ((scale_00 <= uVar11) &&
+             (modelNode->renderDepthBiasOrState = scale_00,
              (shotRuntime->impactEffectEmissionFlags & 1) == 0)) {
             shotRuntime->impactEffectEmissionFlags = shotRuntime->impactEffectEmissionFlags | 1;
-            effectDefinition1 =
-                 ((ShotDefinition *)mixedScalarOrPointerCarrier)->primaryEffectDefinition;
-            worldContext1 = worldRuntime;
-            FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+            pEVar25 = pSVar16->primaryEffectDefinition;
+            pWVar26 = worldRuntime;
+            FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                                ((modelNode->modelPayload).worldRotationAngle1,
-                                (modelNode->modelPayload).worldRotationAngle0,
-                                (FixedMathScale32)shotDefinition2);
-            iVar16 = extraout_ECX_27 + (modelNode->worldTransform).translation.y;
-            iVar17 = (int)(FVar25 >> 0x20) + (modelNode->worldTransform).translation.z;
-            uVar21 = EffectRuntimePool_CreateInstanceFromDefinitionCf
-                               (iVar16,iVar17,EFFECT_RUNTIME_COMPLETION_NONE,0,0,0x4000,0,iVar17,
-                                iVar16,(int)FVar25 + (modelNode->worldTransform).translation.x,
-                                effectDefinition1,worldContext1);
-            MVar26.nearestModelNode = modelNode1;
-            MVar26.nearestDistanceQ12 = (Q12)((ulonglong)uVar21 >> 0x20);
-            mixedScalarOrPointerCarrier = extraout_ECX_14;
+                                (modelNode->modelPayload).worldRotationAngle0,scale_00);
+            EffectRuntimePool_CreateInstanceFromDefinitionCf
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                       FVar24.edx + (modelNode->worldTransform).translation.z,
+                       FVar24.ecx + (modelNode->worldTransform).translation.y,
+                       FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,pWVar26);
           }
         }
         else {
 
           ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_HandleNearestArmyHitAndContinueMotion
           :
-          mixedScalarOrPointerCarrier = *(dword *)&shotRuntime->definitionOrSavedId;
-          if (shotDefinition1 <= shotDefinition3) {
-            modelNode->renderDepthBiasOrState = (int)shotDefinition1;
+          pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+          if (uVar10 <= uVar11) {
+            modelNode->renderDepthBiasOrState = uVar10;
             ShotRuntime_ApplyArmyHitRelationAndNotifications
-                      ((modelNode1->runtimePayload).armyRuntime,shotRuntime);
-            armySlot2 = *(ArmyRuntimeSlot **)(extraout_EAX_01 + 0x48);
+                      (((MVar14.nearestModelNode)->runtimePayload).armyRuntime,shotRuntime);
+            armySlot2 = ((MVar14.nearestModelNode)->runtimePayload).armyRuntime;
             armySlot1 = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
-            FVar19 = 0;
+            FVar17 = 0;
             if (armySlot1 != (ArmyRuntimeSlot *)0x0) {
-              FVar19 = armySlot1->factionIndex;
+              FVar17 = armySlot1->factionIndex;
             }
             LOCK();
             UNLOCK();
             AVar27 = (modelNode->modelPayload).worldRotationAngle0;
-            iVar16 = *(int *)(extraout_ECX_25 + 0xb0 + iStack_24 * 4) /
-                     *(int *)(extraout_ECX_25 + 0xd0);
+            iVar12 = pSVar16->targetClassImpactDamageQ12[iStack_24] /
+                     (int)pSVar16->projectileLifetimeTicks;
             LOCK();
             UNLOCK();
-            effectDefinition1 = *(EffectDefinition **)(extraout_ECX_25 + 0x90 + iStack_24 * 4);
+            pEVar25 = pSVar16->targetClassImpactEffectDefinitions8[iStack_24];
             if (((shotRuntime->impactEffectEmissionFlags & 1) == 0) &&
-               (effectDefinition1 != (EffectDefinition *)0x0)) {
+               (pEVar25 != (EffectDefinition *)0x0)) {
               shotRuntime->impactEffectEmissionFlags = shotRuntime->impactEffectEmissionFlags | 1;
-              worldContext1 = worldRuntime;
-              FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+              pWVar26 = worldRuntime;
+              FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                                  ((modelNode->modelPayload).worldRotationAngle1,
-                                  (modelNode->modelPayload).worldRotationAngle0,scale_01);
-              iVar18 = (int)(FVar25 >> 0x20) + (modelNode->worldTransform).translation.z;
-              iVar17 = -(modelNode->modelPayload).worldRotationAngle1;
+                                  (modelNode->modelPayload).worldRotationAngle0,uVar10);
               EffectRuntimePool_CreateInstanceFromDefinitionCf
-                        (iVar17,iVar18,EFFECT_RUNTIME_COMPLETION_NONE,0,0,iVar17,
-                         (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,iVar18,
-                         extraout_ECX_26 + (modelNode->worldTransform).translation.y,
-                         (int)FVar25 + (modelNode->worldTransform).translation.x,effectDefinition1,
-                         worldContext1);
+                        (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,
+                         -(modelNode->modelPayload).worldRotationAngle1,
+                         (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
+                         FVar24.edx + (modelNode->worldTransform).translation.z,
+                         FVar24.ecx + (modelNode->worldTransform).translation.y,
+                         FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,pWVar26);
             }
-            ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AVar27,FVar19,iVar16,armySlot2);
-            MVar26.nearestModelNode = modelNode1;
-            MVar26.nearestDistanceQ12 = extraout_EDX_01;
-            mixedScalarOrPointerCarrier = extraout_ECX_12;
+            ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AVar27,FVar17,iVar12,armySlot2);
           }
         }
       }
       else {
-        if (shotDefinition1 <= mixedScalarOrPointerCarrier)
+        if (uVar10 <= scale)
         goto 
         ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_HandleNearestArmyHitAndContinueMotion
         ;
-        shotDefinition1 = (shotRuntime->definitionOrSavedId).definition;
-        MVar12.nearestModelNode = modelNode1;
-        MVar12.nearestDistanceQ12 = iVar16;
-        MVar26.nearestModelNode = modelNode1;
-        MVar26.nearestDistanceQ12 = iVar16;
-        if ((mixedScalarOrPointerCarrier <= shotDefinition3) &&
-           (modelNode->renderDepthBiasOrState = mixedScalarOrPointerCarrier, MVar26 = MVar12,
+        pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+        if ((scale <= uVar11) &&
+           (modelNode->renderDepthBiasOrState = scale,
            (shotRuntime->impactEffectEmissionFlags & 1) == 0)) {
           shotRuntime->impactEffectEmissionFlags = shotRuntime->impactEffectEmissionFlags | 1;
-          effectDefinition1 = shotDefinition1->terrainImpactEffectDefinitions31[iVar16];
-          worldContext1 = worldRuntime;
-          FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+          pEVar25 = pSVar16->terrainImpactEffectDefinitions31[dVar15];
+          pWVar26 = worldRuntime;
+          FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                              ((modelNode->modelPayload).worldRotationAngle1,
-                              (modelNode->modelPayload).worldRotationAngle0,
-                              mixedScalarOrPointerCarrier);
-          iVar17 = extraout_ECX_28 + (modelNode->worldTransform).translation.y;
-          iVar18 = (int)(FVar25 >> 0x20) + (modelNode->worldTransform).translation.z;
-          uVar21 = EffectRuntimePool_CreateInstanceFromDefinitionCf
-                             (iVar17,iVar18,EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                              shotDefinition1->terrainImpactEffectOwnerSlots31 + iVar16,0,0x4000,0,
-                              iVar18,iVar17,(int)FVar25 + (modelNode->worldTransform).translation.x,
-                              effectDefinition1,worldContext1);
-          MVar26.nearestDistanceQ12 = (Q12)((ulonglong)uVar21 >> 0x20);
-          shotRuntime = (modelNode->runtimePayload).shotRuntime;
-          mixedScalarOrPointerCarrier = extraout_ECX_16;
+                              (modelNode->modelPayload).worldRotationAngle0,scale);
+          EffectRuntimePool_CreateInstanceFromDefinitionCf
+                    (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
+                     (ModelRuntimeNode *)(pSVar16->terrainImpactEffectOwnerSlots31 + dVar15),0,
+                     0x4000,0,FVar24.edx + (modelNode->worldTransform).translation.z,
+                     FVar24.ecx + (modelNode->worldTransform).translation.y,
+                     FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,pWVar26);
+          shotRuntime = modelNode->shotRuntime;
         }
       }
-      shotDefinition3 = (ShotDefinition *)MVar26.nearestDistanceQ12;
-      iVar16 = ((shotRuntime->definitionOrSavedId).definition)->modelSpinStepTurn16;
+      iVar12 = ((shotRuntime->definitionOrSavedId).definition)->modelSpinStepTurn16;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
-      pAVar8 = &(modelNode->modelPayload).worldRotationAngle2;
-      *pAVar8 = *pAVar8 + iVar16;
-      pAVar8 = &(modelNode->modelPayload).worldRotationAngle2;
-      *pAVar8 = *pAVar8 & 0xffff;
+      pAVar7 = &(modelNode->modelPayload).worldRotationAngle2;
+      *pAVar7 = *pAVar7 + iVar12;
+      pAVar7 = &(modelNode->modelPayload).worldRotationAngle2;
+      *pAVar7 = *pAVar7 & 0xffff;
     }
     else {
       armySlot2 = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
-      uVar15 = (modelNode->modelPayload).worldRotationAngle1;
       modelNode1 = (ModelRuntimeNode *)0x0;
       if (armySlot2 != (ArmyRuntimeSlot *)0x0) {
         modelNode1 = armySlot2->modelNodeRuntime;
       }
-      bVar20 = uVar15 < (uint)shotRuntime->elevationOffsetAngle16;
-      MVar22 = ModelRuntime_RaycastCandidateListNearestCf
-                         (uVar15 - shotRuntime->elevationOffsetAngle16,
+      MVar19 = ModelRuntime_RaycastCandidateListNearestCf
+                         ((modelNode->modelPayload).worldRotationAngle1 -
+                          shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,MODEL_RUNTIME_CLASS_00,
                           modelNode1,worldRuntime);
-      QVar14 = MVar22.nearestDistanceQ12;
-      if (bVar20) {
-        iStack_24 = *(int *)((int)(((MVar22.nearestModelNode)->runtimePayload).armyRuntime)->
-                                  definitionOrAsset + 0x5c);
-        if (((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
-            [iStack_24] == (EffectDefinition *)0x0) {
-          QVar14 = 0x7fffffff;
-        }
-        MVar22.nearestModelNode = MVar22.nearestModelNode;
-        MVar22.nearestDistanceQ12 = QVar14;
+      MVar14 = MVar19.edxCarrier;
+      uVar11 = MVar19.nearestDistanceQ12;
+      if ((MVar19.carry) &&
+         (iStack_24 = *(int *)(((((MVar14.nearestModelNode)->runtimePayload).modelRuntime)->
+                               definitionOrSavedId).savedIdOrOffset + 0x5c),
+         ((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
+         [iStack_24] == (EffectDefinition *)0x0)) {
+        uVar11 = 0x7fffffff;
       }
-      shotDefinition1 = (ShotDefinition *)MVar22.nearestDistanceQ12;
-      uVar15 = (modelNode->modelPayload).worldRotationAngle1;
-      bVar20 = uVar15 < (uint)shotRuntime->elevationOffsetAngle16;
-      uVar23 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                         (uVar15 - shotRuntime->elevationOffsetAngle16,
+      FVar20 = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                         ((modelNode->modelPayload).worldRotationAngle1 -
+                          shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-      shotDefinition3 = (ShotDefinition *)(uVar23 >> 0x20);
-      mixedScalarOrPointerCarrier = (dword)uVar23;
-      if ((bVar20) &&
-         (((shotRuntime->definitionOrSavedId).definition)->terrainImpactEffectDefinitions31
-          [(int)shotDefinition3] == (EffectDefinition *)0x0)) {
+      dVar15 = FVar20.materialOrCellIndex;
+      mixedScalarOrPointerCarrier = FVar20.distanceQ12;
+      if ((FVar20.carry) &&
+         (((shotRuntime->definitionOrSavedId).definition)->terrainImpactEffectDefinitions31[dVar15]
+          == (EffectDefinition *)0x0)) {
         mixedScalarOrPointerCarrier = 0x7fffffff;
       }
-      uVar15 = (modelNode->modelPayload).worldRotationAngle1;
-      bVar20 = uVar15 < (uint)shotRuntime->elevationOffsetAngle16;
-      uVar23 = FieldGrid_RaycastSecondarySurfaceDistanceCf
-                         (uVar15 - shotRuntime->elevationOffsetAngle16,
+      FVar20 = FieldGrid_RaycastSecondarySurfaceDistanceCf
+                         ((modelNode->modelPayload).worldRotationAngle1 -
+                          shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-      shotDefinition2 = (ShotDefinition *)uVar23;
-      if ((bVar20) &&
+      uVar10 = FVar20.distanceQ12;
+      if ((FVar20.carry) &&
          (((shotRuntime->definitionOrSavedId).definition)->primaryEffectDefinition ==
           (EffectDefinition *)0x0)) {
-        shotDefinition2 = (ShotDefinition *)0x7fffffff;
+        uVar10 = 0x7fffffff;
       }
-      if (shotDefinition2 < mixedScalarOrPointerCarrier) {
-        if (shotDefinition2 < shotDefinition1) {
-          mixedScalarOrPointerCarrier = (dword)(shotRuntime->definitionOrSavedId).definition;
-          shotDefinition3 = shotDefinition1;
-          if (shotDefinition2 <= (ShotDefinition *)shotRuntime->launchSpeedQ12) {
+      if (uVar10 < mixedScalarOrPointerCarrier) {
+        if (uVar10 < uVar11) {
+          pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+          if (uVar10 <= (uint)shotRuntime->launchSpeedQ12) {
             InterpolationState_SetNegatedTargetAndRescaleProgress
-                      (((ShotDefinition *)mixedScalarOrPointerCarrier)->
-                       shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
-            effectDefinition1 = *(EffectDefinition **)(extraout_ECX_22 + 0x10);
-            FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+                      (pSVar16->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
+            pEVar25 = pSVar16->primaryEffectDefinition;
+            FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                                ((modelNode->modelPayload).worldRotationAngle1,
-                                (modelNode->modelPayload).worldRotationAngle0,scale);
-            iVar16 = extraout_ECX_23 + (modelNode->worldTransform).translation.y;
-            iVar17 = (int)(FVar25 >> 0x20) + (modelNode->worldTransform).translation.z;
+                                (modelNode->modelPayload).worldRotationAngle0,uVar10);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (iVar16,iVar17,EFFECT_RUNTIME_COMPLETION_NONE,0,0,0x4000,0,iVar17,iVar16,
-                       (int)FVar25 + (modelNode->worldTransform).translation.x,effectDefinition1,
-                       worldRuntime);
-            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldRuntimeNode *)modelNode);
+                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                       FVar24.edx + (modelNode->worldTransform).translation.z,
+                       FVar24.ecx + (modelNode->worldTransform).translation.y,
+                       FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,worldRuntime);
+            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
             (shotRuntime->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
             return;
           }
@@ -560,276 +500,245 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
 
           ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_HandleNearestArmyHitAndTerminateProjectile
           :
-          mixedScalarOrPointerCarrier = *(dword *)&shotRuntime->definitionOrSavedId;
-          shotDefinition3 = shotDefinition1;
-          if (shotDefinition1 <= (ShotDefinition *)shotRuntime->launchSpeedQ12) {
+          pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+          if (uVar11 <= (uint)shotRuntime->launchSpeedQ12) {
             ShotRuntime_ApplyArmyHitRelationAndNotifications
-                      (((MVar22.nearestModelNode)->runtimePayload).armyRuntime,shotRuntime);
+                      (((MVar14.nearestModelNode)->runtimePayload).armyRuntime,shotRuntime);
             InterpolationState_SetNegatedTargetAndRescaleProgress
-                      (*(GraphicsTransitionTickCount *)(extraout_ECX_19 + 0x264),
-                       modelNode->shadingRecord);
-            armySlot2 = *(ArmyRuntimeSlot **)(extraout_EAX + 0x48);
-            impactValue = *(ImpactDamageValue32 *)(extraout_ECX_20 + 0xb0 + iStack_24 * 4);
+                      (pSVar16->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
+            armySlot2 = ((MVar14.nearestModelNode)->runtimePayload).armyRuntime;
+            impactValue = pSVar16->targetClassImpactDamageQ12[iStack_24];
             armySlot1 = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
-            FVar19 = 0;
+            FVar17 = 0;
             if (armySlot1 != (ArmyRuntimeSlot *)0x0) {
-              FVar19 = armySlot1->factionIndex;
+              FVar17 = armySlot1->factionIndex;
             }
             LOCK();
             UNLOCK();
-            effectDefinition1 = *(EffectDefinition **)(extraout_ECX_20 + 0x90 + iStack_24 * 4);
+            pEVar25 = pSVar16->targetClassImpactEffectDefinitions8[iStack_24];
             AVar27 = (modelNode->modelPayload).worldRotationAngle0;
-            if (effectDefinition1 != (EffectDefinition *)0x0) {
-              FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+            if (pEVar25 != (EffectDefinition *)0x0) {
+              FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                                  ((modelNode->modelPayload).worldRotationAngle1,
-                                  (modelNode->modelPayload).worldRotationAngle0,scale_00);
-              iVar17 = (int)(FVar25 >> 0x20) + (modelNode->worldTransform).translation.z;
-              iVar16 = -(modelNode->modelPayload).worldRotationAngle1;
+                                  (modelNode->modelPayload).worldRotationAngle0,uVar11);
               EffectRuntimePool_CreateInstanceFromDefinitionCf
-                        (iVar16,iVar17,EFFECT_RUNTIME_COMPLETION_NONE,0,0,iVar16,
-                         (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,iVar17,
-                         extraout_ECX_21 + (modelNode->worldTransform).translation.y,
-                         (int)FVar25 + (modelNode->worldTransform).translation.x,effectDefinition1,
-                         worldRuntime);
+                        (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,
+                         -(modelNode->modelPayload).worldRotationAngle1,
+                         (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
+                         FVar24.edx + (modelNode->worldTransform).translation.z,
+                         FVar24.ecx + (modelNode->worldTransform).translation.y,
+                         FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,worldRuntime
+                        );
             }
-            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldRuntimeNode *)modelNode);
+            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
             (shotRuntime->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
-            ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AVar27,FVar19,impactValue,armySlot2);
+            ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AVar27,FVar17,impactValue,armySlot2);
             return;
           }
         }
       }
       else {
-        if (shotDefinition1 <= mixedScalarOrPointerCarrier)
+        if (uVar11 <= mixedScalarOrPointerCarrier)
         goto 
         ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_HandleNearestArmyHitAndTerminateProjectile
         ;
-        if (mixedScalarOrPointerCarrier <= (ShotDefinition *)shotRuntime->launchSpeedQ12) {
+        pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+        if (mixedScalarOrPointerCarrier <= (uint)shotRuntime->launchSpeedQ12) {
           (shotRuntime->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
           InterpolationState_SetNegatedTargetAndRescaleProgress
-                    (((shotRuntime->definitionOrSavedId).definition)->
-                     shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
-          effectDefinition1 = *(EffectDefinition **)(extraout_EAX_00 + 0x14 + extraout_EDX_00 * 4);
-          FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+                    (pSVar16->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
+          pEVar25 = pSVar16->terrainImpactEffectDefinitions31[dVar15];
+          FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                              ((modelNode->modelPayload).worldRotationAngle1,
                               (modelNode->modelPayload).worldRotationAngle0,
                               mixedScalarOrPointerCarrier);
-          iVar16 = extraout_ECX_24 + (modelNode->worldTransform).translation.y;
-          iVar17 = (int)(FVar25 >> 0x20) + (modelNode->worldTransform).translation.z;
           EffectRuntimePool_CreateInstanceFromDefinitionCf
-                    (iVar16,iVar17,EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     extraout_EAX_00 + 0xe0 + extraout_EDX_00 * 4,0,0x4000,0,iVar17,iVar16,
-                     (int)FVar25 + (modelNode->worldTransform).translation.x,effectDefinition1,
-                     worldRuntime);
-          WorldRuntime_UnlinkNodeFromOwnerListD8((WorldRuntimeNode *)modelNode);
+                    (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
+                     (ModelRuntimeNode *)(pSVar16->terrainImpactEffectOwnerSlots31 + dVar15),0,
+                     0x4000,0,FVar24.edx + (modelNode->worldTransform).translation.z,
+                     FVar24.ecx + (modelNode->worldTransform).translation.y,
+                     FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,worldRuntime);
+          WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
           return;
         }
       }
-      shotDefinition1 = (shotRuntime->definitionOrSavedId).definition;
-      if (shotDefinition1->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) {
-        FVar25 = FixedMath_DirectionFromAnglesScaledRegs
+      pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+      if (pSVar16->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) {
+        FVar24 = FixedMath_DirectionFromAnglesScaledRegs
                            ((modelNode->modelPayload).worldRotationAngle1 -
                             shotRuntime->elevationOffsetAngle16,
                             (modelNode->modelPayload).worldRotationAngle0,
                             shotRuntime->launchSpeedQ12);
-        shotDefinition3 = (ShotDefinition *)(FVar25 >> 0x20);
+        trajectoryStepYQ12 = FVar24.ecx;
         shadingRecord1 = modelNode->shadingRecord;
-        pGVar6 = &(modelNode->worldTransform).translation;
-        pGVar6->x = pGVar6->x + (int)FVar25;
+        pGVar5 = &(modelNode->worldTransform).translation;
+        pGVar5->x = pGVar5->x + FVar24.eax;
         if (shadingRecord1 != (GraphicsShadingRuntimeRecord *)0x0) {
-          shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + (int)FVar25;
-          shadingRecord1->worldYQ12 = shadingRecord1->worldYQ12 + extraout_ECX_00;
-          shadingRecord1->worldZQ12 =
-               (int)shotDefinition3->terrainImpactEffectDefinitions31 +
-               shadingRecord1->worldZQ12 + -0x14;
+          shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + FVar24.eax;
+          shadingRecord1->worldYQ12 = shadingRecord1->worldYQ12 + trajectoryStepYQ12;
+          shadingRecord1->worldZQ12 = shadingRecord1->worldZQ12 + FVar24.edx;
         }
-        pGVar7 = &(modelNode->worldTransform).translation.y;
-        *pGVar7 = *pGVar7 + extraout_ECX_00;
-        shotDefinition1 = (shotRuntime->definitionOrSavedId).definition;
-        pGVar7 = &(modelNode->worldTransform).translation.z;
-        *pGVar7 = (int)shotDefinition3->terrainImpactEffectDefinitions31 + *pGVar7 + -0x14;
-        piVar10 = (shotRuntime->runtimeStateOrSavedOffset).runtimeStatePointer;
-        mixedScalarOrPointerCarrier = extraout_ECX_00;
-        if ((shotDefinition1->mode3LeadDisabled != 0) && (piVar10 != (int *)0x0)) {
-          iVar16 = piVar10[1];
-          if (*(int *)(*piVar10 + 0x4c) == 0x15) {
-            iVar16 = *(int *)(iVar16 + 0xcc);
+        pGVar6 = &(modelNode->worldTransform).translation.y;
+        *pGVar6 = *pGVar6 + trajectoryStepYQ12;
+        pSVar16 = (shotRuntime->definitionOrSavedId).definition;
+        pGVar6 = &(modelNode->worldTransform).translation.z;
+        *pGVar6 = *pGVar6 + FVar24.edx;
+        piVar9 = (shotRuntime->runtimeStateOrSavedOffset).runtimeStatePointer;
+        if ((pSVar16->guidanceTurnLimitAngle16 != 0) && (piVar9 != (int *)0x0)) {
+          iVar12 = piVar9[1];
+          if (*(int *)(*piVar9 + 0x4c) == 0x15) {
+            iVar12 = *(int *)(iVar12 + 0xcc);
           }
           modelNodeRuntime = (shotRuntime->modelNodeOrSavedOffset).modelNode;
-          FixedMath_VectorToAngles3Regs
-                    ((*(int *)(*piVar10 + 0x50) + *(int *)(iVar16 + 0x9c)) -
-                     (modelNodeRuntime->worldTransform).translation.z,
-                     *(int *)(iVar16 + 0x98) - (modelNodeRuntime->worldTransform).translation.y,
-                     *(int *)(iVar16 + 0x94) - (modelNodeRuntime->worldTransform).translation.x);
-          shotDefinition3 =
-               (ShotDefinition *)
-               (extraout_EDX - (modelNodeRuntime->modelPayload).worldRotationAngle1);
-          shotDefinition2 = (ShotDefinition *)shotDefinition1->mode3LeadDisabled;
-          shotDefinition4 =
-               (ShotDefinition *)
-               ((int)((extraout_ECX_17 - (modelNodeRuntime->modelPayload).worldRotationAngle0) *
-                     0x10000) >> 0x10);
-          if ((int)shotDefinition2 < (int)shotDefinition3) {
-            shotDefinition3 = shotDefinition2;
+          FVar21 = FixedMath_VectorToAngles3Regs
+                             ((*(int *)(*piVar9 + 0x50) + *(int *)(iVar12 + 0x9c)) -
+                              (modelNodeRuntime->worldTransform).translation.z,
+                              *(int *)(iVar12 + 0x98) -
+                              (modelNodeRuntime->worldTransform).translation.y,
+                              *(int *)(iVar12 + 0x94) -
+                              (modelNodeRuntime->worldTransform).translation.x);
+          elevationTurnDeltaAngle16 =
+               FVar21.edx - (modelNodeRuntime->modelPayload).worldRotationAngle1;
+          iVar12 = pSVar16->guidanceTurnLimitAngle16;
+          headingTurnDeltaAngle16 =
+               (int)((FVar21.ecx - (modelNodeRuntime->modelPayload).worldRotationAngle0) * 0x10000)
+               >> 0x10;
+          if (iVar12 < elevationTurnDeltaAngle16) {
+            elevationTurnDeltaAngle16 = iVar12;
           }
-          if ((int)shotDefinition2 < (int)shotDefinition4) {
-            shotDefinition4 = shotDefinition2;
+          if (iVar12 < headingTurnDeltaAngle16) {
+            headingTurnDeltaAngle16 = iVar12;
           }
-          shotDefinition2 = (ShotDefinition *)-(int)shotDefinition2;
-          if ((int)shotDefinition4 < (int)shotDefinition2) {
-            shotDefinition4 = shotDefinition2;
+          iVar12 = -iVar12;
+          if (headingTurnDeltaAngle16 < iVar12) {
+            headingTurnDeltaAngle16 = iVar12;
           }
-          if ((int)shotDefinition3 < (int)shotDefinition2) {
-            shotDefinition3 = shotDefinition2;
+          if (elevationTurnDeltaAngle16 < iVar12) {
+            elevationTurnDeltaAngle16 = iVar12;
           }
-          pAVar8 = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
-          *pAVar8 = (int)shotDefinition3->terrainImpactEffectDefinitions31 + (*pAVar8 - 0x14);
-          mixedScalarOrPointerCarrier =
-               (int)shotDefinition4->terrainImpactEffectDefinitions31 +
-               ((modelNodeRuntime->modelPayload).worldRotationAngle0 - 0x14) & 0xffff;
-          (modelNodeRuntime->modelPayload).worldRotationAngle0 = mixedScalarOrPointerCarrier;
+          pAVar7 = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
+          *pAVar7 = *pAVar7 + elevationTurnDeltaAngle16;
+          (modelNodeRuntime->modelPayload).worldRotationAngle0 =
+               headingTurnDeltaAngle16 + (modelNodeRuntime->modelPayload).worldRotationAngle0 &
+               0xffff;
         }
       }
-      iVar16 = shotDefinition1->modelSpinStepTurn16;
+      iVar12 = pSVar16->modelSpinStepTurn16;
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      pAVar8 = &(modelNodeRuntime->modelPayload).worldRotationAngle2;
-      *pAVar8 = *pAVar8 + iVar16;
-      pAVar8 = &(modelNodeRuntime->modelPayload).worldRotationAngle2;
-      *pAVar8 = *pAVar8 & 0xffff;
-      if (shotDefinition1->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) {
-        if (shotDefinition1->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) {
-          if (shotDefinition1->trajectoryRampDurationTicks != 0) {
-            uVar15 = shotRuntime->projectileAgeTicks;
-            if (shotDefinition1->trajectoryRampDurationTicks < uVar15) {
-              uVar15 = shotDefinition1->trajectoryRampDurationTicks;
+      pAVar7 = &(modelNodeRuntime->modelPayload).worldRotationAngle2;
+      *pAVar7 = *pAVar7 + iVar12;
+      pAVar7 = &(modelNodeRuntime->modelPayload).worldRotationAngle2;
+      *pAVar7 = *pAVar7 & 0xffff;
+      if (pSVar16->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) {
+        if (pSVar16->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) {
+          if (pSVar16->trajectoryRampDurationTicks != 0) {
+            uVar11 = shotRuntime->projectileAgeTicks;
+            if (pSVar16->trajectoryRampDurationTicks < uVar11) {
+              uVar11 = pSVar16->trajectoryRampDurationTicks;
             }
-            lVar11 = (longlong)
-                     (int)(((longlong)(int)uVar15 * (longlong)(int)uVar15) /
-                          (longlong)(int)shotDefinition1->trajectoryRampDurationTicks) *
-                     (longlong)shotDefinition1->launchSpeedQ12;
-            shotDefinition3 =
-                 (ShotDefinition *)
-                 (lVar11 % (longlong)(int)shotDefinition1->trajectoryRampDurationTicks);
             shotRuntime->launchSpeedQ12 =
-                 (Q12)(lVar11 / (longlong)(int)shotDefinition1->trajectoryRampDurationTicks);
-            if (shotDefinition1->elevationOffsetAngle16 != 0) {
-              uVar15 = shotDefinition1->trajectoryRampDurationTicks * 2;
-              iVar16 = uVar15 - shotRuntime->projectileAgeTicks;
-              if (uVar15 < shotRuntime->projectileAgeTicks) {
-                iVar16 = 0;
+                 (Q12)(((longlong)
+                        (int)(((longlong)(int)uVar11 * (longlong)(int)uVar11) /
+                             (longlong)(int)pSVar16->trajectoryRampDurationTicks) *
+                       (longlong)pSVar16->launchSpeedQ12) /
+                      (longlong)(int)pSVar16->trajectoryRampDurationTicks);
+            if (pSVar16->elevationOffsetAngle16 != 0) {
+              uVar11 = pSVar16->trajectoryRampDurationTicks * 2;
+              iVar12 = uVar11 - shotRuntime->projectileAgeTicks;
+              if (uVar11 < shotRuntime->projectileAgeTicks) {
+                iVar12 = 0;
               }
-              lVar11 = (longlong)iVar16 * (longlong)shotDefinition1->elevationOffsetAngle16;
-              shotDefinition3 =
-                   (ShotDefinition *)
-                   (lVar11 % (longlong)(int)shotDefinition1->trajectoryRampDurationTicks);
-              iVar16 = ((int)(lVar11 / (longlong)(int)shotDefinition1->trajectoryRampDurationTicks)
-                       >> 1) - shotRuntime->elevationOffsetAngle16;
-              shotRuntime->elevationOffsetAngle16 = shotRuntime->elevationOffsetAngle16 + iVar16;
-              pAVar8 = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
-              *pAVar8 = *pAVar8 + iVar16;
+              iVar12 = ((int)(((longlong)iVar12 * (longlong)pSVar16->elevationOffsetAngle16) /
+                             (longlong)(int)pSVar16->trajectoryRampDurationTicks) >> 1) -
+                       shotRuntime->elevationOffsetAngle16;
+              shotRuntime->elevationOffsetAngle16 = shotRuntime->elevationOffsetAngle16 + iVar12;
+              pAVar7 = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
+              *pAVar7 = *pAVar7 + iVar12;
             }
           }
         }
-        else if (shotDefinition1->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
+        else if (pSVar16->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
           pQVar4 = &(shotRuntime->ownerAndTrajectory).directionComponent2Q12;
           *pQVar4 = *pQVar4 - ((shotRuntime->definitionOrSavedId).definition)->ballisticDivisorQ12;
-          FVar24 = FixedMath_VectorToAnglesAndLengthVec3Regs
+          FVar23 = FixedMath_VectorToAnglesAndLengthVec3Regs
                              ((GraphicsFixedVec3 *)
                               &(shotRuntime->ownerAndTrajectory).directionComponent0Q12);
-          shotDefinition3 = (ShotDefinition *)(FVar24 >> 0x20);
-          shotRuntime->launchSpeedQ12 = (Q12)FVar24;
-          (modelNodeRuntime->modelPayload).worldRotationAngle0 = extraout_ECX_02;
-          (modelNodeRuntime->modelPayload).worldRotationAngle1 = (AngleTurn32)shotDefinition3;
-          mixedScalarOrPointerCarrier = extraout_ECX_02;
+          ballisticAzimuthAngle = FVar23.azimuthAngle;
+          shotRuntime->launchSpeedQ12 = FVar23.lengthQ12;
+          (modelNodeRuntime->modelPayload).worldRotationAngle0 = ballisticAzimuthAngle;
+          (modelNodeRuntime->modelPayload).worldRotationAngle1 = FVar23.elevationAngle;
         }
-        else if (shotDefinition1->trajectoryMode == SHOT_TRAJECTORY_FIXED_RANGE) {
+        else if (pSVar16->trajectoryMode == SHOT_TRAJECTORY_FIXED_RANGE) {
           if ((int)(modelNodeRuntime->modelPayload).worldRotationAngle1 < 0) {
-            mixedScalarOrPointerCarrier = (shotRuntime->runtimeStateOrSavedOffset).runtimeState;
             shadingRecord1 = modelNodeRuntime->shadingRecord;
-            if ((ShotDefinition *)mixedScalarOrPointerCarrier != (ShotDefinition *)0x0) {
-              iVar16 = *(int *)(((ShotDefinition *)mixedScalarOrPointerCarrier)->reservedDword04 +
-                               0x94) - (modelNodeRuntime->worldTransform).translation.x;
-              shotDefinition3 =
-                   (ShotDefinition *)
-                   (*(int *)(((ShotDefinition *)mixedScalarOrPointerCarrier)->reservedDword04 + 0x98
-                            ) - (modelNodeRuntime->worldTransform).translation.y);
-              pGVar6 = &(modelNodeRuntime->worldTransform).translation;
-              pGVar6->x = pGVar6->x + iVar16;
-              pGVar7 = &(modelNodeRuntime->worldTransform).translation.y;
-              *pGVar7 = (int)shotDefinition3->terrainImpactEffectDefinitions31 + *pGVar7 + -0x14;
+            if ((shotRuntime->runtimeStateOrSavedOffset).runtimeState != 0) {
+              iVar12 = *(int *)((shotRuntime->runtimeStateOrSavedOffset).runtimeState + 4);
+              iVar13 = *(int *)(iVar12 + 0x94) - (modelNodeRuntime->worldTransform).translation.x;
+              iVar12 = *(int *)(iVar12 + 0x98) - (modelNodeRuntime->worldTransform).translation.y;
+              pGVar5 = &(modelNodeRuntime->worldTransform).translation;
+              pGVar5->x = pGVar5->x + iVar13;
+              pGVar6 = &(modelNodeRuntime->worldTransform).translation.y;
+              *pGVar6 = *pGVar6 + iVar12;
               if (shadingRecord1 != (GraphicsShadingRuntimeRecord *)0x0) {
-                shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + iVar16;
-                shadingRecord1->worldYQ12 =
-                     (int)shotDefinition3->terrainImpactEffectDefinitions31 +
-                     shadingRecord1->worldYQ12 + -0x14;
+                shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + iVar13;
+                shadingRecord1->worldYQ12 = shadingRecord1->worldYQ12 + iVar12;
               }
             }
           }
           else {
-            if (shotDefinition1->trajectoryRampDurationTicks != 0) {
-              uVar15 = shotRuntime->projectileAgeTicks;
-              if (shotDefinition1->trajectoryRampDurationTicks < uVar15) {
-                uVar15 = shotDefinition1->trajectoryRampDurationTicks;
+            if (pSVar16->trajectoryRampDurationTicks != 0) {
+              uVar11 = shotRuntime->projectileAgeTicks;
+              if (pSVar16->trajectoryRampDurationTicks < uVar11) {
+                uVar11 = pSVar16->trajectoryRampDurationTicks;
               }
-              lVar11 = (longlong)
-                       (int)(((longlong)
-                              (int)(((longlong)(int)uVar15 * (longlong)(int)uVar15) /
-                                   (longlong)(int)shotDefinition1->trajectoryRampDurationTicks) *
-                             (longlong)(int)uVar15) /
-                            (longlong)(int)shotDefinition1->trajectoryRampDurationTicks) *
-                       (longlong)shotDefinition1->launchSpeedQ12;
-              shotDefinition3 =
-                   (ShotDefinition *)
-                   (lVar11 % (longlong)(int)shotDefinition1->trajectoryRampDurationTicks);
               shotRuntime->launchSpeedQ12 =
-                   (Q12)(lVar11 / (longlong)(int)shotDefinition1->trajectoryRampDurationTicks);
+                   (Q12)(((longlong)
+                          (int)(((longlong)
+                                 (int)(((longlong)(int)uVar11 * (longlong)(int)uVar11) /
+                                      (longlong)(int)pSVar16->trajectoryRampDurationTicks) *
+                                (longlong)(int)uVar11) /
+                               (longlong)(int)pSVar16->trajectoryRampDurationTicks) *
+                         (longlong)pSVar16->launchSpeedQ12) /
+                        (longlong)(int)pSVar16->trajectoryRampDurationTicks);
             }
-            mixedScalarOrPointerCarrier = (shotRuntime->runtimeStateOrSavedOffset).runtimeState;
-            if (shotDefinition1->fixedRangeTransitionAgeThresholdTicks <=
-                shotRuntime->projectileAgeTicks) {
-              shotDefinition3 = (ShotDefinition *)(shotRuntime->definitionOrSavedId).savedId;
-              if ((ShotDefinition *)mixedScalarOrPointerCarrier == (ShotDefinition *)0x0) {
+            if (pSVar16->fixedRangeTransitionAgeThresholdTicks <= shotRuntime->projectileAgeTicks) {
+              pSVar16 = (ShotDefinition *)(shotRuntime->definitionOrSavedId).savedId;
+              if ((shotRuntime->runtimeStateOrSavedOffset).runtimeState == 0) {
 
                 ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_UnlinkExpiredOrOrphanedProjectileAndReturn
                 :
                 InterpolationState_SetNegatedTargetAndRescaleProgress
-                          (shotDefinition3->shadingReleaseTransitionDurationTicks,
+                          (pSVar16->shadingReleaseTransitionDurationTicks,
                            modelNodeRuntime->shadingRecord);
-                WorldRuntime_UnlinkNodeFromOwnerListD8((WorldRuntimeNode *)modelNodeRuntime);
+                WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNodeRuntime);
                 (shotRuntime->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
                 return;
               }
+              iVar12 = *(int *)((shotRuntime->runtimeStateOrSavedOffset).runtimeState + 4);
               shadingRecord1 = modelNodeRuntime->shadingRecord;
-              iVar16 = *(int *)(((ShotDefinition *)mixedScalarOrPointerCarrier)->reservedDword04 +
-                               0x94) - (modelNodeRuntime->worldTransform).translation.x;
-              shotDefinition3 =
-                   (ShotDefinition *)
-                   (*(int *)(((ShotDefinition *)mixedScalarOrPointerCarrier)->reservedDword04 + 0x98
-                            ) - (modelNodeRuntime->worldTransform).translation.y);
-              pGVar6 = &(modelNodeRuntime->worldTransform).translation;
-              pGVar6->x = pGVar6->x + iVar16;
-              pGVar7 = &(modelNodeRuntime->worldTransform).translation.y;
-              *pGVar7 = (int)shotDefinition3->terrainImpactEffectDefinitions31 + *pGVar7 + -0x14;
-              pAVar8 = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
-              *pAVar8 = -*pAVar8;
+              iVar13 = *(int *)(iVar12 + 0x94) - (modelNodeRuntime->worldTransform).translation.x;
+              iVar12 = *(int *)(iVar12 + 0x98) - (modelNodeRuntime->worldTransform).translation.y;
+              pGVar5 = &(modelNodeRuntime->worldTransform).translation;
+              pGVar5->x = pGVar5->x + iVar13;
+              pGVar6 = &(modelNodeRuntime->worldTransform).translation.y;
+              *pGVar6 = *pGVar6 + iVar12;
+              pAVar7 = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
+              *pAVar7 = -*pAVar7;
               if (shadingRecord1 != (GraphicsShadingRuntimeRecord *)0x0) {
-                shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + iVar16;
-                shadingRecord1->worldYQ12 =
-                     (int)shotDefinition3->terrainImpactEffectDefinitions31 +
-                     shadingRecord1->worldYQ12 + -0x14;
+                shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + iVar13;
+                shadingRecord1->worldYQ12 = shadingRecord1->worldYQ12 + iVar12;
               }
             }
           }
         }
       }
     }
-    uVar21 = ModelNodeRuntime_RebuildTransformsFromRoot
-                       (mixedScalarOrPointerCarrier,shotDefinition3,modelNodeRuntime);
-    ModelNodeRuntime_UpdateDepthBinMasks
-              (extraout_ECX_18,(int)((ulonglong)uVar21 >> 0x20),0,modelNodeRuntime);
+    ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+    ModelNodeRuntime_UpdateDepthBinMasks(0,modelNodeRuntime);
     IStack_38 = IStack_38 - 1;
     if (IStack_38 == 0) {
       return;
     }
   } while( true );
 }
+

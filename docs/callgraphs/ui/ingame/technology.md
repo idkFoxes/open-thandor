@@ -1,6 +1,6 @@
 # Call graph: `ui/ingame/technology`
 
-[Source](../../../../src/ui/ingame/technology.c) · [Header](../../../../include/thandor/ui/ingame/technology.h) · [Graphviz](technology.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-technology)
+[Source](../../../../src/ui/ingame/technology.c) · [Header](../../../../include/thandor/ui/ingame/technology.h) · [Graphviz](technology.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-technology) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-ingame-technology)
 
 6 functions. Addresses are current V523 executable VAs.
 

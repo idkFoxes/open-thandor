@@ -1,6 +1,6 @@
 # Call graph: `gameplay/army/audio`
 
-[Source](../../../../src/gameplay/army/audio.c) · [Header](../../../../include/thandor/gameplay/army/audio.h) · [Graphviz](audio.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-audio)
+[Source](../../../../src/gameplay/army/audio.c) · [Header](../../../../include/thandor/gameplay/army/audio.h) · [Graphviz](audio.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-audio) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-army-audio) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-army-audio)
 
 10 functions. Addresses are current V523 executable VAs.
 

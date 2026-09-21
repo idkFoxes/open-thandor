@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/ingame/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/ingame/runtime.h>
 
 /* Implementation ownership: ui/ingame/runtime. */
@@ -14,29 +21,37 @@
    TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting [world/terrain/editing],
    TerrainEditBuffer_CommitFlagsAndMaterialDeltas [world/terrain/editing].
 */
-void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
-               (dword keyboardStateMask,dword keyboardEventCode,UiRootNode *uiRoot)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
+          (dword keyboardStateMask,dword keyboardEventCode,UiRootNode *uiRoot)
 
 {
+  UiNodeVtable **stack;
   sdword *psVar1;
   wchar_t wVar2;
   wchar_t wVar3;
-  int extraout_EAX;
   UiNodeVtable *pUVar4;
   dword dVar5;
-  GraphicsCapturedTextureSourceAsset *source;
   UiCommandModeIndex UVar6;
-  sdword in_EDX;
-  UiPageStackControl *stack;
-  UiPageStackControl *stack_00;
-  UiPageStackControl *stack_01;
+  sdword unaff_EDX;
   int iVar7;
   dword unaff_EBP;
   dword unaff_ESI;
   sdword unaff_EDI;
   dword *pdVar8;
   dword *pdVar9;
-  bool bVar10;
+  StatusValueEaxCf5 SVar10;
+  ArmyRegistryIdEaxCf5_571b00 AVar11;
+  ArmyRegistryIdEaxCf5_571d40 AVar12;
+  ArmyRegistryIdEaxCf5_571ab0 AVar13;
+  ArmyRegistryIdEaxCf5_571cf0 AVar14;
+  ArmyRegistryIdEaxCf5_571a10 AVar15;
+  ArmyRegistryIdEaxCf5_571c50 AVar16;
+  ArmyRegistryIdEaxCf5_571a60 AVar17;
+  ArmyRegistryIdEaxCf5_571ca0 AVar18;
+  ArmyRegistryEaxCf5_51b6d0 AVar19;
+  FatalErrorEaxCf5 FVar20;
+  GraphicsFramebufferCaptureEaxCf5 GVar21;
   
   pdVar9 = (dword *)0x56e410;
   do {
@@ -53,22 +68,22 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
     }
   } while ((keyboardStateMask & 0x3c) != 0);
 override_jmp_0056e406_switch:
-  bVar10 = false;
-                    
+                    // WARNING: Switch is manually overridden
   switch(pdVar8[2]) {
   case 0x56e5e0:
-    UiPageStack_ActivePageNotInListCf((UiPageStackControl *)&uiRoot[0xbc].base.vtable);
-    if (extraout_EAX == 0) {
-      UiPageStack_SetActiveIndex(1,stack);
+    stack = &uiRoot[0xbc].base.vtable;
+    SVar10 = UiPageStack_ActivePageNotInListCf((UiPageStackControl *)stack);
+    if (SVar10.valueOrError == 0) {
+      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&uiRoot[0xc9].base.right);
-      UiPageStack_SetActiveIndex(2,stack_01);
+      UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&uiRoot[0xcc].base.topOffset);
       uiRoot[0x1d].base.vtable = (UiNodeVtable *)0x0;
       UiContainer_LayoutChildren(&uiRoot->base);
     }
     else {
-      UiPageStack_SetActiveIndex(0,stack);
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)stack);
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&uiRoot[0xc9].base.right);
-      UiPageStack_SetActiveIndex(1,stack_00);
+      UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&uiRoot[0xcc].base.topOffset);
       uiRoot[0x1d].base.vtable = (UiNodeVtable *)uiRoot[0xbd].base.bottomOffset;
       UiContainer_LayoutChildren(&uiRoot->base);
     }
@@ -134,20 +149,21 @@ override_jmp_0056e406_switch:
         UiCommandMatrix_SelectIndex(UVar6,&uiRoot->base);
       }
       else if (g_UiCommandModeG == 3) {
-        g_UiCommandModeGArmyAssetId =
-             ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(g_UiCommandModeGArmyAssetId)
-        ;
+        AVar11 = ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf
+                           (g_UiCommandModeGArmyAssetId);
+        g_UiCommandModeGArmyAssetId = AVar11.eax;
         pUVar4 = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         uiRoot[0x1c9].base.vtable = pUVar4;
-        ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        g_UiHoverSelectionRecord =
-             (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+        AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+        FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
-        g_UiCommandMode4ArmyAssetId =
-             ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(g_UiCommandMode4ArmyAssetId);
+        AVar12 = ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf
+                           (g_UiCommandMode4ArmyAssetId);
+        g_UiCommandMode4ArmyAssetId = AVar12.eax;
         dVar5 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         uiRoot[0x1cb].base.top = dVar5;
       }
@@ -189,19 +205,20 @@ override_jmp_0056e406_switch:
         UiCommandMatrix_SelectIndex(UVar6,&uiRoot->base);
       }
       else if (g_UiCommandModeG == 3) {
-        g_UiCommandModeGArmyAssetId =
-             ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(g_UiCommandModeGArmyAssetId);
+        AVar13 = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(g_UiCommandModeGArmyAssetId)
+        ;
+        g_UiCommandModeGArmyAssetId = AVar13.eax;
         pUVar4 = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         uiRoot[0x1c9].base.vtable = pUVar4;
-        ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        g_UiHoverSelectionRecord =
-             (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+        AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+        FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
-        g_UiCommandMode4ArmyAssetId =
-             ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(g_UiCommandMode4ArmyAssetId);
+        AVar14 = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(g_UiCommandMode4ArmyAssetId);
+        g_UiCommandMode4ArmyAssetId = AVar14.eax;
         dVar5 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         uiRoot[0x1cb].base.top = dVar5;
       }
@@ -245,19 +262,19 @@ override_jmp_0056e406_switch:
         UiCommandMatrix_SelectIndex(UVar6,&uiRoot->base);
       }
       else if (g_UiCommandModeG == 3) {
-        g_UiCommandModeGArmyAssetId =
-             ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
+        AVar15 = ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
+        g_UiCommandModeGArmyAssetId = AVar15.eax;
         pUVar4 = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         uiRoot[0x1c9].base.vtable = pUVar4;
-        ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        g_UiHoverSelectionRecord =
-             (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+        AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+        FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
-        g_UiCommandMode4ArmyAssetId =
-             ArmyAssetRegistry_StepForwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
+        AVar16 = ArmyAssetRegistry_StepForwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
+        g_UiCommandMode4ArmyAssetId = AVar16.eax;
         dVar5 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         uiRoot[0x1cb].base.top = dVar5;
       }
@@ -301,19 +318,19 @@ override_jmp_0056e406_switch:
         UiCommandMatrix_SelectIndex(UVar6,&uiRoot->base);
       }
       else if (g_UiCommandModeG == 3) {
-        g_UiCommandModeGArmyAssetId =
-             ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
+        AVar17 = ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
+        g_UiCommandModeGArmyAssetId = AVar17.eax;
         pUVar4 = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         uiRoot[0x1c9].base.vtable = pUVar4;
-        ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        g_UiHoverSelectionRecord =
-             (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+        AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+        FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+        g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
-        g_UiCommandMode4ArmyAssetId =
-             ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
+        AVar18 = ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
+        g_UiCommandMode4ArmyAssetId = AVar18.eax;
         dVar5 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         uiRoot[0x1cb].base.top = dVar5;
       }
@@ -342,7 +359,7 @@ override_jmp_0056e406_switch:
   case 0x56ed80:
     if (g_UiCommandModeG == 3) {
       g_UiCommandModeGOwnerFactionIndex = g_UiCommandModeGOwnerFactionIndex + 1;
-      if ((uint)g_GameFactionRuntimeImage.tail.reserved00_03 <
+      if (g_GameFactionRuntimeImage.tail.activeFactionCount <
           (uint)g_UiCommandModeGOwnerFactionIndex) {
         g_UiCommandModeGOwnerFactionIndex = 1;
       }
@@ -353,8 +370,7 @@ override_jmp_0056e406_switch:
     if (g_UiCommandModeG == 3) {
       g_UiCommandModeGOwnerFactionIndex = g_UiCommandModeGOwnerFactionIndex + -1;
       if (g_UiCommandModeGOwnerFactionIndex == 0) {
-        g_UiCommandModeGOwnerFactionIndex =
-             (FactionRuntimeIndex)g_GameFactionRuntimeImage.tail.reserved00_03;
+        g_UiCommandModeGOwnerFactionIndex = g_GameFactionRuntimeImage.tail.activeFactionCount;
       }
       ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((dword)uiRoot);
     }
@@ -421,8 +437,9 @@ override_jmp_0056e406_switch:
     else {
       InGameCommandModeG_Select3((UiSelectableControl *)&uiRoot[0x1bd].base.rightAnchorQ31);
       InGameCommandModeA_Select0((UiSpriteButtonControl *)&uiRoot[0x223].base.leftOffset);
-      ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+      AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+      FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
@@ -434,8 +451,9 @@ override_jmp_0056e406_switch:
     else {
       InGameCommandModeG_Select3((UiSelectableControl *)&uiRoot[0x1bd].base.rightAnchorQ31);
       InGameCommandModeA_Select1((UiSpriteButtonControl *)&uiRoot[0x226].base.parent);
-      ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+      AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+      FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
@@ -447,8 +465,9 @@ override_jmp_0056e406_switch:
     else {
       InGameCommandModeG_Select3((UiSelectableControl *)&uiRoot[0x1bd].base.rightAnchorQ31);
       InGameCommandModeA_Select2((UiSpriteButtonControl *)&uiRoot[0x224].base.layoutWidth);
-      ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)(*g_FatalErrorPrimaryDispatchCf)();
+      AVar19 = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+      FVar20 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar19.eax,AVar19.carry);
+      g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)FVar20.eax;
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
@@ -462,11 +481,11 @@ override_jmp_0056e406_switch:
     InGameCommandModeG_Select5((UiSelectableControl *)&uiRoot[0x1bc].base.right);
     break;
   case 0x56f160:
-    source = (*g_GraphicsFramebufferCaptureRegion)(unaff_EBP,unaff_ESI,unaff_EDI,in_EDX);
-    if (!bVar10) {
+    GVar21 = (*g_GraphicsFramebufferCaptureRegion)(unaff_EBP,unaff_ESI,unaff_EDI,unaff_EDX);
+    if (!GVar21.carry) {
       FileSystem_WriteBufferToPathCf
-                ((source->common).allocationSizeBytes,source,(word *)(u_Dscreen00_pcx_00572e3a + 1))
-      ;
+                (((GVar21.eax)->common).allocationSizeBytes,GVar21.eax,
+                 (word *)(u_Dscreen00_pcx_00572e3a + 1));
       wVar3 = u_Dscreen00_pcx_00572e3a[8];
       wVar2 = u_Dscreen00_pcx_00572e3a[7];
       u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
@@ -498,6 +517,7 @@ override_jmp_0056e406_switch:
   return;
 }
 
+
 /* Address: 0x0056BAD0.
    Ownership: ui/ingame/runtime.
    Purpose: Calls UiAction1004_SubmitSevenSlotCommand and then UiAction1002_CloseCommandPage for the same source
@@ -523,20 +543,18 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
    FrontendPlayerTextCommand_SetPackedState [ui/frontend/player], InGameCommandQueue_AppendLocalPlayerCommand
    [network/protocol/commands].
 */
-void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
 
 {
   int iVar1;
   uint uVar2;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint extraout_EDX;
-  uint packedState;
-  uint extraout_EDX_00;
+  CommandPayloadDword04 packedState;
   uint uVar3;
   int *piVar4;
   word *pwVar5;
   bool bVar6;
+  UiSelectableNodeEaxEcxCf9 UVar7;
   
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)commandTextEdit);
   if ((commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
@@ -556,44 +574,43 @@ void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTex
       if (bVar6) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 0x40000;
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80000;
-        InGameRecentTextHistory_InsertAndRebuild8();
+        InGameRecentTextHistory_InsertAndRebuild8((word *)u_Hmmm__na_gut________0056321e);
       }
     }
     else {
       RichTextCommandStream_CopyToNarrowCf
                 (0x30,g_UiSevenSlotCommandPayloadText.textBytes,commandTextEdit->textBuffer);
-      iVar1 = UiSelectableGroup_NoneVisibleSelectedCf(3);
-      if (iVar1 - (int)commandTextEdit == 0x1dd4) {
+      UVar7 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+      iVar1 = (int)UVar7.node - (int)commandTextEdit;
+      if (iVar1 == 0x1dd4) {
         uVar2 = 0;
+        packedState = 0;
         uVar3 = 0x100;
         do {
-          bVar6 = CARRY4(uVar3,uVar3);
+          piVar4 = g_UiSevenSlotSelectionControlOffsets + uVar2;
           uVar3 = uVar3 * 2;
-          UiSelectableControl_IsSelectedCf
-                    ((UiSelectableControl *)
-                     (g_UiSevenSlotSelectionControlOffsets[uVar2] + -0xb0 + (int)commandTextEdit));
-          packedState = extraout_EDX;
+          uVar2 = uVar2 + 1;
+          bVar6 = (bool)UiSelectableControl_IsSelectedCf
+                                  ((UiSelectableControl *)(*piVar4 + -0xb0 + (int)commandTextEdit));
           if (bVar6) {
-            packedState = extraout_EDX | uVar3;
+            packedState = packedState | uVar3;
           }
-          uVar2 = extraout_ECX;
-        } while (extraout_ECX < 7);
+        } while (uVar2 < 7);
       }
-      else if (iVar1 - (int)commandTextEdit == 0x1e34) {
+      else if (iVar1 == 0x1e34) {
         uVar2 = 0;
+        packedState = 0;
         uVar3 = 0x8000;
         do {
-          bVar6 = CARRY4(uVar3,uVar3);
+          piVar4 = g_UiSevenSlotSelectionControlOffsets + uVar2;
           uVar3 = uVar3 * 2;
-          UiSelectableControl_IsSelectedCf
-                    ((UiSelectableControl *)
-                     (g_UiSevenSlotSelectionControlOffsets[uVar2] + -0xb0 + (int)commandTextEdit));
-          packedState = extraout_EDX_00;
+          uVar2 = uVar2 + 1;
+          bVar6 = (bool)UiSelectableControl_IsSelectedCf
+                                  ((UiSelectableControl *)(*piVar4 + -0xb0 + (int)commandTextEdit));
           if (bVar6) {
-            packedState = extraout_EDX_00 | uVar3;
+            packedState = packedState | uVar3;
           }
-          uVar2 = extraout_ECX_00;
-        } while (extraout_ECX_00 < 7);
+        } while (uVar2 < 7);
       }
       else {
         packedState = 0xffffff00;
@@ -679,6 +696,7 @@ void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTex
   return;
 }
 
+
 /* Address: 0x0050ECE0.
    Ownership: ui/ingame/runtime.
    Purpose: Carry-flag success/failure semantics are preserved in the comment rather than fabricated as an ordinary
@@ -688,154 +706,143 @@ void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTex
    ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs [gameplay/army/runtime], Package_UpsertEntry
    [assets/package/runtime], ArmyRuntimePool_RebaseAfterLoad [gameplay/army/runtime].
 */
-void InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath)
+
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath)
 
 {
   word *arg0;
+  byte *destination;
+  InGameLevelConditionStorageView800 *sourceData;
   void *handle;
-  void *sourceData;
-  void *sourceData_00;
+  dword *sourceData_00;
   dword *sourceData_01;
   dword dVar1;
-  int extraout_ECX;
   FrontendPlayerRuntimeBlockCount FVar2;
   int iVar3;
   PckDecodedByteCount unpackedSize;
-  void *destination;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  void *source;
+  dword *headerDwords;
   FrontendPlayerRuntimeRecord *pFVar4;
   dword *pdVar5;
   dword *pdVar6;
-  undefined1 uVar7;
-  byte bVar8;
-  bool bVar9;
-  RuntimeImagePointerByteSizeEdxEax8 RVar10;
-  ResourceRegistrationImagePair RVar11;
-  uint uVar12;
+  bool bVar7;
+  RuntimeImagePointerByteSizeEdxEax8 RVar8;
+  StatusValueEaxCf5 SVar9;
+  ArenaAllocEaxCf5 AVar10;
+  FileSystemSeekEaxCf5 FVar11;
+  FileSystemReadEaxCf5 FVar12;
+  FileSystemWriteEaxCf5 FVar13;
+  ResourceRegistrationImagePair RVar14;
+  uint uVar15;
   
   g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + '\x01';
-  uVar7 = false;
-  FVar2 = g_FrontendPlayerRuntimeBlockCount;
   pFVar4 = g_FrontendPlayerRuntimeBlocks;
-  while (FVar2 != 0) {
+  for (FVar2 = g_FrontendPlayerRuntimeBlockCount; FVar2 != 0; FVar2 = FVar2 - 1) {
     GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
               (pFVar4->playerRuntimeId,0,0,(pFVar4->factionAssignment).factionAssignmentIndex);
-    uVar7 = (FrontendPlayerRuntimeRecord *)0xffffec4f < pFVar4;
     pFVar4 = pFVar4 + 1;
-    FVar2 = extraout_ECX - 1;
   }
-  handle = (void *)ResourceRegistration_OpenSourceCf(resourcePath);
-  if ((bool)uVar7) {
+  SVar9 = ResourceRegistration_OpenSourceCf(resourcePath);
+  handle = (void *)SVar9.valueOrError;
+  if (SVar9.carry) {
     WidePath_SplitParentAndLeaf((word *)g_PackageScratchBuffer,(word *)0x50dcc4,resourcePath);
-    (*(code *)g_FileSystemCreateDirectoryRecursiveCf)(1,0x50dcc4);
-    if (((bool)uVar7) ||
-       (handle = (void *)ResourceRegistration_OpenSourceCf(resourcePath), (bool)uVar7))
-    goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+    SVar9 = (*g_FileSystemCreateDirectoryRecursiveCf)
+                      (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(word *)0x50dcc4);
+    if (SVar9.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+    SVar9 = ResourceRegistration_OpenSourceCf(resourcePath);
+    handle = (void *)SVar9.valueOrError;
+    if (SVar9.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   }
-  bVar8 = 0;
-  RVar10 = ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs();
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(RVar10 >> 0x20),
-                      (void *)RVar10,(word *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
-  uVar12 = (uint)(bVar8 & 1);
+  RVar8 = ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs();
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(RVar8 >> 0x20),
+                              (dword *)RVar8,(word *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   ArmyRuntimePool_RebaseAfterLoad();
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   ModelRuntimePool_UnrebaseBeforeSave();
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,sourceData,
-                      (word *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
-  uVar12 = (uint)(bVar8 & 1);
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,sourceData_00,
+                              (word *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   ModelRuntimePool_RebaseAfterLoad();
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  RVar11 = ResourceRegistration_QueryDomain2Pair();
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar11,
-                      (void *)(RVar11 >> 0x20),(word *)u_shot_hex_0050dfdc,(EngineFileHandle)handle)
-  ;
-  uVar12 = (uint)(bVar8 & 1);
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  RVar14 = ResourceRegistration_QueryDomain2Pair();
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar14,
+                              (dword *)(RVar14 >> 0x20),(word *)u_shot_hex_0050dfdc,
+                              (EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   ShotRuntime_RebaseSlotsAfterLoad();
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  RVar11 = ResourceRegistration_QueryDomain1Pair();
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar11,
-                      (void *)(RVar11 >> 0x20),(word *)u_effect_hex_0050dfc6,
-                      (EngineFileHandle)handle);
-  uVar12 = (uint)(bVar8 & 1);
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  RVar14 = ResourceRegistration_QueryDomain1Pair();
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar14,
+                              (dword *)(RVar14 >> 0x20),(word *)u_effect_hex_0050dfc6,
+                              (EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   EffectRuntime_RebaseSlotsAfterLoad();
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  RVar11 = ResourceRegistration_SelectDomainPair(runtimeBase);
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar11,
-                      (void *)(RVar11 >> 0x20),(word *)u_widget_hex_0050e02a,
-                      (EngineFileHandle)handle);
-  uVar12 = (uint)(bVar8 & 1);
-  InGameConditionRuntime_RebaseLoadedRecords(runtimeBase);
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  RVar10 = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(RVar10 >> 0x20),
-                      (void *)RVar10,(word *)u_light_hex_0050e016,(EngineFileHandle)handle);
-  uVar12 = (uint)(bVar8 & 1);
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  RVar14 = ResourceRegistration_SelectDomainPair(runtimeBase);
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar14,
+                              (dword *)(RVar14 >> 0x20),(word *)u_widget_hex_0050e02a,
+                              (EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
+  ResourceRegistrationRuntime_RebaseLoadedRecords(runtimeBase);
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  RVar8 = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(RVar8 >> 0x20),
+                              (dword *)RVar8,(word *)u_light_hex_0050e016,(EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   RuntimeHexSegment_ToggleLightImageFlag();
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  RVar11 = RuntimeHexSegment_GetFieldImageRegs(runtimeBase);
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar11,
-                      (void *)(RVar11 >> 0x20),(word *)u_field_hex_0050e002,(EngineFileHandle)handle
-                     );
-  uVar12 = (uint)(bVar8 & 1);
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  RVar14 = RuntimeHexSegment_GetFieldImageRegs(runtimeBase);
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar14,
+                              (dword *)(RVar14 >> 0x20),(word *)u_field_hex_0050e002,
+                              (EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   RuntimeHexSegment_AfterFieldImageNoOp(runtimeBase);
-  bVar8 = (uVar12 & 1) != 0;
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   ResourceRegistration_ResolveRuntimeRecord(runtimeBase);
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                      *(PckDecodedByteCount *)((int)sourceData_00 + 0xdc),sourceData_00,
-                      (word *)u_level_hex_0050e040,(EngineFileHandle)handle);
-  if ((bool)bVar8) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  RVar11 = ResourceRegistration_QueryDomain0Pair();
-  Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar11,
-                      (void *)(RVar11 >> 0x20),(word *)u_daten_hex_0050e054,(EngineFileHandle)handle
-                     );
-  uVar12 = (uint)(bVar8 & 1);
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
+                              (sourceData->levelImage).header.resourceTables.
+                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,(dword *)sourceData
+                              ,(word *)u_level_hex_0050e040,(EngineFileHandle)handle);
+  if (SVar9.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  RVar14 = ResourceRegistration_QueryDomain0Pair();
+  SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)RVar14,
+                              (dword *)(RVar14 >> 0x20),(word *)u_daten_hex_0050e054,
+                              (EngineFileHandle)handle);
+  uVar15 = (uint)(SVar9.carry & 1);
   GameFactionRuntime_RebaseLoadedArmyReferences();
-  if ((uVar12 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  bVar9 = false;
-  if (g_FrontendLoadedCampaignAsset == (void *)0x0) {
+  if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+  if (g_FrontendLoadedCampaignAsset == (dword *)0x0) {
     Package_DeleteEntry((word *)u_campagne_hex_0050e068,(EngineFileHandle)handle);
   }
   else {
-    Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
-                        *(PckDecodedByteCount *)((int)g_FrontendLoadedCampaignAsset + 4),
-                        g_FrontendLoadedCampaignAsset,(word *)u_campagne_hex_0050e068,
-                        (EngineFileHandle)handle);
-    if (bVar9) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+    SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,g_FrontendLoadedCampaignAsset[1],
+                                g_FrontendLoadedCampaignAsset,(word *)u_campagne_hex_0050e068,
+                                (EngineFileHandle)handle);
+    if (SVar9.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,0x38000,g_GameStatTableImage,
                       (word *)u_stat_hex_0050e082,(EngineFileHandle)handle);
-  uVar7 = false;
   if (g_OldUnitRecordCount == 0) {
     iVar3 = 0x40;
-    uVar7 = false;
-    bVar9 = true;
+    bVar7 = true;
     pdVar5 = g_OldUnitSecondaryTable;
     do {
       if (iVar3 == 0) break;
       iVar3 = iVar3 + -1;
-      uVar7 = *pdVar5 != 0;
-      bVar9 = *pdVar5 == 0;
+      bVar7 = *pdVar5 == 0;
       pdVar5 = pdVar5 + 1;
-    } while (bVar9);
-    if (!bVar9) goto InGameResourceRegistration_SerializeOldUnitTables;
+    } while (bVar7);
+    if (!bVar7) goto InGameResourceRegistration_SerializeOldUnitTables;
     Package_DeleteEntry((word *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
   }
   else {
 InGameResourceRegistration_SerializeOldUnitTables:
-    sourceData_01 = (*g_MemoryApi.alloc)(0x4104);
+    AVar10 = (*g_MemoryApi.alloc)(0x4104);
     pdVar5 = g_OldUnitPrimaryTable;
-    if ((bool)uVar7) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
+    sourceData_01 = (dword *)AVar10.eax;
+    if (AVar10.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
     *sourceData_01 = g_OldUnitRecordCount;
     pdVar6 = sourceData_01;
     for (iVar3 = 0x1000; pdVar6 = pdVar6 + 1, iVar3 != 0; iVar3 = iVar3 + -1) {
@@ -848,33 +855,34 @@ InGameResourceRegistration_SerializeOldUnitTables:
       pdVar5 = pdVar5 + 1;
       pdVar6 = pdVar6 + 1;
     }
-    uVar7 = pdVar6 < sourceData_01;
     Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(int)pdVar6 - (int)sourceData_01,sourceData_01,
                         (word *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
     (*g_MemoryApi.free)(sourceData_01);
   }
-  (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
-  if ((!(bool)uVar7) && ((*g_FileSystemReadExactCf)(0x200,destination,handle), !(bool)uVar7)) {
+  destination = g_PackageScratchBuffer;
+  FVar11 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
+  if ((!FVar11.carry) &&
+     (FVar12 = (*g_FileSystemReadExactCf)(0x200,destination,handle), !FVar12.carry)) {
     WidePath_SplitParentAndLeaf
-              ((word *)(extraout_EDX + 0x100),(word *)(extraout_EDX + 0x200),resourcePath);
+              ((word *)(destination + 0x100),(word *)(destination + 0x200),resourcePath);
     dVar1 = (*g_LocaleGetPackedCurrentDate)();
-    *(dword *)(extraout_EDX_00 + 0x1f0) = dVar1;
+    *(dword *)(destination + 0x1f0) = dVar1;
     dVar1 = (*g_LocaleGetPackedCurrentTime)();
-    *(dword *)(extraout_EDX_01 + 500) = dVar1;
-    dVar1 = (*g_LocaleFormatCurrentDateUtf16)((word *)(extraout_EDX_01 + 0x1c0));
-    arg0 = (word *)(dVar1 + 4 + extraout_EDX_01 + 0x1c0);
+    *(dword *)(destination + 500) = dVar1;
+    dVar1 = (*g_LocaleFormatCurrentDateUtf16)((word *)(destination + 0x1c0));
+    arg0 = (word *)(dVar1 + 4 + (int)(destination + 0x1c0));
     arg0[-0xffffffff00000002] = 0x2c;
     arg0[-0xffffffff00000001] = 0x20;
     (*g_LocaleFormatCurrentTimeUtf16)(arg0);
     dVar1 = g_InGameLevelCampaignAssociationIndex;
-    if (g_FrontendLoadedCampaignAsset == (void *)0x0) {
+    if (g_FrontendLoadedCampaignAsset == (dword *)0x0) {
       dVar1 = 0xffffffff;
     }
-    bVar9 = false;
-    *(undefined4 *)(extraout_EDX_02 + 0x170) = g_InGameLevelTitleTextResourceIndex;
-    *(dword *)(extraout_EDX_02 + 400) = dVar1;
-    (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
-    if ((!bVar9) && ((*g_FileSystemWriteExactOrFlushCf)(0x200,source,handle), !bVar9)) {
+    headerDwords[0x5c] = g_InGameLevelTitleTextResourceIndex;
+    headerDwords[100] = dVar1;
+    FVar11 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
+    if ((!FVar11.carry) &&
+       (FVar13 = (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle), !FVar13.carry)) {
       Package_Unmount((EngineFileHandle)handle);
       g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
       return;
@@ -885,6 +893,7 @@ InGameResourceRegistration_DecrementBusyCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0053D9F0.
    Ownership: ui/ingame/runtime.
    Purpose: Binary entry is anchored by g_UiActionPage10InitializedHandlers[0]@005624A0. Queued UI action handler
@@ -893,13 +902,12 @@ InGameResourceRegistration_DecrementBusyCountAndReturn:
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
 */
-undefined8 InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
+void __thandor_void_preserve_eax_ecx_edx
+InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
 
 {
   longlong lVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_EDX;
   int iVar3;
   
   iVar3 = *(int *)(mapControl + 0x6c);
@@ -915,8 +923,9 @@ undefined8 InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlA
   *(int *)(mapControl + -0x8f8c) = *(int *)(mapControl + -0x8f8c) + iVar2;
   *(int *)(mapControl + -0x8f88) = *(int *)(mapControl + -0x8f88) + iVar3;
   WorldRuntime_ClearFieldGridDirtyFlag((WorldRuntimeContext *)(mapControl + -0x8fec));
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0055C990.
    Ownership: ui/ingame/runtime.
@@ -927,7 +936,8 @@ undefined8 InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlA
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext].
 */
-void InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
 
 {
   sdword *psVar1;
@@ -944,35 +954,27 @@ void InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
   int iVar12;
   GraphicsTextureSourceAsset *pGVar13;
   sdword sVar14;
-  undefined *puVar15;
-  GraphicsTextureSourceAsset *pGVar16;
+  DirectSoundVoiceSet *pDVar15;
   UiRootNode *pUVar17;
   UiNodeVtable *pUVar18;
   word *stream;
   int iVar19;
-  dword in_ECX;
-  uint uVar20;
-  uint extraout_ECX;
-  dword arg0;
-  dword arg0_00;
-  dword arg0_01;
-  dword in_EDX;
+  TextResourceId resourceId;
+  int iVar20;
   UiRootNode *pUVar21;
   UiNodeBase *pUVar22;
   int iVar23;
   UiNodeBase *pUVar24;
-  dword arg1;
-  UiRootNode *arg1_00;
-  UiNodeBase *arg1_01;
-  GraphicsTextureSourceAsset *arg1_02;
-  uint uVar25;
-  bool bVar26;
-  undefined1 uVar27;
-  qword qVar28;
-  undefined8 uVar29;
+  int iVar25;
+  uint uVar26;
+  uint uVar27;
+  GraphicsTextureSourceLoadEaxCf5 GVar28;
+  TextResourceResolveEaxCf5 TVar29;
+  StatusValueEaxCf5 SVar30;
+  GraphicsTextureSizeEaxEdxCf9 GVar31;
+  GraphicsTextureSourceAsset *pGVar16;
   
   if ((g_FramebufferWidth < 800) || (g_FramebufferHeight < 600)) {
-    bVar26 = true;
     u_gfx_panel_panel0_gfx_005630d0[0xf] = L'0';
     u_gfx_panel_diagram0_gfx_00563120[0x11] = L'0';
     inGameRoot[0xd5].rootFlags = 0x24;
@@ -992,112 +994,109 @@ void InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     inGameRoot[0xdb].base.topOffset = 0x1f;
     inGameRoot[0xdb].base.rightOffset = 0xd;
   }
-  else {
-    bVar26 = true;
-    if ((g_FramebufferWidth < 0x400) || (bVar26 = g_FramebufferHeight < 0x300, bVar26)) {
-      u_gfx_panel_panel0_gfx_005630d0[0xf] = L'1';
-      u_gfx_panel_diagram0_gfx_00563120[0x11] = L'1';
-      inGameRoot[0xd5].rootFlags = 0x2c;
-      inGameRoot[0xd5].callbacks = (UiRootCallbacks *)0x9;
-      inGameRoot[0xd5].previousRoot = (UiRootNode *)0x6e;
-      inGameRoot[0xd6].base.nextSibling = (UiNodeBase *)0x10;
-      inGameRoot[0xd7].base.topAnchorQ31 = 0x2c;
-      inGameRoot[0xd7].base.rightAnchorQ31 = 0x17;
-      inGameRoot[0xd7].base.bottomAnchorQ31 = 0x6e;
-      inGameRoot[0xd7].base.layoutWidth = 0x1e;
-      inGameRoot[0xd9].base.bottom = 0x2c;
-      inGameRoot[0xd9].base.leftOffset = 0x25;
-      inGameRoot[0xd9].base.topOffset = 0x6e;
-      inGameRoot[0xd9].base.rightOffset = 0x2c;
-      inGameRoot[0xdb].base.bottom = 4;
-      inGameRoot[0xdb].base.leftOffset = 7;
-      inGameRoot[0xdb].base.topOffset = 0x27;
-      inGameRoot[0xdb].base.rightOffset = 0xf;
-    }
-    else {
-      u_gfx_panel_panel0_gfx_005630d0[0xf] = L'2';
-      u_gfx_panel_diagram0_gfx_00563120[0x11] = L'2';
-      inGameRoot[0xd5].rootFlags = 0x2c;
-      inGameRoot[0xd5].callbacks = (UiRootCallbacks *)0x9;
-      inGameRoot[0xd5].previousRoot = (UiRootNode *)0x6e;
-      inGameRoot[0xd6].base.nextSibling = (UiNodeBase *)0x10;
-      inGameRoot[0xd7].base.topAnchorQ31 = 0x2c;
-      inGameRoot[0xd7].base.rightAnchorQ31 = 0x17;
-      inGameRoot[0xd7].base.bottomAnchorQ31 = 0x6e;
-      inGameRoot[0xd7].base.layoutWidth = 0x1e;
-      inGameRoot[0xd9].base.bottom = 0x2c;
-      inGameRoot[0xd9].base.leftOffset = 0x25;
-      inGameRoot[0xd9].base.topOffset = 0x6e;
-      inGameRoot[0xd9].base.rightOffset = 0x2c;
-      inGameRoot[0xdb].base.bottom = 4;
-      inGameRoot[0xdb].base.leftOffset = 7;
-      inGameRoot[0xdb].base.topOffset = 0x27;
-      inGameRoot[0xdb].base.rightOffset = 0xf;
-    }
+  else if ((g_FramebufferWidth < 0x400) || (g_FramebufferHeight < 0x300)) {
+    u_gfx_panel_panel0_gfx_005630d0[0xf] = L'1';
+    u_gfx_panel_diagram0_gfx_00563120[0x11] = L'1';
+    inGameRoot[0xd5].rootFlags = 0x2c;
+    inGameRoot[0xd5].callbacks = (UiRootCallbacks *)0x9;
+    inGameRoot[0xd5].previousRoot = (UiRootNode *)0x6e;
+    inGameRoot[0xd6].base.nextSibling = (UiNodeBase *)0x10;
+    inGameRoot[0xd7].base.topAnchorQ31 = 0x2c;
+    inGameRoot[0xd7].base.rightAnchorQ31 = 0x17;
+    inGameRoot[0xd7].base.bottomAnchorQ31 = 0x6e;
+    inGameRoot[0xd7].base.layoutWidth = 0x1e;
+    inGameRoot[0xd9].base.bottom = 0x2c;
+    inGameRoot[0xd9].base.leftOffset = 0x25;
+    inGameRoot[0xd9].base.topOffset = 0x6e;
+    inGameRoot[0xd9].base.rightOffset = 0x2c;
+    inGameRoot[0xdb].base.bottom = 4;
+    inGameRoot[0xdb].base.leftOffset = 7;
+    inGameRoot[0xdb].base.topOffset = 0x27;
+    inGameRoot[0xdb].base.rightOffset = 0xf;
   }
-  pGVar16 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                      (in_ECX,in_EDX,(word *)u_gfx_panel_panel0_gfx_005630d0);
+  else {
+    u_gfx_panel_panel0_gfx_005630d0[0xf] = L'2';
+    u_gfx_panel_diagram0_gfx_00563120[0x11] = L'2';
+    inGameRoot[0xd5].rootFlags = 0x2c;
+    inGameRoot[0xd5].callbacks = (UiRootCallbacks *)0x9;
+    inGameRoot[0xd5].previousRoot = (UiRootNode *)0x6e;
+    inGameRoot[0xd6].base.nextSibling = (UiNodeBase *)0x10;
+    inGameRoot[0xd7].base.topAnchorQ31 = 0x2c;
+    inGameRoot[0xd7].base.rightAnchorQ31 = 0x17;
+    inGameRoot[0xd7].base.bottomAnchorQ31 = 0x6e;
+    inGameRoot[0xd7].base.layoutWidth = 0x1e;
+    inGameRoot[0xd9].base.bottom = 0x2c;
+    inGameRoot[0xd9].base.leftOffset = 0x25;
+    inGameRoot[0xd9].base.topOffset = 0x6e;
+    inGameRoot[0xd9].base.rightOffset = 0x2c;
+    inGameRoot[0xdb].base.bottom = 4;
+    inGameRoot[0xdb].base.leftOffset = 7;
+    inGameRoot[0xdb].base.topOffset = 0x27;
+    inGameRoot[0xdb].base.rightOffset = 0xf;
+  }
+  GVar28 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_panel0_gfx_005630d0);
   pGVar13 = g_InGamePanelTextureSource;
-  if (!bVar26) {
+  pGVar16 = GVar28.eax;
+  if (!GVar28.carry) {
     LOCK();
     UNLOCK();
     g_InGamePanelTextureSource = pGVar16;
     (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(pGVar13);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar16);
-    g_InGamePanelTextureSubresource00Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(1,pGVar16);
-    g_InGamePanelTextureSubresource01Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(2,pGVar16);
-    g_InGamePanelTextureSubresource02Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(6,pGVar16);
-    g_InGamePanelTextureSubresource06Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(7,pGVar16);
-    g_InGamePanelTextureSubresource07Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1b,pGVar16);
-    g_InGamePanelTextureSubresource27Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1c,pGVar16);
-    g_InGamePanelTextureSubresource28Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,pGVar16);
-    g_InGamePanelTextureSubresource19Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x14,pGVar16);
-    g_InGamePanelTextureSubresource20Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x22,pGVar16);
-    g_InGamePanelTextureSubresource34Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x20,pGVar16);
-    g_InGamePanelTextureSubresource32Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x21,pGVar16);
-    g_InGamePanelTextureSubresource33Width = (sdword)qVar28;
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(2,pGVar16);
-    g_InGamePanelTextureSubresource02Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(3,pGVar16);
-    g_InGamePanelTextureSubresource03Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(4,pGVar16);
-    g_InGamePanelTextureSubresource04Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(5,pGVar16);
-    g_InGamePanelTextureSubresource05Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x24,pGVar16);
-    g_InGamePanelTextureSubresource36Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x25,pGVar16);
-    g_InGamePanelTextureSubresource37Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(6,pGVar16);
-    g_InGamePanelTextureSubresource06Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar16);
-    g_InGamePanelTextureSubresource00Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(7,pGVar16);
-    g_InGamePanelTextureSubresource07Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1a,pGVar16);
-    g_InGamePanelTextureSubresource26Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1f,pGVar16);
-    g_InGamePanelTextureSubresource31Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x12,pGVar16);
-    g_InGamePanelTextureSubresource18Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x17,pGVar16);
-    g_InGamePanelTextureSubresource23Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x22,pGVar16);
-    g_InGamePanelTextureSubresource34Height = (sdword)(qVar28 >> 0x20);
-    qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0x20,pGVar16);
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar16);
+    g_InGamePanelTextureSubresource00Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(1,pGVar16);
+    g_InGamePanelTextureSubresource01Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(2,pGVar16);
+    g_InGamePanelTextureSubresource02Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(6,pGVar16);
+    g_InGamePanelTextureSubresource06Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(7,pGVar16);
+    g_InGamePanelTextureSubresource07Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1b,pGVar16);
+    g_InGamePanelTextureSubresource27Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1c,pGVar16);
+    g_InGamePanelTextureSubresource28Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,pGVar16);
+    g_InGamePanelTextureSubresource19Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x14,pGVar16);
+    g_InGamePanelTextureSubresource20Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x22,pGVar16);
+    g_InGamePanelTextureSubresource34Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x20,pGVar16);
+    g_InGamePanelTextureSubresource32Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x21,pGVar16);
+    g_InGamePanelTextureSubresource33Width = GVar31.logicalWidthPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(2,pGVar16);
+    g_InGamePanelTextureSubresource02Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(3,pGVar16);
+    g_InGamePanelTextureSubresource03Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(4,pGVar16);
+    g_InGamePanelTextureSubresource04Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(5,pGVar16);
+    g_InGamePanelTextureSubresource05Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x24,pGVar16);
+    g_InGamePanelTextureSubresource36Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x25,pGVar16);
+    g_InGamePanelTextureSubresource37Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(6,pGVar16);
+    g_InGamePanelTextureSubresource06Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar16);
+    g_InGamePanelTextureSubresource00Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(7,pGVar16);
+    g_InGamePanelTextureSubresource07Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1a,pGVar16);
+    g_InGamePanelTextureSubresource26Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x1f,pGVar16);
+    g_InGamePanelTextureSubresource31Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x12,pGVar16);
+    g_InGamePanelTextureSubresource18Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x17,pGVar16);
+    g_InGamePanelTextureSubresource23Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x22,pGVar16);
+    g_InGamePanelTextureSubresource34Height = GVar31.logicalHeightPixels;
+    GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0x20,pGVar16);
     pGVar13 = g_InGamePanelTextureSource;
-    g_InGamePanelTextureSubresource32Height = (sdword)(qVar28 >> 0x20);
+    g_InGamePanelTextureSubresource32Height = GVar31.logicalHeightPixels;
     inGameRoot[0xbd].base.bottomOffset = 0;
     inGameRoot[0xbd].base.leftAnchorQ31 = 0;
     inGameRoot[0xbd].base.topAnchorQ31 = 0;
@@ -2296,380 +2295,380 @@ void InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     inGameRoot[0x201].previousRoot = (UiRootNode *)0x2;
     inGameRoot[0x202].base.nextSibling = (UiNodeBase *)0xfffffffe;
     inGameRoot[0x202].base.rightOffset = (sdword)pUVar22;
-    uVar20 = 0x18002c;
+    resourceId = 0x18002c;
     do {
-      stream = TextResource_Resolve(uVar20);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (0,g_InGameSelectionDetailNameTextUtf16,stream);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (1,g_InGameSelectionDetailArmourTextUtf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (2,g_InGameSelectionDetailWeaponName0TextUtf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (3,g_InGameSelectionDetailWeaponName1TextUtf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (4,g_InGameSelectionDetailWeaponName2TextUtf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (5,g_InGameSelectionDetailTextSlot05Utf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (6,g_InGameSelectionDetailBuildXeniteCostTextUtf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (7,g_InGameSelectionDetailBuildTimeTextUtf16,(word *)uVar29);
-      uVar29 = RichTextCommandStream_PatchPayloadBySelector
-                         (8,g_InGameSelectionDetailEnergyTextUtf16,(word *)uVar29);
+      TVar29 = TextResource_Resolve(resourceId);
+      stream = TVar29.eax;
+      resourceId = resourceId + 1;
+      RichTextCommandStream_PatchPayloadBySelector(0,g_InGameSelectionDetailNameTextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector(1,g_InGameSelectionDetailArmourTextUtf16,stream);
       RichTextCommandStream_PatchPayloadBySelector
-                (9,g_InGameSelectionDetailTextSlot09Utf16,(word *)uVar29);
-      uVar20 = extraout_ECX;
-    } while (extraout_ECX < 0x18004f);
-    arg0 = 3;
+                (2,g_InGameSelectionDetailWeaponName0TextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector
+                (3,g_InGameSelectionDetailWeaponName1TextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector
+                (4,g_InGameSelectionDetailWeaponName2TextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector(5,g_InGameSelectionDetailTextSlot05Utf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector
+                (6,g_InGameSelectionDetailBuildXeniteCostTextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector
+                (7,g_InGameSelectionDetailBuildTimeTextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector(8,g_InGameSelectionDetailEnergyTextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector(9,g_InGameSelectionDetailTextSlot09Utf16,stream);
+    } while (resourceId < 0x18004f);
+    iVar20 = 3;
     iVar23 = (int)((ulonglong)(longlong)g_InGamePanelTextureSubresource02Width / 3);
-    uVar20 = 0;
+    uVar27 = 0;
     iVar19 = 0;
-    arg1 = 0;
+    iVar25 = 0;
     do {
-      iVar12 = (&g_InGameSelectionDetailControlOffsetTable32)[uVar20];
+      iVar12 = (&g_InGameSelectionDetailControlOffsetTable32)[uVar27];
       *(int *)((int)&(inGameRoot->base).leftOffset + iVar12) = iVar19;
-      *(dword *)((int)&(inGameRoot->base).topOffset + iVar12) = arg1;
+      *(int *)((int)&(inGameRoot->base).topOffset + iVar12) = iVar25;
       iVar19 = iVar19 + iVar23;
-      arg1 = arg1 + iVar23;
+      iVar25 = iVar25 + iVar23;
       *(int *)((int)&(inGameRoot->base).rightOffset + iVar12) = iVar19;
-      *(dword *)((int)&(inGameRoot->base).bottomOffset + iVar12) = arg1;
-      uVar20 = uVar20 + 1;
-      arg0 = arg0 - 1;
-      if (arg0 == 0) {
-        arg0 = 3;
+      *(int *)((int)&(inGameRoot->base).bottomOffset + iVar12) = iVar25;
+      uVar27 = uVar27 + 1;
+      iVar20 = iVar20 + -1;
+      if (iVar20 == 0) {
+        iVar20 = 3;
         iVar19 = 0;
       }
       else {
-        arg1 = arg1 - iVar23;
+        iVar25 = iVar25 - iVar23;
       }
-      uVar27 = uVar20 < 0xc;
-    } while ((bool)uVar27);
-    pGVar16 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                        (arg0,arg1,(word *)u_gfx_panel_diagram0_gfx_00563120);
+    } while (uVar27 < 0xc);
+    GVar28 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_diagram0_gfx_00563120);
     pGVar13 = g_InGameDiagramTextureSource;
-    if (!(bool)uVar27) {
+    pGVar16 = GVar28.eax;
+    if (!GVar28.carry) {
       LOCK();
       UNLOCK();
       g_InGameDiagramTextureSource = pGVar16;
       (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(pGVar13);
-      inGameRoot[0xd6].base.bottomOffset = (sdword)arg1_00;
-      inGameRoot[0xd8].base.top = (sdword)arg1_00;
-      inGameRoot[0xd9].previousRoot = arg1_00;
-      pGVar16 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                          (arg0_00,(dword)arg1_00,(word *)u_gfx_panel_window_gfx_0056318e);
+      inGameRoot[0xd6].base.bottomOffset = (sdword)pGVar16;
+      inGameRoot[0xd8].base.top = (sdword)pGVar16;
+      inGameRoot[0xd9].previousRoot = (UiRootNode *)pGVar16;
+      GVar28 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_window_gfx_0056318e);
       pGVar13 = g_InGameWindowTextureSource;
-      if (!(bool)uVar27) {
+      pGVar16 = GVar28.eax;
+      if (!GVar28.carry) {
         LOCK();
         UNLOCK();
         g_InGameWindowTextureSource = pGVar16;
         (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(pGVar13);
-        inGameRoot[0x2a].callbacks = (UiRootCallbacks *)arg1_01;
-        inGameRoot[0x52].base.firstChild = arg1_01;
-        inGameRoot[0x24].base.rightAnchorQ31 = (UiAnchorFractionQ31)arg1_01;
-        inGameRoot[0x25].base.bottomAnchorQ31 = (UiAnchorFractionQ31)arg1_01;
-        inGameRoot[0x26].base.layoutWidth = (sdword)arg1_01;
-        inGameRoot[0x27].base.layoutHeight = (sdword)arg1_01;
-        inGameRoot[0x28].base.nodeFlags = (UiNodeFlags)arg1_01;
-        inGameRoot[0x29].rootFlags = (UiRootFlags)arg1_01;
-        pGVar16 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                            (arg0_01,(dword)arg1_01,(word *)u_gfx_panel_tech_gfx_005630fa);
+        inGameRoot[0x2a].callbacks = (UiRootCallbacks *)pGVar16;
+        inGameRoot[0x52].base.firstChild = (UiNodeBase *)pGVar16;
+        inGameRoot[0x24].base.rightAnchorQ31 = (UiAnchorFractionQ31)pGVar16;
+        inGameRoot[0x25].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pGVar16;
+        inGameRoot[0x26].base.layoutWidth = (sdword)pGVar16;
+        inGameRoot[0x27].base.layoutHeight = (sdword)pGVar16;
+        inGameRoot[0x28].base.nodeFlags = (UiNodeFlags)pGVar16;
+        inGameRoot[0x29].rootFlags = (UiRootFlags)pGVar16;
+        GVar28 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_tech_gfx_005630fa);
         pGVar13 = g_InGameTechnologyTextureSource;
-        if (!(bool)uVar27) {
+        pGVar16 = GVar28.eax;
+        if (!GVar28.carry) {
           LOCK();
           UNLOCK();
           g_InGameTechnologyTextureSource = pGVar16;
           (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(pGVar13);
-          inGameRoot[0x47].base.nextSibling = (UiNodeBase *)arg1_02;
-          inGameRoot[0x48].base.firstChild = (UiNodeBase *)arg1_02;
-          inGameRoot[0x49].base.parent = (UiNodeBase *)arg1_02;
-          inGameRoot[0x4a].base.vtable = (UiNodeVtable *)arg1_02;
-          inGameRoot[0x4b].base.left = (sdword)arg1_02;
-          inGameRoot[0x4c].base.top = (sdword)arg1_02;
-          inGameRoot[0x4d].base.right = (sdword)arg1_02;
-          qVar28 = (*g_GraphicsTextureSourceGetLogicalSize)(0,arg1_02);
-          uVar25 = (uint)(qVar28 >> 0x20);
+          inGameRoot[0x47].base.nextSibling = (UiNodeBase *)pGVar16;
+          inGameRoot[0x48].base.firstChild = (UiNodeBase *)pGVar16;
+          inGameRoot[0x49].base.parent = (UiNodeBase *)pGVar16;
+          inGameRoot[0x4a].base.vtable = (UiNodeVtable *)pGVar16;
+          inGameRoot[0x4b].base.left = (sdword)pGVar16;
+          inGameRoot[0x4c].base.top = (sdword)pGVar16;
+          inGameRoot[0x4d].base.right = (sdword)pGVar16;
+          GVar31 = (*g_GraphicsTextureSourceGetLogicalSize)(0,pGVar16);
+          uVar26 = GVar31.logicalHeightPixels;
           psVar1 = &inGameRoot[0x3e].base.right;
-          *psVar1 = *psVar1 - uVar25;
+          *psVar1 = *psVar1 - uVar26;
           psVar1 = &inGameRoot[0x3f].base.rightOffset;
-          *psVar1 = *psVar1 - uVar25;
+          *psVar1 = *psVar1 - uVar26;
           pUVar2 = &inGameRoot[0x40].base.rightAnchorQ31;
-          *pUVar2 = *pUVar2 - uVar25;
+          *pUVar2 = *pUVar2 - uVar26;
           pUVar3 = &inGameRoot[0x41].base.nodeFlags;
-          *pUVar3 = *pUVar3 - uVar25;
+          *pUVar3 = *pUVar3 - uVar26;
           inGameRoot[0x43].base.nextSibling =
-               (UiNodeBase *)((int)inGameRoot[0x43].base.nextSibling - uVar25);
+               (UiNodeBase *)((int)inGameRoot[0x43].base.nextSibling - uVar26);
           psVar1 = &inGameRoot[0x44].base.left;
-          *psVar1 = *psVar1 - uVar25;
+          *psVar1 = *psVar1 - uVar26;
           psVar1 = &inGameRoot[0x45].base.leftOffset;
-          *psVar1 = *psVar1 - uVar25;
-          inGameRoot[0x4e].callbacks = (UiRootCallbacks *)((int)inGameRoot[0x4e].callbacks - uVar25)
+          *psVar1 = *psVar1 - uVar26;
+          inGameRoot[0x4e].callbacks = (UiRootCallbacks *)((int)inGameRoot[0x4e].callbacks - uVar26)
           ;
-          uVar20 = (uint)((int)qVar28 * 7) >> 1;
+          uVar27 = GVar31.logicalWidthPixels * 7 >> 1;
           psVar1 = &inGameRoot[0x2a].base.bottom;
-          *psVar1 = *psVar1 - uVar20;
+          *psVar1 = *psVar1 - uVar27;
           psVar1 = &inGameRoot[0x2a].base.topOffset;
-          *psVar1 = *psVar1 + uVar20;
+          *psVar1 = *psVar1 + uVar27;
           psVar1 = &inGameRoot[0x2a].base.leftOffset;
-          *psVar1 = *psVar1 - (uVar25 >> 1);
+          *psVar1 = *psVar1 - (uVar26 >> 1);
           psVar1 = &inGameRoot[0x2a].base.rightOffset;
-          *psVar1 = *psVar1 + (uVar25 >> 1);
+          *psVar1 = *psVar1 + (uVar26 >> 1);
           inGameRoot[0x50].previousRoot =
                (UiRootNode *)
                ((inGameRoot[0x2a].base.topOffset - inGameRoot[0x2a].base.bottom) + -0x18 +
                (inGameRoot[0x4e].rootFlags - inGameRoot[0x4e].base.layoutHeight));
-          puVar15 = g_UiButtonSoundVoiceSets7[0];
+          pDVar15 = g_UiButtonSoundVoiceSets7[0];
           inGameRoot[0xd0].base.layoutWidth = (sdword)g_UiButtonSoundVoiceSets7[0];
-          inGameRoot[0xd3].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0xd5].base.topOffset = (sdword)puVar15;
-          inGameRoot[0xe1].base.bottom = (sdword)puVar15;
-          inGameRoot[0x111].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x159].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x199].base.bottom = (sdword)puVar15;
-          inGameRoot[0xdd].base.bottom = (sdword)puVar15;
-          inGameRoot[0xde].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0xe0].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x1bd].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x1be].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x1c0].base.right = (sdword)puVar15;
-          puVar15 = g_UiButtonSoundVoiceSets7[1];
+          inGameRoot[0xd3].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0xd5].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0xe1].base.bottom = (sdword)pDVar15;
+          inGameRoot[0x111].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x159].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x199].base.bottom = (sdword)pDVar15;
+          inGameRoot[0xdd].base.bottom = (sdword)pDVar15;
+          inGameRoot[0xde].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0xe0].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x1bd].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x1be].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x1c0].base.right = (sdword)pDVar15;
+          pDVar15 = g_UiButtonSoundVoiceSets7[1];
           inGameRoot[0xc5].base.layoutWidth = (sdword)g_UiButtonSoundVoiceSets7[1];
-          inGameRoot[199].base.parent = (UiNodeBase *)puVar15;
-          puVar15 = g_UiButtonSoundVoiceSets7[2];
+          inGameRoot[199].base.parent = (UiNodeBase *)pDVar15;
+          pDVar15 = g_UiButtonSoundVoiceSets7[2];
           inGameRoot[0x207].base.right = (sdword)g_UiButtonSoundVoiceSets7[2];
-          inGameRoot[0x208].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x20a].base.left = (sdword)puVar15;
-          inGameRoot[0x20b].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x20d].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x20e].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x210].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x211].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x212].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x214].base.right = (sdword)puVar15;
-          inGameRoot[0x215].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x217].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x218].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x219].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x21b].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x21c].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x21d].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x21f].base.left = (sdword)puVar15;
-          inGameRoot[0x220].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x223].base.right = (sdword)puVar15;
-          inGameRoot[0x224].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x226].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x227].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x228].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x22a].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x22b].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x22c].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x22e].base.left = (sdword)puVar15;
-          inGameRoot[0x1d5].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x107].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[0x109].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x10a].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x10c].base.left = (sdword)puVar15;
-          inGameRoot[0x10d].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x10f].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x110].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x114].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0x115].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x117].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x118].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x119].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[0x11b].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x11c].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x11e].base.bottom = (sdword)puVar15;
-          inGameRoot[0x11f].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x121].base.top = (sdword)puVar15;
-          inGameRoot[0x122].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x124].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0x125].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x127].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x128].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x129].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[299].base.topOffset = (sdword)puVar15;
-          inGameRoot[300].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x12e].base.bottom = (sdword)puVar15;
-          inGameRoot[0x12f].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x131].base.top = (sdword)puVar15;
-          inGameRoot[0x132].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x134].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0x135].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x137].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x138].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x139].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[0x13b].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x13c].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x13e].base.bottom = (sdword)puVar15;
-          inGameRoot[0x13f].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x141].base.top = (sdword)puVar15;
-          inGameRoot[0x142].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x144].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0x145].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x147].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x148].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x149].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[0x14b].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x14c].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x14e].base.bottom = (sdword)puVar15;
-          inGameRoot[0x14f].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x151].base.top = (sdword)puVar15;
-          inGameRoot[0x152].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x154].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0x155].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x157].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x158].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x15c].base.right = (sdword)puVar15;
-          inGameRoot[0x15d].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x15f].base.left = (sdword)puVar15;
-          inGameRoot[0x160].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x162].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x163].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x165].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x166].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x167].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x169].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x16a].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x16c].base.right = (sdword)puVar15;
-          inGameRoot[0x16d].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x16f].base.left = (sdword)puVar15;
-          inGameRoot[0x170].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x172].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x173].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x175].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x176].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x177].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x179].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x17a].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x17c].base.right = (sdword)puVar15;
-          inGameRoot[0x17d].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x17f].base.left = (sdword)puVar15;
-          inGameRoot[0x180].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x182].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x183].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x185].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x186].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x187].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x189].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x18a].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x18c].base.right = (sdword)puVar15;
-          inGameRoot[0x18d].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[399].base.left = (sdword)puVar15;
-          inGameRoot[400].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x192].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x193].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x195].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x196].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x197].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x19b].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x19d].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x19e].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x19f].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x1a1].base.bottom = (sdword)puVar15;
-          inGameRoot[0x1a2].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x1a4].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0x1a5].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x1a6].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[0x1a8].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x1a9].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x1ab].base.left = (sdword)puVar15;
-          inGameRoot[0x1ac].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x1ae].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x1af].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x1b0].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x1b2].base.top = (sdword)puVar15;
-          inGameRoot[0x1b3].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x1b5].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x1b6].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x1b7].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x1b9].base.right = (sdword)puVar15;
-          inGameRoot[0x1ba].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x1bc].base.parent = (UiNodeBase *)puVar15;
-          puVar15 = g_UiButtonSoundVoiceSets7[3];
+          inGameRoot[0x208].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x20a].base.left = (sdword)pDVar15;
+          inGameRoot[0x20b].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x20d].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x20e].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x210].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x211].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x212].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x214].base.right = (sdword)pDVar15;
+          inGameRoot[0x215].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x217].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x218].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x219].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x21b].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x21c].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x21d].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x21f].base.left = (sdword)pDVar15;
+          inGameRoot[0x220].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x223].base.right = (sdword)pDVar15;
+          inGameRoot[0x224].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x226].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x227].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x228].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x22a].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x22b].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x22c].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x22e].base.left = (sdword)pDVar15;
+          inGameRoot[0x1d5].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x107].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[0x109].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x10a].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x10c].base.left = (sdword)pDVar15;
+          inGameRoot[0x10d].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x10f].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x110].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x114].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0x115].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x117].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x118].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x119].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[0x11b].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x11c].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x11e].base.bottom = (sdword)pDVar15;
+          inGameRoot[0x11f].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x121].base.top = (sdword)pDVar15;
+          inGameRoot[0x122].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x124].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0x125].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x127].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x128].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x129].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[299].base.topOffset = (sdword)pDVar15;
+          inGameRoot[300].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x12e].base.bottom = (sdword)pDVar15;
+          inGameRoot[0x12f].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x131].base.top = (sdword)pDVar15;
+          inGameRoot[0x132].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x134].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0x135].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x137].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x138].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x139].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[0x13b].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x13c].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x13e].base.bottom = (sdword)pDVar15;
+          inGameRoot[0x13f].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x141].base.top = (sdword)pDVar15;
+          inGameRoot[0x142].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x144].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0x145].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x147].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x148].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x149].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[0x14b].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x14c].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x14e].base.bottom = (sdword)pDVar15;
+          inGameRoot[0x14f].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x151].base.top = (sdword)pDVar15;
+          inGameRoot[0x152].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x154].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0x155].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x157].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x158].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x15c].base.right = (sdword)pDVar15;
+          inGameRoot[0x15d].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x15f].base.left = (sdword)pDVar15;
+          inGameRoot[0x160].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x162].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x163].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x165].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x166].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x167].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x169].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x16a].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x16c].base.right = (sdword)pDVar15;
+          inGameRoot[0x16d].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x16f].base.left = (sdword)pDVar15;
+          inGameRoot[0x170].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x172].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x173].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x175].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x176].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x177].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x179].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x17a].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x17c].base.right = (sdword)pDVar15;
+          inGameRoot[0x17d].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x17f].base.left = (sdword)pDVar15;
+          inGameRoot[0x180].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x182].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x183].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x185].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x186].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x187].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x189].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x18a].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x18c].base.right = (sdword)pDVar15;
+          inGameRoot[0x18d].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[399].base.left = (sdword)pDVar15;
+          inGameRoot[400].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x192].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x193].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x195].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x196].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x197].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x19b].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x19d].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x19e].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x19f].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x1a1].base.bottom = (sdword)pDVar15;
+          inGameRoot[0x1a2].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x1a4].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0x1a5].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x1a6].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[0x1a8].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x1a9].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x1ab].base.left = (sdword)pDVar15;
+          inGameRoot[0x1ac].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x1ae].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x1af].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x1b0].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x1b2].base.top = (sdword)pDVar15;
+          inGameRoot[0x1b3].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x1b5].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x1b6].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x1b7].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x1b9].base.right = (sdword)pDVar15;
+          inGameRoot[0x1ba].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x1bc].base.parent = (UiNodeBase *)pDVar15;
+          pDVar15 = g_UiButtonSoundVoiceSets7[3];
           inGameRoot[0x11].base.parent = (UiNodeBase *)g_UiButtonSoundVoiceSets7[3];
-          inGameRoot[0x12].base.left = (sdword)puVar15;
-          inGameRoot[0x13].base.right = (sdword)puVar15;
-          inGameRoot[0x14].base.leftOffset = (sdword)puVar15;
-          inGameRoot[0x15].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x16].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x17].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x6d].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x6f].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x6e].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x70].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x7e].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x7f].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x81].previousRoot = (UiRootNode *)puVar15;
-          inGameRoot[0x83].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x8d].base.right = (sdword)puVar15;
-          inGameRoot[0x8f].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x90].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x91].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x92].base.bottomAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0xa6].base.bottomOffset = (sdword)puVar15;
-          inGameRoot[0x58].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x57].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x56].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x3d].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x3c].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x2d].base.parent = (UiNodeBase *)puVar15;
-          puVar15 = g_UiButtonSoundVoiceSets7[4];
+          inGameRoot[0x12].base.left = (sdword)pDVar15;
+          inGameRoot[0x13].base.right = (sdword)pDVar15;
+          inGameRoot[0x14].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[0x15].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x16].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x17].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x6d].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x6f].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x6e].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x70].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x7e].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x7f].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x81].previousRoot = (UiRootNode *)pDVar15;
+          inGameRoot[0x83].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x8d].base.right = (sdword)pDVar15;
+          inGameRoot[0x8f].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x90].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x91].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x92].base.bottomAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0xa6].base.bottomOffset = (sdword)pDVar15;
+          inGameRoot[0x58].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x57].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x56].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x3d].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x3c].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x2d].base.parent = (UiNodeBase *)pDVar15;
+          pDVar15 = g_UiButtonSoundVoiceSets7[4];
           inGameRoot[0x78].base.bottom = (sdword)g_UiButtonSoundVoiceSets7[4];
-          inGameRoot[0x79].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x7b].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x7c].base.leftAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x7d].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x94].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0xa3].base.top = (sdword)puVar15;
-          inGameRoot[0xa4].base.bottom = (sdword)puVar15;
-          inGameRoot[0xa5].base.topOffset = (sdword)puVar15;
-          inGameRoot[0xa8].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0xa9].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0xaa].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x96].rootFlags = (UiRootFlags)puVar15;
-          inGameRoot[0x98].base.firstChild = (UiNodeBase *)puVar15;
-          inGameRoot[0x99].base.top = (sdword)puVar15;
-          inGameRoot[0x9a].base.topOffset = (sdword)puVar15;
-          inGameRoot[0x9b].base.topAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x9c].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0x59].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x5c].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x5a].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x60].base.layoutWidth = (sdword)puVar15;
-          inGameRoot[0x61].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x62].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[100].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x65].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x66].base.left = (sdword)puVar15;
-          inGameRoot[0x67].base.right = (sdword)puVar15;
-          inGameRoot[0x3e].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x40].base.parent = (UiNodeBase *)puVar15;
-          inGameRoot[0x41].base.right = (sdword)puVar15;
-          inGameRoot[0x42].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0x43].base.rightAnchorQ31 = (UiAnchorFractionQ31)puVar15;
-          inGameRoot[0x44].base.nodeFlags = (UiNodeFlags)puVar15;
-          inGameRoot[0x46].base.nextSibling = (UiNodeBase *)puVar15;
-          inGameRoot[0x2e].base.left = (sdword)puVar15;
-          inGameRoot[0x2f].base.right = (sdword)puVar15;
-          inGameRoot[0x30].base.leftOffset = (sdword)puVar15;
-          puVar15 = g_UiButtonSoundVoiceSets7[5];
+          inGameRoot[0x79].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x7b].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x7c].base.leftAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x7d].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x94].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0xa3].base.top = (sdword)pDVar15;
+          inGameRoot[0xa4].base.bottom = (sdword)pDVar15;
+          inGameRoot[0xa5].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0xa8].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0xa9].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0xaa].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x96].rootFlags = (UiRootFlags)pDVar15;
+          inGameRoot[0x98].base.firstChild = (UiNodeBase *)pDVar15;
+          inGameRoot[0x99].base.top = (sdword)pDVar15;
+          inGameRoot[0x9a].base.topOffset = (sdword)pDVar15;
+          inGameRoot[0x9b].base.topAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x9c].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0x59].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x5c].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x5a].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x60].base.layoutWidth = (sdword)pDVar15;
+          inGameRoot[0x61].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x62].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[100].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x65].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x66].base.left = (sdword)pDVar15;
+          inGameRoot[0x67].base.right = (sdword)pDVar15;
+          inGameRoot[0x3e].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x40].base.parent = (UiNodeBase *)pDVar15;
+          inGameRoot[0x41].base.right = (sdword)pDVar15;
+          inGameRoot[0x42].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0x43].base.rightAnchorQ31 = (UiAnchorFractionQ31)pDVar15;
+          inGameRoot[0x44].base.nodeFlags = (UiNodeFlags)pDVar15;
+          inGameRoot[0x46].base.nextSibling = (UiNodeBase *)pDVar15;
+          inGameRoot[0x2e].base.left = (sdword)pDVar15;
+          inGameRoot[0x2f].base.right = (sdword)pDVar15;
+          inGameRoot[0x30].base.leftOffset = (sdword)pDVar15;
+          pDVar15 = g_UiButtonSoundVoiceSets7[5];
           inGameRoot[0xa1].base.left = (sdword)g_UiButtonSoundVoiceSets7[5];
-          inGameRoot[0xaf].base.vtable = (UiNodeVtable *)puVar15;
-          inGameRoot[0xb3].base.rightOffset = (sdword)puVar15;
-          inGameRoot[0xb7].base.layoutHeight = (sdword)puVar15;
-          inGameRoot[0xbc].base.parent = (UiNodeBase *)puVar15;
-          puVar15 = g_UiButtonSoundVoiceSets7[6];
+          inGameRoot[0xaf].base.vtable = (UiNodeVtable *)pDVar15;
+          inGameRoot[0xb3].base.rightOffset = (sdword)pDVar15;
+          inGameRoot[0xb7].base.layoutHeight = (sdword)pDVar15;
+          inGameRoot[0xbc].base.parent = (UiNodeBase *)pDVar15;
+          pDVar15 = g_UiButtonSoundVoiceSets7[6];
           inGameRoot[0x8a].base.topOffset = (sdword)g_UiButtonSoundVoiceSets7[6];
-          inGameRoot[0x85].callbacks = (UiRootCallbacks *)puVar15;
-          inGameRoot[0x54].base.leftOffset = (sdword)puVar15;
-          inGameRoot[3].base.left = (sdword)puVar15;
+          inGameRoot[0x85].callbacks = (UiRootCallbacks *)pDVar15;
+          inGameRoot[0x54].base.leftOffset = (sdword)pDVar15;
+          inGameRoot[3].base.left = (sdword)pDVar15;
+          GVar28.carry = false;
+          GVar28.eax = (GraphicsTextureSourceAsset *)pDVar15;
         }
       }
     }
   }
-  return;
+  SVar30.valueOrError = (dword)GVar28.eax;
+  SVar30.carry = GVar28.carry;
+  return SVar30;
 }
+
 
 /* Address: 0x00563BD0.
    Ownership: ui/ingame/runtime.
@@ -2680,58 +2679,47 @@ void InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
    WorldRuntime_GetVector0Regs [world/runtime/core], WorldRuntime_GetVector1Regs [world/runtime/core],
    TextResource_Resolve [assets/text/resources].
 */
-void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
+void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessionPrompts(void)
 
 {
   SelectionPlayerRuntimeBlock *pSVar1;
-  ulonglong uVar2;
+  uint uVar2;
+  ulonglong uVar3;
   dword value;
-  int iVar3;
-  word *pwVar4;
-  int iVar5;
-  WideNumberSignedValue32 value_00;
-  WideNumberSignedValue32 value_01;
-  uint uVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  uint extraout_ECX_01;
-  WideNumberDenominator32 extraout_EDX;
-  WideNumberDenominator32 denominator;
-  WideNumberDenominator32 denominator_00;
-  WideNumberDenominator32 denominator_01;
-  WideNumberSignedValue32 value_02;
-  WideNumberSignedValue32 value_03;
-  FrontendPlayerRuntimeBlockCount extraout_EDX_00;
-  FrontendPlayerRuntimeBlockCount FVar7;
+  word *stream;
+  uint uVar4;
+  FrontendPlayerRuntimeBlockCount FVar5;
   WorldRuntimeContext *world;
-  FrontendPlayerRuntimeRecord *pFVar8;
-  int iVar9;
-  int iVar10;
-  word *pwVar11;
+  FrontendPlayerRuntimeRecord *pFVar6;
+  int iVar7;
+  int iVar8;
+  word *pwVar9;
   word *destination;
-  bool bVar12;
-  undefined1 uVar13;
-  undefined8 uVar14;
+  RichTextCopyExpandedEaxCf5 RVar10;
+  TextResourceResolveEaxCf5 TVar11;
+  TextResourceResolveEaxCf5 TVar12;
+  WorldVector0EaxEcxEdx12 WVar13;
+  WorldVector1EaxEcxEdx12 WVar14;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
   
+  uVar4 = g_RenderedFrameCountSinceDebugRefresh;
   g_DebugOverlayCounterRefreshCountdown = g_DebugOverlayCounterRefreshCountdown - 1;
   if (g_DebugOverlayCounterRefreshCountdown == 0) {
     g_DebugOverlayCounterRefreshCountdown = 0x14;
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,g_RenderedFrameCountSinceDebugRefresh,
                g_FrontendDebugOverlayTextSlot00Utf16);
-    denominator = extraout_EDX;
-    if (extraout_EDX == 0) {
-      denominator = 1;
+    if (uVar4 == 0) {
+      uVar4 = 1;
     }
     WideNumber_FormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,denominator,
+              (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,uVar4,
                g_PrimitiveDrawCallCount,g_FrontendDebugOverlayTextSlot01Utf16);
     WideNumber_FormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,denominator_00,
+              (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,uVar4,
                g_TextureBindStateChangeCount,g_FrontendDebugOverlayTextSlot02Utf16);
     WideNumber_FormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,denominator_01,
+              (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,uVar4,
                g_TextureDeviceReloadCount,g_FrontendDebugOverlayTextSlot03Utf16);
     if ((g_InGameReadyStateToggleFlags & 1) == 0) {
       if (g_RenderedFrameCountSinceDebugRefresh < 0xd) {
@@ -2762,26 +2750,26 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   }
   gameRuntime1 = g_InGameRuntimeRoot;
   world = &g_InGameRuntimeRoot->worldRuntime0A30;
-  uVar14 = WorldRuntime_GetVector0Regs(world);
+  WVar13 = WorldRuntime_GetVector0Regs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
-             1,(WideNumberSignedValue32)uVar14,g_FrontendDebugOverlayTextSlot04Utf16);
+             1,WVar13.xQ12,g_FrontendDebugOverlayTextSlot04Utf16);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
-             1,value_00,g_FrontendDebugOverlayTextSlot05Utf16);
+             1,WVar13.yQ12,g_FrontendDebugOverlayTextSlot05Utf16);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
-             1,value_02,g_FrontendDebugOverlayTextSlot06Utf16);
-  uVar14 = WorldRuntime_GetVector1Regs(world);
+             1,WVar13.zQ12,g_FrontendDebugOverlayTextSlot06Utf16);
+  WVar14 = WorldRuntime_GetVector1Regs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
-             1,(WideNumberSignedValue32)uVar14,g_FrontendDebugOverlayTextSlot07Utf16);
+             1,WVar14.magnitudeQ12,g_FrontendDebugOverlayTextSlot07Utf16);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
-             1,value_01,g_FrontendDebugOverlayTextSlot08Utf16);
+             1,WVar14.headingAngle,g_FrontendDebugOverlayTextSlot08Utf16);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
-             1,value_03,g_FrontendDebugOverlayTextSlot09Utf16);
+             1,WVar14.pitchAngle,g_FrontendDebugOverlayTextSlot09Utf16);
   if (*(int *)((gameRuntime1->worldRuntime0A30).selection.reserved04_1F + 0x10) == 0x7fffffff) {
     g_FrontendDebugOverlayTextSlot10Utf16[0] = 0x2d;
     g_FrontendDebugOverlayTextSlot10Utf16[1] = 0;
@@ -2804,104 +2792,99 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   WideNumber_FormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,value,
              g_FrontendDebugOverlayTextSlot12Utf16);
-  uVar2 = (ulonglong)(g_GameFactionRuntimeImage.tail.simulationTick + 0x4af) / 0x4b0;
+  uVar3 = (ulonglong)(g_GameFactionRuntimeImage.tail.simulationTick + 0x4af) / 0x4b0;
   (*g_LocaleFormatTimeFieldsUtf16)
-            ((dword)(uVar2 / 0x3c),(dword)(uVar2 % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
-  uVar6 = 1;
-  iVar9 = 0x50fa80;
-  destination = (word *)g_InGameFactionStatusTextScratchUtf16;
+            ((dword)(uVar3 / 0x3c),(dword)(uVar3 % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
+  uVar4 = 1;
+  iVar7 = 0x50fa80;
+  destination = g_InGameFactionStatusTextScratchUtf16;
   do {
-    if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar6] != 0) &&
-       (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar6] <
+    if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar4] != 0) &&
+       (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar4] <
         FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED)) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(int *)(iVar9 + 0x90) + *(int *)(iVar9 + 0x94),(word *)0x55056e);
+                 *(int *)(iVar7 + 0x90) + *(int *)(iVar7 + 0x94),(word *)0x55056e);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
 InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWithoutPlayerRoster:
-        TextResource_Resolve(0x21d4);
+        TVar11 = TextResource_Resolve(0x21d4);
+        pwVar9 = TVar11.eax;
       }
       else {
-        iVar10 = 0;
-        iVar5 = extraout_ECX;
-        FVar7 = g_FrontendPlayerRuntimeBlockCount;
-        pFVar8 = g_FrontendPlayerRuntimeBlocks;
-        pwVar4 = (word *)g_InGamePlayerListTextScratchUtf16;
+        iVar8 = 0;
+        FVar5 = g_FrontendPlayerRuntimeBlockCount;
+        pFVar6 = g_FrontendPlayerRuntimeBlocks;
+        pwVar9 = g_InGamePlayerListTextScratchUtf16;
         do {
-          pwVar11 = pwVar4;
-          if (iVar5 == (pFVar8->factionAssignment).factionAssignmentIndex) {
-            if (iVar10 != 0) {
-              pwVar4[0] = 0x2c;
-              pwVar4[1] = 0x20;
-              pwVar11 = pwVar4 + 2;
+          if (uVar4 == (pFVar6->factionAssignment).factionAssignmentIndex) {
+            if (iVar8 != 0) {
+              pwVar9[0] = 0x2c;
+              pwVar9[1] = 0x20;
+              pwVar9 = pwVar9 + 2;
             }
-            bVar12 = iVar10 != 0 && (word *)0xfffffffb < pwVar4;
-            iVar10 = iVar10 + 1;
-            iVar3 = RichTextCommandStream_CopyExpandedCf
-                              (0x28,pwVar11,(pFVar8->playerName).textUtf16);
-            iVar5 = extraout_ECX_00;
-            FVar7 = extraout_EDX_00;
-            if (!bVar12) {
-              pwVar11 = (word *)((int)pwVar11 + iVar3);
-              pSVar1 = g_SelectionPlayerRuntimeBlockPointers[pFVar8->playerRuntimeId];
-              uVar6 = pSVar1->simulationStepTicks;
+            iVar8 = iVar8 + 1;
+            RVar10 = RichTextCommandStream_CopyExpandedCf
+                               (0x28,pwVar9,(pFVar6->playerName).textUtf16);
+            if (!RVar10.carry) {
+              pwVar9 = (word *)((int)pwVar9 + RVar10.eax);
+              pSVar1 = g_SelectionPlayerRuntimeBlockPointers[pFVar6->playerRuntimeId];
+              uVar2 = pSVar1->simulationStepTicks;
               if ((pSVar1->sessionFlags & 1) != 0) {
-                pwVar11[0] = 0x20;
-                pwVar11[1] = 0x20;
-                pwVar11[2] = 0x50;
-                pwVar11[3] = 0;
-                pwVar11 = pwVar11 + 3;
+                pwVar9[0] = 0x20;
+                pwVar9[1] = 0x20;
+                pwVar9[2] = 0x50;
+                pwVar9[3] = 0;
+                pwVar9 = pwVar9 + 3;
               }
-              if (1 < uVar6) {
-                pwVar11[0] = 0x20;
-                pwVar11[1] = 0x20;
-                *(uint *)(pwVar11 + 2) = uVar6 * 0x10000 + 0x300078;
-                pwVar11 = pwVar11 + 4;
+              if (1 < uVar2) {
+                pwVar9[0] = 0x20;
+                pwVar9[1] = 0x20;
+                *(uint *)(pwVar9 + 2) = uVar2 * 0x10000 + 0x300078;
+                pwVar9 = pwVar9 + 4;
               }
               if ((pSVar1->sessionFlags & 2) != 0) {
-                pwVar11[0] = 0x20;
-                pwVar11[1] = 0x20;
-                pwVar11[2] = 0x8004;
-                pwVar11[3] = 0x8003;
-                pwVar11[4] = 0x57;
-                pwVar11[5] = 0x8005;
-                pwVar11 = pwVar11 + 6;
+                pwVar9[0] = 0x20;
+                pwVar9[1] = 0x20;
+                pwVar9[2] = 0x8004;
+                pwVar9[3] = 0x8003;
+                pwVar9[4] = 0x57;
+                pwVar9[5] = 0x8005;
+                pwVar9 = pwVar9 + 6;
               }
             }
           }
-          pFVar8 = pFVar8 + 1;
-          FVar7 = FVar7 - 1;
-          pwVar4 = pwVar11;
-        } while (FVar7 != 0);
-        *pwVar11 = 0;
-        if (iVar10 == 0)
+          pFVar6 = pFVar6 + 1;
+          FVar5 = FVar5 - 1;
+        } while (FVar5 != 0);
+        *pwVar9 = 0;
+        if (iVar8 == 0)
         goto 
         InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWithoutPlayerRoster
         ;
-        pwVar4 = TextResource_Resolve(0x21d3);
-        RichTextCommandStream_PatchPayloadBySelector(0,g_InGamePlayerListTextScratchUtf16,pwVar4);
+        TVar11 = TextResource_Resolve(0x21d3);
+        pwVar9 = TVar11.eax;
+        RichTextCommandStream_PatchPayloadBySelector(0,g_InGamePlayerListTextScratchUtf16,pwVar9);
       }
-      uVar13 = 0xffffde8c < *(uint *)(iVar9 + 0x38);
-      pwVar4 = TextResource_Resolve(*(uint *)(iVar9 + 0x38) + 0x2173);
-      pwVar11 = TextResource_Resolve(0x21d2);
-      uVar14 = RichTextCommandStream_PatchPayloadBySelector(0,pwVar4,pwVar11);
-      uVar14 = RichTextCommandStream_PatchPayloadBySelector
-                         (1,(void *)((ulonglong)uVar14 >> 0x20),(word *)uVar14);
-      uVar14 = RichTextCommandStream_PatchPayloadBySelector(2,(void *)0x55056e,(word *)uVar14);
-      iVar5 = RichTextCommandStream_CopyExpandedCf(0x400,destination,(word *)uVar14);
-      uVar6 = extraout_ECX_01;
-      if (!(bool)uVar13) {
-        destination = (word *)((int)destination + iVar5);
+      TVar11 = TextResource_Resolve(*(int *)(iVar7 + 0x38) + 0x2173);
+      TVar12 = TextResource_Resolve(0x21d2);
+      stream = TVar12.eax;
+      RichTextCommandStream_PatchPayloadBySelector(0,TVar11.eax,stream);
+      RichTextCommandStream_PatchPayloadBySelector(1,pwVar9,stream);
+      RichTextCommandStream_PatchPayloadBySelector(2,(void *)0x55056e,stream);
+      RVar10 = RichTextCommandStream_CopyExpandedCf(0x400,destination,stream);
+      if (!RVar10.carry) {
+        destination = (word *)((int)destination + RVar10.eax);
       }
     }
-    uVar6 = uVar6 + 1;
-    iVar9 = iVar9 + 0x740;
-    if (7 < uVar6) {
+    uVar4 = uVar4 + 1;
+    iVar7 = iVar7 + 0x740;
+    if (7 < uVar4) {
       return;
     }
   } while( true );
 }
+
 
 /* Address: 0x005640E0.
    Ownership: ui/ingame/runtime.
@@ -2914,34 +2897,33 @@ InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWith
    [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
 */
-void InGamePanel_RebuildPlayerStatusRows(void *uiState)
+void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(void *uiState)
 
 {
   FrontendPlayerRuntimeRecord *pFVar1;
   TextResourceId resourceId;
-  word *stream;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_EDX;
-  int iVar2;
+  FrontendPlayerRuntimeBlockCount FVar2;
+  int iVar3;
   InGamePlayerStatusTextSlot *destination;
   FrontendPlayerNameUtf16_28 *replacementPayload;
-  RichTextExtentRegs RVar3;
-  undefined8 uVar4;
+  RichTextExtentRegs RVar4;
+  TextResourceResolveEaxCf5 TVar5;
+  GraphicsTextureSizeEaxEdxCf9 GVar6;
   
   (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
+  FVar2 = g_FrontendPlayerRuntimeBlockCount;
   pFVar1 = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
     replacementPayload = &pFVar1->playerName;
-    RVar3 = RichTextCommandStream_MeasureRegs
+    RVar4 = RichTextCommandStream_MeasureRegs
                       (g_UiTextStyleNormal,(word *)u_gfx_panel_panel0_gfx_005630d0);
-    iVar2 = (RVar3.heightPixels * extraout_ECX >> 1) + extraout_EDX;
+    iVar3 = (RVar4.heightPixels * FVar2 >> 1) + GVar6.logicalHeightPixels;
     destination = g_InGamePlayerStatusTextSlots;
-    *(int *)((int)uiState + 0x93c) = extraout_ECX;
-    *(int *)((int)uiState + 0x910) = iVar2;
-    *(int *)((int)uiState + 0x908) = -iVar2;
+    *(FrontendPlayerRuntimeBlockCount *)((int)uiState + 0x93c) = FVar2;
+    *(int *)((int)uiState + 0x910) = iVar3;
+    *(int *)((int)uiState + 0x908) = -iVar3;
     UiContainer_LayoutChildren(*(UiNodeBase **)((int)uiState + 0x8ec));
     do {
       if (((FrontendPlayerFactionAssignmentState10 *)
@@ -2952,16 +2934,18 @@ void InGamePanel_RebuildPlayerStatusRows(void *uiState)
       else {
         resourceId = 0xff06;
       }
-      stream = TextResource_Resolve(resourceId);
-      uVar4 = RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-      RichTextCommandStream_CopyExpandedCf(0x80,destination->text,(word *)uVar4);
+      TVar5 = TextResource_Resolve(resourceId);
+      RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,TVar5.eax);
+      RichTextCommandStream_CopyExpandedCf(0x80,destination->text,TVar5.eax);
       destination = destination + 1;
       replacementPayload = replacementPayload + 0x7e;
-    } while (extraout_ECX_00 != 1);
+      FVar2 = FVar2 - 1;
+    } while (FVar2 != 0);
   }
   (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
   return;
 }
+
 
 /* Address: 0x005678C0.
    Ownership: ui/ingame/runtime.
@@ -2970,9 +2954,10 @@ void InGamePanel_RebuildPlayerStatusRows(void *uiState)
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-void InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
-               (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
-               WorldRuntimeContext *inGameRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+          WorldRuntimeContext *inGameRuntime)
 
 {
   UiCommandDispatchRecord *currentDispatchRecord;
@@ -3035,6 +3020,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
   ;
 }
 
+
 /* Address: 0x00569750.
    Ownership: ui/ingame/runtime.
    Purpose: One-argument in-game UI callback that clears transient state value 0x1B at context offset +0x911C.
@@ -3067,9 +3053,8 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *con
       (((context->interaction).interactionFlags48 & 8) == 0)) &&
      ((g_UiCommandRuntimeFlags & 0x100) == 0)) {
     if ((context->runtimeFlags & 0x10) == 0) {
-      bVar1 = false;
       if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-        SelectionInfo_ValidateOwnerType16AndAnyActiveCf(context->activeFactionRuntimeIndex);
+        bVar1 = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(context->activeFactionRuntimeIndex);
         if (bVar1) {
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
@@ -3105,16 +3090,18 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *con
   return;
 }
 
+
 /* Address: 0x00569890.
    Ownership: ui/ingame/runtime.
    Purpose: Inserts one eight-dword notification record into the four-slot in-game queue by descending priority,
    shifting displaced records through later slots and ignoring records with a zero identifier.
 */
-void InGameNotificationQueue_InsertPriorityRecord
-               (InGameNotificationPayloadKind payloadKind,dword payloadReserved10,
-               dword orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
-               Q12 secondaryWorldCoordinateQ12_04,Q12 primaryWorldCoordinateQ12_00,
-               InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId)
+void __thandor_void_preserve_eax_ecx_edx
+InGameNotificationQueue_InsertPriorityRecord
+          (InGameNotificationPayloadKind payloadKind,dword payloadReserved10,
+          dword orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
+          Q12 secondaryWorldCoordinateQ12_04,Q12 primaryWorldCoordinateQ12_00,
+          InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId)
 
 {
   Q12 *pQVar1;
@@ -3204,6 +3191,7 @@ void InGameNotificationQueue_InsertPriorityRecord
   return;
 }
 
+
 /* Address: 0x00569B00.
    Ownership: ui/ingame/runtime.
    Purpose: Finds the UI root, enumerates active player slots excluding the root's current player index, fills at
@@ -3212,26 +3200,23 @@ void InGameNotificationQueue_InsertPriorityRecord
    Cross-module calls: UiGrid_OneColumnDimensionsPacked [ui/controls/layout], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx
+InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 
 {
   uint *puVar1;
   UiNodeBase *pUVar2;
-  dword dVar3;
-  SessionNetworkRoleFlags SVar4;
-  UiControlCount UVar5;
-  int iVar6;
-  int extraout_ECX;
-  int extraout_ECX_00;
+  SessionNetworkRoleFlags SVar3;
+  UiControlCount UVar4;
+  int iVar5;
+  uint uVar6;
   dword dVar7;
-  uint extraout_ECX_01;
-  byte abVar8 [4];
-  int iVar9;
-  uint uVar10;
-  SessionNetworkRoleFlags SVar11;
-  FrontendPlayerRuntimeRecord *pFVar12;
-  uint uVar13;
-  UiGridDimensionsEdxEax8 UVar14;
+  int iVar8;
+  uint uVar9;
+  SessionNetworkRoleFlags SVar10;
+  FrontendPlayerRuntimeRecord *pFVar11;
+  uint uVar12;
+  UiGridDimensionsEdxEax8 UVar13;
   UiControlCount local_20;
   
   pUVar2 = node->parent;
@@ -3239,22 +3224,22 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     node = node->parent;
     pUVar2 = node->parent;
   }
-  iVar6 = 1;
+  iVar5 = 1;
   local_20 = 0;
-  abVar8 = g_GameFactionRuntimeImage.tail.reserved00_03;
+  dVar7 = g_GameFactionRuntimeImage.tail.activeFactionCount;
   do {
-    if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[iVar6] ==
-          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (iVar6 != node[0x23].bottom)) &&
+    if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[iVar5] ==
+          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (iVar5 != node[0x23].bottom)) &&
        ((g_UiCommandRuntimeFlags & 0x100) == 0)) {
       local_20 = local_20 + 1;
     }
-    iVar6 = iVar6 + 1;
-    abVar8 = (byte  [4])((int)abVar8 + -1);
-  } while (abVar8 != (byte  [4])0x0);
-  UVar14 = UiGrid_OneColumnDimensionsPacked(local_20);
-  iVar6 = (int)UVar14 * g_InGamePanelTextureSubresource32Width +
+    iVar5 = iVar5 + 1;
+    dVar7 = dVar7 - 1;
+  } while (dVar7 != 0);
+  UVar13 = UiGrid_OneColumnDimensionsPacked(local_20);
+  iVar5 = (int)UVar13 * g_InGamePanelTextureSubresource32Width +
           g_InGamePanelTextureSubresource19Width + g_InGamePanelTextureSubresource20Width;
-  iVar9 = (int)(UVar14 >> 0x20) * g_InGamePanelTextureSubresource32Height +
+  iVar8 = (int)(UVar13 >> 0x20) * g_InGamePanelTextureSubresource32Height +
           g_InGamePanelTextureSubresource18Height + g_InGamePanelTextureSubresource23Height;
   if ((int)g_FramebufferWidth < 800) {
     node[0x105].bottom = -0x1f;
@@ -3268,80 +3253,81 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     node[0x105].leftOffset = -0x7e;
     node[0x105].rightOffset = -0x7e;
   }
-  node[0x105].bottom = node[0x105].bottom - iVar6;
-  node[0x105].leftOffset = node[0x105].leftOffset - iVar9;
+  node[0x105].bottom = node[0x105].bottom - iVar5;
+  node[0x105].leftOffset = node[0x105].leftOffset - iVar8;
   node[0x104].topOffset = node[0x104].topOffset | 8;
-  if ((extraout_ECX != 0) && ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) == 0)) {
+  if ((local_20 != 0) && ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) == 0)) {
     node[0x104].topOffset = node[0x104].topOffset & 0xfffffff7;
   }
-  (**(code **)(node[0x103].topAnchorQ31 + 0xc))(&node[0x103].rightOffset);
-  uVar13 = 0;
-  if (extraout_ECX_00 != 0) {
-    dVar7 = 1;
-    iVar6 = 0x50fa80;
+  (**(code **)(node[0x103].topAnchorQ31 + 0xc))((UiNodeBase *)&node[0x103].rightOffset);
+  uVar12 = 0;
+  if (local_20 != 0) {
+    uVar6 = 1;
+    iVar5 = 0x50fa80;
     do {
-      UVar5 = local_20 + 1;
-      if ((dVar7 != node[0x23].bottom) &&
-         (g_GameFactionRuntimeImage.tail.factionLifecycleStates[dVar7] ==
+      UVar4 = local_20 + 1;
+      if ((uVar6 != node[0x23].bottom) &&
+         (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar6] ==
           FACTION_RUNTIME_LIFECYCLE_ACTIVE)) {
-        g_UiAction1012TargetPlayerIndices[uVar13] = dVar7;
+        g_UiAction1012TargetPlayerIndices[uVar12] = uVar6;
         UiPageStack_SetActiveIndex
                   (0,(UiPageStackControl *)
-                     ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[uVar13]));
-        *(int *)((int)&node[1].parent + g_UiAction1012PlayerLabelTextOffsets[uVar13]) =
-             *(int *)(iVar6 + 0x38) + 0x2173;
-        *(uint *)((int)&node[1].parent + g_UiAction1012PlayerIndexTextOffsets[uVar13]) =
-             extraout_ECX_01 + 0x2190;
-        uVar10 = g_GameFactionRuntimeImage.records[node[0x23].bottom].packedRelationStates >>
-                 ((byte)(extraout_ECX_01 << 2) & 0x1f) & 0xf;
-        dVar7 = extraout_ECX_01 & 0x3fffffff;
-        *(uint *)((int)&node[1].parent + g_UiAction1012StateTextOffsets[uVar13]) = uVar10 + 0x21a3;
-        iVar9 = g_UiAction1012IconImageOffsets[uVar13];
-        *(undefined **)((int)&node[1].parent + iVar9) = &g_EmptyFrontendPlayerNameUtf16;
-        pFVar12 = g_FrontendPlayerRuntimeBlocks;
-        SVar11 = g_FrontendPlayerRuntimeBlockCount;
-        SVar4 = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
-        while (SVar4 != SESSION_NETWORK_ROLE_LOCAL) {
-          if ((pFVar12->factionAssignment).factionAssignmentIndex == dVar7) {
-            *(FrontendPlayerNameUtf16_28 **)((int)&node[1].parent + iVar9) = &pFVar12->playerName;
+                     ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[uVar12]));
+        *(int *)((int)&node[1].parent + g_UiAction1012PlayerLabelTextOffsets[uVar12]) =
+             *(int *)(iVar5 + 0x38) + 0x2173;
+        *(uint *)((int)&node[1].parent + g_UiAction1012PlayerIndexTextOffsets[uVar12]) =
+             uVar6 + 0x2190;
+        uVar9 = g_GameFactionRuntimeImage.records[node[0x23].bottom].packedRelationStates >>
+                ((byte)(uVar6 << 2) & 0x1f) & 0xf;
+        uVar6 = uVar6 & 0x3fffffff;
+        *(uint *)((int)&node[1].parent + g_UiAction1012StateTextOffsets[uVar12]) = uVar9 + 0x21a3;
+        iVar8 = g_UiAction1012IconImageOffsets[uVar12];
+        *(undefined **)((int)&node[1].parent + iVar8) = &g_EmptyFrontendPlayerNameUtf16;
+        pFVar11 = g_FrontendPlayerRuntimeBlocks;
+        SVar10 = g_FrontendPlayerRuntimeBlockCount;
+        SVar3 = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
+        while (SVar3 != SESSION_NETWORK_ROLE_LOCAL) {
+          if ((pFVar11->factionAssignment).factionAssignmentIndex == uVar6) {
+            *(FrontendPlayerNameUtf16_28 **)((int)&node[1].parent + iVar8) = &pFVar11->playerName;
             break;
           }
-          pFVar12 = pFVar12 + 1;
-          SVar11 = SVar11 - SESSION_NETWORK_ROLE_CLIENT;
-          SVar4 = SVar11;
+          pFVar11 = pFVar11 + 1;
+          SVar10 = SVar10 - SESSION_NETWORK_ROLE_CLIENT;
+          SVar3 = SVar10;
         }
-        iVar9 = g_UiAction1012ControlOffsets[uVar13];
-        dVar3 = g_UiAction1012SubresourceByState[uVar10];
-        uVar13 = uVar13 + 1;
-        puVar1 = (uint *)((int)&node->nodeFlags + iVar9);
+        iVar8 = g_UiAction1012ControlOffsets[uVar12];
+        dVar7 = g_UiAction1012SubresourceByState[uVar9];
+        uVar12 = uVar12 + 1;
+        puVar1 = (uint *)((int)&node->nodeFlags + iVar8);
         *puVar1 = *puVar1 & 0xfffffff7;
-        *(dword *)((int)&node[1].vtable + iVar9) = dVar3;
-        UVar5 = local_20;
+        *(dword *)((int)&node[1].vtable + iVar8) = dVar7;
+        UVar4 = local_20;
         if (((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) != 0) &&
-           ((7 < uVar10 ||
+           ((7 < uVar9 ||
             (((g_GameFactionRuntimeImage.tail.relationUiFlags & 2) != 0 &&
-             ((3 < uVar10 || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) != 0)))))))) {
-          puVar1 = (uint *)((int)&node->nodeFlags + iVar9);
+             ((3 < uVar9 || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) != 0)))))))) {
+          puVar1 = (uint *)((int)&node->nodeFlags + iVar8);
           *puVar1 = *puVar1 | 8;
         }
       }
-      local_20 = UVar5;
-      dVar7 = dVar7 + 1;
-      iVar6 = iVar6 + 0x740;
+      local_20 = UVar4;
+      uVar6 = uVar6 + 1;
+      iVar5 = iVar5 + 0x740;
       local_20 = local_20 - 1;
     } while (local_20 != 0);
-    if (6 < uVar13) {
+    if (6 < uVar12) {
       return;
     }
   }
   do {
     UiPageStack_SetActiveIndex
               (1,(UiPageStackControl *)
-                 ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[uVar13]));
-    uVar13 = uVar13 + 1;
-  } while (uVar13 < 7);
+                 ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[uVar12]));
+    uVar12 = uVar12 + 1;
+  } while (uVar12 < 7);
   return;
 }
+
 
 /* Address: 0x0056A460.
    Ownership: ui/ingame/runtime.
@@ -3350,39 +3336,37 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
 */
-dword InGameMusic_ComputeTrackSuitabilityScore
-                (MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime)
+dword __thandor_eax_preserve_ecx_edx
+InGameMusic_ComputeTrackSuitabilityScore
+          (MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime)
 
 {
-  dword dVar1;
+  int iVar1;
+  dword dVar2;
   ArmyAssetRecordPrefix *armyDefinition1;
-  uint extraout_ECX;
-  uint uVar2;
-  uint extraout_EDX;
   int iVar3;
   int iVar4;
-  bool bVar5;
+  ArmyRegistryEaxCf5_51b6d0 AVar5;
   int iStack_28;
   int iStack_24;
   int iStack_20;
   int iStack_1c;
-  WorldRuntimeNode *worldNode1;
+  WorldOwnerListNode100 *worldNode1;
   
-  dVar1 = 0;
+  dVar2 = 0;
   iStack_1c = 0;
   iStack_20 = 0;
   iStack_24 = 0;
   iStack_28 = 0;
   if (trackClassId != 0) {
-    uVar2 = worldRuntime->activeFactionRuntimeIndex;
-    for (worldNode1 = worldRuntime->ownerListHead; worldNode1 != (WorldRuntimeNode *)0x0;
-        worldNode1 = (worldNode1->common).nextNode) {
-      if (worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) {
-        iVar3 = *(int *)((int)worldNode1->runtimePayload + 8);
-        bVar5 = uVar2 < *(uint *)(iVar3 + 0xc);
-        if ((uVar2 == *(uint *)(iVar3 + 0xc)) &&
-           (armyDefinition1 = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(iVar3 + 0xa0))
-           , uVar2 = extraout_ECX, trackClassId = extraout_EDX, !bVar5)) {
+    iVar1 = worldRuntime->activeFactionRuntimeIndex;
+    for (worldNode1 = worldRuntime->ownerListHead; worldNode1 != (WorldOwnerListNode100 *)0x0;
+        worldNode1 = worldNode1->nextNode) {
+      if ((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+         (iVar3 = *(int *)((int)worldNode1->runtimePayload + 8), iVar1 == *(int *)(iVar3 + 0xc))) {
+        AVar5 = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(iVar3 + 0xa0));
+        armyDefinition1 = AVar5.eax;
+        if (!AVar5.carry) {
           iVar4 = 1;
           if ((*(uint *)(iVar3 + 0x2c) & 1) != 0) {
             iVar4 = 3;
@@ -3399,20 +3383,21 @@ dword InGameMusic_ComputeTrackSuitabilityScore
       }
     }
     if (trackClassId < 0x14) {
-      dVar1 = iStack_28 * 0x80 + iStack_24 * 0x100 + iStack_20 * 0x280 + iStack_1c * 0x100;
+      dVar2 = iStack_28 * 0x80 + iStack_24 * 0x100 + iStack_20 * 0x280 + iStack_1c * 0x100;
     }
     else if (trackClassId < 0x32) {
-      dVar1 = iStack_28 * -0x100 + iStack_24 * 0x40 + 0x32000 + iStack_20 * 0x10 + iStack_1c * 0x80;
+      dVar2 = iStack_28 * -0x100 + iStack_24 * 0x40 + 0x32000 + iStack_20 * 0x10 + iStack_1c * 0x80;
     }
     else if (trackClassId < 0x46) {
-      dVar1 = iStack_28 * 0x80 + iStack_24 * 0x100 + iStack_20 * 0x20 + iStack_1c * 0x300;
+      dVar2 = iStack_28 * 0x80 + iStack_24 * 0x100 + iStack_20 * 0x20 + iStack_1c * 0x300;
     }
     else {
-      dVar1 = iStack_28 * 0x100 + iStack_24 * 0x200 + iStack_20 * 0x180 + iStack_1c * 0x10;
+      dVar2 = iStack_28 * 0x100 + iStack_24 * 0x200 + iStack_20 * 0x180 + iStack_1c * 0x10;
     }
   }
-  return dVar1;
+  return dVar2;
 }
+
 
 /* Address: 0x0056A8A0.
    Ownership: ui/ingame/runtime.
@@ -3422,33 +3407,28 @@ dword InGameMusic_ComputeTrackSuitabilityScore
    [ui/controls/input], TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureWrappedBlockRegs
    [assets/text/richtext].
 */
-void InGameUiAction101F_Handler(void *source)
+
+void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *source)
 
 {
-  int iVar1;
-  void *pvVar2;
-  UiPageStackControl *stack;
-  UiPageStackControl *stack_00;
-  word *pwVar3;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  bool bVar4;
-  RichTextExtentRegs RVar5;
-  undefined8 uVar6;
+  WorldInteractionFlags *pWVar1;
+  UiNodeBase *pUVar2;
+  bool bVar3;
+  RichTextExtentRegs RVar4;
+  TextResourceResolveEaxCf5 TVar5;
+  InGameAction101FRootView43DC *uiRoot;
   
-  iVar1 = *(int *)((int)source + 8);
-  pvVar2 = source;
-  while (iVar1 != -1) {
-    pvVar2 = *(void **)((int)pvVar2 + 8);
-    iVar1 = *(int *)((int)pvVar2 + 8);
+  pUVar2 = source->parent;
+  uiRoot = (InGameAction101FRootView43DC *)source;
+  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+    uiRoot = (InGameAction101FRootView43DC *)(uiRoot->rootUi0000).base.parent;
+    pUVar2 = (uiRoot->rootUi0000).base.parent;
   }
-  bVar4 = (void *)0xfffff42f < pvVar2;
-  UiSelectableControl_IsSelectedCf(source);
-  if (!bVar4) {
-    UiPageStack_SetActiveIndex(0,stack);
-    *(uint *)(extraout_EDX_02 + 0xa78) = *(uint *)(extraout_EDX_02 + 0xa78) & 0xfffffff7;
+  bVar3 = (bool)UiSelectableControl_IsSelectedCf((UiSelectableControl *)source);
+  if (!bVar3) {
+    UiPageStack_SetActiveIndex(0,&uiRoot->technologyPageStack0BD0);
+    pWVar1 = &(uiRoot->worldRuntime0A30).interaction.interactionFlags48;
+    *pWVar1 = *pWVar1 & 0xfffffff7;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if ((g_UiCommandRuntimeFlags & 0x400) == 0) {
@@ -3460,37 +3440,36 @@ void InGameUiAction101F_Handler(void *source)
     }
     return;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)(extraout_EDX + 0x4388));
-  *(uint *)(extraout_EDX_00 + 0xa78) = *(uint *)(extraout_EDX_00 + 0xa78) | 8;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)(extraout_EDX_00 + 0xa30));
-  UiPageStack_SetActiveIndex(8,stack_00);
-  *(int *)(extraout_EDX_01 + 0x11e4) =
-       *(int *)(extraout_EDX_01 + 0xa80) + 0x230017 +
-       *(int *)(g_InGameConditionRuntime[1].reserved5C_AB + 0x38) * 0x10;
-  pwVar3 = TextResource_Resolve(*(TextResourceId *)(extraout_EDX_01 + 0x11e4));
-  RVar5 = RichTextCommandStream_MeasureWrappedBlockRegs
-                    (g_UiTextStyleNormal,pwVar3,*(UiPixelExtent *)(extraout_EDX_01 + 0x11e0));
-  *(dword *)(extraout_EDX_01 + 0x11b8) = RVar5.widthPixels + 6;
-  *(dword *)(extraout_EDX_01 + 0x11bc) = RVar5.heightPixels + 6;
-  uVar6 = UiScrollableControl_RebuildViewportAndScrollbars
-                    ((UiScrollableControl *)(extraout_EDX_01 + 0x1100));
-  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)uVar6);
-  pwVar3 = TextResource_Resolve(*(TextResourceId *)(extraout_EDX_01 + 0x12d0));
-  RVar5 = RichTextCommandStream_MeasureWrappedBlockRegs
-                    (g_UiTextStyleNormal,pwVar3,*(UiPixelExtent *)(extraout_EDX_01 + 0x12cc));
-  *(dword *)(extraout_EDX_01 + 0x12a4) = RVar5.widthPixels + 6;
-  *(dword *)(extraout_EDX_01 + 0x12a8) = RVar5.heightPixels + 6;
-  uVar6 = UiScrollableControl_RebuildViewportAndScrollbars
-                    ((UiScrollableControl *)(extraout_EDX_01 + 0x11ec));
-  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)uVar6);
-  pwVar3 = TextResource_Resolve(*(TextResourceId *)(extraout_EDX_01 + 0x1418));
-  RVar5 = RichTextCommandStream_MeasureWrappedBlockRegs
-                    (g_UiTextStyleNormal,pwVar3,*(UiPixelExtent *)(extraout_EDX_01 + 0x1414));
-  *(dword *)(extraout_EDX_01 + 0x13ec) = RVar5.widthPixels + 6;
-  *(dword *)(extraout_EDX_01 + 0x13f0) = RVar5.heightPixels + 6;
-  uVar6 = UiScrollableControl_RebuildViewportAndScrollbars
-                    ((UiScrollableControl *)(extraout_EDX_01 + 0x1334));
-  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)uVar6);
+  UiSelectableControl_SetSelected(0,&uiRoot->sharedSettingsToggle4388);
+  pWVar1 = &(uiRoot->worldRuntime0A30).interaction.interactionFlags48;
+  *pWVar1 = *pWVar1 | 8;
+  UiKeyboardFocus_ReleaseNode((UiNodeBase *)&uiRoot->worldRuntime0A30);
+  UiPageStack_SetActiveIndex(8,&uiRoot->technologyPageStack0BD0);
+  (uiRoot->textPanel0_1100).textResourceIdE4 =
+       (uiRoot->worldRuntime0A30).activeFactionRuntimeIndex + 0x230017 +
+       ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).header.
+       titleTextResourceIndex * 0x10;
+  TVar5 = TextResource_Resolve((uiRoot->textPanel0_1100).textResourceIdE4);
+  RVar4 = RichTextCommandStream_MeasureWrappedBlockRegs
+                    (g_UiTextStyleNormal,TVar5.eax,(uiRoot->textPanel0_1100).wrapWidthE0);
+  (uiRoot->textPanel0_1100).measuredWidthB8 = RVar4.widthPixels + 6;
+  (uiRoot->textPanel0_1100).measuredHeightBC = RVar4.heightPixels + 6;
+  UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->textPanel0_1100).scrollable);
+  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->textPanel0_1100).scrollable);
+  TVar5 = TextResource_Resolve((uiRoot->textPanel1_11EC).textResourceIdE4);
+  RVar4 = RichTextCommandStream_MeasureWrappedBlockRegs
+                    (g_UiTextStyleNormal,TVar5.eax,(uiRoot->textPanel1_11EC).wrapWidthE0);
+  (uiRoot->textPanel1_11EC).measuredWidthB8 = RVar4.widthPixels + 6;
+  (uiRoot->textPanel1_11EC).measuredHeightBC = RVar4.heightPixels + 6;
+  UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->textPanel1_11EC).scrollable);
+  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->textPanel1_11EC).scrollable);
+  TVar5 = TextResource_Resolve((uiRoot->textPanel2_1334).textResourceIdE4);
+  RVar4 = RichTextCommandStream_MeasureWrappedBlockRegs
+                    (g_UiTextStyleNormal,TVar5.eax,(uiRoot->textPanel2_1334).wrapWidthE0);
+  (uiRoot->textPanel2_1334).measuredWidthB8 = RVar4.widthPixels + 6;
+  (uiRoot->textPanel2_1334).measuredHeightBC = RVar4.heightPixels + 6;
+  UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->textPanel2_1334).scrollable);
+  UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->textPanel2_1334).scrollable);
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
        SESSION_NETWORK_ROLE_LOCAL) && ((g_UiCommandRuntimeFlags & 0x4000) == 0)) {
     if ((g_UiCommandRuntimeFlags & 1) != 0) {
@@ -3501,17 +3480,18 @@ void InGameUiAction101F_Handler(void *source)
   return;
 }
 
+
 /* Address: 0x0056AD00.
    Ownership: ui/ingame/runtime.
    Purpose: Recovered action-table target INGAME_PAGE10[28] (0x101C).
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists],
    UiSelectableGroup_NoneVisibleSelectedCf [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-void InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
 
 {
-  UiPageIndex pageIndex;
-  UiPageStackControl *stack;
+  UiSelectableNodeEaxEcxCf9 UVar1;
   int parentNodeAddress;
   void *rootNodeCursor;
   
@@ -3522,10 +3502,14 @@ void InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
     parentNodeAddress = *(int *)((int)rootNodeCursor + 8);
   }
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base);
-  UiSelectableGroup_NoneVisibleSelectedCf(3);
-  UiPageStack_SetActiveIndex(pageIndex,stack);
+  UVar1 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+  UiPageStack_SetActiveIndex
+            (UVar1.controlIndexOrCount,
+             (UiPageStackControl *)
+             &(((UiSelectableControl *)((int)rootNodeCursor + 0x39c))->base).left);
   return;
 }
+
 
 /* Address: 0x0056AD80.
    Ownership: ui/ingame/runtime.
@@ -3537,7 +3521,8 @@ void InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
    GameFactionRuntime_ResetPairwiseRelationState [gameplay/faction/runtime].
 */
-void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control)
+void __thandor_void_preserve_eax_ecx_edx
+InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control)
 
 {
   UiNodeBase *pUVar1;
@@ -3589,6 +3574,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
   return;
 }
 
+
 /* Address: 0x0056B520.
    Ownership: ui/ingame/runtime.
    Purpose: Finds the UI root, clears suppression on the command-page container, toggles the page stack at
@@ -3601,18 +3587,17 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
    FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 [ui/frontend/player],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
 */
-void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
 
 {
   sdword *psVar1;
   UiNodeBase *pUVar2;
-  int extraout_EAX;
+  void *pvVar3;
   UiPageIndex pageIndex;
-  int extraout_EAX_00;
-  GameEntityRuntime *pGVar3;
-  UiPageStackControl *stack;
+  GameEntityRuntime *pGVar4;
   CommandPayloadDword04 modelOffset;
-  undefined8 uVar4;
+  StatusValueEaxCf5 SVar5;
   
   pUVar2 = source->parent;
   while (pUVar2 != (UiNodeBase *)0xffffffff) {
@@ -3622,19 +3607,20 @@ void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
   if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
     psVar1 = &(((UiRootNode *)((int)source + 0xa50))->base).rightOffset;
     *psVar1 = *psVar1 & 0xfffffff7;
-    UiPageStack_ActivePageNotInListCf
-              ((UiPageStackControl *)&(((UiRootNode *)((int)source + 0xbb0))->base).leftOffset);
-    if (extraout_EAX == 2) {
+    psVar1 = &(((UiRootNode *)((int)source + 0xbb0))->base).leftOffset;
+    SVar5 = UiPageStack_ActivePageNotInListCf((UiPageStackControl *)psVar1);
+    if (SVar5.valueOrError == 2) {
       pageIndex = 0;
     }
     else {
       pageIndex = 2;
     }
-    UiPageStack_SetActiveIndex(pageIndex,stack);
-    if ((extraout_EAX_00 == 2) &&
-       (pGVar3 = SelectionInfo_GetFirstEntry(), pGVar3 != (GameEntityRuntime *)0x0)) {
-      uVar4 = InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
-      modelOffset = (int)((ulonglong)uVar4 >> 0x20) - g_ModelRuntimeRebaseDelta;
+    UiPageStack_SetActiveIndex(pageIndex,(UiPageStackControl *)psVar1);
+    if ((pageIndex == 2) &&
+       (pGVar4 = SelectionInfo_GetFirstEntry(), pGVar4 != (GameEntityRuntime *)0x0)) {
+      pvVar3 = (pGVar4->common).ownership.definitionOrClassRecord;
+      InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
+      modelOffset = (int)pvVar3 - g_ModelRuntimeRebaseDelta;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
@@ -3648,6 +3634,7 @@ void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
   return;
 }
 
+
 /* Address: 0x0056B5D0.
    Ownership: ui/ingame/runtime.
    Purpose: Finds the UI root, initializes the three selection-mode controls, selects subpage 0, populates up to
@@ -3659,22 +3646,20 @@ void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
    [assets/text/richtext], UiScrollableControl_RebuildViewportAndScrollbars [ui/controls/lists],
    UiScrollableControl_ClampOffsetsToViewport [ui/controls/lists].
 */
-void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
 
 {
   uint *puVar1;
   UiNodeBase *pUVar2;
   UiNodeBase *pUVar3;
   int iVar4;
-  int iVar5;
   word *stream;
-  word *replacementPayload;
   TextResourceId resourceId;
-  TextResourceId extraout_ECX;
-  uint uVar6;
-  int iVar7;
-  uint uVar8;
-  undefined8 uVar9;
+  uint uVar5;
+  int iVar6;
+  uint uVar7;
+  TextResourceResolveEaxCf5 TVar8;
   
   pUVar2 = source->parent;
   pUVar3 = source;
@@ -3682,37 +3667,39 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     pUVar3 = pUVar3->parent;
     pUVar2 = pUVar3->parent;
   }
-  iVar5 = UiSelectableGroup_SelectExclusive(3,source);
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(iVar5 + 0x1fa4));
+  UiSelectableGroup_SelectExclusive(3,source);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&pUVar3[0x6a].bottomOffset);
   resourceId = 0x216d;
-  uVar8 = 0;
-  uVar6 = 1;
-  iVar7 = 0x50fa80;
+  uVar7 = 0;
+  uVar5 = 1;
+  iVar6 = 0x50fa80;
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar6] != 0) {
-      stream = TextResource_Resolve(resourceId);
-      iVar4 = *(int *)(iVar7 + 0x38);
-      puVar1 = (uint *)(iVar5 + g_UiSevenSlotSelectionControlOffsets[uVar8] + 0x48);
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar5] != 0) {
+      TVar8 = TextResource_Resolve(resourceId);
+      stream = TVar8.eax;
+      iVar4 = *(int *)(iVar6 + 0x38);
+      resourceId = resourceId + 1;
+      puVar1 = (uint *)((int)&pUVar3->nodeFlags + g_UiSevenSlotSelectionControlOffsets[uVar7]);
       *puVar1 = *puVar1 & 0xfffffff7;
-      uVar8 = uVar8 + 1;
-      replacementPayload = TextResource_Resolve(iVar4 + 0x2173);
-      uVar9 = RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-      uVar6 = (uint)((ulonglong)uVar9 >> 0x20);
-      resourceId = extraout_ECX;
+      uVar7 = uVar7 + 1;
+      TVar8 = TextResource_Resolve(iVar4 + 0x2173);
+      RichTextCommandStream_PatchPayloadBySelector(0,TVar8.eax,stream);
     }
-    uVar6 = uVar6 + 1;
-    iVar7 = iVar7 + 0x740;
-  } while (uVar6 < 8);
-  *(uint *)(iVar5 + 0x20b8) = uVar8 * 0x18;
-  uVar9 = UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)(iVar5 + 0x1ffc));
+    uVar5 = uVar5 + 1;
+    iVar6 = iVar6 + 0x740;
+  } while (uVar5 < 8);
+  pUVar3[0x6e].left = uVar7 * 0x18;
+  UiScrollableControl_RebuildViewportAndScrollbars
+            ((UiScrollableControl *)&pUVar3[0x6b].rightAnchorQ31);
   UiScrollableControl_ClampOffsetsToViewport
-            (0,0,0,0,(UiScrollableControl *)((ulonglong)uVar9 >> 0x20));
-  for (; uVar8 < 7; uVar8 = uVar8 + 1) {
-    puVar1 = (uint *)(g_UiSevenSlotSelectionControlOffsets[uVar8] + 0x48 + iVar5);
+            (0,0,0,0,(UiScrollableControl *)&pUVar3[0x6b].rightAnchorQ31);
+  for (; uVar7 < 7; uVar7 = uVar7 + 1) {
+    puVar1 = (uint *)((int)&pUVar3->nodeFlags + g_UiSevenSlotSelectionControlOffsets[uVar7]);
     *puVar1 = *puVar1 | 8;
   }
   return;
 }
+
 
 /* Address: 0x0056B6E0.
    Ownership: ui/ingame/runtime.
@@ -3725,19 +3712,17 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
    [assets/text/richtext], UiScrollableControl_RebuildViewportAndScrollbars [ui/controls/lists],
    UiScrollableControl_ClampOffsetsToViewport [ui/controls/lists].
 */
-void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
 
 {
   uint *puVar1;
   UiNodeBase *pUVar2;
   UiNodeBase *pUVar3;
   SelectionPlayerRuntimeBlock *pSVar4;
-  int iVar5;
-  word *stream;
   TextResourceId resourceId;
-  TextResourceId extraout_ECX;
-  uint uVar6;
-  undefined8 uVar7;
+  uint uVar5;
+  TextResourceResolveEaxCf5 TVar6;
   
   pUVar2 = source->parent;
   pUVar3 = source;
@@ -3745,31 +3730,33 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     pUVar3 = pUVar3->parent;
     pUVar2 = pUVar3->parent;
   }
-  iVar5 = UiSelectableGroup_SelectExclusive(3,source);
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(iVar5 + 0x1fa4));
+  UiSelectableGroup_SelectExclusive(3,source);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&pUVar3[0x6a].bottomOffset);
   resourceId = 0x216d;
-  uVar6 = 0;
+  uVar5 = 0;
   do {
-    stream = TextResource_Resolve(resourceId);
+    TVar6 = TextResource_Resolve(resourceId);
     pSVar4 = g_SelectionPlayerRuntimeBlockPointers
-             [g_FrontendPlayerRuntimeBlocks[uVar6].playerRuntimeId];
-    puVar1 = (uint *)(iVar5 + g_UiSevenSlotSelectionControlOffsets[uVar6] + 0x48);
+             [g_FrontendPlayerRuntimeBlocks[uVar5].playerRuntimeId];
+    resourceId = resourceId + 1;
+    puVar1 = (uint *)((int)&pUVar3->nodeFlags + g_UiSevenSlotSelectionControlOffsets[uVar5]);
     *puVar1 = *puVar1 & 0xfffffff7;
-    uVar6 = uVar6 + 1;
-    RichTextCommandStream_PatchPayloadBySelector(0,pSVar4->reserved80B0_8117 + 0x40,stream);
-    if (6 < uVar6) break;
-    resourceId = extraout_ECX;
-  } while (uVar6 < g_FrontendPlayerRuntimeBlockCount);
-  *(uint *)(iVar5 + 0x20b8) = uVar6 * 0x18;
-  uVar7 = UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)(iVar5 + 0x1ffc));
+    uVar5 = uVar5 + 1;
+    RichTextCommandStream_PatchPayloadBySelector(0,pSVar4->reserved80B0_8117 + 0x40,TVar6.eax);
+    if (6 < uVar5) break;
+  } while (uVar5 < g_FrontendPlayerRuntimeBlockCount);
+  pUVar3[0x6e].left = uVar5 * 0x18;
+  UiScrollableControl_RebuildViewportAndScrollbars
+            ((UiScrollableControl *)&pUVar3[0x6b].rightAnchorQ31);
   UiScrollableControl_ClampOffsetsToViewport
-            (0,0,0,0,(UiScrollableControl *)((ulonglong)uVar7 >> 0x20));
-  for (; uVar6 < 7; uVar6 = uVar6 + 1) {
-    puVar1 = (uint *)(g_UiSevenSlotSelectionControlOffsets[uVar6] + 0x48 + iVar5);
+            (0,0,0,0,(UiScrollableControl *)&pUVar3[0x6b].rightAnchorQ31);
+  for (; uVar5 < 7; uVar5 = uVar5 + 1) {
+    puVar1 = (uint *)((int)&pUVar3->nodeFlags + g_UiSevenSlotSelectionControlOffsets[uVar5]);
     *puVar1 = *puVar1 | 8;
   }
   return;
 }
+
 
 /* Address: 0x0056B7E0.
    Ownership: ui/ingame/runtime.
@@ -3779,7 +3766,7 @@ void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
+void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
 
 {
   int selectionGroupAddress;
@@ -3792,10 +3779,11 @@ void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
     rootNodeCursor = rootNodeCursor->parent;
     parentNode = rootNodeCursor->parent;
   }
-  selectionGroupAddress = UiSelectableGroup_SelectExclusive(3,source);
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)(selectionGroupAddress + 0x1fa4));
+  UiSelectableGroup_SelectExclusive(3,source);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&rootNodeCursor[0x6a].bottomOffset);
   return;
 }
+
 
 /* Address: 0x0056D500.
    Ownership: ui/ingame/runtime.
@@ -3805,21 +3793,21 @@ void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
    Cross-module calls: RecentTextHistory_RemoveOldest [ui/support/runtime],
    RecentTextHistory_SortAndBuildPointerList [ui/support/runtime].
 */
-void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
+void __thandor_void_preserve_eax_ecx
+InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 
 {
-  int extraout_ECX;
   uint currentEntryCount;
   
-  currentEntryCount = (historyView->recentTextPointerList).count;
-  while (4 < currentEntryCount) {
+  for (currentEntryCount = (historyView->recentTextPointerList).count; 4 < currentEntryCount;
+      currentEntryCount = currentEntryCount - 1) {
     RecentTextHistory_RemoveOldest();
-    currentEntryCount = extraout_ECX - 1;
   }
   RecentTextHistory_RemoveOldest();
   RecentTextHistory_SortAndBuildPointerList(8,&historyView->recentTextPointerList);
   return;
 }
+
 
 /* Address: 0x0056F7F0.
    Ownership: ui/ingame/runtime.
@@ -3834,24 +3822,20 @@ void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 */
 dword InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,
-                undefined4 param_4,ArmyRuntimeSlot *armyRuntimeUnderPointer,
+                dword reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
                 WorldRuntimeContext *worldRuntime)
 
 {
-  dword dVar1;
-  SelectionPlayerRuntimeBlock *pSVar2;
-  ArmyRuntimeSlot *modelRuntimeHolder;
-  GameEntityRuntime *entityRuntime;
-  dword extraout_EDX;
-  dword extraout_EDX_00;
-  dword extraout_EDX_01;
+  SelectionPlayerRuntimeBlock *pSVar1;
+  dword dVar2;
   bool bVar3;
+  ArmyRuntimeCreateEaxCf5 AVar4;
   
   if ((armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) &&
      (armyRuntimeUnderPointer->runtimeStateA4 != 0)) {
     armyRuntimeUnderPointer = (ArmyRuntimeSlot *)0x0;
   }
-                    
+                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
   case 0:
     if (g_UiCommandModeC == 0) {
@@ -3884,60 +3868,62 @@ dword InGameUiCommand_ResolveCursorCodeByMode
     }
     return 0x22;
   case 3:
-    dVar1 = g_UiCommandModeA;
+    dVar2 = g_UiCommandModeA;
     goto joined_r0x0056fa27;
   case 4:
-    dVar1 = g_UiCommandModeB;
+    dVar2 = g_UiCommandModeB;
 joined_r0x0056fa27:
-    if (dVar1 == 0) {
+    if (dVar2 == 0) {
       if (pointerRegionCode == 0x7fffffff) {
         return 0x18;
       }
-      pSVar2 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-      bVar3 = false;
-      if (pSVar2->primarySelectionEntityOffset8094 == 0) {
-        modelRuntimeHolder =
-             ArmyRuntime_CreateInstanceFromAssetCf
-                       (1,0,pointerWorldXQ12,pointerWorldYQ12,g_UiCommandModeGOwnerFactionIndex,
-                        g_UiCommandModeGArmyAssetId,worldRuntime);
-        if (!bVar3) {
-          ArmyRuntimeNode_DispatchTypedCallback(&modelRuntimeHolder->definitionOrAsset,worldRuntime)
-          ;
-          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
-          return extraout_EDX_01;
+      pSVar1 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
+      dVar2 = 0x17;
+      if (pSVar1->primarySelectionEntityOffset8094 == 0) {
+        AVar4 = ArmyRuntime_CreateInstanceFromAssetCf
+                          (1,0,pointerWorldXQ12,pointerWorldYQ12,g_UiCommandModeGOwnerFactionIndex,
+                           g_UiCommandModeGArmyAssetId,worldRuntime);
+        if (!AVar4.carry) {
+          bVar3 = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)AVar4.eax,worldRuntime);
+          if (bVar3) {
+            dVar2 = 0x18;
+          }
+          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar4.eax);
+          return dVar2;
         }
-        return extraout_EDX_00;
+        return 0x17;
       }
     }
     else {
-      if (dVar1 == 1) {
+      if (dVar2 == 1) {
         if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
           return 0x19;
         }
         return 0x1a;
       }
-      pSVar2 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-      if (pSVar2->primarySelectionEntityOffset8094 == 0) {
+      pSVar1 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
+      dVar2 = 0x15;
+      if (pSVar1->primarySelectionEntityOffset8094 == 0) {
         if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
           return 0x15;
         }
         return 0x16;
       }
     }
-    bVar3 = CARRY4(pSVar2->primarySelectionEntityOffset8094,(uint)g_ArmyRuntimeRebaseBaseMinusOne);
-    ArmyRuntimeNode_DispatchTypedCallback
-              ((ArmyRuntimeSlot **)
-               (pSVar2->primarySelectionEntityOffset8094 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
-               worldRuntime);
+    bVar3 = ArmyRuntimeNode_DispatchTypedCallback
+                      ((ArmyRuntimeSlot **)
+                       (pSVar1->primarySelectionEntityOffset8094 +
+                       (int)g_ArmyRuntimeRebaseBaseMinusOne),worldRuntime);
     if (bVar3) {
-      return extraout_EDX + 1;
+      return dVar2 + 1;
     }
-    return extraout_EDX;
+    return dVar2;
   case 5:
     return 0x21;
   }
   return 0;
 }
+
 
 /* Address: 0x0056FA70.
    Ownership: ui/ingame/runtime.
@@ -3951,399 +3937,365 @@ joined_r0x0056fa27:
    FieldGrid_ResetLocalInfluenceState [world/terrain/grid], TerrainMaterialEdit_SeedMatchingRegionReplacement
    [world/terrain/editing], TerrainMaterialEdit_SeedNonTargetRegionReplacement [world/terrain/editing].
 */
-void InGameUiCommand_BeginInteractionByMode
-               (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,undefined4 param_4,
-               ArmyRuntimeSlot *armyRuntimeUnderPointer,
-               WorldRuntimeExtendedMapControlAddress32 mapControl)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiCommand_BeginInteractionByMode
+          (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,dword reservedArg3,
+          ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView170 *mapControl
+          )
 
 {
-  int iVar1;
+  FieldGridAsset *pFVar1;
   longlong lVar2;
-  CommandPayloadDword04 CVar3;
-  CommandPayloadDword08 extraout_EAX;
-  CommandPayloadDword08 extraout_EAX_00;
-  CommandPayloadDword08 payloadDword08;
-  undefined4 extraout_EAX_01;
-  undefined4 in_ECX;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int extraout_ECX_06;
-  CommandPayloadDword04 extraout_ECX_07;
-  CommandPayloadDword04 extraout_ECX_08;
-  int extraout_ECX_09;
-  int iVar4;
-  undefined4 in_EDX;
-  uint uVar5;
-  CommandPayloadDword0C extraout_EDX;
-  CommandPayloadDword0C extraout_EDX_00;
-  CommandPayloadDword0C payloadDword0C;
-  undefined4 extraout_EDX_01;
-  uint uVar6;
-  int iVar7;
-  undefined8 uVar8;
-  qword qVar9;
+  longlong lVar3;
+  PckArmyAssetIdCatalog lookupToken;
+  dword dVar4;
+  CommandPayloadDword04 CVar5;
+  int iVar6;
+  uint uVar7;
+  uint uVar8;
+  int iVar9;
+  FieldGridNearestPointRegsCf13 FVar10;
   
-  uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
   if ((armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) &&
      (armyRuntimeUnderPointer->runtimeStateA4 != 0)) {
     armyRuntimeUnderPointer = (ArmyRuntimeSlot *)0x0;
   }
-                    
+                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
   case 0:
     if (g_UiCommandModeC == 0) {
-      *(uint *)(mapControl + 0x4c) = *(uint *)(mapControl + 0x4c) & 0xffefffff;
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      g_UiCommandDragStartScreenX = 0x7fffffff;
-      if (pointerRegionCode != 0x7fffffff) {
-        g_UiCommandDragStartScreenX = *(undefined4 *)(mapControl + 0x160);
-        g_UiCommandDragStartScreenY = *(undefined4 *)(mapControl + 0x164);
-        qVar9 = FieldGrid_GetNearestTerrainPoint
-                          (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-        uVar6 = (int)((ulonglong)((longlong)extraout_ECX_00 * -0x20c8cc) >> 0x20) << 0xb |
-                (uint)((longlong)extraout_ECX_00 * -0x20c8cc) >> 0x15;
-        g_UiCommandDragAnchorWorldXQ12 =
-             (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6) + 0x3ff &
-             0xfffff000;
-        g_UiCommandDragAnchorWorldYQ12 = uVar6 * 2 + 0x3ff & 0xfffff000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
-          uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1f20,0,0,0);
-          uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        }
+      mapControl->runtimeFlags = mapControl->runtimeFlags & 0xffefffff;
+      if (pointerRegionCode == 0x7fffffff) {
+        g_UiCommandDragStartScreenX = 0x7fffffff;
+        return;
       }
-      goto InGameUiCommand_FinalizeBeginInteractionState;
+      g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
+      g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
+      FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+      lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+      uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+      g_UiCommandDragAnchorWorldXQ12 =
+           (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x3ff &
+           0xfffff000;
+      g_UiCommandDragAnchorWorldYQ12 = uVar8 * 2 + 0x3ff & 0xfffff000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+          SESSION_NETWORK_ROLE_LOCAL) {
+        FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
+        return;
+      }
+      InGameCommandQueue_AppendLocalPlayerCommand(0x1f20,0,0,0);
+      return;
     }
     if (g_UiCommandModeC == 1) {
-      *(uint *)(mapControl + 0x4c) = *(uint *)(mapControl + 0x4c) & 0xffefffff;
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      g_UiCommandDragStartScreenX = 0x7fffffff;
-      if (pointerRegionCode != 0x7fffffff) {
-        g_UiCommandDragStartScreenX = *(undefined4 *)(mapControl + 0x160);
-        g_UiCommandDragStartScreenY = *(undefined4 *)(mapControl + 0x164);
-        qVar9 = FieldGrid_GetNearestTerrainPoint
-                          (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-        uVar6 = (int)((ulonglong)((longlong)extraout_ECX_01 * -0x20c8cc) >> 0x20) << 0xb |
-                (uint)((longlong)extraout_ECX_01 * -0x20c8cc) >> 0x15;
-        g_UiCommandDragAnchorWorldXQ12 =
-             (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6) + 0x3ff &
-             0xfffff000;
-        g_UiCommandDragAnchorWorldYQ12 = uVar6 * 2 + 0x3ff & 0xfffff000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
-          uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1f20,0,0,0);
-          uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        }
+      mapControl->runtimeFlags = mapControl->runtimeFlags & 0xffefffff;
+      if (pointerRegionCode == 0x7fffffff) {
+        g_UiCommandDragStartScreenX = 0x7fffffff;
+        return;
       }
-      goto InGameUiCommand_FinalizeBeginInteractionState;
+      g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
+      g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
+      FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+      lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+      uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+      g_UiCommandDragAnchorWorldXQ12 =
+           (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x3ff &
+           0xfffff000;
+      g_UiCommandDragAnchorWorldYQ12 = uVar8 * 2 + 0x3ff & 0xfffff000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+          SESSION_NETWORK_ROLE_LOCAL) {
+        FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
+        return;
+      }
+      InGameCommandQueue_AppendLocalPlayerCommand(0x1f20,0,0,0);
+      return;
     }
     if (g_UiCommandModeC == 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FieldGrid_ResetLocalInfluenceState(g_LocalPlayerRuntimeId,0,0,0);
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
+        return;
       }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2a80,0,0,0);
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      }
-      goto InGameUiCommand_FinalizeBeginInteractionState;
+      InGameCommandQueue_AppendLocalPlayerCommand(0x2a80,0,0,0);
+      return;
     }
     break;
   case 1:
     if (g_UiCommandModeD != 3) {
       if (g_UiCommandModeD == 1) {
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        if (pointerRegionCode != 0x7fffffff) {
-          qVar9 = FieldGrid_GetNearestTerrainPoint
-                            (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-          lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-          uVar5 = (int)((ulonglong)((longlong)extraout_ECX_02 * -0x20c8cc) >> 0x20) << 0xb |
-                  (uint)((longlong)extraout_ECX_02 * -0x20c8cc) >> 0x15;
-          uVar6 = (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar5) + 0x3ff &
-                  0xfffff000;
-          uVar5 = uVar5 * 2 + 0x3ff & 0xfffff000;
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-              SESSION_NETWORK_ROLE_LOCAL) {
-            TerrainMaterialEdit_SeedMatchingRegionReplacement
-                      (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,uVar5,uVar6);
-            uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-          }
-          else {
-            InGameCommandQueue_AppendLocalPlayerCommand
-                      (0x28e0,g_UiCommandAbsoluteSelectionIndex,uVar5,uVar6);
-            uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-          }
+        if (pointerRegionCode == 0x7fffffff) {
+          return;
         }
-      }
-      else if (g_UiCommandModeD == 2) {
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        if (pointerRegionCode != 0x7fffffff) {
-          qVar9 = FieldGrid_GetNearestTerrainPoint
-                            (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-          lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-          uVar5 = (int)((ulonglong)((longlong)extraout_ECX_03 * -0x20c8cc) >> 0x20) << 0xb |
-                  (uint)((longlong)extraout_ECX_03 * -0x20c8cc) >> 0x15;
-          uVar6 = (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar5) + 0x3ff &
-                  0xfffff000;
-          uVar5 = uVar5 * 2 + 0x3ff & 0xfffff000;
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-              SESSION_NETWORK_ROLE_LOCAL) {
-            TerrainMaterialEdit_SeedNonTargetRegionReplacement
-                      (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,uVar5,uVar6);
-            uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-          }
-          else {
-            InGameCommandQueue_AppendLocalPlayerCommand
-                      (0x29b0,g_UiCommandAbsoluteSelectionIndex,uVar5,uVar6);
-            uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-          }
+        FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+        lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+        lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+        uVar7 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+        uVar8 = (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar7) + 0x3ff &
+                0xfffff000;
+        uVar7 = uVar7 * 2 + 0x3ff & 0xfffff000;
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          TerrainMaterialEdit_SeedMatchingRegionReplacement
+                    (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,uVar7,uVar8);
+          return;
         }
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (0x28e0,g_UiCommandAbsoluteSelectionIndex,uVar7,uVar8);
+        return;
       }
-      else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-               SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_CopyCellMaterialBytes(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      }
-      else {
+      if (g_UiCommandModeD != 2) {
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          TerrainEditBuffer_CopyCellMaterialBytes(g_LocalPlayerRuntimeId,0,0,0);
+          return;
+        }
         InGameCommandQueue_AppendLocalPlayerCommand(0x2700,0,0,0);
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
+        return;
       }
-      goto InGameUiCommand_FinalizeBeginInteractionState;
+      if (pointerRegionCode != 0x7fffffff) {
+        FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+        lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+        lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+        uVar7 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+        uVar8 = (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar7) + 0x3ff &
+                0xfffff000;
+        uVar7 = uVar7 * 2 + 0x3ff & 0xfffff000;
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          TerrainMaterialEdit_SeedNonTargetRegionReplacement
+                    (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,uVar7,uVar8);
+          return;
+        }
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (0x29b0,g_UiCommandAbsoluteSelectionIndex,uVar7,uVar8);
+        return;
+      }
+      return;
     }
     break;
   case 2:
     if (g_UiCommandModeE == 0) {
-      g_UiCommandDragStartScreenX = 0x7fffffff;
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
       if (pointerRegionCode != 0x7fffffff) {
-        g_UiCommandDragStartScreenX = *(undefined4 *)(mapControl + 0x160);
-        g_UiCommandDragStartScreenY = *(undefined4 *)(mapControl + 0x164);
-        qVar9 = FieldGrid_GetNearestTerrainPoint
-                          (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-        uVar6 = (int)((ulonglong)((longlong)extraout_ECX_06 * -0x20c8cc) >> 0x20) << 0xb |
-                (uint)((longlong)extraout_ECX_06 * -0x20c8cc) >> 0x15;
+        g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
+        g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
+        FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+        lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+        lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+        uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
         g_UiCommandDragAnchorWorldXQ12 =
-             (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6) + 0x3ff &
+             (((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x3ff &
              0xfffff000;
-        g_UiCommandDragAnchorWorldYQ12 = uVar6 * 2 + 0x3ff & 0xfffff000;
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
+        g_UiCommandDragAnchorWorldYQ12 = uVar8 * 2 + 0x3ff & 0xfffff000;
+        return;
       }
+      g_UiCommandDragStartScreenX = 0x7fffffff;
+      return;
     }
-    else if (g_UiCommandModeE == 1) {
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      if (pointerRegionCode != 0x7fffffff) {
-        qVar9 = FieldGrid_GetNearestTerrainPoint
-                          (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-        uVar6 = (int)((ulonglong)((longlong)extraout_ECX_05 * -0x20c8cc) >> 0x20) << 0xb |
-                (uint)((longlong)extraout_ECX_05 * -0x20c8cc) >> 0x15;
+    if (g_UiCommandModeE == 1) {
+      if (pointerRegionCode == 0x7fffffff) {
+        return;
+      }
+      FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+      lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+      uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+      pFVar1 = mapControl->fieldGrid;
+      iVar6 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x3ff
+                   ) >> 0xc;
+      if (iVar6 < 0) {
         g_UiCommandTerrainMaskToggleValue = 0x20000000;
-        iVar1 = *(int *)(mapControl + 0x54);
-        iVar4 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6) +
-                     0x3ff) >> 0xc;
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        if (((-1 < iVar4) &&
-            (iVar7 = (int)(uVar6 * 2 + 0x3ff) >> 0xc,
-            uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX), -1 < iVar7)) &&
-           ((uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-            iVar4 < *(int *)(iVar1 + 0xb8) &&
-            (uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-            iVar7 < *(int *)(iVar1 + 0xbc))))) {
+        return;
+      }
+      iVar9 = (int)(uVar8 * 2 + 0x3ff) >> 0xc;
+      if (iVar9 < 0) {
+        g_UiCommandTerrainMaskToggleValue = 0x20000000;
+        return;
+      }
+      if (iVar6 < (int)pFVar1->gridWidth) {
+        if (iVar9 < (int)pFVar1->gridHeight) {
           g_UiCommandTerrainMaskToggleValue =
-               *(uint *)((iVar7 * *(int *)(iVar1 + 0xb8) + iVar4) * 0x80 + 0x250 + iVar1) &
-               0x20000000 ^ 0x20000000;
-          uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
+               pFVar1->cells[iVar9 * pFVar1->gridWidth + iVar6].flagsAndMaterial &
+               FIELD_CELL_FLUID_RECEIVER_EXCLUDED ^ FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
+          return;
         }
+        g_UiCommandTerrainMaskToggleValue = 0x20000000;
+        return;
+      }
+      g_UiCommandTerrainMaskToggleValue = 0x20000000;
+      return;
+    }
+    if (pointerRegionCode == 0x7fffffff) {
+      return;
+    }
+    FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+    lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+    lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+    uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+    pFVar1 = mapControl->fieldGrid;
+    iVar6 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x3ff)
+            >> 0xc;
+    if (iVar6 < 0) {
+      g_UiCommandTerrainMaskToggleValue = 0x40000000;
+      return;
+    }
+    iVar9 = (int)(uVar8 * 2 + 0x3ff) >> 0xc;
+    if (iVar9 < 0) {
+      g_UiCommandTerrainMaskToggleValue = 0x40000000;
+      return;
+    }
+    if (iVar6 < (int)pFVar1->gridWidth) {
+      if (iVar9 < (int)pFVar1->gridHeight) {
+        g_UiCommandTerrainMaskToggleValue =
+             pFVar1->cells[iVar9 * pFVar1->gridWidth + iVar6].flagsAndMaterial &
+             FIELD_CELL_FLUID_SOURCE_EXCLUDED ^ FIELD_CELL_FLUID_SOURCE_EXCLUDED;
+        return;
+      }
+      g_UiCommandTerrainMaskToggleValue = 0x40000000;
+      return;
+    }
+    g_UiCommandTerrainMaskToggleValue = 0x40000000;
+    return;
+  case 3:
+    CVar5 = g_UiCommandModeGOwnerFactionIndex;
+    lookupToken = g_UiCommandModeGArmyAssetId;
+    dVar4 = g_UiCommandModeA;
+    goto joined_r0x005701bf;
+  case 4:
+    CVar5 = 0;
+    lookupToken = g_UiCommandMode4ArmyAssetId;
+    dVar4 = g_UiCommandModeB;
+joined_r0x005701bf:
+    if (dVar4 == 0) {
+      if (pointerRegionCode != 0x7fffffff) {
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          PlayerRuntime_SetState8090(g_LocalPlayerRuntimeId,0,0,CVar5);
+        }
+        else {
+          InGameCommandQueue_AppendLocalPlayerCommand(0x2ec0,0,0,CVar5);
+        }
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          PlayerRuntime_ResolveAndStoreState8094
+                    (g_LocalPlayerRuntimeId,pointerX,pointerY,lookupToken);
+        }
+        else {
+          InGameCommandQueue_AppendLocalPlayerCommand(0x2e50,pointerX,pointerY,lookupToken);
+        }
+        g_UiCommandDragReferenceX = pointerY;
+        g_UiCommandDragReferenceY = pointerX;
+        g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
+        g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
+        return;
+      }
+      return;
+    }
+    if (dVar4 == 1) {
+      if (pointerRegionCode == 0x7fffffff) {
+        return;
+      }
+      if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
+        CVar5 = *(int *)(armyRuntimeUnderPointer->runtimeState48 + 8) -
+                (int)g_ArmyRuntimeRebaseBaseMinusOne;
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          FrontendPlayerSelection_ApplyEntryOrAll(g_LocalPlayerRuntimeId,0,0,CVar5);
+          return;
+        }
+        InGameCommandQueue_AppendLocalPlayerCommand(0x2de0,0,0,CVar5);
+        return;
       }
     }
     else {
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      if (pointerRegionCode != 0x7fffffff) {
-        qVar9 = FieldGrid_GetNearestTerrainPoint
-                          (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-        uVar6 = (int)((ulonglong)((longlong)extraout_ECX_04 * -0x20c8cc) >> 0x20) << 0xb |
-                (uint)((longlong)extraout_ECX_04 * -0x20c8cc) >> 0x15;
-        g_UiCommandTerrainMaskToggleValue = 0x40000000;
-        iVar1 = *(int *)(mapControl + 0x54);
-        iVar4 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6) +
-                     0x3ff) >> 0xc;
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        if ((((-1 < iVar4) &&
-             (iVar7 = (int)(uVar6 * 2 + 0x3ff) >> 0xc,
-             uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX), -1 < iVar7)) &&
-            (uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-            iVar4 < *(int *)(iVar1 + 0xb8))) &&
-           (uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-           iVar7 < *(int *)(iVar1 + 0xbc))) {
-          g_UiCommandTerrainMaskToggleValue =
-               *(uint *)((iVar7 * *(int *)(iVar1 + 0xb8) + iVar4) * 0x80 + 0x250 + iVar1) &
-               0x40000000 ^ 0x40000000;
-          uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-        }
+      if (pointerRegionCode == 0x7fffffff) {
+        return;
       }
-    }
-    goto InGameUiCommand_FinalizeBeginInteractionState;
-  case 3:
-    CVar3 = g_UiCommandModeGOwnerFactionIndex;
-    if (g_UiCommandModeA == 0) {
-InGameUiCommand_ApplyModeGStateAtPointer:
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      if (pointerRegionCode != 0x7fffffff) {
+      if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
+        g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
+        g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
+        CVar5 = *(int *)(armyRuntimeUnderPointer->runtimeState48 + 8) -
+                (int)g_ArmyRuntimeRebaseBaseMinusOne;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          PlayerRuntime_SetState8090(g_LocalPlayerRuntimeId,0,0,CVar3);
-          payloadDword08 = extraout_EAX_00;
-          CVar3 = extraout_ECX_08;
-          payloadDword0C = extraout_EDX_00;
+          PlayerRuntime_SetState8094(g_LocalPlayerRuntimeId,0,0,CVar5);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2ec0,0,0,CVar3);
-          payloadDword08 = extraout_EAX;
-          CVar3 = extraout_ECX_07;
-          payloadDword0C = extraout_EDX;
+          InGameCommandQueue_AppendLocalPlayerCommand(0x2ef0,0,0,CVar5);
         }
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          uVar8 = PlayerRuntime_ResolveAndStoreState8094
-                            (g_LocalPlayerRuntimeId,payloadDword0C,payloadDword08,CVar3);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2e50,payloadDword0C,payloadDword08,CVar3);
-          uVar8 = CONCAT44(extraout_EDX_01,extraout_EAX_01);
-        }
-        g_UiCommandDragStartScreenX = *(undefined4 *)(mapControl + 0x160);
-        g_UiCommandDragStartScreenY = *(undefined4 *)(mapControl + 0x164);
+        g_UiCommandDragReferenceX = pointerY;
+        g_UiCommandDragReferenceY = pointerX;
+        return;
       }
-      goto InGameUiCommand_FinalizeBeginInteractionState;
     }
-    if (g_UiCommandModeA != 1) goto InGameUiCommand_BeginSelectionOrPointerTargetAction;
-InGameUiCommand_UseExistingPrimarySelection:
-    uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-    if (pointerRegionCode == 0x7fffffff) goto InGameUiCommand_FinalizeBeginInteractionState;
-    if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
-      CVar3 = *(int *)(armyRuntimeUnderPointer->runtimeState48 + 8) -
-              (int)g_ArmyRuntimeRebaseBaseMinusOne;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerSelection_ApplyEntryOrAll(g_LocalPlayerRuntimeId,0,0,CVar3);
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2de0,0,0,CVar3);
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      }
-      goto InGameUiCommand_FinalizeBeginInteractionState;
-    }
-    goto InGameUiCommand_ResolvePointerArmyAndCommandPayload;
-  case 4:
-    CVar3 = 0;
-    if (g_UiCommandModeB == 0) goto InGameUiCommand_ApplyModeGStateAtPointer;
-    if (g_UiCommandModeB == 1) goto InGameUiCommand_UseExistingPrimarySelection;
-InGameUiCommand_BeginSelectionOrPointerTargetAction:
-    uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-    if (pointerRegionCode == 0x7fffffff) goto InGameUiCommand_FinalizeBeginInteractionState;
-    if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
-      g_UiCommandDragStartScreenX = *(undefined4 *)(mapControl + 0x160);
-      g_UiCommandDragStartScreenY = *(undefined4 *)(mapControl + 0x164);
-      CVar3 = *(int *)(armyRuntimeUnderPointer->runtimeState48 + 8) -
-              (int)g_ArmyRuntimeRebaseBaseMinusOne;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        PlayerRuntime_SetState8094(g_LocalPlayerRuntimeId,0,0,CVar3);
-      }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2ef0,0,0,CVar3);
-      }
-      uVar8 = CONCAT44(pointerX,pointerY);
-      goto InGameUiCommand_FinalizeBeginInteractionState;
-    }
-InGameUiCommand_ResolvePointerArmyAndCommandPayload:
-    *(uint *)(mapControl + 0x4c) = *(uint *)(mapControl + 0x4c) | 0x80;
+    mapControl->runtimeFlags = mapControl->runtimeFlags | 0x80;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
+      return;
     }
-    else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0xba0,0,0,0);
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-    }
-    goto InGameUiCommand_FinalizeBeginInteractionState;
+    InGameCommandQueue_AppendLocalPlayerCommand(0xba0,0,0,0);
+    return;
   case 5:
-    uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-    if (pointerRegionCode != 0x7fffffff) {
-      qVar9 = FieldGrid_GetNearestTerrainPoint
-                        (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-      lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-      uVar6 = (int)((ulonglong)((longlong)extraout_ECX_09 * -0x20c8cc) >> 0x20) << 0xb |
-              (uint)((longlong)extraout_ECX_09 * -0x20c8cc) >> 0x15;
-      g_UiCommandCallerMaskHighBit = 0;
-      iVar1 = *(int *)(mapControl + 0x54);
-      iVar4 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6) + 0x3ff
-                   ) >> 0xc;
-      uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      if ((((-1 < iVar4) &&
-           (iVar7 = (int)(uVar6 * 2 + 0x3ff) >> 0xc,
-           uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX), -1 < iVar7)) &&
-          (uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-          iVar4 < *(int *)(iVar1 + 0xb8))) &&
-         ((uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-          iVar7 < *(int *)(iVar1 + 0xbc) &&
-          (uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX),
-          (*(uint *)((iVar7 * *(int *)(iVar1 + 0xb8) + iVar4) * 0x80 + 0x250 + iVar1) &
-          0x800 << ((byte)g_UiCommandModeF & 0x1f)) != 0)))) {
-        g_UiCommandCallerMaskHighBit = 0x80000000;
-        uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-      }
+    if (pointerRegionCode == 0x7fffffff) {
+      return;
     }
-    goto InGameUiCommand_FinalizeBeginInteractionState;
+    FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+    lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+    lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+    uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
+    pFVar1 = mapControl->fieldGrid;
+    iVar6 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x3ff)
+            >> 0xc;
+    if (iVar6 < 0) {
+      g_UiCommandCallerMaskHighBit = 0;
+      return;
+    }
+    iVar9 = (int)(uVar8 * 2 + 0x3ff) >> 0xc;
+    if (iVar9 < 0) {
+      g_UiCommandCallerMaskHighBit = 0;
+      return;
+    }
+    if (iVar6 < (int)pFVar1->gridWidth) {
+      if ((int)pFVar1->gridHeight <= iVar9) {
+        g_UiCommandCallerMaskHighBit = 0;
+        return;
+      }
+      if ((pFVar1->cells[iVar9 * pFVar1->gridWidth + iVar6].flagsAndMaterial &
+          0x800 << ((byte)g_UiCommandModeF & 0x1f)) != 0) {
+        g_UiCommandCallerMaskHighBit = 0x80000000;
+        return;
+      }
+      g_UiCommandCallerMaskHighBit = 0;
+      return;
+    }
+    g_UiCommandCallerMaskHighBit = 0;
+    return;
   }
   g_UiCommandSelectionAnchorWorldXQ12 = 0x7fffffff;
   if (pointerRegionCode != 0x7fffffff) {
     if ((g_KeyboardStateMask & 0xf) == 0) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        SelectionPlayerRuntime_ClearTerrainEditSelectionState(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
+        SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand(0x1ed0,0,0,0);
       }
     }
-    qVar9 = FieldGrid_GetNearestTerrainPoint
-                      (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-    uVar8 = CONCAT44(g_UiCommandDragReferenceY,g_UiCommandDragReferenceX);
-    lVar2 = (longlong)(int)qVar9 * 0x1c6e9c;
-    uVar6 = (int)((ulonglong)((longlong)extraout_ECX * -0x20c8cc) >> 0x20) << 0xb |
-            (uint)((longlong)extraout_ECX * -0x20c8cc) >> 0x15;
+    FVar10 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+    lVar2 = (longlong)(int)FVar10.eax * 0x1c6e9c;
+    lVar3 = (longlong)(int)FVar10.ecx * -0x20c8cc;
+    uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
     g_UiCommandSelectionAnchorWorldXQ12 =
-         ((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar6;
-    g_UiCommandSelectionAnchorWorldYQ12 = uVar6 * 2;
+         ((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8;
+    g_UiCommandSelectionAnchorWorldYQ12 = uVar8 * 2;
     g_UiCommandSelectionCurrentWorldXQ12 = g_UiCommandSelectionAnchorWorldXQ12;
     g_UiCommandSelectionCurrentWorldYQ12 = g_UiCommandSelectionAnchorWorldYQ12;
   }
-InGameUiCommand_FinalizeBeginInteractionState:
-  g_UiCommandDragReferenceY = (sdword)((ulonglong)uVar8 >> 0x20);
-  g_UiCommandDragReferenceX = (sdword)uVar8;
   return;
 }
+
 
 /* Address: 0x005703D0.
    Ownership: ui/ingame/runtime.
@@ -4359,458 +4311,399 @@ InGameUiCommand_FinalizeBeginInteractionState:
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
    FrontendPlayerSelection_InsertThreeEntriesAndRefresh [ui/frontend/player].
 */
-undefined8 __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_UpdateInteractionByMode
-          (undefined4 param_1,undefined4 param_2,UiPointerRegionCode pointerRegionCode,
-          GraphicsScreenCoordinate pointerX,GraphicsScreenCoordinate pointerY,undefined4 param_6,
-          int param_7,WorldRuntimeExtendedMapControlAddress32 mapControl)
+          (UiPointerRegionCode pointerRegionCode,GraphicsScreenCoordinate pointerX,
+          GraphicsScreenCoordinate pointerY,dword reservedArg3,int optionalContext,
+          WorldRuntimeExtendedMapControlView170 *mapControl)
 
 {
   longlong lVar1;
-  dword dVar2;
-  undefined4 in_EAX;
-  int iVar3;
-  undefined4 extraout_EAX;
-  undefined4 extraout_EAX_00;
-  CommandPayloadDword04 CVar4;
-  int extraout_ECX;
+  longlong lVar2;
+  dword dVar3;
+  int iVar4;
+  CommandPayloadDword04 payloadDword04;
   int iVar5;
-  CommandPayloadDword0C CVar6;
-  CommandPayloadDword0C extraout_ECX_00;
-  CommandPayloadDword0C extraout_ECX_01;
-  CommandPayloadDword0C extraout_ECX_02;
-  CommandPayloadDword0C extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
-  int extraout_ECX_06;
-  int extraout_ECX_07;
-  undefined4 extraout_ECX_08;
-  int iVar7;
-  int extraout_ECX_09;
-  int extraout_ECX_10;
-  int extraout_ECX_11;
-  int extraout_ECX_12;
-  int extraout_ECX_13;
-  int extraout_ECX_14;
-  int extraout_ECX_15;
-  int extraout_ECX_16;
-  int extraout_ECX_17;
-  uint uVar8;
-  int iVar9;
-  undefined4 extraout_EDX;
-  undefined4 extraout_EDX_00;
-  CommandPayloadDword08 CVar10;
-  void *extraout_EDX_01;
-  void *extraout_EDX_02;
-  void *extraout_EDX_03;
-  void *extraout_EDX_04;
-  void *extraout_EDX_05;
-  void *extraout_EDX_06;
-  void *pvVar11;
-  uint uVar12;
-  int iVar13;
+  int iVar6;
+  uint uVar7;
+  int iVar8;
+  CommandPayloadDword08 CVar9;
+  uint uVar10;
+  int iVar11;
   InGameCommandPayloadTripletValue32 payloadValue;
-  undefined4 *puVar14;
-  WorldRuntimeNode *runtimeNode;
-  CommandPayloadDword04 *pCVar15;
-  bool bVar16;
-  undefined8 uVar17;
-  qword qVar18;
+  undefined4 *puVar12;
+  WorldOwnerListNode100 *runtimeNode;
+  CommandPayloadDword04 *pCVar13;
+  bool bVar14;
+  FieldGridNearestPointRegsCf13 FVar15;
   GameEntityRuntime *entry;
   
-  if ((*(uint *)(mapControl + 0x4c) & 0x80) != 0) {
-    puVar14 = (undefined4 *)&g_InGameSelectionInsertTripletDwords;
-    for (iVar7 = 0x1a; iVar7 != 0; iVar7 = iVar7 + -1) {
-      *puVar14 = 0;
-      puVar14 = puVar14 + 1;
+  if ((mapControl->runtimeFlags & 0x80) != 0) {
+    puVar12 = (undefined4 *)&g_InGameSelectionInsertTripletDwords;
+    for (iVar6 = 0x1a; iVar6 != 0; iVar6 = iVar6 + -1) {
+      *puVar12 = 0;
+      puVar12 = puVar12 + 1;
     }
-    runtimeNode = *(WorldRuntimeNode **)(mapControl + 0xd8);
-    iVar7 = *(int *)(mapControl + 0x50);
-    if (runtimeNode != (WorldRuntimeNode *)0x0) {
-      do {
-        pvVar11 = runtimeNode->runtimePayload;
-        if ((((runtimeNode->runtimeFlags & 2) != 0) &&
-            (entry = *(GameEntityRuntime **)((int)pvVar11 + 8),
-            (runtimeNode->runtimeFlags & 0x20) != 0)) &&
-           (iVar7 == (entry->common).ownership.ownerIndex)) {
-          bVar16 = entry < g_ArmyRuntimeRebaseBaseMinusOne;
-          payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
-          WorldRuntimeNode_IsPositionInsideBoundsCf(runtimeNode,mapControl);
-          if (bVar16) {
-            SelectionInfo_FindEntryCf(entry);
-            iVar7 = extraout_ECX_09;
-            pvVar11 = extraout_EDX_01;
-            if (bVar16) {
-              uVar17 = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fb90);
-              pvVar11 = (void *)((ulonglong)uVar17 >> 0x20);
-              iVar7 = extraout_ECX_10;
-              if ((!bVar16) &&
-                 (*(InGameCommandPayloadTripletValue32 *)
-                   (&g_InGameSelectionInsertTripletDwords + (uint)uVar17 * 4) = payloadValue,
-                 (uint)uVar17 < 0xb)) {
-                g_InGameSelectionInsertTripletDwordCount =
-                     g_InGameSelectionInsertTripletDwordCount + 1;
-              }
-            }
-          }
-          else {
-            SelectionInfo_FindEntryCf(entry);
-            iVar7 = extraout_ECX_11;
-            pvVar11 = extraout_EDX_02;
-            if (!bVar16) {
-              uVar17 = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fc30);
-              pvVar11 = (void *)((ulonglong)uVar17 >> 0x20);
-              iVar7 = extraout_ECX_12;
-              if ((!bVar16) &&
-                 (*(InGameCommandPayloadTripletValue32 *)
-                   (&g_InGameSelectionRemoveTripletDwords + (uint)uVar17 * 4) = payloadValue,
-                 (uint)uVar17 < 0xb)) {
-                g_InGameSelectionRemoveTripletDwordCount =
-                     g_InGameSelectionRemoveTripletDwordCount + 1;
-              }
-            }
+    runtimeNode = (WorldOwnerListNode100 *)mapControl->ownerListHead;
+    iVar6 = mapControl->activeFactionRuntimeIndex;
+    if (runtimeNode == (WorldOwnerListNode100 *)0x0) {
+      return;
+    }
+    do {
+      if ((((runtimeNode->runtimeFlags & 2) != 0) &&
+          (entry = *(GameEntityRuntime **)((int)runtimeNode->runtimePayload + 8),
+          (runtimeNode->runtimeFlags & 0x20) != 0)) &&
+         (iVar6 == (entry->common).ownership.ownerIndex)) {
+        payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+        bVar14 = WorldRuntimeNode_IsPositionInsideBoundsCf(runtimeNode,mapControl);
+        if (bVar14) {
+          bVar14 = SelectionInfo_FindEntryCf(entry);
+          uVar7 = g_InGameSelectionInsertTripletDwordCount;
+          if (((bVar14) &&
+              (bVar14 = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fb90), !bVar14))
+             && (*(InGameCommandPayloadTripletValue32 *)
+                  (&g_InGameSelectionInsertTripletDwords + uVar7 * 4) = payloadValue, uVar7 < 0xb))
+          {
+            g_InGameSelectionInsertTripletDwordCount = g_InGameSelectionInsertTripletDwordCount + 1;
           }
         }
-        runtimeNode = (runtimeNode->common).nextNode;
-      } while (runtimeNode != (WorldRuntimeNode *)0x0);
-      if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-        pCVar15 = (CommandPayloadDword04 *)&g_InGameSelectionRemoveTripletDwords;
-        do {
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-              SESSION_NETWORK_ROLE_LOCAL) {
-            FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-                      (g_LocalPlayerRuntimeId,pCVar15[2],pCVar15[1],*pCVar15);
-            iVar7 = extraout_ECX_14;
-            pvVar11 = extraout_EDX_04;
+        else {
+          bVar14 = SelectionInfo_FindEntryCf(entry);
+          uVar7 = g_InGameSelectionRemoveTripletDwordCount;
+          if (((!bVar14) &&
+              (bVar14 = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fc30), !bVar14))
+             && (*(InGameCommandPayloadTripletValue32 *)
+                  (&g_InGameSelectionRemoveTripletDwords + uVar7 * 4) = payloadValue, uVar7 < 0xb))
+          {
+            g_InGameSelectionRemoveTripletDwordCount = g_InGameSelectionRemoveTripletDwordCount + 1;
           }
-          else {
-            InGameCommandQueue_AppendLocalPlayerCommand(0xb00,pCVar15[2],pCVar15[1],*pCVar15);
-            iVar7 = extraout_ECX_13;
-            pvVar11 = extraout_EDX_03;
-          }
-          iVar3 = g_InGameSelectionRemoveTripletDwordCount;
-          pCVar15 = pCVar15 + 3;
-          g_InGameSelectionRemoveTripletDwordCount = g_InGameSelectionRemoveTripletDwordCount + -3;
-        } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < iVar3);
+        }
       }
-      if (g_InGameSelectionInsertTripletDwordCount != 0) {
-        pCVar15 = (CommandPayloadDword04 *)&g_InGameSelectionInsertTripletDwords;
-        do {
-          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-              SESSION_NETWORK_ROLE_LOCAL) {
-            FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-                      (iVar7,pvVar11,g_LocalPlayerRuntimeId,pCVar15[2],pCVar15[1],*pCVar15);
-            iVar7 = extraout_ECX_16;
-            pvVar11 = extraout_EDX_06;
-          }
-          else {
-            InGameCommandQueue_AppendLocalPlayerCommand(0xa60,pCVar15[2],pCVar15[1],*pCVar15);
-            iVar7 = extraout_ECX_15;
-            pvVar11 = extraout_EDX_05;
-          }
-          iVar3 = g_InGameSelectionInsertTripletDwordCount;
-          pCVar15 = pCVar15 + 3;
-          g_InGameSelectionInsertTripletDwordCount = g_InGameSelectionInsertTripletDwordCount + -3;
-        } while (g_InGameSelectionInsertTripletDwordCount != 0 && 2 < iVar3);
-      }
+      runtimeNode = runtimeNode->nextNode;
+    } while (runtimeNode != (WorldOwnerListNode100 *)0x0);
+    if (g_InGameSelectionRemoveTripletDwordCount != 0) {
+      pCVar13 = (CommandPayloadDword04 *)&g_InGameSelectionRemoveTripletDwords;
+      do {
+        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+            SESSION_NETWORK_ROLE_LOCAL) {
+          FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
+                    (g_LocalPlayerRuntimeId,pCVar13[2],pCVar13[1],*pCVar13);
+        }
+        else {
+          InGameCommandQueue_AppendLocalPlayerCommand(0xb00,pCVar13[2],pCVar13[1],*pCVar13);
+        }
+        uVar7 = g_InGameSelectionRemoveTripletDwordCount;
+        pCVar13 = pCVar13 + 3;
+        g_InGameSelectionRemoveTripletDwordCount = g_InGameSelectionRemoveTripletDwordCount - 3;
+      } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < (int)uVar7);
     }
-    goto InGameUiCommand_FinalizeInteractionUpdate;
+    if (g_InGameSelectionInsertTripletDwordCount == 0) {
+      return;
+    }
+    pCVar13 = (CommandPayloadDword04 *)&g_InGameSelectionInsertTripletDwords;
+    do {
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+          SESSION_NETWORK_ROLE_LOCAL) {
+        FrontendPlayerSelection_InsertThreeEntriesAndRefresh
+                  (g_LocalPlayerRuntimeId,pCVar13[2],pCVar13[1],*pCVar13);
+      }
+      else {
+        InGameCommandQueue_AppendLocalPlayerCommand(0xa60,pCVar13[2],pCVar13[1],*pCVar13);
+      }
+      uVar7 = g_InGameSelectionInsertTripletDwordCount;
+      pCVar13 = pCVar13 + 3;
+      g_InGameSelectionInsertTripletDwordCount = g_InGameSelectionInsertTripletDwordCount - 3;
+    } while (g_InGameSelectionInsertTripletDwordCount != 0 && 2 < (int)uVar7);
+    return;
   }
-                    
+                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
   case 0:
     if (g_UiCommandModeC == 0) {
-      if (g_UiCommandDragStartScreenX != 0x7fffffff) {
-        uVar8 = 0xffff;
-        if ((g_KeyboardStateMask & 0xf) != 0) {
-          uVar8 = 0;
-        }
-        uVar8 = *(int *)(mapControl + 0x168) - g_UiCommandDragStartScreenX & uVar8 |
-                (*(int *)(mapControl + 0x16c) - g_UiCommandDragStartScreenY) * 0x10000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ApplyPositiveCellDeltas
-                    (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
-                     g_UiCommandDragAnchorWorldXQ12,uVar8);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (0x1f70,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,uVar8);
-        }
+      if (g_UiCommandDragStartScreenX == 0x7fffffff) {
+        return;
       }
-      goto InGameUiCommand_FinalizeInteractionUpdate;
+      uVar7 = 0xffff;
+      if ((g_KeyboardStateMask & 0xf) != 0) {
+        uVar7 = 0;
+      }
+      uVar7 = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX & uVar7 |
+              (mapControl->extendedCoordinate16C - g_UiCommandDragStartScreenY) * 0x10000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+          SESSION_NETWORK_ROLE_LOCAL) {
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (0x1f70,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,uVar7);
+        return;
+      }
+      FieldGrid_ApplyPositiveCellDeltas
+                (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
+                 g_UiCommandDragAnchorWorldXQ12,uVar7);
+      return;
     }
     if (g_UiCommandModeC == 1) {
-      if (g_UiCommandDragStartScreenX != 0x7fffffff) {
-        uVar8 = 0xffff;
-        if ((g_KeyboardStateMask & 0xf) != 0) {
-          uVar8 = 0;
-        }
-        uVar8 = *(int *)(mapControl + 0x168) - g_UiCommandDragStartScreenX & uVar8 |
-                (*(int *)(mapControl + 0x16c) - g_UiCommandDragStartScreenY) * 0x10000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ApplyNegativeCellDeltas
-                    (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
-                     g_UiCommandDragAnchorWorldXQ12,uVar8);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (0x2290,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,uVar8);
-        }
+      if (g_UiCommandDragStartScreenX == 0x7fffffff) {
+        return;
       }
-      goto InGameUiCommand_FinalizeInteractionUpdate;
+      uVar7 = 0xffff;
+      if ((g_KeyboardStateMask & 0xf) != 0) {
+        uVar7 = 0;
+      }
+      uVar7 = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX & uVar7 |
+              (mapControl->extendedCoordinate16C - g_UiCommandDragStartScreenY) * 0x10000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+          SESSION_NETWORK_ROLE_LOCAL) {
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (0x2290,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,uVar7);
+        return;
+      }
+      FieldGrid_ApplyNegativeCellDeltas
+                (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
+                 g_UiCommandDragAnchorWorldXQ12,uVar7);
+      return;
     }
     if (g_UiCommandModeC == 2) {
-      if (pointerRegionCode != 0x7fffffff) {
-        qVar18 = FieldGrid_GetNearestTerrainPoint
-                           (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar1 = (longlong)(int)qVar18 * 0x1c6e9c;
-        uVar12 = (int)((ulonglong)((longlong)extraout_ECX_04 * -0x20c8cc) >> 0x20) << 0xb |
-                 (uint)((longlong)extraout_ECX_04 * -0x20c8cc) >> 0x15;
-        uVar8 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar12) + 0x3ff &
-                0xfffff000;
-        uVar12 = uVar12 * 2 + 0x3ff & 0xfffff000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_RebuildLocalInfluenceState(g_LocalPlayerRuntimeId,0,uVar12,uVar8);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2ae0,0,uVar12,uVar8);
-        }
+      if (pointerRegionCode == 0x7fffffff) {
+        return;
       }
-      goto InGameUiCommand_FinalizeInteractionUpdate;
+      FVar15 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      lVar1 = (longlong)(int)FVar15.eax * 0x1c6e9c;
+      lVar2 = (longlong)(int)FVar15.ecx * -0x20c8cc;
+      uVar10 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
+      uVar7 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar10) + 0x3ff &
+              0xfffff000;
+      uVar10 = uVar10 * 2 + 0x3ff & 0xfffff000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+          SESSION_NETWORK_ROLE_LOCAL) {
+        InGameCommandQueue_AppendLocalPlayerCommand(0x2ae0,0,uVar10,uVar7);
+        return;
+      }
+      FieldGrid_RebuildLocalInfluenceState(g_LocalPlayerRuntimeId,0,uVar10,uVar7);
+      return;
     }
     break;
   case 1:
     if (g_UiCommandModeD != 3) {
-      if (((g_TerrainMaterialTextureSets[g_UiCommandAbsoluteSelectionIndex] !=
-            (GraphicsTextureSet *)0x0) && (g_UiCommandModeD != 1)) &&
-         ((g_UiCommandModeD != 2 && (pointerRegionCode != 0x7fffffff)))) {
-        qVar18 = FieldGrid_GetNearestTerrainPoint
-                           (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar1 = (longlong)(int)qVar18 * 0x1c6e9c;
-        uVar12 = (int)((ulonglong)((longlong)extraout_ECX_05 * -0x20c8cc) >> 0x20) << 0xb |
-                 (uint)((longlong)extraout_ECX_05 * -0x20c8cc) >> 0x15;
-        uVar8 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar12) + 0x3ff &
-                0xfffff000;
-        uVar12 = uVar12 * 2 + 0x3ff & 0xfffff000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ApplyLocalCellUpdate
-                    (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,uVar12,uVar8);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (0x2770,g_UiCommandAbsoluteSelectionIndex,uVar12,uVar8);
-        }
+      if (g_TerrainMaterialTextureSets[g_UiCommandAbsoluteSelectionIndex] ==
+          (GraphicsTextureSet *)0x0) {
+        return;
       }
-      goto InGameUiCommand_FinalizeInteractionUpdate;
+      if (g_UiCommandModeD == 1) {
+        return;
+      }
+      if (g_UiCommandModeD == 2) {
+        return;
+      }
+      if (pointerRegionCode == 0x7fffffff) {
+        return;
+      }
+      FVar15 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      lVar1 = (longlong)(int)FVar15.eax * 0x1c6e9c;
+      lVar2 = (longlong)(int)FVar15.ecx * -0x20c8cc;
+      uVar10 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
+      uVar7 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar10) + 0x3ff &
+              0xfffff000;
+      uVar10 = uVar10 * 2 + 0x3ff & 0xfffff000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+          SESSION_NETWORK_ROLE_LOCAL) {
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (0x2770,g_UiCommandAbsoluteSelectionIndex,uVar10,uVar7);
+        return;
+      }
+      FieldGrid_ApplyLocalCellUpdate
+                (g_LocalPlayerRuntimeId,g_UiCommandAbsoluteSelectionIndex,uVar10,uVar7);
+      return;
     }
     break;
   case 2:
     if (g_UiCommandModeE == 0) {
-      if (g_UiCommandDragStartScreenX != 0x7fffffff) {
-        uVar8 = 0xffff;
-        if ((g_KeyboardStateMask & 0xf) != 0) {
-          uVar8 = 0;
-        }
-        uVar12 = *(int *)(mapControl + 0x168) - g_UiCommandDragStartScreenX;
-        iVar7 = *(int *)(mapControl + 0x16c) - g_UiCommandDragStartScreenY;
-        g_UiCommandDragStartScreenX = g_UiCommandDragStartScreenX + uVar12;
-        g_UiCommandDragStartScreenY = g_UiCommandDragStartScreenY + iVar7;
-        uVar8 = uVar12 & uVar8 | iVar7 * 0x10000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ApplyEncodedCellUpdate
-                    (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
-                     g_UiCommandDragAnchorWorldXQ12,uVar8);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (0x3260,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,uVar8);
-        }
+      if (g_UiCommandDragStartScreenX == 0x7fffffff) {
+        return;
       }
-    }
-    else if (g_UiCommandModeE == 1) {
-      if (pointerRegionCode != 0x7fffffff) {
-        qVar18 = FieldGrid_GetNearestTerrainPoint
-                           (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-        lVar1 = (longlong)(int)qVar18 * 0x1c6e9c;
-        uVar12 = (int)((ulonglong)((longlong)extraout_ECX_07 * -0x20c8cc) >> 0x20) << 0xb |
-                 (uint)((longlong)extraout_ECX_07 * -0x20c8cc) >> 0x15;
-        uVar8 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar12) + 0x3ff &
-                0xfffff000;
-        uVar12 = uVar12 * 2 + 0x3ff & 0xfffff000;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          FieldGrid_ApplyMaskDFFFFFFF
-                    (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,uVar12,uVar8);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand
-                    (0x32a0,g_UiCommandTerrainMaskToggleValue,uVar12,uVar8);
-        }
+      uVar7 = 0xffff;
+      if ((g_KeyboardStateMask & 0xf) != 0) {
+        uVar7 = 0;
       }
-    }
-    else if (pointerRegionCode != 0x7fffffff) {
-      qVar18 = FieldGrid_GetNearestTerrainPoint
-                         (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-      lVar1 = (longlong)(int)qVar18 * 0x1c6e9c;
-      uVar12 = (int)((ulonglong)((longlong)extraout_ECX_06 * -0x20c8cc) >> 0x20) << 0xb |
-               (uint)((longlong)extraout_ECX_06 * -0x20c8cc) >> 0x15;
-      uVar8 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar12) + 0x3ff &
-              0xfffff000;
-      uVar12 = uVar12 * 2 + 0x3ff & 0xfffff000;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      uVar10 = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX;
+      iVar6 = mapControl->extendedCoordinate16C - g_UiCommandDragStartScreenY;
+      g_UiCommandDragStartScreenX = g_UiCommandDragStartScreenX + uVar10;
+      g_UiCommandDragStartScreenY = g_UiCommandDragStartScreenY + iVar6;
+      uVar7 = uVar10 & uVar7 | iVar6 * 0x10000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-        FieldGrid_ApplyMaskBFFFFFFF
-                  (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,uVar12,uVar8);
-      }
-      else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x32e0,g_UiCommandTerrainMaskToggleValue,uVar12,uVar8);
+                  (0x3260,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,uVar7);
+        return;
       }
+      FieldGrid_ApplyEncodedCellUpdate
+                (g_LocalPlayerRuntimeId,g_UiCommandDragAnchorWorldYQ12,
+                 g_UiCommandDragAnchorWorldXQ12,uVar7);
+      return;
     }
-    goto InGameUiCommand_FinalizeInteractionUpdate;
+    if (g_UiCommandModeE != 1) {
+      if (pointerRegionCode == 0x7fffffff) {
+        return;
+      }
+      FVar15 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      lVar1 = (longlong)(int)FVar15.eax * 0x1c6e9c;
+      lVar2 = (longlong)(int)FVar15.ecx * -0x20c8cc;
+      uVar10 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
+      uVar7 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar10) + 0x3ff &
+              0xfffff000;
+      uVar10 = uVar10 * 2 + 0x3ff & 0xfffff000;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+          SESSION_NETWORK_ROLE_LOCAL) {
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (0x32e0,g_UiCommandTerrainMaskToggleValue,uVar10,uVar7);
+        return;
+      }
+      FieldGrid_ApplyMaskBFFFFFFF
+                (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,uVar10,uVar7);
+      return;
+    }
+    if (pointerRegionCode == 0x7fffffff) {
+      return;
+    }
+    FVar15 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+    lVar1 = (longlong)(int)FVar15.eax * 0x1c6e9c;
+    lVar2 = (longlong)(int)FVar15.ecx * -0x20c8cc;
+    uVar10 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
+    uVar7 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar10) + 0x3ff &
+            0xfffff000;
+    uVar10 = uVar10 * 2 + 0x3ff & 0xfffff000;
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+        SESSION_NETWORK_ROLE_LOCAL) {
+      InGameCommandQueue_AppendLocalPlayerCommand
+                (0x32a0,g_UiCommandTerrainMaskToggleValue,uVar10,uVar7);
+      return;
+    }
+    FieldGrid_ApplyMaskDFFFFFFF
+              (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,uVar10,uVar7);
+    return;
   case 3:
-    dVar2 = g_UiCommandModeA;
+    dVar3 = g_UiCommandModeA;
     goto joined_r0x00570b27;
   case 4:
-    dVar2 = g_UiCommandModeB;
+    dVar3 = g_UiCommandModeB;
 joined_r0x00570b27:
-    if (((dVar2 == 0) || (dVar2 != 1)) && (pointerRegionCode != 0x7fffffff)) {
-      if ((g_CursorButtonState & 4) == 0) {
-        uVar17 = (*g_PointerSetPosition)(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          SelectionPlayerRuntime_AdvancePrimarySelectionCycle
-                    (extraout_ECX_08,(int)((ulonglong)uVar17 >> 0x20),g_LocalPlayerRuntimeId);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x30f0,0,0,(int)uVar17 << 6);
-        }
-      }
-      else {
-        g_UiCommandDragStartScreenX = *(int *)(mapControl + 0x168);
-        g_UiCommandDragStartScreenY = *(int *)(mapControl + 0x16c);
-        CVar4 = pointerY - g_UiCommandDragReferenceX;
-        CVar10 = pointerX - g_UiCommandDragReferenceY;
-        g_UiCommandDragReferenceX = g_UiCommandDragReferenceX + CVar4;
-        g_UiCommandDragReferenceY = g_UiCommandDragReferenceY + CVar10;
-        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-            SESSION_NETWORK_ROLE_LOCAL) {
-          SelectionPlayerRuntime_ReissuePrimarySelectionPosition
-                    (param_1,CVar10,g_LocalPlayerRuntimeId);
-        }
-        else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2f20,0,CVar10,CVar4);
-        }
-      }
+    if ((dVar3 != 0) && (dVar3 == 1)) {
+      return;
     }
-    goto InGameUiCommand_FinalizeInteractionUpdate;
-  case 5:
-    if (pointerRegionCode != 0x7fffffff) {
-      qVar18 = FieldGrid_GetNearestTerrainPoint
-                         (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-      lVar1 = (longlong)(int)qVar18 * 0x1c6e9c;
-      uVar12 = (int)((ulonglong)((longlong)extraout_ECX_17 * -0x20c8cc) >> 0x20) << 0xb |
-               (uint)((longlong)extraout_ECX_17 * -0x20c8cc) >> 0x15;
-      uVar8 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar12) + 0x3ff &
-              0xfffff000;
-      uVar12 = uVar12 * 2 + 0x3ff & 0xfffff000;
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+    if (pointerRegionCode == 0x7fffffff) {
+      return;
+    }
+    if ((g_CursorButtonState & 4) != 0) {
+      g_UiCommandDragStartScreenX = mapControl->extendedCoordinate168;
+      g_UiCommandDragStartScreenY = mapControl->extendedCoordinate16C;
+      payloadDword04 = pointerY - g_UiCommandDragReferenceX;
+      CVar9 = pointerX - g_UiCommandDragReferenceY;
+      g_UiCommandDragReferenceX = g_UiCommandDragReferenceX + payloadDword04;
+      g_UiCommandDragReferenceY = g_UiCommandDragReferenceY + CVar9;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-        FieldGrid_ApplyCallerMask
-                  (g_LocalPlayerRuntimeId,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,uVar12,
-                   uVar8);
+        InGameCommandQueue_AppendLocalPlayerCommand(0x2f20,0,CVar9,payloadDword04);
+        return;
       }
-      else {
-        InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x3320,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,uVar12,uVar8);
-      }
+      SelectionPlayerRuntime_ReissuePrimarySelectionPosition
+                (g_LocalPlayerRuntimeId,0,CVar9,payloadDword04);
+      return;
     }
-    goto InGameUiCommand_FinalizeInteractionUpdate;
+    iVar6 = (*g_PointerSetPosition)(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+        SESSION_NETWORK_ROLE_LOCAL) {
+      InGameCommandQueue_AppendLocalPlayerCommand(0x30f0,0,0,iVar6 << 6);
+      return;
+    }
+    SelectionPlayerRuntime_AdvancePrimarySelectionCycle(g_LocalPlayerRuntimeId,0,0,iVar6 << 6);
+    return;
+  case 5:
+    if (pointerRegionCode == 0x7fffffff) {
+      return;
+    }
+    FVar15 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+    lVar1 = (longlong)(int)FVar15.eax * 0x1c6e9c;
+    lVar2 = (longlong)(int)FVar15.ecx * -0x20c8cc;
+    uVar10 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
+    uVar7 = (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar10) + 0x3ff &
+            0xfffff000;
+    uVar10 = uVar10 * 2 + 0x3ff & 0xfffff000;
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
+        SESSION_NETWORK_ROLE_LOCAL) {
+      InGameCommandQueue_AppendLocalPlayerCommand
+                (0x3320,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,uVar10,uVar7);
+      return;
+    }
+    FieldGrid_ApplyCallerMask
+              (g_LocalPlayerRuntimeId,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,uVar10,uVar7);
+    return;
   }
   if ((pointerRegionCode != 0x7fffffff) && (g_UiCommandSelectionAnchorWorldXQ12 != 0x7fffffff)) {
-    qVar18 = FieldGrid_GetNearestTerrainPoint
-                       (pointerX,pointerY,*(FieldGridAsset **)(mapControl + 0x54));
-    lVar1 = (longlong)(int)qVar18 * 0x1c6e9c;
-    uVar8 = (int)((ulonglong)((longlong)extraout_ECX * -0x20c8cc) >> 0x20) << 0xb |
-            (uint)((longlong)extraout_ECX * -0x20c8cc) >> 0x15;
-    iVar5 = ((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar8;
-    iVar7 = uVar8 * 2;
+    FVar15 = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+    lVar1 = (longlong)(int)FVar15.eax * 0x1c6e9c;
+    lVar2 = (longlong)(int)FVar15.ecx * -0x20c8cc;
+    uVar7 = (int)((ulonglong)lVar2 >> 0x20) << 0xb | (uint)lVar2 >> 0x15;
+    iVar5 = ((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - uVar7;
+    iVar6 = uVar7 * 2;
     LOCK();
     UNLOCK();
     LOCK();
     UNLOCK();
-    iVar3 = g_UiCommandSelectionAnchorWorldXQ12;
+    iVar4 = g_UiCommandSelectionAnchorWorldXQ12;
     if (g_UiCommandSelectionCurrentWorldXQ12 < g_UiCommandSelectionAnchorWorldXQ12) {
-      iVar3 = g_UiCommandSelectionCurrentWorldXQ12;
+      iVar4 = g_UiCommandSelectionCurrentWorldXQ12;
       g_UiCommandSelectionCurrentWorldXQ12 = g_UiCommandSelectionAnchorWorldXQ12;
     }
-    iVar9 = g_UiCommandSelectionCurrentWorldYQ12;
-    iVar13 = g_UiCommandSelectionAnchorWorldYQ12;
+    iVar8 = g_UiCommandSelectionCurrentWorldYQ12;
+    iVar11 = g_UiCommandSelectionAnchorWorldYQ12;
     if (g_UiCommandSelectionCurrentWorldYQ12 < g_UiCommandSelectionAnchorWorldYQ12) {
-      iVar9 = g_UiCommandSelectionAnchorWorldYQ12;
-      iVar13 = g_UiCommandSelectionCurrentWorldYQ12;
+      iVar8 = g_UiCommandSelectionAnchorWorldYQ12;
+      iVar11 = g_UiCommandSelectionCurrentWorldYQ12;
     }
-    CVar4 = iVar3 + 0x3ffU & 0xfffff000;
-    CVar10 = iVar13 + 0x3ffU & 0xfffff000;
-    CVar6 = g_UiCommandSelectionCurrentWorldXQ12 + 0x3ffU & 0xfffff000;
+    uVar7 = iVar4 + 0x3ffU & 0xfffff000;
+    CVar9 = iVar11 + 0x3ffU & 0xfffff000;
+    uVar10 = g_UiCommandSelectionCurrentWorldXQ12 + 0x3ffU & 0xfffff000;
     g_UiCommandSelectionCurrentWorldXQ12 = iVar5;
-    g_UiCommandSelectionCurrentWorldYQ12 = iVar7;
-    if (((int)CVar4 <= (int)CVar6) && ((int)CVar10 <= (int)(iVar9 + 0x3ffU & 0xfffff000))) {
-      do {
+    g_UiCommandSelectionCurrentWorldYQ12 = iVar6;
+    if ((int)uVar7 <= (int)uVar10) {
+      for (; (int)CVar9 <= (int)(iVar8 + 0x3ffU & 0xfffff000); CVar9 = CVar9 + 0x1000) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          uVar17 = PlayerPairList_RemoveRange(g_LocalPlayerRuntimeId,CVar6,CVar10,CVar4);
-          CVar6 = extraout_ECX_01;
+          PlayerPairList_RemoveRange(g_LocalPlayerRuntimeId,uVar10,CVar9,uVar7);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1d40,CVar6,CVar10,CVar4);
-          uVar17 = CONCAT44(extraout_EDX,extraout_EAX);
-          CVar6 = extraout_ECX_00;
+          InGameCommandQueue_AppendLocalPlayerCommand(0x1d40,uVar10,CVar9,uVar7);
         }
-        CVar4 = (CommandPayloadDword04)uVar17;
-        CVar10 = CVar10 + 0x1000;
-      } while ((int)CVar10 <= (int)((ulonglong)uVar17 >> 0x20));
+      }
     }
-    iVar7 = g_UiCommandSelectionAnchorWorldXQ12;
-    iVar3 = g_UiCommandSelectionCurrentWorldXQ12;
+    iVar6 = g_UiCommandSelectionAnchorWorldXQ12;
+    iVar4 = g_UiCommandSelectionCurrentWorldXQ12;
     if (g_UiCommandSelectionCurrentWorldXQ12 < g_UiCommandSelectionAnchorWorldXQ12) {
-      iVar7 = g_UiCommandSelectionCurrentWorldXQ12;
-      iVar3 = g_UiCommandSelectionAnchorWorldXQ12;
+      iVar6 = g_UiCommandSelectionCurrentWorldXQ12;
+      iVar4 = g_UiCommandSelectionAnchorWorldXQ12;
     }
     iVar5 = g_UiCommandSelectionCurrentWorldYQ12;
-    iVar9 = g_UiCommandSelectionAnchorWorldYQ12;
+    iVar8 = g_UiCommandSelectionAnchorWorldYQ12;
     if (g_UiCommandSelectionCurrentWorldYQ12 < g_UiCommandSelectionAnchorWorldYQ12) {
       iVar5 = g_UiCommandSelectionAnchorWorldYQ12;
-      iVar9 = g_UiCommandSelectionCurrentWorldYQ12;
+      iVar8 = g_UiCommandSelectionCurrentWorldYQ12;
     }
-    CVar4 = iVar7 + 0x3ffU & 0xfffff000;
-    CVar10 = iVar9 + 0x3ffU & 0xfffff000;
-    CVar6 = iVar3 + 0x3ffU & 0xfffff000;
-    if (((int)CVar4 <= (int)CVar6) && ((int)CVar10 <= (int)(iVar5 + 0x3ffU & 0xfffff000))) {
-      do {
+    uVar7 = iVar6 + 0x3ffU & 0xfffff000;
+    CVar9 = iVar8 + 0x3ffU & 0xfffff000;
+    uVar10 = iVar4 + 0x3ffU & 0xfffff000;
+    if ((int)uVar7 <= (int)uVar10) {
+      for (; (int)CVar9 <= (int)(iVar5 + 0x3ffU & 0xfffff000); CVar9 = CVar9 + 0x1000) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          uVar17 = PlayerPairList_InsertRange(g_LocalPlayerRuntimeId,CVar6,CVar10,CVar4);
-          CVar6 = extraout_ECX_03;
+          PlayerPairList_InsertRange(g_LocalPlayerRuntimeId,uVar10,CVar9,uVar7);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1d00,CVar6,CVar10,CVar4);
-          uVar17 = CONCAT44(extraout_EDX_00,extraout_EAX_00);
-          CVar6 = extraout_ECX_02;
+          InGameCommandQueue_AppendLocalPlayerCommand(0x1d00,uVar10,CVar9,uVar7);
         }
-        CVar4 = (CommandPayloadDword04)uVar17;
-        CVar10 = CVar10 + 0x1000;
-      } while ((int)CVar10 <= (int)((ulonglong)uVar17 >> 0x20));
+      }
     }
   }
-InGameUiCommand_FinalizeInteractionUpdate:
-  return CONCAT44(param_2,in_EAX);
+  return;
 }
+
 
 /* Address: 0x00570D60.
    Ownership: ui/ingame/runtime.
@@ -4820,18 +4713,17 @@ InGameUiCommand_FinalizeInteractionUpdate:
    TerrainEditBuffer_SubtractCurrentCellMaterialBytes [world/terrain/editing], PlayerRuntime_ClearState8094
    [gameplay/faction/runtime].
 */
-void InGameUiCommand_EndInteractionByMode
-               (dword callbackArg0,dword callbackArg1,dword callbackArg2,dword callbackArg3,
-               WorldRuntimeNode *worldNode,WorldRuntimeContext *worldRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiCommand_EndInteractionByMode
+          (dword callbackArg0,dword callbackArg1,dword callbackArg2,dword callbackArg3,
+          WorldOwnerListNode100 *worldNode,WorldRuntimeContext *worldRuntime)
 
 {
   dword dVar1;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   
   dVar1 = g_UiCommandModeG;
   worldRuntime->runtimeFlags = worldRuntime->runtimeFlags & 0xffffff7f;
-                    
+                    // WARNING: Switch is manually overridden
   switch(dVar1) {
   case 0:
     if (g_UiCommandModeC == 0) {
@@ -4843,7 +4735,7 @@ void InGameUiCommand_EndInteractionByMode
     else if (g_UiCommandModeC == 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_ConvertHeightsToDeltas(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
+        TerrainEditBuffer_ConvertHeightsToDeltas(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand(0x2c90,0,0,0);
@@ -4854,7 +4746,7 @@ void InGameUiCommand_EndInteractionByMode
     if (((g_UiCommandModeD != 3) && (g_UiCommandModeD != 1)) && (g_UiCommandModeD != 2)) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        TerrainEditBuffer_SubtractCurrentCellMaterialBytes(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
+        TerrainEditBuffer_SubtractCurrentCellMaterialBytes(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand(0x2800,0,0,0);
@@ -4870,7 +4762,7 @@ joined_r0x00570ef7:
     if ((dVar1 == 0) || (dVar1 != 1)) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        PlayerRuntime_ClearState8094(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
+        PlayerRuntime_ClearState8094(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand(0x3190,0,0,0);
@@ -4880,6 +4772,7 @@ joined_r0x00570ef7:
   return;
 }
 
+
 /* Address: 0x00570F30.
    Ownership: ui/ingame/runtime.
    Purpose: Handles in game ui command reset interaction by mode.
@@ -4887,17 +4780,16 @@ joined_r0x00570ef7:
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
    FrontendPlayerSelection_ClearAndRefreshLocalPanels [ui/frontend/player].
 */
-void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 
 {
-  undefined4 in_ECX;
-  undefined4 in_EDX;
-
+                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
   case 0:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      SelectionPlayerRuntime_ClearTerrainEditSelectionState(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
+      SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
       InGameCommandQueue_AppendLocalPlayerCommand(0x1ed0,0,0,0);
@@ -4906,7 +4798,7 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
   case 1:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      SelectionPlayerRuntime_ClearTerrainEditSelectionState(in_ECX,in_EDX,g_LocalPlayerRuntimeId);
+      SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
       InGameCommandQueue_AppendLocalPlayerCommand(0x1ed0,0,0,0);
@@ -4924,6 +4816,7 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
   return;
 }
 
+
 /* Address: 0x005609F0.
    Ownership: ui/ingame/runtime.
    Purpose: Activates or deactivates the in-game command/UI interaction subsystem. The immutable body synchronizes
@@ -4935,58 +4828,48 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
    ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf [assets/army/catalog],
    ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf [assets/army/catalog].
 */
-void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
-               (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+
+void __thandor_void_preserve_eax_ecx_edx
+InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
+          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
   WorldRuntimeFlags *pWVar1;
+  WorldRuntimeContext *node;
   GraphicsTextureSet *pGVar2;
-  byte *pbVar3;
+  ArmyAssetRecordPrefix *pAVar3;
+  byte *pbVar4;
   InGameRuntimeRootImageC3E4 *root;
-  int extraout_EAX;
-  dword dVar4;
-  int extraout_EAX_00;
-  int extraout_EAX_01;
-  int iVar5;
-  GraphicsTextureSourceAsset *pGVar6;
-  int extraout_ECX;
-  undefined4 extraout_ECX_00;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  UiNodeBase *node;
-  UiNodeBase *node_00;
-  UiNodeBase *node_01;
-  UiNodeBase *node_02;
-  void *visualState;
-  UiNodeBase *node_03;
-  UiNodeBase *node_04;
-  int extraout_EDX_03;
-  InGameNotificationQueueRecord20 *pIVar7;
-  TerrainDirectionRecord *pTVar8;
+  dword dVar5;
+  int iVar6;
+  GraphicsTextureSourceAsset *pGVar7;
+  InGameNotificationQueueRecord20 *pIVar8;
+  TerrainDirectionRecord *pTVar9;
   FieldGridCell *gridCell1;
-  ArmyAssetRecordPrefix **ppAVar9;
+  ArmyAssetRecordPrefix **ppAVar10;
+  StatusValueEaxCf5 SVar11;
+  ArmyRegistryIdEaxCf5_5719f0 AVar12;
+  ArmyRegistryIdEaxCf5_571c30 AVar13;
   FieldGridAsset *fieldGrid1;
   
-  dVar4 = g_UiCommandModeG;
+  dVar5 = g_UiCommandModeG;
   root = g_InGameRuntimeRoot;
   if ((commandArg3 & 4) == 0) {
     if ((g_UiCommandRuntimeFlags & 4) == 0) {
-      pbVar3 = g_InGameRuntimeRoot->opaque9A74_9B4B;
+      pbVar4 = g_InGameRuntimeRoot->opaque9A74_9B4B;
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 5;
       pWVar1 = &(g_InGameRuntimeRoot->worldRuntime0A30).runtimeFlags;
       *pWVar1 = *pWVar1 | 0x400000;
       UiPageStack_SetActiveIndex
-                (g_UiCommandModeGPrimaryPageIndices[dVar4],(UiPageStackControl *)(pbVar3 + 0x18));
+                (g_UiCommandModeGPrimaryPageIndices[dVar5],(UiPageStackControl *)(pbVar4 + 0x18));
       UiPageStack_SetActiveIndex
-                (g_UiCommandModeGSecondaryPageIndices[extraout_EDX],
+                (g_UiCommandModeGSecondaryPageIndices[dVar5],
                  (UiPageStackControl *)root->opaque9EE0_9FAB);
       UiPageStack_SetActiveIndex
-                (g_UiCommandModeGTertiaryPageIndices[extraout_EDX_00],
+                (g_UiCommandModeGTertiaryPageIndices[dVar5],
                  (UiPageStackControl *)(root->opaqueA06C_C3E3 + 0x1130));
-      UiPageStack_ActivePageNotInListCf(&root->optionalUiPageStack40AC);
-      if (extraout_EAX == 0) {
+      SVar11 = UiPageStack_ActivePageNotInListCf(&root->optionalUiPageStack40AC);
+      if (SVar11.valueOrError == 0) {
         UiPageStack_SetActiveIndex(1,&root->optionalUiPageStack4530);
         UiPageStack_SetActiveIndex(1,&root->optionalUiPageStack4644);
       }
@@ -5010,36 +4893,36 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
            InGameUiCommand_ResetInteractionByMode;
       g_UiRootCallbacks_0054FBC0.keyboardFallbackCf =
            InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf;
-      (*g_UiCommandModeGHandlers[extraout_EDX_01])
-                (root->opaque0058_017B + g_UiCommandModeGControlOffsets[extraout_EDX_01] + -0x58);
-      pIVar7 = root->notificationQueue9E60;
-      for (iVar5 = 0x20; iVar5 != 0; iVar5 = iVar5 + -1) {
-        pIVar7->notificationMovieId00 = 0;
-        pIVar7 = (InGameNotificationQueueRecord20 *)&pIVar7->priority04;
+      (*g_UiCommandModeGHandlers[dVar5])
+                (root->opaque0058_017B + g_UiCommandModeGControlOffsets[dVar5] + -0x58);
+      pIVar8 = root->notificationQueue9E60;
+      for (iVar6 = 0x20; iVar6 != 0; iVar6 = iVar6 + -1) {
+        pIVar8->notificationMovieId00 = 0;
+        pIVar8 = (InGameNotificationQueueRecord20 *)&pIVar8->priority04;
       }
       Movie_Close();
-      dVar4 = g_UiCommandAbsoluteSelectionIndex;
-      pGVar6 = g_InGamePanelTextureSource;
+      dVar5 = g_UiCommandAbsoluteSelectionIndex;
+      pGVar7 = g_InGamePanelTextureSource;
       if (root->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE) {
         root->sessionNotificationInteractionState9B4C = NONE;
       }
-      pGVar2 = g_TerrainMaterialTextureSets[dVar4];
-      root->observedSessionNotificationValue9B50 = (dword)pGVar6;
-      pGVar6 = (GraphicsTextureSourceAsset *)0x0;
+      pGVar2 = g_TerrainMaterialTextureSets[dVar5];
+      root->observedSessionNotificationValue9B50 = (dword)pGVar7;
+      pGVar7 = (GraphicsTextureSourceAsset *)0x0;
       if (pGVar2 != (GraphicsTextureSet *)0x0) {
-        pGVar6 = pGVar2->entries[0].sourceAsset;
+        pGVar7 = pGVar2->entries[0].sourceAsset;
       }
       root->notificationPlaybackCompletionCode9B54 = 0x25;
-      *(GraphicsTextureSourceAsset **)(root->opaque9B58_9E3F + 0xb8) = pGVar6;
+      *(GraphicsTextureSourceAsset **)(root->opaque9B58_9E3F + 0xb8) = pGVar7;
       UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,(UiNodeBase *)root);
-      g_UiCommandModeGArmyAssetId =
-           ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
-      dVar4 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
-      *(dword *)(root->opaque9B58_9E3F + 0x1cc) = dVar4;
-      g_UiCommandMode4ArmyAssetId =
-           ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
-      dVar4 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-      *(dword *)(root->opaque9B58_9E3F + 0x284) = dVar4;
+      AVar12 = ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
+      g_UiCommandModeGArmyAssetId = AVar12.eax;
+      dVar5 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
+      *(dword *)(root->opaque9B58_9E3F + 0x1cc) = dVar5;
+      AVar13 = ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
+      g_UiCommandMode4ArmyAssetId = AVar13.eax;
+      dVar5 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
+      *(dword *)(root->opaque9B58_9E3F + 0x284) = dVar5;
       FieldGrid_SetOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
                  (root->worldRuntime0A30).fieldGrid);
@@ -5050,27 +4933,24 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       FieldGrid_ClassifyCellFlagsToRuntimeByte
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
                  (root->worldRuntime0A30).fieldGrid);
-      iVar5 = 0x100;
-      pTVar8 = g_TerrainDirectionRecordTable256;
+      iVar6 = 0x100;
+      pTVar9 = g_TerrainDirectionRecordTable256;
       do {
-        pTVar8->angleAComponent0ScaledQ28 = 0;
-        pTVar8->angleAComponent1ScaledQ28 = 0;
-        pTVar8->angleBComponent0ScaledQ28 = 0;
-        pTVar8 = pTVar8 + 1;
-        iVar5 = iVar5 + -1;
-      } while (iVar5 != 0);
+        pTVar9->angleAComponent0ScaledQ28 = 0;
+        pTVar9->angleAComponent1ScaledQ28 = 0;
+        pTVar9->angleBComponent0ScaledQ28 = 0;
+        pTVar9 = pTVar9 + 1;
+        iVar6 = iVar6 + -1;
+      } while (iVar6 != 0);
       fieldGrid1 = (root->worldRuntime0A30).fieldGrid;
-      iVar5 = fieldGrid1->gridWidth * fieldGrid1->gridHeight;
+      iVar6 = fieldGrid1->gridWidth * fieldGrid1->gridHeight;
       gridCell1 = fieldGrid1->cells;
       do {
-        gridCell1->runtime58_6F[0x14] = 0;
-        gridCell1->runtime58_6F[0x15] = 0;
-        gridCell1->runtime58_6F[0x16] = 0;
-        gridCell1->runtime58_6F[0x17] = 0;
-        gridCell1->runtime7C = 0;
+        gridCell1->armyRuntimeSavedOffset6C = 0;
+        gridCell1->resourceExtractionDescriptor7C = 0;
         gridCell1 = gridCell1 + 1;
-        iVar5 = iVar5 + -1;
-      } while (iVar5 != 0);
+        iVar6 = iVar6 + -1;
+      } while (iVar6 != 0);
     }
   }
   else if ((g_UiCommandRuntimeFlags & 4) != 0) {
@@ -5079,36 +4959,45 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
               (0,(UiPageStackControl *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x18));
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)root->opaque9EE0_9FAB);
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root->opaqueA06C_C3E3 + 0x1130));
-    UiPageStack_ActivePageNotInListCf(&root->optionalUiPageStack40AC);
-    if (extraout_EAX_00 == 0) {
+    SVar11 = UiPageStack_ActivePageNotInListCf(&root->optionalUiPageStack40AC);
+    if (SVar11.valueOrError == 0) {
       UiPageStack_SetActiveIndex(0,&root->optionalUiPageStack4530);
       UiPageStack_SetActiveIndex(0,&root->optionalUiPageStack4644);
     }
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root->opaque4100_452F + 0x22c));
     UiCommandModeG_ClearNodeFlag00100000((UiNodeBase *)&root->worldRuntime0A30);
-    *(code **)(extraout_EAX_01 + 0x15c) = InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
-    *(code **)(extraout_EAX_01 + 0x100) = InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf;
-    *(code **)(extraout_EAX_01 + 0x104) = InGameWorldInput_ResolveContextActionAndCursorCf;
-    *(code **)(extraout_EAX_01 + 0x108) = InGameWorldInput_ResolveContextActionAndCursorCf;
-    *(code **)(extraout_EAX_01 + 0x10c) = InGameWorldInput_BeginPointerCaptureCf;
-    *(code **)(extraout_EAX_01 + 0x110) = InGameWorldInput_UpdateDragSelectionAndCameraCf;
-    *(code **)(extraout_EAX_01 + 0x114) = InGameWorldInput_CommitPointerActionCf;
-    *(code **)(extraout_EAX_01 + 0xb0) = InGameUiRuntime_ClearTransientState1BCallback;
-    *(code **)(extraout_EAX_01 + 0x118) = InGameUiRuntime_DispatchWorldContextActionCallback;
-    *(uint *)(extraout_EAX_01 + 0x4c) = *(uint *)(extraout_EAX_01 + 0x4c) | 0x400;
+    root->worldOverlayCallback0B8C = InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
+    (root->worldRuntime0A30).selection.dispatchCommandCallback =
+         InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf;
+    (root->worldRuntime0A30).selection.resolveContextActionPrimaryCallback =
+         InGameWorldInput_ResolveContextActionAndCursorCf;
+    (root->worldRuntime0A30).selection.resolveContextActionSecondaryCallback =
+         InGameWorldInput_ResolveContextActionAndCursorCf;
+    (root->worldRuntime0A30).selection.beginPointerCaptureCallback =
+         InGameWorldInput_BeginPointerCaptureCf;
+    (root->worldRuntime0A30).selection.updateDragSelectionCallback =
+         InGameWorldInput_UpdateDragSelectionAndCameraCf;
+    (root->worldRuntime0A30).selection.commitPointerActionCallback =
+         InGameWorldInput_CommitPointerActionCf;
+    (root->worldRuntime0A30).fieldRegion.clearTransientStateCallback =
+         InGameUiRuntime_ClearTransientState1BCallback;
+    (root->worldRuntime0A30).selection.dispatchWorldContextActionCallback =
+         InGameUiRuntime_DispatchWorldContextActionCallback;
+    pWVar1 = &(root->worldRuntime0A30).runtimeFlags;
+    *pWVar1 = *pWVar1 | 0x400;
     g_UiRootCallbacks_0054FBC0.keyboardFallbackCf = EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     ;
-    ppAVar9 = g_ArmyAssetRecordRegistry;
-    iVar5 = 0x300;
+    ppAVar10 = g_ArmyAssetRecordRegistry;
+    iVar6 = 0x300;
     do {
-      if (*ppAVar9 != (ArmyAssetRecordPrefix *)0x0) {
-        (*g_MemoryApi.free)((void *)(*ppAVar9)[2].byteSize);
-        *(undefined4 *)(extraout_EDX_02 + 0x20) = 0;
-        iVar5 = extraout_ECX;
+      pAVar3 = *ppAVar10;
+      if (pAVar3 != (ArmyAssetRecordPrefix *)0x0) {
+        (*g_MemoryApi.free)((void *)pAVar3[2].byteSize);
+        pAVar3[2].byteSize = 0;
       }
-      ppAVar9 = ppAVar9 + 1;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      ppAVar10 = ppAVar10 + 1;
+      iVar6 = iVar6 + -1;
+    } while (iVar6 != 0);
     if ((g_UiCommandRuntimeFlags & 8) == 0) {
       FieldGrid_ClearOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
@@ -5117,23 +5006,26 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     WorldRuntime_ForEachNodeInOwnerListD8
               (&root->worldRuntime0A30,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
                ,&root->worldRuntime0A30);
+    node = &root->worldRuntime0A30;
     FieldGrid_ClassifyCellFlagsToRuntimeByte
               ((root->worldRuntime0A30).activeFactionRuntimeIndex,(root->worldRuntime0A30).fieldGrid
               );
-    UiCommandModeG_ClearNodeFlag00100000(node);
-    UiCommandModeG_ClearNodeFlag00200000(node_00);
-    UiCommandModeG_SetNodeFlag00000400(node_01);
-    UiCommandModeG_ClearNodeFlag01000000(node_02);
-    UiCommandModeG_ApplyRawColorVariant(visualState);
-    UiCommandModeG_ClearNodeFlag00800000(node_03);
-    UiCommandModeG_ClearNodeFlag02000000(node_04);
-    *(uint *)(extraout_EDX_03 + 0x4c) = *(uint *)(extraout_EDX_03 + 0x4c) & 0xffbfffff;
-    TerrainDirectionTable_AdvanceAndRebuildVectors(extraout_ECX_00,extraout_EDX_03);
+    UiCommandModeG_ClearNodeFlag00100000((UiNodeBase *)node);
+    UiCommandModeG_ClearNodeFlag00200000((UiNodeBase *)node);
+    UiCommandModeG_SetNodeFlag00000400((UiNodeBase *)node);
+    UiCommandModeG_ClearNodeFlag01000000((UiNodeBase *)node);
+    UiCommandModeG_ApplyRawColorVariant(node);
+    UiCommandModeG_ClearNodeFlag00800000((UiNodeBase *)node);
+    UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+    pWVar1 = &(root->worldRuntime0A30).runtimeFlags;
+    *pWVar1 = *pWVar1 & 0xffbfffff;
+    TerrainDirectionTable_AdvanceAndRebuildVectors();
     g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)0x0;
     InGameSelectionDetailPanel_Rebuild();
   }
   return;
 }
+
 
 /* Address: 0x005622F0.
    Ownership: ui/ingame/runtime.
@@ -5142,27 +5034,28 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
    Cross-module calls: FieldGrid_SaveAssetImageFromRuntimeStateCf [world/terrain/grid],
    InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf [gameplay/session/level].
 */
-void InGameUiCommand_SaveFieldAndLevelAssetImages
-               (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+void __thandor_preserve_eax
+InGameUiCommand_SaveFieldAndLevelAssetImages
+          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
-  undefined1 in_CF;
-  bool bVar1;
-  InGameRuntimeRootImageC3E4 *gameRuntime1;
+  InGameRuntimeRootImageC3E4 *pIVar1;
+  StatusValueEaxCf5 SVar2;
   
-  gameRuntime1 = g_InGameRuntimeRoot;
-  FieldGrid_SaveAssetImageFromRuntimeStateCf
-            ((dword)(g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid);
-  if ((bool)in_CF) {
-    (*g_FatalErrorRuntimeDispatchCf)();
+  pIVar1 = g_InGameRuntimeRoot;
+  SVar2 = FieldGrid_SaveAssetImageFromRuntimeStateCf
+                    ((dword *)(g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid);
+  if (SVar2.carry) {
+    (*g_FatalErrorRuntimeDispatchCf)(SVar2.valueOrError,true);
   }
-  bVar1 = (InGameRuntimeRootImageC3E4 *)0xfffff5cf < gameRuntime1;
-  InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf((int)&gameRuntime1->worldRuntime0A30);
-  if (bVar1) {
-    (*g_FatalErrorRuntimeDispatchCf)();
+  SVar2 = InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf
+                    ((InGameLevelSaveWorldView *)&pIVar1->worldRuntime0A30);
+  if (SVar2.carry) {
+    (*g_FatalErrorRuntimeDispatchCf)(SVar2.valueOrError,true);
   }
   return;
 }
+
 
 /* Address: 0x00567040.
    Ownership: ui/ingame/runtime.
@@ -5171,17 +5064,17 @@ void InGameUiCommand_SaveFieldAndLevelAssetImages
    Cross-module calls: RecentTextHistory_Insert [ui/support/runtime], RecentTextHistory_SortAndBuildPointerList
    [ui/support/runtime].
 */
-word * __fastcall InGameRecentTextHistory_InsertAndRebuild8(void)
+void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(word *text)
 
 {
-  word *in_EAX;
   RecentTextHistoryPointerList *output;
   
   output = &g_InGameRuntimeRoot->recentTextHistory09B8;
-  RecentTextHistory_Insert(in_EAX);
+  RecentTextHistory_Insert(text);
   RecentTextHistory_SortAndBuildPointerList(8,output);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0056B850.
    Ownership: ui/ingame/runtime.
@@ -5190,7 +5083,7 @@ word * __fastcall InGameRecentTextHistory_InsertAndRebuild8(void)
    preserved for non-queue direct callers.
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
+void __thandor_preserve_eax InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -5205,6 +5098,7 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
   return;
 }
 
+
 /* Address: 0x0056B890.
    Ownership: ui/ingame/runtime.
    Purpose: Finds the UI root, converts the rich UTF-16 command text at root+0x1D04 into a 48-byte payload, derives
@@ -5217,62 +5111,60 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
    FrontendPlayerTextCommand_AppendTripleClamped [ui/frontend/player].
 */
-void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 
 {
   sdword *psVar1;
-  UiNodeBase *pUVar2;
-  int iVar3;
-  uint uVar4;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint extraout_EDX;
-  uint packedState;
-  uint extraout_EDX_00;
+  int *piVar2;
+  UiNodeBase *pUVar3;
+  int iVar4;
   uint uVar5;
-  UiAnchorFractionQ31 *pUVar6;
-  bool bVar7;
+  CommandPayloadDword04 packedState;
+  uint uVar6;
+  UiAnchorFractionQ31 *pUVar7;
+  bool bVar8;
+  UiSelectableNodeEaxEcxCf9 UVar9;
   
-  pUVar2 = source->parent;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  pUVar3 = source->parent;
+  while (pUVar3 != (UiNodeBase *)0xffffffff) {
     source = source->parent;
-    pUVar2 = source->parent;
+    pUVar3 = source->parent;
   }
   psVar1 = &source[0x60].right;
   RichTextCommandStream_CopyToNarrowCf
             (0x30,g_UiSevenSlotCommandPayloadText.textBytes,(word *)&source[0x61].rightAnchorQ31);
-  iVar3 = UiSelectableGroup_NoneVisibleSelectedCf(3);
-  if (iVar3 - (int)psVar1 == 0x1ec) {
-    uVar4 = 0;
-    uVar5 = 0x100;
+  UVar9 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+  iVar4 = (int)UVar9.node - (int)psVar1;
+  if (iVar4 == 0x1ec) {
+    uVar5 = 0;
+    packedState = 0;
+    uVar6 = 0x100;
     do {
-      bVar7 = CARRY4(uVar5,uVar5);
-      uVar5 = uVar5 * 2;
-      UiSelectableControl_IsSelectedCf
-                ((UiSelectableControl *)
-                 (g_UiSevenSlotSelectionControlOffsets[uVar4] + -0x1c98 + (int)psVar1));
-      packedState = extraout_EDX;
-      if (bVar7) {
-        packedState = extraout_EDX | uVar5;
+      piVar2 = g_UiSevenSlotSelectionControlOffsets + uVar5;
+      uVar6 = uVar6 * 2;
+      uVar5 = uVar5 + 1;
+      bVar8 = (bool)UiSelectableControl_IsSelectedCf
+                              ((UiSelectableControl *)(*piVar2 + -0x1c98 + (int)psVar1));
+      if (bVar8) {
+        packedState = packedState | uVar6;
       }
-      uVar4 = extraout_ECX;
-    } while (extraout_ECX < 7);
+    } while (uVar5 < 7);
   }
-  else if (iVar3 - (int)psVar1 == 0x24c) {
-    uVar4 = 0;
-    uVar5 = 0x8000;
+  else if (iVar4 == 0x24c) {
+    uVar5 = 0;
+    packedState = 0;
+    uVar6 = 0x8000;
     do {
-      bVar7 = CARRY4(uVar5,uVar5);
-      uVar5 = uVar5 * 2;
-      UiSelectableControl_IsSelectedCf
-                ((UiSelectableControl *)
-                 (g_UiSevenSlotSelectionControlOffsets[uVar4] + -0x1c98 + (int)psVar1));
-      packedState = extraout_EDX_00;
-      if (bVar7) {
-        packedState = extraout_EDX_00 | uVar5;
+      piVar2 = g_UiSevenSlotSelectionControlOffsets + uVar5;
+      uVar6 = uVar6 * 2;
+      uVar5 = uVar5 + 1;
+      bVar8 = (bool)UiSelectableControl_IsSelectedCf
+                              ((UiSelectableControl *)(*piVar2 + -0x1c98 + (int)psVar1));
+      if (bVar8) {
+        packedState = packedState | uVar6;
       }
-      uVar4 = extraout_ECX_00;
-    } while (extraout_ECX_00 < 7);
+    } while (uVar5 < 7);
   }
   else {
     packedState = 0xffffff00;
@@ -5346,13 +5238,14 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   source[0x61].rightOffset = 0;
   source[0x61].bottomOffset = 0;
   source[0x61].leftAnchorQ31 = 0;
-  pUVar6 = &source[0x61].rightAnchorQ31;
-  for (iVar3 = 0x18; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pUVar6 = 0;
-    pUVar6 = pUVar6 + 1;
+  pUVar7 = &source[0x61].rightAnchorQ31;
+  for (iVar4 = 0x18; iVar4 != 0; iVar4 = iVar4 + -1) {
+    *pUVar7 = 0;
+    pUVar7 = pUVar7 + 1;
   }
   return;
 }
+
 
 /* Address: 0x005669B0.
    Ownership: ui/ingame/runtime.
@@ -5364,250 +5257,250 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
    [gameplay/technology/runtime], UiNodeList_SuppressActionId [ui/controls/lists], ArmyAssetRegistry_FindByIdCf
    [assets/army/catalog], UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-void __cdecl InGameSelectionDetailPanel_Rebuild(void)
+void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void)
 
 {
   UiPageStackControl *stack;
   byte *pbVar1;
-  uint uVar2;
-  undefined4 uVar3;
-  dword dVar4;
-  void *pvVar5;
-  int iVar6;
-  ArmyAssetRecordPrefix *armyDefinition1;
-  int extraout_EAX;
-  int extraout_EAX_00;
-  uint uVar7;
+  GraphicsTextureSourceAsset *pGVar2;
+  uint uVar3;
+  ModelRuntimeSlot *pMVar4;
+  UiCommandRuntimeRecordPrefix *definitionNode;
+  int iVar5;
+  dword dVar6;
+  EnergyDemandQ4 EVar7;
   word *pwVar8;
-  ModelDefinitionRecordPrefix *modelDefinition1;
-  int iVar9;
-  int extraout_ECX;
-  sdword arg4;
-  int extraout_ECX_00;
-  word *source;
-  word *source_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  UiPageStackControl *stack_00;
-  word *source_01;
-  word *source_02;
-  int extraout_ECX_04;
-  int extraout_EDX;
-  int definitionNode;
+  uint uVar9;
+  ArmyAssetRecordPrefix *pAVar10;
+  int iVar11;
+  int iVar12;
   ModelDefinitionHierarchyNodeAddress32 definitionNode_00;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  int extraout_EDX_03;
-  int extraout_EDX_04;
-  int extraout_EDX_05;
-  int extraout_EDX_06;
+  ModelLinkedDefinitionBranchView18 *linkedDefinitionListView;
   InGameRuntimeRootImageC3E4 *firstNode;
   GameEntityRuntime *entityRuntime1;
-  int *piVar10;
-  GameEntityRuntime **ppGVar11;
-  word *pwVar12;
-  undefined1 uVar13;
-  ArmyUnlockedArmourAggregateEaxPreservedEdxCarrier64 AVar14;
-  EnergyQ4AggregateEaxPreservedEdxCarrier64 EVar15;
+  int *piVar13;
+  GameEntityRuntime **ppGVar14;
+  word *pwVar15;
+  bool bVar16;
+  ArmyRegistryEaxCf5_51b6d0 AVar17;
+  FatalErrorEaxCf5 FVar18;
+  TextResourceResolveEaxCf5 TVar19;
+  ModelDefinitionLookupEaxCf5 MVar20;
+  ModelRuntimeSlot *selectedModelRuntime;
+  ModelRuntimeSlot *selectedModelRuntimeTail;
+  ModelRuntimeSlot *selectedModelRuntimeTail2;
   
+  definitionNode = g_UiHoverSelectionRecord;
   firstNode = g_InGameRuntimeRoot;
   if (g_InGameRuntimeRoot == (InGameRuntimeRootImageC3E4 *)0x0) {
     return;
   }
-  iVar9 = 0x20;
-  uVar7 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
-  iVar6 = 0;
+  iVar11 = 0x20;
+  iVar12 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+  iVar5 = 0;
   entityRuntime1 = (GameEntityRuntime *)0x0;
-  ppGVar11 = g_SelectionInfoEntitySlots->entries;
+  ppGVar14 = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*ppGVar11 != (GameEntityRuntime *)0x0) {
-      iVar6 = iVar6 + 1;
-      entityRuntime1 = *ppGVar11;
+    if (*ppGVar14 != (GameEntityRuntime *)0x0) {
+      iVar5 = iVar5 + 1;
+      entityRuntime1 = *ppGVar14;
     }
-    ppGVar11 = ppGVar11 + 1;
-    iVar9 = iVar9 + -1;
-  } while (iVar9 != 0);
+    ppGVar14 = ppGVar14 + 1;
+    iVar11 = iVar11 + -1;
+  } while (iVar11 != 0);
   stack = &g_InGameRuntimeRoot->selectionDetailPageStack9FAC;
   if (g_UiHoverSelectionRecord == (UiCommandRuntimeRecordPrefix *)0x0) {
-    if (iVar6 == 1) {
-      uVar2 = (entityRuntime1->common).ownership.ownerIndex;
-      uVar13 = uVar7 < uVar2;
-      if (uVar7 == uVar2) {
-        FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
-                  ((RuntimeToken)(entityRuntime1->common).ownership.definitionOrClassRecord,
-                   (g_InGameRuntimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId);
-        if (!(bool)uVar13) {
+    if (iVar5 == 1) {
+      if (iVar12 == (entityRuntime1->common).ownership.ownerIndex) {
+        piVar13 = (entityRuntime1->common).ownership.definitionOrClassRecord;
+        iVar12 = *piVar13;
+        bVar16 = FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
+                           ((RuntimeToken)piVar13,
+                            (g_InGameRuntimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId)
+        ;
+        if (!bVar16) {
           UiNodeList_UnsuppressActionId(0x1010,(UiNodeBase *)firstNode);
-          iVar9 = 0x1c;
-          iVar6 = extraout_EDX_04;
+          iVar5 = 0x1c;
           do {
-            Technology_IsAvailableForFactionCf
-                      (*(PckTechnologyIdCatalog *)(iVar6 + 0x1c4 + iVar9 * 4),
-                       (entityRuntime1->common).ownership.ownerIndex);
-            if ((bool)uVar13)
+            bVar16 = Technology_IsAvailableForFactionCf
+                               (*(PckTechnologyIdCatalog *)(iVar12 + 0x1c4 + iVar5 * 4),
+                                (entityRuntime1->common).ownership.ownerIndex);
+            if (bVar16)
             goto InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails;
-            iVar9 = extraout_EAX + -1;
-            uVar13 = 0;
-            iVar6 = extraout_EDX_05;
-          } while (iVar9 != 0);
+            iVar5 = iVar5 + -1;
+          } while (iVar5 != 0);
         }
         UiNodeList_SuppressActionId(0x1010,(UiNodeBase *)firstNode);
 InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails:
-        ArmyAssetRegistry_FindByIdCf((entityRuntime1->common).runtimeIdentityOrArmyAssetId);
-        (*g_FatalErrorPrimaryDispatchCf)();
-        UiPageStack_SetActiveIndex(1,stack_00);
-        dVar4 = *(dword *)(extraout_EAX_00 + 0x1c);
-        iVar6 = ModelRuntimeHierarchy_SumMetric3C((int *)entityRuntime1);
-        firstNode->selectionDetailArmyAssetValueA060 = dVar4;
+        AVar17 = ArmyAssetRegistry_FindByIdCf((entityRuntime1->common).runtimeIdentityOrArmyAssetId)
+        ;
+        FVar18 = (*g_FatalErrorPrimaryDispatchCf)((dword)AVar17.eax,AVar17.carry);
+        UiPageStack_SetActiveIndex(1,stack);
+        dVar6 = *(dword *)(FVar18.eax + 0x1c);
+        iVar12 = ModelRuntimeHierarchy_SumMetric3C((int *)entityRuntime1);
+        firstNode->selectionDetailArmyAssetValueA060 = dVar6;
         firstNode->selectionDetailEntityA068 = entityRuntime1;
         (*g_WideNumberFormatUtf16)
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar6,g_InGameSelectionDetailArmourTextUtf16)
-        ;
-        uVar7 = ModelRuntime_QueryActiveHierarchyMetric((ArmyRuntimeSlot *)entityRuntime1);
+                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,iVar12,g_InGameSelectionDetailArmourTextUtf16
+                  );
+        uVar9 = ModelRuntime_QueryActiveHierarchyMetric((ArmyRuntimeSlot *)entityRuntime1);
         (*g_WideNumberFormatUtf16)
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar7 >> 4,
+                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar9 >> 4,
                    g_InGameSelectionDetailEnergyTextUtf16);
-        *(int *)(firstNode->opaqueA06C_C3E3 + 0x54) = *(int *)(extraout_EDX_06 + 4) + 0x18002c;
-        pwVar8 = TextResource_Resolve
+        *(int *)(firstNode->opaqueA06C_C3E3 + 0x54) = *(int *)(FVar18.eax + 4) + 0x18002c;
+        TVar19 = TextResource_Resolve
                            (*(int *)(*(int *)(entityRuntime1->common).ownership.
                                              definitionOrClassRecord + 4) + 0x18004f);
-        pwVar12 = g_InGameSelectionDetailNameTextUtf16;
-        for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-          *pwVar12 = *pwVar8;
+        pwVar8 = TVar19.eax;
+        pwVar15 = g_InGameSelectionDetailNameTextUtf16;
+        for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+          *pwVar15 = *pwVar8;
           pwVar8 = pwVar8 + 1;
-          pwVar12 = pwVar12 + 1;
+          pwVar15 = pwVar15 + 1;
         }
-        pwVar8 = TextResource_Resolve(0x18004e);
+        TVar19 = TextResource_Resolve(0x18004e);
+        pwVar8 = TVar19.eax;
         RichTextCommandStream_CopyExpandedCf
                   (0x80,g_InGameSelectionDetailWeaponName0TextUtf16,pwVar8);
         RichTextCommandStream_CopyExpandedCf
-                  (0x80,g_InGameSelectionDetailWeaponName1TextUtf16,source_01);
+                  (0x80,g_InGameSelectionDetailWeaponName1TextUtf16,pwVar8);
         RichTextCommandStream_CopyExpandedCf
-                  (0x80,g_InGameSelectionDetailWeaponName2TextUtf16,source_02);
+                  (0x80,g_InGameSelectionDetailWeaponName2TextUtf16,pwVar8);
         g_InGameSelectionDetailTextSlot05Utf16[0] = 0x2d;
         g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
         g_InGameSelectionDetailTextSlot09Utf16[0] = 0x2d;
         g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
-        pvVar5 = (entityRuntime1->common).ownership.definitionOrClassRecord;
-        if ((*(uint *)((int)pvVar5 + 0xec) & 0x40) != 0) {
-          armyDefinition1 =
-               ArmyAssetRegistry_FindByIdCf((entityRuntime1->common).runtimeIdentityOrArmyAssetId);
-          iVar6 = *(int *)((int)pvVar5 + 0x100);
+        selectedModelRuntime = (entityRuntime1->common).ownership.definitionOrClassRecord;
+        if (((selectedModelRuntime->classState).classStateEC & 0x40) != 0) {
+          AVar17 = ArmyAssetRegistry_FindByIdCf
+                             ((entityRuntime1->common).runtimeIdentityOrArmyAssetId);
+          iVar12 = *(int *)selectedModelRuntime->reserved100_117;
           *(ArmySelectionDetailTemplateVariantIndex *)(firstNode->opaqueA06C_C3E3 + 0x54) =
-               armyDefinition1->selectionDetailTemplateVariantIndex + 0x18003c;
-          pwVar8 = TextResource_Resolve(iVar6 * 2 + 0x300000);
-          RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailTextSlot09Utf16,pwVar8);
+               (AVar17.eax)->selectionDetailTemplateVariantIndex + 0x18003c;
+          TVar19 = TextResource_Resolve(iVar12 * 2 + 0x300000);
+          RichTextCommandStream_CopyExpandedCf
+                    (0x80,g_InGameSelectionDetailTextSlot09Utf16,TVar19.eax);
         }
-        if (*(int *)((int)pvVar5 + 0xc) != 0) {
-          if (*(int **)((int)pvVar5 + 0x140) != (int *)0x0) {
-            pwVar8 = TextResource_Resolve(*(int *)(**(int **)((int)pvVar5 + 0x140) + 4) + 0x18004f);
-            pwVar12 = g_InGameSelectionDetailWeaponName0TextUtf16;
-            for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-              *pwVar12 = *pwVar8;
+        if (selectedModelRuntime->attachmentCount0C != 0) {
+          pMVar4 = selectedModelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
+          if (pMVar4 != (ModelRuntimeSlot *)0x0) {
+            TVar19 = TextResource_Resolve
+                               (((pMVar4->definitionOrSavedId).definition)->flags + 0x18004f);
+            pwVar8 = TVar19.eax;
+            pwVar15 = g_InGameSelectionDetailWeaponName0TextUtf16;
+            for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+              *pwVar15 = *pwVar8;
               pwVar8 = pwVar8 + 1;
-              pwVar12 = pwVar12 + 1;
+              pwVar15 = pwVar15 + 1;
             }
           }
-          pvVar5 = (entityRuntime1->common).ownership.definitionOrClassRecord;
-          if (1 < *(uint *)((int)pvVar5 + 0xc)) {
-            piVar10 = *(int **)((int)pvVar5 + 0x160);
-            if (piVar10 != (int *)0x0) {
-              pwVar8 = TextResource_Resolve(*(int *)(*piVar10 + 4) + 0x18004f);
-              pwVar12 = g_InGameSelectionDetailWeaponName1TextUtf16;
-              for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-                *pwVar12 = *pwVar8;
+          selectedModelRuntimeTail = (entityRuntime1->common).ownership.definitionOrClassRecord;
+          if (1 < selectedModelRuntimeTail->attachmentCount0C) {
+            pMVar4 = selectedModelRuntimeTail->attachments140[1].childModelRuntimeOrSavedOffset00;
+            if (pMVar4 != (ModelRuntimeSlot *)0x0) {
+              TVar19 = TextResource_Resolve
+                                 (((pMVar4->definitionOrSavedId).definition)->flags + 0x18004f);
+              pwVar8 = TVar19.eax;
+              pwVar15 = g_InGameSelectionDetailWeaponName1TextUtf16;
+              for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+                *pwVar15 = *pwVar8;
                 pwVar8 = pwVar8 + 1;
-                pwVar12 = pwVar12 + 1;
+                pwVar15 = pwVar15 + 1;
               }
             }
-            pvVar5 = (entityRuntime1->common).ownership.definitionOrClassRecord;
-            if ((2 < *(uint *)((int)pvVar5 + 0xc)) &&
-               (piVar10 = *(int **)((int)pvVar5 + 0x180), piVar10 != (int *)0x0)) {
-              pwVar8 = TextResource_Resolve(*(int *)(*piVar10 + 4) + 0x18004f);
-              pwVar12 = g_InGameSelectionDetailWeaponName2TextUtf16;
-              for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-                *pwVar12 = *pwVar8;
+            selectedModelRuntimeTail2 = (entityRuntime1->common).ownership.definitionOrClassRecord;
+            if ((2 < selectedModelRuntimeTail2->attachmentCount0C) &&
+               (pMVar4 = selectedModelRuntimeTail2->attachments140[2].
+                         childModelRuntimeOrSavedOffset00, pMVar4 != (ModelRuntimeSlot *)0x0)) {
+              TVar19 = TextResource_Resolve
+                                 (((pMVar4->definitionOrSavedId).definition)->flags + 0x18004f);
+              pwVar8 = TVar19.eax;
+              pwVar15 = g_InGameSelectionDetailWeaponName2TextUtf16;
+              for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+                *pwVar15 = *pwVar8;
                 pwVar8 = pwVar8 + 1;
-                pwVar12 = pwVar12 + 1;
+                pwVar15 = pwVar15 + 1;
               }
             }
           }
         }
-        piVar10 = (entityRuntime1->common).ownership.definitionOrClassRecord;
-        iVar6 = *(int *)(*piVar10 + 0x4c);
-        if (iVar6 == 0x16) {
-          if (piVar10[0x2b] != 1) {
+        piVar13 = (entityRuntime1->common).ownership.definitionOrClassRecord;
+        iVar12 = *(int *)(*piVar13 + 0x4c);
+        if (iVar12 == 0x16) {
+          if (piVar13[0x2b] != 1) {
             return;
           }
-          armyDefinition1 = ArmyAssetRegistry_FindByIdCf(piVar10[0x18]);
+          AVar17 = ArmyAssetRegistry_FindByIdCf(piVar13[0x18]);
+          pAVar10 = AVar17.eax;
         }
-        else if (iVar6 == 0xb) {
-          if (piVar10[0x2e] != 1) {
+        else if (iVar12 == 0xb) {
+          if (piVar13[0x2e] != 1) {
             return;
           }
-          armyDefinition1 = ArmyAssetRegistry_FindByIdCf(piVar10[0x18]);
+          AVar17 = ArmyAssetRegistry_FindByIdCf(piVar13[0x18]);
+          pAVar10 = AVar17.eax;
         }
         else {
-          if (iVar6 != 0xd) {
-            if (iVar6 != 0xe) {
+          if (iVar12 != 0xd) {
+            if (iVar12 != 0xe) {
               return;
             }
             (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,piVar10[0x18],
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,piVar13[0x18],
                        g_InGameSelectionDetailWeaponName0TextUtf16);
             return;
           }
-          if (piVar10[0x2e] != 1) {
+          if (piVar13[0x2e] != 1) {
             return;
           }
-          armyDefinition1 = ArmyAssetRegistry_FindByIdCf(piVar10[0x18]);
+          AVar17 = ArmyAssetRegistry_FindByIdCf(piVar13[0x18]);
+          pAVar10 = AVar17.eax;
         }
-        dVar4 = armyDefinition1->rootNodeOffsetOrPointer;
-        if (armyDefinition1->selectionDetailTemplateVariantIndex < 8) {
+        linkedDefinitionListView =
+             (ModelLinkedDefinitionBranchView18 *)pAVar10->rootNodeOffsetOrPointer;
+        if (pAVar10->selectionDetailTemplateVariantIndex < 8) {
           *(ArmySelectionDetailTemplateVariantIndex *)(firstNode->opaqueA06C_C3E3 + 0x54) =
                *(int *)(firstNode->opaqueA06C_C3E3 + 0x54) +
-               armyDefinition1->selectionDetailTemplateVariantIndex;
+               pAVar10->selectionDetailTemplateVariantIndex;
         }
-        modelDefinition1 =
-             ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                       ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,dVar4);
-        pwVar8 = TextResource_Resolve(extraout_ECX_04 + modelDefinition1->flags);
-        pwVar12 = g_InGameSelectionDetailTextSlot05Utf16;
+        MVar20 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                           ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
+                            (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
+        TVar19 = TextResource_Resolve((MVar20.modelDefinition)->flags + 0x18004f);
+        pwVar8 = TVar19.eax;
+        pwVar15 = g_InGameSelectionDetailTextSlot05Utf16;
         goto InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots;
       }
     }
-    else if ((iVar6 != 0) && (uVar7 == (entityRuntime1->common).ownership.ownerIndex)) {
+    else if ((iVar5 != 0) && (iVar12 == (entityRuntime1->common).ownership.ownerIndex)) {
       UiPageStack_SetActiveIndex(2,stack);
-      iVar9 = 0x20;
-      piVar10 = &g_InGameSelectionDetailControlOffsetTable32;
-      iVar6 = 0xc;
-      ppGVar11 = g_SelectionInfoEntitySlots->entries;
+      iVar5 = 0x20;
+      piVar13 = &g_InGameSelectionDetailControlOffsetTable32;
+      iVar12 = 0xc;
+      ppGVar14 = g_SelectionInfoEntitySlots->entries;
       do {
-        entityRuntime1 = *ppGVar11;
-        if ((entityRuntime1 != (GameEntityRuntime *)0x0) && (iVar6 != 0)) {
-          iVar6 = *piVar10;
-          *(GameEntityRuntime **)(firstNode->opaque0058_017B + iVar6 + 4) = entityRuntime1;
-          armyDefinition1 =
-               ArmyAssetRegistry_FindByIdCf((entityRuntime1->common).runtimeIdentityOrArmyAssetId);
-          *(PckArmyAssetIdCatalog *)(firstNode->opaque0058_017B + iVar6 + -4) =
-               armyDefinition1[1].registryId;
-          firstNode = (InGameRuntimeRootImageC3E4 *)((int)firstNode + (iVar6 - *piVar10));
-          iVar6 = extraout_EDX + -1;
-          piVar10 = piVar10 + 1;
-          iVar9 = extraout_ECX;
+        entityRuntime1 = *ppGVar14;
+        if ((entityRuntime1 != (GameEntityRuntime *)0x0) && (iVar12 != 0)) {
+          iVar11 = *piVar13;
+          *(GameEntityRuntime **)(firstNode->opaque0058_017B + iVar11 + 4) = entityRuntime1;
+          AVar17 = ArmyAssetRegistry_FindByIdCf
+                             ((entityRuntime1->common).runtimeIdentityOrArmyAssetId);
+          *(PckArmyAssetIdCatalog *)(firstNode->opaque0058_017B + iVar11 + -4) =
+               AVar17.eax[1].registryId;
+          firstNode = (InGameRuntimeRootImageC3E4 *)((int)firstNode + (iVar11 - *piVar13));
+          iVar12 = iVar12 + -1;
+          piVar13 = piVar13 + 1;
         }
-        ppGVar11 = ppGVar11 + 1;
-        iVar9 = iVar9 + -1;
-      } while (iVar9 != 0);
-      for (; iVar6 != 0; iVar6 = iVar6 + -1) {
-        pbVar1 = firstNode->opaque0058_017B + *piVar10 + -4;
+        ppGVar14 = ppGVar14 + 1;
+        iVar5 = iVar5 + -1;
+      } while (iVar5 != 0);
+      for (; iVar12 != 0; iVar12 = iVar12 + -1) {
+        pbVar1 = firstNode->opaque0058_017B + *piVar13 + -4;
         pbVar1[0] = 0;
         pbVar1[1] = 0;
         pbVar1[2] = 0;
         pbVar1[3] = 0;
-        piVar10 = piVar10 + 1;
+        piVar13 = piVar13 + 1;
       }
       g_InGameSelectionDetailTextSlot05Utf16[0] = (word)g_InGameSelectionDetailTextSlot05Utf16._0_4_
       ;
@@ -5623,80 +5516,83 @@ InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails:
   }
   else {
     UiPageStack_SetActiveIndex(3,stack);
-    uVar3 = *(undefined4 *)(definitionNode + 0x1c);
-    AVar14 = ArmyAssetHierarchy_SumFactionUnlockedArmour
-                       ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,definitionNode);
-    *(undefined4 *)(firstNode->opaqueA06C_C3E3 + 0x128) = uVar3;
-    uVar7 = *(uint *)((int)(AVar14 >> 0x20) + 0x24);
+    pGVar2 = definitionNode->textureSource;
+    dVar6 = ArmyAssetHierarchy_SumFactionUnlockedArmour
+                      ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
+                       (ModelDefinitionHierarchyNodeAddress32)definitionNode);
+    *(GraphicsTextureSourceAsset **)(firstNode->opaqueA06C_C3E3 + 0x128) = pGVar2;
+    uVar9 = definitionNode->buildXeniteCostQ4;
+    uVar3 = definitionNode->buildDurationQ5;
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)AVar14,
-               g_InGameSelectionDetailArmourTextUtf16);
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,dVar6,g_InGameSelectionDetailArmourTextUtf16);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,arg4,
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar9 >> 4,
                g_InGameSelectionDetailBuildXeniteCostTextUtf16);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar7 >> 5,
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar3 >> 5,
                g_InGameSelectionDetailBuildTimeTextUtf16);
-    EVar15 = ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
-                       ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,definitionNode_00);
+    EVar7 = ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
+                      ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
+                       (ModelDefinitionHierarchyNodeAddress32)definitionNode);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)EVar15 >> 4,
-               g_InGameSelectionDetailEnergyTextUtf16);
-    iVar6 = *(int *)(extraout_EDX_00 + 4) + 0x180045;
-    *(int *)(firstNode->opaqueA06C_C3E3 + 0x184) = iVar6;
-    *(int *)(firstNode->opaqueA06C_C3E3 + 0x1070) = iVar6;
-    modelDefinition1 =
-         ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                   ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
-                    *(ModelLinkedDefinitionListAddress32 *)(extraout_EDX_00 + 0xc));
-    pwVar8 = TextResource_Resolve(extraout_ECX_00 + modelDefinition1->flags);
-    pwVar12 = g_InGameSelectionDetailNameTextUtf16;
-InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
-    for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *pwVar12 = *pwVar8;
-      pwVar8 = pwVar8 + 1;
-      pwVar12 = pwVar12 + 1;
-    }
-    pwVar8 = TextResource_Resolve(0x18004e);
-    RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailWeaponName0TextUtf16,pwVar8);
-    RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailWeaponName1TextUtf16,source);
-    RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailWeaponName2TextUtf16,source_00)
-    ;
-    if (*(int *)(extraout_EDX_01 + 8) != 0) {
-      modelDefinition1 =
-           ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                     ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
-                      *(ModelLinkedDefinitionListAddress32 *)(extraout_EDX_01 + 0xc));
-      pwVar8 = TextResource_Resolve(extraout_ECX_01 + modelDefinition1->flags);
-      pwVar12 = g_InGameSelectionDetailWeaponName0TextUtf16;
-      for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *pwVar12 = *pwVar8;
-        pwVar8 = pwVar8 + 1;
-        pwVar12 = pwVar12 + 1;
-      }
-      if (1 < *(uint *)(extraout_EDX_02 + 8)) {
-        modelDefinition1 =
-             ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,EVar7 >> 4,g_InGameSelectionDetailEnergyTextUtf16
+              );
+    iVar12 = *(int *)(definitionNode->reserved00_07 + 4) + 0x180045;
+    *(int *)(firstNode->opaqueA06C_C3E3 + 0x184) = iVar12;
+    *(int *)(firstNode->opaqueA06C_C3E3 + 0x1070) = iVar12;
+    linkedDefinitionListView = *(ModelLinkedDefinitionBranchView18 **)definitionNode->reserved0C_1B;
+    MVar20 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                        ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
-                        *(ModelLinkedDefinitionListAddress32 *)(extraout_EDX_02 + 0x10));
-        pwVar8 = TextResource_Resolve(extraout_ECX_02 + modelDefinition1->flags);
-        pwVar12 = g_InGameSelectionDetailWeaponName1TextUtf16;
-        for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-          *pwVar12 = *pwVar8;
-          pwVar8 = pwVar8 + 1;
-          pwVar12 = pwVar12 + 1;
-        }
-        if (2 < *(uint *)(extraout_EDX_03 + 8)) {
-          modelDefinition1 =
-               ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                        (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
+    TVar19 = TextResource_Resolve((MVar20.modelDefinition)->flags + 0x18004f);
+    pwVar8 = TVar19.eax;
+    pwVar15 = g_InGameSelectionDetailNameTextUtf16;
+InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
+    for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+      *pwVar15 = *pwVar8;
+      pwVar8 = pwVar8 + 1;
+      pwVar15 = pwVar15 + 1;
+    }
+    TVar19 = TextResource_Resolve(0x18004e);
+    pwVar8 = TVar19.eax;
+    RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailWeaponName0TextUtf16,pwVar8);
+    RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailWeaponName1TextUtf16,pwVar8);
+    RichTextCommandStream_CopyExpandedCf(0x80,g_InGameSelectionDetailWeaponName2TextUtf16,pwVar8);
+    if (linkedDefinitionListView->childListCount != 0) {
+      MVar20 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                          ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
-                          *(ModelLinkedDefinitionListAddress32 *)(extraout_EDX_03 + 0x14));
-          pwVar8 = TextResource_Resolve(extraout_ECX_03 + modelDefinition1->flags);
-          pwVar12 = g_InGameSelectionDetailWeaponName2TextUtf16;
-          for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-            *pwVar12 = *pwVar8;
+                          linkedDefinitionListView->childList0Address);
+      TVar19 = TextResource_Resolve((MVar20.modelDefinition)->flags + 0x18004f);
+      pwVar8 = TVar19.eax;
+      pwVar15 = g_InGameSelectionDetailWeaponName0TextUtf16;
+      for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+        *pwVar15 = *pwVar8;
+        pwVar8 = pwVar8 + 1;
+        pwVar15 = pwVar15 + 1;
+      }
+      if (1 < linkedDefinitionListView->childListCount) {
+        MVar20 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                           ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
+                            linkedDefinitionListView->childList1Address);
+        TVar19 = TextResource_Resolve((MVar20.modelDefinition)->flags + 0x18004f);
+        pwVar8 = TVar19.eax;
+        pwVar15 = g_InGameSelectionDetailWeaponName1TextUtf16;
+        for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+          *pwVar15 = *pwVar8;
+          pwVar8 = pwVar8 + 1;
+          pwVar15 = pwVar15 + 1;
+        }
+        if (2 < linkedDefinitionListView->childListCount) {
+          MVar20 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                             ((firstNode->worldRuntime0A30).activeFactionRuntimeIndex,
+                              linkedDefinitionListView->childList2Address);
+          TVar19 = TextResource_Resolve((MVar20.modelDefinition)->flags + 0x18004f);
+          pwVar8 = TVar19.eax;
+          pwVar15 = g_InGameSelectionDetailWeaponName2TextUtf16;
+          for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
+            *pwVar15 = *pwVar8;
             pwVar8 = pwVar8 + 1;
-            pwVar12 = pwVar12 + 1;
+            pwVar15 = pwVar15 + 1;
           }
         }
       }
@@ -5704,3 +5600,4 @@ InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
   }
   return;
 }
+

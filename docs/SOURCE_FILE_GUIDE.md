@@ -2,14 +2,14 @@
 
 This index explains each leaf source/header pair and shows which other curated modules call into it. All links are repository-relative and work on GitHub and in a local clone.
 
-[Module tree](MODULE_TREE.md) · [Umbrella header](../include/thandor/thandor.h) · [Function index](../FUNCTION_INDEX.csv) · [V279 → V523 changelog](../CHANGELOG_V279_TO_V523_FULL.md)
+[Module tree](MODULE_TREE.md) · [Developer changelog](../CHANGELOG.md) · [Full recovery changelog](../CHANGELOG_FULL.md) · [Umbrella header](../include/thandor/thandor.h)
 
 ## Assets
 
 <a id="module-assets-army-catalog"></a>
 ### `assets/army/catalog`
 
-[Source](../src/assets/army/catalog.c) · [Header](../include/thandor/assets/army/catalog.h) · [Call graph](callgraphs/assets/army/catalog.md) · [Graphviz](callgraphs/assets/army/catalog.dot)
+[Source](../src/assets/army/catalog.c) · [Header](../include/thandor/assets/army/catalog.h) · [Call graph](callgraphs/assets/army/catalog.md) · [Graphviz](callgraphs/assets/army/catalog.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-army-catalog)
 
 This file owns catalog lookup, preparation, and registry operations within asset loading, catalogs, and resource formats. Dominant function families: `ArmyAssetRegistry_*` (18), `ArmyAssetHierarchy_*` (2), `ArmyAssetRecord_*` (2). Representative entry points: `ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf`, `ArmyAssetRegistry_StepForwardFlag0100Without0200Cf`, `ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf`.
 
@@ -31,7 +31,7 @@ This file owns catalog lookup, preparation, and registry operations within asset
 <a id="module-assets-effect-catalog"></a>
 ### `assets/effect/catalog`
 
-[Source](../src/assets/effect/catalog.c) · [Header](../include/thandor/assets/effect/catalog.h) · [Call graph](callgraphs/assets/effect/catalog.md) · [Graphviz](callgraphs/assets/effect/catalog.dot)
+[Source](../src/assets/effect/catalog.c) · [Header](../include/thandor/assets/effect/catalog.h) · [Call graph](callgraphs/assets/effect/catalog.md) · [Graphviz](callgraphs/assets/effect/catalog.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-effect-catalog)
 
 This file owns catalog lookup, preparation, and registry operations within asset loading, catalogs, and resource formats. Dominant function families: `EffectAsset_*` (1), `EffectDefinition_*` (1), `EffectDefinitionRegistry_*` (1). Representative entry points: `EffectAsset_PrepareEntries`, `EffectDefinitions_ResolveCrossReferences`, `EffectDefinition_RegisterAndLoadSpriteCf`.
 
@@ -48,7 +48,7 @@ This file owns catalog lookup, preparation, and registry operations within asset
 <a id="module-assets-fnc-runtime"></a>
 ### `assets/fnc/runtime`
 
-[Source](../src/assets/fnc/runtime.c) · [Header](../include/thandor/assets/fnc/runtime.h) · [Call graph](callgraphs/assets/fnc/runtime.md) · [Graphviz](callgraphs/assets/fnc/runtime.dot)
+[Source](../src/assets/fnc/runtime.c) · [Header](../include/thandor/assets/fnc/runtime.h) · [Call graph](callgraphs/assets/fnc/runtime.md) · [Graphviz](callgraphs/assets/fnc/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-fnc-runtime)
 
 This file owns runtime state and lifecycle operations within asset loading, catalogs, and resource formats. Dominant function families: `FncModule_*` (3). Representative entry points: `FncModule_GetBindingModeCf`, `FncModule_LoadAndRelocateCf`, `FncModule_GetExportByIndexCf`.
 
@@ -59,7 +59,7 @@ This file owns runtime state and lifecycle operations within asset loading, cata
 <a id="module-assets-model-definitions"></a>
 ### `assets/model/definitions`
 
-[Source](../src/assets/model/definitions.c) · [Header](../include/thandor/assets/model/definitions.h) · [Call graph](callgraphs/assets/model/definitions.md) · [Graphviz](callgraphs/assets/model/definitions.dot)
+[Source](../src/assets/model/definitions.c) · [Header](../include/thandor/assets/model/definitions.h) · [Call graph](callgraphs/assets/model/definitions.md) · [Graphviz](callgraphs/assets/model/definitions.dot) · [Developer notes](../CHANGELOG.md#module-assets-model-definitions) · [Full changelog](../CHANGELOG_FULL.md#module-assets-model-definitions)
 
 This file owns definitions within asset loading, catalogs, and resource formats. Dominant function families: `ModelDefinition_*` (5), `ModelDefinitionRegistry_*` (3), `ModelDefinitionHierarchy_*` (2). Representative entry points: `ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf`, `ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology`, `ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf`.
 
@@ -91,7 +91,7 @@ This file owns definitions within asset loading, catalogs, and resource formats.
 <a id="module-assets-package-codec"></a>
 ### `assets/package/codec`
 
-[Source](../src/assets/package/codec.c) · [Header](../include/thandor/assets/package/codec.h) · [Call graph](callgraphs/assets/package/codec.md) · [Graphviz](callgraphs/assets/package/codec.dot)
+[Source](../src/assets/package/codec.c) · [Header](../include/thandor/assets/package/codec.h) · [Call graph](callgraphs/assets/package/codec.md) · [Graphviz](callgraphs/assets/package/codec.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-package-codec)
 
 This file owns encoding and decoding operations within asset loading, catalogs, and resource formats. Dominant function families: `PckCodec_*` (6). Representative entry points: `PckCodec_EncodeFieldGrid`, `PckCodec_DecodeFieldGrid`, `PckCodec_EncodeStored`.
 
@@ -104,7 +104,7 @@ This file owns encoding and decoding operations within asset loading, catalogs, 
 <a id="module-assets-package-runtime"></a>
 ### `assets/package/runtime`
 
-[Source](../src/assets/package/runtime.c) · [Header](../include/thandor/assets/package/runtime.h) · [Call graph](callgraphs/assets/package/runtime.md) · [Graphviz](callgraphs/assets/package/runtime.dot)
+[Source](../src/assets/package/runtime.c) · [Header](../include/thandor/assets/package/runtime.h) · [Call graph](callgraphs/assets/package/runtime.md) · [Graphviz](callgraphs/assets/package/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-package-runtime)
 
 This file owns runtime state and lifecycle operations within asset loading, catalogs, and resource formats. Dominant function families: `Package_*` (14), `LevelPackage_*` (1). Representative entry points: `LevelPackage_ValidateAndMount`, `Package_UpsertEntry`, `Package_LoadEntryIntoBuffer`.
 
@@ -138,7 +138,7 @@ This file owns runtime state and lifecycle operations within asset loading, cata
 <a id="module-assets-resource-runtime"></a>
 ### `assets/resource/runtime`
 
-[Source](../src/assets/resource/runtime.c) · [Header](../include/thandor/assets/resource/runtime.h) · [Call graph](callgraphs/assets/resource/runtime.md) · [Graphviz](callgraphs/assets/resource/runtime.dot)
+[Source](../src/assets/resource/runtime.c) · [Header](../include/thandor/assets/resource/runtime.h) · [Call graph](callgraphs/assets/resource/runtime.md) · [Graphviz](callgraphs/assets/resource/runtime.dot) · [Developer notes](../CHANGELOG.md#module-assets-resource-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-assets-resource-runtime)
 
 This file owns runtime state and lifecycle operations within asset loading, catalogs, and resource formats. Dominant function families: `ResourceRegistration_*` (6), `Resource_*` (2). Representative entry points: `ResourceRegistration_OpenSourceCf`, `Resource_Load`, `Resource_Release`.
 
@@ -176,7 +176,7 @@ This file owns runtime state and lifecycle operations within asset loading, cata
 <a id="module-assets-rom-runtime"></a>
 ### `assets/rom/runtime`
 
-[Source](../src/assets/rom/runtime.c) · [Header](../include/thandor/assets/rom/runtime.h) · [Call graph](callgraphs/assets/rom/runtime.md) · [Graphviz](callgraphs/assets/rom/runtime.dot)
+[Source](../src/assets/rom/runtime.c) · [Header](../include/thandor/assets/rom/runtime.h) · [Call graph](callgraphs/assets/rom/runtime.md) · [Graphviz](callgraphs/assets/rom/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-rom-runtime)
 
 This file owns runtime state and lifecycle operations within asset loading, catalogs, and resource formats. Dominant function families: `FrontendRomTransition_*` (4), `RomRegistry_*` (4), `RomRuntime_*` (4). Representative entry points: `FrontendRomActionTable_ExecuteRecord`, `RomAsset_PrepareRecords`, `RomRuntime_BuildAllRegistryNodeTrees`.
 
@@ -191,7 +191,7 @@ This file owns runtime state and lifecycle operations within asset loading, cata
 <a id="module-assets-scenario-catalog"></a>
 ### `assets/scenario/catalog`
 
-[Source](../src/assets/scenario/catalog.c) · [Header](../include/thandor/assets/scenario/catalog.h) · [Call graph](callgraphs/assets/scenario/catalog.md) · [Graphviz](callgraphs/assets/scenario/catalog.dot)
+[Source](../src/assets/scenario/catalog.c) · [Header](../include/thandor/assets/scenario/catalog.h) · [Call graph](callgraphs/assets/scenario/catalog.md) · [Graphviz](callgraphs/assets/scenario/catalog.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
 This file owns catalog lookup, preparation, and registry operations within asset loading, catalogs, and resource formats. Dominant function families: `ScenarioCatalog_*` (9), `FrontendScenarioSelection_*` (4), `FrontendScenarioPage_*` (3). Representative entry points: `FrontendScenarioSelection_ApplyLocalizedTextSelection`, `FrontendScenarioSelection_ApplyField70Selection`, `FrontendScenarioSelection_ApplyField50Selection`.
 
@@ -204,7 +204,7 @@ This file owns catalog lookup, preparation, and registry operations within asset
 <a id="module-assets-shot-catalog"></a>
 ### `assets/shot/catalog`
 
-[Source](../src/assets/shot/catalog.c) · [Header](../include/thandor/assets/shot/catalog.h) · [Call graph](callgraphs/assets/shot/catalog.md) · [Graphviz](callgraphs/assets/shot/catalog.dot)
+[Source](../src/assets/shot/catalog.c) · [Header](../include/thandor/assets/shot/catalog.h) · [Call graph](callgraphs/assets/shot/catalog.md) · [Graphviz](callgraphs/assets/shot/catalog.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-shot-catalog)
 
 This file owns catalog lookup, preparation, and registry operations within asset loading, catalogs, and resource formats. Dominant function families: `ShotDefinition_*` (5), `ShotAsset_*` (1), `ShotDefinitionRegistry_*` (1). Representative entry points: `ShotAsset_PrepareEntries`, `ShotDefinitions_ValidateTerrainMaterialReferences`, `ShotDefinitionRegistry_FindByIdWithErrorCf`.
 
@@ -224,7 +224,7 @@ This file owns catalog lookup, preparation, and registry operations within asset
 <a id="module-assets-sprite-catalog"></a>
 ### `assets/sprite/catalog`
 
-[Source](../src/assets/sprite/catalog.c) · [Header](../include/thandor/assets/sprite/catalog.h) · [Call graph](callgraphs/assets/sprite/catalog.md) · [Graphviz](callgraphs/assets/sprite/catalog.dot)
+[Source](../src/assets/sprite/catalog.c) · [Header](../include/thandor/assets/sprite/catalog.h) · [Call graph](callgraphs/assets/sprite/catalog.md) · [Graphviz](callgraphs/assets/sprite/catalog.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-sprite-catalog)
 
 This file owns catalog lookup, preparation, and registry operations within asset loading, catalogs, and resource formats. Dominant function families: `SpriteAsset_*` (2), `SpriteAssetRegistry_*` (2). Representative entry points: `SpriteAsset_ValidateGroupCountCf`, `SpriteAssetRegistry_Reset`, `SpriteAssetRegistry_FindById`.
 
@@ -240,7 +240,7 @@ This file owns catalog lookup, preparation, and registry operations within asset
 <a id="module-assets-text-resources"></a>
 ### `assets/text/resources`
 
-[Source](../src/assets/text/resources.c) · [Header](../include/thandor/assets/text/resources.h) · [Call graph](callgraphs/assets/text/resources.md) · [Graphviz](callgraphs/assets/text/resources.dot)
+[Source](../src/assets/text/resources.c) · [Header](../include/thandor/assets/text/resources.h) · [Call graph](callgraphs/assets/text/resources.md) · [Graphviz](callgraphs/assets/text/resources.dot) · [Full changelog](../CHANGELOG_FULL.md#module-assets-text-resources)
 
 This file owns resource lookup and management within asset loading, catalogs, and resource formats. Dominant function families: `FontGlyph_*` (4), `TextResourcePage_*` (3), `FontRuntime_*` (1). Representative entry points: `TextResourcePage_LoadCompatibilityAliases`, `FontRuntime_Init`, `TextResourcePage_Unload`.
 
@@ -275,7 +275,7 @@ This file owns resource lookup and management within asset loading, catalogs, an
 <a id="module-assets-text-richtext"></a>
 ### `assets/text/richtext`
 
-[Source](../src/assets/text/richtext.c) · [Header](../include/thandor/assets/text/richtext.h) · [Call graph](callgraphs/assets/text/richtext.md) · [Graphviz](callgraphs/assets/text/richtext.dot)
+[Source](../src/assets/text/richtext.c) · [Header](../include/thandor/assets/text/richtext.h) · [Call graph](callgraphs/assets/text/richtext.md) · [Graphviz](callgraphs/assets/text/richtext.dot) · [Developer notes](../CHANGELOG.md#module-assets-text-richtext) · [Full changelog](../CHANGELOG_FULL.md#module-assets-text-richtext)
 
 This file owns rich-text parsing, layout, and rendering within asset loading, catalogs, and resource formats. Dominant function families: `RichTextCommandStream_*` (17), `RichTextMarkup_*` (1). Representative entry points: `RichTextCommandStream_MeasureWrappedBlockRegs`, `RichTextCommandStream_DrawWrappedBlockCf`, `RichTextCommandStream_DrawSingleLine`.
 
@@ -315,7 +315,7 @@ This file owns rich-text parsing, layout, and rendering within asset loading, ca
 <a id="module-audio-backend-runtime"></a>
 ### `audio/backend/runtime`
 
-[Source](../src/audio/backend/runtime.c) · [Header](../include/thandor/audio/backend/runtime.h) · [Call graph](callgraphs/audio/backend/runtime.md) · [Graphviz](callgraphs/audio/backend/runtime.dot)
+[Source](../src/audio/backend/runtime.c) · [Header](../include/thandor/audio/backend/runtime.h) · [Call graph](callgraphs/audio/backend/runtime.md) · [Graphviz](callgraphs/audio/backend/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-audio-backend-runtime)
 
 This file owns runtime state and lifecycle operations within audio decoding, playback, and spatial sound. Dominant function families: `DirectSound_*` (13), `SoundBackendDisabled_*` (11). Representative entry points: `DirectSound_Shutdown`, `SoundBackendDisabled_CreateSampleVoiceSet`, `SoundBackendDisabled_ReleaseSampleVoiceSet`.
 
@@ -329,7 +329,7 @@ This file owns runtime state and lifecycle operations within audio decoding, pla
 <a id="module-audio-codec-sam"></a>
 ### `audio/codec/sam`
 
-[Source](../src/audio/codec/sam.c) · [Header](../include/thandor/audio/codec/sam.h) · [Call graph](callgraphs/audio/codec/sam.md) · [Graphviz](callgraphs/audio/codec/sam.dot)
+[Source](../src/audio/codec/sam.c) · [Header](../include/thandor/audio/codec/sam.h) · [Call graph](callgraphs/audio/codec/sam.md) · [Graphviz](callgraphs/audio/codec/sam.dot) · [Full changelog](../CHANGELOG_FULL.md#module-audio-codec-sam)
 
 This file owns SAM audio decoding and synthesis within audio decoding, playback, and spatial sound. Dominant function families: `SoundSample_*` (3), `SoundCoefficientTransform_*` (1). Representative entry points: `SoundCoefficientTransform_ApplyCosineBanksMmx`, `SoundSample_DecodeCoefficientBlockToPcmMmx`, `SoundSample_DecodeCoefficientBlockToMonoPcmMmx`.
 
@@ -340,7 +340,7 @@ This file owns SAM audio decoding and synthesis within audio decoding, playback,
 <a id="module-audio-spatial-runtime"></a>
 ### `audio/spatial/runtime`
 
-[Source](../src/audio/spatial/runtime.c) · [Header](../include/thandor/audio/spatial/runtime.h) · [Call graph](callgraphs/audio/spatial/runtime.md) · [Graphviz](callgraphs/audio/spatial/runtime.dot)
+[Source](../src/audio/spatial/runtime.c) · [Header](../include/thandor/audio/spatial/runtime.h) · [Call graph](callgraphs/audio/spatial/runtime.md) · [Graphviz](callgraphs/audio/spatial/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-audio-spatial-runtime)
 
 This file owns runtime state and lifecycle operations within audio decoding, playback, and spatial sound. Dominant function families: `SpatialSoundSlot_*` (4), `SpatialSound_*` (3), `SpatialSoundPool_*` (3). Representative entry points: `SpatialSoundPool_Init`, `SpatialSound_RebuildListenerTransformFromPose`, `SpatialSound_PlayPositionedOneShot`.
 
@@ -363,7 +363,7 @@ This file owns runtime state and lifecycle operations within audio decoding, pla
 <a id="module-core-error-runtime"></a>
 ### `core/error/runtime`
 
-[Source](../src/core/error/runtime.c) · [Header](../include/thandor/core/error/runtime.h) · [Call graph](callgraphs/core/error/runtime.md) · [Graphviz](callgraphs/core/error/runtime.dot)
+[Source](../src/core/error/runtime.c) · [Header](../include/thandor/core/error/runtime.h) · [Call graph](callgraphs/core/error/runtime.md) · [Graphviz](callgraphs/core/error/runtime.dot) · [Developer notes](../CHANGELOG.md#module-core-error-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-core-error-runtime)
 
 This file owns runtime state and lifecycle operations within shared low-level runtime services. Dominant function families: `ErrorRuntime_*` (3), `FatalError_*` (3), `ErrorSystem_*` (1). Representative entry points: `ErrorSystem_Init`, `ErrorRuntime_CallbackAlwaysFailCf`, `ErrorRuntime_CallbackReturnCode8`.
 
@@ -379,7 +379,7 @@ This file owns runtime state and lifecycle operations within shared low-level ru
 <a id="module-core-math-fixed"></a>
 ### `core/math/fixed`
 
-[Source](../src/core/math/fixed.c) · [Header](../include/thandor/core/math/fixed.h) · [Call graph](callgraphs/core/math/fixed.md) · [Graphviz](callgraphs/core/math/fixed.dot)
+[Source](../src/core/math/fixed.c) · [Header](../include/thandor/core/math/fixed.h) · [Call graph](callgraphs/core/math/fixed.md) · [Graphviz](callgraphs/core/math/fixed.dot) · [Developer notes](../CHANGELOG.md#module-core-math-fixed) · [Full changelog](../CHANGELOG_FULL.md#module-core-math-fixed)
 
 This file owns fixed-point math and transform helpers within shared low-level runtime services. Dominant function families: `FixedMath_*` (16), `FixedTransform_*` (12), `FixedVec3_*` (4). Representative entry points: `FixedTransform_ComposeEulerAnglesRegs`, `FixedMath_VectorToAnglesAndLength3Regs`, `FixedMath_VectorToAnglesAndLengthVec3Regs`.
 
@@ -416,7 +416,7 @@ This file owns fixed-point math and transform helpers within shared low-level ru
 <a id="module-core-math-geometry"></a>
 ### `core/math/geometry`
 
-[Source](../src/core/math/geometry.c) · [Header](../include/thandor/core/math/geometry.h) · [Call graph](callgraphs/core/math/geometry.md) · [Graphviz](callgraphs/core/math/geometry.dot)
+[Source](../src/core/math/geometry.c) · [Header](../include/thandor/core/math/geometry.h) · [Call graph](callgraphs/core/math/geometry.md) · [Graphviz](callgraphs/core/math/geometry.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-math-geometry)
 
 This file owns geometry helpers within shared low-level runtime services. Dominant function families: `Triangle2D_*` (1). Representative entry points: `Triangle2D_ComputeBarycentricWeightsQ12Packed`.
 
@@ -427,7 +427,7 @@ This file owns geometry helpers within shared low-level runtime services. Domina
 <a id="module-core-math-interpolation"></a>
 ### `core/math/interpolation`
 
-[Source](../src/core/math/interpolation.c) · [Header](../include/thandor/core/math/interpolation.h) · [Call graph](callgraphs/core/math/interpolation.md) · [Graphviz](callgraphs/core/math/interpolation.dot)
+[Source](../src/core/math/interpolation.c) · [Header](../include/thandor/core/math/interpolation.h) · [Call graph](callgraphs/core/math/interpolation.md) · [Graphviz](callgraphs/core/math/interpolation.dot) · [Developer notes](../CHANGELOG.md#module-core-math-interpolation) · [Full changelog](../CHANGELOG_FULL.md#module-core-math-interpolation)
 
 This file owns interpolation and numeric transition helpers within shared low-level runtime services. Dominant function families: `CubicSpline_*` (6), `WorldMotionSpline_*` (4), `InterpolationState_*` (1). Representative entry points: `WorldMotionSpline_EvaluateAndApplyAtTime`, `WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf`, `WorldMotionSpline_BuildSixChannelCurves`.
 
@@ -445,7 +445,7 @@ This file owns interpolation and numeric transition helpers within shared low-le
 <a id="module-core-math-random"></a>
 ### `core/math/random`
 
-[Source](../src/core/math/random.c) · [Header](../include/thandor/core/math/random.h) · [Call graph](callgraphs/core/math/random.md) · [Graphviz](callgraphs/core/math/random.dot)
+[Source](../src/core/math/random.c) · [Header](../include/thandor/core/math/random.h) · [Call graph](callgraphs/core/math/random.md) · [Graphviz](callgraphs/core/math/random.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-math-random)
 
 This file owns random-number state and selection helpers within shared low-level runtime services. Dominant function families: `Random_*` (6). Representative entry points: `Random_NextPrimary`, `Random_NextSecondary`, `Random_SetBothSeeds`.
 
@@ -465,7 +465,7 @@ This file owns random-number state and selection helpers within shared low-level
 <a id="module-core-memory-allocator"></a>
 ### `core/memory/allocator`
 
-[Source](../src/core/memory/allocator.c) · [Header](../include/thandor/core/memory/allocator.h) · [Call graph](callgraphs/core/memory/allocator.md) · [Graphviz](callgraphs/core/memory/allocator.dot)
+[Source](../src/core/memory/allocator.c) · [Header](../include/thandor/core/memory/allocator.h) · [Call graph](callgraphs/core/memory/allocator.md) · [Graphviz](callgraphs/core/memory/allocator.dot) · [Developer notes](../CHANGELOG.md#module-core-memory-allocator) · [Full changelog](../CHANGELOG_FULL.md#module-core-memory-allocator)
 
 This file owns memory allocation and heap management within shared low-level runtime services. Dominant function families: `ArenaHeap_*` (8), `PriorityPairHeap_*` (2), `DwordBlock64Array_*` (1). Representative entry points: `PriorityPairHeap_SiftUp`, `PriorityPairHeap_SiftDown`, `DwordBlock64Array_ContainsExactRecordCf`.
 
@@ -487,7 +487,7 @@ This file owns memory allocation and heap management within shared low-level run
 <a id="module-core-memory-synchronization"></a>
 ### `core/memory/synchronization`
 
-[Source](../src/core/memory/synchronization.c) · [Header](../include/thandor/core/memory/synchronization.h) · [Call graph](callgraphs/core/memory/synchronization.md) · [Graphviz](callgraphs/core/memory/synchronization.dot)
+[Source](../src/core/memory/synchronization.c) · [Header](../include/thandor/core/memory/synchronization.h) · [Call graph](callgraphs/core/memory/synchronization.md) · [Graphviz](callgraphs/core/memory/synchronization.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-memory-synchronization)
 
 This file owns runtime synchronization primitives within shared low-level runtime services. Dominant function families: `SpinLock_*` (4), `Runtime_*` (1). Representative entry points: `SpinLock_Acquire`, `SpinLock_TryAcquireFlags`, `SpinLock_Release`.
 
@@ -502,7 +502,7 @@ This file owns runtime synchronization primitives within shared low-level runtim
 <a id="module-core-settings-persistent"></a>
 ### `core/settings/persistent`
 
-[Source](../src/core/settings/persistent.c) · [Header](../include/thandor/core/settings/persistent.h) · [Call graph](callgraphs/core/settings/persistent.md) · [Graphviz](callgraphs/core/settings/persistent.dot)
+[Source](../src/core/settings/persistent.c) · [Header](../include/thandor/core/settings/persistent.h) · [Call graph](callgraphs/core/settings/persistent.md) · [Graphviz](callgraphs/core/settings/persistent.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-settings-persistent)
 
 This file owns persistent settings storage within shared low-level runtime services. Dominant function families: `PersistentSettings_*` (6). Representative entry points: `PersistentSettings_Flush`, `PersistentSettings_Load`, `PersistentSettings_ReadDword`.
 
@@ -522,7 +522,7 @@ This file owns persistent settings storage within shared low-level runtime servi
 <a id="module-core-text-path"></a>
 ### `core/text/path`
 
-[Source](../src/core/text/path.c) · [Header](../include/thandor/core/text/path.h) · [Call graph](callgraphs/core/text/path.md) · [Graphviz](callgraphs/core/text/path.dot)
+[Source](../src/core/text/path.c) · [Header](../include/thandor/core/text/path.h) · [Call graph](callgraphs/core/text/path.md) · [Graphviz](callgraphs/core/text/path.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-text-path)
 
 This file owns path and filename manipulation within shared low-level runtime services. Dominant function families: `WidePath_*` (5). Representative entry points: `WidePath_GetExtensionCode`, `WidePath_SetExtensionCode`, `WidePath_SplitParentAndLeaf`.
 
@@ -554,7 +554,7 @@ This file owns path and filename manipulation within shared low-level runtime se
 <a id="module-core-text-string"></a>
 ### `core/text/string`
 
-[Source](../src/core/text/string.c) · [Header](../include/thandor/core/text/string.h) · [Call graph](callgraphs/core/text/string.md) · [Graphviz](callgraphs/core/text/string.dot)
+[Source](../src/core/text/string.c) · [Header](../include/thandor/core/text/string.h) · [Call graph](callgraphs/core/text/string.md) · [Graphviz](callgraphs/core/text/string.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-text-string)
 
 This file owns string manipulation and conversion within shared low-level runtime services. Dominant function families: `Text_*` (1), `Utf16_*` (1), `Utf16String_*` (1). Representative entry points: `WideNumber_FormatUtf16`, `Utf16String_CompareAsciiCaseInsensitiveFlags`, `Text_CopyNarrowToUtf16Cf`.
 
@@ -578,7 +578,7 @@ This file owns string manipulation and conversion within shared low-level runtim
 <a id="module-gameplay-ai-combat"></a>
 ### `gameplay/ai/combat`
 
-[Source](../src/gameplay/ai/combat.c) · [Header](../include/thandor/gameplay/ai/combat.h) · [Call graph](callgraphs/gameplay/ai/combat.md) · [Graphviz](callgraphs/gameplay/ai/combat.dot)
+[Source](../src/gameplay/ai/combat.c) · [Header](../include/thandor/gameplay/ai/combat.h) · [Call graph](callgraphs/gameplay/ai/combat.md) · [Graphviz](callgraphs/gameplay/ai/combat.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-ai-combat)
 
 This file owns combat targeting and resolution within game simulation and player/AI behavior. Dominant function families: `AiCombatTarget_*` (2), `AiCombatDecision_*` (1), `AiUnitGroup_*` (1). Representative entry points: `AiCombatDecision_UpdateTargetAssignment`, `AiUnitGroup_AssignCollectedEntitiesToBestTarget`, `AiCombatTarget_SelectBestCandidate`.
 
@@ -592,7 +592,7 @@ This file owns combat targeting and resolution within game simulation and player
 <a id="module-gameplay-ai-placement"></a>
 ### `gameplay/ai/placement`
 
-[Source](../src/gameplay/ai/placement.c) · [Header](../include/thandor/gameplay/ai/placement.h) · [Call graph](callgraphs/gameplay/ai/placement.md) · [Graphviz](callgraphs/gameplay/ai/placement.dot)
+[Source](../src/gameplay/ai/placement.c) · [Header](../include/thandor/gameplay/ai/placement.h) · [Call graph](callgraphs/gameplay/ai/placement.md) · [Graphviz](callgraphs/gameplay/ai/placement.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-ai-placement)
 
 This file owns placement, site selection, and spatial validation within game simulation and player/AI behavior. Dominant function families: `AiPlacement_*` (7), `AiSiteCandidate_*` (3), `AiCandidatePlanning_*` (2). Representative entry points: `AiPlacement_ReserveAdditionalSpecialSite`, `AiCandidatePlanning_AddSpecialSiteCandidate`, `AiSiteCandidate_AddGeneralCellIfSeparated`.
 
@@ -607,7 +607,7 @@ This file owns placement, site selection, and spatial validation within game sim
 <a id="module-gameplay-ai-planning"></a>
 ### `gameplay/ai/planning`
 
-[Source](../src/gameplay/ai/planning.c) · [Header](../include/thandor/gameplay/ai/planning.h) · [Call graph](callgraphs/gameplay/ai/planning.md) · [Graphviz](callgraphs/gameplay/ai/planning.dot)
+[Source](../src/gameplay/ai/planning.c) · [Header](../include/thandor/gameplay/ai/planning.h) · [Call graph](callgraphs/gameplay/ai/planning.md) · [Graphviz](callgraphs/gameplay/ai/planning.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-ai-planning)
 
 This file owns planning and decision dispatch within game simulation and player/AI behavior. Dominant function families: `AiArmyCandidate_*` (5), `AiConstructionPlanner_*` (5), `AiStrategicClass_*` (4). Representative entry points: `AiFactionRuntime_RebuildPlanningCapacityState`, `AiArmyCandidate_ComputeAverageCompatibleAssetScore`, `AiPlanning_CollectActiveGridMaskClasses`.
 
@@ -622,7 +622,7 @@ This file owns planning and decision dispatch within game simulation and player/
 <a id="module-gameplay-ai-technology"></a>
 ### `gameplay/ai/technology`
 
-[Source](../src/gameplay/ai/technology.c) · [Header](../include/thandor/gameplay/ai/technology.h) · [Call graph](callgraphs/gameplay/ai/technology.md) · [Graphviz](callgraphs/gameplay/ai/technology.dot)
+[Source](../src/gameplay/ai/technology.c) · [Header](../include/thandor/gameplay/ai/technology.h) · [Call graph](callgraphs/gameplay/ai/technology.md) · [Graphviz](callgraphs/gameplay/ai/technology.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-ai-technology) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-ai-technology)
 
 This file owns technology-state logic within game simulation and player/AI behavior. Dominant function families: `AiTechnologyScore_*` (5), `AiTechnologyCompatibility_*` (2), `AiTechnologyCandidate_*` (1). Representative entry points: `AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue`, `AiTechnologyCandidate_IsCurrentlyAvailableCf`, `AiTechnologyPlanning_AddCandidateRecord`.
 
@@ -635,7 +635,7 @@ This file owns technology-state logic within game simulation and player/AI behav
 <a id="module-gameplay-ai-units"></a>
 ### `gameplay/ai/units`
 
-[Source](../src/gameplay/ai/units.c) · [Header](../include/thandor/gameplay/ai/units.h) · [Call graph](callgraphs/gameplay/ai/units.md) · [Graphviz](callgraphs/gameplay/ai/units.dot)
+[Source](../src/gameplay/ai/units.c) · [Header](../include/thandor/gameplay/ai/units.h) · [Call graph](callgraphs/gameplay/ai/units.md) · [Graphviz](callgraphs/gameplay/ai/units.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-ai-units)
 
 This file owns unit behavior and command selection within game simulation and player/AI behavior. Dominant function families: `AiUnitBehavior_*` (7), `AiUnitCommand_*` (2). Representative entry points: `AiUnitBehavior_UpdateWorkspace01Entities`, `AiUnitBehavior_SelectBestAnchorAction`, `AiUnitBehavior_ComputeWorkspace05DistanceScore`.
 
@@ -649,7 +649,7 @@ This file owns unit behavior and command selection within game simulation and pl
 <a id="module-gameplay-ai-workspaces"></a>
 ### `gameplay/ai/workspaces`
 
-[Source](../src/gameplay/ai/workspaces.c) · [Header](../include/thandor/gameplay/ai/workspaces.h) · [Call graph](callgraphs/gameplay/ai/workspaces.md) · [Graphviz](callgraphs/gameplay/ai/workspaces.dot)
+[Source](../src/gameplay/ai/workspaces.c) · [Header](../include/thandor/gameplay/ai/workspaces.h) · [Call graph](callgraphs/gameplay/ai/workspaces.md) · [Graphviz](callgraphs/gameplay/ai/workspaces.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-ai-workspaces) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-ai-workspaces)
 
 This file owns AI workspace storage, scoring, and candidate management within game simulation and player/AI behavior. Dominant function families: `AiPrimaryWorkspace_*` (7), `AiCandidateWorkspace_*` (6), `AiSecondaryWorkspace_*` (3). Representative entry points: `AiWorkspaceAssetCandidate_AddWeightedEntry`, `AiPlanning_RebuildFactionWorkspaces`, `AiStrategicCandidate_AddBestWorkspace12Entry`.
 
@@ -666,7 +666,7 @@ This file owns AI workspace storage, scoring, and candidate management within ga
 <a id="module-gameplay-army-audio"></a>
 ### `gameplay/army/audio`
 
-[Source](../src/gameplay/army/audio.c) · [Header](../include/thandor/gameplay/army/audio.h) · [Call graph](callgraphs/gameplay/army/audio.md) · [Graphviz](callgraphs/gameplay/army/audio.dot)
+[Source](../src/gameplay/army/audio.c) · [Header](../include/thandor/gameplay/army/audio.h) · [Call graph](callgraphs/gameplay/army/audio.md) · [Graphviz](callgraphs/gameplay/army/audio.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-army-audio) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-army-audio)
 
 This file owns audio-related gameplay behavior within game simulation and player/AI behavior. Dominant function families: `ArmyRuntimeAudio_*` (9), `ArmyGraphics_*` (1). Representative entry points: `ArmyGraphics_CopyFrontendPlayerPaletteAndTexture`, `ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA`, `ArmyRuntimeAudio_DispatchPositionedSoundVariant`.
 
@@ -679,7 +679,7 @@ This file owns audio-related gameplay behavior within game simulation and player
 <a id="module-gameplay-army-combat"></a>
 ### `gameplay/army/combat`
 
-[Source](../src/gameplay/army/combat.c) · [Header](../include/thandor/gameplay/army/combat.h) · [Call graph](callgraphs/gameplay/army/combat.md) · [Graphviz](callgraphs/gameplay/army/combat.dot)
+[Source](../src/gameplay/army/combat.c) · [Header](../include/thandor/gameplay/army/combat.h) · [Call graph](callgraphs/gameplay/army/combat.md) · [Graphviz](callgraphs/gameplay/army/combat.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-army-combat) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-army-combat)
 
 This file owns combat targeting and resolution within game simulation and player/AI behavior. Dominant function families: `ArmyRuntime_*` (5), `ArmyRuntimeClass_*` (2), `ArmyRuntimeWeapon_*` (1). Representative entry points: `ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments`, `ArmyRuntimeClass_UpdateTransformAndDamageEffect`, `ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage`.
 
@@ -696,7 +696,7 @@ This file owns combat targeting and resolution within game simulation and player
 <a id="module-gameplay-army-movement"></a>
 ### `gameplay/army/movement`
 
-[Source](../src/gameplay/army/movement.c) · [Header](../include/thandor/gameplay/army/movement.h) · [Call graph](callgraphs/gameplay/army/movement.md) · [Graphviz](callgraphs/gameplay/army/movement.dot)
+[Source](../src/gameplay/army/movement.c) · [Header](../include/thandor/gameplay/army/movement.h) · [Call graph](callgraphs/gameplay/army/movement.md) · [Graphviz](callgraphs/gameplay/army/movement.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-army-movement) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-army-movement)
 
 This file owns movement, route execution, and waypoint handling within game simulation and player/AI behavior. Dominant function families: `ArmyRuntime_*` (13), `ArmyArticulatedRuntime_*` (8), `ArmyRuntimeClass_*` (8). Representative entry points: `ArmyRuntimeClass_UpdateArticulatedMovement`, `ArmyRuntime_ResolveCommandTargetAndRoute`, `ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement`.
 
@@ -716,7 +716,7 @@ This file owns movement, route execution, and waypoint handling within game simu
 <a id="module-gameplay-army-placement"></a>
 ### `gameplay/army/placement`
 
-[Source](../src/gameplay/army/placement.c) · [Header](../include/thandor/gameplay/army/placement.h) · [Call graph](callgraphs/gameplay/army/placement.md) · [Graphviz](callgraphs/gameplay/army/placement.dot)
+[Source](../src/gameplay/army/placement.c) · [Header](../include/thandor/gameplay/army/placement.h) · [Call graph](callgraphs/gameplay/army/placement.md) · [Graphviz](callgraphs/gameplay/army/placement.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-army-placement) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-army-placement)
 
 This file owns placement, site selection, and spatial validation within game simulation and player/AI behavior. Dominant function families: `ArmyPlacement_*` (8), `ArmyPlacementContact_*` (5), `ArmyPlacementCollision_*` (4). Representative entry points: `ArmyPlacementCandidate_TestOffsetClearanceCf`, `ArmyPlacement_TestModelTerrainAndRuntimeClearance`, `ArmyPlacement_ValidateAssetAtPointAndCellCornersCf`.
 
@@ -735,7 +735,7 @@ This file owns placement, site selection, and spatial validation within game sim
 <a id="module-gameplay-army-runtime"></a>
 ### `gameplay/army/runtime`
 
-[Source](../src/gameplay/army/runtime.c) · [Header](../include/thandor/gameplay/army/runtime.h) · [Call graph](callgraphs/gameplay/army/runtime.md) · [Graphviz](callgraphs/gameplay/army/runtime.dot)
+[Source](../src/gameplay/army/runtime.c) · [Header](../include/thandor/gameplay/army/runtime.h) · [Call graph](callgraphs/gameplay/army/runtime.md) · [Graphviz](callgraphs/gameplay/army/runtime.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-army-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-army-runtime)
 
 This file owns runtime state and lifecycle operations within game simulation and player/AI behavior. Dominant function families: `ArmyRuntime_*` (31), `ArmyRuntimeClass_*` (9), `ArmyRuntimeMaintenance_*` (3). Representative entry points: `ArmyRuntimeClassUpdateSlot21_DispatchByClassId`, `ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode`, `ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId`.
 
@@ -766,7 +766,7 @@ This file owns runtime state and lifecycle operations within game simulation and
 <a id="module-gameplay-faction-relations"></a>
 ### `gameplay/faction/relations`
 
-[Source](../src/gameplay/faction/relations.c) · [Header](../include/thandor/gameplay/faction/relations.h) · [Call graph](callgraphs/gameplay/faction/relations.md) · [Graphviz](callgraphs/gameplay/faction/relations.dot)
+[Source](../src/gameplay/faction/relations.c) · [Header](../include/thandor/gameplay/faction/relations.h) · [Call graph](callgraphs/gameplay/faction/relations.md) · [Graphviz](callgraphs/gameplay/faction/relations.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-faction-relations) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-faction-relations)
 
 This file owns faction relationship state within game simulation and player/AI behavior. Dominant function families: `GameFactionRelations_*` (8), `PlayerPairList_*` (4). Representative entry points: `GameFactionRelations_UpdateAllPairsForFaction`, `PlayerPairList_InsertRange`, `PlayerPairList_RemoveRange`.
 
@@ -780,7 +780,7 @@ This file owns faction relationship state within game simulation and player/AI b
 <a id="module-gameplay-faction-runtime"></a>
 ### `gameplay/faction/runtime`
 
-[Source](../src/gameplay/faction/runtime.c) · [Header](../include/thandor/gameplay/faction/runtime.h) · [Call graph](callgraphs/gameplay/faction/runtime.md) · [Graphviz](callgraphs/gameplay/faction/runtime.dot)
+[Source](../src/gameplay/faction/runtime.c) · [Header](../include/thandor/gameplay/faction/runtime.h) · [Call graph](callgraphs/gameplay/faction/runtime.md) · [Graphviz](callgraphs/gameplay/faction/runtime.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-faction-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-faction-runtime)
 
 This file owns runtime state and lifecycle operations within game simulation and player/AI behavior. Dominant function families: `GameFactionRuntime_*` (17), `PlayerRuntime_*` (4), `GameEntityRuntime_*` (3). Representative entry points: `GameFactionRuntime_AdvancePairwiseRelationState`, `GameFactionRuntime_ResetPairwiseRelationState`, `OldUnitRuntime_RebuildScenarioReplayTables`.
 
@@ -809,7 +809,7 @@ This file owns runtime state and lifecycle operations within game simulation and
 <a id="module-gameplay-input-world"></a>
 ### `gameplay/input/world`
 
-[Source](../src/gameplay/input/world.c) · [Header](../include/thandor/gameplay/input/world.h) · [Call graph](callgraphs/gameplay/input/world.md) · [Graphviz](callgraphs/gameplay/input/world.dot)
+[Source](../src/gameplay/input/world.c) · [Header](../include/thandor/gameplay/input/world.h) · [Call graph](callgraphs/gameplay/input/world.md) · [Graphviz](callgraphs/gameplay/input/world.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-input-world) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-input-world)
 
 This file owns world-facing input handling within game simulation and player/AI behavior. Dominant function families: `InGameWorldInput_*` (4), `InGameCameraCommand_*` (2), `InGameTargetingContext_*` (2). Representative entry points: `InGameTargetingContext_AdvanceOrResolveTarget`, `InGameWorldInput_ResolveContextActionAndCursorCf`, `InGameWorldInput_BeginPointerCaptureCf`.
 
@@ -820,7 +820,7 @@ This file owns world-facing input handling within game simulation and player/AI 
 <a id="module-gameplay-selection-overlay"></a>
 ### `gameplay/selection/overlay`
 
-[Source](../src/gameplay/selection/overlay.c) · [Header](../include/thandor/gameplay/selection/overlay.h) · [Call graph](callgraphs/gameplay/selection/overlay.md) · [Graphviz](callgraphs/gameplay/selection/overlay.dot)
+[Source](../src/gameplay/selection/overlay.c) · [Header](../include/thandor/gameplay/selection/overlay.h) · [Call graph](callgraphs/gameplay/selection/overlay.md) · [Graphviz](callgraphs/gameplay/selection/overlay.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-selection-overlay)
 
 This file owns selection overlays and visual selection state within game simulation and player/AI behavior. Dominant function families: `SelectionOverlay_*` (9), `SelectionMarkerCoordinates_*` (5), `InGameWorldOverlay_*` (2). Representative entry points: `InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf`, `SelectionOverlay_RenderSelectedArmyMetrics`, `SelectionOverlay_RenderArmyMetricsForEntity`.
 
@@ -833,7 +833,7 @@ This file owns selection overlays and visual selection state within game simulat
 <a id="module-gameplay-selection-runtime"></a>
 ### `gameplay/selection/runtime`
 
-[Source](../src/gameplay/selection/runtime.c) · [Header](../include/thandor/gameplay/selection/runtime.h) · [Call graph](callgraphs/gameplay/selection/runtime.md) · [Graphviz](callgraphs/gameplay/selection/runtime.dot)
+[Source](../src/gameplay/selection/runtime.c) · [Header](../include/thandor/gameplay/selection/runtime.h) · [Call graph](callgraphs/gameplay/selection/runtime.md) · [Graphviz](callgraphs/gameplay/selection/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-selection-runtime)
 
 This file owns runtime state and lifecycle operations within game simulation and player/AI behavior. Dominant function families: `SelectionPointerArray_*` (12), `SelectionInfo_*` (11), `SelectionPanel_*` (8). Representative entry points: `SelectionPanel_RenderArmyRuntimeMetrics`, `InGameSelection_RebuildOwnedClass16Selection`, `InGamePlayerSelection_ReplaceWithArmyRuntimeIndex`.
 
@@ -857,7 +857,7 @@ This file owns runtime state and lifecycle operations within game simulation and
 <a id="module-gameplay-session-level"></a>
 ### `gameplay/session/level`
 
-[Source](../src/gameplay/session/level.c) · [Header](../include/thandor/gameplay/session/level.h) · [Call graph](callgraphs/gameplay/session/level.md) · [Graphviz](callgraphs/gameplay/session/level.dot)
+[Source](../src/gameplay/session/level.c) · [Header](../include/thandor/gameplay/session/level.h) · [Call graph](callgraphs/gameplay/session/level.md) · [Graphviz](callgraphs/gameplay/session/level.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-session-level) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-session-level)
 
 This file owns level loading and level-owned state within game simulation and player/AI behavior. Dominant function families: `InGameLevelRuntime_*` (4), `LevelAsset_*` (1). Representative entry points: `LevelAsset_PrepareEndingMoviePathCf`, `InGameLevelRuntime_LoadResourcesAfterDefaultResetCf`, `InGameLevelRuntime_LoadResourcesAfterExternalTablesCf`.
 
@@ -871,7 +871,7 @@ This file owns level loading and level-owned state within game simulation and pl
 <a id="module-gameplay-session-runtime"></a>
 ### `gameplay/session/runtime`
 
-[Source](../src/gameplay/session/runtime.c) · [Header](../include/thandor/gameplay/session/runtime.h) · [Call graph](callgraphs/gameplay/session/runtime.md) · [Graphviz](callgraphs/gameplay/session/runtime.dot)
+[Source](../src/gameplay/session/runtime.c) · [Header](../include/thandor/gameplay/session/runtime.h) · [Call graph](callgraphs/gameplay/session/runtime.md) · [Graphviz](callgraphs/gameplay/session/runtime.dot) · [Developer notes](../CHANGELOG.md#module-gameplay-session-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-session-runtime)
 
 This file owns runtime state and lifecycle operations within game simulation and player/AI behavior. Dominant function families: `InGameRuntime_*` (12), `EndGameResultsUiRuntime_*` (2), `InGameConditionRuntime_*` (2). Representative entry points: `InGameRuntime_RunSessionUntilExit`, `EndGameResultsUiRuntime_UpdateAndHandleInputCf`, `InGameConditionRuntime_RebaseLoadedRecords`.
 
@@ -887,7 +887,7 @@ This file owns runtime state and lifecycle operations within game simulation and
 <a id="module-gameplay-session-savegame"></a>
 ### `gameplay/session/savegame`
 
-[Source](../src/gameplay/session/savegame.c) · [Header](../include/thandor/gameplay/session/savegame.h) · [Call graph](callgraphs/gameplay/session/savegame.md) · [Graphviz](callgraphs/gameplay/session/savegame.dot)
+[Source](../src/gameplay/session/savegame.c) · [Header](../include/thandor/gameplay/session/savegame.h) · [Call graph](callgraphs/gameplay/session/savegame.md) · [Graphviz](callgraphs/gameplay/session/savegame.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-session-savegame)
 
 This file owns save/load state serialization within game simulation and player/AI behavior. Dominant function families: `InGameSaveGame_*` (1), `InGameSaveGameAction_*` (1), `InGameSaveGameList_*` (1). Representative entry points: `InGameSaveGameList_SelectAndRefreshDetail`, `InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog`, `InGameSaveGamePage_RebuildCatalog`.
 
@@ -898,7 +898,7 @@ This file owns save/load state serialization within game simulation and player/A
 <a id="module-gameplay-technology-runtime"></a>
 ### `gameplay/technology/runtime`
 
-[Source](../src/gameplay/technology/runtime.c) · [Header](../include/thandor/gameplay/technology/runtime.h) · [Call graph](callgraphs/gameplay/technology/runtime.md) · [Graphviz](callgraphs/gameplay/technology/runtime.dot)
+[Source](../src/gameplay/technology/runtime.c) · [Header](../include/thandor/gameplay/technology/runtime.h) · [Call graph](callgraphs/gameplay/technology/runtime.md) · [Graphviz](callgraphs/gameplay/technology/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-gameplay-technology-runtime)
 
 This file owns runtime state and lifecycle operations within game simulation and player/AI behavior. Dominant function families: `Technology_*` (4), `TechnologyRuntime_*` (1). Representative entry points: `Technology_UnlockForFaction`, `Technology_IsUnlockedForFactionCf`, `Technology_IsAvailableForFactionCf`.
 
@@ -920,7 +920,7 @@ This file owns runtime state and lifecycle operations within game simulation and
 <a id="module-graphics-backend-direct3d"></a>
 ### `graphics/backend/direct3d`
 
-[Source](../src/graphics/backend/direct3d.c) · [Header](../include/thandor/graphics/backend/direct3d.h) · [Call graph](callgraphs/graphics/backend/direct3d.md) · [Graphviz](callgraphs/graphics/backend/direct3d.dot)
+[Source](../src/graphics/backend/direct3d.c) · [Header](../include/thandor/graphics/backend/direct3d.h) · [Call graph](callgraphs/graphics/backend/direct3d.md) · [Graphviz](callgraphs/graphics/backend/direct3d.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-backend-direct3d)
 
 This file owns Direct3D backend integration within rendering, graphics backends, and GPU/software resources. Dominant function families: `Direct3D_*` (10), `Direct3DRenderer_*` (3), `GraphicsDirect3D_*` (1). Representative entry points: `Direct3D_EnumDeviceCallback`, `GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback`, `Direct3DRenderer_SetAntialiasMode`.
 
@@ -931,7 +931,7 @@ This file owns Direct3D backend integration within rendering, graphics backends,
 <a id="module-graphics-backend-directdraw"></a>
 ### `graphics/backend/directdraw`
 
-[Source](../src/graphics/backend/directdraw.c) · [Header](../include/thandor/graphics/backend/directdraw.h) · [Call graph](callgraphs/graphics/backend/directdraw.md) · [Graphviz](callgraphs/graphics/backend/directdraw.dot)
+[Source](../src/graphics/backend/directdraw.c) · [Header](../include/thandor/graphics/backend/directdraw.h) · [Call graph](callgraphs/graphics/backend/directdraw.md) · [Graphviz](callgraphs/graphics/backend/directdraw.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-backend-directdraw)
 
 This file owns DirectDraw display and surface integration within rendering, graphics backends, and GPU/software resources. Dominant function families: `DirectDraw_*` (2), `DisplayModeTable_*` (1), `GraphicsDirectDraw_*` (1). Representative entry points: `GraphicsDisplayMode_IsEnumeratedCf`, `DisplayModeTable_ContainsExactModeCf`, `DirectDraw_EnumAdapterCallback`.
 
@@ -945,7 +945,7 @@ This file owns DirectDraw display and surface integration within rendering, grap
 <a id="module-graphics-backend-glide"></a>
 ### `graphics/backend/glide`
 
-[Source](../src/graphics/backend/glide.c) · [Header](../include/thandor/graphics/backend/glide.h) · [Call graph](callgraphs/graphics/backend/glide.md) · [Graphviz](callgraphs/graphics/backend/glide.dot)
+[Source](../src/graphics/backend/glide.c) · [Header](../include/thandor/graphics/backend/glide.h) · [Call graph](callgraphs/graphics/backend/glide.md) · [Graphviz](callgraphs/graphics/backend/glide.dot) · [Developer notes](../CHANGELOG.md#module-graphics-backend-glide) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-backend-glide)
 
 This file owns Glide backend integration within rendering, graphics backends, and GPU/software resources. Dominant function families: `Glide3_*` (30), `GlideBackend_*` (3), `GraphicsGlide3_*` (1). Representative entry points: `Glide3_TextureSet_CreateBackend`, `Glide3_TextureResource_ReinitializeAll`, `GlideBackend_ShutdownWrapper`.
 
@@ -961,7 +961,7 @@ This file owns Glide backend integration within rendering, graphics backends, an
 <a id="module-graphics-backend-software"></a>
 ### `graphics/backend/software`
 
-[Source](../src/graphics/backend/software.c) · [Header](../include/thandor/graphics/backend/software.h) · [Call graph](callgraphs/graphics/backend/software.md) · [Graphviz](callgraphs/graphics/backend/software.dot)
+[Source](../src/graphics/backend/software.c) · [Header](../include/thandor/graphics/backend/software.h) · [Call graph](callgraphs/graphics/backend/software.md) · [Graphviz](callgraphs/graphics/backend/software.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-backend-software)
 
 This file owns software rasterization within rendering, graphics backends, and GPU/software resources. Dominant function families: `SoftwareRaster16_*` (20), `SoftwareRasterAux_*` (20), `SoftwareRasterNon16_*` (20). Representative entry points: `SoftwareMaskBuffer_AdvancePatternByPercentTick`, `SoftwareRenderer_ClearViewport`, `SoftwareRenderer_DrawQueue16Bit`.
 
@@ -980,7 +980,7 @@ This file owns software rasterization within rendering, graphics backends, and G
 <a id="module-graphics-core-runtime"></a>
 ### `graphics/core/runtime`
 
-[Source](../src/graphics/core/runtime.c) · [Header](../include/thandor/graphics/core/runtime.h) · [Call graph](callgraphs/graphics/core/runtime.md) · [Graphviz](callgraphs/graphics/core/runtime.dot)
+[Source](../src/graphics/core/runtime.c) · [Header](../include/thandor/graphics/core/runtime.h) · [Call graph](callgraphs/graphics/core/runtime.md) · [Graphviz](callgraphs/graphics/core/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-core-runtime)
 
 This file owns runtime state and lifecycle operations within rendering, graphics backends, and GPU/software resources. Dominant function families: `Graphics_*` (14), `GraphicsCursor_*` (7), `GraphicsObject_*` (5). Representative entry points: `GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer`, `GraphicsCursor_SetFrameIndex`, `GraphicsCursor_ConsumeNextInputEvent`.
 
@@ -1003,7 +1003,7 @@ This file owns runtime state and lifecycle operations within rendering, graphics
 <a id="module-graphics-render-model"></a>
 ### `graphics/render/model`
 
-[Source](../src/graphics/render/model.c) · [Header](../include/thandor/graphics/render/model.h) · [Call graph](callgraphs/graphics/render/model.md) · [Graphviz](callgraphs/graphics/render/model.dot)
+[Source](../src/graphics/render/model.c) · [Header](../include/thandor/graphics/render/model.h) · [Call graph](callgraphs/graphics/render/model.md) · [Graphviz](callgraphs/graphics/render/model.dot) · [Developer notes](../CHANGELOG.md#module-graphics-render-model) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-render-model)
 
 This file owns model rendering within rendering, graphics backends, and GPU/software resources. Dominant function families: `ModelRender_*` (13), `ModelProjectedBounds_*` (3). Representative entry points: `ModelRender_DrawMeshGroupsWithTemporaryTransform`, `ModelRender_DrawMeshGroupsAlternatePath`, `ModelProjectedBounds_AccumulateHierarchyRecursive`.
 
@@ -1017,7 +1017,7 @@ This file owns model rendering within rendering, graphics backends, and GPU/soft
 <a id="module-graphics-render-primitives"></a>
 ### `graphics/render/primitives`
 
-[Source](../src/graphics/render/primitives.c) · [Header](../include/thandor/graphics/render/primitives.h) · [Call graph](callgraphs/graphics/render/primitives.md) · [Graphviz](callgraphs/graphics/render/primitives.dot)
+[Source](../src/graphics/render/primitives.c) · [Header](../include/thandor/graphics/render/primitives.h) · [Call graph](callgraphs/graphics/render/primitives.md) · [Graphviz](callgraphs/graphics/render/primitives.dot) · [Developer notes](../CHANGELOG.md#module-graphics-render-primitives) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-render-primitives)
 
 This file owns primitive rasterization and draw dispatch within rendering, graphics backends, and GPU/software resources. Dominant function families: `GraphicsPrimitiveQueue_*` (13), `DepthBinMasks_*` (1), `DepthInterval_*` (1). Representative entry points: `GraphicsPrimitiveQueue_RadixSortForRendering`, `GraphicsPrimitiveQueue_AllocateGlobalPool`, `GraphicsPrimitiveQueue_ResetGlobal`.
 
@@ -1040,7 +1040,7 @@ This file owns primitive rasterization and draw dispatch within rendering, graph
 <a id="module-graphics-render-projection"></a>
 ### `graphics/render/projection`
 
-[Source](../src/graphics/render/projection.c) · [Header](../include/thandor/graphics/render/projection.h) · [Call graph](callgraphs/graphics/render/projection.md) · [Graphviz](callgraphs/graphics/render/projection.dot)
+[Source](../src/graphics/render/projection.c) · [Header](../include/thandor/graphics/render/projection.h) · [Call graph](callgraphs/graphics/render/projection.md) · [Graphviz](callgraphs/graphics/render/projection.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-render-projection)
 
 This file owns projection and projected geometry within rendering, graphics backends, and GPU/software resources. Dominant function families: `GraphicsOffscreen_*` (1), `GraphicsProjectedPoint_*` (1). Representative entry points: `GraphicsOffscreen_RenderModelListToTextureSourceCf`, `GraphicsProjectedPoint_IsInsideTriangleCf`.
 
@@ -1053,7 +1053,7 @@ This file owns projection and projected geometry within rendering, graphics back
 <a id="module-graphics-render-shading"></a>
 ### `graphics/render/shading`
 
-[Source](../src/graphics/render/shading.c) · [Header](../include/thandor/graphics/render/shading.h) · [Call graph](callgraphs/graphics/render/shading.md) · [Graphviz](callgraphs/graphics/render/shading.dot)
+[Source](../src/graphics/render/shading.c) · [Header](../include/thandor/graphics/render/shading.h) · [Call graph](callgraphs/graphics/render/shading.md) · [Graphviz](callgraphs/graphics/render/shading.dot) · [Developer notes](../CHANGELOG.md#module-graphics-render-shading) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-render-shading)
 
 This file owns lighting, shading, and generated-texture work within rendering, graphics backends, and GPU/software resources. Dominant function families: `GraphicsShadingGeneratedTexture_*` (19), `GraphicsShadingRuntime_*` (7), `GraphicsIntensityClampTable_*` (1). Representative entry points: `GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy`, `GraphicsIntensityClampTable_InitializeCf`, `GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs`.
 
@@ -1075,7 +1075,7 @@ This file owns lighting, shading, and generated-texture work within rendering, g
 <a id="module-graphics-resources-framebuffer"></a>
 ### `graphics/resources/framebuffer`
 
-[Source](../src/graphics/resources/framebuffer.c) · [Header](../include/thandor/graphics/resources/framebuffer.h) · [Call graph](callgraphs/graphics/resources/framebuffer.md) · [Graphviz](callgraphs/graphics/resources/framebuffer.dot)
+[Source](../src/graphics/resources/framebuffer.c) · [Header](../include/thandor/graphics/resources/framebuffer.h) · [Call graph](callgraphs/graphics/resources/framebuffer.md) · [Graphviz](callgraphs/graphics/resources/framebuffer.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-resources-framebuffer)
 
 This file owns framebuffer and render-target resources within rendering, graphics backends, and GPU/software resources. Dominant function families: `GraphicsFramebuffer_*` (7). Representative entry points: `GraphicsFramebuffer_BeginAccessStub`, `GraphicsFramebuffer_EndAccessStub`, `GraphicsFramebuffer_Present`.
 
@@ -1086,7 +1086,7 @@ This file owns framebuffer and render-target resources within rendering, graphic
 <a id="module-graphics-resources-palette"></a>
 ### `graphics/resources/palette`
 
-[Source](../src/graphics/resources/palette.c) · [Header](../include/thandor/graphics/resources/palette.h) · [Call graph](callgraphs/graphics/resources/palette.md) · [Graphviz](callgraphs/graphics/resources/palette.dot)
+[Source](../src/graphics/resources/palette.c) · [Header](../include/thandor/graphics/resources/palette.h) · [Call graph](callgraphs/graphics/resources/palette.md) · [Graphviz](callgraphs/graphics/resources/palette.dot) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-resources-palette)
 
 This file owns palette resources and conversion within rendering, graphics backends, and GPU/software resources. Dominant function families: `GraphicsPaletteAsset_*` (7), `GraphicsPaletteTextureSource_*` (6). Representative entry points: `GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices`, `GraphicsPaletteAsset_GetBankCountRegs`, `GraphicsPaletteAsset_LoadPackage`.
 
@@ -1097,7 +1097,7 @@ This file owns palette resources and conversion within rendering, graphics backe
 <a id="module-graphics-resources-texture"></a>
 ### `graphics/resources/texture`
 
-[Source](../src/graphics/resources/texture.c) · [Header](../include/thandor/graphics/resources/texture.h) · [Call graph](callgraphs/graphics/resources/texture.md) · [Graphviz](callgraphs/graphics/resources/texture.dot)
+[Source](../src/graphics/resources/texture.c) · [Header](../include/thandor/graphics/resources/texture.h) · [Call graph](callgraphs/graphics/resources/texture.md) · [Graphviz](callgraphs/graphics/resources/texture.dot) · [Developer notes](../CHANGELOG.md#module-graphics-resources-texture) · [Full changelog](../CHANGELOG_FULL.md#module-graphics-resources-texture)
 
 This file owns texture resources and upload/lookup within rendering, graphics backends, and GPU/software resources. Dominant function families: `GraphicsTexture_*` (14), `GraphicsTextureSource_*` (13), `GraphicsTextureSet_*` (9). Representative entry points: `GraphicsTextureSet_Create`, `GraphicsTexture_RebuildAllStagingTextures`, `GraphicsTextureSet_Destroy`.
 
@@ -1116,7 +1116,7 @@ This file owns texture resources and upload/lookup within rendering, graphics ba
 <a id="module-movie-runtime-playback"></a>
 ### `movie/runtime/playback`
 
-[Source](../src/movie/runtime/playback.c) · [Header](../include/thandor/movie/runtime/playback.h) · [Call graph](callgraphs/movie/runtime/playback.md) · [Graphviz](callgraphs/movie/runtime/playback.dot)
+[Source](../src/movie/runtime/playback.c) · [Header](../include/thandor/movie/runtime/playback.h) · [Call graph](callgraphs/movie/runtime/playback.md) · [Graphviz](callgraphs/movie/runtime/playback.dot) · [Developer notes](../CHANGELOG.md#module-movie-runtime-playback) · [Full changelog](../CHANGELOG_FULL.md#module-movie-runtime-playback)
 
 This file owns movie playback and scheduling within movie playback and frame scheduling. Dominant function families: `Movie_*` (11), `EndMovieUiRuntime_*` (2), `MovieColor_*` (2). Representative entry points: `Movie_EncodeFlmBufferFromFrameProviderCf`, `MoviePlayback_AdvanceScheduledFrameAndTick`, `Movie_Open`.
 
@@ -1141,7 +1141,7 @@ This file owns movie playback and scheduling within movie playback and frame sch
 <a id="module-network-backend-fallback-udp"></a>
 ### `network/backend/fallback_udp`
 
-[Source](../src/network/backend/fallback_udp.c) · [Header](../include/thandor/network/backend/fallback_udp.h) · [Call graph](callgraphs/network/backend/fallback_udp.md) · [Graphviz](callgraphs/network/backend/fallback_udp.dot)
+[Source](../src/network/backend/fallback_udp.c) · [Header](../include/thandor/network/backend/fallback_udp.h) · [Call graph](callgraphs/network/backend/fallback_udp.md) · [Graphviz](callgraphs/network/backend/fallback_udp.dot) · [Developer notes](../CHANGELOG.md#module-network-backend-fallback-udp) · [Full changelog](../CHANGELOG_FULL.md#module-network-backend-fallback-udp)
 
 This file owns fallback UDP transport within network transports, packet transfer, and synchronized commands. Dominant function families: `NetworkBackendFallback_*` (8), `NetworkFallback_*` (8), `NetworkFallbackUdp_*` (3). Representative entry points: `NetworkBackendFallback_Slot0_ReturnError43Cf`, `NetworkBackendFallback_Slot1_NoOp`, `NetworkBackendFallback_Slot2_ReturnError43Cf`.
 
@@ -1152,7 +1152,7 @@ This file owns fallback UDP transport within network transports, packet transfer
 <a id="module-network-backend-runtime"></a>
 ### `network/backend/runtime`
 
-[Source](../src/network/backend/runtime.c) · [Header](../include/thandor/network/backend/runtime.h) · [Call graph](callgraphs/network/backend/runtime.md) · [Graphviz](callgraphs/network/backend/runtime.dot)
+[Source](../src/network/backend/runtime.c) · [Header](../include/thandor/network/backend/runtime.h) · [Call graph](callgraphs/network/backend/runtime.md) · [Graphviz](callgraphs/network/backend/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-network-backend-runtime)
 
 This file owns runtime state and lifecycle operations within network transports, packet transfer, and synchronized commands. Dominant function families: `FrontendNetwork_*` (4), `Network_*` (2), `NetworkBackend_*` (2). Representative entry points: `FrontendNetwork_HandleHandshakeAndPlayerStatePackets`, `FrontendNetwork_HostTickCommandAndSnapshotTransfer`, `FrontendNetwork_TickDisconnectTimeoutAndResetSession`.
 
@@ -1170,7 +1170,7 @@ This file owns runtime state and lifecycle operations within network transports,
 <a id="module-network-protocol-commands"></a>
 ### `network/protocol/commands`
 
-[Source](../src/network/protocol/commands.c) · [Header](../include/thandor/network/protocol/commands.h) · [Call graph](callgraphs/network/protocol/commands.md) · [Graphviz](callgraphs/network/protocol/commands.dot)
+[Source](../src/network/protocol/commands.c) · [Header](../include/thandor/network/protocol/commands.h) · [Call graph](callgraphs/network/protocol/commands.md) · [Graphviz](callgraphs/network/protocol/commands.dot) · [Full changelog](../CHANGELOG_FULL.md#module-network-protocol-commands)
 
 This file owns synchronized command queues within network transports, packet transfer, and synchronized commands. Dominant function families: `InGameCommandQueue_*` (3), `FrontendCommandQueue_*` (2). Representative entry points: `FrontendCommandQueue_EnqueueLocalPlayerCommand`, `FrontendCommandQueue_DequeueFirstIntoRecord`, `InGameCommandQueue_AppendLocalPlayerCommand`.
 
@@ -1194,7 +1194,7 @@ This file owns synchronized command queues within network transports, packet tra
 <a id="module-network-protocol-transfer"></a>
 ### `network/protocol/transfer`
 
-[Source](../src/network/protocol/transfer.c) · [Header](../include/thandor/network/protocol/transfer.h) · [Call graph](callgraphs/network/protocol/transfer.md) · [Graphviz](callgraphs/network/protocol/transfer.dot)
+[Source](../src/network/protocol/transfer.c) · [Header](../include/thandor/network/protocol/transfer.h) · [Call graph](callgraphs/network/protocol/transfer.md) · [Graphviz](callgraphs/network/protocol/transfer.dot) · [Full changelog](../CHANGELOG_FULL.md#module-network-protocol-transfer)
 
 This file owns packet staging, transfer, and protocol handlers within network transports, packet transfer, and synchronized commands. Dominant function families: `FrontendTransfer_*` (15), `UiTransferMailbox_*` (6), `UiTransfer_*` (4). Representative entry points: `UiTransferMailbox_ServiceAndRetransmitTimer`, `FrontendTransfer_HandleHostSessionAndCommandBatchPackets`, `FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf`.
 
@@ -1217,7 +1217,7 @@ This file owns packet staging, transfer, and protocol handlers within network tr
 <a id="module-platform-bootstrap-runtime"></a>
 ### `platform/bootstrap/runtime`
 
-[Source](../src/platform/bootstrap/runtime.c) · [Header](../include/thandor/platform/bootstrap/runtime.h) · [Call graph](callgraphs/platform/bootstrap/runtime.md) · [Graphviz](callgraphs/platform/bootstrap/runtime.dot)
+[Source](../src/platform/bootstrap/runtime.c) · [Header](../include/thandor/platform/bootstrap/runtime.h) · [Call graph](callgraphs/platform/bootstrap/runtime.md) · [Graphviz](callgraphs/platform/bootstrap/runtime.dot) · [Developer notes](../CHANGELOG.md#module-platform-bootstrap-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-platform-bootstrap-runtime)
 
 This file owns runtime state and lifecycle operations within platform bootstrap, Win32 services, filesystem, and input devices. Dominant function families: `DynDLL_*` (3), `Game_*` (3), `CommandLine_*` (2). Representative entry points: `ProcessEntry`, `GameData_ResetDefaults`, `GameData_LoadExternalTables`.
 
@@ -1237,7 +1237,7 @@ This file owns runtime state and lifecycle operations within platform bootstrap,
 <a id="module-platform-filesystem-win32"></a>
 ### `platform/filesystem/win32`
 
-[Source](../src/platform/filesystem/win32.c) · [Header](../include/thandor/platform/filesystem/win32.h) · [Call graph](callgraphs/platform/filesystem/win32.md) · [Graphviz](callgraphs/platform/filesystem/win32.dot)
+[Source](../src/platform/filesystem/win32.c) · [Header](../include/thandor/platform/filesystem/win32.h) · [Call graph](callgraphs/platform/filesystem/win32.md) · [Graphviz](callgraphs/platform/filesystem/win32.dot) · [Full changelog](../CHANGELOG_FULL.md#module-platform-filesystem-win32)
 
 This file owns Win32 platform integration within platform bootstrap, Win32 services, filesystem, and input devices. Dominant function families: `Win32File_*` (16), `Win32Drive_*` (5), `FileSystem_*` (2). Representative entry points: `FileSystem_Init`, `Win32File_GetLastWriteDosDateCf`, `Win32File_GetLastWriteTimeHighCf`.
 
@@ -1256,7 +1256,7 @@ This file owns Win32 platform integration within platform bootstrap, Win32 servi
 <a id="module-platform-input-devices"></a>
 ### `platform/input/devices`
 
-[Source](../src/platform/input/devices.c) · [Header](../include/thandor/platform/input/devices.h) · [Call graph](callgraphs/platform/input/devices.md) · [Graphviz](callgraphs/platform/input/devices.dot)
+[Source](../src/platform/input/devices.c) · [Header](../include/thandor/platform/input/devices.h) · [Call graph](callgraphs/platform/input/devices.md) · [Graphviz](callgraphs/platform/input/devices.dot) · [Full changelog](../CHANGELOG_FULL.md#module-platform-input-devices)
 
 This file owns input-device acquisition and polling within platform bootstrap, Win32 services, filesystem, and input devices. Dominant function families: `Keyboard_*` (8), `DirectInputMouse_*` (7). Representative entry points: `Keyboard_CompareAsciiCaseInsensitiveFlags`, `Keyboard_FlushEvents`, `Keyboard_ReadNextEventRegs`.
 
@@ -1272,7 +1272,7 @@ This file owns input-device acquisition and polling within platform bootstrap, W
 <a id="module-platform-system-time-locale"></a>
 ### `platform/system/time_locale`
 
-[Source](../src/platform/system/time_locale.c) · [Header](../include/thandor/platform/system/time_locale.h) · [Call graph](callgraphs/platform/system/time_locale.md) · [Graphviz](callgraphs/platform/system/time_locale.dot)
+[Source](../src/platform/system/time_locale.c) · [Header](../include/thandor/platform/system/time_locale.h) · [Call graph](callgraphs/platform/system/time_locale.md) · [Graphviz](callgraphs/platform/system/time_locale.dot) · [Developer notes](../CHANGELOG.md#module-platform-system-time-locale) · [Full changelog](../CHANGELOG_FULL.md#module-platform-system-time-locale)
 
 This file owns time, locale, and system-format helpers within platform bootstrap, Win32 services, filesystem, and input devices. Dominant function families: `Locale_*` (11), `TimerSystem_*` (4), `WinMM_*` (1). Representative entry points: `TimerSystem_Shutdown`, `Locale_Init`, `Locale_MapTelephoneCountryCodeToRegionTagPacked`.
 
@@ -1287,7 +1287,7 @@ This file owns time, locale, and system-format helpers within platform bootstrap
 <a id="module-platform-system-win32"></a>
 ### `platform/system/win32`
 
-[Source](../src/platform/system/win32.c) · [Header](../include/thandor/platform/system/win32.h) · [Call graph](callgraphs/platform/system/win32.md) · [Graphviz](callgraphs/platform/system/win32.dot)
+[Source](../src/platform/system/win32.c) · [Header](../include/thandor/platform/system/win32.h) · [Call graph](callgraphs/platform/system/win32.md) · [Graphviz](callgraphs/platform/system/win32.dot) · [Full changelog](../CHANGELOG_FULL.md#module-platform-system-win32)
 
 This file owns Win32 platform integration within platform bootstrap, Win32 services, filesystem, and input devices. Dominant function families: `Win32_*` (2). Representative entry points: `Win32_PumpMessages`, `Win32_ShouldTranslateMessageFlags`.
 
@@ -1300,7 +1300,7 @@ This file owns Win32 platform integration within platform bootstrap, Win32 servi
 <a id="module-ui-controls-buttons"></a>
 ### `ui/controls/buttons`
 
-[Source](../src/ui/controls/buttons.c) · [Header](../include/thandor/ui/controls/buttons.h) · [Call graph](callgraphs/ui/controls/buttons.md) · [Graphviz](callgraphs/ui/controls/buttons.dot)
+[Source](../src/ui/controls/buttons.c) · [Header](../include/thandor/ui/controls/buttons.h) · [Call graph](callgraphs/ui/controls/buttons.md) · [Graphviz](callgraphs/ui/controls/buttons.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-controls-buttons)
 
 This file owns button widgets and actions within frontend and in-game user interface. Dominant function families: `UiSpriteButtonControl_*` (7), `UiImageActionControl_*` (5), `UiConditionalActionControl_*` (4). Representative entry points: `UiTree_AdvanceSpriteButtonAnimations`, `UiSpriteButtonControl_Relocate`, `UiSpriteButtonControl_DrawClipped`.
 
@@ -1313,7 +1313,7 @@ This file owns button widgets and actions within frontend and in-game user inter
 <a id="module-ui-controls-input"></a>
 ### `ui/controls/input`
 
-[Source](../src/ui/controls/input.c) · [Header](../include/thandor/ui/controls/input.h) · [Call graph](callgraphs/ui/controls/input.md) · [Graphviz](callgraphs/ui/controls/input.dot)
+[Source](../src/ui/controls/input.c) · [Header](../include/thandor/ui/controls/input.h) · [Call graph](callgraphs/ui/controls/input.md) · [Graphviz](callgraphs/ui/controls/input.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-controls-input)
 
 This file owns UI input routing within frontend and in-game user interface. Dominant function families: `UiFocusProxyControl_*` (12), `UiKeyboardFocus_*` (5), `UiPointer_*` (5). Representative entry points: `UiPointer_DispatchPendingEvents`, `UiKeyboardFocus_ReleaseNode`, `UiKeyboard_DispatchPendingEvents`.
 
@@ -1334,7 +1334,7 @@ This file owns UI input routing within frontend and in-game user interface. Domi
 <a id="module-ui-controls-layout"></a>
 ### `ui/controls/layout`
 
-[Source](../src/ui/controls/layout.c) · [Header](../include/thandor/ui/controls/layout.h) · [Call graph](callgraphs/ui/controls/layout.md) · [Graphviz](callgraphs/ui/controls/layout.dot)
+[Source](../src/ui/controls/layout.c) · [Header](../include/thandor/ui/controls/layout.h) · [Call graph](callgraphs/ui/controls/layout.md) · [Graphviz](callgraphs/ui/controls/layout.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-controls-layout)
 
 This file owns UI layout and geometry within frontend and in-game user interface. Dominant function families: `UiContainer_*` (10), `UiResizableWindowControl_*` (7), `UiFrame_*` (5). Representative entry points: `UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren`, `UiResizableWindowControl_DrawFrameTitleAndChildren`, `UiTitledWindowControl_DrawFrameTitleAndChildren`.
 
@@ -1371,7 +1371,7 @@ This file owns UI layout and geometry within frontend and in-game user interface
 <a id="module-ui-controls-lists"></a>
 ### `ui/controls/lists`
 
-[Source](../src/ui/controls/lists.c) · [Header](../include/thandor/ui/controls/lists.h) · [Call graph](callgraphs/ui/controls/lists.md) · [Graphviz](callgraphs/ui/controls/lists.dot)
+[Source](../src/ui/controls/lists.c) · [Header](../include/thandor/ui/controls/lists.h) · [Call graph](callgraphs/ui/controls/lists.md) · [Graphviz](callgraphs/ui/controls/lists.dot) · [Developer notes](../CHANGELOG.md#module-ui-controls-lists) · [Full changelog](../CHANGELOG_FULL.md#module-ui-controls-lists)
 
 This file owns list widgets, selection, and scrolling within frontend and in-game user interface. Dominant function families: `UiScrollableControl_*` (16), `UiPointerList_*` (10), `UiListControl_*` (6). Representative entry points: `UiTimedListControl_HandleKeyboardNavigationCf`, `UiListControl_HandleKeyboardNavigationCf`, `UiPointerList_RefreshSelectionAndQueueAction`.
 
@@ -1399,7 +1399,7 @@ This file owns list widgets, selection, and scrolling within frontend and in-gam
 <a id="module-ui-controls-misc"></a>
 ### `ui/controls/misc`
 
-[Source](../src/ui/controls/misc.c) · [Header](../include/thandor/ui/controls/misc.h) · [Call graph](callgraphs/ui/controls/misc.md) · [Graphviz](callgraphs/ui/controls/misc.dot)
+[Source](../src/ui/controls/misc.c) · [Header](../include/thandor/ui/controls/misc.h) · [Call graph](callgraphs/ui/controls/misc.md) · [Graphviz](callgraphs/ui/controls/misc.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-controls-misc)
 
 This file owns miscellaneous UI controls within frontend and in-game user interface. Dominant function families: `UiDisplayModeAction_*` (6), `UiImageControl_*` (6), `UiRangeSliderControl_*` (5). Representative entry points: `UiDisplaySettingsRoot_RefreshModeSelection`, `UiDisplayModeAction_UpdateAdapterSelection`, `UiDisplayModeAction_UpdateResolutionSelection`.
 
@@ -1415,7 +1415,7 @@ This file owns miscellaneous UI controls within frontend and in-game user interf
 <a id="module-ui-controls-text"></a>
 ### `ui/controls/text`
 
-[Source](../src/ui/controls/text.c) · [Header](../include/thandor/ui/controls/text.h) · [Call graph](callgraphs/ui/controls/text.md) · [Graphviz](callgraphs/ui/controls/text.dot)
+[Source](../src/ui/controls/text.c) · [Header](../include/thandor/ui/controls/text.h) · [Call graph](callgraphs/ui/controls/text.md) · [Graphviz](callgraphs/ui/controls/text.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-controls-text)
 
 This file owns UI text, labels, and text widgets within frontend and in-game user interface. Dominant function families: `UiTextEditControl_*` (10), `UiFramedTextButtonControl_*` (6), `UiTextListControl_*` (6). Representative entry points: `UiTooltip_TickCountdown`, `UiNumericTextEditControl_HandleKeyboardAndCommitCf`, `UiPathTextEditControl_HandleKeyboardAndValidateCf`.
 
@@ -1438,7 +1438,7 @@ This file owns UI text, labels, and text widgets within frontend and in-game use
 <a id="module-ui-core-runtime"></a>
 ### `ui/core/runtime`
 
-[Source](../src/ui/core/runtime.c) · [Header](../include/thandor/ui/core/runtime.h) · [Call graph](callgraphs/ui/core/runtime.md) · [Graphviz](callgraphs/ui/core/runtime.dot)
+[Source](../src/ui/core/runtime.c) · [Header](../include/thandor/ui/core/runtime.h) · [Call graph](callgraphs/ui/core/runtime.md) · [Graphviz](callgraphs/ui/core/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-core-runtime)
 
 This file owns runtime state and lifecycle operations within frontend and in-game user interface. Dominant function families: `UiNode_*` (12), `UiRuntime_*` (6), `UiRuntimeRecordRing_*` (4). Representative entry points: `UiRootCallbacks_FreeCf`, `UiRootCallbacks_NoOpMethod08`, `UiRuntime_FormatSignedValues140And144`.
 
@@ -1467,7 +1467,7 @@ This file owns runtime state and lifecycle operations within frontend and in-gam
 <a id="module-ui-frontend-network"></a>
 ### `ui/frontend/network`
 
-[Source](../src/ui/frontend/network.c) · [Header](../include/thandor/ui/frontend/network.h) · [Call graph](callgraphs/ui/frontend/network.md) · [Graphviz](callgraphs/ui/frontend/network.dot)
+[Source](../src/ui/frontend/network.c) · [Header](../include/thandor/ui/frontend/network.h) · [Call graph](callgraphs/ui/frontend/network.md) · [Graphviz](callgraphs/ui/frontend/network.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-network)
 
 This file owns frontend network UI within frontend and in-game user interface. Dominant function families: `FrontendNetworkSetupPage_*` (3), `FrontendTransferPage_*` (2), `FrontendTeardown_*` (1). Representative entry points: `FrontendNetworkSetupPage_InitializeBackendMode`, `FrontendTeardown_SaveRootStateSnapshot80`, `FrontendTransferPage_ValidateInputAndRequestMailbox`.
 
@@ -1480,7 +1480,7 @@ This file owns frontend network UI within frontend and in-game user interface. D
 <a id="module-ui-frontend-player"></a>
 ### `ui/frontend/player`
 
-[Source](../src/ui/frontend/player.c) · [Header](../include/thandor/ui/frontend/player.h) · [Call graph](callgraphs/ui/frontend/player.md) · [Graphviz](callgraphs/ui/frontend/player.dot)
+[Source](../src/ui/frontend/player.c) · [Header](../include/thandor/ui/frontend/player.h) · [Call graph](callgraphs/ui/frontend/player.md) · [Graphviz](callgraphs/ui/frontend/player.dot) · [Developer notes](../CHANGELOG.md#module-ui-frontend-player) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-player)
 
 This file owns frontend player/roster UI within frontend and in-game user interface. Dominant function families: `FrontendPlayerRuntime_*` (21), `FrontendPlayerSelection_*` (5), `FrontendPlayerMessageBuffer_*` (3). Representative entry points: `FrontendPlayerMessage_SubmitSevenSlotText`, `FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel`, `FrontendPlayerConsensus_SubmitSelectedValue`.
 
@@ -1505,7 +1505,7 @@ This file owns frontend player/roster UI within frontend and in-game user interf
 <a id="module-ui-frontend-results"></a>
 ### `ui/frontend/results`
 
-[Source](../src/ui/frontend/results.c) · [Header](../include/thandor/ui/frontend/results.h) · [Call graph](callgraphs/ui/frontend/results.md) · [Graphviz](callgraphs/ui/frontend/results.dot)
+[Source](../src/ui/frontend/results.c) · [Header](../include/thandor/ui/frontend/results.h) · [Call graph](callgraphs/ui/frontend/results.md) · [Graphviz](callgraphs/ui/frontend/results.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-results)
 
 This file owns frontend result screens within frontend and in-game user interface. Dominant function families: `FrontendResultsTable_*` (9). Representative entry points: `FrontendResultsTable_DrawColumnSequenceByType`, `FrontendResultsTable_HitTestAlwaysNone`, `FrontendResultsTable_DrawColourColumn`.
 
@@ -1516,7 +1516,7 @@ This file owns frontend result screens within frontend and in-game user interfac
 <a id="module-ui-frontend-runtime"></a>
 ### `ui/frontend/runtime`
 
-[Source](../src/ui/frontend/runtime.c) · [Header](../include/thandor/ui/frontend/runtime.h) · [Call graph](callgraphs/ui/frontend/runtime.md) · [Graphviz](callgraphs/ui/frontend/runtime.dot)
+[Source](../src/ui/frontend/runtime.c) · [Header](../include/thandor/ui/frontend/runtime.h) · [Call graph](callgraphs/ui/frontend/runtime.md) · [Graphviz](callgraphs/ui/frontend/runtime.dot) · [Developer notes](../CHANGELOG.md#module-ui-frontend-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-runtime)
 
 This file owns runtime state and lifecycle operations within frontend and in-game user interface. Dominant function families: `FrontendModelPointerContext_*` (14), `FrontendCallback_*` (6), `FrontendRuntime_*` (6). Representative entry points: `Frontend_MainLoop`, `FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction`, `FrontendModelPointerContext_NonRightPress`.
 
@@ -1535,7 +1535,7 @@ This file owns runtime state and lifecycle operations within frontend and in-gam
 <a id="module-ui-frontend-scenario"></a>
 ### `ui/frontend/scenario`
 
-[Source](../src/ui/frontend/scenario.c) · [Header](../include/thandor/ui/frontend/scenario.h) · [Call graph](callgraphs/ui/frontend/scenario.md) · [Graphviz](callgraphs/ui/frontend/scenario.dot)
+[Source](../src/ui/frontend/scenario.c) · [Header](../include/thandor/ui/frontend/scenario.h) · [Call graph](callgraphs/ui/frontend/scenario.md) · [Graphviz](callgraphs/ui/frontend/scenario.dot) · [Developer notes](../CHANGELOG.md#module-ui-frontend-scenario) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-scenario)
 
 This file owns frontend scenario selection within frontend and in-game user interface. Dominant function families: `FrontendMissionBriefingPage_*` (1), `FrontendRoot_*` (1). Representative entry points: `FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState`, `FrontendMissionBriefingPage_Initialize`.
 
@@ -1548,7 +1548,7 @@ This file owns frontend scenario selection within frontend and in-game user inte
 <a id="module-ui-frontend-session"></a>
 ### `ui/frontend/session`
 
-[Source](../src/ui/frontend/session.c) · [Header](../include/thandor/ui/frontend/session.h) · [Call graph](callgraphs/ui/frontend/session.md) · [Graphviz](callgraphs/ui/frontend/session.dot)
+[Source](../src/ui/frontend/session.c) · [Header](../include/thandor/ui/frontend/session.h) · [Call graph](callgraphs/ui/frontend/session.md) · [Graphviz](callgraphs/ui/frontend/session.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-session)
 
 This file owns frontend session/lobby UI within frontend and in-game user interface. Dominant function families: `FrontendSession_*` (6), `FrontendSessionAction_*` (4), `FrontendClientSession_*` (1). Representative entry points: `FrontendSession_ReleaseSelectedResourceAndReturnToMainPage`, `FrontendSessionAction_CloseMovieAndReturnToMainPage`, `FrontendSessionAction_ApplySpeedOrToggleReady`.
 
@@ -1568,7 +1568,7 @@ This file owns frontend session/lobby UI within frontend and in-game user interf
 <a id="module-ui-frontend-settings"></a>
 ### `ui/frontend/settings`
 
-[Source](../src/ui/frontend/settings.c) · [Header](../include/thandor/ui/frontend/settings.h) · [Call graph](callgraphs/ui/frontend/settings.md) · [Graphviz](callgraphs/ui/frontend/settings.dot)
+[Source](../src/ui/frontend/settings.c) · [Header](../include/thandor/ui/frontend/settings.h) · [Call graph](callgraphs/ui/frontend/settings.md) · [Graphviz](callgraphs/ui/frontend/settings.dot) · [Developer notes](../CHANGELOG.md#module-ui-frontend-settings) · [Full changelog](../CHANGELOG_FULL.md#module-ui-frontend-settings)
 
 This file owns settings UI and option synchronization within frontend and in-game user interface. Dominant function families: `FrontendAudioSettings_*` (8), `FrontendGameplaySettings_*` (8), `FrontendNetworkSettings_*` (5). Representative entry points: `FrontendTaskAssignmentPage_Initialize`, `FrontendDisplaySettingsAction_ApplyPendingResolution`, `FrontendDisplaySettingsAction_ApplyPendingColorDepth`.
 
@@ -1583,7 +1583,7 @@ This file owns settings UI and option synchronization within frontend and in-gam
 <a id="module-ui-ingame-commands"></a>
 ### `ui/ingame/commands`
 
-[Source](../src/ui/ingame/commands.c) · [Header](../include/thandor/ui/ingame/commands.h) · [Call graph](callgraphs/ui/ingame/commands.md) · [Graphviz](callgraphs/ui/ingame/commands.dot)
+[Source](../src/ui/ingame/commands.c) · [Header](../include/thandor/ui/ingame/commands.h) · [Call graph](callgraphs/ui/ingame/commands.md) · [Graphviz](callgraphs/ui/ingame/commands.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-ingame-commands)
 
 This file owns synchronized command queues within frontend and in-game user interface. Dominant function families: `UiCommandModeG_*` (15), `InGameCommandModeG_*` (6), `InGameCommandModeC_*` (4). Representative entry points: `InGameCommandModeG_Select0`, `InGameCommandModeG_Select1`, `InGameCommandModeG_Select2`.
 
@@ -1601,7 +1601,7 @@ This file owns synchronized command queues within frontend and in-game user inte
 <a id="module-ui-ingame-runtime"></a>
 ### `ui/ingame/runtime`
 
-[Source](../src/ui/ingame/runtime.c) · [Header](../include/thandor/ui/ingame/runtime.h) · [Call graph](callgraphs/ui/ingame/runtime.md) · [Graphviz](callgraphs/ui/ingame/runtime.dot)
+[Source](../src/ui/ingame/runtime.c) · [Header](../include/thandor/ui/ingame/runtime.h) · [Call graph](callgraphs/ui/ingame/runtime.md) · [Graphviz](callgraphs/ui/ingame/runtime.dot) · [Developer notes](../CHANGELOG.md#module-ui-ingame-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-ui-ingame-runtime)
 
 This file owns runtime state and lifecycle operations within frontend and in-game user interface. Dominant function families: `InGameUiCommand_*` (6), `InGameSelectionPage_*` (4), `InGameUiRuntime_*` (4). Representative entry points: `InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf`, `InGameSevenSlotCommand_SubmitAndClosePage`, `InGameUiAction1024_Handler`.
 
@@ -1626,7 +1626,7 @@ This file owns runtime state and lifecycle operations within frontend and in-gam
 <a id="module-ui-ingame-settings"></a>
 ### `ui/ingame/settings`
 
-[Source](../src/ui/ingame/settings.c) · [Header](../include/thandor/ui/ingame/settings.h) · [Call graph](callgraphs/ui/ingame/settings.md) · [Graphviz](callgraphs/ui/ingame/settings.dot)
+[Source](../src/ui/ingame/settings.c) · [Header](../include/thandor/ui/ingame/settings.h) · [Call graph](callgraphs/ui/ingame/settings.md) · [Graphviz](callgraphs/ui/ingame/settings.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-ingame-settings)
 
 This file owns settings UI and option synchronization within frontend and in-game user interface. Dominant function families: `InGameAudioSettings_*` (8), `InGameGameplaySettings_*` (7), `InGameSettingsPage_*` (6). Representative entry points: `InGameSettingsAction_CloseAlternatePanel`, `InGameSettingsAction_CloseAndDepartPlayerMode0`, `InGameSettingsAction_CloseAndDepartPlayerMode1`.
 
@@ -1640,7 +1640,7 @@ This file owns settings UI and option synchronization within frontend and in-gam
 <a id="module-ui-ingame-technology"></a>
 ### `ui/ingame/technology`
 
-[Source](../src/ui/ingame/technology.c) · [Header](../include/thandor/ui/ingame/technology.h) · [Call graph](callgraphs/ui/ingame/technology.md) · [Graphviz](callgraphs/ui/ingame/technology.dot)
+[Source](../src/ui/ingame/technology.c) · [Header](../include/thandor/ui/ingame/technology.h) · [Call graph](callgraphs/ui/ingame/technology.md) · [Graphviz](callgraphs/ui/ingame/technology.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-ingame-technology)
 
 This file owns technology-state logic within frontend and in-game user interface. Dominant function families: `InGameTechnologyPanel_*` (2), `InGameTechnologyAreaTab_*` (1), `InGameTechnologyResearch_*` (1). Representative entry points: `InGameTechnologyAreaTab_SelectAndRebuild`, `InGameTechnologyPanel_ResetAndSelectCurrentArea`, `UiCatalogGroup48_RebuildGrid`.
 
@@ -1660,7 +1660,7 @@ This file owns technology-state logic within frontend and in-game user interface
 <a id="module-ui-support-runtime"></a>
 ### `ui/support/runtime`
 
-[Source](../src/ui/support/runtime.c) · [Header](../include/thandor/ui/support/runtime.h) · [Call graph](callgraphs/ui/support/runtime.md) · [Graphviz](callgraphs/ui/support/runtime.dot)
+[Source](../src/ui/support/runtime.c) · [Header](../include/thandor/ui/support/runtime.h) · [Call graph](callgraphs/ui/support/runtime.md) · [Graphviz](callgraphs/ui/support/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-ui-support-runtime)
 
 This file owns runtime state and lifecycle operations within frontend and in-game user interface. Dominant function families: `RecentTextHistory_*` (4), `CreditsScreen_*` (1), `PcxPreview_*` (1). Representative entry points: `RecentTextHistory_SortAndBuildPointerList`, `RecentTextHistory_Insert`, `RecentTextHistory_RemoveOldest`.
 
@@ -1680,7 +1680,7 @@ This file owns runtime state and lifecycle operations within frontend and in-gam
 <a id="module-world-effects-maintenance"></a>
 ### `world/effects/maintenance`
 
-[Source](../src/world/effects/maintenance.c) · [Header](../include/thandor/world/effects/maintenance.h) · [Call graph](callgraphs/world/effects/maintenance.md) · [Graphviz](callgraphs/world/effects/maintenance.dot)
+[Source](../src/world/effects/maintenance.c) · [Header](../include/thandor/world/effects/maintenance.h) · [Call graph](callgraphs/world/effects/maintenance.md) · [Graphviz](callgraphs/world/effects/maintenance.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-effects-maintenance)
 
 This file owns periodic update and cleanup operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `EffectRuntimeMaintenance_*` (3), `EffectModelRuntimeMaintenance_*` (1). Representative entry points: `EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint`, `EffectRuntimeMaintenance_OccupancyRebuildNoOp`, `EffectRuntimeMaintenance_AudioRefreshNoOp`.
 
@@ -1691,7 +1691,7 @@ This file owns periodic update and cleanup operations within world simulation, t
 <a id="module-world-effects-runtime"></a>
 ### `world/effects/runtime`
 
-[Source](../src/world/effects/runtime.c) · [Header](../include/thandor/world/effects/runtime.h) · [Call graph](callgraphs/world/effects/runtime.md) · [Graphviz](callgraphs/world/effects/runtime.dot)
+[Source](../src/world/effects/runtime.c) · [Header](../include/thandor/world/effects/runtime.h) · [Call graph](callgraphs/world/effects/runtime.md) · [Graphviz](callgraphs/world/effects/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-effects-runtime)
 
 This file owns runtime state and lifecycle operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `EffectRuntime_*` (4), `EffectRuntimePool_*` (1). Representative entry points: `EffectRuntime_FindDefinitionByIdCf`, `EffectRuntime_InitGraphicsResources`, `EffectRuntime_ShutdownGraphicsResources`.
 
@@ -1716,7 +1716,7 @@ This file owns runtime state and lifecycle operations within world simulation, t
 <a id="module-world-model-hierarchy"></a>
 ### `world/model/hierarchy`
 
-[Source](../src/world/model/hierarchy.c) · [Header](../include/thandor/world/model/hierarchy.h) · [Call graph](callgraphs/world/model/hierarchy.md) · [Graphviz](callgraphs/world/model/hierarchy.dot)
+[Source](../src/world/model/hierarchy.c) · [Header](../include/thandor/world/model/hierarchy.h) · [Call graph](callgraphs/world/model/hierarchy.md) · [Graphviz](callgraphs/world/model/hierarchy.dot) · [Developer notes](../CHANGELOG.md#module-world-model-hierarchy) · [Full changelog](../CHANGELOG_FULL.md#module-world-model-hierarchy)
 
 This file owns runtime model hierarchy and transforms within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `ModelNodeRuntime_*` (16), `ModelRuntimeHierarchy_*` (10), `ModelRuntimeNode_*` (2). Representative entry points: `ModelNodeRuntime_UpdateStateTintRecursive`, `ModelNodeRuntime_RebuildTransformsFromRoot`, `ModelRuntimeHierarchy_ApplyFactionTechnologyVariants`.
 
@@ -1752,7 +1752,7 @@ This file owns runtime model hierarchy and transforms within world simulation, t
 <a id="module-world-model-runtime"></a>
 ### `world/model/runtime`
 
-[Source](../src/world/model/runtime.c) · [Header](../include/thandor/world/model/runtime.h) · [Call graph](callgraphs/world/model/runtime.md) · [Graphviz](callgraphs/world/model/runtime.dot)
+[Source](../src/world/model/runtime.c) · [Header](../include/thandor/world/model/runtime.h) · [Call graph](callgraphs/world/model/runtime.md) · [Graphviz](callgraphs/world/model/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-model-runtime)
 
 This file owns runtime state and lifecycle operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `ModelRuntime_*` (8), `ModelRuntimePool_*` (7). Representative entry points: `ModelRuntimePool_RepairDeferredChild`, `ModelRuntime_CullAndRenderHierarchyRecursive`, `ModelRuntime_RenderHierarchyRecursiveAlternatePath`.
 
@@ -1777,7 +1777,7 @@ This file owns runtime state and lifecycle operations within world simulation, t
 <a id="module-world-model-slots"></a>
 ### `world/model/slots`
 
-[Source](../src/world/model/slots.c) · [Header](../include/thandor/world/model/slots.h) · [Call graph](callgraphs/world/model/slots.md) · [Graphviz](callgraphs/world/model/slots.dot)
+[Source](../src/world/model/slots.c) · [Header](../include/thandor/world/model/slots.h) · [Call graph](callgraphs/world/model/slots.md) · [Graphviz](callgraphs/world/model/slots.dot) · [Developer notes](../CHANGELOG.md#module-world-model-slots) · [Full changelog](../CHANGELOG_FULL.md#module-world-model-slots)
 
 This file owns model slot/attachment management within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `ModelRuntimeSlotClassInit_*` (14), `ModelRuntimeSlot_*` (4), `ModelRuntimeSlotClassRelease_*` (1). Representative entry points: `ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`, `ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`, `ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`.
 
@@ -1788,7 +1788,7 @@ This file owns model slot/attachment management within world simulation, terrain
 <a id="module-world-motion-runtime"></a>
 ### `world/motion/runtime`
 
-[Source](../src/world/motion/runtime.c) · [Header](../include/thandor/world/motion/runtime.h) · [Call graph](callgraphs/world/motion/runtime.md) · [Graphviz](callgraphs/world/motion/runtime.dot)
+[Source](../src/world/motion/runtime.c) · [Header](../include/thandor/world/motion/runtime.h) · [Call graph](callgraphs/world/motion/runtime.md) · [Graphviz](callgraphs/world/motion/runtime.dot) · [Developer notes](../CHANGELOG.md#module-world-motion-runtime) · [Full changelog](../CHANGELOG_FULL.md#module-world-motion-runtime)
 
 This file owns runtime state and lifecycle operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `WorldMotion_*` (9), `WorldRuntime_*` (2). Representative entry points: `WorldRuntime_ApplyEdgeScrollAndGetCursorFrame`, `WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn`, `WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn`.
 
@@ -1802,7 +1802,7 @@ This file owns runtime state and lifecycle operations within world simulation, t
 <a id="module-world-pathing-grid"></a>
 ### `world/pathing/grid`
 
-[Source](../src/world/pathing/grid.c) · [Header](../include/thandor/world/pathing/grid.h) · [Call graph](callgraphs/world/pathing/grid.md) · [Graphviz](callgraphs/world/pathing/grid.dot)
+[Source](../src/world/pathing/grid.c) · [Header](../include/thandor/world/pathing/grid.h) · [Call graph](callgraphs/world/pathing/grid.md) · [Graphviz](callgraphs/world/pathing/grid.dot) · [Developer notes](../CHANGELOG.md#module-world-pathing-grid) · [Full changelog](../CHANGELOG_FULL.md#module-world-pathing-grid)
 
 This file owns grid traversal, routing, and cell-state operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `GridScratch_*` (12), `EntityPathing_*` (3), `GridFootprint_*` (3). Representative entry points: `EntityPathing_ResolveDestinationAndRebuildRoutes`, `GridReachability_RebuildConnectedRegionAroundWorldPoint`, `GridScratch_RebuildTerrainAndRuntimeClassificationMasks`.
 
@@ -1819,7 +1819,7 @@ This file owns grid traversal, routing, and cell-state operations within world s
 <a id="module-world-pathing-influence"></a>
 ### `world/pathing/influence`
 
-[Source](../src/world/pathing/influence.c) · [Header](../include/thandor/world/pathing/influence.h) · [Call graph](callgraphs/world/pathing/influence.md) · [Graphviz](callgraphs/world/pathing/influence.dot)
+[Source](../src/world/pathing/influence.c) · [Header](../include/thandor/world/pathing/influence.h) · [Call graph](callgraphs/world/pathing/influence.md) · [Graphviz](callgraphs/world/pathing/influence.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-pathing-influence)
 
 This file owns pathing influence fields and distance bands within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `GridInfluence_*` (19). Representative entry points: `GridInfluence_AddLowDistanceBands`, `GridInfluence_RemoveLowDistanceBands`, `GridInfluence_AddHighDistanceBands`.
 
@@ -1831,7 +1831,7 @@ This file owns pathing influence fields and distance bands within world simulati
 <a id="module-world-runtime-core"></a>
 ### `world/runtime/core`
 
-[Source](../src/world/runtime/core.c) · [Header](../include/thandor/world/runtime/core.h) · [Call graph](callgraphs/world/runtime/core.md) · [Graphviz](callgraphs/world/runtime/core.dot)
+[Source](../src/world/runtime/core.c) · [Header](../include/thandor/world/runtime/core.h) · [Call graph](callgraphs/world/runtime/core.md) · [Graphviz](callgraphs/world/runtime/core.dot) · [Developer notes](../CHANGELOG.md#module-world-runtime-core) · [Full changelog](../CHANGELOG_FULL.md#module-world-runtime-core)
 
 This file owns core within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `WorldRuntime_*` (33), `UnifiedRuntimeDefault_*` (5), `RuntimeHexSegment_*` (4). Representative entry points: `WorldLightingRuntime_UpdateInterpolatedTerrainLighting`, `WorldRuntime_SetPosition60AndDistanceFromPosition80`, `WorldRuntime_SetMotionParameters6CThrough78Clamped`.
 
@@ -1864,7 +1864,7 @@ This file owns core within world simulation, terrain, pathing, models, effects, 
 <a id="module-world-shots-maintenance"></a>
 ### `world/shots/maintenance`
 
-[Source](../src/world/shots/maintenance.c) · [Header](../include/thandor/world/shots/maintenance.h) · [Call graph](callgraphs/world/shots/maintenance.md) · [Graphviz](callgraphs/world/shots/maintenance.dot)
+[Source](../src/world/shots/maintenance.c) · [Header](../include/thandor/world/shots/maintenance.h) · [Call graph](callgraphs/world/shots/maintenance.md) · [Graphviz](callgraphs/world/shots/maintenance.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-shots-maintenance)
 
 This file owns periodic update and cleanup operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `ShotModelRuntimeMaintenance_*` (2), `ShotRuntimeMaintenance_*` (2). Representative entry points: `ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint`, `ShotRuntimeMaintenance_OccupancyRebuildNoOp`, `ShotRuntimeMaintenance_UpdateHierarchyProjectedSound`.
 
@@ -1875,7 +1875,7 @@ This file owns periodic update and cleanup operations within world simulation, t
 <a id="module-world-shots-runtime"></a>
 ### `world/shots/runtime`
 
-[Source](../src/world/shots/runtime.c) · [Header](../include/thandor/world/shots/runtime.h) · [Call graph](callgraphs/world/shots/runtime.md) · [Graphviz](callgraphs/world/shots/runtime.dot)
+[Source](../src/world/shots/runtime.c) · [Header](../include/thandor/world/shots/runtime.h) · [Call graph](callgraphs/world/shots/runtime.md) · [Graphviz](callgraphs/world/shots/runtime.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-shots-runtime)
 
 This file owns runtime state and lifecycle operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `ShotRuntime_*` (6), `ShotRuntimePool_*` (1). Representative entry points: `ShotRuntime_ApplyArmyHitRelationAndNotifications`, `ShotRuntime_InitGraphicsResources`, `ShotRuntime_ShutdownGraphicsResources`.
 
@@ -1894,7 +1894,7 @@ This file owns runtime state and lifecycle operations within world simulation, t
 <a id="module-world-terrain-editing"></a>
 ### `world/terrain/editing`
 
-[Source](../src/world/terrain/editing.c) · [Header](../include/thandor/world/terrain/editing.h) · [Call graph](callgraphs/world/terrain/editing.md) · [Graphviz](callgraphs/world/terrain/editing.dot)
+[Source](../src/world/terrain/editing.c) · [Header](../include/thandor/world/terrain/editing.h) · [Call graph](callgraphs/world/terrain/editing.md) · [Graphviz](callgraphs/world/terrain/editing.dot) · [Developer notes](../CHANGELOG.md#module-world-terrain-editing) · [Full changelog](../CHANGELOG_FULL.md#module-world-terrain-editing)
 
 This file owns terrain editing operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `TerrainEditBuffer_*` (5), `TerrainMaterialEdit_*` (4), `TerrainRegionCollection_*` (2). Representative entry points: `TerrainRegionCollection_CollectConnectedCellsRecursive`, `TerrainMaterialEdit_SeedMatchingRegionReplacement`, `TerrainMaterialEdit_SeedNonTargetRegionReplacement`.
 
@@ -1908,7 +1908,7 @@ This file owns terrain editing operations within world simulation, terrain, path
 <a id="module-world-terrain-grid"></a>
 ### `world/terrain/grid`
 
-[Source](../src/world/terrain/grid.c) · [Header](../include/thandor/world/terrain/grid.h) · [Call graph](callgraphs/world/terrain/grid.md) · [Graphviz](callgraphs/world/terrain/grid.dot)
+[Source](../src/world/terrain/grid.c) · [Header](../include/thandor/world/terrain/grid.h) · [Call graph](callgraphs/world/terrain/grid.md) · [Graphviz](callgraphs/world/terrain/grid.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-terrain-grid)
 
 This file owns grid traversal, routing, and cell-state operations within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `FieldGrid_*` (46), `TerrainGrid_*` (6), `FieldGridCell_*` (3). Representative entry points: `FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf`, `TerrainGrid_RunDirectionalRelaxationPasses`, `FieldGrid_ApplyPositiveCellDeltas`.
 
@@ -1942,7 +1942,7 @@ This file owns grid traversal, routing, and cell-state operations within world s
 <a id="module-world-terrain-height"></a>
 ### `world/terrain/height`
 
-[Source](../src/world/terrain/height.c) · [Header](../include/thandor/world/terrain/height.h) · [Call graph](callgraphs/world/terrain/height.md) · [Graphviz](callgraphs/world/terrain/height.dot)
+[Source](../src/world/terrain/height.c) · [Header](../include/thandor/world/terrain/height.h) · [Call graph](callgraphs/world/terrain/height.md) · [Graphviz](callgraphs/world/terrain/height.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-terrain-height)
 
 This file owns terrain-height sampling and interpolation within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `TerrainAuxHeightThreshold_*` (13), `TerrainHeightBand_*` (13), `TerrainHeightDelta_*` (12). Representative entry points: `TerrainHeightBand_TestAroundWorldPoint`, `TerrainAuxHeightThreshold_TestAroundWorldPoint`, `TerrainHeightDelta_ApplyWedge0`.
 
@@ -1956,7 +1956,7 @@ This file owns terrain-height sampling and interpolation within world simulation
 <a id="module-world-terrain-occupancy"></a>
 ### `world/terrain/occupancy`
 
-[Source](../src/world/terrain/occupancy.c) · [Header](../include/thandor/world/terrain/occupancy.h) · [Call graph](callgraphs/world/terrain/occupancy.md) · [Graphviz](callgraphs/world/terrain/occupancy.dot)
+[Source](../src/world/terrain/occupancy.c) · [Header](../include/thandor/world/terrain/occupancy.h) · [Call graph](callgraphs/world/terrain/occupancy.md) · [Graphviz](callgraphs/world/terrain/occupancy.dot) · [Full changelog](../CHANGELOG_FULL.md#module-world-terrain-occupancy)
 
 This file owns terrain/world occupancy masks within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `TerrainOccupancyBit2_*` (13), `TerrainOccupancyMask_*` (2). Representative entry points: `TerrainOccupancyBit2_MarkAroundWorldPoint`, `TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint`, `TerrainOccupancyMask_ResolveRuntimeClassFlags`.
 
@@ -1973,7 +1973,7 @@ This file owns terrain/world occupancy masks within world simulation, terrain, p
 <a id="module-world-terrain-projection"></a>
 ### `world/terrain/projection`
 
-[Source](../src/world/terrain/projection.c) · [Header](../include/thandor/world/terrain/projection.h) · [Call graph](callgraphs/world/terrain/projection.md) · [Graphviz](callgraphs/world/terrain/projection.dot)
+[Source](../src/world/terrain/projection.c) · [Header](../include/thandor/world/terrain/projection.h) · [Call graph](callgraphs/world/terrain/projection.md) · [Graphviz](callgraphs/world/terrain/projection.dot) · [Developer notes](../CHANGELOG.md#module-world-terrain-projection) · [Full changelog](../CHANGELOG_FULL.md#module-world-terrain-projection)
 
 This file owns projection and projected geometry within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `FieldGridTerrainOverlayVariantA_*` (13), `FieldGridTerrainOverlayVariantB_*` (13), `TerrainProjectedOcclusion_*` (13). Representative entry points: `TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint`, `FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf`, `FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf`.
 
@@ -1987,7 +1987,7 @@ This file owns projection and projected geometry within world simulation, terrai
 <a id="module-world-terrain-visuals"></a>
 ### `world/terrain/visuals`
 
-[Source](../src/world/terrain/visuals.c) · [Header](../include/thandor/world/terrain/visuals.h) · [Call graph](callgraphs/world/terrain/visuals.md) · [Graphviz](callgraphs/world/terrain/visuals.dot)
+[Source](../src/world/terrain/visuals.c) · [Header](../include/thandor/world/terrain/visuals.h) · [Call graph](callgraphs/world/terrain/visuals.md) · [Graphviz](callgraphs/world/terrain/visuals.dot) · [Developer notes](../CHANGELOG.md#module-world-terrain-visuals) · [Full changelog](../CHANGELOG_FULL.md#module-world-terrain-visuals)
 
 This file owns terrain visual resources and animated visual state within world simulation, terrain, pathing, models, effects, and projectiles. Dominant function families: `TerrainCompositeTexture_*` (5), `TerrainVisualResources_*` (3), `TerrainLighting_*` (2). Representative entry points: `TerrainCompositeTexture_Create`, `TerrainByteClampLookup_Initialize`, `TerrainVisualResources_LoadPrimary`.
 

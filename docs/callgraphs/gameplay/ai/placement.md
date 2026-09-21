@@ -1,6 +1,6 @@
 # Call graph: `gameplay/ai/placement`
 
-[Source](../../../../src/gameplay/ai/placement.c) · [Header](../../../../include/thandor/gameplay/ai/placement.h) · [Graphviz](placement.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-placement)
+[Source](../../../../src/gameplay/ai/placement.c) · [Header](../../../../include/thandor/gameplay/ai/placement.h) · [Graphviz](placement.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-ai-placement) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-ai-placement)
 
 12 functions. Addresses are current V523 executable VAs.
 

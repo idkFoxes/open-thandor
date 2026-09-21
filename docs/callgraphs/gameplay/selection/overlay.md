@@ -1,6 +1,6 @@
 # Call graph: `gameplay/selection/overlay`
 
-[Source](../../../../src/gameplay/selection/overlay.c) · [Header](../../../../include/thandor/gameplay/selection/overlay.h) · [Graphviz](overlay.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-selection-overlay)
+[Source](../../../../src/gameplay/selection/overlay.c) · [Header](../../../../include/thandor/gameplay/selection/overlay.h) · [Graphviz](overlay.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-selection-overlay) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-selection-overlay)
 
 16 functions. Addresses are current V523 executable VAs.
 

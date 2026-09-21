@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/package/codec.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/package/codec.h>
 
 /* Implementation ownership: assets/package/codec. */
@@ -9,34 +16,37 @@
    back to the 0x10-byte on-disk record (+0x54,+0x48,+0x4C,+0x50) then Huffman.
    Local calls: PckCodec_EncodeHuffmanRle.
 */
-dword PckCodec_EncodeFieldGrid
-                (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-                PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
+PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodec_EncodeFieldGrid
+          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
+          PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
 
 {
   AssetMagic AVar1;
+  AssetMagic *pAVar2;
   AssetMagic *compactFieldImageBase;
   PckHeaderDwordCount headerDwordCount;
-  uint uVar2;
+  uint uVar3;
+  dword bytes;
   PckCompactFieldImageByteCount compactImageSizeBytes;
   AssetMagic *compactWriteCursor;
-  bool bVar3;
-  void *pvVar4;
+  ArenaAllocEaxCf5 AVar4;
+  PckCodecEaxCf5 PVar5;
+  PckCodecEaxCf5 PVar6;
   AssetMagic persistedCellDword;
   
-  uVar2 = sourceGrid->gridWidth * sourceGrid->gridHeight * 0x10;
-  bVar3 = 0xfffffdff < uVar2;
-  _pvVar4 = (*g_MemoryApi.alloc)(uVar2 + 0x200);
-  compactImageSizeBytes = (PckCompactFieldImageByteCount)((ulonglong)_pvVar4 >> 0x20);
-  compactFieldImageBase = SUB84(_pvVar4,0);
-  if (!bVar3) {
+  uVar3 = sourceGrid->gridWidth * sourceGrid->gridHeight;
+  bytes = uVar3 * 0x10 + 0x200;
+  AVar4 = (*g_MemoryApi.alloc)(bytes);
+  compactFieldImageBase = (AssetMagic *)AVar4.eax;
+  if (!AVar4.carry) {
     compactWriteCursor = compactFieldImageBase;
     for (headerDwordCount = 0x80; headerDwordCount != 0; headerDwordCount = headerDwordCount - 1) {
       *compactWriteCursor = (sourceGrid->common).magic;
       sourceGrid = (FieldGridAsset *)&(sourceGrid->common).allocationSizeBytes;
       compactWriteCursor = compactWriteCursor + 1;
     }
-    uVar2 = compactImageSizeBytes - 0x200 >> 4;
+    uVar3 = uVar3 & 0xfffffff;
     do {
       persistedCellDword =
            *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xc);
@@ -49,21 +59,27 @@ dword PckCodec_EncodeFieldGrid
       compactWriteCursor[3] = AVar1;
       sourceGrid = (FieldGridAsset *)((sourceGrid->common).buildMetadata.names.sourceName + 8);
       compactWriteCursor = compactWriteCursor + 4;
-      uVar2 = uVar2 - 1;
-    } while (uVar2 != 0);
-    *(PckCompactFieldImageByteCount *)destination = compactImageSizeBytes;
-    bVar3 = (byte *)0xffffffef < destination;
-    PckCodec_EncodeHuffmanRle
-              (destinationCapacityBytes - 0x10,destination + 0x10,compactImageSizeBytes,
-               (byte *)compactFieldImageBase);
-    if (!bVar3) {
+      uVar3 = uVar3 - 1;
+    } while (uVar3 != 0);
+    *(dword *)destination = bytes;
+    PVar5 = PckCodec_EncodeHuffmanRle
+                      (destinationCapacityBytes - 0x10,destination + 0x10,bytes,
+                       (byte *)compactFieldImageBase);
+    pAVar2 = (AssetMagic *)PVar5.eax;
+    if (!PVar5.carry) {
       (*g_MemoryApi.free)(compactFieldImageBase);
-      return (dword)(compactFieldImageBase + 4);
+      PVar6.eax = pAVar2 + 4;
+      PVar6.carry = false;
+      return PVar6;
     }
     (*g_MemoryApi.free)(compactFieldImageBase);
+    compactFieldImageBase = pAVar2;
   }
-  return (dword)compactFieldImageBase;
+  PVar5.carry = true;
+  PVar5.eax = (dword)compactFieldImageBase;
+  return PVar5;
 }
+
 
 /* Address: 0x0040AAA0.
    Ownership: assets/package/codec.
@@ -74,47 +90,46 @@ dword PckCodec_EncodeFieldGrid
    col*0x901 + row*0x480, worldY = -1999*row (triangle lattice 2305/1152/1999; inverse of the T4 sampler).
    Local calls: PckCodec_DecodeHuffmanRle.
 */
-dword PckCodec_DecodeFieldGrid
-                (PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
-                PckStoredByteCount sourceSizeBytes,byte *source)
+PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodec_DecodeFieldGrid
+          (PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+          PckStoredByteCount sourceSizeBytes,byte *source)
 
 {
+  dword bytes;
   AssetMagic AVar1;
-  dword dVar2;
   AssetMagic *compactFieldImageBase;
-  PckDecodedByteCount outputSizeBytes;
-  int iVar3;
+  int iVar2;
   FieldGridDimension columnsRemaining;
-  int iVar4;
+  int iVar3;
   FieldGridDimension rowsRemaining;
   Q12 currentWorldYQ12;
   AssetMagic *compactReadCursor;
   FieldGridCell *currentWorldCoordinateCell;
   FieldGridAsset *expandedZeroCursor;
   FieldGridAsset *expandedWriteCursor;
-  bool bVar5;
-  void *pvVar6;
+  ArenaAllocEaxCf5 AVar4;
+  PckCodecEaxCf5 PVar5;
+  ArenaFreeEaxCf5 AVar6;
   FieldGridDimension gridWidth;
   
-  bVar5 = sourceSizeBytes < 0x10;
-  _pvVar6 = (*g_MemoryApi.alloc)(*(dword *)source);
-  compactFieldImageBase = SUB84(_pvVar6,0);
-  if (!bVar5) {
-    bVar5 = (byte *)0xffffffef < source;
-    PckCodec_DecodeHuffmanRle
-              (outputSizeBytes,(byte *)compactFieldImageBase,
-               (PckStoredByteCount)((ulonglong)_pvVar6 >> 0x20),source + 0x10);
-    if (!bVar5) {
-      iVar4 = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
+  bytes = *(dword *)source;
+  AVar4 = (*g_MemoryApi.alloc)(bytes);
+  compactFieldImageBase = (AssetMagic *)AVar4.eax;
+  if (!AVar4.carry) {
+    PVar5 = PckCodec_DecodeHuffmanRle
+                      (bytes,(byte *)compactFieldImageBase,sourceSizeBytes - 0x10,source + 0x10);
+    if (!PVar5.carry) {
+      iVar3 = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
       compactReadCursor = compactFieldImageBase;
       expandedWriteCursor = destinationGrid;
-      for (iVar3 = 0x80; iVar3 != 0; iVar3 = iVar3 + -1) {
+      for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
         (expandedWriteCursor->common).magic = *compactReadCursor;
         compactReadCursor = compactReadCursor + 1;
         expandedWriteCursor = (FieldGridAsset *)&(expandedWriteCursor->common).allocationSizeBytes;
       }
       expandedZeroCursor = expandedWriteCursor;
-      for (iVar3 = iVar4 * 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
+      for (iVar2 = iVar3 * 0x20; iVar2 != 0; iVar2 = iVar2 + -1) {
         (expandedZeroCursor->common).magic = 0;
         expandedZeroCursor = (FieldGridAsset *)&(expandedZeroCursor->common).allocationSizeBytes;
       }
@@ -132,48 +147,55 @@ dword PckCodec_DecodeFieldGrid
         compactReadCursor = compactReadCursor + 4;
         expandedWriteCursor =
              (FieldGridAsset *)((expandedWriteCursor->common).buildMetadata.names.sourceName + 8);
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
-      iVar4 = 0;
+        iVar3 = iVar3 + -1;
+      } while (iVar3 != 0);
+      iVar3 = 0;
       currentWorldYQ12 = 0;
       gridWidth = destinationGrid->gridWidth;
       rowsRemaining = destinationGrid->gridHeight;
       currentWorldCoordinateCell = destinationGrid->cells;
       columnsRemaining = gridWidth;
-      iVar3 = 0;
+      iVar2 = 0;
       do {
         do {
-          currentWorldCoordinateCell->worldX = iVar4;
+          currentWorldCoordinateCell->worldX = iVar3;
           currentWorldCoordinateCell->worldY = currentWorldYQ12;
-          iVar4 = iVar4 + 0x901;
+          iVar3 = iVar3 + 0x901;
           currentWorldCoordinateCell = currentWorldCoordinateCell + 1;
           columnsRemaining = columnsRemaining - 1;
         } while (columnsRemaining != 0);
-        iVar4 = iVar3 + 0x480;
+        iVar3 = iVar2 + 0x480;
         currentWorldYQ12 = currentWorldYQ12 + -1999;
         rowsRemaining = rowsRemaining - 1;
         columnsRemaining = gridWidth;
-        iVar3 = iVar4;
+        iVar2 = iVar3;
       } while (rowsRemaining != 0);
-      dVar2 = (*g_MemoryApi.free)(compactFieldImageBase);
-      return dVar2;
+      AVar6 = (*g_MemoryApi.free)(compactFieldImageBase);
+      return (PckCodecEaxCf5)((uint5)AVar6 & 0xffffffff);
     }
-    compactFieldImageBase = (AssetMagic *)(*g_MemoryApi.free)(compactFieldImageBase);
+    AVar6 = (*g_MemoryApi.free)(compactFieldImageBase);
+    compactFieldImageBase = (AssetMagic *)AVar6.eax;
   }
-  return (dword)compactFieldImageBase;
+  PVar5.carry = true;
+  PVar5.eax = (dword)compactFieldImageBase;
+  return PVar5;
 }
+
 
 /* Address: 0x0040A960.
    Ownership: assets/package/codec.
    Purpose: Copies sourceSize bytes when destinationCapacity is large enough and returns the four-byte-aligned
    size. This is PCK compression method 1. Method 1 writer: plain dword-tail-safe copy.
 */
-dword PckCodec_EncodeStored
-                (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-                PckDecodedByteCount sourceSizeBytes,byte *source)
+PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodec_EncodeStored
+          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
+          PckDecodedByteCount sourceSizeBytes,byte *source)
 
 {
   PckDwordCopyCount dwordCopyCount;
+  PckCodecEaxCf5 PVar1;
+  PckCodecEaxCf5 PVar2;
   
   if (sourceSizeBytes <= destinationCapacityBytes) {
     for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
@@ -182,23 +204,30 @@ dword PckCodec_EncodeStored
       source = source + 4;
       destination = destination + 4;
     }
-    return sourceSizeBytes + 3 & 0xfffffffc;
+    PVar1.eax = sourceSizeBytes + 3 & 0xfffffffc;
+    PVar1.carry = false;
+    return PVar1;
   }
-  return 0x14;
+  PVar2.carry = true;
+  PVar2.eax = 0x14;
+  return PVar2;
 }
+
 
 /* Address: 0x0040A9A0.
    Ownership: assets/package/codec.
    Purpose: Copies sourceSize bytes directly to the destination. This is PCK compression method 1. Method 1 reader:
    stored copy.
 */
-dword PckCodec_DecodeStored
-                (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-                PckStoredByteCount sourceSizeBytes,byte *source)
+PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodec_DecodeStored
+          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
+          PckStoredByteCount sourceSizeBytes,byte *source)
 
 {
   dword in_EAX;
   PckDwordCopyCount dwordCopyCount;
+  PckCodecEaxCf5 PVar1;
   
   for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
       dwordCopyCount = dwordCopyCount - 1) {
@@ -206,8 +235,11 @@ dword PckCodec_DecodeStored
     source = source + 4;
     destination = destination + 4;
   }
-  return in_EAX;
+  PVar1.carry = (sourceSizeBytes >> 1 & 1) != 0;
+  PVar1.eax = in_EAX;
+  return PVar1;
 }
+
 
 /* Address: 0x0040A4C0.
    Ownership: assets/package/codec.
@@ -215,9 +247,10 @@ dword PckCodec_DecodeStored
    3-to-18-byte repeated runs. Returns the aligned packed size with CF clear; returns error 0x14 with CF set on
    failure. PCK compressionMethod 0 writer: order-0 Huffman over literal/RLE symbols.
 */
-dword PckCodec_EncodeHuffmanRle
-                (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-                PckDecodedByteCount sourceSizeBytes,byte *source)
+PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodec_EncodeHuffmanRle
+          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
+          PckDecodedByteCount sourceSizeBytes,byte *source)
 
 {
   PckHuffmanNodePtr pPVar1;
@@ -226,7 +259,7 @@ dword PckCodec_EncodeHuffmanRle
   int iVar3;
   PckDecodedByteCount PVar4;
   uint uVar5;
-  PckHuffmanNode *unaff_EBX;
+  PckHuffmanNode *lowestWeightNode;
   byte *pbVar6;
   PckHuffmanSymbolState *pPVar7;
   PckHuffmanNode *pPVar8;
@@ -236,6 +269,8 @@ dword PckCodec_EncodeHuffmanRle
   PckHuffmanNodePtr currentLeafNode;
   uint *puVar10;
   uint *puVar11;
+  PckCodecEaxCf5 PVar12;
+  PckCodecEaxCf5 PVar13;
   PckHuffmanNodePtr nextInternalNode;
   byte currentSymbolByte;
   PckHuffmanNodePtr parentNode;
@@ -289,10 +324,10 @@ dword PckCodec_EncodeHuffmanRle
         if (pPVar8->weight < uVar2) {
           if (uVar2 < uVar5) {
             uVar5 = uVar2;
-            pPVar9 = unaff_EBX;
+            pPVar9 = lowestWeightNode;
           }
           uVar2 = pPVar8->weight;
-          unaff_EBX = pPVar8;
+          lowestWeightNode = pPVar8;
         }
         else if (pPVar8->weight < uVar5) {
           uVar5 = pPVar8->weight;
@@ -304,21 +339,17 @@ dword PckCodec_EncodeHuffmanRle
     } while (iVar3 != 0);
     if ((int)uVar5 < 0) break;
     nextInternalNode->weight = uVar2 + uVar5;
-    nextInternalNode->zeroChild = unaff_EBX;
+    nextInternalNode->zeroChild = lowestWeightNode;
     nextInternalNode->oneChild = pPVar9;
-    unaff_EBX->parent = nextInternalNode;
+    lowestWeightNode->parent = nextInternalNode;
     pPVar9->parent = nextInternalNode;
-    unaff_EBX->weight = 0;
+    lowestWeightNode->weight = 0;
     pPVar9->weight = 0;
     nextInternalNode = nextInternalNode + 1;
     if ((PckHuffmanNodePtr)((int)&g_PckHuffmanInternalNodeWorkspace256[0xff].parent + 3) <
-        nextInternalNode) {
-      return 0x14;
-    }
+        nextInternalNode) goto LAB_0040a77f;
   }
-  if (destinationCapacityBytes < 0x100) {
-    return 0x14;
-  }
+  if (destinationCapacityBytes < 0x100) goto LAB_0040a77f;
   iVar3 = 0x100;
   puVar11 = (uint *)(destination + 0x100);
   frequencyByteCursor = (byte *)g_PckHuffmanSymbolWorkspace256;
@@ -380,9 +411,7 @@ dword PckCodec_EncodeHuffmanRle
             puVar11 = (uint *)((int)puVar11 + 1);
             uVar2 = uVar2 + 1;
             destinationCapacityBytes = destinationCapacityBytes - 1;
-            if (destinationCapacityBytes == 0) {
-              return 0x14;
-            }
+            if (destinationCapacityBytes == 0) goto LAB_0040a77f;
           }
           if (sourceSizeBytes == 0)
           goto PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear;
@@ -394,9 +423,7 @@ dword PckCodec_EncodeHuffmanRle
           puVar11 = (uint *)((int)puVar11 + 1);
           uVar2 = uVar2 + 1;
           destinationCapacityBytes = destinationCapacityBytes - 1;
-          if (destinationCapacityBytes == 0) {
-            return 0x14;
-          }
+          if (destinationCapacityBytes == 0) goto LAB_0040a77f;
         }
         source = source + 1;
         sourceSizeBytes = sourceSizeBytes - 1;
@@ -405,20 +432,27 @@ PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear:
       if (outputBitOffset != 0) {
         uVar2 = uVar2 + 1;
       }
-      return uVar2 & 0xfffffff0;
+      PVar12.eax = uVar2 & 0xfffffff0;
+      PVar12.carry = false;
+      return PVar12;
     }
   }
-  return 0x14;
+LAB_0040a77f:
+  PVar13.carry = true;
+  PVar13.eax = 0x14;
+  return PVar13;
 }
+
 
 /* Address: 0x0040A790.
    Ownership: assets/package/codec.
    Purpose: Rebuilds the package Huffman tree from the first 256 source bytes and decodes literal or repeated-run
    tokens until outputSize bytes have been produced. CF reports success or failure. PCK compressionMethod 0 reader.
 */
-dword PckCodec_DecodeHuffmanRle
-                (PckDecodedByteCount outputSizeBytes,byte *destination,
-                PckStoredByteCount sourceSizeBytes,byte *source)
+PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodec_DecodeHuffmanRle
+          (PckDecodedByteCount outputSizeBytes,byte *destination,PckStoredByteCount sourceSizeBytes,
+          byte *source)
 
 {
   PckHuffmanSymbolState PVar1;
@@ -428,7 +462,7 @@ dword PckCodec_DecodeHuffmanRle
   PckHuffmanBitOffset inputBitOffset;
   int iVar3;
   uint uVar4;
-  PckHuffmanNode *unaff_EBX;
+  PckHuffmanNode *lowestWeightNode;
   PckHuffmanNodePtr pPVar5;
   PckHuffmanNodePtr currentHuffmanNode;
   byte *frequencyByteCursor;
@@ -436,6 +470,8 @@ dword PckCodec_DecodeHuffmanRle
   uint *puVar7;
   PckHuffmanSymbolState *pPVar8;
   PckHuffmanNode *pPVar9;
+  bool bVar10;
+  PckCodecEaxCf5 PVar11;
   PckHuffmanNodePtr nextInternalNode;
   
   pPVar8 = g_PckHuffmanSymbolWorkspace256;
@@ -459,7 +495,7 @@ dword PckCodec_DecodeHuffmanRle
     pPVar9 = pPVar9 + 1;
   } while (pPVar8 < g_PckHuffmanLeafNodeWorkspace256);
   nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
-  while( true ) {
+  do {
     pPVar6 = g_PckHuffmanLeafNodeWorkspace256;
     uVar2 = 0xffffffff;
     iVar3 = 0x200;
@@ -469,10 +505,10 @@ dword PckCodec_DecodeHuffmanRle
         if (pPVar6->weight < uVar2) {
           if (uVar2 < uVar4) {
             uVar4 = uVar2;
-            pPVar9 = unaff_EBX;
+            pPVar9 = lowestWeightNode;
           }
           uVar2 = pPVar6->weight;
-          unaff_EBX = pPVar6;
+          lowestWeightNode = pPVar6;
         }
         else if (pPVar6->weight < uVar4) {
           uVar4 = pPVar6->weight;
@@ -482,36 +518,38 @@ dword PckCodec_DecodeHuffmanRle
       pPVar6 = pPVar6 + 1;
       iVar3 = iVar3 + -1;
     } while (iVar3 != 0);
-    if ((int)uVar4 < 0) break;
+    if ((int)uVar4 < 0) {
+      inputBitOffset = 0;
+      puVar7 = (uint *)(source + 0x100);
+      goto LAB_0040a890;
+    }
     nextInternalNode->weight = uVar2 + uVar4;
-    nextInternalNode->zeroChild = unaff_EBX;
+    nextInternalNode->zeroChild = lowestWeightNode;
     nextInternalNode->oneChild = pPVar9;
-    unaff_EBX->parent = nextInternalNode;
+    lowestWeightNode->parent = nextInternalNode;
     pPVar9->parent = nextInternalNode;
-    unaff_EBX->weight = 0;
+    lowestWeightNode->weight = 0;
     pPVar9->weight = 0;
     nextInternalNode = nextInternalNode + 1;
-    if (PckCodec_EncodeHuffmanRle <= nextInternalNode) {
-      return 0x14;
-    }
-  }
-  inputBitOffset = 0;
-  puVar7 = (uint *)(source + 0x100);
+  } while (nextInternalNode < PckCodec_EncodeHuffmanRle);
+  runLength = 0x14;
+  bVar10 = true;
+  goto LAB_0040a953;
+LAB_0040a890:
   do {
-    while( true ) {
-      uVar2 = *puVar7 >> (inputBitOffset & 0x1f);
-      nextBitOffset = inputBitOffset + 1;
-      if ((uVar2 & 1) != 0) break;
-      uVar2 = uVar2 >> 1;
+    uVar2 = *puVar7 >> (inputBitOffset & 0x1f);
+    nextBitOffset = inputBitOffset + 1;
+    if ((uVar2 & 1) == 0) {
+      runLength = uVar2 >> 1;
       pPVar5 = nextInternalNode + -1;
       do {
-        if ((uVar2 & 1) == 0) {
+        if ((runLength & 1) == 0) {
           pPVar5 = pPVar5->zeroChild;
         }
         else {
           pPVar5 = pPVar5->oneChild;
         }
-        uVar2 = uVar2 >> 1;
+        runLength = runLength >> 1;
         nextBitOffset = nextBitOffset + 1;
       } while (pPVar5->zeroChild != (PckHuffmanNodePtr)0x0);
       *destination = (byte)((uint)(pPVar5 + -0x4084c) >> 4);
@@ -521,9 +559,8 @@ dword PckCodec_DecodeHuffmanRle
         puVar7 = (uint *)((int)puVar7 + 1);
       }
       outputSizeBytes = outputSizeBytes - 1;
-      if (outputSizeBytes == 0) {
-        return uVar2;
-      }
+      if (outputSizeBytes == 0) break;
+      goto LAB_0040a890;
     }
     uVar4 = uVar2 >> 5;
     inputBitOffset = inputBitOffset + 5;
@@ -549,8 +586,11 @@ dword PckCodec_DecodeHuffmanRle
       if (outputSizeBytes == 0) break;
       runLength = runLength - 1;
     } while (runLength != 0);
-    if (outputSizeBytes == 0) {
-      return runLength;
-    }
-  } while( true );
+  } while (outputSizeBytes != 0);
+  bVar10 = false;
+LAB_0040a953:
+  PVar11.carry = bVar10;
+  PVar11.eax = runLength;
+  return PVar11;
 }
+

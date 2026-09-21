@@ -1,6 +1,6 @@
 # Call graph: `graphics/render/shading`
 
-[Source](../../../../src/graphics/render/shading.c) · [Header](../../../../include/thandor/graphics/render/shading.h) · [Graphviz](shading.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-render-shading)
+[Source](../../../../src/graphics/render/shading.c) · [Header](../../../../include/thandor/graphics/render/shading.h) · [Graphviz](shading.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-render-shading) · [Developer notes](../../../../CHANGELOG.md#module-graphics-render-shading) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-render-shading)
 
 27 functions. Addresses are current V523 executable VAs.
 

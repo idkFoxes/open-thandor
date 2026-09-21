@@ -1,6 +1,6 @@
 # Call graph: `audio/spatial/runtime`
 
-[Source](../../../../src/audio/spatial/runtime.c) · [Header](../../../../include/thandor/audio/spatial/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-audio-spatial-runtime)
+[Source](../../../../src/audio/spatial/runtime.c) · [Header](../../../../include/thandor/audio/spatial/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-audio-spatial-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-audio-spatial-runtime)
 
 10 functions. Addresses are current V523 executable VAs.
 

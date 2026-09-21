@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/model/slots.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/model/slots.h>
 
 /* Implementation ownership: world/model/slots. */
@@ -9,9 +16,10 @@
    indices from the MDL definition. Inputs: Class-selected model definition fields and root ModelRuntimeNode.
    Outputs: Root animation flags, subresource indices and zeroed UV offsets.
 */
-void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
-               (ModelDefinitionRuntimeSemanticView280 *modelDefinition,
-               ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_preserve_eax_edx
+ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
+          (ModelDefinitionRuntimeSemanticView280 *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot
+          )
 
 {
   ModelRuntimeNode *rootModelNode;
@@ -36,13 +44,15 @@ void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
   return;
 }
 
+
 /* Address: 0x00522A90.
    Ownership: world/model/slots.
    Purpose: Initializes class-specific sentinels, bounds, and timing fields. Class-initialization callback table
    slot selected by model runtime class id.
 */
-void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   uint uVar1;
@@ -77,18 +87,20 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   return;
 }
 
+
 /* Address: 0x00522B90.
    Ownership: world/model/slots.
    Purpose: Seeds class fields from the root model transform. Class-initialization callback table slot selected by
    model runtime class id.
 */
-void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   dword *classStateFlags;
   ModelRuntimeNode *rootModelNode;
-  ModelRuntimeArmyLinkOrState4 rootWorldYQ12;
+  Q12 rootWorldYQ12;
   
   rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   (modelRuntimeSlot->classLinkState).modelLinkOrState60.classState = 0x4000;
@@ -100,11 +112,12 @@ void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
     classStateFlags = &(modelRuntimeSlot->classState).classStateB8;
     *classStateFlags = *classStateFlags | 6;
   }
-  rootWorldYQ12 = (ModelRuntimeArmyLinkOrState4)(rootModelNode->worldTransform).translation.y;
+  rootWorldYQ12 = (rootModelNode->worldTransform).translation.y;
   (modelRuntimeSlot->classLinkState).classState68 = (rootModelNode->worldTransform).translation.x;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C = rootWorldYQ12;
+  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.classState = rootWorldYQ12;
   return;
 }
+
 
 /* Address: 0x00523CA0.
    Ownership: world/model/slots.
@@ -112,13 +125,14 @@ void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
    table slot selected by model runtime class id.
    Cross-module calls: ModelLookupTable_FindPackedKeyEntryRegsCf [assets/model/definitions].
 */
-void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   dword *pdVar1;
   ModelRuntimeArmyLinkOrState4 *pMVar2;
-  undefined1 in_CF;
+  ModelLookupPayloadEaxEcxEdxCf13 MVar3;
   dword *matchedClassCounterField;
   ModelRuntimeArmyLinkOrState4 *class6CCounterField;
   ModelRuntimeNode *modelKeyLookupNode;
@@ -136,48 +150,49 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   (modelRuntimeSlot->classLinkState).classState74 = 0;
   (modelRuntimeSlot->classLinkState).classState78 = 0;
   (modelRuntimeSlot->classLinkState).classState7C = 0;
-  ModelLookupTable_FindPackedKeyEntryRegsCf(0,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(0,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
          (ModelRuntimeSlot *)((modelRuntimeSlot->classLinkState).modelLinkOrState60.classState - 1);
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(1,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(1,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     matchedClassCounterField = &(modelRuntimeSlot->classLinkState).classState64;
     *matchedClassCounterField = *matchedClassCounterField - 1;
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(2,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(2,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     pdVar1 = &(modelRuntimeSlot->classLinkState).classState68;
     *pdVar1 = *pdVar1 - 1;
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(3,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(3,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     pMVar2 = &(modelRuntimeSlot->classLinkState).armyLinkOrState6C;
     pMVar2->armyRuntime = (ArmyRuntimeSlot *)(pMVar2->classState - 1);
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(4,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(4,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     pdVar1 = &(modelRuntimeSlot->classLinkState).classState70;
     *pdVar1 = *pdVar1 - 1;
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(5,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(5,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     pdVar1 = &(modelRuntimeSlot->classLinkState).classState74;
     *pdVar1 = *pdVar1 - 1;
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(6,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(6,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     pdVar1 = &(modelRuntimeSlot->classLinkState).classState78;
     *pdVar1 = *pdVar1 - 1;
   }
-  ModelLookupTable_FindPackedKeyEntryRegsCf(7,2,(modelNode1->modelPayload).modelResource);
-  if ((bool)in_CF) {
+  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(7,2,(modelNode1->modelPayload).modelResource);
+  if (MVar3.carry) {
     pdVar1 = &(modelRuntimeSlot->classLinkState).classState7C;
     *pdVar1 = *pdVar1 - 1;
   }
   return;
 }
+
 
 /* Address: 0x005243D0.
    Ownership: world/model/slots.
@@ -200,7 +215,8 @@ void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8
    Purpose: Converts the class-specific army link at offset 0x6C to a saved pool offset. Model-unrebase partition
    slots 48-71 receive one ModelRuntimeSlot pointer.
 */
-void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
 
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
@@ -213,12 +229,14 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
   return;
 }
 
+
 /* Address: 0x00524CE0.
    Ownership: world/model/slots.
    Purpose: Rebases the class-specific army link at offset 0x6C. Pointer-rebase callback table slot selected by
    model runtime class id.
 */
-void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
@@ -227,10 +245,12 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
   if (linkedArmyRuntime != (ArmyRuntimeSlot *)0x0) {
     (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime =
          (ArmyRuntimeSlot *)
-         ((int)&linkedArmyRuntime->definitionOrAsset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+         ((int)&linkedArmyRuntime->modelRuntimeOrSavedOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne)
+    ;
   }
   return;
 }
+
 
 /* Address: 0x00524D10.
    Ownership: world/model/slots.
@@ -239,8 +259,9 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
    selector and enables animation. Inputs: Class-selected MDL definition and new ModelRuntimeSlot. Outputs:
    Initialized class state and root animated subresource.
 */
-void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ModelRuntimeNode *rootModelNode;
@@ -248,10 +269,10 @@ void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
   
   rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classState).reservedBC_CF[0] = 1;
-  (modelRuntimeSlot->classState).reservedBC_CF[1] = 0;
-  (modelRuntimeSlot->classState).reservedBC_CF[2] = 0;
-  (modelRuntimeSlot->classState).reservedBC_CF[3] = 0;
+  (modelRuntimeSlot->classState).reservedBC_BF[0] = 1;
+  (modelRuntimeSlot->classState).reservedBC_BF[1] = 0;
+  (modelRuntimeSlot->classState).reservedBC_BF[2] = 0;
+  (modelRuntimeSlot->classState).reservedBC_BF[3] = 0;
   (modelRuntimeSlot->classLinkState).classState74 = 0;
   (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = (ArmyRuntimeSlot *)0x0;
   (modelRuntimeSlot->classLinkState).classState64 = 0;
@@ -264,14 +285,16 @@ void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
   return;
 }
 
+
 /* Address: 0x005251C0.
    Ownership: world/model/slots.
    Purpose: Accumulates a faction metric and detaches root child slot 3. Class-initialization callback table slot
    selected by model runtime class id.
    Cross-module calls: WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core].
 */
-void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   byte *pbVar1;
@@ -292,11 +315,12 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   *(dword *)pbVar1 = *(int *)pbVar1 + modelDefinition[0x10].flags;
   if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
       (3 < modelNode1->childCount)) && (modelNode1->childNodes[3] != (ModelRuntimeNode *)0x0)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldRuntimeNode *)modelNode1->childNodes[3]);
+    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[3]);
     modelNode1->childNodes[3] = (ModelRuntimeNode *)0x0;
   }
   return;
 }
+
 
 /* Address: 0x00525250.
    Ownership: world/model/slots.
@@ -305,8 +329,9 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
    the table caller. Class-initialization callback table slot selected by model runtime class id.
    Cross-module calls: WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core].
 */
-void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   byte *pbVar1;
@@ -326,11 +351,12 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
   *(dword *)pbVar1 = *(int *)pbVar1 + modelDefinition[0x10].flags;
   if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
       (1 < modelNode1->childCount)) && (modelNode1->childNodes[1] != (ModelRuntimeNode *)0x0)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldRuntimeNode *)modelNode1->childNodes[1]);
+    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[1]);
     modelNode1->childNodes[1] = (ModelRuntimeNode *)0x0;
   }
   return;
 }
+
 
 /* Address: 0x005252E0.
    Ownership: world/model/slots.
@@ -339,8 +365,9 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
    Energy-generator init callback. Adds class-16 MDL +0xC0 to owning faction energyGenerationCapacityQ4. Stock
    Power plant (ARM 310) has four linked class-16 generator MDLs with +0xC0=200 Q4 each.
 */
-void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_preserve_eax
+ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   FactionProgressAmountQ4 *factionProgressLimitQ4;
@@ -353,6 +380,7 @@ void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
   return;
 }
 
+
 /* Address: 0x005254B0.
    Ownership: world/model/slots.
    Purpose: Binary entry is anchored by g_CodePointerTable_0051FE78[16]@0051FE78. Model release partition slots
@@ -360,8 +388,9 @@ void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
    release callback. Subtracts class-16 MDL +0xC0 from owning faction energyGenerationCapacityQ4; exact inverse of
    the class-16 initialization callback.
 */
-void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
+void __thandor_preserve_eax
+ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
   FactionProgressAmountQ4 *factionProgressLimitQ4;
@@ -374,12 +403,14 @@ void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
   return;
 }
 
+
 /* Address: 0x00526340.
    Ownership: world/model/slots.
    Purpose: Converts the class-specific model-runtime link at offset 0x60 to a saved pool offset. Model-unrebase
    partition slots 48-71 receive one ModelRuntimeSlot pointer.
 */
-void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
@@ -392,12 +423,14 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
   return;
 }
 
+
 /* Address: 0x00526370.
    Ownership: world/model/slots.
    Purpose: Rebases the class-specific model-runtime link at offset 0x60. Pointer-rebase callback table slot
    selected by model runtime class id.
 */
-void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
@@ -410,6 +443,7 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
   }
   return;
 }
+
 
 /* Address: 0x005263A0.
    Ownership: world/model/slots.
@@ -438,8 +472,9 @@ void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
    Inputs: Class-selected model definition and new ModelRuntimeSlot. Outputs: Reset class state plus root animation
    flags/selector.
 */
-void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
-               (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx
+ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
+          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   int stateDwordsRemaining;
@@ -471,16 +506,19 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   return;
 }
 
+
 /* Address: 0x00527B80.
    Ownership: world/model/slots.
    Purpose: Fourth exact one-argument no-op reused across many unified runtime object method-table entries. It
    returns with ret 0x04. Pointer-rebase callback table slot selected by model runtime class id.
 */
-void ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
+void __thandor_void_preserve_eax_ecx_edx
+ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   return;
 }
+
 
 /* Address: 0x00527B90.
    Ownership: world/model/slots.

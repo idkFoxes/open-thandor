@@ -1,6 +1,6 @@
 # Call graph: `gameplay/session/level`
 
-[Source](../../../../src/gameplay/session/level.c) · [Header](../../../../include/thandor/gameplay/session/level.h) · [Graphviz](level.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-session-level)
+[Source](../../../../src/gameplay/session/level.c) · [Header](../../../../include/thandor/gameplay/session/level.h) · [Graphviz](level.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-session-level) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-session-level) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-session-level)
 
 5 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/level.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/session/level.h>
 
 /* Implementation ownership: gameplay/session/level. */
@@ -8,36 +15,53 @@
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], Package_SetLastErrorPath
    [assets/package/runtime].
 */
-undefined8 LevelAsset_PrepareEndingMoviePathCf(word *currentLevelPath,LevelAssetHeader *asset)
+EndingMoviePathEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+LevelAsset_PrepareEndingMoviePathCf(word *currentLevelPath,LevelAssetHeader *asset)
 
 {
-  undefined4 extraout_EAX;
-  int extraout_ECX;
   int iVar1;
-  undefined4 in_EDX;
+  int iVar2;
   sdword arg4;
-  word *pwVar2;
-  undefined4 uVar3;
+  word *pwVar3;
+  EndingMoviePathEaxCf5 EVar4;
+  EndingMoviePathEaxCf5 EVar5;
+  byte *path;
   
   if (((asset->common).magic == ASSET_MAGIC_LEV) &&
      ((asset->common).converterVersion == PCK_CONVERTER_LEV_00070001)) {
-    WidePath_SetExtensionCode
-              (0x6d6c66,(word *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                ((asset->pathOffsets).endingMovieBasePathOffset - 0x28)));
-    uVar3 = 8;
+    path = (asset->common).buildMetadata.assetRelativeAddressAnchor28 +
+           ((asset->pathOffsets).endingMovieBasePathOffset - 0x28);
+    iVar2 = 0x80;
+    iVar1 = *(int *)((AssetProducerSourceNames *)(path + 8))->producerName;
+    arg4 = 0;
+    if (iVar1 == 0xfc0077) {
+      arg4 = 2;
+    }
+    else if (iVar1 == 0x690065) {
+      arg4 = 3;
+    }
+    else if (iVar1 == 0x61006c) {
+      arg4 = 4;
+    }
+    WidePath_SetExtensionCode(0x6d6c66,(word *)path);
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,arg4,(word *)(u_flm_ende0000_flm_0050df06 + 8));
-    pwVar2 = g_LevelEndingMovieSourcePath;
-    for (iVar1 = extraout_ECX; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined4 *)pwVar2 = *(undefined4 *)currentLevelPath;
+    pwVar3 = g_LevelEndingMovieSourcePath;
+    for (; iVar2 != 0; iVar2 = iVar2 + -1) {
+      *(undefined4 *)pwVar3 = *(undefined4 *)currentLevelPath;
       currentLevelPath = currentLevelPath + 2;
-      pwVar2 = pwVar2 + 2;
+      pwVar3 = pwVar3 + 2;
     }
-    return CONCAT44(in_EDX,uVar3);
+    EVar4.carry = false;
+    EVar4.moviePath = (word *)path;
+    return EVar4;
   }
   Package_SetLastErrorPath(currentLevelPath);
-  return CONCAT44(in_EDX,extraout_EAX);
+  EVar5.carry = true;
+  EVar5.moviePath = (word *)0x39;
+  return EVar5;
 }
+
 
 /* Address: 0x005311D0.
    Ownership: gameplay/session/level.
@@ -53,853 +77,837 @@ undefined8 LevelAsset_PrepareEndingMoviePathCf(word *currentLevelPath,LevelAsset
    [assets/effect/catalog], MoviePlayback_AdvanceScheduledFrameAndTick [movie/runtime/playback],
    ShotAsset_PrepareEntries [assets/shot/catalog].
 */
-undefined8 __fastcall
+
+InGameLevelDefaultLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
-          (undefined4 param_1,undefined4 param_2,LevelAssetRuntimeImagePrefix370 *levelImage,
-          WorldRuntimeContext *worldRuntime)
+          (LevelAssetRuntimeImagePrefix370 *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
-  AssetRelativeOffset *pAVar1;
-  FactionRuntimeLifecycleObservedState FVar2;
-  PckConverterVersion PVar3;
-  InGameConditionRuntime *pIVar4;
-  uint uVar5;
-  TechnologyAsset *pTVar6;
-  TechnologyAsset *extraout_EAX;
-  TechnologyAsset *outputEntries;
-  TechnologyAsset *pTVar7;
-  TechnologyAsset *extraout_EAX_00;
-  uint extraout_EAX_01;
-  dword dVar8;
-  SpatialSoundSlot *pSVar9;
-  DirectSoundVoiceSet *pDVar10;
-  ModelDefinitionRecordPrefix *modelDefinition1;
-  uint extraout_ECX;
-  uint uVar11;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int iVar12;
-  WorldWorkspaceElementCount WVar13;
+  LevelPlayerSlotByteOffset32 LVar1;
+  InGameLevelConditionStorageView800 *pIVar2;
+  void **loadedResourcePointerArray;
+  void *resultOrPointer;
+  TechnologyAsset *loadedTechnologyAsset;
+  dword soundDirectoryRecordSizeBytes;
+  void *shrinkResultOrError;
+  uint uVar3;
+  WorldWorkspaceElementCount WVar4;
   PckOutputCapacityBytes outputCapacityBytes;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  uint extraout_ECX_04;
-  uint extraout_ECX_05;
-  undefined4 extraout_ECX_06;
-  undefined4 extraout_ECX_07;
-  undefined4 extraout_ECX_08;
-  undefined4 extraout_ECX_09;
-  undefined4 extraout_ECX_10;
-  undefined4 extraout_ECX_11;
-  undefined4 extraout_ECX_12;
-  undefined4 extraout_ECX_13;
-  undefined4 extraout_ECX_14;
-  byte abVar14 [4];
-  uint uVar15;
-  uint uVar16;
-  uint extraout_ECX_15;
-  uint uVar17;
-  uint extraout_ECX_16;
+  dword dVar5;
+  uint uVar6;
+  uint uVar7;
+  LevelAssetRecordCount LVar8;
   word *graphicsBasePath;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  byte *outputRecords;
-  byte *extraout_EDX_01;
-  byte *memory;
-  undefined4 extraout_EDX_02;
-  word *pwVar18;
-  undefined4 extraout_EDX_03;
-  undefined4 extraout_EDX_04;
-  undefined4 extraout_EDX_05;
-  undefined4 extraout_EDX_06;
-  undefined4 extraout_EDX_07;
-  undefined4 extraout_EDX_08;
-  undefined4 extraout_EDX_09;
-  undefined4 extraout_EDX_10;
-  int extraout_EDX_11;
-  ArmyAssetRecordPrefix **ppAVar19;
-  uint uVar20;
-  LevelAssetRuntimeImagePrefix370 *pLVar21;
-  byte *pbVar22;
-  dword *pdVar23;
-  WorldRuntimeNode *worldNode1;
-  uint uVar24;
-  bool bVar25;
-  undefined1 uVar26;
-  bool bVar27;
-  undefined8 uVar28;
-  WorldRuntimeContext *pWVar29;
-  PckOutputCapacityBytes outputCapacityBytes_00;
+  word *mutableBasePath;
+  int iVar9;
+  uint uVar10;
+  ArmyAssetRecordPrefix **ppAVar11;
+  uint uVar12;
+  uint uVar13;
+  uint uVar14;
+  LevelAssetRuntimeImagePrefix370 *pLVar15;
+  byte *pbVar16;
+  word *pwVar17;
+  dword *pdVar18;
+  WorldOwnerListNode100 *worldNode1;
+  uint uVar19;
+  ArenaAllocEaxCf5 AVar20;
+  PackageLoadEntryEaxCf5 PVar21;
+  StatusValueEaxCf5 SVar22;
+  ArmyRuntimeInitEaxCf5 AVar23;
+  ArmyRuntimeCreateEaxCf5 AVar24;
+  ArenaShrinkEaxCf5 AVar25;
+  SpatialSoundSlotEaxCf5 SVar26;
+  SoundCreateSampleVoiceSetEaxCf5 SVar27;
+  ModelDefinitionLookupEaxCf5 MVar28;
+  InGameLevelDefaultLoadEaxCf5 IVar29;
+  InGameLevelDefaultLoadEaxCf5 IVar30;
+  ArenaLargestAllocationEaxEcxCf9 AVar31;
+  PackageFindEntryEaxEcxCf9 PVar32;
+  FileSystemEnumerationEaxEcxCf9 FVar33;
+  ResourceLoadEaxEcxCf9 RVar34;
+  WorldRuntimeContext *pWVar35;
   ArmyAssetRecordPrefix *local_2c;
   ArmyAssetRecordPrefix *local_28;
   ArmyAssetRecordPrefix *local_24;
   ArmyAssetRecordPrefix *local_20;
+  word *soundDirectoryPathCursor;
   ArmyAssetRecordPrefix *armyDefinition1;
   ArmyAssetRecordPrefix *armyDefinition2;
   ArmyAssetRecordPrefix *armyDefinition3;
   ArmyAssetRecordPrefix *armyDefinition4;
   WorldRuntimeContext *worldContext1;
   
-  bVar25 = &stack0xffffffe8 < (undefined1 *)0x14;
-  pTVar6 = (*g_MemoryApi.alloc)(0x800);
-  outputEntries = pTVar6;
-  if (!bVar25) {
+  AVar20 = (*g_MemoryApi.alloc)(0x800);
+  loadedResourcePointerArray = (void **)AVar20.eax;
+  resultOrPointer = loadedResourcePointerArray;
+  if (!AVar20.carry) {
     g_InGameLoadedResourcePointerCount = 0;
-    g_InGameLoadedResourcePointers = pTVar6;
+    resultOrPointer = (void *)0x39;
+    g_InGameLoadedResourcePointers = loadedResourcePointerArray;
     Package_SetLastErrorPath(g_LevelEndingMovieSourcePath);
-    outputEntries = extraout_EAX;
-    if ((((levelImage->header).common.magic == ASSET_MAGIC_LEV) &&
-        (PVar3 = (levelImage->header).common.converterVersion,
-        bVar25 = PVar3 < PCK_CONVERTER_LEV_00070001, outputEntries = extraout_EAX,
-        PVar3 == PCK_CONVERTER_LEV_00070001)) &&
-       (outputEntries =
-             (*g_MemoryApi.alloc)
-                       ((levelImage->header).resourceTables.loadedResourcePointerArrayBytes),
-       !bVar25)) {
-      pLVar21 = levelImage;
-      g_InGameConditionRuntime = (InGameConditionRuntime *)outputEntries;
-      for (uVar11 = extraout_ECX >> 2; uVar11 != 0; uVar11 = uVar11 - 1) {
-        (outputEntries->header).common.magic = (pLVar21->header).common.magic;
-        pLVar21 = (LevelAssetRuntimeImagePrefix370 *)&(pLVar21->header).common.allocationSizeBytes;
-        outputEntries = (TechnologyAsset *)&(outputEntries->header).common.allocationSizeBytes;
-      }
-      g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
-      g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
-      uVar11 = (levelImage->header).pathOffsets.technologyPathOffset;
-      uVar26 = CARRY4(uVar11,(uint)levelImage);
-      pbVar22 = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                (uVar11 - 0x28);
-      WidePath_SetExtensionCode(0x636574,(word *)pbVar22);
-      pTVar7 = Package_LoadEntry((word *)pbVar22);
-      outputEntries = pTVar7;
-      if (((!(bool)uVar26) &&
-          (outputEntries = (TechnologyAsset *)&k_LowAddressLiteral0000004F,
-          g_TechnologyAsset = pTVar7, (pTVar7->header).common.magic == ASSET_MAGIC_TEC)) &&
-         ((pTVar7->header).common.converterVersion == PCK_CONVERTER_TEC_00020000)) {
-        g_LevelCameraBookmark1PositionXQ12 = levelImage->playerSlots[0].startCameraXQ12;
-        g_LevelCameraBookmark1PositionYQ12 = levelImage->playerSlots[0].startCameraYQ12;
-        g_LevelCameraBookmark1PositionZQ12 = levelImage->playerSlots[0].startCameraZQ12;
-        g_LevelCameraBookmark1PositionMagnitudeQ12 =
-             levelImage->playerSlots[0].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[0].packedHeadingLow16PitchHigh16;
-        g_LevelCameraBookmark2PositionXQ12 = levelImage->playerSlots[1].startCameraXQ12;
-        g_LevelCameraBookmark2PositionYQ12 = levelImage->playerSlots[1].startCameraYQ12;
-        g_LevelCameraBookmark2PositionZQ12 = levelImage->playerSlots[1].startCameraZQ12;
-        g_LevelCameraBookmark2PositionMagnitudeQ12 =
-             levelImage->playerSlots[1].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[1].packedHeadingLow16PitchHigh16;
-        g_LevelCameraBookmark3PositionXQ12 = levelImage->playerSlots[2].startCameraXQ12;
-        g_LevelCameraBookmark3PositionYQ12 = levelImage->playerSlots[2].startCameraYQ12;
-        g_LevelCameraBookmark3PositionZQ12 = levelImage->playerSlots[2].startCameraZQ12;
-        g_LevelCameraBookmark3PositionMagnitudeQ12 =
-             levelImage->playerSlots[2].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[2].packedHeadingLow16PitchHigh16;
-        g_LevelCameraBookmark4PositionXQ12 = levelImage->playerSlots[3].startCameraXQ12;
-        g_LevelCameraBookmark4PositionYQ12 = levelImage->playerSlots[3].startCameraYQ12;
-        g_LevelCameraBookmark4PositionZQ12 = levelImage->playerSlots[3].startCameraZQ12;
-        g_LevelCameraBookmark4PositionMagnitudeQ12 =
-             levelImage->playerSlots[3].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[3].packedHeadingLow16PitchHigh16;
-        g_LevelCameraBookmark5PositionXQ12 = levelImage->playerSlots[4].startCameraXQ12;
-        g_LevelCameraBookmark5PositionYQ12 = levelImage->playerSlots[4].startCameraYQ12;
-        g_LevelCameraBookmark5PositionZQ12 = levelImage->playerSlots[4].startCameraZQ12;
-        g_LevelCameraBookmark5PositionMagnitudeQ12 =
-             levelImage->playerSlots[4].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[4].packedHeadingLow16PitchHigh16;
-        g_LevelCameraBookmark6PositionXQ12 = levelImage->playerSlots[5].startCameraXQ12;
-        g_LevelCameraBookmark6PositionYQ12 = levelImage->playerSlots[5].startCameraYQ12;
-        g_LevelCameraBookmark6PositionZQ12 = levelImage->playerSlots[5].startCameraZQ12;
-        g_LevelCameraBookmark6PositionMagnitudeQ12 =
-             levelImage->playerSlots[5].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[5].packedHeadingLow16PitchHigh16;
-        g_LevelCameraBookmark7PositionXQ12 = levelImage->playerSlots[6].startCameraXQ12;
-        g_LevelCameraBookmark7PositionYQ12 = levelImage->playerSlots[6].startCameraYQ12;
-        g_LevelCameraBookmark7PositionZQ12 = levelImage->playerSlots[6].startCameraZQ12;
-        g_LevelCameraBookmark7PositionMagnitudeQ12 =
-             levelImage->playerSlots[6].startCameraMagnitudeQ12;
-        g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 =
-             levelImage->playerSlots[6].packedHeadingLow16PitchHigh16;
-        g_GameFactionRuntimeImage.records[1].xeniteCurrentQ4 =
-             levelImage->playerSlots[0].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[1].tritiumCurrentQ4 =
-             levelImage->playerSlots[0].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[2].xeniteCurrentQ4 =
-             levelImage->playerSlots[1].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[2].tritiumCurrentQ4 =
-             levelImage->playerSlots[1].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[3].xeniteCurrentQ4 =
-             levelImage->playerSlots[2].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[3].tritiumCurrentQ4 =
-             levelImage->playerSlots[2].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[4].xeniteCurrentQ4 =
-             levelImage->playerSlots[3].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[4].tritiumCurrentQ4 =
-             levelImage->playerSlots[3].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[5].xeniteCurrentQ4 =
-             levelImage->playerSlots[4].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[5].tritiumCurrentQ4 =
-             levelImage->playerSlots[4].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[6].xeniteCurrentQ4 =
-             levelImage->playerSlots[5].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[6].tritiumCurrentQ4 =
-             levelImage->playerSlots[5].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[7].xeniteCurrentQ4 =
-             levelImage->playerSlots[6].startXeniteQ4;
-        g_GameFactionRuntimeImage.records[7].tritiumCurrentQ4 =
-             levelImage->playerSlots[6].startTritiumQ4;
-        g_GameFactionRuntimeImage.records[1].factionClassOrMode =
-             levelImage->playerSlots[0].aiClassOrMode + 1;
-        g_GameFactionRuntimeImage.records[2].factionClassOrMode =
-             levelImage->playerSlots[1].aiClassOrMode + 2;
-        g_GameFactionRuntimeImage.records[3].factionClassOrMode =
-             levelImage->playerSlots[2].aiClassOrMode + 3;
-        g_GameFactionRuntimeImage.tail.reserved00_03 =
-             *(byte (*) [4])(levelImage->opaqueRuntimeTail2E0_36F + 0x34);
-        g_GameFactionRuntimeImage.records[4].factionClassOrMode =
-             levelImage->playerSlots[3].aiClassOrMode + 4;
-        g_GameFactionRuntimeImage.records[5].factionClassOrMode =
-             levelImage->playerSlots[4].aiClassOrMode + 5;
-        g_GameFactionRuntimeImage.records[6].factionClassOrMode =
-             levelImage->playerSlots[5].aiClassOrMode + 6;
-        g_GameFactionRuntimeImage.records[7].factionClassOrMode =
-             levelImage->playerSlots[6].aiClassOrMode + 7;
-        g_MoviePlaybackScheduleSpan =
-             (levelImage->header).resourceTables.effectAssetPathCount +
-             (levelImage->header).resourceTables.shotAssetPathCount +
-             (levelImage->header).resourceTables.modelAssetPathCount +
-             (levelImage->header).resourceTables.armyAssetPathCount;
-        g_MoviePlaybackBaseFrameGroup = 0;
-        g_MoviePlaybackScheduleCounter = 0;
-        pwVar18 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                          ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28));
-        if ((levelImage->header).resourceTables.effectAssetPathCount != 0) {
-          do {
-            WidePath_SetExtensionCode(0x666665,pwVar18);
-            outputEntries = (TechnologyAsset *)0x3a;
-            bVar25 = g_InGameLoadedResourcePointerCount < 0x200;
-            if ((!bVar25) || (outputEntries = Package_LoadEntry(pwVar18), bVar25))
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-            ;
-            (pTVar6->header).common.magic = (AssetMagic)outputEntries;
-            g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-            bVar25 = (TechnologyAsset *)0xfffffffb < pTVar6;
-            pTVar6 = (TechnologyAsset *)&(pTVar6->header).common.allocationSizeBytes;
-            outputEntries =
-                 (TechnologyAsset *)EffectAsset_PrepareEntries((EffectAssetHeader *)outputEntries);
-            if (bVar25)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-            ;
-            uVar28 = MoviePlayback_AdvanceScheduledFrameAndTick();
-            pwVar18 = pwVar18 + 0x20;
-          } while ((int)((ulonglong)uVar28 >> 0x20) != 1);
-        }
-        pwVar18 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                          ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28));
-        bVar25 = false;
-        if ((levelImage->header).resourceTables.shotAssetPathCount != 0) {
-          do {
-            WidePath_SetExtensionCode(0x746873,pwVar18);
-            outputEntries = (TechnologyAsset *)0x3a;
-            bVar25 = g_InGameLoadedResourcePointerCount < 0x200;
-            if ((!bVar25) || (outputEntries = Package_LoadEntry(pwVar18), bVar25))
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-            ;
-            (pTVar6->header).common.magic = (AssetMagic)outputEntries;
-            g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-            bVar25 = (TechnologyAsset *)0xfffffffb < pTVar6;
-            pTVar6 = (TechnologyAsset *)&(pTVar6->header).common.allocationSizeBytes;
-            outputEntries =
-                 (TechnologyAsset *)ShotAsset_PrepareEntries((ShotAssetHeader *)outputEntries);
-            if (bVar25)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-            ;
-            uVar28 = MoviePlayback_AdvanceScheduledFrameAndTick();
-            bVar25 = (byte *)0xffffffbf < pwVar18;
-            pwVar18 = pwVar18 + 0x20;
-          } while ((int)((ulonglong)uVar28 >> 0x20) != 1);
-        }
-        outputEntries = (TechnologyAsset *)EffectDefinitions_ResolveCrossReferences();
-        if (!bVar25) {
-          pwVar18 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
-                            + ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
-                            );
-          if ((levelImage->header).resourceTables.modelAssetPathCount != 0) {
-            do {
-              WidePath_SetExtensionCode(0x6c646d,pwVar18);
-              outputEntries = (TechnologyAsset *)0x3a;
-              bVar25 = g_InGameLoadedResourcePointerCount < 0x200;
-              if ((!bVar25) || (outputEntries = Package_LoadEntry(pwVar18), bVar25))
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              (pTVar6->header).common.magic = (AssetMagic)outputEntries;
-              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-              bVar25 = (TechnologyAsset *)0xfffffffb < pTVar6;
-              pTVar6 = (TechnologyAsset *)&(pTVar6->header).common.allocationSizeBytes;
-              outputEntries =
-                   (TechnologyAsset *)ModelAsset_PrepareRecords((ModelAssetHeader *)outputEntries);
-              if (bVar25)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              uVar28 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              pwVar18 = pwVar18 + 0x20;
-            } while ((int)((ulonglong)uVar28 >> 0x20) != 1);
-          }
-          pwVar18 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
-                            + ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
+    if (((levelImage->header).common.magic == ASSET_MAGIC_LEV) &&
+       ((levelImage->header).common.converterVersion == PCK_CONVERTER_LEV_00070001)) {
+      uVar3 = (levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset
+      ;
+      AVar20 = (*g_MemoryApi.alloc)(uVar3);
+      resultOrPointer = (void *)AVar20.eax;
+      if (!AVar20.carry) {
+        pLVar15 = levelImage;
+        g_InGameLevelRuntimeGlobalBlock.conditionStorage = resultOrPointer;
+        for (uVar3 = uVar3 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
+          (((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.magic
+               = (pLVar15->header).common.magic;
+          pLVar15 = (LevelAssetRuntimeImagePrefix370 *)&(pLVar15->header).common.allocationSizeBytes
           ;
-          if ((levelImage->header).resourceTables.armyAssetPathCount != 0) {
-            do {
-              WidePath_SetExtensionCode(0x6d7261,pwVar18);
-              outputEntries = (TechnologyAsset *)0x3a;
-              bVar25 = g_InGameLoadedResourcePointerCount < 0x200;
-              if ((!bVar25) || (outputEntries = Package_LoadEntry(pwVar18), bVar25))
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              (pTVar6->header).common.magic = (AssetMagic)outputEntries;
-              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-              bVar25 = (TechnologyAsset *)0xfffffffb < pTVar6;
-              pTVar6 = (TechnologyAsset *)&(pTVar6->header).common.allocationSizeBytes;
-              outputEntries =
-                   (TechnologyAsset *)ArmyAsset_PrepareRecords((ArmyAssetHeader *)outputEntries);
-              if (bVar25)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              uVar28 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              pwVar18 = pwVar18 + 0x20;
-            } while ((int)((ulonglong)uVar28 >> 0x20) != 1);
+          resultOrPointer =
+               &(((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.
+                allocationSizeBytes;
+        }
+        g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
+        g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
+        pbVar16 = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                  ((levelImage->header).pathOffsets.technologyPathOffset - 0x28);
+        WidePath_SetExtensionCode(0x636574,(word *)pbVar16);
+        PVar21 = Package_LoadEntry((word *)pbVar16);
+        loadedTechnologyAsset = PVar21.bufferOrError;
+        resultOrPointer = loadedTechnologyAsset;
+        if (((!PVar21.carry) &&
+            (resultOrPointer = &k_LowAddressLiteral0000004F,
+            g_TechnologyAsset = loadedTechnologyAsset,
+            (loadedTechnologyAsset->header).common.magic == ASSET_MAGIC_TEC)) &&
+           ((loadedTechnologyAsset->header).common.converterVersion == PCK_CONVERTER_TEC_00020000))
+        {
+          g_LevelCameraBookmark1PositionXQ12 = levelImage->playerSlots[0].startCameraXQ12;
+          g_LevelCameraBookmark1PositionYQ12 = levelImage->playerSlots[0].startCameraYQ12;
+          g_LevelCameraBookmark1PositionZQ12 = levelImage->playerSlots[0].startCameraZQ12;
+          g_LevelCameraBookmark1PositionMagnitudeQ12 =
+               levelImage->playerSlots[0].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[0].packedHeadingLow16PitchHigh16;
+          g_LevelCameraBookmark2PositionXQ12 = levelImage->playerSlots[1].startCameraXQ12;
+          g_LevelCameraBookmark2PositionYQ12 = levelImage->playerSlots[1].startCameraYQ12;
+          g_LevelCameraBookmark2PositionZQ12 = levelImage->playerSlots[1].startCameraZQ12;
+          g_LevelCameraBookmark2PositionMagnitudeQ12 =
+               levelImage->playerSlots[1].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[1].packedHeadingLow16PitchHigh16;
+          g_LevelCameraBookmark3PositionXQ12 = levelImage->playerSlots[2].startCameraXQ12;
+          g_LevelCameraBookmark3PositionYQ12 = levelImage->playerSlots[2].startCameraYQ12;
+          g_LevelCameraBookmark3PositionZQ12 = levelImage->playerSlots[2].startCameraZQ12;
+          g_LevelCameraBookmark3PositionMagnitudeQ12 =
+               levelImage->playerSlots[2].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[2].packedHeadingLow16PitchHigh16;
+          g_LevelCameraBookmark4PositionXQ12 = levelImage->playerSlots[3].startCameraXQ12;
+          g_LevelCameraBookmark4PositionYQ12 = levelImage->playerSlots[3].startCameraYQ12;
+          g_LevelCameraBookmark4PositionZQ12 = levelImage->playerSlots[3].startCameraZQ12;
+          g_LevelCameraBookmark4PositionMagnitudeQ12 =
+               levelImage->playerSlots[3].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[3].packedHeadingLow16PitchHigh16;
+          g_LevelCameraBookmark5PositionXQ12 = levelImage->playerSlots[4].startCameraXQ12;
+          g_LevelCameraBookmark5PositionYQ12 = levelImage->playerSlots[4].startCameraYQ12;
+          g_LevelCameraBookmark5PositionZQ12 = levelImage->playerSlots[4].startCameraZQ12;
+          g_LevelCameraBookmark5PositionMagnitudeQ12 =
+               levelImage->playerSlots[4].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[4].packedHeadingLow16PitchHigh16;
+          g_LevelCameraBookmark6PositionXQ12 = levelImage->playerSlots[5].startCameraXQ12;
+          g_LevelCameraBookmark6PositionYQ12 = levelImage->playerSlots[5].startCameraYQ12;
+          g_LevelCameraBookmark6PositionZQ12 = levelImage->playerSlots[5].startCameraZQ12;
+          g_LevelCameraBookmark6PositionMagnitudeQ12 =
+               levelImage->playerSlots[5].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[5].packedHeadingLow16PitchHigh16;
+          g_LevelCameraBookmark7PositionXQ12 = levelImage->playerSlots[6].startCameraXQ12;
+          g_LevelCameraBookmark7PositionYQ12 = levelImage->playerSlots[6].startCameraYQ12;
+          g_LevelCameraBookmark7PositionZQ12 = levelImage->playerSlots[6].startCameraZQ12;
+          g_LevelCameraBookmark7PositionMagnitudeQ12 =
+               levelImage->playerSlots[6].startCameraMagnitudeQ12;
+          g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 =
+               levelImage->playerSlots[6].packedHeadingLow16PitchHigh16;
+          g_GameFactionRuntimeImage.records[1].xeniteCurrentQ4 =
+               levelImage->playerSlots[0].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[1].tritiumCurrentQ4 =
+               levelImage->playerSlots[0].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[2].xeniteCurrentQ4 =
+               levelImage->playerSlots[1].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[2].tritiumCurrentQ4 =
+               levelImage->playerSlots[1].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[3].xeniteCurrentQ4 =
+               levelImage->playerSlots[2].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[3].tritiumCurrentQ4 =
+               levelImage->playerSlots[2].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[4].xeniteCurrentQ4 =
+               levelImage->playerSlots[3].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[4].tritiumCurrentQ4 =
+               levelImage->playerSlots[3].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[5].xeniteCurrentQ4 =
+               levelImage->playerSlots[4].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[5].tritiumCurrentQ4 =
+               levelImage->playerSlots[4].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[6].xeniteCurrentQ4 =
+               levelImage->playerSlots[5].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[6].tritiumCurrentQ4 =
+               levelImage->playerSlots[5].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[7].xeniteCurrentQ4 =
+               levelImage->playerSlots[6].startXeniteQ4;
+          g_GameFactionRuntimeImage.records[7].tritiumCurrentQ4 =
+               levelImage->playerSlots[6].startTritiumQ4;
+          g_GameFactionRuntimeImage.records[1].factionClassOrMode =
+               levelImage->playerSlots[0].aiClassOrMode + 1;
+          g_GameFactionRuntimeImage.records[2].factionClassOrMode =
+               levelImage->playerSlots[1].aiClassOrMode + 2;
+          g_GameFactionRuntimeImage.records[3].factionClassOrMode =
+               levelImage->playerSlots[2].aiClassOrMode + 3;
+          g_GameFactionRuntimeImage.tail.activeFactionCount =
+               (levelImage->runtimeTail2E0).activeFactionCount;
+          g_GameFactionRuntimeImage.records[4].factionClassOrMode =
+               levelImage->playerSlots[3].aiClassOrMode + 4;
+          g_GameFactionRuntimeImage.records[5].factionClassOrMode =
+               levelImage->playerSlots[4].aiClassOrMode + 5;
+          g_GameFactionRuntimeImage.records[6].factionClassOrMode =
+               levelImage->playerSlots[5].aiClassOrMode + 6;
+          g_GameFactionRuntimeImage.records[7].factionClassOrMode =
+               levelImage->playerSlots[6].aiClassOrMode + 7;
+          g_MoviePlaybackScheduleSpan =
+               (levelImage->header).resourceTables.effectAssetPathCount +
+               (levelImage->header).resourceTables.shotAssetPathCount +
+               (levelImage->header).resourceTables.modelAssetPathCount +
+               (levelImage->header).resourceTables.armyAssetPathCount;
+          g_MoviePlaybackBaseFrameGroup = 0;
+          g_MoviePlaybackScheduleCounter = 0;
+          pwVar17 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+                            + ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28
+                              ));
+          for (LVar8 = (levelImage->header).resourceTables.effectAssetPathCount; LVar8 != 0;
+              LVar8 = LVar8 - 1) {
+            WidePath_SetExtensionCode(0x666665,pwVar17);
+            resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+            if (0x1ff < g_InGameLoadedResourcePointerCount)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            PVar21 = Package_LoadEntry(pwVar17);
+            resultOrPointer = PVar21.bufferOrError;
+            if (PVar21.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            *loadedResourcePointerArray = resultOrPointer;
+            g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+            loadedResourcePointerArray = loadedResourcePointerArray + 1;
+            SVar22 = EffectAsset_PrepareEntries(resultOrPointer);
+            resultOrPointer = (void *)SVar22.valueOrError;
+            if (SVar22.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            MoviePlayback_AdvanceScheduledFrameAndTick();
+            pwVar17 = pwVar17 + 0x20;
           }
-          outputEntries = (TechnologyAsset *)0x3a;
-          if (g_InGameLoadedResourcePointerCount < 0x200) {
-            uVar11 = (levelImage->header).pathOffsets.surfaceTextureBasePathOffset;
-            bVar25 = CARRY4(uVar11,(uint)levelImage);
-            g_MoviePlaybackBaseFrameGroup = 1;
-            g_MoviePlaybackScheduleCounter = 0;
-            g_MoviePlaybackScheduleSpan = 0x10000;
-            uVar28 = TerrainVisualResources_LoadPrimary
-                               ((word *)((levelImage->header).common.buildMetadata.
-                                         assetRelativeAddressAnchor28 + (uVar11 - 0x28)),
-                                (word *)((levelImage->header).common.buildMetadata.
-                                         assetRelativeAddressAnchor28 +
-                                        ((levelImage->header).pathOffsets.
-                                         groundTextureBasePathOffset - 0x28)),
-                                (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset);
-            outputEntries = (TechnologyAsset *)uVar28;
-            if ((!bVar25) &&
-               (outputEntries =
-                     (TechnologyAsset *)ShotDefinitions_ValidateTerrainMaterialReferences(), !bVar25
-               )) {
-              bVar25 = CARRY4((levelImage->header).pathOffsets.armyTextureBasePathOffset,
-                              (uint)levelImage);
-              g_MoviePlaybackBaseFrameGroup = 2;
+          pwVar17 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+                            + ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28))
+          ;
+          for (LVar8 = (levelImage->header).resourceTables.shotAssetPathCount; LVar8 != 0;
+              LVar8 = LVar8 - 1) {
+            WidePath_SetExtensionCode(0x746873,pwVar17);
+            resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+            if (0x1ff < g_InGameLoadedResourcePointerCount)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            PVar21 = Package_LoadEntry(pwVar17);
+            resultOrPointer = PVar21.bufferOrError;
+            if (PVar21.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            *loadedResourcePointerArray = resultOrPointer;
+            g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+            loadedResourcePointerArray = loadedResourcePointerArray + 1;
+            SVar22 = ShotAsset_PrepareEntries(resultOrPointer);
+            resultOrPointer = (void *)SVar22.valueOrError;
+            if (SVar22.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            MoviePlayback_AdvanceScheduledFrameAndTick();
+            pwVar17 = pwVar17 + 0x20;
+          }
+          SVar22 = EffectDefinitions_ResolveCrossReferences();
+          resultOrPointer = (void *)SVar22.valueOrError;
+          if (!SVar22.carry) {
+            pwVar17 = (word *)((levelImage->header).common.buildMetadata.
+                               assetRelativeAddressAnchor28 +
+                              ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
+                              );
+            for (LVar8 = (levelImage->header).resourceTables.modelAssetPathCount; LVar8 != 0;
+                LVar8 = LVar8 - 1) {
+              WidePath_SetExtensionCode(0x6c646d,pwVar17);
+              resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+              if (0x1ff < g_InGameLoadedResourcePointerCount)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              PVar21 = Package_LoadEntry(pwVar17);
+              resultOrPointer = PVar21.bufferOrError;
+              if (PVar21.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              *loadedResourcePointerArray = resultOrPointer;
+              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+              loadedResourcePointerArray = loadedResourcePointerArray + 1;
+              SVar22 = ModelAsset_PrepareRecords(resultOrPointer);
+              resultOrPointer = (void *)SVar22.valueOrError;
+              if (SVar22.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              pwVar17 = pwVar17 + 0x20;
+            }
+            pwVar17 = (word *)((levelImage->header).common.buildMetadata.
+                               assetRelativeAddressAnchor28 +
+                              ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
+            ;
+            for (LVar8 = (levelImage->header).resourceTables.armyAssetPathCount; LVar8 != 0;
+                LVar8 = LVar8 - 1) {
+              WidePath_SetExtensionCode(0x6d7261,pwVar17);
+              resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+              if (0x1ff < g_InGameLoadedResourcePointerCount)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              PVar21 = Package_LoadEntry(pwVar17);
+              resultOrPointer = PVar21.bufferOrError;
+              if (PVar21.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              *loadedResourcePointerArray = resultOrPointer;
+              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+              loadedResourcePointerArray = loadedResourcePointerArray + 1;
+              SVar22 = ArmyAsset_PrepareRecords(resultOrPointer);
+              resultOrPointer = (void *)SVar22.valueOrError;
+              if (SVar22.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              pwVar17 = pwVar17 + 0x20;
+            }
+            resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+            if (g_InGameLoadedResourcePointerCount < 0x200) {
+              g_MoviePlaybackBaseFrameGroup = 1;
               g_MoviePlaybackScheduleCounter = 0;
               g_MoviePlaybackScheduleSpan = 0x10000;
-              ModelRuntimePool_Init();
-              outputEntries = extraout_EAX_00;
-              if ((!bVar25) &&
-                 (outputEntries =
-                       (TechnologyAsset *)
-                       ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath),
-                 !bVar25)) {
-                bVar25 = CARRY4((levelImage->header).pathOffsets.effectTextureBasePathOffset,
-                                (uint)levelImage);
-                g_MoviePlaybackBaseFrameGroup = 3;
-                g_MoviePlaybackScheduleCounter = 0;
-                g_MoviePlaybackScheduleSpan = 4;
-                uVar28 = ShotRuntime_InitGraphicsResources
-                                   ((word *)((levelImage->header).common.buildMetadata.
-                                             assetRelativeAddressAnchor28 +
-                                            ((levelImage->header).pathOffsets.
-                                             shotTextureBasePathOffset - 0x28)));
-                outputEntries = (TechnologyAsset *)uVar28;
-                if (!bVar25) {
-                  g_MoviePlaybackBaseFrameGroup = 4;
+              SVar22 = TerrainVisualResources_LoadPrimary
+                                 ((word *)((levelImage->header).common.buildMetadata.
+                                           assetRelativeAddressAnchor28 +
+                                          ((levelImage->header).pathOffsets.
+                                           surfaceTextureBasePathOffset - 0x28)),
+                                  (word *)((levelImage->header).common.buildMetadata.
+                                           assetRelativeAddressAnchor28 +
+                                          ((levelImage->header).pathOffsets.
+                                           groundTextureBasePathOffset - 0x28)),
+                                  (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset
+                                 );
+              resultOrPointer = (void *)SVar22.valueOrError;
+              if (!SVar22.carry) {
+                SVar22 = ShotDefinitions_ValidateTerrainMaterialReferences();
+                resultOrPointer = (void *)SVar22.valueOrError;
+                if (!SVar22.carry) {
+                  g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
-                  g_MoviePlaybackScheduleSpan = 4;
-                  outputEntries =
-                       (TechnologyAsset *)
-                       EffectRuntime_InitGraphicsResources((word *)((ulonglong)uVar28 >> 0x20));
-                  if (!bVar25) {
-                    g_MoviePlaybackBaseFrameGroup = 5;
-                    g_MoviePlaybackScheduleCounter = 0;
-                    g_MoviePlaybackScheduleSpan = 6;
-                    WorldRuntime_SetTerrainLightingConfiguration
-                              (*(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x2c),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x28),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x24),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x20),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x18),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x14),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 8),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 4),
-                               worldRuntime);
-                    uVar28 = MoviePlayback_AdvanceScheduledFrameAndTick();
-                    pIVar4 = (&g_InGameConditionRuntime)[(int)((ulonglong)uVar28 >> 0x20)];
-                    WorldRuntime_AttachFieldGridAsset
-                              ((FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,
-                               worldRuntime);
-                    MoviePlayback_AdvanceScheduledFrameAndTick();
-                    WorldRuntime_SetPosition60AndDistanceFromPosition80
-                              (*(Q12 *)((int)&levelImage->playerSlots[0].startCameraZQ12 +
-                                       (int)pIVar4->reserved00_4F),
-                               *(Q12 *)((int)&levelImage->playerSlots[0].startCameraYQ12 +
-                                       (int)pIVar4->reserved00_4F),
-                               *(Q12 *)(pIVar4->reserved00_4F +
-                                       (int)&levelImage->playerSlots[0].startCameraXQ12),
-                               worldRuntime);
-                    WorldRuntime_SetMotionParameters6CThrough78Clamped
-                              (2,extraout_EDX >> 0x10,extraout_EAX_01 & 0xffff,
-                               *(UQ12 *)((int)&levelImage->playerSlots[0].startCameraMagnitudeQ12 +
-                                        (int)pIVar4->reserved00_4F),worldRuntime);
-                    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-                    uVar11 = WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
-                    WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-                              ((int)*(uint *)(levelImage->opaqueRuntimeTail2E0_36F + 0x10) >> 0x10,
-                               *(uint *)(levelImage->opaqueRuntimeTail2E0_36F + 0x10) & 0xffff,
-                               extraout_EDX_00 >> 0x10,uVar11 & 0xffff,worldRuntime);
-                    pwVar18 = (word *)((levelImage->header).common.buildMetadata.
-                                       assetRelativeAddressAnchor28 +
-                                      ((levelImage->header).resourceTables.
-                                       loadedResourcePointerArrayBytes - 0x28));
-                    MoviePlayback_AdvanceScheduledFrameAndTick();
-                    for (iVar12 = extraout_ECX_00; iVar12 != 0; iVar12 = iVar12 + -1) {
-                      FVar2 = g_GameFactionRuntimeImage.tail.factionLifecycleStates
-                              [*(PckArmyAssetIdCatalog *)(pwVar18 + 2)];
-                      bVar25 = FVar2 == 0;
-                      if ((FVar2 == FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-                         (outputEntries =
-                               (TechnologyAsset *)
-                               ArmyRuntime_CreateInstanceFromAssetCf
-                                         (6,*(PckArmyAssetIdCatalog *)(pwVar18 + 8),
-                                          *(PckArmyAssetIdCatalog *)(pwVar18 + 6),
-                                          *(Q12 *)((AssetProducerSourceNames *)(pwVar18 + 4))->
-                                                  producerName,
-                                          *(PckArmyAssetIdCatalog *)(pwVar18 + 2),
-                                          *(PckArmyAssetIdCatalog *)pwVar18,worldRuntime),
-                         iVar12 = extraout_ECX_01, bVar25))
-                      goto 
-                      InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
-                      ;
-                      pwVar18 = pwVar18 + 0x10;
-                    }
-                    MoviePlayback_AdvanceScheduledFrameAndTick();
-                    WorldRuntime_ForEachNodeInOwnerListD8
-                              (worldRuntime,
-                               ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
-                               worldRuntime);
-                    WorldRuntime_ForEachNodeInOwnerListD8
-                              (worldRuntime,
-                               ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
-                               worldRuntime);
-                    FieldGrid_ClassifyCellFlagsToRuntimeByte
-                              (worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid);
-                    MoviePlayback_AdvanceScheduledFrameAndTick();
-                    pdVar23 = worldRuntime->dwordArray;
-                    for (WVar13 = worldRuntime->dwordArrayCount; WVar13 != 0; WVar13 = WVar13 - 1) {
-                      *pdVar23 = 0;
-                      pdVar23 = pdVar23 + 1;
-                    }
-                    pAVar1 = &(levelImage->header).pathOffsets.soundBasePathOffset;
-                    uVar26 = CARRY4((uint)levelImage,*pAVar1);
-                    pbVar22 = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
-                              + (*pAVar1 - 0x28);
-                    WidePath_SetExtensionCode(0x6d6173,(word *)pbVar22);
-                    WidePath_SplitParentAndLeaf
-                              ((word *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                               (word *)&g_InGameLevelSoundParentDirectoryScratchUtf16,
-                               (word *)pbVar22);
-                    outputEntries = (*g_MemoryApi.allocLargestFreeBlock)();
-                    if (!(bool)uVar26) {
-                      bVar25 = false;
-                      outputCapacityBytes_00 = outputCapacityBytes;
-                      pTVar6 = (TechnologyAsset *)
-                               Package_FindEntry(outputCapacityBytes,(PckEntryHeader *)outputEntries
-                                                 ,(word *)pbVar22,g_SoundPackageHandle);
-                      iVar12 = extraout_ECX_02;
-                      memory = outputRecords;
-                      if (bVar25) {
-                        pTVar6 = (TechnologyAsset *)
-                                 (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
-                                           (FILESYSTEM_ENUMERATE_FILES,0xffffffff,
-                                            outputCapacityBytes_00,outputRecords,pbVar22);
-                        iVar12 = extraout_ECX_03;
-                        memory = extraout_EDX_01;
-                      }
-                      pTVar7 = pTVar6;
-                      if (&stack0xffffffd0 < (undefined1 *)0xfffffffc) {
-                        g_MoviePlaybackBaseFrameGroup = 6;
+                  g_MoviePlaybackScheduleSpan = 0x10000;
+                  SVar22 = ModelRuntimePool_Init();
+                  resultOrPointer = (void *)SVar22.valueOrError;
+                  if (!SVar22.carry) {
+                    AVar23 = ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath);
+                    resultOrPointer = (void *)AVar23.errorOrValue;
+                    if (!AVar23.carry) {
+                      g_MoviePlaybackBaseFrameGroup = 3;
+                      g_MoviePlaybackScheduleCounter = 0;
+                      g_MoviePlaybackScheduleSpan = 4;
+                      SVar22 = ShotRuntime_InitGraphicsResources
+                                         ((word *)((levelImage->header).common.buildMetadata.
+                                                   assetRelativeAddressAnchor28 +
+                                                  ((levelImage->header).pathOffsets.
+                                                   shotTextureBasePathOffset - 0x28)));
+                      resultOrPointer = (void *)SVar22.valueOrError;
+                      if (!SVar22.carry) {
+                        g_MoviePlaybackBaseFrameGroup = 4;
                         g_MoviePlaybackScheduleCounter = 0;
-                        dVar8 = (dword)((longlong)(int)pTVar6 * (longlong)iVar12);
-                        bVar27 = (longlong)(int)dVar8 != (longlong)(int)pTVar6 * (longlong)iVar12;
-                        g_MoviePlaybackScheduleSpan = iVar12;
-                        uVar28 = (*g_MemoryApi.shrinkInPlace)(dVar8,memory);
-                        pwVar18 = (word *)((ulonglong)uVar28 >> 0x20);
-                        pTVar7 = (TechnologyAsset *)uVar28;
-                        if (!bVar27) {
-                          worldContext1 = worldRuntime;
-                          uVar11 = extraout_ECX_04;
-                          pIVar4 = g_InGameConditionRuntime;
-                          if (worldRuntime->dwordArrayCount < extraout_ECX_04) {
-                            uVar11 = worldRuntime->dwordArrayCount;
+                        g_MoviePlaybackScheduleSpan = 4;
+                        SVar22 = EffectRuntime_InitGraphicsResources(mutableBasePath);
+                        resultOrPointer = (void *)SVar22.valueOrError;
+                        if (!SVar22.carry) {
+                          g_MoviePlaybackBaseFrameGroup = 5;
+                          g_MoviePlaybackScheduleCounter = 0;
+                          g_MoviePlaybackScheduleSpan = 6;
+                          WorldRuntime_SetTerrainLightingConfiguration
+                                    ((levelImage->runtimeTail2E0).terrainLightingColor13CArgb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor138Argb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor134Argb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor130Argb,
+                                     (levelImage->runtimeTail2E0).terrainRampColor12CArgb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor128Argb,
+                                     (levelImage->runtimeTail2E0).terrainRampColor124Argb,
+                                     (levelImage->runtimeTail2E0).terrainBaseColorArgb,worldRuntime)
+                          ;
+                          iVar9 = worldRuntime->activeFactionRuntimeIndex;
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          LVar1 = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[iVar9 + -1];
+                          WorldRuntime_AttachFieldGridAsset
+                                    ((FieldGridAsset *)
+                                     (levelImage->header).pathOffsets.levelPathOffset,worldRuntime);
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          uVar3 = *(uint *)((int)&levelImage->playerSlots[0].
+                                                  packedHeadingLow16PitchHigh16 + LVar1);
+                          WorldRuntime_SetPosition60AndDistanceFromPosition80
+                                    (*(Q12 *)((int)&levelImage->playerSlots[0].startCameraZQ12 +
+                                             LVar1),
+                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraYQ12 +
+                                             LVar1),
+                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraXQ12 +
+                                             LVar1),worldRuntime);
+                          WorldRuntime_SetMotionParameters6CThrough78Clamped
+                                    (2,(int)uVar3 >> 0x10,uVar3 & 0xffff,
+                                     *(UQ12 *)((int)&levelImage->playerSlots[0].
+                                                     startCameraMagnitudeQ12 + LVar1),worldRuntime);
+                          uVar3 = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
+                          WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+                          uVar19 = uVar3;
+                          WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+                          uVar10 = (levelImage->runtimeTail2E0).
+                                   packedFieldRegionHeightHigh16WidthLow16;
+                          WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+                                    ((int)uVar10 >> 0x10,uVar10 & 0xffff,(int)uVar19 >> 0x10,
+                                     uVar3 & 0xffff,worldRuntime);
+                          LVar8 = (levelImage->header).initialArmyPlacementRecordCount;
+                          pwVar17 = (word *)((levelImage->header).common.buildMetadata.
+                                             assetRelativeAddressAnchor28 +
+                                            ((levelImage->header).resourceTables.
+                                             runtimePrefixByteSizeAndInitialArmyPlacementOffset -
+                                            0x28));
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          for (; LVar8 != 0; LVar8 = LVar8 - 1) {
+                            if (g_GameFactionRuntimeImage.tail.factionLifecycleStates
+                                [*(PckArmyAssetIdCatalog *)(pwVar17 + 2)] ==
+                                FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
+                              AVar24 = ArmyRuntime_CreateInstanceFromAssetCf
+                                                 (6,*(PckArmyAssetIdCatalog *)(pwVar17 + 8),
+                                                  *(PckArmyAssetIdCatalog *)(pwVar17 + 6),
+                                                  *(Q12 *)((AssetProducerSourceNames *)(pwVar17 + 4)
+                                                          )->producerName,
+                                                  *(PckArmyAssetIdCatalog *)(pwVar17 + 2),
+                                                  *(PckArmyAssetIdCatalog *)pwVar17,worldRuntime);
+                              resultOrPointer = (void *)AVar24.eax;
+                              if (AVar24.carry)
+                              goto 
+                              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+                              ;
+                            }
+                            pwVar17 = pwVar17 + 0x10;
                           }
-                          do {
-                            g_InGameConditionRuntime = pIVar4;
-                            if (uVar11 == 0) {
-                              (*g_MemoryApi.free)(outputEntries);
-                              g_InGameLevelEffectVoiceSet0 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameLevelEffectVoiceSet1 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameLevelEffectVoiceSet2 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameLevelEffectVoiceSet3 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameActiveEffectVoice = 0;
-                              g_InGameEffectsEnabled = 1;
-                              g_InGameActiveMusicVoice = 0;
-                              g_InGameMusicEnabled = 1;
-                              g_InGameLevelMusicVoiceSet0 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameLevelMusicVoiceSet1 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameLevelMusicVoiceSet2 = (DirectSoundVoiceSet *)0x0;
-                              g_InGameLevelMusicVoiceSet3 = (DirectSoundVoiceSet *)0x0;
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0x1c) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0x1c),
-                                           (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_07,extraout_EDX_03,
-                                                       (word *)u_sound_level00_sam_0050df6c);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelEffectVoiceSet0 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          WorldRuntime_ForEachNodeInOwnerListD8
+                                    (worldRuntime,
+                                     ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
+                                     worldRuntime);
+                          WorldRuntime_ForEachNodeInOwnerListD8
+                                    (worldRuntime,
+                                     ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
+                                     worldRuntime);
+                          FieldGrid_ClassifyCellFlagsToRuntimeByte
+                                    (worldRuntime->activeFactionRuntimeIndex,worldRuntime->fieldGrid
+                                    );
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          pdVar18 = worldRuntime->dwordArray;
+                          for (WVar4 = worldRuntime->dwordArrayCount; WVar4 != 0; WVar4 = WVar4 - 1)
+                          {
+                            *pdVar18 = 0;
+                            pdVar18 = pdVar18 + 1;
+                          }
+                          pbVar16 = (levelImage->header).common.buildMetadata.
+                                    assetRelativeAddressAnchor28 +
+                                    ((levelImage->header).pathOffsets.soundBasePathOffset - 0x28);
+                          WidePath_SetExtensionCode(0x6d6173,(word *)pbVar16);
+                          WidePath_SplitParentAndLeaf
+                                    ((word *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+                                     (word *)&g_InGameLevelSoundParentDirectoryScratchUtf16,
+                                     (word *)pbVar16);
+                          AVar31 = (*g_MemoryApi.allocLargestFreeBlock)();
+                          outputCapacityBytes = AVar31.blockSizeOrSentinel;
+                          resultOrPointer = (void *)AVar31.allocationOrError;
+                          if (!AVar31.carry) {
+                            PVar32 = Package_FindEntry(outputCapacityBytes,resultOrPointer,
+                                                       (word *)pbVar16,g_SoundPackageHandle);
+                            uVar3 = PVar32.matchCount;
+                            soundDirectoryRecordSizeBytes = PVar32.recordSizeOrError;
+                            if (PVar32.carry) {
+                              FVar33 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                                                 (FILESYSTEM_ENUMERATE_FILES,0xffffffff,
+                                                  outputCapacityBytes,resultOrPointer,pbVar16);
+                              uVar3 = FVar33.entryCount;
+                              soundDirectoryRecordSizeBytes = FVar33.recordSizeBytes;
+                            }
+                            shrinkResultOrError = (void *)soundDirectoryRecordSizeBytes;
+                            if (&stack0xffffffd0 < (undefined1 *)0xfffffffc) {
+                              g_MoviePlaybackBaseFrameGroup = 6;
+                              g_MoviePlaybackScheduleCounter = 0;
+                              g_MoviePlaybackScheduleSpan = uVar3;
+                              AVar25 = (*g_MemoryApi.shrinkInPlace)
+                                                 (soundDirectoryRecordSizeBytes * uVar3,
+                                                  resultOrPointer);
+                              shrinkResultOrError = (void *)AVar25.scratchOrError;
+                              if (!AVar25.carry) {
+                                worldContext1 = worldRuntime;
+                                soundDirectoryPathCursor = resultOrPointer;
+                                pIVar2 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+                                if (worldRuntime->dwordArrayCount < uVar3) {
+                                  uVar3 = worldRuntime->dwordArrayCount;
                                 }
-                              }
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0x20) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0x20),
-                                           (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_08,extraout_EDX_04,
-                                                       (word *)u_sound_level00_sam_0050df6c);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelEffectVoiceSet1 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0x24) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0x24),
-                                           (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_09,extraout_EDX_05,
-                                                       (word *)u_sound_level00_sam_0050df6c);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelEffectVoiceSet2 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              uVar26 = 0;
-                              if (pIVar4[3].tailRecordD8 != (InGameConditionRecord *)0x0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           (sdword)pIVar4[3].tailRecordD8,
-                                           (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_10,extraout_EDX_06,
-                                                       (word *)u_sound_level00_sam_0050df6c);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelEffectVoiceSet3 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0xc) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0xc),
-                                           (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_11,extraout_EDX_07,
-                                                       (word *)u_sound_music00_sam_0050df90);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelMusicVoiceSet0 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0x10) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0x10),
-                                           (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_12,extraout_EDX_08,
-                                                       (word *)u_sound_music00_sam_0050df90);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelMusicVoiceSet1 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0x14) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0x14),
-                                           (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_13,extraout_EDX_09,
-                                                       (word *)u_sound_music00_sam_0050df90);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelMusicVoiceSet2 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              uVar26 = 0;
-                              if (*(int *)(pIVar4[3].reservedB0_D7 + 0x18) != 0) {
-                                (*g_WideNumberFormatUtf16)
-                                          (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                           *(sdword *)(pIVar4[3].reservedB0_D7 + 0x18),
-                                           (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                uVar28 = Resource_Load(extraout_ECX_14,extraout_EDX_10,
-                                                       (word *)u_sound_music00_sam_0050df90);
-                                if (!(bool)uVar26) {
-                                  pDVar10 = (*g_SoundCreateSampleVoiceSet)
-                                                      ((SoundSampleAsset *)uVar28);
-                                  if (!(bool)uVar26) {
-                                    g_InGameLevelMusicVoiceSet3 = pDVar10;
-                                  }
-                                  Resource_Release((SoundSampleAsset *)uVar28);
-                                }
-                              }
-                              ppAVar19 = g_ArmyAssetRecordRegistry;
-                              iVar12 = 0x300;
-                              local_20 = (ArmyAssetRecordPrefix *)0x0;
-                              local_24 = (ArmyAssetRecordPrefix *)0x0;
-                              do {
-                                armyDefinition1 = *ppAVar19;
-                                armyDefinition3 = local_2c;
-                                armyDefinition2 = local_28;
-                                armyDefinition4 = local_20;
-                                if ((armyDefinition1 != (ArmyAssetRecordPrefix *)0x0) &&
-                                   ((armyDefinition1[1].selectionDetailTemplateVariantIndex & 1) !=
-                                    0)) {
-                                  modelDefinition1 =
-                                       ModelDefinitionRegistry_FindByIdWithErrorCf
-                                                 (*(PckModelDefinitionIdCatalog *)
-                                                   (armyDefinition1->rootNodeOffsetOrPointer + 0x20)
-                                                 );
-                                  dVar8 = modelDefinition1[6].flags;
-                                  iVar12 = extraout_EDX_11;
-                                  armyDefinition4 = armyDefinition1;
-                                  if ((dVar8 != 0xb) &&
-                                     (((armyDefinition3 = armyDefinition1,
-                                       armyDefinition4 = local_20, dVar8 != 0x10 &&
-                                       (armyDefinition3 = local_2c, dVar8 == 0xe)) &&
-                                      (armyDefinition2 = armyDefinition1,
-                                      modelDefinition1[0x10].byteSize == 0)))) {
-                                    armyDefinition2 = local_28;
-                                    local_24 = armyDefinition1;
-                                  }
-                                }
-                                local_20 = armyDefinition4;
-                                local_28 = armyDefinition2;
-                                local_2c = armyDefinition3;
-                                ppAVar19 = ppAVar19 + 1;
-                                iVar12 = iVar12 + -1;
-                              } while (iVar12 != 0);
-                              if ((local_20 != (ArmyAssetRecordPrefix *)0x0) &&
-                                 (local_24 != (ArmyAssetRecordPrefix *)0x0)) {
-                                abVar14[0] = 1;
-                                abVar14[1] = 0;
-                                abVar14[2] = 0;
-                                abVar14[3] = 0;
-                                worldNode1 = worldRuntime->ownerListHead;
-                                uVar11 = 0;
-                                if (worldNode1 != (WorldRuntimeNode *)0x0) {
-                                  do {
+                                do {
+                                  g_InGameLevelRuntimeGlobalBlock.conditionStorage = pIVar2;
+                                  if (uVar3 == 0) {
+                                    (*g_MemoryApi.free)(resultOrPointer);
+                                    g_InGameLevelEffectVoiceSet0 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameLevelEffectVoiceSet1 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameLevelEffectVoiceSet2 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameLevelEffectVoiceSet3 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameActiveEffectVoice = 0;
+                                    g_InGameEffectsEnabled = 1;
+                                    g_InGameActiveMusicVoice = 0;
+                                    g_InGameMusicEnabled = 1;
+                                    g_InGameLevelMusicVoiceSet0 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameLevelMusicVoiceSet1 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameLevelMusicVoiceSet2 = (DirectSoundVoiceSet *)0x0;
+                                    g_InGameLevelMusicVoiceSet3 = (DirectSoundVoiceSet *)0x0;
+                                    if ((pIVar2->levelImage).runtimeTail2E0.effectSampleNumbers[0]
+                                        != 0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 effectSampleNumbers[0],
+                                                 (word *)(u_sound_level00_sam_0050df6c + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_level00_sam_0050df6c);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelEffectVoiceSet0 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.effectSampleNumbers[1]
+                                        != 0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 effectSampleNumbers[1],
+                                                 (word *)(u_sound_level00_sam_0050df6c + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_level00_sam_0050df6c);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelEffectVoiceSet1 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.effectSampleNumbers[2]
+                                        != 0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 effectSampleNumbers[2],
+                                                 (word *)(u_sound_level00_sam_0050df6c + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_level00_sam_0050df6c);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelEffectVoiceSet2 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.effectSampleNumbers[3]
+                                        != 0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 effectSampleNumbers[3],
+                                                 (word *)(u_sound_level00_sam_0050df6c + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_level00_sam_0050df6c);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelEffectVoiceSet3 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.musicSampleNumbers[0] !=
+                                        0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 musicSampleNumbers[0],
+                                                 (word *)(u_sound_music00_sam_0050df90 + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_music00_sam_0050df90);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelMusicVoiceSet0 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.musicSampleNumbers[1] !=
+                                        0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 musicSampleNumbers[1],
+                                                 (word *)(u_sound_music00_sam_0050df90 + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_music00_sam_0050df90);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelMusicVoiceSet1 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.musicSampleNumbers[2] !=
+                                        0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 musicSampleNumbers[2],
+                                                 (word *)(u_sound_music00_sam_0050df90 + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_music00_sam_0050df90);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelMusicVoiceSet2 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    if ((pIVar2->levelImage).runtimeTail2E0.musicSampleNumbers[3] !=
+                                        0) {
+                                      (*g_WideNumberFormatUtf16)
+                                                (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                 (pIVar2->levelImage).runtimeTail2E0.
+                                                 musicSampleNumbers[3],
+                                                 (word *)(u_sound_music00_sam_0050df90 + 0xb));
+                                      RVar34 = Resource_Load((word *)u_sound_music00_sam_0050df90);
+                                      if (!RVar34.carry) {
+                                        SVar27 = (*g_SoundCreateSampleVoiceSet)
+                                                           ((SoundSampleAsset *)RVar34.eax);
+                                        if (!SVar27.carry) {
+                                          g_InGameLevelMusicVoiceSet3 = SVar27.eax;
+                                        }
+                                        Resource_Release((SoundSampleAsset *)RVar34.eax);
+                                      }
+                                    }
+                                    ppAVar11 = g_ArmyAssetRecordRegistry;
+                                    iVar9 = 0x300;
+                                    local_20 = (ArmyAssetRecordPrefix *)0x0;
+                                    local_24 = (ArmyAssetRecordPrefix *)0x0;
                                     do {
-                                      if ((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0)
-                                         && (abVar14 ==
-                                             *(byte (*) [4])
-                                              (*(int *)((int)worldNode1->runtimePayload + 8) + 0xc))
-                                         ) {
-                                        iVar12 = *(int *)(*(int *)worldNode1->runtimePayload + 0x4c)
-                                        ;
-                                        if (iVar12 == 0x12) {
-                                          uVar11 = uVar11 | 2;
+                                      armyDefinition1 = *ppAVar11;
+                                      armyDefinition3 = local_2c;
+                                      armyDefinition2 = local_28;
+                                      armyDefinition4 = local_20;
+                                      if ((armyDefinition1 != (ArmyAssetRecordPrefix *)0x0) &&
+                                         ((armyDefinition1[1].selectionDetailTemplateVariantIndex &
+                                          1) != 0)) {
+                                        MVar28 = ModelDefinitionRegistry_FindByIdWithErrorCf
+                                                           (*(PckModelDefinitionIdCatalog *)
+                                                             (armyDefinition1->
+                                                              rootNodeOffsetOrPointer + 0x20));
+                                        dVar5 = MVar28.modelDefinition[6].flags;
+                                        armyDefinition4 = armyDefinition1;
+                                        if (((dVar5 != 0xb) &&
+                                            ((armyDefinition3 = armyDefinition1,
+                                             armyDefinition4 = local_20, dVar5 != 0x10 &&
+                                             (armyDefinition3 = local_2c, dVar5 == 0xe)))) &&
+                                           (armyDefinition2 = armyDefinition1,
+                                           MVar28.modelDefinition[0x10].byteSize == 0)) {
+                                          armyDefinition2 = local_28;
+                                          local_24 = armyDefinition1;
                                         }
-                                        else if (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
-                                                 classCommand[iVar12] ==
-                                                 ArmyRuntime_ClassCommandHandlerGroupACf) {
-                                          uVar11 = uVar11 | 1;
+                                      }
+                                      local_20 = armyDefinition4;
+                                      local_28 = armyDefinition2;
+                                      local_2c = armyDefinition3;
+                                      ppAVar11 = ppAVar11 + 1;
+                                      iVar9 = iVar9 + -1;
+                                    } while (iVar9 != 0);
+                                    if ((local_20 != (ArmyAssetRecordPrefix *)0x0) &&
+                                       (local_24 != (ArmyAssetRecordPrefix *)0x0)) {
+                                      uVar3 = 1;
+                                      worldNode1 = worldRuntime->ownerListHead;
+                                      uVar10 = 0;
+                                      if (worldNode1 != (WorldOwnerListNode100 *)0x0) {
+                                        do {
+                                          do {
+                                            if ((worldNode1->ownerClassId ==
+                                                 WORLD_OWNER_RUNTIME_MODEL) &&
+                                               (uVar3 == *(uint *)(*(int *)((int)worldNode1->
+                                                                                 runtimePayload + 8)
+                                                                  + 0xc))) {
+                                              iVar9 = *(int *)(*(int *)worldNode1->runtimePayload +
+                                                              0x4c);
+                                              if (iVar9 == 0x12) {
+                                                uVar10 = uVar10 | 2;
+                                              }
+                                              else if (
+                                                  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
+                                                  classCommand[iVar9] ==
+                                                  ArmyRuntime_ClassCommandHandlerGroupACf) {
+                                                uVar10 = uVar10 | 1;
+                                              }
+                                            }
+                                            worldNode1 = worldNode1->nextNode;
+                                          } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
+                                          if (uVar10 == 2) {
+                                            g_GameFactionRuntimeImage.records[uVar3].
+                                            primaryArmyAssetPointersOrIds[0] = (dword)local_20;
+                                            g_GameFactionRuntimeImage.records[uVar3].
+                                            primaryArmyAssetPointersOrIds[1] = (dword)local_24;
+                                            g_GameFactionRuntimeImage.records[uVar3].
+                                            primaryArmyAssetPointersOrIds[2] = (dword)local_28;
+                                            g_GameFactionRuntimeImage.records[uVar3].
+                                            primaryArmyAssetPointersOrIds[3] = (dword)local_2c;
+                                            g_GameFactionRuntimeImage.records[uVar3].
+                                            primaryArmyAssetCount = 4;
+                                          }
+                                          worldNode1 = worldRuntime->ownerListHead;
+                                          uVar3 = uVar3 + 1;
+                                          uVar10 = 0;
+                                        } while (uVar3 <= g_GameFactionRuntimeImage.tail.
+                                                          activeFactionCount);
+                                      }
+                                    }
+                                    uVar3 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->
+                                            levelImage).runtimeTail2E0.relationUiFlags;
+                                    uVar10 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->
+                                             levelImage).runtimeTail2E0.
+                                             relationState4FactionGroupMasks;
+                                    uVar19 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->
+                                             levelImage).runtimeTail2E0.
+                                             relationState8FactionGroupMasks;
+                                    g_GameFactionRuntimeImage.tail.relationUiFlags = uVar3;
+                                    uVar6 = uVar10 & 0xff;
+                                    while (uVar6 != 0) {
+                                      uVar6 = 1;
+                                      uVar12 = 0;
+                                      do {
+                                        uVar13 = uVar12;
+                                        uVar14 = uVar6;
+                                        uVar7 = uVar12;
+                                        if ((uVar10 & uVar6) != 0) {
+                                          while (uVar7 = uVar7 + 1, uVar3 = uVar12, uVar7 < 8) {
+                                            uVar14 = uVar14 * 2;
+                                            if ((uVar10 & uVar14) != 0) {
+                                              GameFactionRuntime_ApplyPairwiseRelationTransition
+                                                        (0x20,0x20,4,4,uVar7,uVar12);
+                                            }
+                                          }
                                         }
-                                      }
-                                      worldNode1 = (worldNode1->common).nextNode;
-                                    } while (worldNode1 != (WorldRuntimeNode *)0x0);
-                                    if (uVar11 == 2) {
-                                      g_GameFactionRuntimeImage.records[(int)abVar14].
-                                      primaryArmyAssetPointersOrIds[0] = (dword)local_20;
-                                      g_GameFactionRuntimeImage.records[(int)abVar14].
-                                      primaryArmyAssetPointersOrIds[1] = (dword)local_24;
-                                      g_GameFactionRuntimeImage.records[(int)abVar14].
-                                      primaryArmyAssetPointersOrIds[2] = (dword)local_28;
-                                      g_GameFactionRuntimeImage.records[(int)abVar14].
-                                      primaryArmyAssetPointersOrIds[3] = (dword)local_2c;
-                                      g_GameFactionRuntimeImage.records[(int)abVar14].
-                                      primaryArmyAssetCount = 4;
+                                        uVar12 = uVar13 + 1;
+                                        uVar6 = uVar6 * 2;
+                                      } while (uVar12 != 8);
+                                      uVar10 = uVar10 >> 8;
+                                      uVar6 = uVar10;
                                     }
-                                    worldNode1 = worldRuntime->ownerListHead;
-                                    abVar14 = (byte  [4])((int)abVar14 + 1);
-                                    uVar11 = 0;
-                                  } while ((uint)abVar14 <=
-                                           (uint)g_GameFactionRuntimeImage.tail.reserved00_03);
-                                }
-                              }
-                              uVar11 = *(uint *)(g_InGameConditionRuntime[3].reserved5C_AB + 0x28);
-                              uVar15 = *(uint *)(g_InGameConditionRuntime[3].reserved5C_AB + 0x30);
-                              uVar24 = *(uint *)(g_InGameConditionRuntime[3].reserved5C_AB + 0x2c);
-                              g_GameFactionRuntimeImage.tail.relationUiFlags = uVar11;
-                              uVar20 = uVar15 & 0xff;
-                              while (uVar20 != 0) {
-                                uVar28 = CONCAT44(uVar15,uVar11);
-                                uVar15 = 1;
-                                uVar20 = 0;
-                                do {
-                                  uVar11 = (uint)((ulonglong)uVar28 >> 0x20);
-                                  if ((uVar11 & uVar15) != 0) {
-                                    uVar28 = CONCAT44(uVar11,uVar20);
-                                    uVar16 = uVar15;
-                                    uVar11 = uVar20;
-                                    while (uVar11 = uVar11 + 1, uVar11 < 8) {
-                                      uVar16 = uVar16 * 2;
-                                      if (((uint)((ulonglong)uVar28 >> 0x20) & uVar16) != 0) {
-                                        uVar28 = GameFactionRuntime_ApplyPairwiseRelationTransition
-                                                           (0x20,0x20,4,4,uVar11,
-                                                            (FactionRuntimeIndex)uVar28);
-                                        uVar16 = extraout_ECX_15;
-                                      }
+                                    uVar10 = uVar19 & 0xff;
+                                    while (uVar10 != 0) {
+                                      uVar10 = 1;
+                                      uVar6 = 0;
+                                      do {
+                                        uVar14 = uVar6;
+                                        uVar7 = uVar10;
+                                        uVar12 = uVar6;
+                                        if ((uVar19 & uVar10) != 0) {
+                                          while (uVar12 = uVar12 + 1, uVar3 = uVar6, uVar12 < 8) {
+                                            uVar7 = uVar7 * 2;
+                                            if ((uVar19 & uVar7) != 0) {
+                                              GameFactionRuntime_ApplyPairwiseRelationTransition
+                                                        (0x20,0x20,8,8,uVar12,uVar6);
+                                            }
+                                          }
+                                        }
+                                        uVar6 = uVar14 + 1;
+                                        uVar10 = uVar10 * 2;
+                                      } while (uVar6 != 8);
+                                      uVar19 = uVar19 >> 8;
+                                      uVar10 = uVar19;
                                     }
+                                    IVar29.carry = false;
+                                    IVar29.errorOrValue = uVar3;
+                                    return IVar29;
                                   }
-                                  uVar11 = (uint)uVar28;
-                                  uVar20 = uVar20 + 1;
-                                  uVar15 = uVar15 * 2;
-                                } while (uVar20 != 8);
-                                uVar15 = (uint)((ulonglong)uVar28 >> 0x28);
-                                uVar20 = uVar15;
-                              }
-                              uVar15 = uVar24 & 0xff;
-                              while (uVar15 != 0) {
-                                uVar15 = 1;
-                                uVar20 = 0;
-                                do {
-                                  uVar17 = uVar15;
-                                  uVar5 = uVar20;
-                                  uVar16 = uVar20;
-                                  if ((uVar24 & uVar15) != 0) {
-                                    while (uVar11 = uVar5, uVar16 = uVar16 + 1, uVar16 < 8) {
-                                      uVar17 = uVar17 * 2;
-                                      uVar5 = uVar11;
-                                      if ((uVar24 & uVar17) != 0) {
-                                        uVar28 = GameFactionRuntime_ApplyPairwiseRelationTransition
-                                                           (0x20,0x20,8,8,uVar16,uVar11);
-                                        uVar17 = extraout_ECX_16;
-                                        uVar5 = (uint)uVar28;
-                                      }
+                                  pdVar18 = worldContext1->dwordArray;
+                                  pWVar35 = worldContext1;
+                                  dVar5 = WidePath_ParseTrailingNumberBeforeExtensionRegs
+                                                    (soundDirectoryPathCursor);
+                                  if (dVar5 < worldContext1->dwordArrayCount) {
+                                    if (!PVar32.carry) {
+                                      RVar34 = Resource_Load(soundDirectoryPathCursor);
+                                      shrinkResultOrError = (void *)RVar34.eax;
+                                      if (RVar34.carry) break;
                                     }
-                                  }
-                                  uVar20 = uVar20 + 1;
-                                  uVar15 = uVar15 * 2;
-                                } while (uVar20 != 8);
-                                uVar24 = uVar24 >> 8;
-                                uVar15 = uVar24;
-                              }
-                              g_GameFactionRuntimeImage.tail.reserved00_03[0] =
-                                   g_GameFactionRuntimeImage.tail.reserved00_03[0];
-                              g_GameFactionRuntimeImage.tail.reserved00_03[1] =
-                                   g_GameFactionRuntimeImage.tail.reserved00_03[1];
-                              g_GameFactionRuntimeImage.tail.reserved00_03[2] =
-                                   g_GameFactionRuntimeImage.tail.reserved00_03[2];
-                              g_GameFactionRuntimeImage.tail.reserved00_03[3] =
-                                   g_GameFactionRuntimeImage.tail.reserved00_03[3];
-                              return CONCAT44(param_2,uVar11);
-                            }
-                            pdVar23 = worldContext1->dwordArray;
-                            pWVar29 = worldContext1;
-                            uVar28 = WidePath_ParseTrailingNumberBeforeExtensionRegs(pwVar18);
-                            pwVar18 = (word *)((ulonglong)uVar28 >> 0x20);
-                            if (extraout_ECX_05 < worldContext1->dwordArrayCount) {
-                              uVar26 = false;
-                              if (!bVar25) {
-                                uVar28 = Resource_Load(extraout_ECX_05,pwVar18,pwVar18);
-                                pTVar7 = (TechnologyAsset *)uVar28;
-                                if ((bool)uVar26) break;
-                              }
-                              else {
-                                WidePath_CombineDirectoryAndLeaf
-                                          ((word *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16
-                                           ,pwVar18,(word *)&
+                                    else {
+                                      WidePath_CombineDirectoryAndLeaf
+                                                ((word *)&
+                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+                                                 soundDirectoryPathCursor,
+                                                 (word *)&
                                                   g_InGameLevelSoundParentDirectoryScratchUtf16);
-                                uVar28 = Resource_Load(extraout_ECX_06,extraout_EDX_02,
-                                                       (word *)&
+                                      RVar34 = Resource_Load((word *)&
                                                   g_InGameLevelSoundLeafOrCombinedPathScratchUtf16);
-                                pTVar7 = (TechnologyAsset *)uVar28;
-                                if ((bool)uVar26) break;
+                                      shrinkResultOrError = (void *)RVar34.eax;
+                                      if (RVar34.carry) break;
+                                    }
+                                    SVar26 = SpatialSoundSlot_CreateFromSampleAsset
+                                                       (shrinkResultOrError);
+                                    if (!SVar26.carry) {
+                                      pdVar18[dVar5] = (dword)SVar26.soundSlot;
+                                    }
+                                    Resource_Release(shrinkResultOrError);
+                                    MoviePlayback_AdvanceScheduledFrameAndTick();
+                                  }
+                                  uVar3 = uVar3 - 1;
+                                  worldContext1 = pWVar35;
+                                  soundDirectoryPathCursor =
+                                       (word *)((int)soundDirectoryPathCursor +
+                                               (int)&(((InGameLevelConditionStorageView800 *)
+                                                      soundDirectoryRecordSizeBytes)->levelImage).
+                                                     header);
+                                  pIVar2 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+                                } while( true );
                               }
-                              bVar27 = false;
-                              pSVar9 = SpatialSoundSlot_CreateFromSampleAsset
-                                                 ((SoundSampleAsset *)pTVar7);
-                              if (!bVar27) {
-                                pdVar23[extraout_ECX_05] = (dword)pSVar9;
-                              }
-                              Resource_Release(pTVar7);
-                              uVar28 = MoviePlayback_AdvanceScheduledFrameAndTick();
-                              pwVar18 = (word *)((ulonglong)uVar28 >> 0x20);
                             }
-                            pwVar18 = (word *)((int)pwVar18 + (int)pTVar6);
-                            uVar11 = uVar11 - 1;
-                            worldContext1 = pWVar29;
-                            pIVar4 = g_InGameConditionRuntime;
-                          } while( true );
+                            (*g_MemoryApi.free)(resultOrPointer);
+                            resultOrPointer = shrinkResultOrError;
+                          }
                         }
                       }
-                      (*g_MemoryApi.free)(outputEntries);
-                      outputEntries = pTVar7;
                     }
                   }
                 }
@@ -911,8 +919,11 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
     }
   }
 InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus:
-  return CONCAT44(param_2,outputEntries);
+  IVar30.carry = true;
+  IVar30.errorOrValue = (dword)resultOrPointer;
+  return IVar30;
 }
+
 
 /* Address: 0x00532020.
    Ownership: gameplay/session/level.
@@ -924,603 +935,648 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFai
    [assets/effect/catalog], MoviePlayback_AdvanceScheduledFrameAndTick [movie/runtime/playback],
    ShotAsset_PrepareEntries [assets/shot/catalog].
 */
-undefined8 __fastcall
+
+InGameLevelLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
-          (undefined4 param_1,undefined4 param_2,LevelAssetRuntimeImagePrefix370 *levelImage,
-          WorldRuntimeContext *worldRuntime)
+          (FrontendLoadedLevelRuntimeImage370 *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
-  AssetRelativeOffset *pAVar1;
-  PckConverterVersion PVar2;
-  InGameConditionRuntime *pIVar3;
-  longlong lVar4;
-  TechnologyAsset *pTVar5;
-  TechnologyAsset *extraout_EAX;
-  TechnologyAsset *outputEntries;
-  TechnologyAsset *pTVar6;
-  TechnologyAsset *extraout_EAX_00;
-  uint extraout_EAX_01;
-  dword newSize;
-  SpatialSoundSlot *pSVar7;
-  SoundSampleAsset *arg0;
-  DirectSoundVoiceSet *pDVar8;
-  uint extraout_ECX;
-  uint uVar9;
-  WorldWorkspaceElementCount WVar10;
+  LevelPlayerSlotByteOffset32 LVar1;
+  InGameLevelConditionStorageView800 *pIVar2;
+  void **loadedResourcePointerArray;
+  void *resultOrPointer;
+  TechnologyAsset *loadedTechnologyAsset;
+  dword soundDirectoryRecordSizeBytes;
+  void *shrinkResultOrError;
+  SoundSampleAsset *pSVar3;
+  SoundSampleAsset *pSVar4;
+  uint uVar5;
+  WorldWorkspaceElementCount WVar6;
   PckOutputCapacityBytes outputCapacityBytes;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  uint extraout_ECX_02;
-  uint extraout_ECX_03;
-  undefined4 extraout_ECX_04;
-  undefined4 extraout_ECX_05;
-  undefined4 extraout_ECX_06;
-  undefined4 extraout_ECX_07;
-  undefined4 extraout_ECX_08;
-  undefined4 extraout_ECX_09;
-  undefined4 extraout_ECX_10;
-  undefined4 extraout_ECX_11;
-  undefined4 extraout_ECX_12;
+  dword dVar7;
+  LevelAssetRecordCount LVar8;
   word *graphicsBasePath;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int iVar11;
+  word *mutableBasePath;
+  uint uVar9;
+  int iVar10;
   FieldGridDimensionCells gridHeight;
-  PckLoadCapacityFlags bufferCapacityAndLoadFlags;
-  byte *outputRecords;
-  byte *extraout_EDX_01;
-  byte *memory;
-  undefined4 extraout_EDX_02;
-  word *pwVar12;
-  undefined4 extraout_EDX_03;
-  undefined4 extraout_EDX_04;
-  undefined4 extraout_EDX_05;
-  undefined4 extraout_EDX_06;
-  undefined4 extraout_EDX_07;
-  undefined4 extraout_EDX_08;
-  undefined4 extraout_EDX_09;
-  undefined4 extraout_EDX_10;
-  LevelAssetRuntimeImagePrefix370 *pLVar13;
-  byte *pbVar14;
-  dword *pdVar15;
-  bool bVar16;
-  undefined1 uVar17;
-  bool bVar18;
-  undefined8 uVar19;
-  PckOutputCapacityBytes outputCapacityBytes_00;
+  FrontendLoadedLevelRuntimeImage370 *pFVar11;
+  byte *pbVar12;
+  word *pwVar13;
+  dword *pdVar14;
+  ArenaAllocEaxCf5 AVar15;
+  PackageLoadEntryEaxCf5 PVar16;
+  StatusValueEaxCf5 SVar17;
+  ArmyRuntimeInitEaxCf5 AVar18;
+  ArenaShrinkEaxCf5 AVar19;
+  SpatialSoundSlotEaxCf5 SVar20;
+  ArenaFreeEaxCf5 AVar21;
+  SoundCreateSampleVoiceSetEaxCf5 SVar22;
+  InGameLevelLoadEaxCf5 IVar23;
+  InGameLevelLoadEaxCf5 IVar24;
+  ArenaLargestAllocationEaxEcxCf9 AVar25;
+  PackageFindEntryEaxEcxCf9 PVar26;
+  FileSystemEnumerationEaxEcxCf9 FVar27;
+  ResourceLoadEaxEcxCf9 RVar28;
+  word *soundDirectoryPathCursor;
   WorldRuntimeContext *worldContext1;
   
-  bVar16 = &stack0xffffffe8 < (undefined1 *)0xc;
-  pTVar5 = (*g_MemoryApi.alloc)(0x800);
-  outputEntries = pTVar5;
-  if (!bVar16) {
+  AVar15 = (*g_MemoryApi.alloc)(0x800);
+  loadedResourcePointerArray = (void **)AVar15.eax;
+  resultOrPointer = loadedResourcePointerArray;
+  if (!AVar15.carry) {
     g_InGameLoadedResourcePointerCount = 0;
-    g_InGameLoadedResourcePointers = pTVar5;
+    resultOrPointer = (void *)0x39;
+    g_InGameLoadedResourcePointers = loadedResourcePointerArray;
     Package_SetLastErrorPath(g_LevelEndingMovieSourcePath);
-    outputEntries = extraout_EAX;
-    if ((((levelImage->header).common.magic == ASSET_MAGIC_LEV) &&
-        (PVar2 = (levelImage->header).common.converterVersion,
-        bVar16 = PVar2 < PCK_CONVERTER_LEV_00070001, outputEntries = extraout_EAX,
-        PVar2 == PCK_CONVERTER_LEV_00070001)) &&
-       (outputEntries =
-             (*g_MemoryApi.alloc)
-                       ((levelImage->header).resourceTables.loadedResourcePointerArrayBytes),
-       !bVar16)) {
-      pLVar13 = levelImage;
-      g_InGameConditionRuntime = (InGameConditionRuntime *)outputEntries;
-      for (uVar9 = extraout_ECX >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-        (outputEntries->header).common.magic = (pLVar13->header).common.magic;
-        pLVar13 = (LevelAssetRuntimeImagePrefix370 *)&(pLVar13->header).common.allocationSizeBytes;
-        outputEntries = (TechnologyAsset *)&(outputEntries->header).common.allocationSizeBytes;
-      }
-      g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
-      g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
-      uVar9 = (levelImage->header).pathOffsets.technologyPathOffset;
-      uVar17 = CARRY4(uVar9,(uint)levelImage);
-      pbVar14 = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                (uVar9 - 0x28);
-      WidePath_SetExtensionCode(0x636574,(word *)pbVar14);
-      pTVar6 = Package_LoadEntry((word *)pbVar14);
-      outputEntries = pTVar6;
-      if (((!(bool)uVar17) &&
-          (outputEntries = (TechnologyAsset *)&k_LowAddressLiteral0000004F,
-          g_TechnologyAsset = pTVar6, (pTVar6->header).common.magic == ASSET_MAGIC_TEC)) &&
-         ((pTVar6->header).common.converterVersion == PCK_CONVERTER_TEC_00020000)) {
-        g_MoviePlaybackScheduleSpan =
-             (levelImage->header).resourceTables.effectAssetPathCount +
-             (levelImage->header).resourceTables.shotAssetPathCount +
-             (levelImage->header).resourceTables.modelAssetPathCount +
-             (levelImage->header).resourceTables.armyAssetPathCount;
-        g_MoviePlaybackBaseFrameGroup = 0;
-        g_MoviePlaybackScheduleCounter = 0;
-        pwVar12 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                          ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28));
-        if ((levelImage->header).resourceTables.effectAssetPathCount != 0) {
-          do {
-            WidePath_SetExtensionCode(0x666665,pwVar12);
-            outputEntries = (TechnologyAsset *)0x3a;
-            bVar16 = g_InGameLoadedResourcePointerCount < 0x200;
-            if ((!bVar16) || (outputEntries = Package_LoadEntry(pwVar12), bVar16))
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
-            ;
-            (pTVar5->header).common.magic = (AssetMagic)outputEntries;
-            g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-            bVar16 = (TechnologyAsset *)0xfffffffb < pTVar5;
-            pTVar5 = (TechnologyAsset *)&(pTVar5->header).common.allocationSizeBytes;
-            outputEntries =
-                 (TechnologyAsset *)EffectAsset_PrepareEntries((EffectAssetHeader *)outputEntries);
-            if (bVar16)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
-            ;
-            uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-            pwVar12 = pwVar12 + 0x20;
-          } while ((int)((ulonglong)uVar19 >> 0x20) != 1);
+    if (((levelImage->header).common.magic == ASSET_MAGIC_LEV) &&
+       ((levelImage->header).common.converterVersion == PCK_CONVERTER_LEV_00070001)) {
+      uVar5 = (levelImage->header).resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset
+      ;
+      AVar15 = (*g_MemoryApi.alloc)(uVar5);
+      resultOrPointer = (void *)AVar15.eax;
+      if (!AVar15.carry) {
+        pFVar11 = levelImage;
+        g_InGameLevelRuntimeGlobalBlock.conditionStorage = resultOrPointer;
+        for (uVar5 = uVar5 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+          (((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.magic
+               = (pFVar11->header).common.magic;
+          pFVar11 = (FrontendLoadedLevelRuntimeImage370 *)
+                    &(pFVar11->header).common.allocationSizeBytes;
+          resultOrPointer =
+               &(((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.
+                allocationSizeBytes;
         }
-        pwVar12 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                          ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28));
-        bVar16 = false;
-        if ((levelImage->header).resourceTables.shotAssetPathCount != 0) {
-          do {
-            WidePath_SetExtensionCode(0x746873,pwVar12);
-            outputEntries = (TechnologyAsset *)0x3a;
-            bVar16 = g_InGameLoadedResourcePointerCount < 0x200;
-            if ((!bVar16) || (outputEntries = Package_LoadEntry(pwVar12), bVar16))
+        g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
+        g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
+        pbVar12 = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                  ((levelImage->header).pathState.technologyPathOffset - 0x28);
+        WidePath_SetExtensionCode(0x636574,(word *)pbVar12);
+        PVar16 = Package_LoadEntry((word *)pbVar12);
+        loadedTechnologyAsset = PVar16.bufferOrError;
+        resultOrPointer = loadedTechnologyAsset;
+        if (((!PVar16.carry) &&
+            (resultOrPointer = &k_LowAddressLiteral0000004F,
+            g_TechnologyAsset = loadedTechnologyAsset,
+            (loadedTechnologyAsset->header).common.magic == ASSET_MAGIC_TEC)) &&
+           ((loadedTechnologyAsset->header).common.converterVersion == PCK_CONVERTER_TEC_00020000))
+        {
+          g_MoviePlaybackScheduleSpan =
+               (levelImage->header).resourceTables.effectAssetPathCount +
+               (levelImage->header).resourceTables.shotAssetPathCount +
+               (levelImage->header).resourceTables.modelAssetPathCount +
+               (levelImage->header).resourceTables.armyAssetPathCount;
+          g_MoviePlaybackBaseFrameGroup = 0;
+          g_MoviePlaybackScheduleCounter = 0;
+          pwVar13 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+                            + ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28
+                              ));
+          for (LVar8 = (levelImage->header).resourceTables.effectAssetPathCount; LVar8 != 0;
+              LVar8 = LVar8 - 1) {
+            WidePath_SetExtensionCode(0x666665,pwVar13);
+            resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+            if (0x1ff < g_InGameLoadedResourcePointerCount)
             goto 
             InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
             ;
-            (pTVar5->header).common.magic = (AssetMagic)outputEntries;
+            PVar16 = Package_LoadEntry(pwVar13);
+            resultOrPointer = PVar16.bufferOrError;
+            if (PVar16.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-            bVar16 = (TechnologyAsset *)0xfffffffb < pTVar5;
-            pTVar5 = (TechnologyAsset *)&(pTVar5->header).common.allocationSizeBytes;
-            outputEntries =
-                 (TechnologyAsset *)ShotAsset_PrepareEntries((ShotAssetHeader *)outputEntries);
-            if (bVar16)
+            loadedResourcePointerArray = loadedResourcePointerArray + 1;
+            SVar17 = EffectAsset_PrepareEntries(resultOrPointer);
+            resultOrPointer = (void *)SVar17.valueOrError;
+            if (SVar17.carry)
             goto 
             InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
             ;
-            uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-            bVar16 = (byte *)0xffffffbf < pwVar12;
-            pwVar12 = pwVar12 + 0x20;
-          } while ((int)((ulonglong)uVar19 >> 0x20) != 1);
-        }
-        outputEntries = (TechnologyAsset *)EffectDefinitions_ResolveCrossReferences();
-        if (!bVar16) {
-          pwVar12 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
-                            + ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
-                            );
-          if ((levelImage->header).resourceTables.modelAssetPathCount != 0) {
-            do {
-              WidePath_SetExtensionCode(0x6c646d,pwVar12);
-              outputEntries = (TechnologyAsset *)0x3a;
-              bVar16 = g_InGameLoadedResourcePointerCount < 0x200;
-              if ((!bVar16) || (outputEntries = Package_LoadEntry(pwVar12), bVar16))
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              (pTVar5->header).common.magic = (AssetMagic)outputEntries;
-              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-              bVar16 = (TechnologyAsset *)0xfffffffb < pTVar5;
-              pTVar5 = (TechnologyAsset *)&(pTVar5->header).common.allocationSizeBytes;
-              outputEntries =
-                   (TechnologyAsset *)ModelAsset_PrepareRecords((ModelAssetHeader *)outputEntries);
-              if (bVar16)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              pwVar12 = pwVar12 + 0x20;
-            } while ((int)((ulonglong)uVar19 >> 0x20) != 1);
+            MoviePlayback_AdvanceScheduledFrameAndTick();
+            pwVar13 = pwVar13 + 0x20;
           }
-          pwVar12 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
-                            + ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
+          pwVar13 = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+                            + ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28))
           ;
-          if ((levelImage->header).resourceTables.armyAssetPathCount != 0) {
-            do {
-              WidePath_SetExtensionCode(0x6d7261,pwVar12);
-              outputEntries = (TechnologyAsset *)0x3a;
-              bVar16 = g_InGameLoadedResourcePointerCount < 0x200;
-              if ((!bVar16) || (outputEntries = Package_LoadEntry(pwVar12), bVar16))
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              (pTVar5->header).common.magic = (AssetMagic)outputEntries;
-              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
-              bVar16 = (TechnologyAsset *)0xfffffffb < pTVar5;
-              pTVar5 = (TechnologyAsset *)&(pTVar5->header).common.allocationSizeBytes;
-              outputEntries =
-                   (TechnologyAsset *)ArmyAsset_PrepareRecords((ArmyAssetHeader *)outputEntries);
-              if (bVar16)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
-              ;
-              uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-              pwVar12 = pwVar12 + 0x20;
-            } while ((int)((ulonglong)uVar19 >> 0x20) != 1);
+          for (LVar8 = (levelImage->header).resourceTables.shotAssetPathCount; LVar8 != 0;
+              LVar8 = LVar8 - 1) {
+            WidePath_SetExtensionCode(0x746873,pwVar13);
+            resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+            if (0x1ff < g_InGameLoadedResourcePointerCount)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            PVar16 = Package_LoadEntry(pwVar13);
+            resultOrPointer = PVar16.bufferOrError;
+            if (PVar16.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            *loadedResourcePointerArray = resultOrPointer;
+            g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+            loadedResourcePointerArray = loadedResourcePointerArray + 1;
+            SVar17 = ShotAsset_PrepareEntries(resultOrPointer);
+            resultOrPointer = (void *)SVar17.valueOrError;
+            if (SVar17.carry)
+            goto 
+            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            ;
+            MoviePlayback_AdvanceScheduledFrameAndTick();
+            pwVar13 = pwVar13 + 0x20;
           }
-          outputEntries = (TechnologyAsset *)0x3a;
-          if (g_InGameLoadedResourcePointerCount < 0x200) {
-            uVar9 = (levelImage->header).pathOffsets.surfaceTextureBasePathOffset;
-            bVar16 = CARRY4(uVar9,(uint)levelImage);
-            g_MoviePlaybackBaseFrameGroup = 1;
-            g_MoviePlaybackScheduleCounter = 0;
-            g_MoviePlaybackScheduleSpan = 0x10000;
-            uVar19 = TerrainVisualResources_LoadAndClearCellOverlayFlags
-                               ((word *)((levelImage->header).common.buildMetadata.
-                                         assetRelativeAddressAnchor28 + (uVar9 - 0x28)),
-                                (word *)((levelImage->header).common.buildMetadata.
-                                         assetRelativeAddressAnchor28 +
-                                        ((levelImage->header).pathOffsets.
-                                         groundTextureBasePathOffset - 0x28)),
-                                (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset);
-            outputEntries = (TechnologyAsset *)uVar19;
-            if ((!bVar16) &&
-               (outputEntries =
-                     (TechnologyAsset *)ShotDefinitions_ValidateTerrainMaterialReferences(), !bVar16
-               )) {
-              bVar16 = CARRY4((levelImage->header).pathOffsets.armyTextureBasePathOffset,
-                              (uint)levelImage);
-              g_MoviePlaybackBaseFrameGroup = 2;
+          SVar17 = EffectDefinitions_ResolveCrossReferences();
+          resultOrPointer = (void *)SVar17.valueOrError;
+          if (!SVar17.carry) {
+            pwVar13 = (word *)((levelImage->header).common.buildMetadata.
+                               assetRelativeAddressAnchor28 +
+                              ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
+                              );
+            for (LVar8 = (levelImage->header).resourceTables.modelAssetPathCount; LVar8 != 0;
+                LVar8 = LVar8 - 1) {
+              WidePath_SetExtensionCode(0x6c646d,pwVar13);
+              resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+              if (0x1ff < g_InGameLoadedResourcePointerCount)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              PVar16 = Package_LoadEntry(pwVar13);
+              resultOrPointer = PVar16.bufferOrError;
+              if (PVar16.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              *loadedResourcePointerArray = resultOrPointer;
+              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+              loadedResourcePointerArray = loadedResourcePointerArray + 1;
+              SVar17 = ModelAsset_PrepareRecords(resultOrPointer);
+              resultOrPointer = (void *)SVar17.valueOrError;
+              if (SVar17.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              pwVar13 = pwVar13 + 0x20;
+            }
+            pwVar13 = (word *)((levelImage->header).common.buildMetadata.
+                               assetRelativeAddressAnchor28 +
+                              ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
+            ;
+            for (LVar8 = (levelImage->header).resourceTables.armyAssetPathCount; LVar8 != 0;
+                LVar8 = LVar8 - 1) {
+              WidePath_SetExtensionCode(0x6d7261,pwVar13);
+              resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+              if (0x1ff < g_InGameLoadedResourcePointerCount)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              PVar16 = Package_LoadEntry(pwVar13);
+              resultOrPointer = PVar16.bufferOrError;
+              if (PVar16.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              *loadedResourcePointerArray = resultOrPointer;
+              g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
+              loadedResourcePointerArray = loadedResourcePointerArray + 1;
+              SVar17 = ArmyAsset_PrepareRecords(resultOrPointer);
+              resultOrPointer = (void *)SVar17.valueOrError;
+              if (SVar17.carry)
+              goto 
+              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              ;
+              MoviePlayback_AdvanceScheduledFrameAndTick();
+              pwVar13 = pwVar13 + 0x20;
+            }
+            resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
+            if (g_InGameLoadedResourcePointerCount < 0x200) {
+              g_MoviePlaybackBaseFrameGroup = 1;
               g_MoviePlaybackScheduleCounter = 0;
               g_MoviePlaybackScheduleSpan = 0x10000;
-              ModelRuntimePool_Init();
-              outputEntries = extraout_EAX_00;
-              if ((!bVar16) &&
-                 (outputEntries =
-                       (TechnologyAsset *)
-                       ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath),
-                 !bVar16)) {
-                bVar16 = CARRY4((levelImage->header).pathOffsets.effectTextureBasePathOffset,
-                                (uint)levelImage);
-                g_MoviePlaybackBaseFrameGroup = 3;
-                g_MoviePlaybackScheduleCounter = 0;
-                g_MoviePlaybackScheduleSpan = 4;
-                uVar19 = ShotRuntime_InitGraphicsResources
-                                   ((word *)((levelImage->header).common.buildMetadata.
-                                             assetRelativeAddressAnchor28 +
-                                            ((levelImage->header).pathOffsets.
-                                             shotTextureBasePathOffset - 0x28)));
-                outputEntries = (TechnologyAsset *)uVar19;
-                if (!bVar16) {
-                  g_MoviePlaybackBaseFrameGroup = 4;
+              SVar17 = TerrainVisualResources_LoadAndClearCellOverlayFlags
+                                 ((word *)((levelImage->header).common.buildMetadata.
+                                           assetRelativeAddressAnchor28 +
+                                          ((levelImage->header).pathState.
+                                           surfaceTextureBasePathOffset - 0x28)),
+                                  (word *)((levelImage->header).common.buildMetadata.
+                                           assetRelativeAddressAnchor28 +
+                                          ((levelImage->header).pathState.
+                                           groundTextureBasePathOffset - 0x28)),
+                                  (FieldGridAsset *)
+                                  (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid);
+              resultOrPointer = (void *)SVar17.valueOrError;
+              if (!SVar17.carry) {
+                SVar17 = ShotDefinitions_ValidateTerrainMaterialReferences();
+                resultOrPointer = (void *)SVar17.valueOrError;
+                if (!SVar17.carry) {
+                  g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
-                  g_MoviePlaybackScheduleSpan = 4;
-                  outputEntries =
-                       (TechnologyAsset *)
-                       EffectRuntime_InitGraphicsResources((word *)((ulonglong)uVar19 >> 0x20));
-                  if (!bVar16) {
-                    g_MoviePlaybackBaseFrameGroup = 5;
-                    g_MoviePlaybackScheduleCounter = 0;
-                    g_MoviePlaybackScheduleSpan = 6;
-                    GameFactionRuntime_RebaseLoadedArmyReferences();
-                    WorldRuntime_SetTerrainLightingConfiguration
-                              (*(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x2c),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x28),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x24),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x20),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x18),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 0x14),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 8),
-                               *(PackedArgb32 *)(levelImage->opaqueRuntimeTail2E0_36F + 4),
-                               worldRuntime);
-                    uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-                    pIVar3 = (&g_InGameConditionRuntime)[(int)((ulonglong)uVar19 >> 0x20)];
-                    WorldRuntime_AttachFieldGridAsset
-                              ((FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset,
-                               worldRuntime);
-                    MoviePlayback_AdvanceScheduledFrameAndTick();
-                    WorldRuntime_SetPosition60AndDistanceFromPosition80
-                              (*(Q12 *)((int)&levelImage->playerSlots[0].startCameraZQ12 +
-                                       (int)pIVar3->reserved00_4F),
-                               *(Q12 *)((int)&levelImage->playerSlots[0].startCameraYQ12 +
-                                       (int)pIVar3->reserved00_4F),
-                               *(Q12 *)(pIVar3->reserved00_4F +
-                                       (int)&levelImage->playerSlots[0].startCameraXQ12),
-                               worldRuntime);
-                    WorldRuntime_SetMotionParameters6CThrough78Clamped
-                              (2,extraout_EDX >> 0x10,extraout_EAX_01 & 0xffff,
-                               *(UQ12 *)((int)&levelImage->playerSlots[0].startCameraMagnitudeQ12 +
-                                        (int)pIVar3->reserved00_4F),worldRuntime);
-                    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-                    uVar9 = WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
-                    uVar9 = uVar9 & 0xffff;
-                    iVar11 = extraout_EDX_00 >> 0x10;
-                    worldContext1 = worldRuntime;
-                    uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-                    gridHeight = (FieldGridDimensionCells)((ulonglong)uVar19 >> 0x20);
-                    WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-                              (gridHeight,(FieldGridDimensionCells)uVar19,iVar11,uVar9,worldContext1
-                              );
-                    lVar4 = (longlong)(int)worldRuntime->objectCount * 0x100;
-                    bufferCapacityAndLoadFlags = (PckLoadCapacityFlags)lVar4;
-                    bVar16 = (int)bufferCapacityAndLoadFlags != lVar4;
-                    outputEntries =
-                         (TechnologyAsset *)
-                         Package_LoadEntryIntoBuffer
-                                   (bufferCapacityAndLoadFlags,(byte *)worldRuntime->objectArray,
-                                    (word *)u_widget_hex_0050e02a);
-                    if (((((!bVar16) &&
-                          (outputEntries =
-                                (TechnologyAsset *)
-                                Package_LoadEntryIntoBuffer
-                                          (0x48000,(byte *)g_ArmyRuntimeSlots,
-                                           (word *)u_army_hex_0050dfb4), !bVar16)) &&
-                         (outputEntries =
-                               (TechnologyAsset *)
-                               Package_LoadEntryIntoBuffer
-                                         (0x400000,(byte *)g_ModelRuntimeSlots,
-                                          (word *)u_modul_hex_0050dfee), !bVar16)) &&
-                        ((outputEntries =
-                               (TechnologyAsset *)
-                               Package_LoadEntryIntoBuffer
-                                         (0x40000,(byte *)g_EffectRuntimeSlots,
-                                          (word *)u_effect_hex_0050dfc6), !bVar16 &&
-                         (outputEntries =
-                               (TechnologyAsset *)
-                               Package_LoadEntryIntoBuffer
-                                         (0x40000,(byte *)g_ShotRuntimeSlots,
-                                          (word *)u_shot_hex_0050dfdc), !bVar16)))) &&
-                       (outputEntries =
-                             (TechnologyAsset *)
-                             Package_LoadEntryIntoBuffer
-                                       (0x4000,(byte *)g_GraphicsShadingRuntimeRecords,
-                                        (word *)u_light_hex_0050e016), !bVar16)) {
-                      ArmyRuntimePool_RebaseAfterLoad();
-                      ModelRuntimePool_RebaseAfterLoad();
-                      ShotRuntime_RebaseSlotsAfterLoad();
-                      EffectRuntime_RebaseSlotsAfterLoad();
-                      InGameConditionRuntime_RebaseLoadedRecords
-                                ((InGameConditionRuntime *)worldRuntime);
-                      RuntimeHexSegment_ToggleLightImageFlag();
-                      MoviePlayback_AdvanceScheduledFrameAndTick();
-                      pdVar15 = worldRuntime->dwordArray;
-                      for (WVar10 = worldRuntime->dwordArrayCount; WVar10 != 0; WVar10 = WVar10 - 1)
-                      {
-                        *pdVar15 = 0;
-                        pdVar15 = pdVar15 + 1;
-                      }
-                      pAVar1 = &(levelImage->header).pathOffsets.soundBasePathOffset;
-                      uVar17 = CARRY4((uint)levelImage,*pAVar1);
-                      pbVar14 = (levelImage->header).common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (*pAVar1 - 0x28);
-                      WidePath_SetExtensionCode(0x6d6173,(word *)pbVar14);
-                      MoviePlayback_AdvanceScheduledFrameAndTick();
-                      WidePath_SplitParentAndLeaf
-                                ((word *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                 (word *)&g_InGameLevelSoundParentDirectoryScratchUtf16,
-                                 (word *)pbVar14);
-                      outputEntries = (*g_MemoryApi.allocLargestFreeBlock)();
-                      if (!(bool)uVar17) {
-                        bVar16 = false;
-                        outputCapacityBytes_00 = outputCapacityBytes;
-                        pTVar5 = (TechnologyAsset *)
-                                 Package_FindEntry(outputCapacityBytes,
-                                                   (PckEntryHeader *)outputEntries,(word *)pbVar14,
-                                                   g_SoundPackageHandle);
-                        iVar11 = extraout_ECX_00;
-                        memory = outputRecords;
-                        if (bVar16) {
-                          pTVar5 = (TechnologyAsset *)
-                                   (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
-                                             (FILESYSTEM_ENUMERATE_FILES,0xffffffff,
-                                              outputCapacityBytes_00,outputRecords,pbVar14);
-                          iVar11 = extraout_ECX_01;
-                          memory = extraout_EDX_01;
-                        }
-                        pTVar6 = pTVar5;
-                        if (&stack0xffffffd8 < (undefined1 *)0xfffffffc) {
-                          g_MoviePlaybackBaseFrameGroup = 6;
+                  g_MoviePlaybackScheduleSpan = 0x10000;
+                  SVar17 = ModelRuntimePool_Init();
+                  resultOrPointer = (void *)SVar17.valueOrError;
+                  if (!SVar17.carry) {
+                    AVar18 = ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath);
+                    resultOrPointer = (void *)AVar18.errorOrValue;
+                    if (!AVar18.carry) {
+                      g_MoviePlaybackBaseFrameGroup = 3;
+                      g_MoviePlaybackScheduleCounter = 0;
+                      g_MoviePlaybackScheduleSpan = 4;
+                      SVar17 = ShotRuntime_InitGraphicsResources
+                                         ((word *)((levelImage->header).common.buildMetadata.
+                                                   assetRelativeAddressAnchor28 +
+                                                  ((levelImage->header).pathState.
+                                                   shotTextureBasePathOffset - 0x28)));
+                      resultOrPointer = (void *)SVar17.valueOrError;
+                      if (!SVar17.carry) {
+                        g_MoviePlaybackBaseFrameGroup = 4;
+                        g_MoviePlaybackScheduleCounter = 0;
+                        g_MoviePlaybackScheduleSpan = 4;
+                        SVar17 = EffectRuntime_InitGraphicsResources(mutableBasePath);
+                        resultOrPointer = (void *)SVar17.valueOrError;
+                        if (!SVar17.carry) {
+                          g_MoviePlaybackBaseFrameGroup = 5;
                           g_MoviePlaybackScheduleCounter = 0;
-                          newSize = (dword)((longlong)(int)pTVar5 * (longlong)iVar11);
-                          bVar18 = (longlong)(int)newSize !=
-                                   (longlong)(int)pTVar5 * (longlong)iVar11;
-                          g_MoviePlaybackScheduleSpan = iVar11;
-                          uVar19 = (*g_MemoryApi.shrinkInPlace)(newSize,memory);
-                          pwVar12 = (word *)((ulonglong)uVar19 >> 0x20);
-                          pTVar6 = (TechnologyAsset *)uVar19;
-                          if (!bVar18) {
-                            uVar9 = extraout_ECX_02;
-                            pIVar3 = g_InGameConditionRuntime;
-                            if (worldRuntime->dwordArrayCount < extraout_ECX_02) {
-                              uVar9 = worldRuntime->dwordArrayCount;
-                            }
-                            do {
-                              g_InGameConditionRuntime = pIVar3;
-                              if (uVar9 == 0) {
-                                arg0 = (SoundSampleAsset *)(*g_MemoryApi.free)(outputEntries);
-                                g_InGameLevelEffectVoiceSet0 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameLevelEffectVoiceSet1 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameLevelEffectVoiceSet2 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameLevelEffectVoiceSet3 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameActiveEffectVoice = 0;
-                                g_InGameEffectsEnabled = 1;
-                                g_InGameActiveMusicVoice = 0;
-                                g_InGameMusicEnabled = 1;
-                                g_InGameLevelMusicVoiceSet0 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameLevelMusicVoiceSet1 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameLevelMusicVoiceSet2 = (DirectSoundVoiceSet *)0x0;
-                                g_InGameLevelMusicVoiceSet3 = (DirectSoundVoiceSet *)0x0;
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0x1c) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0x1c),
-                                             (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_05,extraout_EDX_03,
-                                                         (word *)u_sound_level00_sam_0050df6c);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelEffectVoiceSet0 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0x20) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0x20),
-                                             (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_06,extraout_EDX_04,
-                                                         (word *)u_sound_level00_sam_0050df6c);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelEffectVoiceSet1 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0x24) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0x24),
-                                             (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_07,extraout_EDX_05,
-                                                         (word *)u_sound_level00_sam_0050df6c);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelEffectVoiceSet2 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (pIVar3[3].tailRecordD8 != (InGameConditionRecord *)0x0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             (sdword)pIVar3[3].tailRecordD8,
-                                             (word *)(u_sound_level00_sam_0050df6c + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_08,extraout_EDX_06,
-                                                         (word *)u_sound_level00_sam_0050df6c);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelEffectVoiceSet3 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0xc) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0xc),
-                                             (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_09,extraout_EDX_07,
-                                                         (word *)u_sound_music00_sam_0050df90);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelMusicVoiceSet0 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0x10) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0x10),
-                                             (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_10,extraout_EDX_08,
-                                                         (word *)u_sound_music00_sam_0050df90);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelMusicVoiceSet1 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0x14) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0x14),
-                                             (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_11,extraout_EDX_09,
-                                                         (word *)u_sound_music00_sam_0050df90);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelMusicVoiceSet2 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                uVar17 = 0;
-                                if (*(int *)(pIVar3[3].reservedB0_D7 + 0x18) != 0) {
-                                  (*g_WideNumberFormatUtf16)
-                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                             *(sdword *)(pIVar3[3].reservedB0_D7 + 0x18),
-                                             (word *)(u_sound_music00_sam_0050df90 + 0xb));
-                                  uVar19 = Resource_Load(extraout_ECX_12,extraout_EDX_10,
-                                                         (word *)u_sound_music00_sam_0050df90);
-                                  arg0 = (SoundSampleAsset *)uVar19;
-                                  if (!(bool)uVar17) {
-                                    pDVar8 = (*g_SoundCreateSampleVoiceSet)(arg0);
-                                    if (!(bool)uVar17) {
-                                      g_InGameLevelMusicVoiceSet3 = pDVar8;
-                                    }
-                                    arg0 = (SoundSampleAsset *)Resource_Release(arg0);
-                                  }
-                                }
-                                return CONCAT44(param_2,arg0);
-                              }
-                              pdVar15 = worldRuntime->dwordArray;
-                              worldContext1 = worldRuntime;
-                              uVar19 = WidePath_ParseTrailingNumberBeforeExtensionRegs(pwVar12);
-                              pwVar12 = (word *)((ulonglong)uVar19 >> 0x20);
-                              if (extraout_ECX_03 < worldRuntime->dwordArrayCount) {
-                                uVar17 = false;
-                                if (!bVar16) {
-                                  uVar19 = Resource_Load(extraout_ECX_03,pwVar12,pwVar12);
-                                  pTVar6 = (TechnologyAsset *)uVar19;
-                                  if ((bool)uVar17) break;
-                                }
-                                else {
-                                  WidePath_CombineDirectoryAndLeaf
-                                            ((word *)&
+                          g_MoviePlaybackScheduleSpan = 6;
+                          GameFactionRuntime_RebaseLoadedArmyReferences();
+                          WorldRuntime_SetTerrainLightingConfiguration
+                                    ((levelImage->runtimeTail2E0).terrainLightingColor13CArgb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor138Argb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor134Argb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor130Argb,
+                                     (levelImage->runtimeTail2E0).terrainRampColor12CArgb,
+                                     (levelImage->runtimeTail2E0).terrainLightingColor128Argb,
+                                     (levelImage->runtimeTail2E0).terrainRampColor124Argb,
+                                     (levelImage->runtimeTail2E0).terrainBaseColorArgb,worldRuntime)
+                          ;
+                          iVar10 = worldRuntime->activeFactionRuntimeIndex;
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          LVar1 = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[iVar10 + -1]
+                          ;
+                          WorldRuntime_AttachFieldGridAsset
+                                    ((FieldGridAsset *)
+                                     (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid
+                                     ,worldRuntime);
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          uVar5 = *(uint *)((int)&levelImage->playerSlots[0].
+                                                  packedHeadingLow16PitchHigh16 + LVar1);
+                          WorldRuntime_SetPosition60AndDistanceFromPosition80
+                                    (*(Q12 *)((int)&levelImage->playerSlots[0].startCameraZQ12 +
+                                             LVar1),
+                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraYQ12 +
+                                             LVar1),
+                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraXQ12 +
+                                             LVar1),worldRuntime);
+                          WorldRuntime_SetMotionParameters6CThrough78Clamped
+                                    (2,(int)uVar5 >> 0x10,uVar5 & 0xffff,
+                                     *(UQ12 *)((int)&levelImage->playerSlots[0].
+                                                     startCameraMagnitudeQ12 + LVar1),worldRuntime);
+                          uVar5 = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
+                          WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+                          uVar9 = uVar5;
+                          WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+                          uVar5 = uVar5 & 0xffff;
+                          iVar10 = (int)uVar9 >> 0x10;
+                          uVar9 = (levelImage->runtimeTail2E0).
+                                  packedFieldRegionHeightHigh16WidthLow16;
+                          worldContext1 = worldRuntime;
+                          MoviePlayback_AdvanceScheduledFrameAndTick();
+                          WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+                                    ((int)uVar9 >> 0x10,uVar9 & 0xffff,iVar10,uVar5,worldContext1);
+                          SVar17 = Package_LoadEntryIntoBuffer
+                                             (worldRuntime->objectCount * 0x100,
+                                              (byte *)worldRuntime->objectArray,
+                                              (word *)u_widget_hex_0050e02a);
+                          resultOrPointer = (void *)SVar17.valueOrError;
+                          if (!SVar17.carry) {
+                            SVar17 = Package_LoadEntryIntoBuffer
+                                               (0x48000,(byte *)g_ArmyRuntimeSlots,
+                                                (word *)u_army_hex_0050dfb4);
+                            resultOrPointer = (void *)SVar17.valueOrError;
+                            if (!SVar17.carry) {
+                              SVar17 = Package_LoadEntryIntoBuffer
+                                                 (0x400000,(byte *)g_ModelRuntimeSlots,
+                                                  (word *)u_modul_hex_0050dfee);
+                              resultOrPointer = (void *)SVar17.valueOrError;
+                              if (!SVar17.carry) {
+                                SVar17 = Package_LoadEntryIntoBuffer
+                                                   (0x40000,(byte *)g_EffectRuntimeSlots,
+                                                    (word *)u_effect_hex_0050dfc6);
+                                resultOrPointer = (void *)SVar17.valueOrError;
+                                if (!SVar17.carry) {
+                                  SVar17 = Package_LoadEntryIntoBuffer
+                                                     (0x40000,(byte *)g_ShotRuntimeSlots,
+                                                      (word *)u_shot_hex_0050dfdc);
+                                  resultOrPointer = (void *)SVar17.valueOrError;
+                                  if (!SVar17.carry) {
+                                    SVar17 = Package_LoadEntryIntoBuffer
+                                                       (0x4000,(byte *)
+                                                  g_GraphicsShadingRuntimeRecords,
+                                                  (word *)u_light_hex_0050e016);
+                                    resultOrPointer = (void *)SVar17.valueOrError;
+                                    if (!SVar17.carry) {
+                                      ArmyRuntimePool_RebaseAfterLoad();
+                                      ModelRuntimePool_RebaseAfterLoad();
+                                      ShotRuntime_RebaseSlotsAfterLoad();
+                                      EffectRuntime_RebaseSlotsAfterLoad();
+                                      ResourceRegistrationRuntime_RebaseLoadedRecords
+                                                ((ResourceRegistrationRuntimeImage *)worldRuntime);
+                                      RuntimeHexSegment_ToggleLightImageFlag();
+                                      MoviePlayback_AdvanceScheduledFrameAndTick();
+                                      pdVar14 = worldRuntime->dwordArray;
+                                      for (WVar6 = worldRuntime->dwordArrayCount; WVar6 != 0;
+                                          WVar6 = WVar6 - 1) {
+                                        *pdVar14 = 0;
+                                        pdVar14 = pdVar14 + 1;
+                                      }
+                                      pbVar12 = (levelImage->header).common.buildMetadata.
+                                                assetRelativeAddressAnchor28 +
+                                                ((levelImage->header).pathState.soundBasePathOffset
+                                                - 0x28);
+                                      WidePath_SetExtensionCode(0x6d6173,(word *)pbVar12);
+                                      MoviePlayback_AdvanceScheduledFrameAndTick();
+                                      WidePath_SplitParentAndLeaf
+                                                ((word *)&
                                                   g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
-                                             pwVar12,(word *)&
+                                                 (word *)&
+                                                  g_InGameLevelSoundParentDirectoryScratchUtf16,
+                                                 (word *)pbVar12);
+                                      AVar25 = (*g_MemoryApi.allocLargestFreeBlock)();
+                                      outputCapacityBytes = AVar25.blockSizeOrSentinel;
+                                      resultOrPointer = (void *)AVar25.allocationOrError;
+                                      if (!AVar25.carry) {
+                                        PVar26 = Package_FindEntry(outputCapacityBytes,
+                                                                   resultOrPointer,(word *)pbVar12,
+                                                                   g_SoundPackageHandle);
+                                        uVar5 = PVar26.matchCount;
+                                        soundDirectoryRecordSizeBytes = PVar26.recordSizeOrError;
+                                        if (PVar26.carry) {
+                                          FVar27 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+                                                   )(FILESYSTEM_ENUMERATE_FILES,0xffffffff,
+                                                     outputCapacityBytes,resultOrPointer,pbVar12);
+                                          uVar5 = FVar27.entryCount;
+                                          soundDirectoryRecordSizeBytes = FVar27.recordSizeBytes;
+                                        }
+                                        shrinkResultOrError = (void *)soundDirectoryRecordSizeBytes;
+                                        if (&stack0xffffffd8 < (undefined1 *)0xfffffffc) {
+                                          g_MoviePlaybackBaseFrameGroup = 6;
+                                          g_MoviePlaybackScheduleCounter = 0;
+                                          g_MoviePlaybackScheduleSpan = uVar5;
+                                          AVar19 = (*g_MemoryApi.shrinkInPlace)
+                                                             (soundDirectoryRecordSizeBytes * uVar5,
+                                                              resultOrPointer);
+                                          shrinkResultOrError = (void *)AVar19.scratchOrError;
+                                          if (!AVar19.carry) {
+                                            soundDirectoryPathCursor = resultOrPointer;
+                                            pIVar2 = g_InGameLevelRuntimeGlobalBlock.
+                                                     conditionStorage;
+                                            if (worldRuntime->dwordArrayCount < uVar5) {
+                                              uVar5 = worldRuntime->dwordArrayCount;
+                                            }
+                                            do {
+                                              g_InGameLevelRuntimeGlobalBlock.conditionStorage =
+                                                   pIVar2;
+                                              if (uVar5 == 0) {
+                                                AVar21 = (*g_MemoryApi.free)(resultOrPointer);
+                                                g_InGameLevelEffectVoiceSet0 = (void *)0x0;
+                                                g_InGameLevelEffectVoiceSet1 = (void *)0x0;
+                                                g_InGameLevelEffectVoiceSet2 = (void *)0x0;
+                                                g_InGameLevelEffectVoiceSet3 = (void *)0x0;
+                                                g_InGameActiveEffectVoice = 0;
+                                                g_InGameEffectsEnabled = 1;
+                                                g_InGameActiveMusicVoice = 0;
+                                                g_InGameMusicEnabled = 1;
+                                                g_InGameLevelMusicVoiceSet0 = (void *)0x0;
+                                                g_InGameLevelMusicVoiceSet1 = (void *)0x0;
+                                                g_InGameLevelMusicVoiceSet2 = (void *)0x0;
+                                                g_InGameLevelMusicVoiceSet3 = (void *)0x0;
+                                                pSVar4 = (SoundSampleAsset *)AVar21.eax;
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    effectSampleNumbers[0] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             effectSampleNumbers[0],
+                                                             (word *)(u_sound_level00_sam_0050df6c +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_level00_sam_0050df6c);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelEffectVoiceSet0 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    effectSampleNumbers[1] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             effectSampleNumbers[1],
+                                                             (word *)(u_sound_level00_sam_0050df6c +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_level00_sam_0050df6c);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelEffectVoiceSet1 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    effectSampleNumbers[2] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             effectSampleNumbers[2],
+                                                             (word *)(u_sound_level00_sam_0050df6c +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_level00_sam_0050df6c);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelEffectVoiceSet2 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    effectSampleNumbers[3] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             effectSampleNumbers[3],
+                                                             (word *)(u_sound_level00_sam_0050df6c +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_level00_sam_0050df6c);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelEffectVoiceSet3 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    musicSampleNumbers[0] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             musicSampleNumbers[0],
+                                                             (word *)(u_sound_music00_sam_0050df90 +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_music00_sam_0050df90);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelMusicVoiceSet0 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    musicSampleNumbers[1] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             musicSampleNumbers[1],
+                                                             (word *)(u_sound_music00_sam_0050df90 +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_music00_sam_0050df90);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelMusicVoiceSet1 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    musicSampleNumbers[2] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             musicSampleNumbers[2],
+                                                             (word *)(u_sound_music00_sam_0050df90 +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_music00_sam_0050df90);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelMusicVoiceSet2 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                if ((pIVar2->levelImage).runtimeTail2E0.
+                                                    musicSampleNumbers[3] != 0) {
+                                                  (*g_WideNumberFormatUtf16)
+                                                            (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
+                                                             (pIVar2->levelImage).runtimeTail2E0.
+                                                             musicSampleNumbers[3],
+                                                             (word *)(u_sound_music00_sam_0050df90 +
+                                                                     0xb));
+                                                  RVar28 = Resource_Load((word *)
+                                                  u_sound_music00_sam_0050df90);
+                                                  pSVar3 = (SoundSampleAsset *)RVar28.eax;
+                                                  pSVar4 = pSVar3;
+                                                  if (!RVar28.carry) {
+                                                    SVar22 = (*g_SoundCreateSampleVoiceSet)(pSVar3);
+                                                    pSVar4 = (SoundSampleAsset *)SVar22.eax;
+                                                    if (!SVar22.carry) {
+                                                      g_InGameLevelMusicVoiceSet3 = pSVar4;
+                                                    }
+                                                    Resource_Release(pSVar3);
+                                                  }
+                                                }
+                                                IVar23.carry = false;
+                                                IVar23.errorOrValue = (dword)pSVar4;
+                                                return IVar23;
+                                              }
+                                              pdVar14 = worldRuntime->dwordArray;
+                                              worldContext1 = worldRuntime;
+                                              dVar7 = 
+                                                  WidePath_ParseTrailingNumberBeforeExtensionRegs
+                                                            (soundDirectoryPathCursor);
+                                              if (dVar7 < worldRuntime->dwordArrayCount) {
+                                                if (!PVar26.carry) {
+                                                  RVar28 = Resource_Load(soundDirectoryPathCursor);
+                                                  shrinkResultOrError = (void *)RVar28.eax;
+                                                  if (RVar28.carry) break;
+                                                }
+                                                else {
+                                                  WidePath_CombineDirectoryAndLeaf
+                                                            ((word *)&
+                                                  g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
+                                                  soundDirectoryPathCursor,
+                                                  (word *)&
                                                   g_InGameLevelSoundParentDirectoryScratchUtf16);
-                                  uVar19 = Resource_Load(extraout_ECX_04,extraout_EDX_02,
-                                                         (word *)&
+                                                  RVar28 = Resource_Load((word *)&
                                                   g_InGameLevelSoundLeafOrCombinedPathScratchUtf16);
-                                  pTVar6 = (TechnologyAsset *)uVar19;
-                                  if ((bool)uVar17) break;
+                                                  shrinkResultOrError = (void *)RVar28.eax;
+                                                  if (RVar28.carry) break;
+                                                }
+                                                SVar20 = SpatialSoundSlot_CreateFromSampleAsset
+                                                                   (shrinkResultOrError);
+                                                if (!SVar20.carry) {
+                                                  pdVar14[dVar7] = (dword)SVar20.soundSlot;
+                                                }
+                                                Resource_Release(shrinkResultOrError);
+                                                MoviePlayback_AdvanceScheduledFrameAndTick();
+                                              }
+                                              uVar5 = uVar5 - 1;
+                                              worldRuntime = worldContext1;
+                                              soundDirectoryPathCursor =
+                                                   (word *)((int)soundDirectoryPathCursor +
+                                                           (int)&(((
+                                                  InGameLevelConditionStorageView800 *)
+                                                  soundDirectoryRecordSizeBytes)->levelImage).header
+                                                  );
+                                              pIVar2 = g_InGameLevelRuntimeGlobalBlock.
+                                                       conditionStorage;
+                                            } while( true );
+                                          }
+                                        }
+                                        (*g_MemoryApi.free)(resultOrPointer);
+                                        resultOrPointer = shrinkResultOrError;
+                                      }
+                                    }
+                                  }
                                 }
-                                bVar18 = false;
-                                pSVar7 = SpatialSoundSlot_CreateFromSampleAsset
-                                                   ((SoundSampleAsset *)pTVar6);
-                                if (!bVar18) {
-                                  pdVar15[extraout_ECX_03] = (dword)pSVar7;
-                                }
-                                Resource_Release(pTVar6);
-                                uVar19 = MoviePlayback_AdvanceScheduledFrameAndTick();
-                                pwVar12 = (word *)((ulonglong)uVar19 >> 0x20);
                               }
-                              pwVar12 = (word *)((int)pwVar12 + (int)pTVar5);
-                              uVar9 = uVar9 - 1;
-                              worldRuntime = worldContext1;
-                              pIVar3 = g_InGameConditionRuntime;
-                            } while( true );
+                            }
                           }
                         }
-                        (*g_MemoryApi.free)(outputEntries);
-                        outputEntries = pTVar6;
                       }
                     }
                   }
@@ -1533,8 +1589,11 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
     }
   }
 InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus:
-  return CONCAT44(param_2,outputEntries);
+  IVar24.carry = true;
+  IVar24.errorOrValue = (dword)resultOrPointer;
+  return IVar24;
 }
+
 
 /* Address: 0x005329C0.
    Ownership: gameplay/session/level.
@@ -1546,13 +1605,16 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadF
    [world/model/runtime], ArmyRuntime_ShutdownPoolAndGraphics [gameplay/army/runtime],
    TerrainVisualResources_Shutdown [world/terrain/visuals], SpatialSoundSlot_ReleaseSample [audio/spatial/runtime].
 */
-void __thiscall
-InGameLevelRuntime_ShutdownLoadedAssetResources(void *this,LevelAssetHeader *levelAsset)
+
+void __thandor_void_preserve_eax_ecx
+InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime)
 
 {
-  int extraout_ECX;
-  int extraout_ECX_00;
-  undefined4 *puVar1;
+  void **ppvVar1;
+  InGameLoadedResourcePointerCount IVar2;
+  dword *pdVar3;
+  dword *pdVar4;
+  dword *pdVar5;
   void **resourcePointerCursor;
   
   EffectRuntime_ShutdownGraphicsResources();
@@ -1560,12 +1622,16 @@ InGameLevelRuntime_ShutdownLoadedAssetResources(void *this,LevelAssetHeader *lev
   ModelRuntimePool_ShutdownAndReleaseDefinitions();
   ArmyRuntime_ShutdownPoolAndGraphics();
   TerrainVisualResources_Shutdown();
-  puVar1 = (undefined4 *)(levelAsset->pathOffsets).armyTextureBasePathOffset;
-  if (((levelAsset->pathOffsets).shotTextureBasePathOffset != 0) && (puVar1 != (undefined4 *)0x0)) {
-    do {
-      SpatialSoundSlot_ReleaseSample((SpatialSoundSlot *)*puVar1);
-      puVar1 = puVar1 + 1;
-    } while (extraout_ECX != 1);
+  pdVar4 = (dword *)worldRuntime->dwordArrayCount;
+  pdVar5 = worldRuntime->dwordArray;
+  pdVar3 = pdVar5;
+  if (pdVar4 != (dword *)0x0) {
+    while (pdVar3 != (dword *)0x0) {
+      SpatialSoundSlot_ReleaseSample((SpatialSoundSlot *)*pdVar5);
+      pdVar5 = pdVar5 + 1;
+      pdVar4 = (dword *)((int)pdVar4 + -1);
+      pdVar3 = pdVar4;
+    }
   }
   (*g_SoundReleaseSampleVoiceSet)(g_InGameLevelEffectVoiceSet0);
   (*g_SoundReleaseSampleVoiceSet)(g_InGameLevelEffectVoiceSet1);
@@ -1575,23 +1641,24 @@ InGameLevelRuntime_ShutdownLoadedAssetResources(void *this,LevelAssetHeader *lev
   (*g_SoundReleaseSampleVoiceSet)(g_InGameLevelMusicVoiceSet1);
   (*g_SoundReleaseSampleVoiceSet)(g_InGameLevelMusicVoiceSet2);
   (*g_SoundReleaseSampleVoiceSet)(g_InGameLevelMusicVoiceSet3);
-  if ((g_InGameLoadedResourcePointers != (void **)0x0) &&
-     (resourcePointerCursor = g_InGameLoadedResourcePointers,
-     g_InGameLoadedResourcePointerCount != 0)) {
-    do {
-      Resource_Release(*resourcePointerCursor);
-      resourcePointerCursor = resourcePointerCursor + 1;
-    } while (extraout_ECX_00 != 1);
+  ppvVar1 = g_InGameLoadedResourcePointers;
+  IVar2 = g_InGameLoadedResourcePointerCount;
+  if (g_InGameLoadedResourcePointers != (void **)0x0) {
+    for (; IVar2 != 0; IVar2 = IVar2 - 1) {
+      Resource_Release(*ppvVar1);
+      ppvVar1 = ppvVar1 + 1;
+    }
   }
   (*g_MemoryApi.free)(g_InGameLoadedResourcePointers);
   g_InGameLoadedResourcePointers = (void **)0x0;
   g_InGameLoadedResourcePointerCount = 0;
-  (*g_MemoryApi.free)(g_InGameConditionRuntime);
-  g_InGameConditionRuntime = (InGameConditionRuntime *)0x0;
+  (*g_MemoryApi.free)(g_InGameLevelRuntimeGlobalBlock.conditionStorage);
+  g_InGameLevelRuntimeGlobalBlock.conditionStorage = (InGameLevelConditionStorageView800 *)0x0;
   Resource_Release(g_TechnologyAsset);
   g_TechnologyAsset = (TechnologyAsset *)0x0;
   return;
 }
+
 
 /* Address: 0x00532CA0.
    Ownership: gameplay/session/level.
@@ -1601,133 +1668,142 @@ InGameLevelRuntime_ShutdownLoadedAssetResources(void *this,LevelAssetHeader *lev
    Cross-module calls: Package_LoadEntryIntoBuffer [assets/package/runtime], FileSystem_WriteBufferToPathCf
    [platform/filesystem/win32].
 */
-void InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf(int param_1)
+
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf(InGameLevelSaveWorldView *saveWorldView)
 
 {
   int iVar1;
-  undefined4 uVar2;
-  int iVar3;
+  FactionRuntimeIndex FVar2;
+  WorldOwnerListNode100 *pWVar3;
+  AngleTurn32 AVar4;
   byte *source;
-  dword dVar4;
   dword dVar5;
   dword dVar6;
   dword dVar7;
-  byte *pbVar8;
-  undefined1 in_CF;
-  bool bVar9;
+  dword dVar8;
+  LevelPlacedModelRecord20 *objectRecordCursor;
+  StatusValueEaxCf5 SVar9;
   
-  Package_LoadEntryIntoBuffer(0x800000,g_PackageScratchBuffer,g_LevelEndingMovieSourcePath);
+  SVar9 = Package_LoadEntryIntoBuffer(0x800000,g_PackageScratchBuffer,g_LevelEndingMovieSourcePath);
   source = g_PackageScratchBuffer;
-  if (!(bool)in_CF) {
+  dVar8 = SVar9.valueOrError;
+  if (!SVar9.carry) {
     iVar1 = *(int *)(g_PackageScratchBuffer + 0xdc);
-    uVar2 = *(undefined4 *)(param_1 + 0x50);
+    FVar2 = (saveWorldView->worldRuntime).activeFactionRuntimeIndex;
     *(int *)(g_PackageScratchBuffer + 4) = iVar1;
     source[0xd8] = 0;
     source[0xd9] = 0;
     source[0xda] = 0;
     source[0xdb] = 0;
-    *(undefined4 *)(source + 0x2dc) = uVar2;
-    pbVar8 = source + iVar1;
-    for (iVar1 = *(int *)(param_1 + 0xd8); iVar1 != 0; iVar1 = *(int *)(iVar1 + 4)) {
-      if (*(int *)(iVar1 + 0xa4) == 0) {
+    *(FactionRuntimeIndex *)(source + 0x2dc) = FVar2;
+    objectRecordCursor = (LevelPlacedModelRecord20 *)(source + iVar1);
+    for (pWVar3 = (saveWorldView->worldRuntime).ownerListHead;
+        pWVar3 != (WorldOwnerListNode100 *)0x0; pWVar3 = pWVar3->nextNode) {
+      if (pWVar3->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         *(int *)(source + 0xd8) = *(int *)(source + 0xd8) + 1;
         *(int *)(source + 4) = *(int *)(source + 4) + 0x20;
-        iVar3 = *(int *)(*(int *)(iVar1 + 0x48) + 8);
-        *(undefined4 *)(pbVar8 + 8) = *(undefined4 *)(iVar1 + 0x94);
-        uVar2 = *(undefined4 *)(iVar3 + 0xa0);
-        *(undefined4 *)(pbVar8 + 4) = *(undefined4 *)(iVar3 + 0xc);
-        *(undefined4 *)pbVar8 = uVar2;
-        uVar2 = *(undefined4 *)(iVar1 + 0x14);
-        *(undefined4 *)(pbVar8 + 0xc) = *(undefined4 *)(iVar1 + 0x98);
-        *(undefined4 *)(pbVar8 + 0x10) = uVar2;
-        pbVar8[0x14] = 0;
-        pbVar8[0x15] = 0;
-        pbVar8[0x16] = 0;
-        pbVar8[0x17] = 0;
-        pbVar8[0x18] = 0;
-        pbVar8[0x19] = 0;
-        pbVar8[0x1a] = 0;
-        pbVar8[0x1b] = 0;
-        pbVar8[0x1c] = 0;
-        pbVar8[0x1d] = 0;
-        pbVar8[0x1e] = 0;
-        pbVar8[0x1f] = 0;
-        pbVar8 = pbVar8 + 0x20;
+        iVar1 = *(int *)((int)pWVar3->runtimePayload + 8);
+        objectRecordCursor->meshGroupMask = pWVar3->worldXQ12;
+        dVar8 = *(dword *)(iVar1 + 0xa0);
+        objectRecordCursor->modelRuntimeField0C = *(dword *)(iVar1 + 0xc);
+        objectRecordCursor->modelRuntimeFieldA0 = dVar8;
+        AVar4 = pWVar3->modelLocalRotationAngle2;
+        objectRecordCursor->nodePayloadField0C = pWVar3->worldYQ12;
+        objectRecordCursor->worldRotationAngle2 = AVar4;
+        objectRecordCursor->reserved14_1F[0] = 0;
+        objectRecordCursor->reserved14_1F[1] = 0;
+        objectRecordCursor->reserved14_1F[2] = 0;
+        objectRecordCursor->reserved14_1F[3] = 0;
+        objectRecordCursor->reserved14_1F[4] = 0;
+        objectRecordCursor->reserved14_1F[5] = 0;
+        objectRecordCursor->reserved14_1F[6] = 0;
+        objectRecordCursor->reserved14_1F[7] = 0;
+        objectRecordCursor->reserved14_1F[8] = 0;
+        objectRecordCursor->reserved14_1F[9] = 0;
+        objectRecordCursor->reserved14_1F[10] = 0;
+        objectRecordCursor->reserved14_1F[0xb] = 0;
+        objectRecordCursor = objectRecordCursor + 1;
       }
     }
     *(uint *)(source + 0x2e0) =
-         *(uint *)(param_1 + 0x178) & 0xffff | *(int *)(param_1 + 0x17c) << 0x10;
-    bVar9 = false;
-    *(uint *)(source + 0x2f0) =
-         *(uint *)(param_1 + 0xb8) & 0xffff | *(int *)(param_1 + 0xbc) << 0x10;
+         saveWorldView->fieldRegionOriginWorldXQ12 & 0xffffU |
+         saveWorldView->fieldRegionOriginWorldYQ12 << 0x10;
+    *(WorldFieldDimension *)(source + 0x2f0) =
+         (saveWorldView->worldRuntime).fieldRegion.regionWidth & 0xffff |
+         (saveWorldView->worldRuntime).fieldRegion.regionHeight << 0x10;
     dVar7 = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark1PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark1PositionZQ12;
-    dVar4 = g_LevelCameraBookmark1PositionYQ12;
+    dVar8 = g_LevelCameraBookmark1PositionYQ12;
     *(dword *)(source + 0x200) = g_LevelCameraBookmark1PositionXQ12;
-    *(dword *)(source + 0x204) = dVar4;
+    *(dword *)(source + 0x204) = dVar8;
     *(dword *)(source + 0x208) = dVar5;
     *(dword *)(source + 0x20c) = dVar6;
     *(dword *)(source + 0x210) = dVar7;
     dVar7 = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark2PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark2PositionZQ12;
-    dVar4 = g_LevelCameraBookmark2PositionYQ12;
+    dVar8 = g_LevelCameraBookmark2PositionYQ12;
     *(dword *)(source + 0x220) = g_LevelCameraBookmark2PositionXQ12;
-    *(dword *)(source + 0x224) = dVar4;
+    *(dword *)(source + 0x224) = dVar8;
     *(dword *)(source + 0x228) = dVar5;
     *(dword *)(source + 0x22c) = dVar6;
     *(dword *)(source + 0x230) = dVar7;
     dVar7 = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark3PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark3PositionZQ12;
-    dVar4 = g_LevelCameraBookmark3PositionYQ12;
+    dVar8 = g_LevelCameraBookmark3PositionYQ12;
     *(dword *)(source + 0x240) = g_LevelCameraBookmark3PositionXQ12;
-    *(dword *)(source + 0x244) = dVar4;
+    *(dword *)(source + 0x244) = dVar8;
     *(dword *)(source + 0x248) = dVar5;
     *(dword *)(source + 0x24c) = dVar6;
     *(dword *)(source + 0x250) = dVar7;
     dVar7 = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark4PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark4PositionZQ12;
-    dVar4 = g_LevelCameraBookmark4PositionYQ12;
+    dVar8 = g_LevelCameraBookmark4PositionYQ12;
     *(dword *)(source + 0x260) = g_LevelCameraBookmark4PositionXQ12;
-    *(dword *)(source + 0x264) = dVar4;
+    *(dword *)(source + 0x264) = dVar8;
     *(dword *)(source + 0x268) = dVar5;
     *(dword *)(source + 0x26c) = dVar6;
     *(dword *)(source + 0x270) = dVar7;
     dVar7 = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark5PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark5PositionZQ12;
-    dVar4 = g_LevelCameraBookmark5PositionYQ12;
+    dVar8 = g_LevelCameraBookmark5PositionYQ12;
     *(dword *)(source + 0x280) = g_LevelCameraBookmark5PositionXQ12;
-    *(dword *)(source + 0x284) = dVar4;
+    *(dword *)(source + 0x284) = dVar8;
     *(dword *)(source + 0x288) = dVar5;
     *(dword *)(source + 0x28c) = dVar6;
     *(dword *)(source + 0x290) = dVar7;
     dVar7 = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark6PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark6PositionZQ12;
-    dVar4 = g_LevelCameraBookmark6PositionYQ12;
+    dVar8 = g_LevelCameraBookmark6PositionYQ12;
     *(dword *)(source + 0x2a0) = g_LevelCameraBookmark6PositionXQ12;
-    *(dword *)(source + 0x2a4) = dVar4;
+    *(dword *)(source + 0x2a4) = dVar8;
     *(dword *)(source + 0x2a8) = dVar5;
     *(dword *)(source + 0x2ac) = dVar6;
     *(dword *)(source + 0x2b0) = dVar7;
     dVar7 = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
     dVar6 = g_LevelCameraBookmark7PositionMagnitudeQ12;
     dVar5 = g_LevelCameraBookmark7PositionZQ12;
-    dVar4 = g_LevelCameraBookmark7PositionYQ12;
+    dVar8 = g_LevelCameraBookmark7PositionYQ12;
     *(dword *)(source + 0x2c0) = g_LevelCameraBookmark7PositionXQ12;
-    *(dword *)(source + 0x2c4) = dVar4;
+    *(dword *)(source + 0x2c4) = dVar8;
     *(dword *)(source + 0x2c8) = dVar5;
     *(dword *)(source + 0x2cc) = dVar6;
     *(dword *)(source + 0x2d0) = dVar7;
-    FileSystem_WriteBufferToPathCf
-              (*(FileIoByteCount *)(source + 4),source,g_LevelEndingMovieSourcePath);
-    if (!bVar9) {
-      return;
+    SVar9 = FileSystem_WriteBufferToPathCf
+                      (*(FileIoByteCount *)(source + 4),source,g_LevelEndingMovieSourcePath);
+    dVar8 = SVar9.valueOrError;
+    if (!SVar9.carry) {
+      return (StatusValueEaxCf5)((uint5)SVar9 & 0xffffffff);
     }
   }
-  return;
+  SVar9.carry = true;
+  SVar9.valueOrError = dVar8;
+  return SVar9;
 }
+

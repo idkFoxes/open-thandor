@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/settings`
 
-[Source](../../../../src/ui/frontend/settings.c) · [Header](../../../../include/thandor/ui/frontend/settings.h) · [Graphviz](settings.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-settings)
+[Source](../../../../src/ui/frontend/settings.c) · [Header](../../../../include/thandor/ui/frontend/settings.h) · [Graphviz](settings.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-settings) · [Developer notes](../../../../CHANGELOG.md#module-ui-frontend-settings) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-settings)
 
 33 functions. Addresses are current V523 executable VAs.
 

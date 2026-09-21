@@ -1,6 +1,6 @@
 # Call graph: `ui/support/runtime`
 
-[Source](../../../../src/ui/support/runtime.c) · [Header](../../../../include/thandor/ui/support/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-support-runtime)
+[Source](../../../../src/ui/support/runtime.c) · [Header](../../../../include/thandor/ui/support/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-support-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-support-runtime)
 
 6 functions. Addresses are current V523 executable VAs.
 

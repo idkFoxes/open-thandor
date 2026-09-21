@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/terrain/projection.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/terrain/projection.h>
 
 /* Implementation ownership: world/terrain/projection. */
@@ -13,30 +20,22 @@
    TerrainProjectedOcclusion_TraceWedge4, TerrainProjectedOcclusion_TraceWedge5.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
-undefined8 __fastcall
+void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
-          (undefined4 incomingEcxValue,undefined4 preservedEdxValue,
-          FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
-          FieldGridAsset *fieldGrid)
+          (ulonglong occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
+          Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
 
 {
   uint uVar1;
   int iVar2;
   int iVar3;
-  undefined4 in_EAX;
   uint uVar4;
   uint uVar5;
   uint uVar6;
   int iVar7;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  int extraout_EDX_03;
   FieldGridCell *pFVar8;
   FieldGridCell *pFVar9;
-  ulonglong extraout_MM0;
-  qword qVar10;
+  FieldGridCoordinatesEaxEdx8 FVar10;
   uint uVar11;
   uint uVar12;
   
@@ -49,12 +48,12 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
       g_TerrainScanStepLimit = 0xff;
     }
     g_TerrainScanReferenceHeight = referenceHeightQ12;
-    qVar10 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    FVar10 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     iVar3 = g_TerrainScanReferenceHeight;
-    uVar1 = (int)qVar10 >> 0xc;
-    uVar11 = (uint)((longlong)qVar10 >> 0x2c);
-    uVar4 = (uint)(qVar10 & 0xfff00000fff);
-    uVar6 = (uint)((qVar10 & 0xfff00000fff) >> 0x20);
+    uVar1 = FVar10.columnQ12 >> 0xc;
+    uVar11 = FVar10.rowQ12 >> 0xc;
+    uVar4 = (uint)((ulonglong)FVar10 & 0xfff00000fff);
+    uVar6 = (uint)(((ulonglong)FVar10 & 0xfff00000fff) >> 0x20);
     uVar5 = uVar6 + uVar4 * 2;
     uVar12 = uVar1;
     if (uVar5 < 0x1000) {
@@ -80,28 +79,34 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
         (uVar11 < fieldGrid->gridHeight)) && (uVar12 < uVar5)) {
       iVar7 = uVar11 * uVar5 + uVar12;
       if ((fieldGrid->cells[iVar7].flagsAndMaterial & 0x88006000) == 0) {
-        fieldGrid->cells[iVar7].occupancyMask = fieldGrid->cells[iVar7].occupancyMask | extraout_MM0
-        ;
+        fieldGrid->cells[iVar7].occupancyMask =
+             fieldGrid->cells[iVar7].occupancyMask | occupancyMaskBits;
         iVar2 = g_TerrainScanRowStrideBytes;
         pFVar8 = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
                  iVar7 * 0x80 + -0x28);
         pFVar9 = (FieldGridCell *)((int)pFVar8 - g_TerrainScanRowStrideBytes);
-        TerrainProjectedOcclusion_TraceWedge0(pFVar9->terrainHeight - iVar3,0,pFVar8);
-        TerrainProjectedOcclusion_TraceWedge1(pFVar9[-1].terrainHeight - extraout_EDX,0,pFVar9);
-        pFVar8 = (FieldGridCell *)((pFVar9 + -1)[-1].runtime00_07 + iVar2);
-        TerrainProjectedOcclusion_TraceWedge2(pFVar8->terrainHeight - extraout_EDX_00,0,pFVar9 + -1)
-        ;
-        pFVar9 = (FieldGridCell *)(pFVar8->runtime00_07 + iVar2);
-        TerrainProjectedOcclusion_TraceWedge3(pFVar9->terrainHeight - extraout_EDX_01,0,pFVar8);
-        TerrainProjectedOcclusion_TraceWedge4(pFVar9[1].terrainHeight - extraout_EDX_02,0,pFVar9);
+        TerrainProjectedOcclusion_TraceWedge0
+                  (occupancyMaskBits,pFVar9->terrainHeight - iVar3,0,pFVar8);
+        TerrainProjectedOcclusion_TraceWedge1
+                  (occupancyMaskBits,pFVar9[-1].terrainHeight - iVar3,0,pFVar9);
+        pFVar8 = (FieldGridCell *)((pFVar9 + -1)[-1].runtime0C_3F + iVar2 + -0xc);
+        TerrainProjectedOcclusion_TraceWedge2
+                  (occupancyMaskBits,pFVar8->terrainHeight - iVar3,0,pFVar9 + -1);
+        pFVar9 = (FieldGridCell *)(pFVar8->runtime0C_3F + iVar2 + -0xc);
+        TerrainProjectedOcclusion_TraceWedge3
+                  (occupancyMaskBits,pFVar9->terrainHeight - iVar3,0,pFVar8);
+        TerrainProjectedOcclusion_TraceWedge4
+                  (occupancyMaskBits,pFVar9[1].terrainHeight - iVar3,0,pFVar9);
         TerrainProjectedOcclusion_TraceWedge5
-                  (*(int *)((int)(pFVar9 + 1) + (200 - iVar2)) - extraout_EDX_03,0,pFVar9 + 1);
+                  (occupancyMaskBits,*(int *)((int)(pFVar9 + 1) + (200 - iVar2)) - iVar3,0,
+                   pFVar9 + 1);
       }
     }
   }
-  return CONCAT44(preservedEdxValue,in_EAX);
+  return;
 }
+
 
 /* Address: 0x005099D0.
    Ownership: world/terrain/projection.
@@ -114,10 +119,11 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
    FieldGridTerrainOverlayVariantA_ApplyWedge4, FieldGridTerrainOverlayVariantA_ApplyWedge5.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
-void FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
-               (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
-               FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
-               FieldGridAsset *fieldGrid)
+bool __thandor_cf_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
+          (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
+          FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
+          FieldGridAsset *fieldGrid)
 
 {
   uint uVar1;
@@ -129,7 +135,7 @@ void FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
   FieldGridCell *pFVar7;
   FieldGridCell *pFVar8;
   FieldGridCell *fieldCell;
-  qword qVar9;
+  FieldGridCoordinatesEaxEdx8 FVar9;
   uint uVar10;
   uint uVar11;
   
@@ -143,12 +149,12 @@ void FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
     }
     g_TerrainScanReferenceHeight = cellValue;
     g_TerrainScanSharedSelectorValue.fieldCellFlagMask = cellFlagMask;
-    qVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    FVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    uVar1 = (int)qVar9 >> 0xc;
-    uVar10 = (uint)((longlong)qVar9 >> 0x2c);
-    uVar3 = (uint)(qVar9 & 0xfff00000fff);
-    uVar5 = (uint)((qVar9 & 0xfff00000fff) >> 0x20);
+    uVar1 = FVar9.columnQ12 >> 0xc;
+    uVar10 = FVar9.rowQ12 >> 0xc;
+    uVar3 = (uint)((ulonglong)FVar9 & 0xfff00000fff);
+    uVar5 = (uint)(((ulonglong)FVar9 & 0xfff00000fff) >> 0x20);
     uVar4 = uVar5 + uVar3 * 2;
     uVar11 = uVar1;
     if (uVar4 < 0x1000) {
@@ -177,7 +183,7 @@ void FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
         (fieldGrid->cells[iVar6].flagsAndMaterial & 0x88006000) == 0)))) {
       if (((fieldGrid->cells[iVar6].flagsAndMaterial & cellFlagMask) != 0) &&
          (fieldGrid->cells[iVar6].waterSurfaceDelta < 0)) {
-        *(TerrainOverlayCellRuntimeValue *)(fieldGrid->cells[iVar6].runtime00_07 + 4) = cellValue;
+        fieldGrid->cells[iVar6].runtimeOverlayOrHeightValue04 = cellValue;
       }
       iVar2 = g_TerrainScanRowStrideBytes;
       pFVar7 = (FieldGridCell *)
@@ -187,17 +193,18 @@ void FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
       FieldGridTerrainOverlayVariantA_ApplyWedge0(0,pFVar7);
       fieldCell = pFVar8 + -1;
       FieldGridTerrainOverlayVariantA_ApplyWedge1(0,pFVar8);
-      pFVar7 = (FieldGridCell *)(fieldCell[-1].runtime00_07 + iVar2);
+      pFVar7 = (FieldGridCell *)(fieldCell[-1].runtime0C_3F + iVar2 + -0xc);
       FieldGridTerrainOverlayVariantA_ApplyWedge2(0,fieldCell);
-      pFVar8 = (FieldGridCell *)(pFVar7->runtime00_07 + iVar2);
+      pFVar8 = (FieldGridCell *)(pFVar7->runtime0C_3F + iVar2 + -0xc);
       FieldGridTerrainOverlayVariantA_ApplyWedge3(0,pFVar7);
       FieldGridTerrainOverlayVariantA_ApplyWedge4(0,pFVar8);
       FieldGridTerrainOverlayVariantA_ApplyWedge5(0,pFVar8 + 1);
-      return;
+      return false;
     }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0050A190.
    Ownership: world/terrain/projection.
@@ -210,10 +217,11 @@ void FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
    FieldGridTerrainOverlayVariantB_ApplyWedge4, FieldGridTerrainOverlayVariantB_ApplyWedge5.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
-void FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
-               (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
-               FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
-               FieldGridAsset *fieldGrid)
+bool __thandor_cf_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
+          (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
+          FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
+          FieldGridAsset *fieldGrid)
 
 {
   uint uVar1;
@@ -225,7 +233,7 @@ void FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
   FieldGridCell *pFVar7;
   FieldGridCell *pFVar8;
   FieldGridCell *fieldCell;
-  qword qVar9;
+  FieldGridCoordinatesEaxEdx8 FVar9;
   uint uVar10;
   uint uVar11;
   
@@ -239,12 +247,12 @@ void FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
     }
     g_TerrainScanReferenceHeight = cellValue;
     g_TerrainScanSharedSelectorValue.fieldCellFlagMask = cellFlagMask;
-    qVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    FVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    uVar1 = (int)qVar9 >> 0xc;
-    uVar10 = (uint)((longlong)qVar9 >> 0x2c);
-    uVar3 = (uint)(qVar9 & 0xfff00000fff);
-    uVar5 = (uint)((qVar9 & 0xfff00000fff) >> 0x20);
+    uVar1 = FVar9.columnQ12 >> 0xc;
+    uVar10 = FVar9.rowQ12 >> 0xc;
+    uVar3 = (uint)((ulonglong)FVar9 & 0xfff00000fff);
+    uVar5 = (uint)(((ulonglong)FVar9 & 0xfff00000fff) >> 0x20);
     uVar4 = uVar5 + uVar3 * 2;
     uVar11 = uVar1;
     if (uVar4 < 0x1000) {
@@ -273,7 +281,7 @@ void FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
         (fieldGrid->cells[iVar6].flagsAndMaterial & 0x88006000) == 0)))) {
       if (((fieldGrid->cells[iVar6].flagsAndMaterial & cellFlagMask) != 0) &&
          (0 < fieldGrid->cells[iVar6].waterSurfaceDelta)) {
-        *(TerrainOverlayCellRuntimeValue *)(fieldGrid->cells[iVar6].runtime00_07 + 4) = cellValue;
+        fieldGrid->cells[iVar6].runtimeOverlayOrHeightValue04 = cellValue;
       }
       iVar2 = g_TerrainScanRowStrideBytes;
       pFVar7 = (FieldGridCell *)
@@ -283,17 +291,18 @@ void FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
       FieldGridTerrainOverlayVariantB_ApplyWedge0(0,pFVar7);
       fieldCell = pFVar8 + -1;
       FieldGridTerrainOverlayVariantB_ApplyWedge1(0,pFVar8);
-      pFVar7 = (FieldGridCell *)(fieldCell[-1].runtime00_07 + iVar2);
+      pFVar7 = (FieldGridCell *)(fieldCell[-1].runtime0C_3F + iVar2 + -0xc);
       FieldGridTerrainOverlayVariantB_ApplyWedge2(0,fieldCell);
-      pFVar8 = (FieldGridCell *)(pFVar7->runtime00_07 + iVar2);
+      pFVar8 = (FieldGridCell *)(pFVar7->runtime0C_3F + iVar2 + -0xc);
       FieldGridTerrainOverlayVariantB_ApplyWedge3(0,pFVar7);
       FieldGridTerrainOverlayVariantB_ApplyWedge4(0,pFVar8);
       FieldGridTerrainOverlayVariantB_ApplyWedge5(0,pFVar8 + 1);
-      return;
+      return false;
     }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x00500F50.
    Ownership: world/terrain/projection.
@@ -302,140 +311,153 @@ void FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
    TerrainProjectedVertex_TransformProjectAndShadeVariantB,
    TerrainProjectedVertex_TransformProjectAndShadeVariantA, TerrainProjectedQuad_QueueAsTwoTrianglesRegs.
 */
-undefined8 TerrainProjectedGrid_TransformShadeAndQueue(int param_1,GraphicsPrimitiveQueue *param_2)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainProjectedGrid_TransformShadeAndQueue
+          (FieldGridAsset *fieldGrid,FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  undefined4 uVar1;
-  undefined4 in_EAX;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  undefined4 in_EDX;
+  FieldGridDimension FVar1;
   int iVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  int *piVar6;
-  undefined4 *puVar7;
-  int iVar8;
-  undefined8 uVar9;
+  FieldGridDimension FVar5;
+  FieldGridDimension FVar6;
+  int iVar7;
+  FieldGridDimension FVar8;
+  FieldGridCell *pFVar9;
+  TerrainProjectedVertexWorkRecord *pTVar10;
+  TerrainProjectedRowSpan *pTVar11;
+  int iVar12;
   
-  if ((param_2[1].reserved1C & 0x800) == 0) {
-    puVar7 = &DAT_004ffc80;
-    uVar1 = *(undefined4 *)(param_1 + 0xb8);
-    iVar2 = *(int *)(param_1 + 0xbc);
+  if ((renderContext->contextFlags & 0x800) == 0) {
+    pTVar11 = g_TerrainProjectedRowSpans;
+    FVar1 = fieldGrid->gridWidth;
+    FVar5 = fieldGrid->gridHeight;
     do {
-      *puVar7 = 0;
-      puVar7[1] = uVar1;
-      puVar7 = puVar7 + 2;
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
-    TerrainProjectedGrid_ClipRowSpansAgainstPlane(param_1,&g_FrustumPlaneNormalFixed_0[0].x);
-    TerrainProjectedGrid_ClipRowSpansAgainstPlane(param_1,&g_FrustumPlaneNormalFixed_0[1].x);
-    TerrainProjectedGrid_ClipRowSpansAgainstPlane(param_1,&g_FrustumPlaneNormalFixed_0[2].x);
-    TerrainProjectedGrid_ClipRowSpansAgainstPlane(param_1,&g_FrustumPlaneNormalFixed_0[3].x);
-    iVar2 = *(int *)(param_1 + 0xb8);
-    iVar8 = *(int *)(param_1 + 0xbc);
-    iVar5 = param_1 + 0x200;
-    iVar3 = iVar8;
-    iVar4 = iVar2;
+      pTVar11->firstColumn = 0;
+      pTVar11->endColumnExclusive = FVar1;
+      pTVar11 = pTVar11 + 1;
+      FVar5 = FVar5 - 1;
+    } while (FVar5 != 0);
+    TerrainProjectedGrid_ClipRowSpansAgainstPlane(fieldGrid,g_FrustumPlaneNormalFixed_0);
+    TerrainProjectedGrid_ClipRowSpansAgainstPlane(fieldGrid,g_FrustumPlaneNormalFixed_0 + 1);
+    TerrainProjectedGrid_ClipRowSpansAgainstPlane(fieldGrid,g_FrustumPlaneNormalFixed_0 + 2);
+    TerrainProjectedGrid_ClipRowSpansAgainstPlane(fieldGrid,g_FrustumPlaneNormalFixed_0 + 3);
+    FVar1 = fieldGrid->gridWidth;
+    FVar5 = fieldGrid->gridHeight;
+    pFVar9 = fieldGrid->cells;
+    FVar6 = FVar5;
+    FVar8 = FVar1;
     do {
       do {
-        *(uint *)(iVar5 + 0x50) = *(uint *)(iVar5 + 0x50) | 0x4200000;
-        iVar5 = iVar5 + 0x80;
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
-      iVar3 = iVar3 + -1;
-      iVar4 = iVar2;
-    } while (iVar3 != 0);
-    piVar6 = (int *)0x4ffc88;
-    iVar8 = iVar8 + -1;
-    iVar2 = DAT_004ffc80;
-    iVar3 = DAT_004ffc84;
+        pFVar9->flagsAndMaterial = pFVar9->flagsAndMaterial | 0x4200000;
+        pFVar9 = pFVar9 + 1;
+        FVar8 = FVar8 - 1;
+      } while (FVar8 != 0);
+      FVar6 = FVar6 - 1;
+      FVar8 = FVar1;
+    } while (FVar6 != 0);
+    pTVar11 = g_TerrainProjectedRowSpans;
+    iVar12 = FVar5 - 1;
+    iVar7 = g_TerrainProjectedRowSpans[0].firstColumn;
+    iVar4 = g_TerrainProjectedRowSpans[0].endColumnExclusive;
     do {
-      iVar4 = *piVar6;
-      iVar5 = piVar6[1];
-      if (iVar3 == 0) {
-        piVar6[-2] = iVar4;
-        piVar6[-1] = iVar5;
+      pTVar11 = pTVar11 + 1;
+      iVar2 = pTVar11->firstColumn;
+      iVar3 = pTVar11->endColumnExclusive;
+      if (iVar4 == 0) {
+        pTVar11[-1].firstColumn = iVar2;
+        pTVar11[-1].endColumnExclusive = iVar3;
       }
-      else if (iVar5 == 0) {
-        *piVar6 = iVar2;
-        piVar6[1] = iVar3;
+      else if (iVar3 == 0) {
+        pTVar11->firstColumn = iVar7;
+        pTVar11->endColumnExclusive = iVar4;
       }
       else {
-        if (iVar2 < iVar4) {
-          *piVar6 = iVar2;
+        if (iVar7 < iVar2) {
+          pTVar11->firstColumn = iVar7;
         }
-        else if (iVar4 < piVar6[-2]) {
-          piVar6[-2] = iVar4;
+        else if (iVar2 < pTVar11[-1].firstColumn) {
+          pTVar11[-1].firstColumn = iVar2;
         }
-        if (iVar5 < iVar3) {
-          piVar6[1] = iVar3;
+        if (iVar3 < iVar4) {
+          pTVar11->endColumnExclusive = iVar4;
         }
-        else if (piVar6[-1] < iVar5) {
-          piVar6[-1] = iVar5;
+        else if (pTVar11[-1].endColumnExclusive < iVar3) {
+          pTVar11[-1].endColumnExclusive = iVar3;
         }
       }
-      piVar6 = piVar6 + 2;
-      iVar8 = iVar8 + -1;
-      iVar2 = iVar4;
-      iVar3 = iVar5;
-    } while (iVar8 != 0);
+      iVar12 = iVar12 + -1;
+      iVar7 = iVar2;
+      iVar4 = iVar3;
+    } while (iVar12 != 0);
   }
-  piVar6 = &DAT_004ffc80;
-  iVar2 = *(int *)(param_1 + 0xbc);
-  iVar8 = *(int *)(param_1 + 0xb8) * 0x80;
-  if (((*(uint *)(param_1 + 0xb4) & 1) == 0) && ((param_2[1].reserved1C & 0x800) != 0)) {
-    iVar3 = param_1 + 0x200;
+  pTVar11 = g_TerrainProjectedRowSpans;
+  FVar1 = fieldGrid->gridWidth;
+  FVar5 = fieldGrid->gridHeight;
+  if (((fieldGrid->runtimeStateFlags & 1) == 0) && ((renderContext->contextFlags & 0x800) != 0)) {
+    pFVar9 = fieldGrid->cells;
     do {
-      if (*piVar6 < piVar6[1]) {
-        iVar4 = iVar3 + *piVar6 * 0x80;
+      iVar7 = pTVar11->firstColumn;
+      iVar4 = pTVar11->endColumnExclusive - iVar7;
+      if (iVar4 != 0 && iVar7 <= pTVar11->endColumnExclusive) {
+        pTVar10 = (TerrainProjectedVertexWorkRecord *)(pFVar9 + iVar7);
         do {
-          uVar9 = TerrainProjectedVertex_TransformProjectAndShadeVariantB(iVar4);
-          iVar2 = (int)((ulonglong)uVar9 >> 0x20);
-          iVar4 = iVar4 + 0x80;
-        } while (extraout_ECX != 1);
+          TerrainProjectedVertex_TransformProjectAndShadeVariantB(pTVar10);
+          pTVar10 = pTVar10 + 1;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
       }
-      piVar6 = piVar6 + 2;
-      iVar3 = iVar3 + iVar8;
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
+      pTVar11 = pTVar11 + 1;
+      pFVar9 = pFVar9 + FVar1;
+      FVar5 = FVar5 - 1;
+    } while (FVar5 != 0);
   }
   else {
-    *(uint *)(param_1 + 0xb4) = *(uint *)(param_1 + 0xb4) & 0xfffffffe;
-    param_2[1].reserved1C = param_2[1].reserved1C & 0xfffff7ff;
-    iVar3 = param_1 + 0x200;
+    fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags & 0xfffffffe;
+    renderContext->contextFlags = renderContext->contextFlags & 0xfffff7ff;
+    pFVar9 = fieldGrid->cells;
     do {
-      if (*piVar6 < piVar6[1]) {
-        iVar4 = iVar3 + *piVar6 * 0x80;
+      iVar7 = pTVar11->firstColumn;
+      iVar4 = pTVar11->endColumnExclusive - iVar7;
+      if (iVar4 != 0 && iVar7 <= pTVar11->endColumnExclusive) {
+        pTVar10 = (TerrainProjectedVertexWorkRecord *)(pFVar9 + iVar7);
         do {
-          uVar9 = TerrainProjectedVertex_TransformProjectAndShadeVariantA(iVar4);
-          iVar2 = (int)((ulonglong)uVar9 >> 0x20);
-          iVar4 = iVar4 + 0x80;
-        } while (extraout_ECX_00 != 1);
+          TerrainProjectedVertex_TransformProjectAndShadeVariantA(pTVar10);
+          pTVar10 = pTVar10 + 1;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
       }
-      piVar6 = piVar6 + 2;
-      iVar3 = iVar3 + iVar8;
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
+      pTVar11 = pTVar11 + 1;
+      pFVar9 = pFVar9 + FVar1;
+      FVar5 = FVar5 - 1;
+    } while (FVar5 != 0);
   }
-  piVar6 = &DAT_004ffc80;
-  iVar2 = *(int *)(param_1 + 0xbc) + -1;
+  FVar1 = fieldGrid->gridWidth;
+  pFVar9 = fieldGrid->cells;
+  pTVar11 = g_TerrainProjectedRowSpans;
+  iVar7 = fieldGrid->gridHeight - 1;
   do {
-    iVar8 = piVar6[1] - *piVar6;
-    if (*piVar6 < piVar6[1]) {
-      while (iVar8 != 1) {
-        uVar9 = TerrainProjectedQuad_QueueAsTwoTrianglesRegs(param_2);
-        iVar2 = (int)((ulonglong)uVar9 >> 0x20);
-        iVar8 = extraout_ECX_01;
+    iVar4 = pTVar11->firstColumn;
+    iVar12 = pTVar11->endColumnExclusive - iVar4;
+    if (iVar12 != 0 && iVar4 <= pTVar11->endColumnExclusive) {
+      iVar12 = iVar12 + -1;
+      if (iVar12 != 0) {
+        pTVar10 = (TerrainProjectedVertexWorkRecord *)(pFVar9 + iVar4);
+        do {
+          TerrainProjectedQuad_QueueAsTwoTrianglesRegs(FVar1 * 0x80,pTVar10,renderContext);
+          pTVar10 = pTVar10 + 1;
+          iVar12 = iVar12 + -1;
+        } while (iVar12 != 0);
       }
     }
-    piVar6 = piVar6 + 2;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  return CONCAT44(in_EDX,in_EAX);
+    pTVar11 = pTVar11 + 1;
+    pFVar9 = pFVar9 + FVar1;
+    iVar7 = iVar7 + -1;
+  } while (iVar7 != 0);
+  return;
 }
+
 
 /* Address: 0x005066D0.
    Ownership: world/terrain/projection.
@@ -446,22 +468,19 @@ undefined8 TerrainProjectedGrid_TransformShadeAndQueue(int param_1,GraphicsPrimi
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainProjectedOcclusion_ScanDirection0, TerrainProjectedOcclusion_ScanDirection1.
 */
-void TerrainProjectedOcclusion_TraceWedge0
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_TraceWedge0
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   int iVar3;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   uint uVar4;
   TerrainProjectedHeightThresholdQ20 TVar5;
   FieldGridCell *cell_00;
-  ulonglong in_MM0;
-  ulonglong extraout_MM0;
-  ulonglong extraout_MM0_00;
   
   TVar5 = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
@@ -475,13 +494,15 @@ void TerrainProjectedOcclusion_TraceWedge0
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar5 <= (int)uVar4) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar4;
       }
       iVar2 = g_TerrainScanRowStrideBytes;
       cell_00 = cell + 1;
-      TerrainProjectedOcclusion_ScanDirection0(projectedHeightThresholdQ20,scanStep + 4,cell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      uVar4 = scanStep + 4;
+      TerrainProjectedOcclusion_ScanDirection0
+                (occupancyMaskBits,projectedHeightThresholdQ20,uVar4,cell_00);
+      if (g_TerrainScanStepLimit <= uVar4) {
         return;
       }
       if ((*(uint *)((int)cell_00 + (0x50 - iVar2)) & 0x88006000) != 0) {
@@ -492,27 +513,27 @@ void TerrainProjectedOcclusion_TraceWedge0
         iVar3 = iVar3 + *(int *)((int)cell_00 + (0x4c - iVar2));
       }
       lVar1 = (longlong)(iVar3 - g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + extraout_ECX * 4);
+              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar4 * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar4) {
         *(ulonglong *)((int)cell_00 + (0x70 - iVar2)) =
-             *(ulonglong *)((int)cell_00 + (0x70 - iVar2)) | extraout_MM0;
+             *(ulonglong *)((int)cell_00 + (0x70 - iVar2)) | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar4;
       }
       cell = (FieldGridCell *)((int)cell_00 + (0x80 - iVar2));
+      scanStep = scanStep + 7;
       TerrainProjectedOcclusion_ScanDirection1
-                (projectedHeightThresholdQ20,extraout_ECX + 3,
+                (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
                  (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
       TVar5 = projectedHeightThresholdQ20;
-      in_MM0 = extraout_MM0_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005067D0.
    Ownership: world/terrain/projection.
@@ -523,22 +544,19 @@ void TerrainProjectedOcclusion_TraceWedge0
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainProjectedOcclusion_ScanDirection1, TerrainProjectedOcclusion_ScanDirection2.
 */
-void TerrainProjectedOcclusion_TraceWedge1
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_TraceWedge1
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   int iVar3;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   uint uVar4;
   TerrainProjectedHeightThresholdQ20 TVar5;
   FieldGridCell *cell_00;
-  ulonglong in_MM0;
-  ulonglong extraout_MM0;
-  ulonglong extraout_MM0_00;
   
   TVar5 = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
@@ -552,14 +570,15 @@ void TerrainProjectedOcclusion_TraceWedge1
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar5 <= (int)uVar4) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar4;
       }
       iVar2 = g_TerrainScanRowStrideBytes;
+      uVar4 = scanStep + 4;
       TerrainProjectedOcclusion_ScanDirection1
-                (projectedHeightThresholdQ20,scanStep + 4,
+                (occupancyMaskBits,projectedHeightThresholdQ20,uVar4,
                  (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= uVar4) {
         return;
       }
       if ((*(uint *)((int)cell + (0x50 - iVar2)) & 0x88006000) != 0) {
@@ -570,27 +589,27 @@ void TerrainProjectedOcclusion_TraceWedge1
         iVar3 = iVar3 + *(int *)((int)cell + (0x4c - iVar2));
       }
       lVar1 = (longlong)(iVar3 - g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + extraout_ECX * 4);
+              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar4 * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar4) {
         *(ulonglong *)((int)cell + (0x70 - iVar2)) =
-             *(ulonglong *)((int)cell + (0x70 - iVar2)) | extraout_MM0;
+             *(ulonglong *)((int)cell + (0x70 - iVar2)) | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar4;
       }
       cell_00 = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - iVar2));
+      scanStep = scanStep + 7;
       cell = cell_00 + 1;
-      TerrainProjectedOcclusion_ScanDirection2(projectedHeightThresholdQ20,extraout_ECX + 3,cell_00)
-      ;
-      scanStep = extraout_ECX_00;
+      TerrainProjectedOcclusion_ScanDirection2
+                (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,cell_00);
       TVar5 = projectedHeightThresholdQ20;
-      in_MM0 = extraout_MM0_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005068D0.
    Ownership: world/terrain/projection.
@@ -601,21 +620,18 @@ void TerrainProjectedOcclusion_TraceWedge1
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainProjectedOcclusion_ScanDirection2, TerrainProjectedOcclusion_ScanDirection3.
 */
-void TerrainProjectedOcclusion_TraceWedge2
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_TraceWedge2
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *cell_00;
   longlong lVar1;
   int iVar2;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   uint uVar3;
   TerrainProjectedHeightThresholdQ20 TVar4;
-  ulonglong in_MM0;
-  ulonglong extraout_MM0;
-  ulonglong extraout_MM0_00;
   
   TVar4 = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
@@ -629,13 +645,14 @@ void TerrainProjectedOcclusion_TraceWedge2
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar4 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
+      uVar3 = scanStep + 4;
       TerrainProjectedOcclusion_ScanDirection2
-                (projectedHeightThresholdQ20,scanStep + 4,
+                (occupancyMaskBits,projectedHeightThresholdQ20,uVar3,
                  (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= uVar3) {
         return;
       }
       if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
@@ -646,26 +663,26 @@ void TerrainProjectedOcclusion_TraceWedge2
         iVar2 = iVar2 + cell[-1].waterSurfaceDelta;
       }
       lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + extraout_ECX * 4);
+              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar3 * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell[-1].occupancyMask = cell[-1].occupancyMask | extraout_MM0;
+        cell[-1].occupancyMask = cell[-1].occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       cell_00 = cell + -2;
+      scanStep = scanStep + 7;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
-      TerrainProjectedOcclusion_ScanDirection3(projectedHeightThresholdQ20,extraout_ECX + 3,cell_00)
-      ;
-      scanStep = extraout_ECX_00;
+      TerrainProjectedOcclusion_ScanDirection3
+                (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,cell_00);
       TVar4 = projectedHeightThresholdQ20;
-      in_MM0 = extraout_MM0_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005069D0.
    Ownership: world/terrain/projection.
@@ -676,73 +693,73 @@ void TerrainProjectedOcclusion_TraceWedge2
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainProjectedOcclusion_ScanDirection3, TerrainProjectedOcclusion_ScanDirection4.
 */
-void TerrainProjectedOcclusion_TraceWedge3
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_TraceWedge3
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
-  int iVar3;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  uint uVar4;
-  TerrainProjectedHeightThresholdQ20 TVar5;
+  FieldCellPersistedAux FVar3;
+  int iVar4;
+  uint uVar5;
+  TerrainProjectedHeightThresholdQ20 TVar6;
   FieldGridCell *cell_00;
-  ulonglong in_MM0;
-  ulonglong extraout_MM0;
-  ulonglong extraout_MM0_00;
   
-  TVar5 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+  TVar6 = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
-    projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + TVar5) >> 1;
+    projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + TVar6) >> 1;
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      iVar2 = cell->terrainHeight;
+      FVar3 = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
-        iVar2 = iVar2 + cell->waterSurfaceDelta;
+        FVar3 = FVar3 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(int)(FVar3 - g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-      if ((int)TVar5 <= (int)uVar4) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
-        projectedHeightThresholdQ20 = uVar4;
+      uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
+      if ((int)TVar6 <= (int)uVar5) {
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
+        projectedHeightThresholdQ20 = uVar5;
       }
       iVar2 = g_TerrainScanRowStrideBytes;
       cell_00 = cell + -1;
-      TerrainProjectedOcclusion_ScanDirection3(projectedHeightThresholdQ20,scanStep + 4,cell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      uVar5 = scanStep + 4;
+      TerrainProjectedOcclusion_ScanDirection3
+                (occupancyMaskBits,projectedHeightThresholdQ20,uVar5,cell_00);
+      if (g_TerrainScanStepLimit <= uVar5) {
         return;
       }
-      if ((*(uint *)(cell_00->runtime58_6F + iVar2 + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(cell_00->runtime60_6B + iVar2 + -0x10) & 0x88006000) != 0) {
         return;
       }
-      iVar3 = *(int *)(cell_00->runtime58_6F + iVar2 + -0x10);
-      if (0 < *(int *)(cell_00->runtime58_6F + iVar2 + -0xc)) {
-        iVar3 = iVar3 + *(int *)(cell_00->runtime58_6F + iVar2 + -0xc);
+      iVar4 = *(int *)(cell_00->runtime60_6B + iVar2 + -0x18);
+      if (0 < *(int *)(cell_00->runtime60_6B + iVar2 + -0x14)) {
+        iVar4 = iVar4 + *(int *)(cell_00->runtime60_6B + iVar2 + -0x14);
       }
-      lVar1 = (longlong)(iVar3 - g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + extraout_ECX * 4);
-      uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-      if ((int)projectedHeightThresholdQ20 <= (int)uVar4) {
-        *(ulonglong *)(cell_00->runtime58_6F + iVar2 + 0x18) =
-             *(ulonglong *)(cell_00->runtime58_6F + iVar2 + 0x18) | extraout_MM0;
-        projectedHeightThresholdQ20 = uVar4;
+      lVar1 = (longlong)(iVar4 - g_TerrainScanReferenceHeight) *
+              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar5 * 4);
+      uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
+      if ((int)projectedHeightThresholdQ20 <= (int)uVar5) {
+        *(ulonglong *)(cell_00->runtime60_6B + iVar2 + 0x10) =
+             *(ulonglong *)(cell_00->runtime60_6B + iVar2 + 0x10) | occupancyMaskBits;
+        projectedHeightThresholdQ20 = uVar5;
       }
-      cell = (FieldGridCell *)(cell_00[-1].runtime00_07 + iVar2);
+      cell = (FieldGridCell *)(cell_00[-1].runtime0C_3F + iVar2 + -0xc);
+      scanStep = scanStep + 7;
       TerrainProjectedOcclusion_ScanDirection4
-                (projectedHeightThresholdQ20,extraout_ECX + 3,
-                 (FieldGridCell *)(cell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      TVar5 = projectedHeightThresholdQ20;
-      in_MM0 = extraout_MM0_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      TVar6 = projectedHeightThresholdQ20;
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00506AD0.
    Ownership: world/terrain/projection.
@@ -753,22 +770,19 @@ void TerrainProjectedOcclusion_TraceWedge3
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainProjectedOcclusion_ScanDirection4, TerrainProjectedOcclusion_ScanDirection5.
 */
-void TerrainProjectedOcclusion_TraceWedge4
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_TraceWedge4
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   byte *pbVar2;
   int iVar3;
   int iVar4;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   uint uVar5;
   TerrainProjectedHeightThresholdQ20 TVar6;
-  ulonglong in_MM0;
-  ulonglong extraout_MM0;
-  ulonglong extraout_MM0_00;
   
   TVar6 = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
@@ -782,46 +796,47 @@ void TerrainProjectedOcclusion_TraceWedge4
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar6 <= (int)uVar5) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar5;
       }
       iVar3 = g_TerrainScanRowStrideBytes;
+      uVar5 = scanStep + 4;
       TerrainProjectedOcclusion_ScanDirection4
-                (projectedHeightThresholdQ20,scanStep + 4,
-                 (FieldGridCell *)(cell[-1].runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                (occupancyMaskBits,projectedHeightThresholdQ20,uVar5,
+                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= uVar5) {
         return;
       }
-      if ((*(uint *)(cell->runtime58_6F + iVar3 + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(cell->runtime60_6B + iVar3 + -0x10) & 0x88006000) != 0) {
         return;
       }
-      iVar4 = *(int *)(cell->runtime58_6F + iVar3 + -0x10);
-      if (0 < *(int *)(cell->runtime58_6F + iVar3 + -0xc)) {
-        iVar4 = iVar4 + *(int *)(cell->runtime58_6F + iVar3 + -0xc);
+      iVar4 = *(int *)(cell->runtime60_6B + iVar3 + -0x18);
+      if (0 < *(int *)(cell->runtime60_6B + iVar3 + -0x14)) {
+        iVar4 = iVar4 + *(int *)(cell->runtime60_6B + iVar3 + -0x14);
       }
       lVar1 = (longlong)(iVar4 - g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + extraout_ECX * 4);
+              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar5 * 4);
       uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar5) {
-        *(ulonglong *)(cell->runtime58_6F + iVar3 + 0x18) =
-             *(ulonglong *)(cell->runtime58_6F + iVar3 + 0x18) | extraout_MM0;
+        *(ulonglong *)(cell->runtime60_6B + iVar3 + 0x10) =
+             *(ulonglong *)(cell->runtime60_6B + iVar3 + 0x10) | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar5;
       }
-      pbVar2 = cell->runtime00_07;
-      cell = (FieldGridCell *)(pbVar2 + g_TerrainScanRowStrideBytes + iVar3) + -1;
+      pbVar2 = cell->runtime0C_3F;
+      scanStep = scanStep + 7;
+      cell = (FieldGridCell *)(pbVar2 + g_TerrainScanRowStrideBytes + iVar3 + -0xc) + -1;
       TerrainProjectedOcclusion_ScanDirection5
-                (projectedHeightThresholdQ20,extraout_ECX + 3,
-                 (FieldGridCell *)(pbVar2 + g_TerrainScanRowStrideBytes + iVar3));
-      scanStep = extraout_ECX_00;
+                (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
+                 (FieldGridCell *)(pbVar2 + g_TerrainScanRowStrideBytes + iVar3 + -0xc));
       TVar6 = projectedHeightThresholdQ20;
-      in_MM0 = extraout_MM0_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00506BD0.
    Ownership: world/terrain/projection.
@@ -832,21 +847,18 @@ void TerrainProjectedOcclusion_TraceWedge4
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainProjectedOcclusion_ScanDirection5, TerrainProjectedOcclusion_ScanDirection0.
 */
-void TerrainProjectedOcclusion_TraceWedge5
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_TraceWedge5
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *cell_00;
   longlong lVar1;
   int iVar2;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   uint uVar3;
   TerrainProjectedHeightThresholdQ20 TVar4;
-  ulonglong in_MM0;
-  ulonglong extraout_MM0;
-  ulonglong extraout_MM0_00;
   
   TVar4 = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
@@ -860,13 +872,14 @@ void TerrainProjectedOcclusion_TraceWedge5
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar4 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
+      uVar3 = scanStep + 4;
       TerrainProjectedOcclusion_ScanDirection5
-                (projectedHeightThresholdQ20,scanStep + 4,
-                 (FieldGridCell *)(cell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                (occupancyMaskBits,projectedHeightThresholdQ20,uVar3,
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= uVar3) {
         return;
       }
       if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
@@ -877,26 +890,26 @@ void TerrainProjectedOcclusion_TraceWedge5
         iVar2 = iVar2 + cell[1].waterSurfaceDelta;
       }
       lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + extraout_ECX * 4);
+              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar3 * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell[1].occupancyMask = cell[1].occupancyMask | extraout_MM0;
+        cell[1].occupancyMask = cell[1].occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       cell_00 = cell + 2;
-      cell = (FieldGridCell *)(cell[1].runtime00_07 + g_TerrainScanRowStrideBytes);
-      TerrainProjectedOcclusion_ScanDirection0(projectedHeightThresholdQ20,extraout_ECX + 3,cell_00)
-      ;
-      scanStep = extraout_ECX_00;
+      scanStep = scanStep + 7;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      TerrainProjectedOcclusion_ScanDirection0
+                (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,cell_00);
       TVar4 = projectedHeightThresholdQ20;
-      in_MM0 = extraout_MM0_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509580.
    Ownership: world/terrain/projection.
@@ -905,12 +918,11 @@ void TerrainProjectedOcclusion_TraceWedge5
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantA_ApplyDirection0, FieldGridTerrainOverlayVariantA_ApplyDirection1.
 */
-void FieldGridTerrainOverlayVariantA_ApplyWedge0
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyWedge0
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   FieldGridCell *fieldCell_00;
   int rowStrideBytes;
   
@@ -918,12 +930,12 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge0
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       fieldCell_00 = fieldCell + 1;
       FieldGridTerrainOverlayVariantA_ApplyDirection0(scanStep + 4,fieldCell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((*(uint *)((int)fieldCell_00 + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
@@ -932,19 +944,20 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge0
       if (((*(uint *)((int)fieldCell_00 + (0x50 - rowStrideBytes)) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
          (*(int *)((int)fieldCell_00 + (0x4c - rowStrideBytes)) < 0)) {
-        *(undefined4 *)((int)fieldCell_00 + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(dword *)((int)fieldCell_00 + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       fieldCell = (FieldGridCell *)((int)fieldCell_00 + (0x80 - rowStrideBytes));
+      scanStep = scanStep + 7;
       FieldGridTerrainOverlayVariantA_ApplyDirection1
-                (extraout_ECX + 3,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509640.
    Ownership: world/terrain/projection.
@@ -953,12 +966,11 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge0
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantA_ApplyDirection1, FieldGridTerrainOverlayVariantA_ApplyDirection2.
 */
-void FieldGridTerrainOverlayVariantA_ApplyWedge1
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyWedge1
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   FieldGridCell *fieldCell_00;
   int rowStrideBytes;
   
@@ -966,13 +978,13 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge1
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantA_ApplyDirection1
                 (scanStep + 4,
                  (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((*(uint *)((int)fieldCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
@@ -981,20 +993,21 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge1
       if (((*(uint *)((int)fieldCell + (0x50 - rowStrideBytes)) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
          (*(int *)((int)fieldCell + (0x4c - rowStrideBytes)) < 0)) {
-        *(undefined4 *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(dword *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       fieldCell_00 = (FieldGridCell *)
                      ((int)fieldCell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
+      scanStep = scanStep + 7;
       fieldCell = fieldCell_00 + 1;
-      FieldGridTerrainOverlayVariantA_ApplyDirection2(extraout_ECX + 3,fieldCell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      FieldGridTerrainOverlayVariantA_ApplyDirection2(scanStep,fieldCell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005096F0.
    Ownership: world/terrain/projection.
@@ -1003,23 +1016,22 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge1
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantA_ApplyDirection2, FieldGridTerrainOverlayVariantA_ApplyDirection3.
 */
-void FieldGridTerrainOverlayVariantA_ApplyWedge2
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyWedge2
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *fieldCell_00;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantA_ApplyDirection2
                 (scanStep + 4,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((fieldCell[-1].flagsAndMaterial & 0x88006000) != 0) {
@@ -1027,19 +1039,20 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge2
       }
       if (((fieldCell[-1].flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) !=
            0) && (fieldCell[-1].waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell[-1].runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell[-1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       fieldCell_00 = fieldCell + -2;
+      scanStep = scanStep + 7;
       fieldCell = (FieldGridCell *)((int)fieldCell + (-0x80 - g_TerrainScanRowStrideBytes));
-      FieldGridTerrainOverlayVariantA_ApplyDirection3(extraout_ECX + 3,fieldCell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      FieldGridTerrainOverlayVariantA_ApplyDirection3(scanStep,fieldCell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x005097A0.
    Ownership: world/terrain/projection.
@@ -1048,12 +1061,12 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge2
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantA_ApplyDirection3, FieldGridTerrainOverlayVariantA_ApplyDirection4.
 */
-void FieldGridTerrainOverlayVariantA_ApplyWedge3
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyWedge3
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
+  int iVar1;
   FieldGridCell *fieldCell_00;
   int rowStrideBytes;
   
@@ -1061,35 +1074,35 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge3
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
+      iVar1 = g_TerrainScanRowStrideBytes;
       fieldCell_00 = fieldCell + -1;
       FieldGridTerrainOverlayVariantA_ApplyDirection3(scanStep + 4,fieldCell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(fieldCell_00->runtime58_6F + rowStrideBytes + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(fieldCell_00->runtime60_6B + iVar1 + -0x10) & 0x88006000) != 0) {
         return;
       }
-      if (((*(uint *)(fieldCell_00->runtime58_6F + rowStrideBytes + -8) &
+      if (((*(uint *)(fieldCell_00->runtime60_6B + iVar1 + -0x10) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
-         (*(int *)(fieldCell_00->runtime58_6F + rowStrideBytes + -0xc) < 0)) {
-        *(undefined4 *)(fieldCell_00->runtime00_07 + rowStrideBytes + 4) =
-             g_TerrainScanReferenceHeight;
+         (*(int *)(fieldCell_00->runtime60_6B + iVar1 + -0x14) < 0)) {
+        *(dword *)(fieldCell_00->runtime0C_3F + iVar1 + -8) = g_TerrainScanReferenceHeight;
       }
-      fieldCell = (FieldGridCell *)(fieldCell_00[-1].runtime00_07 + rowStrideBytes);
+      fieldCell = (FieldGridCell *)(fieldCell_00[-1].runtime0C_3F + iVar1 + -0xc);
+      scanStep = scanStep + 7;
       FieldGridTerrainOverlayVariantA_ApplyDirection4
-                (extraout_ECX + 3,
-                 (FieldGridCell *)(fieldCell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)
+                          (fieldCell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509860.
    Ownership: world/terrain/projection.
@@ -1098,12 +1111,11 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge3
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantA_ApplyDirection4, FieldGridTerrainOverlayVariantA_ApplyDirection5.
 */
-void FieldGridTerrainOverlayVariantA_ApplyWedge4
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyWedge4
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   byte *currentCellRuntimeBase;
   int rowStrideBytes;
   
@@ -1111,39 +1123,41 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge4
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantA_ApplyDirection4
                 (scanStep + 4,
-                 (FieldGridCell *)(fieldCell[-1].runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                 (FieldGridCell *)(fieldCell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc))
+      ;
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(fieldCell->runtime58_6F + rowStrideBytes + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
-      if (((*(uint *)(fieldCell->runtime58_6F + rowStrideBytes + -8) &
+      if (((*(uint *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
-         (*(int *)(fieldCell->runtime58_6F + rowStrideBytes + -0xc) < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + rowStrideBytes + 4) = g_TerrainScanReferenceHeight
-        ;
+         (*(int *)(fieldCell->runtime60_6B + rowStrideBytes + -0x14) < 0)) {
+        *(dword *)(fieldCell->runtime0C_3F + rowStrideBytes + -8) = g_TerrainScanReferenceHeight;
       }
-      currentCellRuntimeBase = fieldCell->runtime00_07;
+      currentCellRuntimeBase = fieldCell->runtime0C_3F;
+      scanStep = scanStep + 7;
       fieldCell = (FieldGridCell *)
-                  (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes) + -1;
+                  (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) +
+                  -1;
       FieldGridTerrainOverlayVariantA_ApplyDirection5
-                (extraout_ECX + 3,
-                 (FieldGridCell *)
-                 (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)
+                          (currentCellRuntimeBase +
+                          g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509910.
    Ownership: world/terrain/projection.
@@ -1152,24 +1166,23 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge4
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantA_ApplyDirection5, FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
-void FieldGridTerrainOverlayVariantA_ApplyWedge5
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyWedge5
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *fieldCell_00;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantA_ApplyDirection5
                 (scanStep + 4,
-                 (FieldGridCell *)(fieldCell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                 (FieldGridCell *)(fieldCell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((fieldCell[1].flagsAndMaterial & 0x88006000) != 0) {
@@ -1177,19 +1190,20 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge5
       }
       if (((fieldCell[1].flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0
           ) && (fieldCell[1].waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell[1].runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell[1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       fieldCell_00 = fieldCell + 2;
-      fieldCell = (FieldGridCell *)(fieldCell[1].runtime00_07 + g_TerrainScanRowStrideBytes);
-      FieldGridTerrainOverlayVariantA_ApplyDirection0(extraout_ECX + 3,fieldCell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      scanStep = scanStep + 7;
+      fieldCell = (FieldGridCell *)(fieldCell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      FieldGridTerrainOverlayVariantA_ApplyDirection0(scanStep,fieldCell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509DD0.
    Ownership: world/terrain/projection.
@@ -1198,43 +1212,43 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge5
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantB_ApplyDirection0, FieldGridTerrainOverlayVariantB_ApplyDirection1.
 */
-void FieldGridTerrainOverlayVariantB_ApplyWedge0
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyWedge0
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   FieldGridCell *fieldCell_00;
   int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       fieldCell_00 = fieldCell + 1;
       FieldGridTerrainOverlayVariantB_ApplyDirection0(scanStep + 4,fieldCell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((*(uint *)((int)fieldCell_00 + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
       if (0 < *(int *)((int)fieldCell_00 + (0x4c - rowStrideBytes))) {
-        *(undefined4 *)((int)fieldCell_00 + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(dword *)((int)fieldCell_00 + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       fieldCell = (FieldGridCell *)((int)fieldCell_00 + (0x80 - rowStrideBytes));
+      scanStep = scanStep + 7;
       FieldGridTerrainOverlayVariantB_ApplyDirection1
-                (extraout_ECX + 3,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509E70.
    Ownership: world/terrain/projection.
@@ -1243,45 +1257,45 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge0
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantB_ApplyDirection1, FieldGridTerrainOverlayVariantB_ApplyDirection2.
 */
-void FieldGridTerrainOverlayVariantB_ApplyWedge1
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyWedge1
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   FieldGridCell *fieldCell_00;
   int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantB_ApplyDirection1
                 (scanStep + 4,
                  (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((*(uint *)((int)fieldCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
       if (0 < *(int *)((int)fieldCell + (0x4c - rowStrideBytes))) {
-        *(undefined4 *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(dword *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       fieldCell_00 = (FieldGridCell *)
                      ((int)fieldCell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
+      scanStep = scanStep + 7;
       fieldCell = fieldCell_00 + 1;
-      FieldGridTerrainOverlayVariantB_ApplyDirection2(extraout_ECX + 3,fieldCell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      FieldGridTerrainOverlayVariantB_ApplyDirection2(scanStep,fieldCell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509F10.
    Ownership: world/terrain/projection.
@@ -1290,41 +1304,41 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge1
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantB_ApplyDirection2, FieldGridTerrainOverlayVariantB_ApplyDirection3.
 */
-void FieldGridTerrainOverlayVariantB_ApplyWedge2
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyWedge2
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *fieldCell_00;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantB_ApplyDirection2
                 (scanStep + 4,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((fieldCell[-1].flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
       if (0 < fieldCell[-1].waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell[-1].runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell[-1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       fieldCell_00 = fieldCell + -2;
+      scanStep = scanStep + 7;
       fieldCell = (FieldGridCell *)((int)fieldCell + (-0x80 - g_TerrainScanRowStrideBytes));
-      FieldGridTerrainOverlayVariantB_ApplyDirection3(extraout_ECX + 3,fieldCell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      FieldGridTerrainOverlayVariantB_ApplyDirection3(scanStep,fieldCell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x00509FB0.
    Ownership: world/terrain/projection.
@@ -1333,45 +1347,45 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge2
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantB_ApplyDirection3, FieldGridTerrainOverlayVariantB_ApplyDirection4.
 */
-void FieldGridTerrainOverlayVariantB_ApplyWedge3
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyWedge3
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
+  int iVar1;
   FieldGridCell *fieldCell_00;
   int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
-      rowStrideBytes = g_TerrainScanRowStrideBytes;
+      iVar1 = g_TerrainScanRowStrideBytes;
       fieldCell_00 = fieldCell + -1;
       FieldGridTerrainOverlayVariantB_ApplyDirection3(scanStep + 4,fieldCell_00);
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(fieldCell_00->runtime58_6F + rowStrideBytes + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(fieldCell_00->runtime60_6B + iVar1 + -0x10) & 0x88006000) != 0) {
         return;
       }
-      if (0 < *(int *)(fieldCell_00->runtime58_6F + rowStrideBytes + -0xc)) {
-        *(undefined4 *)(fieldCell_00->runtime00_07 + rowStrideBytes + 4) =
-             g_TerrainScanReferenceHeight;
+      if (0 < *(int *)(fieldCell_00->runtime60_6B + iVar1 + -0x14)) {
+        *(dword *)(fieldCell_00->runtime0C_3F + iVar1 + -8) = g_TerrainScanReferenceHeight;
       }
-      fieldCell = (FieldGridCell *)(fieldCell_00[-1].runtime00_07 + rowStrideBytes);
+      fieldCell = (FieldGridCell *)(fieldCell_00[-1].runtime0C_3F + iVar1 + -0xc);
+      scanStep = scanStep + 7;
       FieldGridTerrainOverlayVariantB_ApplyDirection4
-                (extraout_ECX + 3,
-                 (FieldGridCell *)(fieldCell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)
+                          (fieldCell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x0050A050.
    Ownership: world/terrain/projection.
@@ -1380,49 +1394,50 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge3
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantB_ApplyDirection4, FieldGridTerrainOverlayVariantB_ApplyDirection5.
 */
-void FieldGridTerrainOverlayVariantB_ApplyWedge4
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyWedge4
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   byte *currentCellRuntimeBase;
   int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantB_ApplyDirection4
                 (scanStep + 4,
-                 (FieldGridCell *)(fieldCell[-1].runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                 (FieldGridCell *)(fieldCell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc))
+      ;
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(fieldCell->runtime58_6F + rowStrideBytes + -8) & 0x88006000) != 0) {
+      if ((*(uint *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
-      if (0 < *(int *)(fieldCell->runtime58_6F + rowStrideBytes + -0xc)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + rowStrideBytes + 4) = g_TerrainScanReferenceHeight
-        ;
+      if (0 < *(int *)(fieldCell->runtime60_6B + rowStrideBytes + -0x14)) {
+        *(dword *)(fieldCell->runtime0C_3F + rowStrideBytes + -8) = g_TerrainScanReferenceHeight;
       }
-      currentCellRuntimeBase = fieldCell->runtime00_07;
+      currentCellRuntimeBase = fieldCell->runtime0C_3F;
+      scanStep = scanStep + 7;
       fieldCell = (FieldGridCell *)
-                  (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes) + -1;
+                  (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) +
+                  -1;
       FieldGridTerrainOverlayVariantB_ApplyDirection5
-                (extraout_ECX + 3,
-                 (FieldGridCell *)
-                 (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes));
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+                (scanStep,(FieldGridCell *)
+                          (currentCellRuntimeBase +
+                          g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
   return;
 }
+
 
 /* Address: 0x0050A0F0.
    Ownership: world/terrain/projection.
@@ -1431,36 +1446,35 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge4
    bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: FieldGridTerrainOverlayVariantB_ApplyDirection5, FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
-void FieldGridTerrainOverlayVariantB_ApplyWedge5
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyWedge5
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *fieldCell_00;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantB_ApplyDirection5
                 (scanStep + 4,
-                 (FieldGridCell *)(fieldCell->runtime00_07 + g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= extraout_ECX) {
+                 (FieldGridCell *)(fieldCell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+      if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
       if ((fieldCell[1].flagsAndMaterial & 0x88006000) != 0) {
         return;
       }
       if (0 < fieldCell[1].waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell[1].runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell[1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       fieldCell_00 = fieldCell + 2;
-      fieldCell = (FieldGridCell *)(fieldCell[1].runtime00_07 + g_TerrainScanRowStrideBytes);
-      FieldGridTerrainOverlayVariantB_ApplyDirection0(extraout_ECX + 3,fieldCell_00);
-      scanStep = extraout_ECX_00;
-      if (g_TerrainScanStepLimit <= extraout_ECX_00) {
+      scanStep = scanStep + 7;
+      fieldCell = (FieldGridCell *)(fieldCell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      FieldGridTerrainOverlayVariantB_ApplyDirection0(scanStep,fieldCell_00);
+      if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
@@ -1468,32 +1482,31 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5
   return;
 }
 
+
 /* Address: 0x00500CE0.
    Ownership: world/terrain/projection.
    Purpose: Handles terrain projected quad queue as two triangles register result.
    Local calls: TerrainProjectedTriangle_ClipInterpolateAndQueueTextured.
 */
-undefined8 TerrainProjectedQuad_QueueAsTwoTrianglesRegs(GraphicsPrimitiveQueue *param_1)
+void __thandor_void_preserve_ecx_edx
+TerrainProjectedQuad_QueueAsTwoTrianglesRegs
+          (dword rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
+          FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  undefined4 extraout_EAX;
-  undefined4 in_EDX;
-  int unaff_EBX;
-  GraphicsProjectedVertexSource *unaff_ESI;
-  
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
-            (*(int *)unaff_ESI->reserved00_0B,
-             (GraphicsProjectedVertexSource *)(unaff_ESI[2].texturedPacketAttributes + 1),
-             (GraphicsProjectedVertexSource *)(unaff_ESI->reserved00_0B + unaff_EBX),unaff_ESI,
-             param_1);
+            (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
+             (TerrainProjectedVertexWorkRecord *)
+             (topLeftVertex->reserved08_0B + (rowStrideBytes - 8)),topLeftVertex,renderContext);
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
-            (*(int *)unaff_ESI->reserved00_0B,
-             (GraphicsProjectedVertexSource *)(unaff_ESI[2].texturedPacketAttributes + 1),
-             (GraphicsProjectedVertexSource *)
-             ((int)unaff_ESI[2].texturedPacketAttributes + unaff_EBX + 4),
-             (GraphicsProjectedVertexSource *)(unaff_ESI->reserved00_0B + unaff_EBX),param_1);
-  return CONCAT44(in_EDX,extraout_EAX);
+            (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
+             (TerrainProjectedVertexWorkRecord *)
+             (topLeftVertex[1].reserved08_0B + (rowStrideBytes - 8)),
+             (TerrainProjectedVertexWorkRecord *)
+             (topLeftVertex->reserved08_0B + (rowStrideBytes - 8)),renderContext);
+  return;
 }
+
 
 /* Address: 0x005004A0.
    Ownership: world/terrain/projection.
@@ -1502,179 +1515,169 @@ undefined8 TerrainProjectedQuad_QueueAsTwoTrianglesRegs(GraphicsPrimitiveQueue *
    [graphics/core/runtime], GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
    [graphics/render/shading].
 */
-undefined8 TerrainProjectedVertex_TransformProjectAndShadeVariantA(int param_1)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWorkRecord *vertex)
 
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
-  int *piVar3;
-  int iVar4;
-  short sVar5;
-  short sVar6;
+  GraphicsWorldCoordinateQ12 *pGVar1;
+  PackedArgb32 PVar2;
+  PackedArgb32 PVar3;
+  GraphicsFixedVec3 *pGVar4;
+  int iVar5;
+  int iVar6;
   short sVar7;
   short sVar8;
-  ushort uVar9;
-  ushort uVar10;
-  undefined4 in_EAX;
-  int extraout_EAX;
-  GraphicsFixedVec3 *extraout_ECX;
-  int extraout_ECX_00;
-  GraphicsFixedVec3 *extraout_ECX_01;
-  GraphicsFixedVec3 *pGVar11;
-  undefined4 in_EDX;
-  int iVar12;
-  int extraout_EDX;
-  uint uVar13;
+  short sVar9;
+  short sVar10;
+  ushort uVar11;
+  ushort uVar12;
+  int iVar13;
   uint uVar14;
-  undefined1 uVar17;
+  uint uVar15;
   undefined1 uVar18;
-  undefined8 uVar15;
-  undefined8 uVar16;
   undefined1 uVar19;
+  MmxPackedValue64 MVar16;
+  undefined8 uVar17;
   undefined1 uVar20;
-  undefined8 extraout_MM1;
-  undefined8 extraout_MM1_00;
-  GraphicsProjectedPointEdxEax8 GVar21;
+  undefined1 uVar21;
+  GraphicsProjectedPointPair GVar22;
   
-  uVar13 = *(uint *)(param_1 + 0x50) & 0xe801ffff;
-  if ((*(uint *)(param_1 + 0x50) & 0xff) != 0xff) {
-    uVar14 = uVar13 | 0x200000;
-    FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)(param_1 + 0x14),(GraphicsFixedVec3 *)(param_1 + 0x40),
-               &g_ViewProjectionMatrixFixed);
-    pGVar11 = (GraphicsFixedVec3 *)(param_1 + 0x14);
-    if ((int)g_ProjectionScaleFixed < *(int *)(param_1 + 0x1c)) {
-      GVar21 = Graphics_ProjectViewPoint(pGVar11);
-      iVar12 = (int)(GVar21 >> 0x20);
-      *(GraphicsProjectedPointEdxEax8 *)(param_1 + 0xc) = GVar21;
-      uVar14 = uVar13;
-      if (g_ProjectionClipRect.minX <= (int)GVar21) {
-        uVar14 = uVar13 | 0x20000;
+  uVar14 = vertex->projectionFlags & 0xe801ffff;
+  if ((vertex->projectionFlags & 0xff) != 0xff) {
+    uVar15 = uVar14 | 0x200000;
+    FixedTransform_ApplyPoint(&vertex->viewPointA,&vertex->sourcePoint,&g_ViewProjectionMatrixFixed)
+    ;
+    if ((int)g_ProjectionScaleFixed < (vertex->viewPointA).z) {
+      GVar22 = Graphics_ProjectViewPoint(&vertex->viewPointA);
+      vertex->projectedPointA = GVar22;
+      uVar15 = uVar14;
+      if (g_ProjectionClipRect.minX <= GVar22.projectedX) {
+        uVar15 = uVar14 | 0x20000;
       }
-      if ((int)GVar21 < g_ProjectionClipRect.maxX) {
-        uVar14 = uVar14 | 0x80000;
+      if (GVar22.projectedX < g_ProjectionClipRect.maxX) {
+        uVar15 = uVar15 | 0x80000;
       }
-      if (g_ProjectionClipRect.minY <= iVar12) {
-        uVar14 = uVar14 | 0x40000;
+      if (g_ProjectionClipRect.minY <= GVar22.projectedY) {
+        uVar15 = uVar15 | 0x40000;
       }
-      pGVar11 = extraout_ECX;
-      if (iVar12 < g_ProjectionClipRect.maxY) {
-        uVar14 = uVar14 | 0x100000;
+      if (GVar22.projectedY < g_ProjectionClipRect.maxY) {
+        uVar15 = uVar15 | 0x100000;
       }
     }
-    uVar1 = *(undefined4 *)(param_1 + 0x58);
-    uVar2 = *(undefined4 *)(param_1 + 4);
-    uVar17 = (undefined1)((uint)uVar1 >> 0x18);
-    uVar9 = CONCAT11(uVar17,uVar17);
-    uVar18 = (undefined1)((uint)uVar1 >> 0x10);
-    uVar17 = (undefined1)((uint)uVar1 >> 8);
-    uVar19 = (undefined1)((uint)uVar2 >> 0x18);
-    uVar10 = CONCAT11(uVar19,uVar19);
-    uVar20 = (undefined1)((uint)uVar2 >> 0x10);
-    uVar19 = (undefined1)((uint)uVar2 >> 8);
-    uVar15 = CONCAT26(uVar9 >> 6,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar18),CONCAT14(uVar18,uVar1)) >>
+    PVar2 = vertex->packedColorA;
+    PVar3 = vertex->basePackedColor;
+    uVar18 = (undefined1)(PVar2 >> 0x18);
+    uVar11 = CONCAT11(uVar18,uVar18);
+    uVar19 = (undefined1)(PVar2 >> 0x10);
+    uVar18 = (undefined1)(PVar2 >> 8);
+    uVar20 = (undefined1)(PVar3 >> 0x18);
+    uVar12 = CONCAT11(uVar20,uVar20);
+    uVar21 = (undefined1)(PVar3 >> 0x10);
+    uVar20 = (undefined1)(PVar3 >> 8);
+    MVar16 = CONCAT26(uVar11 >> 6,
+                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar11,uVar19),CONCAT14(uVar19,PVar2)) >>
                                        0x20) >> 6,
-                               CONCAT22(CONCAT11(uVar17,uVar17) >> 6,
-                                        CONCAT11((char)uVar1,(char)uVar1) >> 6)));
-    uVar16 = CONCAT26(uVar10 >> 2,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar10,uVar20),CONCAT14(uVar20,uVar2)) >>
-                                       0x20) >> 2,
-                               CONCAT22(CONCAT11(uVar19,uVar19) >> 2,
-                                        CONCAT11((char)uVar2,(char)uVar2) >> 2)));
-    if (*(int *)(param_1 + 0x68) == 0xff) {
-      uVar15 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
-                         (pGVar11,(int *)(param_1 + 0x14));
-      uVar16 = extraout_MM1;
+                               CONCAT22(CONCAT11(uVar18,uVar18) >> 6,
+                                        CONCAT11((char)PVar2,(char)PVar2) >> 6)));
+    if (vertex->lightingLookupIndexOrSentinel == 0xff) {
+      MVar16 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+                         (&vertex->viewPointA,MVar16);
     }
-    uVar16 = pmulhw(uVar15,uVar16);
-    sVar5 = (short)uVar16;
-    sVar6 = (short)((ulonglong)uVar16 >> 0x10);
-    sVar7 = (short)((ulonglong)uVar16 >> 0x20);
-    sVar8 = (short)((ulonglong)uVar16 >> 0x30);
-    piVar3 = *(int **)(param_1 + 0x54);
-    *(uint *)(param_1 + 0x60) =
-         CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar16 >> 0x30) - (0xff < sVar8)
-                  ,CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar16 >> 0x20) -
-                            (0xff < sVar7),
-                            CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                     (char)((ulonglong)uVar16 >> 0x10) - (0xff < sVar6),
-                                     (0 < sVar5) * (sVar5 < 0x100) * (char)uVar16 - (0xff < sVar5)))
-                 );
-    uVar13 = uVar14 | 0x4000000;
-    iVar12 = piVar3[1];
-    iVar4 = piVar3[2];
-    *(int *)(param_1 + 0x40) = *(int *)(param_1 + 0x40) + *piVar3;
-    *(int *)(param_1 + 0x44) = *(int *)(param_1 + 0x44) + iVar12;
-    *(int *)(param_1 + 0x48) = *(int *)(param_1 + 0x48) + iVar4 + *(int *)(param_1 + 0x4c);
-    FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)(param_1 + 0x34),(GraphicsFixedVec3 *)(param_1 + 0x40),
-               &g_ViewProjectionMatrixFixed);
-    *(int *)(param_1 + 0x40) = *(int *)(param_1 + 0x40) - extraout_EAX;
-    *(int *)(param_1 + 0x44) = *(int *)(param_1 + 0x44) - extraout_ECX_00;
-    *(int *)(param_1 + 0x48) = *(int *)(param_1 + 0x48) - extraout_EDX;
-    pGVar11 = (GraphicsFixedVec3 *)(param_1 + 0x34);
-    if ((int)g_ProjectionScaleFixed < *(int *)(param_1 + 0x3c)) {
-      GVar21 = Graphics_ProjectViewPoint(pGVar11);
-      iVar12 = (int)(GVar21 >> 0x20);
-      *(GraphicsProjectedPointEdxEax8 *)(param_1 + 0x2c) = GVar21;
-      uVar13 = uVar14;
-      if (g_ProjectionClipRect.minX <= (int)GVar21) {
-        uVar13 = uVar14 | 0x400000;
+    uVar17 = pmulhw(MVar16,CONCAT26(uVar12 >> 2,
+                                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar12,uVar21),
+                                                               CONCAT14(uVar21,PVar3)) >> 0x20) >> 2
+                                             ,CONCAT22(CONCAT11(uVar20,uVar20) >> 2,
+                                                       CONCAT11((char)PVar3,(char)PVar3) >> 2))));
+    sVar7 = (short)uVar17;
+    sVar8 = (short)((ulonglong)uVar17 >> 0x10);
+    sVar9 = (short)((ulonglong)uVar17 >> 0x20);
+    sVar10 = (short)((ulonglong)uVar17 >> 0x30);
+    pGVar4 = vertex->secondaryOffset;
+    vertex->shadedColorA =
+         CONCAT13((0 < sVar10) * (sVar10 < 0x100) * (char)((ulonglong)uVar17 >> 0x30) -
+                  (0xff < sVar10),
+                  CONCAT12((0 < sVar9) * (sVar9 < 0x100) * (char)((ulonglong)uVar17 >> 0x20) -
+                           (0xff < sVar9),
+                           CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
+                                    (char)((ulonglong)uVar17 >> 0x10) - (0xff < sVar8),
+                                    (0 < sVar7) * (sVar7 < 0x100) * (char)uVar17 - (0xff < sVar7))))
+    ;
+    uVar14 = uVar15 | 0x4000000;
+    iVar5 = pGVar4->x;
+    iVar6 = pGVar4->y;
+    iVar13 = pGVar4->z;
+    (vertex->sourcePoint).x = (vertex->sourcePoint).x + iVar5;
+    iVar13 = iVar13 + vertex->secondaryProjectionDepthQ12;
+    pGVar1 = &(vertex->sourcePoint).y;
+    *pGVar1 = *pGVar1 + iVar6;
+    pGVar1 = &(vertex->sourcePoint).z;
+    *pGVar1 = *pGVar1 + iVar13;
+    FixedTransform_ApplyPoint(&vertex->viewPointB,&vertex->sourcePoint,&g_ViewProjectionMatrixFixed)
+    ;
+    (vertex->sourcePoint).x = (vertex->sourcePoint).x - iVar5;
+    pGVar1 = &(vertex->sourcePoint).y;
+    *pGVar1 = *pGVar1 - iVar6;
+    pGVar1 = &(vertex->sourcePoint).z;
+    *pGVar1 = *pGVar1 - iVar13;
+    if ((int)g_ProjectionScaleFixed < (vertex->viewPointB).z) {
+      GVar22 = Graphics_ProjectViewPoint(&vertex->viewPointB);
+      vertex->projectedPointB = GVar22;
+      uVar14 = uVar15;
+      if (g_ProjectionClipRect.minX <= GVar22.projectedX) {
+        uVar14 = uVar15 | 0x400000;
       }
-      if ((int)GVar21 < g_ProjectionClipRect.maxX) {
-        uVar13 = uVar13 | 0x1000000;
+      if (GVar22.projectedX < g_ProjectionClipRect.maxX) {
+        uVar14 = uVar14 | 0x1000000;
       }
-      if (g_ProjectionClipRect.minY <= iVar12) {
-        uVar13 = uVar13 | 0x800000;
+      if (g_ProjectionClipRect.minY <= GVar22.projectedY) {
+        uVar14 = uVar14 | 0x800000;
       }
-      pGVar11 = extraout_ECX_01;
-      if (iVar12 < g_ProjectionClipRect.maxY) {
-        uVar13 = uVar13 | 0x2000000;
+      if (GVar22.projectedY < g_ProjectionClipRect.maxY) {
+        uVar14 = uVar14 | 0x2000000;
       }
     }
-    uVar1 = *(undefined4 *)(param_1 + 0x5c);
-    uVar2 = *(undefined4 *)(param_1 + 4);
-    uVar17 = (undefined1)((uint)uVar1 >> 0x18);
-    uVar9 = CONCAT11(uVar17,uVar17);
-    uVar18 = (undefined1)((uint)uVar1 >> 0x10);
-    uVar17 = (undefined1)((uint)uVar1 >> 8);
-    uVar19 = (undefined1)((uint)uVar2 >> 0x18);
-    uVar10 = CONCAT11(uVar19,uVar19);
-    uVar20 = (undefined1)((uint)uVar2 >> 0x10);
-    uVar19 = (undefined1)((uint)uVar2 >> 8);
-    uVar15 = CONCAT26(uVar9 >> 6,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar18),CONCAT14(uVar18,uVar1)) >>
+    PVar2 = vertex->packedColorB;
+    PVar3 = vertex->basePackedColor;
+    uVar18 = (undefined1)(PVar2 >> 0x18);
+    uVar11 = CONCAT11(uVar18,uVar18);
+    uVar19 = (undefined1)(PVar2 >> 0x10);
+    uVar18 = (undefined1)(PVar2 >> 8);
+    uVar20 = (undefined1)(PVar3 >> 0x18);
+    uVar12 = CONCAT11(uVar20,uVar20);
+    uVar21 = (undefined1)(PVar3 >> 0x10);
+    uVar20 = (undefined1)(PVar3 >> 8);
+    MVar16 = CONCAT26(uVar11 >> 6,
+                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar11,uVar19),CONCAT14(uVar19,PVar2)) >>
                                        0x20) >> 6,
-                               CONCAT22(CONCAT11(uVar17,uVar17) >> 6,
-                                        CONCAT11((char)uVar1,(char)uVar1) >> 6)));
-    uVar16 = CONCAT26(uVar10 >> 2,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar10,uVar20),CONCAT14(uVar20,uVar2)) >>
-                                       0x20) >> 2,
-                               CONCAT22(CONCAT11(uVar19,uVar19) >> 2,
-                                        CONCAT11((char)uVar2,(char)uVar2) >> 2)));
-    if (*(int *)(param_1 + 0x68) == 0xff) {
-      uVar15 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
-                         (pGVar11,(int *)(param_1 + 0x34));
-      uVar16 = extraout_MM1_00;
+                               CONCAT22(CONCAT11(uVar18,uVar18) >> 6,
+                                        CONCAT11((char)PVar2,(char)PVar2) >> 6)));
+    if (vertex->lightingLookupIndexOrSentinel == 0xff) {
+      MVar16 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+                         (&vertex->viewPointB,MVar16);
     }
-    uVar16 = pmulhw(uVar15,uVar16);
-    sVar5 = (short)uVar16;
-    sVar6 = (short)((ulonglong)uVar16 >> 0x10);
-    sVar7 = (short)((ulonglong)uVar16 >> 0x20);
-    sVar8 = (short)((ulonglong)uVar16 >> 0x30);
-    *(uint *)(param_1 + 0x50) = uVar13;
-    *(uint *)(param_1 + 100) =
-         CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar16 >> 0x30) - (0xff < sVar8)
-                  ,CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar16 >> 0x20) -
-                            (0xff < sVar7),
-                            CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                     (char)((ulonglong)uVar16 >> 0x10) - (0xff < sVar6),
-                                     (0 < sVar5) * (sVar5 < 0x100) * (char)uVar16 - (0xff < sVar5)))
-                 );
+    uVar17 = pmulhw(MVar16,CONCAT26(uVar12 >> 2,
+                                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar12,uVar21),
+                                                               CONCAT14(uVar21,PVar3)) >> 0x20) >> 2
+                                             ,CONCAT22(CONCAT11(uVar20,uVar20) >> 2,
+                                                       CONCAT11((char)PVar3,(char)PVar3) >> 2))));
+    sVar7 = (short)uVar17;
+    sVar8 = (short)((ulonglong)uVar17 >> 0x10);
+    sVar9 = (short)((ulonglong)uVar17 >> 0x20);
+    sVar10 = (short)((ulonglong)uVar17 >> 0x30);
+    vertex->projectionFlags = uVar14;
+    vertex->shadedColorB =
+         CONCAT13((0 < sVar10) * (sVar10 < 0x100) * (char)((ulonglong)uVar17 >> 0x30) -
+                  (0xff < sVar10),
+                  CONCAT12((0 < sVar9) * (sVar9 < 0x100) * (char)((ulonglong)uVar17 >> 0x20) -
+                           (0xff < sVar9),
+                           CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
+                                    (char)((ulonglong)uVar17 >> 0x10) - (0xff < sVar8),
+                                    (0 < sVar7) * (sVar7 < 0x100) * (char)uVar17 - (0xff < sVar7))))
+    ;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x005006A0.
    Ownership: world/terrain/projection.
@@ -1683,157 +1686,149 @@ undefined8 TerrainProjectedVertex_TransformProjectAndShadeVariantA(int param_1)
    [graphics/core/runtime], GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
    [graphics/render/shading].
 */
-undefined8 TerrainProjectedVertex_TransformProjectAndShadeVariantB(int param_1)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWorkRecord *vertex)
 
 {
-  int *piVar1;
-  int iVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  short sVar5;
-  short sVar6;
+  GraphicsWorldCoordinateQ12 *pGVar1;
+  GraphicsFixedVec3 *pGVar2;
+  int iVar3;
+  int iVar4;
+  PackedArgb32 PVar5;
+  PackedArgb32 PVar6;
   short sVar7;
   short sVar8;
-  ushort uVar9;
-  ushort uVar10;
-  undefined4 in_EAX;
-  int extraout_EAX;
-  int extraout_ECX;
-  GraphicsFixedVec3 *extraout_ECX_00;
-  GraphicsFixedVec3 *extraout_ECX_01;
-  GraphicsFixedVec3 *viewPoint;
-  undefined4 in_EDX;
-  int extraout_EDX;
-  int iVar11;
-  uint uVar12;
-  uint uVar13;
-  undefined1 uVar16;
-  undefined1 uVar17;
-  undefined8 uVar14;
-  undefined8 uVar15;
+  short sVar9;
+  short sVar10;
+  ushort uVar11;
+  ushort uVar12;
+  int iVar13;
+  uint uVar14;
+  uint uVar15;
   undefined1 uVar18;
   undefined1 uVar19;
-  undefined8 extraout_MM1;
-  undefined8 extraout_MM1_00;
-  GraphicsProjectedPointEdxEax8 GVar20;
+  MmxPackedValue64 MVar16;
+  undefined8 uVar17;
+  undefined1 uVar20;
+  undefined1 uVar21;
+  GraphicsProjectedPointPair GVar22;
   
-  viewPoint = (GraphicsFixedVec3 *)(param_1 + 0x14);
-  uVar13 = *(uint *)(param_1 + 0x50);
-  piVar1 = *(int **)(param_1 + 0x54);
-  if ((uVar13 & 0x10000000) != 0) {
-    uVar12 = uVar13 & 0xf83fffff;
-    uVar13 = uVar12 | 0x4000000;
-    iVar11 = piVar1[1];
-    iVar2 = piVar1[2];
-    *(int *)(param_1 + 0x40) = *(int *)(param_1 + 0x40) + *piVar1;
-    *(int *)(param_1 + 0x44) = *(int *)(param_1 + 0x44) + iVar11;
-    *(int *)(param_1 + 0x48) = *(int *)(param_1 + 0x48) + iVar2 + *(int *)(param_1 + 0x4c);
-    FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)(param_1 + 0x34),(GraphicsFixedVec3 *)(param_1 + 0x40),
-               &g_ViewProjectionMatrixFixed);
-    *(int *)(param_1 + 0x40) = *(int *)(param_1 + 0x40) - extraout_EAX;
-    *(int *)(param_1 + 0x44) = *(int *)(param_1 + 0x44) - extraout_ECX;
-    *(int *)(param_1 + 0x48) = *(int *)(param_1 + 0x48) - extraout_EDX;
-    viewPoint = (GraphicsFixedVec3 *)(param_1 + 0x34);
-    if ((int)g_ProjectionScaleFixed < *(int *)(param_1 + 0x3c)) {
-      GVar20 = Graphics_ProjectViewPoint(viewPoint);
-      iVar11 = (int)(GVar20 >> 0x20);
-      *(GraphicsProjectedPointEdxEax8 *)(param_1 + 0x2c) = GVar20;
-      uVar13 = uVar12;
-      if (g_ProjectionClipRect.minX <= (int)GVar20) {
-        uVar13 = uVar12 | 0x400000;
+  uVar15 = vertex->projectionFlags;
+  pGVar2 = vertex->secondaryOffset;
+  if ((uVar15 & 0x10000000) != 0) {
+    uVar14 = uVar15 & 0xf83fffff;
+    uVar15 = uVar14 | 0x4000000;
+    iVar3 = pGVar2->x;
+    iVar4 = pGVar2->y;
+    iVar13 = pGVar2->z;
+    (vertex->sourcePoint).x = (vertex->sourcePoint).x + iVar3;
+    iVar13 = iVar13 + vertex->secondaryProjectionDepthQ12;
+    pGVar1 = &(vertex->sourcePoint).y;
+    *pGVar1 = *pGVar1 + iVar4;
+    pGVar1 = &(vertex->sourcePoint).z;
+    *pGVar1 = *pGVar1 + iVar13;
+    FixedTransform_ApplyPoint(&vertex->viewPointB,&vertex->sourcePoint,&g_ViewProjectionMatrixFixed)
+    ;
+    (vertex->sourcePoint).x = (vertex->sourcePoint).x - iVar3;
+    pGVar1 = &(vertex->sourcePoint).y;
+    *pGVar1 = *pGVar1 - iVar4;
+    pGVar1 = &(vertex->sourcePoint).z;
+    *pGVar1 = *pGVar1 - iVar13;
+    if ((int)g_ProjectionScaleFixed < (vertex->viewPointB).z) {
+      GVar22 = Graphics_ProjectViewPoint(&vertex->viewPointB);
+      vertex->projectedPointB = GVar22;
+      uVar15 = uVar14;
+      if (g_ProjectionClipRect.minX <= GVar22.projectedX) {
+        uVar15 = uVar14 | 0x400000;
       }
-      if ((int)GVar20 < g_ProjectionClipRect.maxX) {
-        uVar13 = uVar13 | 0x1000000;
+      if (GVar22.projectedX < g_ProjectionClipRect.maxX) {
+        uVar15 = uVar15 | 0x1000000;
       }
-      if (g_ProjectionClipRect.minY <= iVar11) {
-        uVar13 = uVar13 | 0x800000;
+      if (g_ProjectionClipRect.minY <= GVar22.projectedY) {
+        uVar15 = uVar15 | 0x800000;
       }
-      viewPoint = extraout_ECX_00;
-      if (iVar11 < g_ProjectionClipRect.maxY) {
-        uVar13 = uVar13 | 0x2000000;
+      if (GVar22.projectedY < g_ProjectionClipRect.maxY) {
+        uVar15 = uVar15 | 0x2000000;
       }
     }
-    uVar3 = *(undefined4 *)(param_1 + 0x5c);
-    uVar4 = *(undefined4 *)(param_1 + 4);
-    uVar16 = (undefined1)((uint)uVar3 >> 0x18);
-    uVar9 = CONCAT11(uVar16,uVar16);
-    uVar17 = (undefined1)((uint)uVar3 >> 0x10);
-    uVar16 = (undefined1)((uint)uVar3 >> 8);
-    uVar18 = (undefined1)((uint)uVar4 >> 0x18);
-    uVar10 = CONCAT11(uVar18,uVar18);
-    uVar19 = (undefined1)((uint)uVar4 >> 0x10);
-    uVar18 = (undefined1)((uint)uVar4 >> 8);
-    uVar14 = CONCAT26(uVar9 >> 6,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar17),CONCAT14(uVar17,uVar3)) >>
+    PVar5 = vertex->packedColorB;
+    PVar6 = vertex->basePackedColor;
+    uVar18 = (undefined1)(PVar5 >> 0x18);
+    uVar11 = CONCAT11(uVar18,uVar18);
+    uVar19 = (undefined1)(PVar5 >> 0x10);
+    uVar18 = (undefined1)(PVar5 >> 8);
+    uVar20 = (undefined1)(PVar6 >> 0x18);
+    uVar12 = CONCAT11(uVar20,uVar20);
+    uVar21 = (undefined1)(PVar6 >> 0x10);
+    uVar20 = (undefined1)(PVar6 >> 8);
+    MVar16 = CONCAT26(uVar11 >> 6,
+                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar11,uVar19),CONCAT14(uVar19,PVar5)) >>
                                        0x20) >> 6,
-                               CONCAT22(CONCAT11(uVar16,uVar16) >> 6,
-                                        CONCAT11((char)uVar3,(char)uVar3) >> 6)));
-    uVar15 = CONCAT26(uVar10 >> 2,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(uVar10,uVar19),CONCAT14(uVar19,uVar4)) >>
-                                       0x20) >> 2,
-                               CONCAT22(CONCAT11(uVar18,uVar18) >> 2,
-                                        CONCAT11((char)uVar4,(char)uVar4) >> 2)));
-    if (*(int *)(param_1 + 0x68) == 0xff) {
-      uVar14 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
-                         (viewPoint,(int *)(param_1 + 0x34));
-      viewPoint = extraout_ECX_01;
-      uVar15 = extraout_MM1;
+                               CONCAT22(CONCAT11(uVar18,uVar18) >> 6,
+                                        CONCAT11((char)PVar5,(char)PVar5) >> 6)));
+    if (vertex->lightingLookupIndexOrSentinel == 0xff) {
+      MVar16 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+                         (&vertex->viewPointB,MVar16);
     }
-    uVar15 = pmulhw(uVar14,uVar15);
-    sVar5 = (short)uVar15;
-    sVar6 = (short)((ulonglong)uVar15 >> 0x10);
-    sVar7 = (short)((ulonglong)uVar15 >> 0x20);
-    sVar8 = (short)((ulonglong)uVar15 >> 0x30);
-    *(uint *)(param_1 + 100) =
-         CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar15 >> 0x30) - (0xff < sVar8)
-                  ,CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar15 >> 0x20) -
-                            (0xff < sVar7),
-                            CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                     (char)((ulonglong)uVar15 >> 0x10) - (0xff < sVar6),
-                                     (0 < sVar5) * (sVar5 < 0x100) * (char)uVar15 - (0xff < sVar5)))
-                 );
+    uVar17 = pmulhw(MVar16,CONCAT26(uVar12 >> 2,
+                                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar12,uVar21),
+                                                               CONCAT14(uVar21,PVar6)) >> 0x20) >> 2
+                                             ,CONCAT22(CONCAT11(uVar20,uVar20) >> 2,
+                                                       CONCAT11((char)PVar6,(char)PVar6) >> 2))));
+    sVar7 = (short)uVar17;
+    sVar8 = (short)((ulonglong)uVar17 >> 0x10);
+    sVar9 = (short)((ulonglong)uVar17 >> 0x20);
+    sVar10 = (short)((ulonglong)uVar17 >> 0x30);
+    vertex->shadedColorB =
+         CONCAT13((0 < sVar10) * (sVar10 < 0x100) * (char)((ulonglong)uVar17 >> 0x30) -
+                  (0xff < sVar10),
+                  CONCAT12((0 < sVar9) * (sVar9 < 0x100) * (char)((ulonglong)uVar17 >> 0x20) -
+                           (0xff < sVar9),
+                           CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
+                                    (char)((ulonglong)uVar17 >> 0x10) - (0xff < sVar8),
+                                    (0 < sVar7) * (sVar7 < 0x100) * (char)uVar17 - (0xff < sVar7))))
+    ;
   }
-  uVar3 = *(undefined4 *)(param_1 + 0x58);
-  uVar4 = *(undefined4 *)(param_1 + 4);
-  uVar16 = (undefined1)((uint)uVar3 >> 0x18);
-  uVar9 = CONCAT11(uVar16,uVar16);
-  uVar17 = (undefined1)((uint)uVar3 >> 0x10);
-  uVar16 = (undefined1)((uint)uVar3 >> 8);
-  uVar18 = (undefined1)((uint)uVar4 >> 0x18);
-  uVar10 = CONCAT11(uVar18,uVar18);
-  uVar19 = (undefined1)((uint)uVar4 >> 0x10);
-  uVar18 = (undefined1)((uint)uVar4 >> 8);
-  uVar14 = CONCAT26(uVar9 >> 6,
-                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar17),CONCAT14(uVar17,uVar3)) >>
+  PVar5 = vertex->packedColorA;
+  PVar6 = vertex->basePackedColor;
+  uVar18 = (undefined1)(PVar5 >> 0x18);
+  uVar11 = CONCAT11(uVar18,uVar18);
+  uVar19 = (undefined1)(PVar5 >> 0x10);
+  uVar18 = (undefined1)(PVar5 >> 8);
+  uVar20 = (undefined1)(PVar6 >> 0x18);
+  uVar12 = CONCAT11(uVar20,uVar20);
+  uVar21 = (undefined1)(PVar6 >> 0x10);
+  uVar20 = (undefined1)(PVar6 >> 8);
+  MVar16 = CONCAT26(uVar11 >> 6,
+                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar11,uVar19),CONCAT14(uVar19,PVar5)) >>
                                      0x20) >> 6,
-                             CONCAT22(CONCAT11(uVar16,uVar16) >> 6,
-                                      CONCAT11((char)uVar3,(char)uVar3) >> 6)));
-  uVar15 = CONCAT26(uVar10 >> 2,
-                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar10,uVar19),CONCAT14(uVar19,uVar4)) >>
-                                     0x20) >> 2,
-                             CONCAT22(CONCAT11(uVar18,uVar18) >> 2,
-                                      CONCAT11((char)uVar4,(char)uVar4) >> 2)));
-  if (*(int *)(param_1 + 0x68) == 0xff) {
-    uVar14 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
-                       (viewPoint,(int *)(param_1 + 0x14));
-    uVar15 = extraout_MM1_00;
+                             CONCAT22(CONCAT11(uVar18,uVar18) >> 6,
+                                      CONCAT11((char)PVar5,(char)PVar5) >> 6)));
+  if (vertex->lightingLookupIndexOrSentinel == 0xff) {
+    MVar16 = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+                       (&vertex->viewPointA,MVar16);
   }
-  uVar15 = pmulhw(uVar14,uVar15);
-  sVar5 = (short)uVar15;
-  sVar6 = (short)((ulonglong)uVar15 >> 0x10);
-  sVar7 = (short)((ulonglong)uVar15 >> 0x20);
-  sVar8 = (short)((ulonglong)uVar15 >> 0x30);
-  *(uint *)(param_1 + 0x60) =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar15 >> 0x30) - (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar15 >> 0x20) -
-                         (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) * (char)((ulonglong)uVar15 >> 0x10)
-                                  - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)uVar15 - (0xff < sVar5))));
-  *(uint *)(param_1 + 0x50) = uVar13;
-  return CONCAT44(in_EDX,in_EAX);
+  uVar17 = pmulhw(MVar16,CONCAT26(uVar12 >> 2,
+                                  CONCAT24((ushort)(CONCAT35(CONCAT21(uVar12,uVar21),
+                                                             CONCAT14(uVar21,PVar6)) >> 0x20) >> 2,
+                                           CONCAT22(CONCAT11(uVar20,uVar20) >> 2,
+                                                    CONCAT11((char)PVar6,(char)PVar6) >> 2))));
+  sVar7 = (short)uVar17;
+  sVar8 = (short)((ulonglong)uVar17 >> 0x10);
+  sVar9 = (short)((ulonglong)uVar17 >> 0x20);
+  sVar10 = (short)((ulonglong)uVar17 >> 0x30);
+  vertex->shadedColorA =
+       CONCAT13((0 < sVar10) * (sVar10 < 0x100) * (char)((ulonglong)uVar17 >> 0x30) -
+                (0xff < sVar10),
+                CONCAT12((0 < sVar9) * (sVar9 < 0x100) * (char)((ulonglong)uVar17 >> 0x20) -
+                         (0xff < sVar9),
+                         CONCAT11((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar17 >> 0x10)
+                                  - (0xff < sVar8),
+                                  (0 < sVar7) * (sVar7 < 0x100) * (char)uVar17 - (0xff < sVar7))));
+  vertex->projectionFlags = uVar15;
+  return;
 }
+
 
 /* Address: 0x00500820.
    Ownership: world/terrain/projection.
@@ -1842,490 +1837,485 @@ undefined8 TerrainProjectedVertex_TransformProjectAndShadeVariantB(int param_1)
    GraphicsPrimitiveQueue_AppendTexturedTriangleRegs [graphics/render/primitives],
    GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle [graphics/render/primitives].
 */
-void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
-               (int param_1,GraphicsProjectedVertexSource *param_2,
-               GraphicsProjectedVertexSource *param_3,GraphicsProjectedVertexSource *param_4,
-               GraphicsPrimitiveQueue *param_5)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
+          (int surfacePacketIndex,TerrainProjectedVertexWorkRecord *vertex2,
+          TerrainProjectedVertexWorkRecord *vertex1,TerrainProjectedVertexWorkRecord *vertex0,
+          FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  uint *puVar1;
-  GraphicsPrimitiveQueueNode **ppGVar2;
-  dword dVar3;
-  dword dVar4;
-  dword dVar5;
-  GraphicsPrimitiveDepthFixed GVar6;
-  GraphicsPrimitiveDepthFixed GVar7;
-  GraphicsPrimitiveDepthFixed GVar8;
+  GraphicsPrimitiveDispatchFlags *pGVar1;
+  dword dVar2;
+  short sVar3;
+  short sVar4;
+  short sVar5;
+  short sVar6;
+  short sVar7;
+  short sVar8;
   short sVar9;
   short sVar10;
   short sVar11;
   short sVar12;
   short sVar13;
   short sVar14;
-  short sVar15;
-  short sVar16;
-  short sVar17;
-  short sVar18;
-  short sVar19;
-  short sVar20;
-  ushort uVar21;
-  ushort uVar22;
-  ushort uVar23;
+  ushort uVar15;
+  ushort uVar16;
+  ushort uVar17;
+  void *pvVar18;
+  uint uVar19;
+  int iVar20;
+  int iVar21;
+  uint uVar22;
+  int iVar23;
   uint uVar24;
   int iVar25;
   int iVar26;
-  uint incomingEcxValue;
-  undefined4 textureAndMaterialIndices;
-  uint uVar27;
-  int iVar28;
-  uint uVar29;
-  bool bVar30;
-  PackedArgb32 vertex0DiffuseColor;
-  undefined1 uVar32;
-  undefined1 uVar33;
-  undefined8 uVar31;
-  PackedArgb32 vertex1DiffuseColor;
+  bool bVar27;
+  PackedArgb32 PVar28;
+  undefined1 uVar30;
+  undefined1 uVar31;
+  undefined8 uVar29;
+  PackedArgb32 PVar32;
+  undefined1 uVar34;
   undefined1 uVar35;
-  undefined1 uVar36;
-  undefined8 uVar34;
-  PackedArgb32 vertex2DiffuseColor;
+  undefined8 uVar33;
+  PackedArgb32 PVar36;
   undefined1 uVar38;
   undefined1 uVar39;
   undefined8 uVar37;
-  ulonglong uVar40;
-  GraphicsProjectedVertexSource *vertex2Projected;
-  GraphicsProjectedVertexSource *vertex1Projected;
-  GraphicsProjectedVertexSource *vertex0Projected;
-  GraphicsPrimitiveQueue *primitiveQueue;
+  TriangleBarycentricWeightsQ12 TVar40;
+  GraphicsPrimitivePacketEaxCf5 GVar41;
+  TerrainProjectedVertexWorkRecord *vertex2Projected;
+  TerrainProjectedVertexWorkRecord *vertex1Projected;
+  TerrainProjectedVertexWorkRecord *vertex0Projected;
+  FrontendModelPointerContextRuntimeState17C *renderContext_00;
   
-  uVar24 = param_4[1].texturedPacketAttributes[3] | param_3[1].texturedPacketAttributes[3] |
-           param_2[1].texturedPacketAttributes[3];
-  if ((uVar24 & 0xff) != 0xff) {
-    if ((uVar24 & 0x3e0000) == 0x1e0000) {
-      bVar30 = false;
+  uVar19 = vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags;
+  if ((uVar19 & 0xff) != 0xff) {
+    if ((uVar19 & 0x3e0000) == 0x1e0000) {
+      bVar27 = false;
       if ((g_UiCommandModeGColorVariantLimit & 0xff000000) == 0) {
-        uVar40 = Triangle2D_ComputeBarycentricWeightsQ12Packed
-                           (param_2->texturedPacketAttributes[1],
-                            param_2->texturedPacketAttributes[0],
-                            param_3->texturedPacketAttributes[1],
-                            param_3->texturedPacketAttributes[0],
-                            param_4->texturedPacketAttributes[1],
-                            param_4->texturedPacketAttributes[0],(int)param_5[5].packetPool,
-                            param_5[5].count);
-        iVar26 = (int)(uVar40 >> 0x20);
-        if ((!bVar30) && ((int)param_4->texturedPacketAttributes[4] < (int)param_5[5].capacity)) {
-          param_5[5].capacity = param_4->texturedPacketAttributes[4];
-          dVar3 = param_3[1].texturedPacketAttributes[0];
-          dVar4 = param_4[1].texturedPacketAttributes[0];
-          dVar5 = param_4[1].texturedPacketAttributes[0];
-          param_5[4].primaryNodes[0].next =
-               (GraphicsPrimitiveQueueNode *)
-               (((*(int *)(param_3[1].reserved00_0B + 8) - *(int *)(param_4[1].reserved00_0B + 8)) *
-                 (int)uVar40 >> 0xc) + *(int *)(param_4[1].reserved00_0B + 8));
-          param_5[4].primaryNodes[0].previous =
-               (GraphicsPrimitiveQueueNode *)(((int)((dVar3 - dVar4) * (int)uVar40) >> 0xc) + dVar5)
-          ;
-          dVar3 = param_2[1].texturedPacketAttributes[0];
-          dVar4 = param_4[1].texturedPacketAttributes[0];
-          ppGVar2 = &param_5[4].primaryNodes[0].next;
-          *ppGVar2 = (GraphicsPrimitiveQueueNode *)
-                     ((int)&(*ppGVar2)->sortKey +
-                     ((*(int *)(param_2[1].reserved00_0B + 8) -
-                      *(int *)(param_4[1].reserved00_0B + 8)) * iVar26 >> 0xc));
-          ppGVar2 = &param_5[4].primaryNodes[0].previous;
-          *ppGVar2 = (GraphicsPrimitiveQueueNode *)
-                     ((int)&(*ppGVar2)->sortKey + ((int)((dVar3 - dVar4) * iVar26) >> 0xc));
+        TVar40 = Triangle2D_ComputeBarycentricWeightsQ12Packed
+                           ((vertex2->projectedPointA).projectedY,
+                            (vertex2->projectedPointA).projectedX,
+                            (vertex1->projectedPointA).projectedY,
+                            (vertex1->projectedPointA).projectedX,
+                            (vertex0->projectedPointA).projectedY,
+                            (vertex0->projectedPointA).projectedX,renderContext->cursorWorldYQ12,
+                            renderContext->cursorWorldXQ12);
+        dVar2 = (vertex0->viewPointA).z;
+        if ((!bVar27) && ((int)dVar2 < (int)renderContext->callbackArgumentF0)) {
+          renderContext->callbackArgumentF0 = dVar2;
+          iVar21 = (vertex1->sourcePoint).y;
+          iVar23 = (vertex0->sourcePoint).y;
+          iVar20 = (vertex0->sourcePoint).y;
+          renderContext->callbackArgumentE8 =
+               (((vertex1->sourcePoint).x - (vertex0->sourcePoint).x) * TVar40.weightVertexB_Q12 >>
+               0xc) + (vertex0->sourcePoint).x;
+          renderContext->callbackArgumentEC =
+               ((iVar21 - iVar23) * TVar40.weightVertexB_Q12 >> 0xc) + iVar20;
+          iVar21 = (vertex2->sourcePoint).y;
+          iVar23 = (vertex0->sourcePoint).y;
+          renderContext->callbackArgumentE8 =
+               renderContext->callbackArgumentE8 +
+               (((vertex2->sourcePoint).x - (vertex0->sourcePoint).x) * TVar40.weightVertexA_Q12 >>
+               0xc);
+          renderContext->callbackArgumentEC =
+               renderContext->callbackArgumentEC +
+               ((iVar21 - iVar23) * TVar40.weightVertexA_Q12 >> 0xc);
         }
       }
-      GVar6 = param_4[1].depth;
-      GVar7 = param_3[1].depth;
-      GVar8 = param_2[1].depth;
-      uVar32 = (undefined1)((uint)GVar6 >> 0x18);
-      uVar21 = CONCAT11(uVar32,uVar32);
-      uVar33 = (undefined1)((uint)GVar6 >> 0x10);
-      uVar32 = (undefined1)((uint)GVar6 >> 8);
-      uVar35 = (undefined1)((uint)GVar7 >> 0x18);
-      uVar22 = CONCAT11(uVar35,uVar35);
-      uVar36 = (undefined1)((uint)GVar7 >> 0x10);
-      uVar35 = (undefined1)((uint)GVar7 >> 8);
-      uVar38 = (undefined1)((uint)GVar8 >> 0x18);
-      uVar23 = CONCAT11(uVar38,uVar38);
-      uVar39 = (undefined1)((uint)GVar8 >> 0x10);
-      uVar38 = (undefined1)((uint)GVar8 >> 8);
-      uVar24 = param_4[1].texturedPacketAttributes[2];
-      uVar29 = param_3[1].texturedPacketAttributes[2];
-      uVar27 = param_2[1].texturedPacketAttributes[2];
+      pvVar18 = g_TerrainSoilPacketTablePayload;
+      PVar28 = vertex0->shadedColorA;
+      PVar32 = vertex1->shadedColorA;
+      PVar36 = vertex2->shadedColorA;
+      uVar30 = (undefined1)(PVar28 >> 0x18);
+      uVar15 = CONCAT11(uVar30,uVar30);
+      uVar31 = (undefined1)(PVar28 >> 0x10);
+      uVar30 = (undefined1)(PVar28 >> 8);
+      uVar34 = (undefined1)(PVar32 >> 0x18);
+      uVar16 = CONCAT11(uVar34,uVar34);
+      uVar35 = (undefined1)(PVar32 >> 0x10);
+      uVar34 = (undefined1)(PVar32 >> 8);
+      uVar38 = (undefined1)(PVar36 >> 0x18);
+      uVar17 = CONCAT11(uVar38,uVar38);
+      uVar39 = (undefined1)(PVar36 >> 0x10);
+      uVar38 = (undefined1)(PVar36 >> 8);
+      uVar19 = vertex0->secondaryProjectionDepthQ12;
+      uVar24 = vertex1->secondaryProjectionDepthQ12;
+      uVar22 = vertex2->secondaryProjectionDepthQ12;
+      if ((int)uVar19 < 0) {
+        uVar19 = 0;
+      }
       if ((int)uVar24 < 0) {
         uVar24 = 0;
       }
-      if ((int)uVar29 < 0) {
-        uVar29 = 0;
+      if ((int)uVar22 < 0) {
+        uVar22 = 0;
       }
-      if ((int)uVar27 < 0) {
-        uVar27 = 0;
+      iVar21 = vertex0->lightingLookupIndexOrSentinel - (uVar19 >> 1);
+      if (iVar21 < 0) {
+        iVar21 = 0;
       }
-      iVar26 = param_4[1].screenX - (uVar24 >> 1);
-      if (iVar26 < 0) {
-        iVar26 = 0;
+      iVar23 = vertex1->lightingLookupIndexOrSentinel - (uVar24 >> 1);
+      if (iVar23 < 0) {
+        iVar23 = 0;
       }
-      iVar28 = param_3[1].screenX - (uVar29 >> 1);
-      if (iVar28 < 0) {
-        iVar28 = 0;
+      iVar20 = vertex2->lightingLookupIndexOrSentinel - (uVar22 >> 1);
+      if (iVar20 < 0) {
+        iVar20 = 0;
       }
-      iVar25 = param_2[1].screenX - (uVar27 >> 1);
-      if (iVar25 < 0) {
-        iVar25 = 0;
-      }
-      uVar31 = pmulhw(CONCAT26(uVar21 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar21,uVar33),
-                                                          CONCAT14(uVar33,GVar6)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(uVar32,uVar32) >> 4,
-                                                 CONCAT11((char)GVar6,(char)GVar6) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar26 * 8));
-      uVar34 = pmulhw(CONCAT26(uVar22 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar22,uVar36),
-                                                          CONCAT14(uVar36,GVar7)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(uVar35,uVar35) >> 4,
-                                                 CONCAT11((char)GVar7,(char)GVar7) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar28 * 8));
-      uVar37 = pmulhw(CONCAT26(uVar23 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar23,uVar39),
-                                                          CONCAT14(uVar39,GVar8)) >> 0x20) >> 4,
+      uVar29 = pmulhw(CONCAT26(uVar15 >> 4,
+                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar15,uVar31),
+                                                          CONCAT14(uVar31,PVar28)) >> 0x20) >> 4,
+                                        CONCAT22(CONCAT11(uVar30,uVar30) >> 4,
+                                                 CONCAT11((char)PVar28,(char)PVar28) >> 4))),
+                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar21 * 8));
+      uVar33 = pmulhw(CONCAT26(uVar16 >> 4,
+                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar16,uVar35),
+                                                          CONCAT14(uVar35,PVar32)) >> 0x20) >> 4,
+                                        CONCAT22(CONCAT11(uVar34,uVar34) >> 4,
+                                                 CONCAT11((char)PVar32,(char)PVar32) >> 4))),
+                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar23 * 8));
+      uVar37 = pmulhw(CONCAT26(uVar17 >> 4,
+                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar17,uVar39),
+                                                          CONCAT14(uVar39,PVar36)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(uVar38,uVar38) >> 4,
-                                                 CONCAT11((char)GVar8,(char)GVar8) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar25 * 8));
-      sVar9 = (short)uVar31;
-      sVar10 = (short)((ulonglong)uVar31 >> 0x10);
-      sVar11 = (short)((ulonglong)uVar31 >> 0x20);
-      sVar12 = (short)((ulonglong)uVar31 >> 0x30);
-      vertex0DiffuseColor =
-           CONCAT13((0 < sVar12) * (sVar12 < 0x100) * (char)((ulonglong)uVar31 >> 0x30) -
-                    (0xff < sVar12),
-                    CONCAT12((0 < sVar11) * (sVar11 < 0x100) * (char)((ulonglong)uVar31 >> 0x20) -
-                             (0xff < sVar11),
-                             CONCAT11((0 < sVar10) * (sVar10 < 0x100) *
-                                      (char)((ulonglong)uVar31 >> 0x10) - (0xff < sVar10),
-                                      (0 < sVar9) * (sVar9 < 0x100) * (char)uVar31 - (0xff < sVar9))
-                            ));
-      sVar9 = (short)uVar34;
-      sVar10 = (short)((ulonglong)uVar34 >> 0x10);
-      sVar11 = (short)((ulonglong)uVar34 >> 0x20);
-      sVar12 = (short)((ulonglong)uVar34 >> 0x30);
-      vertex1DiffuseColor =
-           CONCAT13((0 < sVar12) * (sVar12 < 0x100) * (char)((ulonglong)uVar34 >> 0x30) -
-                    (0xff < sVar12),
-                    CONCAT12((0 < sVar11) * (sVar11 < 0x100) * (char)((ulonglong)uVar34 >> 0x20) -
-                             (0xff < sVar11),
-                             CONCAT11((0 < sVar10) * (sVar10 < 0x100) *
-                                      (char)((ulonglong)uVar34 >> 0x10) - (0xff < sVar10),
-                                      (0 < sVar9) * (sVar9 < 0x100) * (char)uVar34 - (0xff < sVar9))
-                            ));
-      sVar9 = (short)uVar37;
-      sVar10 = (short)((ulonglong)uVar37 >> 0x10);
-      sVar11 = (short)((ulonglong)uVar37 >> 0x20);
-      sVar12 = (short)((ulonglong)uVar37 >> 0x30);
-      vertex2DiffuseColor =
-           CONCAT13((0 < sVar12) * (sVar12 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
-                    (0xff < sVar12),
-                    CONCAT12((0 < sVar11) * (sVar11 < 0x100) * (char)((ulonglong)uVar37 >> 0x20) -
-                             (0xff < sVar11),
-                             CONCAT11((0 < sVar10) * (sVar10 < 0x100) *
-                                      (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar10),
-                                      (0 < sVar9) * (sVar9 < 0x100) * (char)uVar37 - (0xff < sVar9))
-                            ));
-      uVar24 = (param_2[1].texturedPacketAttributes[3] & 0x700) +
-               (int)g_TerrainSoilPacketTablePayload;
-      iVar25 = (param_4[1].texturedPacketAttributes[3] & 0xff) * 0x800;
-      iVar28 = (param_3[1].texturedPacketAttributes[3] & 0xff) * 0x800;
-      uVar29 = (param_2[1].texturedPacketAttributes[3] & 0xff) * 0x800;
-      uVar27 = (int)g_TerrainSoilPacketTablePayload +
-               iVar28 + (param_3[1].texturedPacketAttributes[3] & 0x700);
-      bVar30 = CARRY4(uVar24,uVar29);
-      vertex2Projected = param_2;
-      vertex1Projected = param_3;
-      vertex0Projected = param_4;
-      primitiveQueue = param_5;
-      uVar31 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                         (uVar24 + uVar29,uVar29,
-                          (dword *)((int)g_TerrainSoilPacketTablePayload +
-                                   iVar25 + (param_4[1].texturedPacketAttributes[3] & 0x700)),
-                          vertex2DiffuseColor,vertex1DiffuseColor,vertex0DiffuseColor,param_2,
-                          param_3,param_4,param_5);
-      iVar26 = (int)((ulonglong)uVar31 >> 0x20);
-      if (!bVar30) {
-        if (iVar25 == iVar28) {
-          if (iVar25 != iVar26) {
-            bVar30 = 0xffffffdf < incomingEcxValue;
-            uVar31 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                               (incomingEcxValue + 0x20,iVar26,(dword *)(incomingEcxValue + 0x20),
-                                vertex2DiffuseColor,vertex1DiffuseColor,vertex0DiffuseColor,
-                                vertex2Projected,vertex1Projected,vertex0Projected,primitiveQueue);
-            if (!bVar30) {
-              puVar1 = (uint *)((int)uVar31 + 0x68);
-              *puVar1 = *puVar1 | 0x10020000;
+                                                 CONCAT11((char)PVar36,(char)PVar36) >> 4))),
+                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar20 * 8));
+      sVar3 = (short)uVar29;
+      sVar4 = (short)((ulonglong)uVar29 >> 0x10);
+      sVar5 = (short)((ulonglong)uVar29 >> 0x20);
+      sVar6 = (short)((ulonglong)uVar29 >> 0x30);
+      PVar28 = CONCAT13((0 < sVar6) * (sVar6 < 0x100) * (char)((ulonglong)uVar29 >> 0x30) -
+                        (0xff < sVar6),
+                        CONCAT12((0 < sVar5) * (sVar5 < 0x100) * (char)((ulonglong)uVar29 >> 0x20) -
+                                 (0xff < sVar5),
+                                 CONCAT11((0 < sVar4) * (sVar4 < 0x100) *
+                                          (char)((ulonglong)uVar29 >> 0x10) - (0xff < sVar4),
+                                          (0 < sVar3) * (sVar3 < 0x100) * (char)uVar29 -
+                                          (0xff < sVar3))));
+      sVar3 = (short)uVar33;
+      sVar4 = (short)((ulonglong)uVar33 >> 0x10);
+      sVar5 = (short)((ulonglong)uVar33 >> 0x20);
+      sVar6 = (short)((ulonglong)uVar33 >> 0x30);
+      PVar32 = CONCAT13((0 < sVar6) * (sVar6 < 0x100) * (char)((ulonglong)uVar33 >> 0x30) -
+                        (0xff < sVar6),
+                        CONCAT12((0 < sVar5) * (sVar5 < 0x100) * (char)((ulonglong)uVar33 >> 0x20) -
+                                 (0xff < sVar5),
+                                 CONCAT11((0 < sVar4) * (sVar4 < 0x100) *
+                                          (char)((ulonglong)uVar33 >> 0x10) - (0xff < sVar4),
+                                          (0 < sVar3) * (sVar3 < 0x100) * (char)uVar33 -
+                                          (0xff < sVar3))));
+      sVar3 = (short)uVar37;
+      sVar4 = (short)((ulonglong)uVar37 >> 0x10);
+      sVar5 = (short)((ulonglong)uVar37 >> 0x20);
+      sVar6 = (short)((ulonglong)uVar37 >> 0x30);
+      PVar36 = CONCAT13((0 < sVar6) * (sVar6 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
+                        (0xff < sVar6),
+                        CONCAT12((0 < sVar5) * (sVar5 < 0x100) * (char)((ulonglong)uVar37 >> 0x20) -
+                                 (0xff < sVar5),
+                                 CONCAT11((0 < sVar4) * (sVar4 < 0x100) *
+                                          (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar4),
+                                          (0 < sVar3) * (sVar3 < 0x100) * (char)uVar37 -
+                                          (0xff < sVar3))));
+      iVar26 = (vertex0->projectionFlags & 0xff) * 0x800;
+      iVar25 = (vertex1->projectionFlags & 0xff) * 0x800;
+      iVar20 = (vertex2->projectionFlags & 0xff) * 0x800;
+      iVar21 = iVar25 + (vertex1->projectionFlags & 0x700);
+      iVar23 = iVar20 + (vertex2->projectionFlags & 0x700);
+      vertex2Projected = vertex2;
+      vertex1Projected = vertex1;
+      vertex0Projected = vertex0;
+      renderContext_00 = renderContext;
+      GVar41 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+                         ((dword *)((int)g_TerrainSoilPacketTablePayload +
+                                   iVar26 + (vertex0->projectionFlags & 0x700)),PVar36,PVar32,PVar28
+                          ,(GraphicsProjectedVertexSource *)vertex2,
+                          (GraphicsProjectedVertexSource *)vertex1,
+                          (GraphicsProjectedVertexSource *)vertex0,renderContext);
+      if (!GVar41.carry) {
+        if (iVar26 == iVar25) {
+          if (iVar26 != iVar20) {
+            GVar41 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+                               ((dword *)((int)pvVar18 + iVar23 + 0x20),PVar36,PVar32,PVar28,
+                                (GraphicsProjectedVertexSource *)vertex2Projected,
+                                (GraphicsProjectedVertexSource *)vertex1Projected,
+                                (GraphicsProjectedVertexSource *)vertex0Projected,renderContext_00);
+            if (!GVar41.carry) {
+              pGVar1 = &(GVar41.packet)->renderFlags;
+              *pGVar1 = *pGVar1 | 0x10020000;
             }
           }
         }
-        else if (iVar25 == iVar26) {
-          bVar30 = 0xffffffbf < uVar27;
-          uVar31 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             (incomingEcxValue,iVar26,(dword *)(uVar27 + 0x40),vertex2DiffuseColor,
-                              vertex1DiffuseColor,vertex0DiffuseColor,vertex2Projected,
-                              vertex1Projected,vertex0Projected,primitiveQueue);
-          if (!bVar30) {
-            puVar1 = (uint *)((int)uVar31 + 0x68);
-            *puVar1 = *puVar1 | 0x10020000;
+        else if (iVar26 == iVar20) {
+          GVar41 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+                             ((dword *)((int)pvVar18 + iVar21 + 0x40),PVar36,PVar32,PVar28,
+                              (GraphicsProjectedVertexSource *)vertex2Projected,
+                              (GraphicsProjectedVertexSource *)vertex1Projected,
+                              (GraphicsProjectedVertexSource *)vertex0Projected,renderContext_00);
+          if (!GVar41.carry) {
+            pGVar1 = &(GVar41.packet)->renderFlags;
+            *pGVar1 = *pGVar1 | 0x10020000;
           }
         }
-        else if (iVar28 == iVar26) {
-          bVar30 = 0xffffff9f < uVar27;
-          uVar31 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             (incomingEcxValue,iVar26,(dword *)(uVar27 + 0x60),vertex2DiffuseColor,
-                              vertex1DiffuseColor,vertex0DiffuseColor,vertex2Projected,
-                              vertex1Projected,vertex0Projected,primitiveQueue);
-          if (!bVar30) {
-            puVar1 = (uint *)((int)uVar31 + 0x68);
-            *puVar1 = *puVar1 | 0x10020000;
+        else if (iVar25 == iVar20) {
+          GVar41 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+                             ((dword *)((int)pvVar18 + iVar21 + 0x60),PVar36,PVar32,PVar28,
+                              (GraphicsProjectedVertexSource *)vertex2Projected,
+                              (GraphicsProjectedVertexSource *)vertex1Projected,
+                              (GraphicsProjectedVertexSource *)vertex0Projected,renderContext_00);
+          if (!GVar41.carry) {
+            pGVar1 = &(GVar41.packet)->renderFlags;
+            *pGVar1 = *pGVar1 | 0x10020000;
           }
         }
         else {
-          bVar30 = 0xffffff5f < incomingEcxValue;
-          uVar31 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             (incomingEcxValue + 0xa0,iVar26,(dword *)(uVar27 + 0x80),
-                              vertex2DiffuseColor,vertex1DiffuseColor,vertex0DiffuseColor,
-                              vertex2Projected,vertex1Projected,vertex0Projected,primitiveQueue);
-          if (!bVar30) {
-            puVar1 = (uint *)((int)uVar31 + 0x68);
-            bVar30 = false;
-            *puVar1 = *puVar1 | 0x10020000;
-            uVar31 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                               (textureAndMaterialIndices,(int)((ulonglong)uVar31 >> 0x20),
-                                (dword *)textureAndMaterialIndices,vertex2DiffuseColor,
-                                vertex1DiffuseColor,vertex0DiffuseColor,vertex2Projected,
-                                vertex1Projected,vertex0Projected,primitiveQueue);
-            if (!bVar30) {
-              puVar1 = (uint *)((int)uVar31 + 0x68);
-              *puVar1 = *puVar1 | 0x20020000;
+          GVar41 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+                             ((dword *)((int)pvVar18 + iVar21 + 0x80),PVar36,PVar32,PVar28,
+                              (GraphicsProjectedVertexSource *)vertex2Projected,
+                              (GraphicsProjectedVertexSource *)vertex1Projected,
+                              (GraphicsProjectedVertexSource *)vertex0Projected,renderContext_00);
+          if (!GVar41.carry) {
+            pGVar1 = &(GVar41.packet)->renderFlags;
+            *pGVar1 = *pGVar1 | 0x10020000;
+            GVar41 = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+                               ((dword *)((int)pvVar18 + iVar23 + 0xa0),PVar36,PVar32,PVar28,
+                                (GraphicsProjectedVertexSource *)vertex2Projected,
+                                (GraphicsProjectedVertexSource *)vertex1Projected,
+                                (GraphicsProjectedVertexSource *)vertex0Projected,renderContext_00);
+            if (!GVar41.carry) {
+              pGVar1 = &(GVar41.packet)->renderFlags;
+              *pGVar1 = *pGVar1 | 0x20020000;
             }
           }
         }
       }
     }
-    if ((((((param_5[1].reserved1C & 0x1000000) != 0) ||
-          (0 < (int)param_4[1].texturedPacketAttributes[2])) ||
-         (0 < (int)param_3[1].texturedPacketAttributes[2])) ||
-        (0 < (int)param_2[1].texturedPacketAttributes[2])) &&
-       (((param_4[1].texturedPacketAttributes[3] | param_3[1].texturedPacketAttributes[3] |
-         param_2[1].texturedPacketAttributes[3]) & 0x7c00000) == 0x3c00000)) {
-      param_4[1].texturedPacketAttributes[3] = param_4[1].texturedPacketAttributes[3] | 0x10000000;
-      param_3[1].texturedPacketAttributes[3] = param_3[1].texturedPacketAttributes[3] | 0x10000000;
-      param_2[1].texturedPacketAttributes[3] = param_2[1].texturedPacketAttributes[3] | 0x10000000;
-      bVar30 = false;
+    if ((((((renderContext->contextFlags & 0x1000000) != 0) ||
+          (0 < vertex0->secondaryProjectionDepthQ12)) || (0 < vertex1->secondaryProjectionDepthQ12))
+        || (0 < vertex2->secondaryProjectionDepthQ12)) &&
+       (((vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags) &
+        0x7c00000) == 0x3c00000)) {
+      vertex0->projectionFlags = vertex0->projectionFlags | 0x10000000;
+      vertex1->projectionFlags = vertex1->projectionFlags | 0x10000000;
+      vertex2->projectionFlags = vertex2->projectionFlags | 0x10000000;
+      bVar27 = false;
       if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
-        uVar40 = Triangle2D_ComputeBarycentricWeightsQ12Packed
-                           (param_2->screenX,param_2->reserved2C,param_3->screenX,
-                            param_3->reserved2C,param_4->screenX,param_4->reserved2C,
-                            (int)param_5[5].packetPool,param_5[5].count);
-        iVar26 = (int)(uVar40 >> 0x20);
-        if ((!bVar30) && ((int)*(dword *)(param_4[1].reserved00_0B + 4) < (int)param_5[5].capacity))
-        {
-          param_5[5].capacity = *(dword *)(param_4[1].reserved00_0B + 4);
-          dVar3 = param_3[1].texturedPacketAttributes[0];
-          dVar4 = param_4[1].texturedPacketAttributes[0];
-          dVar5 = param_4[1].texturedPacketAttributes[0];
-          param_5[4].primaryNodes[0].next =
-               (GraphicsPrimitiveQueueNode *)
-               (((*(int *)(param_3[1].reserved00_0B + 8) - *(int *)(param_4[1].reserved00_0B + 8)) *
-                 (int)uVar40 >> 0xc) + *(int *)(param_4[1].reserved00_0B + 8));
-          param_5[4].primaryNodes[0].previous =
-               (GraphicsPrimitiveQueueNode *)(((int)((dVar3 - dVar4) * (int)uVar40) >> 0xc) + dVar5)
-          ;
-          dVar3 = param_2[1].texturedPacketAttributes[0];
-          dVar4 = param_4[1].texturedPacketAttributes[0];
-          ppGVar2 = &param_5[4].primaryNodes[0].next;
-          *ppGVar2 = (GraphicsPrimitiveQueueNode *)
-                     ((int)&(*ppGVar2)->sortKey +
-                     ((*(int *)(param_2[1].reserved00_0B + 8) -
-                      *(int *)(param_4[1].reserved00_0B + 8)) * iVar26 >> 0xc));
-          ppGVar2 = &param_5[4].primaryNodes[0].previous;
-          *ppGVar2 = (GraphicsPrimitiveQueueNode *)
-                     ((int)&(*ppGVar2)->sortKey + ((int)((dVar3 - dVar4) * iVar26) >> 0xc));
+        TVar40 = Triangle2D_ComputeBarycentricWeightsQ12Packed
+                           ((vertex2->projectedPointB).projectedY,
+                            (vertex2->projectedPointB).projectedX,
+                            (vertex1->projectedPointB).projectedY,
+                            (vertex1->projectedPointB).projectedX,
+                            (vertex0->projectedPointB).projectedY,
+                            (vertex0->projectedPointB).projectedX,renderContext->cursorWorldYQ12,
+                            renderContext->cursorWorldXQ12);
+        dVar2 = (vertex0->viewPointB).z;
+        if ((!bVar27) && ((int)dVar2 < (int)renderContext->callbackArgumentF0)) {
+          renderContext->callbackArgumentF0 = dVar2;
+          iVar21 = (vertex1->sourcePoint).y;
+          iVar23 = (vertex0->sourcePoint).y;
+          iVar20 = (vertex0->sourcePoint).y;
+          renderContext->callbackArgumentE8 =
+               (((vertex1->sourcePoint).x - (vertex0->sourcePoint).x) * TVar40.weightVertexB_Q12 >>
+               0xc) + (vertex0->sourcePoint).x;
+          renderContext->callbackArgumentEC =
+               ((iVar21 - iVar23) * TVar40.weightVertexB_Q12 >> 0xc) + iVar20;
+          iVar21 = (vertex2->sourcePoint).y;
+          iVar23 = (vertex0->sourcePoint).y;
+          renderContext->callbackArgumentE8 =
+               renderContext->callbackArgumentE8 +
+               (((vertex2->sourcePoint).x - (vertex0->sourcePoint).x) * TVar40.weightVertexA_Q12 >>
+               0xc);
+          renderContext->callbackArgumentEC =
+               renderContext->callbackArgumentEC +
+               ((iVar21 - iVar23) * TVar40.weightVertexA_Q12 >> 0xc);
         }
       }
-      dVar3 = param_4[1].reserved2C;
-      dVar4 = param_3[1].reserved2C;
-      dVar5 = param_2[1].reserved2C;
-      uVar32 = (undefined1)(dVar3 >> 0x18);
-      uVar21 = CONCAT11(uVar32,uVar32);
-      uVar33 = (undefined1)(dVar3 >> 0x10);
-      uVar32 = (undefined1)(dVar3 >> 8);
-      uVar35 = (undefined1)(dVar4 >> 0x18);
-      uVar22 = CONCAT11(uVar35,uVar35);
-      uVar36 = (undefined1)(dVar4 >> 0x10);
-      uVar35 = (undefined1)(dVar4 >> 8);
-      uVar38 = (undefined1)(dVar5 >> 0x18);
-      uVar23 = CONCAT11(uVar38,uVar38);
-      uVar39 = (undefined1)(dVar5 >> 0x10);
-      uVar38 = (undefined1)(dVar5 >> 8);
-      uVar31 = pmulhw(CONCAT26(uVar21 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar21,uVar33),
-                                                          CONCAT14(uVar33,dVar3)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(uVar32,uVar32) >> 4,
-                                                 CONCAT11((char)dVar3,(char)dVar3) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + param_4[1].screenX * 8));
-      uVar34 = pmulhw(CONCAT26(uVar22 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar22,uVar36),
-                                                          CONCAT14(uVar36,dVar4)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(uVar35,uVar35) >> 4,
-                                                 CONCAT11((char)dVar4,(char)dVar4) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + param_3[1].screenX * 8));
-      uVar37 = pmulhw(CONCAT26(uVar23 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar23,uVar39),
-                                                          CONCAT14(uVar39,dVar5)) >> 0x20) >> 4,
+      PVar28 = vertex0->shadedColorB;
+      PVar32 = vertex1->shadedColorB;
+      PVar36 = vertex2->shadedColorB;
+      uVar30 = (undefined1)(PVar28 >> 0x18);
+      uVar15 = CONCAT11(uVar30,uVar30);
+      uVar31 = (undefined1)(PVar28 >> 0x10);
+      uVar30 = (undefined1)(PVar28 >> 8);
+      uVar34 = (undefined1)(PVar32 >> 0x18);
+      uVar16 = CONCAT11(uVar34,uVar34);
+      uVar35 = (undefined1)(PVar32 >> 0x10);
+      uVar34 = (undefined1)(PVar32 >> 8);
+      uVar38 = (undefined1)(PVar36 >> 0x18);
+      uVar17 = CONCAT11(uVar38,uVar38);
+      uVar39 = (undefined1)(PVar36 >> 0x10);
+      uVar38 = (undefined1)(PVar36 >> 8);
+      uVar29 = pmulhw(CONCAT26(uVar15 >> 4,
+                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar15,uVar31),
+                                                          CONCAT14(uVar31,PVar28)) >> 0x20) >> 4,
+                                        CONCAT22(CONCAT11(uVar30,uVar30) >> 4,
+                                                 CONCAT11((char)PVar28,(char)PVar28) >> 4))),
+                      *(undefined8 *)
+                       (&g_PackedLightingLookupTable + vertex0->lightingLookupIndexOrSentinel * 8));
+      uVar33 = pmulhw(CONCAT26(uVar16 >> 4,
+                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar16,uVar35),
+                                                          CONCAT14(uVar35,PVar32)) >> 0x20) >> 4,
+                                        CONCAT22(CONCAT11(uVar34,uVar34) >> 4,
+                                                 CONCAT11((char)PVar32,(char)PVar32) >> 4))),
+                      *(undefined8 *)
+                       (&g_PackedLightingLookupTable + vertex1->lightingLookupIndexOrSentinel * 8));
+      uVar37 = pmulhw(CONCAT26(uVar17 >> 4,
+                               CONCAT24((ushort)(CONCAT35(CONCAT21(uVar17,uVar39),
+                                                          CONCAT14(uVar39,PVar36)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(uVar38,uVar38) >> 4,
-                                                 CONCAT11((char)dVar5,(char)dVar5) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + param_2[1].screenX * 8));
-      sVar9 = (short)uVar31;
-      sVar12 = (short)((ulonglong)uVar31 >> 0x10);
-      sVar15 = (short)((ulonglong)uVar31 >> 0x20);
-      sVar18 = (short)((ulonglong)uVar31 >> 0x30);
-      sVar10 = (short)uVar34;
-      sVar13 = (short)((ulonglong)uVar34 >> 0x10);
-      sVar16 = (short)((ulonglong)uVar34 >> 0x20);
-      sVar19 = (short)((ulonglong)uVar34 >> 0x30);
-      sVar11 = (short)uVar37;
-      sVar14 = (short)((ulonglong)uVar37 >> 0x10);
-      sVar17 = (short)((ulonglong)uVar37 >> 0x20);
-      sVar20 = (short)((ulonglong)uVar37 >> 0x30);
-      GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle
-                ((undefined4 *)(param_1 * 0x20 + (int)g_TerrainSurfacePacketTablePayload),
-                 CONCAT13((0 < sVar20) * (sVar20 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
-                          (0xff < sVar20),
-                          CONCAT12((0 < sVar17) * (sVar17 < 0x100) *
-                                   (char)((ulonglong)uVar37 >> 0x20) - (0xff < sVar17),
-                                   CONCAT11((0 < sVar14) * (sVar14 < 0x100) *
-                                            (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar14),
-                                            (0 < sVar11) * (sVar11 < 0x100) * (char)uVar37 -
-                                            (0xff < sVar11)))),
-                 CONCAT13((0 < sVar19) * (sVar19 < 0x100) * (char)((ulonglong)uVar34 >> 0x30) -
-                          (0xff < sVar19),
-                          CONCAT12((0 < sVar16) * (sVar16 < 0x100) *
-                                   (char)((ulonglong)uVar34 >> 0x20) - (0xff < sVar16),
-                                   CONCAT11((0 < sVar13) * (sVar13 < 0x100) *
-                                            (char)((ulonglong)uVar34 >> 0x10) - (0xff < sVar13),
-                                            (0 < sVar10) * (sVar10 < 0x100) * (char)uVar34 -
-                                            (0xff < sVar10)))),
-                 CONCAT13((0 < sVar18) * (sVar18 < 0x100) * (char)((ulonglong)uVar31 >> 0x30) -
-                          (0xff < sVar18),
-                          CONCAT12((0 < sVar15) * (sVar15 < 0x100) *
-                                   (char)((ulonglong)uVar31 >> 0x20) - (0xff < sVar15),
-                                   CONCAT11((0 < sVar12) * (sVar12 < 0x100) *
-                                            (char)((ulonglong)uVar31 >> 0x10) - (0xff < sVar12),
-                                            (0 < sVar9) * (sVar9 < 0x100) * (char)uVar31 -
-                                            (0xff < sVar9)))),(int)param_2,(int)param_3,(int)param_4
-                 ,(int)param_5);
+                                                 CONCAT11((char)PVar36,(char)PVar36) >> 4))),
+                      *(undefined8 *)
+                       (&g_PackedLightingLookupTable + vertex2->lightingLookupIndexOrSentinel * 8));
+      sVar3 = (short)uVar29;
+      sVar6 = (short)((ulonglong)uVar29 >> 0x10);
+      sVar9 = (short)((ulonglong)uVar29 >> 0x20);
+      sVar12 = (short)((ulonglong)uVar29 >> 0x30);
+      sVar4 = (short)uVar33;
+      sVar7 = (short)((ulonglong)uVar33 >> 0x10);
+      sVar10 = (short)((ulonglong)uVar33 >> 0x20);
+      sVar13 = (short)((ulonglong)uVar33 >> 0x30);
+      sVar5 = (short)uVar37;
+      sVar8 = (short)((ulonglong)uVar37 >> 0x10);
+      sVar11 = (short)((ulonglong)uVar37 >> 0x20);
+      sVar14 = (short)((ulonglong)uVar37 >> 0x30);
+      GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
+                ((dword *)(surfacePacketIndex * 0x20 + (int)g_TerrainSurfacePacketTablePayload),
+                 CONCAT13((0 < sVar14) * (sVar14 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
+                          (0xff < sVar14),
+                          CONCAT12((0 < sVar11) * (sVar11 < 0x100) *
+                                   (char)((ulonglong)uVar37 >> 0x20) - (0xff < sVar11),
+                                   CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
+                                            (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar8),
+                                            (0 < sVar5) * (sVar5 < 0x100) * (char)uVar37 -
+                                            (0xff < sVar5)))),
+                 CONCAT13((0 < sVar13) * (sVar13 < 0x100) * (char)((ulonglong)uVar33 >> 0x30) -
+                          (0xff < sVar13),
+                          CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
+                                   (char)((ulonglong)uVar33 >> 0x20) - (0xff < sVar10),
+                                   CONCAT11((0 < sVar7) * (sVar7 < 0x100) *
+                                            (char)((ulonglong)uVar33 >> 0x10) - (0xff < sVar7),
+                                            (0 < sVar4) * (sVar4 < 0x100) * (char)uVar33 -
+                                            (0xff < sVar4)))),
+                 CONCAT13((0 < sVar12) * (sVar12 < 0x100) * (char)((ulonglong)uVar29 >> 0x30) -
+                          (0xff < sVar12),
+                          CONCAT12((0 < sVar9) * (sVar9 < 0x100) * (char)((ulonglong)uVar29 >> 0x20)
+                                   - (0xff < sVar9),
+                                   CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
+                                            (char)((ulonglong)uVar29 >> 0x10) - (0xff < sVar6),
+                                            (0 < sVar3) * (sVar3 < 0x100) * (char)uVar29 -
+                                            (0xff < sVar3)))),
+                 (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
+                 (GraphicsProjectedVertexSource *)vertex0,renderContext);
     }
   }
   return;
 }
 
+
 /* Address: 0x00500D30.
    Ownership: world/terrain/projection.
    Purpose: Handles terrain projected grid clip row spans against plane.
 */
-undefined8 TerrainProjectedGrid_ClipRowSpansAgainstPlane(int param_1,int *param_2)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainProjectedGrid_ClipRowSpansAgainstPlane
+          (FieldGridAsset *fieldGrid,GraphicsFixedVec3 *planeNormal)
 
 {
   longlong lVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_EDX;
   uint uVar3;
   int iVar4;
-  int *piVar5;
-  undefined4 *puVar6;
+  FieldGridDimension FVar5;
+  int *piVar6;
+  TerrainProjectedRowSpan *pTVar7;
   
-  if (*param_2 == 0) {
-    if (param_2[1] != 0) {
-      if (param_2[1] < 0) {
-        iVar4 = 0;
-        if (-1 < param_2[2]) {
-          iVar4 = (int)(((longlong)g_ViewOriginFixed.z * (longlong)param_2[2]) /
-                       (longlong)param_2[1]);
+  if (planeNormal->x == 0) {
+    if (planeNormal->y != 0) {
+      if (planeNormal->y < 0) {
+        iVar2 = 0;
+        if (-1 < planeNormal->z) {
+          iVar2 = (int)(((longlong)g_ViewOriginFixed.z * (longlong)planeNormal->z) /
+                       (longlong)planeNormal->y);
         }
-        lVar1 = (longlong)(iVar4 + g_ViewOriginFixed.y) * -0x20c8cc;
-        iVar2 = (int)((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) >> 0xc;
-        iVar4 = *(int *)(param_1 + 0xbc) - iVar2;
-        if ((iVar4 != 0 && iVar2 <= *(int *)(param_1 + 0xbc)) && (iVar4 = iVar4 + -1, iVar4 != 0)) {
-          puVar6 = (undefined4 *)(iVar2 * 8 + 0x4ffc98);
-          for (iVar4 = iVar4 * 2; iVar4 != 0; iVar4 = iVar4 + -1) {
-            *puVar6 = 0;
-            puVar6 = puVar6 + 1;
+        lVar1 = (longlong)(iVar2 + g_ViewOriginFixed.y) * -0x20c8cc;
+        iVar4 = (int)((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) >> 0xc;
+        iVar2 = fieldGrid->gridHeight - iVar4;
+        if ((iVar2 != 0 && iVar4 <= (int)fieldGrid->gridHeight) && (iVar2 = iVar2 + -1, iVar2 != 0))
+        {
+          pTVar7 = g_TerrainProjectedRowSpans + iVar4 + 3;
+          for (iVar2 = iVar2 * 2; iVar2 != 0; iVar2 = iVar2 + -1) {
+            pTVar7->firstColumn = 0;
+            pTVar7 = (TerrainProjectedRowSpan *)&pTVar7->endColumnExclusive;
           }
         }
       }
       else {
-        iVar4 = 0;
-        if (-1 < param_2[2]) {
-          iVar4 = (int)(((longlong)g_ViewOriginFixed.z * (longlong)param_2[2]) /
-                       (longlong)param_2[1]);
+        iVar2 = 0;
+        if (-1 < planeNormal->z) {
+          iVar2 = (int)(((longlong)g_ViewOriginFixed.z * (longlong)planeNormal->z) /
+                       (longlong)planeNormal->y);
         }
-        lVar1 = (longlong)(iVar4 + g_ViewOriginFixed.y) * -0x20c8cc;
-        iVar4 = (int)((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) >> 0xc;
-        if ((-1 < iVar4) && (iVar4 != 0)) {
-          puVar6 = &DAT_004ffc80;
-          for (iVar4 = iVar4 * 2; iVar4 != 0; iVar4 = iVar4 + -1) {
-            *puVar6 = 0;
-            puVar6 = puVar6 + 1;
+        lVar1 = (longlong)(iVar2 + g_ViewOriginFixed.y) * -0x20c8cc;
+        iVar2 = (int)((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) >> 0xc;
+        if ((-1 < iVar2) && (iVar2 != 0)) {
+          pTVar7 = g_TerrainProjectedRowSpans;
+          for (iVar2 = iVar2 * 2; iVar2 != 0; iVar2 = iVar2 + -1) {
+            pTVar7->firstColumn = 0;
+            pTVar7 = (TerrainProjectedRowSpan *)&pTVar7->endColumnExclusive;
           }
         }
       }
     }
   }
-  else if (*param_2 < 0) {
-    lVar1 = (longlong)param_2[1] * (longlong)g_ViewOriginFixed.y +
-            (longlong)*param_2 * (longlong)g_ViewOriginFixed.x;
-    if (-1 < param_2[2]) {
-      lVar1 = lVar1 + (longlong)param_2[2] * (longlong)g_ViewOriginFixed.z;
+  else if (planeNormal->x < 0) {
+    lVar1 = (longlong)planeNormal->y * (longlong)g_ViewOriginFixed.y +
+            (longlong)planeNormal->x * (longlong)g_ViewOriginFixed.x;
+    if (-1 < planeNormal->z) {
+      lVar1 = lVar1 + (longlong)planeNormal->z * (longlong)g_ViewOriginFixed.z;
     }
-    lVar1 = (longlong)(int)(lVar1 / (longlong)*param_2) * 0x1c6e9c;
+    lVar1 = (longlong)(int)(lVar1 / (longlong)planeNormal->x) * 0x1c6e9c;
     uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14;
-    lVar1 = (longlong)(int)(((longlong)param_2[1] * 1999) / (longlong)*param_2) * 0x1c6e9c;
-    piVar5 = (int *)0x4ffc78;
-    iVar4 = *(int *)(param_1 + 0xbc);
+    lVar1 = (longlong)(int)(((longlong)planeNormal->y * 1999) / (longlong)planeNormal->x) * 0x1c6e9c
+    ;
+    piVar6 = (int *)0x4ffc78;
+    FVar5 = fieldGrid->gridHeight;
     do {
-      piVar5 = piVar5 + 2;
+      piVar6 = piVar6 + 2;
       iVar2 = (int)(uVar3 - 0x1000) >> 0xc;
       uVar3 = uVar3 + (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - 0x800);
-      if (*piVar5 < iVar2) {
-        *piVar5 = iVar2;
+      if (*piVar6 < iVar2) {
+        *piVar6 = iVar2;
       }
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      FVar5 = FVar5 - 1;
+    } while (FVar5 != 0);
   }
   else {
-    lVar1 = (longlong)param_2[1] * (longlong)g_ViewOriginFixed.y +
-            (longlong)*param_2 * (longlong)g_ViewOriginFixed.x;
-    if (-1 < param_2[2]) {
-      lVar1 = lVar1 + (longlong)param_2[2] * (longlong)g_ViewOriginFixed.z;
+    lVar1 = (longlong)planeNormal->y * (longlong)g_ViewOriginFixed.y +
+            (longlong)planeNormal->x * (longlong)g_ViewOriginFixed.x;
+    if (-1 < planeNormal->z) {
+      lVar1 = lVar1 + (longlong)planeNormal->z * (longlong)g_ViewOriginFixed.z;
     }
-    lVar1 = (longlong)(int)(lVar1 / (longlong)*param_2) * 0x1c6e9c;
+    lVar1 = (longlong)(int)(lVar1 / (longlong)planeNormal->x) * 0x1c6e9c;
     uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14;
-    lVar1 = (longlong)(int)(((longlong)param_2[1] * 1999) / (longlong)*param_2) * 0x1c6e9c;
-    piVar5 = (int *)0x4ffc7c;
-    iVar4 = *(int *)(param_1 + 0xbc);
+    lVar1 = (longlong)(int)(((longlong)planeNormal->y * 1999) / (longlong)planeNormal->x) * 0x1c6e9c
+    ;
+    piVar6 = (int *)0x4ffc7c;
+    FVar5 = fieldGrid->gridHeight;
     do {
-      piVar5 = piVar5 + 2;
+      piVar6 = piVar6 + 2;
       iVar2 = (int)(uVar3 + 0x1fff) >> 0xc;
       uVar3 = uVar3 + (((int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14) - 0x800);
-      if (iVar2 < *piVar5) {
-        *piVar5 = iVar2;
+      if (iVar2 < *piVar6) {
+        *piVar6 = iVar2;
       }
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      FVar5 = FVar5 - 1;
+    } while (FVar5 != 0);
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return;
 }
+
 
 /* Address: 0x005063B0.
    Ownership: world/terrain/projection.
@@ -2335,15 +2325,16 @@ undefined8 TerrainProjectedGrid_ClipRowSpansAgainstPlane(int param_1,int *param_
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainProjectedOcclusion_ScanDirection0
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_ScanDirection0
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   uint uVar3;
-  ulonglong in_MM0;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2358,7 +2349,7 @@ void TerrainProjectedOcclusion_ScanDirection0
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       scanStep = scanStep + 4;
@@ -2368,6 +2359,7 @@ void TerrainProjectedOcclusion_ScanDirection0
   return;
 }
 
+
 /* Address: 0x00506430.
    Ownership: world/terrain/projection.
    Purpose: Scans directional terrain run 1, stops at excluded cells, converts the current cell height relative to
@@ -2376,15 +2368,16 @@ void TerrainProjectedOcclusion_ScanDirection0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainProjectedOcclusion_ScanDirection1
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_ScanDirection1
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   uint uVar3;
-  ulonglong in_MM0;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2399,7 +2392,7 @@ void TerrainProjectedOcclusion_ScanDirection1
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       scanStep = scanStep + 4;
@@ -2409,6 +2402,7 @@ void TerrainProjectedOcclusion_ScanDirection1
   return;
 }
 
+
 /* Address: 0x005064C0.
    Ownership: world/terrain/projection.
    Purpose: Scans directional terrain run 2, stops at excluded cells, converts the current cell height relative to
@@ -2417,15 +2411,16 @@ void TerrainProjectedOcclusion_ScanDirection1
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainProjectedOcclusion_ScanDirection2
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_ScanDirection2
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   uint uVar3;
-  ulonglong in_MM0;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2440,7 +2435,7 @@ void TerrainProjectedOcclusion_ScanDirection2
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       scanStep = scanStep + 4;
@@ -2450,6 +2445,7 @@ void TerrainProjectedOcclusion_ScanDirection2
   return;
 }
 
+
 /* Address: 0x00506540.
    Ownership: world/terrain/projection.
    Purpose: Scans directional terrain run 3, stops at excluded cells, converts the current cell height relative to
@@ -2458,15 +2454,16 @@ void TerrainProjectedOcclusion_ScanDirection2
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainProjectedOcclusion_ScanDirection3
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_ScanDirection3
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   uint uVar3;
-  ulonglong in_MM0;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2481,7 +2478,7 @@ void TerrainProjectedOcclusion_ScanDirection3
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       scanStep = scanStep + 4;
@@ -2491,6 +2488,7 @@ void TerrainProjectedOcclusion_ScanDirection3
   return;
 }
 
+
 /* Address: 0x005065C0.
    Ownership: world/terrain/projection.
    Purpose: Scans directional terrain run 4, stops at excluded cells, converts the current cell height relative to
@@ -2499,15 +2497,16 @@ void TerrainProjectedOcclusion_ScanDirection3
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainProjectedOcclusion_ScanDirection4
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_ScanDirection4
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   uint uVar3;
-  ulonglong in_MM0;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2522,15 +2521,16 @@ void TerrainProjectedOcclusion_ScanDirection4
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell[-1].runtime00_07 + g_TerrainScanRowStrideBytes);
+      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00506650.
    Ownership: world/terrain/projection.
@@ -2540,15 +2540,16 @@ void TerrainProjectedOcclusion_ScanDirection4
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainProjectedOcclusion_ScanDirection5
-               (TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
-               TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void __thandor_void_preserve_eax_ecx_edx_mm0
+TerrainProjectedOcclusion_ScanDirection5
+          (ulonglong occupancyMaskBits,
+          TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
+          TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   longlong lVar1;
   int iVar2;
   uint uVar3;
-  ulonglong in_MM0;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2563,15 +2564,16 @@ void TerrainProjectedOcclusion_ScanDirection5
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
-        cell->occupancyMask = cell->occupancyMask | in_MM0;
+        cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = uVar3;
       }
       scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell->runtime00_07 + g_TerrainScanRowStrideBytes);
+      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00509320.
    Ownership: world/terrain/projection.
@@ -2579,8 +2581,9 @@ void TerrainProjectedOcclusion_ScanDirection5
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantA_ApplyDirection0
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyDirection0
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2590,7 +2593,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection0
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = fieldCell + 1;
@@ -2598,6 +2601,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection0
   }
   return;
 }
+
 
 /* Address: 0x00509380.
    Ownership: world/terrain/projection.
@@ -2605,8 +2609,9 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantA_ApplyDirection1
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyDirection1
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2616,7 +2621,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection1
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes));
@@ -2625,14 +2630,16 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection1
   return;
 }
 
+
 /* Address: 0x005093F0.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantA_ApplyDirection2
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyDirection2
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2642,7 +2649,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection2
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = (FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes);
@@ -2651,14 +2658,16 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection2
   return;
 }
 
+
 /* Address: 0x00509450.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantA_ApplyDirection3
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyDirection3
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2668,7 +2677,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection3
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = fieldCell + -1;
@@ -2677,14 +2686,16 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection3
   return;
 }
 
+
 /* Address: 0x005094B0.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantA_ApplyDirection4
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyDirection4
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2694,14 +2705,16 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection4
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
-      fieldCell = (FieldGridCell *)(fieldCell[-1].runtime00_07 + g_TerrainScanRowStrideBytes);
+      fieldCell = (FieldGridCell *)(fieldCell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc)
+      ;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00509520.
    Ownership: world/terrain/projection.
@@ -2709,8 +2722,9 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection4
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantA_ApplyDirection5
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantA_ApplyDirection5
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2720,14 +2734,15 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection5
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
-      fieldCell = (FieldGridCell *)(fieldCell->runtime00_07 + g_TerrainScanRowStrideBytes);
+      fieldCell = (FieldGridCell *)(fieldCell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00509B90.
    Ownership: world/terrain/projection.
@@ -2735,8 +2750,9 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection5
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantB_ApplyDirection0
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyDirection0
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2745,7 +2761,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection0
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = fieldCell + 1;
@@ -2754,14 +2770,16 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection0
   return;
 }
 
+
 /* Address: 0x00509BF0.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantB_ApplyDirection1
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyDirection1
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2770,7 +2788,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection1
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes));
@@ -2779,14 +2797,16 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection1
   return;
 }
 
+
 /* Address: 0x00509C50.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantB_ApplyDirection2
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyDirection2
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2795,7 +2815,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection2
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = (FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes);
@@ -2804,14 +2824,16 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection2
   return;
 }
 
+
 /* Address: 0x00509CB0.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantB_ApplyDirection3
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyDirection3
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2820,7 +2842,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection3
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
       fieldCell = fieldCell + -1;
@@ -2829,14 +2851,16 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection3
   return;
 }
 
+
 /* Address: 0x00509D10.
    Ownership: world/terrain/projection.
    Purpose: Transitive terrain-overlay cell helper; exact two-stack-argument contract. Typed parameters: p0
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantB_ApplyDirection4
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyDirection4
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2845,14 +2869,16 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection4
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
-      fieldCell = (FieldGridCell *)(fieldCell[-1].runtime00_07 + g_TerrainScanRowStrideBytes);
+      fieldCell = (FieldGridCell *)(fieldCell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc)
+      ;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+
 
 /* Address: 0x00509D70.
    Ownership: world/terrain/projection.
@@ -2860,8 +2886,9 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection4
    scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FieldGridTerrainOverlayVariantB_ApplyDirection5
-               (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void __thandor_void_preserve_eax_ecx_edx
+FieldGridTerrainOverlayVariantB_ApplyDirection5
+          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2870,11 +2897,12 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection5
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        *(undefined4 *)(fieldCell->runtime00_07 + 4) = g_TerrainScanReferenceHeight;
+        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + 4;
-      fieldCell = (FieldGridCell *)(fieldCell->runtime00_07 + g_TerrainScanRowStrideBytes);
+      fieldCell = (FieldGridCell *)(fieldCell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
 }
+

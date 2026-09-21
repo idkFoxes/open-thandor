@@ -1,6 +1,6 @@
 # Call graph: `assets/shot/catalog`
 
-[Source](../../../../src/assets/shot/catalog.c) · [Header](../../../../include/thandor/assets/shot/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-shot-catalog)
+[Source](../../../../src/assets/shot/catalog.c) · [Header](../../../../include/thandor/assets/shot/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-shot-catalog) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-shot-catalog)
 
 8 functions. Addresses are current V523 executable VAs.
 

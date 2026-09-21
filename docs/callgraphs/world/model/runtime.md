@@ -1,6 +1,6 @@
 # Call graph: `world/model/runtime`
 
-[Source](../../../../src/world/model/runtime.c) · [Header](../../../../include/thandor/world/model/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-model-runtime)
+[Source](../../../../src/world/model/runtime.c) · [Header](../../../../include/thandor/world/model/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-model-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-model-runtime)
 
 15 functions. Addresses are current V523 executable VAs.
 

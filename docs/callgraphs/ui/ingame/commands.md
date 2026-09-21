@@ -1,6 +1,6 @@
 # Call graph: `ui/ingame/commands`
 
-[Source](../../../../src/ui/ingame/commands.c) · [Header](../../../../include/thandor/ui/ingame/commands.h) · [Graphviz](commands.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-commands)
+[Source](../../../../src/ui/ingame/commands.c) · [Header](../../../../include/thandor/ui/ingame/commands.h) · [Graphviz](commands.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-commands) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-ingame-commands)
 
 67 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/graphics/resources/texture.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/graphics/resources/texture.h>
 
 /* Implementation ownership: graphics/resources/texture. */
@@ -11,47 +18,46 @@
    GraphicsTexture_CreateDeviceTexture.
    Cross-module calls: Glide3_TextureSet_CreateBackend [graphics/backend/glide].
 */
-GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
+GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *sourceAsset_00;
-  uint uVar1;
-  dword dVar2;
-  GraphicsTextureSet *pGVar3;
+  dword dVar1;
+  int iVar2;
+  GraphicsAdapterRecord *pGVar3;
   DDPIXELFORMAT *pDVar4;
   GraphicsTextureResource *pGVar5;
-  GraphicsTextureResource *texture;
-  int extraout_ECX;
-  int iVar6;
-  word *pwVar7;
-  bool bVar8;
-  undefined1 uVar9;
+  bool bVar6;
+  GraphicsTextureSetEaxCf5 GVar7;
+  ArenaAllocEaxCf5 AVar8;
+  GraphicsTextureSetEaxCf5 GVar9;
+  GraphicsTextureSetEaxCf5 GVar10;
   GraphicsTextureSetEntry *pGStack_24;
   AssetSubresourceCount AStack_20;
   GraphicsSubresourceIndex GStack_1c;
   
-  iVar6 = g_ActiveGraphicsAdapterIndex * 0x80;
-  bVar8 = g_ActiveGraphicsAdapterIndex << 6 < 0;
-  pGVar3 = GraphicsTextureSet_AllocateMetadata(sourceAsset);
-  if (bVar8) {
-    return pGVar3;
+  pGVar3 = g_GraphicsAdapters;
+  iVar2 = g_ActiveGraphicsAdapterIndex;
+  GVar7 = GraphicsTextureSet_AllocateMetadata(sourceAsset);
+  if (GVar7.carry) {
+    GVar10.carry = true;
+    GVar10.textureSet = GVar7.textureSet;
+    return GVar10;
   }
-  if (*(int *)(extraout_ECX + 0x10 + iVar6) == 1) {
-    pGVar3 = Glide3_TextureSet_CreateBackend(sourceAsset);
-    return pGVar3;
+  if (pGVar3[iVar2].deviceGuid.Data1 == 1) {
+    GVar7.carry = Glide3_TextureSet_CreateBackend(GVar7.textureSet,sourceAsset);
+    return GVar7;
   }
-  sourceAsset_00 = pGVar3->sourceAsset;
-  uVar1 = (sourceAsset_00->tableDescriptor).subresourceTableOffset;
+  sourceAsset_00 = (GVar7.textureSet)->sourceAsset;
   AStack_20 = (sourceAsset_00->tableDescriptor).subresourceCount;
-  uVar9 = CARRY4(uVar1,(uint)sourceAsset_00);
-  pwVar7 = (word *)((sourceAsset_00->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   (uVar1 - 0x28));
-  pGStack_24 = pGVar3->entries;
+  pGStack_24 = (GVar7.textureSet)->entries;
   GStack_1c = 0;
   do {
     pDVar4 = GraphicsTexture_SelectPixelFormat(GStack_1c,sourceAsset_00);
-    pGVar5 = (*g_MemoryApi.alloc)(0x50);
-    if (!(bool)uVar9) {
+    AVar8 = (*g_MemoryApi.alloc)(0x50);
+    pGVar5 = (GraphicsTextureResource *)AVar8.eax;
+    if (!AVar8.carry) {
       pGVar5->stagingTexture2 = (IDirect3DTexture2 *)0x0;
       pGVar5->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
       pGVar5->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
@@ -62,29 +68,30 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
       pGVar5->sourceAsset = sourceAsset_00;
       pGVar5->subresourceIndex = GStack_1c;
       pGVar5->pixelFormat = pDVar4;
-      dVar2 = g_TextureDownsampleShift;
+      dVar1 = g_TextureDownsampleShift;
       pGVar5->lastUsedCounter = 0;
       pGVar5->textureHandle = 0;
-      pGVar5->downsampleShift = dVar2;
+      pGVar5->downsampleShift = dVar1;
       pGVar5 = GraphicsTexture_CreateStagingTexture(pGVar5);
-      GraphicsTexture_RegisterSlot(pGVar5);
-      if ((bool)uVar9) {
-        pGVar5 = GraphicsTexture_ReleaseObjects(texture);
+      bVar6 = GraphicsTexture_RegisterSlot(pGVar5);
+      if (bVar6) {
+        GraphicsTexture_ReleaseObjects(pGVar5);
         (*g_MemoryApi.free)(pGVar5);
         pGStack_24->texture = (GraphicsTextureResource *)0x0;
       }
       else {
-        GraphicsTexture_CreateDeviceTexture(texture);
+        GraphicsTexture_CreateDeviceTexture(pGVar5);
       }
     }
     GStack_1c = GStack_1c + 1;
     pGStack_24 = pGStack_24 + 1;
-    uVar9 = (word *)0xffffffdf < pwVar7;
-    pwVar7 = pwVar7 + 0x10;
     AStack_20 = AStack_20 - 1;
   } while (AStack_20 != 0);
-  return pGVar3;
+  GVar9.carry = false;
+  GVar9.textureSet = GVar7.textureSet;
+  return GVar9;
 }
+
 
 /* Address: 0x0057AD30.
    Ownership: graphics/resources/texture.
@@ -94,12 +101,11 @@ GraphicsTextureSet * GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourc
    Local calls: GraphicsTexture_ReleaseObjects, GraphicsTexture_CreateStagingTexture.
    Cross-module calls: Glide3_TextureResource_ReinitializeAll [graphics/backend/glide].
 */
-void __cdecl GraphicsTexture_RebuildAllStagingTextures(void)
+void __thandor_void_preserve_eax_ecx_edx GraphicsTexture_RebuildAllStagingTextures(void)
 
 {
   GraphicsTextureResource *texture;
   int textureSlotsRemaining;
-  int extraout_ECX;
   GraphicsTextureResource **textureSlotCursor;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
@@ -109,16 +115,17 @@ void __cdecl GraphicsTexture_RebuildAllStagingTextures(void)
   textureSlotsRemaining = 0x1000;
   textureSlotCursor = g_GraphicsTextureSlots;
   do {
-    if (*textureSlotCursor != (GraphicsTextureResource *)0x0) {
-      texture = GraphicsTexture_ReleaseObjects(*textureSlotCursor);
+    texture = *textureSlotCursor;
+    if (texture != (GraphicsTextureResource *)0x0) {
+      GraphicsTexture_ReleaseObjects(texture);
       GraphicsTexture_CreateStagingTexture(texture);
-      textureSlotsRemaining = extraout_ECX;
     }
     textureSlotCursor = textureSlotCursor + 1;
     textureSlotsRemaining = textureSlotsRemaining + -1;
   } while (textureSlotsRemaining != 0);
   return;
 }
+
 
 /* Address: 0x0057EAF0.
    Ownership: graphics/resources/texture.
@@ -127,49 +134,49 @@ void __cdecl GraphicsTexture_RebuildAllStagingTextures(void)
    Local calls: GraphicsTexture_ReleaseObjects, GraphicsTextureSet_FreeMetadata.
    Cross-module calls: Glide3_TextureSet_DestroyBackend [graphics/backend/glide].
 */
-GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
+GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
 
 {
+  GraphicsTextureResource *texture;
   GraphicsTextureResource **ppGVar1;
   GraphicsTextureSourceAsset *pGVar2;
-  GraphicsTextureResource *pGVar3;
-  int iVar4;
-  dword extraout_EDX;
-  dword dVar5;
-  GraphicsTextureSetEntry *pGVar6;
-  GraphicsTextureResource **ppGVar7;
+  int iVar3;
+  dword dVar4;
+  GraphicsTextureSetEntry *pGVar5;
+  GraphicsTextureResource **ppGVar6;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
-    pGVar2 = Glide3_TextureSet_DestroyBackend(set);
+    pGVar2 = Glide3_TextureSet_DestroyBackend(set,set);
     return pGVar2;
   }
   pGVar2 = (GraphicsTextureSourceAsset *)0x0;
   if (set != (GraphicsTextureSet *)0x0) {
-    dVar5 = set->subresourceCount;
-    pGVar6 = set->entries;
+    dVar4 = set->subresourceCount;
+    pGVar5 = set->entries;
     do {
-      pGVar3 = pGVar6->texture;
-      if (pGVar3 != (GraphicsTextureResource *)0x0) {
-        iVar4 = 0x1000;
+      texture = pGVar5->texture;
+      if (texture != (GraphicsTextureResource *)0x0) {
+        iVar3 = 0x1000;
         ppGVar1 = g_GraphicsTextureSlots;
         do {
-          ppGVar7 = ppGVar1;
-          if (pGVar3 == *ppGVar7) break;
-          iVar4 = iVar4 + -1;
-          ppGVar1 = ppGVar7 + 1;
-        } while (iVar4 != 0);
-        *ppGVar7 = (GraphicsTextureResource *)0x0;
-        pGVar3 = GraphicsTexture_ReleaseObjects(pGVar3);
-        (*g_MemoryApi.free)(pGVar3);
-        dVar5 = extraout_EDX;
+          ppGVar6 = ppGVar1;
+          if (texture == *ppGVar6) break;
+          iVar3 = iVar3 + -1;
+          ppGVar1 = ppGVar6 + 1;
+        } while (iVar3 != 0);
+        *ppGVar6 = (GraphicsTextureResource *)0x0;
+        GraphicsTexture_ReleaseObjects(texture);
+        (*g_MemoryApi.free)(texture);
       }
-      pGVar6 = pGVar6 + 1;
-      dVar5 = dVar5 - 1;
-    } while (dVar5 != 0);
+      pGVar5 = pGVar5 + 1;
+      dVar4 = dVar4 - 1;
+    } while (dVar4 != 0);
     pGVar2 = GraphicsTextureSet_FreeMetadata(set);
   }
   return pGVar2;
 }
+
 
 /* Address: 0x00485E40.
    Ownership: graphics/resources/texture.
@@ -179,24 +186,31 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
    means success. CF set means package loading or texture-set creation failed.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-GraphicsTextureSet * __fastcall
-GraphicsTextureSet_LoadPackage(dword packageContext0,dword packageContext1,word *pathUtf16)
+GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsTextureSet_LoadPackage(word *pathUtf16)
 
 {
   GraphicsTextureSourceAsset *loadedTextureSource;
   GraphicsTextureSet *createdTextureSet;
-  undefined1 in_CF;
+  PackageLoadEntryEaxCf5 PVar1;
+  GraphicsTextureSetEaxCf5 GVar2;
   
-  loadedTextureSource = Package_LoadEntry(pathUtf16);
-  if (!(bool)in_CF) {
-    createdTextureSet = (*g_GraphicsCreateTextureSet)(loadedTextureSource);
-    if (!(bool)in_CF) {
-      return createdTextureSet;
+  PVar1 = Package_LoadEntry(pathUtf16);
+  loadedTextureSource = PVar1.bufferOrError;
+  if (!PVar1.carry) {
+    GVar2 = (*g_GraphicsCreateTextureSet)(loadedTextureSource);
+    createdTextureSet = GVar2.textureSet;
+    if (!GVar2.carry) {
+      return GVar2;
     }
-    loadedTextureSource = (GraphicsTextureSourceAsset *)Resource_Release(loadedTextureSource);
+    Resource_Release(loadedTextureSource);
+    loadedTextureSource = (GraphicsTextureSourceAsset *)createdTextureSet;
   }
-  return (GraphicsTextureSet *)loadedTextureSource;
+  GVar2.carry = true;
+  GVar2.textureSet = (GraphicsTextureSet *)loadedTextureSource;
+  return GVar2;
 }
+
 
 /* Address: 0x00485E80.
    Ownership: graphics/resources/texture.
@@ -204,7 +218,7 @@ GraphicsTextureSet_LoadPackage(dword packageContext0,dword packageContext1,word 
    asset, which this wrapper releases through Resource_Release.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
+void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
 
 {
   GraphicsTextureSourceAsset *allocation;
@@ -214,16 +228,18 @@ void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
   return;
 }
 
+
 /* Address: 0x00485FC0.
    Ownership: graphics/resources/texture.
    Purpose: Default two-argument refresh implementation used before a hardware backend replaces the service table.
 */
-void GraphicsTextureSet_RefreshNoOp
-               (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   return;
 }
+
 
 /* Address: 0x00486070.
    Ownership: graphics/resources/texture.
@@ -241,26 +257,37 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
    Purpose: Validates the source asset and subresource index. EAX returns logicalWidth and EDX returns
    logicalHeight. ABI: CF clear means success. CF set means failure.
 */
-qword GraphicsTextureSource_GetLogicalSizeRegs
-                (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
+GraphicsTextureSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+GraphicsTextureSource_GetLogicalSizeRegs
+          (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
   undefined4 in_EAX;
   undefined4 in_EDX;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
+  GraphicsTextureSizeEaxEdxCf9 GVar2;
   AssetRelativeOffset subresourceTableOffset;
   
   if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
      (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
     subresourceTableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
-    return CONCAT44(*(undefined4 *)
-                     ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     subresourceIndex * 0x20 + subresourceTableOffset + -0x24),
-                    *(undefined4 *)
-                     ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     subresourceIndex * 0x20 + subresourceTableOffset + -0x28));
+    GVar1.logicalHeightPixels =
+         *(undefined4 *)
+          ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+          subresourceIndex * 0x20 + subresourceTableOffset + -0x24);
+    GVar1.logicalWidthPixels =
+         *(undefined4 *)
+          ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+          subresourceIndex * 0x20 + subresourceTableOffset + -0x28);
+    GVar1.carry = false;
+    return GVar1;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  GVar2.logicalHeightPixels = in_EDX;
+  GVar2.logicalWidthPixels = in_EAX;
+  GVar2.carry = true;
+  return GVar2;
 }
+
 
 /* Address: 0x004A92C0.
    Ownership: graphics/resources/texture.
@@ -269,10 +296,11 @@ qword GraphicsTextureSource_GetLogicalSizeRegs
    ABI: CF set means the tested source pixel is opaque/hit. CF clear means transparent, outside the image, or
    invalid input.
 */
-void GraphicsTextureSource_TestOpaquePixel
-               (GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
-               GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
+bool __thandor_cf_preserve_eax_ecx_edx
+GraphicsTextureSource_TestOpaquePixel
+          (GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+          GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
   byte *pbVar1;
@@ -307,7 +335,7 @@ void GraphicsTextureSource_TestOpaquePixel
               *(uint *)(iVar4 * 4 +
                         *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                                 iVar5 + AVar2 + -0x1c) + (int)sourceAsset)) {
-            return;
+            return true;
           }
         }
         else if (0xffffff <
@@ -317,13 +345,14 @@ void GraphicsTextureSource_TestOpaquePixel
                                                            assetRelativeAddressAnchor28 +
                                                           iVar5 + AVar2 + -0x1c) + (int)sourceAsset)
                           * 8 + -0x28)) {
-          return;
+          return true;
         }
       }
     }
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x004A9A50.
    Ownership: graphics/resources/texture.
@@ -333,47 +362,45 @@ void GraphicsTextureSource_TestOpaquePixel
    dimensions until it covers the clipping minimum. CF is cleared before return. It selects an existing resource
    facet and does not imply sprite, model, or effect identity.
 */
-void GraphicsTextureSource_BlitTiledSourceAlpha
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-               GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSource_BlitTiledSourceAlpha
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
+          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
-  int iVar1;
-  int iVar2;
+  dword dVar1;
   int arg5;
-  GraphicsPixelDimension extraout_ECX;
-  int iVar3;
-  sdword arg4;
-  bool bVar4;
-  qword qVar5;
+  dword dVar2;
+  int arg4;
+  bool bVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
-  qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
-  iVar3 = (int)(qVar5 >> 0x20);
-  iVar1 = (int)qVar5;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  dVar2 = GVar4.logicalHeightPixels;
+  dVar1 = GVar4.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
-    repeatEndX = tileOriginX + iVar1;
+    repeatEndX = tileOriginX + dVar1;
   }
   if (repeatEndY == -0x80000000) {
-    repeatEndY = tileOriginY + iVar3;
+    repeatEndY = tileOriginY + dVar2;
   }
   do {
     do {
-      bVar4 = SCARRY4(tileOriginX,iVar1);
-      tileOriginX = tileOriginX + iVar1;
-    } while (tileOriginX == 0 || bVar4 != tileOriginX < 0);
+      bVar3 = SCARRY4(tileOriginX,dVar1);
+      tileOriginX = tileOriginX + dVar1;
+    } while (tileOriginX == 0 || bVar3 != tileOriginX < 0);
   } while (tileOriginX <= clipMinX);
-  iVar2 = tileOriginX - iVar1;
   do {
     do {
-      bVar4 = SCARRY4(tileOriginY,iVar3);
-      tileOriginY = tileOriginY + iVar3;
-    } while (tileOriginY == 0 || bVar4 != tileOriginY < 0);
+      bVar3 = SCARRY4(tileOriginY,dVar2);
+      tileOriginY = tileOriginY + dVar2;
+    } while (tileOriginY == 0 || bVar3 != tileOriginY < 0);
   } while (tileOriginY <= clipMinY);
-  arg4 = tileOriginY - iVar3;
+  arg4 = tileOriginY - dVar2;
   if (clipMaxX < repeatEndX) {
     repeatEndX = clipMaxX;
   }
@@ -386,22 +413,19 @@ void GraphicsTextureSource_BlitTiledSourceAlpha
   if ((int)framebuffer->height < repeatEndY) {
     repeatEndY = framebuffer->height;
   }
-  if ((iVar2 < repeatEndX) && (arg5 = iVar2, arg4 < repeatEndY)) {
-    do {
+  if ((int)(tileOriginX - dVar1) < repeatEndX) {
+    for (; arg5 = tileOriginX - dVar1, arg4 < repeatEndY; arg4 = arg4 + dVar2) {
       do {
-        qVar5 = (*g_GraphicsTextureSourceBlitSourceAlpha)
-                          (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,
-                           sourceAsset,framebuffer);
-        arg4 = (sdword)(qVar5 >> 0x20);
-        arg5 = (int)qVar5 + iVar1;
-        repeatEndY = extraout_ECX;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,sourceAsset,
+                   framebuffer);
+        arg5 = arg5 + dVar1;
       } while (arg5 < repeatEndX);
-      arg4 = arg4 + iVar3;
-      arg5 = iVar2;
-    } while (arg4 < (int)extraout_ECX);
+    }
   }
   return;
 }
+
 
 /* Address: 0x004AA0A0.
    Ownership: graphics/resources/texture.
@@ -411,47 +435,45 @@ void GraphicsTextureSource_BlitTiledSourceAlpha
    cleared before return. It selects an existing resource facet and does not imply sprite, model, or effect
    identity.
 */
-void GraphicsTextureSource_BlitTiledHalfSourceRgb
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-               GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSource_BlitTiledHalfSourceRgb
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
+          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
-  int iVar1;
-  int iVar2;
+  dword dVar1;
   int arg5;
-  GraphicsPixelDimension extraout_ECX;
-  int iVar3;
-  sdword arg4;
-  bool bVar4;
-  qword qVar5;
+  dword dVar2;
+  int arg4;
+  bool bVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
-  qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
-  iVar3 = (int)(qVar5 >> 0x20);
-  iVar1 = (int)qVar5;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  dVar2 = GVar4.logicalHeightPixels;
+  dVar1 = GVar4.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
-    repeatEndX = tileOriginX + iVar1;
+    repeatEndX = tileOriginX + dVar1;
   }
   if (repeatEndY == -0x80000000) {
-    repeatEndY = tileOriginY + iVar3;
+    repeatEndY = tileOriginY + dVar2;
   }
   do {
     do {
-      bVar4 = SCARRY4(tileOriginX,iVar1);
-      tileOriginX = tileOriginX + iVar1;
-    } while (tileOriginX == 0 || bVar4 != tileOriginX < 0);
+      bVar3 = SCARRY4(tileOriginX,dVar1);
+      tileOriginX = tileOriginX + dVar1;
+    } while (tileOriginX == 0 || bVar3 != tileOriginX < 0);
   } while (tileOriginX <= clipMinX);
-  iVar2 = tileOriginX - iVar1;
   do {
     do {
-      bVar4 = SCARRY4(tileOriginY,iVar3);
-      tileOriginY = tileOriginY + iVar3;
-    } while (tileOriginY == 0 || bVar4 != tileOriginY < 0);
+      bVar3 = SCARRY4(tileOriginY,dVar2);
+      tileOriginY = tileOriginY + dVar2;
+    } while (tileOriginY == 0 || bVar3 != tileOriginY < 0);
   } while (tileOriginY <= clipMinY);
-  arg4 = tileOriginY - iVar3;
+  arg4 = tileOriginY - dVar2;
   if (clipMaxX < repeatEndX) {
     repeatEndX = clipMaxX;
   }
@@ -464,22 +486,19 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb
   if ((int)framebuffer->height < repeatEndY) {
     repeatEndY = framebuffer->height;
   }
-  if ((iVar2 < repeatEndX) && (arg5 = iVar2, arg4 < repeatEndY)) {
-    do {
+  if ((int)(tileOriginX - dVar1) < repeatEndX) {
+    for (; arg5 = tileOriginX - dVar1, arg4 < repeatEndY; arg4 = arg4 + dVar2) {
       do {
-        qVar5 = (*g_GraphicsTextureSourceBlitHalfSourceRgb)
-                          (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,
-                           sourceAsset,framebuffer);
-        arg4 = (sdword)(qVar5 >> 0x20);
-        arg5 = (int)qVar5 + iVar1;
-        repeatEndY = extraout_ECX;
+        (*g_GraphicsTextureSourceBlitHalfSourceRgb)
+                  (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,sourceAsset,
+                   framebuffer);
+        arg5 = arg5 + dVar1;
       } while (arg5 < repeatEndX);
-      arg4 = arg4 + iVar3;
-      arg5 = iVar2;
-    } while (arg4 < (int)extraout_ECX);
+    }
   }
   return;
 }
+
 
 /* Address: 0x004AB9A0.
    Ownership: graphics/resources/texture.
@@ -488,47 +507,45 @@ void GraphicsTextureSource_BlitTiledHalfSourceRgb
    wrapper aligns the first tile backward to cover the clipping minimum. CF is cleared before return. It selects an
    existing resource facet and does not imply sprite, model, or effect identity.
 */
-void GraphicsTextureSource_BlitTiledSaturatedAddRgb
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-               GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSource_BlitTiledSaturatedAddRgb
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
+          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
-  int iVar1;
-  int iVar2;
+  dword dVar1;
   int arg5;
-  GraphicsPixelDimension extraout_ECX;
-  int iVar3;
-  sdword arg4;
-  bool bVar4;
-  qword qVar5;
+  dword dVar2;
+  int arg4;
+  bool bVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
-  qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
-  iVar3 = (int)(qVar5 >> 0x20);
-  iVar1 = (int)qVar5;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  dVar2 = GVar4.logicalHeightPixels;
+  dVar1 = GVar4.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
-    repeatEndX = tileOriginX + iVar1;
+    repeatEndX = tileOriginX + dVar1;
   }
   if (repeatEndY == -0x80000000) {
-    repeatEndY = tileOriginY + iVar3;
+    repeatEndY = tileOriginY + dVar2;
   }
   do {
     do {
-      bVar4 = SCARRY4(tileOriginX,iVar1);
-      tileOriginX = tileOriginX + iVar1;
-    } while (tileOriginX == 0 || bVar4 != tileOriginX < 0);
+      bVar3 = SCARRY4(tileOriginX,dVar1);
+      tileOriginX = tileOriginX + dVar1;
+    } while (tileOriginX == 0 || bVar3 != tileOriginX < 0);
   } while (tileOriginX <= clipMinX);
-  iVar2 = tileOriginX - iVar1;
   do {
     do {
-      bVar4 = SCARRY4(tileOriginY,iVar3);
-      tileOriginY = tileOriginY + iVar3;
-    } while (tileOriginY == 0 || bVar4 != tileOriginY < 0);
+      bVar3 = SCARRY4(tileOriginY,dVar2);
+      tileOriginY = tileOriginY + dVar2;
+    } while (tileOriginY == 0 || bVar3 != tileOriginY < 0);
   } while (tileOriginY <= clipMinY);
-  arg4 = tileOriginY - iVar3;
+  arg4 = tileOriginY - dVar2;
   if (clipMaxX < repeatEndX) {
     repeatEndX = clipMaxX;
   }
@@ -541,22 +558,19 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb
   if ((int)framebuffer->height < repeatEndY) {
     repeatEndY = framebuffer->height;
   }
-  if ((iVar2 < repeatEndX) && (arg5 = iVar2, arg4 < repeatEndY)) {
-    do {
+  if ((int)(tileOriginX - dVar1) < repeatEndX) {
+    for (; arg5 = tileOriginX - dVar1, arg4 < repeatEndY; arg4 = arg4 + dVar2) {
       do {
-        qVar5 = (*g_GraphicsTextureSourceBlitSaturatedAddRgb)
-                          (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,
-                           sourceAsset,framebuffer);
-        arg4 = (sdword)(qVar5 >> 0x20);
-        arg5 = (int)qVar5 + iVar1;
-        repeatEndY = extraout_ECX;
+        (*g_GraphicsTextureSourceBlitSaturatedAddRgb)
+                  (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,sourceAsset,
+                   framebuffer);
+        arg5 = arg5 + dVar1;
       } while (arg5 < repeatEndX);
-      arg4 = arg4 + iVar3;
-      arg5 = iVar2;
-    } while (arg4 < (int)extraout_ECX);
+    }
   }
   return;
 }
+
 
 /* Address: 0x004ABF70.
    Ownership: graphics/resources/texture.
@@ -565,47 +579,45 @@ void GraphicsTextureSource_BlitTiledSaturatedAddRgb
    wrapper aligns the first tile backward to cover the clipping minimum. CF is cleared before return. It selects an
    existing resource facet and does not imply sprite, model, or effect identity.
 */
-void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
-               (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
-               GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
-               GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
-               GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
-               GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
-               SoftwareFramebufferAccess *framebuffer)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
+          GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
+          GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
+          GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
+          SoftwareFramebufferAccess *framebuffer)
 
 {
-  int iVar1;
-  int iVar2;
+  dword dVar1;
   int arg5;
-  GraphicsPixelDimension extraout_ECX;
-  int iVar3;
-  sdword arg4;
-  bool bVar4;
-  qword qVar5;
+  dword dVar2;
+  int arg4;
+  bool bVar3;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
-  qVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
-  iVar3 = (int)(qVar5 >> 0x20);
-  iVar1 = (int)qVar5;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  dVar2 = GVar4.logicalHeightPixels;
+  dVar1 = GVar4.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
-    repeatEndX = tileOriginX + iVar1;
+    repeatEndX = tileOriginX + dVar1;
   }
   if (repeatEndY == -0x80000000) {
-    repeatEndY = tileOriginY + iVar3;
+    repeatEndY = tileOriginY + dVar2;
   }
   do {
     do {
-      bVar4 = SCARRY4(tileOriginX,iVar1);
-      tileOriginX = tileOriginX + iVar1;
-    } while (tileOriginX == 0 || bVar4 != tileOriginX < 0);
+      bVar3 = SCARRY4(tileOriginX,dVar1);
+      tileOriginX = tileOriginX + dVar1;
+    } while (tileOriginX == 0 || bVar3 != tileOriginX < 0);
   } while (tileOriginX <= clipMinX);
-  iVar2 = tileOriginX - iVar1;
   do {
     do {
-      bVar4 = SCARRY4(tileOriginY,iVar3);
-      tileOriginY = tileOriginY + iVar3;
-    } while (tileOriginY == 0 || bVar4 != tileOriginY < 0);
+      bVar3 = SCARRY4(tileOriginY,dVar2);
+      tileOriginY = tileOriginY + dVar2;
+    } while (tileOriginY == 0 || bVar3 != tileOriginY < 0);
   } while (tileOriginY <= clipMinY);
-  arg4 = tileOriginY - iVar3;
+  arg4 = tileOriginY - dVar2;
   if (clipMaxX < repeatEndX) {
     repeatEndX = clipMaxX;
   }
@@ -618,21 +630,648 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   if ((int)framebuffer->height < repeatEndY) {
     repeatEndY = framebuffer->height;
   }
-  if ((iVar2 < repeatEndX) && (arg5 = iVar2, arg4 < repeatEndY)) {
-    do {
+  if ((int)(tileOriginX - dVar1) < repeatEndX) {
+    for (; arg5 = tileOriginX - dVar1, arg4 < repeatEndY; arg4 = arg4 + dVar2) {
       do {
-        qVar5 = (*g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd)
-                          (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,
-                           sourceAsset,framebuffer);
-        arg4 = (sdword)(qVar5 >> 0x20);
-        arg5 = (int)qVar5 + iVar1;
-        repeatEndY = extraout_ECX;
+        (*g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd)
+                  (repeatEndY,repeatEndX,clipMinY,clipMinX,arg4,arg5,subresourceIndex,sourceAsset,
+                   framebuffer);
+        arg5 = arg5 + dVar1;
       } while (arg5 < repeatEndX);
-      arg4 = arg4 + iVar3;
-      arg5 = iVar2;
-    } while (arg4 < (int)extraout_ECX);
+    }
   }
   return;
+}
+
+
+/* Address: 0x004AC8E0.
+   Ownership: graphics/resources/texture.
+   Purpose: Decomposes texture-source subresource regions and returns the recovered EAX/CF asset result.
+*/
+GraphicsTextureSourceAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsTextureSource_DecomposeSubresourceRegionsCf
+          (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset)
+
+{
+  word *pwVar1;
+  byte bVar2;
+  byte bVar3;
+  int iVar4;
+  uint uVar5;
+  uint uVar6;
+  GraphicsTextureSourceAsset *pGVar7;
+  dword dVar8;
+  dword dVar9;
+  int iVar10;
+  int iVar11;
+  int iVar12;
+  uint uVar13;
+  AssetSubresourceCount AVar14;
+  int iVar15;
+  int iVar16;
+  uint uVar17;
+  uint uVar18;
+  uint uVar19;
+  uint uVar20;
+  int iVar21;
+  int iVar22;
+  uint uVar23;
+  byte *pbVar24;
+  PckConverterVersion PVar25;
+  uint *puVar26;
+  uint *puVar27;
+  GraphicsTextureSourceAsset *pGVar28;
+  byte *pbVar29;
+  byte *pbVar30;
+  byte *pbVar31;
+  byte *pbVar32;
+  uint *puVar33;
+  uint *puVar34;
+  uint *puVar35;
+  bool bVar37;
+  bool bVar38;
+  ArenaShrinkEaxCf5 AVar39;
+  GraphicsTextureSourceAssetEaxCf5 GVar40;
+  GraphicsTextureSourceAssetEaxCf5 GVar41;
+  GraphicsTextureSourceAssetEaxCf5 GVar42;
+  ArenaLargestAllocationEaxEcxCf9 AVar43;
+  uint *puStackY_4c;
+  uint uStack_38;
+  uint *puStack_34;
+  int iStack_2c;
+  int iStack_24;
+  uint *puVar36;
+  
+  GVar40.assetOrError = (GraphicsTextureSourceAsset *)0x2c;
+  if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
+     ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) goto LAB_004ad0f7;
+  iVar12 = entryIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
+  iVar21 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+                   iVar12 + -0x10);
+  iStack_24 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+                      iVar12 + -0xc);
+  AVar43 = (*g_MemoryApi.allocLargestFreeBlock)();
+  dVar9 = AVar43.blockSizeOrSentinel;
+  GVar40.assetOrError = (GraphicsTextureSourceAsset *)AVar43.allocationOrError;
+  if (AVar43.carry) goto LAB_004ad0f7;
+  pGVar7 = sourceAsset;
+  pGVar28 = GVar40.assetOrError;
+  for (iVar10 = 0x80; iVar10 != 0; iVar10 = iVar10 + -1) {
+    (pGVar28->common).magic = (pGVar7->common).magic;
+    pGVar7 = (GraphicsTextureSourceAsset *)&(pGVar7->common).allocationSizeBytes;
+    pGVar28 = (GraphicsTextureSourceAsset *)&(pGVar28->common).allocationSizeBytes;
+  }
+  iVar11 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+                   iVar12 + -0x20);
+  pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+  iVar10 = dVar9 - 0x200;
+  if (iVar10 != 0 && 0x1ff < (int)dVar9) {
+    iVar12 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+                     iVar12 + -0x1c);
+    dVar8 = (*g_LocaleGetPackedCurrentTime)();
+    ((GVar40.assetOrError)->common).buildMetadata.timestamps.dateValue1 = dVar8;
+    ((GVar40.assetOrError)->common).buildMetadata.timestamps.dateValue2 = dVar8;
+    dVar8 = (*g_LocaleGetPackedCurrentDate)();
+    ((GVar40.assetOrError)->common).buildMetadata.timestamps.timeValue1 = dVar8;
+    ((GVar40.assetOrError)->common).buildMetadata.timestamps.timeValue2 = dVar8;
+    (*g_LocaleCopyDefaultComputerLabelUtf16)
+              (((GVar40.assetOrError)->common).buildMetadata.names.sourceName);
+    pbVar24 = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + iVar12 + -0x28;
+    if (iVar11 == -1) {
+      ((GVar40.assetOrError)->tableDescriptor).paletteBankCount = 0;
+      ((GVar40.assetOrError)->tableDescriptor).subresourceCount = 0;
+      ((GVar40.assetOrError)->tableDescriptor).subresourceTableOffset = 0x200;
+      uVar13 = *(uint *)pbVar24;
+      uVar17 = iVar21 * iStack_24;
+      bVar37 = true;
+      uVar18 = uVar17;
+      pbVar29 = pbVar24;
+      do {
+        pbVar30 = pbVar29;
+        if (uVar18 == 0) break;
+        uVar18 = uVar18 - 1;
+        pbVar30 = pbVar29 + 4;
+        bVar37 = uVar13 == *(uint *)pbVar29;
+        pbVar29 = pbVar30;
+      } while (bVar37);
+      uVar18 = *(uint *)(pbVar30 + -4);
+      pGVar7 = (GraphicsTextureSourceAsset *)0x2d;
+      if (!bVar37) {
+        pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+        iStack_2c = iVar10 + uVar17 * -4;
+        if (iStack_2c != 0 && (int)(uVar17 * 4) <= iVar10) {
+          puVar26 = (uint *)((int)GVar40.assetOrError + iStack_2c + 0x200);
+          bVar37 = puVar26 == (uint *)0x0;
+          puVar27 = puVar26;
+          for (uVar17 = uVar17 & 0x3fffffff; uVar17 != 0; uVar17 = uVar17 - 1) {
+            *puVar27 = *(uint *)pbVar24;
+            pbVar24 = pbVar24 + 4;
+            puVar27 = puVar27 + 1;
+          }
+          uStack_38 = 0;
+          iVar12 = iVar21;
+          puStack_34 = puVar26;
+code_r0x004ace04:
+          do {
+            if (iVar12 != 0) {
+              iVar12 = iVar12 + -1;
+              puVar27 = puVar26 + 1;
+              bVar37 = uVar13 == *puVar26;
+              puVar26 = puVar27;
+              if (bVar37) goto code_r0x004ace04;
+            }
+            if (!bVar37) {
+              pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+              iVar10 = iStack_2c + -0x20;
+              if (iVar10 == 0 || iStack_2c < 0x20) goto LAB_004ad0ec;
+              AVar14 = ((GVar40.assetOrError)->tableDescriptor).subresourceCount;
+              puVar26 = puVar26 + -1;
+              iVar12 = iVar12 + 1;
+              ((GVar40.assetOrError)->tableDescriptor).subresourceCount =
+                   ((GVar40.assetOrError)->tableDescriptor).subresourceCount + 1;
+              iVar22 = AVar14 * 0x20;
+              bVar37 = iVar22 == 0;
+              iVar11 = iVar12;
+              puVar27 = puVar26;
+              do {
+                puVar33 = puVar27;
+                if (iVar11 == 0) break;
+                iVar11 = iVar11 + -1;
+                puVar33 = puVar27 + 1;
+                bVar37 = uVar13 == *puVar27;
+                puVar27 = puVar33;
+              } while (!bVar37);
+              if (bVar37) {
+                puVar33 = puVar33 + -1;
+              }
+              pbVar24 = GVar40.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                        iVar22 + -0x28;
+              *(uint *)pbVar24 = (uint)((int)puVar33 - (int)puVar26) >> 2;
+              pbVar24[4] = 0;
+              pbVar24[5] = 0;
+              pbVar24[6] = 0;
+              pbVar24[7] = 0;
+              *(word *)((int)(pbVar24 + 0x10) + 0) = 0;
+              *(word *)((int)(pbVar24 + 0x10) + 2) = 0;
+              *(word *)((int)(pbVar24 + 0x14) + 0) = 0;
+              *(word *)((int)(pbVar24 + 0x14) + 2) = 0;
+              ((AssetProducerSourceNames *)(pbVar24 + 8))->producerName[0] = 0xffff;
+              ((AssetProducerSourceNames *)(pbVar24 + 8))->producerName[1] = 0xffff;
+              iVar11 = iStack_24;
+              puVar27 = puVar26;
+              do {
+                *(uint *)(pbVar24 + 4) = *(uint *)(pbVar24 + 4) + 1;
+                puVar27 = puVar27 + iVar21;
+                iVar11 = iVar11 + -1;
+                bVar37 = true;
+                if (iVar11 == 0) break;
+                bVar37 = uVar13 == *puVar27;
+              } while (!bVar37);
+              *(uint *)(pbVar24 + 0x18) = *(uint *)pbVar24;
+              *(uint *)(pbVar24 + 0x1c) = *(uint *)(pbVar24 + 4);
+              puVar27 = puVar26;
+              do {
+                uVar17 = *(uint *)pbVar24;
+                puVar33 = puVar27;
+                do {
+                  if (uVar17 == 0) break;
+                  uVar17 = uVar17 - 1;
+                  bVar37 = uVar18 == *puVar33;
+                  puVar33 = puVar33 + 1;
+                } while (bVar37);
+                if ((!bVar37) || (0xffffff < uVar18)) goto LAB_004acf82;
+                puVar27 = puVar27 + iVar21;
+                *(uint *)(pbVar24 + 0x14) = *(uint *)(pbVar24 + 0x14) + 1;
+                pwVar1 = (word *)(pbVar24 + 0x1c);
+                *(uint *)pwVar1 = *(uint *)pwVar1 - 1;
+                bVar37 = *(uint *)pwVar1 == 0;
+              } while (!bVar37);
+              puVar27 = puVar27 + -iVar21;
+              *(uint *)(pbVar24 + 0x14) = *(uint *)(pbVar24 + 0x14) - 1;
+              *(uint *)(pbVar24 + 0x1c) = *(uint *)(pbVar24 + 0x1c) + 1;
+LAB_004acf82:
+              puVar33 = (uint *)((int)puVar27 + iVar21 * 4 * *(uint *)(pbVar24 + 0x1c));
+              do {
+                puVar33 = puVar33 + -iVar21;
+                bVar37 = puVar33 == (uint *)0x0;
+                uVar17 = *(uint *)pbVar24;
+                puVar34 = puVar33;
+                do {
+                  if (uVar17 == 0) break;
+                  uVar17 = uVar17 - 1;
+                  bVar37 = uVar18 == *puVar34;
+                  puVar34 = puVar34 + 1;
+                } while (bVar37);
+                if ((!bVar37) || (0xffffff < uVar18)) goto LAB_004acfc4;
+                pwVar1 = (word *)(pbVar24 + 0x1c);
+                *(uint *)pwVar1 = *(uint *)pwVar1 - 1;
+              } while (*(uint *)pwVar1 != 0);
+              *(uint *)(pbVar24 + 0x1c) = *(uint *)(pbVar24 + 0x1c) + 1;
+LAB_004acfc4:
+              uVar17 = *(uint *)(pbVar24 + 0x1c);
+              puStackY_4c = puVar27;
+              puVar33 = puVar27;
+              if ((uVar18 & 0xff000000) == 0) {
+                do {
+                  do {
+                    puStackY_4c = puVar33;
+                    if (uVar18 != *puVar27) goto LAB_004ad012;
+                    puVar27 = puVar27 + iVar21;
+                    uVar17 = uVar17 - 1;
+                    puVar33 = puStackY_4c;
+                  } while (uVar17 != 0);
+                  *(uint *)(pbVar24 + 0x10) = *(uint *)(pbVar24 + 0x10) + 1;
+                  puVar27 = puStackY_4c + 1;
+                  uVar17 = *(uint *)(pbVar24 + 0x1c);
+                  pwVar1 = (word *)(pbVar24 + 0x18);
+                  *(uint *)pwVar1 = *(uint *)pwVar1 - 1;
+                  puVar33 = puVar27;
+                } while (*(uint *)pwVar1 != 0);
+                *(uint *)(pbVar24 + 0x10) = *(uint *)(pbVar24 + 0x10) - 1;
+                *(uint *)(pbVar24 + 0x18) = *(uint *)(pbVar24 + 0x18) + 1;
+              }
+LAB_004ad012:
+              puVar27 = puStackY_4c;
+              uVar17 = *(uint *)(pbVar24 + 0x1c);
+              puVar33 = (uint *)((int)puStackY_4c +
+                                *(uint *)(pbVar24 + 0x18) +
+                                *(uint *)(pbVar24 + 0x18) +
+                                *(uint *)(pbVar24 + 0x18) + *(uint *)(pbVar24 + 0x18) + -4);
+              puStackY_4c = puVar33;
+              if ((uVar18 & 0xff000000) == 0) {
+                do {
+                  do {
+                    if (uVar18 != *puVar33) goto LAB_004ad066;
+                    puVar33 = puVar33 + iVar21;
+                    uVar17 = uVar17 - 1;
+                  } while (uVar17 != 0);
+                  uVar17 = *(uint *)(pbVar24 + 0x1c);
+                  puVar33 = puStackY_4c + -1;
+                  pwVar1 = (word *)(pbVar24 + 0x18);
+                  *(uint *)pwVar1 = *(uint *)pwVar1 - 1;
+                  puStackY_4c = puVar33;
+                } while (*(uint *)pwVar1 != 0);
+                *(uint *)(pbVar24 + 0x18) = *(uint *)(pbVar24 + 0x18) + 1;
+              }
+LAB_004ad066:
+              uVar17 = *(uint *)(pbVar24 + 0x1c);
+              iVar11 = *(uint *)(pbVar24 + 0x18) * uVar17;
+              iStack_2c = iVar10 + iVar11 * -4;
+              if (iStack_2c == 0 || iVar10 < iVar11 * 4) goto LAB_004ad0e9;
+              puStack_34 = puStack_34 + -iVar11;
+              uStack_38 = uStack_38 + iVar11 * 4;
+              uVar5 = *(uint *)pbVar24;
+              uVar23 = *(uint *)(pbVar24 + 4);
+              uVar6 = *(uint *)(pbVar24 + 0x18);
+              uVar19 = uVar6;
+              puVar33 = puStack_34;
+              puVar34 = puVar27;
+              do {
+                for (; uVar19 != 0; uVar19 = uVar19 - 1) {
+                  *puVar33 = *puVar27;
+                  puVar27 = puVar27 + 1;
+                  puVar33 = puVar33 + 1;
+                }
+                puVar27 = puVar34 + iVar21;
+                uVar17 = uVar17 - 1;
+                uVar20 = uVar5;
+                uVar19 = uVar6;
+                puVar35 = puVar26;
+                puVar34 = puVar27;
+                puVar36 = puVar26;
+              } while (uVar17 != 0);
+              do {
+                for (; uVar20 != 0; uVar20 = uVar20 - 1) {
+                  *puVar35 = uVar13;
+                  puVar35 = puVar35 + 1;
+                }
+                uVar23 = uVar23 - 1;
+                uVar20 = uVar5;
+                puVar35 = puVar36 + iVar21;
+                puVar36 = puVar36 + iVar21;
+              } while (uVar23 != 0);
+              bVar37 = &stack0x00000000 == (undefined1 *)0x40;
+              goto code_r0x004ace04;
+            }
+            iStack_24 = iStack_24 + -1;
+            bVar37 = iStack_24 == 0;
+            iVar12 = iVar21;
+          } while (!bVar37);
+          iVar21 = ((GVar40.assetOrError)->tableDescriptor).subresourceCount * 0x20;
+          uVar13 = uStack_38 >> 2;
+          ((GVar40.assetOrError)->common).allocationSizeBytes = uStack_38 + iVar21 + 0x200;
+          pbVar24 = GVar40.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                    iVar21 + -0x28;
+          for (; uVar13 != 0; uVar13 = uVar13 - 1) {
+            *(uint *)pbVar24 = *puStack_34;
+            puStack_34 = puStack_34 + 1;
+            pbVar24 = pbVar24 + 4;
+          }
+          AVar39 = (*g_MemoryApi.shrinkInPlace)
+                             (((GVar40.assetOrError)->common).allocationSizeBytes,
+                              GVar40.assetOrError);
+          pGVar7 = (GraphicsTextureSourceAsset *)AVar39.scratchOrError;
+          if (!AVar39.carry) {
+            PVar25 = ((GVar40.assetOrError)->common).allocationSizeBytes;
+            pGVar7 = GVar40.assetOrError + 1;
+            AVar14 = ((GVar40.assetOrError)->tableDescriptor).subresourceCount;
+            do {
+              PVar25 = PVar25 + (pGVar7->common).buildMetadata.timestamps.dateValue1 *
+                                (pGVar7->common).buildMetadata.timestamps.timeValue1 * -4;
+              (pGVar7->common).converterVersion = PVar25;
+              pGVar7 = (GraphicsTextureSourceAsset *)
+                       &(pGVar7->common).buildMetadata.timestamps.dateValue2;
+              AVar14 = AVar14 - 1;
+            } while (AVar14 != 0);
+            GVar41.carry = false;
+            GVar41.assetOrError = GVar40.assetOrError;
+            return GVar41;
+          }
+        }
+      }
+    }
+    else {
+      ((GVar40.assetOrError)->tableDescriptor).paletteBankCount = 1;
+      ((GVar40.assetOrError)->tableDescriptor).subresourceCount = 0;
+      ((GVar40.assetOrError)->tableDescriptor).subresourceTableOffset = 0xa00;
+      pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+      iVar12 = dVar9 - 0xa00;
+      if (iVar12 != 0 && 0x7ff < iVar10) {
+        pGVar7 = sourceAsset + iVar11 * 4 + 1;
+        pGVar28 = GVar40.assetOrError + 1;
+        for (iVar10 = 0x200; iVar10 != 0; iVar10 = iVar10 + -1) {
+          (pGVar28->common).magic = (pGVar7->common).magic;
+          pGVar7 = (GraphicsTextureSourceAsset *)&(pGVar7->common).allocationSizeBytes;
+          pGVar28 = (GraphicsTextureSourceAsset *)&(pGVar28->common).allocationSizeBytes;
+        }
+        bVar2 = *pbVar24;
+        iVar11 = iVar21 * iStack_24;
+        bVar37 = true;
+        iVar10 = iVar11;
+        pbVar29 = pbVar24;
+        do {
+          pbVar30 = pbVar29;
+          if (iVar10 == 0) break;
+          iVar10 = iVar10 + -1;
+          pbVar30 = pbVar29 + 1;
+          bVar37 = bVar2 == *pbVar29;
+          pbVar29 = pbVar30;
+        } while (bVar37);
+        bVar3 = pbVar30[-1];
+        pGVar7 = (GraphicsTextureSourceAsset *)0x2d;
+        if (!bVar37) {
+          pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+          iVar10 = iVar12 - iVar11;
+          if (iVar10 != 0 && iVar11 <= iVar12) {
+            pbVar29 = (byte *)((int)pGVar28 + iVar10);
+            pbVar30 = pbVar29;
+            for (; iVar11 != 0; iVar11 = iVar11 + -1) {
+              *pbVar30 = *pbVar24;
+              pbVar24 = pbVar24 + 1;
+              pbVar30 = pbVar30 + 1;
+            }
+            bVar37 = (*(uint *)(GVar40.assetOrError[1].common.buildMetadata.
+                                assetRelativeAddressAnchor28 + (uint)bVar3 * 8 + -0x28) & 0xff000000
+                     ) == 0;
+            pbVar24 = GVar40.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                      (uint)bVar3 * 8 + -0x28;
+            *(uint *)pbVar24 = *(uint *)pbVar24 & 0xffffff;
+            puStack_34 = (uint *)((uint)pbVar29 & 0xfffffffc);
+            uStack_38 = 0;
+            pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+            iStack_2c = iVar10 + -3;
+            bVar38 = iStack_2c == 0;
+            iVar12 = iVar21;
+            if (!bVar38 && 2 < iVar10) {
+code_r0x004acaa4:
+              do {
+                if (iVar12 != 0) {
+                  iVar12 = iVar12 + -1;
+                  pbVar24 = pbVar29 + 1;
+                  bVar38 = bVar2 == *pbVar29;
+                  pbVar29 = pbVar24;
+                  if (bVar38) goto code_r0x004acaa4;
+                }
+                if (!bVar38) {
+                  pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+                  iVar10 = iStack_2c + -0x20;
+                  if (iVar10 == 0 || iStack_2c < 0x20) goto LAB_004ad0ec;
+                  AVar14 = ((GVar40.assetOrError)->tableDescriptor).subresourceCount;
+                  pbVar29 = pbVar29 + -1;
+                  ((GVar40.assetOrError)->tableDescriptor).subresourceCount =
+                       ((GVar40.assetOrError)->tableDescriptor).subresourceCount + 1;
+                  iVar22 = AVar14 * 0x20;
+                  bVar38 = iVar22 == 0;
+                  iVar11 = iVar12 + 1;
+                  pbVar24 = pbVar29;
+                  do {
+                    pbVar30 = pbVar24;
+                    if (iVar11 == 0) break;
+                    iVar11 = iVar11 + -1;
+                    pbVar30 = pbVar24 + 1;
+                    bVar38 = bVar2 == *pbVar24;
+                    pbVar24 = pbVar30;
+                  } while (!bVar38);
+                  if (bVar38) {
+                    pbVar30 = pbVar30 + -1;
+                  }
+                  pbVar24 = GVar40.assetOrError[5].common.buildMetadata.assetRelativeAddressAnchor28
+                            + iVar22 + -0x28;
+                  *(int *)pbVar24 = (int)pbVar30 - (int)pbVar29;
+                  pbVar24[4] = 0;
+                  pbVar24[5] = 0;
+                  pbVar24[6] = 0;
+                  pbVar24[7] = 0;
+                  *(word *)((int)(pbVar24 + 0x10) + 0) = 0;
+                  *(word *)((int)(pbVar24 + 0x10) + 2) = 0;
+                  *(word *)((int)(pbVar24 + 0x14) + 0) = 0;
+                  *(word *)((int)(pbVar24 + 0x14) + 2) = 0;
+                  ((AssetProducerSourceNames *)(pbVar24 + 8))->producerName[0] = 0;
+                  ((AssetProducerSourceNames *)(pbVar24 + 8))->producerName[1] = 0;
+                  iVar11 = iStack_24;
+                  pbVar30 = pbVar29;
+                  do {
+                    *(int *)(pbVar24 + 4) = *(int *)(pbVar24 + 4) + 1;
+                    pbVar30 = pbVar30 + iVar21;
+                    iVar11 = iVar11 + -1;
+                    bVar38 = true;
+                    if (iVar11 == 0) break;
+                    bVar38 = bVar2 == *pbVar30;
+                  } while (!bVar38);
+                  *(int *)(pbVar24 + 0x18) = *(int *)pbVar24;
+                  *(int *)(pbVar24 + 0x1c) = *(int *)(pbVar24 + 4);
+                  pbVar30 = pbVar29;
+                  do {
+                    iVar11 = *(int *)pbVar24;
+                    pbVar31 = pbVar30;
+                    do {
+                      if (iVar11 == 0) break;
+                      iVar11 = iVar11 + -1;
+                      bVar38 = bVar3 == *pbVar31;
+                      pbVar31 = pbVar31 + 1;
+                    } while (bVar38);
+                    if ((!bVar38) || (!bVar37)) goto LAB_004acc23;
+                    pbVar30 = pbVar30 + iVar21;
+                    *(int *)(pbVar24 + 0x14) = *(int *)(pbVar24 + 0x14) + 1;
+                    pwVar1 = (word *)(pbVar24 + 0x1c);
+                    *(int *)pwVar1 = *(int *)pwVar1 + -1;
+                    bVar38 = *(int *)pwVar1 == 0;
+                  } while (!bVar38);
+                  pbVar30 = pbVar30 + -iVar21;
+                  *(int *)(pbVar24 + 0x14) = *(int *)(pbVar24 + 0x14) + -1;
+                  *(int *)(pbVar24 + 0x1c) = *(int *)(pbVar24 + 0x1c) + 1;
+LAB_004acc23:
+                  pbVar31 = pbVar30 + iVar21 * *(int *)(pbVar24 + 0x1c);
+                  do {
+                    pbVar31 = pbVar31 + -iVar21;
+                    bVar38 = pbVar31 == (byte *)0x0;
+                    iVar11 = *(int *)pbVar24;
+                    pbVar32 = pbVar31;
+                    do {
+                      if (iVar11 == 0) break;
+                      iVar11 = iVar11 + -1;
+                      bVar38 = bVar3 == *pbVar32;
+                      pbVar32 = pbVar32 + 1;
+                    } while (bVar38);
+                    if ((!bVar38) || (!bVar37)) goto LAB_004acc64;
+                    pwVar1 = (word *)(pbVar24 + 0x1c);
+                    *(int *)pwVar1 = *(int *)pwVar1 + -1;
+                  } while (*(int *)pwVar1 != 0);
+                  *(int *)(pbVar24 + 0x1c) = *(int *)(pbVar24 + 0x1c) + 1;
+LAB_004acc64:
+                  iVar11 = *(int *)(pbVar24 + 0x1c);
+                  puStackY_4c = (uint *)pbVar30;
+                  puVar26 = (uint *)pbVar30;
+                  if (bVar37) {
+                    do {
+                      do {
+                        puStackY_4c = puVar26;
+                        if (bVar3 != *pbVar30) goto LAB_004accb0;
+                        pbVar30 = pbVar30 + iVar21;
+                        iVar11 = iVar11 + -1;
+                        puVar26 = puStackY_4c;
+                      } while (iVar11 != 0);
+                      *(int *)(pbVar24 + 0x10) = *(int *)(pbVar24 + 0x10) + 1;
+                      pbVar30 = (byte *)((int)puStackY_4c + 1);
+                      iVar11 = *(int *)(pbVar24 + 0x1c);
+                      pwVar1 = (word *)(pbVar24 + 0x18);
+                      *(int *)pwVar1 = *(int *)pwVar1 + -1;
+                      puVar26 = (uint *)pbVar30;
+                    } while (*(int *)pwVar1 != 0);
+                    *(int *)(pbVar24 + 0x10) = *(int *)(pbVar24 + 0x10) + -1;
+                    *(int *)(pbVar24 + 0x18) = *(int *)(pbVar24 + 0x18) + 1;
+                  }
+LAB_004accb0:
+                  puVar26 = puStackY_4c;
+                  iVar11 = *(int *)(pbVar24 + 0x1c);
+                  pbVar30 = (byte *)((int)puStackY_4c + *(int *)(pbVar24 + 0x18) + -1);
+                  puStackY_4c = (uint *)pbVar30;
+                  if (bVar37) {
+                    do {
+                      do {
+                        if (bVar3 != *pbVar30) goto LAB_004accf1;
+                        pbVar30 = pbVar30 + iVar21;
+                        iVar11 = iVar11 + -1;
+                      } while (iVar11 != 0);
+                      iVar11 = *(int *)(pbVar24 + 0x1c);
+                      pbVar30 = (byte *)((int)puStackY_4c + -1);
+                      pwVar1 = (word *)(pbVar24 + 0x18);
+                      *(int *)pwVar1 = *(int *)pwVar1 + -1;
+                      puStackY_4c = (uint *)pbVar30;
+                    } while (*(int *)pwVar1 != 0);
+                    *(int *)(pbVar24 + 0x18) = *(int *)(pbVar24 + 0x18) + 1;
+                  }
+LAB_004accf1:
+                  iVar11 = *(int *)(pbVar24 + 0x1c);
+                  uVar13 = *(int *)(pbVar24 + 0x18) * iVar11 + 3U & 0xfffffffc;
+                  iStack_2c = iVar10 - uVar13;
+                  if (iStack_2c == 0 || iVar10 < (int)uVar13) goto LAB_004ad0e9;
+                  puStack_34 = (uint *)((int)puStack_34 + -uVar13);
+                  uStack_38 = uStack_38 + uVar13;
+                  iVar10 = *(int *)pbVar24;
+                  iVar22 = *(int *)(pbVar24 + 4);
+                  iVar4 = *(int *)(pbVar24 + 0x18);
+                  iVar15 = iVar4;
+                  pbVar24 = (byte *)puStack_34;
+                  puVar27 = puVar26;
+                  do {
+                    for (; iVar15 != 0; iVar15 = iVar15 + -1) {
+                      *pbVar24 = *(byte *)puVar26;
+                      puVar26 = (uint *)((int)puVar26 + 1);
+                      pbVar24 = pbVar24 + 1;
+                    }
+                    puVar26 = (uint *)((int)puVar27 + iVar21);
+                    iVar11 = iVar11 + -1;
+                    iVar16 = iVar10;
+                    iVar15 = iVar4;
+                    pbVar30 = pbVar29;
+                    puVar27 = puVar26;
+                    pbVar31 = pbVar29;
+                  } while (iVar11 != 0);
+                  do {
+                    for (; iVar16 != 0; iVar16 = iVar16 + -1) {
+                      *pbVar30 = bVar2;
+                      pbVar30 = pbVar30 + 1;
+                    }
+                    iVar22 = iVar22 + -1;
+                    iVar16 = iVar10;
+                    pbVar30 = pbVar31 + iVar21;
+                    pbVar31 = pbVar31 + iVar21;
+                  } while (iVar22 != 0);
+                  bVar38 = &stack0x00000000 == (undefined1 *)0x40;
+                  iVar12 = iVar12 + 1;
+                  goto code_r0x004acaa4;
+                }
+                iStack_24 = iStack_24 + -1;
+                bVar38 = iStack_24 == 0;
+                iVar12 = iVar21;
+              } while (!bVar38);
+              iVar21 = ((GVar40.assetOrError)->tableDescriptor).subresourceCount * 0x20;
+              uVar13 = uStack_38 >> 2;
+              ((GVar40.assetOrError)->common).allocationSizeBytes = uStack_38 + iVar21 + 0xa00;
+              pbVar24 = GVar40.assetOrError[5].common.buildMetadata.assetRelativeAddressAnchor28 +
+                        iVar21 + -0x28;
+              for (; uVar13 != 0; uVar13 = uVar13 - 1) {
+                *(uint *)pbVar24 = *puStack_34;
+                puStack_34 = (uint *)((int)puStack_34 + 4);
+                pbVar24 = pbVar24 + 4;
+              }
+              AVar39 = (*g_MemoryApi.shrinkInPlace)
+                                 (((GVar40.assetOrError)->common).allocationSizeBytes,
+                                  GVar40.assetOrError);
+              pGVar7 = (GraphicsTextureSourceAsset *)AVar39.scratchOrError;
+              if (!AVar39.carry) {
+                PVar25 = ((GVar40.assetOrError)->common).allocationSizeBytes;
+                pGVar7 = GVar40.assetOrError + 5;
+                AVar14 = ((GVar40.assetOrError)->tableDescriptor).subresourceCount;
+                do {
+                  PVar25 = PVar25 - ((pGVar7->common).buildMetadata.timestamps.dateValue1 *
+                                     (pGVar7->common).buildMetadata.timestamps.timeValue1 + 3 &
+                                    0xfffffffc);
+                  (pGVar7->common).converterVersion = PVar25;
+                  pGVar7 = (GraphicsTextureSourceAsset *)
+                           &(pGVar7->common).buildMetadata.timestamps.dateValue2;
+                  AVar14 = AVar14 - 1;
+                } while (AVar14 != 0);
+                GVar40.carry = false;
+                return GVar40;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+LAB_004ad0ec:
+  (*g_MemoryApi.free)(GVar40.assetOrError);
+  GVar40.assetOrError = pGVar7;
+LAB_004ad0f7:
+  GVar42.carry = true;
+  GVar42.assetOrError = GVar40.assetOrError;
+  return GVar42;
+LAB_004ad0e9:
+  pGVar7 = (GraphicsTextureSourceAsset *)0x14;
+  goto LAB_004ad0ec;
 }
 
 /* Address: 0x004AD630.
@@ -643,26 +1282,32 @@ void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
    means load or palette conversion failure.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-GraphicsTextureSourceAsset * __fastcall
-GraphicsTextureSource_LoadPackageAsset(dword packageContext0,dword packageContext1,word *pathUtf16)
+GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsTextureSource_LoadPackageAsset(word *pathUtf16)
 
 {
   GraphicsPaletteTextureSourceAsset *loadedPaletteTextureSource;
   GraphicsPaletteTextureSourceAsset *convertedTextureSource;
-  undefined1 in_CF;
+  PackageLoadEntryEaxCf5 PVar1;
+  GraphicsTextureSourceLoadEaxCf5 GVar2;
   
-  loadedPaletteTextureSource = Package_LoadEntry(pathUtf16);
-  if (!(bool)in_CF) {
-    convertedTextureSource =
-         (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource);
-    if (!(bool)in_CF) {
-      return (GraphicsTextureSourceAsset *)convertedTextureSource;
+  PVar1 = Package_LoadEntry(pathUtf16);
+  loadedPaletteTextureSource = PVar1.bufferOrError;
+  if (!PVar1.carry) {
+    GVar2 = (GraphicsTextureSourceLoadEaxCf5)
+            (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource);
+    convertedTextureSource = (GraphicsPaletteTextureSourceAsset *)GVar2.eax;
+    if (!GVar2.carry) {
+      return GVar2;
     }
-    loadedPaletteTextureSource =
-         (GraphicsPaletteTextureSourceAsset *)Resource_Release(loadedPaletteTextureSource);
+    Resource_Release(loadedPaletteTextureSource);
+    loadedPaletteTextureSource = convertedTextureSource;
   }
-  return (GraphicsTextureSourceAsset *)loadedPaletteTextureSource;
+  GVar2.carry = true;
+  GVar2.eax = (GraphicsTextureSourceAsset *)loadedPaletteTextureSource;
+  return GVar2;
 }
+
 
 /* Address: 0x004AD670.
    Ownership: graphics/resources/texture.
@@ -675,29 +1320,32 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsPaletteTextureSourceAsset *arg0;
-  GraphicsPaletteTextureSourceAsset *pGVar1;
-  uint extraout_ECX;
-  uint uVar2;
-  undefined1 in_CF;
-  bool bVar3;
+  uint uVar1;
+  GraphicsPaletteTextureSourceAsset *pGVar2;
+  ArenaAllocEaxCf5 AVar3;
+  GraphicsPaletteTextureSourceEaxCf5 GVar4;
+  ArenaFreeEaxCf5 AVar5;
   
-  arg0 = (*g_MemoryApi.alloc)((sourceAsset->common).allocationSizeBytes);
-  if (!(bool)in_CF) {
-    bVar3 = (extraout_ECX >> 1 & 1) != 0;
-    pGVar1 = arg0;
-    for (uVar2 = extraout_ECX >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
-      pGVar1->magic = (sourceAsset->common).magic;
+  uVar1 = (sourceAsset->common).allocationSizeBytes;
+  AVar3 = (*g_MemoryApi.alloc)(uVar1);
+  arg0 = (GraphicsPaletteTextureSourceAsset *)AVar3.eax;
+  if (!AVar3.carry) {
+    pGVar2 = arg0;
+    for (uVar1 = uVar1 >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
+      pGVar2->magic = (sourceAsset->common).magic;
       sourceAsset = (GraphicsTextureSourceAsset *)&(sourceAsset->common).allocationSizeBytes;
-      pGVar1 = (GraphicsPaletteTextureSourceAsset *)&pGVar1->allocationSizeBytes;
+      pGVar2 = (GraphicsPaletteTextureSourceAsset *)&pGVar2->allocationSizeBytes;
     }
-    pGVar1 = (*g_GraphicsTextureSourceConvertPaletteEntries)(arg0);
-    if (!bVar3) {
-      return (GraphicsTextureSourceAsset *)pGVar1;
+    GVar4 = (*g_GraphicsTextureSourceConvertPaletteEntries)(arg0);
+    if (!GVar4.carry) {
+      return (GraphicsTextureSourceAsset *)GVar4.paletteSource;
     }
-    arg0 = (GraphicsPaletteTextureSourceAsset *)(*g_MemoryApi.free)(arg0);
+    AVar5 = (*g_MemoryApi.free)(arg0);
+    arg0 = (GraphicsPaletteTextureSourceAsset *)AVar5.eax;
   }
   return (GraphicsTextureSourceAsset *)arg0;
 }
+
 
 /* Address: 0x004AD6C0.
    Ownership: graphics/resources/texture.
@@ -705,12 +1353,14 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
    Each 8-byte entry retains argb8888 and receives framebufferPixel through g_SoftwarePixelPackTables. ABI: CF
    clear means success. CF set means invalid input.
 */
-GraphicsPaletteTextureSourceAsset *
+GraphicsPaletteTextureSourceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset)
 
 {
   int paletteEntriesRemaining;
   GraphicsTexturePaletteEntry *paletteEntryCursor;
+  GraphicsPaletteTextureSourceEaxCf5 GVar1;
+  GraphicsPaletteTextureSourceEaxCf5 GVar2;
   uint argb8888;
   
   if ((sourceAsset != (GraphicsPaletteTextureSourceAsset *)0x0) &&
@@ -726,10 +1376,15 @@ GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *s
            g_SoftwarePixelPackTables->blue[argb8888 & 0xff];
       paletteEntryCursor = paletteEntryCursor + 1;
     }
-    return sourceAsset;
+    GVar1.carry = false;
+    GVar1.paletteSource = sourceAsset;
+    return GVar1;
   }
-  return (GraphicsPaletteTextureSourceAsset *)0x2c;
+  GVar2.carry = true;
+  GVar2.paletteSource = (GraphicsPaletteTextureSourceAsset *)0x2c;
+  return GVar2;
 }
+
 
 /* Address: 0x004AD770.
    Ownership: graphics/resources/texture.
@@ -738,7 +1393,8 @@ GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *s
    GraphicsTextureSource_LoadPackageAsset. Graphics texture-source lifecycle callback.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *allocation;
@@ -748,13 +1404,15 @@ void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourc
   return;
 }
 
+
 /* Address: 0x004AD790.
    Ownership: graphics/resources/texture.
    Purpose: Resolves the underlying allocation base through g_GraphicsTextureSourceResolveAllocationBase, then
    frees it through g_MemoryApi.free. Use this path for assets returned by GraphicsTextureSource_CloneAsset.
    Graphics texture-source lifecycle callback.
 */
-void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *memory;
@@ -764,17 +1422,19 @@ void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *source
   return;
 }
 
+
 /* Address: 0x004AD7B0.
    Ownership: graphics/resources/texture.
    Purpose: Returns the allocation pointer that owns a gfx asset. The current implementation is an identity
    function, but all release services route through this slot.
 */
-GraphicsTextureSourceAsset *
+GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
 GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   return sourceAsset;
 }
+
 
 /* Address: 0x004AD7C0.
    Ownership: graphics/resources/texture.
@@ -782,25 +1442,36 @@ GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAs
    EAX and logicalHeight into EDX from the first source entry at subresourceTableOffset. The qword return models
    EDX:EAX. ABI: CF clear means success; CF set means invalid input.
 */
-GraphicsLogicalDimensionsEdxEax8
+GraphicsTextureSizeEaxEdxCf9
 GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset)
 
 {
+  uint uVar1;
   undefined4 in_EAX;
   byte *firstSubresourceRecord;
+  bool bVar2;
+  GraphicsTextureSizeEaxEdxCf9 GVar3;
   uint subresourceCount;
   
-  if ((((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-      (subresourceCount = (sourceAsset->tableDescriptor).subresourceCount, subresourceCount != 0))
-     && (subresourceCount < 0x1000)) {
-    firstSubresourceRecord =
-         (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-         ((sourceAsset->tableDescriptor).subresourceTableOffset - 0x28);
-    in_EAX = *(undefined4 *)firstSubresourceRecord;
-    sourceAsset = *(GraphicsTextureSourceAsset **)(firstSubresourceRecord + 4);
+  bVar2 = true;
+  if ((sourceAsset->common).magic == ASSET_MAGIC_GFX) {
+    uVar1 = (sourceAsset->tableDescriptor).subresourceCount;
+    bVar2 = true;
+    if ((uVar1 != 0) && (bVar2 = 0xfff < uVar1, !bVar2)) {
+      firstSubresourceRecord =
+           (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+           ((sourceAsset->tableDescriptor).subresourceTableOffset - 0x28);
+      in_EAX = *(undefined4 *)firstSubresourceRecord;
+      sourceAsset = *(GraphicsTextureSourceAsset **)(firstSubresourceRecord + 4);
+      bVar2 = false;
+    }
   }
-  return CONCAT44(sourceAsset,in_EAX);
+  GVar3.logicalHeightPixels = (dword)sourceAsset;
+  GVar3.logicalWidthPixels = in_EAX;
+  GVar3.carry = bVar2;
+  return GVar3;
 }
+
 
 /* Address: 0x0057ADA0.
    Ownership: graphics/resources/texture.
@@ -811,7 +1482,8 @@ GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *source
    destination RGB/alpha masks. Destinations up to 16 bits use word stores; wider destinations use dword packing.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
 
 {
   int iVar1;
@@ -1218,6 +1890,7 @@ GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0057B410.
    Ownership: graphics/resources/texture.
    Purpose: Restores and locks texture->stagingSurface3, converts the selected gfx source entry into the
@@ -1227,7 +1900,8 @@ GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn:
    destination RGB/alpha masks. Destinations up to 16 bits use word stores; wider destinations use dword packing.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
 
 {
   DDPIXELFORMAT *pDVar1;
@@ -1837,6 +2511,7 @@ GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0057BBE0.
    Ownership: graphics/resources/texture.
    Purpose: Restores and locks texture->stagingSurface3, converts the selected gfx source entry into the
@@ -1846,7 +2521,8 @@ GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn:
    destination RGB/alpha masks. Destinations up to 16 bits use word stores; wider destinations use dword packing.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
 
 {
   int iVar1;
@@ -2907,6 +3583,7 @@ GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0057C6C0.
    Ownership: graphics/resources/texture.
    Purpose: Restores and locks texture->stagingSurface3, treats sourceEntry.dataOffset as a one-byte-per-pixel mask
@@ -2915,7 +3592,8 @@ GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn:
    destination surfaces. The 1x path packs each source mask byte directly.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
 
 {
   IDirectDrawSurface3 *This;
@@ -3021,6 +3699,7 @@ GraphicsTextureUploadAlpha1x_DecrementActiveCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0057C890.
    Ownership: graphics/resources/texture.
    Purpose: Restores and locks texture->stagingSurface3, treats sourceEntry.dataOffset as a one-byte-per-pixel mask
@@ -3030,7 +3709,8 @@ GraphicsTextureUploadAlpha1x_DecrementActiveCountAndReturn:
    sum into the alpha mask while advancing two source pixels and rows.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
 
 {
   int iVar1;
@@ -3157,6 +3837,7 @@ GraphicsTextureUploadAlpha2x_DecrementActiveCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0057CAA0.
    Ownership: graphics/resources/texture.
    Purpose: Restores and locks texture->stagingSurface3, treats sourceEntry.dataOffset as a one-byte-per-pixel mask
@@ -3166,7 +3847,8 @@ GraphicsTextureUploadAlpha2x_DecrementActiveCountAndReturn:
    and (2,2), scales their sum into the alpha mask, then advances four source pixels and rows.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-void GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
 
 {
   int iVar1;
@@ -3295,32 +3977,33 @@ GraphicsTextureUploadAlpha4x_DecrementActiveCountAndReturn:
   return;
 }
 
+
 /* Address: 0x0057EBB0.
    Ownership: graphics/resources/texture.
    Purpose: Runs the color-upload handler selected by texture->downsampleShift and reloads the device texture from
    staging.
    Cross-module calls: Glide3_TextureSet_RefreshColor [graphics/backend/glide].
 */
-void GraphicsTextureSet_RefreshColor
-               (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
-  int extraout_EDX;
+  GraphicsTextureResource *arg0;
   GraphicsTextureResource *textureResource;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
     Glide3_TextureSet_RefreshColor(subresourceIndex,set);
     return;
   }
-  textureResource = set->entries[subresourceIndex].texture;
-  (*g_GraphicsDispatchTable.colorUpload[textureResource->downsampleShift])(textureResource);
-  if (*(int *)(extraout_EDX + 8) != 0) {
-    (**(code **)(**(int **)(extraout_EDX + 8) + 0x14))
-              (*(int **)(extraout_EDX + 8),*(undefined4 *)(extraout_EDX + 0x14));
+  arg0 = set->entries[subresourceIndex].texture;
+  (*g_GraphicsDispatchTable.colorUpload[arg0->downsampleShift])(arg0);
+  if (arg0->deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+    (*arg0->deviceTexture2->lpVtbl->Load)(arg0->deviceTexture2,arg0->stagingTexture2);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
 }
+
 
 /* Address: 0x0057EC40.
    Ownership: graphics/resources/texture.
@@ -3328,26 +4011,26 @@ void GraphicsTextureSet_RefreshColor
    staging.
    Cross-module calls: Glide3_TextureSet_RefreshAlpha [graphics/backend/glide].
 */
-void GraphicsTextureSet_RefreshAlpha
-               (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
-  int extraout_EDX;
+  GraphicsTextureResource *arg0;
   GraphicsTextureResource *textureResource;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
     Glide3_TextureSet_RefreshAlpha(subresourceIndex,set);
     return;
   }
-  textureResource = set->entries[subresourceIndex].texture;
-  (*g_GraphicsDispatchTable.alphaUpload[textureResource->downsampleShift])(textureResource);
-  if (*(int *)(extraout_EDX + 8) != 0) {
-    (**(code **)(**(int **)(extraout_EDX + 8) + 0x14))
-              (*(int **)(extraout_EDX + 8),*(undefined4 *)(extraout_EDX + 0x14));
+  arg0 = set->entries[subresourceIndex].texture;
+  (*g_GraphicsDispatchTable.alphaUpload[arg0->downsampleShift])(arg0);
+  if (arg0->deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+    (*arg0->deviceTexture2->lpVtbl->Load)(arg0->deviceTexture2,arg0->stagingTexture2);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
 }
+
 
 /* Address: 0x0057AAD0.
    Ownership: graphics/resources/texture.
@@ -3358,20 +4041,20 @@ void GraphicsTextureSet_RefreshAlpha
    Local calls: GraphicsTexture_EvictOldestDeviceTexture.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-GraphicsTextureResource * GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
 
 {
   D3DDEVICEDESC_DX6 *pDVar1;
-  GraphicsTextureResource *in_EAX;
   uint uVar2;
-  uint uVar3;
+  TH_LEGACY_HRESULT TVar3;
   sdword sVar4;
   GraphicsTextureDownsampleShift GVar5;
   int iVar6;
   DDPIXELFORMAT *pDVar7;
   DDPIXELFORMAT *pDVar8;
   bool bVar9;
-  qword qVar10;
+  GraphicsTextureSizeEaxEdxCf9 GVar10;
   dword textureHandle;
   IDirect3DTexture2 *deviceTexture2;
   IDirectDrawSurface3 *deviceSurface3;
@@ -3385,21 +4068,20 @@ GraphicsTextureResource * GraphicsTexture_CreateDeviceTexture(GraphicsTextureRes
   pDVar1 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 0) {
     g_SurfaceDesc.dwSize = 0x6c;
-    return in_EAX;
+    return;
   }
   g_SurfaceDesc.dwFlags = 0x1007;
   g_SurfaceDesc.ddsCaps.dwCaps = 0x4001000;
-  qVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
-  uVar3 = (uint)(qVar10 >> 0x20);
+  GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
   if (pDVar1->dcmColorModel == 0) {
     g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | 0x800;
   }
   else {
     g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | 0x4000;
   }
-  uVar2 = (uint)qVar10;
-  if ((uint)qVar10 < uVar3) {
-    uVar2 = uVar3;
+  uVar2 = GVar10.logicalWidthPixels;
+  if (GVar10.logicalWidthPixels < GVar10.logicalHeightPixels) {
+    uVar2 = GVar10.logicalHeightPixels;
   }
   g_SurfaceDesc.dwHeight = uVar2 >> ((byte)g_TextureDownsampleShift & 0x1f);
   GVar5 = g_TextureDownsampleShift;
@@ -3418,17 +4100,17 @@ GraphicsTextureResource * GraphicsTexture_CreateDeviceTexture(GraphicsTextureRes
     pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;
   }
   do {
-    uVar3 = (*g_DirectDraw2->lpVtbl->CreateSurface)
+    TVar3 = (*g_DirectDraw2->lpVtbl->CreateSurface)
                       (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,(TH_LEGACY_LPVOID)0x0);
-    if (uVar3 == 0) {
-      uVar3 = (*deviceSurfaceBase->lpVtbl->QueryInterface)
+    if (TVar3 == 0) {
+      TVar3 = (*deviceSurfaceBase->lpVtbl->QueryInterface)
                         (deviceSurfaceBase,&IID_IDirectDrawSurface3_Local,&deviceSurface3);
-      if ((uVar3 == 0) &&
-         (uVar3 = (*deviceSurface3->lpVtbl->QueryInterface)
+      if ((TVar3 == 0) &&
+         (TVar3 = (*deviceSurface3->lpVtbl->QueryInterface)
                             (deviceSurface3,&IID_IDirect3DTexture2_Local,&deviceTexture2),
-         uVar3 == 0)) {
-        uVar3 = (*deviceTexture2->lpVtbl->Load)(deviceTexture2,texture->stagingTexture2);
-        if (uVar3 == 0) {
+         TVar3 == 0)) {
+        TVar3 = (*deviceTexture2->lpVtbl->Load)(deviceTexture2,texture->stagingTexture2);
+        if (TVar3 == 0) {
           sVar4 = (*deviceTexture2->lpVtbl->GetHandle)
                             (deviceTexture2,g_Direct3DDevice2,&textureHandle);
           if (sVar4 == 0) {
@@ -3436,7 +4118,7 @@ GraphicsTextureResource * GraphicsTexture_CreateDeviceTexture(GraphicsTextureRes
             texture->deviceSurface3 = deviceSurface3;
             texture->deviceTexture2 = deviceTexture2;
             texture->textureHandle = textureHandle;
-            return in_EAX;
+            return;
           }
 GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure:
           if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
@@ -3452,7 +4134,7 @@ GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure:
           texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
           texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
           texture->textureHandle = 0;
-          return in_EAX;
+          return;
         }
       }
     }
@@ -3468,11 +4150,11 @@ GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure:
       (*deviceSurfaceBase->lpVtbl->Release)(deviceSurfaceBase);
       deviceSurfaceBase = (IDirectDrawSurface *)0x0;
     }
-    bVar9 = uVar3 < 0x8876017c;
-    if ((uVar3 != 0x8876017c) || (GraphicsTexture_EvictOldestDeviceTexture(texture), bVar9))
-    goto GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure;
+    if ((TVar3 != -0x7789fe84) || (bVar9 = GraphicsTexture_EvictOldestDeviceTexture(texture), bVar9)
+       ) goto GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure;
   } while( true );
 }
+
 
 /* Address: 0x00485EA0.
    Ownership: graphics/resources/texture.
@@ -3481,86 +4163,90 @@ GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure:
    pixelHeight must be an exact power of two. widthLog2 and heightLog2 are generated with BSR. ABI: CF clear means
    success. CF set means palette conversion, allocation, or power-of-two validation failed.
 */
-GraphicsTextureSet * GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
+GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   dword dVar1;
   int iVar2;
   GraphicsPaletteTextureSourceAsset *pGVar3;
   GraphicsPaletteTextureSourceAsset *pGVar4;
-  uint uVar5;
-  int iVar6;
-  GraphicsPaletteTextureFormatVersion *pGVar7;
-  int iVar8;
-  undefined1 in_CF;
-  bool bVar9;
-  void *pvVar10;
-  GraphicsAssetAllocationByteSize GStackY_28;
+  int iVar5;
+  GraphicsPaletteTextureFormatVersion *pGVar6;
+  byte *pbVar7;
+  GraphicsPaletteTextureSourceEaxCf5 GVar8;
+  ArenaAllocEaxCf5 AVar9;
+  GraphicsTextureSetEaxCf5 GVar10;
+  GraphicsAssetAllocationByteSize GStackY_20;
   
-  pGVar3 = (*g_GraphicsTextureSourceConvertPaletteEntries)
-                     ((GraphicsPaletteTextureSourceAsset *)sourceAsset);
+  GVar8 = (*g_GraphicsTextureSourceConvertPaletteEntries)
+                    ((GraphicsPaletteTextureSourceAsset *)sourceAsset);
+  pGVar3 = GVar8.paletteSource;
   pGVar4 = pGVar3;
-  if (!(bool)in_CF) {
-    uVar5 = pGVar3->subresourceCount * 0x20;
-    bVar9 = 0xfffffff7 < uVar5;
-    _pvVar10 = (*g_MemoryApi.alloc)(uVar5 + 8);
-    GStackY_28 = (GraphicsAssetAllocationByteSize)((ulonglong)_pvVar10 >> 0x20);
-    pGVar4 = SUB84(_pvVar10,0);
-    if (!bVar9) {
-      pGVar7 = &pGVar4->formatVersion;
+  if (!GVar8.carry) {
+    GStackY_20 = pGVar3->subresourceCount;
+    AVar9 = (*g_MemoryApi.alloc)(GStackY_20 * 0x20 + 8);
+    pGVar4 = (GraphicsPaletteTextureSourceAsset *)AVar9.eax;
+    if (!AVar9.carry) {
+      pGVar6 = &pGVar4->formatVersion;
       pGVar4->magic = (GraphicsPaletteTextureAssetMagic)pGVar3;
-      pGVar4->allocationSizeBytes = GStackY_28;
-      iVar8 = (int)&pGVar3->magic + pGVar3->subresourceTableOffset;
-      iVar6 = 0;
+      pGVar4->allocationSizeBytes = GStackY_20;
+      pbVar7 = pGVar3->reserved10_AF + (pGVar3->subresourceTableOffset - 0x10);
+      iVar5 = 0;
       while( true ) {
         dVar1 = 0x1f;
-        if (*(int *)(iVar8 + 0x18) != 0) {
-          for (; *(uint *)(iVar8 + 0x18) >> dVar1 == 0; dVar1 = dVar1 - 1) {
+        if (*(uint *)(pbVar7 + 0x18) != 0) {
+          for (; *(uint *)(pbVar7 + 0x18) >> dVar1 == 0; dVar1 = dVar1 - 1) {
           }
         }
-        *pGVar7 = 0;
-        pGVar7[5] = iVar6;
-        pGVar7[1] = dVar1;
-        if (1 << ((byte)dVar1 & 0x1f) != *(int *)(iVar8 + 0x18)) break;
-        pGVar7[3] = (GraphicsPaletteTextureFormatVersion)pGVar3;
+        *pGVar6 = 0;
+        pGVar6[5] = iVar5;
+        pGVar6[1] = dVar1;
+        if (1 << ((byte)dVar1 & 0x1f) != *(int *)(pbVar7 + 0x18)) break;
+        pGVar6[3] = (GraphicsPaletteTextureFormatVersion)pGVar3;
         iVar2 = 0x1f;
-        if (*(int *)(iVar8 + 0x1c) != 0) {
-          for (; *(uint *)(iVar8 + 0x1c) >> iVar2 == 0; iVar2 = iVar2 + -1) {
+        if (*(uint *)(pbVar7 + 0x1c) != 0) {
+          for (; *(uint *)(pbVar7 + 0x1c) >> iVar2 == 0; iVar2 = iVar2 + -1) {
           }
         }
-        pGVar7[4] = iVar8;
-        pGVar7[2] = iVar2;
-        if (1 << ((byte)iVar2 & 0x1f) != *(int *)(iVar8 + 0x1c)) break;
-        pGVar7 = pGVar7 + 8;
-        iVar8 = iVar8 + 0x20;
-        iVar6 = iVar6 + 1;
-        GStackY_28 = GStackY_28 - 1;
-        if (GStackY_28 == 0) {
-          return (GraphicsTextureSet *)pGVar4;
+        pGVar6[4] = (GraphicsPaletteTextureFormatVersion)pbVar7;
+        pGVar6[2] = iVar2;
+        if (1 << ((byte)iVar2 & 0x1f) != *(int *)(pbVar7 + 0x1c)) break;
+        pGVar6 = pGVar6 + 8;
+        pbVar7 = pbVar7 + 0x20;
+        iVar5 = iVar5 + 1;
+        GStackY_20 = GStackY_20 - 1;
+        if (GStackY_20 == 0) {
+          return (GraphicsTextureSetEaxCf5)((uint5)AVar9 & 0xffffffff);
         }
       }
       pGVar4 = (GraphicsPaletteTextureSourceAsset *)&k_LowAddressLiteral0000002F;
     }
   }
-  return (GraphicsTextureSet *)pGVar4;
+  GVar10.carry = true;
+  GVar10.textureSet = (GraphicsTextureSet *)pGVar4;
+  return GVar10;
 }
+
 
 /* Address: 0x00485F90.
    Ownership: graphics/resources/texture.
    Purpose: Frees the texture-set metadata allocation and returns set->sourceAsset. Null input returns null.
 */
-GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
+GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
 
 {
   GraphicsTextureSourceAsset *releasedTextureSet;
   
   releasedTextureSet = (GraphicsTextureSourceAsset *)0x0;
   if (set != (GraphicsTextureSet *)0x0) {
-    releasedTextureSet = (GraphicsTextureSourceAsset *)set;
+    releasedTextureSet = set->sourceAsset;
     (*g_MemoryApi.free)(set);
   }
   return releasedTextureSet;
 }
+
 
 /* Address: 0x0057A9D0.
    Ownership: graphics/resources/texture.
@@ -3568,7 +4254,8 @@ GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet 
    If the evicted handle was bound, D3DRENDERSTATE_TEXTUREHANDLE is set to zero. ABI: CF clear means an object was
    evicted. CF set means no eligible object existed.
 */
-void GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
+bool __thandor_cf_preserve_eax_ecx_edx
+GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
 
 {
   GraphicsTextureResource *pGVar1;
@@ -3596,7 +4283,7 @@ void GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
     iVar3 = iVar3 + -1;
   } while (iVar3 != 0);
   if (pGVar5 == (GraphicsTextureResource *)0x0) {
-    return;
+    return true;
   }
   deviceTexture2 = pGVar5->deviceTexture2;
   if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
@@ -3619,15 +4306,16 @@ void GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
     g_BoundTextureHandle = 0;
     (*g_Direct3DDevice2->lpVtbl->SetRenderState)(g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x0057E870.
    Ownership: graphics/resources/texture.
    Purpose: Stores the texture pointer in the first free entry of the 4096-entry texture-slot array. ABI: CF clear
    means success. CF set means failure; EAX may contain an engine error code.
 */
-void GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
+bool __thandor_void_preserve_eax_ecx GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 
 {
   int slotsRemaining;
@@ -3638,13 +4326,14 @@ void GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
   do {
     if (*slotCursor == (GraphicsTextureResource *)0x0) {
       *slotCursor = texture;
-      return;
+      return false;
     }
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
-  return;
+  return true;
 }
+
 
 /* Address: 0x0057E8C0.
    Ownership: graphics/resources/texture.
@@ -3705,7 +4394,8 @@ GraphicsTexture_SelectPixelFormat
    register as a pointer result; the stack argument remains the actual formal parameter.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
+GraphicsTextureResource * __thandor_eax_preserve_ecx_edx
+GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureResource *in_EAX;
@@ -3713,10 +4403,9 @@ GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureRe
   TH_LEGACY_HRESULT TVar2;
   GraphicsTextureDownsampleShift GVar3;
   int iVar4;
-  uint uVar5;
+  DDPIXELFORMAT *pDVar5;
   DDPIXELFORMAT *pDVar6;
-  DDPIXELFORMAT *pDVar7;
-  qword qVar8;
+  GraphicsTextureSizeEaxEdxCf9 GVar7;
   IDirect3DTexture2 *texture2;
   IDirectDrawSurface3 *surface3;
   IDirectDrawSurface *surfaceBase;
@@ -3729,12 +4418,11 @@ GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureRe
   if (1 < g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1) {
     g_SurfaceDesc.dwFlags = 0x1007;
     g_SurfaceDesc.ddsCaps.dwCaps = 0x1800;
-    qVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset)
+    GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset)
     ;
-    uVar5 = (uint)(qVar8 >> 0x20);
-    uVar1 = (uint)qVar8;
-    if ((uint)qVar8 < uVar5) {
-      uVar1 = uVar5;
+    uVar1 = GVar7.logicalWidthPixels;
+    if (GVar7.logicalWidthPixels < GVar7.logicalHeightPixels) {
+      uVar1 = GVar7.logicalHeightPixels;
     }
     g_SurfaceDesc.dwHeight = uVar1 >> ((byte)g_TextureDownsampleShift & 0x1f);
     GVar3 = g_TextureDownsampleShift;
@@ -3744,13 +4432,13 @@ GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureRe
       GVar3 = GVar3 - GRAPHICS_TEXTURE_DOWNSAMPLE_2X;
     } while (GVar3 != GRAPHICS_TEXTURE_DOWNSAMPLE_1X);
     texture->downsampleShift = GVar3;
-    pDVar6 = texture->pixelFormat;
-    pDVar7 = &g_SurfaceDesc.ddpfPixelFormat;
+    pDVar5 = texture->pixelFormat;
+    pDVar6 = &g_SurfaceDesc.ddpfPixelFormat;
     g_SurfaceDesc.dwWidth = g_SurfaceDesc.dwHeight;
     for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
-      pDVar7->dwSize = pDVar6->dwSize;
+      pDVar6->dwSize = pDVar5->dwSize;
+      pDVar5 = (DDPIXELFORMAT *)&pDVar5->dwFlags;
       pDVar6 = (DDPIXELFORMAT *)&pDVar6->dwFlags;
-      pDVar7 = (DDPIXELFORMAT *)&pDVar7->dwFlags;
     }
     TVar2 = (*g_DirectDraw2->lpVtbl->CreateSurface)
                       (g_DirectDraw2,&g_SurfaceDesc,&surfaceBase,(TH_LEGACY_LPVOID)0x0);
@@ -3789,16 +4477,17 @@ GraphicsTexture_CommitStagingResourcesAndUpload:
   return in_EAX;
 }
 
+
 /* Address: 0x0057A900.
    Ownership: graphics/resources/texture.
    Purpose: Releases the device and staging COM triplets, clears all six pointers and textureHandle, and
    invalidates g_BoundTextureHandle with 0xFFFFFFFF when it referred to the released handle. The routine preserves
    incoming EAX. Several callers mirror texture in EAX and chain the preserved value into another helper.
 */
-GraphicsTextureResource * GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
+void __thandor_void_preserve_eax_ecx_edx
+GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
 
 {
-  GraphicsTextureResource *in_EAX;
   IDirect3DTexture2 *currentTexture2;
   IDirect3DTexture2 *stagingTexture2;
   IDirectDrawSurface3 *currentSurface3;
@@ -3842,5 +4531,6 @@ GraphicsTextureResource * GraphicsTexture_ReleaseObjects(GraphicsTextureResource
   if (releasedTextureHandle == g_BoundTextureHandle) {
     g_BoundTextureHandle = 0xffffffff;
   }
-  return in_EAX;
+  return;
 }
+

@@ -1,6 +1,6 @@
 # Call graph: `world/terrain/height`
 
-[Source](../../../../src/world/terrain/height.c) · [Header](../../../../include/thandor/world/terrain/height.h) · [Graphviz](height.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-height)
+[Source](../../../../src/world/terrain/height.c) · [Header](../../../../include/thandor/world/terrain/height.h) · [Graphviz](height.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-terrain-height) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-terrain-height)
 
 40 functions. Addresses are current V523 executable VAs.
 

@@ -61,7 +61,7 @@
   },
   {
     "module": "assets/sprite/catalog",
-    "functions": 4,
+    "functions": 5,
     "header": "include/thandor/assets/sprite/catalog.h",
     "source": "src/assets/sprite/catalog.c"
   },
@@ -85,7 +85,7 @@
   },
   {
     "module": "audio/codec/sam",
-    "functions": 4,
+    "functions": 5,
     "header": "include/thandor/audio/codec/sam.h",
     "source": "src/audio/codec/sam.c"
   },
@@ -103,7 +103,7 @@
   },
   {
     "module": "core/math/fixed",
-    "functions": 36,
+    "functions": 37,
     "header": "include/thandor/core/math/fixed.h",
     "source": "src/core/math/fixed.c"
   },
@@ -235,7 +235,7 @@
   },
   {
     "module": "gameplay/input/world",
-    "functions": 8,
+    "functions": 7,
     "header": "include/thandor/gameplay/input/world.h",
     "source": "src/gameplay/input/world.c"
   },
@@ -247,7 +247,7 @@
   },
   {
     "module": "gameplay/selection/runtime",
-    "functions": 55,
+    "functions": 58,
     "header": "include/thandor/gameplay/selection/runtime.h",
     "source": "src/gameplay/selection/runtime.c"
   },
@@ -289,7 +289,7 @@
   },
   {
     "module": "graphics/backend/glide",
-    "functions": 34,
+    "functions": 37,
     "header": "include/thandor/graphics/backend/glide.h",
     "source": "src/graphics/backend/glide.c"
   },
@@ -319,7 +319,7 @@
   },
   {
     "module": "graphics/render/projection",
-    "functions": 2,
+    "functions": 3,
     "header": "include/thandor/graphics/render/projection.h",
     "source": "src/graphics/render/projection.c"
   },
@@ -343,7 +343,7 @@
   },
   {
     "module": "graphics/resources/texture",
-    "functions": 36,
+    "functions": 37,
     "header": "include/thandor/graphics/resources/texture.h",
     "source": "src/graphics/resources/texture.c"
   },
@@ -355,13 +355,13 @@
   },
   {
     "module": "network/backend/fallback_udp",
-    "functions": 19,
+    "functions": 22,
     "header": "include/thandor/network/backend/fallback_udp.h",
     "source": "src/network/backend/fallback_udp.c"
   },
   {
     "module": "network/backend/runtime",
-    "functions": 8,
+    "functions": 11,
     "header": "include/thandor/network/backend/runtime.h",
     "source": "src/network/backend/runtime.c"
   },
@@ -385,7 +385,7 @@
   },
   {
     "module": "platform/filesystem/win32",
-    "functions": 26,
+    "functions": 29,
     "header": "include/thandor/platform/filesystem/win32.h",
     "source": "src/platform/filesystem/win32.c"
   },
@@ -421,13 +421,13 @@
   },
   {
     "module": "ui/controls/layout",
-    "functions": 48,
+    "functions": 49,
     "header": "include/thandor/ui/controls/layout.h",
     "source": "src/ui/controls/layout.c"
   },
   {
     "module": "ui/controls/lists",
-    "functions": 54,
+    "functions": 64,
     "header": "include/thandor/ui/controls/lists.h",
     "source": "src/ui/controls/lists.c"
   },
@@ -445,7 +445,7 @@
   },
   {
     "module": "ui/core/runtime",
-    "functions": 27,
+    "functions": 28,
     "header": "include/thandor/ui/core/runtime.h",
     "source": "src/ui/core/runtime.c"
   },
@@ -463,7 +463,7 @@
   },
   {
     "module": "ui/frontend/results",
-    "functions": 9,
+    "functions": 12,
     "header": "include/thandor/ui/frontend/results.h",
     "source": "src/ui/frontend/results.c"
   },
@@ -535,7 +535,7 @@
   },
   {
     "module": "world/model/hierarchy",
-    "functions": 28,
+    "functions": 29,
     "header": "include/thandor/world/model/hierarchy.h",
     "source": "src/world/model/hierarchy.c"
   },

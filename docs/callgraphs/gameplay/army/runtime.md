@@ -1,6 +1,6 @@
 # Call graph: `gameplay/army/runtime`
 
-[Source](../../../../src/gameplay/army/runtime.c) · [Header](../../../../include/thandor/gameplay/army/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-runtime)
+[Source](../../../../src/gameplay/army/runtime.c) · [Header](../../../../include/thandor/gameplay/army/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-army-runtime) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-army-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-army-runtime)
 
 56 functions. Addresses are current V523 executable VAs.
 

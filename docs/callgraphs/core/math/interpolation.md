@@ -1,6 +1,6 @@
 # Call graph: `core/math/interpolation`
 
-[Source](../../../../src/core/math/interpolation.c) · [Header](../../../../include/thandor/core/math/interpolation.h) · [Graphviz](interpolation.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-math-interpolation)
+[Source](../../../../src/core/math/interpolation.c) · [Header](../../../../include/thandor/core/math/interpolation.h) · [Graphviz](interpolation.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-math-interpolation) · [Developer notes](../../../../CHANGELOG.md#module-core-math-interpolation) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-math-interpolation)
 
 12 functions. Addresses are current V523 executable VAs.
 

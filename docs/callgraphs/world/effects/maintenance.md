@@ -1,6 +1,6 @@
 # Call graph: `world/effects/maintenance`
 
-[Source](../../../../src/world/effects/maintenance.c) · [Header](../../../../include/thandor/world/effects/maintenance.h) · [Graphviz](maintenance.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-effects-maintenance)
+[Source](../../../../src/world/effects/maintenance.c) · [Header](../../../../include/thandor/world/effects/maintenance.h) · [Graphviz](maintenance.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-effects-maintenance) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-effects-maintenance)
 
 4 functions. Addresses are current V523 executable VAs.
 

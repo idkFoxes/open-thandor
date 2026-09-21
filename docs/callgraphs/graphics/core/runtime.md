@@ -1,6 +1,6 @@
 # Call graph: `graphics/core/runtime`
 
-[Source](../../../../src/graphics/core/runtime.c) · [Header](../../../../include/thandor/graphics/core/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-core-runtime)
+[Source](../../../../src/graphics/core/runtime.c) · [Header](../../../../include/thandor/graphics/core/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-core-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-core-runtime)
 
 28 functions. Addresses are current V523 executable VAs.
 

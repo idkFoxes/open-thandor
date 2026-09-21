@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/sprite/catalog.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/sprite/catalog.h>
 
 /* Implementation ownership: assets/sprite/catalog. */
@@ -34,7 +41,8 @@ void SpriteAssetRegistry_Reset(void)
    names alone. It remains separate from relocated SpriteAssetHeader pointers, mesh flags, and attachment-kind
    semantics.
 */
-SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
+SpriteAssetHeader * __thandor_eax_preserve_ecx_edx
+SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 
 {
   SpriteAssetHeader *spriteAssetCursor;
@@ -47,6 +55,7 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
   return spriteAssetCursor;
 }
 
+
 /* Address: 0x004BE4D0.
    Ownership: assets/sprite/catalog.
    Purpose: Validates the 'spr' magic and converter version 0x00020007, prepends the image to the sprite registry,
@@ -55,7 +64,8 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
    serialized image. CF clear returns the asset; CF set returns error 0x36 in EAX. Role: Registers one SPR image
    and converts serialized offsets into runtime pointers.
 */
-SpriteAssetHeader * SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
+SpriteRegisterRelocateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 
 {
   AssetAllocationSizeBytes relocationBlocksRemaining;
@@ -63,6 +73,8 @@ SpriteAssetHeader * SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *a
   SprGroupRelocationHeader20 *groupRelocationCursor;
   SprRelocationBlockHeader20 *relocationBlockCursor;
   SprPointerRelocationRecord40 *pointerRelocationCursor;
+  SpriteRegisterRelocateEaxCf5 SVar1;
+  SpriteRegisterRelocateEaxCf5 SVar2;
   AssetRecordCount groupsRemaining;
   SpriteAssetHeader *previousRegistryHead;
   
@@ -110,7 +122,73 @@ SpriteAssetHeader * SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *a
         groupsRemaining = groupsRemaining - 1;
       } while (groupsRemaining != 0);
     }
-    return asset;
+    SVar1.carry = false;
+    SVar1.assetOrError = asset;
+    return SVar1;
   }
-  return (SpriteAssetHeader *)0x36;
+  SVar2.carry = true;
+  SVar2.assetOrError = (SpriteAssetHeader *)0x36;
+  return SVar2;
 }
+
+/* Address: 0x004BE5A0.
+   Ownership: assets/sprite/catalog.
+   Purpose: Copies and derelocates a sprite image asset.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+SpriteAsset_CopyAndDerelocateImage
+          (void *serializedDestination,SpriteAssetHeader *relocatedSourceImage)
+
+{
+  uint uVar1;
+  int iVar2;
+  int iVar3;
+  SpriteAssetHeader *pSVar4;
+  int *piVar5;
+  int *piVar6;
+  AssetMagic *pAVar7;
+  int *piVar8;
+  int iStack_20;
+  
+  pSVar4 = relocatedSourceImage;
+  pAVar7 = serializedDestination;
+  for (uVar1 = (relocatedSourceImage->registryHeader).common.allocationSizeBytes >> 2; uVar1 != 0;
+      uVar1 = uVar1 - 1) {
+    *pAVar7 = (pSVar4->registryHeader).common.magic;
+    pSVar4 = (SpriteAssetHeader *)&(pSVar4->registryHeader).common.allocationSizeBytes;
+    pAVar7 = pAVar7 + 1;
+  }
+  piVar6 = (int *)((int)serializedDestination + 0x200);
+  iStack_20 = *(int *)((int)serializedDestination + 0xb0);
+  do {
+    iVar2 = piVar6[1];
+    piVar5 = piVar6 + 8;
+    do {
+      iVar3 = piVar5[2];
+      piVar8 = piVar5 + 8;
+      do {
+        piVar8[0xc] = 0;
+        piVar8[0xd] = 0;
+        piVar8[8] = 0;
+        piVar8[9] = 0;
+        piVar8[10] = 0;
+        piVar8 = piVar8 + 0x10;
+        iVar3 = iVar3 + -1;
+      } while (iVar3 != 0);
+      iVar3 = piVar5[3];
+      do {
+        *piVar8 = *piVar8 - (int)relocatedSourceImage;
+        piVar8[3] = piVar8[3] - (int)relocatedSourceImage;
+        piVar8[6] = piVar8[6] - (int)relocatedSourceImage;
+        piVar8 = piVar8 + 0x10;
+        iVar3 = iVar3 + -1;
+      } while (iVar3 != 0);
+      piVar5 = (int *)((int)piVar5 + *piVar5);
+      iVar2 = iVar2 + -1;
+    } while (iVar2 != 0);
+    piVar6 = (int *)((int)piVar6 + *piVar6);
+    iStack_20 = iStack_20 + -1;
+  } while (iStack_20 != 0);
+  return;
+}
+

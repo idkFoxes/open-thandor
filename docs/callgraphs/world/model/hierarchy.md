@@ -1,6 +1,6 @@
 # Call graph: `world/model/hierarchy`
 
-[Source](../../../../src/world/model/hierarchy.c) · [Header](../../../../include/thandor/world/model/hierarchy.h) · [Graphviz](hierarchy.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-model-hierarchy)
+[Source](../../../../src/world/model/hierarchy.c) · [Header](../../../../include/thandor/world/model/hierarchy.h) · [Graphviz](hierarchy.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-world-model-hierarchy) · [Developer notes](../../../../CHANGELOG.md#module-world-model-hierarchy) · [Full changelog](../../../../CHANGELOG_FULL.md#module-world-model-hierarchy)
 
 28 functions. Addresses are current V523 executable VAs.
 

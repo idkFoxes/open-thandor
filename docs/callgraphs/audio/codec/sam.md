@@ -1,6 +1,6 @@
 # Call graph: `audio/codec/sam`
 
-[Source](../../../../src/audio/codec/sam.c) · [Header](../../../../include/thandor/audio/codec/sam.h) · [Graphviz](sam.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-audio-codec-sam)
+[Source](../../../../src/audio/codec/sam.c) · [Header](../../../../include/thandor/audio/codec/sam.h) · [Graphviz](sam.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-audio-codec-sam) · [Full changelog](../../../../CHANGELOG_FULL.md#module-audio-codec-sam)
 
 4 functions. Addresses are current V523 executable VAs.
 

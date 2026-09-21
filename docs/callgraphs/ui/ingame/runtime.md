@@ -1,6 +1,6 @@
 # Call graph: `ui/ingame/runtime`
 
-[Source](../../../../src/ui/ingame/runtime.c) · [Header](../../../../include/thandor/ui/ingame/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-runtime)
+[Source](../../../../src/ui/ingame/runtime.c) · [Header](../../../../include/thandor/ui/ingame/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-ingame-runtime) · [Developer notes](../../../../CHANGELOG.md#module-ui-ingame-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-ingame-runtime)
 
 33 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/ai/placement.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/ai/placement.h>
 
 /* Implementation ownership: gameplay/ai/placement. */
@@ -13,43 +20,40 @@
    Local calls: AiPlacement_ReserveSeparatedSpecialSiteChain.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-void AiPlacement_ReserveAdditionalSpecialSite
-               (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-               FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+bool __thandor_cf_preserve_eax_ecx_edx
+AiPlacement_ReserveAdditionalSpecialSite
+          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  uint uVar1;
-  uint uVar2;
-  AiKnowledgeDataImage *pAVar3;
-  undefined4 extraout_ECX;
-  undefined1 in_CF;
+  AiKnowledgeDataImage *pAVar1;
+  dword dVar2;
+  uint uVar3;
   bool bVar4;
-  undefined8 uVar5;
-  int iVar6;
+  ArmyPlacementDispatchEaxCf5 AVar5;
   
-  pAVar3 = g_AiKnowledgeData;
-  uVar5 = ArmyPlacement_DispatchAssetAtFieldPoint
-                    (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
-                     (uint)(ushort)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-                     workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-  iVar6 = (int)uVar5;
-  if ((!(bool)in_CF) && (bVar4 = false, iVar6 != 0)) {
-    ArmyPlacement_DispatchAssetAtFieldPoint
-              (4,0,(FactionRuntimeIndex)((ulonglong)uVar5 >> 0x20),workspaceRecord->worldY,
-               workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-    if (bVar4) {
-      uVar2 = (pAVar3->parameters).specialSiteSeparationQuantumQ12;
-      uVar1 = iVar6 + -1 + uVar2;
-      if (uVar1 / uVar2 < 5) {
-        AiPlacement_ReserveSeparatedSpecialSiteChain
-                  (extraout_ECX,uVar1 % uVar2,armyAssetId,workspaceRecord,factionIndex,worldRuntime)
-        ;
-        return;
-      }
+  pAVar1 = g_AiKnowledgeData;
+  uVar3 = (uint)(ushort)workspaceRecord->triangle0NormalAngles;
+  AVar5 = ArmyPlacement_DispatchAssetAtFieldPoint
+                    (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,uVar3,
+                     workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
+                     (UiRootNode *)worldRuntime);
+  dVar2 = AVar5.eax;
+  if ((!AVar5.carry) && (dVar2 != 0)) {
+    AVar5 = ArmyPlacement_DispatchAssetAtFieldPoint
+                      (4,0,uVar3,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                       factionIndex,(UiRootNode *)worldRuntime);
+    if ((AVar5.carry) &&
+       (uVar3 = (pAVar1->parameters).specialSiteSeparationQuantumQ12,
+       ((dVar2 - 1) + uVar3) / uVar3 < 5)) {
+      bVar4 = AiPlacement_ReserveSeparatedSpecialSiteChain
+                        (armyAssetId,workspaceRecord,factionIndex,worldRuntime);
+      return bVar4;
     }
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0053AE60.
    Ownership: gameplay/ai/placement.
@@ -62,62 +66,45 @@ void AiPlacement_ReserveAdditionalSpecialSite
    AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces], ArmyAssetRegistry_FindEnabledByIdCf
    [assets/army/catalog], AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
 */
-AiPreservedFactionIndexEdxResult
+void __thandor_void_preserve_eax_ecx_edx
 AiCandidatePlanning_AddSpecialSiteCandidate
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  FactionRuntimeIndex extraout_EDX;
-  FactionRuntimeIndex extraout_EDX_00;
-  AiPreservedFactionIndexEdxResult AVar1;
-  FactionRuntimeIndex extraout_EDX_01;
-  FactionRuntimeIndex extraout_EDX_02;
-  FactionRuntimeIndex extraout_EDX_03;
-  int iVar2;
-  bool bVar3;
-  AiCandidateScoreCfEaxPreservedEdxCarrier64 AVar4;
+  bool bVar1;
+  AiCandidateScoreEaxCf5 AVar2;
   
-  iVar2 = (int)((longlong)factionIndex * 0x740);
-  bVar3 = (longlong)iVar2 != (longlong)factionIndex * 0x740;
-  AiSecondaryWorkspace_HasEntryByIdCf(ARM_0050_UNIT_MDL0103);
-  AVar1.preservedEdxFactionIndex = extraout_EDX;
-  if (!bVar3) {
-    AiPrimaryWorkspace_HasEntryByIdCf(ARM_0301_BUILDING_MDL0318);
-    if (bVar3) {
-      ArmyAssetRegistry_FindEnabledByIdCf(ARM_0050_UNIT_MDL0103);
-      AVar1.preservedEdxFactionIndex = extraout_EDX_00;
-      if (!bVar3) {
-        bVar3 = false;
-        if ((*(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits + iVar2) &
-            0x800) == 0) {
-          AVar4 = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-          AVar1.preservedEdxFactionIndex = (FactionRuntimeIndex)(AVar4 >> 0x20);
-          if (!bVar3) {
-            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0xb,(dword)AVar4,2);
-            AVar1.preservedEdxFactionIndex = extraout_EDX_03;
+  bVar1 = AiSecondaryWorkspace_HasEntryByIdCf(ARM_0050_UNIT_MDL0103);
+  if (!bVar1) {
+    bVar1 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0301_BUILDING_MDL0318);
+    if (bVar1) {
+      bVar1 = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0050_UNIT_MDL0103);
+      if (!bVar1) {
+        if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 0x800) == 0
+           ) {
+          AVar2 = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
+          if (!AVar2.carry) {
+            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0xb,AVar2.score,2);
           }
         }
         else {
-          AVar4 = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-          AVar1.preservedEdxFactionIndex = (FactionRuntimeIndex)(AVar4 >> 0x20);
-          if (!bVar3) {
-            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x32,(dword)AVar4,0);
-            AVar1.preservedEdxFactionIndex = extraout_EDX_01;
+          AVar2 = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
+          if (!AVar2.carry) {
+            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x32,AVar2.score,0);
           }
         }
       }
     }
     else {
-      AVar4 = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-      AVar1.preservedEdxFactionIndex = (FactionRuntimeIndex)(AVar4 >> 0x20);
-      if (!bVar3) {
-        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x12d,(dword)AVar4,0);
-        AVar1.preservedEdxFactionIndex = extraout_EDX_02;
+      AVar2 = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
+      if (!AVar2.carry) {
+        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x12d,AVar2.score,0);
       }
     }
   }
-  return (AiPreservedFactionIndexEdxResult)AVar1.preservedEdxFactionIndex;
+  return;
 }
+
 
 /* Address: 0x00537B20.
    Ownership: gameplay/ai/placement.
@@ -129,63 +116,75 @@ AiCandidatePlanning_AddSpecialSiteCandidate
    AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
    AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces].
 */
-AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddGeneralCellIfSeparated(void)
+void __thandor_void_preserve_ecx_edx
+AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 
 {
   Q12 worldY;
   Q12 worldX;
   dword dVar1;
-  AiKnowledgeDataImage *pAVar2;
-  int iVar3;
-  dword dVar4;
-  uint uVar5;
-  int extraout_ECX;
-  dword in_EDX;
-  int iVar6;
-  Q12 worldX_00;
-  Q12 worldX_01;
-  FieldGridCell *unaff_ESI;
-  AiScoredSiteWorkspaceEntry *pAVar7;
+  dword dVar2;
+  dword dVar3;
+  AiKnowledgeDataImage *pAVar4;
+  int iVar5;
+  dword dVar6;
+  dword dVar7;
+  uint uVar8;
+  int iVar9;
+  AiScoredSiteWorkspaceEntry *pAVar10;
   
-  uVar5 = g_AiWorkspace05Count;
-  pAVar7 = g_AiWorkspaceBuffer05_Size0200;
+  uVar8 = g_AiWorkspace05Count;
+  pAVar10 = g_AiWorkspaceBuffer05_Size0200;
   while( true ) {
-    if (uVar5 == 0) {
-      worldY = unaff_ESI->worldX;
-      worldX = unaff_ESI->worldY;
+    if (uVar8 == 0) {
+      worldY = currentCell->worldX;
+      worldX = currentCell->worldY;
       if (g_AiWorkspace05Count < 0x20) {
-        pAVar7->cellWorldXQ12 = worldY;
-        pAVar7->cellWorldYQ12 = worldX;
-        pAVar7->cell = unaff_ESI;
-        pAVar2 = g_AiKnowledgeData;
-        AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
-        AiWorkspace02_GetMinimumManhattanDistanceToPoint(worldX_00,worldY);
-        dVar1 = (pAVar2->parameters).generalSiteSecondaryDistanceCapQ12;
-        dVar4 = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX_01,worldY);
-        if ((int)dVar1 < (int)dVar4) {
-          dVar4 = dVar1;
+        pAVar10->cellWorldXQ12 = worldY;
+        pAVar10->cellWorldYQ12 = worldX;
+        pAVar10->cell = currentCell;
+        pAVar4 = g_AiKnowledgeData;
+        dVar1 = (g_AiKnowledgeData->parameters).unknownParameterDword33;
+        iVar5 = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        iVar5 = dVar1 - iVar5;
+        if (iVar5 < 0) {
+          iVar5 = 0;
+        }
+        dVar1 = (pAVar4->parameters).unknownParameterDwords36_37[1];
+        dVar2 = (pAVar4->parameters).unknownParameterDwords36_37[0];
+        dVar6 = AiWorkspace02_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        if ((int)dVar2 < (int)dVar6) {
+          dVar6 = dVar2;
+        }
+        dVar2 = (pAVar4->parameters).unknownParameterDwords40_47[0];
+        dVar3 = (pAVar4->parameters).generalSiteSecondaryDistanceCapQ12;
+        dVar7 = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        if ((int)dVar3 < (int)dVar7) {
+          dVar7 = dVar3;
         }
         g_AiWorkspace05Count = g_AiWorkspace05Count + 1;
-        pAVar7->score =
-             extraout_ECX + dVar4 * (pAVar2->parameters).generalSiteSecondaryDistanceCoefficient;
+        pAVar10->score =
+             iVar5 * dVar1 + dVar6 * dVar2 +
+             dVar7 * (pAVar4->parameters).generalSiteSecondaryDistanceCoefficient;
       }
-      return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+      return;
     }
-    iVar3 = pAVar7->cellWorldXQ12 - unaff_ESI->worldX;
-    if (iVar3 < 0) {
-      iVar3 = -iVar3;
+    iVar5 = pAVar10->cellWorldXQ12 - currentCell->worldX;
+    if (iVar5 < 0) {
+      iVar5 = -iVar5;
     }
-    iVar6 = pAVar7->cellWorldYQ12 - unaff_ESI->worldY;
-    if (iVar6 < 0) {
-      iVar6 = -iVar6;
+    iVar9 = pAVar10->cellWorldYQ12 - currentCell->worldY;
+    if (iVar9 < 0) {
+      iVar9 = -iVar9;
     }
-    if ((iVar3 < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12) &&
-       (iVar6 < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12)) break;
-    pAVar7 = pAVar7 + 1;
-    uVar5 = uVar5 - 1;
+    if ((iVar5 < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12) &&
+       (iVar9 < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12)) break;
+    pAVar10 = pAVar10 + 1;
+    uVar8 = uVar8 - 1;
   }
-  return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+  return;
 }
+
 
 /* Address: 0x00537C10.
    Ownership: gameplay/ai/placement.
@@ -198,7 +197,8 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddGeneralCellIfSeparat
    AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
    AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces].
 */
-AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddFlaggedCellIfSeparated(void)
+void __thandor_void_preserve_ecx_edx
+AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 
 {
   Q12 worldY;
@@ -206,52 +206,59 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddFlaggedCellIfSeparat
   int iVar1;
   int iVar2;
   uint uVar3;
-  int extraout_ECX;
-  dword in_EDX;
   int iVar4;
-  Q12 worldX_00;
-  Q12 worldX_01;
-  int unaff_ESI;
-  byte *pbVar5;
+  int iVar5;
+  byte *pbVar6;
   
   uVar3 = g_AiWorkspace06Count;
-  pbVar5 = g_AiWorkspaceBuffer06_Size0400;
+  pbVar6 = g_AiWorkspaceBuffer06_Size0400;
   while( true ) {
     if (uVar3 == 0) {
-      worldY = *(Q12 *)(unaff_ESI + 0x40);
-      worldX = *(Q12 *)(unaff_ESI + 0x44);
+      worldY = currentCell->worldX;
+      worldX = currentCell->worldY;
       if (g_AiWorkspace06Count < 0x40) {
-        *(Q12 *)pbVar5 = worldY;
-        *(Q12 *)(pbVar5 + 4) = worldX;
-        *(int *)(pbVar5 + 0xc) = unaff_ESI;
-        AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
-        AiWorkspace02_GetMinimumManhattanDistanceToPoint(worldX_00,worldY);
-        iVar1 = *(int *)(pbVar5 + 200);
-        iVar2 = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX_01,worldY);
-        iVar4 = extraout_ECX;
-        if (-1 < iVar1 - iVar2) {
-          iVar4 = extraout_ECX + (iVar1 - iVar2) * *(int *)(pbVar5 + 0xd8);
+        *(Q12 *)pbVar6 = worldY;
+        *(Q12 *)(pbVar6 + 4) = worldX;
+        *(FieldGridCell **)(pbVar6 + 0xc) = currentCell;
+        iVar1 = *(int *)(pbVar6 + 0xc4);
+        iVar5 = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        iVar1 = iVar1 - iVar5;
+        if (iVar1 < 0) {
+          iVar1 = 0;
+        }
+        iVar5 = *(int *)(pbVar6 + 0xd4);
+        iVar4 = *(int *)(pbVar6 + 0xd0);
+        iVar2 = AiWorkspace02_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        if (iVar4 < iVar2) {
+          iVar2 = iVar4;
+        }
+        iVar4 = iVar1 * iVar5 + iVar2 * *(int *)(pbVar6 + 0xe0);
+        iVar1 = *(int *)(pbVar6 + 200);
+        iVar5 = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        if (-1 < iVar1 - iVar5) {
+          iVar4 = iVar4 + (iVar1 - iVar5) * *(int *)(pbVar6 + 0xd8);
         }
         g_AiWorkspace06Count = g_AiWorkspace06Count + 1;
-        *(int *)(pbVar5 + 8) = iVar4;
+        *(int *)(pbVar6 + 8) = iVar4;
       }
-      return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+      return;
     }
-    iVar1 = *(int *)pbVar5 - *(int *)(unaff_ESI + 0x40);
+    iVar1 = *(int *)pbVar6 - currentCell->worldX;
     if (iVar1 < 0) {
       iVar1 = -iVar1;
     }
-    iVar4 = *(int *)(pbVar5 + 4) - *(int *)(unaff_ESI + 0x44);
-    if (iVar4 < 0) {
-      iVar4 = -iVar4;
+    iVar5 = *(int *)(pbVar6 + 4) - currentCell->worldY;
+    if (iVar5 < 0) {
+      iVar5 = -iVar5;
     }
     if ((iVar1 < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12) &&
-       (iVar4 < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) break;
-    pbVar5 = pbVar5 + 0x10;
+       (iVar5 < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) break;
+    pbVar6 = pbVar6 + 0x10;
     uVar3 = uVar3 - 1;
   }
-  return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+  return;
 }
+
 
 /* Address: 0x00537CF0.
    Ownership: gameplay/ai/placement.
@@ -263,26 +270,23 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddFlaggedCellIfSeparat
    Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], FixedMath_Length2 [core/math/fixed].
 */
-AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddTerrainFeatureCellIfSeparated(void)
+void __thandor_void_preserve_ecx_edx
+AiSiteCandidate_AddTerrainFeatureCellIfSeparated
+          (FieldGridCell *terrainFeatureCell,dword gridScratchRowStrideBytes)
 
 {
   uint uVar1;
   int *piVar2;
   ModelRuntimeNode *modelNodeRuntime;
-  ModelPackedPointRecord *localPointRecord;
   dword dVar3;
   int iVar4;
   int iVar5;
   uint uVar6;
-  undefined4 extraout_ECX;
-  int extraout_ECX_00;
-  dword in_EDX;
   int iVar7;
   PckArmyAssetIdCatalog PVar8;
-  FieldGridCell *unaff_ESI;
-  byte *pbVar9;
-  bool bVar10;
-  undefined8 uVar11;
+  AiWorkspace00EntryView8 *pAVar9;
+  ModelLookupEntryEaxCf5 MVar10;
+  ModelLocalPointRegs12 MVar11;
   int local_20;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   
@@ -290,60 +294,56 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddTerrainFeatureCellIf
   PVar8 = ARM_0330_BUILDING_MDL0303;
   uVar6 = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 0x55 >> 8;
   iVar4 = g_AiWorkspace00Count;
-  pbVar9 = g_AiWorkspaceBuffer00_Size0400;
-  if ((unaff_ESI->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
+  pAVar9 = g_AiWorkspaceBuffer00_Size0400;
+  if ((terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
     PVar8 = ARM_0332_BUILDING_MDL0302;
   }
   for (; terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200, iVar4 != 0; iVar4 = iVar4 + -1) {
-    piVar2 = *(int **)pbVar9;
-    if (piVar2 != (int *)0x0) {
-      modelNodeRuntime = (ModelRuntimeNode *)piVar2[1];
-      bVar10 = *(uint *)(*piVar2 + 0x4c) < 0xd;
-      if ((*(uint *)(*piVar2 + 0x4c) == 0xd) &&
-         (localPointRecord =
-               (ModelPackedPointRecord *)
-               ModelLookupTable_ContainsPackedKeyCf
-                         (1,5,(modelNodeRuntime->modelPayload).modelResource), !bVar10)) {
-        uVar11 = ModelNodeRuntime_TransformLocalPointRegs
-                           (extraout_ECX,localPointRecord,modelNodeRuntime);
-        dVar3 = FixedMath_Length2(extraout_ECX_00 - unaff_ESI->worldY,
-                                  (int)uVar11 - unaff_ESI->worldX);
+    piVar2 = (int *)pAVar9->runtimeSlotAddressOrZero;
+    if ((piVar2 != (int *)0x0) &&
+       (modelNodeRuntime = (ModelRuntimeNode *)piVar2[1], *(int *)(*piVar2 + 0x4c) == 0xd)) {
+      MVar10 = ModelLookupTable_ContainsPackedKeyCf
+                         (1,5,(modelNodeRuntime->modelPayload).modelResource);
+      if (!MVar10.carry) {
+        MVar11 = ModelNodeRuntime_TransformLocalPointRegs(MVar10.entry,modelNodeRuntime);
+        dVar3 = FixedMath_Length2(MVar11.ecx - terrainFeatureCell->worldY,
+                                  MVar11.eax - terrainFeatureCell->worldX);
         if ((int)dVar3 < 0x2001) {
-          return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+          return;
         }
       }
     }
-    pbVar9 = pbVar9 + 8;
+    pAVar9 = pAVar9 + 1;
   }
   do {
     if (uVar1 == 0) {
       if (g_AiWorkspace08Count < 0x20) {
-        terrainFeatureEntry->cell = unaff_ESI;
+        terrainFeatureEntry->cell = terrainFeatureCell;
         terrainFeatureEntry->armyAssetId = PVar8;
         local_20 = 0x7fffffff;
-        pbVar9 = g_AiWorkspaceBuffer00_Size0400;
+        pAVar9 = g_AiWorkspaceBuffer00_Size0400;
         for (iVar4 = g_AiWorkspace00Count; iVar4 != 0; iVar4 = iVar4 + -1) {
-          if (*(int *)pbVar9 != 0) {
-            iVar7 = *(int *)(*(int *)pbVar9 + 4);
-            iVar5 = *(int *)(iVar7 + 0x94) - unaff_ESI->worldX;
+          if (pAVar9->runtimeSlotAddressOrZero != 0) {
+            iVar7 = *(int *)(pAVar9->runtimeSlotAddressOrZero + 4);
+            iVar5 = *(int *)(iVar7 + 0x94) - terrainFeatureCell->worldX;
             if (iVar5 < 0) {
               iVar5 = -iVar5;
             }
-            iVar7 = *(int *)(iVar7 + 0x98) - unaff_ESI->worldY;
+            iVar7 = *(int *)(iVar7 + 0x98) - terrainFeatureCell->worldY;
             if (iVar7 < 0) {
               iVar7 = -iVar7;
             }
-            if (((PVar8 == *(PckArmyAssetIdCatalog *)(pbVar9 + 4)) &&
+            if (((PVar8 == pAVar9->armyAssetId) &&
                 (iVar5 < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12
                 )) && (iVar7 < (int)(g_AiKnowledgeData->parameters).
                                     terrainFeatureMinimumAxisSeparationQ12)) {
-              return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+              return;
             }
             if (iVar5 + iVar7 < local_20) {
               local_20 = iVar5 + iVar7;
             }
           }
-          pbVar9 = pbVar9 + 8;
+          pAVar9 = pAVar9 + 1;
         }
         local_20 = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 - local_20;
         if (local_20 < 0) {
@@ -352,20 +352,20 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddTerrainFeatureCellIf
         g_AiWorkspace08Count = g_AiWorkspace08Count + 1;
         terrainFeatureEntry->priority = local_20;
       }
-      return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+      return;
     }
     if (PVar8 == terrainFeatureEntry->armyAssetId) {
-      iVar4 = terrainFeatureEntry->cell->worldX - unaff_ESI->worldX;
+      iVar4 = terrainFeatureEntry->cell->worldX - terrainFeatureCell->worldX;
       if (iVar4 < 0) {
         iVar4 = -iVar4;
       }
-      iVar7 = terrainFeatureEntry->cell->worldY - unaff_ESI->worldY;
+      iVar7 = terrainFeatureEntry->cell->worldY - terrainFeatureCell->worldY;
       if (iVar7 < 0) {
         iVar7 = -iVar7;
       }
       if ((iVar4 < (int)uVar6) && (iVar7 < (int)uVar6)) {
         local_20 = 0x7fffffff;
-        pbVar9 = g_AiWorkspaceBuffer00_Size0400;
+        pAVar9 = g_AiWorkspaceBuffer00_Size0400;
         iVar4 = g_AiWorkspace00Count;
         do {
           if (iVar4 == 0) {
@@ -374,33 +374,33 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddTerrainFeatureCellIf
               local_20 = 0;
             }
             if (local_20 <= terrainFeatureEntry->priority) {
-              return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+              return;
             }
-            terrainFeatureEntry->cell = unaff_ESI;
+            terrainFeatureEntry->cell = terrainFeatureCell;
             terrainFeatureEntry->priority = local_20;
-            return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+            return;
           }
-          if (*(int *)pbVar9 != 0) {
-            iVar7 = *(int *)(*(int *)pbVar9 + 4);
-            iVar5 = *(int *)(iVar7 + 0x94) - unaff_ESI->worldX;
+          if (pAVar9->runtimeSlotAddressOrZero != 0) {
+            iVar7 = *(int *)(pAVar9->runtimeSlotAddressOrZero + 4);
+            iVar5 = *(int *)(iVar7 + 0x94) - terrainFeatureCell->worldX;
             if (iVar5 < 0) {
               iVar5 = -iVar5;
             }
-            iVar7 = *(int *)(iVar7 + 0x98) - unaff_ESI->worldY;
+            iVar7 = *(int *)(iVar7 + 0x98) - terrainFeatureCell->worldY;
             if (iVar7 < 0) {
               iVar7 = -iVar7;
             }
-            if (((PVar8 == *(PckArmyAssetIdCatalog *)(pbVar9 + 4)) &&
+            if (((PVar8 == pAVar9->armyAssetId) &&
                 (iVar5 < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12
                 )) && (iVar7 < (int)(g_AiKnowledgeData->parameters).
                                     terrainFeatureMinimumAxisSeparationQ12)) {
-              return (AiPlanningGridScratchEdxContinuityResult)in_EDX;
+              return;
             }
             if (iVar5 + iVar7 < local_20) {
               local_20 = iVar5 + iVar7;
             }
           }
-          pbVar9 = pbVar9 + 8;
+          pAVar9 = pAVar9 + 1;
           iVar4 = iVar4 + -1;
         } while( true );
       }
@@ -409,6 +409,7 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddTerrainFeatureCellIf
     terrainFeatureEntry = terrainFeatureEntry + 1;
   } while( true );
 }
+
 
 /* Address: 0x00539200.
    Ownership: gameplay/ai/placement.
@@ -420,19 +421,21 @@ AiPlanningGridScratchEdxContinuityResult AiSiteCandidate_AddTerrainFeatureCellIf
    unchanged. Typed parameters: p3 workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-undefined4
+bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_TestWorkspaceRecordAtPoint
           (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           ArmyPlacementContext placementContext,UiRootNode *inGameRoot)
 
 {
-  undefined4 in_EAX;
+  ArmyPlacementDispatchEaxCf5 AVar1;
   
-  ArmyPlacement_DispatchAssetAtFieldPoint
-            (0,0,(uint)(ushort)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-             workspaceRecord->worldX,armyAssetId,placementContext,inGameRoot);
-  return in_EAX;
+  AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
+                    (0,0,(uint)(ushort)workspaceRecord->triangle0NormalAngles,
+                     workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,placementContext,
+                     inGameRoot);
+  return AVar1.carry;
 }
+
 
 /* Address: 0x0053A1B0.
    Ownership: gameplay/ai/placement.
@@ -442,19 +445,21 @@ AiPlacement_TestWorkspaceRecordAtPoint
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-undefined4
+bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_TestMode4AtWorkspaceRecord
           (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  undefined4 in_EAX;
+  ArmyPlacementDispatchEaxCf5 AVar1;
   
-  ArmyPlacement_DispatchAssetAtFieldPoint
-            (4,0,(uint)(ushort)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-             workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-  return in_EAX;
+  AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
+                    (4,0,(uint)(ushort)workspaceRecord->triangle0NormalAngles,
+                     workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
+                     (UiRootNode *)worldRuntime);
+  return AVar1.carry;
 }
+
 
 /* Address: 0x0053B570.
    Ownership: gameplay/ai/placement.
@@ -466,47 +471,51 @@ AiPlacement_TestMode4AtWorkspaceRecord
    unchanged.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-dword AiPlacement_QueryReachableSiteBucketCount
-                (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-                FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+AiPlacement_QueryReachableSiteBucketCount
+          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  uint uVar1;
-  AiKnowledgeDataImage *pAVar2;
-  dword dVar3;
-  FactionRuntimeIndex ownerFactionIndex;
-  undefined1 in_CF;
-  bool bVar4;
-  undefined8 uVar5;
-  int iVar6;
+  AiKnowledgeDataImage *pAVar1;
+  dword dVar2;
+  uint uVar3;
+  ArmyPlacementDispatchEaxCf5 AVar4;
+  StatusValueEaxCf5 SVar5;
+  StatusValueEaxCf5 SVar6;
   
-  pAVar2 = g_AiKnowledgeData;
-  uVar5 = ArmyPlacement_DispatchAssetAtFieldPoint
-                    (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
-                     (uint)(ushort)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
-                     workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-  ownerFactionIndex = (FactionRuntimeIndex)((ulonglong)uVar5 >> 0x20);
-  iVar6 = (int)uVar5;
-  if ((bool)in_CF) {
-    dVar3 = ArmyPlacement_DispatchAssetAtFieldPoint
-                      (0,0,ownerFactionIndex,workspaceRecord->worldY,workspaceRecord->worldX,
-                       armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-    if ((bool)in_CF) {
-      return dVar3;
+  pAVar1 = g_AiKnowledgeData;
+  uVar3 = (uint)(ushort)workspaceRecord->triangle0NormalAngles;
+  AVar4 = ArmyPlacement_DispatchAssetAtFieldPoint
+                    (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,uVar3,
+                     workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
+                     (UiRootNode *)worldRuntime);
+  dVar2 = AVar4.eax;
+  if (AVar4.carry) {
+    AVar4 = ArmyPlacement_DispatchAssetAtFieldPoint
+                      (0,0,uVar3,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                       factionIndex,(UiRootNode *)worldRuntime);
+    if (AVar4.carry) {
+      SVar6.valueOrError = AVar4.eax;
+      SVar6.carry = AVar4.carry;
+      return SVar6;
     }
   }
-  else {
-    bVar4 = false;
-    if ((iVar6 != 0) &&
-       (ArmyPlacement_DispatchAssetAtFieldPoint
-                  (0,0,ownerFactionIndex,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId
-                   ,factionIndex,(UiRootNode *)worldRuntime), bVar4)) {
-      uVar1 = (pAVar2->parameters).specialSiteSeparationQuantumQ12;
-      return (iVar6 + -1 + uVar1) / uVar1;
-    }
+  else if ((dVar2 != 0) &&
+          (AVar4 = ArmyPlacement_DispatchAssetAtFieldPoint
+                             (0,0,uVar3,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                              factionIndex,(UiRootNode *)worldRuntime), AVar4.carry)) {
+    uVar3 = (pAVar1->parameters).specialSiteSeparationQuantumQ12;
+    uVar3 = ((dVar2 - 1) + uVar3) / uVar3;
+    goto AiPlacement_QueryReachableSiteBucketCount_ReturnComputedOrZeroCountWithCarryClear;
   }
-  return 0;
+  uVar3 = 0;
+AiPlacement_QueryReachableSiteBucketCount_ReturnComputedOrZeroCountWithCarryClear:
+  SVar5.carry = false;
+  SVar5.valueOrError = uVar3;
+  return SVar5;
 }
+
 
 /* Address: 0x0053ACD0.
    Ownership: gameplay/ai/placement.
@@ -519,42 +528,35 @@ dword AiPlacement_QueryReachableSiteBucketCount
    Local calls: AiPlacement_ReserveSeparatedSpecialSiteChain.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-void AiPlacement_ReserveMode3SiteCluster
-               (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
-               FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+bool __thandor_cf_preserve_eax_ecx_edx
+AiPlacement_ReserveMode3SiteCluster
+          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+          FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  uint uVar1;
+  AiKnowledgeDataImage *pAVar1;
   uint uVar2;
-  AiKnowledgeDataImage *pAVar3;
-  int iVar4;
-  uint uVar5;
-  undefined4 extraout_ECX;
-  undefined1 in_CF;
-  bool bVar6;
+  bool bVar3;
+  ArmyPlacementDispatchEaxCf5 AVar4;
   
-  pAVar3 = g_AiKnowledgeData;
-  iVar4 = ArmyPlacement_DispatchAssetAtFieldPoint
+  pAVar1 = g_AiKnowledgeData;
+  AVar4 = ArmyPlacement_DispatchAssetAtFieldPoint
                     (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
                      (uint)(ushort)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
                      workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-  if (!(bool)in_CF) {
-    uVar2 = (pAVar3->parameters).specialSiteSeparationQuantumQ12;
-    uVar1 = iVar4 + -1 + uVar2;
-    uVar5 = uVar1 / uVar2;
-    if (uVar5 != 0) {
-      bVar6 = uVar5 < 4;
-      if ((uVar5 < 5) &&
-         (AiPlacement_ReserveSeparatedSpecialSiteChain
-                    (extraout_ECX,uVar1 % uVar2,armyAssetId,workspaceRecord,factionIndex,
-                     worldRuntime), !bVar6)) {
-        return;
-      }
-      return;
-    }
+  if ((AVar4.carry) ||
+     (uVar2 = (pAVar1->parameters).specialSiteSeparationQuantumQ12,
+     uVar2 = ((AVar4.eax - 1) + uVar2) / uVar2, uVar2 == 0)) {
+    return true;
   }
-  return;
+  if ((uVar2 < 5) &&
+     (bVar3 = AiPlacement_ReserveSeparatedSpecialSiteChain
+                        (armyAssetId,workspaceRecord,factionIndex,worldRuntime), !bVar3)) {
+    return true;
+  }
+  return false;
 }
+
 
 /* Address: 0x0053AD50.
    Ownership: gameplay/ai/placement.
@@ -566,72 +568,66 @@ void AiPlacement_ReserveMode3SiteCluster
    AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
    AiPrimaryWorkspace_CountAssignedEntriesById [gameplay/ai/workspaces].
 */
-AiCandidateScoreCfEaxPreservedEdxCarrier64
+AiCandidateScoreEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridCell *workspaceRecord;
   dword dVar1;
-  int in_EAX;
-  int extraout_EAX;
-  uint uVar2;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int iVar3;
-  undefined4 in_EDX;
-  AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
-  bool bVar4;
-  AiWorkspaceCountEaxPreservedEdxCarrier64 AVar5;
+  dword in_EAX;
+  int iVar2;
+  uint uVar3;
+  AiTerrainFeatureWorkspaceEntry *pAVar4;
+  bool bVar5;
+  AiCandidateScoreEaxCf5 AVar6;
+  AiCandidateScoreEaxCf5 AVar7;
   AiKnowledgeDataImage *knowledgeData;
   
   knowledgeData = g_AiKnowledgeData;
-  bVar4 = false;
-  terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
-  if (g_AiWorkspace08Count != 0) {
-    do {
-      workspaceRecord = terrainFeatureEntry->cell;
-      AiPlacement_ReserveMode3SiteCluster
-                (terrainFeatureEntry->armyAssetId,workspaceRecord,factionIndex,worldRuntime);
-      in_EAX = extraout_EAX;
-      iVar3 = extraout_ECX;
-      if (!bVar4) {
-        in_EAX = AiWorkspace03_GetMinimumManhattanDistanceToPoint
-                           (workspaceRecord->worldY,workspaceRecord->worldX);
-        iVar3 = extraout_ECX_00;
-        if ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= in_EAX) {
-          in_EAX = AiWorkspace02_GetMinimumManhattanDistanceToPoint
-                             (workspaceRecord->worldY,workspaceRecord->worldX);
-          iVar3 = extraout_ECX_01;
-          if ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= in_EAX) {
-            AVar5 = AiPrimaryWorkspace_CountAssignedEntriesById(terrainFeatureEntry->armyAssetId);
-            dVar1 = (knowledgeData->parameters).specialSite14aBaseWeight;
-            if (terrainFeatureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
-              dVar1 = (knowledgeData->parameters).specialSite14cBaseWeight;
-            }
-            uVar2 = (dVar1 * 3) / ((int)AVar5 * 2 + 6U);
-            if (terrainFeatureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
-              iVar3 = g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 << 8;
-              if (iVar3 != 0) {
-                uVar2 = (uint)(((longlong)(int)uVar2 *
-                               (longlong)
-                               (int)(g_GameFactionRuntimeImage.records[factionIndex].
-                                     unpoweredEnergyDemandQ4 * 2 +
-                                    g_GameFactionRuntimeImage.records[factionIndex].
-                                    suppliedEnergyDemandQ4)) / (longlong)iVar3);
-              }
-            }
-            return CONCAT44(in_EDX,uVar2);
-          }
-        }
-      }
-      bVar4 = (AiTerrainFeatureWorkspaceEntry *)0xffffffef < terrainFeatureEntry;
-      terrainFeatureEntry = terrainFeatureEntry + 1;
-    } while (iVar3 != 1);
+  iVar2 = g_AiWorkspace08Count;
+  pAVar4 = g_AiWorkspaceBuffer08_Size0200;
+  while( true ) {
+    if (iVar2 == 0) {
+      AVar7.carry = true;
+      AVar7.score = in_EAX;
+      return AVar7;
+    }
+    workspaceRecord = pAVar4->cell;
+    bVar5 = AiPlacement_ReserveMode3SiteCluster
+                      (pAVar4->armyAssetId,workspaceRecord,factionIndex,worldRuntime);
+    if (((!bVar5) &&
+        (in_EAX = AiWorkspace03_GetMinimumManhattanDistanceToPoint
+                            (workspaceRecord->worldY,workspaceRecord->worldX),
+        (int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= (int)in_EAX)) &&
+       (in_EAX = AiWorkspace02_GetMinimumManhattanDistanceToPoint
+                           (workspaceRecord->worldY,workspaceRecord->worldX),
+       (int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= (int)in_EAX))
+    break;
+    pAVar4 = pAVar4 + 1;
+    iVar2 = iVar2 + -1;
   }
-  return CONCAT44(in_EDX,in_EAX);
+  iVar2 = AiPrimaryWorkspace_CountAssignedEntriesById(pAVar4->armyAssetId);
+  dVar1 = (knowledgeData->parameters).specialSite14aBaseWeight;
+  if (pAVar4->armyAssetId != ARM_0330_BUILDING_MDL0303) {
+    dVar1 = (knowledgeData->parameters).specialSite14cBaseWeight;
+  }
+  uVar3 = (dVar1 * 3) / (iVar2 * 2 + 6U);
+  if (pAVar4->armyAssetId != ARM_0330_BUILDING_MDL0303) {
+    iVar2 = g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 << 8;
+    if (iVar2 != 0) {
+      uVar3 = (uint)(((longlong)(int)uVar3 *
+                     (longlong)
+                     (int)(g_GameFactionRuntimeImage.records[factionIndex].unpoweredEnergyDemandQ4 *
+                           2 + g_GameFactionRuntimeImage.records[factionIndex].
+                               suppliedEnergyDemandQ4)) / (longlong)iVar2);
+    }
+  }
+  AVar6.carry = false;
+  AVar6.score = uVar3;
+  return AVar6;
 }
+
 
 /* Address: 0x00539330.
    Ownership: gameplay/ai/placement.
@@ -642,63 +638,68 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
    flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-AiWorkspace09AnchorCfRegisterResult
+AiWorkspace09AnchorEcxEdxCf9 __thandor_preserve_eax
 AiPlacement_FindNearestValidWorkspace09Anchor
           (Q12 referenceWorldXQ12,Q12 referenceWorldYQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  int iVar1;
-  int extraout_ECX;
-  int iVar2;
-  uint in_EDX;
+  undefined4 uVar1;
+  undefined4 uVar2;
   int iVar3;
-  uint extraout_EDX;
-  uint uVar4;
+  int iVar4;
+  uint in_EDX;
+  int iVar5;
+  uint uVar6;
   FieldGridCell **gridCellCursor;
-  bool bVar5;
-  AiWorkspace09AnchorCfRegisterResult AVar6;
+  ArmyPlacementDispatchEaxCf5 AVar7;
+  AiWorkspace09AnchorEcxEdxCf9 AVar8;
+  AiWorkspace09AnchorEcxEdxCf9 AVar9;
   FieldGridCell *local_18;
   FieldGridCell *gridCell1;
   
   if (g_AiWorkspace09Count != 0) {
-    uVar4 = 0x7fffffff;
-    iVar2 = g_AiWorkspace09Count;
+    uVar6 = 0x7fffffff;
+    iVar4 = g_AiWorkspace09Count;
     gridCellCursor = g_AiWorkspaceBuffer09_Size1000;
     do {
       gridCell1 = *gridCellCursor;
-      iVar1 = referenceWorldYQ12 - gridCell1->worldX;
-      if (iVar1 < 0) {
-        iVar1 = -iVar1;
-      }
-      iVar3 = referenceWorldXQ12 - gridCell1->worldY;
+      iVar3 = referenceWorldYQ12 - gridCell1->worldX;
       if (iVar3 < 0) {
         iVar3 = -iVar3;
       }
-      in_EDX = iVar3 + iVar1;
-      bVar5 = in_EDX < uVar4;
-      if ((int)in_EDX < (int)uVar4) {
-        ArmyPlacement_DispatchAssetAtFieldPoint
-                  (1,0,(uint)(ushort)gridCell1->triangle0NormalAngles,gridCell1->worldY,
-                   gridCell1->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-        iVar2 = extraout_ECX;
-        in_EDX = extraout_EDX;
-        if (!bVar5) {
-          uVar4 = extraout_EDX;
+      iVar5 = referenceWorldXQ12 - gridCell1->worldY;
+      if (iVar5 < 0) {
+        iVar5 = -iVar5;
+      }
+      in_EDX = iVar5 + iVar3;
+      if ((int)in_EDX < (int)uVar6) {
+        AVar7 = ArmyPlacement_DispatchAssetAtFieldPoint
+                          (1,0,(uint)(ushort)gridCell1->triangle0NormalAngles,gridCell1->worldY,
+                           gridCell1->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
+        if (!AVar7.carry) {
+          uVar6 = in_EDX;
           local_18 = gridCell1;
         }
       }
       gridCellCursor = gridCellCursor + 1;
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
-    if ((int)uVar4 < 0x7fffffff) {
-      AVar6.worldYQ12 = local_18->worldX;
-      AVar6.worldXQ12 = local_18->worldY;
-      return AVar6;
+      iVar4 = iVar4 + -1;
+    } while (iVar4 != 0);
+    if ((int)uVar6 < 0x7fffffff) {
+      uVar1 = local_18->worldX;
+      uVar2 = local_18->worldY;
+      AVar8.worldYQ12 = uVar2;
+      AVar8.worldXQ12 = uVar1;
+      AVar8.carry = false;
+      return AVar8;
     }
   }
-  return (AiWorkspace09AnchorCfRegisterResult)((ulonglong)in_EDX << 0x20);
+  AVar9.carry = true;
+  AVar9.worldXQ12 = (int)((ulonglong)in_EDX << 0x20);
+  AVar9.worldYQ12 = (int)(((ulonglong)in_EDX << 0x20) >> 0x20);
+  return AVar9;
 }
+
 
 /* Address: 0x00539EF0.
    Ownership: gameplay/ai/placement.
@@ -712,136 +713,123 @@ AiPlacement_FindNearestValidWorkspace09Anchor
    Cross-module calls: ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime],
    ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
 */
-void __fastcall
+bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_ReserveSeparatedSpecialSiteChain
-          (undefined4 param_1,uint param_2,undefined4 param_3,FieldGridCell *workspaceRecord,
+          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  GameEntityRuntime *entityRuntime;
-  GameEntityRuntime *entityRuntime_00;
-  GameEntityRuntime *entityRuntime_01;
-  GameEntityRuntime *entityRuntime_02;
   Q12 worldYQ12;
-  int extraout_ECX;
   int iVar1;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
   Q12 worldXQ12;
-  int extraout_EDX;
   int iVar2;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  bool bVar3;
-  AiWorkspace09AnchorCfRegisterResult AVar4;
+  ArmyRuntimeCreateEaxCf5 AVar3;
+  ArmyRuntimeCreateEaxCf5 AVar4;
+  ArmyRuntimeCreateEaxCf5 AVar5;
+  ArmyRuntimeCreateEaxCf5 AVar6;
+  AiWorkspace09AnchorEcxEdxCf9 AVar7;
   AiKnowledgeDataImage *knowledgeData;
   
   knowledgeData = g_AiKnowledgeData;
-  bVar3 = &stack0xffffffe4 < (undefined1 *)0x8;
-  AVar4 = AiPlacement_FindNearestValidWorkspace09Anchor
+  AVar7 = AiPlacement_FindNearestValidWorkspace09Anchor
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
-  worldXQ12 = AVar4.worldXQ12;
-  worldYQ12 = AVar4.worldYQ12;
-  if (bVar3) {
-    return;
+  worldXQ12 = AVar7.worldYQ12;
+  worldYQ12 = AVar7.worldXQ12;
+  if (AVar7.carry) {
+    return true;
   }
-  entityRuntime =
-       (GameEntityRuntime *)
-       ArmyRuntime_CreateInstanceFromAssetCf
-                 (1,0,worldXQ12,worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
-  if (bVar3) {
-    return;
+  AVar3 = ArmyRuntime_CreateInstanceFromAssetCf
+                    (1,0,worldXQ12,worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
+  if (AVar3.carry) {
+    return true;
   }
-  iVar1 = extraout_ECX - workspaceRecord->worldX;
+  iVar1 = worldYQ12 - workspaceRecord->worldX;
   if (iVar1 < 0) {
     iVar1 = -iVar1;
   }
-  iVar2 = extraout_EDX - workspaceRecord->worldY;
+  iVar2 = worldXQ12 - workspaceRecord->worldY;
   if (iVar2 < 0) {
     iVar2 = -iVar2;
   }
-  bVar3 = (uint)(iVar1 + iVar2) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
-  if (bVar3) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarryClear;
-  AVar4 = AiPlacement_FindNearestValidWorkspace09Anchor
+  if ((uint)(iVar1 + iVar2) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
+  goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarryClear;
+  AVar7 = AiPlacement_FindNearestValidWorkspace09Anchor
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
-  if ((bVar3) ||
-     (entityRuntime_00 =
-           (GameEntityRuntime *)
-           ArmyRuntime_CreateInstanceFromAssetCf
-                     (1,0,AVar4.worldXQ12,AVar4.worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
-                      worldRuntime), bVar3))
-  goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
-  iVar1 = extraout_ECX_00 - workspaceRecord->worldX;
+  if (AVar7.carry) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
+  AVar4 = ArmyRuntime_CreateInstanceFromAssetCf
+                    (1,0,AVar7.worldYQ12,AVar7.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
+                     worldRuntime);
+  if (AVar4.carry) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
+  iVar1 = AVar7.worldXQ12 - workspaceRecord->worldX;
   if (iVar1 < 0) {
     iVar1 = -iVar1;
   }
-  iVar2 = extraout_EDX_00 - workspaceRecord->worldY;
+  iVar2 = AVar7.worldYQ12 - workspaceRecord->worldY;
   if (iVar2 < 0) {
     iVar2 = -iVar2;
   }
-  bVar3 = (uint)(iVar1 + iVar2) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
-  if (!bVar3) {
-    AVar4 = AiPlacement_FindNearestValidWorkspace09Anchor
+  if ((knowledgeData->parameters).specialSiteSeparationQuantumQ12 <= (uint)(iVar1 + iVar2)) {
+    AVar7 = AiPlacement_FindNearestValidWorkspace09Anchor
                       (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                        factionIndex,worldRuntime);
-    if ((!bVar3) &&
-       (entityRuntime_01 =
-             (GameEntityRuntime *)
-             ArmyRuntime_CreateInstanceFromAssetCf
-                       (1,0,AVar4.worldXQ12,AVar4.worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
-                        worldRuntime), !bVar3)) {
-      iVar1 = extraout_ECX_01 - workspaceRecord->worldX;
-      if (iVar1 < 0) {
-        iVar1 = -iVar1;
-      }
-      iVar2 = extraout_EDX_01 - workspaceRecord->worldY;
-      if (iVar2 < 0) {
-        iVar2 = -iVar2;
-      }
-      bVar3 = (uint)(iVar1 + iVar2) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
-      if (bVar3) {
-AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear:
-        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime_01);
-        goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear;
-      }
-      AVar4 = AiPlacement_FindNearestValidWorkspace09Anchor
-                        (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
-                         factionIndex,worldRuntime);
-      if ((!bVar3) &&
-         (entityRuntime_02 =
-               (GameEntityRuntime *)
-               ArmyRuntime_CreateInstanceFromAssetCf
-                         (1,0,AVar4.worldXQ12,AVar4.worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307
-                          ,worldRuntime), !bVar3)) {
-        iVar1 = extraout_ECX_02 - workspaceRecord->worldX;
+    if (!AVar7.carry) {
+      AVar5 = ArmyRuntime_CreateInstanceFromAssetCf
+                        (1,0,AVar7.worldYQ12,AVar7.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
+                         worldRuntime);
+      if (!AVar5.carry) {
+        iVar1 = AVar7.worldXQ12 - workspaceRecord->worldX;
         if (iVar1 < 0) {
           iVar1 = -iVar1;
         }
-        iVar2 = extraout_EDX_02 - workspaceRecord->worldY;
+        iVar2 = AVar7.worldYQ12 - workspaceRecord->worldY;
         if (iVar2 < 0) {
           iVar2 = -iVar2;
         }
         if ((uint)(iVar1 + iVar2) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12) {
-          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime_02);
-          goto 
-          AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear;
+AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear:
+          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar5.eax);
+          goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear;
         }
-        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime_02);
+        AVar7 = AiPlacement_FindNearestValidWorkspace09Anchor
+                          (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307
+                           ,factionIndex,worldRuntime);
+        if (!AVar7.carry) {
+          AVar6 = ArmyRuntime_CreateInstanceFromAssetCf
+                            (1,0,AVar7.worldYQ12,AVar7.worldXQ12,factionIndex,
+                             ARM_0333_BUILDING_MDL0307,worldRuntime);
+          if (!AVar6.carry) {
+            iVar1 = AVar7.worldXQ12 - workspaceRecord->worldX;
+            if (iVar1 < 0) {
+              iVar1 = -iVar1;
+            }
+            iVar2 = AVar7.worldYQ12 - workspaceRecord->worldY;
+            if (iVar2 < 0) {
+              iVar2 = -iVar2;
+            }
+            if ((uint)(iVar1 + iVar2) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
+            {
+              ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar6.eax);
+              goto 
+              AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear
+              ;
+            }
+            ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar6.eax);
+          }
+        }
+        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar5.eax);
       }
-      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime_01);
     }
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime_00);
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar4.eax);
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet:
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
-    return;
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar3.eax);
+    return true;
   }
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime_00);
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar4.eax);
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarryClear:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
-  return;
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)AVar3.eax);
+  return false;
 }
+

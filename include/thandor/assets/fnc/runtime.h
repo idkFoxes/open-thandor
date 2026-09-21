@@ -1,7 +1,14 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/assets/fnc/runtime.h
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #ifndef THANDOR_ASSETS_FNC_RUNTIME_H
 #define THANDOR_ASSETS_FNC_RUNTIME_H
 
-#include <thandor/generated/v523_types.h>
+#include <thandor/generated/types.h>
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/fnc/runtime. */
@@ -11,9 +18,10 @@
 dword FncModule_GetBindingModeCf(FncModuleHeader *module);
 
 /* 0x0041A640 */
-int * FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule);
+FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule);
 
 /* 0x0041A710 */
-undefined8 FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module);
 
 #endif /* THANDOR_ASSETS_FNC_RUNTIME_H */

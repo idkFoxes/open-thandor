@@ -1,6 +1,6 @@
 # Call graph: `platform/bootstrap/runtime`
 
-[Source](../../../../src/platform/bootstrap/runtime.c) · [Header](../../../../include/thandor/platform/bootstrap/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-bootstrap-runtime)
+[Source](../../../../src/platform/bootstrap/runtime.c) · [Header](../../../../include/thandor/platform/bootstrap/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-bootstrap-runtime) · [Developer notes](../../../../CHANGELOG.md#module-platform-bootstrap-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-platform-bootstrap-runtime)
 
 17 functions. Addresses are current V523 executable VAs.
 

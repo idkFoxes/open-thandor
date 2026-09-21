@@ -1,6 +1,6 @@
 # Call graph: `platform/filesystem/win32`
 
-[Source](../../../../src/platform/filesystem/win32.c) · [Header](../../../../include/thandor/platform/filesystem/win32.h) · [Graphviz](win32.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-filesystem-win32)
+[Source](../../../../src/platform/filesystem/win32.c) · [Header](../../../../include/thandor/platform/filesystem/win32.h) · [Graphviz](win32.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-filesystem-win32) · [Full changelog](../../../../CHANGELOG_FULL.md#module-platform-filesystem-win32)
 
 26 functions. Addresses are current V523 executable VAs.
 

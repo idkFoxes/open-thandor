@@ -1,6 +1,6 @@
 # Call graph: `ui/core/runtime`
 
-[Source](../../../../src/ui/core/runtime.c) · [Header](../../../../include/thandor/ui/core/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-core-runtime)
+[Source](../../../../src/ui/core/runtime.c) · [Header](../../../../include/thandor/ui/core/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-core-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-core-runtime)
 
 27 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `ui/controls/misc`
 
-[Source](../../../../src/ui/controls/misc.c) · [Header](../../../../include/thandor/ui/controls/misc.h) · [Graphviz](misc.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-misc)
+[Source](../../../../src/ui/controls/misc.c) · [Header](../../../../include/thandor/ui/controls/misc.h) · [Graphviz](misc.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-misc) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-controls-misc)
 
 23 functions. Addresses are current V523 executable VAs.
 

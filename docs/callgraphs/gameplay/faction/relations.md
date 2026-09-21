@@ -1,6 +1,6 @@
 # Call graph: `gameplay/faction/relations`
 
-[Source](../../../../src/gameplay/faction/relations.c) · [Header](../../../../include/thandor/gameplay/faction/relations.h) · [Graphviz](relations.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-faction-relations)
+[Source](../../../../src/gameplay/faction/relations.c) · [Header](../../../../include/thandor/gameplay/faction/relations.h) · [Graphviz](relations.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-faction-relations) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-faction-relations) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-faction-relations)
 
 12 functions. Addresses are current V523 executable VAs.
 

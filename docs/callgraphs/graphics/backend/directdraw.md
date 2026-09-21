@@ -1,6 +1,6 @@
 # Call graph: `graphics/backend/directdraw`
 
-[Source](../../../../src/graphics/backend/directdraw.c) · [Header](../../../../include/thandor/graphics/backend/directdraw.h) · [Graphviz](directdraw.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-directdraw)
+[Source](../../../../src/graphics/backend/directdraw.c) · [Header](../../../../include/thandor/graphics/backend/directdraw.h) · [Graphviz](directdraw.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-directdraw) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-backend-directdraw)
 
 5 functions. Addresses are current V523 executable VAs.
 

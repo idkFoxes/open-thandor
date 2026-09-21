@@ -1,6 +1,6 @@
 # Call graph: `network/protocol/commands`
 
-[Source](../../../../src/network/protocol/commands.c) · [Header](../../../../include/thandor/network/protocol/commands.h) · [Graphviz](commands.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-protocol-commands)
+[Source](../../../../src/network/protocol/commands.c) · [Header](../../../../include/thandor/network/protocol/commands.h) · [Graphviz](commands.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-protocol-commands) · [Full changelog](../../../../CHANGELOG_FULL.md#module-network-protocol-commands)
 
 5 functions. Addresses are current V523 executable VAs.
 

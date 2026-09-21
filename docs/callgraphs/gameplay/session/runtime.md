@@ -1,6 +1,6 @@
 # Call graph: `gameplay/session/runtime`
 
-[Source](../../../../src/gameplay/session/runtime.c) · [Header](../../../../include/thandor/gameplay/session/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-session-runtime)
+[Source](../../../../src/gameplay/session/runtime.c) · [Header](../../../../include/thandor/gameplay/session/runtime.h) · [Graphviz](runtime.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-gameplay-session-runtime) · [Developer notes](../../../../CHANGELOG.md#module-gameplay-session-runtime) · [Full changelog](../../../../CHANGELOG_FULL.md#module-gameplay-session-runtime)
 
 16 functions. Addresses are current V523 executable VAs.
 

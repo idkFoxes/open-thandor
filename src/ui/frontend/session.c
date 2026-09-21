@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/ui/frontend/session.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/ui/frontend/session.h>
 
 /* Implementation ownership: ui/frontend/session. */
@@ -11,20 +18,19 @@
    Local calls: FrontendSession_ReturnToMainPage.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
           (FrontendReturnCallbackContext32 callbackContext,dword argument2,dword argument3,
           dword argument4)
 
 {
-  undefined4 in_EAX;
-  
   Resource_Release(g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = (void *)0x0;
   g_FrontendScenarioInitializationCount = 0;
   FrontendSession_ReturnToMainPage(callbackContext,0,0,2);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00548FE0.
    Ownership: ui/frontend/session.
@@ -36,11 +42,9 @@ FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
    Cross-module calls: Movie_Close [movie/runtime/playback], UiPageStack_SetActiveIndex [ui/controls/layout],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
-undefined4 FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
+void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
 
 {
-  undefined4 in_EAX;
-  UiPageStackControl *stack;
   int parentNodeAddress;
   
   parentNodeAddress = (int)source->parent;
@@ -49,7 +53,7 @@ undefined4 FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *sourc
     parentNodeAddress = (int)source->parent;
   }
   Movie_Close();
-  UiPageStack_SetActiveIndex(0,stack);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&source[1].vtable);
   (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)
             ((GraphicsTextureSourceAsset *)source[7].left);
   (*g_MemoryApi.free)((void *)source[7].leftOffset);
@@ -65,8 +69,9 @@ undefined4 FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *sourc
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00549090.
    Ownership: ui/frontend/session.
@@ -76,11 +81,9 @@ undefined4 FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *sourc
    Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands],
    FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08 [ui/frontend/player].
 */
-undefined4 FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
+void __thandor_preserve_eax FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
 
 {
-  undefined4 in_EAX;
-  
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -97,8 +100,9 @@ undefined4 FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(0x1e0,0,0,0);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054C770.
    Ownership: ui/frontend/session.
@@ -108,11 +112,9 @@ undefined4 FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
    Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands],
    Random_SelectPrimaryStream [core/math/random].
 */
-undefined4 FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
+void __thandor_preserve_eax FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
 
 {
-  undefined4 in_EAX;
-  
   (*g_NetworkBackendSlot3)();
   g_FrontendNetworkState = 0;
   (*g_NetworkBackendSlot1)();
@@ -124,8 +126,9 @@ undefined4 FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
     FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
   }
   Random_SelectPrimaryStream();
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054D0B0.
    Ownership: ui/frontend/session.
@@ -138,11 +141,11 @@ undefined4 FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
    Random_SelectSecondaryStream [core/math/random], FrontendCommandQueue_EnqueueLocalPlayerCommand
    [network/protocol/commands].
 */
-undefined4 FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
+void __thandor_void_preserve_eax_ecx
+FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
 
 {
   UiNodeBase *pUVar1;
-  undefined4 in_EAX;
   dword seed;
   int iVar2;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
@@ -174,8 +177,9 @@ undefined4 FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,1);
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00544250.
    Ownership: ui/frontend/session.
@@ -183,13 +187,15 @@ undefined4 FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase
    Typed parameters: p3 gameSpeedPercent→GameSpeedPercent_V305. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void FrontendSession_SetGameSpeedPercent
-               (dword argument1,dword argument2,dword argument3,GameSpeedPercent gameSpeedPercent)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendSession_SetGameSpeedPercent
+          (dword argument1,dword argument2,dword argument3,GameSpeedPercent gameSpeedPercent)
 
 {
   *(GameSpeedPercent *)(g_FrontendRootNode + 0xa80) = gameSpeedPercent;
   return;
 }
+
 
 /* Address: 0x0054A790.
    Ownership: ui/frontend/session.
@@ -197,7 +203,7 @@ void FrontendSession_SetGameSpeedPercent
    most 640 pixels. EAX is preserved.
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-void FrontendSession_ShowPage9WithCompactLayout(void *frontendRuntime)
+void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(void *frontendRuntime)
 
 {
   UiPageStack_SetActiveIndex(9,(UiPageStackControl *)((int)frontendRuntime + 0x508));
@@ -206,6 +212,7 @@ void FrontendSession_ShowPage9WithCompactLayout(void *frontendRuntime)
   }
   return;
 }
+
 
 /* Address: 0x0054D2E0.
    Ownership: ui/frontend/session.
@@ -218,12 +225,11 @@ void FrontendSession_ShowPage9WithCompactLayout(void *frontendRuntime)
    UiTransferMailbox_RandomizeSequenceToken [network/protocol/transfer], UiTransfer_SendPacketType10000Value2931Cf
    [network/protocol/transfer].
 */
-undefined4 FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
+void __thandor_preserve_eax
+FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 
 {
   FrontendPlayerRuntimeRecord *pFVar1;
-  undefined4 in_EAX;
-  UiPointerListControl *control;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
   
   g_FrontendNetworkState = 1;
@@ -232,7 +238,8 @@ undefined4 FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *so
     source[-0x11b].topAnchorQ31 = source[-0x11b].topAnchorQ31 | 0x2000;
   }
   UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&source[-0x127].left);
-  UiPointerList_InitializeColumnLayout(0,g_FrontendSessionListRows,control);
+  UiPointerList_InitializeColumnLayout
+            (0,g_FrontendSessionListRows,(UiPointerListControl *)&source[-0x29].left);
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
   UiTransfer_SendPacketType10000Value2931Cf();
@@ -246,8 +253,9 @@ undefined4 FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *so
   (pFVar1->factionAssignment).roleStateFlags = 0;
   pFVar1->runtimeState64 = 0;
   pFVar1->snapshotTransferFlags = 0;
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0054E3A0.
    Ownership: ui/frontend/session.
@@ -255,61 +263,69 @@ undefined4 FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *so
    offsets, and refreshes the associated pointer list.
    Cross-module calls: UiPointerList_RefreshSelectionAndQueueAction [ui/controls/lists].
 */
-void FrontendSessionList_DecrementExpiryAndCompactRows(void *frontendRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendSessionList_DecrementExpiryAndCompactRows
+          (FrontendNetworkListsRuntimeView5650 *frontendRuntime)
 
 {
   UiTransferPayloadByteCount *pUVar1;
-  FrontendSessionDiscoveryRecordB0 *pFVar2;
-  FrontendSessionDiscoveryRecordB0 *pFVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  FrontendSessionDiscoveryRecordB0 **ppFVar7;
+  UiListRowCount *pUVar2;
+  void ***pppvVar3;
+  void **ppvVar4;
+  FrontendSessionDiscoveryRecordB0 *pFVar5;
+  FrontendSessionDiscoveryRecordB0 *pFVar6;
+  UiListRowCount UVar7;
+  int iVar8;
+  void **ppvVar9;
+  FrontendSessionDiscoveryRecordB0 **ppFVar10;
   dword *sourceDwordCursor;
   dword *destinationDwordCursor;
   
-  uVar6 = *(uint *)((int)frontendRuntime + 0x4bb8);
-  pFVar2 = g_FrontendSessionDiscoveryRecords;
-  pFVar3 = g_FrontendSessionDiscoveryRecords;
-  ppFVar7 = g_FrontendSessionListRows;
-  for (iVar4 = *(int *)((int)frontendRuntime + 0x4bbc); iVar4 != 0; iVar4 = iVar4 + -1) {
-    pUVar1 = &(pFVar2->advertisement).payloadByteCount;
+  ppvVar9 = (frontendRuntime->sessionDiscoveryList).rowSlots;
+  pFVar5 = g_FrontendSessionDiscoveryRecords;
+  pFVar6 = g_FrontendSessionDiscoveryRecords;
+  ppFVar10 = g_FrontendSessionListRows;
+  for (UVar7 = (frontendRuntime->sessionDiscoveryList).rowCount; UVar7 != 0; UVar7 = UVar7 - 1) {
+    pUVar1 = &(pFVar5->advertisement).payloadByteCount;
     *pUVar1 = *pUVar1 - 1;
-    destinationDwordCursor = (dword *)pFVar3;
+    destinationDwordCursor = (dword *)pFVar6;
     if (*pUVar1 == 0) {
-      sourceDwordCursor = (dword *)(pFVar2 + 1);
-      *(int *)((int)frontendRuntime + 0x4bbc) = *(int *)((int)frontendRuntime + 0x4bbc) + -1;
-      if (uVar6 == *(uint *)((int)frontendRuntime + 0x4bc8)) {
-        *(undefined4 *)((int)frontendRuntime + 0x4bc8) =
-             *(undefined4 *)((int)frontendRuntime + 0x4bb8);
+      sourceDwordCursor = (dword *)(pFVar5 + 1);
+      pUVar2 = &(frontendRuntime->sessionDiscoveryList).rowCount;
+      *pUVar2 = *pUVar2 - 1;
+      ppvVar4 = (frontendRuntime->sessionDiscoveryList).selectedRowSlot;
+      if (ppvVar9 == ppvVar4) {
+        (frontendRuntime->sessionDiscoveryList).selectedRowSlot =
+             (frontendRuntime->sessionDiscoveryList).rowSlots;
       }
-      else if (uVar6 <= *(uint *)((int)frontendRuntime + 0x4bc8)) {
-        *(int *)((int)frontendRuntime + 0x4bc8) = *(int *)((int)frontendRuntime + 0x4bc8) + -4;
+      else if (ppvVar9 <= ppvVar4) {
+        pppvVar3 = &(frontendRuntime->sessionDiscoveryList).selectedRowSlot;
+        *pppvVar3 = *pppvVar3 + -1;
       }
     }
     else {
-      sourceDwordCursor = (dword *)(pFVar2 + 1);
-      *ppFVar7 = pFVar3;
-      destinationDwordCursor = (dword *)(pFVar3 + 1);
-      ppFVar7 = ppFVar7 + 1;
+      sourceDwordCursor = (dword *)(pFVar5 + 1);
+      *ppFVar10 = pFVar6;
+      destinationDwordCursor = (dword *)(pFVar6 + 1);
+      ppFVar10 = ppFVar10 + 1;
       if (destinationDwordCursor != sourceDwordCursor) {
-        sourceDwordCursor = (dword *)pFVar2;
-        destinationDwordCursor = (dword *)pFVar3;
-        for (iVar5 = 0x2c; iVar5 != 0; iVar5 = iVar5 + -1) {
+        sourceDwordCursor = (dword *)pFVar5;
+        destinationDwordCursor = (dword *)pFVar6;
+        for (iVar8 = 0x2c; iVar8 != 0; iVar8 = iVar8 + -1) {
           *destinationDwordCursor = *sourceDwordCursor;
           sourceDwordCursor = sourceDwordCursor + 1;
           destinationDwordCursor = destinationDwordCursor + 1;
         }
       }
     }
-    uVar6 = uVar6 + 4;
-    pFVar2 = (FrontendSessionDiscoveryRecordB0 *)sourceDwordCursor;
-    pFVar3 = (FrontendSessionDiscoveryRecordB0 *)destinationDwordCursor;
+    ppvVar9 = ppvVar9 + 1;
+    pFVar5 = (FrontendSessionDiscoveryRecordB0 *)sourceDwordCursor;
+    pFVar6 = (FrontendSessionDiscoveryRecordB0 *)destinationDwordCursor;
   }
-  UiPointerList_RefreshSelectionAndQueueAction
-            ((UiPointerListControl *)((int)frontendRuntime + 0x4b68));
+  UiPointerList_RefreshSelectionAndQueueAction(&frontendRuntime->sessionDiscoveryList);
   return;
 }
+
 
 /* Address: 0x00565670.
    Ownership: ui/frontend/session.
@@ -322,19 +338,16 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(void *frontendRuntime)
    [network/protocol/transfer], UiRuntimeRecordRing_ContainsIdCf [ui/core/runtime],
    FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf [network/backend/runtime].
 */
-void FrontendSession_PeriodicTick(void)
+void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
 
 {
-  uint uVar1;
-  InGameRuntimeRootImageC3E4 *pIVar2;
-  undefined1 in_CF;
-  undefined1 uVar3;
-  bool bVar4;
-  undefined8 uVar5;
+  InGameRuntimeRootImageC3E4 *pIVar1;
+  bool bVar2;
+  UiRuntimeRecordRingDiscardEaxEdxCf9 UVar3;
   
-  (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
-  pIVar2 = g_InGameRuntimeRoot;
-  if ((bool)in_CF) {
+  bVar2 = (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
+  pIVar1 = g_InGameRuntimeRoot;
+  if (bVar2) {
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -345,41 +358,36 @@ void FrontendSession_PeriodicTick(void)
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
         FrontendTransfer_DispatchStagedCommandRecords();
       }
-      else {
-        uVar1 = (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2;
-        uVar3 = uVar1 < g_SessionNetworkTickInterval;
-        if (uVar1 == g_SessionNetworkTickInterval) {
-          while( true ) {
-            uVar5 = UiRuntimeRecordRing_DiscardOldestCf();
-            if ((bool)uVar3) break;
-            FrontendTransfer_HandleSyncRequest10021AndReply10023
-                      ((NetworkSessionContext *)((ulonglong)uVar5 >> 0x20),
-                       (FrontendTransferPacketUnion *)uVar5);
-          }
-          FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
-          if ((bool)uVar3) {
-            g_InGameNetworkTickCountdown = 1;
-            goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
-          }
+      else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
+               g_SessionNetworkTickInterval) {
+        while( true ) {
+          UVar3 = UiRuntimeRecordRing_DiscardOldestCf();
+          if (UVar3.carryEmpty) break;
+          FrontendTransfer_HandleSyncRequest10021AndReply10023
+                    ((NetworkSessionContext *)UVar3.edxEndpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)UVar3.eaxPayloadOrReadIndex);
+        }
+        bVar2 = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
+        if (bVar2) {
+          g_InGameNetworkTickCountdown = 1;
+          goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
         }
       }
     }
   }
   else {
-    bVar4 = false;
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-      UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
-      uVar3 = 1;
-      if (!bVar4) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+      bVar2 = UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
+      if (!bVar2) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
       do {
-        uVar5 = UiRuntimeRecordRing_DiscardOldestCf();
-        if ((bool)uVar3) break;
-        FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
-                  ((NetworkSessionContext *)((ulonglong)uVar5 >> 0x20),
-                   (FrontendTransferPacketUnion *)uVar5);
-      } while (!(bool)uVar3);
-      FrontendTransfer_ConsumeProcessedFlagCf();
-      if ((bool)uVar3) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+        UVar3 = UiRuntimeRecordRing_DiscardOldestCf();
+        if (UVar3.carryEmpty) break;
+        bVar2 = FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
+                          ((NetworkSessionContext *)UVar3.edxEndpointOrReadIndex,
+                           (FrontendTransferPacketUnion *)UVar3.eaxPayloadOrReadIndex);
+      } while (!bVar2);
+      bVar2 = FrontendTransfer_ConsumeProcessedFlagCf();
+      if (bVar2) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
     }
     else if (g_InGameNetworkTickCountdown != 0)
     goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
@@ -387,13 +395,14 @@ void FrontendSession_PeriodicTick(void)
   }
   g_SessionNetworkTickCounter = g_SessionNetworkTickCounter + 1;
   if (((g_UiCommandRuntimeFlags & 0x800) != 0) &&
-     (pIVar2->activeEndMovieRuntime022C != (MovieRuntime *)0x0)) {
+     (pIVar1->activeEndMovieRuntime022C != (MovieRuntime *)0x0)) {
     g_EndMoviePendingTicks = g_EndMoviePendingTicks + 1;
   }
 FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
   (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
   return;
 }
+
 
 /* Address: 0x005725D0.
    Ownership: ui/frontend/session.
@@ -404,17 +413,14 @@ FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
    UiTransfer_StagePacketAndSendCf [network/protocol/transfer],
    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus [ui/frontend/player].
 */
-void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
+void __thandor_void_preserve_eax_ecx_edx
+FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
 
 {
   FrontendHeartbeatTickCount *pFVar1;
   FrontendPlayerRuntimeBlockCount FVar2;
-  word *stream;
-  void *replacementPayload;
   int iVar3;
-  FrontendPlayerRuntimeBlockCount extraout_ECX;
   int iVar4;
-  int extraout_EDX;
   int iVar5;
   FrontendPlayerRuntimeRecord *pFVar6;
   FrontendCommandPacketRecord *pFVar7;
@@ -422,7 +428,7 @@ void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
   UiTransferEndpointDescriptor *endpoint;
   FrontendPlayerRuntimeRecord *pFVar9;
   FrontendPlayerRuntimeRecord *pFVar10;
-  undefined8 uVar11;
+  TextResourceResolveEaxCf5 TVar11;
   FrontendCommandPacketRecord *pFVar12;
   FrontendPlayerRemovalPacket10007 *pFVar13;
   FrontendCommandPacketRecord *pFStack_20;
@@ -431,7 +437,6 @@ void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
   pFStack_20 = g_FrontendClientPlayerCommandRecords;
   pFVar12 = g_FrontendClientPlayerCommandRecords;
   iVar4 = g_FrontendPlayerRuntimeBlockCount - 1;
-  iVar3 = iVar4;
   pFVar6 = g_FrontendPlayerRuntimeBlocks + 1;
   pFVar9 = g_FrontendPlayerRuntimeBlocks + 1;
   pFVar13 = (FrontendPlayerRemovalPacket10007 *)pFVar12;
@@ -449,10 +454,9 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndP
         pFVar1 = &pFVar6->heartbeatExpiryTicks;
         *pFVar1 = *pFVar1 - 1;
         if (*pFVar1 == 0) {
-          stream = TextResource_Resolve(0xff00);
-          RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-          InGameRecentTextHistory_InsertAndRebuild8();
-          iVar4 = extraout_EDX;
+          TVar11 = TextResource_Resolve(0xff00);
+          RichTextCommandStream_PatchPayloadBySelector(0,&pFVar6->playerName,TVar11.eax);
+          InGameRecentTextHistory_InsertAndRebuild8(TVar11.eax);
           goto 
           FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndPrepareCompaction
           ;
@@ -477,7 +481,6 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndP
       }
       pFStack_20 = pFStack_20 + 1;
       iVar4 = iVar4 + -1;
-      iVar3 = 0;
       pFVar6 = pFVar8;
       pFVar9 = pFVar10;
       pFVar13 = (FrontendPlayerRemovalPacket10007 *)pFVar12;
@@ -491,21 +494,19 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndP
       g_FrontendClientPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)pFVar12
       ;
       FVar2 = g_FrontendPlayerRuntimeBlockCount;
-      while (FVar2 != 1) {
+      while (FVar2 = FVar2 - 1, FVar2 != 0) {
         pFVar13 = &g_FrontendClientPlayerRemovalPacket10007;
-        uVar11 = UiTransfer_StagePacketAndSendCf
-                           (endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
-        iVar3 = (int)((ulonglong)uVar11 >> 0x20);
+        UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
         endpoint = endpoint + 0x13b;
         pFVar12 = (FrontendCommandPacketRecord *)pFVar13;
-        FVar2 = extraout_ECX;
       }
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
-    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0,iVar3,0xffffffff);
+    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0xffffffff,0,0,0);
   }
   return;
 }
+
 
 /* Address: 0x00572960.
    Ownership: ui/frontend/session.
@@ -516,17 +517,15 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndP
    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus [ui/frontend/player],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
 */
-void FrontendHostSession_TickShutdownOrReadyConsensus(void)
+void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyConsensus(void)
 
 {
   PlayerRuntimeId PVar1;
   FrontendPlayerRuntimeRecord *pFVar2;
   InGameRuntimeRootImageC3E4 *pIVar3;
-  word *stream;
-  void *replacementPayload;
   FrontendPlayerRuntimeBlockCount FVar4;
-  undefined4 extraout_EDX;
   FrontendPlayerRuntimeRecord *pFVar5;
+  TextResourceResolveEaxCf5 TVar6;
   
   pIVar3 = g_InGameRuntimeRoot;
   pFVar5 = g_FrontendPlayerRuntimeBlocks;
@@ -535,9 +534,9 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
     (*g_NetworkBackendSlot3)();
     (*g_NetworkBackendSlot1)();
-    stream = TextResource_Resolve(0xff01);
-    RichTextCommandStream_PatchPayloadBySelector(0,replacementPayload,stream);
-    InGameRecentTextHistory_InsertAndRebuild8();
+    TVar6 = TextResource_Resolve(0xff01);
+    RichTextCommandStream_PatchPayloadBySelector(0,&pFVar5->playerName,TVar6.eax);
+    InGameRecentTextHistory_InsertAndRebuild8(TVar6.eax);
     pFVar2 = g_FrontendPlayerRuntimeBlocks;
     PVar1 = g_LocalPlayerRuntimeId;
     FVar4 = g_FrontendPlayerRuntimeBlockCount;
@@ -545,8 +544,8 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
       if ((pFVar5->factionAssignment).readyOrWaitState == 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-                    (FVar4,extraout_EDX,g_LocalPlayerRuntimeId);
+          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0)
+          ;
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
@@ -582,6 +581,7 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
   return;
 }
 
+
 /* Address: 0x00544210.
    Ownership: ui/frontend/session.
    Purpose: Closes the active movie, converts the frontend game-speed percentage at +0xA80 to the runtime Q8 value
@@ -592,7 +592,7 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
    Local calls: FrontendSession_ReturnToMainPage.
    Cross-module calls: Movie_Close [movie/runtime/playback].
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ApplyGameSpeedAndReturnToMainPage
           (FrontendReturnCallbackContext32 callbackContext,dword argument2,dword argument3,
           FrontendStatusCode stateCode)
@@ -600,7 +600,6 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
 {
   uint *puVar1;
   int iVar2;
-  undefined4 in_EAX;
   
   iVar2 = g_FrontendRootNode;
   Movie_Close();
@@ -608,8 +607,9 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
   puVar1 = (uint *)(iVar2 + 0x8fc);
   *puVar1 = *puVar1 | 8;
   FrontendSession_ReturnToMainPage(callbackContext,0,0,stateCode);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x00544D10.
    Ownership: ui/frontend/session.
@@ -621,17 +621,17 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], FrontendState_DispatchCode
    [ui/frontend/runtime].
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReturnToMainPage
           (dword callbackContext,dword argument2,dword argument3,FrontendStatusCode stateCode)
 
 {
-  undefined4 in_EAX;
   int frontendRootAddress;
   
   frontendRootAddress = g_FrontendRootNode;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(g_FrontendRootNode + 0x508));
   *(uint *)(frontendRootAddress + 0x3b4) = *(uint *)(frontendRootAddress + 0x3b4) & 0xffffdfff;
   FrontendState_DispatchCode(stateCode);
-  return in_EAX;
+  return;
 }
+

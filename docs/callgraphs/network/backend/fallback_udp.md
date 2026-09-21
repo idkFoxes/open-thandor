@@ -1,6 +1,6 @@
 # Call graph: `network/backend/fallback_udp`
 
-[Source](../../../../src/network/backend/fallback_udp.c) · [Header](../../../../include/thandor/network/backend/fallback_udp.h) · [Graphviz](fallback_udp.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-backend-fallback-udp)
+[Source](../../../../src/network/backend/fallback_udp.c) · [Header](../../../../include/thandor/network/backend/fallback_udp.h) · [Graphviz](fallback_udp.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-network-backend-fallback-udp) · [Developer notes](../../../../CHANGELOG.md#module-network-backend-fallback-udp) · [Full changelog](../../../../CHANGELOG_FULL.md#module-network-backend-fallback-udp)
 
 19 functions. Addresses are current V523 executable VAs.
 

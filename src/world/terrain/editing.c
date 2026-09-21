@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/terrain/editing.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/terrain/editing.h>
 
 /* Implementation ownership: world/terrain/editing. */
@@ -11,70 +18,50 @@
    flow, globals, locals, and executable data remain unchanged.
    Local calls: TerrainRegionCollection_RecordConnectedCell.
 */
-undefined8 __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 TerrainRegionCollection_CollectConnectedCellsRecursive
-          (undefined4 incomingEcxValue,undefined4 preservedEdxValue,
-          FieldGridRegionMask requiredOccupancyMask,FieldGridRowStrideBytes rowStrideBytes,
+          (FieldGridRegionMask requiredOccupancyMask,FieldGridRowStrideBytes rowStrideBytes,
           FieldGridCell *cell)
 
 {
-  undefined4 in_EAX;
-  FieldCellPackedFlagsAndMaterial extraout_EAX;
-  FieldCellPackedFlagsAndMaterial extraout_EAX_00;
-  FieldCellPackedFlagsAndMaterial FVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
   FieldGridCell *rowCellCursor;
-  FieldGridCell *pFVar2;
-  FieldGridCell *pFVar3;
-  FieldGridCell *pFVar4;
-  undefined8 uVar5;
+  FieldGridCell *cell_00;
+  FieldGridCell *cell_01;
+  FieldGridCell *pFVar1;
   
-  pFVar3 = cell;
+  pFVar1 = cell;
   do {
-    pFVar2 = pFVar3;
-    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,pFVar2);
-    FVar1 = extraout_EAX;
-    if ((pFVar2[-1].flagsAndMaterial & extraout_EAX) == 0) break;
-    requiredOccupancyMask = extraout_EAX;
-    pFVar3 = pFVar2 + -1;
-  } while ((pFVar2[-1].flagsAndMaterial & 0x88016000) == 0);
-  while ((pFVar3 = cell + 1, (cell[1].flagsAndMaterial & FVar1) != 0 &&
+    cell_00 = pFVar1;
+    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,cell_00);
+    if ((cell_00[-1].flagsAndMaterial & requiredOccupancyMask) == 0) break;
+    pFVar1 = cell_00 + -1;
+  } while ((cell_00[-1].flagsAndMaterial & 0x88016000) == 0);
+  while ((pFVar1 = cell + 1, (cell[1].flagsAndMaterial & requiredOccupancyMask) != 0 &&
          ((cell[1].flagsAndMaterial & 0x88016000) == 0))) {
-    TerrainRegionCollection_RecordConnectedCell(FVar1,pFVar3);
-    FVar1 = extraout_EAX_00;
-    cell = pFVar3;
+    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,pFVar1);
+    cell = pFVar1;
   }
-  uVar5 = CONCAT44(pFVar2,FVar1);
-  pFVar2 = (FieldGridCell *)((int)pFVar2 - rowStrideBytes);
-  pFVar4 = (FieldGridCell *)((int)pFVar3 - rowStrideBytes);
+  cell_01 = (FieldGridCell *)((int)cell_00 - rowStrideBytes);
   do {
-    if (((pFVar2->flagsAndMaterial & 0x88016000) == 0) &&
-       ((pFVar2->flagsAndMaterial & (FieldCellPackedFlagsAndMaterial)uVar5) != 0)) {
-      uVar5 = TerrainRegionCollection_CollectConnectedCellsRecursive
-                        (rowStrideBytes,(int)((ulonglong)uVar5 >> 0x20),
-                         (FieldCellPackedFlagsAndMaterial)uVar5,rowStrideBytes,pFVar2);
-      rowStrideBytes = extraout_ECX;
+    if (((cell_01->flagsAndMaterial & 0x88016000) == 0) &&
+       ((cell_01->flagsAndMaterial & requiredOccupancyMask) != 0)) {
+      TerrainRegionCollection_CollectConnectedCellsRecursive
+                (requiredOccupancyMask,rowStrideBytes,cell_01);
     }
-    FVar1 = (FieldCellPackedFlagsAndMaterial)uVar5;
-    pFVar2 = pFVar2 + 1;
-  } while (pFVar2 <= pFVar4);
-  rowCellCursor = (FieldGridCell *)(rowStrideBytes + -0x80 + (int)((ulonglong)uVar5 >> 0x20));
-  pFVar3 = (FieldGridCell *)(pFVar3->runtime00_07 + rowStrideBytes);
+    cell_01 = cell_01 + 1;
+  } while (cell_01 <= (FieldGridCell *)((int)pFVar1 - rowStrideBytes));
+  rowCellCursor = (FieldGridCell *)(cell_00[-1].runtime0C_3F + rowStrideBytes + -0xc);
   do {
-    uVar5 = CONCAT44(rowCellCursor,FVar1);
     if (((rowCellCursor->flagsAndMaterial & 0x88016000) == 0) &&
-       (uVar5 = CONCAT44(rowCellCursor,FVar1), (rowCellCursor->flagsAndMaterial & FVar1) != 0)) {
-      uVar5 = TerrainRegionCollection_CollectConnectedCellsRecursive
-                        (rowStrideBytes,rowCellCursor,FVar1,rowStrideBytes,rowCellCursor);
-      rowStrideBytes = extraout_ECX_00;
+       ((rowCellCursor->flagsAndMaterial & requiredOccupancyMask) != 0)) {
+      TerrainRegionCollection_CollectConnectedCellsRecursive
+                (requiredOccupancyMask,rowStrideBytes,rowCellCursor);
     }
-    rowCellCursor = (FieldGridCell *)((ulonglong)uVar5 >> 0x20);
-    FVar1 = (FieldCellPackedFlagsAndMaterial)uVar5;
     rowCellCursor = rowCellCursor + 1;
-  } while (rowCellCursor < pFVar3);
-  return CONCAT44(preservedEdxValue,in_EAX);
+  } while (rowCellCursor < (FieldGridCell *)(pFVar1->runtime0C_3F + rowStrideBytes + -0xc));
+  return;
 }
+
 
 /* Address: 0x00561A10.
    Ownership: world/terrain/editing.
@@ -86,9 +73,10 @@ TerrainRegionCollection_CollectConnectedCellsRecursive
    executable data remain unchanged.
    Local calls: TerrainMaterialEdit_PropagateMatchingRegionReplacement.
 */
-void TerrainMaterialEdit_SeedMatchingRegionReplacement
-               (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue replacementMaterialByte,
-               Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainMaterialEdit_SeedMatchingRegionReplacement
+          (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue replacementMaterialByte,
+          Q12 worldYQ12,Q12 worldXQ12)
 
 {
   SelectionPlayerRuntimeBlock *pSVar1;
@@ -123,6 +111,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   return;
 }
 
+
 /* Address: 0x00561AE0.
    Ownership: world/terrain/editing.
    Purpose: Clears the selected player material edit buffer, converts world coordinates to a field cell, records
@@ -133,9 +122,10 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
    executable data remain unchanged.
    Local calls: TerrainMaterialEdit_PropagateNonTargetRegionReplacement.
 */
-void TerrainMaterialEdit_SeedNonTargetRegionReplacement
-               (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue referenceMaterialByte,
-               Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainMaterialEdit_SeedNonTargetRegionReplacement
+          (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue referenceMaterialByte,
+          Q12 worldYQ12,Q12 worldXQ12)
 
 {
   SelectionPlayerRuntimeBlock *pSVar1;
@@ -167,6 +157,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
   return;
 }
 
+
 /* Address: 0x005616D0.
    Ownership: world/terrain/editing.
    Purpose: Commits per-cell terrain-height edit deltas from a player/runtime edit buffer into the FieldGrid and
@@ -174,97 +165,73 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
    Cross-module calls: FieldGridCell_RecomputeTriangleNormalAngles [world/terrain/grid],
    FieldGridCell_ComputeDirectionalLightColor [world/terrain/grid].
 */
-void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
-               (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
+          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
-  FieldGridCell *cell;
   FieldGridAsset *pFVar1;
-  int iVar2;
+  FieldGridDimension FVar2;
   int iVar3;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
-  int extraout_ECX_03;
-  int extraout_ECX_04;
-  int extraout_ECX_05;
+  int iVar4;
   int rowStrideBytes;
-  FieldGridRowStrideBytes rowStrideBytes_00;
-  FieldGridRowStrideBytes extraout_EDX;
-  int extraout_EDX_00;
-  FieldGridRowStrideBytes extraout_EDX_01;
-  int extraout_EDX_02;
-  FieldGridRowStrideBytes extraout_EDX_03;
-  int extraout_EDX_04;
-  FieldGridCell *pFVar4;
-  int *piVar5;
+  FieldGridCell *cell;
+  FieldGridCell *pFVar5;
+  int *piVar6;
   
   pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar5 = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainHeightScratchPlane8088;
-  iVar3 = pFVar1->gridWidth * pFVar1->gridHeight;
+  piVar6 = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainHeightScratchPlane8088;
+  FVar2 = pFVar1->gridWidth;
+  iVar4 = FVar2 * pFVar1->gridHeight;
   pFVar1->runtimeStateFlags = pFVar1->runtimeStateFlags | 1;
-  rowStrideBytes = pFVar1->gridWidth << 7;
-  pFVar4 = pFVar1->cells;
+  rowStrideBytes = FVar2 * 0x80;
+  pFVar5 = pFVar1->cells;
   do {
-    iVar2 = *piVar5;
-    if (iVar2 != 0) {
-      pFVar4->terrainHeight = pFVar4->terrainHeight - iVar2;
-      pFVar4->waterSurfaceDelta = pFVar4->waterSurfaceDelta + iVar2;
-      *piVar5 = -*piVar5;
-      if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-        iVar3 = extraout_ECX;
-        rowStrideBytes = rowStrideBytes_00;
-        if (((pFVar4[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar5[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar4 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + -1);
-          iVar3 = extraout_ECX_00;
-          rowStrideBytes = extraout_EDX;
+    iVar3 = *piVar6;
+    if (iVar3 != 0) {
+      pFVar5->terrainHeight = pFVar5->terrainHeight - iVar3;
+      pFVar5->waterSurfaceDelta = pFVar5->waterSurfaceDelta + iVar3;
+      *piVar6 = -*piVar6;
+      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
+        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+        if (((pFVar5[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + -1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + -1);
         }
-        if (((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) && (piVar5[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-          iVar3 = extraout_ECX_01;
-          rowStrideBytes = extraout_EDX_00;
+        if (((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
         }
-        pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes);
-        if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar3 = extraout_ECX_02;
-          rowStrideBytes = extraout_EDX_01;
+        pFVar5 = pFVar5 + -FVar2;
+        if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
         }
-        if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
-          iVar3 = extraout_ECX_03;
-          rowStrideBytes = extraout_EDX_02;
+        if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
         }
-        cell = (FieldGridCell *)(pFVar4[-1].runtime00_07 + rowStrideBytes * 2);
-        if ((cell->flagsAndMaterial & 0x88006000) == 0) {
+        pFVar5 = pFVar5 + FVar2 * 2 + -1;
+        if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
+          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+        }
+        cell = pFVar5 + 1;
+        if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
-          iVar3 = extraout_ECX_04;
-          rowStrideBytes = extraout_EDX_03;
         }
-        pFVar4 = cell + 1;
-        if ((cell[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-          iVar3 = extraout_ECX_05;
-          rowStrideBytes = extraout_EDX_04;
-        }
-        pFVar4 = (FieldGridCell *)((int)pFVar4 - rowStrideBytes);
+        pFVar5 = cell + -FVar2;
       }
     }
-    pFVar4 = pFVar4 + 1;
-    piVar5 = piVar5 + 1;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    pFVar5 = pFVar5 + 1;
+    piVar6 = piVar6 + 1;
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   return;
 }
+
 
 /* Address: 0x00561830.
    Ownership: world/terrain/editing.
@@ -272,9 +239,10 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
    buffer at runtime offset +0x808C. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player
    identity, and PCK-backed asset identifiers.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CopyCellMaterialBytes
-          (undefined4 param_1,undefined4 param_2,FrontendPlayerIndex playerIndex)
+          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          dword reservedZero2)
 
 {
   FieldGridAsset *pFVar1;
@@ -284,7 +252,7 @@ TerrainEditBuffer_CopyCellMaterialBytes
   
   pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   pFVar4 = (TerrainMaterialIndex *)
-           g_SelectionPlayerRuntimeBlockPointers[playerIndex]->terrainMaterialEditPlane808C;
+           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
   iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
   pFVar3 = pFVar1->cells;
   do {
@@ -296,14 +264,16 @@ TerrainEditBuffer_CopyCellMaterialBytes
   return;
 }
 
+
 /* Address: 0x00561930.
    Ownership: world/terrain/editing.
    Purpose: It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset
    identifiers.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_SubtractCurrentCellMaterialBytes
-          (undefined4 param_1,undefined4 param_2,FrontendPlayerIndex playerIndex)
+          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          dword reservedZero2)
 
 {
   FieldGridAsset *pFVar1;
@@ -312,7 +282,7 @@ TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   dword *pdVar4;
   
   pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  pdVar4 = g_SelectionPlayerRuntimeBlockPointers[playerIndex]->terrainMaterialEditPlane808C;
+  pdVar4 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
   iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
   pFVar3 = pFVar1->cells;
   do {
@@ -324,13 +294,15 @@ TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   return;
 }
 
+
 /* Address: 0x005619A0.
    Ownership: world/terrain/editing.
    Purpose: Commits per-cell flags/material edit deltas from the corresponding player/runtime edit buffer into
    FieldGridCell flags/material state.
 */
-void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
-               (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+void __thandor_void_preserve_eax_ecx_edx
+TerrainEditBuffer_CommitFlagsAndMaterialDeltas
+          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
   FieldGridAsset *pFVar1;
@@ -353,15 +325,17 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   return;
 }
 
+
 /* Address: 0x00561DC0.
    Ownership: world/terrain/editing.
    Purpose: Replaces each selected-player height-buffer value with fieldCell.terrainHeight minus the previous
    buffer value. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed
    asset identifiers.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_ConvertHeightsToDeltas
-          (undefined4 param_1,undefined4 param_2,FrontendPlayerIndex playerIndex)
+          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          dword reservedZero2)
 
 {
   FieldGridAsset *pFVar1;
@@ -370,7 +344,7 @@ TerrainEditBuffer_ConvertHeightsToDeltas
   int *piVar4;
   
   pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar4 = g_SelectionPlayerRuntimeBlockPointers[playerIndex]->terrainHeightScratchPlane8088;
+  piVar4 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
   iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
   pFVar3 = pFVar1->cells;
   do {
@@ -382,6 +356,7 @@ TerrainEditBuffer_ConvertHeightsToDeltas
   return;
 }
 
+
 /* Address: 0x00513790.
    Ownership: world/terrain/editing.
    Purpose: Marks one field cell as visited, removes matching occupancy bits, and appends the original occupancy
@@ -390,39 +365,37 @@ TerrainEditBuffer_ConvertHeightsToDeltas
    Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void TerrainRegionCollection_RecordConnectedCell
-               (FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell)
+
+void __thandor_void_preserve_eax_ecx_edx
+TerrainRegionCollection_RecordConnectedCell
+          (FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell)
 
 {
-  byte *pbVar1;
-  undefined4 uVar2;
-  uint uVar3;
-  TerrainRegionCollectionCount TVar4;
-  int iVar5;
+  ArmyRuntimeSavedOffset AVar1;
+  uint uVar2;
+  TerrainRegionCollectionCount TVar3;
+  int iVar4;
   
-  TVar4 = g_TerrainRegionCollectionStoredCount;
+  TVar3 = g_TerrainRegionCollectionStoredCount;
   g_TerrainRegionCollectionVisitedCount = g_TerrainRegionCollectionVisitedCount + 1;
-  uVar3 = cell->runtime7C;
+  uVar2 = cell->resourceExtractionDescriptor7C;
   cell->flagsAndMaterial = cell->flagsAndMaterial | FIELD_CELL_CONNECTED_REGION_VISITED;
-  if ((requiredOccupancyMask & uVar3) != 0) {
-    cell->runtime7C = 0;
+  if ((requiredOccupancyMask & uVar2) != 0) {
+    cell->resourceExtractionDescriptor7C = 0;
     LOCK();
-    pbVar1 = cell->runtime58_6F + 0x14;
-    uVar2 = *(undefined4 *)pbVar1;
-    pbVar1[0] = 0;
-    iVar5 = g_TerrainRegionCollectionEntries;
-    pbVar1[1] = 0;
-    pbVar1[2] = 0;
-    pbVar1[3] = 0;
+    AVar1 = cell->armyRuntimeSavedOffset6C;
+    cell->armyRuntimeSavedOffset6C = 0;
+    iVar4 = g_TerrainRegionCollectionEntries;
     UNLOCK();
-    if (TVar4 < 0x800) {
+    if (TVar3 < 0x800) {
       g_TerrainRegionCollectionStoredCount = g_TerrainRegionCollectionStoredCount + 1;
-      *(uint *)(g_TerrainRegionCollectionEntries + TVar4 * 8) = uVar3;
-      *(undefined4 *)(iVar5 + 4 + TVar4 * 8) = uVar2;
+      *(uint *)(g_TerrainRegionCollectionEntries + TVar3 * 8) = uVar2;
+      *(ArmyRuntimeSavedOffset *)(iVar4 + 4 + TVar3 * 8) = AVar1;
     }
   }
   return;
 }
+
 
 /* Address: 0x00571600.
    Ownership: world/terrain/editing.
@@ -431,8 +404,9 @@ void TerrainRegionCollection_RecordConnectedCell
    gridY→FieldGridCellCoordinate_V331, p1 gridX→FieldGridCellCoordinate_V331. Calling convention, parameter
    storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainMaterialEdit_PropagateMatchingRegionReplacement
-               (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
+void __thandor_eax_preserve_ecx_edx
+TerrainMaterialEdit_PropagateMatchingRegionReplacement
+          (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
   uint uVar1;
@@ -440,11 +414,6 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement
   uint uVar3;
   int iVar4;
   int iVar5;
-  int extraout_ECX;
-  FieldGridCellCoordinate gridY_00;
-  FieldGridCellCoordinate extraout_ECX_00;
-  int extraout_EDX;
-  int extraout_EDX_00;
   int iVar6;
   int *piVar7;
   int *piVar8;
@@ -484,26 +453,23 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement
         *piVar8 = *piVar8 + iVar4;
         iVar2 = iVar2 + 0x80;
       }
-      iVar5 = gridY + -1;
-      iVar2 = iVar9;
+      iVar5 = iVar9;
       do {
-        iVar4 = iVar2 + 1;
-        TerrainMaterialEdit_PropagateMatchingRegionReplacement(iVar5,iVar2);
-        iVar5 = extraout_ECX;
-        iVar2 = iVar4;
-      } while (iVar4 <= extraout_EDX);
-      gridY_00 = extraout_ECX + 2;
+        iVar2 = iVar5 + 1;
+        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + -1,iVar5);
+        iVar5 = iVar2;
+      } while (iVar2 <= gridX);
       iVar5 = iVar9 + -1;
       do {
         iVar2 = iVar5 + 1;
-        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY_00,iVar5);
-        gridY_00 = extraout_ECX_00;
+        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + 1,iVar5);
         iVar5 = iVar2;
-      } while (iVar2 < extraout_EDX_00);
+      } while (iVar2 < gridX);
     }
   }
   return;
 }
+
 
 /* Address: 0x00571730.
    Ownership: world/terrain/editing.
@@ -512,8 +478,9 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement
    gridY→FieldGridCellCoordinate_V331, p1 gridX→FieldGridCellCoordinate_V331. Calling convention, parameter
    storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
-               (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
+void __thandor_eax_preserve_ecx_edx
+TerrainMaterialEdit_PropagateNonTargetRegionReplacement
+          (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
   uint uVar1;
@@ -521,11 +488,6 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   uint uVar3;
   int iVar4;
   int iVar5;
-  int extraout_ECX;
-  FieldGridCellCoordinate gridY_00;
-  FieldGridCellCoordinate extraout_ECX_00;
-  int extraout_EDX;
-  int extraout_EDX_00;
   int iVar6;
   int *piVar7;
   int *piVar8;
@@ -564,23 +526,20 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
         *piVar8 = *piVar8 + iVar4;
         iVar2 = iVar2 + 0x80;
       }
-      iVar5 = gridY + -1;
-      iVar2 = iVar9;
+      iVar5 = iVar9;
       do {
-        iVar4 = iVar2 + 1;
-        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(iVar5,iVar2);
-        iVar5 = extraout_ECX;
-        iVar2 = iVar4;
-      } while (iVar4 <= extraout_EDX);
-      gridY_00 = extraout_ECX + 2;
+        iVar2 = iVar5 + 1;
+        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + -1,iVar5);
+        iVar5 = iVar2;
+      } while (iVar2 <= gridX);
       iVar5 = iVar9 + -1;
       do {
         iVar2 = iVar5 + 1;
-        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY_00,iVar5);
-        gridY_00 = extraout_ECX_00;
+        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + 1,iVar5);
         iVar5 = iVar2;
-      } while (iVar2 < extraout_EDX_00);
+      } while (iVar2 < gridX);
     }
   }
   return;
 }
+

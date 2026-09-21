@@ -1,6 +1,6 @@
 # Call graph: `graphics/backend/glide`
 
-[Source](../../../../src/graphics/backend/glide.c) · [Header](../../../../include/thandor/graphics/backend/glide.h) · [Graphviz](glide.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-glide)
+[Source](../../../../src/graphics/backend/glide.c) · [Header](../../../../include/thandor/graphics/backend/glide.h) · [Graphviz](glide.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-glide) · [Developer notes](../../../../CHANGELOG.md#module-graphics-backend-glide) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-backend-glide)
 
 34 functions. Addresses are current V523 executable VAs.
 

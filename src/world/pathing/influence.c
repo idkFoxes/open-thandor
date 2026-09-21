@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/world/pathing/influence.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/world/pathing/influence.h>
 
 /* Implementation ownership: world/pathing/influence. */
@@ -12,7 +19,8 @@
    g_CodePointerTable_0051FFF8[22]@0051FFF8. Grid-influence add callback table slot selected by entity class id.
    Local calls: GridInfluence_SetLowDistanceBandsAroundWorldPoint.
 */
-void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeNode *modelNode;
@@ -28,6 +36,7 @@ void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
   return;
 }
 
+
 /* Address: 0x00527380.
    Ownership: world/pathing/influence.
    Purpose: Binary entry is anchored by g_CodePointerTable_00520058[4]@00520058;
@@ -38,7 +47,8 @@ void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
    g_CodePointerTable_00520058[22]@00520058. Grid-influence remove callback table slot selected by entity class id.
    Local calls: GridInfluence_ClearLowDistanceBandsAroundWorldPoint.
 */
-void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeNode *modelNode;
@@ -54,6 +64,7 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
   return;
 }
 
+
 /* Address: 0x00528070.
    Ownership: world/pathing/influence.
    Purpose: Binary entry is anchored by g_CodePointerTable_0051FFF8[0]@0051FFF8;
@@ -63,13 +74,13 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
    g_CodePointerTable_0051FFF8[23]@0051FFF8. Grid-influence add callback table slot selected by entity class id.
    Local calls: GridInfluence_SetHighDistanceBandsAroundWorldPoint.
 */
-void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   void *pvVar1;
   Q12 worldXQ12;
   Q12 worldYQ12;
-  void *runtimeInfluenceState;
   ModelRuntimeNode *modelNode;
   void *entityDefinition;
   
@@ -87,6 +98,7 @@ void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
   return;
 }
 
+
 /* Address: 0x005280D0.
    Ownership: world/pathing/influence.
    Purpose: Binary entry is anchored by g_CodePointerTable_00520058[0]@00520058;
@@ -96,11 +108,11 @@ void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
    g_CodePointerTable_00520058[23]@00520058. Grid-influence remove callback table slot selected by entity class id.
    Local calls: GridInfluence_ClearHighDistanceBandsAroundWorldPoint.
 */
-void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   void *pvVar1;
-  void *runtimeInfluenceState;
   void *entityDefinition;
   
   pvVar1 = (entityRuntime->common).ownership.runtimeLink;
@@ -113,33 +125,37 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
   return;
 }
 
+
 /* Address: 0x00527B50.
    Ownership: world/pathing/influence.
    Purpose: Exact one-argument no-op reused in unified runtime object method tables. It returns with ret 0x04 and
    preserves EAX and flags. Grid-influence add callback table slot selected by entity class id.
 */
-void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
+void __thandor_void_preserve_eax_ecx_edx GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 
 {
   return;
 }
+
 
 /* Address: 0x00527B60.
    Ownership: world/pathing/influence.
    Purpose: Second exact one-argument no-op reused in unified runtime object method tables. It returns with ret
    0x04 and preserves EAX and flags. Grid-influence remove callback table slot selected by entity class id.
 */
-void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
+void __thandor_void_preserve_eax_ecx_edx GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
 
 {
   return;
 }
 
+
 /* Address: 0x00535A30.
    Ownership: world/pathing/influence.
    Purpose: Handles grid influence clear distance bands and refresh entities.
 */
-void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldRuntimeNode *entityListHead)
+void __thandor_preserve_eax
+GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entityListHead)
 
 {
   int cellsRemaining;
@@ -171,9 +187,9 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldRuntimeNode *entity
     fullBlockRemaining = 0xf < cellsRemaining;
     cellsRemaining = nextCellsRemaining;
   } while (nextCellsRemaining != 0 && fullBlockRemaining);
-  for (; entityListHead != (WorldRuntimeNode *)0x0;
-      entityListHead = (entityListHead->common).nextNode) {
-    if (entityListHead[2].common.nextNode == (WorldRuntimeNode *)0x0) {
+  for (; entityListHead != (WorldOwnerListNode100 *)0x0; entityListHead = entityListHead->nextNode)
+  {
+    if (entityListHead->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
         [*(int *)((int)(entityListHead->runtimePayload->common).ownership.definitionOrClassRecord +
                  0x4c)])(entityListHead->runtimePayload);
@@ -181,6 +197,7 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldRuntimeNode *entity
   }
   return;
 }
+
 
 /* Address: 0x00535330.
    Ownership: world/pathing/influence.
@@ -192,133 +209,115 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldRuntimeNode *entity
    Local calls: GridInfluence_SetLowDistanceBandsDiagonalPositive,
    GridInfluence_SetLowDistanceBandsDiagonalNegative.
 */
-void GridInfluence_SetLowDistanceBandsAroundWorldPoint
-               (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_SetLowDistanceBandsAroundWorldPoint
+          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   longlong lVar1;
-  FieldGridCellCoordinate FVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
+  uint scanGridMetric1;
+  uint uVar2;
+  int iVar3;
+  uint uVar4;
   uint scanGridMetric0;
-  FieldGridCellCoordinate FVar6;
+  int iVar5;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar7;
-  GridInfluenceDiagonalScanRegisterResult GVar8;
+  int iVar6;
   
-  iVar7 = radiusMetric + 499;
+  iVar6 = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar7) * (g_GridInfluenceRadiusOffset0 + iVar7);
+       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar7) * (g_GridInfluenceRadiusOffset1 + iVar7);
+       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar7) * (g_GridInfluenceRadiusOffset2 + iVar7);
+       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar7) * (g_GridInfluenceRadiusOffset3 + iVar7);
+       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar7) * (g_GridInfluenceRadiusOffset4 + iVar7);
+       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar7) * (g_GridInfluenceRadiusOffset5 + iVar7);
+       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar7) * (g_GridInfluenceRadiusOffset6 + iVar7);
+       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar7) * (g_GridInfluenceRadiusOffset7 + iVar7);
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
+  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar7 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10;
-  if ((((-1 < iVar7) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 10, -1 < iVar4)) &&
-      (iVar7 < (int)g_GridScratchWidth)) && (iVar4 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar4 + iVar7;
-    iVar4 = iVar4 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar4 + (iVar7 * 0x400 + -0x600) * 2) * 0x901;
-    uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar4 * -1999;
+  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
+  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
+      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
+    iVar3 = iVar3 * 0x400 + -0x600;
+    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
+    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
+    lVar1 = (longlong)iVar3 * -1999;
     scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar3 = uVar5;
+    uVar2 = uVar4;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while( true ) {
-        GVar8 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,uVar3,&scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        scratchCell3 = scratchCell1;
-        if (GVar8.processedCellCount == 0) break;
-        GVar8 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEcxGridMetric,
-                           &scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        if (GVar8.processedCellCount == 0) break;
+      while ((iVar6 = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
+             (iVar6 = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , iVar6 != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar3 = GVar8.preservedEcxGridMetric - 0x240;
+        uVar2 = uVar2 - 0x240;
       }
-      do {
-        GVar8 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,FVar2,&scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0) {
-GridInfluence_SetLowDistanceBands_ScanOppositeHalf:
-          FVar6 = scanGridMetric0 + 499;
-          FVar2 = uVar5 - 0x120;
-          scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-          scratchCell3 = scratchCell2;
-          while( true ) {
-            GVar8 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell3->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell3 = scratchCell3 + -1;
-            FVar2 = GVar8.preservedEcxGridMetric + -0x240;
-          }
-          while( true ) {
-            scratchCell2 = scratchCell2 + 1;
-            GVar8 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-          }
-          FVar6 = FVar6 + -999;
-          FVar2 = uVar5 + 0x120;
-          scratchCell1 = scratchCell1 + g_GridScratchWidth;
-          scratchCell2 = scratchCell1;
-          while( true ) {
-            GVar8 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell2 = scratchCell2 + 1;
-            FVar2 = GVar8.preservedEcxGridMetric + 0x240;
-          }
-          while( true ) {
-            scratchCell1 = scratchCell1 + -1;
-            GVar8 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell1->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + -0x240;
-          }
-          return;
-        }
-        GVar8 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEaxGridMetric,
-                           &scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0) goto GridInfluence_SetLowDistanceBands_ScanOppositeHalf;
+      while ((iVar6 = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0 &&
+             (iVar6 = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0))) {
         scratchCell3 = scratchCell3 + 1;
-        FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-      } while( true );
+        scanGridMetric1 = scanGridMetric1 + 0x240;
+      }
+      iVar3 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1 + -g_GridScratchWidth;
+      iVar6 = uVar4 + 0x120;
+      scratchCell3 = scratchCell2;
+      while (iVar5 = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
+                                &scratchCell3->stateMask), iVar5 != 0) {
+        scratchCell3 = scratchCell3 + -1;
+        iVar3 = iVar3 + -0x240;
+      }
+      while( true ) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + 0x240;
+      }
+      iVar3 = uVar4 + 0x120;
+      scratchCell1 = scratchCell1 + g_GridScratchWidth;
+      iVar6 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1;
+      while (iVar5 = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
+                                &scratchCell2->stateMask), iVar5 != 0) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = iVar3 + 0x240;
+      }
+      while( true ) {
+        scratchCell1 = scratchCell1 + -1;
+        iVar3 = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + -0x240;
+      }
+      return;
     }
   }
   return;
 }
+
 
 /* Address: 0x00535780.
    Ownership: world/pathing/influence.
@@ -330,133 +329,115 @@ GridInfluence_SetLowDistanceBands_ScanOppositeHalf:
    Local calls: GridInfluence_SetHighDistanceBandsDiagonalPositive,
    GridInfluence_SetHighDistanceBandsDiagonalNegative.
 */
-void GridInfluence_SetHighDistanceBandsAroundWorldPoint
-               (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_SetHighDistanceBandsAroundWorldPoint
+          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   longlong lVar1;
-  FieldGridCellCoordinate FVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
+  uint scanGridMetric1;
+  uint uVar2;
+  int iVar3;
+  uint uVar4;
   uint scanGridMetric0;
-  FieldGridCellCoordinate FVar6;
+  int iVar5;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar7;
-  GridInfluenceDiagonalScanRegisterResult GVar8;
+  int iVar6;
   
-  iVar7 = radiusMetric + 499;
+  iVar6 = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar7) * (g_GridInfluenceRadiusOffset0 + iVar7);
+       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar7) * (g_GridInfluenceRadiusOffset1 + iVar7);
+       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar7) * (g_GridInfluenceRadiusOffset2 + iVar7);
+       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar7) * (g_GridInfluenceRadiusOffset3 + iVar7);
+       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar7) * (g_GridInfluenceRadiusOffset4 + iVar7);
+       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar7) * (g_GridInfluenceRadiusOffset5 + iVar7);
+       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar7) * (g_GridInfluenceRadiusOffset6 + iVar7);
+       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar7) * (g_GridInfluenceRadiusOffset7 + iVar7);
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
+  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar7 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10;
-  if ((((-1 < iVar7) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 10, -1 < iVar4)) &&
-      (iVar7 < (int)g_GridScratchWidth)) && (iVar4 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar4 + iVar7;
-    iVar4 = iVar4 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar4 + (iVar7 * 0x400 + -0x600) * 2) * 0x901;
-    uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar4 * -1999;
+  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
+  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
+      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
+    iVar3 = iVar3 * 0x400 + -0x600;
+    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
+    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
+    lVar1 = (longlong)iVar3 * -1999;
     scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar3 = uVar5;
+    uVar2 = uVar4;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while( true ) {
-        GVar8 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,uVar3,&scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        scratchCell3 = scratchCell1;
-        if (GVar8.processedCellCount == 0) break;
-        GVar8 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEcxGridMetric,
-                           &scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        if (GVar8.processedCellCount == 0) break;
+      while ((iVar6 = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
+             (iVar6 = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , iVar6 != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar3 = GVar8.preservedEcxGridMetric - 0x240;
+        uVar2 = uVar2 - 0x240;
       }
-      do {
-        GVar8 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,FVar2,&scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0) {
-GridInfluence_SetHighDistanceBands_ScanOppositeHalf:
-          FVar6 = scanGridMetric0 + 499;
-          FVar2 = uVar5 - 0x120;
-          scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-          scratchCell3 = scratchCell2;
-          while( true ) {
-            GVar8 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell3->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell3 = scratchCell3 + -1;
-            FVar2 = GVar8.preservedEcxGridMetric + -0x240;
-          }
-          while( true ) {
-            scratchCell2 = scratchCell2 + 1;
-            GVar8 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-          }
-          FVar6 = FVar6 + -999;
-          FVar2 = uVar5 + 0x120;
-          scratchCell1 = scratchCell1 + g_GridScratchWidth;
-          scratchCell2 = scratchCell1;
-          while( true ) {
-            GVar8 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell2 = scratchCell2 + 1;
-            FVar2 = GVar8.preservedEcxGridMetric + 0x240;
-          }
-          while( true ) {
-            scratchCell1 = scratchCell1 + -1;
-            GVar8 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell1->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + -0x240;
-          }
-          return;
-        }
-        GVar8 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEaxGridMetric,
-                           &scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0) goto GridInfluence_SetHighDistanceBands_ScanOppositeHalf;
+      while ((iVar6 = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0 &&
+             (iVar6 = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0))) {
         scratchCell3 = scratchCell3 + 1;
-        FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-      } while( true );
+        scanGridMetric1 = scanGridMetric1 + 0x240;
+      }
+      iVar3 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1 + -g_GridScratchWidth;
+      iVar6 = uVar4 + 0x120;
+      scratchCell3 = scratchCell2;
+      while (iVar5 = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
+                                &scratchCell3->stateMask), iVar5 != 0) {
+        scratchCell3 = scratchCell3 + -1;
+        iVar3 = iVar3 + -0x240;
+      }
+      while( true ) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + 0x240;
+      }
+      iVar3 = uVar4 + 0x120;
+      scratchCell1 = scratchCell1 + g_GridScratchWidth;
+      iVar6 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1;
+      while (iVar5 = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
+                                &scratchCell2->stateMask), iVar5 != 0) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = iVar3 + 0x240;
+      }
+      while( true ) {
+        scratchCell1 = scratchCell1 + -1;
+        iVar3 = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + -0x240;
+      }
+      return;
     }
   }
   return;
 }
+
 
 /* Address: 0x00535CC0.
    Ownership: world/pathing/influence.
@@ -468,134 +449,115 @@ GridInfluence_SetHighDistanceBands_ScanOppositeHalf:
    Local calls: GridInfluence_ClearLowDistanceBandsDiagonalPositive,
    GridInfluence_ClearLowDistanceBandsDiagonalNegative.
 */
-void GridInfluence_ClearLowDistanceBandsAroundWorldPoint
-               (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_ClearLowDistanceBandsAroundWorldPoint
+          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   longlong lVar1;
-  FieldGridCellCoordinate FVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
+  uint scanGridMetric1;
+  uint uVar2;
+  int iVar3;
+  uint uVar4;
   uint scanGridMetric0;
-  FieldGridCellCoordinate FVar6;
+  int iVar5;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar7;
-  GridInfluenceDiagonalScanRegisterResult GVar8;
+  int iVar6;
   
-  iVar7 = radiusMetric + 499;
+  iVar6 = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar7) * (g_GridInfluenceRadiusOffset0 + iVar7);
+       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar7) * (g_GridInfluenceRadiusOffset1 + iVar7);
+       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar7) * (g_GridInfluenceRadiusOffset2 + iVar7);
+       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar7) * (g_GridInfluenceRadiusOffset3 + iVar7);
+       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar7) * (g_GridInfluenceRadiusOffset4 + iVar7);
+       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar7) * (g_GridInfluenceRadiusOffset5 + iVar7);
+       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar7) * (g_GridInfluenceRadiusOffset6 + iVar7);
+       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar7) * (g_GridInfluenceRadiusOffset7 + iVar7);
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
+  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar7 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10;
-  if ((((-1 < iVar7) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 10, -1 < iVar4)) &&
-      (iVar7 < (int)g_GridScratchWidth)) && (iVar4 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar4 + iVar7;
-    iVar4 = iVar4 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar4 + (iVar7 * 0x400 + -0x600) * 2) * 0x901;
-    uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar4 * -1999;
+  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
+  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
+      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
+    iVar3 = iVar3 * 0x400 + -0x600;
+    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
+    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
+    lVar1 = (longlong)iVar3 * -1999;
     scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar3 = uVar5;
+    uVar2 = uVar4;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while( true ) {
-        GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,uVar3,&scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        scratchCell3 = scratchCell1;
-        if (GVar8.processedCellCount == 0) break;
-        GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEcxGridMetric,
-                           &scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        if (GVar8.processedCellCount == 0) break;
+      while ((iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
+             (iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , iVar6 != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar3 = GVar8.preservedEcxGridMetric - 0x240;
+        uVar2 = uVar2 - 0x240;
       }
-      do {
-        GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,FVar2,&scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0) {
-GridInfluence_ClearLowDistanceBands_ScanOppositeHalf:
-          FVar6 = scanGridMetric0 + 499;
-          FVar2 = uVar5 - 0x120;
-          scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-          scratchCell3 = scratchCell2;
-          while( true ) {
-            GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell3->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell3 = scratchCell3 + -1;
-            FVar2 = GVar8.preservedEcxGridMetric + -0x240;
-          }
-          while( true ) {
-            scratchCell2 = scratchCell2 + 1;
-            GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-          }
-          FVar6 = FVar6 + -999;
-          FVar2 = uVar5 + 0x120;
-          scratchCell1 = scratchCell1 + g_GridScratchWidth;
-          scratchCell2 = scratchCell1;
-          while( true ) {
-            GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell2 = scratchCell2 + 1;
-            FVar2 = GVar8.preservedEcxGridMetric + 0x240;
-          }
-          while( true ) {
-            scratchCell1 = scratchCell1 + -1;
-            GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell1->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + -0x240;
-          }
-          return;
-        }
-        GVar8 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEaxGridMetric,
-                           &scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0)
-        goto GridInfluence_ClearLowDistanceBands_ScanOppositeHalf;
+      while ((iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0 &&
+             (iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0))) {
         scratchCell3 = scratchCell3 + 1;
-        FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-      } while( true );
+        scanGridMetric1 = scanGridMetric1 + 0x240;
+      }
+      iVar3 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1 + -g_GridScratchWidth;
+      iVar6 = uVar4 + 0x120;
+      scratchCell3 = scratchCell2;
+      while (iVar5 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
+                                &scratchCell3->stateMask), iVar5 != 0) {
+        scratchCell3 = scratchCell3 + -1;
+        iVar3 = iVar3 + -0x240;
+      }
+      while( true ) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + 0x240;
+      }
+      iVar3 = uVar4 + 0x120;
+      scratchCell1 = scratchCell1 + g_GridScratchWidth;
+      iVar6 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1;
+      while (iVar5 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
+                                &scratchCell2->stateMask), iVar5 != 0) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = iVar3 + 0x240;
+      }
+      while( true ) {
+        scratchCell1 = scratchCell1 + -1;
+        iVar3 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + -0x240;
+      }
+      return;
     }
   }
   return;
 }
+
 
 /* Address: 0x00536110.
    Ownership: world/pathing/influence.
@@ -607,134 +569,115 @@ GridInfluence_ClearLowDistanceBands_ScanOppositeHalf:
    Local calls: GridInfluence_ClearHighDistanceBandsDiagonalPositive,
    GridInfluence_ClearHighDistanceBandsDiagonalNegative.
 */
-void GridInfluence_ClearHighDistanceBandsAroundWorldPoint
-               (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void __thandor_void_preserve_eax_ecx_edx
+GridInfluence_ClearHighDistanceBandsAroundWorldPoint
+          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   longlong lVar1;
-  FieldGridCellCoordinate FVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
+  uint scanGridMetric1;
+  uint uVar2;
+  int iVar3;
+  uint uVar4;
   uint scanGridMetric0;
-  FieldGridCellCoordinate FVar6;
+  int iVar5;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar7;
-  GridInfluenceDiagonalScanRegisterResult GVar8;
+  int iVar6;
   
-  iVar7 = radiusMetric + 499;
+  iVar6 = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar7) * (g_GridInfluenceRadiusOffset0 + iVar7);
+       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar7) * (g_GridInfluenceRadiusOffset1 + iVar7);
+       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar7) * (g_GridInfluenceRadiusOffset2 + iVar7);
+       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar7) * (g_GridInfluenceRadiusOffset3 + iVar7);
+       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar7) * (g_GridInfluenceRadiusOffset4 + iVar7);
+       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar7) * (g_GridInfluenceRadiusOffset5 + iVar7);
+       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar7) * (g_GridInfluenceRadiusOffset6 + iVar7);
+       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar7) * (g_GridInfluenceRadiusOffset7 + iVar7);
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
+  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar7 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10;
-  if ((((-1 < iVar7) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 10, -1 < iVar4)) &&
-      (iVar7 < (int)g_GridScratchWidth)) && (iVar4 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar4 + iVar7;
-    iVar4 = iVar4 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar4 + (iVar7 * 0x400 + -0x600) * 2) * 0x901;
-    uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar4 * -1999;
+  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
+  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
+      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
+    iVar3 = iVar3 * 0x400 + -0x600;
+    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
+    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
+    lVar1 = (longlong)iVar3 * -1999;
     scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar3 = uVar5;
+    uVar2 = uVar4;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while( true ) {
-        GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,uVar3,&scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        scratchCell3 = scratchCell1;
-        if (GVar8.processedCellCount == 0) break;
-        GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEcxGridMetric,
-                           &scratchCell2->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        FVar2 = GVar8.preservedEaxGridMetric;
-        if (GVar8.processedCellCount == 0) break;
+      while ((iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
+             (iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
+             , iVar6 != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar3 = GVar8.preservedEcxGridMetric - 0x240;
+        uVar2 = uVar2 - 0x240;
       }
-      do {
-        GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0,FVar2,&scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0) {
-GridInfluence_ClearHighDistanceBands_ScanOppositeHalf:
-          FVar6 = scanGridMetric0 + 499;
-          FVar2 = uVar5 - 0x120;
-          scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-          scratchCell3 = scratchCell2;
-          while( true ) {
-            GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell3->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell3 = scratchCell3 + -1;
-            FVar2 = GVar8.preservedEcxGridMetric + -0x240;
-          }
-          while( true ) {
-            scratchCell2 = scratchCell2 + 1;
-            GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-          }
-          FVar6 = FVar6 + -999;
-          FVar2 = uVar5 + 0x120;
-          scratchCell1 = scratchCell1 + g_GridScratchWidth;
-          scratchCell2 = scratchCell1;
-          while( true ) {
-            GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell2->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            FVar2 = GVar8.preservedEaxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            scratchCell2 = scratchCell2 + 1;
-            FVar2 = GVar8.preservedEcxGridMetric + 0x240;
-          }
-          while( true ) {
-            scratchCell1 = scratchCell1 + -1;
-            GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                              (worldYQ12,worldXQ12,FVar6,FVar2,&scratchCell1->stateMask);
-            FVar6 = GVar8.preservedEdxGridMetric;
-            if (GVar8.processedCellCount == 0) break;
-            FVar2 = GVar8.preservedEaxGridMetric + -0x240;
-          }
-          return;
-        }
-        GVar8 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0,GVar8.preservedEaxGridMetric,
-                           &scratchCell3->stateMask);
-        scanGridMetric0 = GVar8.preservedEdxGridMetric;
-        if (GVar8.processedCellCount == 0)
-        goto GridInfluence_ClearHighDistanceBands_ScanOppositeHalf;
+      while ((iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0 &&
+             (iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
+                                 &scratchCell3->stateMask), iVar6 != 0))) {
         scratchCell3 = scratchCell3 + 1;
-        FVar2 = GVar8.preservedEaxGridMetric + 0x240;
-      } while( true );
+        scanGridMetric1 = scanGridMetric1 + 0x240;
+      }
+      iVar3 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1 + -g_GridScratchWidth;
+      iVar6 = uVar4 + 0x120;
+      scratchCell3 = scratchCell2;
+      while (iVar5 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
+                                &scratchCell3->stateMask), iVar5 != 0) {
+        scratchCell3 = scratchCell3 + -1;
+        iVar3 = iVar3 + -0x240;
+      }
+      while( true ) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + 0x240;
+      }
+      iVar3 = uVar4 + 0x120;
+      scratchCell1 = scratchCell1 + g_GridScratchWidth;
+      iVar6 = uVar4 - 0x120;
+      scratchCell2 = scratchCell1;
+      while (iVar5 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
+                                &scratchCell2->stateMask), iVar5 != 0) {
+        scratchCell2 = scratchCell2 + 1;
+        iVar3 = iVar3 + 0x240;
+      }
+      while( true ) {
+        scratchCell1 = scratchCell1 + -1;
+        iVar3 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        ;
+        if (iVar3 == 0) break;
+        iVar6 = iVar6 + -0x240;
+      }
+      return;
     }
   }
   return;
 }
+
 
 /* Address: 0x00535190.
    Ownership: world/pathing/influence.
@@ -743,7 +686,7 @@ GridInfluence_ClearHighDistanceBands_ScanOppositeHalf:
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -751,12 +694,8 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -774,19 +713,18 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + -999;
     *scratchCell = *scratchCell | iVar1 * 0x100;
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x00535260.
    Ownership: world/pathing/influence.
@@ -796,7 +734,7 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -804,12 +742,8 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -827,19 +761,18 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + 999;
     *scratchCell = *scratchCell | iVar1 * 0x100;
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x005355E0.
    Ownership: world/pathing/influence.
@@ -849,7 +782,7 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -857,12 +790,8 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -880,19 +809,18 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + -999;
     *scratchCell = *scratchCell | iVar1 * 0x10000;
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x005356B0.
    Ownership: world/pathing/influence.
@@ -902,7 +830,7 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
    scanGridMetric0→FieldGridCellCoordinate_V331, p5 scanGridMetric1→FieldGridCellCoordinate_V331. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -910,12 +838,8 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -933,19 +857,18 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + 999;
     *scratchCell = *scratchCell | iVar1 * 0x10000;
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x00535B20.
    Ownership: world/pathing/influence.
@@ -955,7 +878,7 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -963,12 +886,8 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -986,19 +905,18 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + -999;
     *scratchCell = *scratchCell & (iVar1 * 0x100 ^ 0xffffffffU);
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x00535BF0.
    Ownership: world/pathing/influence.
@@ -1008,7 +926,7 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -1016,12 +934,8 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -1039,19 +953,18 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + 999;
     *scratchCell = *scratchCell & (iVar1 * 0x100 ^ 0xffffffffU);
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x00535F70.
    Ownership: world/pathing/influence.
@@ -1061,7 +974,7 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -1069,12 +982,8 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -1092,19 +1001,18 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + -999;
     *scratchCell = *scratchCell & (iVar1 * 0x10000 ^ 0xffffffffU);
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+
 
 /* Address: 0x00536040.
    Ownership: world/pathing/influence.
@@ -1114,7 +1022,7 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
    scanGridMetric1→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-GridInfluenceDiagonalScanRegisterResult
+int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
@@ -1122,12 +1030,8 @@ GridInfluence_ClearHighDistanceBandsDiagonalPositive
 
 {
   int iVar1;
-  undefined4 in_EAX;
   int iVar2;
-  undefined4 in_ECX;
-  undefined4 in_EDX;
   int iVar3;
-  GridInfluenceDiagonalScanRegisterResult GVar4;
   uint squaredDistanceMetric;
   
   iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
@@ -1145,16 +1049,15 @@ GridInfluence_ClearHighDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) break;
+    if (iVar1 == 0) {
+      return iVar3;
+    }
     scanGridMetric0 = scanGridMetric0 + 999;
     *scratchCell = *scratchCell & (iVar1 * 0x10000 ^ 0xffffffffU);
     iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
     iVar1 = iVar3 + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  GVar4.preservedEcxGridMetric = in_ECX;
-  GVar4.preservedEaxGridMetric = in_EAX;
-  GVar4.processedCellCount = iVar3;
-  GVar4.preservedEdxGridMetric = in_EDX;
-  return GVar4;
+  return iVar3;
 }
+

@@ -1,6 +1,6 @@
 # Call graph: `platform/input/devices`
 
-[Source](../../../../src/platform/input/devices.c) · [Header](../../../../include/thandor/platform/input/devices.h) · [Graphviz](devices.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-input-devices)
+[Source](../../../../src/platform/input/devices.c) · [Header](../../../../include/thandor/platform/input/devices.h) · [Graphviz](devices.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-platform-input-devices) · [Full changelog](../../../../CHANGELOG_FULL.md#module-platform-input-devices)
 
 15 functions. Addresses are current V523 executable VAs.
 

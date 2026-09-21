@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/army/catalog.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/army/catalog.h>
 
 /* Implementation ownership: assets/army/catalog. */
@@ -11,18 +18,25 @@
    Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf,
    ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf.
 */
-void ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId)
+ArmyRegistryIdEaxCf5_5719f0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId)
 
 {
-  ArmyAssetId recordId_00;
-  undefined1 in_CF;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571ab0 AVar2;
+  ArmyRegistryIdEaxCf5_5719f0 AVar3;
   
-  ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-  if ((bool)in_CF) {
-    ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(recordId_00);
+  bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+  AVar2.carry = bVar1;
+  AVar2.eax = recordId;
+  if (bVar1) {
+    AVar2 = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(recordId);
   }
-  return;
+  AVar3.eax = AVar2.eax;
+  AVar3.carry = AVar2.carry;
+  return AVar3;
 }
+
 
 /* Address: 0x00571A10.
    Ownership: assets/army/catalog.
@@ -32,39 +46,32 @@ void ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf, ArmyAssetRegistry_HasIdWithoutFlag0200Cf.
 */
-void ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571a10 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId recordId_00;
-  uint extraout_EAX;
-  ArmyAssetId recordId_01;
-  uint extraout_EAX_00;
-  undefined1 in_CF;
-  undefined1 uVar1;
-  bool bVar2;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571a10 AVar2;
   
   while( true ) {
-    uVar1 = in_CF;
-    ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId + 1);
-    if (!(bool)uVar1) break;
-    ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_00);
-    recordId = extraout_EAX;
-    in_CF = 0;
-    if ((bool)uVar1) {
-      bVar2 = extraout_EAX < 2;
-      recordId_01 = extraout_EAX - 2;
-      while( true ) {
-        ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_01);
-        recordId = extraout_EAX_00;
-        in_CF = 1;
-        if (bVar2) break;
-        recordId_01 = extraout_EAX_00 - 1;
-        bVar2 = false;
-      }
+    recordId_00 = recordId;
+    AVar2.eax = recordId_00 + 1;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(AVar2.eax);
+    if (!AVar2.carry) break;
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(AVar2.eax);
+    recordId = AVar2.eax;
+    if (bVar1) {
+      do {
+        recordId_00 = recordId_00 - 1;
+        bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_00);
+        recordId = recordId_00;
+      } while (!bVar1);
     }
   }
-  return;
+  return AVar2;
 }
+
 
 /* Address: 0x00571A60.
    Ownership: assets/army/catalog.
@@ -74,39 +81,32 @@ void ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf, ArmyAssetRegistry_HasIdWithoutFlag0200Cf.
 */
-void ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571a60 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId recordId_00;
-  uint extraout_EAX;
-  ArmyAssetId recordId_01;
-  uint extraout_EAX_00;
-  undefined1 in_CF;
-  undefined1 uVar1;
-  bool bVar2;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571a60 AVar2;
   
   while( true ) {
-    uVar1 = in_CF;
-    ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId - 1);
-    if (!(bool)uVar1) break;
-    ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_00);
-    recordId = extraout_EAX;
-    in_CF = 0;
-    if ((bool)uVar1) {
-      bVar2 = 0xfffffffd < extraout_EAX;
-      recordId_01 = extraout_EAX + 2;
-      while( true ) {
-        ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_01);
-        recordId = extraout_EAX_00;
-        in_CF = 1;
-        if (bVar2) break;
-        recordId_01 = extraout_EAX_00 + 1;
-        bVar2 = false;
-      }
+    recordId_00 = recordId;
+    AVar2.eax = recordId_00 - 1;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(AVar2.eax);
+    if (!AVar2.carry) break;
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(AVar2.eax);
+    recordId = AVar2.eax;
+    if (bVar1) {
+      do {
+        recordId_00 = recordId_00 + 1;
+        bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_00);
+        recordId = recordId_00;
+      } while (!bVar1);
     }
   }
-  return;
+  return AVar2;
 }
+
 
 /* Address: 0x00571B00.
    Ownership: assets/army/catalog.
@@ -115,35 +115,35 @@ void ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
    stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200Cf, ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf.
 */
-void ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571b00 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId extraout_EAX;
-  ArmyAssetId recordId_00;
-  int extraout_EAX_00;
-  undefined1 in_CF;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571b00 AVar2;
   
   do {
-    ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
-    recordId_00 = extraout_EAX;
-    if ((bool)in_CF)
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
+    if (bVar1)
     goto 
     ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap
     ;
-    recordId = extraout_EAX - 1;
+    recordId = recordId - 1;
   } while (-1 < (int)recordId);
-  recordId_00 = 0x1000;
+  recordId = 0x1000;
 ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap:
   while( true ) {
-    ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId_00);
-    if (!(bool)in_CF) break;
-    recordId_00 = extraout_EAX_00 - 1;
-    if ((int)recordId_00 < 0) {
-      recordId_00 = 0x1000;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    if (!AVar2.carry) break;
+    recordId = recordId - 1;
+    if ((int)recordId < 0) {
+      recordId = 0x1000;
     }
   }
-  return;
+  AVar2.eax = recordId;
+  return AVar2;
 }
+
 
 /* Address: 0x00571C30.
    Ownership: assets/army/catalog.
@@ -153,18 +153,25 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualified
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf.
 */
-void ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId)
+ArmyRegistryIdEaxCf5_571c30 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId)
 
 {
-  ArmyAssetId recordId_00;
-  undefined1 in_CF;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571cf0 AVar2;
+  ArmyRegistryIdEaxCf5_571c30 AVar3;
   
-  ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-  if ((bool)in_CF) {
-    ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(recordId_00);
+  bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+  AVar2.carry = bVar1;
+  AVar2.eax = recordId;
+  if (bVar1) {
+    AVar2 = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(recordId);
   }
-  return;
+  AVar3.eax = AVar2.eax;
+  AVar3.carry = AVar2.carry;
+  return AVar3;
 }
+
 
 /* Address: 0x00571C50.
    Ownership: assets/army/catalog.
@@ -174,39 +181,32 @@ void ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog re
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_HasIdWithFlag0200Cf.
 */
-void ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571c50 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId recordId_00;
-  uint extraout_EAX;
-  ArmyAssetId recordId_01;
-  uint extraout_EAX_00;
-  undefined1 in_CF;
-  undefined1 uVar1;
-  bool bVar2;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571c50 AVar2;
   
   while( true ) {
-    uVar1 = in_CF;
-    ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId + 1);
-    if (!(bool)uVar1) break;
-    ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_00);
-    recordId = extraout_EAX;
-    in_CF = 0;
-    if ((bool)uVar1) {
-      bVar2 = extraout_EAX < 2;
-      recordId_01 = extraout_EAX - 2;
-      while( true ) {
-        ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_01);
-        recordId = extraout_EAX_00;
-        in_CF = 1;
-        if (bVar2) break;
-        recordId_01 = extraout_EAX_00 - 1;
-        bVar2 = false;
-      }
+    recordId_00 = recordId;
+    AVar2.eax = recordId_00 + 1;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(AVar2.eax);
+    if (!AVar2.carry) break;
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(AVar2.eax);
+    recordId = AVar2.eax;
+    if (bVar1) {
+      do {
+        recordId_00 = recordId_00 - 1;
+        bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_00);
+        recordId = recordId_00;
+      } while (!bVar1);
     }
   }
-  return;
+  return AVar2;
 }
+
 
 /* Address: 0x00571CA0.
    Ownership: assets/army/catalog.
@@ -216,39 +216,32 @@ void ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_HasIdWithFlag0200Cf.
 */
-void ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571ca0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId recordId_00;
-  uint extraout_EAX;
-  ArmyAssetId recordId_01;
-  uint extraout_EAX_00;
-  undefined1 in_CF;
-  undefined1 uVar1;
-  bool bVar2;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571ca0 AVar2;
   
   while( true ) {
-    uVar1 = in_CF;
-    ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId - 1);
-    if (!(bool)uVar1) break;
-    ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_00);
-    recordId = extraout_EAX;
-    in_CF = 0;
-    if ((bool)uVar1) {
-      bVar2 = 0xfffffffd < extraout_EAX;
-      recordId_01 = extraout_EAX + 2;
-      while( true ) {
-        ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_01);
-        recordId = extraout_EAX_00;
-        in_CF = 1;
-        if (bVar2) break;
-        recordId_01 = extraout_EAX_00 + 1;
-        bVar2 = false;
-      }
+    recordId_00 = recordId;
+    AVar2.eax = recordId_00 - 1;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(AVar2.eax);
+    if (!AVar2.carry) break;
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(AVar2.eax);
+    recordId = AVar2.eax;
+    if (bVar1) {
+      do {
+        recordId_00 = recordId_00 + 1;
+        bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_00);
+        recordId = recordId_00;
+      } while (!bVar1);
     }
   }
-  return;
+  return AVar2;
 }
+
 
 /* Address: 0x00571D40.
    Ownership: assets/army/catalog.
@@ -257,34 +250,34 @@ void ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
    32-bit registry key and does not imply gameplay class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0200Cf, ArmyAssetRegistry_HasIdWithFlags0100And0200Cf.
 */
-void ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571d40 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId extraout_EAX;
-  ArmyAssetId recordId_00;
-  int extraout_EAX_00;
-  undefined1 in_CF;
+  bool bVar1;
+  ArmyRegistryIdEaxCf5_571d40 AVar2;
   
   do {
-    ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
-    recordId_00 = extraout_EAX;
-    if ((bool)in_CF)
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
+    if (bVar1)
     goto 
     ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap;
-    recordId = extraout_EAX - 1;
+    recordId = recordId - 1;
   } while (-1 < (int)recordId);
-  recordId_00 = 0x1000;
+  recordId = 0x1000;
 ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap:
   while( true ) {
-    ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId_00);
-    if (!(bool)in_CF) break;
-    recordId_00 = extraout_EAX_00 - 1;
-    if ((int)recordId_00 < 0) {
-      recordId_00 = 0x1000;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    if (!AVar2.carry) break;
+    recordId = recordId - 1;
+    if ((int)recordId < 0) {
+      recordId = 0x1000;
     }
   }
-  return;
+  AVar2.eax = recordId;
+  return AVar2;
 }
+
 
 /* Address: 0x0051B5E0.
    Ownership: assets/army/catalog.
@@ -294,39 +287,43 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCan
    Local calls: ArmyAssetRecord_RegisterAndRelocate.
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
 */
-dword ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
+StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 
 {
   dword registrationStatusCode;
-  undefined4 extraout_EAX;
-  int extraout_ECX;
+  AssetRecordCount AVar1;
   ArmyAssetHeader *record;
-  bool bVar1;
-  longlong lVar2;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   
   registrationStatusCode = 0x40;
   if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ARM) &&
      ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_ARM_00020008)) {
+    AVar1 = (asset->recordCountHeader).recordCount;
     record = asset + 1;
-    bVar1 = false;
-    if ((asset->recordCountHeader).recordCount != 0) {
-      do {
-        lVar2 = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
-        registrationStatusCode = (dword)lVar2;
-        if (bVar1) {
-          return registrationStatusCode;
-        }
-        bVar1 = CARRY4((uint)record,(record->recordCountHeader).common.magic);
-        record = (ArmyAssetHeader *)
-                 ((int)(record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                 + ((record->recordCountHeader).common.magic - 0x28));
-      } while (extraout_ECX != 1);
+    while( true ) {
+      if (AVar1 == 0) {
+        SVar2.carry = false;
+        SVar2.valueOrError = registrationStatusCode;
+        return SVar2;
+      }
+      SVar2 = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
+      registrationStatusCode = SVar2.valueOrError;
+      if (SVar2.carry) break;
+      record = (ArmyAssetHeader *)
+               ((int)(record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+               ((record->recordCountHeader).common.magic - 0x28));
+      AVar1 = AVar1 - 1;
     }
-    return registrationStatusCode;
   }
-  Package_SetLastErrorPath((word *)asset);
-  return extraout_EAX;
+  else {
+    Package_SetLastErrorPath((word *)asset);
+  }
+  SVar3.carry = true;
+  SVar3.valueOrError = registrationStatusCode;
+  return SVar3;
 }
+
 
 /* Address: 0x0051B740.
    Ownership: assets/army/catalog.
@@ -334,14 +331,21 @@ dword ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
    its verified enabled flag is set.
    Local calls: ArmyAssetRegistry_FindByIdCf.
 */
-undefined4 ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
+bool __thandor_cf_preserve_eax_ecx_edx
+ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
 
 {
-  undefined4 in_EAX;
+  bool bVar1;
+  ArmyRegistryEaxCf5_51b6d0 AVar2;
   
-  ArmyAssetRegistry_FindByIdCf(recordId);
-  return in_EAX;
+  AVar2 = ArmyAssetRegistry_FindByIdCf(recordId);
+  bVar1 = AVar2.carry;
+  if (!bVar1) {
+    bVar1 = (AVar2.eax[1].selectionDetailTemplateVariantIndex & 1) == 0;
+  }
+  return bVar1;
 }
+
 
 /* Address: 0x0051B770.
    Ownership: assets/army/catalog.
@@ -352,44 +356,42 @@ undefined4 ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
    Local calls: ArmyAssetRegistry_FindByIdCf.
    Cross-module calls: ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf [assets/model/definitions].
 */
-void ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
-               (FactionRuntimeIndex factionIndex,undefined4 param_2,
-               ArmyAssetRecordPrefix *armyAssetRecord)
+bool __thandor_cf_preserve_eax_ecx_edx
+ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
+          (FactionRuntimeIndex factionIndex,dword requiredDefinitionFlags,
+          ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
   ArmyAssetRecordPrefix *definitionNode;
-  dword dVar1;
-  dword extraout_ECX;
+  int iVar1;
   bool bVar2;
-  ModelTechnologyHierarchyCfVolatileContinuityResult MVar3;
+  ArmyRegistryEaxCf5_51b6d0 AVar3;
   
-  dVar1 = 0x10;
+  iVar1 = 0x10;
   do {
-    bVar2 = false;
     if (armyAssetRecord[3].byteSize != 0) {
-      definitionNode = ArmyAssetRegistry_FindByIdCf(armyAssetRecord[3].byteSize);
-      dVar1 = extraout_ECX;
-      if ((!bVar2) &&
-         (bVar2 = false, (definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-        MVar3 = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+      AVar3 = ArmyAssetRegistry_FindByIdCf(armyAssetRecord[3].byteSize);
+      definitionNode = AVar3.eax;
+      if ((!AVar3.carry) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+        bVar2 = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
-        dVar1 = MVar3.preservedEcxCallerValue;
         if ((!bVar2) &&
-           ((*(int *)(MVar3.preservedEaxDefinitionNodeAddress + 0x1c) != 0 &&
-            ((*(uint *)(MVar3.preservedEaxDefinitionNodeAddress + 0x14) &
-             MVar3.preservedEdxCallerValue) != 0)))) {
-          return;
+           ((definitionNode[1].rootNodeOffsetOrPointer != 0 &&
+            ((definitionNode[1].selectionDetailTemplateVariantIndex & requiredDefinitionFlags) != 0)
+            ))) {
+          return true;
         }
       }
     }
     armyAssetRecord = (ArmyAssetRecordPrefix *)&armyAssetRecord->selectionDetailTemplateVariantIndex
     ;
-    dVar1 = dVar1 - 1;
-    if (dVar1 == 0) {
-      return;
+    iVar1 = iVar1 + -1;
+    if (iVar1 == 0) {
+      return false;
     }
   } while( true );
 }
+
 
 /* Address: 0x00571E40.
    Ownership: assets/army/catalog.
@@ -397,12 +399,12 @@ void ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
    preview resources.
    Local calls: ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf.
 */
-void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyAssetRegistryId)
+void __thandor_void_preserve_eax_ecx
+ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyAssetRegistryId)
 
 {
   dword dVar1;
   int iVar2;
-  int extraout_ECX;
   ArmyAssetRecordPrefix **ppAVar3;
   ArmyAssetRecordPrefix *armyDefinition1;
   
@@ -413,7 +415,6 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selected
     if (armyDefinition1 != (ArmyAssetRecordPrefix *)0x0) {
       (*g_MemoryApi.free)((void *)armyDefinition1[2].byteSize);
       armyDefinition1[2].byteSize = 0;
-      iVar2 = extraout_ECX;
     }
     ppAVar3 = ppAVar3 + 1;
     iVar2 = iVar2 + -1;
@@ -425,6 +426,7 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selected
   return;
 }
 
+
 /* Address: 0x0051C170.
    Ownership: assets/army/catalog.
    Purpose: Traverses the linked model-definition hierarchy, resolves the faction-unlocked definition at each node,
@@ -435,41 +437,43 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selected
    unchanged.
    Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
 */
-ArmyUnlockedArmourAggregateEaxPreservedEdxCarrier64
+dword __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedArmour
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  ModelDefinitionRecordPrefix *pMVar1;
-  undefined4 in_EDX;
-  int extraout_EDX;
+  dword dVar1;
   int iVar2;
   int unaff_EBP;
   int unaff_EDI;
   ModelLinkedDefinitionListAddress32 linkedDefinitionList;
-  int iVar3;
+  ModelDefinitionLookupEaxCf5 MVar3;
+  int iVar4;
   
   iVar2 = 0;
+  dVar1 = 0;
   linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc);
   do {
-    pMVar1 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                       (factionIndex,linkedDefinitionList);
+    MVar3 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                      (factionIndex,linkedDefinitionList);
+    dVar1 = dVar1 + MVar3.modelDefinition[8].byteSize;
     iVar2 = iVar2 + 1;
-    iVar3 = unaff_EDI;
+    iVar4 = unaff_EDI;
     do {
       while (unaff_EBP == 0) {
         iVar2 = iVar2 + -1;
         if (iVar2 == 0) {
-          return CONCAT44(in_EDX,extraout_EDX + pMVar1[8].byteSize);
+          return dVar1;
         }
       }
       unaff_EBP = unaff_EBP + -1;
-      unaff_EDI = iVar3 + 4;
-      linkedDefinitionList = *(int *)(iVar3 + 0xc);
-      iVar3 = unaff_EDI;
+      unaff_EDI = iVar4 + 4;
+      linkedDefinitionList = *(int *)(iVar4 + 0xc);
+      iVar4 = unaff_EDI;
     } while (linkedDefinitionList == 0);
   } while( true );
 }
+
 
 /* Address: 0x0051C2C0.
    Ownership: assets/army/catalog.
@@ -482,29 +486,30 @@ ArmyAssetHierarchy_SumFactionUnlockedArmour
    model hierarchy.
    Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
 */
-EnergyQ4AggregateEaxPreservedEdxCarrier64
+EnergyDemandQ4 __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  ModelDefinitionRecordPrefix *pMVar1;
-  undefined4 in_EDX;
-  int extraout_EDX;
+  EnergyDemandQ4 EVar1;
   int iVar2;
   int unaff_EBP;
   int unaff_EDI;
   ModelLinkedDefinitionListAddress32 linkedDefinitionList;
+  ModelDefinitionLookupEaxCf5 MVar3;
   
+  EVar1 = 0;
   iVar2 = 0;
   linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc);
   do {
-    pMVar1 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                       (factionIndex,linkedDefinitionList);
+    MVar3 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                      (factionIndex,linkedDefinitionList);
+    EVar1 = EVar1 + MVar3.modelDefinition[0x21].byteSize;
     iVar2 = iVar2 + 1;
     while (unaff_EBP == 0) {
       iVar2 = iVar2 + -1;
       if (iVar2 == 0) {
-        return CONCAT44(in_EDX,extraout_EDX + pMVar1[0x21].byteSize);
+        return EVar1;
       }
     }
     linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(unaff_EDI + 0xc);
@@ -512,6 +517,7 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
     unaff_EDI = unaff_EDI + 4;
   } while( true );
 }
+
 
 /* Address: 0x00571AB0.
    Ownership: assets/army/catalog.
@@ -521,35 +527,30 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    gameplay class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200Cf, ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf.
 */
-void ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571ab0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId extraout_EAX;
-  int extraout_EAX_00;
-  ArmyAssetId recordId_00;
-  undefined1 in_CF;
   bool bVar1;
+  ArmyRegistryIdEaxCf5_571ab0 AVar2;
   
   while( true ) {
-    ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
-    bVar1 = true;
-    recordId_00 = extraout_EAX;
-    if ((bool)in_CF) break;
-    recordId = extraout_EAX + 1;
-    in_CF = 0;
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
+    if (bVar1) break;
+    recordId = recordId + 1;
   }
   while( true ) {
-    ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId_00);
-    if (!bVar1) break;
-    recordId_00 = extraout_EAX_00 + 1;
-    bVar1 = recordId_00 < 0x1000;
-    if (!bVar1) {
-      bVar1 = false;
-      recordId_00 = 0;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    if (!AVar2.carry) break;
+    recordId = recordId + 1;
+    if (0xfff < recordId) {
+      recordId = 0;
     }
   }
-  return;
+  AVar2.eax = recordId;
+  return AVar2;
 }
+
 
 /* Address: 0x00571CF0.
    Ownership: assets/army/catalog.
@@ -559,35 +560,30 @@ void ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId
    tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0200Cf, ArmyAssetRegistry_HasIdWithFlags0100And0200Cf.
 */
-void ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
+ArmyRegistryIdEaxCf5_571cf0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId extraout_EAX;
-  int extraout_EAX_00;
-  ArmyAssetId recordId_00;
-  undefined1 in_CF;
   bool bVar1;
+  ArmyRegistryIdEaxCf5_571cf0 AVar2;
   
   while( true ) {
-    ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
-    bVar1 = true;
-    recordId_00 = extraout_EAX;
-    if ((bool)in_CF) break;
-    recordId = extraout_EAX + 1;
-    in_CF = 0;
+    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
+    if (bVar1) break;
+    recordId = recordId + 1;
   }
   while( true ) {
-    ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId_00);
-    if (!bVar1) break;
-    recordId_00 = extraout_EAX_00 + 1;
-    bVar1 = recordId_00 < 0x1000;
-    if (!bVar1) {
-      bVar1 = false;
-      recordId_00 = 0;
+    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    if (!AVar2.carry) break;
+    recordId = recordId + 1;
+    if (0xfff < recordId) {
+      recordId = 0;
     }
   }
-  return;
+  AVar2.eax = recordId;
+  return AVar2;
 }
+
 
 /* Address: 0x0051B4A0.
    Ownership: assets/army/catalog.
@@ -599,86 +595,85 @@ void ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
    Local calls: ArmyAssetRegistry_FindByIdCf.
    Cross-module calls: ModelDefinitionRegistry_FindBuildMetricTupleByIdCf [assets/model/definitions].
 */
-longlong ArmyAssetRecord_RegisterAndRelocate
-                   (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
+StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
+ArmyAssetRecord_RegisterAndRelocate
+          (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
 
 {
-  byte *pbVar1;
-  dword dVar2;
+  dword dVar1;
+  ArmyAssetRuntimeSemanticView80 *pAVar2;
   ArmyAssetRuntimeSemanticView80 *pAVar3;
-  ArmyAssetRuntimeSemanticView80 *pAVar4;
-  int extraout_ECX;
+  int iVar4;
   int iVar5;
-  uint in_EDX;
-  int extraout_EDX;
   int iVar6;
-  int extraout_EDX_00;
-  int iVar7;
-  ArmyAssetRecordPrefix **ppAVar8;
+  ArmyAssetRecordPrefix **ppAVar7;
   int unaff_EBP;
   int unaff_ESI;
   byte *unaff_EDI;
-  byte *pbVar9;
-  undefined1 in_CF;
-  bool bVar10;
+  byte *pbVar8;
+  ArmyRegistryEaxCf5_51b6d0 AVar9;
+  StatusValueEaxCf5 SVar10;
+  StatusValueEaxCf5 SVar11;
+  ModelBuildMetricEaxEcxEdxCf13 MVar12;
   
-  pAVar3 = record;
-  ppAVar8 = g_ArmyAssetRecordRegistry;
-  ArmyAssetRegistry_FindByIdCf(record->registryId);
-  iVar6 = extraout_EDX;
-  if ((bool)in_CF) {
+  pAVar2 = record;
+  ppAVar7 = g_ArmyAssetRecordRegistry;
+  iVar5 = 0x300;
+  AVar9 = ArmyAssetRegistry_FindByIdCf(record->registryId);
+  if (AVar9.carry) {
     do {
-      if (*ppAVar8 == (ArmyAssetRecordPrefix *)0x0) {
-        dVar2 = record->rootNodeOffsetOrPointer;
-        *ppAVar8 = (ArmyAssetRecordPrefix *)record;
+      if (*ppAVar7 == (ArmyAssetRecordPrefix *)0x0) {
+        dVar1 = record->rootNodeOffsetOrPointer;
+        *ppAVar7 = (ArmyAssetRecordPrefix *)record;
         record = (ArmyAssetRuntimeSemanticView80 *)0x0;
-        if (dVar2 != 0) {
-          pAVar3->rootNodeOffsetOrPointer =
+        if (dVar1 != 0) {
+          pAVar2->rootNodeOffsetOrPointer =
                (dword)((assetBase->recordCountHeader).common.buildMetadata.
-                       assetRelativeAddressAnchor28 + (pAVar3->rootNodeOffsetOrPointer - 0x28));
-          pbVar9 = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                   + (dVar2 - 0x28);
-          bVar10 = false;
-          iVar6 = 0;
+                       assetRelativeAddressAnchor28 + (pAVar2->rootNodeOffsetOrPointer - 0x28));
+          pbVar8 = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
+                   + (dVar1 - 0x28);
+          iVar5 = 0;
           do {
-            pAVar4 = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf
-                               (*(PckModelDefinitionIdCatalog *)(pbVar9 + 0x20));
-            if (!bVar10) {
-              pAVar3->relocationPointerOrOffset2C =
-                   (dword)(pAVar4->reserved018_023 + (pAVar3->relocationPointerOrOffset2C - 0x18));
-              pAVar3->relocationValue24 = pAVar3->relocationValue24 + extraout_ECX;
-              pAVar3->relocationValue28 = pAVar3->relocationValue28 + extraout_EDX_00;
-              pAVar4 = record;
+            MVar12 = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf
+                               (*(PckModelDefinitionIdCatalog *)(pbVar8 + 0x20));
+            pAVar3 = (ArmyAssetRuntimeSemanticView80 *)MVar12.metric0;
+            if (!MVar12.carry) {
+              pAVar2->relocationPointerOrOffset2C =
+                   (dword)(((ArmyAssetRuntimeSemanticView80 *)MVar12.metric0)->reserved018_023 +
+                          (pAVar2->relocationPointerOrOffset2C - 0x18));
+              pAVar2->relocationValue24 = pAVar2->relocationValue24 + MVar12.metric1;
+              pAVar2->relocationValue28 = pAVar2->relocationValue28 + MVar12.metric2;
+              pAVar3 = record;
             }
-            record = pAVar4;
-            iVar7 = 0;
-            iVar5 = *(int *)((AssetProducerSourceNames *)(pbVar9 + 8))->producerName;
-            while (iVar5 == 0) {
-              iVar6 = iVar6 + -1;
-              if (iVar6 < 0) goto ArmyAssetRecord_RegisterAndRelocate_FinalizeRelocationResult;
-              iVar7 = unaff_ESI + 1;
-              pbVar9 = unaff_EDI;
-              iVar5 = unaff_EBP + -1;
+            record = pAVar3;
+            iVar6 = 0;
+            iVar4 = *(int *)((AssetProducerSourceNames *)(pbVar8 + 8))->producerName;
+            while (iVar4 == 0) {
+              iVar5 = iVar5 + -1;
+              if (iVar5 < 0) goto ArmyAssetRecord_RegisterAndRelocate_FinalizeRelocationResult;
+              iVar6 = unaff_ESI + 1;
+              pbVar8 = unaff_EDI;
+              iVar4 = unaff_EBP + -1;
             }
-            iVar6 = iVar6 + 1;
-            pbVar1 = pbVar9 + iVar7 * 4 + 0xc;
-            bVar10 = CARRY4(*(uint *)pbVar1,(uint)assetBase);
-            *(byte **)pbVar1 =
+            iVar5 = iVar5 + 1;
+            *(byte **)(pbVar8 + iVar6 * 4 + 0xc) =
                  (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 (*(uint *)pbVar1 - 0x28);
-            pbVar9 = *(byte **)(pbVar9 + iVar7 * 4 + 0xc);
-            unaff_EBP = iVar5;
+                 *(int *)(pbVar8 + iVar6 * 4 + 0xc) + -0x28;
+            pbVar8 = *(byte **)(pbVar8 + iVar6 * 4 + 0xc);
+            unaff_EBP = iVar4;
           } while( true );
         }
 ArmyAssetRecord_RegisterAndRelocate_FinalizeRelocationResult:
         if (record == (ArmyAssetRuntimeSemanticView80 *)0x0) {
-          return (ulonglong)in_EDX << 0x20;
+          SVar11.valueOrError = 0;
+          SVar11.carry = false;
+          return SVar11;
         }
         goto ArmyAssetRecord_RegisterAndRelocate_ReturnRegistrationStatus;
       }
-      ppAVar8 = ppAVar8 + 1;
-      iVar6 = iVar6 + -1;
-    } while (iVar6 != 0);
+      ppAVar7 = ppAVar7 + 1;
+      iVar5 = iVar5 + -1;
+    } while (iVar5 != 0);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
     record = (ArmyAssetRuntimeSemanticView80 *)0x42;
   }
@@ -688,8 +683,11 @@ ArmyAssetRecord_RegisterAndRelocate_FinalizeRelocationResult:
     record = (ArmyAssetRuntimeSemanticView80 *)0x4c;
   }
 ArmyAssetRecord_RegisterAndRelocate_ReturnRegistrationStatus:
-  return CONCAT44(in_EDX,record);
+  SVar10.carry = true;
+  SVar10.valueOrError = (dword)record;
+  return SVar10;
 }
+
 
 /* Address: 0x00571D90.
    Ownership: assets/army/catalog.
@@ -700,42 +698,40 @@ ArmyAssetRecord_RegisterAndRelocate_ReturnRegistrationStatus:
 dword ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(dword armyAssetRegistryId)
 
 {
-  int iVar1;
-  ArmyAssetRecordPrefix **ppAVar2;
-  bool bVar3;
-  undefined8 uVar4;
+  ArmyAssetRecordPrefix *pAVar1;
+  int iVar2;
+  ArmyAssetRecordPrefix **ppAVar3;
+  ArmyPreviewTextureEaxCf5 AVar4;
   FactionRuntimeIndex factionIndex;
-  ArmyAssetRecordPrefix *armyDefinition1;
   
-  ppAVar2 = g_ArmyAssetRecordRegistry;
-  iVar1 = 0x300;
-  while ((armyDefinition1 = *ppAVar2, armyDefinition1 == (ArmyAssetRecordPrefix *)0x0 ||
-         (armyAssetRegistryId != armyDefinition1->registryId))) {
-    ppAVar2 = ppAVar2 + 1;
-    iVar1 = iVar1 + -1;
-    if (iVar1 == 0) {
+  ppAVar3 = g_ArmyAssetRecordRegistry;
+  iVar2 = 0x300;
+  while ((pAVar1 = *ppAVar3, pAVar1 == (ArmyAssetRecordPrefix *)0x0 ||
+         (armyAssetRegistryId != pAVar1->registryId))) {
+    ppAVar3 = ppAVar3 + 1;
+    iVar2 = iVar2 + -1;
+    if (iVar2 == 0) {
       return 0;
     }
   }
-  if (armyDefinition1[2].byteSize == 0) {
-    bVar3 = armyAssetRegistryId < 400;
+  if (pAVar1[2].byteSize == 0) {
     factionIndex = g_UiCommandModeGOwnerFactionIndex;
-    if (!bVar3) {
+    if (399 < armyAssetRegistryId) {
       factionIndex = 0;
     }
-    uVar4 = ArmyRuntime_RenderPreviewTextureCf
-                      (iVar1,armyDefinition1,
-                       *(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
+    AVar4 = ArmyRuntime_RenderPreviewTextureCf
+                      (*(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        *(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime0A30);
-    if (bVar3) {
+    if (AVar4.carry) {
       return 0;
     }
-    *(dword *)((int)((ulonglong)uVar4 >> 0x20) + 0x20) = (dword)uVar4;
-    return (dword)uVar4;
+    pAVar1[2].byteSize = (AssetRecordByteCount)AVar4.previewTexture;
+    return (dword)AVar4.previewTexture;
   }
-  return armyDefinition1[2].byteSize;
+  return pAVar1[2].byteSize;
 }
+
 
 /* Address: 0x0051B6D0.
    Ownership: assets/army/catalog.
@@ -744,30 +740,36 @@ dword ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(dword armyAssetRegistryI
    ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and
    does not imply gameplay class, tier, faction, or direction.
 */
-ArmyAssetRecordPrefix * ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
+ArmyRegistryEaxCf5_51b6d0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
 
 {
+  ArmyAssetRecordPrefix *pAVar1;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
+  ArmyRegistryEaxCf5_51b6d0 AVar2;
+  ArmyRegistryEaxCf5_51b6d0 AVar3;
   ArmyAssetRecordPrefix *candidateAsset;
-  ArmyAssetRecordPrefix *armyDefinition1;
   
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = 0x300;
-  while( true ) {
-    armyDefinition1 = *registryCursor;
-    if ((armyDefinition1 != (ArmyAssetRecordPrefix *)0x0) &&
-       (armyDefinition1->registryId == registryId)) break;
+  while ((pAVar1 = *registryCursor, pAVar1 == (ArmyAssetRecordPrefix *)0x0 ||
+         (pAVar1->registryId != registryId))) {
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
-      return (ArmyAssetRecordPrefix *)0x41;
+      AVar2.carry = true;
+      AVar2.eax = (ArmyAssetRecordPrefix *)0x41;
+      return AVar2;
     }
   }
-  return armyDefinition1;
+  AVar3.carry = false;
+  AVar3.eax = pAVar1;
+  return AVar3;
 }
+
 
 /* Address: 0x00571910.
    Ownership: assets/army/catalog.
@@ -776,7 +778,8 @@ ArmyAssetRecordPrefix * ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog regis
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
 */
-void ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
+byte __thandor_cf_preserve_eax_ecx_edx
+ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -791,11 +794,12 @@ void ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      return;
+      return 1;
     }
   }
-  return;
+  return 0;
 }
+
 
 /* Address: 0x00571B50.
    Ownership: assets/army/catalog.
@@ -803,7 +807,7 @@ void ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
    absent. EAX preserves recordId. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping
    preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
 */
-void ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
+byte __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -818,11 +822,12 @@ void ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      return;
+      return 1;
     }
   }
-  return;
+  return 0;
 }
+
 
 /* Address: 0x00571980.
    Ownership: assets/army/catalog.
@@ -831,7 +836,8 @@ void ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
    ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction,
    or direction.
 */
-void ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
+byte __thandor_cf_preserve_eax_ecx_edx
+ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -847,11 +853,12 @@ void ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      return;
+      return 1;
     }
   }
-  return;
+  return 0;
 }
+
 
 /* Address: 0x00571BC0.
    Ownership: assets/army/catalog.
@@ -860,7 +867,8 @@ void ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
    flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or
    direction.
 */
-void ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId)
+byte __thandor_cf_preserve_eax_ecx_edx
+ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -876,8 +884,9 @@ void ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      return;
+      return 1;
     }
   }
-  return;
+  return 0;
 }
+

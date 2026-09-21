@@ -1,6 +1,6 @@
 # Call graph: `graphics/resources/texture`
 
-[Source](../../../../src/graphics/resources/texture.c) · [Header](../../../../include/thandor/graphics/resources/texture.h) · [Graphviz](texture.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-texture)
+[Source](../../../../src/graphics/resources/texture.c) · [Header](../../../../include/thandor/graphics/resources/texture.h) · [Graphviz](texture.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-resources-texture) · [Developer notes](../../../../CHANGELOG.md#module-graphics-resources-texture) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-resources-texture)
 
 36 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `core/memory/synchronization`
 
-[Source](../../../../src/core/memory/synchronization.c) · [Header](../../../../include/thandor/core/memory/synchronization.h) · [Graphviz](synchronization.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-memory-synchronization)
+[Source](../../../../src/core/memory/synchronization.c) · [Header](../../../../include/thandor/core/memory/synchronization.h) · [Graphviz](synchronization.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-core-memory-synchronization) · [Full changelog](../../../../CHANGELOG_FULL.md#module-core-memory-synchronization)
 
 5 functions. Addresses are current V523 executable VAs.
 

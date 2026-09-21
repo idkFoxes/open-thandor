@@ -1,6 +1,6 @@
 # Call graph: `graphics/backend/software`
 
-[Source](../../../../src/graphics/backend/software.c) · [Header](../../../../include/thandor/graphics/backend/software.h) · [Graphviz](software.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-software)
+[Source](../../../../src/graphics/backend/software.c) · [Header](../../../../include/thandor/graphics/backend/software.h) · [Graphviz](software.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-graphics-backend-software) · [Full changelog](../../../../CHANGELOG_FULL.md#module-graphics-backend-software)
 
 103 functions. Addresses are current V523 executable VAs.
 

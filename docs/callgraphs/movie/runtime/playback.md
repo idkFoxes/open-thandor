@@ -1,6 +1,6 @@
 # Call graph: `movie/runtime/playback`
 
-[Source](../../../../src/movie/runtime/playback.c) · [Header](../../../../include/thandor/movie/runtime/playback.h) · [Graphviz](playback.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-movie-runtime-playback)
+[Source](../../../../src/movie/runtime/playback.c) · [Header](../../../../include/thandor/movie/runtime/playback.h) · [Graphviz](playback.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-movie-runtime-playback) · [Developer notes](../../../../CHANGELOG.md#module-movie-runtime-playback) · [Full changelog](../../../../CHANGELOG_FULL.md#module-movie-runtime-playback)
 
 18 functions. Addresses are current V523 executable VAs.
 

@@ -1,6 +1,6 @@
 # Call graph: `ui/frontend/scenario`
 
-[Source](../../../../src/ui/frontend/scenario.c) · [Header](../../../../include/thandor/ui/frontend/scenario.h) · [Graphviz](scenario.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-scenario)
+[Source](../../../../src/ui/frontend/scenario.c) · [Header](../../../../include/thandor/ui/frontend/scenario.h) · [Graphviz](scenario.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-frontend-scenario) · [Developer notes](../../../../CHANGELOG.md#module-ui-frontend-scenario) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-frontend-scenario)
 
 2 functions. Addresses are current V523 executable VAs.
 

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/selection/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/selection/runtime.h>
 
 /* Implementation ownership: gameplay/selection/runtime. */
@@ -21,463 +28,447 @@
    ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime], ArmyRuntime_QueryMetric6CAndDefinitionC4Regs
    [gameplay/army/runtime].
 */
-void SelectionPanel_RenderArmyRuntimeMetrics
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,
-               UiPixelCoordinate panelRight,UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
-               ArmyRuntimeSlot *armyRuntime)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_RenderArmyRuntimeMetrics
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
+          UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
+          RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
-  GameEntityRuntime *pGVar1;
-  int *piVar2;
-  dword dVar3;
-  int iVar4;
-  int extraout_ECX;
-  uint uVar5;
-  uint extraout_ECX_00;
+  dword dVar1;
+  ModelRuntimeSlot *pMVar2;
+  ArmyCommandGeneration maximumValue;
+  InGameRuntimeRootImageC3E4 *pIVar3;
+  uint uVar4;
   SelectionPanelSegmentCount totalSegmentCount;
-  uint extraout_ECX_01;
   SelectionPanelSegmentCount totalSegmentCount_00;
-  uint extraout_ECX_02;
   SelectionPanelSegmentCount totalSegmentCount_01;
+  int maximumValue_00;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  int *piVar8;
-  bool bVar9;
-  undefined1 uVar10;
-  ModelRuntimeActiveTotalMetricRegisterPair MVar11;
-  undefined8 uVar12;
-  undefined8 uVar13;
-  undefined8 uVar14;
-  undefined8 uVar15;
-  ModelRuntimeScaleRatioRegisterPairQ12 MVar16;
+  uint uVar7;
+  ModelRuntimeSlot *armyRuntime;
+  bool bVar8;
+  ModelRuntimeActiveTotalMetricRegisterPair MVar9;
+  SelectionPanelAdvanceEaxEdx8 SVar10;
+  SelectionPanelAdvanceEaxEdx8 SVar11;
+  SelectionPanelAdvanceEaxEdx8 SVar12;
+  SelectionPanelAdvanceEaxEdx8 SVar13;
+  ModelRuntimeScaleRatioRegisterPairQ12 MVar14;
+  FactionRuntimeGroupIndexEaxCf5 FVar15;
+  ArmyMetric6CDefinitionC4Regs8 AVar16;
   
-  bVar9 = &stack0xffffffe4 < (undefined1 *)0x8;
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (bVar9) {
+  pIVar3 = g_InGameRuntimeRoot;
+  bVar8 = (*g_GraphicsFramebufferBeginAccess)();
+  if (bVar8) {
     return;
   }
-  pGVar1 = armyRuntime->linkedEntityRuntime;
-  piVar8 = armyRuntime->definitionOrAsset;
-  if (armyRuntime->factionIndex == *(int *)(extraout_ECX + 0xa80)) {
-    if (pGVar1 != (GameEntityRuntime *)0x0) {
-      if (pGVar1 == (GameEntityRuntime *)0x1) {
-        if ((piVar8[0x2e] == 1) &&
-           ((uVar5 = *(uint *)(*piVar8 + 0x4c), uVar10 = uVar5 < 0xd, uVar5 == 0xd ||
-            (uVar5 = *(uint *)(*piVar8 + 0x4c), uVar10 = uVar5 < 0xb, uVar5 == 0xb)))) {
-          MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-          uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+  uVar4 = runtimeEntry->runtimeLinkOrKind08;
+  armyRuntime = runtimeEntry->modelRuntime;
+  if (runtimeEntry->factionIndex == (pIVar3->worldRuntime0A30).activeFactionRuntimeIndex) {
+    if (uVar4 != 0) {
+      if (uVar4 == 1) {
+        if (((armyRuntime->classState).classStateB8 == 1) &&
+           ((((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
+             definitionValue9C_4C == 0xd ||
+            (((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
+             definitionValue9C_4C == 0xb)))) {
+          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                              (UiNumericValue32)(MVar11 >> 0x20),(UiNumericValue32)MVar11,0x12);
-          dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-          if ((bool)uVar10) {
-            uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+                              (UiNumericValue32)(MVar9 >> 0x20),(UiNumericValue32)MVar9,0x12);
+          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (FVar15.carry) {
+            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb)
-            ;
+            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                FVar15.runtimeGroupIndex,0xb);
           }
-          uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                     (UiPixelCoordinate)uVar12,piVar8[0x1a],piVar8[0x19],0x16);
-          MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
+                     SVar10.nextDrawY,(armyRuntime->classLinkState).classState68,
+                     (armyRuntime->classLinkState).classState64,0x16);
+          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                     (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                     (UiNumericValue32)MVar16,0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
+                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                     0x19);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,5);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                     panelLeft,5);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,6);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                     panelRight,6);
           goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
         }
       }
-      else if (pGVar1 < (GameEntityRuntime *)0x3) {
-        piVar2 = (int *)piVar8[0x50];
-        if (((piVar8[3] != 0) && (piVar2 != (int *)0x0)) &&
-           ((iVar7 = *piVar2, *(int *)(iVar7 + 0x4c) == 5 ||
-            (((*(int *)(iVar7 + 0x4c) == 6 || (*(int *)(iVar7 + 0x4c) == 7)) ||
-             (*(int *)(iVar7 + 0x4c) == 8)))))) {
-          iVar7 = piVar2[9];
-          iVar4 = *(int *)(*piVar2 + 0x30);
-          MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-          iVar6 = (int)(MVar11 >> 0x20);
-          uVar10 = 0;
-          if (iVar6 == 0) {
-            uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      else if (uVar4 < 3) {
+        pMVar2 = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
+                 childModelRuntimeOrSavedOffset00;
+        if (((armyRuntime->attachmentCount0C != 0) && (pMVar2 != (ModelRuntimeSlot *)0x0)) &&
+           ((dVar1 = (pMVar2->definitionOrSavedId).savedIdOrOffset, *(int *)(dVar1 + 0x4c) == 5 ||
+            (((*(int *)(dVar1 + 0x4c) == 6 || (*(int *)(dVar1 + 0x4c) == 7)) ||
+             (*(int *)(dVar1 + 0x4c) == 8)))))) {
+          iVar5 = *(int *)(pMVar2->reserved10_37 + 0x14);
+          iVar6 = *(int *)((pMVar2->definitionOrSavedId).savedIdOrOffset + 0x30);
+          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          maximumValue_00 = (int)(MVar9 >> 0x20);
+          if (maximumValue_00 == 0) {
+            SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
           }
           else {
-            uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar6,
-                                (UiNumericValue32)MVar11,0x12);
+            SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
+                                maximumValue_00,(UiNumericValue32)MVar9,0x12);
           }
-          dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-          if ((bool)uVar10) {
-            uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (FVar15.carry) {
+            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb)
-            ;
+            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                FVar15.runtimeGroupIndex,0xb);
           }
-          uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                     (UiPixelCoordinate)uVar12,iVar4,iVar4 - iVar7,0x16);
-          MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
+                     SVar10.nextDrawY,iVar6,iVar6 - iVar5,0x16);
+          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                     (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                     (UiNumericValue32)MVar16,0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
+                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                     0x19);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,5);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                     panelLeft,5);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,6);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                     panelRight,6);
           goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
         }
       }
-      else if (pGVar1 == (GameEntityRuntime *)0x3) {
-        piVar2 = (int *)piVar8[0x50];
-        if ((piVar8[3] != 0) && (piVar2 != (int *)0x0)) {
-          piVar8 = (int *)*piVar2;
-          uVar5 = 0xffffffff;
-          iVar7 = 7;
-          if (piVar8[0x13] == 9) {
+      else if (uVar4 == 3) {
+        pMVar2 = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
+                 childModelRuntimeOrSavedOffset00;
+        if ((armyRuntime->attachmentCount0C != 0) && (pMVar2 != (ModelRuntimeSlot *)0x0)) {
+          armyRuntime = (ModelRuntimeSlot *)(pMVar2->definitionOrSavedId).savedIdOrOffset;
+          uVar4 = 0xffffffff;
+          iVar5 = 7;
+          if (armyRuntime->definitionValue9C_4C == 9) {
             do {
-              if ((uint)piVar2[iVar7 + 0x18] < uVar5) {
-                uVar5 = piVar2[iVar7 + 0x18];
+              if (*(uint *)((pMVar2->classState).reserved84_A7 + iVar5 * 4 + -0x24) < uVar4) {
+                uVar4 = *(uint *)((pMVar2->classState).reserved84_A7 + iVar5 * 4 + -0x24);
               }
-              iVar7 = iVar7 + -1;
-            } while (-1 < iVar7);
-            if ((int)uVar5 < piVar2[0x20]) {
-              uVar5 = piVar2[0x20];
+              iVar5 = iVar5 + -1;
+            } while (-1 < iVar5);
+            if ((int)uVar4 < (int)(pMVar2->classLinkState).classState80) {
+              uVar4 = (pMVar2->classLinkState).classState80;
             }
-            iVar4 = 0;
-            iVar7 = piVar8[0xc];
-            if (0 < (int)uVar5) {
-              iVar4 = -uVar5;
+            iVar5 = 0;
+            maximumValue = *(ArmyCommandGeneration *)
+                            ((ArmyRuntimeMovementControlState *)armyRuntime->reserved10_37 + 4);
+            if (0 < (int)uVar4) {
+              iVar5 = -uVar4;
             }
-            MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-            iVar6 = (int)(MVar11 >> 0x20);
-            uVar10 = 0;
+            MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+            iVar6 = (int)(MVar9 >> 0x20);
             if (iVar6 == 0) {
-              uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+              SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
             }
             else {
-              uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+              SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar6,
-                                  (UiNumericValue32)MVar11,0x12);
+                                  (UiNumericValue32)MVar9,0x12);
             }
-            dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-            if ((bool)uVar10) {
-              uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+            if (FVar15.carry) {
+              SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
             }
             else {
-              uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,
-                                  0xb);
+              SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                  FVar15.runtimeGroupIndex,0xb);
             }
-            uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-            uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                       (UiPixelCoordinate)uVar12,iVar7,iVar4 + iVar7,0x16);
-            MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
+                       SVar10.nextDrawY,maximumValue,iVar5 + maximumValue,0x16);
+            MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                       (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                       (UiNumericValue32)MVar16,0x19);
+                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
+                       SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                       0x19);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,
-                       (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                       (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,5);
+                      (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                       panelLeft,5);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,
-                       (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                       (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,6);
+                      (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                       panelRight,6);
             goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
           }
         }
       }
-      else if (((GameEntityRuntime *)0x3 < pGVar1) && (*(int *)(*piVar8 + 0x4c) == 0x16)) {
-        uVar10 = piVar8[0x2b] == 0;
-        if (piVar8[0x2b] == 1) {
-          MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-          uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+      else if ((3 < uVar4) &&
+              (((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
+               definitionValue9C_4C == 0x16)) {
+        if (((ArmyRuntimeArticulatedContactState14 *)&(armyRuntime->classState).classStateAC)->
+            terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
+          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                              (UiNumericValue32)(MVar11 >> 0x20),(UiNumericValue32)MVar11,0x12);
-          dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-          if ((bool)uVar10) {
-            uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+                              (UiNumericValue32)(MVar9 >> 0x20),(UiNumericValue32)MVar9,0x12);
+          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (FVar15.carry) {
+            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb)
-            ;
+            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                FVar15.runtimeGroupIndex,0xb);
           }
-          uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                     (UiPixelCoordinate)uVar12,piVar8[0x1a],piVar8[0x19],0x16);
-          MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
+                     SVar10.nextDrawY,(armyRuntime->classLinkState).classState68,
+                     (armyRuntime->classLinkState).classState64,0x16);
+          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                     (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                     (UiNumericValue32)MVar16,0x19);
-          ArmyRuntime_QueryMetric6CAndDefinitionC4Regs();
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
+                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                     0x19);
+          AVar16 = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          uVar7 = AVar16.ebx >> 1;
+          uVar4 = AVar16.ecx >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,
-                     extraout_ECX_00 - (extraout_ECX_00 >> 1),(int)pGVar1 - ((uint)pGVar1 >> 1),0xf)
-          ;
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                     panelLeft,AVar16.ecx - uVar4,AVar16.ebx - uVar7,0xf);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,totalSegmentCount,
-                     (uint)pGVar1 >> 1,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                     panelRight,uVar4,uVar7,0x10);
         }
-        else if ((piVar8[0x3b] & 0xc0U) == 0) {
-          MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-          iVar7 = (int)(MVar11 >> 0x20);
-          uVar10 = 0;
-          if (iVar7 == 0) {
-            uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+        else if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
+          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          iVar5 = (int)(MVar9 >> 0x20);
+          if (iVar5 == 0) {
+            SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
           }
           else {
-            uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar7,
-                                (UiNumericValue32)MVar11,0x12);
+            SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
+                                (UiNumericValue32)MVar9,0x12);
           }
-          dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-          if ((bool)uVar10) {
-            uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (FVar15.carry) {
+            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb)
-            ;
+            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                FVar15.runtimeGroupIndex,0xb);
           }
-          uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawForwardCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                     (UiPixelCoordinate)uVar12,4);
-          MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
+                     SVar10.nextDrawY,4);
+          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                     (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                     (UiNumericValue32)MVar16,0x19);
-          ArmyRuntime_QueryMetric6CAndDefinitionC4Regs();
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
+                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                     0x19);
+          AVar16 = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          uVar7 = AVar16.ebx >> 1;
+          uVar4 = AVar16.ecx >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,
-                     extraout_ECX_01 - (extraout_ECX_01 >> 1),(int)pGVar1 - ((uint)pGVar1 >> 1),0xf)
-          ;
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                     panelLeft,AVar16.ecx - uVar4,AVar16.ebx - uVar7,0xf);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,totalSegmentCount_00,
-                     (uint)pGVar1 >> 1,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                     panelRight,uVar4,uVar7,0x10);
         }
         else {
-          MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-          iVar7 = (int)(MVar11 >> 0x20);
-          uVar10 = 0;
-          if (iVar7 == 0) {
-            uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          iVar5 = (int)(MVar9 >> 0x20);
+          if (iVar5 == 0) {
+            SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
           }
           else {
-            uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar7,
-                                (UiNumericValue32)MVar11,0x12);
+            SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
+                                (UiNumericValue32)MVar9,0x12);
           }
-          dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-          if ((bool)uVar10) {
-            uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (FVar15.carry) {
+            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb)
-            ;
+            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                FVar15.runtimeGroupIndex,0xb);
           }
-          uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                     (UiPixelCoordinate)uVar12,piVar8[0x41],piVar8[0x42],0x16);
-          MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
+                     SVar10.nextDrawY,*(dword *)(armyRuntime->reserved100_117 + 4),
+                     *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),0x16);
+          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                     (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                     (UiNumericValue32)MVar16,0x19);
-          ArmyRuntime_QueryMetric6CAndDefinitionC4Regs();
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
+                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                     0x19);
+          AVar16 = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          uVar7 = AVar16.ebx >> 1;
+          uVar4 = AVar16.ecx >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,
-                     extraout_ECX_02 - (extraout_ECX_02 >> 1),(int)pGVar1 - ((uint)pGVar1 >> 1),0xf)
-          ;
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                     panelLeft,AVar16.ecx - uVar4,AVar16.ebx - uVar7,0xf);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,
-                     (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                     (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,totalSegmentCount_01,
-                     (uint)pGVar1 >> 1,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                     panelRight,uVar4,uVar7,0x10);
         }
         goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
       }
     }
-    if ((piVar8[0x3b] & 0xc0U) == 0) {
-      MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-      iVar7 = (int)(MVar11 >> 0x20);
-      uVar10 = 0;
-      if (iVar7 == 0) {
-        uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
+      MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+      iVar5 = (int)(MVar9 >> 0x20);
+      if (iVar5 == 0) {
+        SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
       }
       else {
-        uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar7,
-                            (UiNumericValue32)MVar11,0x12);
+        SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
+                            (UiNumericValue32)MVar9,0x12);
       }
-      dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-      if ((bool)uVar10) {
-        uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+      if (FVar15.carry) {
+        SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
       }
       else {
-        uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb);
+        SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                            FVar15.runtimeGroupIndex,0xb);
       }
-      uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-      uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
       SelectionPanel_DrawForwardCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                 (UiPixelCoordinate)uVar12,4);
-      MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,SVar10.nextDrawY,4)
+      ;
+      MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                 (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                 (UiNumericValue32)MVar16,0x19);
+                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,SVar12.nextDrawY
+                 ,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,0x19);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,
-                 (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                 (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,5);
+                (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,panelLeft,5
+                );
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,
-                 (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                 (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,6);
+                (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,panelRight,
+                 6);
     }
     else {
-      MVar11 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(armyRuntime);
-      iVar7 = (int)(MVar11 >> 0x20);
-      uVar10 = 0;
-      if (iVar7 == 0) {
-        uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+      iVar5 = (int)(MVar9 >> 0x20);
+      if (iVar5 == 0) {
+        SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
       }
       else {
-        uVar12 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar7,
-                            (UiNumericValue32)MVar11,0x12);
+        SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
+                            (UiNumericValue32)MVar9,0x12);
       }
-      dVar3 = GameFactionRuntime_FindRuntimeGroupIndexCf(armyRuntime);
-      if ((bool)uVar10) {
-        uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+      if (FVar15.carry) {
+        SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
       }
       else {
-        uVar13 = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,dVar3,0xb);
+        SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                            FVar15.runtimeGroupIndex,0xb);
       }
-      uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-      uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-                 (UiPixelCoordinate)uVar12,piVar8[0x41],piVar8[0x42],0x16);
-      MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+                (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,SVar10.nextDrawY,
+                 *(dword *)(armyRuntime->reserved100_117 + 4),
+                 *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),0x16);
+      MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-                 (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),
-                 (UiNumericValue32)MVar16,0x19);
+                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,SVar12.nextDrawY
+                 ,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,0x19);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,
-                 (UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-                 (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,5);
+                (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,panelLeft,5
+                );
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,
-                 (UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-                 (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,6);
+                (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,panelRight,
+                 6);
     }
   }
   else {
-    uVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
-    uVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
-    uVar14 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-    uVar15 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
     SelectionPanel_DrawForwardCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelTop,(UiPixelCoordinate)uVar13,
-               (UiPixelCoordinate)uVar12,4);
-    MVar16 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(armyRuntime);
+              (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,SVar10.nextDrawY,4);
+    MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
     SelectionPanel_DrawProportionalCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,(UiPixelCoordinate)uVar15,
-               (UiPixelCoordinate)uVar14,(UiNumericValue32)(MVar16 >> 0x20),(UiNumericValue32)MVar16
-               ,0x19);
+              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,SVar12.nextDrawY,
+               (UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,0x19);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,(UiPixelCoordinate)((ulonglong)uVar14 >> 0x20),
-               (UiPixelCoordinate)((ulonglong)uVar12 >> 0x20),panelLeft,5);
+              (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,panelLeft,5);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,(UiPixelCoordinate)((ulonglong)uVar15 >> 0x20),
-               (UiPixelCoordinate)((ulonglong)uVar13 >> 0x20),panelRight,6);
+              (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,panelRight,6)
+    ;
   }
 SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
   (*g_GraphicsFramebufferEndAccess)();
   return;
 }
+
 
 /* Address: 0x0055FA20.
    Ownership: gameplay/selection/runtime.
@@ -486,36 +477,38 @@ SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
    Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid
    [ui/ingame/technology].
 */
-undefined8 __fastcall
-InGameSelection_RebuildOwnedClass16Selection(undefined4 param_1,undefined4 param_2,int param_3)
+void __thandor_void_preserve_eax_ecx_edx
+InGameSelection_RebuildOwnedClass16Selection
+          (PlayerRuntimeId playerRuntimeId,dword callbackArg1,dword callbackArg2,dword callbackArg3)
 
 {
+  WorldOwnerListNode100 *pWVar1;
   GameEntityRuntime *entityRuntime;
-  int iVar1;
-  SelectionPlayerRuntimeBlock *selection;
-  undefined4 in_EAX;
-  int iVar2;
+  InGameRuntimeRootImageC3E4 *pIVar2;
   
-  iVar2 = SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[param_3]->selection);
-  for (iVar2 = *(int *)(iVar2 + 0xb08); iVar2 != 0; iVar2 = *(int *)(iVar2 + 4)) {
-    if (*(int *)(iVar2 + 0xa4) == 0) {
-      entityRuntime = (GameEntityRuntime *)(*(int **)(iVar2 + 0x48))[2];
-      iVar1 = **(int **)(iVar2 + 0x48);
-      selection = g_SelectionPlayerRuntimeBlockPointers[param_3];
-      if ((*(int *)(iVar1 + 0x4c) == 0x16) &&
-         ((entityRuntime->common).ownership.ownerIndex == selection->primaryEntityOrFactionToken8080
-         )) {
+  pIVar2 = g_InGameRuntimeRoot;
+  SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+  for (pWVar1 = (pIVar2->worldRuntime0A30).ownerListHead; pWVar1 != (WorldOwnerListNode100 *)0x0;
+      pWVar1 = pWVar1->nextNode) {
+    if (pWVar1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      entityRuntime = *(GameEntityRuntime **)((int)pWVar1->runtimePayload + 8);
+      if ((*(int *)(*(int *)pWVar1->runtimePayload + 0x4c) == 0x16) &&
+         ((entityRuntime->common).ownership.ownerIndex ==
+          g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primaryEntityOrFactionToken8080))
+      {
         SelectionPointerArray_InsertUniqueAndRecenter
-                  (iVar1,selection,entityRuntime,&selection->selection);
+                  (entityRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection)
+        ;
       }
     }
   }
-  if (param_3 == g_LocalPlayerRuntimeId) {
+  if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  return CONCAT44(param_2,in_EAX);
+  return;
 }
+
 
 /* Address: 0x0055FB30.
    Ownership: gameplay/selection/runtime.
@@ -528,17 +521,18 @@ InGameSelection_RebuildOwnedClass16Selection(undefined4 param_1,undefined4 param
    Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid
    [ui/ingame/technology].
 */
-void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
-               (PlayerRuntimeId playerId,dword payloadDword04,dword payloadDword08,
-               RuntimeToken armyRuntimeIndex)
+void __thandor_preserve_eax
+InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
+          (PlayerRuntimeId playerId,dword payloadDword04,dword payloadDword08,
+          RuntimeToken armyRuntimeIndex)
 
 {
   ArmyRuntimeSlot *sourceArmyRuntime;
   
   if (armyRuntimeIndex != 0) {
-    sourceArmyRuntime =
-         (ArmyRuntimeSlot *)
-         SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
+    sourceArmyRuntime = (ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne)
+    ;
+    SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
     if (sourceArmyRuntime->modelNodeRuntime != (ModelRuntimeNode *)0x0) {
       SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
                 (sourceArmyRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
@@ -551,6 +545,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
   return;
 }
 
+
 /* Address: 0x0055FE70.
    Ownership: gameplay/selection/runtime.
    Purpose: Forwards command payload coordinates to position-command variant B using the player selection array.
@@ -560,9 +555,10 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
    payloadDword0C→CommandPayloadDword0C_V343.
    Local calls: SelectionPointerArray_ApplyPositionCommandVariantB.
 */
-void InGamePlayerSelection_ApplyPositionCommandVariantB
-               (PlayerRuntimeId playerId,dword payloadDword04,CommandPayloadDword08 payloadDword08,
-               CommandPayloadDword0C payloadDword0C)
+void __thandor_preserve_eax_edx
+InGamePlayerSelection_ApplyPositionCommandVariantB
+          (PlayerRuntimeId playerId,dword payloadDword04,CommandPayloadDword08 payloadDword08,
+          CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionPointerArray_ApplyPositionCommandVariantB
@@ -570,6 +566,7 @@ void InGamePlayerSelection_ApplyPositionCommandVariantB
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
+
 
 /* Address: 0x0055FEA0.
    Ownership: gameplay/selection/runtime.
@@ -580,9 +577,10 @@ void InGamePlayerSelection_ApplyPositionCommandVariantB
    payloadDword08→CommandPayloadDword08_V343, p3 payloadDword0C→CommandPayloadDword0C_V343.
    Local calls: SelectionPointerArray_ApplyPositionCommand.
 */
-void InGamePlayerSelection_ApplyPositionCommand
-               (PlayerRuntimeId playerId,dword payloadDword04,CommandPayloadDword08 payloadDword08,
-               CommandPayloadDword0C payloadDword0C)
+void __thandor_void_preserve_eax_ecx_edx
+InGamePlayerSelection_ApplyPositionCommand
+          (PlayerRuntimeId playerId,dword payloadDword04,CommandPayloadDword08 payloadDword08,
+          CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionPointerArray_ApplyPositionCommand
@@ -590,6 +588,7 @@ void InGamePlayerSelection_ApplyPositionCommand
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
+
 
 /* Address: 0x0055FED0.
    Ownership: gameplay/selection/runtime.
@@ -599,9 +598,10 @@ void InGamePlayerSelection_ApplyPositionCommand
    flow, and executable data remain unchanged. Typed parameters: p3 armyRuntimeIndex→RuntimeToken.
    Local calls: SelectionPointerArray_ApplyArmyRuntimeTarget.
 */
-void InGamePlayerSelection_SelectArmyRuntimeIndex
-               (PlayerRuntimeId playerId,dword payloadDword04,dword payloadDword08,
-               RuntimeToken armyRuntimeIndex)
+void __thandor_preserve_eax
+InGamePlayerSelection_SelectArmyRuntimeIndex
+          (PlayerRuntimeId playerId,dword payloadDword04,dword payloadDword08,
+          RuntimeToken armyRuntimeIndex)
 
 {
   if ((armyRuntimeIndex != 0) &&
@@ -614,6 +614,7 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
   return;
 }
 
+
 /* Address: 0x0055FF10.
    Ownership: gameplay/selection/runtime.
    Purpose: Forwards a four-dword in-game command to the target-position helper using one player selection array.
@@ -623,9 +624,10 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
    payloadDword08→CommandPayloadDword08_V343, p3 payloadDword0C→CommandPayloadDword0C_V343.
    Local calls: SelectionPointerArray_ApplyTargetPositionCommand.
 */
-void InGamePlayerSelection_ApplyTargetPositionCommand
-               (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+void __thandor_void_preserve_eax_ecx_edx
+InGamePlayerSelection_ApplyTargetPositionCommand
+          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionPointerArray_ApplyTargetPositionCommand
@@ -634,14 +636,16 @@ void InGamePlayerSelection_ApplyTargetPositionCommand
   return;
 }
 
+
 /* Address: 0x0055FF40.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles player selection reset movement prune and recenter entries.
    Local calls: SelectionRuntime_ResetMovementPruneAndRecenterEntries.
 */
-void PlayerSelection_ResetMovementPruneAndRecenterEntries
-               (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+void __thandor_preserve_eax
+PlayerSelection_ResetMovementPruneAndRecenterEntries
+          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionRuntime_ResetMovementPruneAndRecenterEntries
@@ -649,86 +653,93 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries
   return;
 }
 
+
 /* Address: 0x0055FF60.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles player selection reset movement anchors and clear flag200 for eligible entries.
    Local calls: SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries.
 */
-void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
-               (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+void __thandor_preserve_eax
+PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
+          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
-            ((int *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
+
 
 /* Address: 0x0055FF80.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles player selection interrupt targets and clear flag10 for eligible entries.
    Local calls: SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries.
 */
-void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
-               (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+void __thandor_preserve_eax
+PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
+          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
-            ((undefined4 *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
+
 
 /* Address: 0x0055FFA0.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles player selection apply flags418 unless bit8 to eligible entries.
    Local calls: SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries.
 */
-void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
-               (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-               CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+void __thandor_preserve_eax
+PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
+          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
+          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
 {
   SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries
-            ((undefined4 *)g_SelectionPlayerRuntimeBlockPointers[playerId]);
+            ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
+
 
 /* Address: 0x0055FFC0.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles in game selection apply type16 marker coordinates variant1.
    Local calls: SelectionPointerArray_ApplyType16MarkerCoordinates.
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 InGameSelection_ApplyType16MarkerCoordinatesVariant1
-          (int param_1,SelectionMarkerCoordinateValue32 param_2,
-          SelectionMarkerCoordinateValue32 param_3,SelectionMarkerCoordinateValue32 param_4)
+          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
+          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
 
 {
-  undefined4 in_EAX;
-  
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (1,param_2,param_3,param_4,&g_SelectionPlayerRuntimeBlockPointers[param_1]->selection);
-  return in_EAX;
+            (1,valueC,valueB,valueA,
+             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+  return;
 }
+
 
 /* Address: 0x0055FFF0.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles in game selection apply type16 marker coordinates variant2.
    Local calls: SelectionPointerArray_ApplyType16MarkerCoordinates.
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 InGameSelection_ApplyType16MarkerCoordinatesVariant2
-          (int param_1,SelectionMarkerCoordinateValue32 param_2,
-          SelectionMarkerCoordinateValue32 param_3,SelectionMarkerCoordinateValue32 param_4)
+          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
+          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
 
 {
-  undefined4 in_EAX;
-  
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (2,param_2,param_3,param_4,&g_SelectionPlayerRuntimeBlockPointers[param_1]->selection);
-  return in_EAX;
+            (2,valueC,valueB,valueA,
+             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+  return;
 }
+
 
 /* Address: 0x00562050.
    Ownership: gameplay/selection/runtime.
@@ -741,56 +752,50 @@ InGameSelection_ApplyType16MarkerCoordinatesVariant2
    Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
    ModelNodeRuntime_UpdateDepthBinMasks [world/model/hierarchy].
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_ReissuePrimarySelectionPosition
-          (undefined4 param_1,undefined4 param_2,PlayerRuntimeId playerRuntimeId)
+          (PlayerRuntimeId playerRuntimeId,dword reserved,Q12 deltaYQ12,Q12 deltaXQ12)
 
 {
   dword dVar1;
   ModelRuntimeNode *modelNode;
   int iVar2;
   int iVar3;
-  int iVar4;
-  undefined4 *extraout_ECX;
-  undefined4 extraout_ECX_00;
-  undefined4 extraout_ECX_01;
-  int extraout_EDX;
+  int worldYQ12;
+  GameEntityRuntime *target;
   int worldXQ12;
-  undefined4 extraout_EDX_00;
   WorldRuntimeContext *worldRuntime;
-  undefined8 uVar5;
   
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   dVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
   if (dVar1 != 0) {
-    iVar4 = SelectionPointerArray_ContainsCf
-                      ((GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + dVar1),
-                       &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-    modelNode = (ModelRuntimeNode *)extraout_ECX[1];
-    iVar4 = iVar4 + (modelNode->worldTransform).translation.x;
-    worldXQ12 = extraout_EDX + (modelNode->worldTransform).translation.y;
-    iVar2 = *(int *)*extraout_ECX;
-    extraout_ECX[0x2e] = iVar4;
-    extraout_ECX[0x2f] = worldXQ12;
-    extraout_ECX[0x1e] = iVar4;
-    extraout_ECX[0x1f] = worldXQ12;
-    extraout_ECX[0x16] = iVar4;
-    extraout_ECX[0x17] = worldXQ12;
-    (modelNode->worldTransform).translation.x = iVar4;
+    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + dVar1);
+    SelectionPointerArray_ContainsCf
+              (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+    modelNode = (target->common).ownership.modelNode;
+    worldYQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
+    worldXQ12 = deltaYQ12 + (modelNode->worldTransform).translation.y;
+    iVar2 = *(int *)(target->common).ownership.definitionOrClassRecord;
+    (target->common).pathCoordinate0Q12 = worldYQ12;
+    (target->common).pathCoordinate1Q12 = worldXQ12;
+    (target->common).trackedCoordinate0Q12 = worldYQ12;
+    (target->common).trackedCoordinate1Q12 = worldXQ12;
+    (target->common).damageState.trackedCoordinate0Q12 = worldYQ12;
+    (target->common).damageState.trackedCoordinate1Q12 = worldXQ12;
+    (modelNode->worldTransform).translation.x = worldYQ12;
     iVar3 = *(int *)(iVar2 + 0x278);
     (modelNode->worldTransform).translation.y = worldXQ12;
     if (iVar3 == 3) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
     }
     (*g_ArmyPlacementContactKindDispatchTable.callbacks[iVar3])
-              (*(Q12 *)(iVar2 + 0x54),worldXQ12,iVar4,modelNode,worldRuntime);
-    uVar5 = ModelNodeRuntime_RebuildTransformsFromRoot(extraout_ECX_00,extraout_EDX_00,modelNode);
-    ModelNodeRuntime_UpdateDepthBinMasks
-              (extraout_ECX_01,(int)((ulonglong)uVar5 >> 0x20),
-               *(DepthIntervalRadius32 *)(iVar2 + 0xdc),modelNode);
+              (*(Q12 *)(iVar2 + 0x54),worldXQ12,worldYQ12,modelNode,worldRuntime);
+    ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
+    ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(iVar2 + 0xdc),modelNode);
   }
   return;
 }
+
 
 /* Address: 0x00562220.
    Ownership: gameplay/selection/runtime.
@@ -800,29 +805,28 @@ SelectionPlayerRuntime_ReissuePrimarySelectionPosition
    Local calls: SelectionPointerArray_ContainsCf.
    Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_AdvancePrimarySelectionCycle
-          (undefined4 param_1,undefined4 param_2,PlayerRuntimeId playerRuntimeId)
+          (PlayerRuntimeId playerRuntimeId,dword reserved0,dword reserved1,AngleTurn32 angleDelta)
 
 {
   dword dVar1;
   ModelRuntimeNode *modelNodeRuntime;
-  int iVar2;
-  int extraout_ECX;
-  undefined4 extraout_EDX;
+  GameEntityRuntime *target;
   
   dVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
   if (dVar1 != 0) {
-    iVar2 = SelectionPointerArray_ContainsCf
-                      ((GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + dVar1),
-                       &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-    modelNodeRuntime = *(ModelRuntimeNode **)(extraout_ECX + 4);
+    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + dVar1);
+    SelectionPointerArray_ContainsCf
+              (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+    modelNodeRuntime = (target->common).ownership.modelNode;
     (modelNodeRuntime->modelPayload).worldRotationAngle2 =
-         iVar2 + (modelNodeRuntime->modelPayload).worldRotationAngle2 & 0xffff;
-    ModelNodeRuntime_RebuildTransformsFromRoot(extraout_ECX,extraout_EDX,modelNodeRuntime);
+         angleDelta + (modelNodeRuntime->modelPayload).worldRotationAngle2 & 0xffff;
+    ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   }
   return;
 }
+
 
 /* Address: 0x0052CEE0.
    Ownership: gameplay/selection/runtime.
@@ -831,264 +835,275 @@ SelectionPlayerRuntime_AdvancePrimarySelectionCycle
    the selection and information panels. The .dat record semantics remain opaque.
    Cross-module calls: Package_LoadEntry [assets/package/runtime].
 */
-void SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
 
 {
   byte *pbVar1;
-  undefined4 uVar2;
-  AssetRelativeOffset AVar3;
-  GraphicsTextureSourceAsset *pGVar4;
-  void *pvVar5;
-  dword in_ECX;
-  dword arg0;
-  int iVar6;
-  dword in_EDX;
-  dword arg1;
-  int iVar7;
-  SelectionPlayerRuntimeBlock *pSVar8;
-  undefined1 in_CF;
+  AssetRelativeOffset AVar2;
+  GraphicsTextureSourceAsset *pGVar3;
+  int iVar4;
+  int iVar5;
+  SelectionPlayerRuntimeBlock *pSVar6;
+  GraphicsTextureSourceLoadEaxCf5 GVar7;
+  PackageLoadEntryEaxCf5 PVar8;
+  StatusValueEaxCf5 SVar9;
+  StatusValueEaxCf5 SVar10;
+  AssetRelativeOffset swappedSelectionDataOffset;
+  dword referencePayloadValue;
   
-  pGVar4 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                     (in_ECX,in_EDX,(word *)u_gfx_panel_select_gfx_0052ce18);
-  if (!(bool)in_CF) {
-    g_SelectionPanelTextureSource = pGVar4;
-    pGVar4 = (*g_GraphicsTextureSourceLoadPackageAsset)
-                       (arg0,arg1,(word *)u_gfx_panel_info_gfx_0052ce42);
-    if (!(bool)in_CF) {
-      g_InfoPanelTextureSource = pGVar4;
-      pvVar5 = Package_LoadEntry((word *)u_gfx_panel_select_dat_0052ce68);
-      if (!(bool)in_CF) {
-        g_SelectionPanelData = pvVar5;
-        pvVar5 = Package_LoadEntry((word *)u_gfx_panel_info_dat_0052ce92);
-        if (!(bool)in_CF) {
-          iVar7 = 8;
-          pSVar8 = g_SelectionPlayerBlocks;
-          g_InfoPanelData = pvVar5;
+  GVar7 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_select_gfx_0052ce18);
+  pGVar3 = GVar7.eax;
+  if (!GVar7.carry) {
+    g_SelectionPanelTextureSource = pGVar3;
+    GVar7 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_info_gfx_0052ce42);
+    pGVar3 = GVar7.eax;
+    if (!GVar7.carry) {
+      g_InfoPanelTextureSource = pGVar3;
+      PVar8 = Package_LoadEntry((word *)u_gfx_panel_select_dat_0052ce68);
+      pGVar3 = PVar8.bufferOrError;
+      if (!PVar8.carry) {
+        g_SelectionPanelData = pGVar3;
+        PVar8 = Package_LoadEntry((word *)u_gfx_panel_info_dat_0052ce92);
+        pGVar3 = PVar8.bufferOrError;
+        if (!PVar8.carry) {
+          iVar5 = 8;
+          pSVar6 = g_SelectionPlayerBlocks;
+          g_InfoPanelData = pGVar3;
           do {
-            for (iVar6 = 0x20; pGVar4 = g_SelectionPanelTextureSource, iVar6 != 0;
-                iVar6 = iVar6 + -1) {
-              (pSVar8->selection).entries[0] = (GameEntityRuntime *)0x0;
-              pSVar8 = (SelectionPlayerRuntimeBlock *)((pSVar8->selection).entries + 1);
+            for (iVar4 = 0x20; pGVar3 = g_SelectionPanelTextureSource, iVar4 != 0;
+                iVar4 = iVar4 + -1) {
+              (pSVar6->selection).entries[0] = (GameEntityRuntime *)0x0;
+              pSVar6 = (SelectionPlayerRuntimeBlock *)((pSVar6->selection).entries + 1);
             }
-            pSVar8 = (SelectionPlayerRuntimeBlock *)&pSVar8->pendingSelectionEntityOffset8098;
-            iVar7 = iVar7 + -1;
-          } while (iVar7 != 0);
+            pSVar6 = (SelectionPlayerRuntimeBlock *)&pSVar6->pendingSelectionEntityOffset8098;
+            iVar5 = iVar5 + -1;
+          } while (iVar5 != 0);
           g_SelectionInfoEntitySlots = entitySlots;
-          AVar3 = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
+          AVar2 = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
           LOCK();
-          uVar2 = *(undefined4 *)
-                   (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar3 + 0x110);
-          *(undefined4 *)(g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar3 + 0x110)
-               = *(undefined4 *)
-                  (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar3 + 0xf0);
+          swappedSelectionDataOffset =
+               *(AssetRelativeOffset *)
+                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0x110);
+          *(AssetRelativeOffset *)
+           (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0x110) =
+               *(AssetRelativeOffset *)
+                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0xf0);
           UNLOCK();
-          *(undefined4 *)(pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0xf0) = uVar2;
-          pGVar4 = g_InfoPanelTextureSource;
-          AVar3 = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
-          uVar2 = *(undefined4 *)
-                   ((g_InfoPanelTextureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar3 + 0xd0) +
-                   -0x28);
-          iVar7 = *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar3 + 0x130);
+          *(AssetRelativeOffset *)(pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0xf0) =
+               swappedSelectionDataOffset;
+          pGVar3 = g_InfoPanelTextureSource;
+          AVar2 = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
+          referencePayloadValue =
+               *(dword *)((g_InfoPanelTextureSource->common).buildMetadata.
+                          assetRelativeAddressAnchor28 +
+                         *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF +
+                                 AVar2 + 0xd0) + -0x28);
+          iVar5 = *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0x130);
           pbVar1 = (g_InfoPanelTextureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   iVar7 + -0x28;
+                   iVar5 + -0x28;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24) = uVar2;
-          iVar7 = *(int *)(pGVar4[3].common.buildMetadata.assetRelativeAddressAnchor28 +
-                          (AVar3 - 0x1c));
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x28;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+               referencePayloadValue;
+          iVar5 = *(int *)(pGVar3[3].common.buildMetadata.assetRelativeAddressAnchor28 +
+                          (AVar2 - 0x1c));
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24) = uVar2;
-          iVar7 = *(int *)(pGVar4[3].common.buildMetadata.assetRelativeAddressAnchor28 + AVar3 + 4);
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x28;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+               referencePayloadValue;
+          iVar5 = *(int *)(pGVar3[3].common.buildMetadata.assetRelativeAddressAnchor28 + AVar2 + 4);
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24) = uVar2;
-          *(undefined4 *)((int)pGVar4[3].common.buildMetadata.names.producerName + AVar3 + 0x2c) = 4
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+               referencePayloadValue;
+          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x2c) = 4
           ;
-          *(undefined4 *)((int)pGVar4[3].common.buildMetadata.names.producerName + AVar3 + 0x14) = 4
+          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x14) = 4
           ;
-          *(undefined4 *)((int)pGVar4[3].common.buildMetadata.names.sourceName + AVar3 + 0xc) = 4;
-          *(undefined4 *)((int)pGVar4[3].common.buildMetadata.names.producerName + AVar3 + 0x34) = 4
+          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.sourceName + AVar2 + 0xc) = 4;
+          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x34) = 4
           ;
-          pbVar1 = pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0x100;
+          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x100;
           pbVar1[0] = 4;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          pbVar1 = pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0xe8;
+          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0xe8;
           pbVar1[0] = 4;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          pbVar1 = pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0x120;
+          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x120;
           pbVar1[0] = 4;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          pbVar1 = pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0x108;
+          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x108;
           pbVar1[0] = 4;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          iVar7 = *(int *)((int)pGVar4[3].common.buildMetadata.names.producerName + AVar3 + 0x1c);
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x28;
+          iVar5 = *(int *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x1c);
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24) = uVar2;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x20;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+               referencePayloadValue;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x1c;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x18;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x14;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x10;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0xc) = uVar2;
-          iVar7 = *(int *)((int)pGVar4[3].common.buildMetadata.names.producerName + AVar3 + 0x3c);
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x28;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc) =
+               referencePayloadValue;
+          iVar5 = *(int *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x3c);
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24) = uVar2;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x20;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+               referencePayloadValue;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x1c;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x18;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x14;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x10;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0xc) = uVar2;
-          iVar7 = *(int *)(pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0xf0);
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x28) = uVar2;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc) =
+               referencePayloadValue;
+          iVar5 = *(int *)(pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0xf0);
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28) =
+               referencePayloadValue;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x20;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x1c;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x18;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x14;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x10) = uVar2;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0xc;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10) =
+               referencePayloadValue;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          iVar7 = *(int *)(pGVar4[2].opaqueTablePayloadBC_1FF + AVar3 + 0x110);
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x28) = uVar2;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x24;
+          iVar5 = *(int *)(pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x110);
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28) =
+               referencePayloadValue;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x20;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x1c;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x18;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x14;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0xff;
           pbVar1[3] = 0xff;
-          *(undefined4 *)
-           ((pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0x10) = uVar2;
-          pbVar1 = (pGVar4->common).buildMetadata.assetRelativeAddressAnchor28 + iVar7 + -0xc;
+          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10) =
+               referencePayloadValue;
+          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc;
           pbVar1[0] = 0;
           pbVar1[1] = 0;
           pbVar1[2] = 0;
           pbVar1[3] = 0;
-          return;
+          SVar9.valueOrError = 0xffff0000;
+          SVar9.carry = false;
+          return SVar9;
         }
       }
     }
   }
-  return;
+  SVar10.carry = true;
+  SVar10.valueOrError = (dword)pGVar3;
+  return SVar10;
 }
+
 
 /* Address: 0x0052D0F0.
    Ownership: gameplay/selection/runtime.
@@ -1096,7 +1111,7 @@ void SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
    resource pointers.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void SelectionInfoPanel_ShutdownResources(void)
+void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
 
 {
   (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_SelectionPanelTextureSource);
@@ -1110,12 +1125,14 @@ void SelectionInfoPanel_ShutdownResources(void)
   return;
 }
 
+
 /* Address: 0x0052FB20.
    Ownership: gameplay/selection/runtime.
    Purpose: Scans the first 32 pointers in each of eight exact 0x8118-byte player blocks and clears every entry
    equal to target. All incoming general registers are restored.
 */
-void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 
 {
   int entriesRemainingInBlock;
@@ -1144,31 +1161,37 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
   return;
 }
 
+
 /* Address: 0x0052FB70.
    Ownership: gameplay/selection/runtime.
    Purpose: Scans the 32 global selection-info entity slots, sums entity position fields +0x94/+0x98/+0x9C, and
    returns their signed averages in EAX/ECX/EDX. CF is set when no slot is populated and clear on success.
 */
-undefined8 __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void)
+WorldPositionEaxEcxEdxCf13 __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void)
 
 {
+  ModelRuntimeNode *pMVar1;
   int worldXAggregateQ12;
+  int iVar2;
   int worldZAggregateQ12;
   GameEntityRuntime **selectionEntitySlotCursor;
+  WorldPositionEaxEcxEdxCf13 WVar3;
   int selectedEntityCount;
   int selectionSlotsRemaining;
   ModelRuntimeNode *selectedModelNode;
   
   worldXAggregateQ12 = 0;
+  iVar2 = 0;
   worldZAggregateQ12 = 0;
   selectionSlotsRemaining = 0x20;
   selectedEntityCount = 0;
   selectionEntitySlotCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntitySlotCursor != (GameEntityRuntime *)0x0) {
-      selectedModelNode = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
-      worldXAggregateQ12 = worldXAggregateQ12 + (selectedModelNode->worldTransform).translation.x;
-      worldZAggregateQ12 = worldZAggregateQ12 + (selectedModelNode->worldTransform).translation.z;
+      pMVar1 = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
+      worldXAggregateQ12 = worldXAggregateQ12 + (pMVar1->worldTransform).translation.x;
+      iVar2 = iVar2 + (pMVar1->worldTransform).translation.y;
+      worldZAggregateQ12 = worldZAggregateQ12 + (pMVar1->worldTransform).translation.z;
       selectedEntityCount = selectedEntityCount + 1;
     }
     selectionEntitySlotCursor = selectionEntitySlotCursor + 1;
@@ -1176,21 +1199,26 @@ undefined8 __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(vo
   } while (selectionSlotsRemaining != 0);
   if (selectedEntityCount != 0) {
     worldXAggregateQ12 = worldXAggregateQ12 / selectedEntityCount;
+    iVar2 = iVar2 / selectedEntityCount;
     worldZAggregateQ12 = worldZAggregateQ12 / selectedEntityCount;
   }
-  return CONCAT44(worldZAggregateQ12,worldXAggregateQ12);
+  WVar3.worldYQ12 = iVar2;
+  WVar3.worldXQ12 = worldXAggregateQ12;
+  WVar3.carry = selectedEntityCount == 0;
+  WVar3.worldZQ12 = worldZAggregateQ12;
+  return WVar3;
 }
+
 
 /* Address: 0x0052FD60.
    Ownership: gameplay/selection/runtime.
    Purpose: Scans one exact 32-entry pointer array and clears only the first entry equal to target. EAX is
    preserved.
 */
-undefined4
+void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
-  undefined4 in_EAX;
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
   undefined1 in_ZF;
@@ -1207,33 +1235,36 @@ SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointe
   if ((bool)in_ZF) {
     selectionEntryCursor[-1] = (GameEntityRuntime *)0x0;
   }
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0052FDC0.
    Ownership: gameplay/selection/runtime.
    Purpose: Scans the global exact 32-entry selection array. CF set means at least one entry is non-null; CF clear
    means all entries are null. EAX is restored before return.
 */
-void __cdecl SelectionInfo_HasAnyEntryCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntryCf(void)
 
 {
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
+  bool bVar1;
   GameEntityRuntime *currentEntry;
   
   entriesRemaining = 0x20;
+  bVar1 = true;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (entriesRemaining == 0) {
-      return;
-    }
+    if (entriesRemaining == 0) break;
     entriesRemaining = entriesRemaining + -1;
     currentEntry = *selectionEntryCursor;
+    bVar1 = currentEntry == (GameEntityRuntime *)0x0;
     selectionEntryCursor = selectionEntryCursor + 1;
-  } while (currentEntry == (GameEntityRuntime *)0x0);
-  return;
+  } while (bVar1);
+  return !bVar1;
 }
+
 
 /* Address: 0x0052FDE0.
    Ownership: gameplay/selection/runtime.
@@ -1242,12 +1273,11 @@ void __cdecl SelectionInfo_HasAnyEntryCf(void)
    the first mismatch. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or
    codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
 */
-undefined8 SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex ownerIndex)
+bool __thandor_cf_preserve_eax_ecx_edx
+SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex ownerIndex)
 
 {
-  undefined4 in_EAX;
   int entriesRemaining;
-  undefined4 in_EDX;
   GameEntityRuntime **selectionEntryCursor;
   
   entriesRemaining = 0x20;
@@ -1257,11 +1287,12 @@ undefined8 SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex owner
     selectionEntryCursor = selectionEntryCursor + 1;
     entriesRemaining = entriesRemaining + -1;
     if (entriesRemaining == 0) {
-      return CONCAT44(in_EDX,in_EAX);
+      return false;
     }
   }
-  return CONCAT44(in_EDX,in_EAX);
+  return true;
 }
+
 
 /* Address: 0x0052FE30.
    Ownership: gameplay/selection/runtime.
@@ -1271,13 +1302,12 @@ undefined8 SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex owner
    It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
    ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
 */
-undefined8 SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex)
+bool __thandor_cf_preserve_eax_ecx_edx
+SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex)
 
 {
   int *piVar1;
-  undefined4 in_EAX;
   int entriesRemaining;
-  undefined4 in_EDX;
   int activeEntryCount;
   GameEntityRuntime **selectionEntryCursor;
   GameEntityRuntime *currentEntry;
@@ -1289,29 +1319,34 @@ undefined8 SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex o
     currentEntry = *selectionEntryCursor;
     if (currentEntry != (GameEntityRuntime *)0x0) {
       piVar1 = (currentEntry->common).ownership.definitionOrClassRecord;
-      if ((ownerIndex != (currentEntry->common).ownership.ownerIndex) ||
-         (*(int *)(*piVar1 + 0x4c) != 0x16))
-      goto SelectionInfo_ValidateOwnerType16AndAnyActiveCf_ReturnInvalidOrNoActiveWithCarrySet;
+      if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
+        return true;
+      }
+      if (*(int *)(*piVar1 + 0x4c) != 0x16) {
+        return true;
+      }
       if (piVar1[0x1c] != 0) {
         activeEntryCount = activeEntryCount + 1;
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
     entriesRemaining = entriesRemaining + -1;
-  } while (entriesRemaining != 0);
-  if (activeEntryCount != 0) {
-    return CONCAT44(in_EDX,in_EAX);
-  }
-SelectionInfo_ValidateOwnerType16AndAnyActiveCf_ReturnInvalidOrNoActiveWithCarrySet:
-  return CONCAT44(in_EDX,in_EAX);
+    if (entriesRemaining == 0) {
+      if (activeEntryCount == 0) {
+        return true;
+      }
+      return false;
+    }
+  } while( true );
 }
+
 
 /* Address: 0x0052FEB0.
    Ownership: gameplay/selection/runtime.
    Purpose: Returns through CF whether the current selection contains an active definition or the exact single-
    class-13 fallback condition.
 */
-void SelectionInfo_TestAnyActiveOrSingleClass13Cf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13Cf(void)
 
 {
   int entriesRemaining;
@@ -1330,7 +1365,7 @@ void SelectionInfo_TestAnyActiveOrSingleClass13Cf(void)
       selectedDefinitionRecordAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
       if (*(int *)(selectedDefinitionRecordAddress + 0x18) != 0) {
-        return;
+        return false;
       }
       selectedEntryIsClass13 = *(int *)(selectedDefinitionRecordAddress + 0x4c) == 0xd;
     }
@@ -1338,10 +1373,11 @@ void SelectionInfo_TestAnyActiveOrSingleClass13Cf(void)
     entriesRemaining = entriesRemaining + -1;
   } while (entriesRemaining != 0);
   if ((selectedEntryCount == 1) && (selectedEntryIsClass13)) {
-    return;
+    return false;
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x0052FF30.
    Ownership: gameplay/selection/runtime.
@@ -1349,60 +1385,69 @@ void SelectionInfo_TestAnyActiveOrSingleClass13Cf(void)
    Cross-module calls: GridScratch_TestProjectedCellMaskBandsCf [world/pathing/grid],
    ArmyRuntimeNode_DispatchTypedCallback [gameplay/army/runtime].
 */
-void SelectionInfo_TestPositionCommandAtWorldPointCf
-               (Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
+bool __thandor_cf_preserve_eax_ecx_edx
+SelectionInfo_TestPositionCommandAtWorldPointCf
+          (Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
-  ModelRuntimeNode *pMVar1;
-  int iVar2;
-  uint uVar3;
-  GraphicsWorldCoordinateQ12 extraout_EAX;
-  int iVar4;
+  GraphicsFixedVec3 *pGVar1;
+  GraphicsWorldCoordinateQ12 *pGVar2;
+  GraphicsWorldCoordinateQ12 GVar3;
+  GraphicsWorldCoordinateQ12 GVar4;
+  ModelRuntimeNode *pMVar5;
+  int iVar6;
+  uint uVar7;
+  int iVar8;
   byte highBandIndex;
-  GraphicsWorldCoordinateQ12 extraout_EDX;
-  GameEntityRuntime **ppGVar5;
+  GameEntityRuntime **ppGVar9;
+  bool bVar10;
   GameEntityRuntime *selectedEntity;
   
-  iVar4 = 0x20;
-  ppGVar5 = g_SelectionInfoEntitySlots->entries;
-  while ((selectedEntity = *ppGVar5, selectedEntity == (GameEntityRuntime *)0x0 ||
-         (pMVar1 = (selectedEntity->common).ownership.modelNode,
+  iVar8 = 0x20;
+  ppGVar9 = g_SelectionInfoEntitySlots->entries;
+  while ((selectedEntity = *ppGVar9, selectedEntity == (GameEntityRuntime *)0x0 ||
+         (pMVar5 = (selectedEntity->common).ownership.modelNode,
          *(int *)(*(int *)(selectedEntity->common).ownership.definitionOrClassRecord + 0x18) == 0)))
   {
-    ppGVar5 = ppGVar5 + 1;
-    iVar4 = iVar4 + -1;
-    if (iVar4 == 0) {
-      iVar4 = 0x20;
-      ppGVar5 = g_SelectionInfoEntitySlots->entries;
-      while ((*ppGVar5 == (GameEntityRuntime *)0x0 ||
-             (iVar2 = *(int *)((*ppGVar5)->common).ownership.definitionOrClassRecord,
-             *(int *)(iVar2 + 0x4c) != 0xd))) {
-        ppGVar5 = ppGVar5 + 1;
-        iVar4 = iVar4 + -1;
-        if (iVar4 == 0) {
-          return;
+    ppGVar9 = ppGVar9 + 1;
+    iVar8 = iVar8 + -1;
+    if (iVar8 == 0) {
+      iVar8 = 0x20;
+      ppGVar9 = g_SelectionInfoEntitySlots->entries;
+      while ((*ppGVar9 == (GameEntityRuntime *)0x0 ||
+             (iVar6 = *(int *)((*ppGVar9)->common).ownership.definitionOrClassRecord,
+             *(int *)(iVar6 + 0x4c) != 0xd))) {
+        ppGVar9 = ppGVar9 + 1;
+        iVar8 = iVar8 + -1;
+        if (iVar8 == 0) {
+          return true;
         }
       }
-      uVar3 = *(uint *)(iVar2 + 0xc4);
+      uVar7 = *(uint *)(iVar6 + 0xc4);
       highBandIndex = 3;
-      if (((uVar3 & 0x80) == 0) && (highBandIndex = 1, (uVar3 & 4) == 0)) {
+      if (((uVar7 & 0x80) == 0) && (highBandIndex = 1, (uVar7 & 4) == 0)) {
         highBandIndex = 6;
       }
-      GridScratch_TestProjectedCellMaskBandsCf(worldXQ12,worldYQ12,7,highBandIndex);
-      return;
+      bVar10 = GridScratch_TestProjectedCellMaskBandsCf(worldXQ12,worldYQ12,7,highBandIndex);
+      return bVar10;
     }
   }
   LOCK();
-  (pMVar1->worldTransform).translation.x = worldYQ12;
+  pGVar1 = &(pMVar5->worldTransform).translation;
+  GVar3 = pGVar1->x;
+  pGVar1->x = worldYQ12;
   UNLOCK();
   LOCK();
-  (pMVar1->worldTransform).translation.y = worldXQ12;
+  pGVar2 = &(pMVar5->worldTransform).translation.y;
+  GVar4 = *pGVar2;
+  *pGVar2 = worldXQ12;
   UNLOCK();
-  ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)selectedEntity,inGameRuntime);
-  (pMVar1->worldTransform).translation.x = extraout_EAX;
-  (pMVar1->worldTransform).translation.y = extraout_EDX;
-  return;
+  bVar10 = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)selectedEntity,inGameRuntime);
+  (pMVar5->worldTransform).translation.x = GVar3;
+  (pMVar5->worldTransform).translation.y = GVar4;
+  return bVar10;
 }
+
 
 /* Address: 0x00530050.
    Ownership: gameplay/selection/runtime.
@@ -1410,65 +1455,61 @@ void SelectionInfo_TestPositionCommandAtWorldPointCf
    Cross-module calls: ArmyRuntime_TestStateField100NonnegativeCf [gameplay/army/runtime],
    ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime].
 */
-void SelectionInfo_TestAllStateField100NonpositiveCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100NonpositiveCf(void)
 
 {
+  GameEntityRuntime *armyRuntime;
   int entriesRemaining;
-  int extraout_ECX;
-  int extraout_ECX_00;
   GameEntityRuntime **selectionEntryCursor;
   bool bVar1;
   
   entriesRemaining = 0x20;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    bVar1 = false;
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)*selectionEntryCursor);
-      entriesRemaining = extraout_ECX;
+    armyRuntime = *selectionEntryCursor;
+    if (armyRuntime != (GameEntityRuntime *)0x0) {
+      bVar1 = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)armyRuntime);
       if (bVar1) {
-        ArmyRuntime_TestStateField100ZeroCf();
-        entriesRemaining = extraout_ECX_00;
+        bVar1 = ArmyRuntime_TestStateField100ZeroCf((ArmyRuntimeSlot *)armyRuntime);
         if (!bVar1) {
-          return;
+          return false;
         }
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
     entriesRemaining = entriesRemaining + -1;
   } while (entriesRemaining != 0);
-  return;
+  return true;
 }
+
 
 /* Address: 0x005300A0.
    Ownership: gameplay/selection/runtime.
    Purpose: Returns through CF when any selected runtime reports a nonnegative state value at offset 0x100.
    Cross-module calls: ArmyRuntime_TestStateField100NonnegativeCf [gameplay/army/runtime].
 */
-void SelectionInfo_TestAnyStateField100NonnegativeCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100NonnegativeCf(void)
 
 {
   int entriesRemaining;
-  int extraout_ECX;
   GameEntityRuntime **selectionEntryCursor;
   bool bVar1;
   
   entriesRemaining = 0x20;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    bVar1 = false;
     if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)*selectionEntryCursor);
-      entriesRemaining = extraout_ECX;
+      bVar1 = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)*selectionEntryCursor);
       if (bVar1) {
-        return;
+        return true;
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
     entriesRemaining = entriesRemaining + -1;
   } while (entriesRemaining != 0);
-  return;
+  return false;
 }
+
 
 /* Address: 0x005300E0.
    Ownership: gameplay/selection/runtime.
@@ -1507,40 +1548,40 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
    Purpose: Scans the fixed 32-entry selection-info array for entry. CF is clear when found and set when absent;
    EAX is preserved.
 */
-undefined4 SelectionInfo_FindEntryCf(GameEntityRuntime *entry)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntryCf(GameEntityRuntime *entry)
 
 {
-  undefined4 in_EAX;
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
+  byte in_CF;
+  undefined1 in_ZF;
   GameEntityRuntime *currentEntry;
   
   entriesRemaining = 0x20;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (entriesRemaining == 0) {
-      return in_EAX;
-    }
+    if (entriesRemaining == 0) break;
     entriesRemaining = entriesRemaining + -1;
+    in_CF = 0;
     currentEntry = *selectionEntryCursor;
+    in_ZF = entry == currentEntry;
     selectionEntryCursor = selectionEntryCursor + 1;
-  } while (entry != currentEntry);
-  return in_EAX;
+  } while (!(bool)in_ZF);
+  return (in_CF & 2) != 0 || !(bool)in_ZF;
 }
+
 
 /* Address: 0x00530770.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection info collect attachment effect variant mask.
    Cross-module calls: ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs [gameplay/army/runtime].
 */
-dword SelectionInfo_CollectAttachmentEffectVariantMask(void)
+dword __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVariantMask(void)
 
 {
   dword effectVariantMask;
-  uint extraout_EAX;
   int entriesRemaining;
-  int extraout_ECX;
-  uint unaff_EBX;
+  uint uVar1;
   GameEntityRuntime **selectionEntryCursor;
   
   entriesRemaining = 0x20;
@@ -1548,16 +1589,16 @@ dword SelectionInfo_CollectAttachmentEffectVariantMask(void)
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs
-                (((*selectionEntryCursor)->common).ownership.definitionOrClassRecord);
-      effectVariantMask = extraout_EAX | unaff_EBX;
-      entriesRemaining = extraout_ECX;
+      uVar1 = ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs
+                        (((*selectionEntryCursor)->common).ownership.definitionOrClassRecord);
+      effectVariantMask = effectVariantMask | uVar1;
     }
     selectionEntryCursor = selectionEntryCursor + 1;
     entriesRemaining = entriesRemaining + -1;
   } while (entriesRemaining != 0);
   return effectVariantMask;
 }
+
 
 /* Address: 0x005307C0.
    Ownership: gameplay/selection/runtime.
@@ -1599,9 +1640,10 @@ dword __cdecl SelectionInfo_CollectCapabilityFlags(void)
    endpoint identity, and PCK asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling
    convention, storage, body bytes, control flow, and executable data remain unchanged.
 */
-void __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_ClearTerrainEditSelectionState
-          (undefined4 param_1,undefined4 param_2,PlayerRuntimeId playerRuntimeId)
+          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          dword reservedZero2)
 
 {
   InGameRuntimeRootImageC3E4 *inGameRuntimeRoot;
@@ -1614,14 +1656,16 @@ SelectionPlayerRuntime_ClearTerrainEditSelectionState
   return;
 }
 
+
 /* Address: 0x00571020.
    Ownership: gameplay/selection/runtime.
    Purpose: CF=0 reports an existing pair and CF=1 reports absence. Archived binary body 00571020-0057108B; EAX,
    ECX, and EDX are preserved or incidental caller state rather than synthetic parameters or normal returns.
 */
-void SelectionPlayerPairList_ContainsPairCf
-               (SelectionPlayerPairValue pairValue,SelectionPlayerPairKey pairKey,
-               PlayerRuntimeId playerRuntimeId)
+bool __thandor_cf_preserve_eax_ecx_edx
+SelectionPlayerPairList_ContainsPairCf
+          (SelectionPlayerPairValue pairValue,SelectionPlayerPairKey pairKey,
+          PlayerRuntimeId playerRuntimeId)
 
 {
   dword pairRecordsRemaining;
@@ -1632,14 +1676,15 @@ void SelectionPlayerPairList_ContainsPairCf
   pairRecordCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
   while( true ) {
     if (pairRecordsRemaining == 0) {
-      return;
+      return true;
     }
     if ((pairKey == pairRecordCursor->pairKey) && (pairValue == pairRecordCursor->pairValue)) break;
     pairRecordCursor = pairRecordCursor + 1;
     pairRecordsRemaining = pairRecordsRemaining - 1;
   }
-  return;
+  return false;
 }
+
 
 /* Address: 0x005302B0.
    Ownership: gameplay/selection/runtime.
@@ -1648,44 +1693,39 @@ void SelectionPlayerPairList_ContainsPairCf
    Local calls: SelectionPointerArray_IsSpatialSpreadTooLargeCf, SelectionPointerArray_Clear32.
    Cross-module calls: ArmyRuntime_QueueOrStartMoveCommandVariantA [gameplay/army/movement].
 */
-void SelectionPointerArray_ApplyPositionCommandVariantB
-               (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_ApplyPositionCommandVariantB
+          (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection)
 
 {
   ArmyMovementRuntime *movementRuntime;
   void *pvVar1;
-  int extraout_EAX;
-  int extraout_ECX;
-  int extraout_ECX_00;
   int iVar2;
-  int targetWorldY;
-  int extraout_EDX;
+  Q12 targetWorldY;
   int selectedEntryCount;
   Q12 targetWorldX;
   int *singleClass13Entry;
   GameEntityRuntime **ppGVar3;
   GameEntityRuntime **selectionEntryCursor;
-  byte in_CF;
+  bool bVar4;
   int entityDefinitionAddress;
   
-  SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
-  iVar2 = extraout_ECX;
+  iVar2 = 0x20;
+  bVar4 = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
   targetWorldY = coordinateA;
   targetWorldX = coordinateB;
   ppGVar3 = selection->entries;
   do {
     movementRuntime = (ArmyMovementRuntime *)*ppGVar3;
     if (movementRuntime != (ArmyMovementRuntime *)0x0) {
-      if ((in_CF & 1) == 0) {
+      if (!bVar4) {
         targetWorldX = targetWorldX - movementRuntime->classState60;
         targetWorldY = targetWorldY - movementRuntime->ownerValue64;
       }
       ArmyRuntime_QueueOrStartMoveCommandVariantA(targetWorldY,targetWorldX,movementRuntime);
-      iVar2 = extraout_ECX_00;
-      targetWorldY = extraout_EDX;
-      if ((in_CF & 1) == 0) {
-        targetWorldX = targetWorldX + *(int *)(extraout_EAX + 0x60);
-        targetWorldY = extraout_EDX + *(int *)(extraout_EAX + 100);
+      if (!bVar4) {
+        targetWorldX = targetWorldX + movementRuntime->classState60;
+        targetWorldY = targetWorldY + movementRuntime->ownerValue64;
       }
     }
     ppGVar3 = ppGVar3 + 1;
@@ -1721,6 +1761,7 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
   return;
 }
 
+
 /* Address: 0x00530420.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection runtime reset movement prune and recenter entries.
@@ -1729,50 +1770,49 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
    ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
    [world/model/hierarchy].
 */
-void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
 
 {
-  int *piVar1;
+  ModelRuntimeSlot *pMVar1;
   int iVar2;
   void *pvVar3;
   ModelRuntimeNode *modelNodeRuntime;
-  int *extraout_EAX;
-  ModelPackedPointRecord *localPointRecord;
   int iVar4;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  undefined4 extraout_ECX_01;
-  undefined4 extraout_ECX_02;
-  int extraout_EDX;
   int iVar5;
   GameEntityRuntime *pGVar6;
   GameEntityRuntime **ppGVar7;
-  bool bVar8;
-  undefined8 uVar9;
+  ModelLookupEntryEaxCf5 MVar8;
+  ModelLocalPointRegs12 MVar9;
   
   iVar4 = 0x20;
   ppGVar7 = selectionEntries;
   do {
     pGVar6 = *ppGVar7;
-    if ((pGVar6 != (GameEntityRuntime *)0x0) && (((pGVar6->common).commandFlags & 2) == 0)) {
+    if ((pGVar6 != (GameEntityRuntime *)0x0) &&
+       ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[6].savedIdOrOffset & 2) == 0))
+    {
       ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)pGVar6);
-      extraout_EAX[0xb] = extraout_EAX[0xb] & 0xffffffef;
-      extraout_EAX[6] = extraout_EAX[6] & 0xfffffdff;
-      piVar1 = (int *)*extraout_EAX;
-      iVar4 = extraout_ECX;
-      if (*(int *)(*piVar1 + 0x4c) == 0x16) {
+      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[0xb].savedIdOrOffset =
+           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[0xb].savedIdOrOffset &
+           0xffffffef;
+      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[6].savedIdOrOffset =
+           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[6].savedIdOrOffset &
+           0xfffffdff;
+      pMVar1 = ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)->modelRuntime;
+      if (*(int *)((pMVar1->definitionOrSavedId).savedIdOrOffset + 0x4c) == 0x16) {
         *ppGVar7 = (GameEntityRuntime *)0x0;
-        piVar1[0x37] = 0;
+        (pMVar1->classState).classStateDC = 0;
       }
     }
     ppGVar7 = ppGVar7 + 1;
     iVar4 = iVar4 + -1;
   } while (iVar4 != 0);
+  iVar4 = 0x20;
+  iVar5 = 0;
   pGVar6 = (GameEntityRuntime *)0x0;
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             ((SelectionPointerArray32 *)selectionEntries);
-  iVar4 = extraout_ECX_00;
-  iVar5 = extraout_EDX;
   ppGVar7 = selectionEntries;
   do {
     if (*ppGVar7 != (GameEntityRuntime *)0x0) {
@@ -1791,55 +1831,52 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
   if ((iVar5 == 1) && (pGVar6 != (GameEntityRuntime *)0x0)) {
     pvVar3 = (pGVar6->common).ownership.definitionOrClassRecord;
     modelNodeRuntime = (pGVar6->common).ownership.modelNode;
-    bVar8 = false;
     *(uint *)((int)pvVar3 + 0xec) = *(uint *)((int)pvVar3 + 0xec) & 0xfffff7ff;
-    localPointRecord =
-         (ModelPackedPointRecord *)
-         ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource);
-    if (!bVar8) {
-      uVar9 = ModelNodeRuntime_TransformLocalPointRegs
-                        (extraout_ECX_01,localPointRecord,modelNodeRuntime);
-      *(int *)((int)pvVar3 + 0x78) = (int)uVar9;
-      *(undefined4 *)((int)pvVar3 + 0x7c) = extraout_ECX_02;
+    MVar8 = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
+    ;
+    if (!MVar8.carry) {
+      MVar9 = ModelNodeRuntime_TransformLocalPointRegs(MVar8.entry,modelNodeRuntime);
+      *(dword *)((int)pvVar3 + 0x78) = MVar9.eax;
+      *(dword *)((int)pvVar3 + 0x7c) = MVar9.ecx;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
     }
   }
   return;
 }
 
+
 /* Address: 0x0052FCE0.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection pointer array add world entries matching runtime identity.
    Local calls: SelectionPointerArray_InsertUniqueAndRecenter.
 */
-void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
-               (ArmyRuntimeSlot *sourceArmyRuntime,SelectionPointerArray32 *selection)
+void __thandor_void_preserve_ecx_edx
+SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
+          (ArmyRuntimeSlot *sourceArmyRuntime,SelectionPointerArray32 *selection)
 
 {
+  PckArmyAssetIdCatalog PVar1;
+  int iVar2;
   GameEntityRuntime *entityRuntime;
-  RuntimeToken extraout_ECX;
   RuntimeToken runtimeIdentity;
-  int extraout_EDX;
   int ownerIndex;
   WorldRuntimeNode *worldNodeCursor;
   
-  runtimeIdentity = sourceArmyRuntime->armyAssetId;
-  ownerIndex = sourceArmyRuntime->factionIndex;
-  for (worldNodeCursor = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+  PVar1 = sourceArmyRuntime->armyAssetId;
+  iVar2 = sourceArmyRuntime->factionIndex;
+  for (worldNodeCursor = (WorldRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
       worldNodeCursor != (WorldRuntimeNode *)0x0;
       worldNodeCursor = (worldNodeCursor->common).nextNode) {
     if (((worldNodeCursor[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
         (entityRuntime = *(GameEntityRuntime **)((int)worldNodeCursor->runtimePayload + 8),
-        runtimeIdentity == (entityRuntime->common).runtimeIdentityOrArmyAssetId)) &&
-       (ownerIndex == (entityRuntime->common).ownership.ownerIndex)) {
-      SelectionPointerArray_InsertUniqueAndRecenter
-                (runtimeIdentity,ownerIndex,entityRuntime,selection);
-      runtimeIdentity = extraout_ECX;
-      ownerIndex = extraout_EDX;
+        PVar1 == (entityRuntime->common).runtimeIdentityOrArmyAssetId)) &&
+       (iVar2 == (entityRuntime->common).ownership.ownerIndex)) {
+      SelectionPointerArray_InsertUniqueAndRecenter(entityRuntime,selection);
     }
   }
   return;
 }
+
 
 /* Address: 0x005303A0.
    Ownership: gameplay/selection/runtime.
@@ -1850,38 +1887,183 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
    Local calls: SelectionPointerArray_IsSpatialSpreadTooLargeCf.
    Cross-module calls: ArmyRuntime_QueueWaypointOrStartMoveVariantA [gameplay/army/movement].
 */
-void SelectionPointerArray_ApplyPositionCommand
-               (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_ApplyPositionCommand
+          (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection)
 
 {
   ArmyMovementRuntime *movementRuntime;
-  int extraout_EAX;
-  int extraout_ECX;
-  int extraout_ECX_00;
   int entriesRemaining;
-  int extraout_EDX;
-  byte in_CF;
+  bool bVar1;
   
-  SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
-  entriesRemaining = extraout_ECX;
+  entriesRemaining = 0x20;
+  bVar1 = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
   do {
     movementRuntime = *(ArmyMovementRuntime **)selection;
     if (movementRuntime != (ArmyMovementRuntime *)0x0) {
-      if ((in_CF & 1) == 0) {
+      if (!bVar1) {
         coordinateB = coordinateB - movementRuntime->classState60;
         coordinateA = coordinateA - movementRuntime->ownerValue64;
       }
       ArmyRuntime_QueueWaypointOrStartMoveVariantA(coordinateA,coordinateB,movementRuntime);
-      entriesRemaining = extraout_ECX_00;
-      coordinateA = extraout_EDX;
-      if ((in_CF & 1) == 0) {
-        coordinateB = coordinateB + *(int *)(extraout_EAX + 0x60);
-        coordinateA = extraout_EDX + *(int *)(extraout_EAX + 100);
+      if (!bVar1) {
+        coordinateB = coordinateB + movementRuntime->classState60;
+        coordinateA = coordinateA + movementRuntime->ownerValue64;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
     entriesRemaining = entriesRemaining + -1;
   } while (entriesRemaining != 0);
+  return;
+}
+
+
+/* Address: 0x0052D150.
+   Ownership: gameplay/selection/runtime.
+   Purpose: Draws the recovered horizontal number/text capped selection bar.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawHorizontalNumberTextCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
+          word *commandStream,SelectionPanelCellIndex cellIndex)
+
+{
+  int iVar1;
+  dword arg0;
+  void *pvVar2;
+  dword dVar3;
+  dword dVar4;
+  int iVar5;
+  int iVar6;
+  int iVar7;
+  dword arg0_00;
+  uint uVar8;
+  uint *puVar9;
+  RichTextExtentRegs RVar10;
+  GraphicsTextureSizeEaxEdxCf9 GVar11;
+  GraphicsTextureSizeEaxEdxCf9 GVar12;
+  GraphicsTextureSizeEaxEdxCf9 GVar13;
+  GraphicsTextureSizeEaxEdxCf9 GVar14;
+  
+  RVar10 = RichTextCommandStream_MeasureRegs(g_SelectionPanelNumberTextStyle,commandStream);
+  pvVar2 = g_SelectionPanelData;
+  dVar3 = RVar10.widthPixels;
+  puVar9 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  iVar7 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
+  arg0_00 = arg0 + 5;
+  GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0_00,g_SelectionPanelTextureSource);
+  GVar14 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  dVar4 = GVar14.logicalWidthPixels;
+  uVar8 = dVar3 + GVar11.logicalWidthPixels + GVar12.logicalWidthPixels + GVar13.logicalWidthPixels
+          + spanStartCoordinate + dVar4;
+  if ((uint)spanEndCoordinate < uVar8) {
+    (*g_SelectionPanelBlitOpaque)
+              (clipTop,clipLeft,clipBottom,clipRight,iVar7,spanStartCoordinate,arg0,
+               g_SelectionPanelTextureSource,g_FramebufferAccess);
+    GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+    iVar6 = spanEndCoordinate - GVar11.logicalWidthPixels;
+    (*g_SelectionPanelBlitOpaque)
+              (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar6,arg0 + 2,
+               g_SelectionPanelTextureSource,g_FramebufferAccess);
+    (*g_SelectionPanelBlitClipped)
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar6,iVar7,
+               spanStartCoordinate + dVar4,arg0 + 1,g_SelectionPanelTextureSource,
+               g_FramebufferAccess);
+  }
+  else {
+    (*g_SelectionPanelBlitOpaque)
+              (clipTop,clipLeft,clipBottom,clipRight,iVar7,spanStartCoordinate,arg0,
+               g_SelectionPanelTextureSource,g_FramebufferAccess);
+    iVar6 = spanStartCoordinate + dVar4;
+    GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+    iVar1 = spanEndCoordinate - GVar11.logicalWidthPixels;
+    (*g_SelectionPanelBlitOpaque)
+              (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar1,arg0 + 2,
+               g_SelectionPanelTextureSource,g_FramebufferAccess);
+    if ((*puVar9 & 0x100) == 0) {
+      if ((*puVar9 & 0x200) == 0) {
+        iVar5 = ((int)(iVar1 - uVar8) >> 1) + iVar6;
+        (*g_SelectionPanelBlitClipped)
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar7,iVar6,arg0 + 1,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,arg0 + 3,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
+        iVar5 = iVar5 + GVar11.logicalWidthPixels;
+        iVar6 = dVar3 + iVar5;
+        (*g_SelectionPanelBlitClipped)
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar6,iVar7,iVar5,arg0 + 4,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        iVar7 = iVar7 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+        RichTextCommandStream_DrawSingleLine
+                  (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
+                   commandStream,iVar7,iVar5);
+        iVar7 = iVar7 - *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar6,arg0 + 5,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 5,g_SelectionPanelTextureSource);
+        (*g_SelectionPanelBlitClipped)
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar1,iVar7,
+                   iVar6 + GVar11.logicalWidthPixels,arg0 + 1,g_SelectionPanelTextureSource,
+                   g_FramebufferAccess);
+      }
+      else {
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0_00,g_SelectionPanelTextureSource);
+        iVar1 = iVar1 - GVar11.logicalWidthPixels;
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar1,arg0_00,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        iVar5 = iVar1 - dVar3;
+        (*g_SelectionPanelBlitClipped)
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar1,iVar7,iVar5,arg0 + 4,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        iVar7 = iVar7 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+        RichTextCommandStream_DrawSingleLine
+                  (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
+                   commandStream,iVar7,iVar5);
+        iVar7 = iVar7 - *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
+        iVar5 = iVar5 - GVar11.logicalWidthPixels;
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,arg0 + 3,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        (*g_SelectionPanelBlitClipped)
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar7,iVar6,arg0 + 1,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+      }
+    }
+    else {
+      (*g_SelectionPanelBlitOpaque)
+                (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar6,arg0 + 3,
+                 g_SelectionPanelTextureSource,g_FramebufferAccess);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
+      iVar6 = iVar6 + GVar11.logicalWidthPixels;
+      iVar5 = dVar3 + iVar6;
+      (*g_SelectionPanelBlitClipped)
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar7,iVar6,arg0 + 4,
+                 g_SelectionPanelTextureSource,g_FramebufferAccess);
+      iVar7 = iVar7 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+      RichTextCommandStream_DrawSingleLine
+                (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,commandStream
+                 ,iVar7,iVar6);
+      iVar7 = iVar7 - *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+      (*g_SelectionPanelBlitOpaque)
+                (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,arg0_00,
+                 g_SelectionPanelTextureSource,g_FramebufferAccess);
+      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0_00,g_SelectionPanelTextureSource);
+      (*g_SelectionPanelBlitClipped)
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar1,iVar7,
+                 iVar5 + GVar11.logicalWidthPixels,arg0 + 1,g_SelectionPanelTextureSource,
+                 g_FramebufferAccess);
+    }
+  }
   return;
 }
 
@@ -1897,7 +2079,7 @@ void SelectionPointerArray_ApplyPositionCommand
    Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext],
    RichTextCommandStream_DrawSingleLine [assets/text/richtext].
 */
-undefined8
+SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 SelectionPanel_DrawNumberCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
@@ -1906,13 +2088,14 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
 {
   uint uVar1;
   void *pvVar2;
-  int iVar3;
-  qword qVar7;
-  int extraout_ECX;
-  int iVar4;
+  dword dVar3;
+  int arg4;
+  dword dVar4;
   int arg5;
   uint *puVar5;
   RichTextExtentRegs RVar6;
+  SelectionPanelAdvanceEaxEdx8 SVar7;
+  GraphicsTextureSizeEaxEdxCf9 GVar8;
   
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,0xf,1,value,
@@ -1922,30 +2105,31 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
   pvVar2 = g_SelectionPanelData;
   puVar5 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
   arg5 = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  qVar7._0_4_ = (*g_SelectionPanelBlitOpaque)
-                          (clipTop,clipLeft,clipBottom,clipRight,
-                           drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10),
-                           arg5,*(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8),
-                           g_SelectionPanelTextureSource,g_FramebufferAccess);
-  qVar7 = (*g_GraphicsTextureSourceGetLogicalSize)
-                    ((dword)(qword)qVar7,g_SelectionPanelTextureSource);
-  iVar4 = (int)(qVar7 >> 0x20);
-  iVar3 = (int)qVar7;
+  arg4 = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  dVar3 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,dVar3,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
+  GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar3,g_SelectionPanelTextureSource);
+  dVar4 = GVar8.logicalHeightPixels;
+  dVar3 = GVar8.logicalWidthPixels;
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
              (word *)&g_SelectionPanelNumberScratchUtf16,
-             ((int)(iVar4 - RVar6.heightPixels) >> 1) + extraout_ECX,
-             ((int)(iVar3 - RVar6.widthPixels) >> 1) + arg5);
+             ((int)(dVar4 - RVar6.heightPixels) >> 1) + arg4,
+             ((int)(dVar3 - RVar6.widthPixels) >> 1) + arg5);
   uVar1 = *puVar5;
   if ((uVar1 & 4) != 0) {
-    iVar3 = 0;
+    dVar3 = 0;
   }
   if ((uVar1 & 8) != 0) {
-    iVar4 = 0;
+    dVar4 = 0;
   }
-  return CONCAT44(iVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX,
-                  iVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY);
+  SVar7.nextDrawY = dVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY;
+  SVar7.nextDrawX = dVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX;
+  return SVar7;
 }
+
 
 /* Address: 0x0052D6F0.
    Ownership: gameplay/selection/runtime.
@@ -1956,42 +2140,44 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
    Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-undefined8
+SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 SelectionPanel_DrawIconCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           SelectionPanelCellIndex cellIndex)
 
 {
-  dword arg6;
   uint uVar1;
   void *pvVar2;
-  int iVar3;
-  int iVar4;
+  dword dVar3;
+  dword dVar4;
   uint *puVar5;
-  qword qVar6;
+  SelectionPanelAdvanceEaxEdx8 SVar6;
+  GraphicsTextureSizeEaxEdxCf9 GVar7;
   
   pvVar2 = g_SelectionPanelData;
   puVar5 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  arg6 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  dVar3 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
   (*g_SelectionPanelBlitOpaque)
             (clipTop,clipLeft,clipBottom,clipRight,
              drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10),
-             drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),arg6,
+             drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),dVar3,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  qVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6,g_SelectionPanelTextureSource);
-  iVar4 = (int)(qVar6 >> 0x20);
-  iVar3 = (int)qVar6;
+  GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar3,g_SelectionPanelTextureSource);
+  dVar4 = GVar7.logicalHeightPixels;
+  dVar3 = GVar7.logicalWidthPixels;
   uVar1 = *puVar5;
   if ((uVar1 & 4) != 0) {
-    iVar3 = 0;
+    dVar3 = 0;
   }
   if ((uVar1 & 8) != 0) {
-    iVar4 = 0;
+    dVar4 = 0;
   }
-  return CONCAT44(iVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX,
-                  iVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY);
+  SVar6.nextDrawY = dVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY;
+  SVar6.nextDrawX = dVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX;
+  return SVar6;
 }
+
 
 /* Address: 0x0052D770.
    Ownership: gameplay/selection/runtime.
@@ -2003,7 +2189,7 @@ SelectionPanel_DrawIconCellAndAdvanceRegs
    VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-undefined8
+SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
@@ -2011,15 +2197,19 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
           SelectionPanelCellIndex cellIndex)
 
 {
-  dword arg6;
-  uint uVar1;
-  void *pvVar2;
-  int iVar3;
-  qword qVar6;
+  int iVar1;
+  uint uVar2;
+  void *pvVar3;
   int iVar4;
-  uint *puVar5;
+  int arg5;
+  dword dVar5;
+  int arg4;
+  dword dVar6;
+  uint *puVar7;
+  SelectionPanelAdvanceEaxEdx8 SVar8;
+  GraphicsTextureSizeEaxEdxCf9 GVar9;
   
-  pvVar2 = g_SelectionPanelData;
+  pvVar3 = g_SelectionPanelData;
   if (currentValue < 0) {
     currentValue = 0;
   }
@@ -2027,35 +2217,37 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
     currentValue = maximumValue;
   }
   if (maximumValue == 0) {
-    iVar3 = 0x11;
+    iVar4 = 0x11;
   }
   else {
-    iVar3 = ((uint)(currentValue * 0x20 + maximumValue) / (uint)maximumValue >> 1) + 1;
+    iVar4 = ((uint)(currentValue * 0x20 + maximumValue) / (uint)maximumValue >> 1) + 1;
   }
-  puVar5 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  iVar4 = *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  arg6 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  qVar6._0_4_ = (*g_SelectionPanelBlitOpaque)
-                          (clipTop,clipLeft,clipBottom,clipRight,
-                           drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10),
-                           drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),arg6
-                           ,g_SelectionPanelTextureSource,g_FramebufferAccess);
+  puVar7 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  iVar1 = *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  arg5 = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  arg4 = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  dVar5 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,qVar6._4_4_,(sdword)(qword)qVar6,iVar3 + iVar4,
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,dVar5,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,iVar4 + iVar1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  qVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6,g_SelectionPanelTextureSource);
-  iVar4 = (int)(qVar6 >> 0x20);
-  iVar3 = (int)qVar6;
-  uVar1 = *puVar5;
-  if ((uVar1 & 4) != 0) {
-    iVar3 = 0;
+  GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar5,g_SelectionPanelTextureSource);
+  dVar6 = GVar9.logicalHeightPixels;
+  dVar5 = GVar9.logicalWidthPixels;
+  uVar2 = *puVar7;
+  if ((uVar2 & 4) != 0) {
+    dVar5 = 0;
   }
-  if ((uVar1 & 8) != 0) {
-    iVar4 = 0;
+  if ((uVar2 & 8) != 0) {
+    dVar6 = 0;
   }
-  return CONCAT44(iVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX,
-                  iVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY);
+  SVar8.nextDrawY = dVar5 + *(int *)((int)pvVar3 + cellIndex * 0x10 + 0xc) + drawY;
+  SVar8.nextDrawX = dVar6 + *(int *)((int)pvVar3 + cellIndex * 0x10 + 0x10) + drawX;
+  return SVar8;
 }
+
 
 /* Address: 0x0052D850.
    Ownership: gameplay/selection/runtime.
@@ -2068,11 +2260,13 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
    VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-void SelectionPanel_DrawProportionalCappedBar
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,undefined4 param_5,UiPixelCoordinate barEndCoordinate,
-               UiPixelCoordinate barStartCoordinate,UiNumericValue32 maximumValue,
-               UiNumericValue32 currentValue,SelectionPanelCellIndex cellIndex)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawProportionalCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
+          UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
+          SelectionPanelCellIndex cellIndex)
 
 {
   int arg7;
@@ -2081,24 +2275,21 @@ void SelectionPanel_DrawProportionalCappedBar
   longlong lVar1;
   int iVar2;
   int iVar3;
-  sdword arg7_00;
-  sdword arg4;
-  qword qVar4;
-  sdword arg4_00;
-  sdword arg6;
-  sdword arg6_00;
+  int arg4;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
   
+  arg4 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
-  qVar4._0_4_ = (*g_SelectionPanelBlitOpaque)
-                          (clipTop,clipLeft,clipBottom,clipRight,arg4,barStartCoordinate,arg0,
-                           g_SelectionPanelTextureSource,g_FramebufferAccess);
-  arg7 = barStartCoordinate + (int)(qword)qVar4;
-  qVar4._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  arg5 = barEndCoordinate - (int)(qword)qVar4;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4_00,arg5,arg0 + 2,
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,barStartCoordinate,arg0,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
+  arg7 = barStartCoordinate + GVar4.logicalWidthPixels;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  arg5 = barEndCoordinate - GVar4.logicalWidthPixels;
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
   iVar2 = arg5 - arg7;
   if (currentValue < 0) {
     currentValue = 0;
@@ -2120,11 +2311,76 @@ void SelectionPanel_DrawProportionalCappedBar
       iVar3 = iVar3 + 1;
     }
   }
-  arg7_00 = (*g_SelectionPanelBlitClipped)
-                      (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar2 + arg7,arg6,arg7,
-                       iVar3 + 2 + arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,arg5,arg6_00,arg7_00,arg0 + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar2 + arg7,arg4,arg7,
+             iVar3 + 2 + arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+  (*g_SelectionPanelBlitClipped)
+            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,arg5,arg4,iVar2 + arg7,arg0 + 1,
+             g_SelectionPanelTextureSource,g_FramebufferAccess);
+  return;
+}
+
+
+/* Address: 0x0052D9A0.
+   Ownership: gameplay/selection/runtime.
+   Purpose: Draws the recovered vertical proportional capped selection bar.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawVerticalProportionalCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
+          UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
+          SelectionPanelCellIndex cellIndex)
+
+{
+  int arg6;
+  int arg4;
+  dword arg0;
+  longlong lVar1;
+  int iVar2;
+  int iVar3;
+  int arg5;
+  GraphicsTextureSizeEaxEdxCf9 GVar4;
+  
+  arg5 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0,
+             g_SelectionPanelTextureSource,g_FramebufferAccess);
+  arg6 = barStartCoordinate + GVar4.logicalHeightPixels;
+  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  arg4 = barEndCoordinate - GVar4.logicalHeightPixels;
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
+  iVar2 = arg4 - arg6;
+  if (currentValue < 0) {
+    currentValue = 0;
+  }
+  else if (maximumValue < currentValue) {
+    currentValue = maximumValue;
+  }
+  if ((maximumValue != 0) &&
+     (lVar1 = (longlong)iVar2, iVar2 = (int)((lVar1 * currentValue) / (longlong)maximumValue),
+     maximumValue < (int)((lVar1 * currentValue) % (longlong)maximumValue) * 2)) {
+    iVar2 = iVar2 + 1;
+  }
+  if (maximumValue == 0) {
+    iVar3 = 6;
+  }
+  else {
+    iVar3 = (int)(((longlong)currentValue * 6) / (longlong)maximumValue);
+    if (maximumValue < (int)(((longlong)currentValue * 6) % (longlong)maximumValue) * 2) {
+      iVar3 = iVar3 + 1;
+    }
+  }
+  (*g_SelectionPanelBlitClipped)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,arg4 - iVar2,arg5,
+             iVar3 + 2 + arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+  (*g_SelectionPanelBlitClipped)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4 - iVar2,-0x80000000,arg6,arg5,arg0 + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
@@ -2138,33 +2394,38 @@ void SelectionPanel_DrawProportionalCappedBar
    cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void SelectionPanel_DrawForwardCappedBar
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,undefined4 param_5,UiPixelCoordinate barEndCoordinate,
-               UiPixelCoordinate barStartCoordinate,SelectionPanelCellIndex cellIndex)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawForwardCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
+          SelectionPanelCellIndex cellIndex)
 
 {
+  int arg5;
   dword arg0;
-  sdword arg4;
-  qword qVar1;
-  qword qVar2;
-  sdword arg6;
+  int arg4;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
+  GraphicsTextureSizeEaxEdxCf9 GVar2;
   
+  arg4 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
-  qVar1._0_4_ = (*g_SelectionPanelBlitOpaque)
-                          (clipTop,clipLeft,clipBottom,clipRight,arg4,barStartCoordinate,arg0,
-                           g_SelectionPanelTextureSource,g_FramebufferAccess);
-  qVar2._0_4_ = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,qVar2._4_4_,barEndCoordinate - (int)(qword)qVar2,
-             arg0 + 2,g_SelectionPanelTextureSource,g_FramebufferAccess);
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,barStartCoordinate,arg0,
+             g_SelectionPanelTextureSource,g_FramebufferAccess);
+  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  arg5 = barEndCoordinate - GVar2.logicalWidthPixels;
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,barEndCoordinate - (int)(qword)qVar2,
-             arg6,barStartCoordinate + (int)(qword)qVar1,arg0 + 1,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,arg5,arg4,
+             barStartCoordinate + GVar1.logicalWidthPixels,arg0 + 1,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   return;
 }
+
 
 /* Address: 0x0052DBC0.
    Ownership: gameplay/selection/runtime.
@@ -2175,33 +2436,153 @@ void SelectionPanel_DrawForwardCappedBar
    cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-void SelectionPanel_DrawSolidCappedBar
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
-               UiPixelCoordinate barStartCoordinate,undefined4 param_7,
-               SelectionPanelCellIndex cellIndex)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawSolidCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
+          SelectionPanelCellIndex cellIndex)
 
 {
+  int arg4;
   dword arg0;
-  sdword arg5;
-  sdword arg5_00;
-  sdword arg7;
-  int extraout_EDX;
-  int extraout_EDX_00;
+  int arg5;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
+  GraphicsTextureSizeEaxEdxCf9 GVar2;
   
+  arg5 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  arg4 = barEndCoordinate - GVar2.logicalHeightPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate - extraout_EDX_00,arg5_00,
-             arg0 + 2,g_SelectionPanelTextureSource,g_FramebufferAccess);
-  (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate - extraout_EDX_00,-0x80000000,
-             barStartCoordinate + extraout_EDX,arg7,arg0 + 1,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
+  (*g_SelectionPanelBlitClipped)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,
+             barStartCoordinate + GVar1.logicalHeightPixels,arg5,arg0 + 1,
+             g_SelectionPanelTextureSource,g_FramebufferAccess);
+  return;
+}
+
+
+/* Address: 0x0052DC90.
+   Ownership: gameplay/selection/runtime.
+   Purpose: Draws the recovered horizontal segmented capped selection bar.
+*/
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawHorizontalSegmentedCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
+          SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
+          ,SelectionPanelCellIndex cellIndex)
+
+{
+  int arg7;
+  dword arg0;
+  int iVar1;
+  int arg4;
+  uint *puVar2;
+  GraphicsTextureSizeEaxEdxCf9 GVar3;
+  
+  puVar2 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  arg4 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0,
+             g_SelectionPanelTextureSource,g_FramebufferAccess);
+  arg7 = spanStartCoordinate + GVar3.logicalWidthPixels;
+  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  spanEndCoordinate = spanEndCoordinate - GVar3.logicalWidthPixels;
+  (*g_SelectionPanelBlitOpaque)
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,spanEndCoordinate,arg0 + 2,
+             g_SelectionPanelTextureSource,g_FramebufferAccess);
+  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
+  iVar1 = filledSegmentCount;
+  if ((*puVar2 & 0x400) != 0) {
+    iVar1 = totalSegmentCount;
+  }
+  iVar1 = GVar3.logicalWidthPixels * iVar1 + arg7;
+  if (spanEndCoordinate < iVar1) {
+    (*g_SelectionPanelBlitClipped)
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,arg7,
+               arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+  }
+  else if ((*puVar2 & 0x100) == 0) {
+    if ((*puVar2 & 0x200) == 0) {
+      spanStartCoordinate = (spanEndCoordinate - iVar1 >> 1) + arg7;
+      (*g_SelectionPanelBlitClipped)
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanStartCoordinate,arg4,arg7,
+                 arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+      for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 4,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+        totalSegmentCount = totalSegmentCount + -1;
+      }
+      if ((*puVar2 & 0x400) != 0) {
+        for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+          (*g_SelectionPanelBlitOpaque)
+                    (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 3,
+                     g_SelectionPanelTextureSource,g_FramebufferAccess);
+          spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+        }
+      }
+      (*g_SelectionPanelBlitClipped)
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,
+                 spanStartCoordinate,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+    }
+    else {
+      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+      for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+        spanEndCoordinate = spanEndCoordinate - GVar3.logicalWidthPixels;
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,arg4,spanEndCoordinate,arg0 + 4,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        totalSegmentCount = totalSegmentCount + -1;
+      }
+      if ((*puVar2 & 0x400) != 0) {
+        for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+          spanEndCoordinate = spanEndCoordinate - GVar3.logicalWidthPixels;
+          (*g_SelectionPanelBlitOpaque)
+                    (clipTop,clipLeft,clipBottom,clipRight,arg4,spanEndCoordinate,arg0 + 3,
+                     g_SelectionPanelTextureSource,g_FramebufferAccess);
+        }
+      }
+      (*g_SelectionPanelBlitClipped)
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,arg7,
+                 arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+    }
+  }
+  else {
+    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+    spanStartCoordinate = arg7;
+    for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+      (*g_SelectionPanelBlitOpaque)
+                (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 4,
+                 g_SelectionPanelTextureSource,g_FramebufferAccess);
+      spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+      totalSegmentCount = totalSegmentCount + -1;
+    }
+    if ((*puVar2 & 0x400) != 0) {
+      for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+        (*g_SelectionPanelBlitOpaque)
+                  (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 3,
+                   g_SelectionPanelTextureSource,g_FramebufferAccess);
+        spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+      }
+    }
+    (*g_SelectionPanelBlitClipped)
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,
+               spanStartCoordinate,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+  }
   return;
 }
 
@@ -2217,155 +2598,121 @@ void SelectionPanel_DrawSolidCappedBar
    Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-void SelectionPanel_DrawSegmentedCappedBar
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
-               UiPixelCoordinate barStartCoordinate,undefined4 param_7,
-               SelectionPanelSegmentCount totalSegmentCount,
-               SelectionPanelSegmentCount filledSegmentCount,SelectionPanelCellIndex cellIndex)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPanel_DrawSegmentedCappedBar
+          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
+          SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
+          ,SelectionPanelCellIndex cellIndex)
 
 {
+  int arg4;
   dword arg0;
-  sdword arg5;
-  sdword arg5_00;
-  sdword arg7;
-  sdword extraout_ECX;
-  sdword extraout_ECX_00;
-  sdword extraout_ECX_01;
-  sdword extraout_ECX_02;
-  sdword extraout_ECX_03;
-  sdword extraout_ECX_04;
-  sdword sVar1;
-  sdword extraout_ECX_05;
-  sdword extraout_ECX_06;
-  sdword extraout_ECX_07;
-  int extraout_EDX;
-  int extraout_EDX_00;
-  int extraout_EDX_01;
-  int iVar2;
-  int extraout_EDX_02;
-  int extraout_EDX_03;
-  int extraout_EDX_04;
-  int extraout_EDX_05;
-  int extraout_EDX_06;
-  int extraout_EDX_07;
-  int extraout_EDX_08;
-  int extraout_EDX_09;
-  int extraout_EDX_10;
-  uint *puVar3;
+  int arg5;
+  int iVar1;
+  uint *puVar2;
+  GraphicsTextureSizeEaxEdxCf9 GVar3;
   
-  puVar3 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  puVar2 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  arg5 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  barStartCoordinate = barStartCoordinate + extraout_EDX;
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  barEndCoordinate = barEndCoordinate - extraout_EDX_00;
+  barStartCoordinate = barStartCoordinate + GVar3.logicalHeightPixels;
+  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
+  arg4 = barEndCoordinate - GVar3.logicalHeightPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5_00,arg0 + 2,
-             g_SelectionPanelTextureSource,g_FramebufferAccess);
-  (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-  iVar2 = filledSegmentCount;
-  if ((*puVar3 & 0x400) != 0) {
-    iVar2 = totalSegmentCount;
+            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+             g_FramebufferAccess);
+  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
+  iVar1 = filledSegmentCount;
+  if ((*puVar2 & 0x400) != 0) {
+    iVar1 = totalSegmentCount;
   }
-  iVar2 = extraout_EDX_01 * iVar2 + barStartCoordinate;
-  if (barEndCoordinate < iVar2) {
+  iVar1 = GVar3.logicalHeightPixels * iVar1 + barStartCoordinate;
+  if (arg4 < iVar1) {
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,barStartCoordinate
-               ,arg7,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,barStartCoordinate,arg5,
+               arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
-  else if ((*puVar3 & 0x100) == 0) {
-    if ((*puVar3 & 0x200) == 0) {
+  else if ((*puVar2 & 0x100) == 0) {
+    if ((*puVar2 & 0x200) == 0) {
+      barEndCoordinate = arg4 - (arg4 - iVar1 >> 1);
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
-                 barEndCoordinate - (barEndCoordinate - iVar2 >> 1),arg7,arg0 + 1,
-                 g_SelectionPanelTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
-      sVar1 = extraout_ECX_05;
-      barEndCoordinate = extraout_EDX_07;
-      iVar2 = extraout_EDX_08;
+                (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,barEndCoordinate,arg5,
+                 arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-        barEndCoordinate = barEndCoordinate - iVar2;
+        barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,sVar1,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
-        sVar1 = extraout_ECX_06;
-        iVar2 = extraout_EDX_09;
       }
-      if ((*puVar3 & 0x400) != 0) {
+      if ((*puVar2 & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-          barEndCoordinate = barEndCoordinate - iVar2;
+          barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
           (*g_SelectionPanelBlitOpaque)
-                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,sVar1,arg0 + 3,
+                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
-          sVar1 = extraout_ECX_07;
-          iVar2 = extraout_EDX_10;
         }
       }
       (*g_SelectionPanelBlitClipped)
                 (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
-                 barStartCoordinate,sVar1,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess
-                );
+                 barStartCoordinate,arg5,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
+      ;
     }
     else {
-      (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
-      sVar1 = extraout_ECX_02;
-      iVar2 = extraout_EDX_04;
+      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+      barEndCoordinate = arg4;
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-        barEndCoordinate = barEndCoordinate - iVar2;
+        barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,sVar1,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
-        sVar1 = extraout_ECX_03;
-        iVar2 = extraout_EDX_05;
       }
-      if ((*puVar3 & 0x400) != 0) {
+      if ((*puVar2 & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-          barEndCoordinate = barEndCoordinate - iVar2;
+          barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
           (*g_SelectionPanelBlitOpaque)
-                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,sVar1,arg0 + 3,
+                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
-          sVar1 = extraout_ECX_04;
-          iVar2 = extraout_EDX_06;
         }
       }
       (*g_SelectionPanelBlitClipped)
                 (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
-                 barStartCoordinate,sVar1,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess
-                );
+                 barStartCoordinate,arg5,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
+      ;
     }
   }
   else {
-    (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
-    sVar1 = extraout_ECX;
+    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
     for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
       (*g_SelectionPanelBlitOpaque)
-                (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,sVar1,arg0 + 4,
+                (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0 + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      barStartCoordinate = barStartCoordinate + extraout_EDX_02;
+      barStartCoordinate = barStartCoordinate + GVar3.logicalHeightPixels;
       totalSegmentCount = totalSegmentCount + -1;
-      sVar1 = extraout_ECX_00;
     }
-    if ((*puVar3 & 0x400) != 0) {
+    if ((*puVar2 & 0x400) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,sVar1,arg0 + 3,
+                  (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0 + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        barStartCoordinate = barStartCoordinate + extraout_EDX_03;
-        sVar1 = extraout_ECX_01;
+        barStartCoordinate = barStartCoordinate + GVar3.logicalHeightPixels;
       }
     }
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,barStartCoordinate
-               ,sVar1,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,barStartCoordinate,arg5,
+               arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;
 }
+
 
 /* Address: 0x00530130.
    Ownership: gameplay/selection/runtime.
@@ -2373,31 +2720,25 @@ void SelectionPanel_DrawSegmentedCappedBar
    Cross-module calls: ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime],
    ArmyRuntime_ResolveCommandTarget [gameplay/army/runtime].
 */
-void SelectionPointerArray_ApplyArmyRuntimeTarget
-               (ArmyRuntimeSlot *targetArmyRuntime,SelectionPointerArray32 *selection)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_ApplyArmyRuntimeTarget
+          (ArmyRuntimeSlot *targetArmyRuntime,SelectionPointerArray32 *selection)
 
 {
-  ArmyRuntimeSlot *armyRuntime;
-  int extraout_EAX;
+  ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  GameEntityRuntime *resolvedTarget;
-  undefined4 extraout_EDX;
   bool bVar1;
   
   entriesRemaining = 0x20;
   do {
-    bVar1 = false;
-    if (*(int *)selection != 0) {
-      armyRuntime = (ArmyRuntimeSlot *)ArmyRuntime_TestStateField100ZeroCf();
-      entriesRemaining = extraout_ECX;
+    runtimeState = *(ArmyRuntimeSlot **)selection;
+    if (runtimeState != (ArmyRuntimeSlot *)0x0) {
+      bVar1 = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
       if (!bVar1) {
-        ArmyRuntime_ResolveCommandTarget(resolvedTarget,armyRuntime);
-        *(undefined4 *)(extraout_EAX + 0x98) = extraout_EDX;
-        *(uint *)(extraout_EAX + 0x2c) = *(uint *)(extraout_EAX + 0x2c) | 0x14;
-        *(uint *)(extraout_EAX + 0x18) = *(uint *)(extraout_EAX + 0x18) & 0xfffffdff;
-        entriesRemaining = extraout_ECX_00;
+        ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
+        runtimeState->runtimeState98 = (dword)targetArmyRuntime;
+        runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
+        runtimeState->movementStateFlags = runtimeState->movementStateFlags & 0xfffffdff;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
@@ -2405,6 +2746,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget
   } while (entriesRemaining != 0);
   return;
 }
+
 
 /* Address: 0x00530190.
    Ownership: gameplay/selection/runtime.
@@ -2414,31 +2756,25 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget
    Cross-module calls: ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime],
    ArmyRuntime_ApplyTargetPositionCommand [gameplay/army/runtime].
 */
-void SelectionPointerArray_ApplyTargetPositionCommand
-               (Q12 coordinateA,dword coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection
-               )
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_ApplyTargetPositionCommand
+          (Q12 coordinateA,dword coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection)
 
 {
-  ArmyRuntimeSlot *armyRuntime;
-  int extraout_EAX;
+  ArmyRuntimeSlot *runtimeState;
   int iVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  Q12 coordinateB_00;
   bool bVar2;
   
   iVar1 = 0x20;
   do {
-    bVar2 = false;
-    if (*(int *)selection != 0) {
-      armyRuntime = (ArmyRuntimeSlot *)ArmyRuntime_TestStateField100ZeroCf();
-      iVar1 = extraout_ECX;
+    runtimeState = *(ArmyRuntimeSlot **)selection;
+    if (runtimeState != (ArmyRuntimeSlot *)0x0) {
+      bVar2 = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
       if (!bVar2) {
-        ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB_00,coordinateC,armyRuntime);
-        *(uint *)(extraout_EAX + 0x2c) = *(uint *)(extraout_EAX + 0x2c) | 0x14;
-        *(uint *)(extraout_EAX + 0x18) = *(uint *)(extraout_EAX + 0x18) & 0xfffffdff;
-        *(int *)(extraout_EAX + 0x30) = *(int *)(extraout_EAX + 0x30) << 2;
-        iVar1 = extraout_ECX_00;
+        ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
+        runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
+        runtimeState->movementStateFlags = runtimeState->movementStateFlags & 0xfffffdff;
+        runtimeState->commandGeneration = runtimeState->commandGeneration << 2;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
@@ -2447,87 +2783,96 @@ void SelectionPointerArray_ApplyTargetPositionCommand
   return;
 }
 
+
 /* Address: 0x00530540.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection runtime reset movement anchors and clear flag200 for eligible entries.
    Cross-module calls: GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel
    [gameplay/faction/runtime].
 */
-void SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(int *selectionEntries)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
+          (GameEntityRuntime **selectionEntries)
 
 {
-  int entityRuntime;
-  int extraout_EAX;
-  int iVar1;
-  int extraout_ECX;
+  GameEntityCommandFlags *pGVar1;
+  GameEntityRuntime *entityRuntime;
+  int iVar2;
   
-  iVar1 = 0x20;
+  iVar2 = 0x20;
   do {
     entityRuntime = *selectionEntries;
-    if ((entityRuntime != 0) && ((*(uint *)(entityRuntime + 0x18) & 2) == 0)) {
+    if ((entityRuntime != (GameEntityRuntime *)0x0) &&
+       (((entityRuntime->common).commandFlags & 2) == 0)) {
       GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(entityRuntime);
-      *(uint *)(extraout_EAX + 0x18) = *(uint *)(extraout_EAX + 0x18) & 0xfffffdff;
-      iVar1 = extraout_ECX;
+      pGVar1 = &(entityRuntime->common).commandFlags;
+      *pGVar1 = *pGVar1 & 0xfffffdff;
     }
     selectionEntries = selectionEntries + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   return;
 }
+
 
 /* Address: 0x005305A0.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection runtime interrupt targets and clear flag10 for eligible entries.
    Cross-module calls: ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration [gameplay/army/movement].
 */
-void SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries(undefined4 *selectionEntries)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
+          (GameEntityRuntime **selectionEntries)
 
 {
-  ArmyRuntimeSlot *armyRuntime;
-  int extraout_EAX;
+  GameEntityRuntime *armyRuntime;
   int iVar1;
-  int extraout_ECX;
   
   iVar1 = 0x20;
   do {
-    armyRuntime = (ArmyRuntimeSlot *)*selectionEntries;
-    if ((armyRuntime != (ArmyRuntimeSlot *)0x0) && ((armyRuntime->movementStateFlags & 2) == 0)) {
-      ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(armyRuntime);
-      *(uint *)(extraout_EAX + 0x2c) = *(uint *)(extraout_EAX + 0x2c) & 0xffffffef;
-      iVar1 = extraout_ECX;
+    armyRuntime = *selectionEntries;
+    if ((armyRuntime != (GameEntityRuntime *)0x0) &&
+       ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[6].savedIdOrOffset & 2)
+        == 0)) {
+      ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration((ArmyRuntimeSlot *)armyRuntime);
+      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[0xb].savedIdOrOffset =
+           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[0xb].savedIdOrOffset &
+           0xffffffef;
     }
     selectionEntries = selectionEntries + 1;
     iVar1 = iVar1 + -1;
   } while (iVar1 != 0);
   return;
 }
+
 
 /* Address: 0x00530600.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection runtime apply flags418 unless bit8 to eligible entries.
    Cross-module calls: ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive [world/model/hierarchy].
 */
-void SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(undefined4 *selectionEntries)
+void __thandor_void_preserve_eax_ecx
+SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **selectionEntries)
 
 {
-  int *modelRuntime;
+  GameEntityRuntime *modelRuntime;
   int iVar1;
-  int extraout_ECX;
   WorldRuntimeContext *contextArg;
   
   iVar1 = 0x20;
   contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
   do {
-    modelRuntime = (int *)*selectionEntries;
-    if ((modelRuntime != (int *)0x0) && ((modelRuntime[6] & 2U) == 0)) {
-      ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,modelRuntime);
-      iVar1 = extraout_ECX;
+    modelRuntime = *selectionEntries;
+    if ((modelRuntime != (GameEntityRuntime *)0x0) &&
+       (((modelRuntime->common).commandFlags & 2) == 0)) {
+      ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,(int *)modelRuntime);
     }
     selectionEntries = selectionEntries + 1;
     iVar1 = iVar1 + -1;
   } while (iVar1 != 0);
   return;
 }
+
 
 /* Address: 0x0052FCA0.
    Ownership: gameplay/selection/runtime.
@@ -2535,13 +2880,11 @@ void SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(undefined4 *selec
    relative offsets around the average position.
    Local calls: SelectionPointerArray_RecenterOffsetsAroundAveragePosition.
 */
-undefined4 __fastcall
+void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_InsertUniqueAndRecenter
-          (undefined4 param_1,undefined4 param_2,GameEntityRuntime *entityRuntime,
-          SelectionPointerArray32 *selection)
+          (GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection)
 
 {
-  undefined4 in_EAX;
   int iVar1;
   GameEntityRuntime **ppGVar2;
   GameEntityRuntime **ppGVar3;
@@ -2573,15 +2916,17 @@ SelectionPointerArray_InsertUniqueAndRecenter
     }
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition(selection);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0052FBF0.
    Ownership: gameplay/selection/runtime.
    Purpose: Averages the positions referenced by up to 32 selection pointers and stores each selection record
    offset relative to that average.
 */
-void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
 
 {
   int iVar1;
@@ -2628,16 +2973,16 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
   return;
 }
 
+
 /* Address: 0x0052FD90.
    Ownership: gameplay/selection/runtime.
    Purpose: Scans one exact 32-entry pointer array for target. CF clear means found, CF set means absent, and EAX
    is preserved.
 */
-undefined4
+bool __thandor_cf_preserve_eax_ecx_edx
 SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
-  undefined4 in_EAX;
   int entriesRemaining;
   undefined1 in_ZF;
   
@@ -2649,10 +2994,11 @@ SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray
     array = (SelectionPointerArray32 *)((int)array + 4);
   } while (!(bool)in_ZF);
   if (!(bool)in_ZF) {
-    return in_EAX;
+    return true;
   }
-  return in_EAX;
+  return false;
 }
+
 
 /* Address: 0x005301F0.
    Ownership: gameplay/selection/runtime.
@@ -2660,7 +3006,8 @@ SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray
    +0x64. CF is set when either span exceeds 0x5000 or their sum exceeds 0x7000; CF is clear for an empty or
    compact selection. EAX is preserved.
 */
-void SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *selection)
+bool __thandor_cf_preserve_eax_ecx_edx
+SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *selection)
 
 {
   int iVar1;
@@ -2675,7 +3022,7 @@ void SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *se
     selection = (SelectionPointerArray32 *)((int)selection + 4);
     local_20 = local_20 + -1;
     if (local_20 == 0) {
-      return;
+      return false;
     }
   }
   iVar2 = *(int *)(iVar5 + 0x60);
@@ -2703,10 +3050,11 @@ void SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *se
   } while (local_20 != 0);
   if (((iVar3 - iVar2 < 0x5001) && (iVar4 - iVar5 < 0x5001)) &&
      ((iVar3 - iVar2) + (iVar4 - iVar5) < 0x7001)) {
-    return;
+    return false;
   }
-  return;
+  return true;
 }
+
 
 /* Address: 0x00530650.
    Ownership: gameplay/selection/runtime.
@@ -2718,10 +3066,11 @@ void SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *se
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged. Typed parameters: p0 laneMask→SelectionMarkerLaneMask_V343.
 */
-void SelectionPointerArray_ApplyType16MarkerCoordinates
-               (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 valueC,
-               SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA,
-               SelectionPointerArray32 *selection)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_ApplyType16MarkerCoordinates
+          (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 valueC,
+          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA,
+          SelectionPointerArray32 *selection)
 
 {
   int *piVar1;
@@ -2774,19 +3123,21 @@ void SelectionPointerArray_ApplyType16MarkerCoordinates
   return;
 }
 
+
 /* Address: 0x0052FB00.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection pointer array clear32.
 */
-undefined4 SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
+void __thandor_void_preserve_eax_ecx_edx
+SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
 
 {
-  undefined4 in_EAX;
   int entriesRemaining;
   
   for (entriesRemaining = 0x20; entriesRemaining != 0; entriesRemaining = entriesRemaining + -1) {
     array->entries[0] = 0;
     array = (SelectionPointerArray32 *)((int)array + 4);
   }
-  return in_EAX;
+  return;
 }
+

@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/gameplay/session/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/gameplay/session/runtime.h>
 
 /* Implementation ownership: gameplay/session/runtime. */
@@ -15,24 +22,30 @@
    OldUnitRuntime_RebuildScenarioReplayTables [gameplay/faction/runtime], UiRuntime_SetSynchronizationHooks
    [ui/core/runtime], UiRootStack_PopUntilWindowTextureBoundaryCf [ui/controls/text].
 */
-undefined8 __fastcall
+InGameRuntimeRunEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_RunSessionUntilExit
-          (undefined4 param_1,undefined4 param_2,LevelAssetRuntimeImagePrefix370 *levelAsset,
+          (LevelAssetRuntimeImagePrefix370 *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,word *levelPathUtf16)
 
 {
-  undefined4 extraout_EAX;
-  bool bVar1;
+  dword dVar1;
+  InGameRuntimeInitEaxCf5 IVar2;
+  InGameRuntimeLoadedInitEaxCf5 IVar3;
+  InGameRuntimeRunEaxCf5 IVar4;
+  InGameRuntimeRunEaxCf5 IVar5;
+  InGameRuntimeRunEaxCf5 IVar6;
+  InGameRuntimeRunEaxCf5 IVar7;
   
-  bVar1 = false;
   if ((loadExistingSessionFlag & 1U) == 0) {
-    InGameRuntime_InitializeNewSession(param_1,param_2,levelAsset,levelPathUtf16);
-    if (bVar1)
+    IVar2 = InGameRuntime_InitializeNewSession(levelAsset,levelPathUtf16);
+    dVar1 = IVar2.runtimeRootOrError;
+    if (IVar2.carry)
     goto InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCarrySet;
   }
   else {
-    InGameRuntime_InitializeLoadedSession(param_1,param_2,levelPathUtf16);
-    if (bVar1)
+    IVar3 = InGameRuntime_InitializeLoadedSession(levelPathUtf16);
+    dVar1 = IVar3.runtimeRootOrError;
+    if (IVar3.carry)
     goto InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCarrySet;
   }
   do {
@@ -52,7 +65,9 @@ InGameRuntime_RunSessionUntilExit
                 ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
       UiRootStack_PopUntilWindowTextureBoundaryCf();
       InGameRuntime_ShutdownAndReleaseResources();
-      return CONCAT44(param_2,0xc);
+      IVar5.exitCodeOrError = 0xc;
+      IVar5.carry = false;
+      return IVar5;
     }
     if ((g_UiCommandRuntimeFlags & 0x800) != 0) {
       (*g_SoundStopAllVoices)();
@@ -66,7 +81,9 @@ InGameRuntime_RunSessionUntilExit
       UiRootStack_PopUntilWindowTextureBoundaryCf();
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
-      return CONCAT44(param_2,0xc);
+      IVar6.exitCodeOrError = 0xc;
+      IVar6.carry = false;
+      return IVar6;
     }
     if ((g_UiCommandRuntimeFlags & 0x20000) != 0) {
       (*g_SoundStopAllVoices)();
@@ -76,13 +93,19 @@ InGameRuntime_RunSessionUntilExit
                 ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
-      return CONCAT44(param_2,0xc);
+      IVar4.exitCodeOrError = 0xc;
+      IVar4.carry = false;
+      return IVar4;
     }
   } while (g_UiRootNode != (UiRootNode *)0xffffffff);
+  dVar1 = 0x14;
 InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCarrySet:
   InGameRuntime_ShutdownAndReleaseResources();
-  return CONCAT44(param_2,extraout_EAX);
+  IVar7.carry = true;
+  IVar7.exitCodeOrError = dVar1;
+  return IVar7;
 }
+
 
 /* Address: 0x00566290.
    Ownership: gameplay/session/runtime.
@@ -94,47 +117,38 @@ InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCar
    RecentTextHistory_SortAndBuildPointerList [ui/support/runtime], InGameHud_UpdateStatusCountersAndSessionPrompts
    [ui/ingame/runtime].
 */
-void EndGameResultsUiRuntime_UpdateAndHandleInputCf(void *endGameResultsRuntime)
+
+void __thandor_void_preserve_eax_ecx_edx
+EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
 {
+  Q12 *pQVar1;
+  WorldMotionState *pWVar2;
+  FieldGridAsset *pFVar3;
   ArmyRuntimeSlot *armyRuntime;
-  longlong lVar1;
-  InGameConditionRuntime *pIVar2;
-  WorldRuntimeContext *worldRuntime;
-  WorldRuntimeContext *worldRuntime_00;
-  int iVar3;
-  dword dVar4;
-  int extraout_EAX;
-  dword dVar5;
-  int iVar6;
-  IDirectSoundBuffer *pIVar7;
-  int extraout_EAX_00;
-  AngleTurn32 AVar8;
-  UQ12 UVar9;
-  uint extraout_ECX;
-  int iVar10;
-  uint extraout_ECX_00;
-  uint extraout_ECX_01;
-  uint extraout_ECX_02;
-  uint uVar11;
-  int extraout_ECX_03;
-  InGamePresentationTick IVar12;
-  uint extraout_ECX_04;
-  int iVar13;
-  int extraout_EDX;
-  dword arg0;
-  dword extraout_EDX_00;
-  int extraout_EDX_01;
-  int extraout_EDX_02;
-  WorldRuntimeContext *worldRuntime_01;
-  int iVar14;
+  LevelMusicSampleNumber LVar4;
+  longlong lVar5;
+  InGameLevelConditionStorageView800 *pIVar6;
+  UiNodeBase *pUVar7;
+  dword dVar8;
+  int iVar9;
+  AngleTurn32 AVar10;
+  UQ12 UVar11;
+  int iVar12;
+  uint uVar13;
+  InGamePresentationTick IVar14;
   int iVar15;
-  uint uVar16;
-  uint uVar17;
-  byte *pbVar18;
-  bool bVar19;
-  undefined1 uVar20;
-  qword qVar21;
+  WorldRuntimeContext *worldRuntime;
+  int iVar16;
+  int iVar17;
+  uint uVar18;
+  uint uVar19;
+  InGameConditionScheduleImageView480 *pIVar20;
+  bool bVar21;
+  FieldGridCoordinatesEaxEdx8 FVar22;
+  StatusValueEaxCf5 SVar23;
+  SoundPlayVoiceEaxCf5 SVar24;
+  dword dVar25;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -149,167 +163,162 @@ void EndGameResultsUiRuntime_UpdateAndHandleInputCf(void *endGameResultsRuntime)
       if ((g_UiCommandRuntimeFlags & 0x20) != 0) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x2000;
         FieldGrid_SetAllCellOverlayColors
-                  (0xff808080,*(FieldGridAsset **)((int)endGameResultsRuntime + 0xa84));
+                  (0xff808080,(endGameResultsRuntime->worldRuntime0A30).fieldGrid);
         WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
-                  ((void *)g_InGamePendingPlacementArmyAsset,worldRuntime_00);
+                  ((void *)g_InGamePendingPlacementArmyAsset,
+                   &endGameResultsRuntime->worldRuntime0A30);
       }
     }
     else if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffdfff;
       FieldGrid_SetAllCellOverlayColors
-                (0xffffffff,*(FieldGridAsset **)((int)endGameResultsRuntime + 0xa84));
+                (0xffffffff,(endGameResultsRuntime->worldRuntime0A30).fieldGrid);
     }
     else if ((g_GameFactionRuntimeImage.tail.simulationTick & 7) == 0) {
       FieldGrid_SetAllCellOverlayColors
-                (0xff808080,*(FieldGridAsset **)((int)endGameResultsRuntime + 0xa84));
+                (0xff808080,(endGameResultsRuntime->worldRuntime0A30).fieldGrid);
       WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
-                ((void *)g_InGamePendingPlacementArmyAsset,worldRuntime);
-    }
-    dVar4 = g_CursorOverrideY;
-    iVar3 = (**(code **)(*(int *)((int)endGameResultsRuntime + 0xc) + 0x2c))
-                      (g_CursorOverrideY,g_CursorOverrideX,endGameResultsRuntime,0);
-    if (iVar3 != -1) {
-      dVar4 = (**(code **)(*(int *)(iVar3 + 0xc) + 0x28))(g_CursorOverrideY,g_CursorOverrideX,iVar3)
+                ((void *)g_InGamePendingPlacementArmyAsset,&endGameResultsRuntime->worldRuntime0A30)
       ;
+    }
+    dVar25 = 0;
+    pUVar7 = (*((endGameResultsRuntime->rootUi0000).base.vtable)->hitTest)
+                       (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)endGameResultsRuntime);
+    if (pUVar7 != (UiNodeBase *)0xffffffff) {
+      dVar25 = (*pUVar7->vtable->pointerMove)(g_CursorOverrideY,g_CursorOverrideX,pUVar7);
     }
     g_GameFactionRuntimeImage.tail.presentationTick =
          g_GameFactionRuntimeImage.tail.presentationTick + 1;
-    RecentTextHistory_SortAndBuildPointerList
-              (8,(RecentTextHistoryPointerList *)((int)endGameResultsRuntime + 0x9b8));
-    worldRuntime_01 = (WorldRuntimeContext *)((int)endGameResultsRuntime + 0xa30);
+    RecentTextHistory_SortAndBuildPointerList(8,&endGameResultsRuntime->recentTextHistory09B8);
+    IVar14 = g_GameFactionRuntimeImage.tail.presentationTick;
+    worldRuntime = &endGameResultsRuntime->worldRuntime0A30;
     InGameHud_UpdateStatusCountersAndSessionPrompts();
-    UiPageStack_ActivePageNotInListCf((UiPageStackControl *)((int)endGameResultsRuntime + 0x9dc));
-    if (((((*(uint *)((int)endGameResultsRuntime + 0xa7c) & 0x90) == 0) && (extraout_EAX == 0)) &&
-        ((*(uint *)((int)endGameResultsRuntime + 0xa78) & 8) == 0)) &&
+    SVar23 = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->endGameResultsPageStack09DC);
+    if ((((((endGameResultsRuntime->worldRuntime0A30).runtimeFlags & 0x90) == 0) &&
+         (SVar23.valueOrError == 0)) &&
+        (((endGameResultsRuntime->worldRuntime0A30).interaction.interactionFlags48 & 8) == 0)) &&
        (((g_CursorButtonState & 4) == 0 &&
-        (dVar5 = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime_01), dVar5 != 0)))) {
-      dVar4 = dVar5;
+        (dVar8 = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime), dVar8 != 0)))) {
+      dVar25 = dVar8;
     }
-    (*g_GraphicsCursorSetFrame)(dVar4);
-    iVar3 = *(int *)((int)endGameResultsRuntime + 0xa84);
-    iVar15 = 0;
-    qVar21 = FieldGrid_WorldToGridQ12
-                       (*(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                        *(Q12 *)((int)endGameResultsRuntime + 0xab0));
-    iVar13 = (int)(qVar21 >> 0x20);
-    iVar6 = (int)qVar21;
-    iVar14 = (iVar6 >> 0xc) + -8;
-    iVar10 = (iVar13 >> 0xc) + -8;
-    if (iVar14 < -0x10) {
-      iVar6 = -0x8000;
-      iVar15 = 1;
+    (*g_GraphicsCursorSetFrame)(dVar25);
+    pFVar3 = (endGameResultsRuntime->worldRuntime0A30).fieldGrid;
+    iVar17 = 0;
+    FVar22 = FieldGrid_WorldToGridQ12
+                       ((endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                        (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12);
+    iVar15 = FVar22.rowQ12;
+    iVar9 = FVar22.columnQ12;
+    iVar16 = (iVar9 >> 0xc) + -8;
+    iVar12 = (iVar15 >> 0xc) + -8;
+    if (iVar16 < -0x10) {
+      iVar9 = -0x8000;
+      iVar17 = 1;
     }
-    else if (*(int *)(iVar3 + 0xb8) < iVar14) {
-      iVar15 = 1;
-      iVar6 = (*(int *)(iVar3 + 0xb8) + 8) * 0x1000;
+    else if ((int)pFVar3->gridWidth < iVar16) {
+      iVar17 = 1;
+      iVar9 = (pFVar3->gridWidth + 8) * 0x1000;
     }
-    if (iVar10 < -0x10) {
-      iVar13 = -0x8000;
-      iVar15 = iVar15 + 1;
+    if (iVar12 < -0x10) {
+      iVar15 = -0x8000;
+      iVar17 = iVar17 + 1;
     }
-    else if (*(int *)(iVar3 + 0xbc) < iVar10) {
-      iVar15 = iVar15 + 1;
-      iVar13 = (*(int *)(iVar3 + 0xbc) + 8) * 0x1000;
+    else if ((int)pFVar3->gridHeight < iVar12) {
+      iVar17 = iVar17 + 1;
+      iVar15 = (pFVar3->gridHeight + 8) * 0x1000;
     }
-    IVar12 = extraout_ECX;
-    if (iVar15 != 0) {
-      lVar1 = (longlong)(iVar13 + iVar6 * 2) * 0x901;
-      iVar3 = ((int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd) -
-              *(int *)((int)endGameResultsRuntime + 0xab0);
-      iVar13 = ((int)((ulonglong)((longlong)iVar13 * -1999) >> 0x20) << 0x14 |
-               (uint)((longlong)iVar13 * -1999) >> 0xc) -
-               *(int *)((int)endGameResultsRuntime + 0xab4);
-      *(int *)((int)endGameResultsRuntime + 0xab0) =
-           *(int *)((int)endGameResultsRuntime + 0xab0) + iVar3;
-      *(int *)((int)endGameResultsRuntime + 0xab4) =
-           *(int *)((int)endGameResultsRuntime + 0xab4) + iVar13;
-      *(int *)((int)endGameResultsRuntime + 0xa90) =
-           *(int *)((int)endGameResultsRuntime + 0xa90) + iVar3;
-      *(int *)((int)endGameResultsRuntime + 0xa94) =
-           *(int *)((int)endGameResultsRuntime + 0xa94) + iVar13;
-      WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime_01);
-      IVar12 = extraout_ECX_00;
-      iVar13 = extraout_EDX;
+    if (iVar17 != 0) {
+      lVar5 = (longlong)(iVar15 + iVar9 * 2) * 0x901;
+      iVar9 = ((int)((ulonglong)lVar5 >> 0x20) << 0x13 | (uint)lVar5 >> 0xd) -
+              (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12;
+      iVar12 = ((int)((ulonglong)((longlong)iVar15 * -1999) >> 0x20) << 0x14 |
+               (uint)((longlong)iVar15 * -1999) >> 0xc) -
+               (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12;
+      pQVar1 = &(endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12;
+      *pQVar1 = *pQVar1 + iVar9;
+      pQVar1 = &(endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12;
+      *pQVar1 = *pQVar1 + iVar12;
+      pWVar2 = &(endGameResultsRuntime->worldRuntime0A30).motion;
+      pWVar2->positionXQ12 = pWVar2->positionXQ12 + iVar9;
+      pQVar1 = &(endGameResultsRuntime->worldRuntime0A30).motion.positionYQ12;
+      *pQVar1 = *pQVar1 + iVar12;
+      WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
     }
     if ((g_UiCommandRuntimeFlags & 4) == 0) {
-      TerrainDirectionTable_AdvanceAndRebuildVectors(IVar12,iVar13);
-      dVar4 = PersistentSettings_ReadDword(3,0x20);
-      if ((dVar4 & 1) != 0) {
-        if ((extraout_ECX_01 & 7) == 0) {
+      TerrainDirectionTable_AdvanceAndRebuildVectors();
+      dVar25 = PersistentSettings_ReadDword(3,0x20);
+      if ((dVar25 & 1) != 0) {
+        if ((IVar14 & 7) == 0) {
           SpatialSoundPool_ClearDesiredGains();
-          for (armyRuntime = *(ArmyRuntimeSlot **)((int)endGameResultsRuntime + 0xb08);
+          for (armyRuntime = (ArmyRuntimeSlot *)
+                             (endGameResultsRuntime->worldRuntime0A30).ownerListHead;
               armyRuntime != (ArmyRuntimeSlot *)0x0;
               armyRuntime = (ArmyRuntimeSlot *)armyRuntime->modelNodeRuntime) {
             (*(&g_RuntimeMaintenanceCallbackPhases.audioRefresh.army)[armyRuntime->runtimeStateA4])
-                      (worldRuntime_01,armyRuntime);
+                      (worldRuntime,armyRuntime);
           }
           SpatialSoundPool_ApplyDesiredGains();
           InGameSelectionDetailPanel_Rebuild();
         }
-        bVar19 = false;
         if (g_InGameEffectsEnabled == 0) {
-          (*g_SoundIsVoicePlaying)(g_InGameActiveEffectVoice);
-          if (bVar19) {
+          bVar21 = (*g_SoundIsVoicePlaying)(g_InGameActiveEffectVoice);
+          if (bVar21) {
             g_InGameActiveEffectVoice = (IDirectSoundBuffer *)0x0;
-            dVar4 = Random_NextPrimary();
-            g_InGameEffectsEnabled = (dVar4 & 0x3f) + 1;
+            dVar25 = Random_NextPrimary();
+            g_InGameEffectsEnabled = (dVar25 & 0x3f) + 1;
           }
         }
         else {
           g_InGameEffectsEnabled = g_InGameEffectsEnabled - 1;
           if (g_InGameEffectsEnabled == 0) {
-            PersistentSettings_ReadDword(0x8000,0x24);
-            dVar4 = Random_NextPrimary();
-            bVar19 = false;
-            pIVar7 = (*g_SoundPlayOneShot)
-                               (arg0,arg0,
-                                (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[dVar4 & 3]);
-            if (!bVar19) {
-              g_InGameActiveEffectVoice = pIVar7;
+            dVar25 = PersistentSettings_ReadDword(0x8000,0x24);
+            dVar8 = Random_NextPrimary();
+            SVar24 = (*g_SoundPlayOneShot)
+                               (dVar25,dVar25,
+                                (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[dVar8 & 3]);
+            if (!SVar24.carry) {
+              g_InGameActiveEffectVoice = SVar24.eax;
             }
           }
         }
       }
-      dVar4 = PersistentSettings_ReadDword(3,0x20);
-      pIVar2 = g_InGameConditionRuntime;
-      if ((dVar4 & 2) != 0) {
-        bVar19 = false;
+      dVar25 = PersistentSettings_ReadDword(3,0x20);
+      pIVar6 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+      if ((dVar25 & 2) != 0) {
         if (g_InGameMusicEnabled == 0) {
-          (*g_SoundIsVoicePlaying)(g_InGameActiveMusicVoice);
-          if (bVar19) {
+          bVar21 = (*g_SoundIsVoicePlaying)(g_InGameActiveMusicVoice);
+          if (bVar21) {
             g_InGameActiveMusicVoice = (IDirectSoundBuffer *)0x0;
-            dVar4 = Random_NextPrimary();
-            g_InGameMusicEnabled = (dVar4 & 0x3f) + 1;
+            dVar25 = Random_NextPrimary();
+            g_InGameMusicEnabled = (dVar25 & 0x3f) + 1;
           }
         }
         else {
           g_InGameMusicEnabled = g_InGameMusicEnabled - 1;
           if (g_InGameMusicEnabled == 0) {
-            uVar16 = 0;
+            dVar25 = 0;
+            uVar13 = 0;
+            uVar18 = 0;
             do {
-              dVar5 = InGameMusic_ComputeTrackSuitabilityScore
-                                (*(MusicTrackClassId *)(pIVar2[3].reservedB0_D7 + uVar16 * 4 + 0xc),
-                                 worldRuntime_01);
-              uVar17 = uVar16 + 1;
-              uVar11 = extraout_ECX_02;
-              dVar4 = extraout_EDX_00;
-              if ((int)extraout_EDX_00 < (int)dVar5) {
-                uVar11 = uVar16;
-                dVar4 = dVar5;
+              dVar8 = InGameMusic_ComputeTrackSuitabilityScore
+                                ((pIVar6->levelImage).runtimeTail2E0.musicSampleNumbers[uVar18],
+                                 worldRuntime);
+              uVar19 = uVar18 + 1;
+              if ((int)dVar25 < (int)dVar8) {
+                uVar13 = uVar18;
+                dVar25 = dVar8;
               }
-              uVar16 = uVar17;
-            } while (uVar17 < 4);
-            uVar20 = 0;
-            if (dVar4 != 0) {
-              dVar4 = *(dword *)(pIVar2[3].reservedB0_D7 + uVar11 * 4 + 0xc);
-              dVar5 = PersistentSettings_ReadDword(0x8000,0x2c);
-              g_EndGameResultsCurrentMusicTrackId = dVar4;
-              pIVar7 = (*g_SoundPlayOneShot)
-                                 (dVar5,dVar5,
-                                  (DirectSoundVoiceSet *)
-                                  (&g_InGameLevelMusicVoiceSet0)[extraout_ECX_03]);
-              if (!(bool)uVar20) {
-                g_InGameActiveMusicVoice = pIVar7;
+              uVar18 = uVar19;
+            } while (uVar19 < 4);
+            if (dVar25 != 0) {
+              LVar4 = (pIVar6->levelImage).runtimeTail2E0.musicSampleNumbers[uVar13];
+              dVar25 = PersistentSettings_ReadDword(0x8000,0x2c);
+              g_EndGameResultsCurrentMusicTrackId = LVar4;
+              SVar24 = (*g_SoundPlayOneShot)
+                                 (dVar25,dVar25,
+                                  (DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[uVar13]);
+              if (!SVar24.carry) {
+                g_InGameActiveMusicVoice = SVar24.eax;
               }
             }
           }
@@ -317,128 +326,134 @@ void EndGameResultsUiRuntime_UpdateAndHandleInputCf(void *endGameResultsRuntime)
       }
       if ((g_UiCommandRuntimeFlags & 1) != 0)
       goto EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn;
-      UiPageStack_ActivePageNotInListCf((UiPageStackControl *)((int)endGameResultsRuntime + 0xbd0));
-      if (extraout_EAX_00 == 2) {
-        InGameTechnologyPanel_Rebuild(endGameResultsRuntime);
+      SVar23 = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->technologyPageStack0BD0);
+      if (SVar23.valueOrError == 2) {
+        InGameTechnologyPanel_Rebuild(&endGameResultsRuntime->rootUi0000);
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
       if (g_KeyboardSpecialKeyDown[0x14] != 0) {
-        dVar4 = PersistentSettings_ReadDword(0x20,0x48);
-        WorldRuntime_TranslateCameraByScreenDelta(0,extraout_EDX_01 - dVar4,worldRuntime_01);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime_01);
+        dVar25 = PersistentSettings_ReadDword(0x20,0x48);
+        WorldRuntime_TranslateCameraByScreenDelta(0,-dVar25,worldRuntime);
+        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x16] != 0) {
-        dVar4 = PersistentSettings_ReadDword(0x20,0x48);
-        WorldRuntime_TranslateCameraByScreenDelta(0,dVar4,worldRuntime_01);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime_01);
+        dVar25 = PersistentSettings_ReadDword(0x20,0x48);
+        WorldRuntime_TranslateCameraByScreenDelta(0,dVar25,worldRuntime);
+        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x11] != 0) {
-        dVar4 = PersistentSettings_ReadDword(0x20,0x48);
-        WorldRuntime_TranslateCameraByScreenDelta(extraout_EDX_02 - dVar4,0,worldRuntime_01);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime_01);
+        dVar25 = PersistentSettings_ReadDword(0x20,0x48);
+        WorldRuntime_TranslateCameraByScreenDelta(-dVar25,0,worldRuntime);
+        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x19] != 0) {
-        dVar4 = PersistentSettings_ReadDword(0x20,0x48);
-        WorldRuntime_TranslateCameraByScreenDelta(dVar4,0,worldRuntime_01);
-        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime_01);
+        dVar25 = PersistentSettings_ReadDword(0x20,0x48);
+        WorldRuntime_TranslateCameraByScreenDelta(dVar25,0,worldRuntime);
+        WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x12] != 0) {
-        AVar8 = *(int *)((int)endGameResultsRuntime + 0xaa4) - 0x400;
-        if ((int)AVar8 < *(int *)((int)endGameResultsRuntime + 0xac0)) {
-          AVar8 = *(AngleTurn32 *)((int)endGameResultsRuntime + 0xac0);
+        AVar10 = (endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle - 0x400;
+        if ((int)AVar10 < (int)(endGameResultsRuntime->worldRuntime0A30).motion.minimumPitchAngle) {
+          AVar10 = (endGameResultsRuntime->worldRuntime0A30).motion.minimumPitchAngle;
         }
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (AVar8,*(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa0),
-                   *(UQ12 *)((int)endGameResultsRuntime + 0xabc),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab8),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab0),worldRuntime_01);
+                  (AVar10,(endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
+        ;
       }
       if (g_KeyboardSpecialKeyDown[0x1a] != 0) {
-        AVar8 = *(int *)((int)endGameResultsRuntime + 0xaa4) + 0x400;
-        if (*(int *)((int)endGameResultsRuntime + 0xac4) < (int)AVar8) {
-          AVar8 = *(AngleTurn32 *)((int)endGameResultsRuntime + 0xac4);
+        AVar10 = (endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle + 0x400;
+        if ((int)(endGameResultsRuntime->worldRuntime0A30).motion.maximumPitchAngle < (int)AVar10) {
+          AVar10 = (endGameResultsRuntime->worldRuntime0A30).motion.maximumPitchAngle;
         }
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (AVar8,*(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa0),
-                   *(UQ12 *)((int)endGameResultsRuntime + 0xabc),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab8),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab0),worldRuntime_01);
+                  (AVar10,(endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
+        ;
       }
       if (g_KeyboardSpecialKeyDown[7] != 0) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (*(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa4),
-                   *(int *)((int)endGameResultsRuntime + 0xaa0) - 0x400U & 0xffff,
-                   *(UQ12 *)((int)endGameResultsRuntime + 0xabc),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab8),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab0),worldRuntime_01);
+                  ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle - 0x400 & 0xffff,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
+        ;
       }
       if (g_KeyboardSpecialKeyDown[6] != 0) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (*(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa4),
-                   *(int *)((int)endGameResultsRuntime + 0xaa0) + 0x400U & 0xffff,
-                   *(UQ12 *)((int)endGameResultsRuntime + 0xabc),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab8),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab0),worldRuntime_01);
+                  ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle + 0x400 & 0xffff,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
+        ;
       }
       if (g_KeyboardSpecialKeyDown[0x10] != 0) {
-        UVar9 = *(int *)((int)endGameResultsRuntime + 0xabc) - 0x800;
-        if ((int)UVar9 < *(int *)((int)endGameResultsRuntime + 0xac8)) {
-          UVar9 = *(UQ12 *)((int)endGameResultsRuntime + 0xac8);
+        UVar11 = (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12 - 0x800;
+        if ((int)UVar11 < (int)(endGameResultsRuntime->worldRuntime0A30).minimumCameraDistanceQ12) {
+          UVar11 = (endGameResultsRuntime->worldRuntime0A30).minimumCameraDistanceQ12;
         }
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (*(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa4),
-                   *(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa0),UVar9,
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab8),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab0),worldRuntime_01);
+                  ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,UVar11,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
+        ;
       }
       if (g_KeyboardSpecialKeyDown[0x18] != 0) {
-        UVar9 = *(int *)((int)endGameResultsRuntime + 0xabc) + 0x800;
-        if (*(int *)((int)endGameResultsRuntime + 0xacc) < (int)UVar9) {
-          UVar9 = *(UQ12 *)((int)endGameResultsRuntime + 0xacc);
+        UVar11 = (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12 + 0x800;
+        if ((int)(endGameResultsRuntime->worldRuntime0A30).maximumCameraDistanceQ12 < (int)UVar11) {
+          UVar11 = (endGameResultsRuntime->worldRuntime0A30).maximumCameraDistanceQ12;
         }
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (*(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa4),
-                   *(AngleTurn32 *)((int)endGameResultsRuntime + 0xaa0),UVar9,
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab8),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab4),
-                   *(Q12 *)((int)endGameResultsRuntime + 0xab0),worldRuntime_01);
+                  ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,UVar11,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12,
+                   (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
+        ;
       }
-      pIVar2 = g_InGameConditionRuntime;
-      *(uint *)((int)endGameResultsRuntime + 0x44c0) =
-           *(uint *)((int)endGameResultsRuntime + 0x44c0) & 0xfffffff7;
-      IVar12 = g_GameFactionRuntimeImage.tail.presentationTick;
-      iVar3 = 0x40;
-      pbVar18 = pIVar2[4].reserved00_4F;
+      pIVar6 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+      endGameResultsRuntime->sessionTimerNodeFlags44C0 =
+           endGameResultsRuntime->sessionTimerNodeFlags44C0 & ~UI_NODE_SUPPRESSED;
+      IVar14 = g_GameFactionRuntimeImage.tail.presentationTick;
+      iVar9 = 0x40;
+      pIVar20 = &pIVar6->schedule;
       do {
-        pbVar18 = pbVar18 + 0x10;
-        if (((*(uint *)pbVar18 & 0xfe) == 0x14) && (*(uint *)(pbVar18 + 8) != 0)) {
-          dVar4 = (*g_WideNumberFormatUtf16)
-                            (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,*(uint *)(pbVar18 + 8) / 0x3c,
-                             (word *)0x550590);
-          *(undefined2 *)((dword)dVar4 + 0x550590) = 0x3a;
+        if (((pIVar20->conditions[0].statusAndKind.kind & 0xfe) ==
+             INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) &&
+           (uVar13 = pIVar20->conditions[0].payload.operands[1], uVar13 != 0)) {
+          dVar25 = (*g_WideNumberFormatUtf16)
+                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,uVar13 / 0x3c,(word *)0x550590);
+          *(undefined2 *)(dVar25 + 0x550590) = 0x3a;
           (*g_WideNumberFormatUtf16)
-                    (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                     (sdword)((ulonglong)dVar4 >> 0x20),(word *)((dword)dVar4 + 0x550592));
-          IVar12 = g_GameFactionRuntimeImage.tail.presentationTick;
+                    (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,uVar13 % 0x3c,
+                     (word *)(dVar25 + 0x550592));
+          IVar14 = g_GameFactionRuntimeImage.tail.presentationTick;
           goto 
           EndGameResultsUiRuntime_UpdateAndHandleInput_RefreshTerrainCompositeOnPresentationCadence;
         }
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
-      *(uint *)((int)endGameResultsRuntime + 0x44c0) =
-           *(uint *)((int)endGameResultsRuntime + 0x44c0) | 8;
+        pIVar20 = (InGameConditionScheduleImageView480 *)(pIVar20->conditions + 1);
+        iVar9 = iVar9 + -1;
+      } while (iVar9 != 0);
+      endGameResultsRuntime->sessionTimerNodeFlags44C0 =
+           endGameResultsRuntime->sessionTimerNodeFlags44C0 | UI_NODE_SUPPRESSED;
     }
 EndGameResultsUiRuntime_UpdateAndHandleInput_RefreshTerrainCompositeOnPresentationCadence:
-    if ((IVar12 & 0x1f) == 0) {
+    if ((IVar14 & 0x1f) == 0) {
       TerrainCompositeTexture_FillPlane1();
-      IVar12 = extraout_ECX_04;
     }
-    if ((IVar12 & 3) == 0) {
+    if ((IVar14 & 3) == 0) {
       TerrainCompositeTexture_RebuildPlane0();
     }
   }
@@ -447,13 +462,15 @@ EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn:
   return;
 }
 
+
 /* Address: 0x0050EA90.
    Ownership: gameplay/session/runtime.
    Purpose: Rebases exact 0x100-byte loaded condition records. RET 4 proves one stack argument and removes two
    false register parameters.
    Cross-module calls: SpriteAssetRegistry_FindById [assets/sprite/catalog].
 */
-void InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
+void __thandor_void_preserve_eax_ecx_edx
+InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
 
 {
   FrontendPlayerRuntimeRecord *pFVar1;
@@ -465,7 +482,6 @@ void InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
   dword dVar7;
   GraphicsPaletteAsset *pGVar8;
   InGameConditionRecord *pIVar9;
-  InGameConditionRecordCount extraout_EDX;
   InGameConditionRecordCount IVar10;
   byte *pbVar11;
   InGameConditionRecord *pIVar12;
@@ -508,7 +524,7 @@ void InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
         pGVar8 = g_ShotPalette;
       }
       modelSlot1 = (pIVar9->payload48).modelRuntime;
-                    
+                    // WARNING: Switch is manually overridden
       switch(pIVar9->conditionKindA4) {
       case MODEL_RUNTIME:
         modelSlot1 = (ModelRuntimeSlot *)
@@ -538,7 +554,6 @@ void InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
       (pIVar9->payload48).modelRuntime = modelSlot1;
       pSVar5 = SpriteAssetRegistry_FindById((SpriteAssetId)pIVar9->spriteAsset40);
       pIVar9->spriteAsset40 = pSVar5;
-      IVar10 = extraout_EDX;
     }
     pFVar1 = g_FrontendPlayerRuntimeBlocks;
     pIVar9 = pIVar9 + 1;
@@ -554,6 +569,7 @@ void InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
        (FrontendFactionAssignmentIndex)runtime->worldContext50;
   return;
 }
+
 
 /* Address: 0x00565E10.
    Ownership: gameplay/session/runtime.
@@ -580,14 +596,16 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-void EndGameResultsUiRuntime_DispatchCommandByFlagsCf
-               (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endGameResultsRuntime
-               )
+bool __thandor_cf_preserve_eax_ecx_edx
+EndGameResultsUiRuntime_DispatchCommandByFlagsCf
+          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+          EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
 {
   uint uVar1;
   UiCommandDispatchRecord *pUVar2;
   UiCommandDispatchRecord *pUVar3;
+  bool bVar4;
   
   pUVar3 = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
   do {
@@ -598,32 +616,34 @@ void EndGameResultsUiRuntime_DispatchCommandByFlagsCf
             pUVar2 = pUVar3;
             uVar1 = pUVar2->modifierClassFlags;
             if (pUVar2->commandCode == 0) {
-              return;
+              return false;
             }
             pUVar3 = pUVar2 + 1;
           } while (pUVar2->commandCode != commandCode);
           if (uVar1 != 0) break;
+          bVar4 = false;
           if ((modifierFlags & 0x3c) == 0) {
             (*(code *)pUVar2->continuationEntryAddress)();
-            return;
+            return bVar4;
           }
         }
         if ((uVar1 & 0x30) != 0) break;
-        if (((modifierFlags & 0xc) != 0) && ((modifierFlags & 0x30) == 0)) {
+        if (((modifierFlags & 0xc) != 0) && (bVar4 = false, (modifierFlags & 0x30) == 0)) {
           (*(code *)pUVar2->continuationEntryAddress)();
-          return;
+          return bVar4;
         }
       }
       if ((uVar1 & 0xc) != 0) break;
-      if (((modifierFlags & 0xc) == 0) && ((modifierFlags & 0x30) != 0)) {
+      if (((modifierFlags & 0xc) == 0) && (bVar4 = false, (modifierFlags & 0x30) != 0)) {
         (*(code *)pUVar2->continuationEntryAddress)();
-        return;
+        return bVar4;
       }
     }
-  } while (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0));
+  } while (((modifierFlags & 0xc) == 0) || (bVar4 = false, (modifierFlags & 0x30) == 0));
   (*(code *)pUVar2->continuationEntryAddress)();
-  return;
+  return bVar4;
 }
+
 
 /* Address: 0x00569920.
    Ownership: gameplay/session/runtime.
@@ -631,20 +651,18 @@ void EndGameResultsUiRuntime_DispatchCommandByFlagsCf
    Cross-module calls: Movie_Open [movie/runtime/playback], Movie_SetAudioGainQ15 [movie/runtime/playback],
    Movie_AdvanceFrame [movie/runtime/playback], Movie_Close [movie/runtime/playback].
 */
-void __cdecl InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
+void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 
 {
   uint arg4;
   GraphicsTextureSourceAsset *pGVar1;
-  MovieRuntime *pMVar2;
-  int iVar3;
-  dword extraout_EDX;
-  InGameNotificationPayload18 *pIVar4;
-  InGameNotificationQueueRecord20 *pIVar5;
-  InGameNotificationPayload18 *pIVar6;
-  InGameNotificationQueueRecord20 *pIVar7;
-  bool bVar8;
-  undefined1 uVar9;
+  int iVar2;
+  InGameNotificationPayload18 *pIVar3;
+  InGameNotificationQueueRecord20 *pIVar4;
+  InGameNotificationPayload18 *pIVar5;
+  InGameNotificationQueueRecord20 *pIVar6;
+  MovieAdvanceFrameEaxCf5 MVar7;
+  MovieOpenEaxCf5 MVar8;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
   
   pGVar1 = g_InGamePanelTextureSource;
@@ -655,31 +673,26 @@ void __cdecl InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
      (g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE)) {
     g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C = NONE;
   }
-  bVar8 = pGVar1 < (GraphicsTextureSourceAsset *)gameRuntime1->observedSessionNotificationValue9B50;
   if (pGVar1 == (GraphicsTextureSourceAsset *)gameRuntime1->observedSessionNotificationValue9B50) {
-    uVar9 = 0;
     if (gameRuntime1->notificationQueue9E60[0].priority04 != 0) {
       arg4 = gameRuntime1->notificationQueue9E60[0].notificationMovieId00;
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,arg4,(word *)(u_flm_movie000_flm_0056314e + 9));
-      Movie_Open(0x80000000,(word *)u_flm_movie000_flm_0056314e);
-      if (!(bool)uVar9) {
-        uVar9 = arg4 < 100;
-        if ((!(bool)uVar9) &&
-           ((uVar9 = true, arg4 < 300 ||
-            ((uVar9 = arg4 < 700, !(bool)uVar9 && (uVar9 = arg4 < 900, (bool)uVar9)))))) {
+      MVar8 = Movie_Open(0x80000000,(word *)u_flm_movie000_flm_0056314e);
+      if (!MVar8.carry) {
+        if ((99 < arg4) && ((arg4 < 300 || ((699 < arg4 && (arg4 < 900)))))) {
           Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
         }
-        pMVar2 = Movie_AdvanceFrame();
-        if (!(bool)uVar9) {
-          gameRuntime1->observedSessionNotificationValue9B50 = (dword)pMVar2;
+        MVar7 = Movie_AdvanceFrame();
+        if (!MVar7.carry) {
+          gameRuntime1->observedSessionNotificationValue9B50 = MVar7.eax;
           gameRuntime1->notificationPlaybackCompletionCode9B54 = 0;
-          pIVar4 = &gameRuntime1->notificationQueue9E60[0].payload08;
-          pIVar6 = &gameRuntime1->activeNotificationPayload9E40;
-          for (iVar3 = 6; iVar3 != 0; iVar3 = iVar3 + -1) {
-            pIVar6->primaryWorldCoordinateQ12_00 = pIVar4->primaryWorldCoordinateQ12_00;
-            pIVar4 = (InGameNotificationPayload18 *)&pIVar4->secondaryWorldCoordinateQ12_04;
-            pIVar6 = (InGameNotificationPayload18 *)&pIVar6->secondaryWorldCoordinateQ12_04;
+          pIVar3 = &gameRuntime1->notificationQueue9E60[0].payload08;
+          pIVar5 = &gameRuntime1->activeNotificationPayload9E40;
+          for (iVar2 = 6; iVar2 != 0; iVar2 = iVar2 + -1) {
+            pIVar5->primaryWorldCoordinateQ12_00 = pIVar3->primaryWorldCoordinateQ12_00;
+            pIVar3 = (InGameNotificationPayload18 *)&pIVar3->secondaryWorldCoordinateQ12_04;
+            pIVar5 = (InGameNotificationPayload18 *)&pIVar5->secondaryWorldCoordinateQ12_04;
           }
           if (gameRuntime1->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE) {
             gameRuntime1->sessionNotificationInteractionState9B4C = NONE;
@@ -690,30 +703,31 @@ void __cdecl InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
           }
         }
       }
-      pIVar5 = gameRuntime1->notificationQueue9E60 + 1;
-      pIVar7 = gameRuntime1->notificationQueue9E60;
-      for (iVar3 = 0x18; iVar3 != 0; iVar3 = iVar3 + -1) {
-        pIVar7->notificationMovieId00 = pIVar5->notificationMovieId00;
-        pIVar5 = (InGameNotificationQueueRecord20 *)&pIVar5->priority04;
-        pIVar7 = (InGameNotificationQueueRecord20 *)&pIVar7->priority04;
+      pIVar4 = gameRuntime1->notificationQueue9E60 + 1;
+      pIVar6 = gameRuntime1->notificationQueue9E60;
+      for (iVar2 = 0x18; iVar2 != 0; iVar2 = iVar2 + -1) {
+        pIVar6->notificationMovieId00 = pIVar4->notificationMovieId00;
+        pIVar4 = (InGameNotificationQueueRecord20 *)&pIVar4->priority04;
+        pIVar6 = (InGameNotificationQueueRecord20 *)&pIVar6->priority04;
       }
-      for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
-        pIVar7->notificationMovieId00 = 0;
-        pIVar7 = (InGameNotificationQueueRecord20 *)&pIVar7->priority04;
+      for (iVar2 = 8; iVar2 != 0; iVar2 = iVar2 + -1) {
+        pIVar6->notificationMovieId00 = 0;
+        pIVar6 = (InGameNotificationQueueRecord20 *)&pIVar6->priority04;
       }
     }
   }
   else {
-    Movie_AdvanceFrame();
-    if (bVar8) {
+    MVar7 = Movie_AdvanceFrame();
+    if (MVar7.carry) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 0x280;
-      gameRuntime1->observedSessionNotificationValue9B50 = extraout_EDX;
+      gameRuntime1->observedSessionNotificationValue9B50 = (dword)pGVar1;
       gameRuntime1->notificationPlaybackCompletionCode9B54 = 0x25;
     }
   }
   return;
 }
+
 
 /* Address: 0x005641D0.
    Ownership: gameplay/session/runtime.
@@ -727,10 +741,8 @@ void __cdecl InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
    [gameplay/selection/runtime], InGameUiRuntime_InitializeControlTreeResourcesCf [ui/ingame/runtime],
    UiRootStack_Push [ui/controls/layout].
 */
-undefined8 __fastcall
-InGameRuntime_InitializeNewSession
-          (undefined4 param_1,undefined4 param_2,LevelAssetRuntimeImagePrefix370 *levelAsset,
-          word *levelMoviePath)
+InGameRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,word *levelMoviePath)
 
 {
   WorldRuntimeFlags *pWVar1;
@@ -739,42 +751,35 @@ InGameRuntime_InitializeNewSession
   UiTextResourceId UVar3;
   PlayerRuntimeId PVar4;
   word *pwVar5;
-  WorldObjectRecord *pWVar6;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  MovieRuntime *pMVar7;
-  dword dVar8;
+  dword dVar6;
   dword gridHalfSize;
   dword subresourceCount;
-  undefined4 extraout_EAX;
-  int iVar9;
-  FrontendPlayerRuntimeBlockCount FVar10;
-  uint extraout_ECX;
-  uint uVar11;
-  undefined4 extraout_ECX_00;
-  dword registerContext;
-  undefined4 extraout_ECX_01;
-  undefined4 extraout_EDX;
-  UiPageStackControl *stack;
-  FactionRuntimeIndex factionIndex;
+  int iVar7;
+  FrontendPlayerRuntimeBlockCount FVar8;
   InGameNotificationMovieId notificationMovieId;
-  InGameNotificationMovieId notificationMovieId_01;
-  InGameNotificationMovieId notificationMovieId_02;
-  InGameNotificationMovieId notificationMovieId_03;
   InGameNotificationMovieId notificationMovieId_00;
-  SelectionPlayerRuntimeBlock *pSVar12;
-  FrontendPlayerNameUtf16_28 *pFVar13;
-  undefined4 *puVar14;
-  FrontendPlayerRemovalPacket10007 *pFVar15;
-  SelectionPlayerRuntimeBlock *pSVar16;
-  FrontendPlayerRuntimeRecord *pFVar17;
-  byte *pbVar18;
-  undefined2 *puVar19;
-  word *pwVar20;
+  SelectionPlayerRuntimeBlock *pSVar9;
+  FrontendPlayerNameUtf16_28 *pFVar10;
+  undefined4 *puVar11;
+  FrontendPlayerRemovalPacket10007 *pFVar12;
+  SelectionPlayerRuntimeBlock *pSVar13;
+  FrontendPlayerRuntimeRecord *pFVar14;
+  byte *pbVar15;
+  undefined2 *puVar16;
+  word *pwVar17;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
-  InGameNotificationQueueRecord20 *pIVar21;
-  bool bVar22;
-  undefined1 uVar23;
-  undefined8 uVar24;
+  InGameNotificationQueueRecord20 *pIVar18;
+  bool bVar19;
+  TextResourceResolveEaxCf5 TVar20;
+  ArenaAllocEaxCf5 AVar21;
+  StatusValueEaxCf5 SVar22;
+  EndingMoviePathEaxCf5 EVar23;
+  MovieOpenEaxCf5 MVar24;
+  MovieAdvanceFrameEaxCf5 MVar25;
+  InGameLevelDefaultLoadEaxCf5 IVar26;
+  GridScratchAllocEaxCf5 GVar27;
+  InGameRuntimeInitEaxCf5 IVar28;
   
   g_UiCommandRuntimeFlags = 0x11;
   g_SessionNetworkTickCounter = 1;
@@ -792,38 +797,37 @@ InGameRuntime_InitializeNewSession
   g_EndMovieSelectionIndex = 0xffffffff;
   g_EndMovieVariantIndex = 0;
   g_EndMoviePath = (word *)0x0;
-  pFVar15 = &g_FrontendClientPlayerRemovalPacket10007;
-  for (iVar9 = 0xa0; iVar9 != 0; iVar9 = iVar9 + -1) {
-    (pFVar15->header).packedTypeAndUnitCount = 0;
-    pFVar15 = (FrontendPlayerRemovalPacket10007 *)&(pFVar15->header).sequenceToken;
+  pFVar12 = &g_FrontendClientPlayerRemovalPacket10007;
+  for (iVar7 = 0xa0; iVar7 != 0; iVar7 = iVar7 + -1) {
+    (pFVar12->header).packedTypeAndUnitCount = 0;
+    pFVar12 = (FrontendPlayerRemovalPacket10007 *)&(pFVar12->header).sequenceToken;
   }
-  pSVar16 = g_SelectionPlayerBlocks;
-  for (iVar9 = 0x10230; FVar10 = g_FrontendPlayerRuntimeBlockCount,
-      pSVar12 = g_SelectionPlayerBlocks, pFVar17 = g_FrontendPlayerRuntimeBlocks, iVar9 != 0;
-      iVar9 = iVar9 + -1) {
-    (pSVar16->selection).entries[0] = (GameEntityRuntime *)0x0;
-    pSVar16 = (SelectionPlayerRuntimeBlock *)((pSVar16->selection).entries + 1);
+  pSVar13 = g_SelectionPlayerBlocks;
+  for (iVar7 = 0x10230; FVar8 = g_FrontendPlayerRuntimeBlockCount, pSVar9 = g_SelectionPlayerBlocks,
+      pFVar14 = g_FrontendPlayerRuntimeBlocks, iVar7 != 0; iVar7 = iVar7 + -1) {
+    (pSVar13->selection).entries[0] = (GameEntityRuntime *)0x0;
+    pSVar13 = (SelectionPlayerRuntimeBlock *)((pSVar13->selection).entries + 1);
   }
   do {
-    iVar9 = pFVar17->playerRuntimeId;
-    (pFVar17->factionAssignment).readyOrWaitState = 0;
-    pFVar17->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
-    pFVar17->heartbeatExpiryTicks = 0x400;
-    dVar8 = (pFVar17->factionAssignment).factionAssignmentIndex;
-    g_SelectionPlayerRuntimeBlockPointers[iVar9] = pSVar12;
-    pSVar12->primaryEntityOrFactionToken8080 = dVar8;
-    pSVar12->simulationStepTicks = 1;
-    pFVar13 = &pFVar17->playerName;
-    pbVar18 = pSVar12->reserved80B0_8117 + 0x40;
-    for (iVar9 = 0x14; iVar9 != 0; iVar9 = iVar9 + -1) {
-      *(undefined4 *)pbVar18 = *(undefined4 *)pFVar13->textUtf16;
-      pFVar13 = (FrontendPlayerNameUtf16_28 *)(pFVar13->textUtf16 + 2);
-      pbVar18 = pbVar18 + 4;
+    iVar7 = pFVar14->playerRuntimeId;
+    (pFVar14->factionAssignment).readyOrWaitState = 0;
+    pFVar14->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
+    pFVar14->heartbeatExpiryTicks = 0x400;
+    dVar6 = (pFVar14->factionAssignment).factionAssignmentIndex;
+    g_SelectionPlayerRuntimeBlockPointers[iVar7] = pSVar9;
+    pSVar9->primaryEntityOrFactionToken8080 = dVar6;
+    pSVar9->simulationStepTicks = 1;
+    pFVar10 = &pFVar14->playerName;
+    pbVar15 = pSVar9->reserved80B0_8117 + 0x40;
+    for (iVar7 = 0x14; iVar7 != 0; iVar7 = iVar7 + -1) {
+      *(undefined4 *)pbVar15 = *(undefined4 *)pFVar10->textUtf16;
+      pFVar10 = (FrontendPlayerNameUtf16_28 *)(pFVar10->textUtf16 + 2);
+      pbVar15 = pbVar15 + 4;
     }
-    FVar10 = FVar10 - 1;
-    pSVar12 = pSVar12 + 1;
-    pFVar17 = pFVar17 + 1;
-  } while (FVar10 != 0);
+    FVar8 = FVar8 - 1;
+    pSVar9 = pSVar9 + 1;
+    pFVar14 = pFVar14 + 1;
+  } while (FVar8 != 0);
   g_SessionTransferTimeoutTicks = 0x400;
   g_InGameNetworkTickCountdown = 4;
   g_InGameStateTickSpinLock = 0;
@@ -831,59 +835,57 @@ InGameRuntime_InitializeNewSession
   UiRuntime_SetSynchronizationHooks
             (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
   UVar3 = (levelAsset->header).titleTextResourceIndex;
-  puVar19 = &g_InGameSessionNameScratchUtf16;
-  for (iVar9 = 0x20; iVar9 != 0; iVar9 = iVar9 + -1) {
-    *puVar19 = 0;
-    puVar19 = puVar19 + 1;
+  puVar16 = &g_InGameSessionNameScratchUtf16;
+  for (iVar7 = 0x20; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar16 = 0;
+    puVar16 = puVar16 + 1;
   }
-  pwVar5 = TextResource_Resolve(UVar3 + 0x2230);
-  pwVar20 = &g_InGameSessionNameScratchUtf16;
-  iVar9 = 0x1f;
+  TVar20 = TextResource_Resolve(UVar3 + 0x2230);
+  pwVar5 = TVar20.eax;
+  pwVar17 = &g_InGameSessionNameScratchUtf16;
+  iVar7 = 0x1f;
   do {
     pwVar5 = pwVar5 + 1;
     wVar2 = *pwVar5;
-    bVar22 = false;
     if (wVar2 == 0) break;
     if ((((((wVar2 != 0x2a) && (wVar2 != 0x3c)) && (wVar2 != 0x3e)) &&
-         (((wVar2 != 0x22 && (wVar2 != 0x2f)) &&
-          ((wVar2 != 0x5c && ((wVar2 != 0x2e && (wVar2 != 0x3f)))))))) && (wVar2 != 0x3a)) &&
-       (wVar2 != 0x7c)) {
-      *pwVar20 = wVar2;
-      pwVar20 = pwVar20 + 1;
+         ((wVar2 != 0x22 && (wVar2 != 0x2f)))) &&
+        ((wVar2 != 0x5c && ((wVar2 != 0x2e && (wVar2 != 0x3f)))))) &&
+       ((wVar2 != 0x3a && (wVar2 != 0x7c)))) {
+      *pwVar17 = wVar2;
+      pwVar17 = pwVar17 + 1;
     }
-    bVar22 = (word *)0xfffffffd < pwVar5;
-    iVar9 = iVar9 + -1;
-  } while (iVar9 != 0);
-  pWVar6 = (*g_MemoryApi.alloc)(0x400000);
-  if (!bVar22) {
-    g_RuntimeObjectRebaseBaseMinusOne = pWVar6[-1].classPayload + 0xaf;
-    bVar22 = false;
-    g_InGameWorldObjectRecords = pWVar6;
-    for (iVar9 = 0x100000; iVar9 != 0; iVar9 = iVar9 + -1) {
-      (pWVar6->common).reserved00_07[0] = 0;
-      (pWVar6->common).reserved00_07[1] = 0;
-      (pWVar6->common).reserved00_07[2] = 0;
-      (pWVar6->common).reserved00_07[3] = 0;
-      pWVar6 = (WorldObjectRecord *)((pWVar6->common).reserved00_07 + 4);
+    iVar7 = iVar7 + -1;
+  } while (iVar7 != 0);
+  AVar21 = (*g_MemoryApi.alloc)(0x400000);
+  gameRuntime1 = (InGameRuntimeRootImageC3E4 *)AVar21.eax;
+  if (!AVar21.carry) {
+    g_RuntimeObjectRebaseBaseMinusOne = gameRuntime1[-1].opaqueA06C_C3E3 + 0x2377;
+    g_InGameWorldObjectRecords = (WorldObjectRecord *)gameRuntime1;
+    for (iVar7 = 0x100000; iVar7 != 0; iVar7 = iVar7 + -1) {
+      (gameRuntime1->rootUi0000).base.nextSibling = (UiNodeBase *)0x0;
+      gameRuntime1 = (InGameRuntimeRootImageC3E4 *)&(gameRuntime1->rootUi0000).base.firstChild;
     }
-    SelectionInfoPanel_InitResources
-              ((SelectionInfoEntitySlots *)
-               g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]);
-    if (!bVar22) {
-      inGameRoot = (*g_MemoryApi.alloc)(0xc3e4);
-      if (!bVar22) {
-        bVar22 = (extraout_ECX >> 1 & 1) != 0;
-        puVar14 = &g_InGameRuntimeDefaultImageTemplate;
-        gameRuntime1 = inGameRoot;
+    SVar22 = SelectionInfoPanel_InitResources
+                       ((SelectionInfoEntitySlots *)
+                        g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]);
+    gameRuntime1 = (InGameRuntimeRootImageC3E4 *)SVar22.valueOrError;
+    if (!SVar22.carry) {
+      AVar21 = (*g_MemoryApi.alloc)(0xc3e4);
+      inGameRoot = (InGameRuntimeRootImageC3E4 *)AVar21.eax;
+      gameRuntime1 = inGameRoot;
+      if (!AVar21.carry) {
+        puVar11 = &g_InGameRuntimeDefaultImageTemplate;
         g_InGameRuntimeRoot = inGameRoot;
-        for (uVar11 = extraout_ECX >> 2; uVar11 != 0; uVar11 = uVar11 - 1) {
-          (gameRuntime1->rootUi0000).base.nextSibling = (UiNodeBase *)*puVar14;
-          puVar14 = puVar14 + 1;
+        for (iVar7 = 0x30f9; iVar7 != 0; iVar7 = iVar7 + -1) {
+          (gameRuntime1->rootUi0000).base.nextSibling = (UiNodeBase *)*puVar11;
+          puVar11 = puVar11 + 1;
           gameRuntime1 = (InGameRuntimeRootImageC3E4 *)&(gameRuntime1->rootUi0000).base.firstChild;
         }
         world = &inGameRoot->worldRuntime0A30;
-        InGameUiRuntime_InitializeControlTreeResourcesCf(&inGameRoot->rootUi0000);
-        if (!bVar22) {
+        SVar22 = InGameUiRuntime_InitializeControlTreeResourcesCf((UiRootNode *)inGameRoot);
+        gameRuntime1 = (InGameRuntimeRootImageC3E4 *)SVar22.valueOrError;
+        if (!SVar22.carry) {
           inGameRoot->worldOverlayCallback0B8C =
                InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
           (inGameRoot->worldRuntime0A30).selection.dispatchCommandCallback =
@@ -902,173 +904,184 @@ InGameRuntime_InitializeNewSession
                InGameUiRuntime_ClearTransientState1BCallback;
           (inGameRoot->worldRuntime0A30).selection.dispatchWorldContextActionCallback =
                InGameUiRuntime_DispatchWorldContextActionCallback;
-          (inGameRoot->worldRuntime0A30).reserved98 = 0x8000;
-          (inGameRoot->worldRuntime0A30).surfaceSelectionFlags = 0x13000;
+          (inGameRoot->worldRuntime0A30).minimumCameraDistanceQ12 = 0x8000;
+          (inGameRoot->worldRuntime0A30).maximumCameraDistanceQ12 = 0x13000;
           (inGameRoot->worldRuntime0A30).motion.minimumPitchAngle = 0xffffc400;
           (inGameRoot->worldRuntime0A30).motion.maximumPitchAngle = 0xffffe800;
           (inGameRoot->worldRuntime0A30).tickSpinLock = &g_InGameStateTickSpinLock;
           (inGameRoot->worldRuntime0A30).simulationAndNetworkTickCallback =
                InGameRuntime_UpdateSimulationAndNetworkTick;
-          uVar23 = (SelectionPlayerRuntimeBlock *)0xffffff7f <
-                   g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-          pSVar16 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
+          pSVar13 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
           inGameRoot->localPlayerPairCount0BA4 = 0;
-          inGameRoot->localPlayerPairRecords0BA0 = pSVar16->pairRecords80_807F;
-          UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,&inGameRoot->rootUi0000);
-          uVar24 = LevelAsset_PrepareEndingMoviePathCf(levelMoviePath,&levelAsset->header);
-          if (((!(bool)uVar23) && (Movie_Open(0x80000000,(word *)uVar24), !(bool)uVar23)) &&
-             (pMVar7 = Movie_AdvanceFrame(), !(bool)uVar23)) {
-            inGameRoot->levelMovieRuntime08D4 = pMVar7;
-            g_MoviePlaybackBaseFrameGroup = 0;
-            g_MoviePlaybackScheduleCounter = 0;
-            g_MoviePlaybackScheduleSpan = 0;
-            g_MoviePlaybackCurrentFrame = 0;
-            MoviePlayback_AdvanceToFrameAndPresent(0);
-            MoviePlayback_AdvanceToFrameAndPresent(1);
-            RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory09B8);
-            WorldRuntime_AttachObjectArray(0x4000,g_InGameWorldObjectRecords,world);
-            PVar4 = g_LocalPlayerRuntimeId;
-            dVar8 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->
-                    primaryEntityOrFactionToken8080;
-            levelAsset->playerSlots[6].aiClassOrMode = dVar8;
-            (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex = dVar8;
-            (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = PVar4;
-            WorldRuntime_AttachAndClearDwordArray
-                      (0x100,(dword *)&g_InGameWorldRuntimeDwordArray256,world);
-            GameData_ResetDefaults();
-            if ((!(bool)uVar23) &&
-               (InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
-                          (extraout_ECX_00,extraout_EDX,levelAsset,world), !(bool)uVar23)) {
-              bVar22 = false;
-              pIVar21 = inGameRoot->notificationQueue9E60;
-              for (iVar9 = 0x20; iVar9 != 0; iVar9 = iVar9 + -1) {
-                pIVar21->notificationMovieId00 = 0;
-                pIVar21 = (InGameNotificationQueueRecord20 *)&pIVar21->priority04;
-              }
-              TerrainCompositeTexture_Create();
-              if (!bVar22) {
-                (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
-                g_InGameSimulationStepTicks = 1;
-                dVar8 = PersistentSettings_ReadDword(0x40,0x14);
-                gridHalfSize = PersistentSettings_ReadDword(0x20,0x10);
-                subresourceCount = PersistentSettings_ReadDword(0x10,0x18);
-                GraphicsShadingRuntime_InitializeGeneratedTextureCf
-                          (subresourceCount,gridHalfSize,dVar8);
-                dVar8 = PersistentSettings_ReadDword(1,0x1c);
-                if (dVar8 == 0) {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 & 0xfffdffff;
-                }
-                else {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 | 0x20000;
-                }
-                dVar8 = PersistentSettings_ReadDword(0,0x5c);
-                if ((dVar8 & 1) == 0) {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 & 0xbfffffff;
-                }
-                else {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 | 0x40000000;
-                }
-                if ((dVar8 & 2) == 0) {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 & 0x7fffffff;
-                }
-                else {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 | 0x80000000;
-                }
-                if ((dVar8 & 4) == 0) {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 & 0xfbffffff;
-                }
-                else {
-                  pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                  *pWVar1 = *pWVar1 | 0x4000000;
-                }
-                dVar8 = PersistentSettings_ReadDword(0,0x40);
-                uVar23 = 0;
-                if ((dVar8 & 4) != 0) {
-                  UiPageStack_SetActiveIndex(1,&inGameRoot->optionalUiPageStack40AC);
-                  UiPageStack_SetActiveIndex(0,&inGameRoot->optionalUiPageStack4530);
-                  UiPageStack_SetActiveIndex(0,stack);
-                  inGameRoot->optionalUiLayoutState0A04 = 0;
-                  UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
-                }
-                InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf();
-                if (!(bool)uVar23) {
-                  uVar23 = 0;
-                  if (g_FrontendLoadedCampaignAsset == 0) {
-                    OldUnitRuntime_ResetPendingTables();
-                  }
-                  else {
-                    OldUnitRuntime_MergeMasksAndReplayRecords();
-                  }
-                  GridScratch_AllocateForFieldGridCf((inGameRoot->worldRuntime0A30).fieldGrid);
-                  if (!(bool)uVar23) {
-                    GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
-                    GridInfluence_ClearDistanceBandsAndRefreshEntities
-                              ((inGameRoot->worldRuntime0A30).ownerListHead);
-                    TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks
-                              (registerContext,factionIndex);
-                    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                        SESSION_NETWORK_ROLE_LOCAL) {
-                      inGameRoot->localNetworkUiStateFlags24E0 =
-                           inGameRoot->localNetworkUiStateFlags24E0 | 8;
+          inGameRoot->localPlayerPairRecords0BA0 = pSVar13->pairRecords80_807F;
+          UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
+          EVar23 = LevelAsset_PrepareEndingMoviePathCf(levelMoviePath,&levelAsset->header);
+          gameRuntime1 = (InGameRuntimeRootImageC3E4 *)EVar23.moviePath;
+          if (!EVar23.carry) {
+            MVar24 = Movie_Open(0x80000000,(word *)gameRuntime1);
+            gameRuntime1 = (InGameRuntimeRootImageC3E4 *)MVar24.eax;
+            if (!MVar24.carry) {
+              MVar25 = Movie_AdvanceFrame();
+              gameRuntime1 = (InGameRuntimeRootImageC3E4 *)MVar25.eax;
+              if (!MVar25.carry) {
+                inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)gameRuntime1;
+                g_MoviePlaybackBaseFrameGroup = 0;
+                g_MoviePlaybackScheduleCounter = 0;
+                g_MoviePlaybackScheduleSpan = 0;
+                g_MoviePlaybackCurrentFrame = 0;
+                MoviePlayback_AdvanceToFrameAndPresent(0);
+                MoviePlayback_AdvanceToFrameAndPresent(1);
+                RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory09B8);
+                WorldRuntime_AttachObjectArray(0x4000,g_InGameWorldObjectRecords,world);
+                PVar4 = g_LocalPlayerRuntimeId;
+                dVar6 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->
+                        primaryEntityOrFactionToken8080;
+                levelAsset->playerSlots[6].aiClassOrMode = dVar6;
+                (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex = dVar6;
+                (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = PVar4;
+                WorldRuntime_AttachAndClearDwordArray
+                          (0x100,(dword *)&g_InGameWorldRuntimeDwordArray256,world);
+                SVar22 = GameData_ResetDefaults();
+                gameRuntime1 = (InGameRuntimeRootImageC3E4 *)SVar22.valueOrError;
+                if (!SVar22.carry) {
+                  IVar26 = InGameLevelRuntime_LoadResourcesAfterDefaultResetCf(levelAsset,world);
+                  gameRuntime1 = (InGameRuntimeRootImageC3E4 *)IVar26.errorOrValue;
+                  if (!IVar26.carry) {
+                    pIVar18 = inGameRoot->notificationQueue9E60;
+                    for (iVar7 = 0x20; iVar7 != 0; iVar7 = iVar7 + -1) {
+                      pIVar18->notificationMovieId00 = 0;
+                      pIVar18 = (InGameNotificationQueueRecord20 *)&pIVar18->priority04;
                     }
-                    else {
-                      inGameRoot->localNetworkUiStateFlags24E0 =
-                           inGameRoot->localNetworkUiStateFlags24E0 & 0xfffffff7;
+                    SVar22 = TerrainCompositeTexture_Create();
+                    gameRuntime1 = (InGameRuntimeRootImageC3E4 *)SVar22.valueOrError;
+                    if (!SVar22.carry) {
+                      (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
+                      g_InGameSimulationStepTicks = 1;
+                      dVar6 = PersistentSettings_ReadDword(0x40,0x14);
+                      gridHalfSize = PersistentSettings_ReadDword(0x20,0x10);
+                      subresourceCount = PersistentSettings_ReadDword(0x10,0x18);
+                      GraphicsShadingRuntime_InitializeGeneratedTextureCf
+                                (subresourceCount,gridHalfSize,dVar6);
+                      dVar6 = PersistentSettings_ReadDword(1,0x1c);
+                      if (dVar6 == 0) {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 & 0xfffdffff;
+                      }
+                      else {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 | 0x20000;
+                      }
+                      dVar6 = PersistentSettings_ReadDword(0,0x5c);
+                      if ((dVar6 & 1) == 0) {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 & 0xbfffffff;
+                      }
+                      else {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 | 0x40000000;
+                      }
+                      if ((dVar6 & 2) == 0) {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 & 0x7fffffff;
+                      }
+                      else {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 | 0x80000000;
+                      }
+                      if ((dVar6 & 4) == 0) {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 & 0xfbffffff;
+                      }
+                      else {
+                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                        *pWVar1 = *pWVar1 | 0x4000000;
+                      }
+                      gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
+                                     PersistentSettings_ReadDword(0,0x40);
+                      if (((uint)gameRuntime1 & 4) != 0) {
+                        UiPageStack_SetActiveIndex(1,&inGameRoot->optionalUiPageStack40AC);
+                        gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
+                                       &inGameRoot->optionalUiPageStack4530;
+                        UiPageStack_SetActiveIndex(0,(UiPageStackControl *)gameRuntime1);
+                        UiPageStack_SetActiveIndex(0,&inGameRoot->optionalUiPageStack4644);
+                        inGameRoot->optionalUiLayoutState0A04 = 0;
+                        UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
+                      }
+                      bVar19 = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf
+                                               ((dword)(inGameRoot->worldRuntime0A30).fieldGrid);
+                      if (!bVar19) {
+                        if (g_FrontendLoadedCampaignAsset == 0) {
+                          OldUnitRuntime_ResetPendingTables();
+                        }
+                        else {
+                          OldUnitRuntime_MergeMasksAndReplayRecords();
+                        }
+                        GVar27 = GridScratch_AllocateForFieldGridCf
+                                           ((inGameRoot->worldRuntime0A30).fieldGrid);
+                        gameRuntime1 = (InGameRuntimeRootImageC3E4 *)GVar27.eax;
+                        if (!GVar27.carry) {
+                          GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
+                          GridInfluence_ClearDistanceBandsAndRefreshEntities
+                                    ((inGameRoot->worldRuntime0A30).ownerListHead);
+                          TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks();
+                          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+                              SESSION_NETWORK_ROLE_LOCAL) {
+                            inGameRoot->localNetworkUiStateFlags24E0 =
+                                 inGameRoot->localNetworkUiStateFlags24E0 | 8;
+                          }
+                          else {
+                            inGameRoot->localNetworkUiStateFlags24E0 =
+                                 inGameRoot->localNetworkUiStateFlags24E0 & 0xfffffff7;
+                          }
+                          UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
+                          UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
+                          UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
+                          InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
+                          WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
+                          if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+                              SESSION_NETWORK_ROLE_LOCAL) {
+                            FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
+                                      (g_LocalPlayerRuntimeId,0,0,0);
+                          }
+                          else {
+                            InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
+                          }
+                          (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+                          UiFrame_FlushInputAndResetPendingTicks();
+                          (*g_GraphicsCursorSetFrame)(6);
+                          g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+                          InGamePanel_RebuildPlayerStatusRows(inGameRoot);
+                          do {
+                            UiNode_InvalidateRoot(&inGameRoot->playerStatusNode08E4);
+                            InGamePanel_RebuildPlayerStatusRows(inGameRoot);
+                            UiFrame_Update(0);
+                            UiFrame_Draw();
+                            (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+                            InGameRuntime_UpdateSimulationAndNetworkTick();
+                          } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
+                          inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
+                          inGameRoot->playerStatusLayoutMetric093C = 0;
+                          UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
+                          Movie_Close();
+                          (*g_GraphicsCursorSetFrame)(0);
+                          (*g_TimerRegisterPeriodic)
+                                    (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
+                          if (notificationMovieId != 0) {
+                            InGameNotificationQueue_InsertPriorityRecord
+                                      (NONE,0,0,0,0,0,1,notificationMovieId);
+                            InGameNotificationQueue_InsertPriorityRecord
+                                      (NONE,0,0,0,0,0,1,notificationMovieId + 1);
+                            InGameNotificationQueue_InsertPriorityRecord
+                                      (NONE,0,0,0,0,0,1,notificationMovieId + 2);
+                            InGameNotificationQueue_InsertPriorityRecord
+                                      (NONE,0,0,0,0,0,1,notificationMovieId + 3);
+                            InGameNotificationQueue_InsertPriorityRecord
+                                      (NONE,0,0,0,0,0,1,notificationMovieId + 4);
+                          }
+                          return (InGameRuntimeInitEaxCf5)((uint5)AVar21 & 0xffffffff);
+                        }
+                      }
                     }
-                    UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
-                    UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
-                    UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
-                    InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
-                    uVar24 = WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
-                    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                        SESSION_NETWORK_ROLE_LOCAL) {
-                      FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-                                (extraout_ECX_01,(int)((ulonglong)uVar24 >> 0x20),
-                                 g_LocalPlayerRuntimeId);
-                    }
-                    else {
-                      InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
-                    }
-                    (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
-                    UiFrame_FlushInputAndResetPendingTicks();
-                    (*g_GraphicsCursorSetFrame)(6);
-                    g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-                    InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-                    do {
-                      UiNode_InvalidateRoot(&inGameRoot->playerStatusNode08E4);
-                      InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-                      UiFrame_Update(0);
-                      UiFrame_Draw();
-                      (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
-                      InGameRuntime_UpdateSimulationAndNetworkTick();
-                    } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
-                    inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
-                    inGameRoot->playerStatusLayoutMetric093C = 0;
-                    UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
-                    Movie_Close();
-                    (*g_GraphicsCursorSetFrame)(0);
-                    (*g_TimerRegisterPeriodic)
-                              (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
-                    if (notificationMovieId != 0) {
-                      InGameNotificationQueue_InsertPriorityRecord
-                                (NONE,0,0,0,0,0,1,notificationMovieId);
-                      InGameNotificationQueue_InsertPriorityRecord
-                                (NONE,0,0,0,0,0,1,notificationMovieId_01);
-                      InGameNotificationQueue_InsertPriorityRecord
-                                (NONE,0,0,0,0,0,1,notificationMovieId_02);
-                      InGameNotificationQueue_InsertPriorityRecord
-                                (NONE,0,0,0,0,0,1,notificationMovieId_03);
-                      InGameNotificationQueue_InsertPriorityRecord
-                                (NONE,0,0,0,0,0,1,notificationMovieId_00);
-                    }
-                    return CONCAT44(param_2,inGameRoot);
                   }
                 }
               }
@@ -1079,8 +1092,11 @@ InGameRuntime_InitializeNewSession
     }
   }
   Movie_Close();
-  return CONCAT44(param_2,extraout_EAX);
+  IVar28.carry = true;
+  IVar28.runtimeRootOrError = (dword)gameRuntime1;
+  return IVar28;
 }
+
 
 /* Address: 0x00564920.
    Ownership: gameplay/session/runtime.
@@ -1093,29 +1109,21 @@ InGameRuntime_InitializeNewSession
    [ui/core/runtime], SelectionInfoPanel_InitResources [gameplay/selection/runtime],
    InGameUiRuntime_InitializeControlTreeResourcesCf [ui/ingame/runtime].
 */
-undefined8 __fastcall
-InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word *savePackagePath)
+InGameRuntimeLoadedInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+InGameRuntime_InitializeLoadedSession(word *savePackagePath)
 
 {
   WorldRuntimeFlags *pWVar1;
   WorldRuntimeContext *world;
   SelectionPlayerRuntimeBlock *entitySlots;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
-  void *pvVar2;
-  InGameRuntimeRootImageC3E4 *levelImage;
-  InGameRuntimeRootImageC3E4 *extraout_EAX;
+  FrontendLoadedLevelRuntimeImage370 *levelImage;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  dword dVar3;
+  dword dVar2;
   dword gridHalfSize;
   dword subresourceCount;
+  InGameRuntimeRootImageC3E4 *pIVar3;
   int iVar4;
-  uint extraout_ECX;
-  undefined4 extraout_ECX_00;
-  dword registerContext;
-  undefined4 extraout_ECX_01;
-  int extraout_EDX;
-  undefined4 extraout_EDX_00;
-  FactionRuntimeIndex factionIndex;
   byte *pbVar5;
   undefined4 *puVar6;
   undefined2 *puVar7;
@@ -1125,31 +1133,36 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
   short *psVar11;
   SelectionPlayerRuntimeBlock *pSVar12;
   InGameNotificationQueueRecord20 *pIVar13;
-  undefined1 uVar14;
-  bool bVar15;
-  bool bVar16;
-  undefined8 uVar17;
-  InGameRuntimeRootImageC3E4 *fileHandle;
-  InGameRuntimeRootImageC3E4 *loadedLevelAsset;
+  bool bVar14;
+  StatusValueEaxCf5 SVar15;
+  PackageLoadEntryEaxCf5 PVar16;
+  ArenaAllocEaxCf5 AVar17;
+  EndingMoviePathEaxCf5 EVar18;
+  MovieOpenEaxCf5 MVar19;
+  MovieAdvanceFrameEaxCf5 MVar20;
+  InGameLevelLoadEaxCf5 IVar21;
+  GridScratchAllocEaxCf5 GVar22;
+  InGameRuntimeLoadedInitEaxCf5 IVar23;
+  InGameRuntimeRootImageC3E4 *local_24;
+  FrontendLoadedLevelRuntimeImage370 *loadedLevelAsset;
   
-  uVar14 = &stack0xffffffe8 < (undefined1 *)0xc;
   g_TextureDownsampleShift = PersistentSettings_ReadDword(0,0x30);
-  fileHandle = (InGameRuntimeRootImageC3E4 *)0x0;
-  loadedLevelAsset = (InGameRuntimeRootImageC3E4 *)0x0;
-  gameRuntime1 = (InGameRuntimeRootImageC3E4 *)Package_Mount(savePackagePath);
+  local_24 = (InGameRuntimeRootImageC3E4 *)0x0;
+  loadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
+  SVar15 = Package_Mount(savePackagePath);
   pbVar5 = g_PackageScratchBuffer;
-  if (!(bool)uVar14) {
+  gameRuntime1 = (InGameRuntimeRootImageC3E4 *)SVar15.valueOrError;
+  pIVar3 = gameRuntime1;
+  if (!SVar15.carry) {
     puVar7 = &g_InGameSessionNameScratchUtf16;
     for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
       *puVar7 = 0;
       puVar7 = puVar7 + 1;
     }
-    fileHandle = gameRuntime1;
     (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,gameRuntime1);
     (*g_FileSystemReadExactCf)(0x200,pbVar5,gameRuntime1);
     pbVar5 = pbVar5 + 0x100;
-    bVar15 = false;
-    bVar16 = true;
+    bVar14 = true;
     iVar4 = 0x24;
     pbVar8 = pbVar5;
     do {
@@ -1157,11 +1170,10 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
       if (iVar4 == 0) break;
       iVar4 = iVar4 + -1;
       pbVar9 = pbVar8 + 2;
-      bVar15 = *(short *)pbVar8 != 0;
-      bVar16 = *(short *)pbVar8 == 0;
+      bVar14 = *(short *)pbVar8 == 0;
       pbVar8 = pbVar9;
-    } while (!bVar16);
-    if (bVar16) {
+    } while (!bVar14);
+    if (bVar14) {
       pbVar9[-0xffffffff00000006] = 0;
       pbVar9[-0xffffffff00000005] = 0;
       pbVar9[-0xffffffff00000004] = 0;
@@ -1172,8 +1184,7 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
       pbVar9[-0xffffffff00000007] = 0;
       uVar10 = (uint)((int)pbVar9 - (int)pbVar5) >> 1;
       psVar11 = &g_InGameSessionNameScratchUtf16;
-      bVar15 = uVar10 < 0x20;
-      if (!bVar15) {
+      if (0x1f < uVar10) {
         uVar10 = 0x1f;
       }
       for (; uVar10 != 0; uVar10 = uVar10 - 1) {
@@ -1182,15 +1193,16 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
         psVar11 = psVar11 + 1;
       }
     }
-    pvVar2 = Package_LoadEntry((word *)u_campagne_hex_0050e068);
-    if (!bVar15) {
-      g_FrontendLoadedCampaignAsset = pvVar2;
+    PVar16 = Package_LoadEntry((word *)u_campagne_hex_0050e068);
+    if (!PVar16.carry) {
+      g_FrontendLoadedCampaignAsset = PVar16.bufferOrError;
     }
-    levelImage = Package_LoadEntry((word *)u_level_hex_0050e040);
-    gameRuntime1 = levelImage;
-    if (!bVar15) {
-      dVar3 = *(dword *)(levelImage->opaque0234_02F7 + 0xa8);
-      uVar14 = 0;
+    PVar16 = Package_LoadEntry((word *)u_level_hex_0050e040);
+    levelImage = PVar16.bufferOrError;
+    pIVar3 = (InGameRuntimeRootImageC3E4 *)levelImage;
+    local_24 = gameRuntime1;
+    if (!PVar16.carry) {
+      dVar2 = levelImage->playerSlots[6].aiClassOrMode;
       pSVar12 = g_SelectionPlayerBlocks;
       for (iVar4 = 0x10230; entitySlots = g_SelectionPlayerBlocks, iVar4 != 0; iVar4 = iVar4 + -1) {
         (pSVar12->selection).entries[0] = (GameEntityRuntime *)0x0;
@@ -1201,7 +1213,7 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
       g_EndMoviePath = (word *)0x0;
       g_LocalPlayerRuntimeId = 0;
       g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerBlocks;
-      g_SelectionPlayerBlocks->primaryEntityOrFactionToken8080 = dVar3;
+      g_SelectionPlayerBlocks->primaryEntityOrFactionToken8080 = dVar2;
       entitySlots->simulationStepTicks = 1;
       g_UiCommandRuntimeFlags = 0x11;
       g_SessionNetworkTickCounter = 1;
@@ -1217,36 +1229,34 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
       (*g_TimerRegisterPeriodic)(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
       UiRuntime_SetSynchronizationHooks
                 (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
-      gameRuntime1 = (*g_MemoryApi.alloc)(0x400000);
+      AVar17 = (*g_MemoryApi.alloc)(0x400000);
+      pIVar3 = (InGameRuntimeRootImageC3E4 *)AVar17.eax;
       loadedLevelAsset = levelImage;
-      if (!(bool)uVar14) {
-        g_RuntimeObjectRebaseBaseMinusOne = gameRuntime1[-1].opaqueA06C_C3E3 + 0x2377;
-        bVar15 = false;
-        g_InGameWorldObjectRecords = (WorldObjectRecord *)gameRuntime1;
+      if (!AVar17.carry) {
+        g_RuntimeObjectRebaseBaseMinusOne = pIVar3[-1].opaqueA06C_C3E3 + 0x2377;
+        g_InGameWorldObjectRecords = (WorldObjectRecord *)pIVar3;
         for (iVar4 = 0x100000; iVar4 != 0; iVar4 = iVar4 + -1) {
-          (gameRuntime1->rootUi0000).base.nextSibling = (UiNodeBase *)0x0;
-          gameRuntime1 = (InGameRuntimeRootImageC3E4 *)&(gameRuntime1->rootUi0000).base.firstChild;
+          (pIVar3->rootUi0000).base.nextSibling = (UiNodeBase *)0x0;
+          pIVar3 = (InGameRuntimeRootImageC3E4 *)&(pIVar3->rootUi0000).base.firstChild;
         }
-        SelectionInfoPanel_InitResources((SelectionInfoEntitySlots *)entitySlots);
-        gameRuntime1 = extraout_EAX;
-        if (!bVar15) {
-          inGameRoot = (*g_MemoryApi.alloc)(0xc3e4);
-          gameRuntime1 = inGameRoot;
-          if (!bVar15) {
-            bVar15 = (extraout_ECX >> 1 & 1) != 0;
+        SVar15 = SelectionInfoPanel_InitResources((SelectionInfoEntitySlots *)entitySlots);
+        pIVar3 = (InGameRuntimeRootImageC3E4 *)SVar15.valueOrError;
+        if (!SVar15.carry) {
+          AVar17 = (*g_MemoryApi.alloc)(0xc3e4);
+          inGameRoot = (InGameRuntimeRootImageC3E4 *)AVar17.eax;
+          pIVar3 = inGameRoot;
+          if (!AVar17.carry) {
             puVar6 = &g_InGameRuntimeDefaultImageTemplate;
             g_InGameRuntimeRoot = inGameRoot;
-            for (uVar10 = extraout_ECX >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
-              (gameRuntime1->rootUi0000).base.nextSibling = (UiNodeBase *)*puVar6;
+            for (iVar4 = 0x30f9; iVar4 != 0; iVar4 = iVar4 + -1) {
+              (pIVar3->rootUi0000).base.nextSibling = (UiNodeBase *)*puVar6;
               puVar6 = puVar6 + 1;
-              gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
-                             &(gameRuntime1->rootUi0000).base.firstChild;
+              pIVar3 = (InGameRuntimeRootImageC3E4 *)&(pIVar3->rootUi0000).base.firstChild;
             }
             world = &inGameRoot->worldRuntime0A30;
-            gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
-                           InGameUiRuntime_InitializeControlTreeResourcesCf(&inGameRoot->rootUi0000)
-            ;
-            if (!bVar15) {
+            SVar15 = InGameUiRuntime_InitializeControlTreeResourcesCf((UiRootNode *)inGameRoot);
+            pIVar3 = (InGameRuntimeRootImageC3E4 *)SVar15.valueOrError;
+            if (!SVar15.carry) {
               inGameRoot->worldOverlayCallback0B8C =
                    InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
               (inGameRoot->worldRuntime0A30).selection.dispatchCommandCallback =
@@ -1265,8 +1275,8 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
                    InGameUiRuntime_ClearTransientState1BCallback;
               (inGameRoot->worldRuntime0A30).selection.dispatchWorldContextActionCallback =
                    InGameUiRuntime_DispatchWorldContextActionCallback;
-              (inGameRoot->worldRuntime0A30).reserved98 = 0x8000;
-              (inGameRoot->worldRuntime0A30).surfaceSelectionFlags = 0x13000;
+              (inGameRoot->worldRuntime0A30).minimumCameraDistanceQ12 = 0x8000;
+              (inGameRoot->worldRuntime0A30).maximumCameraDistanceQ12 = 0x13000;
               (inGameRoot->worldRuntime0A30).motion.minimumPitchAngle = 0xffffc400;
               (inGameRoot->worldRuntime0A30).motion.maximumPitchAngle = 0xffffe800;
               (inGameRoot->worldRuntime0A30).tickSpinLock = &g_InGameStateTickSpinLock;
@@ -1275,155 +1285,159 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
               pSVar12 = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
               inGameRoot->localPlayerPairCount0BA4 = 0;
               inGameRoot->localPlayerPairRecords0BA0 = pSVar12->pairRecords80_807F;
-              UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,&inGameRoot->rootUi0000);
-              uVar14 = (InGameRuntimeRootImageC3E4 *)0xfffffeff < levelImage;
+              UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
               WidePath_CombineDirectoryAndLeaf
                         (&g_FrontendScenarioPathScratchUtf16,
-                         (word *)(levelImage->opaque0058_017B + 0xa8),(word *)u_level_0050daac);
+                         (word *)(levelImage->header).opaque100_16F,(word *)u_level_0050daac);
               WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
-              uVar17 = LevelAsset_PrepareEndingMoviePathCf
+              EVar18 = LevelAsset_PrepareEndingMoviePathCf
                                  (savePackagePath,(LevelAssetHeader *)levelImage);
-              gameRuntime1 = (InGameRuntimeRootImageC3E4 *)uVar17;
-              if (((!(bool)uVar14) &&
-                  (gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
-                                  Movie_Open(0x80000000,(word *)gameRuntime1), !(bool)uVar14)) &&
-                 (gameRuntime1 = (InGameRuntimeRootImageC3E4 *)Movie_AdvanceFrame(), !(bool)uVar14))
-              {
-                inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)gameRuntime1;
-                g_MoviePlaybackBaseFrameGroup = 0;
-                g_MoviePlaybackScheduleCounter = 0;
-                g_MoviePlaybackScheduleSpan = 0;
-                g_MoviePlaybackCurrentFrame = 0;
-                MoviePlayback_AdvanceToFrameAndPresent(0);
-                MoviePlayback_AdvanceToFrameAndPresent(1);
-                RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory09B8);
-                WorldRuntime_AttachObjectArray(0x4000,g_InGameWorldObjectRecords,world);
-                uVar14 = 0;
-                (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex =
-                     *(FactionRuntimeIndex *)(extraout_EDX + 0x8080);
-                (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
-                WorldRuntime_AttachAndClearDwordArray
-                          (0x100,(dword *)&g_InGameWorldRuntimeDwordArray256,world);
-                uVar17 = GameData_LoadExternalTables();
-                gameRuntime1 = (InGameRuntimeRootImageC3E4 *)uVar17;
-                if ((!(bool)uVar14) &&
-                   (gameRuntime1 = Package_LoadEntry((word *)u_field_hex_0050e002), !(bool)uVar14))
-                {
-                  *(InGameRuntimeRootImageC3E4 **)(levelImage->opaque0058_017B + 0x58) =
-                       gameRuntime1;
-                  uVar17 = InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
-                                     (extraout_ECX_00,extraout_EDX_00,
-                                      (LevelAssetRuntimeImagePrefix370 *)levelImage,world);
-                  gameRuntime1 = (InGameRuntimeRootImageC3E4 *)uVar17;
-                  if (!(bool)uVar14) {
-                    bVar15 = false;
-                    pIVar13 = inGameRoot->notificationQueue9E60;
-                    for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
-                      pIVar13->notificationMovieId00 = 0;
-                      pIVar13 = (InGameNotificationQueueRecord20 *)&pIVar13->priority04;
-                    }
-                    gameRuntime1 = (InGameRuntimeRootImageC3E4 *)TerrainCompositeTexture_Create();
-                    if (!bVar15) {
-                      (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
-                      UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
-                      UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
-                      UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
-                      InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
-                      g_InGameSimulationStepTicks = 1;
-                      dVar3 = PersistentSettings_ReadDword(0x40,0x14);
-                      gridHalfSize = PersistentSettings_ReadDword(0x20,0x10);
-                      subresourceCount = PersistentSettings_ReadDword(0x10,0x18);
-                      GraphicsShadingRuntime_InitializeGeneratedTextureCf
-                                (subresourceCount,gridHalfSize,dVar3);
-                      dVar3 = PersistentSettings_ReadDword(1,0x1c);
-                      if (dVar3 == 0) {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 & 0xfffdffff;
-                      }
-                      else {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 | 0x20000;
-                      }
-                      dVar3 = PersistentSettings_ReadDword(0,0x5c);
-                      if ((dVar3 & 1) == 0) {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 & 0xbfffffff;
-                      }
-                      else {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 | 0x40000000;
-                      }
-                      if ((dVar3 & 2) == 0) {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 & 0x7fffffff;
-                      }
-                      else {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 | 0x80000000;
-                      }
-                      if ((dVar3 & 4) == 0) {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 & 0xfbffffff;
-                      }
-                      else {
-                        pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
-                        *pWVar1 = *pWVar1 | 0x4000000;
-                      }
-                      bVar15 = false;
-                      gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
-                                     InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf();
-                      if ((!bVar15) &&
-                         (gameRuntime1 = (InGameRuntimeRootImageC3E4 *)
-                                         GridScratch_AllocateForFieldGridCf
-                                                   ((inGameRoot->worldRuntime0A30).fieldGrid),
-                         !bVar15)) {
-                        GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
-                        GridInfluence_ClearDistanceBandsAndRefreshEntities
-                                  ((inGameRoot->worldRuntime0A30).ownerListHead);
-                        TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks
-                                  (registerContext,factionIndex);
-                        uVar17 = WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
-                        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                            SESSION_NETWORK_ROLE_LOCAL) {
-                          inGameRoot->localNetworkUiStateFlags24E0 =
-                               inGameRoot->localNetworkUiStateFlags24E0 | 8;
+              pIVar3 = (InGameRuntimeRootImageC3E4 *)EVar18.moviePath;
+              if (!EVar18.carry) {
+                MVar19 = Movie_Open(0x80000000,(word *)pIVar3);
+                pIVar3 = (InGameRuntimeRootImageC3E4 *)MVar19.eax;
+                if (!MVar19.carry) {
+                  MVar20 = Movie_AdvanceFrame();
+                  pIVar3 = (InGameRuntimeRootImageC3E4 *)MVar20.eax;
+                  if (!MVar20.carry) {
+                    inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)pIVar3;
+                    g_MoviePlaybackBaseFrameGroup = 0;
+                    g_MoviePlaybackScheduleCounter = 0;
+                    g_MoviePlaybackScheduleSpan = 0;
+                    g_MoviePlaybackCurrentFrame = 0;
+                    MoviePlayback_AdvanceToFrameAndPresent(0);
+                    MoviePlayback_AdvanceToFrameAndPresent(1);
+                    RecentTextHistory_SortAndBuildPointerList(8,&inGameRoot->recentTextHistory09B8);
+                    pSVar12 = g_SelectionPlayerBlocks;
+                    WorldRuntime_AttachObjectArray(0x4000,g_InGameWorldObjectRecords,world);
+                    pIVar3 = (InGameRuntimeRootImageC3E4 *)pSVar12->primaryEntityOrFactionToken8080;
+                    (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex =
+                         (FactionRuntimeIndex)pIVar3;
+                    (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
+                    WorldRuntime_AttachAndClearDwordArray
+                              (0x100,(dword *)&g_InGameWorldRuntimeDwordArray256,world);
+                    bVar14 = GameData_LoadExternalTables();
+                    if (!bVar14) {
+                      PVar16 = Package_LoadEntry((word *)u_field_hex_0050e002);
+                      pIVar3 = PVar16.bufferOrError;
+                      if (!PVar16.carry) {
+                        (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid =
+                             (dword)pIVar3;
+                        IVar21 = InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
+                                           (levelImage,world);
+                        pIVar3 = (InGameRuntimeRootImageC3E4 *)IVar21.errorOrValue;
+                        if (!IVar21.carry) {
+                          pIVar13 = inGameRoot->notificationQueue9E60;
+                          for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
+                            pIVar13->notificationMovieId00 = 0;
+                            pIVar13 = (InGameNotificationQueueRecord20 *)&pIVar13->priority04;
+                          }
+                          SVar15 = TerrainCompositeTexture_Create();
+                          pIVar3 = (InGameRuntimeRootImageC3E4 *)SVar15.valueOrError;
+                          if (!SVar15.carry) {
+                            (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
+                            UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
+                            UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
+                            UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
+                            InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
+                            g_InGameSimulationStepTicks = 1;
+                            dVar2 = PersistentSettings_ReadDword(0x40,0x14);
+                            gridHalfSize = PersistentSettings_ReadDword(0x20,0x10);
+                            subresourceCount = PersistentSettings_ReadDword(0x10,0x18);
+                            GraphicsShadingRuntime_InitializeGeneratedTextureCf
+                                      (subresourceCount,gridHalfSize,dVar2);
+                            dVar2 = PersistentSettings_ReadDword(1,0x1c);
+                            if (dVar2 == 0) {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 & 0xfffdffff;
+                            }
+                            else {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 | 0x20000;
+                            }
+                            pIVar3 = (InGameRuntimeRootImageC3E4 *)
+                                     PersistentSettings_ReadDword(0,0x5c);
+                            if (((uint)pIVar3 & 1) == 0) {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 & 0xbfffffff;
+                            }
+                            else {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 | 0x40000000;
+                            }
+                            if (((uint)pIVar3 & 2) == 0) {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 & 0x7fffffff;
+                            }
+                            else {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 | 0x80000000;
+                            }
+                            if (((uint)pIVar3 & 4) == 0) {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 & 0xfbffffff;
+                            }
+                            else {
+                              pWVar1 = &(inGameRoot->worldRuntime0A30).runtimeFlags;
+                              *pWVar1 = *pWVar1 | 0x4000000;
+                            }
+                            bVar14 = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf
+                                                     ((dword)(inGameRoot->worldRuntime0A30).
+                                                             fieldGrid);
+                            if (!bVar14) {
+                              GVar22 = GridScratch_AllocateForFieldGridCf
+                                                 ((inGameRoot->worldRuntime0A30).fieldGrid);
+                              pIVar3 = (InGameRuntimeRootImageC3E4 *)GVar22.eax;
+                              if (!GVar22.carry) {
+                                GridScratch_RebuildTerrainAndRuntimeClassificationMasks(world);
+                                GridInfluence_ClearDistanceBandsAndRefreshEntities
+                                          ((inGameRoot->worldRuntime0A30).ownerListHead);
+                                TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks();
+                                WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
+                                if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK
+                                    ) == SESSION_NETWORK_ROLE_LOCAL) {
+                                  inGameRoot->localNetworkUiStateFlags24E0 =
+                                       inGameRoot->localNetworkUiStateFlags24E0 | 8;
+                                }
+                                else {
+                                  inGameRoot->localNetworkUiStateFlags24E0 =
+                                       inGameRoot->localNetworkUiStateFlags24E0 & 0xfffffff7;
+                                }
+                                if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK
+                                    ) == SESSION_NETWORK_ROLE_LOCAL) {
+                                  FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
+                                            (g_LocalPlayerRuntimeId,0,0,0);
+                                }
+                                else {
+                                  InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
+                                }
+                                (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+                                UiFrame_FlushInputAndResetPendingTicks();
+                                (*g_GraphicsCursorSetFrame)(6);
+                                g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+                                InGamePanel_RebuildPlayerStatusRows(inGameRoot);
+                                do {
+                                  UiNode_InvalidateRoot(&inGameRoot->playerStatusNode08E4);
+                                  InGamePanel_RebuildPlayerStatusRows(inGameRoot);
+                                  UiFrame_Update(0);
+                                  UiFrame_Draw();
+                                  (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+                                  InGameRuntime_UpdateSimulationAndNetworkTick();
+                                } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
+                                inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
+                                inGameRoot->playerStatusLayoutMetric093C = 0;
+                                UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
+                                Movie_Close();
+                                Resource_Release(levelImage);
+                                Package_Unmount((EngineFileHandle)gameRuntime1);
+                                (*g_GraphicsCursorSetFrame)(0);
+                                (*g_TimerRegisterPeriodic)
+                                          (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
+                                return (InGameRuntimeLoadedInitEaxCf5)((uint5)AVar17 & 0xffffffff);
+                              }
+                            }
+                          }
                         }
-                        else {
-                          inGameRoot->localNetworkUiStateFlags24E0 =
-                               inGameRoot->localNetworkUiStateFlags24E0 & 0xfffffff7;
-                        }
-                        if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-                            SESSION_NETWORK_ROLE_LOCAL) {
-                          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-                                    (extraout_ECX_01,(int)((ulonglong)uVar17 >> 0x20),
-                                     g_LocalPlayerRuntimeId);
-                        }
-                        else {
-                          InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
-                        }
-                        (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
-                        UiFrame_FlushInputAndResetPendingTicks();
-                        (*g_GraphicsCursorSetFrame)(6);
-                        g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-                        InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-                        do {
-                          UiNode_InvalidateRoot(&inGameRoot->playerStatusNode08E4);
-                          InGamePanel_RebuildPlayerStatusRows(inGameRoot);
-                          UiFrame_Update(0);
-                          UiFrame_Draw();
-                          (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
-                          InGameRuntime_UpdateSimulationAndNetworkTick();
-                        } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
-                        inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
-                        inGameRoot->playerStatusLayoutMetric093C = 0;
-                        UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
-                        Movie_Close();
-                        Resource_Release(levelImage);
-                        Package_Unmount((EngineFileHandle)fileHandle);
-                        (*g_GraphicsCursorSetFrame)(0);
-                        (*g_TimerRegisterPeriodic)
-                                  (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
-                        return CONCAT44(param_2,inGameRoot);
                       }
                     }
                   }
@@ -1437,9 +1451,12 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
   }
   Movie_Close();
   Resource_Release(loadedLevelAsset);
-  Package_Unmount((EngineFileHandle)fileHandle);
-  return CONCAT44(param_2,gameRuntime1);
+  Package_Unmount((EngineFileHandle)local_24);
+  IVar23.carry = true;
+  IVar23.runtimeRootOrError = (dword)pIVar3;
+  return IVar23;
 }
+
 
 /* Address: 0x005651D0.
    Ownership: gameplay/session/runtime.
@@ -1452,19 +1469,18 @@ InGameRuntime_InitializeLoadedSession(undefined4 param_1,undefined4 param_2,word
    [gameplay/session/level], UiRootStack_PopCf [ui/controls/layout], Movie_Close [movie/runtime/playback],
    TerrainCompositeTexture_Destroy [world/terrain/visuals].
 */
-void InGameRuntime_ShutdownAndReleaseResources(void)
+void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResources(void)
 
 {
-  WorldRuntimeContext *levelAsset;
+  WorldRuntimeContext *world;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  void *this;
-  undefined1 in_CF;
+  bool bVar1;
   
   (*g_TimerUnregisterPeriodic)(InGameRuntime_PeriodicCountdownAndClockTick);
   inGameRoot = g_InGameRuntimeRoot;
   (*g_GraphicsCursorSetFrame)(6);
-  (*g_GraphicsFramebufferBeginAccess)();
-  if (!(bool)in_CF) {
+  bVar1 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar1) {
     (*g_GraphicsFramebufferFillRectArgb)
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
@@ -1474,10 +1490,10 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
   GraphicsShadingRuntime_Shutdown();
   if (inGameRoot != (InGameRuntimeRootImageC3E4 *)0x0) {
     InGameRuntime_PublishRootWorldStatePointer(&inGameRoot->rootUi0000);
-    levelAsset = &inGameRoot->worldRuntime0A30;
+    world = &inGameRoot->worldRuntime0A30;
     WorldRuntime_ForEachNodeInOwnerListD8
-              (levelAsset,WorldRuntimeNode_ReleaseShutdownBindingsCallback,levelAsset);
-    InGameLevelRuntime_ShutdownLoadedAssetResources(this,(LevelAssetHeader *)levelAsset);
+              (world,WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
+    InGameLevelRuntime_ShutdownLoadedAssetResources(world);
     if ((inGameRoot->rootUi0000).previousRoot != (UiRootNode *)0x0) {
       UiRootStack_PopCf(&inGameRoot->rootUi0000);
     }
@@ -1505,17 +1521,19 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
   return;
 }
 
+
 /* Address: 0x0050E0D0.
    Ownership: gameplay/session/runtime.
    Purpose: Releases and clears the paired per-faction scratch-buffer arrays used by the in-game runtime.
 */
-void InGameRuntime_ReleaseFactionScratchBuffers(void)
+void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(void)
 
 {
-  int extraout_ECX;
+  int iVar1;
   undefined4 *scratchBufferSetBCursor;
   undefined4 *scratchBufferSetACursor;
   
+  iVar1 = 8;
   scratchBufferSetACursor = &g_InGameFactionScratchBufferSetA8;
   scratchBufferSetBCursor = &g_InGameFactionScratchBufferSetB8;
   do {
@@ -1525,9 +1543,11 @@ void InGameRuntime_ReleaseFactionScratchBuffers(void)
     *scratchBufferSetBCursor = 0;
     scratchBufferSetACursor = scratchBufferSetACursor + 1;
     scratchBufferSetBCursor = scratchBufferSetBCursor + 1;
-  } while (extraout_ECX != 1);
+    iVar1 = iVar1 + -1;
+  } while (iVar1 != 0);
   return;
 }
+
 
 /* Address: 0x0050E120.
    Ownership: gameplay/session/runtime.
@@ -1543,233 +1563,245 @@ void InGameRuntime_ReleaseFactionScratchBuffers(void)
    vocabulary to code annotation.
    Cross-module calls: ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive [world/model/hierarchy].
 */
-void __fastcall InGameConditionRuntime_UpdateScheduledRecords(void)
+
+void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledRecords(void)
 
 {
-  TerrainOccupancyMask *pTVar1;
-  int iVar2;
+  ResourceExtractionDescriptor32 *pRVar1;
+  dword dVar2;
+  int iVar3;
   int *modelRuntime;
-  InGameConditionRuntime *pIVar3;
-  uint uVar4;
-  byte bVar5;
-  int iVar6;
-  uint uVar7;
-  uint extraout_EDX;
-  byte *pbVar8;
-  uint uVar9;
-  FactionRuntimeLifecycleObservedState *pFVar10;
+  InGameLevelConditionStorageView800 *pIVar4;
+  dword dVar5;
+  uint uVar6;
+  byte bVar7;
+  int iVar8;
+  InGameScheduledConditionKind IVar9;
+  uint uVar10;
+  byte *pbVar11;
+  uint uVar12;
+  FactionRuntimeLifecycleObservedState *pFVar13;
   WorldRuntimeContext *contextArg;
-  FactionRuntimeLifecycleObservedState *pFVar11;
-  WorldRuntimeNode *worldNode1;
-  byte *pbVar12;
+  FactionRuntimeLifecycleObservedState *pFVar14;
+  WorldOwnerListNode100 *worldNode1;
+  InGameConditionScheduleImageView480 *pIVar15;
+  InGameEndConditionTriggerRecord8 *endTrigger;
   FieldGridAsset *fieldGrid1;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
   InGameRuntimeRootImageC3E4 *gameRuntime2;
   
-  pFVar11 = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
-  iVar6 = 7;
+  pFVar14 = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
+  iVar8 = 7;
   do {
-    pFVar11 = pFVar11 + 1;
-    if (*pFVar11 == FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING) {
-      *pFVar11 = *pFVar11 + FACTION_RUNTIME_LIFECYCLE_ACTIVE;
+    pFVar14 = pFVar14 + 1;
+    if (*pFVar14 == FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING) {
+      *pFVar14 = *pFVar14 + FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     }
-    pIVar3 = g_InGameConditionRuntime;
-    iVar6 = iVar6 + -1;
-  } while (iVar6 != 0);
-  iVar6 = 0x40;
-  pbVar12 = g_InGameConditionRuntime[4].reserved00_4F;
+    pIVar4 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+    iVar8 = iVar8 + -1;
+  } while (iVar8 != 0);
+  iVar8 = 0x40;
+  pIVar15 = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
   do {
-    pbVar12 = pbVar12 + 0x10;
-    uVar7 = *(uint *)pbVar12;
-    *(uint *)pbVar12 = *(uint *)pbVar12 & 0xfffffffe;
-                    
-    switch(uVar7 & 0xfe) {
-    case 2:
+    IVar9 = pIVar15->conditions[0].statusAndKind.kind;
+    pIVar15->conditions[0].statusAndKind.kind =
+         pIVar15->conditions[0].statusAndKind.kind & 0xfffffffe;
+                    // WARNING: Switch is manually overridden
+    switch(IVar9 & 0xfe) {
+    case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
       for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-        if ((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
-           (*(uint *)(pbVar12 + 4) == *(uint *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc)
-           )) goto InGameScheduledCondition_AdvanceToNextRecord;
+          worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+        if ((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+           (pIVar15->conditions[0].payload.operands[0] ==
+            *(dword *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc)))
+        goto InGameScheduledCondition_AdvanceToNextRecord;
       }
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
-    case 4:
+    case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_CLASS_COMMAND_GROUP_A:
       for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-        if (((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
+          worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+        if (((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
              [*(int *)(*(int *)worldNode1->runtimePayload + 0x4c)] ==
              ArmyRuntime_ClassCommandHandlerGroupACf)) &&
-           (*(uint *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) == *(uint *)(pbVar12 + 4)
-           )) goto InGameScheduledCondition_AdvanceToNextRecord;
-      }
-      goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
-    case 6:
-      for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-        if (((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
-            (iVar2 = *(int *)((int)worldNode1->runtimePayload + 8),
-            *(uint *)(pbVar12 + 4) == *(uint *)(iVar2 + 0xc))) &&
-           (*(uint *)(iVar2 + 0xa0) == *(uint *)(pbVar12 + 0xc)))
+           (*(dword *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) ==
+            pIVar15->conditions[0].payload.operands[0]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
-    case 8:
-      if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[*(uint *)(pbVar12 + 8)] !=
+    case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_RUNTIME_ID:
+      for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+          worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+        if (((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+            (iVar3 = *(int *)((int)worldNode1->runtimePayload + 8),
+            pIVar15->conditions[0].payload.operands[0] == *(dword *)(iVar3 + 0xc))) &&
+           (*(dword *)(iVar3 + 0xa0) == pIVar15->conditions[0].payload.operands[2]))
+        goto InGameScheduledCondition_AdvanceToNextRecord;
+      }
+      goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
+    case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
+      dVar5 = pIVar15->conditions[0].payload.operands[1];
+      dVar2 = pIVar15->conditions[0].payload.operands[0];
+      if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[dVar5] !=
             FACTION_RUNTIME_LIFECYCLE_ACTIVE) ||
-          (g_GameFactionRuntimeImage.tail.factionLifecycleStates[*(uint *)(pbVar12 + 4)] !=
+          (g_GameFactionRuntimeImage.tail.factionLifecycleStates[dVar2] !=
            FACTION_RUNTIME_LIFECYCLE_ACTIVE)) ||
-         (7 < (g_GameFactionRuntimeImage.records[*(uint *)(pbVar12 + 8)].packedRelationStates >>
-               ((char)*(uint *)(pbVar12 + 4) * '\x04' & 0x1fU) & 0xf)))
+         (7 < (g_GameFactionRuntimeImage.records[dVar5].packedRelationStates >>
+               ((char)dVar2 * '\x04' & 0x1fU) & 0xf)))
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
       break;
-    case 10:
-      if ((int)*(uint *)(pbVar12 + 8) <=
-          (int)g_GameFactionRuntimeImage.records[*(uint *)(pbVar12 + 4)].xeniteCurrentQ4) {
-        *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
+    case INGAME_SCHEDULED_CONDITION_PRIMARY_RESOURCE_CURRENT_AT_LEAST:
+      if ((int)pIVar15->conditions[0].payload.operands[1] <=
+          (int)g_GameFactionRuntimeImage.records[pIVar15->conditions[0].payload.operands[0]].
+               xeniteCurrentQ4) {
+        pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
       }
       break;
-    case 0xc:
-      if ((int)*(uint *)(pbVar12 + 8) <=
-          (int)g_GameFactionRuntimeImage.records[*(uint *)(pbVar12 + 4)].tritiumCurrentQ4) {
-        *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
+    case INGAME_SCHEDULED_CONDITION_SECONDARY_RESOURCE_CURRENT_AT_LEAST:
+      if ((int)pIVar15->conditions[0].payload.operands[1] <=
+          (int)g_GameFactionRuntimeImage.records[pIVar15->conditions[0].payload.operands[0]].
+               tritiumCurrentQ4) {
+        pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
       }
       break;
-    case 0xe:
-      if ((int)*(uint *)(pbVar12 + 8) <=
-          (int)g_GameFactionRuntimeImage.records[*(uint *)(pbVar12 + 4)].
+    case INGAME_SCHEDULED_CONDITION_ACTIVE_ARMY_SCALE_VALUE_AT_LEAST:
+      if ((int)pIVar15->conditions[0].payload.operands[1] <=
+          (int)g_GameFactionRuntimeImage.records[pIVar15->conditions[0].payload.operands[0]].
                tritiumExtractionRateQ4PerTick) {
-        *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
+        pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
       }
       break;
-    case 0x10:
-      uVar7 = *(uint *)(pbVar12 + 8);
+    case INGAME_SCHEDULED_CONDITION_MATCHING_DEFINITION_AND_RUNTIME_ID_ACTIVE_ENTITY_COUNT_AT_LEAST:
+      dVar5 = pIVar15->conditions[0].payload.operands[1];
       for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-        if (((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
-            (*(uint *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) ==
-             *(uint *)(pbVar12 + 4))) &&
-           ((*(uint *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xa0) ==
-             *(uint *)(pbVar12 + 0xc) && (uVar7 = uVar7 - 1, uVar7 == 0))))
+          worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+        if (((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+            (*(dword *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) ==
+             pIVar15->conditions[0].payload.operands[0])) &&
+           ((*(dword *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xa0) ==
+             pIVar15->conditions[0].payload.operands[2] && (dVar5 = dVar5 - 1, dVar5 == 0))))
         goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
       }
       break;
-    case 0x12:
+    case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
       fieldGrid1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-      uVar9 = fieldGrid1->gridWidth * fieldGrid1->gridHeight;
-      pbVar8 = fieldGrid1->cells[0].runtime00_07 + *(uint *)(pbVar12 + 4);
-      uVar4 = 0;
-      uVar7 = uVar9;
+      uVar12 = fieldGrid1->gridWidth * fieldGrid1->gridHeight;
+      pbVar11 = fieldGrid1->cells[0].runtime0C_3F +
+                (pIVar15->conditions[0].payload.operands[0] - 0xc);
+      uVar6 = 0;
+      uVar10 = uVar12;
       do {
-        pTVar1 = (TerrainOccupancyMask *)(pbVar8 + 0x70);
-        pbVar8 = pbVar8 + 0x80;
-        uVar4 = uVar4 + ((*pTVar1 & 0xf9) != 0);
-        uVar7 = uVar7 - 1;
-      } while (uVar7 != 0);
-      if ((int)*(uint *)(pbVar12 + 8) <= (int)(((ulonglong)uVar4 * 100) / (ulonglong)uVar9)) {
-        *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
+        pRVar1 = (ResourceExtractionDescriptor32 *)(pbVar11 + 0x70);
+        pbVar11 = pbVar11 + 0x80;
+        uVar6 = uVar6 + ((*pRVar1 & 0xf9) != 0);
+        uVar10 = uVar10 - 1;
+      } while (uVar10 != 0);
+      if ((int)pIVar15->conditions[0].payload.operands[1] <=
+          (int)(((ulonglong)uVar6 * 100) / (ulonglong)uVar12)) {
+        pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
       }
       break;
-    case 0x14:
-      uVar7 = *(uint *)(pbVar12 + 8) - g_InGameSimulationStepTicks;
-      *(uint *)(pbVar12 + 8) = uVar7;
-      if ((int)uVar7 < 1) {
-        *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
-        pbVar12[8] = 0;
-        pbVar12[9] = 0;
-        pbVar12[10] = 0;
-        pbVar12[0xb] = 0;
+    case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
+      dVar5 = pIVar15->conditions[0].payload.operands[1] - g_InGameSimulationStepTicks;
+      pIVar15->conditions[0].payload.operands[1] = dVar5;
+      if ((int)dVar5 < 1) {
+        pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
+        pIVar15->conditions[0].payload.operands[1] = 0;
       }
       break;
-    case 0x16:
-      if ((int)g_GameFactionRuntimeImage.records[*(uint *)(pbVar12 + 4)].xeniteStorageLimitQ4 <
-          0xfa1) {
-        *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
+    case INGAME_SCHEDULED_CONDITION_PRIMARY_RESOURCE_LIMIT_AT_MOST_0FA0:
+      if ((int)g_GameFactionRuntimeImage.records[pIVar15->conditions[0].payload.operands[0]].
+               xeniteStorageLimitQ4 < 0xfa1) {
+        pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
       }
       break;
-    case 0x18:
+    case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_CLASS_ID_OUTSIDE_CLASS_COMMAND_GROUP_A:
       for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-        if (((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
-            (uVar7 = *(uint *)(*(int *)worldNode1->runtimePayload + 0x4c),
-            g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[uVar7] !=
-            ArmyRuntime_ClassCommandHandlerGroupACf)) && (uVar7 == *(uint *)(pbVar12 + 4)))
+          worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+        if (((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+            (dVar5 = *(dword *)(*(int *)worldNode1->runtimePayload + 0x4c),
+            g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[dVar5] !=
+            ArmyRuntime_ClassCommandHandlerGroupACf)) &&
+           (dVar5 == pIVar15->conditions[0].payload.operands[0]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
 InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied:
-      *(uint *)pbVar12 = *(uint *)pbVar12 | 1;
+      pIVar15->conditions[0].statusAndKind.kind = pIVar15->conditions[0].statusAndKind.kind | 1;
       break;
-    case 0x1a:
-      pbVar8 = pbVar12 + 1;
-      uVar7 = 0;
+    case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
+      pbVar11 = (byte *)((int)&pIVar15->conditions[0].statusAndKind.kind + 1);
+      IVar9 = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
       while( true ) {
         while( true ) {
           while( true ) {
             while( true ) {
-              bVar5 = *pbVar8;
-              pbVar8 = pbVar8 + 1;
-              if (bVar5 != 0xff) break;
-              uVar7 = uVar7 >> 1 | uVar7 & 1;
+              bVar7 = *pbVar11;
+              pbVar11 = pbVar11 + 1;
+              if (bVar7 != 0xff) break;
+              IVar9 = IVar9 >> 1 | IVar9 & 1;
             }
-            if (bVar5 != 0xfe) break;
-            uVar7 = uVar7 >> 1 & (uVar7 | 0xfffffffe);
+            if (bVar7 != 0xfe) break;
+            IVar9 = IVar9 >> 1 & (IVar9 | 0xfffffffe);
           }
-          if (bVar5 != 0xfd) break;
-          uVar7 = uVar7 ^ 1;
+          if (bVar7 != 0xfd) break;
+          IVar9 = IVar9 ^ 1;
         }
-        if (bVar5 == 0xfc) break;
-        uVar7 = (*(uint *)(pIVar3[4].reserved00_4F + (uint)bVar5 * 0x10 + 0x10) & 1) + uVar7 * 2;
+        if (bVar7 == 0xfc) break;
+        IVar9 = ((pIVar4->schedule).conditions[bVar7].statusAndKind.kind & 1) + IVar9 * 2;
       }
-      *(uint *)pbVar12 = *(uint *)pbVar12 | uVar7 & 1;
+      pIVar15->conditions[0].statusAndKind.kind =
+           pIVar15->conditions[0].statusAndKind.kind | IVar9 & 1;
     }
 InGameScheduledCondition_AdvanceToNextRecord:
-    iVar6 = iVar6 + -1;
-    if (iVar6 == 0) {
-      pbVar12 = pIVar3[8].reserved5C_AB + 0x44;
-      iVar6 = 0x10;
+    pIVar15 = (InGameConditionScheduleImageView480 *)(pIVar15->conditions + 1);
+    iVar8 = iVar8 + -1;
+    if (iVar8 == 0) {
+      endTrigger = (InGameEndConditionTriggerRecord8 *)(pIVar4->schedule).triggers;
+      iVar8 = 0x10;
       do {
-        if ((*pbVar12 == 1) &&
-           ((*(uint *)(pIVar3[4].reserved00_4F + (uint)pbVar12[6] * 0x10 + 0x10) & 1) != 0)) {
-          *pbVar12 = *pbVar12 | 2;
+        if ((endTrigger->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
+           (((pIVar4->schedule).conditions[endTrigger->conditionIndex].statusAndKind.kind & 1) !=
+            INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED)) {
+          endTrigger->stateFlags = endTrigger->stateFlags | INGAME_END_CONDITION_TRIGGER_PROCESSED;
           gameRuntime1 = g_InGameRuntimeRoot;
-          uVar7 = (uint)pbVar12[4];
-          if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar7] ==
+          uVar10 = (uint)endTrigger->factionRuntimeIndex;
+          if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar10] ==
               FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
             contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
-            g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar7] =
+            g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar10] =
                  FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING;
-            if (pbVar12[2] != 1) {
+            if (endTrigger->skipArmyDisableWhenOne != 1) {
               worldNode1 = (gameRuntime1->worldRuntime0A30).ownerListHead;
-              if (worldNode1 != (WorldRuntimeNode *)0x0) {
+              if (worldNode1 != (WorldOwnerListNode100 *)0x0) {
                 do {
-                  if ((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
+                  if ((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
                      (modelRuntime = *(int **)((int)worldNode1->runtimePayload + 8),
-                     uVar7 == modelRuntime[3])) {
+                     uVar10 == modelRuntime[3])) {
                     ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,modelRuntime);
-                    uVar7 = extraout_EDX;
                   }
-                  worldNode1 = (worldNode1->common).nextNode;
-                } while (worldNode1 != (WorldRuntimeNode *)0x0);
-                g_GameFactionRuntimeImage.records[uVar7].secondaryArmyAssetCount = 0;
-                g_GameFactionRuntimeImage.records[uVar7].primaryArmyAssetCount = 0;
+                  worldNode1 = worldNode1->nextNode;
+                } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
+                g_GameFactionRuntimeImage.records[uVar10].secondaryArmyAssetCount = 0;
+                g_GameFactionRuntimeImage.records[uVar10].primaryArmyAssetCount = 0;
               }
               gameRuntime2 = g_InGameRuntimeRoot;
-              if (uVar7 == (gameRuntime1->worldRuntime0A30).activeFactionRuntimeIndex) {
+              if (uVar10 == (gameRuntime1->worldRuntime0A30).activeFactionRuntimeIndex) {
                 g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x108;
               }
-              pFVar11 = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
-              uVar7 = 1;
-              bVar5 = 4;
+              pFVar14 = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
+              uVar10 = 1;
+              bVar7 = 4;
               do {
-                pFVar11 = pFVar11 + 1;
-                if (*pFVar11 == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-                  uVar4 = uVar7 + 1;
-                  pFVar10 = pFVar11;
+                pFVar14 = pFVar14 + 1;
+                if (*pFVar14 == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
+                  uVar6 = uVar10 + 1;
+                  pFVar13 = pFVar14;
                   do {
-                    pFVar10 = pFVar10 + 1;
-                    if ((*pFVar10 == FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-                       ((g_GameFactionRuntimeImage.records[uVar4].packedRelationStates >>
-                         (bVar5 & 0x1f) & 0xf) < 8)) {
-                      if ((uint)pbVar12[4] ==
+                    pFVar13 = pFVar13 + 1;
+                    if ((*pFVar13 == FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
+                       ((g_GameFactionRuntimeImage.records[uVar6].packedRelationStates >>
+                         (bVar7 & 0x1f) & 0xf) < 8)) {
+                      if ((uint)endTrigger->factionRuntimeIndex ==
                           (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
                         g_InGameRuntimeRoot->observedRelationTransitionFlags4D54 =
                              g_InGameRuntimeRoot->observedRelationTransitionFlags4D54 | 8;
@@ -1782,29 +1814,29 @@ InGameScheduledCondition_AdvanceToNextRecord:
                       }
                       return;
                     }
-                    uVar4 = uVar4 + 1;
-                  } while (uVar4 < 8);
+                    uVar6 = uVar6 + 1;
+                  } while (uVar6 < 8);
                 }
-                uVar7 = uVar7 + 1;
-                bVar5 = bVar5 + 4;
-              } while (uVar7 < 7);
+                uVar10 = uVar10 + 1;
+                bVar7 = bVar7 + 4;
+              } while (uVar10 < 7);
               contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
-              uVar7 = (uint)pbVar12[4];
+              uVar10 = (uint)endTrigger->factionRuntimeIndex;
             }
-            uVar4 = contextArg->activeFactionRuntimeIndex;
-            g_EndMovieVariantIndex = (uint)pbVar12[1];
-            if (((uVar4 != uVar7) &&
+            uVar6 = contextArg->activeFactionRuntimeIndex;
+            g_EndMovieVariantIndex = (uint)endTrigger->movieVariantSelector;
+            if (((uVar6 != uVar10) &&
                 (g_EndMovieVariantIndex = 0,
-                g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar4] <
+                g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar6] <
                 FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED)) &&
-               (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar4] != 0)) {
-              g_EndMovieVariantIndex = pbVar12[1] ^ 1;
-              if (3 < (g_GameFactionRuntimeImage.records[uVar4].packedRelationStates >>
-                       ((char)uVar7 * '\x04' & 0x1fU) & 0xf)) {
-                g_EndMovieVariantIndex = (uint)pbVar12[1];
+               (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar6] != 0)) {
+              g_EndMovieVariantIndex = endTrigger->movieVariantSelector ^ 1;
+              if (3 < (g_GameFactionRuntimeImage.records[uVar6].packedRelationStates >>
+                       ((char)uVar10 * '\x04' & 0x1fU) & 0xf)) {
+                g_EndMovieVariantIndex = (uint)endTrigger->movieVariantSelector;
               }
             }
-            g_EndMovieSelectionIndex = (uint)pbVar12[5];
+            g_EndMovieSelectionIndex = (uint)endTrigger->endMovieSelectionIndex;
             g_EndMoviePath = (word *)u_flm_ende0000_flm_0050df06;
             if (g_EndMovieVariantIndex == 0) {
               g_EndMoviePath = (word *)u_flm_ende0001_flm_0050df28;
@@ -1813,15 +1845,16 @@ InGameScheduledCondition_AdvanceToNextRecord:
             return;
           }
         }
-        pbVar12 = pbVar12 + 8;
-        iVar6 = iVar6 + -1;
-        if (iVar6 == 0) {
+        endTrigger = endTrigger + 1;
+        iVar8 = iVar8 + -1;
+        if (iVar8 == 0) {
           return;
         }
       } while( true );
     }
   } while( true );
 }
+
 
 /* Address: 0x00513160.
    Ownership: gameplay/session/runtime.
@@ -1837,193 +1870,183 @@ InGameScheduledCondition_AdvanceToNextRecord:
    InGameNotificationQueue_InsertPriorityRecord [ui/ingame/runtime],
    GameFactionRuntime_RecomputeProgressAndScoreMetrics [gameplay/faction/runtime].
 */
+
 void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
 
 {
-  FactionAnchorCooldownTicks *pFVar1;
-  FactionRelationTick *pFVar2;
-  byte *pbVar3;
-  FieldGridDimension FVar4;
-  int *piVar5;
-  InGameConditionRuntime *pIVar6;
-  InGameRuntimeRootImageC3E4 *pIVar7;
-  uint uVar8;
+  byte *pbVar1;
+  FieldGridDimension FVar2;
+  int *piVar3;
+  InGameLevelConditionStorageView800 *pIVar4;
+  InGameRuntimeRootImageC3E4 *pIVar5;
+  uint uVar6;
+  int iVar7;
+  int iVar8;
   int iVar9;
-  uint extraout_EAX;
   int iVar10;
   int iVar11;
-  int extraout_ECX;
-  int iVar12;
-  int incomingEcxValue;
-  uint uVar13;
+  uint uVar12;
+  FactionArmyAssetCount FVar13;
   uint uVar14;
-  int extraout_ECX_00;
   FieldCellPackedFlagsAndMaterial requiredOccupancyMask;
   uint *puVar15;
   uint uVar16;
   uint uVar17;
   TerrainRegionCollectionCount TVar18;
   WorldRuntimeContext *worldRuntime;
-  GameFactionRuntimeImage *pGVar19;
-  int iVar20;
+  GameFactionRuntimeRecord *factionRecord;
+  int iVar19;
+  GameFactionRuntimeImage *pGVar20;
+  GameFactionRuntimeRecord *reverseFactionRecord;
   int *piVar21;
-  GameDataAuxState *pGVar22;
+  dword *pairPressureRow;
   FieldGridCell *gridCell1;
   FieldGridCell *gridCell2;
   FieldGridCell *cell;
-  uint uVar23;
-  uint *puVar24;
-  undefined8 uVar25;
+  uint uVar22;
+  uint *puVar23;
   InGameNotificationMovieId notificationMovieId;
   FieldGridAsset *fieldGrid1;
-  WorldRuntimeNode *worldNode1;
+  WorldOwnerListNode100 *worldNode1;
   
-  pIVar7 = g_InGameRuntimeRoot;
-  pGVar19 = &g_GameFactionRuntimeImage;
-  pGVar22 = &g_GameDataAuxState;
-  iVar10 = 8;
+  pIVar5 = g_InGameRuntimeRoot;
+  factionRecord = g_GameFactionRuntimeImage.records;
+  pairPressureRow = g_GameDataAuxState.pairPressureMatrix8x8;
+  iVar8 = 8;
   do {
-    pGVar19->records[0].suppliedEnergyDemandQ4 = 0;
-    pGVar19->records[0].unpoweredEnergyDemandQ4 = 0;
-    pGVar19->records[0].xeniteExtractionRateQ4PerTick = 0;
-    pGVar19->records[0].tritiumExtractionRateQ4PerTick = 0;
-    pGVar22->pairPressureMatrix8x8[0] = pGVar22->pairPressureMatrix8x8[0] * 7 >> 3;
-    *(dword *)((int)pGVar22 + 4) = *(dword *)((int)pGVar22 + 4) * 7 >> 3;
-    *(dword *)((int)pGVar22 + 8) = *(dword *)((int)pGVar22 + 8) * 7 >> 3;
-    *(dword *)((int)pGVar22 + 0xc) = *(dword *)((int)pGVar22 + 0xc) * 7 >> 3;
-    *(dword *)((int)pGVar22 + 0x10) = *(dword *)((int)pGVar22 + 0x10) * 7 >> 3;
-    *(dword *)((int)pGVar22 + 0x14) = *(dword *)((int)pGVar22 + 0x14) * 7 >> 3;
-    *(dword *)((int)pGVar22 + 0x18) = *(dword *)((int)pGVar22 + 0x18) * 7 >> 3;
-    *(dword *)((int)pGVar22 + 0x1c) = *(dword *)((int)pGVar22 + 0x1c) * 7 >> 3;
-    if (pGVar19->records[0].anchorCooldown1 != 0) {
-      pFVar1 = &pGVar19->records[0].anchorCooldown1;
-      *pFVar1 = *pFVar1 - 1;
+    factionRecord->suppliedEnergyDemandQ4 = 0;
+    factionRecord->unpoweredEnergyDemandQ4 = 0;
+    factionRecord->xeniteExtractionRateQ4PerTick = 0;
+    factionRecord->tritiumExtractionRateQ4PerTick = 0;
+    *pairPressureRow = *pairPressureRow * 7 >> 3;
+    pairPressureRow[1] = pairPressureRow[1] * 7 >> 3;
+    pairPressureRow[2] = pairPressureRow[2] * 7 >> 3;
+    pairPressureRow[3] = pairPressureRow[3] * 7 >> 3;
+    pairPressureRow[4] = pairPressureRow[4] * 7 >> 3;
+    pairPressureRow[5] = pairPressureRow[5] * 7 >> 3;
+    pairPressureRow[6] = pairPressureRow[6] * 7 >> 3;
+    pairPressureRow[7] = pairPressureRow[7] * 7 >> 3;
+    if (factionRecord->anchorCooldown1 != 0) {
+      factionRecord->anchorCooldown1 = factionRecord->anchorCooldown1 - 1;
     }
-    if (pGVar19->records[0].anchorCooldown2 != 0) {
-      pFVar1 = &pGVar19->records[0].anchorCooldown2;
-      *pFVar1 = *pFVar1 - 1;
+    if (factionRecord->anchorCooldown2 != 0) {
+      factionRecord->anchorCooldown2 = factionRecord->anchorCooldown2 - 1;
     }
-    if (pGVar19->records[0].primaryAnchorCooldown != 0) {
-      pFVar1 = &pGVar19->records[0].primaryAnchorCooldown;
-      *pFVar1 = *pFVar1 - 1;
+    if (factionRecord->primaryAnchorCooldown != 0) {
+      factionRecord->primaryAnchorCooldown = factionRecord->primaryAnchorCooldown - 1;
     }
-    if (pGVar19->records[0].anchorCooldown0 != 0) {
-      pFVar1 = &pGVar19->records[0].anchorCooldown0;
-      *pFVar1 = *pFVar1 - 1;
+    if (factionRecord->anchorCooldown0 != 0) {
+      factionRecord->anchorCooldown0 = factionRecord->anchorCooldown0 - 1;
     }
-    pFVar2 = &pGVar19->records[0].relationTransitionTick;
-    *pFVar2 = *pFVar2 + 1;
-    pGVar22 = (GameDataAuxState *)((int)pGVar22 + 0x20);
-    pGVar19 = (GameFactionRuntimeImage *)(pGVar19->records + 1);
-    iVar10 = iVar10 + -1;
-  } while (iVar10 != 0);
-  fieldGrid1 = (pIVar7->worldRuntime0A30).fieldGrid;
-  FVar4 = fieldGrid1->gridWidth;
-  iVar11 = FVar4 * fieldGrid1->gridHeight;
+    factionRecord->relationTransitionTick = factionRecord->relationTransitionTick + 1;
+    pairPressureRow = pairPressureRow + 8;
+    factionRecord = factionRecord + 1;
+    iVar8 = iVar8 + -1;
+  } while (iVar8 != 0);
+  fieldGrid1 = (pIVar5->worldRuntime0A30).fieldGrid;
+  FVar2 = fieldGrid1->gridWidth;
+  iVar9 = FVar2 * fieldGrid1->gridHeight;
   gridCell1 = fieldGrid1->cells;
   requiredOccupancyMask = FIELD_CELL_XENITE_SUPPORT;
-  iVar20 = 0;
-  iVar10 = iVar11;
+  iVar19 = 0;
+  iVar8 = iVar9;
   gridCell2 = gridCell1;
   do {
     do {
       gridCell2->flagsAndMaterial =
            gridCell2->flagsAndMaterial & ~FIELD_CELL_CONNECTED_REGION_VISITED;
-      iVar10 = iVar10 + -1;
-      incomingEcxValue = iVar11;
+      iVar8 = iVar8 + -1;
+      iVar11 = iVar9;
       cell = gridCell1;
       gridCell2 = gridCell2 + 1;
-    } while (iVar10 != 0);
+    } while (iVar8 != 0);
     do {
       if (((cell->flagsAndMaterial & 0x88016000) == 0) &&
          ((cell->flagsAndMaterial & requiredOccupancyMask) != 0)) {
         g_TerrainRegionCollectionStoredCount = 0;
         g_TerrainRegionCollectionVisitedCount = 0;
-        uVar25 = TerrainRegionCollection_CollectConnectedCellsRecursive
-                           (incomingEcxValue,requiredOccupancyMask,requiredOccupancyMask,FVar4 << 7,
-                            cell);
-        requiredOccupancyMask = (FieldCellPackedFlagsAndMaterial)((ulonglong)uVar25 >> 0x20);
-        incomingEcxValue = extraout_ECX;
+        TerrainRegionCollection_CollectConnectedCellsRecursive
+                  (requiredOccupancyMask,FVar2 << 7,cell);
         if (g_TerrainRegionCollectionStoredCount != 0) {
-          iVar10 = (int)g_TerrainRegionCollectionVisitedCount /
-                   (int)g_TerrainRegionCollectionStoredCount;
+          iVar8 = (int)g_TerrainRegionCollectionVisitedCount /
+                  (int)g_TerrainRegionCollectionStoredCount;
           puVar15 = g_TerrainRegionCollectionEntries;
           TVar18 = g_TerrainRegionCollectionStoredCount;
           do {
-            uVar23 = *puVar15 >> 0xd & 0x7ff;
-            uVar8 = iVar10 * 2 * (*puVar15 >> 0x18) *
-                    g_GameFactionRuntimeImage.records[uVar23].terrainContributionScaleQ8 >> 0xf;
-            uVar13 = puVar15[1];
-            piVar21 = (int *)(iVar20 + 0x50f348 + uVar23 * 0x740);
-            *piVar21 = *piVar21 + uVar8;
-            iVar9 = uVar8 * g_InGameSimulationStepTicks;
-            pbVar3 = g_GameFactionRuntimeImage.records[uVar23].reserved78_87 + iVar20 + -0x78;
-            *(int *)pbVar3 = *(int *)pbVar3 + iVar9;
-            piVar21 = (int *)(iVar20 + 0x50f34c + uVar23 * 0x740);
-            *piVar21 = *piVar21 + iVar9;
-            if ((uVar13 != 0) &&
-               (iVar12 = uVar13 + g_ModelRuntimeRebaseDelta, *(int *)(iVar12 + 4) != 0)) {
-              *(int *)(iVar12 + 0x60) = iVar9;
+            uVar22 = *puVar15 >> 0xd & 0x7ff;
+            uVar6 = iVar8 * 2 * (*puVar15 >> 0x18) *
+                    g_GameFactionRuntimeImage.records[uVar22].terrainContributionScaleQ8 >> 0xf;
+            uVar12 = puVar15[1];
+            piVar21 = (int *)(iVar19 + 0x50f348 + uVar22 * 0x740);
+            *piVar21 = *piVar21 + uVar6;
+            iVar7 = uVar6 * g_InGameSimulationStepTicks;
+            pbVar1 = g_GameFactionRuntimeImage.records[uVar22].reserved78_87 + iVar19 + -0x78;
+            *(int *)pbVar1 = *(int *)pbVar1 + iVar7;
+            piVar21 = (int *)(iVar19 + 0x50f34c + uVar22 * 0x740);
+            *piVar21 = *piVar21 + iVar7;
+            if ((uVar12 != 0) &&
+               (iVar10 = uVar12 + g_ModelRuntimeRebaseDelta, *(int *)(iVar10 + 4) != 0)) {
+              *(int *)(iVar10 + 0x60) = iVar7;
             }
             puVar15 = puVar15 + 2;
             TVar18 = TVar18 - 1;
           } while (TVar18 != 0);
         }
       }
-      incomingEcxValue = incomingEcxValue + -1;
+      iVar11 = iVar11 + -1;
       cell = cell + 1;
-    } while (incomingEcxValue != 0);
+    } while (iVar11 != 0);
     requiredOccupancyMask = requiredOccupancyMask * 2;
-    iVar20 = iVar20 + 0x10;
-    iVar10 = iVar11;
+    iVar19 = iVar19 + 0x10;
+    iVar8 = iVar9;
     gridCell2 = gridCell1;
   } while (requiredOccupancyMask == FIELD_CELL_TRITIUM_SUPPORT);
-  pGVar19 = &g_GameFactionRuntimeImage;
-  iVar10 = 8;
+  pGVar20 = &g_GameFactionRuntimeImage;
+  iVar8 = 8;
   do {
-    uVar13 = pGVar19->records[0].xeniteStorageLimitQ4;
-    uVar8 = pGVar19->records[0].tritiumStorageLimitQ4;
-    if (uVar13 < pGVar19->records[0].xeniteCurrentQ4) {
-      pGVar19->records[0].xeniteCurrentQ4 = uVar13;
+    uVar12 = pGVar20->records[0].xeniteStorageLimitQ4;
+    uVar6 = pGVar20->records[0].tritiumStorageLimitQ4;
+    if (uVar12 < pGVar20->records[0].xeniteCurrentQ4) {
+      pGVar20->records[0].xeniteCurrentQ4 = uVar12;
     }
-    if (uVar8 < pGVar19->records[0].tritiumCurrentQ4) {
-      pGVar19->records[0].tritiumCurrentQ4 = uVar8;
+    if (uVar6 < pGVar20->records[0].tritiumCurrentQ4) {
+      pGVar20->records[0].tritiumCurrentQ4 = uVar6;
     }
-    pGVar19 = (GameFactionRuntimeImage *)(pGVar19->records + 1);
-    iVar10 = iVar10 + -1;
-  } while (iVar10 != 0);
-  uVar13 = 0;
+    pGVar20 = (GameFactionRuntimeImage *)(pGVar20->records + 1);
+    iVar8 = iVar8 + -1;
+  } while (iVar8 != 0);
+  uVar12 = 0;
   puVar15 = g_TerrainRegionCollectionEntries;
   for (worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-    if ((worldNode1[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
+      worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+    if ((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
        (piVar21 = worldNode1->runtimePayload, (piVar21[0x3b] & 0x10U) == 0)) {
       if (piVar21[0x3d] != 0) {
-        if (0xff < uVar13)
+        if (0xff < uVar12)
         goto InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectionScan;
-        uVar8 = *(uint *)(piVar21[2] + 0xc);
-        iVar10 = *(int *)(*piVar21 + 0x4c);
+        uVar6 = *(uint *)(piVar21[2] + 0xc);
+        iVar8 = *(int *)(*piVar21 + 0x4c);
         *puVar15 = (uint)piVar21;
-        puVar15[1] = uVar8;
-        uVar8 = piVar21[0x3d];
-        puVar15[3] = *(uint *)(&g_FactionEnergyAllocationPriorityByModelClass + iVar10 * 4);
-        puVar15[2] = uVar8;
-        uVar13 = uVar13 + 1;
+        puVar15[1] = uVar6;
+        uVar6 = piVar21[0x3d];
+        puVar15[3] = *(uint *)(&g_FactionEnergyAllocationPriorityByModelClass + iVar8 * 4);
+        puVar15[2] = uVar6;
+        uVar12 = uVar12 + 1;
         puVar15 = puVar15 + 4;
       }
-      iVar10 = piVar21[3];
-      if ((uVar13 < 0x100) && ((*(uint *)(*piVar21 + 0x68) & 0x80) != 0)) {
-        for (; iVar10 != 0; iVar10 = iVar10 + -1) {
-          piVar5 = (int *)piVar21[0x50];
-          if (((piVar5 != (int *)0x0) && (piVar5[0x3d] != 0)) && (uVar13 < 0x100)) {
-            uVar8 = *(uint *)(piVar5[2] + 0xc);
-            iVar11 = *(int *)(*piVar5 + 0x4c);
-            *puVar15 = (uint)piVar5;
-            puVar15[1] = uVar8;
-            uVar8 = piVar5[0x3d];
-            puVar15[3] = *(uint *)(&g_FactionEnergyAllocationPriorityByModelClass + iVar11 * 4);
-            puVar15[2] = uVar8;
-            uVar13 = uVar13 + 1;
+      iVar8 = piVar21[3];
+      if ((uVar12 < 0x100) && ((*(uint *)(*piVar21 + 0x68) & 0x80) != 0)) {
+        for (; iVar8 != 0; iVar8 = iVar8 + -1) {
+          piVar3 = (int *)piVar21[0x50];
+          if (((piVar3 != (int *)0x0) && (piVar3[0x3d] != 0)) && (uVar12 < 0x100)) {
+            uVar6 = *(uint *)(piVar3[2] + 0xc);
+            iVar9 = *(int *)(*piVar3 + 0x4c);
+            *puVar15 = (uint)piVar3;
+            puVar15[1] = uVar6;
+            uVar6 = piVar3[0x3d];
+            puVar15[3] = *(uint *)(&g_FactionEnergyAllocationPriorityByModelClass + iVar9 * 4);
+            puVar15[2] = uVar6;
+            uVar12 = uVar12 + 1;
             puVar15 = puVar15 + 4;
           }
           piVar21 = piVar21 + 8;
@@ -2032,159 +2055,164 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
     }
 InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectionScan:
   }
-  if (uVar13 != 0) {
-    if (1 < uVar13) {
-      uVar8 = g_TerrainRegionCollectionEntries[3];
+  if (uVar12 != 0) {
+    if (1 < uVar12) {
+      uVar6 = g_TerrainRegionCollectionEntries[3];
       puVar15 = g_TerrainRegionCollectionEntries + 4;
-      iVar10 = uVar13 - 1;
-      uVar23 = uVar13;
-      puVar24 = g_TerrainRegionCollectionEntries;
+      iVar8 = uVar12 - 1;
+      uVar22 = uVar12;
+      puVar23 = g_TerrainRegionCollectionEntries;
       while( true ) {
         do {
-          if (uVar8 < puVar15[3]) {
+          if (uVar6 < puVar15[3]) {
             LOCK();
             uVar16 = puVar15[3];
-            puVar15[3] = uVar8;
+            puVar15[3] = uVar6;
             UNLOCK();
-            puVar24[3] = uVar16;
+            puVar23[3] = uVar16;
             LOCK();
-            uVar8 = *puVar15;
-            *puVar15 = *puVar24;
+            uVar6 = *puVar15;
+            *puVar15 = *puVar23;
             UNLOCK();
-            *puVar24 = uVar8;
+            *puVar23 = uVar6;
             LOCK();
-            uVar8 = puVar15[2];
-            puVar15[2] = puVar24[2];
+            uVar6 = puVar15[2];
+            puVar15[2] = puVar23[2];
             UNLOCK();
-            puVar24[2] = uVar8;
+            puVar23[2] = uVar6;
             LOCK();
-            uVar8 = puVar15[1];
-            puVar15[1] = puVar24[1];
+            uVar6 = puVar15[1];
+            puVar15[1] = puVar23[1];
             UNLOCK();
-            puVar24[1] = uVar8;
-            uVar8 = uVar16;
+            puVar23[1] = uVar6;
+            uVar6 = uVar16;
           }
           puVar15 = puVar15 + 4;
-          iVar10 = iVar10 + -1;
-        } while (iVar10 != 0);
-        if (uVar23 - 1 < 2) break;
-        uVar8 = puVar24[7];
-        puVar15 = puVar24 + 8;
-        iVar10 = uVar23 - 2;
-        uVar23 = uVar23 - 1;
-        puVar24 = puVar24 + 4;
+          iVar8 = iVar8 + -1;
+        } while (iVar8 != 0);
+        if (uVar22 - 1 < 2) break;
+        uVar6 = puVar23[7];
+        puVar15 = puVar23 + 8;
+        iVar8 = uVar22 - 2;
+        uVar22 = uVar22 - 1;
+        puVar23 = puVar23 + 4;
       }
     }
-    uVar8 = 7;
-    iVar10 = 0x512600;
+    uVar6 = 7;
+    reverseFactionRecord = g_GameFactionRuntimeImage.records + 7;
     do {
       puVar15 = g_TerrainRegionCollectionEntries;
-      iVar20 = 0;
-      uVar23 = 0;
-      for (iVar11 = *(int *)(iVar10 + 0x30); iVar11 != 0; iVar11 = iVar11 + -1) {
-        if (*(int *)(*(int *)(iVar10 + 0x1e0 + iVar20 * 4) + 0x74) == 0) {
-          uVar23 = uVar23 + 0x10;
+      iVar8 = 0;
+      uVar22 = 0;
+      for (FVar13 = reverseFactionRecord->primaryArmyAssetCount; FVar13 != 0; FVar13 = FVar13 - 1) {
+        if (*(int *)(reverseFactionRecord->primaryArmyAssetPointersOrIds[iVar8] + 0x74) == 0) {
+          uVar22 = uVar22 + 0x10;
         }
         else {
-          uVar23 = uVar23 + 0x50;
+          uVar22 = uVar22 + 0x50;
         }
-        iVar20 = iVar20 + 1;
+        iVar8 = iVar8 + 1;
       }
-      uVar16 = *(int *)(iVar10 + 0x10) * 0x10 + *(int *)(iVar10 + 0x20);
-      if (*(int *)(iVar10 + 0x24) < (int)uVar16) {
-        uVar16 = *(uint *)(iVar10 + 0x24);
+      uVar16 = reverseFactionRecord->tritiumCurrentQ4 * 0x10 +
+               reverseFactionRecord->baselineEnergySupplyQ4;
+      if ((int)reverseFactionRecord->energyGenerationCapacityQ4 < (int)uVar16) {
+        uVar16 = reverseFactionRecord->energyGenerationCapacityQ4;
       }
-      *(int *)(iVar10 + 0x28) = *(int *)(iVar10 + 0x28) + uVar23;
-      uVar17 = uVar16 - uVar23;
-      uVar14 = uVar13;
-      if (uVar16 < uVar23) {
+      reverseFactionRecord->suppliedEnergyDemandQ4 =
+           reverseFactionRecord->suppliedEnergyDemandQ4 + uVar22;
+      uVar17 = uVar16 - uVar22;
+      uVar14 = uVar12;
+      if (uVar16 < uVar22) {
         uVar17 = 0;
       }
       do {
-        uVar23 = puVar15[2];
-        if (uVar8 == puVar15[1]) {
+        uVar22 = puVar15[2];
+        if (uVar6 == puVar15[1]) {
           uVar16 = *puVar15;
-          if (uVar17 < uVar23) {
-            puVar24 = (uint *)(uVar16 + 0xec);
-            *puVar24 = *puVar24 | 1;
-            *(int *)(iVar10 + 0x2c) = *(int *)(iVar10 + 0x2c) + uVar23;
+          if (uVar17 < uVar22) {
+            puVar23 = (uint *)(uVar16 + 0xec);
+            *puVar23 = *puVar23 | 1;
+            reverseFactionRecord->unpoweredEnergyDemandQ4 =
+                 reverseFactionRecord->unpoweredEnergyDemandQ4 + uVar22;
           }
           else {
-            uVar17 = uVar17 - uVar23;
-            *(int *)(iVar10 + 0x28) = *(int *)(iVar10 + 0x28) + uVar23;
-            puVar24 = (uint *)(uVar16 + 0xec);
-            *puVar24 = *puVar24 & 0xfffffffe;
+            uVar17 = uVar17 - uVar22;
+            reverseFactionRecord->suppliedEnergyDemandQ4 =
+                 reverseFactionRecord->suppliedEnergyDemandQ4 + uVar22;
+            puVar23 = (uint *)(uVar16 + 0xec);
+            *puVar23 = *puVar23 & 0xfffffffe;
           }
         }
-        pIVar6 = g_InGameConditionRuntime;
+        pIVar4 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
         puVar15 = puVar15 + 4;
         uVar14 = uVar14 - 1;
       } while (uVar14 != 0);
-      uVar23 = *(uint *)(iVar10 + 0x28);
-      uVar16 = uVar23 - *(uint *)(iVar10 + 0x20);
-      if (uVar23 < *(uint *)(iVar10 + 0x20)) {
+      uVar22 = reverseFactionRecord->suppliedEnergyDemandQ4;
+      uVar16 = uVar22 - reverseFactionRecord->baselineEnergySupplyQ4;
+      if (uVar22 < reverseFactionRecord->baselineEnergySupplyQ4) {
         uVar16 = 0;
       }
-      if (*(int *)(iVar10 + 0x2c) == 0) {
-        *(undefined4 *)(iVar10 + 0x68) = 0;
+      if (reverseFactionRecord->unpoweredEnergyDemandQ4 == 0) {
+        reverseFactionRecord->anchorCooldown1 = 0;
       }
-      else if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == uVar8) {
-        if (*(uint *)(iVar10 + 0x24) < uVar23 + *(int *)(iVar10 + 0x2c)) {
-          if (*(int *)(iVar10 + 0x68) == 0) {
+      else if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == uVar6) {
+        if (reverseFactionRecord->energyGenerationCapacityQ4 <
+            uVar22 + reverseFactionRecord->unpoweredEnergyDemandQ4) {
+          if (reverseFactionRecord->anchorCooldown1 == 0) {
             notificationMovieId = 400;
-            *(undefined4 *)(iVar10 + 0x68) = 0x96;
+            reverseFactionRecord->anchorCooldown1 = 0x96;
 InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotification:
-            if (((*(int *)(pIVar6[1].reserved00_4F + 0x24) == 0x300074) &&
-                (*(int *)(pIVar6[1].reserved00_4F + 0x28) == 0x5f0030)) &&
-               (*(int *)(pIVar6[1].reserved00_4F + 0x2c) == 0x750074)) {
+            if (((*(int *)(pIVar4->levelImage).header.opaque100_16F == 0x300074) &&
+                (*(int *)((pIVar4->levelImage).header.opaque100_16F + 4) == 0x5f0030)) &&
+               (*(int *)((pIVar4->levelImage).header.opaque100_16F + 8) == 0x750074)) {
               notificationMovieId = 0x192;
-              *(undefined4 *)(iVar10 + 0x68) = 0x7fffffff;
-              *(undefined4 *)(iVar10 + 0x6c) = 0x7fffffff;
+              reverseFactionRecord->anchorCooldown1 = 0x7fffffff;
+              reverseFactionRecord->anchorCooldown2 = 0x7fffffff;
             }
             InGameNotificationQueue_InsertPriorityRecord(NONE,0,0,0,0,0,3,notificationMovieId);
-            uVar16 = extraout_EAX;
           }
         }
-        else if (*(int *)(iVar10 + 0x6c) == 0) {
+        else if (reverseFactionRecord->anchorCooldown2 == 0) {
           notificationMovieId = 0x191;
-          *(undefined4 *)(iVar10 + 0x6c) = 0x96;
+          reverseFactionRecord->anchorCooldown2 = 0x96;
           goto 
           InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotification;
         }
       }
-      *(int *)(iVar10 + 0x10) =
-           *(int *)(iVar10 + 0x10) - (uVar16 >> 4) * g_InGameSimulationStepTicks;
-      iVar10 = iVar10 + -0x740;
-      uVar8 = uVar8 - 1;
-    } while (uVar8 != 0);
+      reverseFactionRecord->tritiumCurrentQ4 =
+           reverseFactionRecord->tritiumCurrentQ4 - (uVar16 >> 4) * g_InGameSimulationStepTicks;
+      reverseFactionRecord = reverseFactionRecord + -1;
+      uVar6 = uVar6 - 1;
+    } while (uVar6 != 0);
   }
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 0x78) == 0) {
-    iVar10 = 0x50fa80;
+    iVar8 = 0x50fa80;
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
     if (g_GameFactionRuntimeImage.tail.simulationTick >> 7 < 0x1000) {
-      uVar13 = 1;
+      uVar12 = 1;
       piVar21 = (int *)((g_GameFactionRuntimeImage.tail.simulationTick >> 7) * 0x38 +
                        (int)g_GameStatTableImage);
       do {
-        GameFactionRuntime_RecomputeProgressAndScoreMetrics(uVar13,worldRuntime);
-        iVar11 = *(int *)(iVar10 + 0x88);
-        iVar20 = *(int *)(iVar10 + 0x8c);
-        if (iVar11 < 0) {
-          iVar11 = 0;
+        GameFactionRuntime_RecomputeProgressAndScoreMetrics(uVar12,worldRuntime);
+        iVar9 = *(int *)(iVar8 + 0x88);
+        iVar19 = *(int *)(iVar8 + 0x8c);
+        if (iVar9 < 0) {
+          iVar9 = 0;
         }
-        if (iVar20 < 0) {
-          iVar20 = 0;
+        if (iVar19 < 0) {
+          iVar19 = 0;
         }
-        *piVar21 = iVar11;
-        piVar21[1] = iVar20;
-        uVar13 = extraout_ECX_00 + 1;
-        iVar10 = iVar10 + 0x740;
+        *piVar21 = iVar9;
+        piVar21[1] = iVar19;
+        uVar12 = uVar12 + 1;
+        iVar8 = iVar8 + 0x740;
         piVar21 = piVar21 + 2;
-      } while (uVar13 < 8);
+      } while (uVar12 < 8);
     }
   }
   return;
 }
+
 
 /* Address: 0x0053D4F0.
    Ownership: gameplay/session/runtime.
@@ -2193,19 +2221,19 @@ InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotif
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid], PersistentSettings_ReadDword
    [core/settings/persistent].
 */
-void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
+void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
 
 {
   UQ12 UVar1;
   dword dVar2;
-  qword qVar3;
+  FieldGridCoordinatesEaxEdx8 FVar3;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
   
   gameRuntime1 = g_InGameRuntimeRoot;
-  qVar3 = FieldGrid_WorldToGridQ12
+  FVar3 = FieldGrid_WorldToGridQ12
                     ((g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionXQ12);
-  gameRuntime1->fieldGridPosition9A6C = qVar3;
+  gameRuntime1->fieldGridPosition9A6C = (FixedPlanarPointEdxEax8)FVar3;
   dVar2 = PersistentSettings_ReadDword(0,0x40);
   UVar1 = (gameRuntime1->worldRuntime0A30).motion.committedDistanceQ12;
   if ((dVar2 & 2) == 0) {
@@ -2219,18 +2247,21 @@ void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
   return;
 }
 
+
 /* Address: 0x005651A0.
    Ownership: gameplay/session/runtime.
    Purpose: Copies the world-state pointer at root offset 0x23D8 into the shared runtime mirror and global world-
    state slot before shutdown traversal.
 */
-void InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
+void __thandor_void_preserve_eax_ecx
+InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
 
 {
   g_InGameWorldStatePointerMirror = inGameRoot[0x68].base.right;
   g_SharedWorldStatePointer = g_InGameWorldStatePointerMirror;
   return;
 }
+
 
 /* Address: 0x00565E30.
    Ownership: gameplay/session/runtime.
@@ -2247,27 +2278,21 @@ void InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
    FrontendTransfer_DispatchStagedCommandRecords [network/protocol/transfer], UiRuntimeRecordRing_ContainsIdCf
    [ui/core/runtime], FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf [network/backend/runtime].
 */
-void __cdecl InGameRuntime_UpdateSimulationAndNetworkTick(void)
+void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
 {
-  void *pvVar1;
+  dword dVar1;
   uint uVar2;
-  uint extraout_ECX;
-  uint extraout_ECX_00;
-  undefined4 extraout_ECX_01;
-  undefined4 extraout_EDX;
   WorldRuntimeContext *worldRuntime;
-  WorldRuntimeNode *worldNode1;
+  WorldOwnerListNode100 *worldNode1;
   ModelRuntimeNode *modelNode1;
-  undefined1 in_CF;
-  undefined1 uVar3;
-  bool bVar4;
-  undefined8 uVar5;
+  bool bVar3;
+  UiRuntimeRecordRingDiscardEaxEdxCf9 UVar4;
   InGameRuntimeRootImageC3E4 *gameRuntime1;
   
-  (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
+  bVar3 = (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
   gameRuntime1 = g_InGameRuntimeRoot;
-  if ((bool)in_CF) {
+  if (bVar3) {
     return;
   }
   if ((g_UiCommandRuntimeFlags & 0x10) == 0) {
@@ -2278,53 +2303,49 @@ void __cdecl InGameRuntime_UpdateSimulationAndNetworkTick(void)
     if (g_InGameNetworkTickCountdown != 0) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
     g_InGameNetworkTickCountdown = 4;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-      uVar3 = 0;
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-        while (bVar4 = false, g_HostCommandBatchSyncSentThisInterval == 0) {
-          uVar5 = UiRuntimeRecordRing_DiscardOldestCf();
-          if (bVar4) {
-            FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
-            if (bVar4) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+        while (g_HostCommandBatchSyncSentThisInterval == 0) {
+          UVar4 = UiRuntimeRecordRing_DiscardOldestCf();
+          if (UVar4.carryEmpty) {
+            bVar3 = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
+            if (bVar3) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
             break;
           }
           FrontendTransfer_HandleSyncRequest10021AndReply10023
-                    ((NetworkSessionContext *)((ulonglong)uVar5 >> 0x20),
-                     (FrontendTransferPacketUnion *)uVar5);
+                    ((NetworkSessionContext *)UVar4.edxEndpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)UVar4.eaxPayloadOrReadIndex);
         }
         FrontendTransfer_DispatchStagedCommandRecords();
         g_HostCommandBatchSyncSentThisInterval = 0;
       }
       else {
         while( true ) {
-          uVar5 = UiRuntimeRecordRing_DiscardOldestCf();
-          if ((bool)uVar3) break;
+          UVar4 = UiRuntimeRecordRing_DiscardOldestCf();
+          if (UVar4.carryEmpty) break;
           FrontendTransfer_HandleSyncRequest10021AndReply10023
-                    ((NetworkSessionContext *)((ulonglong)uVar5 >> 0x20),
-                     (FrontendTransferPacketUnion *)uVar5);
+                    ((NetworkSessionContext *)UVar4.edxEndpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)UVar4.eaxPayloadOrReadIndex);
         }
-        bVar4 = false;
         if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
-           (FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0), !bVar4)) {
+           (bVar3 = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0), !bVar3)) {
           g_HostCommandBatchSyncSentThisInterval = 1;
         }
       }
     }
   }
   else {
-    bVar4 = false;
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-      UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
-      uVar3 = 1;
-      if (!bVar4) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+      bVar3 = UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
+      if (!bVar3) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
       do {
-        uVar5 = UiRuntimeRecordRing_DiscardOldestCf();
-        if ((bool)uVar3) break;
-        FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
-                  ((NetworkSessionContext *)((ulonglong)uVar5 >> 0x20),
-                   (FrontendTransferPacketUnion *)uVar5);
-      } while (!(bool)uVar3);
-      FrontendTransfer_ConsumeProcessedFlagCf();
-      if ((bool)uVar3) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+        UVar4 = UiRuntimeRecordRing_DiscardOldestCf();
+        if (UVar4.carryEmpty) break;
+        bVar3 = FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
+                          ((NetworkSessionContext *)UVar4.edxEndpointOrReadIndex,
+                           (FrontendTransferPacketUnion *)UVar4.eaxPayloadOrReadIndex);
+      } while (!bVar3);
+      bVar3 = FrontendTransfer_ConsumeProcessedFlagCf();
+      if (bVar3) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
     }
     else if (g_InGameNetworkTickCountdown != 0)
     goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
@@ -2338,16 +2359,14 @@ void __cdecl InGameRuntime_UpdateSimulationAndNetworkTick(void)
       worldRuntime = &gameRuntime1->worldRuntime0A30;
       uVar2 = g_GameFactionRuntimeImage.tail.simulationTick & 7;
       for (worldNode1 = (gameRuntime1->worldRuntime0A30).ownerListHead;
-          worldNode1 != (WorldRuntimeNode *)0x0; worldNode1 = (worldNode1->common).nextNode) {
-        (*(&g_RuntimeMaintenanceCallbackPhases.primaryUpdate.army)
-          [(int)worldNode1[2].common.nextNode])(worldRuntime,worldNode1);
-        uVar2 = extraout_ECX;
+          worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
+        (*(&g_RuntimeMaintenanceCallbackPhases.primaryUpdate.army)[worldNode1->ownerClassId])
+                  (worldRuntime,worldNode1);
       }
       if (g_GameFactionRuntimeImage.tail.simulationTick % 0x14 == 0) {
         InGameConditionRuntime_UpdateScheduledRecords();
-        uVar2 = extraout_ECX_00;
       }
-                    
+                    // WARNING: Switch is manually overridden
       switch(uVar2) {
       case 0:
         InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
@@ -2397,12 +2416,12 @@ void __cdecl InGameRuntime_UpdateSimulationAndNetworkTick(void)
                     ((gameRuntime1->worldRuntime0A30).activeFactionRuntimeIndex,
                      (gameRuntime1->worldRuntime0A30).fieldGrid);
         }
-        if (worldNode1 != (WorldRuntimeNode *)0x0) {
+        if (worldNode1 != (WorldOwnerListNode100 *)0x0) {
           do {
-            (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)
-              [(int)worldNode1[2].common.nextNode])(worldRuntime,worldNode1);
-            worldNode1 = (worldNode1->common).nextNode;
-          } while (worldNode1 != (WorldRuntimeNode *)0x0);
+            (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode1->ownerClassId])
+                      (worldRuntime,worldNode1);
+            worldNode1 = worldNode1->nextNode;
+          } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
           modelNode1 = (ModelRuntimeNode *)(gameRuntime1->worldRuntime0A30).ownerListHead;
           do {
             (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
@@ -2426,12 +2445,13 @@ void __cdecl InGameRuntime_UpdateSimulationAndNetworkTick(void)
       for (; modelNode1 != (ModelRuntimeNode *)0x0;
           modelNode1 = (ModelRuntimeNode *)(modelNode1->common).nextNode) {
         if (modelNode1->ownerClassId == MODEL_RUNTIME_CLASS_00) {
-          pvVar1 = ((modelNode1->runtimePayload).armyRuntime)->definitionOrAsset;
-          (*g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)((int)pvVar1 + 0x278)])
-                    (*(Q12 *)((int)pvVar1 + 0x54),(modelNode1->worldTransform).translation.y,
+          dVar1 = (((modelNode1->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset
+          ;
+          (*g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(dVar1 + 0x278)])
+                    (*(Q12 *)(dVar1 + 0x54),(modelNode1->worldTransform).translation.y,
                      (modelNode1->worldTransform).translation.x,modelNode1,
                      &gameRuntime1->worldRuntime0A30);
-          ModelNodeRuntime_RebuildTransformsFromRoot(extraout_ECX_01,extraout_EDX,modelNode1);
+          ModelNodeRuntime_RebuildTransformsFromRoot(modelNode1);
         }
       }
       if ((g_GameFactionRuntimeImage.tail.simulationTick & 0xc) == 0) {
@@ -2450,6 +2470,7 @@ InGameRuntime_ReleaseSimulationTickLockAndReturn:
   return;
 }
 
+
 /* Address: 0x0050E0B0.
    Ownership: gameplay/session/runtime.
    Purpose: Initialization callback used by both new-session and loaded-session setup. Both binary call sites pass
@@ -2458,8 +2479,10 @@ InGameRuntime_ReleaseSimulationTickLockAndReturn:
    direct branch, call, or absolute-pointer reference in the archived executable, so they are verified separately
    and are not included in the function range.
 */
-void InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(void)
+byte __thandor_cf_preserve_eax_ecx_edx
+InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(dword unusedArgument)
 
 {
-  return;
+  return 0;
 }
+

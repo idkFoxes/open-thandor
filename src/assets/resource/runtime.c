@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/resource/runtime.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/resource/runtime.h>
 
 /* Implementation ownership: assets/resource/runtime. */
@@ -9,13 +16,15 @@
    Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32], Package_Mount
    [assets/package/runtime].
 */
-dword ResourceRegistration_OpenSourceCf(void *packagePath)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ResourceRegistration_OpenSourceCf(void *packagePath)
 
 {
   byte *source;
   dword dVar1;
   int clearDwordsRemaining;
   byte *clearCursor;
+  StatusValueEaxCf5 SVar2;
   
   source = g_PackageScratchBuffer;
   clearCursor = g_PackageScratchBuffer;
@@ -59,9 +68,10 @@ dword ResourceRegistration_OpenSourceCf(void *packagePath)
   source[0xb2] = 0;
   source[0xb3] = 0;
   FileSystem_WriteBufferToPathCf(0x200,source,packagePath);
-  dVar1 = Package_Mount(packagePath);
-  return dVar1;
+  SVar2 = Package_Mount(packagePath);
+  return SVar2;
 }
+
 
 /* Address: 0x0040F000.
    Ownership: assets/resource/runtime.
@@ -69,80 +79,100 @@ dword ResourceRegistration_OpenSourceCf(void *packagePath)
    Cross-module calls: Package_FindEntryAcrossMounts [assets/package/runtime], WidePath_CombineDirectoryAndLeaf
    [core/text/path], Package_DecodeEntryInto [assets/package/runtime].
 */
-undefined8 __fastcall Resource_Load(undefined4 param_1,undefined4 param_2,word *path)
+ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path)
 
 {
   PckEntryHeader *entry;
-  byte *destination;
-  dword dVar1;
-  void *destination_00;
-  FileIoByteCount byteCount;
-  byte *memory;
-  undefined4 extraout_EDX;
-  EngineFileHandle unaff_EBX;
-  undefined1 in_CF;
-  bool bVar2;
+  byte *bytes;
+  byte *pbVar1;
+  byte *in_ECX;
+  ArenaAllocEaxCf5 AVar2;
+  PackageDecodeEaxCf5 PVar3;
+  FileSystemOpenEaxCf5 FVar4;
+  FileSystemSizeEaxCf5 FVar5;
+  FileSystemReadEaxCf5 FVar6;
+  PackageFindEntryEaxEbxCf9 PVar7;
+  ResourceLoadEaxEcxCf9 RVar8;
+  ResourceLoadEaxEcxCf9 RVar9;
+  ResourceLoadEaxEcxCf9 RVar10;
   
-  entry = Package_FindEntryAcrossMounts(path);
-  if ((bool)in_CF) {
+  PVar7 = Package_FindEntryAcrossMounts(path);
+  entry = (PckEntryHeader *)PVar7.eax;
+  if (PVar7.carry) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                (word *)&g_ExecutableDirectoryUtf16);
-    destination = (byte *)(*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    if ((bool)in_CF) {
-      destination = (byte *)(*g_FileSystemOpenCf)(0,path);
-      if ((bool)in_CF) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
+    FVar4 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    RVar8.eax = (byte *)FVar4.eax;
+    if (FVar4.carry) {
+      FVar4 = (*g_FileSystemOpenCf)(0,path);
+      RVar8.eax = (byte *)FVar4.eax;
+      if (FVar4.carry) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
-    bVar2 = false;
-    dVar1 = (*g_FileSystemGetSizeCf)(destination);
-    if (!bVar2) {
-      destination_00 = (*g_MemoryApi.alloc)(dVar1);
-      if (bVar2) {
+    FVar5 = (*g_FileSystemGetSizeCf)(RVar8.eax);
+    bytes = (byte *)FVar5.eax;
+    pbVar1 = bytes;
+    if (!FVar5.carry) {
+      AVar2 = (*g_MemoryApi.alloc)((dword)bytes);
+      RVar9.eax = (void *)AVar2.eax;
+      in_ECX = bytes;
+      if (AVar2.carry) {
         (*g_WideNumberFormatUtf16)
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,byteCount,g_FatalErrorDetail1Utf16);
+                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
+        pbVar1 = (byte *)0x5;
       }
       else {
-        dVar1 = (*g_FileSystemReadExactCf)(byteCount,destination_00,destination);
-        if (!bVar2) {
-          (*g_FileSystemClose)(destination);
-          return CONCAT44(param_2,extraout_EDX);
+        FVar6 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,RVar9.eax,RVar8.eax);
+        pbVar1 = (byte *)FVar6.eax;
+        if (!FVar6.carry) {
+          (*g_FileSystemClose)(RVar8.eax);
+          RVar9.ecx = (dword)bytes;
+          RVar9.carry = false;
+          return RVar9;
         }
-        (*g_MemoryApi.free)((void *)((ulonglong)dVar1 >> 0x20));
+        (*g_MemoryApi.free)(RVar9.eax);
       }
     }
-    (*g_FileSystemClose)(destination);
+    (*g_FileSystemClose)(RVar8.eax);
+    RVar8.eax = pbVar1;
   }
   else {
-    destination = (byte *)0x5;
-    bVar2 = entry->packedSize < 0x800000;
+    RVar8.eax = (byte *)0x5;
     if (entry->packedSize < 0x800001) {
-      destination = (*g_MemoryApi.alloc)(entry->unpackedSize);
-      if (!bVar2) {
-        Package_DecodeEntryInto(destination,entry,unaff_EBX);
-        if (!bVar2) {
-          return CONCAT44(param_2,memory);
+      AVar2 = (*g_MemoryApi.alloc)(entry->unpackedSize);
+      RVar8.eax = (byte *)AVar2.eax;
+      if (!AVar2.carry) {
+        PVar3 = Package_DecodeEntryInto(RVar8.eax,entry,PVar7.ebx);
+        if (!PVar3.carry) {
+          RVar8.ecx = entry->unpackedSize;
+          RVar8.carry = false;
+          return RVar8;
         }
-        destination = memory;
-        (*g_MemoryApi.free)(memory);
+        pbVar1 = (byte *)PVar3.eax;
+        (*g_MemoryApi.free)(RVar8.eax);
+        RVar8.eax = pbVar1;
       }
     }
   }
 Resource_Load_ReturnOpenAllocationOrDecodeResult:
-  return CONCAT44(param_2,destination);
+  RVar10.ecx = (dword)in_ECX;
+  RVar10.eax = (dword)RVar8.eax;
+  RVar10.carry = true;
+  return RVar10;
 }
+
 
 /* Address: 0x0040F1D0.
    Ownership: assets/resource/runtime.
    Purpose: Handles resource release.
 */
-undefined4 Resource_Release(void *allocation)
+void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *allocation)
 
 {
-  undefined4 in_EAX;
-  
   (*g_MemoryApi.free)(allocation);
-  return in_EAX;
+  return;
 }
+
 
 /* Address: 0x0050E890.
    Ownership: assets/resource/runtime.
@@ -445,25 +475,28 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
    Cross-module calls: WorldRuntime_GetVector1Regs [world/runtime/core], WorldRuntime_GetVector0Regs
    [world/runtime/core].
 */
-void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
+
+void __thandor_void_preserve_eax_ecx_edx
+ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
-  InGameConditionRuntime *pIVar1;
-  InGameConditionRuntime *pIVar2;
-  uint extraout_ECX;
-  undefined4 extraout_ECX_00;
-  undefined8 uVar3;
+  LevelPlayerSlotByteOffset32 LVar1;
+  InGameLevelConditionStorageView800 *pIVar2;
+  WorldVector1EaxEcxEdx12 WVar3;
+  WorldVector0EaxEcxEdx12 WVar4;
   
-  pIVar2 = g_InGameConditionRuntime;
-  pIVar1 = (&g_InGameConditionRuntime)[runtimeImage->levelRuntimeRecordIndex50];
-  uVar3 = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
-  *(int *)(pIVar2[2].reserved54_57 + (int)pIVar1) = (int)uVar3;
-  *(uint *)(pIVar2[2].reserved54_57 + (int)(pIVar1->reserved00_4F + 4)) =
-       extraout_ECX & 0xffff | (int)((ulonglong)uVar3 >> 0x20) << 0x10;
-  uVar3 = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
-  *(int *)(pIVar2[2].reserved00_4F + (int)(pIVar1->reserved00_4F + 0x48)) = (int)uVar3;
-  *(undefined4 *)(pIVar2[2].reserved00_4F + (int)(pIVar1->reserved00_4F + 0x4c)) = extraout_ECX_00;
-  *(int *)(pIVar2[2].reserved54_57 + (int)&pIVar1[-1].tailRecordD8) =
-       (int)((ulonglong)uVar3 >> 0x20);
+  pIVar2 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  LVar1 = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
+          [runtimeImage->levelRuntimeRecordIndex50 - 1];
+  WVar3 = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
+  *(UQ12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraMagnitudeQ12 + LVar1) =
+       WVar3.magnitudeQ12;
+  *(AngleTurn32 *)((int)&(pIVar2->levelImage).playerSlots[0].packedHeadingLow16PitchHigh16 + LVar1)
+       = WVar3.headingAngle & 0xffff | WVar3.pitchAngle << 0x10;
+  WVar4 = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
+  *(Q12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraXQ12 + LVar1) = WVar4.xQ12;
+  *(Q12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraYQ12 + LVar1) = WVar4.yQ12;
+  *(Q12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraZQ12 + LVar1) = WVar4.zQ12;
   return;
 }
+

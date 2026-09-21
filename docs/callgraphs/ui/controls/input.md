@@ -1,6 +1,6 @@
 # Call graph: `ui/controls/input`
 
-[Source](../../../../src/ui/controls/input.c) · [Header](../../../../include/thandor/ui/controls/input.h) · [Graphviz](input.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-input)
+[Source](../../../../src/ui/controls/input.c) · [Header](../../../../include/thandor/ui/controls/input.h) · [Graphviz](input.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-ui-controls-input) · [Full changelog](../../../../CHANGELOG_FULL.md#module-ui-controls-input)
 
 32 functions. Addresses are current V523 executable VAs.
 

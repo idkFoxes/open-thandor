@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/system/win32.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/platform/system/win32.h>
 
 /* Implementation ownership: platform/system/win32. */
@@ -11,20 +18,20 @@
    Local calls: Win32_ShouldTranslateMessageFlags.
    Cross-module calls: Runtime_Shutdown [core/memory/synchronization].
 */
-void __cdecl Win32_PumpMessages(void)
+void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
 
 {
   BOOL messageAvailable;
   bool shouldTranslateMessage;
+  bool bVar1;
   
   while( true ) {
     messageAvailable = PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,1);
     if (messageAvailable == 0) break;
-    if ((g_WindowDestroyDepth != 0) ||
-       (shouldTranslateMessage = g_MainMessage.message < 0x12, g_MainMessage.message == 0x12))
+    if ((g_WindowDestroyDepth != 0) || (g_MainMessage.message == 0x12))
     goto Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest;
-    Win32_ShouldTranslateMessageFlags(&g_MainMessage);
-    if (shouldTranslateMessage) {
+    bVar1 = Win32_ShouldTranslateMessageFlags(&g_MainMessage);
+    if (bVar1) {
       TranslateMessage((MSG *)&g_MainMessage);
     }
     DispatchMessageA((MSG *)&g_MainMessage);
@@ -35,9 +42,10 @@ void __cdecl Win32_PumpMessages(void)
 Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
-                    
+                    // WARNING: Subroutine does not return
   ExitProcess(0);
 }
+
 
 /* Address: 0x00577B90.
    Ownership: platform/system/win32.
@@ -45,7 +53,7 @@ Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
    clear means translation is suppressed. WM_CHAR/WM_DEADCHAR and the engine's directly handled editing,
    navigation, digit, letter, and function-key ranges are suppressed to avoid duplicate character messages.
 */
-void Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
+bool __thandor_void_preserve_eax_ecx Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
 
 {
   uint messageCode;
@@ -59,7 +67,8 @@ void Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
       (virtualKeyCode != 0x1b)) &&
      ((virtualKeyCode < 0x20 ||
       ((0x2e < virtualKeyCode && ((virtualKeyCode < 0x60 || (0x7b < virtualKeyCode)))))))) {
-    return;
+    return true;
   }
-  return;
+  return false;
 }
+

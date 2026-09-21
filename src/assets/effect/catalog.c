@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/effect/catalog.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/effect/catalog.h>
 
 /* Implementation ownership: assets/effect/catalog. */
@@ -11,37 +18,43 @@
    Local calls: EffectDefinition_RegisterAndLoadSpriteCf.
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
 */
-dword EffectAsset_PrepareEntries(EffectAssetHeader *asset)
+StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
+EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 
 {
   dword registrationStatusCode;
-  undefined4 extraout_EAX;
-  int extraout_ECX;
+  AssetRecordCount AVar1;
+  EffectAssetHeader *definition;
   EffectDefinition *definitionCursor;
-  bool bVar1;
-  undefined8 uVar2;
+  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 SVar3;
   
   registrationStatusCode = 0x47;
   if (((asset->entryCountHeader).common.magic == ASSET_MAGIC_EFF) &&
      ((asset->entryCountHeader).common.converterVersion == PCK_CONVERTER_EFF_00040007)) {
-    definitionCursor = (EffectDefinition *)(asset + 1);
-    bVar1 = false;
-    if ((asset->entryCountHeader).entryCount != 0) {
-      do {
-        uVar2 = EffectDefinition_RegisterAndLoadSpriteCf(definitionCursor);
-        registrationStatusCode = (dword)uVar2;
-        if (bVar1) {
-          return registrationStatusCode;
-        }
-        bVar1 = (EffectDefinition *)0xffffff3f < definitionCursor;
-        definitionCursor = definitionCursor + 1;
-      } while (extraout_ECX != 1);
+    AVar1 = (asset->entryCountHeader).entryCount;
+    definition = asset + 1;
+    while( true ) {
+      if (AVar1 == 0) {
+        SVar2.carry = false;
+        SVar2.valueOrError = registrationStatusCode;
+        return SVar2;
+      }
+      SVar2 = EffectDefinition_RegisterAndLoadSpriteCf((EffectDefinition *)definition);
+      registrationStatusCode = SVar2.valueOrError;
+      if (SVar2.carry) break;
+      definition = (EffectAssetHeader *)(definition->reservedB4_1FF + 0xc);
+      AVar1 = AVar1 - 1;
     }
-    return registrationStatusCode;
   }
-  Package_SetLastErrorPath((word *)asset);
-  return extraout_EAX;
+  else {
+    Package_SetLastErrorPath((word *)asset);
+  }
+  SVar3.carry = true;
+  SVar3.valueOrError = registrationStatusCode;
+  return SVar3;
 }
+
 
 /* Address: 0x0051E3E0.
    Ownership: assets/effect/catalog.
@@ -50,16 +63,15 @@ dword EffectAsset_PrepareEntries(EffectAssetHeader *asset)
    Local calls: EffectDefinitionRegistry_FindByIdWithErrorCf.
    Cross-module calls: ShotDefinitionRegistry_FindByIdWithErrorCf [assets/shot/catalog].
 */
-void __cdecl EffectDefinitions_ResolveCrossReferences(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossReferences(void)
 
 {
-  EffectDefinition *pEVar1;
-  ShotDefinition *pSVar2;
+  StatusValueEaxCf5 SVar1;
+  ShotDefinition *in_EAX;
   int registrySlotsRemaining;
-  int extraout_ECX;
-  int extraout_ECX_00;
   EffectDefinition **registryCursor;
-  bool bVar3;
+  EffectDefinitionLookupEaxCf5 EVar2;
+  ShotDefinitionLookupEaxCf5 SVar3;
   EffectDefinition *currentDefinition;
   
   registryCursor = g_EffectDefinitionRegistry;
@@ -67,33 +79,33 @@ void __cdecl EffectDefinitions_ResolveCrossReferences(void)
   do {
     currentDefinition = *registryCursor;
     if (currentDefinition != (EffectDefinition *)0x0) {
-      bVar3 = false;
       if (currentDefinition->linkedEffectPresent != 0) {
-        pEVar1 = EffectDefinitionRegistry_FindByIdWithErrorCf
-                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition)
-        ;
-        if (bVar3) {
-          return;
+        EVar2 = EffectDefinitionRegistry_FindByIdWithErrorCf
+                          ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
+        in_EAX = (ShotDefinition *)EVar2.definitionOrError;
+        if (EVar2.carry) {
+          return (StatusValueEaxCf5)EVar2;
         }
-        currentDefinition->linkedEffectDefinition = pEVar1;
-        registrySlotsRemaining = extraout_ECX;
+        currentDefinition->linkedEffectDefinition = (EffectDefinition *)in_EAX;
       }
-      bVar3 = false;
       if (currentDefinition->linkedShotPresent != 0) {
-        pSVar2 = ShotDefinitionRegistry_FindByIdWithErrorCf
-                           ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
-        if (bVar3) {
-          return;
+        SVar3 = ShotDefinitionRegistry_FindByIdWithErrorCf
+                          ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
+        in_EAX = SVar3.definitionOrError;
+        if (SVar3.carry) {
+          return (StatusValueEaxCf5)SVar3;
         }
-        currentDefinition->linkedShotDefinition = pSVar2;
-        registrySlotsRemaining = extraout_ECX_00;
+        currentDefinition->linkedShotDefinition = in_EAX;
       }
     }
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
   } while (registrySlotsRemaining != 0);
-  return;
+  SVar1.carry = false;
+  SVar1.valueOrError = (dword)in_EAX;
+  return SVar1;
 }
+
 
 /* Address: 0x0051DFD0.
    Ownership: assets/effect/catalog.
@@ -108,72 +120,85 @@ void __cdecl EffectDefinitions_ResolveCrossReferences(void)
    [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers [assets/sprite/catalog], Resource_Release
    [assets/resource/runtime].
 */
-undefined8 EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
 
 {
-  SpriteAssetHeader *pSVar1;
-  undefined4 in_EDX;
-  int extraout_EDX;
-  int iVar2;
   SpriteAssetHeader *asset;
+  SpriteAssetHeader *pSVar1;
+  int iVar2;
   EffectDefinition **registrySlotCursor;
-  undefined1 in_CF;
   bool bVar3;
+  EffectDefinitionLookupEaxCf5 EVar4;
+  StatusValueEaxCf5 SVar5;
+  PackageLoadEntryEaxCf5 PVar6;
+  SpriteRegisterRelocateEaxCf5 SVar7;
+  StatusValueEaxCf5 SVar8;
   
   registrySlotCursor = g_EffectDefinitionRegistry;
-  EffectRuntime_FindDefinitionByIdCf(definition->definitionId);
-  iVar2 = extraout_EDX;
-  if ((bool)in_CF) {
+  iVar2 = 0x100;
+  EVar4 = EffectRuntime_FindDefinitionByIdCf(definition->definitionId);
+  asset = (SpriteAssetHeader *)EVar4.definitionOrError;
+  if (EVar4.carry) {
     do {
-      bVar3 = false;
       if (*registrySlotCursor == (EffectDefinition *)0x0) {
         *registrySlotCursor = definition;
-        pSVar1 = (SpriteAssetHeader *)
-                 WidePath_SetExtensionCode(0x727073,definition->resourcePathUtf16);
+        bVar3 = WidePath_SetExtensionCode(0x727073,definition->resourcePathUtf16);
         if (bVar3) goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
-        pSVar1 = Package_LoadEntry(definition->resourcePathUtf16);
-        if (bVar3) goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
-        pSVar1 = SpriteAssetRegistry_FindById((pSVar1->registryHeader).registryId);
-        bVar3 = false;
+        PVar6 = Package_LoadEntry(definition->resourcePathUtf16);
+        asset = PVar6.bufferOrError;
+        if (PVar6.carry)
+        goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
+        pSVar1 = SpriteAssetRegistry_FindById((asset->registryHeader).registryId);
         if (pSVar1 == (SpriteAssetHeader *)0x0) {
           definition->ownedNestedResourcePresent = definition->ownedNestedResourcePresent + 1;
           definition->ownedNestedResource = asset;
-          pSVar1 = SpriteAsset_RegisterAndRelocatePointers(asset);
-          if (bVar3) goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
+          SVar7 = SpriteAsset_RegisterAndRelocatePointers(asset);
+          asset = SVar7.assetOrError;
+          if (SVar7.carry)
+          goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
         }
         else {
           definition->ownedNestedResource = pSVar1;
-          pSVar1 = (SpriteAssetHeader *)Resource_Release(asset);
+          Resource_Release(asset);
+          asset = pSVar1;
         }
-        return CONCAT44(in_EDX,pSVar1);
+        SVar8.carry = false;
+        SVar8.valueOrError = (dword)asset;
+        return SVar8;
       }
       registrySlotCursor = registrySlotCursor + 1;
       iVar2 = iVar2 + -1;
     } while (iVar2 != 0);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
-    pSVar1 = (SpriteAssetHeader *)0x49;
+    asset = (SpriteAssetHeader *)0x49;
   }
   else {
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
-    pSVar1 = (SpriteAssetHeader *)0x4e;
+    asset = (SpriteAssetHeader *)0x4e;
   }
 EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError:
-  return CONCAT44(in_EDX,pSVar1);
+  SVar5.carry = true;
+  SVar5.valueOrError = (dword)asset;
+  return SVar5;
 }
+
 
 /* Address: 0x0051E440.
    Ownership: assets/effect/catalog.
    Purpose: Returns null for identifier zero, otherwise scans the 256-slot effect registry. On a miss it formats
    the identifier into g_PackageLastErrorPath and returns error 0x48 with CF set.
 */
-EffectDefinition *
+EffectDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *candidateDefinition;
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
+  EffectDefinitionLookupEaxCf5 EVar1;
+  EffectDefinitionLookupEaxCf5 EVar2;
   
   registryCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = 0x100;
@@ -186,9 +211,14 @@ EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog defini
       if (registrySlotsRemaining == 0) {
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-        return (EffectDefinition *)0x48;
+        EVar1.carry = true;
+        EVar1.definitionOrError = (EffectDefinition *)0x48;
+        return EVar1;
       }
     }
   }
-  return candidateDefinition;
+  EVar2.carry = false;
+  EVar2.definitionOrError = candidateDefinition;
+  return EVar2;
 }
+

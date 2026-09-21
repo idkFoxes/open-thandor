@@ -1,6 +1,6 @@
 # Call graph: `assets/scenario/catalog`
 
-[Source](../../../../src/assets/scenario/catalog.c) · [Header](../../../../include/thandor/assets/scenario/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-scenario-catalog)
+[Source](../../../../src/assets/scenario/catalog.c) · [Header](../../../../include/thandor/assets/scenario/catalog.h) · [Graphviz](catalog.dot) · [Module tree](../../../MODULE_TREE.md) · [Source guide](../../../SOURCE_FILE_GUIDE.md#module-assets-scenario-catalog) · [Full changelog](../../../../CHANGELOG_FULL.md#module-assets-scenario-catalog)
 
 22 functions. Addresses are current V523 executable VAs.
 

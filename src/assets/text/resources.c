@@ -1,3 +1,10 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/assets/text/resources.c
+ * Reverse engineering by idkFoxes 2026
+ */
+
 #include <thandor/assets/text/resources.h>
 
 /* Implementation ownership: assets/text/resources. */
@@ -8,39 +15,44 @@
    or resolve failure.
    Local calls: TextResourcePage_Load, TextResource_Resolve, TextResourceOverride_Register.
 */
-void TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path)
+bool __thandor_cf_preserve_eax_ecx_edx
+TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path)
 
 {
   word *resolvedText;
-  word *pwVar1;
-  int extraout_ECX;
-  int extraout_ECX_00;
-  int extraout_ECX_01;
-  int extraout_ECX_02;
   int aliasIndex;
-  undefined1 in_CF;
-  undefined1 uVar2;
+  bool bVar1;
+  TextResourceLoadEaxCf5 TVar2;
+  TextResourceResolveEaxCf5 TVar3;
   
-  TextResourcePage_Load(0x30,path);
-  if ((!(bool)in_CF) && (resolvedText = TextResource_Resolve(0x3000), !(bool)in_CF)) {
-    TextResourceOverride_Register(extraout_ECX + 0x2230,resolvedText);
-    uVar2 = extraout_ECX_00 << 3 < 0;
-    pwVar1 = TextResource_Resolve(0x3001);
-    if (!(bool)uVar2) {
-      aliasIndex = 0xd;
-      TextResourceOverride_Register(extraout_ECX_01 + 0x230010,pwVar1);
-      do {
-        pwVar1 = TextResource_Resolve(aliasIndex + 0x3002);
-        if ((bool)uVar2) {
-          return;
-        }
-        TextResourceOverride_Register(extraout_ECX_02 + 0x230011 + aliasIndex,pwVar1);
-        aliasIndex = aliasIndex + -1;
-      } while (-1 < aliasIndex);
+  TVar2 = TextResourcePage_Load(0x30,path);
+  bVar1 = TVar2.carry;
+  if (!bVar1) {
+    TVar3 = TextResource_Resolve(0x3000);
+    bVar1 = TVar3.carry;
+    resolvedText = TVar3.eax;
+    if (!bVar1) {
+      TextResourceOverride_Register(aliasAddressBase + 0x2230,resolvedText);
+      TVar3 = TextResource_Resolve(0x3001);
+      bVar1 = TVar3.carry;
+      if (!bVar1) {
+        aliasIndex = 0xd;
+        TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230010,TVar3.eax);
+        do {
+          TVar3 = TextResource_Resolve(aliasIndex + 0x3002);
+          if (TVar3.carry) {
+            return true;
+          }
+          TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230011 + aliasIndex,TVar3.eax);
+          aliasIndex = aliasIndex + -1;
+        } while (-1 < aliasIndex);
+        bVar1 = false;
+      }
     }
   }
-  return;
+  return bVar1;
 }
+
 
 /* Address: 0x0041B080.
    Ownership: assets/text/resources.
@@ -48,61 +60,63 @@ void TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path
    runtime buffer, allocates an 8192-dword slot table, and fills every slot with 0xFFFFFFFF. The pass does not
    assign glyph-cache field semantics beyond those exact operations.
 */
-void FontRuntime_Init(void)
+void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
 
 {
   wchar_t wVar1;
-  dword arg0;
-  dword extraout_ECX;
   int iVar2;
-  dword arg1;
-  GraphicsTextureSourceAsset **ppGVar3;
-  wchar_t *arg2;
-  wchar_t *pwVar4;
-  TextResourceOverrideTable *pTVar5;
-  undefined8 uVar6;
+  int iVar3;
+  GraphicsTextureSourceAsset **ppGVar4;
+  wchar_t *pathUtf16;
+  wchar_t *pwVar5;
+  TextResourceOverrideTable *pTVar6;
+  GraphicsTextureSourceLoadEaxCf5 GVar7;
+  FatalErrorEaxCf5 FVar8;
+  ArenaAllocEaxCf5 AVar9;
   
-  arg2 = u_engine_font_gfx_0041b030;
-  ppGVar3 = g_FontTextureSources;
-  arg1 = 2;
-  arg0 = 0x21;
+  pathUtf16 = u_engine_font_gfx_0041b030;
+  ppGVar4 = g_FontTextureSources;
+  iVar3 = 2;
+  iVar2 = 0x21;
   do {
-    (*g_GraphicsTextureSourceLoadPackageAsset)(arg0,arg1,(word *)arg2);
-    uVar6 = (*g_FatalErrorPrimaryDispatchCf)();
-    *ppGVar3 = (GraphicsTextureSourceAsset *)uVar6;
-    arg0 = extraout_ECX;
-    pwVar4 = arg2;
+    GVar7 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)pathUtf16);
+    FVar8 = (*g_FatalErrorPrimaryDispatchCf)((dword)GVar7.eax,GVar7.carry);
+    *ppGVar4 = (GraphicsTextureSourceAsset *)FVar8.eax;
+    pwVar5 = pathUtf16;
     do {
-      arg2 = pwVar4;
-      if (arg0 == 0) break;
-      arg0 = arg0 - 1;
-      arg2 = pwVar4 + 1;
-      wVar1 = *pwVar4;
-      pwVar4 = arg2;
+      pathUtf16 = pwVar5;
+      if (iVar2 == 0) break;
+      iVar2 = iVar2 + -1;
+      pathUtf16 = pwVar5 + 1;
+      wVar1 = *pwVar5;
+      pwVar5 = pathUtf16;
     } while (wVar1 != L'\0');
-    ppGVar3 = ppGVar3 + 1;
-    arg1 = (int)((ulonglong)uVar6 >> 0x20) - 1;
-    if (arg1 == 0) {
-      (*g_MemoryApi.alloc)(0x4000);
-      g_FontRuntimeBuffer = (byte *)(*g_FatalErrorPrimaryDispatchCf)();
-      (*g_MemoryApi.alloc)(0x8000);
-      g_TextResourceOverrides = (TextResourceOverrideTable *)(*g_FatalErrorPrimaryDispatchCf)();
-      pTVar5 = g_TextResourceOverrides;
+    ppGVar4 = ppGVar4 + 1;
+    iVar3 = iVar3 + -1;
+    if (iVar3 == 0) {
+      AVar9 = (*g_MemoryApi.alloc)(0x4000);
+      FVar8 = (*g_FatalErrorPrimaryDispatchCf)(AVar9.eax,AVar9.carry);
+      g_FontRuntimeBuffer = (byte *)FVar8.eax;
+      AVar9 = (*g_MemoryApi.alloc)(0x8000);
+      FVar8 = (*g_FatalErrorPrimaryDispatchCf)(AVar9.eax,AVar9.carry);
+      g_TextResourceOverrides = (TextResourceOverrideTable *)FVar8.eax;
+      pTVar6 = g_TextResourceOverrides;
       for (iVar2 = 0x2000; iVar2 != 0; iVar2 = iVar2 + -1) {
-        pTVar5->resourceIds[0] = 0xffffffff;
-        pTVar5 = (TextResourceOverrideTable *)(pTVar5->resourceIds + 1);
+        pTVar6->resourceIds[0] = 0xffffffff;
+        pTVar6 = (TextResourceOverrideTable *)(pTVar6->resourceIds + 1);
       }
       return;
     }
   } while( true );
 }
 
+
 /* Address: 0x0041CCB0.
    Ownership: assets/text/resources.
    Purpose: Releases the owning asset for one text-resource page and clears both dwords in its binding.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void TextResourcePage_Unload(TextResourcePageIndex pageIndex)
+void __thandor_preserve_eax TextResourcePage_Unload(TextResourcePageIndex pageIndex)
 
 {
   Resource_Release(g_TextResourcePageBindings[pageIndex].asset);
@@ -111,12 +125,14 @@ void TextResourcePage_Unload(TextResourcePageIndex pageIndex)
   return;
 }
 
+
 /* Address: 0x0041CDB0.
    Ownership: assets/text/resources.
    Purpose: Validates the 'str' magic and returns localeBlockCount from +0xB0 with CF clear. Invalid input returns
    with CF set.
 */
-AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
+AssetRecordCount __thandor_eax_cf_preserve_ecx_edx
+TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
 
 {
   AssetRecordCount in_EAX;
@@ -127,6 +143,7 @@ AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *
   return in_EAX;
 }
 
+
 /* Address: 0x0041CEB0.
    Ownership: assets/text/resources.
    Purpose: Queries one glyph from the currently active font texture. Width is returned in EAX and line height in
@@ -134,19 +151,29 @@ AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *
    parameters: p0 glyphSubresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control
    flow, and executable data remain unchanged.
 */
-undefined4 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
+FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
 
 {
-  undefined4 uVar1;
+  dword dVar1;
+  GraphicsTextureSizeEaxEdxCf9 GVar2;
+  FontGlyphSizeEaxEdxCf9 FVar3;
   dword fontIndex;
   
   fontIndex = g_ActiveFontIndex;
-  (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[g_ActiveFontIndex])
-  ;
-  uVar1 = 0;
-  (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
-  return uVar1;
+  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)
+                    (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
+  dVar1 = GVar2.logicalWidthPixels;
+  if (GVar2.carry) {
+    dVar1 = 0;
+  }
+  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
+  FVar3.lineHeight = GVar2.logicalHeightPixels;
+  FVar3.width = dVar1;
+  FVar3.carry = false;
+  return FVar3;
 }
+
 
 /* Address: 0x0041CEF0.
    Ownership: assets/text/resources.
@@ -155,20 +182,30 @@ undefined4 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubr
    glyphSubresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and
    executable data remain unchanged. Typed parameters: p0 packedStyle→UiPackedTextStyle_V301.
 */
-undefined4
+FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource)
 
 {
+  dword dVar1;
   uint fontIndex;
-  undefined4 uVar1;
+  GraphicsTextureSizeEaxEdxCf9 GVar2;
+  FontGlyphSizeEaxEdxCf9 FVar3;
   
   fontIndex = packedStyle >> 0x18 & 7;
-  (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[fontIndex]);
-  uVar1 = 0;
-  (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
-  return uVar1;
+  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[fontIndex])
+  ;
+  dVar1 = GVar2.logicalWidthPixels;
+  if (GVar2.carry) {
+    dVar1 = 0;
+  }
+  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
+  FVar3.lineHeight = GVar2.logicalHeightPixels;
+  FVar3.width = dVar1;
+  FVar3.carry = false;
+  return FVar3;
 }
+
 
 /* Address: 0x0041D370.
    Ownership: assets/text/resources.
@@ -184,32 +221,30 @@ void FontGlyph_DrawBottomAligned
                UiPixelCoordinate baselineY,sdword drawX)
 
 {
-  int extraout_ECX;
   int arg4;
-  qword qVar1;
-  int arg5;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
   dword arg6;
   GraphicsTextureSourceAsset *arg1;
   SoftwareFramebufferAccess *arg9;
   
   arg1 = g_FontTextureSources[g_ActiveFontIndex];
   if (arg1 != (GraphicsTextureSourceAsset *)0x0) {
-    qVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,arg1);
-    arg4 = baselineY - (int)(qVar1 >> 0x20);
-    arg5 = extraout_ECX;
+    GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,arg1);
+    arg4 = baselineY - GVar1.logicalHeightPixels;
     arg6 = g_RichTextCurrentColorArgb;
     arg9 = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,arg4 + g_RichTextCurrentShadowOffset,
-                 extraout_ECX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,arg1,
+                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,arg1,
                  g_FramebufferAccess);
     }
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg6,glyphSubresource,arg1,arg9);
+              (clipTop,clipLeft,clipBottom,clipRight,arg4,drawX,arg6,glyphSubresource,arg1,arg9);
   }
   return;
 }
+
 
 /* Address: 0x0041D400.
    Ownership: assets/text/resources.
@@ -225,32 +260,30 @@ void FontGlyph_DrawVerticallyCentered
                UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX)
 
 {
-  int extraout_ECX;
   int arg4;
-  qword qVar1;
-  int arg5;
+  GraphicsTextureSizeEaxEdxCf9 GVar1;
   dword arg6;
   GraphicsTextureSourceAsset *arg1;
   SoftwareFramebufferAccess *arg9;
   
   arg1 = g_FontTextureSources[g_ActiveFontIndex];
   if (arg1 != (GraphicsTextureSourceAsset *)0x0) {
-    qVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,arg1);
-    arg4 = (lineBottom - lineTop) + (lineTop - (int)(qVar1 >> 0x20) >> 1);
-    arg5 = extraout_ECX;
+    GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,arg1);
+    arg4 = (lineBottom - lineTop) + ((int)(lineTop - GVar1.logicalHeightPixels) >> 1);
     arg6 = g_RichTextCurrentColorArgb;
     arg9 = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,arg4 + g_RichTextCurrentShadowOffset,
-                 extraout_ECX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,arg1,
+                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,arg1,
                  g_FramebufferAccess);
     }
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg6,glyphSubresource,arg1,arg9);
+              (clipTop,clipLeft,clipBottom,clipRight,arg4,drawX,arg6,glyphSubresource,arg1,arg9);
   }
   return;
 }
+
 
 /* Address: 0x0041CA50.
    Ownership: assets/text/resources.
@@ -260,62 +293,65 @@ void FontGlyph_DrawVerticallyCentered
    package or format error in EAX.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-void TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
+TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
 
 {
   ushort uVar1;
   uint uVar2;
   TextResourceAssetHeader *allocation;
-  LocaleTelephoneCountryCode LVar3;
-  AssetRecordCount extraout_ECX;
-  AssetRecordCount AVar4;
-  TextResourceStringCount TVar5;
-  TextResourceAssetHeader *pTVar6;
+  TextResourceAssetHeader *pTVar3;
+  LocaleTelephoneCountryCode LVar4;
+  AssetRecordCount AVar5;
+  TextResourceStringCount TVar6;
   word *pwVar7;
   word *pwVar8;
   int iVar9;
-  bool bVar10;
+  PackageLoadEntryEaxCf5 PVar10;
+  TextResourceLoadEaxCf5 TVar11;
+  TextResourceLoadEaxCf5 TVar12;
   
-  bVar10 = &stack0xffffffe8 < (undefined1 *)0x4;
-  allocation = Package_LoadEntry(path);
-  if (!bVar10) {
+  PVar10 = Package_LoadEntry(path);
+  allocation = PVar10.bufferOrError;
+  pTVar3 = allocation;
+  if (!PVar10.carry) {
+    pTVar3 = (TextResourceAssetHeader *)&k_LowAddressLiteral00000033;
     if ((allocation->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
-      AVar4 = (allocation->localeCountHeader).localeBlockCount;
-      LVar3 = g_LocaleCountryCodeOverride;
+      AVar5 = (allocation->localeCountHeader).localeBlockCount;
+      LVar4 = g_LocaleCountryCodeOverride;
       if (g_LocaleCountryCodeOverride == 0) {
-        LVar3 = (*g_LocaleGetDefaultTelephoneCountryCode)();
-        AVar4 = extraout_ECX;
+        LVar4 = (*g_LocaleGetDefaultTelephoneCountryCode)();
       }
-      pTVar6 = allocation + 1;
+      pTVar3 = allocation + 1;
       do {
-        if (LVar3 == (pTVar6->localeCountHeader).common.formatVersion)
+        if (LVar4 == (pTVar3->localeCountHeader).common.formatVersion)
         goto TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences;
-        pTVar6 = (TextResourceAssetHeader *)
-                 ((pTVar6->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((pTVar6->localeCountHeader).common.magic - 0x28));
-        AVar4 = AVar4 - 1;
-      } while (AVar4 != 0);
-      AVar4 = (allocation->localeCountHeader).localeBlockCount;
-      pTVar6 = allocation + 1;
+        pTVar3 = (TextResourceAssetHeader *)
+                 ((pTVar3->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+                 ((pTVar3->localeCountHeader).common.magic - 0x28));
+        AVar5 = AVar5 - 1;
+      } while (AVar5 != 0);
+      AVar5 = (allocation->localeCountHeader).localeBlockCount;
+      pTVar3 = allocation + 1;
       do {
-        if ((pTVar6->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN)
+        if ((pTVar3->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN)
         goto TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences;
-        pTVar6 = (TextResourceAssetHeader *)
-                 ((pTVar6->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((pTVar6->localeCountHeader).common.magic - 0x28));
-        AVar4 = AVar4 - 1;
-      } while (AVar4 != 0);
-      pTVar6 = allocation + 1;
+        pTVar3 = (TextResourceAssetHeader *)
+                 ((pTVar3->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+                 ((pTVar3->localeCountHeader).common.magic - 0x28));
+        AVar5 = AVar5 - 1;
+      } while (AVar5 != 0);
+      pTVar3 = allocation + 1;
 TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences:
       g_TextResourcePageBindings[pageIndex].selectedLocaleBlock =
-           (TextResourceLocaleBlockPrefix *)pTVar6;
+           (TextResourceLocaleBlockPrefix *)pTVar3;
       g_TextResourcePageBindings[pageIndex].asset = allocation;
       iVar9 = 0;
-      for (TVar5 = (pTVar6->localeCountHeader).common.allocationSizeBytes; TVar5 != 0;
-          TVar5 = TVar5 - 1) {
-        pwVar8 = (word *)((pTVar6->localeCountHeader).common.buildMetadata.
+      for (TVar6 = (pTVar3->localeCountHeader).common.allocationSizeBytes; TVar6 != 0;
+          TVar6 = TVar6 - 1) {
+        pwVar8 = (word *)((pTVar3->localeCountHeader).common.buildMetadata.
                           assetRelativeAddressAnchor28 +
-                         *(int *)((pTVar6->localeCountHeader).common.buildMetadata.
+                         *(int *)((pTVar3->localeCountHeader).common.buildMetadata.
                                   assetRelativeAddressAnchor28 + iVar9 * 4 + -0x18) + -0x28);
         while( true ) {
           pwVar7 = pwVar8;
@@ -356,12 +392,17 @@ TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences:
         }
         iVar9 = iVar9 + 1;
       }
-      return;
+      TVar12.carry = false;
+      TVar12.errorOrValue = (dword)pTVar3;
+      return TVar12;
     }
     Resource_Release(allocation);
   }
-  return;
+  TVar11.carry = true;
+  TVar11.errorOrValue = (dword)pTVar3;
+  return TVar11;
 }
+
 
 /* Address: 0x0041CCF0.
    Ownership: assets/text/resources.
@@ -369,33 +410,35 @@ TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences:
    localized string pointers. Typed parameters: p0 resourceId→TextResourceId_V338. Calling convention, storage,
    body bytes, control flow, and executable data remain unchanged.
 */
-void TextResourceOverride_Register(TextResourceId resourceId,word *text)
+void __thandor_void_preserve_eax_ecx_edx
+TextResourceOverride_Register(TextResourceId resourceId,word *text)
 
 {
   int overrideSlotsRemaining;
-  TextResourceOverrideTable *overrideSlotCursor;
-  TextResourceOverrideTable *candidateOverrideSlot;
+  TextResourceOverrideParallelWord4 *overrideWordScanCursor;
+  TextResourceOverrideParallelWord4 *overrideWordCursorAfterScan;
   bool availableOverrideSlotFound;
   
   overrideSlotsRemaining = 0x1000;
   availableOverrideSlotFound = g_TextResourceOverrides == (TextResourceOverrideTable *)0x0;
-  overrideSlotCursor = g_TextResourceOverrides;
+  overrideWordScanCursor = (TextResourceOverrideParallelWord4 *)g_TextResourceOverrides;
   if (!availableOverrideSlotFound) {
     do {
-      candidateOverrideSlot = overrideSlotCursor;
+      overrideWordCursorAfterScan = overrideWordScanCursor;
       if (overrideSlotsRemaining == 0) break;
       overrideSlotsRemaining = overrideSlotsRemaining + -1;
-      candidateOverrideSlot = (TextResourceOverrideTable *)(overrideSlotCursor->resourceIds + 1);
-      availableOverrideSlotFound = overrideSlotCursor->resourceIds[0] == 0;
-      overrideSlotCursor = candidateOverrideSlot;
+      overrideWordCursorAfterScan = overrideWordScanCursor + 1;
+      availableOverrideSlotFound = overrideWordScanCursor->resourceId == 0;
+      overrideWordScanCursor = overrideWordCursorAfterScan;
     } while (!availableOverrideSlotFound);
     if (availableOverrideSlotFound) {
-      candidateOverrideSlot[-1].textPointers[0xfff] = (word *)resourceId;
-      candidateOverrideSlot->resourceIds[0xfff] = (dword)text;
+      overrideWordCursorAfterScan[-1].resourceId = resourceId;
+      overrideWordCursorAfterScan[0xfff].textPointer = text;
     }
   }
   return;
 }
+
 
 /* Address: 0x0041CDE0.
    Ownership: assets/text/resources.
@@ -403,7 +446,8 @@ void TextResourceOverride_Register(TextResourceId resourceId,word *text)
    binding. Compact IDs use an 8-bit page and 8-bit index; extended IDs use an 8-bit page and 16-bit index.
    Identifier 0xFFFFFFFF returns the shared empty string. Missing resources return error 0x33 with CF set.
 */
-word * TextResource_Resolve(TextResourceId resourceId)
+TextResourceResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextResource_Resolve(TextResourceId resourceId)
 
 {
   TextResourceLocaleBlockPrefix *pTVar1;
@@ -411,9 +455,16 @@ word * TextResource_Resolve(TextResourceId resourceId)
   TextResourceOverrideTable *pTVar3;
   TextResourceOverrideTable *pTVar4;
   bool bVar5;
+  TextResourceResolveEaxCf5 TVar6;
+  TextResourceResolveEaxCf5 TVar7;
+  TextResourceResolveEaxCf5 TVar8;
+  TextResourceResolveEaxCf5 TVar9;
+  TextResourceResolveEaxCf5 TVar10;
   
   if (resourceId == 0xffffffff) {
-    return (word *)&g_EmptyTextResourceUtf16;
+    TVar9.eax = (word *)0x41afa4;
+    TVar9.carry = false;
+    return TVar9;
   }
   iVar2 = 0x1000;
   bVar5 = g_TextResourceOverrides == (TextResourceOverrideTable *)0x0;
@@ -428,24 +479,31 @@ word * TextResource_Resolve(TextResourceId resourceId)
       pTVar3 = pTVar4;
     } while (!bVar5);
     if (bVar5) {
-      return (word *)pTVar4->resourceIds[0xfff];
+      TVar6.carry = false;
+      TVar6.eax = (word *)pTVar4->resourceIds[0xfff];
+      return TVar6;
     }
   }
   if ((resourceId & 0xff0000) == 0) {
     pTVar1 = g_TextResourcePageBindings[resourceId >> 8].selectedLocaleBlock;
     if ((pTVar1 != (TextResourceLocaleBlockPrefix *)0x0) &&
        ((resourceId & 0xff) < pTVar1->stringCount)) {
-      return (word *)((int)&pTVar1->blockSizeBytes + (&pTVar1[1].blockSizeBytes)[resourceId & 0xff])
-      ;
+      TVar7.eax = (int)&pTVar1->blockSizeBytes + (&pTVar1[1].blockSizeBytes)[resourceId & 0xff];
+      TVar7.carry = false;
+      return TVar7;
     }
   }
   else {
     pTVar1 = g_TextResourcePageBindings[resourceId >> 0x10].selectedLocaleBlock;
     if ((pTVar1 != (TextResourceLocaleBlockPrefix *)0x0) &&
        ((resourceId & 0xffff) < pTVar1->stringCount)) {
-      return (word *)((int)&pTVar1->blockSizeBytes +
-                     (&pTVar1[1].blockSizeBytes)[resourceId & 0xffff]);
+      TVar8.eax = (int)&pTVar1->blockSizeBytes + (&pTVar1[1].blockSizeBytes)[resourceId & 0xffff];
+      TVar8.carry = false;
+      return TVar8;
     }
   }
-  return (word *)&k_LowAddressLiteral00000033;
+  TVar10.carry = true;
+  TVar10.eax = (word *)&k_LowAddressLiteral00000033;
+  return TVar10;
 }
+
