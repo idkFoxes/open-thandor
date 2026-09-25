@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/scenario/catalog.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/scenario/catalog. */
 

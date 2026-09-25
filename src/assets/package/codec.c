@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/package/codec.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/package/codec. */
 

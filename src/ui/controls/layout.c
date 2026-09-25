@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/layout.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/controls/layout. */
 

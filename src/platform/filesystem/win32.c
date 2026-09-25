@@ -6,6 +6,7 @@
  */
 
 #include <thandor/platform/filesystem/win32.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: platform/filesystem/win32. */
 

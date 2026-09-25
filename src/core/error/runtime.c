@@ -6,6 +6,7 @@
  */
 
 #include <thandor/core/error/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: core/error/runtime. */
 

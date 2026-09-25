@@ -23,5 +23,13 @@ typedef unsigned long long qword;
 typedef int Q12;
 typedef unsigned int UQ12;
 
+/* `bool` is Ghidra's one-byte boolean from generated/types.h, so <stdbool.h> cannot be used. */
+#ifndef true
+#define true 1
+#define false 0
+#endif
+
+#include <thandor/generated/globals.h>
+
 
 #endif /* THANDOR_CORE_CONTRACTS_H */

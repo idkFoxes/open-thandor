@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/resources/palette.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/resources/palette. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/resource/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/resource/runtime. */
 

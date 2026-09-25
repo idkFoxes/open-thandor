@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/session/savegame.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/session/savegame. */
 

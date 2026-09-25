@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/technology/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/technology/runtime. */
 
@@ -45,7 +46,7 @@ Technology_UnlockForFaction
        (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex)) {
       if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
         InGameNotificationQueue_InsertPriorityRecord
-                  (NONE,0,0,0,0,0,5,
+                  (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,5,
                    g_TechnologyAsset->records[technologyIndex].completionMessageResourceId);
       }
       else {

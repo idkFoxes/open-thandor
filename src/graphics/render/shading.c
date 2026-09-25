@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/render/shading.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/render/shading. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/shot/catalog.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/shot/catalog. */
 

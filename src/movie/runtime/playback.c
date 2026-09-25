@@ -6,6 +6,7 @@
  */
 
 #include <thandor/movie/runtime/playback.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: movie/runtime/playback. */
 

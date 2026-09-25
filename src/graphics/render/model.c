@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/render/model.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/render/model. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/audio/spatial/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: audio/spatial/runtime. */
 

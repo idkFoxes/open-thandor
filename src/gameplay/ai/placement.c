@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/ai/placement.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/ai/placement. */
 

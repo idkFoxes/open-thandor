@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/session/level.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/session/level. */
 

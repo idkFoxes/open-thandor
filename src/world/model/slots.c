@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/model/slots.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/model/slots. */
 

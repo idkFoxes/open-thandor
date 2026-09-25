@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/session.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/frontend/session. */
 

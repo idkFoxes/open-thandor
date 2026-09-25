@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/selection/overlay.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/selection/overlay. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/lists.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/controls/lists. */
 

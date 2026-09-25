@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/army/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/army/runtime. */
 
@@ -603,7 +604,7 @@ ArmyRuntimeClass_StoreCompletedSecondaryArmyAssetId:
               notificationMovieId = modelDefinition1[0x1d].definitionId;
             }
             InGameNotificationQueue_InsertPriorityRecord
-                      (NONE,0,(worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,
+                      (NOTIFICATION_PAYLOAD_NONE,0,(worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,
                        (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
                        translation.y,
                        (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).

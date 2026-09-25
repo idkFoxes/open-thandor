@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/ai/planning.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/ai/planning. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/backend/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: network/backend/runtime. */
 

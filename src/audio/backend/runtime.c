@@ -6,6 +6,7 @@
  */
 
 #include <thandor/audio/backend/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: audio/backend/runtime. */
 

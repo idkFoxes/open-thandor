@@ -109,5 +109,6 @@ add_library(thandor_curated STATIC
     src/world/terrain/occupancy.c
     src/world/terrain/projection.c
     src/world/terrain/visuals.c
+    src/generated/globals.c
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

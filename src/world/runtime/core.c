@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/runtime/core.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/runtime/core. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/core/memory/synchronization.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: core/memory/synchronization. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/text/richtext.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/text/richtext. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/faction/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/faction/runtime. */
 
@@ -1508,10 +1509,10 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
   
   FVar16 = firstFactionIndex;
   if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == secondFactionIndex) {
-    InGameNotificationQueue_InsertPriorityRecord(NONE,0,0,0,0,0,2,activeFactionCodeForSecond + 500);
+    InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForSecond + 500);
   }
   else if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == firstFactionIndex) {
-    InGameNotificationQueue_InsertPriorityRecord(NONE,0,0,0,0,0,2,activeFactionCodeForFirst + 500);
+    InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForFirst + 500);
   }
   bVar19 = (byte)secondFactionIndex * '\x04';
   bVar20 = (byte)firstFactionIndex * '\x04';

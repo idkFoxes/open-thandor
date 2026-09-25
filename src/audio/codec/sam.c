@@ -6,6 +6,7 @@
  */
 
 #include <thandor/audio/codec/sam.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: audio/codec/sam. */
 

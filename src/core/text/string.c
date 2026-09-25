@@ -6,6 +6,7 @@
  */
 
 #include <thandor/core/text/string.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: core/text/string. */
 

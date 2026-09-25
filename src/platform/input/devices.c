@@ -6,6 +6,7 @@
  */
 
 #include <thandor/platform/input/devices.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: platform/input/devices. */
 
@@ -238,7 +239,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
   TH_LEGACY_HRESULT TVar1;
   
   g_MousePollBusy = g_MousePollBusy + 1;
-  if ((g_MouseButtonMask & LEFT_MIDDLE_RIGHT) == NONE) {
+  if ((g_MouseButtonMask & LEFT_MIDDLE_RIGHT) == CURSOR_BUTTON_NONE) {
     if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
       (*g_MouseDevice->lpVtbl->Release)(g_MouseDevice);
       g_MouseDevice = (IDirectInputDeviceA *)0x0;

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/core/math/interpolation.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: core/math/interpolation. */
 

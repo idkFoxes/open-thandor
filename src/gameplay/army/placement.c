@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/army/placement.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/army/placement. */
 

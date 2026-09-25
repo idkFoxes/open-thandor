@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/ingame/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/ingame/runtime. */
 
@@ -4904,7 +4905,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       dVar5 = g_UiCommandAbsoluteSelectionIndex;
       pGVar7 = g_InGamePanelTextureSource;
       if (root->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE) {
-        root->sessionNotificationInteractionState9B4C = NONE;
+        root->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
       }
       pGVar2 = g_TerrainMaterialTextureSets[dVar5];
       root->observedSessionNotificationValue9B50 = (dword)pGVar7;

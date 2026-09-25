@@ -6,6 +6,7 @@
  */
 
 #include <thandor/core/text/path.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: core/text/path. */
 

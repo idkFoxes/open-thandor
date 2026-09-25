@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/render/primitives.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/render/primitives. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/ingame/commands.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/ingame/commands. */
 

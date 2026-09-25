@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/selection/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/selection/runtime. */
 

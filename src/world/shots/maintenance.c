@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/shots/maintenance.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/shots/maintenance. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/session/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/session/runtime. */
 
@@ -671,7 +672,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
       (g_InGameSessionNotificationTimeoutTicks = g_InGameSessionNotificationTimeoutTicks - 1,
       g_InGameSessionNotificationTimeoutTicks == 0)) &&
      (g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE)) {
-    g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C = NONE;
+    g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
   }
   if (pGVar1 == (GraphicsTextureSourceAsset *)gameRuntime1->observedSessionNotificationValue9B50) {
     if (gameRuntime1->notificationQueue9E60[0].priority04 != 0) {
@@ -695,10 +696,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
             pIVar5 = (InGameNotificationPayload18 *)&pIVar5->secondaryWorldCoordinateQ12_04;
           }
           if (gameRuntime1->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE) {
-            gameRuntime1->sessionNotificationInteractionState9B4C = NONE;
+            gameRuntime1->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
           }
           g_InGameSessionNotificationTimeoutTicks = 0;
-          if ((gameRuntime1->activeNotificationPayload9E40).payloadKind14 != NONE) {
+          if ((gameRuntime1->activeNotificationPayload9E40).payloadKind14 != NOTIFICATION_PAYLOAD_NONE) {
             gameRuntime1->sessionNotificationInteractionState9B4C = PAYLOAD_ACTIVE;
           }
         }
@@ -1068,15 +1069,15 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                                     (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                           if (notificationMovieId != 0) {
                             InGameNotificationQueue_InsertPriorityRecord
-                                      (NONE,0,0,0,0,0,1,notificationMovieId);
+                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId);
                             InGameNotificationQueue_InsertPriorityRecord
-                                      (NONE,0,0,0,0,0,1,notificationMovieId + 1);
+                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 1);
                             InGameNotificationQueue_InsertPriorityRecord
-                                      (NONE,0,0,0,0,0,1,notificationMovieId + 2);
+                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 2);
                             InGameNotificationQueue_InsertPriorityRecord
-                                      (NONE,0,0,0,0,0,1,notificationMovieId + 3);
+                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 3);
                             InGameNotificationQueue_InsertPriorityRecord
-                                      (NONE,0,0,0,0,0,1,notificationMovieId + 4);
+                                      (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 4);
                           }
                           return (InGameRuntimeInitEaxCf5)((uint5)AVar21 & 0xffffffff);
                         }
@@ -2169,7 +2170,7 @@ InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotif
               reverseFactionRecord->anchorCooldown1 = 0x7fffffff;
               reverseFactionRecord->anchorCooldown2 = 0x7fffffff;
             }
-            InGameNotificationQueue_InsertPriorityRecord(NONE,0,0,0,0,0,3,notificationMovieId);
+            InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,3,notificationMovieId);
           }
         }
         else if (reverseFactionRecord->anchorCooldown2 == 0) {

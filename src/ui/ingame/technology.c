@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/ingame/technology.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/ingame/technology. */
 

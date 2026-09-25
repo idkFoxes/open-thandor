@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/fnc/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/fnc/runtime. */
 

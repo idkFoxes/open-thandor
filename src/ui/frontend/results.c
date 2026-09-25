@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/results.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/frontend/results. */
 

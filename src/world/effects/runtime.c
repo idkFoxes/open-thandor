@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/effects/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/effects/runtime. */
 

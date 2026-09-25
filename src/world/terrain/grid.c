@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/terrain/grid.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/terrain/grid. */
 

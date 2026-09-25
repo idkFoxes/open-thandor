@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/text.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/controls/text. */
 

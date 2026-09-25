@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/protocol/commands.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: network/protocol/commands. */
 

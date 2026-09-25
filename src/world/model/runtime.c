@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/model/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/model/runtime. */
 

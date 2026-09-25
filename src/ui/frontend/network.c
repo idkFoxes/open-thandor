@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/network.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/frontend/network. */
 

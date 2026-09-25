@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/controls/input.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/controls/input. */
 
@@ -1376,7 +1377,7 @@ UiPointer_DispatchLeftPress
       if (pUVar6 != (UiNodeBase *)0xffffffff) {
 UiPointer_DispatchLeftPressToCapturedTarget:
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_LEFT;
-        if ((buttonMask & 0x80000000) == NONE) {
+        if ((buttonMask & 0x80000000) == CURSOR_BUTTON_NONE) {
           pUVar2 = &(node->selectable).base.nodeFlags;
           *pUVar2 = *pUVar2 & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
         }

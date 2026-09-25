@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/effect/catalog.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/effect/catalog. */
 

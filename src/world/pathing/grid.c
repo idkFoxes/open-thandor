@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/pathing/grid.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/pathing/grid. */
 

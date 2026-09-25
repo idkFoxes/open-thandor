@@ -6,6 +6,7 @@
  */
 
 #include <thandor/platform/bootstrap/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 

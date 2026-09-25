@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/text/resources.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/text/resources. */
 

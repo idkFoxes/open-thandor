@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/backend/glide.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/backend/glide. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/platform/system/time_locale.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: platform/system/time_locale. */
 

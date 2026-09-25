@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/backend/software.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/backend/software. */
 

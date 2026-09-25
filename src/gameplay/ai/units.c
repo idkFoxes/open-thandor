@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/ai/units.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/ai/units. */
 

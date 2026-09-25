@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/render/projection.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/render/projection. */
 

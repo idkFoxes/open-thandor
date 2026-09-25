@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/resources/texture.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/resources/texture. */
 

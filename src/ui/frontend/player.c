@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/frontend/player.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/frontend/player. */
 

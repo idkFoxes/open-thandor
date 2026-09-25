@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/faction/relations.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/faction/relations. */
 

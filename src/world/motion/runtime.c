@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/motion/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: world/motion/runtime. */
 

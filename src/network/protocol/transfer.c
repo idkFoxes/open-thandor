@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/protocol/transfer.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: network/protocol/transfer. */
 

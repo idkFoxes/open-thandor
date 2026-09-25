@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/core/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/core/runtime. */
 

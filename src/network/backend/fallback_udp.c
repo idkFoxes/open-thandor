@@ -6,6 +6,7 @@
  */
 
 #include <thandor/network/backend/fallback_udp.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: network/backend/fallback_udp. */
 

@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/input/world.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/input/world. */
 
@@ -73,7 +74,7 @@ InGameTargetingContext_AdvanceOrResolveTarget
           else {
             InGameCommandQueue_AppendLocalPlayerCommand(0x1620,0,armyToken,modelToken);
           }
-          targetingContext->sessionNotificationInteractionState9B4C = NONE;
+          targetingContext->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
           return;
         }
       }

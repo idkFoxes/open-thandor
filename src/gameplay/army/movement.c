@@ -6,6 +6,7 @@
  */
 
 #include <thandor/gameplay/army/movement.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: gameplay/army/movement. */
 

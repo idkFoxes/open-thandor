@@ -6,6 +6,7 @@
  */
 
 #include <thandor/core/settings/persistent.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: core/settings/persistent. */
 

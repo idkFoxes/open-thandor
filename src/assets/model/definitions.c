@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/model/definitions.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/model/definitions. */
 

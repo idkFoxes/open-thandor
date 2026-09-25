@@ -6,6 +6,7 @@
  */
 
 #include <thandor/graphics/backend/direct3d.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: graphics/backend/direct3d. */
 

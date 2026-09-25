@@ -6,6 +6,7 @@
  */
 
 #include <thandor/ui/core/runtime.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: ui/core/runtime. */
 

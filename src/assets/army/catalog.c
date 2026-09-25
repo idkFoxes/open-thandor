@@ -6,6 +6,7 @@
  */
 
 #include <thandor/assets/army/catalog.h>
+#include <thandor/thandor.h>
 
 /* Implementation ownership: assets/army/catalog. */
 
