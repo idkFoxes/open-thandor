@@ -7,6 +7,7 @@
 
 #include <thandor/platform/input/devices.h>
 #include <thandor/thandor.h>
+#include <intrin.h>
 
 /* Implementation ownership: platform/input/devices. */
 
@@ -238,11 +239,22 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
   TH_LEGACY_HRESULT mouseDeviceOperationResult;
   TH_LEGACY_HRESULT TVar1;
   
-  g_MousePollBusy = g_MousePollBusy + 1;
+  /* The original only increments the busy counter here, so a poll already running on the timer
+     thread could still be inside GetDeviceData on the device released below. Skip the refresh
+     while a poll is active instead. */
+  if (_InterlockedCompareExchange((volatile long *)&g_MousePollBusy,1,0) != 0) {
+    return;
+  }
   if ((g_MouseButtonMask & LEFT_MIDDLE_RIGHT) == CURSOR_BUTTON_NONE) {
     if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
       (*g_MouseDevice->lpVtbl->Release)(g_MouseDevice);
       g_MouseDevice = (IDirectInputDeviceA *)0x0;
+    }
+    /* The original created a new DirectInput object every refresh without releasing the old one,
+       accumulating thousands per session in dinput's hook thread. */
+    if (g_DirectInput != (IDirectInputA *)0x0) {
+      (*g_DirectInput->lpVtbl->Release)(g_DirectInput);
+      g_DirectInput = (IDirectInputA *)0x0;
     }
     mouseDeviceSetupResult =
          (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
@@ -265,7 +277,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
       }
     }
   }
-  g_MousePollBusy = g_MousePollBusy - 1;
+  g_MousePollBusy = 0;
   return;
 }
 
