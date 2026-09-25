@@ -30,9 +30,9 @@ One-shot rewriters used on `src/` (safe to re-run on a fresh decompiler export):
 Needs Ghidra 12 and JDK 21+ (`JAVA_HOME`):
 
 ```bat
-supportnalyzeHeadless.bat %TEMP%\ghproj thandor -import ghidra	handor.exeV537.gzf -noanalysis ^
+"%GHIDRA_HOME%\support\analyzeHeadless.bat" %TEMP%\ghproj thandor -import ghidra\thandor.exeV537.gzf -noanalysis ^
     -scriptPath tools\ghidra -postScript ExportBuildData.java ghidra\export -deleteProject
-python tools\gen_globals.py ghidra	handor.exeV537.c
+python tools\gen_globals.py ghidra\thandor.exeV537.c
 ```
 
 ## Known TODOs (compiles, but will not run correctly yet)
