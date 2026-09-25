@@ -823,6 +823,10 @@ TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet:
 }
 
 
+FieldGridCell *g_TerrainRayNextCell;
+Q12 g_TerrainRayNextCoord0Q12;
+Q12 g_TerrainRayNextCoord1Q12;
+
 /* Address: 0x005049E0.
    Ownership: world/terrain/height.
    Purpose: Advances the staggered-grid ray traversal to the next X or Y cell boundary. It updates the traversal
@@ -839,44 +843,59 @@ TerrainRay_AdvanceGridTraversalCf
           ,Q12 currentGridCoord1Q12)
 
 {
-  longlong lVar1;
-  int iVar2;
-  longlong boundaryCrossProductQ24;
-  
-  if ((((rayEndCoord1Q12 < currentGridCoord1Q12) || (rayEndCoord0Q12 < currentGridCoord0Q12)) ||
-      (0x1000 < rayEndCoord1Q12 - currentGridCoord1Q12)) ||
-     (0x1000 < rayEndCoord0Q12 - currentGridCoord0Q12)) {
-    iVar2 = rayEndCoord0Q12 - rayStartCoord0Q12;
-    if (iVar2 != 0) {
-      if (iVar2 < 0) {
-        lVar1 = (longlong)(rayStartCoord1Q12 - currentGridCoord1Q12) *
-                (longlong)(rayEndCoord0Q12 - rayStartCoord0Q12) +
-                (longlong)(rayEndCoord1Q12 - rayStartCoord1Q12) *
-                (longlong)(currentGridCoord0Q12 - rayStartCoord0Q12);
-        if ((lVar1 < 0) &&
-           ((int)(((iVar2 >> 0x14) - (int)((ulonglong)lVar1 >> 0x20)) -
-                 (uint)((uint)(iVar2 * 0x1000) < (uint)lVar1)) < 0)) {
-          return false;
-        }
-      }
-      else {
-        boundaryCrossProductQ24 =
-             (longlong)(rayStartCoord1Q12 - currentGridCoord1Q12) *
-             (longlong)(rayEndCoord0Q12 - rayStartCoord0Q12) +
-             (longlong)(rayEndCoord1Q12 - rayStartCoord1Q12) *
-             (longlong)((currentGridCoord0Q12 + 0x1000) - rayStartCoord0Q12);
-        if ((-1 < boundaryCrossProductQ24) &&
-           (-1 < (int)(((iVar2 >> 0x14) - (int)((ulonglong)boundaryCrossProductQ24 >> 0x20)) -
-                      (uint)((uint)(iVar2 * 0x1000) < (uint)boundaryCrossProductQ24)))) {
-          return false;
-        }
+  /* Rewritten from the assembly (0x005049E0-0x00504B04). Besides CF the original returns the next
+     cell in ESI and the next grid corner in EDX (coord0) / ECX (coord1); the decompiler dropped all
+     three, so callers never advanced their cell. They are published in g_TerrainRayNext*. */
+  byte *cell = (byte *)currentCell;
+  int delta0;
+  int delta1;
+
+  g_TerrainRayNextCell = currentCell;
+  g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12;
+  g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12;
+  delta1 = rayEndCoord1Q12 - currentGridCoord1Q12;
+  delta0 = rayEndCoord0Q12 - currentGridCoord0Q12;
+  if (delta1 >= 0 && delta0 >= 0 && delta1 <= 0x1000 && delta0 <= 0x1000) {
+    return true; /* already in the destination cell */
+  }
+  delta0 = rayEndCoord0Q12 - rayStartCoord0Q12;
+  if (delta0 != 0) {
+    longlong limit = (longlong)delta0 * 0x1000;
+    longlong side;
+    if (delta0 > 0) {
+      side = (longlong)(rayEndCoord1Q12 - rayStartCoord1Q12) *
+             ((currentGridCoord0Q12 + 0x1000) - rayStartCoord0Q12) +
+             (longlong)(rayStartCoord1Q12 - currentGridCoord1Q12) * delta0;
+      if (side >= 0 && limit - side >= 0) {
+        g_TerrainRayNextCell = (FieldGridCell *)(cell + rowStrideBytes);
+        g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 + 0x1000;
+        return false;
       }
     }
-    if (rayEndCoord1Q12 != rayStartCoord1Q12) {
-      return false;
+    else {
+      side = (longlong)(rayEndCoord1Q12 - rayStartCoord1Q12) *
+             (currentGridCoord0Q12 - rayStartCoord0Q12) +
+             (longlong)(rayStartCoord1Q12 - currentGridCoord1Q12) * delta0;
+      if (side < 0 && limit - side < 0) {
+        g_TerrainRayNextCell = (FieldGridCell *)(cell - rowStrideBytes);
+        g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 - 0x1000;
+        return false;
+      }
     }
   }
-  return true;
+  delta1 = rayEndCoord1Q12 - rayStartCoord1Q12;
+  if (delta1 == 0) {
+    return true;
+  }
+  if (delta1 < 0) {
+    g_TerrainRayNextCell = (FieldGridCell *)(cell - 0x80);
+    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - 0x1000;
+  }
+  else {
+    g_TerrainRayNextCell = (FieldGridCell *)(cell + 0x80);
+    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 + 0x1000;
+  }
+  return false;
 }
 
 

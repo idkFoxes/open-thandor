@@ -57,6 +57,11 @@ TerrainTriangle_IntersectRayDistanceCf
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12);
 
+/* ESI/EDX/ECX results of TerrainRay_AdvanceGridTraversalCf: next cell and grid corner. */
+extern FieldGridCell *g_TerrainRayNextCell;
+extern Q12 g_TerrainRayNextCoord0Q12;
+extern Q12 g_TerrainRayNextCoord1Q12;
+
 /* 0x005049E0 */
 bool __thandor_cf_preserve_eax
 TerrainRay_AdvanceGridTraversalCf

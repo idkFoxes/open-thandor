@@ -2255,9 +2255,10 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
     }
     bVar10 = TerrainRay_AdvanceGridTraversalCf
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);
-    uVar8 = extraout_ECX;
-    currentGridCoord0Q12 = extraout_EDX;
+                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);    
+    currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
+    uVar8 = g_TerrainRayNextCoord1Q12;
+    currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
   } while (!bVar10);
   FVar12.materialOrCellIndex = currentGridCoord0Q12;
   FVar12.distanceQ12 = 0x7fffffff;
@@ -2356,9 +2357,10 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
     }
     bVar10 = TerrainRay_AdvanceGridTraversalCf
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);
-    uVar8 = extraout_ECX;
-    currentGridCoord0Q12 = extraout_EDX;
+                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);    
+    currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
+    uVar8 = g_TerrainRayNextCoord1Q12;
+    currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
   } while (!bVar10);
   FVar12.materialOrCellIndex = currentGridCoord0Q12;
   FVar12.distanceQ12 = 0x7fffffff;
@@ -2512,10 +2514,10 @@ LAB_00505090:
     }
     bVar13 = TerrainRay_AdvanceGridTraversalCf
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        rowStrideBytes,currentCell,currentGridCoord0Q12,uVar8);
-    uVar8 = extraout_ECX;
-    currentGridCoord0Q12 = extraout_EDX;
-    currentCell = pFVar12;
+                        rowStrideBytes,currentCell,currentGridCoord0Q12,uVar8);    
+    currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
+    uVar8 = g_TerrainRayNextCoord1Q12;
+    currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
   } while (!bVar13);
   FVar16.materialOrCellIndex = currentGridCoord0Q12;
   FVar16.distanceQ12 = 0x7fffffff;
