@@ -3316,7 +3316,7 @@ FrontendUiAction2046_IndexedSelectionHelper
   
   selectedControl =
        (UiNodeBase *)
-       ((int)&(g_FrontendRootNode->base).nextSibling +
+       ((int)&(((UiRootNode *)(uintptr_t)g_FrontendRootNode)->base).nextSibling +
        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[selectionIndex + 1]);
   generationCursor = 7;
   if (((uint)selectedControl[1].nextSibling & 0x400) == 0) {

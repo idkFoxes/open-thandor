@@ -216,7 +216,7 @@ FontGlyph_GetLogicalSizeForStyleRegs
    clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
    clipRight→UiPixelCoordinate_V297, p5 baselineY→UiPixelCoordinate_V297.
 */
-void FontGlyph_DrawBottomAligned
+dword FontGlyph_DrawBottomAligned
                (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
                UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
                UiPixelCoordinate baselineY,sdword drawX)
@@ -242,8 +242,10 @@ void FontGlyph_DrawBottomAligned
     }
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,arg4,drawX,arg6,glyphSubresource,arg1,arg9);
+    /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
+    return GVar1.logicalWidthPixels;
   }
-  return;
+  return 0; /* EAX = arg1 = NULL */
 }
 
 
@@ -255,7 +257,7 @@ void FontGlyph_DrawBottomAligned
    clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
    clipRight→UiPixelCoordinate_V297, p5 lineTop→UiPixelCoordinate_V297, p6 lineBottom→UiPixelCoordinate_V297.
 */
-void FontGlyph_DrawVerticallyCentered
+dword FontGlyph_DrawVerticallyCentered
                (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
                UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
                UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX)
@@ -281,8 +283,10 @@ void FontGlyph_DrawVerticallyCentered
     }
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,arg4,drawX,arg6,glyphSubresource,arg1,arg9);
+    /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
+    return GVar1.logicalWidthPixels;
   }
-  return;
+  return 0; /* EAX = arg1 = NULL */
 }
 
 

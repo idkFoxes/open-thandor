@@ -1199,16 +1199,16 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
       outputRecords[1] = 0;
       outputRecords[2] = 0;
       outputRecords[3] = 0x80000000;
-      puVar13 = RVar18.recordBlockOrError + dVar10 * 4;
+      puVar13 = ((dword *)RVar18.recordBlockOrError) + dVar10 * 4;
       pbVar11 = (byte *)0x40f530;
       do {
         driveLetter = (uint)*pbVar11;
-        *RVar18.recordBlockOrError = (dword)puVar13;
+        *(dword *)RVar18.recordBlockOrError = (dword)puVar13;
         uVar9 = driveLetter;
         EVar5 = (*g_FileSystemGetDriveTypeCode)(driveLetter);
-        RVar18.recordBlockOrError[1] = THANDOR_BITCAST(EngineDriveTypeCode, void, EVar5);
-        RVar18.recordBlockOrError[2] = 0;
-        RVar18.recordBlockOrError[3] = 0;
+        ((dword *)RVar18.recordBlockOrError)[1] = (dword)EVar5;
+        ((dword *)RVar18.recordBlockOrError)[2] = 0;
+        ((dword *)RVar18.recordBlockOrError)[3] = 0;
         u________0040ff58[0] = (wchar_t)driveLetter;
         *puVar13 = driveLetter;
         ((word *)((int)puVar13 + 2))[0] = 0x3a;
@@ -1250,11 +1250,11 @@ LAB_004102e2:
                               (byte *)u________0040ff58);
           if (FVar22.carry) goto LAB_004102e2;
           if (FVar22.entryCount != 0) {
-            RVar18.recordBlockOrError[3] = RVar18.recordBlockOrError[3] | 1;
+            ((dword *)RVar18.recordBlockOrError)[3] = ((dword *)RVar18.recordBlockOrError)[3] | 1;
           }
         }
         puVar13 = puVar13 + 0x80;
-        RVar18.recordBlockOrError = RVar18.recordBlockOrError + 4;
+        RVar18.recordBlockOrError = (dword *)((dword *)RVar18.recordBlockOrError) + 4;
         pbVar11 = pbVar11 + 1;
         dVar10 = dVar10 - 1;
         if (dVar10 == 0) {
@@ -1290,11 +1290,11 @@ LAB_004102e2:
             pdVar4 = (dword *)0x14;
             pdVar6 = (dword *)(AVar21.blockSizeOrSentinel + iVar7 * -0x10);
             if ((uint)(iVar7 * 0x10) <= AVar21.blockSizeOrSentinel && pdVar6 != (dword *)0x0) {
-              *RVar18.recordBlockOrError = dVar10;
-              RVar18.recordBlockOrError[1] = 0;
-              RVar18.recordBlockOrError[2] = 0;
-              RVar18.recordBlockOrError[3] = 0x80000000;
-              pdVar12 = RVar18.recordBlockOrError + iVar7 * 4;
+              *(dword *)RVar18.recordBlockOrError = dVar10;
+              ((dword *)RVar18.recordBlockOrError)[1] = 0;
+              ((dword *)RVar18.recordBlockOrError)[2] = 0;
+              ((dword *)RVar18.recordBlockOrError)[3] = 0x80000000;
+              pdVar12 = ((dword *)RVar18.recordBlockOrError) + iVar7 * 4;
               leaf = outputRecords;
               pdVar1 = RVar18.recordBlockOrError;
               for (; dVar10 != 0; dVar10 = dVar10 - 1) {

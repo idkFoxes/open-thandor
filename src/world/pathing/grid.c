@@ -1041,7 +1041,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
       if (priorityPair2->priority == 1) {
         modelNode1 = (pGVar3->common).ownership.modelNode;
         GridInfluence_SetLowDistanceBandsAroundWorldPoint
-                  (((pGVar3->common).ownership.definitionOrClassRecord)->
+                  (((ModelDefinitionRuntimeSemanticView280 *)(pGVar3->common).ownership.definitionOrClassRecord)->
                    placementRadiusOrClearanceDC,(modelNode1->worldTransform).translation.y,
                    (modelNode1->worldTransform).translation.x);
       }

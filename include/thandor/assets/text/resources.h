@@ -38,10 +38,10 @@ FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource);
 
 /* 0x0041D370 */
-void FontGlyph_DrawBottomAligned (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate baselineY,sdword drawX);
+dword FontGlyph_DrawBottomAligned (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate baselineY,sdword drawX);
 
 /* 0x0041D400 */
-void FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX);
+dword FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX);
 
 /* 0x0041CA50 */
 TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx

@@ -679,7 +679,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
   
   g_SessionNetworkTickInterval = source[1].vtable;
   TVar1 = TextResource_Resolve
-                    ((TextResourceId)((int)&g_SessionNetworkTickInterval[0x75].rightDrag + 1));
+                    ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
   RichTextCommandStream_CopyExpandedCf
             (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,TVar1.eax);
   g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
@@ -1393,12 +1393,12 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
         FVar3 = FVar3 - 1;
       } while (FVar3 != 0);
       if (uVar2 == 0) {
-        pUVar1 = &g_FrontendRootNode[0x21].base.bottomAnchorQ31;
+        pUVar1 = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
         *pUVar1 = *pUVar1 | 8;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL
               ) {
-        pUVar1 = &g_FrontendRootNode[0x21].base.bottomAnchorQ31;
+        pUVar1 = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
         *pUVar1 = *pUVar1 & 0xfffffff7;
       }
       FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(0,playerId,taskAssignmentRoot);

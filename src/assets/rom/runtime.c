@@ -427,7 +427,7 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
     pRVar3 = SVar12.valueOrError;
     g_FrontendActiveRomRecordTable = SVar12.valueOrError;
     pRVar9 = g_RomRegistrySlots;
-    for (RVar6 = SVar12.valueOrError[5].byteSize; g_RomRegistrySlots = pRVar9, RVar6 != 0;
+    for (RVar6 = ((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[5].byteSize; g_RomRegistrySlots = pRVar9, RVar6 != 0;
         RVar6 = RVar6 - 1) {
       SVar11 = RomRegistry_FindSlotValueByRecordIdCf(pRVar3[0x2d].byteSize);
       if (!SVar11.carry) {
@@ -443,7 +443,7 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
       pWVar4 = pRVar9->runtimeRootNode;
       if ((pRVar3 != (RomAssetRecordPrefix *)0x0) &&
          ((pWVar2 = &pWVar4->runtimeFlags, *pWVar2 = *pWVar2 | 0x40, SVar12.valueOrError == pRVar3
-          || (((&SVar12.valueOrError[1].rootNodeOffsetOrPointer)[pRVar3->recordId >> 5] &
+          || (((&((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[1].rootNodeOffsetOrPointer)[pRVar3->recordId >> 5] &
               1 << ((byte)pRVar3->recordId & 0x1f)) != 0)))) {
         pWVar2 = &pWVar4->runtimeFlags;
         *pWVar2 = *pWVar2 & 0xffffffbf;
@@ -458,11 +458,11 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
       iVar8 = iVar8 + -1;
     } while (iVar8 != 0);
     WorldRuntime_SetPosition60AndDistanceFromPosition80
-              (SVar12.valueOrError[3].rootNodeOffsetOrPointer,SVar12.valueOrError[3].byteSize,
-               SVar12.valueOrError[2].recordId,worldRuntime);
+              (((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[3].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[3].byteSize,
+               ((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[2].recordId,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,SVar12.valueOrError[4].rootNodeOffsetOrPointer,SVar12.valueOrError[4].byteSize,
-               SVar12.valueOrError[3].recordId,worldRuntime);
+              (2,((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[4].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[4].byteSize,
+               ((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[3].recordId,worldRuntime);
     if (uVar5 != 0) {
       if ((int)uVar5 < 0) {
         UiActionQueue_Enqueue(0,worldRuntime);
@@ -530,7 +530,7 @@ RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
           (uVar4 = record->recordId >> 5,
           (1 << ((byte)record->recordId & 0x1f) &
           ((&RVar7.recordOrError[1].rootNodeOffsetOrPointer)[uVar4] |
-          (&g_FrontendActiveRomRecordTable[1].rootNodeOffsetOrPointer)[uVar4])) != 0)))) {
+          (&((RomAssetRecordPrefix *)(uintptr_t)g_FrontendActiveRomRecordTable)[1].rootNodeOffsetOrPointer)[uVar4])) != 0)))) {
         pWVar1 = &pWVar2->runtimeFlags;
         *pWVar1 = *pWVar1 & 0xffffffbf;
         entryIndex = 0;
