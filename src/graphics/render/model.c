@@ -7,8 +7,53 @@
 
 #include <thandor/graphics/render/model.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: graphics/render/model. */
+
+
+/* MMX lane helpers for the rewritten lighting routines (Intel SDM semantics). */
+
+/* movd + punpcklbw mm,mm + psrlw mm,shift: each byte b becomes the word (b * 0x101) >> shift. */
+static void ModelLighting_UnpackBytes(uint packed, int shift, short lanes[4])
+{
+  int i;
+  for (i = 0; i < 4; i++) {
+    lanes[i] = (short)((((packed >> (8 * i)) & 0xff) * 0x101) >> shift);
+  }
+}
+
+/* pmulhw */
+static void ModelLighting_MulHigh(short lanes[4], const short factors[4])
+{
+  int i;
+  for (i = 0; i < 4; i++) {
+    lanes[i] = (short)(((int)lanes[i] * (int)factors[i]) >> 16);
+  }
+}
+
+/* paddsw */
+static void ModelLighting_AddSaturate(short lanes[4], const short addends[4])
+{
+  int i;
+  for (i = 0; i < 4; i++) {
+    int sum = (int)lanes[i] + (int)addends[i];
+    lanes[i] = (short)(sum > 0x7fff ? 0x7fff : sum < -0x8000 ? -0x8000 : sum);
+  }
+}
+
+/* packuswb mm,mm + movd */
+static PackedArgb32 ModelLighting_PackUnsigned(const short lanes[4])
+{
+  uint packed = 0;
+  int i;
+  for (i = 0; i < 4; i++) {
+    int v = lanes[i] < 0 ? 0 : lanes[i] > 0xff ? 0xff : lanes[i];
+    packed |= (uint)v << (8 * i);
+  }
+  return packed;
+}
+
 
 /* Address: 0x004BDC90.
    Ownership: graphics/render/model.
@@ -935,123 +980,70 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
           GraphicsFixedVec3 *surfaceNormalQ12)
 
 {
-  int iVar1;
-  uint uVar2;
-  PackedRgb24 PVar3;
-  longlong lVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  ushort uVar9;
-  sdword sVar10;
-  GraphicsShadingRecordCount GVar11;
-  uint uVar12;
-  int iVar13;
-  GraphicsShadingRuntimeRecord *shadingRecord1;
-  undefined1 uVar15;
-  undefined1 uVar16;
-  undefined8 uVar14;
-  undefined8 extraout_MM0;
-  undefined1 uVar17;
-  undefined1 uVar18;
-  ulonglong uVar19;
-  
+  /* Rewritten from the assembly (0x004CC940-0x004CCA88); Ghidra dropped the MMX accumulator, so every
+     light was added to an undefined register instead of the running color. */
+  const short *lightingTable = (const short *)&g_PackedLightingLookupTable;
+  const GraphicsShadingRuntimeRecord *record = g_GraphicsShadingNearbyRecords;
+  GraphicsShadingRecordCount remaining;
+  short color[4];
+  short lanes[4];
+
+  scenePackedColor0 = scenePackedColor0 | 0xff000000;
   FixedTransform_ApplyDirection
             (&g_ModelLightingTransformedSurfaceNormalScratch,surfaceNormalQ12,
              (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
-  uVar16 = (undefined1)(scenePackedColor0 >> 0x10);
-  uVar15 = (undefined1)(scenePackedColor0 >> 8);
-  uVar17 = (undefined1)(materialPackedColor >> 0x18);
-  uVar9 = CONCAT11(uVar17,uVar17);
-  uVar18 = (undefined1)(materialPackedColor >> 0x10);
-  uVar17 = (undefined1)(materialPackedColor >> 8);
-  shadingRecord1 = g_GraphicsShadingNearbyRecords;
-  uVar14 = pmulhw(CONCAT26(0x1fff,CONCAT24((ushort)(CONCAT15(uVar16,CONCAT14(uVar16,
-                                                  scenePackedColor0)) >> 0x23),
-                                           CONCAT22(CONCAT11(uVar15,uVar15) >> 3,
-                                                    CONCAT11((char)scenePackedColor0,
-                                                             (char)scenePackedColor0) >> 3))),
-                  CONCAT26(uVar9 >> 3,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar18),
-                                                      CONCAT14(uVar18,materialPackedColor)) >> 0x20)
-                                    >> 3,CONCAT22(CONCAT11(uVar17,uVar17) >> 3,
-                                                  CONCAT11((char)materialPackedColor,
-                                                           (char)materialPackedColor) >> 3))));
-  uVar19 = (ulonglong)vertexPackedColor;
-  for (GVar11 = g_GraphicsShadingNearbyRecordCount; GVar11 != 0; GVar11 = GVar11 - 1) {
-    if (shadingRecord1->targetRadiusQ12 != 0) {
-      g_ModelLightingVertexToLightVectorScratch.x = shadingRecord1->worldXQ12 - vertexPositionQ12->x
-      ;
-      g_ModelLightingVertexToLightVectorScratch.y = shadingRecord1->worldYQ12 - vertexPositionQ12->y
-      ;
-      g_ModelLightingVertexToLightVectorScratch.z = shadingRecord1->worldZQ12 - vertexPositionQ12->z
-      ;
-      lVar4 = (longlong)g_ModelLightingVertexToLightVectorScratch.y *
-              (longlong)g_ModelLightingVertexToLightVectorScratch.y +
-              (longlong)g_ModelLightingVertexToLightVectorScratch.x *
-              (longlong)g_ModelLightingVertexToLightVectorScratch.x +
-              (longlong)g_ModelLightingVertexToLightVectorScratch.z *
-              (longlong)g_ModelLightingVertexToLightVectorScratch.z;
-      iVar1 = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4);
-      uVar2 = (uint)shadingRecord1->squaredRadiusQ24;
-      if (lVar4 < (longlong)shadingRecord1->squaredRadiusQ24) {
-        uVar12 = (uint)lVar4 * 8;
-        uVar12 = (((int)((ulonglong)lVar4 >> 0x20) << 3 | (uint)lVar4 >> 0x1d) + iVar1 +
-                 (uint)CARRY4(uVar12,uVar2)) * 0x1000 | uVar12 + uVar2 >> 0x14;
-        if (uVar12 != 0) {
-          FixedVec3_NormalizeQ28
-                    (&g_ModelLightingVertexToLightVectorScratch,
-                     &g_ModelLightingVertexToLightVectorScratch);
-          sVar10 = FixedVec3_DotQ12(&g_ModelLightingVertexToLightVectorScratch,
-                                    &g_ModelLightingTransformedSurfaceNormalScratch);
-          iVar13 = 0;
-          if (-1 < sVar10) {
-            iVar13 = sVar10;
-          }
-          PVar3 = shadingRecord1->packedColorRgbActive;
-          uVar15 = (undefined1)(PVar3 >> 0x18);
-          uVar9 = CONCAT11(uVar15,uVar15);
-          uVar16 = (undefined1)(PVar3 >> 0x10);
-          uVar15 = (undefined1)(PVar3 >> 8);
-          lVar4 = (longlong)
-                  (int)((longlong)(ulonglong)((iVar1 << 0x11 | uVar2 >> 0xf) * 9) /
-                       (longlong)(int)uVar12) * (longlong)iVar13;
-          uVar14 = pmulhw(CONCAT26(uVar9 >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(uVar9,uVar16),
-                                                              CONCAT14(uVar16,PVar3)) >> 0x20) >> 2,
-                                            CONCAT22(CONCAT11(uVar15,uVar15) >> 2,
-                                                     CONCAT11((char)PVar3,(char)PVar3) >> 2))),
-                          *(undefined8 *)
-                           (&g_PackedLightingLookupTable +
-                           ((uint)lVar4 >> 0x1c | (int)((ulonglong)lVar4 >> 0x20) << 4) * 8));
-          uVar14 = paddsw(extraout_MM0,uVar14);
-        }
-      }
+  ModelLighting_UnpackBytes(scenePackedColor0,3,color);
+  ModelLighting_UnpackBytes(materialPackedColor,3,lanes);
+  ModelLighting_MulHigh(color,lanes);
+  for (remaining = g_GraphicsShadingNearbyRecordCount; remaining != 0; remaining = remaining - 1,
+       record = record + 1) {
+    longlong distanceSquared;
+    longlong radiusSquared;
+    uint divisor;
+    uint numerator;
+    sdword facing;
+    int quotient;
+    uint tableIndex;
+
+    if (record->targetRadiusQ12 == 0) {
+      continue;
     }
-    vertexPackedColor = (PackedArgb32)uVar19;
-    shadingRecord1 = shadingRecord1 + 1;
+    g_ModelLightingVertexToLightVectorScratch.x = record->worldXQ12 - vertexPositionQ12->x;
+    g_ModelLightingVertexToLightVectorScratch.y = record->worldYQ12 - vertexPositionQ12->y;
+    g_ModelLightingVertexToLightVectorScratch.z = record->worldZQ12 - vertexPositionQ12->z;
+    distanceSquared =
+         (longlong)g_ModelLightingVertexToLightVectorScratch.x *
+         g_ModelLightingVertexToLightVectorScratch.x +
+         (longlong)g_ModelLightingVertexToLightVectorScratch.y *
+         g_ModelLightingVertexToLightVectorScratch.y +
+         (longlong)g_ModelLightingVertexToLightVectorScratch.z *
+         g_ModelLightingVertexToLightVectorScratch.z;
+    radiusSquared = (longlong)record->squaredRadiusQ24;
+    if (distanceSquared >= radiusSquared) {
+      continue;
+    }
+    divisor = (uint)((ulonglong)(distanceSquared * 8 + radiusSquared) >> 20);
+    if (divisor == 0) {
+      continue;
+    }
+    numerator = (uint)((ulonglong)radiusSquared >> 15) * 9;
+    FixedVec3_NormalizeQ28
+              (&g_ModelLightingVertexToLightVectorScratch,&g_ModelLightingVertexToLightVectorScratch);
+    facing = FixedVec3_DotQ12
+                       (&g_ModelLightingVertexToLightVectorScratch,
+                        &g_ModelLightingTransformedSurfaceNormalScratch);
+    if (facing < 0) {
+      facing = 0;
+    }
+    quotient = (int)((longlong)numerator / (int)divisor);
+    tableIndex = (uint)(((longlong)quotient * facing) >> 28);
+    ModelLighting_UnpackBytes(record->packedColorRgbActive,2,lanes);
+    ModelLighting_MulHigh(lanes,lightingTable + tableIndex * 4);
+    ModelLighting_AddSaturate(color,lanes);
   }
-  uVar15 = (undefined1)(vertexPackedColor >> 0x18);
-  uVar9 = CONCAT11(uVar15,uVar15);
-  uVar16 = (undefined1)(vertexPackedColor >> 0x10);
-  uVar15 = (undefined1)(vertexPackedColor >> 8);
-  uVar14 = pmulhw(uVar14,CONCAT26(uVar9 >> 2,
-                                  CONCAT24((ushort)CONCAT31(CONCAT21(uVar9,uVar16),uVar16) >> 2,
-                                           CONCAT22(CONCAT11(uVar15,uVar15) >> 2,
-                                                    CONCAT11((char)vertexPackedColor,
-                                                             (char)vertexPackedColor) >> 2))));
-  sVar5 = (short)uVar14;
-  sVar6 = (short)((ulonglong)uVar14 >> 0x10);
-  sVar7 = (short)((ulonglong)uVar14 >> 0x20);
-  sVar8 = (short)((ulonglong)uVar14 >> 0x30);
-  return CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar14 >> 0x30) - (0xff < sVar8)
-                  ,CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)uVar14 >> 0x20) -
-                            (0xff < sVar7),
-                            CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                     (char)((ulonglong)uVar14 >> 0x10) - (0xff < sVar6),
-                                     (0 < sVar5) * (sVar5 < 0x100) * (char)uVar14 - (0xff < sVar5)))
-                 );
+  ModelLighting_UnpackBytes(vertexPackedColor,2,lanes);
+  ModelLighting_MulHigh(color,lanes);
+  return ModelLighting_PackUnsigned(color);
 }
 
 
