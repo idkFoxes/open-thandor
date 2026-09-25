@@ -4667,13 +4667,13 @@ joined_r0x00570b27:
     LOCK();
     UNLOCK();
     iVar4 = g_UiCommandSelectionAnchorWorldXQ12;
-    if (g_UiCommandSelectionCurrentWorldXQ12 < g_UiCommandSelectionAnchorWorldXQ12) {
+    if ((int)g_UiCommandSelectionCurrentWorldXQ12 < (int)g_UiCommandSelectionAnchorWorldXQ12) {
       iVar4 = g_UiCommandSelectionCurrentWorldXQ12;
       g_UiCommandSelectionCurrentWorldXQ12 = g_UiCommandSelectionAnchorWorldXQ12;
     }
     iVar8 = g_UiCommandSelectionCurrentWorldYQ12;
     iVar11 = g_UiCommandSelectionAnchorWorldYQ12;
-    if (g_UiCommandSelectionCurrentWorldYQ12 < g_UiCommandSelectionAnchorWorldYQ12) {
+    if ((int)g_UiCommandSelectionCurrentWorldYQ12 < (int)g_UiCommandSelectionAnchorWorldYQ12) {
       iVar8 = g_UiCommandSelectionAnchorWorldYQ12;
       iVar11 = g_UiCommandSelectionCurrentWorldYQ12;
     }
@@ -4695,13 +4695,13 @@ joined_r0x00570b27:
     }
     iVar6 = g_UiCommandSelectionAnchorWorldXQ12;
     iVar4 = g_UiCommandSelectionCurrentWorldXQ12;
-    if (g_UiCommandSelectionCurrentWorldXQ12 < g_UiCommandSelectionAnchorWorldXQ12) {
+    if ((int)g_UiCommandSelectionCurrentWorldXQ12 < (int)g_UiCommandSelectionAnchorWorldXQ12) {
       iVar6 = g_UiCommandSelectionCurrentWorldXQ12;
       iVar4 = g_UiCommandSelectionAnchorWorldXQ12;
     }
     iVar5 = g_UiCommandSelectionCurrentWorldYQ12;
     iVar8 = g_UiCommandSelectionAnchorWorldYQ12;
-    if (g_UiCommandSelectionCurrentWorldYQ12 < g_UiCommandSelectionAnchorWorldYQ12) {
+    if ((int)g_UiCommandSelectionCurrentWorldYQ12 < (int)g_UiCommandSelectionAnchorWorldYQ12) {
       iVar5 = g_UiCommandSelectionAnchorWorldYQ12;
       iVar8 = g_UiCommandSelectionCurrentWorldYQ12;
     }

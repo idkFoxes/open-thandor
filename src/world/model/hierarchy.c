@@ -649,9 +649,9 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
   iVar7 = (modelNodeRuntime->worldTransform).translation.y - g_ModelRaycastOriginY;
   iVar10 = (modelNodeRuntime->worldTransform).translation.z - g_ModelRaycastOriginZ;
   iVar13 = modelNodeRuntime->subtreeBoundingRadiusQ12;
-  lVar3 = (longlong)iVar7 * (longlong)g_ModelRaycastWorldDirectionYQ28 +
-          (longlong)iVar6 * (longlong)g_ModelRaycastWorldDirectionXQ28 +
-          (longlong)iVar10 * (longlong)g_ModelRaycastWorldDirectionZQ28;
+  lVar3 = (longlong)iVar7 * (longlong)(int)g_ModelRaycastWorldDirectionYQ28 +
+          (longlong)iVar6 * (longlong)(int)g_ModelRaycastWorldDirectionXQ28 +
+          (longlong)iVar10 * (longlong)(int)g_ModelRaycastWorldDirectionZQ28;
   edxCarrier.scratchSigned = (int)((ulonglong)lVar3 >> 0x20) << 4 | (uint)lVar3 >> 0x1c;
   if ((-iVar13 <= edxCarrier.scratchSigned) &&
      (edxCarrier.scratchSigned < g_ModelRaycastMaximumDistance + iVar13)) {

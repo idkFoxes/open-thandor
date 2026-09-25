@@ -288,9 +288,9 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
           (longlong)((pGVar5->z * 2 + pGVar6->z + pGVar7->z >> 2) - g_ModelRaycastLocalOriginZ) *
           (longlong)iVar18;
   uVar23 = (uint)(uVar8 >> 0x20);
-  lVar9 = (longlong)g_ModelRaycastLocalDirectionYQ28 * (longlong)iVar16 +
-          (longlong)g_ModelRaycastLocalDirectionXQ28 * (longlong)iVar14 +
-          (longlong)g_ModelRaycastLocalDirectionZQ28 * (longlong)iVar18;
+  lVar9 = (longlong)(int)g_ModelRaycastLocalDirectionYQ28 * (longlong)iVar16 +
+          (longlong)(int)g_ModelRaycastLocalDirectionXQ28 * (longlong)iVar14 +
+          (longlong)(int)g_ModelRaycastLocalDirectionZQ28 * (longlong)iVar18;
   uVar17 = (int)((ulonglong)lVar9 >> 0x20) << 4 | (uint)lVar9 >> 0x1c;
   uVar15 = g_ModelRaycastMaximumDistance;
   if (uVar17 != 0) {
@@ -311,21 +311,21 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
     pGVar5 = triangle->vertex0;
     iVar2 = -pGVar5->x;
     iVar20 = ((int)((ulonglong)
-                    ((longlong)TVar26.distanceQ12 * (longlong)g_ModelRaycastLocalDirectionXQ28) >>
+                    ((longlong)TVar26.distanceQ12 * (longlong)(int)g_ModelRaycastLocalDirectionXQ28) >>
                    0x20) << 4 |
-             (uint)((longlong)TVar26.distanceQ12 * (longlong)g_ModelRaycastLocalDirectionXQ28) >>
+             (uint)((longlong)TVar26.distanceQ12 * (longlong)(int)g_ModelRaycastLocalDirectionXQ28) >>
              0x1c) + g_ModelRaycastLocalOriginX + iVar2;
     iVar3 = -pGVar5->y;
     iVar21 = ((int)((ulonglong)
-                    ((longlong)g_ModelRaycastLocalDirectionYQ28 * (longlong)TVar26.distanceQ12) >>
+                    ((longlong)(int)g_ModelRaycastLocalDirectionYQ28 * (longlong)TVar26.distanceQ12) >>
                    0x20) << 4 |
-             (uint)((longlong)g_ModelRaycastLocalDirectionYQ28 * (longlong)TVar26.distanceQ12) >>
+             (uint)((longlong)(int)g_ModelRaycastLocalDirectionYQ28 * (longlong)TVar26.distanceQ12) >>
              0x1c) + g_ModelRaycastLocalOriginY + iVar3;
     iVar4 = -pGVar5->z;
     iVar22 = ((int)((ulonglong)
-                    ((longlong)g_ModelRaycastLocalDirectionZQ28 * (longlong)TVar26.distanceQ12) >>
+                    ((longlong)(int)g_ModelRaycastLocalDirectionZQ28 * (longlong)TVar26.distanceQ12) >>
                    0x20) << 4 |
-             (uint)((longlong)g_ModelRaycastLocalDirectionZQ28 * (longlong)TVar26.distanceQ12) >>
+             (uint)((longlong)(int)g_ModelRaycastLocalDirectionZQ28 * (longlong)TVar26.distanceQ12) >>
              0x1c) + g_ModelRaycastLocalOriginZ + iVar4;
     pGVar5 = triangle->vertex1;
     pGVar6 = triangle->vertex2;

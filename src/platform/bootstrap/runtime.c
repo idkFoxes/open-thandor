@@ -492,7 +492,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
       if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
         (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
       }
-      if (-1 < g_ActiveGraphicsAdapterIndex) {
+      if (-1 < (int)g_ActiveGraphicsAdapterIndex) {
         (*g_GraphicsDisplayModeHook)
                   (g_ActiveGraphicsAdapterIndex,
                    g_SoftwarePixelFormatConfig.redBitCount +

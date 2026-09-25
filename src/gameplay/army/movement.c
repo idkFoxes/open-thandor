@@ -2632,23 +2632,23 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
              (int)pAVar2->ownerValue68 >> 0x10,pAVar2->ownerValue68 & 0xffff);
   iVar16 = 0x1000 - pAVar2->runtimeStateA8;
   g_ArmySuspensionBlendVectorAXQ12 =
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)dVar2) >> 0x20
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)dVar2) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)dVar2) >> 0xc) +
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar16) >> 0x20) <<
-        0x14 | (uint)((longlong)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar16) >> 0xc);
+       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)dVar2) >> 0xc) +
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar16) >> 0x20) <<
+        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar16) >> 0xc);
   g_ArmySuspensionBlendVectorAYQ12 =
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)dVar2) >> 0x20
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)dVar2) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)dVar2) >> 0xc) +
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar16) >> 0x20) <<
-        0x14 | (uint)((longlong)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar16) >> 0xc);
+       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)dVar2) >> 0xc) +
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar16) >> 0x20) <<
+        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar16) >> 0xc);
   g_ArmySuspensionBlendVectorAZQ12 =
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)dVar2) >> 0x20
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)dVar2) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)dVar2) >> 0xc) +
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar16) >> 0x20) <<
-        0x14 | (uint)((longlong)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar16) >> 0xc);
+       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)dVar2) >> 0xc) +
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar16) >> 0x20) <<
+        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar16) >> 0xc);
   FVar31 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
   modelNode1 = modelNodeRuntime->childNodes[1]->childNodes[0]->childNodes[0]->childNodes[0];
   AVar6 = (pAVar2->articulatedContact).terrainContactMode;
@@ -2679,23 +2679,23 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
              (uint)pAVar2->linkedArmyRuntimeOrSavedOffset & 0xffff);
   iVar17 = 0x1000 - (pAVar2->articulatedContact).terrainContactMode;
   g_ArmySuspensionBlendVectorAXQ12 =
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)AVar6) >> 0x20
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)AVar6) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)AVar6) >> 0xc) +
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar17) >> 0x20) <<
-        0x14 | (uint)((longlong)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar17) >> 0xc);
+       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)AVar6) >> 0xc) +
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar17) >> 0x20) <<
+        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)iVar17) >> 0xc);
   g_ArmySuspensionBlendVectorAYQ12 =
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)AVar6) >> 0x20
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)AVar6) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)AVar6) >> 0xc) +
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar17) >> 0x20) <<
-        0x14 | (uint)((longlong)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar17) >> 0xc);
+       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)AVar6) >> 0xc) +
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar17) >> 0x20) <<
+        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)iVar17) >> 0xc);
   g_ArmySuspensionBlendVectorAZQ12 =
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)AVar6) >> 0x20
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)AVar6) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)AVar6) >> 0xc) +
-       ((int)((ulonglong)((longlong)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar17) >> 0x20) <<
-        0x14 | (uint)((longlong)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar17) >> 0xc);
+       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)AVar6) >> 0xc) +
+       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar17) >> 0x20) <<
+        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)iVar17) >> 0xc);
   FVar32 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
   pvVar9 = pAVar2->definitionOrAsset;
   LOCK();

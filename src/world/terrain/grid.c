@@ -3739,17 +3739,17 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
                     ((int)cell->triangle0NormalAngles >> 0x10,cell->triangle0NormalAngles & 0xffff);
   directionalLightColor =
        (&g_TerrainDirectionalLightColorLut)
-       [(int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)g_TerrainLightDirectionX) >> 0x20) +
-        (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)g_TerrainLightDirectionY) >> 0x20) +
-        (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)g_TerrainLightDirectionZ) >> 0x20) >>
+       [(int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)(int)g_TerrainLightDirectionX) >> 0x20) +
+        (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)(int)g_TerrainLightDirectionY) >> 0x20) +
+        (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)(int)g_TerrainLightDirectionZ) >> 0x20) >>
         0x10];
   cell->secondarySurfaceDirectionalLightColor5C = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor58 = directionalLightColor;
   {
     static int logged;
-    int dot = ((int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)g_TerrainLightDirectionX) >> 0x20) +
-               (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)g_TerrainLightDirectionY) >> 0x20) +
-               (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)g_TerrainLightDirectionZ) >> 0x20)) >> 0x10;
+    int dot = ((int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)(int)g_TerrainLightDirectionX) >> 0x20) +
+               (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)(int)g_TerrainLightDirectionY) >> 0x20) +
+               (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)(int)g_TerrainLightDirectionZ) >> 0x20)) >> 0x10;
     if (logged < 6 || dot < 0 || dot > 0x100) {
       if (logged < 30) {
         Thandor_Log("light cell %p: angles=%08X dir=(%d,%d,%d) light=(%d,%d,%d) index=%d color=%08X",

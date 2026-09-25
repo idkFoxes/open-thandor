@@ -158,7 +158,7 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
                 pMVar2 = (modelNodeRuntime->modelPayload).modelResource;
                 uVar3 = pMVar2->meshGroupCount;
                 meshGroup = &pMVar2->firstMeshGroupRelativeOffset;
-                if (((((uint)g_ModelLodDepthThresholdQ8 < g_ModelCullViewRelativeZ) && (1 < uVar3))
+                if (((((uint)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ) && (1 < uVar3))
                     && (meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup),
                        (uint)g_ModelLodDepthThresholdQ8 < (uint)((int)g_ModelCullViewRelativeZ >> 1)
                        )) && (2 < uVar3)) {

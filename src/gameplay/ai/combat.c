@@ -293,7 +293,7 @@ AiCombatTarget_EvaluateCandidateScore
       if (-1 < lVar2) {
         radialClearanceQ12 =
              FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)lVar2 >> 0x20),(UInt64Half32)lVar2);
-        lVar2 = (longlong)g_AiCombatTargetRadialClearanceWeight;
+        lVar2 = (longlong)(int)g_AiCombatTargetRadialClearanceWeight;
         sourceRadiusQ12 = sourceArmyRuntime->runtimeState4C;
         dVar1 = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                 definitionOrSavedId).savedIdOrOffset;
@@ -320,11 +320,11 @@ AiCombatTarget_EvaluateCandidateScore
              ((uint)hierarchyScaleRatioPairQ12 < THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4))) {
             candidateScore =
                  (int)(((int)radialClearanceQ12 * lVar2) / (longlong)(int)sourceRadiusQ12) + iVar5 +
-                 (int)(((longlong)g_AiCombatTargetSourceCounterCountWeight * (longlong)iVar3) /
+                 (int)(((longlong)(int)g_AiCombatTargetSourceCounterCountWeight * (longlong)iVar3) /
                       (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4)) +
-                 (int)(((longlong)g_AiCombatTargetCandidateCounterCountWeight * (longlong)iVar4) /
+                 (int)(((longlong)(int)g_AiCombatTargetCandidateCounterCountWeight * (longlong)iVar4) /
                       (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4)) +
-                 (int)(((longlong)g_AiCombatTargetScaleDeficitWeight *
+                 (int)(((longlong)(int)g_AiCombatTargetScaleDeficitWeight *
                        (longlong)
                        (int)(THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4) - (uint)hierarchyScaleRatioPairQ12)) /
                       (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4));

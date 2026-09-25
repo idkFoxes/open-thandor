@@ -51,7 +51,7 @@ InGameRuntime_RunSessionUntilExit
   }
   do {
     g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks + -2;
-    if (g_InGamePendingSimulationTicks < 0) {
+    if ((int)g_InGamePendingSimulationTicks < 0) {
       g_InGamePendingSimulationTicks = 0;
     }
     UiRootStack_InvalidateAll();
@@ -2307,7 +2307,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
     return;
   }
   if ((g_UiCommandRuntimeFlags & 0x10) == 0) {
-    if (2 < g_InGamePendingSimulationTicks) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+    if (2 < (int)g_InGamePendingSimulationTicks) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
     g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks + 1;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {

@@ -106,7 +106,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
                    &g_GeneratedTextureScratchRuntime.currentModelOriginQ12,
                    &g_ViewProjectionMatrixFixed);
-        if (((int)g_ProjectionScaleFixed < g_ModelCullViewRelativeZ) &&
+        if (((int)g_ProjectionScaleFixed < (int)g_ModelCullViewRelativeZ) &&
            (((modelNode->modelPayload).modelResource)->boundingRadiusQ12 <
             (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed))) {
           g_GeneratedTextureScratchRuntime.projectedMinX = 0x7fffffff;
