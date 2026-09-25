@@ -2069,7 +2069,7 @@ InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectio
   if (uVar12 != 0) {
     if (1 < uVar12) {
       uVar6 = ((dword *)(uintptr_t)g_TerrainRegionCollectionEntries)[3];
-      puVar15 = g_TerrainRegionCollectionEntries + 4;
+      puVar15 = (uint *)(uintptr_t)g_TerrainRegionCollectionEntries + 4; /* 16-byte records: +1 entry */
       iVar8 = uVar12 - 1;
       uVar22 = uVar12;
       puVar23 = g_TerrainRegionCollectionEntries;
