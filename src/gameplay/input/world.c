@@ -537,7 +537,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
       }
       else if ((pointerValue0 != 0x7fffffff) && ((g_InGamePointerInteractionStateFlags & 3) == 0)) {
         if ((g_CursorButtonState & 4) == 0) {
-          iVar2 = (*g_PointerSetPosition)
+          iVar2 = (*(code *)g_PointerSetPosition)
                             (g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + iVar2 * 0x40;
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
@@ -552,7 +552,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
     }
     else if (pointerValue0 != 0x7fffffff) {
       if ((g_CursorButtonState & 4) == 0) {
-        iVar2 = (*g_PointerSetPosition)
+        iVar2 = (*(code *)g_PointerSetPosition)
                           (g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + iVar2 * 0x40;
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;

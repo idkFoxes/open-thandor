@@ -2441,7 +2441,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
       UiTransfer_SendPacketType10000Value2931Cf();
       return;
     }
-    (*g_NetworkBackendSlot1)(UVar6);
+    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale UVar6 */
   }
   NVar2 = (*g_NetworkBackendSlot0)(returnValue);
   if (!NVar2.carry) {
@@ -2449,7 +2449,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
     if (!NVar4.carry) {
       return;
     }
-    (*g_NetworkBackendSlot1)(pNVar5);
+    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale pNVar5 */
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {

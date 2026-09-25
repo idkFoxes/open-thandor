@@ -560,9 +560,9 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (word *)&g_ScenarioCatalogPathScratchUtf16);
-      FVar11 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)
+      FVar11 = (*g_FileSystemOpenCf)
                          (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16
-                         ));
+                         );
       FVar10 = (*g_FatalErrorPrimaryDispatchCf)(FVar11.eax,FVar11.carry);
       handle = (void *)FVar10.eax;
       handle_00 = handle;

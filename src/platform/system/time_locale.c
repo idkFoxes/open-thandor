@@ -142,8 +142,8 @@ Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode count
 void __cdecl TimerSystem_Init(void)
 
 {
-  g_TimerRegisterPeriodic = TimerSystem_RegisterPeriodic;
-  g_TimerUnregisterPeriodic = TimerSystem_UnregisterPeriodic;
+  g_TimerRegisterPeriodic = (TimerRegisterPeriodicProc *)TimerSystem_RegisterPeriodic;
+  g_TimerUnregisterPeriodic = (TimerUnregisterPeriodicProc *)TimerSystem_UnregisterPeriodic;
   g_Win32PumpMessages = Win32_PumpMessages;
   return;
 }

@@ -110,11 +110,69 @@ def wrap(frm, to, expr):
     return f"THANDOR_BITCAST({frm}, {to}, {expr})"
 
 
+def bitcast_span(text, start):
+    """(end, args) of the THANDOR_BITCAST( ... ) call starting at `start`."""
+    open_ = text.index("(", start)
+    end = match_paren(text, open_)
+    inner = text[open_ + 1:end - 1]
+    args, depth, cur = [], 0, ""
+    for c in inner:
+        if c in "([":
+            depth += 1
+        elif c in ")]":
+            depth -= 1
+        if c == "," and depth == 0 and len(args) < 2:
+            args.append(cur.strip())
+            cur = ""
+        else:
+            cur += c
+    args.append(cur.strip())
+    return end, args
+
+
+def retarget(log):
+    """A BITCAST whose `From` no longer matches its operand (signatures were refined): fix `From`,
+    or drop the wrapper when the operand already has the target type."""
+    init = re.compile(r'^(?P<file>[^(]+)\((?P<line>\d+)\): error C2440: "Initialisierung|initializing": '
+                      r'"(?P<actual>[^"]+)" (?:kann nicht in|cannot convert from) "(?P<from>[^"]+)"')
+    sites = collections.defaultdict(set)
+    for line in open(log, encoding="mbcs" if sys.platform == "win32" else "utf-8", errors="replace"):
+        m = re.match(r'^([^(]+)\((\d+)\): error C2440: "(?:Initialisierung|initializing)": "([^"]+)" '
+                     r'(?:kann nicht in|cannot convert from) "([^"]+)"', line.strip())
+        if m:
+            sites[m[1]].add((int(m[2]), m[3], m[4]))
+    done = 0
+    for rel, errs in sites.items():
+        path = ROOT / rel
+        text = path.read_text(encoding="utf-8")
+        starts = [0] + [m.end() for m in re.finditer("\n", text)]
+        edits = {}
+        for lineno, actual, _first_member in errs:
+            # MSVC names the first member of the union's `from_` type, not `From` itself,
+            # so take the BITCAST on that line whose From differs from the operand type.
+            a = starts[lineno - 1]
+            b = starts[lineno] if lineno < len(starts) else len(text)
+            for m in re.finditer(r"THANDOR_BITCAST\(", text[a:b]):
+                s = a + m.start()
+                end, (f, to, expr) = bitcast_span(text, s)
+                if f == actual:
+                    continue
+                edits[(s, end)] = expr if actual == to else f"THANDOR_BITCAST({actual}, {to}, {expr})"
+                break
+        for (s, e), new in sorted(edits.items(), reverse=True):
+            text = text[:s] + new + text[e:]
+            done += 1
+        path.write_text(text, encoding="utf-8", newline="\n")
+    return done
+
+
 def main(log):
+    print(f"retargeted {retarget(log)} existing BITCASTs")
     errors = collections.defaultdict(list)
     for line in open(log, encoding="mbcs" if sys.platform == "win32" else "utf-8", errors="replace"):
         m = ERR.match(line.strip())
-        if m and (m["op"] in CAST_OPS or m["op"] == "="):
+        # function-pointer mismatches (calling convention, parameters) are not register images
+        if m and (m["op"] in CAST_OPS or m["op"] == "=") and "(" not in m["from"] + m["to"]:
             errors[m["file"]].append((int(m["line"]), m["op"], m["from"], m["to"]))
     fixed = skipped = 0
     for rel, errs in errors.items():

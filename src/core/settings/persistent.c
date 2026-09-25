@@ -69,26 +69,26 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
     settingsClearCursor = settingsClearCursor + 1;
   }
   destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
-  FVar3 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,g_PersistentSettings.path));
+  FVar3 = (*g_FileSystemOpenCf)(0,g_PersistentSettings.path);
   handle = (void *)FVar3.eax;
   if (FVar3.carry) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (word *)&g_ExecutableDirectoryUtf16);
-    FVar3 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
+    FVar3 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
     if (FVar3.carry) goto PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure;
     RVar4 = RichTextCommandStream_CopyExpandedCf
                       (0x200,g_PersistentSettings.path,(word *)&g_FileSystemCombinedPathScratchUtf16
                       );
     handle = (void *)RVar4.eax;
   }
-  FVar5 = THANDOR_BITCAST(Win32FileSizeEaxCf5, FileSystemSizeEaxCf5, (*g_FileSystemGetSizeCf)(handle));
+  FVar5 = (*g_FileSystemGetSizeCf)(handle);
   if (!FVar5.carry) {
     byteCount = 200;
     if (FVar5.eax < 200) {
       byteCount = FVar5.eax;
     }
-    FVar6 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(byteCount,destination,handle));
+    FVar6 = (*g_FileSystemReadExactCf)(byteCount,destination,handle);
     if (!FVar6.carry) {
       (*g_FileSystemClose)(handle);
       if (byteCount < 0x3c) {

@@ -1687,7 +1687,7 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   do {
-    pendingFrameTicks = (*g_Win32PumpMessages)();
+    pendingFrameTicks = (*(code *)g_Win32PumpMessages)();
     dVar2 = pendingFrameTicks;
     dVar1 = g_UiPendingFrameTicks;
     arg0 = g_UiRootNode;

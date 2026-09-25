@@ -299,7 +299,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
           }
         }
       }
-      (*g_GrGlideShutdown)(output);
+      (*g_GrGlideShutdown)(); /* grGlideShutdown(void); Ghidra passed a stale register */
 Glide3_ReleaseRuntimeAfterInitializationFailure:
       DynDLL_Unload(dynapi_5);
       g_GlideRuntimeActiveCount = 0;

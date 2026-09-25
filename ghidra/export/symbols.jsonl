@@ -1,0 +1,1894 @@
+{"name":"IMAGE_DOS_HEADER_00400000","address":"00400000","type":"IMAGE_DOS_HEADER","length":128}
+{"name":"g_MemoryApi","address":"00402000","type":"MemoryApiTable","length":24}
+{"name":"g_TimerRegisterPeriodic","address":"00402018","type":"TimerRegisterPeriodicProc *","length":4}
+{"name":"g_TimerUnregisterPeriodic","address":"0040201c","type":"TimerUnregisterPeriodicProc *","length":4}
+{"name":"g_Win32PumpMessages","address":"00402020","type":"Win32PumpMessagesProc *","length":4}
+{"name":"g_CommandLineFindOption","address":"00402024","type":"CommandLineFindOptionProc *","length":4}
+{"name":"g_CommandLineWideArguments","address":"00402028","type":"CommandLineWideArguments","length":1536}
+{"name":"g_WideNumberFormatUtf16","address":"00402628","type":"WideNumberFormatUtf16Proc *","length":4}
+{"name":"g_WideNumberFormatState","address":"0040262c","type":"WideNumberFormatState","length":344}
+{"name":"g_SpinLockAcquire","address":"00402784","type":"SpinLockAcquireProc *","length":4}
+{"name":"g_SpinLockTryAcquire","address":"00402788","type":"SpinLockTryAcquireFlagsProc *","length":4}
+{"name":"g_SpinLockRelease","address":"0040278c","type":"SpinLockReleaseProc *","length":4}
+{"name":"g_SpinLockReleaseAndInvoke","address":"00402790","type":"SpinLockReleaseAndInvokeProc *","length":4}
+{"name":"g_LocaleFormatDateFieldsUtf16","address":"00402794","type":"LocaleFormatDateFieldsUtf16Proc *","length":4}
+{"name":"g_LocaleFormatCurrentDateUtf16","address":"00402798","type":"LocaleFormatCurrentDateUtf16Proc *","length":4}
+{"name":"g_LocaleGetPackedCurrentDate","address":"0040279c","type":"LocaleGetPackedCurrentDateProc *","length":4}
+{"name":"g_LocaleFormatTimeFieldsUtf16","address":"004027a0","type":"LocaleFormatTimeFieldsUtf16Proc *","length":4}
+{"name":"g_LocaleFormatCurrentTimeUtf16","address":"004027a4","type":"LocaleFormatCurrentTimeUtf16Proc *","length":4}
+{"name":"g_LocaleGetPackedCurrentTime","address":"004027a8","type":"LocaleGetPackedCurrentTimeProc *","length":4}
+{"name":"g_LocaleGetDefaultTelephoneCountryCode","address":"004027ac","type":"LocaleGetTelephoneCountryCodeProc *","length":4}
+{"name":"g_LocaleCopyDefaultComputerLabelUtf16","address":"004027b4","type":"LocaleCopyDefaultComputerLabelUtf16Proc *","length":4}
+{"name":"g_CPUDetectFeatures","address":"004027b8","type":"CpuDetectFeaturesProc *","length":4}
+{"name":"g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf","address":"004027bc","type":"pointer","length":4}
+{"name":"g_LocaleCountryCodeOverride","address":"004027c0","type":"dword","length":4}
+{"name":"g_CpuFeatureFlags","address":"004027c4","type":"dword","length":4}
+{"name":"g_PersistentSettings","address":"004028d0","type":"PersistentSettingsRuntime","length":524}
+{"name":"g_RandomGeneratorState","address":"004030a0","type":"RandomGeneratorState","length":12}
+{"name":"g_PackageLastErrorPath","address":"00407514","type":"word[256]","length":512}
+{"name":"g_FatalErrorDetail1Utf16","address":"00407714","type":"word[256]","length":512}
+{"name":"g_FatalErrorPrimaryDispatchCf","address":"00407d14","type":"FatalErrorPassThroughProc *","length":4}
+{"name":"g_FatalErrorRuntimeDispatchCf","address":"00407d18","type":"FatalErrorPassThroughProc *","length":4}
+{"name":"g_FatalErrorExitFallbackDispatchCf","address":"00407d1c","type":"FatalErrorPassThroughProc *","length":4}
+{"name":"u_texte\\error.str_00407d20","address":"00407d20","type":"unicode","length":32}
+{"name":"u_error:_IO:_initialization_failed_00407d40","address":"00407d40","type":"unicode","length":68}
+{"name":"u_error:_HEAP:_cannot_allocate_hea_00407d84","address":"00407d84","type":"unicode","length":142}
+{"name":"g_FatalErrorUiRootTemplate","address":"00407e20","type":"undefined4","length":4}
+{"name":"g_FatalErrorDialogDismissed","address":"00407e24","type":"undefined4","length":4}
+{"name":"g_UiRootCallbacks_00407E28","address":"00407e28","type":"UiRootCallbacks","length":20}
+{"name":"g_FatalErrorUiRootTemplateImage","address":"00407e3c","type":"undefined4","length":4}
+{"name":"DAT_00407e40","address":"00407e40","type":"undefined4","length":4}
+{"name":"g_FatalErrorRichTextLeft","address":"00407e5c","type":"sdword","length":4}
+{"name":"g_FatalErrorRichTextRight","address":"00407e64","type":"undefined4","length":4}
+{"name":"g_FatalErrorRichTextTop","address":"00407eb4","type":"sdword","length":4}
+{"name":"g_FatalErrorRichTextBottom","address":"00407ebc","type":"sdword","length":4}
+{"name":"g_FatalErrorRichTextStream","address":"00407ee8","type":"undefined4","length":4}
+{"name":"g_PckHuffmanSymbolWorkspace256","address":"004080c0","type":"PckHuffmanSymbolState[256]","length":1024}
+{"name":"g_PckHuffmanLeafNodeWorkspace256","address":"004084c0","type":"PckHuffmanNode[256]","length":4096}
+{"name":"g_PckHuffmanInternalNodeWorkspace256","address":"004094c0","type":"PckHuffmanNode[256]","length":4096}
+{"name":"g_InitialWorkingDirectory","address":"0040abc0","type":"WidePathBuffer256","length":512}
+{"name":"g_FileSystemOpenCf","address":"0040b1c0","type":"FileSystemOpenCfProc *","length":4}
+{"name":"g_FileSystemClose","address":"0040b1c4","type":"FileSystemCloseProc *","length":4}
+{"name":"g_FileSystemReadExactCf","address":"0040b1c8","type":"FileSystemReadExactCfProc *","length":4}
+{"name":"g_FileSystemWriteExactOrFlushCf","address":"0040b1cc","type":"FileSystemWriteExactOrFlushCfProc *","length":4}
+{"name":"g_FileSystemGetSizeCf","address":"0040b1d0","type":"FileSystemGetSizeCfProc *","length":4}
+{"name":"g_FileSystemGetPositionCf","address":"0040b1d4","type":"FileSystemGetPositionCfProc *","length":4}
+{"name":"g_FileSystemSeekCf","address":"0040b1d8","type":"FileSystemSeekCfProc *","length":4}
+{"name":"g_FileSystemDeleteCf","address":"0040b1dc","type":"FileSystemDeleteCfProc *","length":4}
+{"name":"g_FileSystemGetCurrentDirectoryCf","address":"0040b1e0","type":"FileSystemGetCurrentDirectoryCfProc *","length":4}
+{"name":"g_FileSystemSetCurrentDirectoryCf","address":"0040b1e4","type":"FileSystemSetCurrentDirectoryCfProc *","length":4}
+{"name":"g_FileSystemCreateDirectoryRecursiveCf","address":"0040b1e8","type":"FileSystemCreateDirectoryRecursiveProc *","length":4}
+{"name":"g_FileSystemRemoveDirectoryCf","address":"0040b1ec","type":"FileSystemRemoveDirectoryCfProc *","length":4}
+{"name":"g_FileSystemEnumerateDriveLetters","address":"0040b1f0","type":"FileSystemEnumerateDriveLettersEaxEcxProc *","length":4}
+{"name":"g_FileSystemGetDriveTypeCode","address":"0040b1f4","type":"FileSystemGetDriveTypeCodePreserveProc *","length":4}
+{"name":"g_FileSystemCheckDriveMediaReady","address":"0040b1f8","type":"FileSystemDriveReadyCfProc *","length":4}
+{"name":"g_FileSystemGetFreeAndTotalBytesRegs","address":"0040b1fc","type":"FileSystemGetFreeAndTotalBytesRegsProc *","length":4}
+{"name":"g_FileSystemGetLastWriteDosDateCf","address":"0040b200","type":"FileSystemGetLastWriteDosDateCfProc *","length":4}
+{"name":"g_FileSystemGetLastWriteTimeHighCf","address":"0040b204","type":"FileSystemGetLastWriteTimeHighCfProc *","length":4}
+{"name":"g_FileSystemGetVolumeSerialNumberCf","address":"0040b208","type":"FileSystemGetVolumeSerialNumberCfProc *","length":4}
+{"name":"g_FileSystemMoveCf","address":"0040b20c","type":"FileSystemMoveCfProc *","length":4}
+{"name":"g_FileSystemCopyCf","address":"0040b210","type":"FileSystemCopyCfProc *","length":4}
+{"name":"g_FileSystemEnumerateDirectoryOrVolumeEntriesCf","address":"0040b214","type":"FileSystemEnumerateDirectoryOrVolumeEntriesCfProc *","length":4}
+{"name":"g_FileSystemValidateDos83Path","address":"0040b218","type":"FileSystemValidateDos83CfProc *","length":4}
+{"name":"g_PackageScratchBuffer","address":"0040b21c","type":"byte *","length":4}
+{"name":"g_EnginePackageLowPriorityMountHandle","address":"0040b220","type":"dword","length":4}
+{"name":"g_PackageMountSlots","address":"0040b224","type":"PckMountSlot[1024]","length":12288}
+{"name":"g_PckEncoderTable","address":"0040e224","type":"PckCodecProc *[3]","length":12}
+{"name":"g_PckDecoderTable","address":"0040e230","type":"PckCodecProc *[3]","length":12}
+{"name":"u_THANDOR.cfg_0040e23d","address":"0040e23d","type":"unicode","length":24}
+{"name":"u_engine.pck_0040e255","address":"0040e255","type":"unicode","length":22}
+{"name":"g_DefaultComputerLabelUtf16","address":"0040e270","type":"word[32]","length":64}
+{"name":"g_UiTimedListRecordPathScratch","address":"0040f550","type":"WidePathBuffer256","length":512}
+{"name":"g_UiTimedListCombinedPathScratch","address":"0040f750","type":"WidePathBuffer256","length":512}
+{"name":"g_UiTimedListSecondaryPathScratch","address":"0040f950","type":"WidePathBuffer256","length":512}
+{"name":"g_UiTimedListHierarchyPathScratch","address":"0040fb50","type":"WidePathBuffer256","length":512}
+{"name":"g_UiTimedListHierarchyParentPathScratch","address":"0040fd50","type":"WidePathBuffer256","length":512}
+{"name":"u_?:\\*.*_0040ff58","address":"0040ff58","type":"unicode","length":14}
+{"name":"g_CursorInputEvents","address":"004107f0","type":"GraphicsCursorInputEvent18[256]","length":6144}
+{"name":"g_CursorInputWriteIndex","address":"004167f0","type":"dword","length":4}
+{"name":"g_CursorInputReadIndex","address":"004167f4","type":"dword","length":4}
+{"name":"g_CursorInputClockValue","address":"004167f8","type":"dword","length":4}
+{"name":"g_GraphicsCursorAnimationCountdown","address":"004167fc","type":"undefined4","length":4}
+{"name":"g_CursorButtonReleaseClock","address":"00416800","type":"dword[3]","length":12}
+{"name":"g_CursorSourceAsset","address":"0041680c","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_CursorFrameRecords","address":"00416810","type":"GraphicsCursorFrameRecord *","length":4}
+{"name":"g_CursorFrameIndex","address":"00416814","type":"GraphicsCursorFrameIndex","length":4}
+{"name":"g_CursorUseOverridePosition","address":"00416818","type":"dword","length":4}
+{"name":"g_CursorFrameCount","address":"0041681c","type":"GraphicsCursorFrameCount","length":4}
+{"name":"g_CursorMaxWidth","address":"00416820","type":"dword","length":4}
+{"name":"g_CursorMaxHeight","address":"00416824","type":"dword","length":4}
+{"name":"g_CursorOverrideX","address":"00416828","type":"UiPixelCoordinate","length":4}
+{"name":"g_CursorOverrideY","address":"0041682c","type":"UiPixelCoordinate","length":4}
+{"name":"g_CursorWheelDelta","address":"00416830","type":"UiPointerWheelDelta","length":4}
+{"name":"g_CursorVisibilityToken","address":"00416834","type":"sdword","length":4}
+{"name":"g_CursorButtonState","address":"00416838","type":"dword","length":4}
+{"name":"g_CursorLastClickX","address":"0041683c","type":"UiPixelCoordinate","length":4}
+{"name":"g_CursorLastClickY","address":"00416840","type":"UiPixelCoordinate","length":4}
+{"name":"g_PointerFlushEvents","address":"00416844","type":"PointerFlushEventsProc *","length":4}
+{"name":"g_GraphicsCursorSetFrame","address":"00416848","type":"GraphicsCursorSetFrameProc *","length":4}
+{"name":"g_PointerSetPosition","address":"0041684c","type":"PointerSetPositionProc *","length":4}
+{"name":"g_GraphicsCursorConsumeEvent","address":"00416850","type":"GraphicsCursorConsumeEventProc *","length":4}
+{"name":"g_CursorOverflowLeft","address":"00416854","type":"dword","length":4}
+{"name":"g_CursorOverflowRight","address":"00416858","type":"dword","length":4}
+{"name":"g_CursorOverflowTop","address":"0041685c","type":"dword","length":4}
+{"name":"g_CursorOverflowBottom","address":"00416860","type":"dword","length":4}
+{"name":"u_engine\\mouse.gfx_00416864","address":"00416864","type":"unicode","length":34}
+{"name":"u_engine\\mouse.dat_00416886","address":"00416886","type":"unicode","length":34}
+{"name":"g_KeyboardEvents","address":"004169e0","type":"KeyboardInputEvent[64]","length":512}
+{"name":"g_KeyboardWriteIndex","address":"004171e0","type":"KeyboardEventRingIndex","length":4}
+{"name":"g_KeyboardReadIndex","address":"004171e4","type":"KeyboardEventRingIndex","length":4}
+{"name":"g_KeyboardStateMask","address":"004171e8","type":"dword","length":4}
+{"name":"g_KeyboardToggleLatchMask","address":"004171ec","type":"dword","length":4}
+{"name":"g_KeyboardSpecialKeyDown","address":"004171f0","type":"byte[32]","length":32}
+{"name":"g_KeyboardFlushEvents","address":"00417210","type":"KeyboardFlushEventsProc *","length":4}
+{"name":"g_KeyboardReadEvent","address":"00417214","type":"KeyboardReadEventProc *","length":4}
+{"name":"g_KeyboardAsciiCaseTransformCallbacks3","address":"00417218","type":"KeyboardAsciiCaseTransformCallbackTable3","length":12}
+{"name":"g_SoundDecodeMmxWordLaneMask0","address":"00417300","type":"qword","length":8}
+{"name":"g_SoundDecodeMmxWordLaneMask1","address":"00417308","type":"qword","length":8}
+{"name":"g_SoundDecodeMmxWordLaneMask2","address":"00417310","type":"qword","length":8}
+{"name":"g_SoundDecodeMmxWordLaneMask3","address":"00417318","type":"qword","length":8}
+{"name":"g_CosineDerivedLookupAllocation","address":"00417330","type":"short *","length":4}
+{"name":"g_CosineDerivedLookupSecondTable","address":"00417334","type":"short *","length":4}
+{"name":"g_SoundCreateSampleVoiceSet","address":"00417338","type":"SoundCreateSampleVoiceSetProc *","length":4}
+{"name":"g_SoundReleaseSampleVoiceSet","address":"0041733c","type":"SoundReleaseSampleVoiceSetProc *","length":4}
+{"name":"g_SoundCreatePcmVoiceSet","address":"00417340","type":"SoundCreatePcmVoiceSetProc *","length":4}
+{"name":"g_SoundReleasePcmVoiceSet","address":"00417344","type":"SoundReleasePcmVoiceSetProc *","length":4}
+{"name":"g_SoundPlayOneShot","address":"00417348","type":"SoundPlayVoiceProc *","length":4}
+{"name":"g_SoundPlayLooping","address":"0041734c","type":"SoundPlayVoiceProc *","length":4}
+{"name":"g_SoundStopVoice","address":"00417350","type":"SoundStopVoiceProc *","length":4}
+{"name":"g_SoundStopAllVoices","address":"00417354","type":"SoundStopAllVoicesProc *","length":4}
+{"name":"g_SoundIsVoicePlaying","address":"00417358","type":"SoundIsVoicePlayingProc *","length":4}
+{"name":"g_SoundQueryVoiceRegs","address":"0041735c","type":"SoundQueryVoiceRegsProc *","length":4}
+{"name":"g_SoundSetVoiceGains","address":"00417360","type":"SoundSetVoiceGainsProc *","length":4}
+{"name":"g_NetworkBackendInstanceTable","address":"0041a540","type":"NetworkBackendInstanceDescriptorPrefix *","length":4}
+{"name":"g_NetworkBackendInstanceCount","address":"0041a544","type":"dword","length":4}
+{"name":"g_NetworkBackendSessionContext","address":"0041a548","type":"NetworkSessionContext *","length":4}
+{"name":"g_NetworkBackendSlot0","address":"0041a54c","type":"NetworkBackendSetSessionCallback *","length":4}
+{"name":"g_NetworkBackendSlot1","address":"0041a550","type":"NetworkBackendCleanupCallback *","length":4}
+{"name":"g_NetworkBackendSlot2","address":"0041a554","type":"NetworkBackendOpenBindCallback *","length":4}
+{"name":"g_NetworkBackendSlot3","address":"0041a558","type":"NetworkBackendCloseCallback *","length":4}
+{"name":"g_NetworkBackendSlot4","address":"0041a55c","type":"NetworkBackendReceiveCallback *","length":4}
+{"name":"g_NetworkBackendSlot5","address":"0041a560","type":"NetworkBackendSendCallback *","length":4}
+{"name":"g_NetworkBackendSlot6","address":"0041a564","type":"NetworkBackendParseEndpointCallback *","length":4}
+{"name":"g_NetworkBackendSlot7","address":"0041a568","type":"NetworkBackendFormatAddressCallback *","length":4}
+{"name":"g_NetworkLocalEndpointDescriptor16","address":"0041a56c","type":"UiTransferEndpointDescriptor","length":16}
+{"name":"g_RichTextColorPalette0Argb","address":"0041a750","type":"undefined4","length":4}
+{"name":"g_RichTextColorPalette1Argb","address":"0041a754","type":"undefined4","length":4}
+{"name":"g_RichTextColorPalette2Argb","address":"0041a758","type":"undefined4","length":4}
+{"name":"g_RichTextColorPalette3Argb","address":"0041a75c","type":"undefined4","length":4}
+{"name":"g_RichTextInsufficientResourceColorArgb","address":"0041a764","type":"undefined4","length":4}
+{"name":"g_RichTextShadowOffsetPalette0","address":"0041a768","type":"undefined4","length":4}
+{"name":"g_RichTextShadowOffsetPalette1","address":"0041a76c","type":"undefined4","length":4}
+{"name":"g_RichTextShadowOffsetPalette2","address":"0041a770","type":"undefined4","length":4}
+{"name":"g_RichTextShadowOffsetPalette3","address":"0041a774","type":"undefined4","length":4}
+{"name":"g_ActiveFontIndex","address":"0041a780","type":"dword","length":4}
+{"name":"g_RichTextCurrentColorArgb","address":"0041a784","type":"undefined4","length":4}
+{"name":"g_RichTextCurrentShadowOffset","address":"0041a788","type":"undefined4","length":4}
+{"name":"g_RichTextSavedColorArgb","address":"0041a78c","type":"undefined4","length":4}
+{"name":"g_RichTextSavedShadowOffset","address":"0041a790","type":"undefined4","length":4}
+{"name":"g_TextResourcePageBindings","address":"0041a794","type":"TextResourcePageBinding[256]","length":2048}
+{"name":"g_TextResourceOverrides","address":"0041af94","type":"TextResourceOverrideTable *","length":4}
+{"name":"g_FontRuntimeBuffer","address":"0041af98","type":"byte *","length":4}
+{"name":"g_RichTextRuntimeBufferUsedWords","address":"0041af9c","type":"undefined4","length":4}
+{"name":"u_error:_TXT2STR:_unknown_characte_0041afac","address":"0041afac","type":"unicode","length":124}
+{"name":"g_FontTextureSources","address":"0041b028","type":"GraphicsTextureSourceAsset *[2]","length":8}
+{"name":"u_engine\\font.gfx_0041b030","address":"0041b030","type":"unicode","length":32}
+{"name":"g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130","address":"0041b130","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041B180","address":"0041b180","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041B190","address":"0041b190","type":"pointer[3]","length":12}
+{"name":"g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230","address":"0041b230","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041B280","address":"0041b280","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041B290","address":"0041b290","type":"pointer[3]","length":12}
+{"name":"g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340","address":"0041b340","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450","address":"0041b450","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550","address":"0041b550","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650","address":"0041b650","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760","address":"0041b760","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870","address":"0041b870","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0","address":"0041b9d0","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041BA20","address":"0041ba20","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041BA30","address":"0041ba30","type":"pointer[3]","length":12}
+{"name":"g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80","address":"0041bb80","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041BBD0","address":"0041bbd0","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041BBE0","address":"0041bbe0","type":"pointer[3]","length":12}
+{"name":"g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0","address":"0041bcf0","type":"pointer[256]","length":1024}
+{"name":"g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160","address":"0041c160","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041C220","address":"0041c220","type":"pointer[10]","length":40}
+{"name":"g_SoundDispatchTable_0041C260","address":"0041c260","type":"pointer[63]","length":252}
+{"name":"g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950","address":"0041c950","type":"pointer[32]","length":128}
+{"name":"g_TextResourcePage_Load_SwitchTable_0041CB70","address":"0041cb70","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041CBC0","address":"0041cbc0","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041CBD0","address":"0041cbd0","type":"pointer[3]","length":12}
+{"name":"g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80","address":"0041cf80","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041CFA0","address":"0041cfa0","type":"pointer[9]","length":36}
+{"name":"g_SoundDispatchTable_0041CFD0","address":"0041cfd0","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041CFE0","address":"0041cfe0","type":"pointer[3]","length":12}
+{"name":"g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150","address":"0041d150","type":"pointer","length":4}
+{"name":"g_SoundDispatchTable_0041D170","address":"0041d170","type":"pointer[11]","length":44}
+{"name":"g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540","address":"0041d540","type":"pointer[7]","length":28}
+{"name":"g_SoundDispatchTable_0041D560","address":"0041d560","type":"pointer[9]","length":36}
+{"name":"g_SoundDispatchTable_0041D590","address":"0041d590","type":"pointer[3]","length":12}
+{"name":"g_SoundDispatchTable_0041D5A0","address":"0041d5a0","type":"pointer[3]","length":12}
+{"name":"g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890","address":"0041d890","type":"pointer[7]","length":28}
+{"name":"g_SoundDispatchTable_0041D8B0","address":"0041d8b0","type":"pointer[11]","length":44}
+{"name":"g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50","address":"0041da50","type":"pointer[32]","length":128}
+{"name":"g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0","address":"0041dbe0","type":"pointer[32]","length":128}
+{"name":"DAT_0041e200","address":"0041e200","type":"undefined8","length":8}
+{"name":"DAT_0041e280","address":"0041e280","type":"undefined8","length":8}
+{"name":"DAT_0041e478","address":"0041e478","type":"undefined8","length":8}
+{"name":"DAT_0041e4f8","address":"0041e4f8","type":"undefined8","length":8}
+{"name":"g_GraphicsShadingRasterizeMmxPackedDwordOneZero","address":"0041f680","type":"qword","length":8}
+{"name":"g_SoftwareBilinearPackedByteClampMask","address":"0041f688","type":"qword","length":8}
+{"name":"g_TerrainOccupancyMmxSignBiasBytes","address":"0041f690","type":"undefined8","length":8}
+{"name":"g_TerrainOccupancyMmxClearBits1And2Mask","address":"0041f698","type":"qword","length":8}
+{"name":"g_TerrainOccupancyMmxAllBitsMask","address":"0041f6a0","type":"qword","length":8}
+{"name":"g_TerrainOccupancyMmxPackedScale0280","address":"0041f6a8","type":"qword","length":8}
+{"name":"g_TerrainOccupancyMmxPackedWeights02_20","address":"0041f6b0","type":"qword","length":8}
+{"name":"g_TerrainOccupancyMmxPackedWeights04_40","address":"0041f6b8","type":"qword","length":8}
+{"name":"g_FieldGridOccupancyMmxHighBitMask","address":"0041f6c0","type":"qword","length":8}
+{"name":"g_GraphicsShadingMmxPacked3BitPerByteMask","address":"0041f6c8","type":"qword","length":8}
+{"name":"g_SoftwarePixelMmxConstants","address":"0041f6e0","type":"SoftwarePixelMmxConstants","length":32}
+{"name":"g_VertexColorAlphaPreserveMaskMMX","address":"0041f700","type":"qword","length":8}
+{"name":"g_VertexColorRgbHalveMaskMMX","address":"0041f708","type":"qword","length":8}
+{"name":"g_SoftwareBilinearForwardFactors","address":"0041ff20","type":"SoftwareBgraWordLanes[256]","length":2048}
+{"name":"g_SoftwareBilinearInverseFactors","address":"00420f20","type":"SoftwareBgraWordLanes[256]","length":2048}
+{"name":"g_SoftwareBlendAlphaFactors","address":"00421720","type":"SoftwareRgbWordLanes[256]","length":2048}
+{"name":"g_SoftwareBlendInverseAlphaFactors","address":"00421f20","type":"SoftwareRgbWordLanes[256]","length":2048}
+{"name":"g_UiGraphicsAdapterTextButtonVtable","address":"00422720","type":"UiNodeVtable","length":72}
+{"name":"g_UiDisplaySettingsRootCallbacks","address":"004229a0","type":"UiRootCallbacks","length":20}
+{"name":"g_UiDisplayModeSelectionActionHandlers20","address":"00423588","type":"UiDisplayModeSelectionActionHandlerTable20","length":80}
+{"name":"g_UiDisplayModeDistinctValueScratch0","address":"004235d8","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch1","address":"004235dc","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch2","address":"004235e0","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch3","address":"004235e4","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch4","address":"004235e8","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch5","address":"004235ec","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch6","address":"004235f0","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiDisplayModeDistinctValueScratch7","address":"004235f4","type":"DisplayModeScratchWord","length":4}
+{"name":"g_UiFourValueDialogRootCallbacks","address":"00424324","type":"UiRootCallbacks","length":20}
+{"name":"g_UiFourValueDialogTemplateImage","address":"00424338","type":"undefined4","length":4}
+{"name":"DAT_0042433c","address":"0042433c","type":"undefined4","length":4}
+{"name":"g_FixedSinQ28","address":"004346a0","type":"sdword[16384]","length":65536}
+{"name":"g_FixedCosQ28","address":"004446a0","type":"sdword[65536]","length":262144}
+{"name":"g_TextureDownsampleShift","address":"00485814","type":"dword","length":4}
+{"name":"g_GraphicsSetViewportAndClearDepth","address":"00485818","type":"GraphicsSetViewportProc *","length":4}
+{"name":"g_GraphicsDrawPrimitiveQueue","address":"0048581c","type":"GraphicsDrawPrimitiveQueueProc *","length":4}
+{"name":"g_GraphicsBeginScene","address":"00485820","type":"GraphicsBeginScenePreserveAllProc *","length":4}
+{"name":"g_GraphicsEndScene","address":"00485824","type":"GraphicsEndSceneProc *","length":4}
+{"name":"g_GraphicsRebuildAllStagingTextures","address":"00485828","type":"GraphicsTextureRebuildAllProc *","length":4}
+{"name":"g_GraphicsTextureSetLoadPackageCf","address":"0048582c","type":"GraphicsTextureSetLoadPackageProc *","length":4}
+{"name":"g_GraphicsTextureSetReleasePackageCf","address":"00485830","type":"GraphicsTextureSetReleasePackageProc *","length":4}
+{"name":"g_GraphicsCreateTextureSet","address":"00485834","type":"GraphicsTextureSetCreateProc *","length":4}
+{"name":"g_GraphicsDestroyTextureSet","address":"00485838","type":"GraphicsTextureSetDestroyProc *","length":4}
+{"name":"g_GraphicsRefreshTextureColor","address":"0048583c","type":"GraphicsTextureSetRefreshProc *","length":4}
+{"name":"g_GraphicsRefreshTextureAlpha","address":"00485840","type":"GraphicsTextureSetRefreshProc *","length":4}
+{"name":"PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844","address":"00485844","type":"GraphicsPrimitiveQueueRadixSortProc *","length":4}
+{"name":"g_GraphicsOffscreenRenderModelListToTextureSourceCf","address":"00485848","type":"GraphicsOffscreenRenderModelListToTextureSourceProc *","length":4}
+{"name":"g_RenderedFrameCountSinceDebugRefresh","address":"0048584c","type":"undefined4","length":4}
+{"name":"g_PrimitiveDrawCallCount","address":"00485850","type":"GraphicsDiagnosticCounter","length":4}
+{"name":"g_TextureBindStateChangeCount","address":"00485854","type":"GraphicsDiagnosticCounter","length":4}
+{"name":"g_TextureDeviceReloadCount","address":"00485858","type":"GraphicsDiagnosticCounter","length":4}
+{"name":"g_ViewOriginFixed","address":"0048585c","type":"GraphicsFixedVec3","length":12}
+{"name":"g_ProjectionScaleFixed","address":"00485868","type":"dword","length":4}
+{"name":"g_ViewAngle0","address":"0048586c","type":"dword","length":4}
+{"name":"g_ViewAngle1","address":"00485870","type":"dword","length":4}
+{"name":"g_ProjectionShift","address":"00485874","type":"dword","length":4}
+{"name":"g_ProjectionScaleProduct","address":"00485878","type":"dword","length":4}
+{"name":"g_ProjectionNumerator","address":"0048587c","type":"GraphicsWideFixed","length":8}
+{"name":"g_ProjectionCenterFixed","address":"00485884","type":"GraphicsFixedVec2","length":8}
+{"name":"g_ActivePrimitiveQueue","address":"0048588c","type":"GraphicsPrimitiveQueue *","length":4}
+{"name":"g_ProjectionClipRect","address":"00485890","type":"GraphicsFixedRect","length":16}
+{"name":"g_ViewProjectionMatrixFixed","address":"004858a0","type":"GraphicsFixedMatrix3x4","length":48}
+{"name":"g_ViewRotationMatrixFixed","address":"004858d0","type":"GraphicsFixedMatrix3x4","length":48}
+{"name":"g_CameraTransformMatrixFixed","address":"00485900","type":"GraphicsFixedMatrix3x4","length":48}
+{"name":"g_ProjectionAngleFactors","address":"00485930","type":"GraphicsWideFixed[2]","length":16}
+{"name":"g_AuxiliaryOrientation","address":"00485940","type":"GraphicsFixedVec2","length":8}
+{"name":"g_AuxiliaryForwardDirectionFixed","address":"00485948","type":"GraphicsFixedVec3","length":12}
+{"name":"g_AuxiliaryRotationMatrixFixed","address":"00485954","type":"GraphicsFixedMatrix3x4","length":48}
+{"name":"g_FrustumPlaneNormalFixed_0","address":"00485984","type":"GraphicsFixedVec3[4]","length":48}
+{"name":"g_FrustumCornerRayFixed_0","address":"004859b4","type":"GraphicsFixedVec3[4]","length":48}
+{"name":"g_SceneBoundsFixed","address":"004859e4","type":"GraphicsSceneBounds8","length":32}
+{"name":"g_ModelLodDepthThresholdQ8","address":"00485a04","type":"sdword","length":4}
+{"name":"g_ArmyPreviewViewOriginXQ12","address":"00485a08","type":"dword","length":4}
+{"name":"g_ArmyPreviewViewOriginYQ12","address":"00485a0c","type":"dword","length":4}
+{"name":"g_ArmyPreviewViewOriginZQ12","address":"00485a10","type":"dword","length":4}
+{"name":"g_ArmyPreviewProjectionScaleQ12","address":"00485a14","type":"dword","length":4}
+{"name":"g_ArmyPreviewViewAngle0","address":"00485a18","type":"dword","length":4}
+{"name":"g_ArmyPreviewViewAngle1","address":"00485a1c","type":"dword","length":4}
+{"name":"g_ArmyPreviewProjectionShift","address":"00485a20","type":"dword","length":4}
+{"name":"g_ArmyPreviewAuxiliaryOrientation0","address":"00485a24","type":"dword","length":4}
+{"name":"g_ArmyPreviewAuxiliaryOrientation1","address":"00485a28","type":"dword","length":4}
+{"name":"g_ArmyPreviewPrimaryColorArgb","address":"00485a2c","type":"dword","length":4}
+{"name":"g_ArmyPreviewSecondaryColorArgb","address":"00485a30","type":"dword","length":4}
+{"name":"g_ArmyPreviewModelNodePointer","address":"00485a34","type":"dword","length":4}
+{"name":"g_PrimitiveRadixBucketWords","address":"00485a40","type":"dword[256]","length":1024}
+{"name":"g_MovieChromaLumaToArgb","address":"00486d90","type":"dword[1024][32]","length":131072}
+{"name":"g_MovieDeltaRgbHighNibbleMask2Pixels","address":"004a6d90","type":"qword","length":8}
+{"name":"g_ActiveMovie","address":"004a6d98","type":"MovieRuntime *","length":4}
+{"name":"g_MovieDefaultAudioGainQ15","address":"004a6d9c","type":"MovieAudioGainQ15","length":4}
+{"name":"g_MovieAlternateAudioGainQ15","address":"004a6da0","type":"MovieAudioGainQ15","length":4}
+{"name":"g_LooseMoviePathPrefix","address":"004a6da4","type":"WidePathBuffer256","length":512}
+{"name":"g_FramebufferAccess","address":"004a8e70","type":"SoftwareFramebufferAccess *","length":4}
+{"name":"g_CursorSavedBackground","address":"004a8e74","type":"SoftwareFramebufferAccess *","length":4}
+{"name":"g_CursorCompositeBuffer","address":"004a8e78","type":"SoftwareFramebufferAccess *","length":4}
+{"name":"g_CursorAlternateSavedBackground","address":"004a8e7c","type":"SoftwareFramebufferAccess *","length":4}
+{"name":"g_SoftwarePixelPackTables","address":"004a8e80","type":"SoftwarePixelPackTables *","length":4}
+{"name":"g_FramebufferRowStrideBytes","address":"004a8e84","type":"dword","length":4}
+{"name":"g_FramebufferWidth","address":"004a8e88","type":"dword","length":4}
+{"name":"g_FramebufferHeight","address":"004a8e8c","type":"dword","length":4}
+{"name":"g_ActiveGraphicsAdapterIndex","address":"004a8e90","type":"undefined4","length":4}
+{"name":"g_SoftwareColorScaleQ16","address":"004a8e94","type":"sdword","length":4}
+{"name":"g_SoftwareColorBiasQ16","address":"004a8e98","type":"sdword","length":4}
+{"name":"g_GraphicsDisplayModes","address":"004a8e9c","type":"GraphicsDisplayMode *","length":4}
+{"name":"g_GraphicsDisplayModeCount","address":"004a8ea0","type":"GraphicsDisplayModeCount","length":4}
+{"name":"g_GraphicsAdapters","address":"004a8ea4","type":"GraphicsAdapterRecord *","length":4}
+{"name":"g_GraphicsAdapterCount","address":"004a8ea8","type":"dword","length":4}
+{"name":"g_SoftwarePixelFormatConfig","address":"004a8eac","type":"SoftwarePixelFormatConfig","length":36}
+{"name":"g_GraphicsDisplayModeHook","address":"004a8ed0","type":"SoftwareDisplayModeHookProc *","length":4}
+{"name":"g_GraphicsBackendRefreshActiveAdapterCf","address":"004a8ed4","type":"GraphicsBackendRefreshActiveAdapterProc *","length":4}
+{"name":"g_SoftwareFramebufferCreate","address":"004a8ed8","type":"SoftwareFramebufferCreateProc *","length":4}
+{"name":"g_SoftwareFramebufferDestroy","address":"004a8edc","type":"SoftwareFramebufferDestroyProc *","length":4}
+{"name":"g_GraphicsFramebufferPresent","address":"004a8ee0","type":"GraphicsFramebufferPresentProc *","length":4}
+{"name":"g_GraphicsFramebufferCaptureRegion","address":"004a8ee4","type":"GraphicsFramebufferCaptureRegionProc *","length":4}
+{"name":"g_SoftwareBuildPixelPackTables","address":"004a8ee8","type":"SoftwareBuildPixelPackTablesProc *","length":4}
+{"name":"g_GraphicsFramebufferBeginAccess","address":"004a8eec","type":"GraphicsFramebufferBeginAccessProc *","length":4}
+{"name":"g_GraphicsFramebufferEndAccess","address":"004a8ef0","type":"GraphicsFramebufferEndAccessProc *","length":4}
+{"name":"g_GraphicsTextureSourceGetLogicalSize","address":"004a8ef4","type":"GraphicsTextureSourceGetLogicalSizeProc *","length":4}
+{"name":"g_GraphicsTextureSourceTestOpaquePixel","address":"004a8ef8","type":"GraphicsTextureSourceTestOpaquePixelProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitSourceAlpha","address":"004a8efc","type":"GraphicsTextureSourceBlitProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitTiledSourceAlpha","address":"004a8f00","type":"GraphicsTextureSourceTiledBlitProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitHalfSourceRgb","address":"004a8f04","type":"GraphicsTextureSourceBlitProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitTiledHalfSourceRgb","address":"004a8f08","type":"GraphicsTextureSourceTiledBlitProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha","address":"004a8f0c","type":"GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc *","length":4}
+{"name":"g_GraphicsTextureSourceStretchDirectColorBilinear","address":"004a8f10","type":"GraphicsTextureSourceStretchDirectColorBilinearProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitSourceAlphaPaletteBank","address":"004a8f14","type":"GraphicsTextureSourceBlitSourceAlphaPaletteBankProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitModulatedSourceAlpha","address":"004a8f18","type":"GraphicsTextureSourceBlitModulatedSourceAlphaProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitSaturatedAddRgb","address":"004a8f1c","type":"GraphicsTextureSourceSaturatedAddRgbProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitTiledSaturatedAddRgb","address":"004a8f20","type":"GraphicsTextureSourceTiledSaturatedAddRgbProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd","address":"004a8f24","type":"GraphicsTextureSourceSaturatedAddRgbProc *","length":4}
+{"name":"g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd","address":"004a8f28","type":"GraphicsTextureSourceTiledSaturatedAddRgbProc *","length":4}
+{"name":"g_GraphicsTextureSourceDecomposeSubresourceRegionsCf","address":"004a8f2c","type":"GraphicsTextureSourceDecomposeSubresourceProc *","length":4}
+{"name":"g_GraphicsFramebufferFillRectArgb","address":"004a8f30","type":"GraphicsFramebufferFillRectArgbProc *","length":4}
+{"name":"g_GraphicsFramebufferCopyRegionToOrigin","address":"004a8f34","type":"GraphicsFramebufferCopyRegionToOriginProc *","length":4}
+{"name":"g_GraphicsFramebufferCopyOriginToRegion","address":"004a8f38","type":"GraphicsFramebufferCopyOriginToRegionProc *","length":4}
+{"name":"g_GraphicsTextureSourceLoadPackageAsset","address":"004a8f3c","type":"GraphicsTextureSourceLoadPackageAssetProc *","length":4}
+{"name":"g_GraphicsTextureSourceLifecycleCallbacks3","address":"004a8f40","type":"GraphicsTextureSourceLifecycleCallbackTable3","length":12}
+{"name":"g_GraphicsTextureSourceConvertPaletteEntries","address":"004a8f4c","type":"GraphicsTextureSourceConvertPaletteEntriesProc *","length":4}
+{"name":"g_GraphicsTextureSourceResolveAllocationBase","address":"004a8f50","type":"GraphicsTextureSourceResolveAllocationBaseProc *","length":4}
+{"name":"g_GraphicsPaletteAssetLoadPackage","address":"004a8f54","type":"GraphicsPaletteAssetLoadPackageProc *","length":4}
+{"name":"g_GraphicsPaletteAssetLifecycleCallbacks3","address":"004a8f58","type":"GraphicsPaletteAssetLifecycleCallbackTable3","length":12}
+{"name":"g_GraphicsPaletteAssetValidate","address":"004a8f64","type":"GraphicsPaletteAssetValidateProc *","length":4}
+{"name":"g_GraphicsPaletteAssetResolveAllocationBase","address":"004a8f68","type":"GraphicsPaletteAssetResolveAllocationBaseProc *","length":4}
+{"name":"g_UiRuntimeRecordRing","address":"004ae960","type":"UiRuntimeRecord *","length":4}
+{"name":"g_UiRuntimeAuxiliaryBuffer8000","address":"004ae964","type":"undefined4","length":4}
+{"name":"g_UiTransferDataBuffer","address":"004ae968","type":"byte *","length":4}
+{"name":"g_UiTransferEndpointBuffer","address":"004ae96c","type":"UiTransferEndpointDescriptor *","length":4}
+{"name":"g_UiRuntimeRecordReadIndex","address":"004ae970","type":"dword","length":4}
+{"name":"g_UiRuntimeRecordWriteIndex","address":"004ae974","type":"dword","length":4}
+{"name":"g_UiTransferUnitCursor","address":"004ae978","type":"dword","length":4}
+{"name":"g_UiTransferSequenceToken","address":"004ae97c","type":"dword","length":4}
+{"name":"g_UiTransferSenderContext","address":"004ae980","type":"dword","length":4}
+{"name":"g_UiRuntimeFrameLock","address":"004ae984","type":"RuntimeSpinLockValue *","length":4}
+{"name":"g_UiRuntimePostUnlockCallback","address":"004ae988","type":"UiRuntimePostUnlockCallbackProc *","length":4}
+{"name":"g_UiRuntimeRecordRingLock","address":"004ae98c","type":"RuntimeSpinLockValue","length":4}
+{"name":"g_UiTransferMailbox","address":"004ae990","type":"UiTransferMailboxState","length":24}
+{"name":"g_UiTransferChunkPacketSequenceToken","address":"004ae9ec","type":"undefined4","length":4}
+{"name":"g_UiTransferMailboxChunkOffset","address":"004ae9f8","type":"UiTransferMailboxByteOffset","length":4}
+{"name":"g_UiTransferMailboxTransferByteCount","address":"004ae9fc","type":"UiTransferMailboxByteCount","length":4}
+{"name":"g_UiTransferMailboxReplyPacket10033","address":"004aeae8","type":"undefined4","length":4}
+{"name":"g_UiTransferMailboxReplyPacket10033SequenceToken","address":"004aeaec","type":"undefined4","length":4}
+{"name":"g_UiTransferMailboxReplyPacket10033EchoedTick","address":"004aeaf8","type":"undefined4","length":4}
+{"name":"g_UiTransferMailboxTickCounter","address":"004aeb08","type":"UiTransferMailboxTickCounter","length":4}
+{"name":"g_UiTooltipState","address":"004af1e0","type":"UiTooltipState","length":16}
+{"name":"g_UiPendingFrameTicks","address":"004af1f0","type":"dword","length":4}
+{"name":"g_UiDirtyRectCount","address":"004af1f4","type":"UiDirtyRectCount","length":4}
+{"name":"g_UiDirtyRectEntries","address":"004af1f8","type":"UiDirtyRectEntry *","length":4}
+{"name":"g_UiActionQueueUsedBytes","address":"004af1fc","type":"UiActionQueueUsedBytes","length":4}
+{"name":"g_UiActionQueueEntries","address":"004af200","type":"UiActionQueueEntry *","length":4}
+{"name":"g_UiRuntimeInitializationCount","address":"004af204","type":"undefined4","length":4}
+{"name":"g_UiInvalidationSuppressed","address":"004af208","type":"dword","length":4}
+{"name":"g_UiActionHandlerPages","address":"004b0a30","type":"UiActionHandlerPage *[256]","length":1024}
+{"name":"g_UiRootNode","address":"004b0e30","type":"UiRootNode *","length":4}
+{"name":"g_UiWindowTextureSource","address":"004b0e34","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_UiWindowClassTextureSource","address":"004b0e38","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_UiPointerCaptureTarget","address":"004b0e3c","type":"UiNodeBase *","length":4}
+{"name":"g_UiKeyboardFocusNode","address":"004b0e40","type":"UiNodeBase *","length":4}
+{"name":"g_UiSoundGainQ15","address":"004b0e44","type":"AudioMixerGainQ15","length":4}
+{"name":"g_UiTooltipDelayFrames","address":"004b0e48","type":"UiFrameDelayFrames","length":4}
+{"name":"g_UiTooltipTextStyle","address":"004b0e4c","type":"dword","length":4}
+{"name":"g_UiScrollWheelDefaultStep","address":"004b0e50","type":"undefined4","length":4}
+{"name":"g_UiScrollWheelListStep","address":"004b0e54","type":"undefined4","length":4}
+{"name":"g_UiRangeSliderDragScale","address":"004b0e58","type":"undefined4","length":4}
+{"name":"g_UiTimedListActionDelayFrames","address":"004b0e5c","type":"UiFrameDelayFrames","length":4}
+{"name":"g_UiListActivationPulseFrames","address":"004b0e60","type":"undefined4","length":4}
+{"name":"g_UiResizableWindowTitleTextTopOffset","address":"004b0e64","type":"undefined4","length":4}
+{"name":"g_UiResizableWindowTitleTextStyle","address":"004b0e68","type":"undefined4","length":4}
+{"name":"g_UiWindowMoveHandleWidth","address":"004b0e6c","type":"undefined4","length":4}
+{"name":"g_UiWindowResizeBorderThickness","address":"004b0e70","type":"undefined4","length":4}
+{"name":"g_UiTextStyleSelected","address":"004b0e74","type":"undefined4","length":4}
+{"name":"g_UiTextStyleNormal","address":"004b0e78","type":"undefined4","length":4}
+{"name":"g_UiTextStyleDisabled","address":"004b0e7c","type":"undefined4","length":4}
+{"name":"g_UiTextStyleAlternate","address":"004b0e80","type":"undefined4","length":4}
+{"name":"g_UiWindowTitleTextStyle","address":"004b0e88","type":"undefined4","length":4}
+{"name":"g_UiWindowFrameInset","address":"004b0e8c","type":"undefined4","length":4}
+{"name":"g_UiListTextStyle","address":"004b0e90","type":"undefined4","length":4}
+{"name":"g_UiTextEditActiveTextStyle","address":"004b0e98","type":"undefined4","length":4}
+{"name":"g_UiTextEditInactiveTextStyle","address":"004b0e9c","type":"undefined4","length":4}
+{"name":"g_UiTextEditDisabledTextStyle","address":"004b0ea0","type":"undefined4","length":4}
+{"name":"g_UiTextEditCaretBlinkPhaseStep","address":"004b0ea4","type":"undefined4","length":4}
+{"name":"g_UiHorizontalGaugeLabelTopInset","address":"004b0ea8","type":"undefined4","length":4}
+{"name":"g_UiHorizontalGaugeLabelTextStyle","address":"004b0eac","type":"undefined4","length":4}
+{"name":"g_UiRootStackActionHandlerPage","address":"004b0eb0","type":"pointer","length":4}
+{"name":"u_texte\\winclass.str_004b0ee0","address":"004b0ee0","type":"unicode","length":38}
+{"name":"u_engine\\win.gfx_004b0f06","address":"004b0f06","type":"unicode","length":30}
+{"name":"g_UiPointerCaptureButton","address":"004b0f24","type":"UiPointerCaptureButton","length":1}
+{"name":"g_UiImageControlHoverTarget","address":"004b0f28","type":"UiImageControl *","length":4}
+{"name":"g_UiSpriteButtonControlVtable","address":"004b15d0","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_004B1D80","address":"004b1d80","type":"UiNodeVtable","length":72}
+{"name":"g_UiWindowControlVtable","address":"004b2740","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_004B2CE0","address":"004b2ce0","type":"UiNodeVtable","length":72}
+{"name":"g_UiTitledWindowControlVtable","address":"004b33d0","type":"UiNodeVtable","length":72}
+{"name":"g_UiImagePanelControlVtable","address":"004b3770","type":"UiNodeVtable","length":72}
+{"name":"g_UiFillPanelControlVtable","address":"004b3a50","type":"UiNodeVtable","length":72}
+{"name":"g_UiHorizontalGaugeControlVtable","address":"004b3c20","type":"UiNodeVtable","length":72}
+{"name":"g_UiWindowPercentTextUtf16","address":"004b3c68","type":"word[5]","length":10}
+{"name":"g_UiRangeSliderControlVtable","address":"004b3ef0","type":"UiNodeVtable","length":72}
+{"name":"g_UiLayoutContainerControlVtable","address":"004b4650","type":"UiNodeVtable","length":72}
+{"name":"g_UiPanelControlVtable","address":"004b4950","type":"UiNodeVtable","length":72}
+{"name":"g_UiResizableWindowControlVtable","address":"004b4cc0","type":"UiNodeVtable","length":72}
+{"name":"g_UiNumericTextEditControlVtable","address":"004b58a0","type":"UiNodeVtable","length":72}
+{"name":"g_UiPathTextEditControlVtable","address":"004b6800","type":"UiNodeVtable","length":72}
+{"name":"g_UiRequiredTextEditControlVtable","address":"004b7050","type":"UiNodeVtable","length":72}
+{"name":"g_UiScrollableControlVtable","address":"004b7920","type":"UiNodeVtable","length":72}
+{"name":"g_UiFocusProxyControlVtable","address":"004b9530","type":"UiNodeVtable","length":72}
+{"name":"g_UiTextListControlVtable","address":"004b9e40","type":"UiNodeVtable","length":72}
+{"name":"g_UiListControlVtable","address":"004ba590","type":"UiNodeVtable","length":72}
+{"name":"g_UiTimedListControlVtable","address":"004bb990","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_004BC410","address":"004bc410","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_004BC570","address":"004bc570","type":"UiNodeVtable","length":72}
+{"name":"g_UiNineSlicePanelControlVtable","address":"004bcc30","type":"UiNodeVtable","length":72}
+{"name":"g_GraphicsIntensityClampTableBase","address":"004bcf68","type":"undefined4","length":4}
+{"name":"g_ModelBoundsMinimumX","address":"004bd2e0","type":"undefined4","length":4}
+{"name":"g_ModelBoundsMaximumX","address":"004bd2e4","type":"undefined4","length":4}
+{"name":"g_ModelBoundsMinimumY","address":"004bd2e8","type":"undefined4","length":4}
+{"name":"g_ModelBoundsMaximumY","address":"004bd2ec","type":"undefined4","length":4}
+{"name":"g_ModelBoundsMinimumZ","address":"004bd2f0","type":"undefined4","length":4}
+{"name":"g_ModelBoundsMaximumZ","address":"004bd2f4","type":"undefined4","length":4}
+{"name":"g_ModelBoundsTransformedPointX","address":"004bd2f8","type":"undefined4","length":4}
+{"name":"g_ModelBoundsTransformedPointY","address":"004bd2fc","type":"undefined4","length":4}
+{"name":"g_ModelBoundsTransformedPointZ","address":"004bd300","type":"undefined4","length":4}
+{"name":"g_ArmyPlacementContactKindDispatchTable","address":"004bd890","type":"ArmyPlacementContactCallbackTable5","length":20}
+{"name":"g_ModelCullViewRelativeX","address":"004bd8b0","type":"undefined4","length":4}
+{"name":"g_ModelCullViewRelativeY","address":"004bd8b4","type":"undefined4","length":4}
+{"name":"g_ModelCullViewRelativeZ","address":"004bd8b8","type":"undefined4","length":4}
+{"name":"g_SpriteAssetRegistryHead","address":"004bd8c8","type":"SpriteAssetHeader *","length":4}
+{"name":"g_ModelTransformTranslationX","address":"004bea94","type":"sdword","length":4}
+{"name":"g_ModelTransformTranslationY","address":"004bea98","type":"sdword","length":4}
+{"name":"g_ModelTransformTranslationZ","address":"004bea9c","type":"sdword","length":4}
+{"name":"g_ModelTransformInputX","address":"004beb00","type":"sdword","length":4}
+{"name":"g_ModelTransformInputY","address":"004beb04","type":"sdword","length":4}
+{"name":"g_ModelTransformInputZ","address":"004beb08","type":"sdword","length":4}
+{"name":"g_ModelTransformOutputX","address":"004beb0c","type":"Q12","length":4}
+{"name":"g_ModelTransformOutputY","address":"004beb10","type":"Q12","length":4}
+{"name":"g_ModelTransformOutputZ","address":"004beb14","type":"Q12","length":4}
+{"name":"g_GraphicsShadingRuntimeRecords","address":"004bed50","type":"GraphicsShadingRuntimeRecord[256]","length":16384}
+{"name":"g_GraphicsShadingCompactRecords","address":"004c2d50","type":"GraphicsShadingRuntimeRecord[256]","length":16384}
+{"name":"g_GraphicsShadingCompactRecordCount","address":"004c6d50","type":"GraphicsShadingRecordCount","length":4}
+{"name":"g_GraphicsShadingNearbyRecords","address":"004c6d54","type":"GraphicsShadingRuntimeRecord[256]","length":16384}
+{"name":"g_GraphicsShadingNearbyRecordCount","address":"004cad54","type":"GraphicsShadingRecordCount","length":4}
+{"name":"g_ModelLightingVertexToLightVectorScratch","address":"004cc6f8","type":"GraphicsFixedVec3","length":12}
+{"name":"g_ModelLightingTransformedSurfaceNormalScratch","address":"004cc704","type":"GraphicsFixedVec3","length":12}
+{"name":"g_GraphicsShadingTextureDimension","address":"004cce00","type":"dword","length":4}
+{"name":"g_GraphicsShadingGridHalfSize","address":"004cce04","type":"undefined4","length":4}
+{"name":"g_GraphicsShadingGeneratedTexturePixelCursor","address":"004cce08","type":"byte *","length":4}
+{"name":"g_GraphicsShadingGeneratedTextureTileX","address":"004cce0c","type":"dword","length":4}
+{"name":"g_GraphicsShadingGeneratedTextureTileY","address":"004cce10","type":"dword","length":4}
+{"name":"g_GraphicsShadingGeneratedTextureSubresourceIndex","address":"004cce14","type":"GraphicsSubresourceIndex","length":4}
+{"name":"g_GraphicsShadingSubresourceCount","address":"004cce18","type":"dword","length":4}
+{"name":"g_GraphicsShadingGeneratedTextureTileXQ20","address":"004cce1c","type":"dword","length":4}
+{"name":"g_GraphicsShadingGeneratedTextureTileYQ20","address":"004cce20","type":"dword","length":4}
+{"name":"g_GraphicsShadingGridStepQ20","address":"004cce24","type":"dword","length":4}
+{"name":"g_GraphicsShadingGridStepQ20Current","address":"004cce28","type":"dword","length":4}
+{"name":"g_GraphicsShadingGeneratedAsset","address":"004cce2c","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_GraphicsShadingGridScratch","address":"004cce30","type":"void *","length":4}
+{"name":"g_GraphicsShadingGridScratchInterior","address":"004cce34","type":"pointer","length":4}
+{"name":"g_GraphicsShadingTextureSet","address":"004cce38","type":"GraphicsTextureSet *","length":4}
+{"name":"g_GraphicsShadingGeneratedTextureCompletedTraversalCount","address":"004cce3c","type":"dword","length":4}
+{"name":"g_GraphicsShadingPositiveGridOriginQ12","address":"004cce40","type":"sdword","length":4}
+{"name":"g_GraphicsShadingNegativeGridOriginQ12","address":"004cce44","type":"sdword","length":4}
+{"name":"g_GeneratedTextureScratchRuntime","address":"004cce48","type":"GeneratedTextureScratchRuntime1A8","length":424}
+{"name":"g_PrimitiveQueueStorage","address":"004d0a00","type":"GraphicsPrimitiveQueue *","length":4}
+{"name":"g_PrimitiveQueuePoolCapacity","address":"004d0a04","type":"dword","length":4}
+{"name":"g_SoftwareRasterScanState","address":"004d11c0","type":"SoftwareRasterScanState","length":116}
+{"name":"g_SoftwareDepthRowStrideBytes","address":"004d1234","type":"dword","length":4}
+{"name":"g_SoftwareDepthBuffer","address":"004d1238","type":"sdword *","length":4}
+{"name":"g_SoftwareAuxiliaryTargetBase","address":"004d123c","type":"void *","length":4}
+{"name":"g_SoftwareDepthEpoch","address":"004d1240","type":"sdword","length":4}
+{"name":"g_SoftwarePreviousDisplayModeHook","address":"004d1244","type":"SoftwareDisplayModeHookProc *","length":4}
+{"name":"g_SoftwareDrawQueueProc","address":"004d1248","type":"SoftwareDrawQueueProc *","length":4}
+{"name":"g_SoftwareRasterHandlers16Bit","address":"004d1260","type":"SoftwareRasterHandler *[64]","length":256}
+{"name":"g_SoftwareRasterHandlersNon16Bit","address":"004d1360","type":"SoftwareRasterHandler *[64]","length":256}
+{"name":"g_SoftwareRasterHandlersAuxiliary","address":"004d1460","type":"SoftwareRasterHandler *[64]","length":256}
+{"name":"g_FieldGridInterpolationCallbacks5","address":"004fea30","type":"FieldGridInterpolationCallbackTable5","length":20}
+{"name":"g_TerrainProjectedRowSpans","address":"004ffc80","type":"TerrainProjectedRowSpan[260]","length":2080}
+{"name":"g_TerrainLightingColorRampArgb256","address":"00501190","type":"undefined4","length":4}
+{"name":"DAT_00501194","address":"00501194","type":"undefined4","length":4}
+{"name":"g_TerrainDirectionalLightColorLut","address":"00501590","type":"undefined4","length":4}
+{"name":"DAT_00501594","address":"00501594","type":"undefined4","length":4}
+{"name":"g_TerrainDirectionalLightSecondaryColor","address":"00501994","type":"undefined4","length":4}
+{"name":"g_TerrainLightDirectionX","address":"00501998","type":"undefined4","length":4}
+{"name":"g_TerrainLightDirectionY","address":"0050199c","type":"undefined4","length":4}
+{"name":"g_TerrainLightDirectionZ","address":"005019a0","type":"undefined4","length":4}
+{"name":"g_TerrainByteClampLookup","address":"005019a4","type":"byte *","length":4}
+{"name":"g_TerrainDirectionRecordTable256","address":"005019a8","type":"TerrainDirectionRecord[256]","length":8192}
+{"name":"g_TerrainMaterialTextureSets","address":"005039dc","type":"GraphicsTextureSet *[26]","length":104}
+{"name":"g_TerrainPrimaryTextureSet","address":"00503a74","type":"GraphicsTextureSet *","length":4}
+{"name":"g_TerrainSoilPacketTablePayload","address":"00503a78","type":"void *","length":4}
+{"name":"g_TerrainSurfacePacketTablePayload","address":"00503a7c","type":"void *","length":4}
+{"name":"g_TerrainSecondaryPalette","address":"00503a80","type":"GraphicsPaletteAsset *","length":4}
+{"name":"g_TerrainPrimaryPalette","address":"00503a84","type":"GraphicsPaletteAsset *","length":4}
+{"name":"g_UiCommandModeGColorVariantFlags","address":"00503a88","type":"dword","length":4}
+{"name":"g_UiCommandModeGColorVariantLimit","address":"00503a8c","type":"dword","length":4}
+{"name":"g_TerrainMaterialTextureSuffixLettersUtf16AtoZ","address":"00503a90","type":"TerrainMaterialSuffixEntry[26]","length":104}
+{"name":"g_TerrainHeightBandMaximumDelta","address":"00503af8","type":"undefined4","length":4}
+{"name":"g_TerrainHeightBandMinimumDelta","address":"00503afc","type":"undefined4","length":4}
+{"name":"g_TerrainAuxHeightMinimum","address":"00503b00","type":"undefined4","length":4}
+{"name":"g_TerrainScanRowStrideBytes","address":"005063a0","type":"undefined4","length":4}
+{"name":"g_TerrainScanStepLimit","address":"005063a4","type":"undefined4","length":4}
+{"name":"g_TerrainScanSharedSelectorValue","address":"005063a8","type":"TerrainScanSelectorUnion","length":4}
+{"name":"g_TerrainScanReferenceHeight","address":"005063ac","type":"undefined4","length":4}
+{"name":"g_GraphicsTransformScratchMatrix3x4","address":"0050a350","type":"GraphicsFixedMatrix3x4","length":48}
+{"name":"g_GraphicsTransformInputScratchVec3","address":"0050a380","type":"GraphicsFixedVec3","length":12}
+{"name":"g_GraphicsTransformOutputScratchVec3","address":"0050a3b0","type":"GraphicsFixedVec3","length":12}
+{"name":"g_GraphicsProjectionScratchVec3","address":"0050a3e0","type":"GraphicsFixedVec3","length":12}
+{"name":"g_ModelProjectedBoundsCornerScratch8","address":"0050a3f0","type":"GraphicsProjectedPoint2i[8]","length":64}
+{"name":"g_ModelRaycastMaximumDistance","address":"0050ae60","type":"undefined4","length":4}
+{"name":"g_ModelRaycastOriginX","address":"0050ae64","type":"sdword","length":4}
+{"name":"g_ModelRaycastOriginY","address":"0050ae68","type":"sdword","length":4}
+{"name":"g_ModelRaycastOriginZ","address":"0050ae6c","type":"sdword","length":4}
+{"name":"g_ModelRaycastLocalOriginX","address":"0050ae70","type":"sdword","length":4}
+{"name":"g_ModelRaycastLocalOriginY","address":"0050ae74","type":"sdword","length":4}
+{"name":"g_ModelRaycastLocalOriginZ","address":"0050ae78","type":"sdword","length":4}
+{"name":"g_ModelRaycastWorldDirectionXQ28","address":"0050ae7c","type":"undefined4","length":4}
+{"name":"g_ModelRaycastWorldDirectionYQ28","address":"0050ae80","type":"undefined4","length":4}
+{"name":"g_ModelRaycastWorldDirectionZQ28","address":"0050ae84","type":"undefined4","length":4}
+{"name":"g_ModelRaycastLocalDirectionXQ28","address":"0050ae88","type":"undefined4","length":4}
+{"name":"g_ModelRaycastLocalDirectionYQ28","address":"0050ae8c","type":"undefined4","length":4}
+{"name":"g_ModelRaycastLocalDirectionZQ28","address":"0050ae90","type":"undefined4","length":4}
+{"name":"g_SpatialSoundRelativeX","address":"0050b5b0","type":"undefined4","length":4}
+{"name":"g_SpatialSoundRelativeY","address":"0050b5b4","type":"undefined4","length":4}
+{"name":"g_SpatialSoundRelativeZ","address":"0050b5b8","type":"undefined4","length":4}
+{"name":"g_SoundEffectsGainQ15","address":"0050b5bc","type":"AudioMixerGainQ15","length":4}
+{"name":"g_ReverseStereoMask","address":"0050b5c0","type":"sdword","length":4}
+{"name":"g_SpatialSoundSlots","address":"0050b5c4","type":"SpatialSoundSlot *","length":4}
+{"name":"g_WorldMotionTargetDistanceConvergenceStepQ12","address":"0050bade","type":"UQ12","length":4}
+{"name":"g_WorldMotionPositionMagnitudeInputScaleQ12","address":"0050bae2","type":"Q12","length":4}
+{"name":"g_WorldMotionDistanceInputScaleQ12","address":"0050baea","type":"Q12","length":4}
+{"name":"g_WorldMotionHeadingInputScale","address":"0050baee","type":"AngleTurn32","length":4}
+{"name":"g_WorldMotionPitchInputScale","address":"0050baf2","type":"AngleTurn32","length":4}
+{"name":"g_WorldMotionPointerWheelInputScale","address":"0050baf6","type":"int","length":4}
+{"name":"g_WorldMotionAlternateMinimumPitchAngle","address":"0050bafa","type":"AngleTurn32","length":4}
+{"name":"g_WorldMotionAlternateMaximumPitchAngle","address":"0050bafe","type":"AngleTurn32","length":4}
+{"name":"g_WorldMotionAlternateMinimumDistanceQ12","address":"0050bb02","type":"UQ12","length":4}
+{"name":"g_WorldMotionAlternateMaximumDistanceQ12","address":"0050bb06","type":"UQ12","length":4}
+{"name":"g_FrontendModelPointerContextVtable","address":"0050bb37","type":"pointer","length":4}
+{"name":"g_FrontendModelPointerContextUpdateCallback","address":"0050bb5f","type":"FrontendModelPointerContextUpdateCallbackProc *","length":4}
+{"name":"g_TechnologyAsset","address":"0050d930","type":"TechnologyAsset *","length":4}
+{"name":"g_LevelCameraBookmark1PositionXQ12","address":"0050d934","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark1PositionYQ12","address":"0050d938","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark1PositionZQ12","address":"0050d93c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark1PositionMagnitudeQ12","address":"0050d940","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16","address":"0050d944","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark2PositionXQ12","address":"0050d948","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark2PositionYQ12","address":"0050d94c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark2PositionZQ12","address":"0050d950","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark2PositionMagnitudeQ12","address":"0050d954","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16","address":"0050d958","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark3PositionXQ12","address":"0050d95c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark3PositionYQ12","address":"0050d960","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark3PositionZQ12","address":"0050d964","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark3PositionMagnitudeQ12","address":"0050d968","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16","address":"0050d96c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark4PositionXQ12","address":"0050d970","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark4PositionYQ12","address":"0050d974","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark4PositionZQ12","address":"0050d978","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark4PositionMagnitudeQ12","address":"0050d97c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16","address":"0050d980","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark5PositionXQ12","address":"0050d984","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark5PositionYQ12","address":"0050d988","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark5PositionZQ12","address":"0050d98c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark5PositionMagnitudeQ12","address":"0050d990","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16","address":"0050d994","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark6PositionXQ12","address":"0050d998","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark6PositionYQ12","address":"0050d99c","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark6PositionZQ12","address":"0050d9a0","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark6PositionMagnitudeQ12","address":"0050d9a4","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16","address":"0050d9a8","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark7PositionXQ12","address":"0050d9ac","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark7PositionYQ12","address":"0050d9b0","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark7PositionZQ12","address":"0050d9b4","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark7PositionMagnitudeQ12","address":"0050d9b8","type":"dword","length":4}
+{"name":"g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16","address":"0050d9bc","type":"dword","length":4}
+{"name":"g_ScenarioCatalog","address":"0050d9c0","type":"ScenarioCatalogHeader *","length":4}
+{"name":"g_ScenarioCatalogUsedBytes","address":"0050d9c4","type":"dword","length":4}
+{"name":"u_save\\*.sve_0050d9c8","address":"0050d9c8","type":"unicode","length":22}
+{"name":"u_level\\level.dat_0050da0e","address":"0050da0e","type":"unicode","length":32}
+{"name":"g_ScenarioLevelDataPathTemplateUtf16","address":"0050da2e","type":"ScenarioLevelDataPathTemplate24","length":36}
+{"name":"u_level\\campagne.dat_0050da52","address":"0050da52","type":"unicode","length":38}
+{"name":"g_ScenarioCampaignDataPathTemplateUtf16","address":"0050da78","type":"ScenarioCampaignDataPathTemplate2A","length":42}
+{"name":"u_save_0050daa2","address":"0050daa2","type":"unicode","length":10}
+{"name":"u_level_0050daac","address":"0050daac","type":"unicode","length":12}
+{"name":"u_level_0050dab8","address":"0050dab8","type":"unicode","length":12}
+{"name":"u_texte\\techno.str_0050dec4","address":"0050dec4","type":"unicode","length":34}
+{"name":"u_flm\\ende0000.flm_0050df06","address":"0050df06","type":"unicode","length":34}
+{"name":"u_flm\\ende0001.flm_0050df28","address":"0050df28","type":"unicode","length":34}
+{"name":"u_flm\\ende0000.flm_0050df4a","address":"0050df4a","type":"unicode","length":34}
+{"name":"u_sound\\level00.sam_0050df6c","address":"0050df6c","type":"unicode","length":36}
+{"name":"u_sound\\music00.sam_0050df90","address":"0050df90","type":"unicode","length":36}
+{"name":"u_army.hex_0050dfb4","address":"0050dfb4","type":"unicode","length":18}
+{"name":"u_effect.hex_0050dfc6","address":"0050dfc6","type":"unicode","length":22}
+{"name":"u_shot.hex_0050dfdc","address":"0050dfdc","type":"unicode","length":18}
+{"name":"u_modul.hex_0050dfee","address":"0050dfee","type":"unicode","length":20}
+{"name":"u_field.hex_0050e002","address":"0050e002","type":"unicode","length":20}
+{"name":"u_light.hex_0050e016","address":"0050e016","type":"unicode","length":20}
+{"name":"u_widget.hex_0050e02a","address":"0050e02a","type":"unicode","length":22}
+{"name":"u_level.hex_0050e040","address":"0050e040","type":"unicode","length":20}
+{"name":"u_daten.hex_0050e054","address":"0050e054","type":"unicode","length":20}
+{"name":"u_campagne.hex_0050e068","address":"0050e068","type":"unicode","length":26}
+{"name":"u_stat.hex_0050e082","address":"0050e082","type":"unicode","length":18}
+{"name":"u_oldunit.hex_0050e094","address":"0050e094","type":"unicode","length":24}
+{"name":"g_InGameResourceRegistrationBusyCount","address":"0050e0ac","type":"undefined1","length":1}
+{"name":"g_InGameScheduledConditionDispatchTable14","address":"0050e170","type":"InGameScheduledConditionDispatchTable14","length":56}
+{"name":"g_ResourceRegistrationDomainPairCallbacks3","address":"0050e960","type":"ResourceRegistrationDomainPairDispatchTable3","length":12}
+{"name":"g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60","address":"0050eb60","type":"pointer[3]","length":12}
+{"name":"g_FrontendPlayerRuntimeCount","address":"0050f050","type":"undefined4","length":4}
+{"name":"g_FrontendLocalPlayerNameUtf16","address":"0050f054","type":"undefined4","length":4}
+{"name":"DAT_0050f058","address":"0050f058","type":"undefined4","length":4}
+{"name":"g_FrontendSelectedNetworkEndpoint","address":"0050f090","type":"UiTransferEndpointDescriptor","length":16}
+{"name":"g_FrontendSessionToken","address":"0050f0a0","type":"undefined4","length":4}
+{"name":"g_SessionTransferTimeoutTicks","address":"0050f0a4","type":"SessionTransferTimeoutTicks","length":4}
+{"name":"g_FrontendTransferResponsePending","address":"0050f0a8","type":"undefined4","length":4}
+{"name":"g_LocalPlayerRuntimeId","address":"0050f0ac","type":"undefined4","length":4}
+{"name":"g_FrontendPlayerRuntimeBlocks","address":"0050f0c0","type":"FrontendPlayerRuntimeRecord *","length":4}
+{"name":"g_FrontendPlayerRuntimeBlockCount","address":"0050f0c4","type":"FrontendPlayerRuntimeBlockCount","length":4}
+{"name":"g_SessionNetworkRoleFlags","address":"0050f0c8","type":"SessionNetworkRoleFlags","length":4}
+{"name":"g_FrontendSelectedPlayerToken","address":"0050f0cc","type":"undefined4","length":4}
+{"name":"g_RecentTextSerialCounter","address":"0050f0d0","type":"RecentTextSerialCounter","length":4}
+{"name":"g_SessionNetworkTickInterval","address":"0050f0d4","type":"undefined4","length":4}
+{"name":"g_SessionNetworkTickCounter","address":"0050f0d8","type":"undefined4","length":4}
+{"name":"g_HostCommandBatchSyncSentThisInterval","address":"0050f0dc","type":"undefined4","length":4}
+{"name":"g_RecentTextSlotStorage","address":"0050f0e0","type":"RecentTextHistorySlot *","length":4}
+{"name":"g_RecentTextEntrySerials","address":"0050f0e4","type":"dword[8]","length":32}
+{"name":"u_texte\\neterror.str_0050f104","address":"0050f104","type":"unicode","length":38}
+{"name":"g_GameFactionRuntimeImage","address":"0050f340","type":"GameFactionRuntimeImage","length":14880}
+{"name":"g_TerrainRegionCollectionStoredCount","address":"00512d60","type":"TerrainRegionCollectionCount","length":4}
+{"name":"g_TerrainRegionCollectionVisitedCount","address":"00512d64","type":"TerrainRegionCollectionCount","length":4}
+{"name":"g_TerrainRegionCollectionEntries","address":"00512d68","type":"undefined4","length":4}
+{"name":"g_GameStatTableImage","address":"00512d6c","type":"void *","length":4}
+{"name":"g_GameDataAuxState","address":"00512d70","type":"GameDataAuxState","length":256}
+{"name":"g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0","address":"00513db0","type":"pointer[16]","length":64}
+{"name":"g_SelectionPlayerRuntimeBlockPointers","address":"00514960","type":"SelectionPlayerRuntimeBlock *[8]","length":32}
+{"name":"g_SelectionPlayerBlocks","address":"00514d60","type":"SelectionPlayerRuntimeBlock *","length":4}
+{"name":"g_InGameFactionScratchBufferSetA8","address":"00514d64","type":"undefined4","length":4}
+{"name":"DAT_00514d68","address":"00514d68","type":"undefined4","length":4}
+{"name":"g_InGameFactionScratchBufferSetB8","address":"00514d84","type":"undefined4","length":4}
+{"name":"g_UiSevenSlotCommandPayloadText","address":"00514e04","type":"UiCommandPayloadTextBatch48","length":48}
+{"name":"g_UiImageActionControlVtable","address":"00514fc0","type":"UiNodeVtable","length":72}
+{"name":"g_UiConditionalActionControlVtable","address":"00515290","type":"UiNodeVtable","length":72}
+{"name":"g_UiNumericPairTextButtonVtable","address":"00515610","type":"UiNodeVtable","length":72}
+{"name":"g_UiPayloadPairTextButtonVtable","address":"00515730","type":"UiNodeVtable","length":72}
+{"name":"g_UiFormattedContainerVtable","address":"005157e0","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_00515C70","address":"00515c70","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_005162C0","address":"005162c0","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_00516310","address":"00516310","type":"UiNodeVtable","length":72}
+{"name":"g_UiCatalogEntryRichTextScratchUtf16","address":"00516510","type":"word[16]","length":32}
+{"name":"g_UiNodeVtable_00516530","address":"00516530","type":"UiNodeVtable","length":72}
+{"name":"g_UiArmyMetricsPanelVtable","address":"00516cc0","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_00516F60","address":"00516f60","type":"UiNodeVtable","length":72}
+{"name":"g_FrontendResultsColumnAdvance00Pixels","address":"00516fa8","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvance01Pixels","address":"00516fac","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceColourPixels","address":"00516fb0","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceEconomyPixels","address":"00516fb4","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceMilitaryPixels","address":"00516fb8","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvancePointsPixels","address":"00516fbc","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvancePlayerPixels","address":"00516fc0","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionPixels","address":"00516fc4","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionField98Pixels","address":"00516fc8","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionField9CPixels","address":"00516fcc","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldA0Pixels","address":"00516fd0","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldA4Pixels","address":"00516fd4","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldA8Pixels","address":"00516fd8","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldACPixels","address":"00516fdc","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldB0Pixels","address":"00516fe0","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldB4Pixels","address":"00516fe4","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldB8Pixels","address":"00516fe8","type":"int","length":4}
+{"name":"g_FrontendResultsColumnAdvanceFactionFieldBCPixels","address":"00516fec","type":"int","length":4}
+{"name":"g_FrontendResultsFramebufferBytesPerPixel","address":"00516ff0","type":"dword","length":4}
+{"name":"g_FrontendResultsFramebufferScanlineStrideBytes","address":"00516ff4","type":"dword","length":4}
+{"name":"g_FrontendResultsFactionPackedPixelColors","address":"00516ff8","type":"dword[7]","length":28}
+{"name":"g_FrontendResultsColumnDrawDispatchTable18","address":"00517070","type":"FrontendResultsColumnDrawDispatchTable18","length":72}
+{"name":"g_UiNodeVtable_00517DE0","address":"00517de0","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_00517F10","address":"00517f10","type":"UiNodeVtable","length":72}
+{"name":"g_UiNodeVtable_00517FC0","address":"00517fc0","type":"UiNodeVtable","length":72}
+{"name":"g_SoftwarePixelIntensityToNativeColorLut256","address":"00518880","type":"undefined4","length":4}
+{"name":"DAT_00518c7c","address":"00518c7c","type":"undefined4","length":4}
+{"name":"g_SoftwareBlendUnityWordLanesQ14","address":"00518c80","type":"undefined8","length":8}
+{"name":"g_UiSoftwareTexturePreviewControlVtable","address":"00518c90","type":"UiNodeVtable","length":72}
+{"name":"g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374","address":"00519374","type":"pointer[13]","length":52}
+{"name":"g_ArmyRuntimeSlots","address":"00519730","type":"ArmyRuntimeSlot *","length":4}
+{"name":"g_ArmyRuntimeRebaseBaseMinusOne","address":"00519734","type":"void *","length":4}
+{"name":"g_ArmyGraphicsBindings","address":"00519738","type":"ArmyGraphicsBinding[8]","length":64}
+{"name":"g_ArmyAssetRecordRegistry","address":"00519778","type":"ArmyAssetRecordPrefix *[768]","length":3072}
+{"name":"g_ArmyPreviewDownsampleAlphaRoundingBiasMmx","address":"0051b380","type":"undefined8","length":8}
+{"name":"g_ArmyCommandGenerationStandard","address":"0051b388","type":"ArmyCommandGeneration","length":4}
+{"name":"g_AiCommandGenerationCandidateBase","address":"0051b38c","type":"ArmyCommandGeneration","length":4}
+{"name":"g_AiCommandGenerationRetainedTarget","address":"0051b390","type":"ArmyCommandGeneration","length":4}
+{"name":"g_EffectTextureSet","address":"0051dbc0","type":"GraphicsTextureSet *","length":4}
+{"name":"g_EffectPalette","address":"0051dbc4","type":"GraphicsPaletteAsset *","length":4}
+{"name":"g_EffectRuntimeSlots","address":"0051dbc8","type":"EffectRuntimeSlot *","length":4}
+{"name":"g_EffectRuntimeRebaseBaseMinusOne","address":"0051dbcc","type":"byte *","length":4}
+{"name":"g_EffectDefinitionRegistry","address":"0051dbd0","type":"EffectDefinition *[256]","length":1024}
+{"name":"g_EffectLifecycleTransitionDispatchTable5","address":"0051eab0","type":"EffectLifecycleTransitionDispatchTable5","length":20}
+{"name":"g_ModelDefinitionRegistry","address":"0051eef0","type":"ModelDefinitionRecordPrefix *[768]","length":3072}
+{"name":"g_TerrainClassPlacementAndOverlayCallbacks10","address":"0051faf0","type":"TerrainClassPlacementAndOverlayCallbackTable10","length":40}
+{"name":"g_RuntimeModelClassPriorityByModelClassId","address":"0051fbd8","type":"RuntimeModelClassPriorityTable24","length":96}
+{"name":"g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes","address":"0051fc98","type":"ArmyRuntimeOrderHandlerMatrix11x24","length":1056}
+{"name":"g_ModelRuntimeSlots","address":"005200b8","type":"ModelRuntimeSlot *","length":4}
+{"name":"g_ModelRuntimeRebaseDelta","address":"005200bc","type":"int","length":4}
+{"name":"g_ArmySuspensionBlendVectorAXQ12","address":"00520eb0","type":"undefined4","length":4}
+{"name":"g_ArmySuspensionBlendVectorAYQ12","address":"00520eb4","type":"undefined4","length":4}
+{"name":"g_ArmySuspensionBlendVectorAZQ12","address":"00520eb8","type":"undefined4","length":4}
+{"name":"g_ArmySuspensionBlendVectorBXQ12","address":"00520ebc","type":"undefined4","length":4}
+{"name":"g_ArmySuspensionBlendVectorBYQ12","address":"00520ec0","type":"undefined4","length":4}
+{"name":"g_ArmySuspensionBlendVectorBZQ12","address":"00520ec4","type":"undefined4","length":4}
+{"name":"g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0","address":"005247d0","type":"pointer[5]","length":20}
+{"name":"g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90","address":"00525a90","type":"pointer[7]","length":28}
+{"name":"g_ArmyTerrainContactDispatchTable2","address":"005266c0","type":"ArmyTerrainContactDispatchTable2","length":8}
+{"name":"g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990","address":"00526990","type":"pointer[7]","length":28}
+{"name":"g_ShotTextureSet","address":"0052af40","type":"GraphicsTextureSet *","length":4}
+{"name":"g_ShotPalette","address":"0052af44","type":"GraphicsPaletteAsset *","length":4}
+{"name":"g_ShotRuntimeSlots","address":"0052af48","type":"ShotRuntimeSlot *","length":4}
+{"name":"g_ShotRuntimeRebaseBaseMinusOne","address":"0052af4c","type":"byte *","length":4}
+{"name":"g_ShotDefinitionRegistry","address":"0052af50","type":"ShotDefinition *[256]","length":1024}
+{"name":"g_SelectionPanelTextureSource","address":"0052cdf0","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_InfoPanelTextureSource","address":"0052cdf4","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_SelectionPanelData","address":"0052cdf8","type":"void *","length":4}
+{"name":"g_InfoPanelData","address":"0052cdfc","type":"void *","length":4}
+{"name":"g_SelectionPanelNumberTextStyle","address":"0052ce00","type":"undefined4","length":4}
+{"name":"g_ModelProjectedBoundsPixels","address":"0052ce04","type":"ModelProjectedBoundsPixels","length":16}
+{"name":"g_SelectionInfoEntitySlots","address":"0052ce14","type":"SelectionInfoEntitySlots *","length":4}
+{"name":"u_gfx\\panel\\select.gfx_0052ce18","address":"0052ce18","type":"unicode","length":42}
+{"name":"u_gfx\\panel\\info.gfx_0052ce42","address":"0052ce42","type":"unicode","length":38}
+{"name":"u_gfx\\panel\\select.dat_0052ce68","address":"0052ce68","type":"unicode","length":42}
+{"name":"u_gfx\\panel\\info.dat_0052ce92","address":"0052ce92","type":"unicode","length":38}
+{"name":"g_SelectionPanelBlitOpaque","address":"0052ced8","type":"GraphicsTextureSourceBlitProc *","length":4}
+{"name":"g_SelectionPanelBlitClipped","address":"0052cedc","type":"GraphicsTextureSourceTiledBlitProc *","length":4}
+{"name":"g_InGameLoadedResourcePointers","address":"00530820","type":"void * *","length":4}
+{"name":"g_InGameLoadedResourcePointerCount","address":"00530824","type":"InGameLoadedResourcePointerCount","length":4}
+{"name":"g_LevelEndingMovieSourcePath","address":"00530e28","type":"word[256]","length":512}
+{"name":"g_InGameLevelTitleTextResourceIndex","address":"00531028","type":"undefined4","length":4}
+{"name":"g_InGameLevelCampaignAssociationIndex","address":"0053102c","type":"dword","length":4}
+{"name":"g_InGameLevelEffectVoiceSet0","address":"00531030","type":"undefined4","length":4}
+{"name":"g_InGameLevelEffectVoiceSet1","address":"00531034","type":"undefined4","length":4}
+{"name":"g_InGameLevelEffectVoiceSet2","address":"00531038","type":"undefined4","length":4}
+{"name":"g_InGameLevelEffectVoiceSet3","address":"0053103c","type":"undefined4","length":4}
+{"name":"g_InGameActiveEffectVoice","address":"00531040","type":"undefined4","length":4}
+{"name":"g_InGameEffectsEnabled","address":"00531044","type":"dword","length":4}
+{"name":"g_InGameLevelMusicVoiceSet0","address":"00531048","type":"undefined4","length":4}
+{"name":"g_InGameLevelMusicVoiceSet1","address":"0053104c","type":"undefined4","length":4}
+{"name":"g_InGameLevelMusicVoiceSet2","address":"00531050","type":"undefined4","length":4}
+{"name":"g_InGameLevelMusicVoiceSet3","address":"00531054","type":"undefined4","length":4}
+{"name":"g_InGameActiveMusicVoice","address":"00531058","type":"undefined4","length":4}
+{"name":"g_InGameMusicEnabled","address":"0053105c","type":"dword","length":4}
+{"name":"g_InGameLevelRuntimeGlobalBlock","address":"00531060","type":"InGameLevelRuntimeGlobalBlock20","length":32}
+{"name":"g_GridScratchPrimary","address":"005332a0","type":"GridScratchCell *","length":4}
+{"name":"g_GridScratchSecondary","address":"005332a4","type":"GridScratchCell *","length":4}
+{"name":"g_GridPathCostQueueBegin","address":"005332a8","type":"GridScratchCell * *","length":4}
+{"name":"g_GridPathCostQueueEnd","address":"005332ac","type":"GridScratchCell * *","length":4}
+{"name":"g_GridPathCostQueuePassBoundary","address":"005332b0","type":"GridScratchCell * *","length":4}
+{"name":"g_GridScratchWidth","address":"005332b4","type":"dword","length":4}
+{"name":"g_GridScratchHeight","address":"005332b8","type":"dword","length":4}
+{"name":"g_GridPathEntityClassMask","address":"00533ed0","type":"dword","length":4}
+{"name":"g_GridPathBlockingMask","address":"00533ed4","type":"undefined4","length":4}
+{"name":"g_GridPathHighCostMask","address":"00533ed8","type":"undefined4","length":4}
+{"name":"g_GridPathUnreachableRegionReferenceColumn","address":"00533edc","type":"dword","length":4}
+{"name":"g_GridPathUnreachableRegionReferenceRow","address":"00533ee0","type":"dword","length":4}
+{"name":"g_EntityPathingPriorityPairs","address":"005367d0","type":"EntityPathingPriorityPair *","length":4}
+{"name":"g_EntityPathingPriorityPairStorage","address":"005367d4","type":"EntityPathingPriorityPair[32]","length":256}
+{"name":"g_EntityPathingPriorityPairCount","address":"005368d4","type":"dword","length":4}
+{"name":"g_GridTerrainClassBit24MaxWaterSurfaceDelta","address":"00536f10","type":"Q12","length":4}
+{"name":"g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16","address":"00536f14","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16","address":"00536f18","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16","address":"00536f1c","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16","address":"00536f20","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridTerrainClassBit28MinWaterSurfaceDelta","address":"00536f30","type":"Q12","length":4}
+{"name":"g_GridTerrainClassBit29MinWaterSurfaceDelta","address":"00536f34","type":"Q12","length":4}
+{"name":"g_GridTerrainClassBit30MinWaterSurfaceDelta","address":"00536f38","type":"Q12","length":4}
+{"name":"g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16","address":"00536f3c","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16","address":"00536f40","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16","address":"00536f44","type":"AngleTurn16Stored32","length":4}
+{"name":"g_GridInfluenceRadiusOffset0","address":"00536f60","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset1","address":"00536f64","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset2","address":"00536f68","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset3","address":"00536f6c","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset4","address":"00536f70","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset5","address":"00536f74","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset6","address":"00536f78","type":"undefined4","length":4}
+{"name":"g_GridInfluenceRadiusOffset7","address":"00536f7c","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold0","address":"00536f80","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold1","address":"00536f84","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold2","address":"00536f88","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold3","address":"00536f8c","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold4","address":"00536f90","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold5","address":"00536f94","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold6","address":"00536f98","type":"undefined4","length":4}
+{"name":"g_GridInfluenceSquaredThreshold7","address":"00536f9c","type":"undefined4","length":4}
+{"name":"g_AiCombatTargetRadialClearanceWeight","address":"00536fa0","type":"undefined4","length":4}
+{"name":"g_AiCombatTargetCandidateCounterCountWeight","address":"00536fa4","type":"undefined4","length":4}
+{"name":"g_AiCombatTargetSourceCounterCountWeight","address":"00536fa8","type":"undefined4","length":4}
+{"name":"g_AiCombatTargetScaleDeficitWeight","address":"00536fac","type":"undefined4","length":4}
+{"name":"g_AiCombatTargetClassBaseScoreMultiplier","address":"00536fb0","type":"undefined4","length":4}
+{"name":"g_AiCombatTargetSelectedCommandGenerationRightShiftBits","address":"00536fb4","type":"AiCommandGenerationRightShiftBits","length":4}
+{"name":"g_AiCombatTargetCurrentCommandGenerationRightShiftBits","address":"00536fb8","type":"AiCommandGenerationRightShiftBits","length":4}
+{"name":"g_AiWorkspaceBuffer13_Size0400","address":"00537410","type":"AiCandidateWorkspaceEntry *","length":4}
+{"name":"g_AiCandidateWorkspaceEntryCount","address":"00537414","type":"undefined4","length":4}
+{"name":"g_AiPurchaseAppliedArmyClassMask","address":"00537418","type":"dword","length":4}
+{"name":"g_AiWorkspaceBuffer00_Size0400","address":"00537960","type":"AiWorkspace00EntryView8 *","length":4}
+{"name":"g_AiWorkspace00Count","address":"00537964","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer01_Size0200","address":"00537968","type":"AiRuntimeWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace01Count","address":"0053796c","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer02_Size0400","address":"00537970","type":"AiRuntimeWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace02Count","address":"00537974","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer03_Size1000","address":"00537978","type":"AiRuntimeWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace03Count","address":"0053797c","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer04_Size0040","address":"00537980","type":"AiRuntimeWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace04Count","address":"00537984","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer05_Size0200","address":"00537988","type":"AiScoredSiteWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace05Count","address":"0053798c","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer06_Size0400","address":"00537990","type":"byte *","length":4}
+{"name":"g_AiWorkspace06Count","address":"00537994","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer07_Size0400","address":"00537998","type":"AiTargetWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace07Count","address":"0053799c","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer08_Size0200","address":"005379a0","type":"AiTerrainFeatureWorkspaceEntry *","length":4}
+{"name":"g_AiWorkspace08Count","address":"005379a4","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer09_Size1000","address":"005379a8","type":"FieldGridCell * *","length":4}
+{"name":"g_AiWorkspace09Count","address":"005379ac","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer10_Size0400","address":"005379b0","type":"FieldGridCell * *","length":4}
+{"name":"g_AiWorkspace10Count","address":"005379b4","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer11_Size1000","address":"005379b8","type":"ArmyAssetRecordPrefix * *","length":4}
+{"name":"g_AiWorkspace11Count","address":"005379bc","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceBuffer12_Size0200","address":"005379c0","type":"AiTechnologyPlanningCandidate *","length":4}
+{"name":"g_AiWorkspace12Count","address":"005379c4","type":"AiTechnologyPlanningCandidateCount","length":4}
+{"name":"g_AiActiveGridMaskClass0","address":"005379c8","type":"undefined4","length":4}
+{"name":"g_AiActiveGridMaskClass1","address":"005379cc","type":"undefined4","length":4}
+{"name":"g_AiActiveGridMaskClass2","address":"005379d0","type":"undefined4","length":4}
+{"name":"g_AiActiveGridMaskClass3","address":"005379d4","type":"undefined4","length":4}
+{"name":"g_AiWorkspaceOwnedAsset300Runtime","address":"005379d8","type":"ArmyRuntimeSlot *","length":4}
+{"name":"g_AiConstructionPendingAssetConsumedCount","address":"00539060","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximumReciprocalQ24Table8","address":"00539980","type":"undefined4","length":4}
+{"name":"DAT_00539984","address":"00539984","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum0","address":"005399a0","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum1","address":"005399a4","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum2","address":"005399a8","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum3","address":"005399ac","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum4","address":"005399b0","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum5","address":"005399b4","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum6","address":"005399b8","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMaximum7","address":"005399bc","type":"undefined4","length":4}
+{"name":"g_AiArmyCandidateFlaggedDefinitionValueMaximum","address":"005399c0","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass12FWeightComponent0","address":"005399c4","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass12FWeightComponent1","address":"005399c8","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass12FWeightComponent2","address":"005399cc","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass130WeightComponent0","address":"005399d0","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass130WeightComponent1","address":"005399d4","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass130WeightComponent2","address":"005399d8","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass131WeightComponent0","address":"005399dc","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass131WeightComponent1","address":"005399e0","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass131WeightComponent2","address":"005399e4","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass132WeightComponent0","address":"005399e8","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass132WeightComponent1","address":"005399ec","type":"undefined4","length":4}
+{"name":"g_AiStrategicClass132WeightComponent2","address":"005399f0","type":"undefined4","length":4}
+{"name":"DAT_005399f4","address":"005399f4","type":"undefined4","length":4}
+{"name":"DAT_005399f8","address":"005399f8","type":"undefined4","length":4}
+{"name":"DAT_005399fc","address":"005399fc","type":"undefined4","length":4}
+{"name":"g_TechnologyCategoryMasks","address":"00539a00","type":"TechnologyCategoryMasks","length":64}
+{"name":"g_AiWorkspaceBuffer14_Size0100","address":"0053b0d0","type":"ArmyRuntimeSlot * *","length":4}
+{"name":"g_AiCollectedEntityCount","address":"0053b0d4","type":"undefined4","length":4}
+{"name":"g_AiTechnologyCandidateScoreCallbackTable","address":"0053b9e0","type":"AiTechnologyCandidateScoreCallback *[6]","length":24}
+{"name":"g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160","address":"0053c160","type":"pointer[14]","length":56}
+{"name":"g_AiKnowledgeData","address":"0053c5e0","type":"AiKnowledgeDataImage *","length":4}
+{"name":"u_engine\\ki.dat_0053c5e4","address":"0053c5e4","type":"unicode","length":28}
+{"name":"g_AiArmyCandidateScoreWeightsVariantB15","address":"0053c600","type":"AiArmyScoreWeights","length":60}
+{"name":"g_AiArmyCandidateScoreWeightsVariantA15","address":"0053c63c","type":"AiArmyScoreWeights","length":60}
+{"name":"g_AiArmyCandidateScoreWeightsVariantC15","address":"0053c678","type":"AiArmyScoreWeights","length":60}
+{"name":"g_WorldMotionSplineMatrixWorkspaces","address":"0053c9a0","type":"float *[6]","length":24}
+{"name":"g_WorldMotionSplineCoefficientTables","address":"0053c9b8","type":"float *[6]","length":24}
+{"name":"g_WorldMotionSplineCachedDerivatives","address":"0053c9d0","type":"float[6]","length":24}
+{"name":"g_WorldMotionSplineEquationCounts","address":"0053c9e8","type":"sdword[6]","length":24}
+{"name":"g_Q12FloatScale4096","address":"0053ca00","type":"float","length":4}
+{"name":"g_TerrainCompositeTexture","address":"0053d360","type":"TerrainCompositeTextureRuntime *","length":4}
+{"name":"g_UiRootCallbacks_0053DA70","address":"0053da70","type":"UiRootCallbacks","length":20}
+{"name":"g_FrontendSessionListRows","address":"0053da84","type":"FrontendSessionDiscoveryRecordB0 * *","length":4}
+{"name":"g_FrontendSessionDiscoveryRecords","address":"0053da88","type":"FrontendSessionDiscoveryRecordB0 *","length":4}
+{"name":"g_FrontendRootInitializationTemplate","address":"0053da8c","type":"undefined4","length":4}
+{"name":"DAT_0053da90","address":"0053da90","type":"undefined4","length":4}
+{"name":"g_SharedWorldStatePointer","address":"00542230","type":"undefined4","length":4}
+{"name":"g_FrontendRootStateSnapshot80","address":"00542854","type":"undefined4","length":4}
+{"name":"DAT_00542858","address":"00542858","type":"undefined4","length":4}
+{"name":"g_FrontendPlayerRuntimeRecordPointers32","address":"005433e0","type":"undefined4","length":4}
+{"name":"g_FrontendTaskAssignmentControlOffsets","address":"0054345c","type":"FrontendTaskAssignmentControlOffsetTablesA8","length":168}
+{"name":"g_FrontendUiDisplayModeAndTaskAssignmentScratch","address":"005438ec","type":"FrontendUiSemanticScratch280","length":640}
+{"name":"g_FrontendCommandQueueRecords","address":"00543e40","type":"UiCommandQueueRecord[16]","length":256}
+{"name":"g_FrontendCommandQueueEnd","address":"00543f40","type":"UiCommandQueueRecord *","length":4}
+{"name":"g_FrontendRootNode","address":"005456f0","type":"undefined4","length":4}
+{"name":"g_FrontendPendingPageAction","address":"005456f4","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionContextValue","address":"005456f8","type":"undefined4","length":4}
+{"name":"g_FrontendActiveRomRecordTable","address":"005456fc","type":"undefined4","length":4}
+{"name":"g_FrontendRuntimeFlags","address":"00545700","type":"dword","length":4}
+{"name":"g_FrontendCentralTextureSet","address":"00545704","type":"undefined4","length":4}
+{"name":"g_FrontendCentralPaletteAsset","address":"00545708","type":"undefined4","length":4}
+{"name":"g_FrontendMenuTextureSource","address":"0054570c","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_FrontendNetworkTickCounter","address":"00545710","type":"undefined4","length":4}
+{"name":"g_FrontendNetworkState","address":"00545714","type":"undefined4","length":4}
+{"name":"g_FrontendFactionAssignmentReadyStateGeneration","address":"00545718","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionElapsedTicks","address":"0054571c","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionSplineKeyframes","address":"00545720","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionSplineKeyframeCount","address":"00545724","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionPendingCount","address":"00545728","type":"undefined4","length":4}
+{"name":"g_FrontendStateTickSpinLock","address":"0054572c","type":"dword","length":4}
+{"name":"g_FrontendTimerCountdownTicks","address":"00545730","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0Channel0Q12","address":"00545734","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0Channel1Q12","address":"00545738","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0Channel2Q12","address":"0054573c","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0Channel3Q12","address":"00545740","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0Channel4Q12","address":"00545744","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0Channel5Q12","address":"00545748","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe0TimeQ12","address":"0054574c","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1Channel0Q12","address":"00545754","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1Channel1Q12","address":"00545758","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1Channel2Q12","address":"0054575c","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1Channel3Q12","address":"00545760","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1Channel4Q12","address":"00545764","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1Channel5Q12","address":"00545768","type":"undefined4","length":4}
+{"name":"g_FrontendRomTransitionKeyframe1TimeQ12","address":"0054576c","type":"undefined4","length":4}
+{"name":"g_FrontendCentralRomAsset","address":"00545774","type":"undefined4","length":4}
+{"name":"g_RomRegistrySlots","address":"00545778","type":"RomRegistrySlot *","length":4}
+{"name":"g_FrontendWorldObjectRecords","address":"0054577c","type":"WorldObjectRecord *","length":4}
+{"name":"g_FrontendLoadedLevelAsset","address":"00545780","type":"FrontendLoadedLevelRuntimeImage370 *","length":4}
+{"name":"g_FrontendMenuSoundVoiceSetTable100","address":"00545784","type":"undefined4","length":4}
+{"name":"g_FrontendMenuSoundVoiceSetLoadBaseEntry1","address":"00545788","type":"undefined4","length":4}
+{"name":"g_FrontendLoadedCampaignAsset","address":"00545914","type":"undefined4","length":4}
+{"name":"g_FrontendScenarioTransferState","address":"00545918","type":"undefined4","length":4}
+{"name":"g_FrontendPlayerMessageBuffers","address":"0054591c","type":"undefined4","length":4}
+{"name":"g_FrontendLocalPlayerPcxPreview","address":"00545920","type":"undefined4","length":4}
+{"name":"g_FrontendHostSnapshotTransferCountdown","address":"00545924","type":"undefined4","length":4}
+{"name":"g_FrontendScenarioInitializationCount","address":"00545928","type":"undefined4","length":4}
+{"name":"g_FrontendMusicVoiceSet","address":"0054592c","type":"undefined4","length":4}
+{"name":"g_FrontendMusicActiveBuffer","address":"00545930","type":"undefined4","length":4}
+{"name":"g_FrontendPendingPageActionDepth","address":"00545934","type":"dword","length":4}
+{"name":"g_FrontendUiActionHandlersPage20","address":"00545938","type":"FrontendUiActionHandlerPage20Prefix86","length":352}
+{"name":"g_FrontendScenarioMapOptionHandlerTable","address":"00545a98","type":"ScenarioCatalogRefreshSelectedRecordCallback *[3]","length":12}
+{"name":"u_engine\\zentrale.rom_00545aa4","address":"00545aa4","type":"unicode","length":40}
+{"name":"u_gfx\\texturen\\zentrale.gfx_00545acc","address":"00545acc","type":"unicode","length":52}
+{"name":"u_gfx\\texturen\\zentrale.pal_00545b00","address":"00545b00","type":"unicode","length":52}
+{"name":"u_texte\\hilfe.str_00545b34","address":"00545b34","type":"unicode","length":32}
+{"name":"u_sound\\menue01.sam_00545b54","address":"00545b54","type":"unicode","length":36}
+{"name":"u_gfx\\panel\\menue.gfx_00545b78","address":"00545b78","type":"unicode","length":40}
+{"name":"u_texte\\menue.str_00545ba0","address":"00545ba0","type":"unicode","length":32}
+{"name":"u_texte\\level.str_00545bc0","address":"00545bc0","type":"unicode","length":32}
+{"name":"u_texte\\inhalt.str_00545be0","address":"00545be0","type":"unicode","length":34}
+{"name":"u_gfx\\panel\\credits.gfx_00545c22","address":"00545c22","type":"unicode","length":44}
+{"name":"u_sound\\music00.sam_00545c4e","address":"00545c4e","type":"unicode","length":36}
+{"name":"g_FrontendScenarioPathScratchUtf16","address":"00545c72","type":"undefined2","length":2}
+{"name":"s_SPIELER=\"SPIEL=\"NETZWERK=\"HOST_00545e72","address":"00545e72","type":"string","length":31}
+{"name":"s_NAME=\"CLIENT=\"KARTE=\"_00545e91","address":"00545e91","type":"string","length":23}
+{"name":"u_level\\*.lev_005460a6","address":"005460a6","type":"unicode","length":24}
+{"name":"u_level\\*.str_005460be","address":"005460be","type":"unicode","length":24}
+{"name":"PTR_ARRAY_00547660","address":"00547660","type":"pointer[6]","length":24}
+{"name":"g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90","address":"00547d90","type":"pointer[6]","length":24}
+{"name":"g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30","address":"00548100","type":"UiCommandDispatchRecord[3]","length":36}
+{"name":"g_FrontendCommandDispatchRecords_Terminator","address":"00548124","type":"dword","length":4}
+{"name":"g_FrontendPacket10000Buffer","address":"0054d7a0","type":"FrontendPacket10000Handshake","length":32}
+{"name":"g_FrontendPacket50001Buffer","address":"0054d7c0","type":"FrontendPacket50001SessionAdvertisement","length":160}
+{"name":"g_FrontendPacket20002Buffer","address":"0054d860","type":"FrontendPacket20002PlayerDescriptor","length":64}
+{"name":"g_FrontendPacket10003Buffer","address":"0054d8a0","type":"FrontendPacket10003JoinAck","length":32}
+{"name":"g_FrontendPacket10004Buffer","address":"0054d8c0","type":"FrontendPacket10004PlayerSnapshotRequest","length":32}
+{"name":"g_FrontendPacket30005Buffer","address":"0054d8e0","type":"FrontendPacket30005PlayerSnapshot","length":96}
+{"name":"g_FrontendPacket10006Buffer","address":"0054d940","type":"FrontendPacket10006CapabilityHeartbeat","length":32}
+{"name":"g_FrontendPacket40008Buffer","address":"0054d960","type":"FrontendPacket40008LobbyRosterSnapshot","length":128}
+{"name":"g_FrontendPacket10009Buffer","address":"0054d9e0","type":"FrontendPacket10009SnapshotChunkRequest","length":32}
+{"name":"g_FrontendPacket8000ABuffer","address":"0054da00","type":"FrontendPacket8000ASnapshotChunk","length":256}
+{"name":"g_FrontendPlayerRemovalPacket10007","address":"0054db00","type":"FrontendPlayerRemovalPacket10007","length":32}
+{"name":"g_FrontendPlayerCommandRecords","address":"0054db20","type":"FrontendCommandPacketRecord[8]","length":256}
+{"name":"g_FrontendCommandBatchPacketBuffer","address":"0054dc20","type":"FrontendCommandPacketRecord[8]","length":256}
+{"name":"g_FrontendPacket10011Buffer","address":"0054dd20","type":"FrontendCommandPacketRecord","length":32}
+{"name":"g_FrontendPacket10012Buffer","address":"0054dd40","type":"FrontendPacket10012SyncPending","length":32}
+{"name":"g_FrontendPacket10013Buffer","address":"0054dd60","type":"FrontendPacket10013HeartbeatAck","length":32}
+{"name":"g_FrontendPacket10032Buffer","address":"0054dd80","type":"FrontendPacket10032HostValue","length":32}
+{"name":"g_FrontendPendingSessionPlayerCount","address":"0054dda0","type":"dword","length":4}
+{"name":"g_FrontendExpectedPlayerRuntimeBlockCount","address":"0054dda8","type":"dword","length":4}
+{"name":"g_FrontendHostPublishRoundRobinCounter","address":"0054ddac","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRows","address":"0054ddb0","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow1","address":"0054ddb4","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow2","address":"0054ddb8","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow3","address":"0054ddbc","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow4","address":"0054ddc0","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow5","address":"0054ddc4","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow6","address":"0054ddc8","type":"dword","length":4}
+{"name":"g_FrontendPlayerListRow7","address":"0054ddcc","type":"dword","length":4}
+{"name":"g_FrontendNetworkEndpointScratch","address":"0054ddd0","type":"UiTransferEndpointDescriptor","length":16}
+{"name":"g_UiRootCallbacks_0054FBC0","address":"0054fbc0","type":"UiRootCallbacks","length":20}
+{"name":"g_InGameFactionStatusTextScratchUtf16","address":"0054fbd4","type":"word *","length":4}
+{"name":"g_InGamePlayerListTextScratchUtf16","address":"0054fbd8","type":"word *","length":4}
+{"name":"g_InGamePlayerStatusTextSlots","address":"0054fbdc","type":"InGamePlayerStatusTextSlot[8]","length":1024}
+{"name":"g_InGameSelectionDetailNameTextUtf16","address":"0054ffdc","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailArmourTextUtf16","address":"0055005c","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailWeaponName0TextUtf16","address":"005500dc","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailWeaponName1TextUtf16","address":"0055015c","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailWeaponName2TextUtf16","address":"005501dc","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailTextSlot05Utf16","address":"0055025c","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailBuildXeniteCostTextUtf16","address":"005502dc","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailBuildTimeTextUtf16","address":"0055035c","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailEnergyTextUtf16","address":"005503dc","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameSelectionDetailTextSlot09Utf16","address":"0055045c","type":"UiSelectionDetailTextBuffer64Utf16","length":128}
+{"name":"g_InGameTechnologyCostColorWords8","address":"005504fe","type":"word[8]","length":16}
+{"name":"g_InGameTechnologyXeniteCostTextUtf16","address":"0055050e","type":"UiTechnologyValueTextBuffer16Utf16","length":32}
+{"name":"g_InGameTechnologyEnergyCostTextUtf16","address":"0055052e","type":"UiTechnologyValueTextBuffer16Utf16","length":32}
+{"name":"g_InGameTechnologyResearchTimeTextUtf16","address":"0055054e","type":"UiTechnologyValueTextBuffer16Utf16","length":32}
+{"name":"g_InGameRuntimeDefaultImageTemplate","address":"005505a0","type":"undefined4","length":4}
+{"name":"DAT_005505a4","address":"005505a4","type":"undefined4","length":4}
+{"name":"g_InGameStatusPanelTextureSource","address":"00550944","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_FrontendResultsFactionWeightSumTemplate","address":"005509a8","type":"FrontendResultsColumnSequenceTemplate6_7C","length":124}
+{"name":"g_FrontendResultsFactionWeightLane0Template","address":"00550a24","type":"FrontendResultsColumnSequenceTemplate6_7C","length":124}
+{"name":"g_FrontendResultsFactionWeightLane1Template","address":"00550aa0","type":"FrontendResultsColumnSequenceTemplate8_84","length":132}
+{"name":"g_CodePointerTable_00550EE0","address":"00550ee0","type":"pointer[8]","length":32}
+{"name":"g_CoreAssetScratchSlice0","address":"00551ae0","type":"byte *","length":4}
+{"name":"g_CoreAssetScratchSlice1","address":"00551b48","type":"byte *","length":4}
+{"name":"g_CoreAssetScratchSlice2","address":"00551bb0","type":"byte *","length":4}
+{"name":"g_CoreAssetScratchSlice3","address":"00551c18","type":"byte *","length":4}
+{"name":"g_CoreAssetScratchSlice4","address":"00551c80","type":"byte *","length":4}
+{"name":"g_CoreAssetScratchSlice5","address":"00551ce8","type":"byte *","length":4}
+{"name":"g_CoreAssetScratchSlice6","address":"00551d50","type":"byte *","length":4}
+{"name":"g_InGameWorldStatePointerMirror","address":"00552978","type":"undefined4","length":4}
+{"name":"g_InGameFactionStatusTextScratchUtf16Mirror","address":"00552a8c","type":"word *","length":4}
+{"name":"g_InGameSessionNameScratchUtf16","address":"00553538","type":"undefined2","length":2}
+{"name":"DAT_0055353a","address":"0055353a","type":"undefined2","length":2}
+{"name":"g_InGameCommandQueueRecords","address":"0055efc0","type":"UiCommandQueueRecord[16]","length":256}
+{"name":"g_InGameCommandQueueEnd","address":"0055f0c0","type":"UiCommandQueueRecord *","length":4}
+{"name":"g_InGameSelectionInsertTripletDwordCount","address":"0055f124","type":"undefined4","length":4}
+{"name":"g_InGameSelectionRemoveTripletDwordCount","address":"0055f128","type":"undefined4","length":4}
+{"name":"g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0","address":"0055f7c0","type":"pointer","length":4}
+{"name":"g_CodePointerTable_0055F7C8","address":"0055f7c8","type":"pointer[3]","length":12}
+{"name":"g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940","address":"0055f940","type":"pointer","length":4}
+{"name":"g_CodePointerTable_0055F944","address":"0055f944","type":"pointer[6]","length":24}
+{"name":"g_CodePointerTable_0055F960","address":"0055f960","type":"pointer[3]","length":12}
+{"name":"g_InGameUiActionHandlersPage10","address":"005624a0","type":"InGameUiActionHandlerPage10Prefix40","length":160}
+{"name":"g_InGameUiCommandModeActionHandlers30","address":"00562540","type":"InGameUiCommandModeActionHandlerPage11Prefix3","length":12}
+{"name":"g_UiActionPage11Group1Handlers","address":"00562550","type":"pointer[3]","length":12}
+{"name":"g_UiActionPage11InitializedHandlers","address":"00562560","type":"pointer[22]","length":88}
+{"name":"g_InGameUiActionHandlersPage12","address":"005625b8","type":"InGameUiActionHandlerPage12Prefix28","length":112}
+{"name":"g_UiAction100AControlOffsets","address":"00562628","type":"sdword[8]","length":32}
+{"name":"g_UiCatalogGroup48ColumnCount","address":"00562648","type":"dword","length":4}
+{"name":"g_UiCatalogGroup42ColumnCount","address":"0056264c","type":"dword","length":4}
+{"name":"g_UiCommandSpriteVariantAColumnCount","address":"00562650","type":"dword","length":4}
+{"name":"g_UiCatalogGroup48OffsetTables","address":"00562654","type":"sdword *[9]","length":36}
+{"name":"g_UiCatalogGroup42OffsetTables","address":"00562678","type":"sdword *[7]","length":28}
+{"name":"g_UiCommandSpriteVariantAOffsetTables","address":"00562694","type":"sdword *[5]","length":20}
+{"name":"DAT_005629a8","address":"005629a8","type":"undefined4","length":4}
+{"name":"DAT_005629ac","address":"005629ac","type":"undefined4","length":4}
+{"name":"DAT_00562bb8","address":"00562bb8","type":"undefined4","length":4}
+{"name":"DAT_00562bbc","address":"00562bbc","type":"undefined4","length":4}
+{"name":"DAT_00562c60","address":"00562c60","type":"undefined4","length":4}
+{"name":"DAT_00562c64","address":"00562c64","type":"undefined4","length":4}
+{"name":"g_UiAction1012PlayerIndexTextOffsets","address":"00562cc0","type":"sdword[7]","length":28}
+{"name":"g_UiAction1012PlayerLabelTextOffsets","address":"00562cdc","type":"sdword[7]","length":28}
+{"name":"g_UiAction1012IconImageOffsets","address":"00562cf8","type":"sdword[7]","length":28}
+{"name":"g_UiAction1012StateTextOffsets","address":"00562d14","type":"sdword[7]","length":28}
+{"name":"g_UiAction1012ControlOffsets","address":"00562d30","type":"sdword[7]","length":28}
+{"name":"g_UiAction1012SlotPageOffsets","address":"00562d4c","type":"sdword[7]","length":28}
+{"name":"DAT_00562d6c","address":"00562d6c","type":"undefined4","length":4}
+{"name":"DAT_00562d80","address":"00562d80","type":"undefined4","length":4}
+{"name":"DAT_00562d9c","address":"00562d9c","type":"undefined4","length":4}
+{"name":"g_InGameSelectionDetailControlOffsetTable32","address":"00562da0","type":"undefined4","length":4}
+{"name":"DAT_00562da4","address":"00562da4","type":"undefined4","length":4}
+{"name":"DAT_00562da8","address":"00562da8","type":"undefined4","length":4}
+{"name":"g_UiSevenSlotSelectionControlOffsets","address":"00562dd0","type":"sdword[7]","length":28}
+{"name":"g_RuntimeMaintenanceCallbackPhases","address":"00562dec","type":"RuntimeMaintenanceCallbackPhasesTyped","length":48}
+{"name":"g_UiAction1012SubresourceByState","address":"00562e1c","type":"dword[16]","length":64}
+{"name":"g_InGameOwnedEntityTransientEffectMarkerCount","address":"00562ec8","type":"undefined4","length":4}
+{"name":"g_InGameCommandTargetTransientEffectMarkerCount","address":"005630cc","type":"undefined4","length":4}
+{"name":"u_gfx\\panel\\panel0.gfx_005630d0","address":"005630d0","type":"unicode","length":42}
+{"name":"u_gfx\\panel\\tech.gfx_005630fa","address":"005630fa","type":"unicode","length":38}
+{"name":"u_gfx\\panel\\diagram0.gfx_00563120","address":"00563120","type":"unicode","length":46}
+{"name":"u_texte\\help.str_00563170","address":"00563170","type":"unicode","length":30}
+{"name":"u_gfx\\panel\\window.gfx_0056318e","address":"0056318e","type":"unicode","length":42}
+{"name":"u_texte\\tastatur.str_005631b8","address":"005631b8","type":"unicode","length":38}
+{"name":"g_UiCommandRuntimeFlags","address":"00563260","type":"dword","length":4}
+{"name":"g_InGameSimulationStepTicks","address":"00563264","type":"InGameSimulationStepBatchTicks","length":4}
+{"name":"g_InGamePendingSimulationTicks","address":"00563268","type":"undefined4","length":4}
+{"name":"g_InGameSessionNotificationTimeoutTicks","address":"0056326c","type":"dword","length":4}
+{"name":"g_EndGameResultsCurrentMusicTrackId","address":"00563270","type":"dword","length":4}
+{"name":"g_InGameNetworkTickCountdown","address":"00563274","type":"undefined4","length":4}
+{"name":"g_InGameStateTickSpinLock","address":"00563278","type":"dword","length":4}
+{"name":"g_InGameRuntimeRoot","address":"0056327c","type":"InGameRuntimeRootImageC3E4 *","length":4}
+{"name":"g_InGamePanelTextureSource","address":"00563280","type":"GraphicsTextureSourceAsset *","length":4}
+{"name":"g_InGameDiagramTextureSource","address":"00563284","type":"undefined4","length":4}
+{"name":"g_InGameTechnologyTextureSource","address":"00563288","type":"undefined4","length":4}
+{"name":"g_InGameWindowTextureSource","address":"0056328c","type":"undefined4","length":4}
+{"name":"g_InGamePanelTextureSubresource00Width","address":"00563290","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource01Width","address":"00563294","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource02Width","address":"00563298","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource06Width","address":"0056329c","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource07Width","address":"005632a0","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource27Width","address":"005632a4","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource28Width","address":"005632a8","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource19Width","address":"005632ac","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource20Width","address":"005632b0","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource34Width","address":"005632b4","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource32Width","address":"005632b8","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource33Width","address":"005632bc","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource02Height","address":"005632c0","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource03Height","address":"005632c4","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource04Height","address":"005632c8","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource05Height","address":"005632cc","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource36Height","address":"005632d0","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource37Height","address":"005632d4","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource06Height","address":"005632d8","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource00Height","address":"005632dc","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource07Height","address":"005632e0","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource26Height","address":"005632e4","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource31Height","address":"005632e8","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource18Height","address":"005632ec","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource23Height","address":"005632f0","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource34Height","address":"005632f4","type":"sdword","length":4}
+{"name":"g_InGamePanelTextureSubresource32Height","address":"005632f8","type":"sdword","length":4}
+{"name":"g_UiHoverSelectionRecord","address":"005632fc","type":"UiCommandRuntimeRecordPrefix *","length":4}
+{"name":"g_InGameSelectedTechnologyId","address":"00563300","type":"PckTechnologyIdCatalog","length":4}
+{"name":"g_MoviePlaybackBaseFrameGroup","address":"00563320","type":"undefined4","length":4}
+{"name":"g_MoviePlaybackScheduleCounter","address":"00563324","type":"undefined4","length":4}
+{"name":"g_MoviePlaybackScheduleSpan","address":"00563328","type":"undefined4","length":4}
+{"name":"g_MoviePlaybackCurrentFrame","address":"0056332c","type":"undefined4","length":4}
+{"name":"g_DebugOverlayCounterRefreshCountdown","address":"00563330","type":"dword","length":4}
+{"name":"g_FrontendDebugOverlayTextSlot00Utf16","address":"00563334","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot01Utf16","address":"00563354","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot02Utf16","address":"00563374","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot03Utf16","address":"00563394","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot04Utf16","address":"005633b4","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot05Utf16","address":"005633d4","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot06Utf16","address":"005633f4","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot07Utf16","address":"00563414","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot08Utf16","address":"00563434","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot09Utf16","address":"00563454","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot10Utf16","address":"00563474","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot11Utf16","address":"00563494","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot12Utf16","address":"005634b4","type":"word[16]","length":32}
+{"name":"g_FrontendDebugOverlayTextSlot13Utf16","address":"005634d4","type":"word[16]","length":32}
+{"name":"g_InGameReadyStateToggleFlags","address":"00563514","type":"dword","length":4}
+{"name":"g_UiCatalogGroup48Records","address":"00563518","type":"UiCommandRuntimeRecordPrefix *[48]","length":192}
+{"name":"g_UiCatalogGroup42Records","address":"005635d8","type":"UiCommandRuntimeRecordPrefix *[42]","length":168}
+{"name":"g_UiCommandSpriteVariantARecords","address":"00563680","type":"UiCommandRuntimeRecordPrefix *[24]","length":96}
+{"name":"g_UiAction1012TargetPlayerIndices","address":"005636e0","type":"dword[7]","length":28}
+{"name":"g_InGameWorldObjectRecords","address":"005636fc","type":"WorldObjectRecord *","length":4}
+{"name":"g_RuntimeObjectRebaseBaseMinusOne","address":"00563700","type":"byte *","length":4}
+{"name":"g_InGamePlacementHeading16","address":"00563704","type":"undefined4","length":4}
+{"name":"g_InGamePlacementPointerCaptureX","address":"00563708","type":"undefined4","length":4}
+{"name":"g_InGamePlacementPointerCaptureY","address":"0056370c","type":"undefined4","length":4}
+{"name":"g_InGamePendingPlacementArmyAsset","address":"00563710","type":"sdword","length":4}
+{"name":"g_InGamePlacementPreviewArmyRuntime","address":"00563714","type":"undefined4","length":4}
+{"name":"g_InGamePlacementWorldYQ12","address":"00563718","type":"undefined4","length":4}
+{"name":"g_InGamePlacementWorldXQ12","address":"0056371c","type":"undefined4","length":4}
+{"name":"g_InGamePlacementSurfaceHeightQ12OrSentinel","address":"00563720","type":"sdword","length":4}
+{"name":"g_InGameCommandPreviewArmyRuntime","address":"00563724","type":"undefined4","length":4}
+{"name":"g_InGameCommandPreviewHeading16","address":"00563728","type":"undefined4","length":4}
+{"name":"g_InGameCommandPreviewWorldYQ12","address":"0056372c","type":"undefined4","length":4}
+{"name":"g_InGameCommandPreviewWorldXQ12","address":"00563730","type":"undefined4","length":4}
+{"name":"g_InGameCommandPreviewSurfaceHeightQ12OrSentinel","address":"00563734","type":"undefined4","length":4}
+{"name":"g_InGameCommandPointerCaptureX","address":"00563738","type":"undefined4","length":4}
+{"name":"g_InGameCommandPointerCaptureY","address":"0056373c","type":"undefined4","length":4}
+{"name":"g_InGameCommandPreviewArmyAssetId","address":"00563740","type":"undefined4","length":4}
+{"name":"g_InGamePointerInteractionStateFlags","address":"00563744","type":"undefined4","length":4}
+{"name":"g_SelectionMarkerCoordinateCallbackTable5","address":"00563754","type":"pointer[5]","length":20}
+{"name":"g_ArmyLinkedChildAssetIdSlot0","address":"0056378c","type":"undefined4","length":4}
+{"name":"g_ArmyLinkedChildAssetIdSlot1","address":"00563790","type":"undefined4","length":4}
+{"name":"g_ArmyLinkedChildAssetIdSlot2","address":"00563798","type":"undefined4","length":4}
+{"name":"g_ArmyPlacementAcceptedCandidateCount","address":"005637a8","type":"ArmyPlacementCandidateCount","length":4}
+{"name":"g_EndMovieSelectionIndex","address":"00563bac","type":"undefined4","length":4}
+{"name":"g_EndMovieVariantIndex","address":"00563bb0","type":"undefined4","length":4}
+{"name":"g_EndMoviePath","address":"00563bb4","type":"word *","length":4}
+{"name":"g_EndMoviePendingTicks","address":"00563bb8","type":"dword","length":4}
+{"name":"g_OldUnitSecondaryTable","address":"00563bbc","type":"dword *","length":4}
+{"name":"g_OldUnitPrimaryTable","address":"00563bc0","type":"dword *","length":4}
+{"name":"g_OldUnitRecordCount","address":"00563bc4","type":"OldUnitRecordCount","length":4}
+{"name":"g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30","address":"005658c0","type":"UiCommandDispatchRecord[2]","length":24}
+{"name":"g_EndMovieCommandDispatchRecords_Terminator","address":"005658d8","type":"dword","length":4}
+{"name":"g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040","address":"00566040","type":"pointer[8]","length":32}
+{"name":"g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30","address":"00567110","type":"UiCommandDispatchRecord[15]","length":180}
+{"name":"g_EndGameResultsCommandDispatchRecords_Terminator","address":"005671c4","type":"dword","length":4}
+{"name":"g_InGameCommandDispatchRecords_00_Code00030073_Modifier33","address":"005679b0","type":"UiCommandDispatchRecord[63]","length":756}
+{"name":"g_InGameCommandDispatchRecords_Terminator","address":"00567ca4","type":"dword","length":4}
+{"name":"g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340","address":"0056d340","type":"pointer[16]","length":64}
+{"name":"g_UiCommandModeG","address":"0056d720","type":"dword","length":4}
+{"name":"g_UiCommandModeC","address":"0056d724","type":"dword","length":4}
+{"name":"g_UiCommandModeD","address":"0056d728","type":"dword","length":4}
+{"name":"g_UiCommandModeE","address":"0056d72c","type":"dword","length":4}
+{"name":"g_UiCommandModeA","address":"0056d730","type":"dword","length":4}
+{"name":"g_UiCommandModeB","address":"0056d734","type":"dword","length":4}
+{"name":"g_UiCommandModeF","address":"0056d73c","type":"dword","length":4}
+{"name":"g_UiCommandAbsoluteSelectionIndex","address":"0056d740","type":"dword","length":4}
+{"name":"g_UiCommandSelectionPageBaseIndex","address":"0056d744","type":"dword","length":4}
+{"name":"g_UiCommandTerrainMaskToggleValue","address":"0056d748","type":"undefined4","length":4}
+{"name":"g_UiCommandModeGOwnerFactionIndex","address":"0056d74c","type":"FactionRuntimeIndex","length":4}
+{"name":"g_UiCommandModeGArmyAssetId","address":"0056d750","type":"undefined4","length":4}
+{"name":"g_UiCommandDragReferenceX","address":"0056d754","type":"sdword","length":4}
+{"name":"g_UiCommandDragReferenceY","address":"0056d758","type":"sdword","length":4}
+{"name":"g_UiCommandMode4ArmyAssetId","address":"0056d75c","type":"PckArmyAssetIdCatalog","length":4}
+{"name":"g_UiCommandCallerMaskHighBit","address":"0056d760","type":"undefined4","length":4}
+{"name":"g_UiCommandModeGPrimaryPageIndices","address":"0056d764","type":"dword[6]","length":24}
+{"name":"g_UiCommandModeGSecondaryPageIndices","address":"0056d77c","type":"dword[6]","length":24}
+{"name":"g_UiCommandModeGTertiaryPageIndices","address":"0056d794","type":"dword[6]","length":24}
+{"name":"g_UiCommandModeGControlOffsets","address":"0056d7ac","type":"sdword[6]","length":24}
+{"name":"g_UiCommandModeGHandlers","address":"0056d7c4","type":"void *[6]","length":24}
+{"name":"g_UiMappedCommandControlOffsets","address":"0056d7dc","type":"sdword[12]","length":48}
+{"name":"g_UiCommandSelectionAnchorWorldXQ12","address":"0056d80c","type":"undefined4","length":4}
+{"name":"g_UiCommandSelectionAnchorWorldYQ12","address":"0056d810","type":"undefined4","length":4}
+{"name":"g_UiCommandSelectionCurrentWorldXQ12","address":"0056d814","type":"undefined4","length":4}
+{"name":"g_UiCommandSelectionCurrentWorldYQ12","address":"0056d818","type":"undefined4","length":4}
+{"name":"g_UiCommandDragAnchorWorldXQ12","address":"0056d81c","type":"undefined4","length":4}
+{"name":"g_UiCommandDragAnchorWorldYQ12","address":"0056d820","type":"undefined4","length":4}
+{"name":"g_UiCommandDragStartScreenX","address":"0056d824","type":"undefined4","length":4}
+{"name":"g_UiCommandDragStartScreenY","address":"0056d828","type":"undefined4","length":4}
+{"name":"g_TerrainMaterialEditFieldGrid","address":"0056d82c","type":"undefined4","length":4}
+{"name":"g_TerrainMaterialEditDeltaBuffer","address":"0056d830","type":"undefined4","length":4}
+{"name":"g_TerrainMaterialEditReferenceMaterialByte","address":"0056d834","type":"undefined4","length":4}
+{"name":"g_TerrainMaterialEditReplacementMaterialByte","address":"0056d838","type":"dword","length":4}
+{"name":"g_InGameCameraCommandDispatchRecords16","address":"0056f280","type":"InGameCameraCommandDispatchTable","length":208}
+{"name":"g_InGameUiCommandCursorCodeModeDispatchTable","address":"0056f820","type":"pointer[6]","length":24}
+{"name":"g_InGameUiCommandBeginInteractionModeDispatchTable","address":"0056faa0","type":"pointer[6]","length":24}
+{"name":"g_InGameUiCommandUpdateInteractionModeDispatchTable","address":"00570410","type":"pointer[6]","length":24}
+{"name":"g_InGameUiCommandEndInteractionModeDispatchTable","address":"00570da0","type":"pointer[6]","length":24}
+{"name":"g_InGameUiCommandResetInteractionModeDispatchTable","address":"00570f50","type":"pointer[6]","length":24}
+{"name":"g_FrontendClientPlayerRemovalPacket10007","address":"00572040","type":"FrontendPlayerRemovalPacket10007","length":32}
+{"name":"g_FrontendClientPlayerCommandRecords","address":"00572060","type":"FrontendCommandPacketRecord[8]","length":256}
+{"name":"g_FrontendClientCommandBatchPacketBuffer","address":"00572160","type":"FrontendCommandPacketRecord[8]","length":256}
+{"name":"g_FrontendPacket10021Buffer","address":"00572260","type":"FrontendCommandPacketRecord","length":32}
+{"name":"g_FrontendPacket10022Buffer","address":"00572280","type":"FrontendPacket10022StatePending","length":32}
+{"name":"g_FrontendPacket10023Buffer","address":"005722a0","type":"FrontendPacket10023StateAck","length":32}
+{"name":"g_DataPackageHandle","address":"00572ac0","type":"dword","length":4}
+{"name":"g_ModelPackageHandle","address":"00572ac4","type":"dword","length":4}
+{"name":"g_GraphicsPackageHandle","address":"00572ac8","type":"dword","length":4}
+{"name":"g_SoundPackageHandle","address":"00572acc","type":"dword","length":4}
+{"name":"g_MoviePackageHandle","address":"00572ad0","type":"dword","length":4}
+{"name":"g_LevelPackageHandle","address":"00572ad4","type":"dword","length":4}
+{"name":"g_UiButtonSoundVoiceSets7","address":"00572ad8","type":"DirectSoundVoiceSet *[7]","length":28}
+{"name":"g_PcxFunctionModule","address":"00572af4","type":"FncModuleHeader *","length":4}
+{"name":"g_PcxFunctionExport3","address":"00572af8","type":"PcxEncodeProc *","length":4}
+{"name":"g_PcxFunctionExport2","address":"00572afc","type":"PcxDecodeProc *","length":4}
+{"name":"g_IntroMoviePendingTicks","address":"00572b00","type":"dword","length":4}
+{"name":"g_InstallRegistryKeyHandle","address":"00572b04","type":"undefined4","length":4}
+{"name":"g_InstallRegistryValueType","address":"00572b0c","type":"undefined4","length":4}
+{"name":"u_Thandor_00572e10","address":"00572e10","type":"unicode","length":16}
+{"name":"s_Software\\Planet4\\Thandor_00572e20","address":"00572e20","type":"string","length":25}
+{"name":"u_daten.pck_00572e56","address":"00572e56","type":"unicode","length":20}
+{"name":"u_modelle.pck_00572e6a","address":"00572e6a","type":"unicode","length":24}
+{"name":"u_graphik.pck_00572e82","address":"00572e82","type":"unicode","length":24}
+{"name":"u_sound.pck_00572e9a","address":"00572e9a","type":"unicode","length":20}
+{"name":"u_filme.pck_00572eae","address":"00572eae","type":"unicode","length":20}
+{"name":"u_level.pck_00572ec2","address":"00572ec2","type":"unicode","length":20}
+{"name":"g_PatchArchivePathTemplateUtf16","address":"00572ed6","type":"PatchArchivePathTemplate18","length":24}
+{"name":"g_LevelArchivePathTemplateUtf16","address":"00572eee","type":"LevelArchivePathTemplate18","length":24}
+{"name":"u_sound\\button0.sam_00572f06","address":"00572f06","type":"unicode","length":36}
+{"name":"u_sound\\button1.sam_00572f2a","address":"00572f2a","type":"unicode","length":36}
+{"name":"u_sound\\button2.sam_00572f4e","address":"00572f4e","type":"unicode","length":36}
+{"name":"u_sound\\button3.sam_00572f72","address":"00572f72","type":"unicode","length":36}
+{"name":"u_sound\\button4.sam_00572f96","address":"00572f96","type":"unicode","length":36}
+{"name":"u_sound\\button5.sam_00572fba","address":"00572fba","type":"unicode","length":36}
+{"name":"u_sound\\button6.sam_00572fde","address":"00572fde","type":"unicode","length":36}
+{"name":"u_gfx\\panel\\stat.gfx_00573002","address":"00573002","type":"unicode","length":38}
+{"name":"u_engine\\pcx.fnc_00573028","address":"00573028","type":"unicode","length":30}
+{"name":"u_flm\\intro0.flm_00573046","address":"00573046","type":"unicode","length":30}
+{"name":"s_NOINTRO_00573064","address":"00573064","type":"string","length":8}
+{"name":"g_DynamicModules","address":"00573ef0","type":"DynamicModuleEntry[16]","length":128}
+{"name":"g_DynamicModuleCount","address":"00573f70","type":"dword","length":4}
+{"name":"g_BootstrapApiBindings","address":"00573f74","type":"DynamicApiBinding[8]","length":64}
+{"name":"pDirectDrawCreate","address":"00573fbc","type":"DirectDrawCreate *","length":4}
+{"name":"pDirectDrawEnumerateA","address":"00573fc0","type":"DirectDrawEnumerateA *","length":4}
+{"name":"pDirectInputCreateA","address":"00573fc4","type":"DirectInputCreateA *","length":4}
+{"name":"pDirectSoundCreate","address":"00573fc8","type":"DirectSoundCreate *","length":4}
+{"name":"pDirectSoundEnumerateA","address":"00573fcc","type":"DirectSoundEnumerateA *","length":4}
+{"name":"pDirectSoundCaptureCreate","address":"00573fd0","type":"DirectSoundCaptureCreate *","length":4}
+{"name":"pDirectSoundCaptureEnumerateA","address":"00573fd4","type":"DirectSoundCaptureEnumerateA *","length":4}
+{"name":"PTR_dynapi_24_00573fdc","address":"00573fdc","type":"pointer","length":4}
+{"name":"g_GrAlphaBlendFunction","address":"00573fe0","type":"GrAlphaBlendFunctionImportProc *","length":4}
+{"name":"PTR_dynapi_25_00573fe4","address":"00573fe4","type":"pointer","length":4}
+{"name":"g_GrAlphaCombine","address":"00573fe8","type":"GrAlphaCombineImportProc *","length":4}
+{"name":"g_GrBufferClear","address":"00574008","type":"GrBufferClearImportProc *","length":4}
+{"name":"g_GrBufferSwap","address":"00574010","type":"GrBufferSwapImportProc *","length":4}
+{"name":"g_GrClipWindow","address":"00574028","type":"GrClipWindowImportProc *","length":4}
+{"name":"g_GrColorCombine","address":"00574030","type":"GrColorCombineImportProc *","length":4}
+{"name":"g_GrCoordinateSpace","address":"00574048","type":"GrCoordinateSpaceImportProc *","length":4}
+{"name":"g_GrCullMode","address":"00574050","type":"GrCullModeImportProc *","length":4}
+{"name":"g_GrDepthBufferFunction","address":"00574060","type":"GrDepthBufferFunctionImportProc *","length":4}
+{"name":"g_GrDepthBufferMode","address":"00574068","type":"GrDepthBufferModeImportProc *","length":4}
+{"name":"g_GrDepthMask","address":"00574070","type":"GrDepthMaskImportProc *","length":4}
+{"name":"g_GrDrawTriangle","address":"005740a8","type":"GrDrawTriangleImportProc *","length":4}
+{"name":"g_GrFinish","address":"005740d0","type":"GrFinishImportProc *","length":4}
+{"name":"g_GrGet","address":"005740f8","type":"GrGetImportProc *","length":4}
+{"name":"g_GrGetString","address":"00574108","type":"GrGetStringImportProc *","length":4}
+{"name":"g_GrGlideInit","address":"00574120","type":"GrGlideInitImportProc *","length":4}
+{"name":"g_GrGlideShutdown","address":"00574138","type":"GrGlideShutdownImportProc *","length":4}
+{"name":"g_GrLfbLock","address":"00574150","type":"GrLfbLockImportProc *","length":4}
+{"name":"g_GrLfbReadRegion","address":"00574158","type":"GrLfbReadRegionImportProc *","length":4}
+{"name":"g_GrLfbUnlock","address":"00574160","type":"GrLfbUnlockImportProc *","length":4}
+{"name":"g_GrQueryResolutions","address":"00574178","type":"GrQueryResolutionsImportProc *","length":4}
+{"name":"g_GrSstSelect","address":"005741a0","type":"GrSstSelectImportProc *","length":4}
+{"name":"g_GrSstWinClose","address":"005741a8","type":"GrSstWinCloseImportProc *","length":4}
+{"name":"g_GrSstWinOpen","address":"005741b0","type":"GrSstWinOpenImportProc *","length":4}
+{"name":"g_GrTexClampMode","address":"005741c0","type":"GrTexClampModeImportProc *","length":4}
+{"name":"g_GrTexCombine","address":"005741c8","type":"GrTexCombineImportProc *","length":4}
+{"name":"g_GrTexDownloadMipMap","address":"005741d8","type":"GrTexDownloadMipMapImportProc *","length":4}
+{"name":"g_GrTexFilterMode","address":"00574200","type":"GrTexFilterModeImportProc *","length":4}
+{"name":"g_GrTexMaxAddress","address":"00574210","type":"GrTexMaxAddressImportProc *","length":4}
+{"name":"g_GrTexMinAddress","address":"00574218","type":"GrTexMinAddressImportProc *","length":4}
+{"name":"g_GrTexMipMapMode","address":"00574220","type":"GrTexMipMapModeImportProc *","length":4}
+{"name":"g_GrTexSource","address":"00574240","type":"GrTexSourceImportProc *","length":4}
+{"name":"g_GrVertexLayout","address":"00574250","type":"GrVertexLayoutImportProc *","length":4}
+{"name":"g_GrViewport","address":"00574258","type":"GrViewportImportProc *","length":4}
+{"name":"g_GuGammaCorrectionRGB","address":"00574290","type":"GuGammaCorrectionRGBImportProc *","length":4}
+{"name":"g_WinSock_accept","address":"005742a0","type":"WinSock_acceptProc *","length":4}
+{"name":"g_WinSock_bind","address":"005742a4","type":"WinSock_bindProc *","length":4}
+{"name":"g_WinSock_closesocket","address":"005742a8","type":"WinSock_closesocketProc *","length":4}
+{"name":"g_WinSock_connect","address":"005742ac","type":"WinSock_connectProc *","length":4}
+{"name":"g_WinSock_getpeername","address":"005742b0","type":"WinSock_getpeernameProc *","length":4}
+{"name":"g_WinSock_getsockname","address":"005742b4","type":"WinSock_getsocknameProc *","length":4}
+{"name":"g_WinSock_getsockopt","address":"005742b8","type":"WinSock_getsockoptProc *","length":4}
+{"name":"g_WinSock_htonl","address":"005742bc","type":"WinSock_htonlProc *","length":4}
+{"name":"g_WinSock_htons","address":"005742c0","type":"WinSock_htonsProc *","length":4}
+{"name":"g_WinSock_inet_addr","address":"005742c4","type":"WinSock_inet_addrProc *","length":4}
+{"name":"g_WinSock_inet_ntoa","address":"005742c8","type":"WinSock_inet_ntoaProc *","length":4}
+{"name":"g_WinSock_ioctlsocket","address":"005742cc","type":"WinSock_ioctlsocketProc *","length":4}
+{"name":"g_WinSock_listen","address":"005742d0","type":"WinSock_listenProc *","length":4}
+{"name":"g_WinSock_ntohl","address":"005742d4","type":"WinSock_ntohlProc *","length":4}
+{"name":"g_WinSock_ntohs","address":"005742d8","type":"WinSock_ntohsProc *","length":4}
+{"name":"g_WinSock_recv","address":"005742dc","type":"WinSock_recvProc *","length":4}
+{"name":"g_WinSock_recvfrom","address":"005742e0","type":"WinSock_recvfromProc *","length":4}
+{"name":"g_WinSock_select","address":"005742e4","type":"WinSock_selectProc *","length":4}
+{"name":"g_WinSock_send","address":"005742e8","type":"WinSock_sendProc *","length":4}
+{"name":"g_WinSock_sendto","address":"005742ec","type":"WinSock_sendtoProc *","length":4}
+{"name":"g_WinSock_setsockopt","address":"005742f0","type":"WinSock_setsockoptProc *","length":4}
+{"name":"g_WinSock_shutdown","address":"005742f4","type":"WinSock_shutdownProc *","length":4}
+{"name":"g_WinSock_socket","address":"005742f8","type":"WinSock_socketProc *","length":4}
+{"name":"g_WinSock_gethostbyaddr","address":"005742fc","type":"WinSock_gethostbyaddrProc *","length":4}
+{"name":"g_WinSock_gethostbyname","address":"00574300","type":"WinSock_gethostbynameProc *","length":4}
+{"name":"g_WinSock_gethostname","address":"00574304","type":"WinSock_gethostnameProc *","length":4}
+{"name":"g_WinSock_getprotobyname","address":"00574308","type":"WinSock_getprotobynameProc *","length":4}
+{"name":"g_WinSock_getprotobynumber","address":"0057430c","type":"WinSock_getprotobynumberProc *","length":4}
+{"name":"g_WinSock_getservbyname","address":"00574310","type":"WinSock_getservbynameProc *","length":4}
+{"name":"g_WinSock_getservbyport","address":"00574314","type":"WinSock_getservbyportProc *","length":4}
+{"name":"g_WinSock_WSAAsyncGetHostByAddr","address":"00574318","type":"WinSock_WSAAsyncGetHostByAddrProc *","length":4}
+{"name":"g_WinSock_WSAAsyncGetHostByName","address":"0057431c","type":"WinSock_WSAAsyncGetHostByNameProc *","length":4}
+{"name":"g_WinSock_WSAAsyncGetProtoByName","address":"00574320","type":"WinSock_WSAAsyncGetProtoByNameProc *","length":4}
+{"name":"g_WinSock_WSAAsyncGetProtoByNumber","address":"00574324","type":"WinSock_WSAAsyncGetProtoByNumberProc *","length":4}
+{"name":"g_WinSock_WSAAsyncGetServByName","address":"00574328","type":"WinSock_WSAAsyncGetServByNameProc *","length":4}
+{"name":"g_WinSock_WSAAsyncGetServByPort","address":"0057432c","type":"WinSock_WSAAsyncGetServByPortProc *","length":4}
+{"name":"g_WinSock_WSAAsyncSelect","address":"00574330","type":"WinSock_WSAAsyncSelectProc *","length":4}
+{"name":"g_WinSock_WSACancelAsyncRequest","address":"00574334","type":"WinSock_WSACancelAsyncRequestProc *","length":4}
+{"name":"g_WinSock_WSACancelBlockingCall","address":"00574338","type":"WinSock_WSACancelBlockingCallProc *","length":4}
+{"name":"g_WinSock_WSACleanup","address":"0057433c","type":"WinSock_WSACleanupProc *","length":4}
+{"name":"g_WinSock_WSAGetLastError","address":"00574340","type":"WinSock_WSAGetLastErrorProc *","length":4}
+{"name":"g_WinSock_WSAIsBlocking","address":"00574344","type":"WinSock_WSAIsBlockingProc *","length":4}
+{"name":"g_WinSock_WSASetBlockingHook","address":"00574348","type":"WinSock_WSASetBlockingHookProc *","length":4}
+{"name":"g_WinSock_UnboundApiSlot34C","address":"0057434c","type":"dword","length":4}
+{"name":"g_WinSock_WSAStartup","address":"00574350","type":"WinSock_WSAStartupProc *","length":4}
+{"name":"g_WinSock_WSAUnhookBlockingHook","address":"00574354","type":"WinSock_WSAUnhookBlockingHookProc *","length":4}
+{"name":"g_Ws2_32_accept","address":"00574358","type":"WinSock_acceptProc *","length":4}
+{"name":"g_Ws2_32_bind","address":"0057435c","type":"WinSock_bindProc *","length":4}
+{"name":"g_Ws2_32_closesocket","address":"00574360","type":"WinSock_closesocketProc *","length":4}
+{"name":"g_Ws2_32_connect","address":"00574364","type":"WinSock_connectProc *","length":4}
+{"name":"g_Ws2_32_getpeername","address":"00574368","type":"WinSock_getpeernameProc *","length":4}
+{"name":"g_Ws2_32_getsockname","address":"0057436c","type":"WinSock_getsocknameProc *","length":4}
+{"name":"g_Ws2_32_getsockopt","address":"00574370","type":"WinSock_getsockoptProc *","length":4}
+{"name":"g_Ws2_32_htonl","address":"00574374","type":"WinSock_htonlProc *","length":4}
+{"name":"g_Ws2_32_htons","address":"00574378","type":"WinSock_htonsProc *","length":4}
+{"name":"g_Ws2_32_ioctlsocket","address":"0057437c","type":"WinSock_ioctlsocketProc *","length":4}
+{"name":"g_Ws2_32_listen","address":"00574380","type":"WinSock_listenProc *","length":4}
+{"name":"g_Ws2_32_ntohl","address":"00574384","type":"WinSock_ntohlProc *","length":4}
+{"name":"g_Ws2_32_ntohs","address":"00574388","type":"WinSock_ntohsProc *","length":4}
+{"name":"g_Ws2_32_recv","address":"0057438c","type":"WinSock_recvProc *","length":4}
+{"name":"g_Ws2_32_recvfrom","address":"00574390","type":"WinSock_recvfromProc *","length":4}
+{"name":"g_Ws2_32_select","address":"00574394","type":"WinSock_selectProc *","length":4}
+{"name":"g_Ws2_32_send","address":"00574398","type":"WinSock_sendProc *","length":4}
+{"name":"g_Ws2_32_sendto","address":"0057439c","type":"WinSock_sendtoProc *","length":4}
+{"name":"g_Ws2_32_setsockopt","address":"005743a0","type":"WinSock_setsockoptProc *","length":4}
+{"name":"g_Ws2_32_shutdown","address":"005743a4","type":"WinSock_shutdownProc *","length":4}
+{"name":"g_Ws2_32_socket","address":"005743a8","type":"WinSock_socketProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncSelect","address":"005743b0","type":"WinSock_WSAAsyncSelectProc *","length":4}
+{"name":"g_Ws2_32_WSACancelBlockingCall","address":"005743b4","type":"WinSock_WSACancelBlockingCallProc *","length":4}
+{"name":"g_Ws2_32_WSACleanup","address":"005743b8","type":"WinSock_WSACleanupProc *","length":4}
+{"name":"g_Ws2_32_WSAGetLastError","address":"005743d8","type":"WinSock_WSAGetLastErrorProc *","length":4}
+{"name":"g_Ws2_32_WSAIoctl","address":"005743ec","type":"WSAIoctl_Proc *","length":4}
+{"name":"g_Ws2_32_WSAIsBlocking","address":"005743f0","type":"WinSock_WSAIsBlockingProc *","length":4}
+{"name":"g_Ws2_32_WSASetBlockingHook","address":"0057441c","type":"WinSock_WSASetBlockingHookProc *","length":4}
+{"name":"g_Ws2_32_WSAStartup","address":"0057442c","type":"WinSock_WSAStartupProc *","length":4}
+{"name":"g_Ws2_32_WSAUnhookBlockingHook","address":"00574430","type":"WinSock_WSAUnhookBlockingHookProc *","length":4}
+{"name":"g_Ws2_32_inet_addr","address":"00574438","type":"WinSock_inet_addrProc *","length":4}
+{"name":"g_Ws2_32_inet_ntoa","address":"0057443c","type":"WinSock_inet_ntoaProc *","length":4}
+{"name":"g_Ws2_32_gethostbyaddr","address":"00574440","type":"WinSock_gethostbyaddrProc *","length":4}
+{"name":"g_Ws2_32_gethostbyname","address":"00574444","type":"WinSock_gethostbynameProc *","length":4}
+{"name":"g_Ws2_32_gethostname","address":"00574448","type":"WinSock_gethostnameProc *","length":4}
+{"name":"g_Ws2_32_getprotobyname","address":"0057444c","type":"WinSock_getprotobynameProc *","length":4}
+{"name":"g_Ws2_32_getprotobynumber","address":"00574450","type":"WinSock_getprotobynumberProc *","length":4}
+{"name":"g_Ws2_32_getservbyname","address":"00574454","type":"WinSock_getservbynameProc *","length":4}
+{"name":"g_Ws2_32_getservbyport","address":"00574458","type":"WinSock_getservbyportProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncGetHostByAddr","address":"0057445c","type":"WinSock_WSAAsyncGetHostByAddrProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncGetHostByName","address":"00574460","type":"WinSock_WSAAsyncGetHostByNameProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncGetProtoByName","address":"00574464","type":"WinSock_WSAAsyncGetProtoByNameProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncGetProtoByNumber","address":"00574468","type":"WinSock_WSAAsyncGetProtoByNumberProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncGetServByName","address":"0057446c","type":"WinSock_WSAAsyncGetServByNameProc *","length":4}
+{"name":"g_Ws2_32_WSAAsyncGetServByPort","address":"00574470","type":"WinSock_WSAAsyncGetServByPortProc *","length":4}
+{"name":"g_Ws2_32_WSACancelAsyncRequest","address":"00574474","type":"WinSock_WSACancelAsyncRequestProc *","length":4}
+{"name":"g_Ws2_32_WSAAddressToStringA","address":"00574478","type":"WSAAddressToStringA_Proc *","length":4}
+{"name":"g_Ws2_32_WSAStringToAddressA","address":"005744a0","type":"WSAStringToAddressA_Proc *","length":4}
+{"name":"dynapi_0","address":"005744a4","type":"TerminatedCString","length":9}
+{"name":"dynapi_1","address":"005744ae","type":"TerminatedCString","length":6}
+{"name":"dynapi_2","address":"005744b4","type":"TerminatedCString","length":6}
+{"name":"dynapi_3","address":"005744ba","type":"TerminatedCString","length":7}
+{"name":"dynapi_4","address":"005744c2","type":"TerminatedCString","length":7}
+{"name":"dynapi_5","address":"005744ca","type":"TerminatedCString","length":8}
+{"name":"dynapi_6","address":"005744d2","type":"TerminatedCString","length":9}
+{"name":"s_Wsock32ModuleName","address":"005744dc","type":"TerminatedCString","length":8}
+{"name":"s_Ws2_32ModuleName","address":"005744e4","type":"TerminatedCString","length":7}
+{"name":"dynapi_9","address":"005744ec","type":"TerminatedCString","length":13}
+{"name":"dynapi_10","address":"005744fa","type":"TerminatedCString","length":12}
+{"name":"dynapi_11","address":"00574506","type":"TerminatedCString","length":14}
+{"name":"dynapi_12","address":"00574514","type":"TerminatedCString","length":17}
+{"name":"dynapi_13","address":"00574526","type":"TerminatedCString","length":12}
+{"name":"dynapi_14","address":"00574532","type":"TerminatedCString","length":13}
+{"name":"dynapi_15","address":"00574540","type":"TerminatedCString","length":14}
+{"name":"dynapi_16","address":"0057454e","type":"TerminatedCString","length":16}
+{"name":"dynapi_17","address":"0057455e","type":"TerminatedCString","length":17}
+{"name":"dynapi_18","address":"00574570","type":"TerminatedCString","length":21}
+{"name":"dynapi_19","address":"00574586","type":"TerminatedCString","length":19}
+{"name":"dynapi_20","address":"0057459a","type":"TerminatedCString","length":18}
+{"name":"dynapi_21","address":"005745ac","type":"TerminatedCString","length":22}
+{"name":"dynapi_22","address":"005745c2","type":"TerminatedCString","length":25}
+{"name":"dynapi_23","address":"005745dc","type":"TerminatedCString","length":29}
+{"name":"dynapi_24","address":"005745fa","type":"TerminatedCString","length":21}
+{"name":"dynapi_25","address":"00574610","type":"TerminatedCString","length":25}
+{"name":"dynapi_26","address":"0057462a","type":"TerminatedCString","length":19}
+{"name":"dynapi_27","address":"0057463e","type":"TerminatedCString","length":32}
+{"name":"dynapi_28","address":"0057465e","type":"TerminatedCString","length":23}
+{"name":"dynapi_29","address":"00574676","type":"TerminatedCString","length":29}
+{"name":"dynapi_30","address":"00574694","type":"TerminatedCString","length":18}
+{"name":"dynapi_31","address":"005746a6","type":"TerminatedCString","length":16}
+{"name":"dynapi_32","address":"005746b6","type":"TerminatedCString","length":19}
+{"name":"dynapi_33","address":"005746ca","type":"TerminatedCString","length":20}
+{"name":"dynapi_34","address":"005746de","type":"TerminatedCString","length":17}
+{"name":"dynapi_35","address":"005746f0","type":"TerminatedCString","length":21}
+{"name":"dynapi_36","address":"00574706","type":"TerminatedCString","length":17}
+{"name":"dynapi_37","address":"00574718","type":"TerminatedCString","length":19}
+{"name":"dynapi_38","address":"0057472c","type":"TerminatedCString","length":15}
+{"name":"dynapi_39","address":"0057473c","type":"TerminatedCString","length":24}
+{"name":"dynapi_40","address":"00574754","type":"TerminatedCString","length":21}
+{"name":"dynapi_41","address":"0057476a","type":"TerminatedCString","length":14}
+{"name":"dynapi_42","address":"00574778","type":"TerminatedCString","length":20}
+{"name":"dynapi_43","address":"0057478c","type":"TerminatedCString","length":25}
+{"name":"dynapi_44","address":"005747a6","type":"TerminatedCString","length":21}
+{"name":"dynapi_45","address":"005747bc","type":"TerminatedCString","length":15}
+{"name":"dynapi_46","address":"005747cc","type":"TerminatedCString","length":16}
+{"name":"dynapi_47","address":"005747dc","type":"TerminatedCString","length":13}
+{"name":"dynapi_48","address":"005747ea","type":"TerminatedCString","length":23}
+{"name":"dynapi_49","address":"00574802","type":"TerminatedCString","length":16}
+{"name":"dynapi_50","address":"00574812","type":"TerminatedCString","length":14}
+{"name":"dynapi_51","address":"00574820","type":"TerminatedCString","length":15}
+{"name":"dynapi_52","address":"00574830","type":"TerminatedCString","length":19}
+{"name":"dynapi_53","address":"00574844","type":"TerminatedCString","length":22}
+{"name":"dynapi_54","address":"0057485a","type":"TerminatedCString","length":32}
+{"name":"dynapi_55","address":"0057487a","type":"TerminatedCString","length":12}
+{"name":"dynapi_56","address":"00574886","type":"TerminatedCString","length":22}
+{"name":"dynapi_57","address":"0057489c","type":"TerminatedCString","length":12}
+{"name":"dynapi_58","address":"005748a8","type":"TerminatedCString","length":11}
+{"name":"dynapi_59","address":"005748b4","type":"TerminatedCString","length":19}
+{"name":"dynapi_60","address":"005748c8","type":"TerminatedCString","length":13}
+{"name":"dynapi_61","address":"005748d6","type":"TerminatedCString","length":14}
+{"name":"dynapi_62","address":"005748e4","type":"TerminatedCString","length":10}
+{"name":"dynapi_63","address":"005748ee","type":"TerminatedCString","length":20}
+{"name":"dynapi_64","address":"00574902","type":"TerminatedCString","length":15}
+{"name":"dynapi_65","address":"00574912","type":"TerminatedCString","length":19}
+{"name":"dynapi_66","address":"00574926","type":"TerminatedCString","length":26}
+{"name":"dynapi_67","address":"00574940","type":"TerminatedCString","length":15}
+{"name":"dynapi_68","address":"00574950","type":"TerminatedCString","length":19}
+{"name":"dynapi_69","address":"00574964","type":"TerminatedCString","length":26}
+{"name":"dynapi_70","address":"0057497e","type":"TerminatedCString","length":19}
+{"name":"dynapi_71","address":"00574992","type":"TerminatedCString","length":22}
+{"name":"dynapi_72","address":"005749a8","type":"TerminatedCString","length":22}
+{"name":"dynapi_73","address":"005749be","type":"TerminatedCString","length":14}
+{"name":"dynapi_74","address":"005749cc","type":"TerminatedCString","length":20}
+{"name":"dynapi_75","address":"005749e0","type":"TerminatedCString","length":15}
+{"name":"dynapi_76","address":"005749f0","type":"TerminatedCString","length":21}
+{"name":"dynapi_77","address":"00574a06","type":"TerminatedCString","length":21}
+{"name":"dynapi_78","address":"00574a1c","type":"TerminatedCString","length":22}
+{"name":"dynapi_79","address":"00574a32","type":"TerminatedCString","length":18}
+{"name":"dynapi_80","address":"00574a44","type":"TerminatedCString","length":11}
+{"name":"dynapi_81","address":"00574a50","type":"TerminatedCString","length":19}
+{"name":"dynapi_82","address":"00574a64","type":"TerminatedCString","length":15}
+{"name":"dynapi_83","address":"00574a74","type":"TerminatedCString","length":15}
+{"name":"dynapi_84","address":"00574a84","type":"TerminatedCString","length":17}
+{"name":"dynapi_85","address":"00574a96","type":"TerminatedCString","length":17}
+{"name":"dynapi_86","address":"00574aa8","type":"TerminatedCString","length":25}
+{"name":"dynapi_87","address":"00574ac2","type":"TerminatedCString","length":22}
+{"name":"dynapi_88","address":"00574ad8","type":"TerminatedCString","length":24}
+{"name":"dynapi_89","address":"00574af0","type":"TerminatedCString","length":19}
+{"name":"dynapi_90","address":"00574b04","type":"TerminatedCString","length":17}
+{"name":"dynapi_91","address":"00574b16","type":"TerminatedCString","length":23}
+{"name":"dynapi_92","address":"00574b2e","type":"TerminatedCString","length":24}
+{"name":"dynapi_93","address":"00574b46","type":"TerminatedCString","length":29}
+{"name":"dynapi_94","address":"00574b64","type":"TerminatedCString","length":36}
+{"name":"dynapi_95","address":"00574b88","type":"TerminatedCString","length":22}
+{"name":"dynapi_96","address":"00574b9e","type":"TerminatedCString","length":30}
+{"name":"dynapi_97","address":"00574bbc","type":"TerminatedCString","length":20}
+{"name":"dynapi_98","address":"00574bd0","type":"TerminatedCString","length":21}
+{"name":"dynapi_99","address":"00574be6","type":"TerminatedCString","length":19}
+{"name":"dynapi_100","address":"00574bfa","type":"TerminatedCString","length":19}
+{"name":"dynapi_101","address":"00574c0e","type":"TerminatedCString","length":20}
+{"name":"dynapi_102","address":"00574c22","type":"TerminatedCString","length":18}
+{"name":"dynapi_103","address":"00574c34","type":"TerminatedCString","length":26}
+{"name":"dynapi_104","address":"00574c4e","type":"TerminatedCString","length":17}
+{"name":"dynapi_105","address":"00574c60","type":"TerminatedCString","length":16}
+{"name":"dynapi_106","address":"00574c70","type":"TerminatedCString","length":27}
+{"name":"dynapi_107","address":"00574c8c","type":"TerminatedCString","length":19}
+{"name":"dynapi_108","address":"00574ca0","type":"TerminatedCString","length":15}
+{"name":"dynapi_109","address":"00574cb0","type":"TerminatedCString","length":16}
+{"name":"dynapi_110","address":"00574cc0","type":"TerminatedCString","length":13}
+{"name":"dynapi_111","address":"00574cce","type":"TerminatedCString","length":20}
+{"name":"dynapi_112","address":"00574ce2","type":"TerminatedCString","length":21}
+{"name":"dynapi_113","address":"00574cf8","type":"TerminatedCString","length":24}
+{"name":"dynapi_114","address":"00574d10","type":"TerminatedCString","length":22}
+{"name":"dynapi_115","address":"00574d26","type":"TerminatedCString","length":25}
+{"name":"s_Wsock32Export_accept","address":"00574d40","type":"TerminatedCString","length":7}
+{"name":"s_Wsock32Export_bind","address":"00574d48","type":"TerminatedCString","length":5}
+{"name":"s_Wsock32Export_closesocket","address":"00574d4e","type":"TerminatedCString","length":12}
+{"name":"s_Wsock32Export_connect","address":"00574d5a","type":"TerminatedCString","length":8}
+{"name":"s_Wsock32Export_getpeername","address":"00574d62","type":"TerminatedCString","length":12}
+{"name":"s_Wsock32Export_getsockname","address":"00574d6e","type":"TerminatedCString","length":12}
+{"name":"s_Wsock32Export_getsockopt","address":"00574d7a","type":"TerminatedCString","length":11}
+{"name":"s_Wsock32Export_htonl","address":"00574d86","type":"TerminatedCString","length":6}
+{"name":"s_Wsock32Export_htons","address":"00574d8c","type":"TerminatedCString","length":6}
+{"name":"s_Wsock32Export_inet_addr","address":"00574d92","type":"TerminatedCString","length":10}
+{"name":"s_Wsock32Export_inet_ntoa","address":"00574d9c","type":"TerminatedCString","length":10}
+{"name":"s_Wsock32Export_ioctlsocket","address":"00574da6","type":"TerminatedCString","length":12}
+{"name":"s_Wsock32Export_listen","address":"00574db2","type":"TerminatedCString","length":7}
+{"name":"s_Wsock32Export_ntohl","address":"00574dba","type":"TerminatedCString","length":6}
+{"name":"s_Wsock32Export_ntohs","address":"00574dc0","type":"TerminatedCString","length":6}
+{"name":"s_Wsock32Export_recv","address":"00574dc6","type":"TerminatedCString","length":5}
+{"name":"s_Wsock32Export_recvfrom","address":"00574dcc","type":"TerminatedCString","length":9}
+{"name":"s_Wsock32Export_select","address":"00574dd6","type":"TerminatedCString","length":7}
+{"name":"s_Wsock32Export_send","address":"00574dde","type":"TerminatedCString","length":5}
+{"name":"s_Wsock32Export_sendto","address":"00574de4","type":"TerminatedCString","length":7}
+{"name":"s_Wsock32Export_setsockopt","address":"00574dec","type":"TerminatedCString","length":11}
+{"name":"s_Wsock32Export_shutdown","address":"00574df8","type":"TerminatedCString","length":9}
+{"name":"s_Wsock32Export_socket","address":"00574e02","type":"TerminatedCString","length":7}
+{"name":"s_Wsock32Export_gethostbyaddr","address":"00574e0a","type":"TerminatedCString","length":14}
+{"name":"s_Wsock32Export_gethostbyname","address":"00574e18","type":"TerminatedCString","length":14}
+{"name":"s_Wsock32Export_gethostname","address":"00574e26","type":"TerminatedCString","length":12}
+{"name":"s_Wsock32Export_getprotobyname","address":"00574e32","type":"TerminatedCString","length":15}
+{"name":"s_Wsock32Export_getprotobynumber","address":"00574e42","type":"TerminatedCString","length":17}
+{"name":"s_Wsock32Export_getservbyname","address":"00574e54","type":"TerminatedCString","length":14}
+{"name":"s_Wsock32Export_getservbyport","address":"00574e62","type":"TerminatedCString","length":14}
+{"name":"s_Wsock32Export_WSAAsyncGetHostByAddr","address":"00574e70","type":"TerminatedCString","length":22}
+{"name":"s_Wsock32Export_WSAAsyncGetHostByName","address":"00574e86","type":"TerminatedCString","length":22}
+{"name":"s_Wsock32Export_WSAAsyncGetProtoByName","address":"00574e9c","type":"TerminatedCString","length":23}
+{"name":"s_Wsock32Export_WSAAsyncGetProtoByNumber","address":"00574eb4","type":"TerminatedCString","length":25}
+{"name":"s_Wsock32Export_WSAAsyncGetServByName","address":"00574ece","type":"TerminatedCString","length":22}
+{"name":"s_Wsock32Export_WSAAsyncGetServByPort","address":"00574ee4","type":"TerminatedCString","length":22}
+{"name":"s_Wsock32Export_WSAAsyncSelect","address":"00574efa","type":"TerminatedCString","length":15}
+{"name":"s_Wsock32Export_WSACancelAsyncRequest","address":"00574f0a","type":"TerminatedCString","length":22}
+{"name":"s_Wsock32Export_WSACancelBlockingCall","address":"00574f20","type":"TerminatedCString","length":22}
+{"name":"s_Wsock32Export_WSACleanup","address":"00574f36","type":"TerminatedCString","length":11}
+{"name":"s_Wsock32Export_WSAGetLastError","address":"00574f42","type":"TerminatedCString","length":16}
+{"name":"s_Wsock32Export_WSAIsBlocking","address":"00574f52","type":"TerminatedCString","length":14}
+{"name":"s_Wsock32Export_WSASetBlockingHook","address":"00574f60","type":"TerminatedCString","length":19}
+{"name":"dynapi_159","address":"00574f74","type":"TerminatedCString","length":16}
+{"name":"s_Wsock32Export_WSAStartup","address":"00574f84","type":"TerminatedCString","length":11}
+{"name":"s_Wsock32Export_WSAUnhookBlockingHook","address":"00574f90","type":"TerminatedCString","length":22}
+{"name":"s_Ws2_32Export_accept","address":"00574fa6","type":"TerminatedCString","length":7}
+{"name":"s_Ws2_32Export_bind","address":"00574fae","type":"TerminatedCString","length":5}
+{"name":"s_Ws2_32Export_closesocket","address":"00574fb4","type":"TerminatedCString","length":12}
+{"name":"s_Ws2_32Export_connect","address":"00574fc0","type":"TerminatedCString","length":8}
+{"name":"s_Ws2_32Export_getpeername","address":"00574fc8","type":"TerminatedCString","length":12}
+{"name":"s_Ws2_32Export_getsockname","address":"00574fd4","type":"TerminatedCString","length":12}
+{"name":"s_Ws2_32Export_getsockopt","address":"00574fe0","type":"TerminatedCString","length":11}
+{"name":"s_Ws2_32Export_htonl","address":"00574fec","type":"TerminatedCString","length":6}
+{"name":"s_Ws2_32Export_htons","address":"00574ff2","type":"TerminatedCString","length":6}
+{"name":"s_Ws2_32Export_ioctlsocket","address":"00574ff8","type":"TerminatedCString","length":12}
+{"name":"s_Ws2_32Export_listen","address":"00575004","type":"TerminatedCString","length":7}
+{"name":"s_Ws2_32Export_ntohl","address":"0057500c","type":"TerminatedCString","length":6}
+{"name":"s_Ws2_32Export_ntohs","address":"00575012","type":"TerminatedCString","length":6}
+{"name":"s_Ws2_32Export_recv","address":"00575018","type":"TerminatedCString","length":5}
+{"name":"s_Ws2_32Export_recvfrom","address":"0057501e","type":"TerminatedCString","length":9}
+{"name":"s_Ws2_32Export_select","address":"00575028","type":"TerminatedCString","length":7}
+{"name":"s_Ws2_32Export_send","address":"00575030","type":"TerminatedCString","length":5}
+{"name":"s_Ws2_32Export_sendto","address":"00575036","type":"TerminatedCString","length":7}
+{"name":"s_Ws2_32Export_setsockopt","address":"0057503e","type":"TerminatedCString","length":11}
+{"name":"s_Ws2_32Export_shutdown","address":"0057504a","type":"TerminatedCString","length":9}
+{"name":"s_Ws2_32Export_socket","address":"00575054","type":"TerminatedCString","length":7}
+{"name":"dynapi_183","address":"0057505c","type":"TerminatedCString","length":10}
+{"name":"s_Ws2_32Export_WSAAsyncSelect","address":"00575066","type":"TerminatedCString","length":15}
+{"name":"s_Ws2_32Export_WSACancelBlockingCall","address":"00575076","type":"TerminatedCString","length":22}
+{"name":"s_Ws2_32Export_WSACleanup","address":"0057508c","type":"TerminatedCString","length":11}
+{"name":"dynapi_187","address":"00575098","type":"TerminatedCString","length":14}
+{"name":"dynapi_188","address":"005750a6","type":"TerminatedCString","length":11}
+{"name":"dynapi_189","address":"005750b2","type":"TerminatedCString","length":15}
+{"name":"dynapi_190","address":"005750c2","type":"TerminatedCString","length":20}
+{"name":"dynapi_191","address":"005750d6","type":"TerminatedCString","length":21}
+{"name":"dynapi_192","address":"005750ec","type":"TerminatedCString","length":18}
+{"name":"dynapi_193","address":"005750fe","type":"TerminatedCString","length":15}
+{"name":"s_Ws2_32Export_WSAGetLastError","address":"0057510e","type":"TerminatedCString","length":16}
+{"name":"dynapi_195","address":"0057511e","type":"TerminatedCString","length":23}
+{"name":"dynapi_196","address":"00575136","type":"TerminatedCString","length":16}
+{"name":"dynapi_197","address":"00575146","type":"TerminatedCString","length":9}
+{"name":"dynapi_198","address":"00575150","type":"TerminatedCString","length":9}
+{"name":"dynapi_199","address":"0057515a","type":"TerminatedCString","length":9}
+{"name":"s_Ws2_32Export_WSAIsBlocking","address":"00575164","type":"TerminatedCString","length":14}
+{"name":"dynapi_201","address":"00575172","type":"TerminatedCString","length":12}
+{"name":"dynapi_202","address":"0057517e","type":"TerminatedCString","length":9}
+{"name":"dynapi_203","address":"00575188","type":"TerminatedCString","length":9}
+{"name":"dynapi_204","address":"00575192","type":"TerminatedCString","length":8}
+{"name":"dynapi_205","address":"0057519a","type":"TerminatedCString","length":18}
+{"name":"dynapi_206","address":"005751ac","type":"TerminatedCString","length":12}
+{"name":"dynapi_207","address":"005751b8","type":"TerminatedCString","length":14}
+{"name":"dynapi_208","address":"005751c6","type":"TerminatedCString","length":8}
+{"name":"dynapi_209","address":"005751ce","type":"TerminatedCString","length":18}
+{"name":"dynapi_210","address":"005751e0","type":"TerminatedCString","length":10}
+{"name":"s_Ws2_32Export_WSASetBlockingHook","address":"005751ea","type":"TerminatedCString","length":19}
+{"name":"dynapi_212","address":"005751fe","type":"TerminatedCString","length":12}
+{"name":"dynapi_213","address":"0057520a","type":"TerminatedCString","length":16}
+{"name":"dynapi_214","address":"0057521a","type":"TerminatedCString","length":11}
+{"name":"s_Ws2_32Export_WSAStartup","address":"00575226","type":"TerminatedCString","length":11}
+{"name":"s_Ws2_32Export_WSAUnhookBlockingHook","address":"00575232","type":"TerminatedCString","length":22}
+{"name":"dynapi_217","address":"00575248","type":"TerminatedCString","length":25}
+{"name":"s_Ws2_32Export_inet_addr","address":"00575262","type":"TerminatedCString","length":10}
+{"name":"s_Ws2_32Export_inet_ntoa","address":"0057526c","type":"TerminatedCString","length":10}
+{"name":"s_Ws2_32Export_gethostbyaddr","address":"00575276","type":"TerminatedCString","length":14}
+{"name":"s_Ws2_32Export_gethostbyname","address":"00575284","type":"TerminatedCString","length":14}
+{"name":"s_Ws2_32Export_gethostname","address":"00575292","type":"TerminatedCString","length":12}
+{"name":"s_Ws2_32Export_getprotobyname","address":"0057529e","type":"TerminatedCString","length":15}
+{"name":"s_Ws2_32Export_getprotobynumber","address":"005752ae","type":"TerminatedCString","length":17}
+{"name":"s_Ws2_32Export_getservbyname","address":"005752c0","type":"TerminatedCString","length":14}
+{"name":"s_Ws2_32Export_getservbyport","address":"005752ce","type":"TerminatedCString","length":14}
+{"name":"s_Ws2_32Export_WSAAsyncGetHostByAddr","address":"005752dc","type":"TerminatedCString","length":22}
+{"name":"s_Ws2_32Export_WSAAsyncGetHostByName","address":"005752f2","type":"TerminatedCString","length":22}
+{"name":"s_Ws2_32Export_WSAAsyncGetProtoByName","address":"00575308","type":"TerminatedCString","length":23}
+{"name":"s_Ws2_32Export_WSAAsyncGetProtoByNumber","address":"00575320","type":"TerminatedCString","length":25}
+{"name":"s_Ws2_32Export_WSAAsyncGetServByName","address":"0057533a","type":"TerminatedCString","length":22}
+{"name":"s_Ws2_32Export_WSAAsyncGetServByPort","address":"00575350","type":"TerminatedCString","length":22}
+{"name":"s_Ws2_32Export_WSACancelAsyncRequest","address":"00575366","type":"TerminatedCString","length":22}
+{"name":"dynapi_234","address":"0057537c","type":"TerminatedCString","length":20}
+{"name":"dynapi_235","address":"00575390","type":"TerminatedCString","length":27}
+{"name":"dynapi_236","address":"005753ac","type":"TerminatedCString","length":24}
+{"name":"dynapi_237","address":"005753c4","type":"TerminatedCString","length":33}
+{"name":"dynapi_238","address":"005753e6","type":"TerminatedCString","length":24}
+{"name":"dynapi_239","address":"005753fe","type":"TerminatedCString","length":23}
+{"name":"dynapi_240","address":"00575416","type":"TerminatedCString","length":20}
+{"name":"dynapi_241","address":"0057542a","type":"TerminatedCString","length":22}
+{"name":"dynapi_242","address":"00575440","type":"TerminatedCString","length":22}
+{"name":"dynapi_243","address":"00575456","type":"TerminatedCString","length":15}
+{"name":"dynapi_244","address":"00575466","type":"TerminatedCString","length":20}
+{"name":"g_FatalErrorNarrowBuffer","address":"00575480","type":"byte[1024]","length":1024}
+{"name":"g_Win32FileBytesTransferred","address":"00575950","type":"dword","length":4}
+{"name":"g_Win32FileCreationTimeOrDosDateScratch","address":"00575954","type":"undefined4","length":4}
+{"name":"g_Win32FileLastWriteTimeHighScratch","address":"00575968","type":"undefined4","length":4}
+{"name":"g_Win32DiskSectorsPerClusterScratch","address":"0057596c","type":"undefined4","length":4}
+{"name":"g_Win32DiskBytesPerSectorScratch","address":"00575970","type":"undefined4","length":4}
+{"name":"g_Win32DiskFreeClustersScratch","address":"00575974","type":"undefined4","length":4}
+{"name":"g_Win32DiskTotalClustersScratch","address":"00575978","type":"undefined4","length":4}
+{"name":"g_FileSystemInitComputerNameCapacityOrConfigCursor","address":"00575a94","type":"pointer","length":4}
+{"name":"g_FileSystemConfigRemainingBytes","address":"00575a98","type":"dword","length":4}
+{"name":"g_Win32PathScratchA","address":"00575a9c","type":"byte[256]","length":256}
+{"name":"g_Win32PathScratchB","address":"00575b9c","type":"byte[256]","length":256}
+{"name":"g_DirectInput","address":"00576b10","type":"IDirectInputA *","length":4}
+{"name":"g_MouseDevice","address":"00576b14","type":"IDirectInputDeviceA *","length":4}
+{"name":"GUID_SysMouse_Local","address":"00576b18","type":"TH_LEGACY_GUID","length":16}
+{"name":"GUID_XAxis_Local","address":"00576b28","type":"TH_LEGACY_GUID","length":16}
+{"name":"GUID_YAxis_Local","address":"00576b38","type":"TH_LEGACY_GUID","length":16}
+{"name":"GUID_ZAxis_Local","address":"00576b48","type":"TH_LEGACY_GUID","length":16}
+{"name":"MouseDataFormat","address":"00576b58","type":"DIDATAFORMAT","length":24}
+{"name":"MouseObjectFormats","address":"00576b70","type":"DIOBJECTDATAFORMAT[7]","length":112}
+{"name":"MouseBufferProperty","address":"00576be0","type":"DIPROPDWORD","length":20}
+{"name":"g_MouseDeviceDataCount","address":"00576bf4","type":"dword","length":4}
+{"name":"g_MousePollBusy","address":"00576bf8","type":"dword","length":4}
+{"name":"g_MouseDeviceEvent","address":"00576bfc","type":"DIDEVICEOBJECTDATA_DX3","length":16}
+{"name":"g_MouseX","address":"00576c0c","type":"UiPixelCoordinate","length":4}
+{"name":"g_MouseY","address":"00576c10","type":"UiPixelCoordinate","length":4}
+{"name":"g_MouseWheelDelta","address":"00576c14","type":"UiPointerWheelDelta","length":4}
+{"name":"g_MouseButtonMask","address":"00576c18","type":"GraphicsCursorButtonState","length":4}
+{"name":"g_MouseEventsProcessed","address":"00576c1c","type":"dword","length":4}
+{"name":"g_DirectInputMousePreviousDisplayModeHookCf","address":"00576c20","type":"SoftwareDisplayModeHookProc *","length":4}
+{"name":"g_DirectInputMouseRefreshCountdown","address":"00576c24","type":"UiFrameRefreshCountdownFrames","length":4}
+{"name":"IID_IDirectDraw2_Local","address":"00577c00","type":"TH_LEGACY_GUID","length":16}
+{"name":"IID_IDirectDrawSurface3_Local","address":"00577c10","type":"TH_LEGACY_GUID","length":16}
+{"name":"IID_IDirect3D2_Local","address":"00577c20","type":"TH_LEGACY_GUID","length":16}
+{"name":"IID_IDirect3DTexture2_Local","address":"00577c30","type":"TH_LEGACY_GUID","length":16}
+{"name":"g_DirectDraw","address":"00577c40","type":"IDirectDraw *","length":4}
+{"name":"g_DirectDraw2","address":"00577c44","type":"IDirectDraw2 *","length":4}
+{"name":"g_PrimarySurfaceBase","address":"00577c48","type":"IDirectDrawSurface *","length":4}
+{"name":"g_PrimarySurface3","address":"00577c4c","type":"IDirectDrawSurface3 *","length":4}
+{"name":"g_BackSurfaceBase","address":"00577c50","type":"IDirectDrawSurface *","length":4}
+{"name":"g_BackSurface3","address":"00577c54","type":"IDirectDrawSurface3 *","length":4}
+{"name":"g_Direct3D2","address":"00577c58","type":"IDirect3D2 *","length":4}
+{"name":"g_Direct3DDevice2","address":"00577c5c","type":"IDirect3DDevice2 *","length":4}
+{"name":"g_ZSurfaceBase","address":"00577c60","type":"IDirectDrawSurface *","length":4}
+{"name":"g_ZSurface3","address":"00577c64","type":"IDirectDrawSurface3 *","length":4}
+{"name":"g_Direct3DViewport2","address":"00577c68","type":"IDirect3DViewport2 *","length":4}
+{"name":"g_CurrentClearRect","address":"00577c70","type":"D3DRECT_DX6","length":16}
+{"name":"g_SurfaceDesc","address":"00577c80","type":"DDSURFACEDESC_DX6","length":108}
+{"name":"g_GraphicsCursorSurfaceDescScratch","address":"00577cf0","type":"dword","length":4}
+{"name":"g_GraphicsCursorSurfacePitchBytes","address":"00577d00","type":"sdword","length":4}
+{"name":"g_GraphicsCursorSurfacePixels","address":"00577d14","type":"byte *","length":4}
+{"name":"g_Direct3DViewportState","address":"00577d60","type":"D3DVIEWPORT2","length":44}
+{"name":"g_Direct3DOpaqueTextureFormatBitsPerPixel","address":"00577d9c","type":"undefined4","length":4}
+{"name":"g_Direct3DAlphaTextureFormatBitsPerPixel","address":"00577dbc","type":"undefined4","length":4}
+{"name":"g_Direct3DTextureFilterMode","address":"00577e10","type":"undefined4","length":4}
+{"name":"g_Direct3DTexturePerspectiveEnabled","address":"00577e14","type":"undefined4","length":4}
+{"name":"g_Direct3DAntialiasMode","address":"00577e18","type":"undefined4","length":4}
+{"name":"g_PrimitiveRenderStateCache","address":"00577e1c","type":"GraphicsPrimitiveRenderStateCache","length":16}
+{"name":"g_BoundTextureHandle","address":"00577e2c","type":"dword","length":4}
+{"name":"g_GraphicsDisplayModeFinalizeCf","address":"00577e30","type":"SoftwareDisplayModeHookProc *","length":4}
+{"name":"g_CursorCurrentVisibilityToken","address":"00577e34","type":"sdword","length":4}
+{"name":"g_CursorAlternateVisibilityToken","address":"00577e38","type":"sdword","length":4}
+{"name":"g_CursorCurrentDrawX","address":"00577e3c","type":"sdword","length":4}
+{"name":"g_CursorCurrentDrawY","address":"00577e40","type":"sdword","length":4}
+{"name":"g_CursorAlternateDrawX","address":"00577e44","type":"sdword","length":4}
+{"name":"g_CursorAlternateDrawY","address":"00577e48","type":"sdword","length":4}
+{"name":"g_GraphicsBackendAccessState","address":"00577e4c","type":"sdword","length":4}
+{"name":"g_PrimitiveRenderStatePresets","address":"00577e50","type":"GraphicsPrimitiveRenderStatePreset[5]","length":80}
+{"name":"g_GraphicsDispatchTable","address":"00577ea0","type":"GraphicsDispatchTable","length":280}
+{"name":"g_ImmediateTLVertices","address":"00577fc0","type":"D3DTLVERTEX_DX6[4]","length":128}
+{"name":"g_LastViewportRect","address":"00578040","type":"D3DRECT_DX6","length":16}
+{"name":"g_ImmediateVertexCount","address":"00578050","type":"dword","length":4}
+{"name":"g_TextureUseSerial","address":"00578054","type":"dword","length":4}
+{"name":"g_TexturePaletteEntries","address":"00578058","type":"DirectDrawPaletteEntry *","length":4}
+{"name":"g_GraphicsTextureSlots","address":"0057805c","type":"GraphicsTextureResource * *","length":4}
+{"name":"g_DisplayFramebufferAccess","address":"00578060","type":"SoftwareFramebufferAccess","length":16}
+{"name":"g_ActiveTextureUploads","address":"00578070","type":"dword","length":4}
+{"name":"g_GraphicsEnumerateAllDevicesFlag","address":"00578074","type":"dword","length":4}
+{"name":"s_D3DALL_00578078","address":"00578078","type":"string","length":7}
+{"name":"g_GlideSelectedResolutionQuery","address":"0057ece0","type":"undefined4","length":4}
+{"name":"g_GlideWindowContextHandle","address":"0057ed14","type":"undefined4","length":4}
+{"name":"g_GlideRuntimeActiveCount","address":"0057ed18","type":"undefined4","length":4}
+{"name":"g_GlidePrimaryLfbPixels","address":"0057ed24","type":"undefined4","length":4}
+{"name":"g_GlidePrimaryLfbStrideBytes","address":"0057ed28","type":"undefined4","length":4}
+{"name":"g_GlideSecondaryLfbStrideBytes","address":"0057ed3c","type":"undefined4","length":4}
+{"name":"g_GlideTextureRefreshHandlers","address":"0057ed48","type":"pointer[3]","length":12}
+{"name":"g_GlideVertex0ScreenX","address":"0057ed54","type":"dword","length":4}
+{"name":"g_GlideVertex0ScreenY","address":"0057ed58","type":"dword","length":4}
+{"name":"g_GlideVertex0ReciprocalDepth","address":"0057ed5c","type":"dword","length":4}
+{"name":"g_GlideVertex0PerspectiveScale","address":"0057ed60","type":"dword","length":4}
+{"name":"g_GlideVertex0ProjectedTextureU","address":"0057ed68","type":"dword","length":4}
+{"name":"g_GlideVertex0ProjectedTextureV","address":"0057ed6c","type":"dword","length":4}
+{"name":"g_GlideVertex0DiffuseColor","address":"0057ed70","type":"dword","length":4}
+{"name":"g_GlideVertex1ScreenX","address":"0057ed74","type":"dword","length":4}
+{"name":"g_GlideVertex1ScreenY","address":"0057ed78","type":"dword","length":4}
+{"name":"g_GlideVertex1ReciprocalDepth","address":"0057ed7c","type":"dword","length":4}
+{"name":"g_GlideVertex1PerspectiveScale","address":"0057ed80","type":"dword","length":4}
+{"name":"g_GlideVertex1ProjectedTextureU","address":"0057ed88","type":"dword","length":4}
+{"name":"g_GlideVertex1ProjectedTextureV","address":"0057ed8c","type":"dword","length":4}
+{"name":"g_GlideVertex1DiffuseColor","address":"0057ed90","type":"dword","length":4}
+{"name":"g_GlideVertex2ScreenX","address":"0057ed94","type":"dword","length":4}
+{"name":"g_GlideVertex2ScreenY","address":"0057ed98","type":"dword","length":4}
+{"name":"g_GlideVertex2ReciprocalDepth","address":"0057ed9c","type":"dword","length":4}
+{"name":"g_GlideVertex2PerspectiveScale","address":"0057eda0","type":"dword","length":4}
+{"name":"g_GlideVertex2ProjectedTextureU","address":"0057eda8","type":"dword","length":4}
+{"name":"g_GlideVertex2ProjectedTextureV","address":"0057edac","type":"dword","length":4}
+{"name":"g_GlideVertex2DiffuseColor","address":"0057edb0","type":"dword","length":4}
+{"name":"g_GlideTmuCount","address":"0057edc8","type":"dword","length":4}
+{"name":"g_GlideTextureColorUpload","address":"0057edcc","type":"GlideTextureUploadProc *[3]","length":12}
+{"name":"g_GlideTextureAlphaUpload","address":"0057edd8","type":"GlideTextureUploadProc *[3]","length":12}
+{"name":"g_GlideTexturingDisabledState","address":"0057ede4","type":"dword","length":4}
+{"name":"g_GlideBlendModeState","address":"0057ede8","type":"dword","length":4}
+{"name":"g_GlideDepthWriteEnabledState","address":"0057edec","type":"undefined4","length":4}
+{"name":"g_GlideBoundTexture","address":"0057edf0","type":"GraphicsTextureResource *","length":4}
+{"name":"g_GlideTmuMinAddress","address":"0057edf4","type":"dword[16]","length":64}
+{"name":"g_GlideTmuMaxAddress","address":"0057ee34","type":"dword[16]","length":64}
+{"name":"g_GlideResidentTextureTail","address":"0057ee74","type":"GraphicsTextureResource *","length":4}
+{"name":"g_GlideResidentTextureHead","address":"0057ee78","type":"GraphicsTextureResource *","length":4}
+{"name":"g_GlideSecondBufferOffset","address":"0057ee7c","type":"sdword","length":4}
+{"name":"g_GlideSecondBufferBase","address":"0057ee80","type":"byte *","length":4}
+{"name":"s_GLIDE_0057ee84","address":"0057ee84","type":"string","length":6}
+{"name":"g_DirectSound","address":"00582ee0","type":"IDirectSound *","length":4}
+{"name":"g_PrimarySoundBuffer","address":"00582ee4","type":"IDirectSoundBuffer *","length":4}
+{"name":"g_PrimaryVolume","address":"00582ee8","type":"TH_LEGACY_LONG","length":4}
+{"name":"g_PrimaryPan","address":"00582eec","type":"TH_LEGACY_LONG","length":4}
+{"name":"WaveFormat_PCM_22050_Stereo16","address":"00582ef0","type":"WAVEFORMATEX","length":18}
+{"name":"PrimarySoundBufferDesc","address":"00582f10","type":"DSBUFFERDESC_DX6","length":20}
+{"name":"g_DirectSoundVoiceSetRegistry","address":"00582f24","type":"DirectSoundVoiceSet * *","length":4}
+{"name":"s_SOUND_00582f28","address":"00582f28","type":"string","length":6}
+{"name":"g_DirectSoundGainAttenuation","address":"00582f2e","type":"sdword[129]","length":516}
+{"name":"g_NetworkBackendMode","address":"00583d60","type":"dword","length":4}
+{"name":"g_WinSockStartupData","address":"00583d64","type":"WinSockData11","length":398}
+{"name":"g_NetworkFallbackSocket","address":"00583ef2","type":"NetworkSocketHandle32","length":4}
+{"name":"g_NetworkFallbackAddressLength","address":"00583efa","type":"dword","length":4}
+{"name":"g_NetworkFallbackBindEndpoint","address":"00583efe","type":"WinSockAddress","length":16}
+{"name":"g_NetworkBackendActiveAddressFamily","address":"00583f0e","type":"dword","length":4}
+{"name":"g_NetworkBackendActiveSocketAddressLength","address":"00583f12","type":"dword","length":4}
+{"name":"g_NetworkBackendActiveSocketType","address":"00583f16","type":"dword","length":4}
+{"name":"g_NetworkBackendActiveProtocol","address":"00583f1a","type":"dword","length":4}
+{"name":"g_NetworkBackendPortNetworkOrderCarrier","address":"00583f1e","type":"dword","length":4}
+{"name":"g_NetworkBackendBindAddress","address":"00583f22","type":"NetworkBackendSocketAddress16","length":16}
+{"name":"NetworkBackendInstanceDescriptorPrefix_00584040","address":"00584040","type":"NetworkBackendInstanceDescriptorPrefix","length":56}
+{"name":"g_hInstance","address":"005856b0","type":"HINSTANCE","length":4}
+{"name":"g_MainWindow","address":"005856b4","type":"HWND","length":4}
+{"name":"g_WindowDestroyDepth","address":"005856b8","type":"dword","length":4}
+{"name":"g_AppActive","address":"005856bc","type":"dword","length":4}
+{"name":"g_MainMessage","address":"005856c0","type":"Win32Message32","length":28}
+{"name":"g_MainWindowClassInstanceHandle","address":"005856e8","type":"HINSTANCE","length":4}
+{"name":"g_MainWindowClassIconHandle","address":"005856ec","type":"HICON","length":4}
+{"name":"g_MainWindowClassCursorHandle","address":"005856f0","type":"HCURSOR","length":4}
+{"name":"g_Arena","address":"00585708","type":"ArenaState","length":20}
+{"name":"g_TimerSystemState","address":"0058571c","type":"TimerSystemState","length":256}
+{"name":"g_CommandLine","address":"0058581c","type":"CommandLineArgumentMirrorState500","length":1280}
+{"name":"sz_MainWindowTitle","address":"00585d1c","type":"TerminatedCString","length":15}
+{"name":"sz_MainWindowClass","address":"00585d2b","type":"TerminatedCString","length":17}
+{"name":"g_LocaleInfoScratch","address":"00586950","type":"byte[16]","length":16}
+{"name":"g_LocaleSystemState","address":"00586a70","type":"LocaleSystemState","length":256}
+{"name":"DWORD_0058c000","address":"0058c000","type":"dword","length":4}
+{"name":"PTR_ShowWindow_0058c08c","address":"0058c08c","type":"pointer","length":4}
+{"name":"PTR_UpdateWindow_0058c090","address":"0058c090","type":"pointer","length":4}
+{"name":"PTR_TranslateMessage_0058c094","address":"0058c094","type":"pointer","length":4}
+{"name":"PTR_CreateWindowExA_0058c098","address":"0058c098","type":"pointer","length":4}
+{"name":"PTR_DefWindowProcA_0058c09c","address":"0058c09c","type":"pointer","length":4}
+{"name":"PTR_DispatchMessageA_0058c0a0","address":"0058c0a0","type":"pointer","length":4}
+{"name":"PTR_FindWindowA_0058c0a4","address":"0058c0a4","type":"pointer","length":4}
+{"name":"PTR_PeekMessageA_0058c0a8","address":"0058c0a8","type":"pointer","length":4}
+{"name":"PTR_LoadCursorA_0058c0ac","address":"0058c0ac","type":"pointer","length":4}
+{"name":"PTR_LoadIconA_0058c0b0","address":"0058c0b0","type":"pointer","length":4}
+{"name":"PTR_RegisterClassA_0058c0b4","address":"0058c0b4","type":"pointer","length":4}
+{"name":"PTR_GetSystemMetrics_0058c0b8","address":"0058c0b8","type":"pointer","length":4}
+{"name":"PTR_DestroyWindow_0058c0bc","address":"0058c0bc","type":"pointer","length":4}
+{"name":"PTR_MessageBoxA_0058c0c0","address":"0058c0c0","type":"pointer","length":4}
+{"name":"PTR_SetCursor_0058c0c4","address":"0058c0c4","type":"pointer","length":4}
+{"name":"PTR_GetKeyState_0058c0c8","address":"0058c0c8","type":"pointer","length":4}
+{"name":"PTR_MsgWaitForMultipleObjects_0058c0d4","address":"0058c0d4","type":"pointer","length":4}
+{"name":"PTR_ExitProcess_0058c1d4","address":"0058c1d4","type":"pointer","length":4}
+{"name":"PTR_GetModuleHandleA_0058c1d8","address":"0058c1d8","type":"pointer","length":4}
+{"name":"PTR_HeapCreate_0058c1dc","address":"0058c1dc","type":"pointer","length":4}
+{"name":"PTR_HeapDestroy_0058c1e0","address":"0058c1e0","type":"pointer","length":4}
+{"name":"PTR_HeapAlloc_0058c1e4","address":"0058c1e4","type":"pointer","length":4}
+{"name":"PTR_HeapFree_0058c1e8","address":"0058c1e8","type":"pointer","length":4}
+{"name":"PTR_CreateFileA_0058c1f0","address":"0058c1f0","type":"pointer","length":4}
+{"name":"PTR_CloseHandle_0058c1f4","address":"0058c1f4","type":"pointer","length":4}
+{"name":"PTR_ReadFile_0058c1f8","address":"0058c1f8","type":"pointer","length":4}
+{"name":"PTR_WriteFile_0058c1fc","address":"0058c1fc","type":"pointer","length":4}
+{"name":"PTR_GetFileSize_0058c200","address":"0058c200","type":"pointer","length":4}
+{"name":"PTR_SetFilePointer_0058c204","address":"0058c204","type":"pointer","length":4}
+{"name":"PTR_DeleteFileA_0058c208","address":"0058c208","type":"pointer","length":4}
+{"name":"PTR_MoveFileA_0058c20c","address":"0058c20c","type":"pointer","length":4}
+{"name":"PTR_CopyFileA_0058c210","address":"0058c210","type":"pointer","length":4}
+{"name":"PTR_GetFileTime_0058c214","address":"0058c214","type":"pointer","length":4}
+{"name":"PTR_GetCurrentDirectoryA_0058c21c","address":"0058c21c","type":"pointer","length":4}
+{"name":"PTR_SetCurrentDirectoryA_0058c220","address":"0058c220","type":"pointer","length":4}
+{"name":"PTR_CreateDirectoryA_0058c224","address":"0058c224","type":"pointer","length":4}
+{"name":"PTR_RemoveDirectoryA_0058c228","address":"0058c228","type":"pointer","length":4}
+{"name":"PTR_GetDriveTypeA_0058c22c","address":"0058c22c","type":"pointer","length":4}
+{"name":"PTR_GetDiskFreeSpaceA_0058c230","address":"0058c230","type":"pointer","length":4}
+{"name":"PTR_FindFirstFileA_0058c238","address":"0058c238","type":"pointer","length":4}
+{"name":"PTR_FindNextFileA_0058c23c","address":"0058c23c","type":"pointer","length":4}
+{"name":"PTR_FindClose_0058c240","address":"0058c240","type":"pointer","length":4}
+{"name":"PTR_GetLogicalDrives_0058c250","address":"0058c250","type":"pointer","length":4}
+{"name":"PTR_GetVolumeInformationA_0058c254","address":"0058c254","type":"pointer","length":4}
+{"name":"PTR_GetComputerNameA_0058c258","address":"0058c258","type":"pointer","length":4}
+{"name":"PTR_GetLocaleInfoA_0058c25c","address":"0058c25c","type":"pointer","length":4}
+{"name":"PTR_FileTimeToDosDateTime_0058c274","address":"0058c274","type":"pointer","length":4}
+{"name":"PTR_GetCommandLineA_0058c278","address":"0058c278","type":"pointer","length":4}
+{"name":"PTR_GetLocalTime_0058c27c","address":"0058c27c","type":"pointer","length":4}
+{"name":"PTR_CreateThread_0058c280","address":"0058c280","type":"pointer","length":4}
+{"name":"PTR_GetProcAddress_0058c288","address":"0058c288","type":"pointer","length":4}
+{"name":"PTR_GetUserDefaultLCID_0058c298","address":"0058c298","type":"pointer","length":4}
+{"name":"PTR_SetEndOfFile_0058c29c","address":"0058c29c","type":"pointer","length":4}
+{"name":"PTR_SetPriorityClass_0058c2a8","address":"0058c2a8","type":"pointer","length":4}
+{"name":"PTR_GetCurrentProcess_0058c2ac","address":"0058c2ac","type":"pointer","length":4}
+{"name":"PTR_GetCurrentThread_0058c2b0","address":"0058c2b0","type":"pointer","length":4}
+{"name":"PTR_SetThreadPriority_0058c2bc","address":"0058c2bc","type":"pointer","length":4}
+{"name":"PTR_CreateSemaphoreA_0058c2c0","address":"0058c2c0","type":"pointer","length":4}
+{"name":"PTR_ReleaseSemaphore_0058c2c4","address":"0058c2c4","type":"pointer","length":4}
+{"name":"Rsrc_GroupIcon_1_409","address":"0058d048","type":"GroupIconResource","length":6}
+{"name":"IMAGE_RESOURCE_DIRECTORY_0058e000","address":"0058e000","type":"IMAGE_RESOURCE_DIRECTORY","length":16}

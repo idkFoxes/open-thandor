@@ -9,189 +9,231 @@
 
 #include <thandor/generated/types.h>
 
-/* Function-signature types Ghidra does not include in its C export. Unprototyped
- * placeholders: they accept any arguments. Replace with the real signature once recovered. */
-typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(); /* return type from call site; parameters TODO */
-typedef dword ArenaFreeProc(); /* TODO: unrecovered signature */
-typedef dword ArenaShrinkProc(); /* TODO: unrecovered signature */
-typedef CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx CommandLineFindOptionProc(CommandLineOptionLengthBytes length,char *option); /* recovered from CommandLine_FindOption */
-typedef dword __cdecl CpuDetectFeaturesProc(void); /* recovered from CPU_DetectFeatures */
-typedef FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx FatalErrorPassThroughProc(dword errorOrValue,bool carryIn); /* recovered from FatalError_Exit */
-typedef void __thandor_void_preserve_eax_ecx_edx FileSystemCloseProc(void *handle); /* recovered from Win32File_Close */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemCopyCfProc(word *destinationPath,word *sourcePath); /* recovered from Win32File_CopyCf */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirectoryFlags flags,word *path); /* recovered from Win32File_CreateDirectoryRecursiveCf */
-typedef dword FileSystemDeleteCfProc(dword unusedFlags,word *path); /* recovered from Win32File_DeleteCf */
-typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemDriveReadyCfProc(DosDriveLetterCode32 driveLetter); /* recovered from Win32Drive_CheckMediaReadyCf */
-typedef FileSystemEnumerationEaxEcxCf9 FileSystemEnumerateDirectoryOrVolumeEntriesCfProc(); /* return type from call site; parameters TODO */
-typedef DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx FileSystemEnumerateDriveLettersEaxEcxProc(byte *lettersOut); /* recovered from Win32Drive_EnumerateLetters */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetCurrentDirectoryCfProc(word *destination); /* recovered from Win32File_GetCurrentDirectoryCf */
-typedef EngineDriveTypeCode __thandor_eax_preserve_ecx_edx FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* recovered from Win32Drive_GetEngineTypeCode */
-typedef Win32DriveCapacityEdxEax8 FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* recovered from Win32Drive_GetFreeAndTotalBytesRegs */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteDosDateCfProc(word *path); /* recovered from Win32File_GetLastWriteDosDateCf */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteTimeHighCfProc(word *path); /* recovered from Win32File_GetLastWriteTimeHighCf */
-typedef dword FileSystemGetPositionCfProc(void *handle); /* recovered from Win32File_GetPositionCf */
-typedef Win32FileSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetSizeCfProc(void *handle); /* recovered from Win32File_GetSizeCf */
-typedef dword FileSystemGetVolumeSerialNumberCfProc(byte *outputLabel,char *path); /* recovered from Win32Drive_GetVolumeSerialNumberCf */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemMoveCfProc(word *destinationPath,word *sourcePath); /* recovered from Win32File_MoveCf */
-typedef Win32FileOpenEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemOpenCfProc(FileSystemOpenFlags openFlags,word *path); /* recovered from Win32File_OpenCf */
-typedef Win32FileReadEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemReadExactCfProc(FileIoByteCount byteCount,void *destination,void *handle); /* recovered from Win32File_ReadExactCf */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemRemoveDirectoryCfProc(word *path); /* recovered from Win32File_RemoveDirectoryCf */
-typedef Win32FileSeekEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemSeekCfProc(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle); /* recovered from Win32File_SeekCf */
-typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemSetCurrentDirectoryCfProc(word *path); /* recovered from Win32File_SetCurrentDirectoryCf */
-typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemValidateDos83CfProc(FileSystemDos83ValidationFlags flags,byte *pathAnsi); /* recovered from Win32Path_ValidateDos83Cf */
-typedef Win32FileWriteEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemWriteExactOrFlushCfProc(FileIoByteCount byteCount,void *source,void *handle); /* recovered from Win32File_WriteExactOrFlushCf */
-typedef dword FrontendModelPointerContextUpdateCallbackProc(); /* TODO: unrecovered signature */
-typedef dword FrontendModelPointerResolvedActionCallbackProc(); /* TODO: unrecovered signature */
-typedef dword GlideTextureUploadProc(); /* TODO: unrecovered signature */
-typedef dword GrAlphaBlendFunctionImportProc(); /* TODO: unrecovered signature */
-typedef dword GrAlphaCombineImportProc(); /* TODO: unrecovered signature */
-typedef dword GrBufferClearImportProc(); /* TODO: unrecovered signature */
-typedef dword GrBufferSwapImportProc(); /* TODO: unrecovered signature */
-typedef dword GrClipWindowImportProc(); /* TODO: unrecovered signature */
-typedef dword GrColorCombineImportProc(); /* TODO: unrecovered signature */
-typedef dword GrCoordinateSpaceImportProc(); /* TODO: unrecovered signature */
-typedef dword GrCullModeImportProc(); /* TODO: unrecovered signature */
-typedef dword GrDepthBufferFunctionImportProc(); /* TODO: unrecovered signature */
-typedef dword GrDepthBufferModeImportProc(); /* TODO: unrecovered signature */
-typedef dword GrDepthMaskImportProc(); /* TODO: unrecovered signature */
-typedef dword GrDrawTriangleImportProc(); /* TODO: unrecovered signature */
-typedef dword GrFinishImportProc(); /* TODO: unrecovered signature */
-typedef dword GrGetImportProc(); /* TODO: unrecovered signature */
-typedef dword GrGetStringImportProc(); /* TODO: unrecovered signature */
-typedef dword GrGlideInitImportProc(); /* TODO: unrecovered signature */
-typedef dword GrGlideShutdownImportProc(); /* TODO: unrecovered signature */
-typedef int GrLfbLockImportProc(); /* return type from call site; parameters TODO */
-typedef dword GrLfbReadRegionImportProc(); /* TODO: unrecovered signature */
-typedef dword GrLfbUnlockImportProc(); /* TODO: unrecovered signature */
-typedef dword GrQueryResolutionsImportProc(); /* return type from call site; parameters TODO */
-typedef dword GrSstSelectImportProc(); /* TODO: unrecovered signature */
-typedef dword GrSstWinCloseImportProc(); /* TODO: unrecovered signature */
-typedef dword GrSstWinOpenImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexClampModeImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexCombineImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexDownloadMipMapImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexFilterModeImportProc(); /* TODO: unrecovered signature */
-typedef GraphicsTextureMemoryAddress GrTexMaxAddressImportProc(); /* return type from call site; parameters TODO */
-typedef GraphicsTextureMemoryAddress GrTexMinAddressImportProc(); /* return type from call site; parameters TODO */
-typedef dword GrTexMipMapModeImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexSourceImportProc(); /* TODO: unrecovered signature */
-typedef dword GrVertexLayoutImportProc(); /* TODO: unrecovered signature */
-typedef dword GrViewportImportProc(); /* TODO: unrecovered signature */
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBackendRefreshActiveAdapterProc(void); /* recovered from GraphicsBackend_RefreshActiveAdapterIfReady */
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBeginScenePreserveAllProc(void); /* recovered from Graphics_BeginScene */
-typedef GraphicsCursorInputEventRegsCf21 GraphicsCursorConsumeEventProc(); /* return type from call site; parameters TODO */
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsDrawPrimitiveQueueProc(GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1, GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3, GraphicsPrimitiveQueue *queue); /* recovered from Graphics_DrawPrimitiveQueue */
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsEndSceneProc(void); /* recovered from Graphics_EndScene */
-typedef GraphicsOffscreenAllocationEaxCf5 GraphicsOffscreenRenderModelListToTextureSourceProc(); /* return type from call site; parameters TODO */
-typedef GraphicsPaletteAssetEaxCf5 GraphicsPaletteAssetLoadPackageProc(); /* return type from call site; parameters TODO */
-typedef GraphicsPaletteAssetEaxCf5 GraphicsPaletteAssetValidateProc(); /* return type from call site; parameters TODO */
-typedef dword GraphicsPrimitiveQueueRadixSortProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsSetViewportProc(); /* TODO: unrecovered signature */
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureRebuildAllProc(void); /* recovered from GraphicsTexture_RebuildAllStagingTextures */
-typedef GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSetCreateProc(GraphicsTextureSourceAsset *sourceAsset); /* recovered from GraphicsTextureSet_Create */
-typedef GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx GraphicsTextureSetDestroyProc(GraphicsTextureSet *set); /* recovered from GraphicsTextureSet_Destroy */
-typedef GraphicsTextureSetEaxCf5 GraphicsTextureSetLoadPackageProc(); /* return type from call site; parameters TODO */
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSetRefreshProc(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set); /* recovered from GraphicsTextureSet_RefreshColor */
-typedef dword GraphicsTextureSetReleasePackageProc(); /* TODO: unrecovered signature */
-typedef GraphicsPaletteTextureSourceEaxCf5 GraphicsTextureSourceConvertPaletteEntriesProc(); /* return type from call site; parameters TODO */
-typedef dword GuGammaCorrectionRGBImportProc(); /* TODO: unrecovered signature */
-typedef dword InGameWorldOverlayPhaseCallbackProc(); /* TODO: unrecovered signature */
-typedef dword InGameWorldOverlayRebuildCallbackProc(); /* TODO: unrecovered signature */
-typedef dword InGameWorldTransientStateClearCallbackProc(); /* TODO: unrecovered signature */
-typedef dword KeyboardFlushEventsProc(); /* TODO: unrecovered signature */
-typedef KeyboardEventEaxEdxCf9 KeyboardReadEventProc(); /* return type from call site; parameters TODO */
-typedef dword LocaleCopyDefaultComputerLabelUtf16Proc(); /* return type from call site; parameters TODO */
-typedef dword LocaleFormatCurrentDateUtf16Proc(); /* return type from call site; parameters TODO */
-typedef dword LocaleFormatCurrentTimeUtf16Proc(word *destination); /* recovered from Locale_FormatCurrentTimeUtf16 */
-typedef dword LocaleFormatDateFieldsUtf16Proc(); /* TODO: unrecovered signature */
-typedef dword LocaleFormatTimeFieldsUtf16Proc(LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,word *destination); /* recovered from Locale_FormatTimeFieldsUtf16 */
-typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentDateProc(void); /* recovered from Locale_GetPackedCurrentDate */
-typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentTimeProc(void); /* recovered from Locale_GetPackedCurrentTime */
-typedef dword __thandor_eax_preserve_ecx_edx LocaleGetTelephoneCountryCodeProc(void); /* recovered from Locale_GetDefaultTelephoneCountryCode */
-typedef dword MovieFrameProviderCfProc(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendCleanupCallback(); /* return type from call site; parameters TODO */
-typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCloseCallback(void); /* recovered from NetworkFallback_CloseActiveSocket */
-typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendFormatAddressCallback(char *outputText,WinSockAddress *socketAddress); /* recovered from NetworkFallback_FormatPeerAddress */
-typedef NetworkBackendOpenBindEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendOpenBindCallback(NetworkPortHostOrder localPort); /* recovered from NetworkFallback_OpenAndBindUdpSocketCf */
-typedef bool __thandor_cf_preserve_eax_ecx_edx NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText); /* recovered from NetworkFallback_ParsePeerEndpointCf */
-typedef NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendReceiveCallback(WinSockAddress *sourceAddress,NetworkByteCount byteCount,byte *buffer); /* recovered from NetworkFallback_ReceiveDatagramCf */
-typedef NetworkBackendSendEaxCf5 NetworkBackendSendCallback(); /* return type from call site; parameters TODO */
-typedef NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx NetworkBackendSetSessionCallback(); /* return type from call site; parameters TODO */
-typedef PckCodecEaxCf5 PckCodecProc(); /* return type from call site; parameters TODO */
-typedef PcxDecodeEaxCf5 PcxDecodeProc(); /* return type from call site; parameters TODO */
-typedef dword PcxEncodeProc(); /* TODO: unrecovered signature */
-typedef void __thandor_void_preserve_eax_ecx_edx PointerFlushEventsProc(void); /* recovered from DirectInputMouse_FlushBufferedEvents */
-typedef dword PointerSetPositionProc(); /* return type from call site; parameters TODO */
-typedef dword ScenarioCatalogRefreshSelectedRecordCallback(); /* TODO: unrecovered signature */
-typedef dword SoftwareBuildPixelPackTablesProc(); /* TODO: unrecovered signature */
-typedef void __thandor_void_preserve_eax_ecx_edx SoftwareDrawQueueProc(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitiveQueue *queue); /* recovered from SoftwareRenderer_DrawQueueNon16Bit */
-typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(); /* return type from call site; parameters TODO */
-typedef dword SoftwareRasterHandler(); /* TODO: unrecovered signature */
-typedef qword SoundQueryVoiceRegsProc(IDirectSoundBuffer *voice); /* recovered from DirectSound_QueryVoiceRegsStub */
-typedef dword SpinLockAcquireProc(); /* TODO: unrecovered signature */
-typedef dword SpinLockReleaseAndInvokeProc(); /* TODO: unrecovered signature */
-typedef dword SpinLockReleaseCallbackProc(); /* TODO: unrecovered signature */
-typedef dword SpinLockReleaseProc(); /* TODO: unrecovered signature */
-typedef bool SpinLockTryAcquireFlagsProc(); /* return type from call site; parameters TODO */
-typedef dword TerrainClassOverlayCallback(); /* TODO: unrecovered signature */
-typedef dword TimerCallbackProc(); /* TODO: unrecovered signature */
-typedef void __thandor_void_preserve_eax_ecx_edx TimerRegisterPeriodicProc(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback); /* recovered from TimerSystem_RegisterPeriodic */
-typedef void __thandor_void_preserve_eax_ecx_edx TimerUnregisterPeriodicProc(TimerCallbackProc *callback); /* recovered from TimerSystem_UnregisterPeriodic */
-typedef dword UiRootCloseCallbackCf(); /* TODO: unrecovered signature */
-typedef dword UiRootFrameCallback(); /* TODO: unrecovered signature */
-typedef dword UiRootKeyboardFallbackCf(); /* TODO: unrecovered signature */
-typedef dword UiRootMethod08Callback(); /* TODO: unrecovered signature */
-typedef dword UiRootPointerMissPolicyCallback(); /* TODO: unrecovered signature */
-typedef dword UiRuntimePostUnlockCallbackProc(); /* TODO: unrecovered signature */
-typedef int WSAIoctl_Proc(); /* return type from call site; parameters TODO */
-typedef int WSAStringToAddressA_Proc(); /* return type from call site; parameters TODO */
-typedef dword Win32PumpMessagesProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_WSAAsyncGetHostByAddrProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAAsyncGetHostByNameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAAsyncGetProtoByNameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAAsyncGetProtoByNumberProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAAsyncGetServByNameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAAsyncGetServByPortProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAAsyncSelectProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSACancelAsyncRequestProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSACancelBlockingCallProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSACleanupProc(); /* TODO: unrecovered signature */
-typedef int WinSock_WSAGetLastErrorProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_WSAIsBlockingProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSASetBlockingHookProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAStartupProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAUnhookBlockingHookProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_acceptProc(); /* TODO: unrecovered signature */
-typedef int WinSock_bindProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_closesocketProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_connectProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_gethostbyaddrProc(); /* TODO: unrecovered signature */
-typedef WinSockHostEnt32 * WinSock_gethostbynameProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_gethostnameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getpeernameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getprotobynameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getprotobynumberProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getservbynameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getservbyportProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getsocknameProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_getsockoptProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_htonlProc(); /* TODO: unrecovered signature */
-typedef word WinSock_htonsProc(); /* return type from call site; parameters TODO */
-typedef NetworkIpv4AddressNetworkOrder WinSock_inet_addrProc(); /* return type from call site; parameters TODO */
-typedef byte * WinSock_inet_ntoaProc(); /* return type from call site; parameters TODO */
-typedef int WinSock_ioctlsocketProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_listenProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_ntohlProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_ntohsProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_recvProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_recvfromProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_selectProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_sendProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_sendtoProc(); /* return type from call site; parameters TODO */
-typedef int WinSock_setsockoptProc(); /* return type from call site; parameters TODO */
-typedef dword WinSock_shutdownProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_socketProc(); /* return type from call site; parameters TODO */
-typedef dword WorldRuntimeNodeTraversalCallback(); /* TODO: unrecovered signature */
+/* Function-signature types Ghidra does not include in its C export, taken from
+ * ghidra/export/function_definitions.jsonl (tools/ghidra/ExportBuildData.java). */
+#ifndef __thandor_cf_preserve_eax_ecx_edx
+#define __thandor_cf_preserve_eax_ecx_edx
+#endif
+#ifndef __thandor_eax_cf_io_preserve_ecx_edx
+#define __thandor_eax_cf_io_preserve_ecx_edx
+#endif
+#ifndef __thandor_eax_cf_preserve_ecx_edx
+#define __thandor_eax_cf_preserve_ecx_edx
+#endif
+#ifndef __thandor_eax_cf_preserve_edx
+#define __thandor_eax_cf_preserve_edx
+#endif
+#ifndef __thandor_eax_ecx_cf
+#define __thandor_eax_ecx_cf
+#endif
+#ifndef __thandor_eax_ecx_cf_preserve_edx
+#define __thandor_eax_ecx_cf_preserve_edx
+#endif
+#ifndef __thandor_eax_ecx_preserve_edx
+#define __thandor_eax_ecx_preserve_edx
+#endif
+#ifndef __thandor_eax_edx_cf_preserve_ecx
+#define __thandor_eax_edx_cf_preserve_ecx
+#endif
+#ifndef __thandor_eax_preserve_ecx_edx
+#define __thandor_eax_preserve_ecx_edx
+#endif
+#ifndef __thandor_ebx_cf_preserve_eax_ecx_edx
+#define __thandor_ebx_cf_preserve_eax_ecx_edx
+#endif
+#ifndef __thandor_input_event_regs_cf
+#define __thandor_input_event_regs_cf
+#endif
+#ifndef __thandor_preserve_eax_edx
+#define __thandor_preserve_eax_edx
+#endif
+#ifndef __thandor_this_eax_cf_preserve_ecx_edx
+#define __thandor_this_eax_cf_preserve_ecx_edx
+#endif
+#ifndef __thandor_void_preserve_eax_ecx_edx
+#define __thandor_void_preserve_eax_ecx_edx
+#endif
+typedef AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx AiTechnologyCandidateScoreCallback(FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime); /* Ghidra FunctionDefinition /Thandor/AI/Callbacks */
+typedef ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaFreeProc(void * memory); /* Ghidra FunctionDefinition /Thandor/ABI */
+typedef ArenaShrinkEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaShrinkProc(dword newSize, void * memory); /* Ghidra FunctionDefinition /Thandor/ABI */
+typedef CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx CommandLineFindOptionProc(dword arg0, char * arg1); /* Ghidra FunctionDefinition /Thandor/CommandLine/Methods */
+typedef dword __cdecl CpuDetectFeaturesProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx FatalErrorPassThroughProc(dword errorOrValue, bool carryIn); /* Ghidra FunctionDefinition /Thandor/ABI */
+typedef void __thandor_void_preserve_eax_ecx_edx FileSystemCloseProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemCopyCfProc(word * destinationPath, word * sourcePath); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirectoryFlags flags, word * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef dword FileSystemDeleteCfProc(dword unusedFlags, word * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemDriveReadyCfProc(dword driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemEnumerationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx FileSystemEnumerateDirectoryOrVolumeEntriesCfProc(FileSystemEnumerationMode mode, dword reserved, FileSystemOutputCapacityBytes outputCapacityBytes, byte * outputRecords, byte * pathOrVolumeText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx FileSystemEnumerateDriveLettersEaxEcxProc(byte * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetCurrentDirectoryCfProc(word * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef EngineDriveTypeCode __thandor_eax_preserve_ecx_edx FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef Win32DriveCapacityEdxEax8 FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteDosDateCfProc(word * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteTimeHighCfProc(word * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef dword FileSystemGetPositionCfProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef FileSystemSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetSizeCfProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword FileSystemGetVolumeSerialNumberCfProc(byte * outputLabel, char * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemMoveCfProc(word * destinationPath, word * sourcePath); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemOpenEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemOpenCfProc(FileSystemOpenFlags openFlags, word * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef FileSystemReadEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemReadExactCfProc(FileIoByteCount byteCount, void * destination, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemRemoveDirectoryCfProc(word * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemSeekEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemSeekCfProc(FileSystemSeekOrigin moveMethod, FileSystemFilePosition distance, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemSetCurrentDirectoryCfProc(word * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef dword __thandor_cf_preserve_eax_ecx_edx FileSystemValidateDos83CfProc(dword flags, byte * pathAnsi); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemWriteEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemWriteExactOrFlushCfProc(FileIoByteCount byteCount, void * source, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword FrontendModelPointerContextUpdateCallbackProc(int pointerY, int pointerX, FrontendModelPointerContextRuntimeState118 * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword FrontendModelPointerResolvedActionCallbackProc(dword callbackArgumentF0, dword callbackArgumentEC, dword callbackArgumentE8, int selectedHitMetric, ModelRuntimeNode * selectedModelNode, FrontendModelPointerContextRuntimeState118 * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef void __thandor_void_preserve_eax_ecx_edx GlideTextureUploadProc(GraphicsTextureResource * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __stdcall GrAlphaBlendFunctionImportProc(dword arg0, dword arg1, dword arg2, dword arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrAlphaCombineImportProc(dword arg0, dword arg1, dword arg2, dword arg3, dword arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrBufferClearImportProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrBufferSwapImportProc(dword swapInterval); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrClipWindowImportProc(dword arg0, dword arg1, dword arg2, dword arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrColorCombineImportProc(dword arg0, dword arg1, dword arg2, dword arg3, dword arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrCoordinateSpaceImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrCullModeImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDepthBufferFunctionImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDepthBufferModeImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDepthMaskImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDrawTriangleImportProc(dword * vertexA, dword * vertexB, dword * vertexC); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrFinishImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef dword __stdcall GrGetImportProc(dword selector, dword sizeBytes, void * output); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef char * __stdcall GrGetStringImportProc(dword selector); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrGlideInitImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrGlideShutdownImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef dword __stdcall GrLfbLockImportProc(dword arg0, dword arg1, dword arg2, dword arg3, dword arg4, void * arg5); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef dword __stdcall GrLfbReadRegionImportProc(dword buffer, GraphicsScreenCoordinate sourceX, GraphicsScreenCoordinate sourceY, GraphicsPixelDimension width, GraphicsPixelDimension height, dword destinationStrideBytes, word * destinationPixels); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrLfbUnlockImportProc(dword arg0, dword arg1); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef dword __stdcall GrQueryResolutionsImportProc(void * query, void * output); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrSstSelectImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrSstWinCloseImportProc(dword arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef dword __stdcall GrSstWinOpenImportProc(dword arg0, dword arg1, dword arg2, dword arg3, dword arg4, dword arg5, dword arg6); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexClampModeImportProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexCombineImportProc(dword arg0, dword arg1, dword arg2, dword arg3, dword arg4, dword arg5, dword arg6); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexDownloadMipMapImportProc(GraphicsTextureResidentTmuIndex tmuIndex, GraphicsTextureMemoryAddress startAddress, dword evenOddMask, GrTexInfo * textureInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexFilterModeImportProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef GraphicsTextureMemoryAddress __stdcall GrTexMaxAddressImportProc(GraphicsTextureResidentTmuIndex tmuIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef GraphicsTextureMemoryAddress __stdcall GrTexMinAddressImportProc(GraphicsTextureResidentTmuIndex tmuIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexMipMapModeImportProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexSourceImportProc(GraphicsTextureResidentTmuIndex tmuIndex, GraphicsTextureMemoryAddress residentAddress, dword mode, GrTexInfo * textureInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrVertexLayoutImportProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrViewportImportProc(dword arg0, dword arg1, dword arg2, dword arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBackendRefreshActiveAdapterProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBeginScenePreserveAllProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursorConsumeEventProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsDrawPrimitiveQueueProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, GraphicsPrimitiveQueue * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsEndSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsOffscreenAllocationEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, undefined4 param_2, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputWidth, GraphicsPixelDimension outputHeight, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsPaletteAssetLoadPackageProc(word * arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsPaletteAssetValidateProc(GraphicsPaletteAsset * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsPrimitiveQueueRadixSortProc(GraphicsBooleanState halveVertexRgb, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsSetViewportProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __cdecl GraphicsTextureRebuildAllProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSetCreateProc(GraphicsTextureSourceAsset * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx GraphicsTextureSetDestroyProc(GraphicsTextureSet * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSetLoadPackageProc(word * pathUtf16); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSetRefreshProc(dword arg0, GraphicsTextureSet * arg1); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSetReleasePackageProc(GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsPaletteTextureSourceEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSourceConvertPaletteEntriesProc(GraphicsPaletteTextureSourceAsset * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __stdcall GuGammaCorrectionRGBImportProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __thandor_void_preserve_eax_ecx_edx InGameWorldOverlayPhaseCallbackProc(GraphicsBooleanState releaseMode, WorldRuntimeContext * worldRuntime); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef void InGameWorldOverlayRebuildCallbackProc(dword arg0, WorldRuntimeContext * arg1); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * arg0); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef void __thandor_void_preserve_eax_ecx_edx KeyboardFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
+typedef KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx KeyboardReadEventProc(void); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx LocaleCopyDefaultComputerLabelUtf16Proc(word * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword LocaleFormatCurrentDateUtf16Proc(word * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword LocaleFormatCurrentTimeUtf16Proc(word * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword LocaleFormatDateFieldsUtf16Proc(dword arg0, dword arg1, dword arg2, word * arg3); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword LocaleFormatTimeFieldsUtf16Proc(dword arg0, dword arg1, word * arg2); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentDateProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentTimeProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword __thandor_eax_preserve_ecx_edx LocaleGetTelephoneCountryCodeProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef MovieFrameProviderEaxCf5 __thandor_eax_cf_preserve_ecx_edx MovieFrameProviderCfProc(void * frameToReleaseOrNull); /* Ghidra FunctionDefinition /Thandor/Assets/Movie/Callbacks */
+typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCleanupCallback(void); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCloseCallback(void); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendFormatAddressCallback(char * outputText, WinSockAddress * socketAddress); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef NetworkBackendOpenBindEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendOpenBindCallback(dword localPort); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef bool __thandor_cf_preserve_eax_ecx_edx NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor * endpoint, char * endpointText); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendReceiveCallback(WinSockAddress * sourceAddress, dword byteCount, byte * buffer); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef NetworkBackendSendEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendSendCallback(WinSockAddress * destinationAddress, dword byteCount, byte * buffer); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx NetworkBackendSetSessionCallback(dword returnValue); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
+typedef PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx PckCodecProc(dword destinationCapacityOrOutputSize, byte * destination, dword sourceSize, byte * source); /* Ghidra FunctionDefinition /Thandor/Package/Methods */
+typedef PcxDecodeEaxCf5 __thandor_eax_cf_preserve_edx PcxDecodeProc(FncModuleHeader * module, dword sourceByteCount, void * sourceBytes); /* Ghidra FunctionDefinition /Thandor/UI/Pcx */
+typedef PcxEncodeEaxEcxCf9 __thandor_eax_ecx_cf PcxEncodeProc(FncModuleHeader * module, void * framebufferCapture); /* Ghidra FunctionDefinition /Thandor/UI/Pcx */
+typedef void __thandor_void_preserve_eax_ecx_edx PointerFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input */
+typedef void PointerSetPositionProc(sdword positionY, sdword positionX); /* Ghidra FunctionDefinition /Thandor/Input */
+typedef void __thandor_void_preserve_eax_ecx_edx ScenarioCatalogRefreshSelectedRecordCallback(dword arg0, dword arg1, dword arg2, UiListRowIndex selectionIndex); /* Ghidra FunctionDefinition /Thandor/UI/ActionHandlers/Callbacks */
+typedef void SoftwareBuildPixelPackTablesProc(sdword arg0, sdword arg1); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx SoftwareDrawQueueProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, GraphicsPrimitiveQueue * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(dword arg0, dword arg1, dword arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void SoftwareRasterHandler(sdword arg0, sdword arg1, sdword arg2, sdword arg3, GraphicsPrimitivePacket * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef qword SoundQueryVoiceRegsProc(IDirectSoundBuffer * arg0); /* Ghidra FunctionDefinition /Thandor/Sound/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx SpinLockAcquireProc(RuntimeSpinLockValue * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx SpinLockReleaseCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * arg0, RuntimeSpinLockValue * arg1); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void __thandor_void_preserve_eax_ecx_edx SpinLockReleaseProc(RuntimeSpinLockValue * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef bool __thandor_cf_preserve_eax_ecx_edx SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef bool __thandor_cf_preserve_eax_ecx_edx TerrainClassOverlayCallback(dword cellFlagMask, int cellValue, dword radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid); /* Ghidra FunctionDefinition /Thandor/Assets/FieldGrid/Callbacks */
+typedef void __cdecl TimerCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void TimerRegisterPeriodicProc(dword arg0, TimerCallbackProc * arg1); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootCloseCallbackCf(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef void __thandor_void_preserve_eax_ecx_edx UiRootFrameCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootKeyboardFallbackCf(UiKeyboardStateMask modifierFlags, UiActionId commandCode, UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootMethod08Callback(UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicyCallback(UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef void UiRuntimePostUnlockCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/UI/Runtime */
+typedef int __stdcall WSAIoctl_Proc(dword socket, dword ioControlCode, void * inBuffer, dword inBufferLength, void * outBuffer, dword outBufferLength, dword * bytesReturned, void * overlapped, void * completionRoutine); /* Ghidra FunctionDefinition /Thandor/Recovered/Network */
+typedef int __stdcall WSAStringToAddressA_Proc(char * addressString, int addressFamily, void * protocolInfo, NetworkBackendSocketAddress16 * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Recovered/Network */
+typedef void __cdecl Win32PumpMessagesProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef dword __stdcall WinSock_WSAAsyncGetHostByAddrProc(dword window, dword message, byte * address, int addressLength, int addressType, byte * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_WSAAsyncGetHostByNameProc(dword window, dword message, byte * hostName, byte * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_WSAAsyncGetProtoByNameProc(dword window, dword message, byte * protocolName, byte * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_WSAAsyncGetProtoByNumberProc(dword window, dword message, int protocolNumber, byte * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_WSAAsyncGetServByNameProc(dword window, dword message, byte * serviceName, byte * protocolName, byte * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_WSAAsyncGetServByPortProc(dword window, dword message, int portNetworkOrder, byte * protocolName, byte * outputBuffer, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSAAsyncSelectProc(dword socket, dword window, dword message, int eventMask); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSACancelAsyncRequestProc(dword asyncTaskHandle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSACancelBlockingCallProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSACleanupProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSAGetLastErrorProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSAIsBlockingProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef pointer __stdcall WinSock_WSASetBlockingHookProc(pointer hookProcedure); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSAStartupProc(word requestedVersion, WinSockData11 * startupData); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_WSAUnhookBlockingHookProc(void); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_acceptProc(dword socket, WinSockAddress * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_bindProc(dword socket, WinSockAddress * address, int addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_closesocketProc(dword socket); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_connectProc(dword socket, WinSockAddress * address, int addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef WinSockHostEnt32 * __stdcall WinSock_gethostbyaddrProc(byte * address, int addressLength, int addressType); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef WinSockHostEnt32 * __stdcall WinSock_gethostbynameProc(byte * hostName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_gethostnameProc(byte * outputName, int outputCapacity); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_getpeernameProc(dword socket, WinSockAddress * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef WinSockProtoEnt32 * __stdcall WinSock_getprotobynameProc(byte * protocolName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef WinSockProtoEnt32 * __stdcall WinSock_getprotobynumberProc(int protocolNumber); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef WinSockServEnt32 * __stdcall WinSock_getservbynameProc(byte * serviceName, byte * protocolName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef WinSockServEnt32 * __stdcall WinSock_getservbyportProc(int portNetworkOrder, byte * protocolName); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_getsocknameProc(dword socket, WinSockAddress * address, int * addressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_getsockoptProc(dword socket, int level, int optionName, byte * optionValue, int * optionLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_htonlProc(dword hostLong); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef word __stdcall WinSock_htonsProc(word hostShort); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_inet_addrProc(byte * addressText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef byte * __stdcall WinSock_inet_ntoaProc(dword ipv4AddressNetworkOrder); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_ioctlsocketProc(dword socket, dword command, dword * argument); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_listenProc(dword socket, int backlog); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_ntohlProc(dword networkLong); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef word __stdcall WinSock_ntohsProc(word networkShort); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_recvProc(dword socket, byte * buffer, int length, int flags); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_recvfromProc(dword socket, byte * buffer, int length, int flags, WinSockAddress * sourceAddress, int * sourceAddressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_selectProc(int ignoredNfds, WinSockFdSet64 * readSet, WinSockFdSet64 * writeSet, WinSockFdSet64 * exceptSet, WinSockTimeVal32 * timeout); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_sendProc(dword socket, byte * buffer, int length, int flags); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_sendtoProc(dword socket, byte * buffer, int length, int flags, WinSockAddress * destinationAddress, int destinationAddressLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_setsockoptProc(dword socket, int level, int optionName, byte * optionValue, int optionLength); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef int __stdcall WinSock_shutdownProc(dword socket, int how); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef dword __stdcall WinSock_socketProc(int addressFamily, int socketType, int protocol); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwnerListNode100 * node); /* Ghidra FunctionDefinition /Thandor/World/Callbacks */
 
 extern FileSystemOpenCfProc * g_FileSystemOpenCf;
 extern undefined g_FileSystemCombinedPathScratchUtf16;

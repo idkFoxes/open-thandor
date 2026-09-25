@@ -15,6 +15,7 @@ labels that name functions, and writes
 
 Usage: python tools/gen_globals.py ghidra/thandor.exeV537.c
 """
+import json
 import pathlib
 import re
 import sys
@@ -102,11 +103,41 @@ def find_block(lines):
     return best
 
 
+def ghidra_strings():
+    """Exact string values by sanitized label, from tools/ghidra/ExportBuildData.java."""
+    path = ROOT / "ghidra/export/strings.jsonl"
+    if not path.exists():
+        return {}
+    out = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        d = json.loads(line)
+        if d["label"] and d["value"] is not None:
+            out.setdefault(re.sub(r"\W", "_", d["label"]), d["value"])
+    return out
+
+
+def c_literal(value, wide):
+    """C string literal; non-ASCII as \\uXXXX (wide) or octal bytes (narrow, cp1252)."""
+    out = []
+    for ch in value:
+        o = ord(ch)
+        if ch in '"\\':
+            out.append("\\" + ch)
+        elif 0x20 <= o < 0x7f:
+            out.append(ch)
+        elif wide:
+            out.append(f"\\u{o:04x}" if o >= 0xa0 else f"\\x{o:x}\"L\"")
+        else:
+            out.extend(f"\\{b:03o}" for b in ch.encode("cp1252", errors="replace"))
+    return ("L" if wide else "") + '"' + "".join(out) + '"'
+
+
 def main(export):
     src = pathlib.Path(export).resolve()
     lines = src.read_text(encoding="utf-8").splitlines()
     lo, hi = find_block(lines)
     funcs = function_names()
+    strings = ghidra_strings()
     decls, skipped, seen = [], [], set()
     for line in lines[lo:hi]:
         m = DECL.match(line)
@@ -120,10 +151,13 @@ def main(export):
         if typ in STRING_TYPES and not dims and not ptr:
             typ, quote = STRING_TYPES[typ]
             dims = "[]"
-            # Best-effort text from the label (prefix and _ADDRESS suffix stripped); verify against the exe.
-            text = re.sub(r"^[su]_|_[0-9a-f]{8}$", "", label)
-            text = text.replace("\\", "\\\\").replace('"', '\\"')
-            init = f'{quote}{text}"'
+            if name in strings:
+                init = (c_literal(strings[name], quote == 'L"'), True)
+            else:
+                # Best-effort text from the label (prefix and _ADDRESS suffix stripped); verify against the exe.
+                text = re.sub(r"^[su]_|_[0-9a-f]{8}$", "", label)
+                text = text.replace("\\", "\\\\").replace('"', '\\"')
+                init = (f'{quote}{text}"', False)
         if name in seen:
             continue
         seen.add(name)
@@ -140,9 +174,11 @@ def main(export):
          "",
          "#include <thandor/generated/types.h>",
          "",
-         "/* Function-signature types Ghidra does not include in its C export. Unprototyped",
-         " * placeholders: they accept any arguments. Replace with the real signature once recovered. */"]
+         "/* Function-signature types Ghidra does not include in its C export, taken from",
+         " * ghidra/export/function_definitions.jsonl (tools/ghidra/ExportBuildData.java). */"]
     sigs = infer_signatures.infer(unrecovered_signatures(), [(t, n) for t, n, _, _ in decls])
+    for conv in infer_signatures.conventions(sigs):
+        h += [f"#ifndef {conv}", f"#define {conv}", "#endif"]
     h += [infer_signatures.render(t, s) for t, s in sigs.items()]
     h += [""]
     h += [f"extern {t} {n}{d};" for t, n, d, _ in decls]
@@ -155,8 +191,8 @@ def main(export):
     h += [f"#define {n} (*(byte *)0x{a})" for n, a in literals]
     h += ["", "#endif /* THANDOR_GENERATED_GLOBALS_H */", ""]
     c = [HEADER.format(src=rel), "#include <thandor/thandor.h>", ""]
-    c += [f"{t} {n}{d} = {i}; /* TODO: verify text against thandor.exe */" if i else f"{t} {n}{d};"
-          for t, n, d, i in decls]
+    c += [(f"{t} {n}{d} = {i[0]};" if i[1] else f"{t} {n}{d} = {i[0]}; /* TODO: verify text against thandor.exe */")
+          if i else f"{t} {n}{d};" for t, n, d, i in decls]
     c += [f"{t} {n};" for t, n in ram]
     c += [""]
 
@@ -164,10 +200,10 @@ def main(export):
     out = ROOT / "src/generated/globals.c"
     out.parent.mkdir(exist_ok=True)
     out.write_text("\n".join(c), encoding="utf-8", newline="\n")
-    full = sum(1 for s in sigs.values() if s and s[0] == "full")
-    ret = sum(1 for s in sigs.values() if s and s[0] == "ret")
+    kinds = {k: sum(1 for s in sigs.values() if s and s[0] == k) for k in ("ghidra", "full", "ret")}
     print(f"block lines {lo + 1}-{hi}: {len(decls)} globals, {len(skipped)} function labels skipped")
-    print(f"signatures: {full} recovered, {ret} return-type only, {len(sigs) - full - ret} placeholders")
+    print(f"signatures: {kinds['ghidra']} from Ghidra, {kinds['full']} from assignments, "
+          f"{kinds['ret']} return-type only, {len(sigs) - sum(kinds.values())} placeholders")
 
 
 if __name__ == "__main__":

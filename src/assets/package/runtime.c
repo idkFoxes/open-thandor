@@ -96,13 +96,13 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
     dVar1 = SVar5.valueOrError;
     if (SVar5.carry) goto LAB_0040ea0c;
   }
-  FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle));
+  FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
   dVar1 = FVar6.eax;
   if (!FVar6.carry) {
-    FVar7 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle));
+    FVar7 = (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle);
     dVar1 = FVar7.eax;
     if (!FVar7.carry) {
-      FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle));
+      FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       dVar1 = FVar6.eax;
       if (!FVar6.carry) {
         *(int *)(destination + 0xb0) = *(int *)(destination + 0xb0) + 1;
@@ -120,7 +120,7 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           destination[0x3ef] = 0;
           *(dword *)(destination + 0x3f4) = *sourceData;
           *(PckDecodedByteCount *)(destination + 0x3f0) = unpackedSize;
-          FVar9 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle));
+          FVar9 = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle);
           dVar1 = FVar9.eax;
           if (FVar9.carry) goto LAB_0040ea0c;
           pbVar3 = destination + 0x200;
@@ -129,13 +129,13 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
             path = path + 2;
             pbVar3 = pbVar3 + 4;
           }
-          FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_END,0,(void *)fileHandle));
+          FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_END,0,(void *)fileHandle);
           dVar1 = FVar6.eax;
           if (FVar6.carry) goto LAB_0040ea0c;
-          FVar9 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,destination + 0x200,(void *)fileHandle));
+          FVar9 = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination + 0x200,(void *)fileHandle);
           dVar1 = FVar9.eax;
           if (FVar9.carry) goto LAB_0040ea0c;
-          FVar9 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(byteCount_00,sourceData,(void *)fileHandle));
+          FVar9 = (*g_FileSystemWriteExactOrFlushCf)(byteCount_00,sourceData,(void *)fileHandle);
           dVar1 = FVar9.eax;
           if (FVar9.carry) goto LAB_0040ea0c;
         }
@@ -154,7 +154,7 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           destination[0x3ef] = 0;
           *(dword *)(destination + 0x3f4) = *sourceData;
           *(PckDecodedByteCount *)(destination + 0x3f0) = unpackedSize;
-          FVar9 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle));
+          FVar9 = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle);
           dVar1 = FVar9.eax;
           if (FVar9.carry) goto LAB_0040ea0c;
           pbVar3 = destination + 0x200;
@@ -163,11 +163,11 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
             path = path + 2;
             pbVar3 = pbVar3 + 4;
           }
-          FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_END,0,(void *)fileHandle));
+          FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_END,0,(void *)fileHandle);
           dVar1 = FVar6.eax;
           if (FVar6.carry) goto LAB_0040ea0c;
-          FVar9 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)
-                            (byteCount,destination + 0x200,(void *)fileHandle));
+          FVar9 = (*g_FileSystemWriteExactOrFlushCf)
+                            (byteCount,destination + 0x200,(void *)fileHandle);
           dVar1 = FVar9.eax;
           if (FVar9.carry) goto LAB_0040ea0c;
         }
@@ -230,7 +230,7 @@ Package_LoadEntryIntoBuffer
     }
   }
   if ((bufferCapacityAndLoadFlags & 0x40000000) == 0) {
-    FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,path));
+    FVar4 = (*g_FileSystemOpenCf)(0,path);
     handle = (void *)FVar4.eax;
     if (FVar4.carry) goto LAB_0040ee1c;
   }
@@ -238,22 +238,22 @@ Package_LoadEntryIntoBuffer
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                (word *)&g_ExecutableDirectoryUtf16);
-    FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
+    FVar4 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
     handle = (void *)FVar4.eax;
     if (FVar4.carry) {
-      FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,path));
+      FVar4 = (*g_FileSystemOpenCf)(0,path);
       handle = (void *)FVar4.eax;
       if (FVar4.carry) goto LAB_0040ee1c;
     }
   }
-  FVar5 = THANDOR_BITCAST(Win32FileSizeEaxCf5, FileSystemSizeEaxCf5, (*g_FileSystemGetSizeCf)(handle));
+  FVar5 = (*g_FileSystemGetSizeCf)(handle);
   byteCount = (void *)FVar5.eax;
   if (!FVar5.carry) {
     if ((pvVar1 < byteCount) && (byteCount = pvVar1, (void *)0x7fffff < pvVar1)) {
       byteCount = (void *)0x5;
     }
     else {
-      FVar6 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,destination,handle));
+      FVar6 = (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,destination,handle);
       byteCount = (void *)FVar6.eax;
       if (!FVar6.carry) {
         (*g_FileSystemClose)(handle);
@@ -298,11 +298,11 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(wor
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (word *)&g_ExecutableDirectoryUtf16);
-      FVar3 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)
-                        (FILESYSTEM_OPEN_WRITE_ACCESS,(word *)&g_FileSystemCombinedPathScratchUtf16));
+      FVar3 = (*g_FileSystemOpenCf)
+                        (FILESYSTEM_OPEN_WRITE_ACCESS,(word *)&g_FileSystemCombinedPathScratchUtf16);
       handle = (PckEntryHeader *)FVar3.eax;
       if (FVar3.carry) {
-        FVar3 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(FILESYSTEM_OPEN_WRITE_ACCESS,path));
+        FVar3 = (*g_FileSystemOpenCf)(FILESYSTEM_OPEN_WRITE_ACCESS,path);
         handle = (PckEntryHeader *)FVar3.eax;
         if (FVar3.carry) goto LAB_0040e480;
       }
@@ -367,52 +367,52 @@ LAB_0040e81c:
     SVar10.valueOrError = (dword)pPVar4;
     return SVar10;
   }
-  FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle));
+  FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
   pPVar4 = (PckEntryHeader *)FVar6.eax;
   if (!FVar6.carry) {
     PVar1 = pPVar3->packedSize;
-    FVar7 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle));
+    FVar7 = (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle);
     pPVar4 = (PckEntryHeader *)FVar7.eax;
     if (!FVar7.carry) {
       iVar2 = *(int *)(destination + 4);
       *(int *)(destination + 0xb0) = *(int *)(destination + 0xb0) + -1;
       *(PckStoredByteCount *)(destination + 4) = *(int *)(destination + 4) - (PVar1 + 0x200);
-      FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle));
+      FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       pPVar4 = (PckEntryHeader *)FVar6.eax;
       if (!FVar6.carry) {
-        FVar8 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle));
+        FVar8 = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle);
         pPVar4 = (PckEntryHeader *)FVar8.eax;
         if (!FVar8.carry) {
           distance = pPVar3->runtimePayloadOffset + pPVar3->packedSize + 0x200;
           byteCount = iVar2 - distance;
           if (byteCount == 0) {
-            FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)
+            FVar6 = (*g_FileSystemSeekCf)
                               (FILESYSTEM_SEEK_BEGIN,pPVar3->runtimePayloadOffset,(void *)fileHandle
-                              ));
+                              );
             pPVar4 = (PckEntryHeader *)FVar6.eax;
             if (FVar6.carry) goto LAB_0040e828;
-            FVar8 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0,(void *)0x0,(void *)fileHandle));
+            FVar8 = (*g_FileSystemWriteExactOrFlushCf)(0,(void *)0x0,(void *)fileHandle);
             pPVar4 = (PckEntryHeader *)FVar8.eax;
             if (FVar8.carry) goto LAB_0040e828;
           }
           else {
-            FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle));
+            FVar6 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
             pPVar4 = (PckEntryHeader *)FVar6.eax;
             if ((FVar6.carry) || (pPVar4 = (PckEntryHeader *)0x14, 0x800000 < byteCount))
             goto LAB_0040e828;
-            FVar7 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(byteCount,g_PackageScratchBuffer,(void *)fileHandle));
+            FVar7 = (*g_FileSystemReadExactCf)(byteCount,g_PackageScratchBuffer,(void *)fileHandle);
             pPVar4 = (PckEntryHeader *)FVar7.eax;
             if (FVar7.carry) goto LAB_0040e828;
-            FVar6 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)
+            FVar6 = (*g_FileSystemSeekCf)
                               (FILESYSTEM_SEEK_BEGIN,pPVar3->runtimePayloadOffset,(void *)fileHandle
-                              ));
+                              );
             pPVar4 = (PckEntryHeader *)FVar6.eax;
             if (FVar6.carry) goto LAB_0040e828;
-            FVar8 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)
-                              (byteCount,g_PackageScratchBuffer,(void *)fileHandle));
+            FVar8 = (*g_FileSystemWriteExactOrFlushCf)
+                              (byteCount,g_PackageScratchBuffer,(void *)fileHandle);
             pPVar4 = (PckEntryHeader *)FVar8.eax;
             if (FVar8.carry) goto LAB_0040e828;
-            FVar8 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0,(void *)0x0,(void *)fileHandle));
+            FVar8 = (*g_FileSystemWriteExactOrFlushCf)(0,(void *)0x0,(void *)fileHandle);
             pPVar4 = (PckEntryHeader *)FVar8.eax;
             if (FVar8.carry) goto LAB_0040e828;
           }
@@ -458,14 +458,14 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                (word *)&g_ExecutableDirectoryUtf16);
-    FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
+    FVar4 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
     destination = (byte *)FVar4.eax;
     if (FVar4.carry) {
-      FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,path));
+      FVar4 = (*g_FileSystemOpenCf)(0,path);
       destination = (byte *)FVar4.eax;
       if (FVar4.carry) goto LAB_0040ef3f;
     }
-    FVar5 = THANDOR_BITCAST(Win32FileSizeEaxCf5, FileSystemSizeEaxCf5, (*g_FileSystemGetSizeCf)(destination));
+    FVar5 = (*g_FileSystemGetSizeCf)(destination);
     pbVar1 = (byte *)FVar5.eax;
     if (!FVar5.carry) {
       AVar2 = (*g_MemoryApi.alloc)((dword)pbVar1);
@@ -475,7 +475,7 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
         pbVar1 = (byte *)0x5;
       }
       else {
-        FVar6 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)((FileIoByteCount)pbVar1,(void *)AVar2.eax,destination));
+        FVar6 = (*g_FileSystemReadExactCf)((FileIoByteCount)pbVar1,(void *)AVar2.eax,destination);
         pbVar1 = (byte *)FVar6.eax;
         if (!FVar6.carry) {
           (*g_FileSystemClose)(destination);
@@ -536,11 +536,11 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_Mount(word *path)
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (word *)&g_ExecutableDirectoryUtf16);
-      FVar3 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)
-                        (FILESYSTEM_OPEN_WRITE_ACCESS,(word *)&g_FileSystemCombinedPathScratchUtf16));
+      FVar3 = (*g_FileSystemOpenCf)
+                        (FILESYSTEM_OPEN_WRITE_ACCESS,(word *)&g_FileSystemCombinedPathScratchUtf16);
       handle = (PckEntryHeader *)FVar3.eax;
       if (FVar3.carry) {
-        FVar3 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(FILESYSTEM_OPEN_WRITE_ACCESS,path));
+        FVar3 = (*g_FileSystemOpenCf)(FILESYSTEM_OPEN_WRITE_ACCESS,path);
         handle = (PckEntryHeader *)FVar3.eax;
         if (FVar3.carry) goto LAB_0040e3d0;
       }
@@ -778,12 +778,12 @@ Package_DecodeEntryInto(byte *destination,PckEntryHeader *entry,EngineFileHandle
   PackageDecodeEaxCf5 PVar5;
   PackageDecodeEaxCf5 PVar6;
   
-  FVar2 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)
-                    (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + 0x200,(void *)fileHandle));
+  FVar2 = (*g_FileSystemSeekCf)
+                    (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + 0x200,(void *)fileHandle);
   decoderStatusCode = FVar2.eax;
   if (!FVar2.carry) {
     PVar1 = entry->compressionMethod;
-    FVar3 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(entry->packedSize,g_PackageScratchBuffer,(void *)fileHandle));
+    FVar3 = (*g_FileSystemReadExactCf)(entry->packedSize,g_PackageScratchBuffer,(void *)fileHandle);
     decoderStatusCode = FVar3.eax;
     if (!FVar3.carry) {
       PVar4 = (*g_PckDecoderTable[PVar1])
@@ -1036,11 +1036,11 @@ Package_ReadDirectory(EngineFileHandle fileHandle)
   do {
     if (fileHandle == pPVar6->fileHandle) {
       destination = pPVar6->entryHeaders;
-      FVar8 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle));
+      FVar8 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       pbVar2 = g_PackageScratchBuffer;
       uVar3 = FVar8.eax;
       if (FVar8.carry) goto LAB_0040e59f;
-      FVar9 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,(void *)fileHandle));
+      FVar9 = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,(void *)fileHandle);
       uVar3 = FVar9.eax;
       if (FVar9.carry) goto LAB_0040e59f;
       PVar4 = *(PckEntryCount *)(pbVar2 + 0xb0);
@@ -1058,14 +1058,14 @@ LAB_0040e59f:
   SVar7.valueOrError = uVar3;
   return SVar7;
 LAB_0040e5f0:
-  FVar9 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle));
+  FVar9 = (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle);
   uVar3 = FVar9.eax;
   if (FVar9.carry) goto LAB_0040e59f;
   pPVar1 = &destination->packedSize;
   destination->runtimePayloadOffset = distance;
   destination = destination + 1;
   distance = distance + *pPVar1 + 0x200;
-  FVar8 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle));
+  FVar8 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
   uVar3 = FVar8.eax;
   if (FVar8.carry) goto LAB_0040e59f;
   PVar4 = PVar4 - 1;

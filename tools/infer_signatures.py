@@ -11,6 +11,7 @@ the FunctionDefinition `FileSystemOpenCfProc` itself. Two sources recover it:
 Anything else stays an unprototyped `dword Name()` placeholder.
 Imported by tools/gen_globals.py.
 """
+import json
 import pathlib
 import re
 
@@ -54,7 +55,59 @@ def holders(ptype, types_h, globals_decls):
     return names
 
 
+GHIDRA_EXPORT = ROOT / "ghidra/export/function_definitions.jsonl"
+
+
+def ghidra_definitions():
+    """FunctionDefinition types exported by tools/ghidra/ExportBuildData.java, if present."""
+    if not GHIDRA_EXPORT.exists():
+        return {}
+    defs = {}
+    for line in GHIDRA_EXPORT.read_text(encoding="utf-8").splitlines():
+        d = json.loads(line)
+        defs.setdefault(d["name"], d)
+    return defs
+
+
 def infer(ptypes, globals_decls):
+    ghidra = ghidra_definitions()
+    if ghidra:
+        # the program database is authoritative; heuristics only for names it lacks
+        types_h = read(ROOT / "include/thandor/generated/types.h")
+        defined = lambda n: re.search(r"typedef[^;{]*\b" + n + r"\b\s*[(;\[]|\}\s*" + n + r"\b", types_h)
+        ordered, seen = [], set()
+
+        def visit(name):
+            # dependencies (other FunctionDefinitions used in the prototype) first
+            if name in seen or name not in ghidra or defined(name):
+                return
+            seen.add(name)
+            d = ghidra[name]
+            for t in [d["return"]] + [p["type"] for p in d["params"]]:
+                visit(t.replace("*", "").strip())
+            ordered.append(name)
+
+        for p in ptypes:
+            visit(p)
+        exact = {p: ("ghidra", ghidra[p]) for p in ordered}
+        rest = [p for p in ptypes if p not in ghidra]
+        return {**exact, **(infer_heuristic(rest, globals_decls) if rest else {})}
+    return infer_heuristic(ptypes, globals_decls)
+
+
+def is_import(d):
+    """DLL entry points (Glide, WinSock) really are __stdcall."""
+    return ("Import" in d["category"] or "/Network" in d["category"]
+            or d["name"].startswith(("WinSock_", "WSA", "Gr")))
+
+
+def conventions(sigs):
+    """Calling-convention markers used by exported prototypes (empty macros for the C build)."""
+    return sorted({s[1]["convention"] for s in sigs.values()
+                   if s and s[0] == "ghidra" and s[1]["convention"].startswith("__thandor_")})
+
+
+def infer_heuristic(ptypes, globals_decls):
     types_h = read(ROOT / "include/thandor/generated/types.h")
     protos = header_prototypes()
     sources = {p: strip_comments(read(p)) for p in (ROOT / "src").rglob("*.c") if p.parent.name != "generated"}
@@ -123,6 +176,12 @@ def validate(sig, names, texts):
 
 
 def render(ptype, sig):
+    if sig and sig[0] == "ghidra":
+        proto = sig[1]["prototype"].replace(" unknown ", " ", 1)
+        if not is_import(sig[1]):
+            # Ghidra's default x86 convention; the game's own functions are plain C (cdecl) here
+            proto = proto.replace(" __stdcall ", " ", 1)
+        return f"typedef {proto}; /* Ghidra FunctionDefinition {sig[1]['category']} */"
     if sig is None:
         return f"typedef dword {ptype}(); /* TODO: unrecovered signature */"
     if sig[0] == "full":

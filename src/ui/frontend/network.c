@@ -233,7 +233,7 @@ FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
       }
       return;
     }
-    (*g_NetworkBackendSlot1)(UVar10);
+    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale UVar10 */
   }
   returnValue = 0;
   do {
@@ -244,7 +244,7 @@ FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
       NVar8 = (*g_NetworkBackendSlot2)(0x3a1);
       errorOrValue = NVar8.eax;
       if (!NVar8.carry) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
-      (*g_NetworkBackendSlot1)(dVar11);
+      (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale dVar11 */
     }
     returnValue = returnValue + 1;
     if (g_NetworkBackendInstanceCount <= returnValue) {

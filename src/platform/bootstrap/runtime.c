@@ -807,7 +807,7 @@ dword __cdecl Game_LoadCoreAssets(void)
                 g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
                 do {
                   do {
-                    FVar13 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1)));
+                    FVar13 = (*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1));
                     if (FVar13.carry)
                     goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';

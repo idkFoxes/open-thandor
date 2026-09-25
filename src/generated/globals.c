@@ -59,7 +59,7 @@ PckCodecProc * g_PckDecoderTable[3];
 WideNumberFormatUtf16Proc * g_WideNumberFormatUtf16;
 FileSystemDeleteCfProc * g_FileSystemDeleteCf;
 FileSystemEnumerateDirectoryOrVolumeEntriesCfProc * g_FileSystemEnumerateDirectoryOrVolumeEntriesCf;
-word u________0040ff58[] = L"?:\\*.*"; /* TODO: verify text against thandor.exe */
+word u________0040ff58[] = L"?:\\*.*";
 FileSystemEnumerateDriveLettersEaxEcxProc * g_FileSystemEnumerateDriveLetters;
 FileSystemGetDriveTypeCodePreserveProc * g_FileSystemGetDriveTypeCode;
 WidePathBuffer256 g_UiTimedListRecordPathScratch;
@@ -90,12 +90,12 @@ qword g_SoundDecodeMmxWordLaneMask0;
 qword g_SoundDecodeMmxWordLaneMask1;
 qword g_SoundDecodeMmxWordLaneMask2;
 qword g_SoundDecodeMmxWordLaneMask3;
-word u_engine_font_gfx_0041b030[] = L"engine\\font.gfx"; /* TODO: verify text against thandor.exe */
+word u_engine_font_gfx_0041b030[] = L"engine\\font.gfx";
 GraphicsTextureSourceLoadPackageAssetProc * g_GraphicsTextureSourceLoadPackageAsset;
 byte * g_FontRuntimeBuffer;
 GraphicsTextureSourceAsset * g_FontTextureSources[2];
 TextResourceOverrideTable * g_TextResourceOverrides;
-word u_error__TXT2STR__unknown_characte_0041afac[] = L"error:_TXT2STR:_unknown_characte"; /* TODO: verify text against thandor.exe */
+word u_error__TXT2STR__unknown_characte_0041afac[] = L"error: TXT2STR: unknown character at:                        ";
 undefined DAT_00000033;
 undefined g_MissingTextResourceFallbackStream;
 LocaleGetTelephoneCountryCodeProc * g_LocaleGetDefaultTelephoneCountryCode;
@@ -262,8 +262,8 @@ GraphicsTextureSourceAsset * g_UiWindowTextureSource;
 dword g_UiTooltipTextStyle;
 word u__engine_winclass_gfx_004b0eb6[] = L"@engine\\winclass.gfx"; /* TODO: verify text against thandor.exe */
 pointer g_UiRootStackActionHandlerPage;
-word u_texte_winclass_str_004b0ee0[] = L"texte\\winclass.str"; /* TODO: verify text against thandor.exe */
-word u_engine_win_gfx_004b0f06[] = L"engine\\win.gfx"; /* TODO: verify text against thandor.exe */
+word u_texte_winclass_str_004b0ee0[] = L"texte\\winclass.str";
+word u_engine_win_gfx_004b0f06[] = L"engine\\win.gfx";
 GraphicsTextureSourceAsset * g_UiWindowClassTextureSource;
 GraphicsTextureSourceTiledBlitProc * g_GraphicsTextureSourceBlitTiledSourceAlpha;
 UiDirtyRectCount g_UiDirtyRectCount;
@@ -492,8 +492,8 @@ dword g_CursorOverflowTop;
 dword g_CursorOverflowBottom;
 undefined4 g_InGameFactionScratchBufferSetA8;
 undefined4 g_InGameFactionScratchBufferSetB8;
-word u_flm_ende0000_flm_0050df06[] = L"flm\\ende0000.flm"; /* TODO: verify text against thandor.exe */
-word u_flm_ende0001_flm_0050df28[] = L"flm\\ende0001.flm"; /* TODO: verify text against thandor.exe */
+word u_flm_ende0000_flm_0050df06[] = L"flm\\ende0000.flm";
+word u_flm_ende0001_flm_0050df28[] = L"flm\\ende0001.flm";
 undefined4 g_EndMovieSelectionIndex;
 undefined4 g_EndMovieVariantIndex;
 InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock;
@@ -512,20 +512,20 @@ GraphicsTextureSet * g_EffectTextureSet;
 GraphicsPaletteAsset * g_EffectPalette;
 GraphicsTextureSet * g_ShotTextureSet;
 GraphicsPaletteAsset * g_ShotPalette;
-word u_army_hex_0050dfb4[] = L"army.hex"; /* TODO: verify text against thandor.exe */
-word u_effect_hex_0050dfc6[] = L"effect.hex"; /* TODO: verify text against thandor.exe */
-word u_shot_hex_0050dfdc[] = L"shot.hex"; /* TODO: verify text against thandor.exe */
-word u_modul_hex_0050dfee[] = L"modul.hex"; /* TODO: verify text against thandor.exe */
-word u_field_hex_0050e002[] = L"field.hex"; /* TODO: verify text against thandor.exe */
-word u_light_hex_0050e016[] = L"light.hex"; /* TODO: verify text against thandor.exe */
-word u_widget_hex_0050e02a[] = L"widget.hex"; /* TODO: verify text against thandor.exe */
+word u_army_hex_0050dfb4[] = L"army.hex";
+word u_effect_hex_0050dfc6[] = L"effect.hex";
+word u_shot_hex_0050dfdc[] = L"shot.hex";
+word u_modul_hex_0050dfee[] = L"modul.hex";
+word u_field_hex_0050e002[] = L"field.hex";
+word u_light_hex_0050e016[] = L"light.hex";
+word u_widget_hex_0050e02a[] = L"widget.hex";
 LocaleFormatCurrentDateUtf16Proc * g_LocaleFormatCurrentDateUtf16;
-word u_level_hex_0050e040[] = L"level.hex"; /* TODO: verify text against thandor.exe */
-word u_daten_hex_0050e054[] = L"daten.hex"; /* TODO: verify text against thandor.exe */
-word u_campagne_hex_0050e068[] = L"campagne.hex"; /* TODO: verify text against thandor.exe */
+word u_level_hex_0050e040[] = L"level.hex";
+word u_daten_hex_0050e054[] = L"daten.hex";
+word u_campagne_hex_0050e068[] = L"campagne.hex";
 LocaleFormatCurrentTimeUtf16Proc * g_LocaleFormatCurrentTimeUtf16;
-word u_stat_hex_0050e082[] = L"stat.hex"; /* TODO: verify text against thandor.exe */
-word u_oldunit_hex_0050e094[] = L"oldunit.hex"; /* TODO: verify text against thandor.exe */
+word u_stat_hex_0050e082[] = L"stat.hex";
+word u_oldunit_hex_0050e094[] = L"oldunit.hex";
 undefined4 g_FrontendLoadedCampaignAsset;
 undefined1 g_InGameResourceRegistrationBusyCount;
 void * g_GameStatTableImage;
@@ -643,10 +643,10 @@ ModelRuntimeSlot * g_ModelRuntimeSlots;
 IMAGE_DOS_HEADER IMAGE_DOS_HEADER_00400000;
 ShotDefinition * g_ShotDefinitionRegistry[256];
 ShotRuntimeSlot * g_ShotRuntimeSlots;
-word u_gfx_panel_select_gfx_0052ce18[] = L"gfx\\panel\\select.gfx"; /* TODO: verify text against thandor.exe */
-word u_gfx_panel_info_gfx_0052ce42[] = L"gfx\\panel\\info.gfx"; /* TODO: verify text against thandor.exe */
-word u_gfx_panel_select_dat_0052ce68[] = L"gfx\\panel\\select.dat"; /* TODO: verify text against thandor.exe */
-word u_gfx_panel_info_dat_0052ce92[] = L"gfx\\panel\\info.dat"; /* TODO: verify text against thandor.exe */
+word u_gfx_panel_select_gfx_0052ce18[] = L"gfx\\panel\\select.gfx";
+word u_gfx_panel_info_gfx_0052ce42[] = L"gfx\\panel\\info.gfx";
+word u_gfx_panel_select_dat_0052ce68[] = L"gfx\\panel\\select.dat";
+word u_gfx_panel_info_dat_0052ce92[] = L"gfx\\panel\\info.dat";
 SelectionPlayerRuntimeBlock * g_SelectionPlayerBlocks;
 SelectionInfoEntitySlots * g_SelectionInfoEntitySlots;
 GraphicsTextureSourceLifecycleCallbackTable3 g_GraphicsTextureSourceLifecycleCallbacks3;
@@ -655,8 +655,8 @@ undefined g_SelectionPanelNumberScratchUtf16;
 ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels;
 word g_LevelEndingMovieSourcePath[256];
 undefined DAT_0000004f;
-word u_sound_level00_sam_0050df6c[] = L"sound\\level00.sam"; /* TODO: verify text against thandor.exe */
-word u_sound_music00_sam_0050df90[] = L"sound\\music00.sam"; /* TODO: verify text against thandor.exe */
+word u_sound_level00_sam_0050df6c[] = L"sound\\level00.sam";
+word u_sound_music00_sam_0050df90[] = L"sound\\music00.sam";
 undefined4 g_InGameLevelEffectVoiceSet0;
 undefined4 g_InGameLevelEffectVoiceSet1;
 undefined4 g_InGameLevelEffectVoiceSet2;
@@ -822,7 +822,7 @@ undefined4 g_AiStrategicClass12FWeightComponent2;
 undefined4 g_AiCollectedEntityCount;
 ArmyRuntimeSlot ** g_AiWorkspaceBuffer14_Size0100;
 AiTechnologyCandidateScoreCallback * g_AiTechnologyCandidateScoreCallbackTable[6];
-word u_engine_ki_dat_0053c5e4[] = L"engine\\ki.dat"; /* TODO: verify text against thandor.exe */
+word u_engine_ki_dat_0053c5e4[] = L"engine\\ki.dat";
 float g_WorldMotionSplineCachedDerivatives[6];
 float * g_WorldMotionSplineCoefficientTables[6];
 float * g_WorldMotionSplineMatrixWorkspaces[6];
@@ -830,7 +830,7 @@ sdword g_WorldMotionSplineEquationCounts[6];
 float g_Q12FloatScale4096;
 TerrainCompositeTextureRuntime * g_TerrainCompositeTexture;
 GraphicsTextureSourceAsset * g_InGamePanelTextureSource;
-word u_gfx_panel_menue_gfx_00545b78[] = L"gfx\\panel\\menue.gfx"; /* TODO: verify text against thandor.exe */
+word u_gfx_panel_menue_gfx_00545b78[] = L"gfx\\panel\\menue.gfx";
 DirectSoundVoiceSet * g_UiButtonSoundVoiceSets7[7];
 GraphicsTextureSourceAsset * g_FrontendMenuTextureSource;
 FrontendTaskAssignmentControlOffsetTablesA8 g_FrontendTaskAssignmentControlOffsets;
@@ -844,10 +844,10 @@ undefined4 g_FrontendScenarioInitializationCount;
 FrontendLoadedLevelRuntimeImage370 * g_FrontendLoadedLevelAsset;
 undefined4 g_FrontendScenarioTransferState;
 undefined4 g_FrontendFactionAssignmentReadyStateGeneration;
-word u_level_0050daac[] = L"level"; /* TODO: verify text against thandor.exe */
+word u_level_0050daac[] = L"level";
 ScenarioCatalogHeader * g_ScenarioCatalog;
 undefined2 g_FrontendScenarioPathScratchUtf16;
-word u_level_0050dab8[] = L"level"; /* TODO: verify text against thandor.exe */
+word u_level_0050dab8[] = L"level";
 undefined4 g_FrontendPendingPageAction;
 undefined4 g_FrontendRomTransitionPendingCount;
 undefined4 g_FrontendMenuSoundVoiceSetTable100;
@@ -856,9 +856,9 @@ undefined4 g_FrontendActiveRomRecordTable;
 undefined4 g_FrontendNetworkState;
 undefined4 g_FrontendPlayerMessageBuffers;
 undefined g_FrontendPlayerMessageScratchUtf16;
-char s_NAME__CLIENT__KARTE___00545e91[] = "NAME=\"CLIENT=\"KARTE=\""; /* TODO: verify text against thandor.exe */
-word u_level___lev_005460a6[] = L"level\\*.lev"; /* TODO: verify text against thandor.exe */
-word u_level___str_005460be[] = L"level\\*.str"; /* TODO: verify text against thandor.exe */
+char s_NAME__CLIENT__KARTE___00545e91[] = "NAME=\"CLIENT=\"KARTE=\"";
+word u_level___lev_005460a6[] = L"level\\*.lev";
+word u_level___str_005460be[] = L"level\\*.str";
 dword g_DebugOverlayCounterRefreshCountdown;
 word g_FrontendDebugOverlayTextSlot00Utf16[16];
 GraphicsDiagnosticCounter g_TextureBindStateChangeCount;
@@ -877,14 +877,14 @@ word g_FrontendDebugOverlayTextSlot12Utf16[16];
 word g_FrontendDebugOverlayTextSlot13Utf16[16];
 GraphicsDiagnosticCounter g_TextureDeviceReloadCount;
 undefined DAT_0000003b;
-word u_engine_zentrale_rom_00545aa4[] = L"engine\\zentrale.rom"; /* TODO: verify text against thandor.exe */
+word u_engine_zentrale_rom_00545aa4[] = L"engine\\zentrale.rom";
 RomRegistrySlot * g_RomRegistrySlots;
 undefined4 g_FrontendCentralPaletteAsset;
 undefined4 g_FrontendCentralTextureSet;
-word u_sound_menue01_sam_00545b54[] = L"sound\\menue01.sam"; /* TODO: verify text against thandor.exe */
-word u_gfx_texturen_zentrale_gfx_00545acc[] = L"gfx\\texturen\\zentrale.gfx"; /* TODO: verify text against thandor.exe */
-word u_gfx_texturen_zentrale_pal_00545b00[] = L"gfx\\texturen\\zentrale.pal"; /* TODO: verify text against thandor.exe */
-word u_sound_music00_sam_00545c4e[] = L"sound\\music00.sam"; /* TODO: verify text against thandor.exe */
+word u_sound_menue01_sam_00545b54[] = L"sound\\menue01.sam";
+word u_gfx_texturen_zentrale_gfx_00545acc[] = L"gfx\\texturen\\zentrale.gfx";
+word u_gfx_texturen_zentrale_pal_00545b00[] = L"gfx\\texturen\\zentrale.pal";
+word u_sound_music00_sam_00545c4e[] = L"sound\\music00.sam";
 undefined4 g_FrontendMusicVoiceSet;
 undefined4 g_FrontendMusicActiveBuffer;
 NetworkBackendInstanceDescriptorPrefix * g_NetworkBackendInstanceTable;
@@ -897,7 +897,7 @@ undefined g_FrontendNetworkEndpointTextUtf16;
 undefined4 g_FrontendRootInitializationTemplate;
 undefined4 g_FrontendLocalPlayerNameUtf16;
 undefined4 g_FrontendMenuSoundVoiceSetLoadBaseEntry1;
-char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST"; /* TODO: verify text against thandor.exe */
+char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[] = "SPIELER=\"SPIEL=\"NETZWERK=\"HOST";
 CommandLineFindOptionProc * g_CommandLineFindOption;
 dword g_FrontendPendingPageActionDepth;
 dword g_ScenarioCatalogUsedBytes;
@@ -925,13 +925,13 @@ undefined4 g_FrontendRomTransitionKeyframe1Channel5Q12;
 undefined4 g_FrontendRomTransitionKeyframe0TimeQ12;
 undefined4 g_FrontendRomTransitionKeyframe1TimeQ12;
 UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText;
-word u_gfx_panel_credits_gfx_00545c22[] = L"gfx\\panel\\credits.gfx"; /* TODO: verify text against thandor.exe */
+word u_gfx_panel_credits_gfx_00545c22[] = L"gfx\\panel\\credits.gfx";
 FrontendUiSemanticScratch280 g_FrontendUiDisplayModeAndTaskAssignmentScratch;
-word u_save_0050daa2[] = L"save"; /* TODO: verify text against thandor.exe */
-word u_save___sve_0050d9c8[] = L"save\\*.sve"; /* TODO: verify text against thandor.exe */
+word u_save_0050daa2[] = L"save";
+word u_save___sve_0050d9c8[] = L"save\\*.sve";
 ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf16;
-word u_level_level_dat_0050da0e[] = L"level\\level.dat"; /* TODO: verify text against thandor.exe */
-word u_level_campagne_dat_0050da52[] = L"level\\campagne.dat"; /* TODO: verify text against thandor.exe */
+word u_level_level_dat_0050da0e[] = L"level\\level.dat";
+word u_level_campagne_dat_0050da52[] = L"level\\campagne.dat";
 undefined g_ScenarioCatalogPathScratchUtf16;
 ScenarioLevelDataPathTemplate24 g_ScenarioLevelDataPathTemplateUtf16;
 ScenarioCatalogRefreshSelectedRecordCallback * g_FrontendScenarioMapOptionHandlerTable[3];
@@ -984,11 +984,11 @@ undefined4 g_FrontendTransferResponsePending;
 FrontendPacket8000ASnapshotChunk g_FrontendPacket8000ABuffer;
 FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer;
 FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer;
-word u_gfx_panel_panel0_gfx_005630d0[] = L"gfx\\panel\\panel0.gfx"; /* TODO: verify text against thandor.exe */
-word u_gfx_panel_diagram0_gfx_00563120[] = L"gfx\\panel\\diagram0.gfx"; /* TODO: verify text against thandor.exe */
-word u_gfx_panel_tech_gfx_005630fa[] = L"gfx\\panel\\tech.gfx"; /* TODO: verify text against thandor.exe */
+word u_gfx_panel_panel0_gfx_005630d0[] = L"gfx\\panel\\panel0.gfx";
+word u_gfx_panel_diagram0_gfx_00563120[] = L"gfx\\panel\\diagram0.gfx";
+word u_gfx_panel_tech_gfx_005630fa[] = L"gfx\\panel\\tech.gfx";
 undefined4 g_InGameSelectionDetailControlOffsetTable32;
-word u_gfx_panel_window_gfx_0056318e[] = L"gfx\\panel\\window.gfx"; /* TODO: verify text against thandor.exe */
+word u_gfx_panel_window_gfx_0056318e[] = L"gfx\\panel\\window.gfx";
 undefined4 g_InGameDiagramTextureSource;
 undefined4 g_InGameTechnologyTextureSource;
 undefined4 g_InGameWindowTextureSource;
@@ -1067,7 +1067,7 @@ undefined4 g_InGamePendingSimulationTicks;
 SoundStopAllVoicesProc * g_SoundStopAllVoices;
 dword g_EndMoviePendingTicks;
 UiCommandDispatchRecord g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30[2];
-word u_flm_ende0000_flm_0050df4a[] = L"flm\\ende0000.flm"; /* TODO: verify text against thandor.exe */
+word u_flm_ende0000_flm_0050df4a[] = L"flm\\ende0000.flm";
 undefined g_EndGameElapsedTimeScratchUtf16;
 RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases;
 byte g_KeyboardSpecialKeyDown[32];
@@ -1145,36 +1145,36 @@ undefined InGameCommandHandlerCodeRegionEnd;
 FrontendPacket10023StateAck g_FrontendPacket10023Buffer;
 FrontendCommandPacketRecord g_FrontendPacket10021Buffer;
 InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12;
-word u_texte_techno_str_0050dec4[] = L"texte\\techno.str"; /* TODO: verify text against thandor.exe */
-word u_texte_neterror_str_0050f104[] = L"texte\\neterror.str"; /* TODO: verify text against thandor.exe */
-word u_texte_hilfe_str_00545b34[] = L"texte\\hilfe.str"; /* TODO: verify text against thandor.exe */
-word u_texte_menue_str_00545ba0[] = L"texte\\menue.str"; /* TODO: verify text against thandor.exe */
-word u_texte_level_str_00545bc0[] = L"texte\\level.str"; /* TODO: verify text against thandor.exe */
-word u_texte_inhalt_str_00545be0[] = L"texte\\inhalt.str"; /* TODO: verify text against thandor.exe */
-word u_texte_help_str_00563170[] = L"texte\\help.str"; /* TODO: verify text against thandor.exe */
-word u_texte_tastatur_str_005631b8[] = L"texte\\tastatur.str"; /* TODO: verify text against thandor.exe */
-word u_Thandor_00572e10[] = L"Thandor"; /* TODO: verify text against thandor.exe */
-char s_Software_Planet4_Thandor_00572e20[] = "Software\\Planet4\\Thandor"; /* TODO: verify text against thandor.exe */
-word u_daten_pck_00572e56[] = L"daten.pck"; /* TODO: verify text against thandor.exe */
-word u_modelle_pck_00572e6a[] = L"modelle.pck"; /* TODO: verify text against thandor.exe */
-word u_graphik_pck_00572e82[] = L"graphik.pck"; /* TODO: verify text against thandor.exe */
-word u_sound_pck_00572e9a[] = L"sound.pck"; /* TODO: verify text against thandor.exe */
+word u_texte_techno_str_0050dec4[] = L"texte\\techno.str";
+word u_texte_neterror_str_0050f104[] = L"texte\\neterror.str";
+word u_texte_hilfe_str_00545b34[] = L"texte\\hilfe.str";
+word u_texte_menue_str_00545ba0[] = L"texte\\menue.str";
+word u_texte_level_str_00545bc0[] = L"texte\\level.str";
+word u_texte_inhalt_str_00545be0[] = L"texte\\inhalt.str";
+word u_texte_help_str_00563170[] = L"texte\\help.str";
+word u_texte_tastatur_str_005631b8[] = L"texte\\tastatur.str";
+word u_Thandor_00572e10[] = L"Thandor";
+char s_Software_Planet4_Thandor_00572e20[] = "Software\\Planet4\\Thandor";
+word u_daten_pck_00572e56[] = L"daten.pck";
+word u_modelle_pck_00572e6a[] = L"modelle.pck";
+word u_graphik_pck_00572e82[] = L"graphik.pck";
+word u_sound_pck_00572e9a[] = L"sound.pck";
 dword g_DataPackageHandle;
-word u_filme_pck_00572eae[] = L"filme.pck"; /* TODO: verify text against thandor.exe */
+word u_filme_pck_00572eae[] = L"filme.pck";
 dword g_ModelPackageHandle;
-word u_level_pck_00572ec2[] = L"level.pck"; /* TODO: verify text against thandor.exe */
+word u_level_pck_00572ec2[] = L"level.pck";
 dword g_GraphicsPackageHandle;
-word u_sound_button0_sam_00572f06[] = L"sound\\button0.sam"; /* TODO: verify text against thandor.exe */
+word u_sound_button0_sam_00572f06[] = L"sound\\button0.sam";
 dword g_MoviePackageHandle;
-word u_sound_button1_sam_00572f2a[] = L"sound\\button1.sam"; /* TODO: verify text against thandor.exe */
+word u_sound_button1_sam_00572f2a[] = L"sound\\button1.sam";
 dword g_LevelPackageHandle;
-word u_sound_button2_sam_00572f4e[] = L"sound\\button2.sam"; /* TODO: verify text against thandor.exe */
-word u_sound_button3_sam_00572f72[] = L"sound\\button3.sam"; /* TODO: verify text against thandor.exe */
-word u_sound_button4_sam_00572f96[] = L"sound\\button4.sam"; /* TODO: verify text against thandor.exe */
-word u_sound_button5_sam_00572fba[] = L"sound\\button5.sam"; /* TODO: verify text against thandor.exe */
-word u_sound_button6_sam_00572fde[] = L"sound\\button6.sam"; /* TODO: verify text against thandor.exe */
-word u_gfx_panel_stat_gfx_00573002[] = L"gfx\\panel\\stat.gfx"; /* TODO: verify text against thandor.exe */
-word u_engine_pcx_fnc_00573028[] = L"engine\\pcx.fnc"; /* TODO: verify text against thandor.exe */
+word u_sound_button2_sam_00572f4e[] = L"sound\\button2.sam";
+word u_sound_button3_sam_00572f72[] = L"sound\\button3.sam";
+word u_sound_button4_sam_00572f96[] = L"sound\\button4.sam";
+word u_sound_button5_sam_00572fba[] = L"sound\\button5.sam";
+word u_sound_button6_sam_00572fde[] = L"sound\\button6.sam";
+word u_gfx_panel_stat_gfx_00573002[] = L"gfx\\panel\\stat.gfx";
+word u_engine_pcx_fnc_00573028[] = L"engine\\pcx.fnc";
 DynamicApiBinding g_BootstrapApiBindings[8];
 GraphicsTextureSourceAsset * g_InGameStatusPanelTextureSource;
 byte * g_CoreAssetScratchSlice0;
@@ -1205,17 +1205,17 @@ dword g_FrontendPlayerListRow7;
 GraphicsTextureSourceAsset * g_CursorSourceAsset;
 InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
 dword g_IntroMoviePendingTicks;
-word u_flm_intro0_flm_00573046[] = L"flm\\intro0.flm"; /* TODO: verify text against thandor.exe */
-char s_NOINTRO_00573064[] = "NOINTRO"; /* TODO: verify text against thandor.exe */
+word u_flm_intro0_flm_00573046[] = L"flm\\intro0.flm";
+char s_NOINTRO_00573064[] = "NOINTRO";
 DynamicModuleEntry g_DynamicModules[16];
 dword g_DynamicModuleCount;
-char dynapi_9[] = "dynapi_9"; /* TODO: verify text against thandor.exe */
-word u_texte_error_str_00407d20[] = L"texte\\error.str"; /* TODO: verify text against thandor.exe */
+char dynapi_9[] = "LoadLibraryA";
+word u_texte_error_str_00407d20[] = L"texte\\error.str";
 FatalErrorPassThroughProc * g_FatalErrorExitFallbackDispatchCf;
 HWND g_MainWindow;
 byte g_FatalErrorNarrowBuffer[1024];
-word u_THANDOR_cfg_0040e23d[] = L"THANDOR.cfg"; /* TODO: verify text against thandor.exe */
-word u_engine_pck_0040e255[] = L"engine.pck"; /* TODO: verify text against thandor.exe */
+word u_THANDOR_cfg_0040e23d[] = L"THANDOR.cfg";
+word u_engine_pck_0040e255[] = L"engine.pck";
 word g_DefaultComputerLabelUtf16[32];
 undefined g_FileSystemConfigCharacterNormalizationMap;
 pointer g_FileSystemInitComputerNameCapacityOrConfigCursor;
@@ -1253,14 +1253,14 @@ sdword g_GraphicsBackendAccessState;
 IDirectDrawSurface3 * g_PrimarySurface3;
 GraphicsCursorFrameRecord * g_CursorFrameRecords;
 IDirectInputA * g_DirectInput;
-word u_engine_mouse_gfx_00416864[] = L"engine\\mouse.gfx"; /* TODO: verify text against thandor.exe */
+word u_engine_mouse_gfx_00416864[] = L"engine\\mouse.gfx";
 IDirectInputDeviceA * g_MouseDevice;
-word u_engine_mouse_dat_00416886[] = L"engine\\mouse.dat"; /* TODO: verify text against thandor.exe */
+word u_engine_mouse_dat_00416886[] = L"engine\\mouse.dat";
 SoftwareDisplayModeHookProc * g_DirectInputMousePreviousDisplayModeHookCf;
-char dynapi_3[] = "dynapi_3"; /* TODO: verify text against thandor.exe */
+char dynapi_3[] = "DINPUT";
 HINSTANCE g_hInstance;
 DirectInputCreateA * pDirectInputCreateA;
-char dynapi_19[] = "dynapi_19"; /* TODO: verify text against thandor.exe */
+char dynapi_19[] = "DirectInputCreateA";
 dword g_CursorMaxWidth;
 dword g_CursorMaxHeight;
 TH_LEGACY_GUID GUID_SysMouse_Local;
@@ -1281,17 +1281,17 @@ SoftwareFramebufferAccess * g_CursorAlternateSavedBackground;
 dword g_KeyboardToggleLatchMask;
 dword g_GraphicsEnumerateAllDevicesFlag;
 undefined DAT_00000017;
-char s_D3DALL_00578078[] = "D3DALL"; /* TODO: verify text against thandor.exe */
-char s_GLIDE_0057ee84[] = "GLIDE"; /* TODO: verify text against thandor.exe */
+char s_D3DALL_00578078[] = "D3DALL";
+char s_GLIDE_0057ee84[] = "GLIDE";
 TH_LEGACY_GUID IID_IDirect3D2_Local;
-char dynapi_2[] = "dynapi_2"; /* TODO: verify text against thandor.exe */
+char dynapi_2[] = "DDRAW";
 GraphicsTextureSetRefreshProc * g_GraphicsRefreshTextureColor;
 GraphicsTextureResource ** g_GraphicsTextureSlots;
 DirectDrawPaletteEntry * g_TexturePaletteEntries;
 DirectDrawCreate * pDirectDrawCreate;
 DirectDrawEnumerateA * pDirectDrawEnumerateA;
-char dynapi_17[] = "dynapi_17"; /* TODO: verify text against thandor.exe */
-char dynapi_18[] = "dynapi_18"; /* TODO: verify text against thandor.exe */
+char dynapi_17[] = "DirectDrawCreate";
+char dynapi_18[] = "DirectDrawEnumerateA";
 GraphicsBackendRefreshActiveAdapterProc * g_GraphicsBackendRefreshActiveAdapterCf;
 SoftwareDisplayModeHookProc * g_GraphicsDisplayModeFinalizeCf;
 undefined4 g_Direct3DOpaqueTextureFormatBitsPerPixel;
@@ -1349,7 +1349,7 @@ GrGetStringImportProc * g_GrGetString;
 GrGlideInitImportProc * g_GrGlideInit;
 GrQueryResolutionsImportProc * g_GrQueryResolutions;
 GrSstSelectImportProc * g_GrSstSelect;
-char dynapi_5[] = "dynapi_5"; /* TODO: verify text against thandor.exe */
+char dynapi_5[] = "GLIDE3X";
 GrGlideShutdownImportProc * g_GrGlideShutdown;
 GuGammaCorrectionRGBImportProc * g_GuGammaCorrectionRGB;
 GrSstWinCloseImportProc * g_GrSstWinClose;
@@ -1423,7 +1423,7 @@ GrBufferSwapImportProc * g_GrBufferSwap;
 GrLfbReadRegionImportProc * g_GrLfbReadRegion;
 WAVEFORMATEX WaveFormat_PCM_22050_Stereo16;
 DSBUFFERDESC_DX6 PrimarySoundBufferDesc;
-char dynapi_4[] = "dynapi_4"; /* TODO: verify text against thandor.exe */
+char dynapi_4[] = "DSOUND";
 IDirectSound * g_DirectSound;
 IDirectSoundBuffer * g_PrimarySoundBuffer;
 TH_LEGACY_LONG g_PrimaryVolume;
@@ -1431,62 +1431,62 @@ TH_LEGACY_LONG g_PrimaryPan;
 SoundQueryVoiceRegsProc * g_SoundQueryVoiceRegs;
 DirectSoundCreate * pDirectSoundCreate;
 DirectSoundEnumerateA * pDirectSoundEnumerateA;
-char dynapi_20[] = "dynapi_20"; /* TODO: verify text against thandor.exe */
+char dynapi_20[] = "DirectSoundCreate";
 DirectSoundVoiceSet ** g_DirectSoundVoiceSetRegistry;
 DirectSoundCaptureCreate * pDirectSoundCaptureCreate;
-char dynapi_21[] = "dynapi_21"; /* TODO: verify text against thandor.exe */
+char dynapi_21[] = "DirectSoundEnumerateA";
 DirectSoundCaptureEnumerateA * pDirectSoundCaptureEnumerateA;
-char dynapi_22[] = "dynapi_22"; /* TODO: verify text against thandor.exe */
-char dynapi_23[] = "dynapi_23"; /* TODO: verify text against thandor.exe */
+char dynapi_22[] = "DirectSoundCaptureCreate";
+char dynapi_23[] = "DirectSoundCaptureEnumerateA";
 sdword g_DirectSoundGainAttenuation[129];
 NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix_00584040;
 dword g_NetworkBackendMode;
 WinSockData11 g_WinSockStartupData;
-char s_Wsock32Export_accept[] = "Wsock32Export_accept"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_bind[] = "Wsock32Export_bind"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_closesocket[] = "Wsock32Export_closesocket"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_connect[] = "Wsock32Export_connect"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getpeername[] = "Wsock32Export_getpeername"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getsockname[] = "Wsock32Export_getsockname"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getsockopt[] = "Wsock32Export_getsockopt"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_htonl[] = "Wsock32Export_htonl"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_htons[] = "Wsock32Export_htons"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_inet_addr[] = "Wsock32Export_inet_addr"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_inet_ntoa[] = "Wsock32Export_inet_ntoa"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_ioctlsocket[] = "Wsock32Export_ioctlsocket"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_listen[] = "Wsock32Export_listen"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_ntohl[] = "Wsock32Export_ntohl"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_ntohs[] = "Wsock32Export_ntohs"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_recv[] = "Wsock32Export_recv"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_recvfrom[] = "Wsock32Export_recvfrom"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_select[] = "Wsock32Export_select"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_send[] = "Wsock32Export_send"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_sendto[] = "Wsock32Export_sendto"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_setsockopt[] = "Wsock32Export_setsockopt"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_shutdown[] = "Wsock32Export_shutdown"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_socket[] = "Wsock32Export_socket"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_gethostbyaddr[] = "Wsock32Export_gethostbyaddr"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_gethostbyname[] = "Wsock32Export_gethostbyname"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_gethostname[] = "Wsock32Export_gethostname"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getprotobyname[] = "Wsock32Export_getprotobyname"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getprotobynumber[] = "Wsock32Export_getprotobynumber"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getservbyname[] = "Wsock32Export_getservbyname"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_getservbyport[] = "Wsock32Export_getservbyport"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncGetHostByAddr[] = "Wsock32Export_WSAAsyncGetHostByAddr"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncGetHostByName[] = "Wsock32Export_WSAAsyncGetHostByName"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncGetProtoByName[] = "Wsock32Export_WSAAsyncGetProtoByName"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncGetProtoByNumber[] = "Wsock32Export_WSAAsyncGetProtoByNumber"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncGetServByName[] = "Wsock32Export_WSAAsyncGetServByName"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncGetServByPort[] = "Wsock32Export_WSAAsyncGetServByPort"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAAsyncSelect[] = "Wsock32Export_WSAAsyncSelect"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSACancelAsyncRequest[] = "Wsock32Export_WSACancelAsyncRequest"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSACancelBlockingCall[] = "Wsock32Export_WSACancelBlockingCall"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSACleanup[] = "Wsock32Export_WSACleanup"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAGetLastError[] = "Wsock32Export_WSAGetLastError"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAIsBlocking[] = "Wsock32Export_WSAIsBlocking"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSASetBlockingHook[] = "Wsock32Export_WSASetBlockingHook"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAStartup[] = "Wsock32Export_WSAStartup"; /* TODO: verify text against thandor.exe */
-char s_Wsock32Export_WSAUnhookBlockingHook[] = "Wsock32Export_WSAUnhookBlockingHook"; /* TODO: verify text against thandor.exe */
+char s_Wsock32Export_accept[] = "accept";
+char s_Wsock32Export_bind[] = "bind";
+char s_Wsock32Export_closesocket[] = "closesocket";
+char s_Wsock32Export_connect[] = "connect";
+char s_Wsock32Export_getpeername[] = "getpeername";
+char s_Wsock32Export_getsockname[] = "getsockname";
+char s_Wsock32Export_getsockopt[] = "getsockopt";
+char s_Wsock32Export_htonl[] = "htonl";
+char s_Wsock32Export_htons[] = "htons";
+char s_Wsock32Export_inet_addr[] = "inet_addr";
+char s_Wsock32Export_inet_ntoa[] = "inet_ntoa";
+char s_Wsock32Export_ioctlsocket[] = "ioctlsocket";
+char s_Wsock32Export_listen[] = "listen";
+char s_Wsock32Export_ntohl[] = "ntohl";
+char s_Wsock32Export_ntohs[] = "ntohs";
+char s_Wsock32Export_recv[] = "recv";
+char s_Wsock32Export_recvfrom[] = "recvfrom";
+char s_Wsock32Export_select[] = "select";
+char s_Wsock32Export_send[] = "send";
+char s_Wsock32Export_sendto[] = "sendto";
+char s_Wsock32Export_setsockopt[] = "setsockopt";
+char s_Wsock32Export_shutdown[] = "shutdown";
+char s_Wsock32Export_socket[] = "socket";
+char s_Wsock32Export_gethostbyaddr[] = "gethostbyaddr";
+char s_Wsock32Export_gethostbyname[] = "gethostbyname";
+char s_Wsock32Export_gethostname[] = "gethostname";
+char s_Wsock32Export_getprotobyname[] = "getprotobyname";
+char s_Wsock32Export_getprotobynumber[] = "getprotobynumber";
+char s_Wsock32Export_getservbyname[] = "getservbyname";
+char s_Wsock32Export_getservbyport[] = "getservbyport";
+char s_Wsock32Export_WSAAsyncGetHostByAddr[] = "WSAAsyncGetHostByAddr";
+char s_Wsock32Export_WSAAsyncGetHostByName[] = "WSAAsyncGetHostByName";
+char s_Wsock32Export_WSAAsyncGetProtoByName[] = "WSAAsyncGetProtoByName";
+char s_Wsock32Export_WSAAsyncGetProtoByNumber[] = "WSAAsyncGetProtoByNumber";
+char s_Wsock32Export_WSAAsyncGetServByName[] = "WSAAsyncGetServByName";
+char s_Wsock32Export_WSAAsyncGetServByPort[] = "WSAAsyncGetServByPort";
+char s_Wsock32Export_WSAAsyncSelect[] = "WSAAsyncSelect";
+char s_Wsock32Export_WSACancelAsyncRequest[] = "WSACancelAsyncRequest";
+char s_Wsock32Export_WSACancelBlockingCall[] = "WSACancelBlockingCall";
+char s_Wsock32Export_WSACleanup[] = "WSACleanup";
+char s_Wsock32Export_WSAGetLastError[] = "WSAGetLastError";
+char s_Wsock32Export_WSAIsBlocking[] = "WSAIsBlocking";
+char s_Wsock32Export_WSASetBlockingHook[] = "WSASetBlockingHook";
+char s_Wsock32Export_WSAStartup[] = "WSAStartup";
+char s_Wsock32Export_WSAUnhookBlockingHook[] = "WSAUnhookBlockingHook";
 WinSock_acceptProc * g_WinSock_accept;
 WinSock_bindProc * g_WinSock_bind;
 WinSock_closesocketProc * g_WinSock_closesocket;
@@ -1507,7 +1507,7 @@ WinSock_recvfromProc * g_WinSock_recvfrom;
 WinSock_selectProc * g_WinSock_select;
 WinSock_sendProc * g_WinSock_send;
 WinSock_sendtoProc * g_WinSock_sendto;
-char s_Wsock32ModuleName[] = "Wsock32ModuleName"; /* TODO: verify text against thandor.exe */
+char s_Wsock32ModuleName[] = "WSOCK32";
 WinSock_setsockoptProc * g_WinSock_setsockopt;
 WinSock_shutdownProc * g_WinSock_shutdown;
 WinSock_socketProc * g_WinSock_socket;
@@ -1557,10 +1557,10 @@ WSAStringToAddressA_Proc * g_Ws2_32_WSAStringToAddressA;
 WinSock_gethostbynameProc * g_Ws2_32_gethostbyname;
 WSAAddressToStringA_Proc * g_Ws2_32_WSAAddressToStringA;
 dword g_CpuFeatureFlags;
-char sz_MainWindowTitle[] = "sz_MainWindowTitle"; /* TODO: verify text against thandor.exe */
-char sz_MainWindowClass[] = "sz_MainWindowClass"; /* TODO: verify text against thandor.exe */
+char sz_MainWindowTitle[] = " thandor  (TG)";
+char sz_MainWindowClass[] = "thandorCLASS(TG)";
 Win32Message32 g_MainMessage;
-char s_SOUND_00582f28[] = "SOUND"; /* TODO: verify text against thandor.exe */
+char s_SOUND_00582f28[] = "SOUND";
 HINSTANCE g_MainWindowClassInstanceHandle;
 HICON g_MainWindowClassIconHandle;
 HCURSOR g_MainWindowClassCursorHandle;
