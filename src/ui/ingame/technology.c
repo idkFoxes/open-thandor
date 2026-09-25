@@ -148,6 +148,9 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   
   inGameUiGridView = (InGameRuntimeUiGridViewC3E4 *)UiNode_GetRoot(node);
   pWVar2 = (inGameUiGridView->worldRuntime0A30).ownerListHead;
+  /* The original loads EDX = root[+0xA80] (the local faction) before the call, which preserves it;
+     the decompiler lost that load. */
+  factionIndex = *(int *)((byte *)inGameUiGridView + 0xa80);
   uVar5 = SelectionInfo_CollectCapabilityFlags();
   if (uVar5 == 0) {
     for (; pWVar2 != (WorldOwnerListNode100 *)0x0; pWVar2 = pWVar2->nextNode) {
