@@ -1914,6 +1914,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                             (vertex0->projectedPointA).projectedY,
                             (vertex0->projectedPointA).projectedX,renderContext->cursorWorldYQ12,
                             renderContext->cursorWorldXQ12);
+        bVar27 = g_Triangle2DBarycentricOutside; /* the original's JC after the call */
         dVar2 = (vertex0->viewPointA).z;
         if ((!bVar27) && ((int)dVar2 < (int)renderContext->callbackArgumentF0)) {
           renderContext->callbackArgumentF0 = dVar2;
@@ -2121,6 +2122,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                             (vertex0->projectedPointB).projectedY,
                             (vertex0->projectedPointB).projectedX,renderContext->cursorWorldYQ12,
                             renderContext->cursorWorldXQ12);
+        bVar27 = g_Triangle2DBarycentricOutside; /* the original's JC after the call */
         dVar2 = (vertex0->viewPointB).z;
         if ((!bVar27) && ((int)dVar2 < (int)renderContext->callbackArgumentF0)) {
           renderContext->callbackArgumentF0 = dVar2;

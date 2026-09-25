@@ -14,6 +14,9 @@
 /* Submodule: core/math/geometry. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* CF result of Triangle2D_ComputeBarycentricWeightsQ12Packed: the point is outside the triangle. */
+extern bool g_Triangle2DBarycentricOutside;
+
 /* 0x004869B0 */
 TriangleBarycentricWeightsQ12
 Triangle2D_ComputeBarycentricWeightsQ12Packed
