@@ -1787,31 +1787,28 @@ UiContainer_HitTestChildren
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
-  UiPixelCoordinate extraout_ECX;
-  UiNodeBase *pUVar1;
-  int unaff_EBP;
-  int iVar2;
-  undefined8 uVar3;
-  
-  pUVar1 = control->firstChild;
-  iVar2 = 0;
-  if (pUVar1 != (UiNodeBase *)0xffffffff) {
-    do {
-      if ((((pUVar1->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0) ||
-          ((((pUVar1->left <= pointerX && (pUVar1->top <= pointerY)) && (pointerX < pUVar1->right))
-           && (pointerY < pUVar1->bottom)))) && ((pUVar1->nodeFlags & UI_NODE_SUPPRESSED) == 0)) {
-        iVar2 = iVar2 + 1;
-      }
-      pUVar1 = pUVar1->nextSibling;
-    } while (pUVar1 != (UiNodeBase *)0xffffffff);
-    while (iVar2 != 0) {
-      iVar2 = iVar2 + -1;
-      uVar3 = (**(code **)(*(int *)(unaff_EBP + 0xc) + 0x2c))(pointerY,pointerX);
-      pointerY = (UiPixelCoordinate)((ulonglong)uVar3 >> 0x20);
-      pointerX = extraout_ECX;
-      if ((UiNodeBase *)uVar3 != (UiNodeBase *)0xffffffff) {
-        return (UiNodeBase *)uVar3;
-      }
+  /* Rewritten from the assembly (0x004B0800): eligible children are pushed on the machine stack
+     in sibling order and hit-tested in reverse (topmost first); Ghidra lost the pushed nodes. */
+  UiNodeBase *eligible[256];
+  UiNodeBase *child;
+  UiNodeBase *hit;
+  int count;
+
+  count = 0;
+  for (child = control->firstChild; child != (UiNodeBase *)0xffffffff; child = child->nextSibling) {
+    if ((((child->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0) ||
+         ((child->left <= pointerX && child->top <= pointerY) &&
+          (pointerX < child->right && pointerY < child->bottom))) &&
+        ((child->nodeFlags & UI_NODE_SUPPRESSED) == 0) && count < 256) {
+      eligible[count] = child;
+      count = count + 1;
+    }
+  }
+  while (count != 0) {
+    count = count - 1;
+    hit = (*eligible[count]->vtable->hitTest)(pointerY,pointerX,eligible[count]);
+    if (hit != (UiNodeBase *)0xffffffff) {
+      return hit;
     }
   }
   return control;

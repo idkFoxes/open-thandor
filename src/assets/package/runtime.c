@@ -7,6 +7,7 @@
 
 #include <thandor/assets/package/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: assets/package/runtime. */
 
@@ -504,6 +505,14 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
     }
   }
 LAB_0040ef3f:
+  {
+    /* open-thandor diagnostics: first failed loads with their caller stack */
+    static int loggedFailures;
+    if (loggedFailures++ < 8) {
+      Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, (dword)destination);
+      Thandor_LogStack("  load failure stack", (dword)destination);
+    }
+  }
   PVar7.carry = true;
   PVar7.bufferOrError = destination;
   return PVar7;

@@ -198,8 +198,22 @@ int Thandor_MapOriginalImage(void)
             redirected++;
         }
     }
+    /* Code addresses also arrive from loaded data (ROM/UI assets store vtables and handlers as
+       original addresses). Every original function entry therefore jumps to its recovered C
+       function: E9 rel32. The rest of the original code never runs. */
+    for (i = 0; i < g_ThandorFunctionMapCount; i++) {
+        unsigned char *entry = (unsigned char *)(uintptr_t)g_ThandorFunctionMap[i].originalAddress;
+        int displacement = (int)((uintptr_t)g_ThandorFunctionMap[i].function - ((uintptr_t)entry + 5));
+        entry[0] = 0xE9;
+        memcpy(entry + 1, &displacement, 4);
+    }
+    {
+        DWORD previous;
+        VirtualProtect(image + 0x1000, 0x18B000, PAGE_EXECUTE_READWRITE, &previous);
+    }
     HeapFree(GetProcessHeap(), 0, data);
-    Thandor_Log("original image mapped at 0x%08X, %u code pointers redirected", ORIGINAL_IMAGE_BASE, redirected);
+    Thandor_Log("original image mapped at 0x%08X, %u code pointers redirected, %u entry jumps", ORIGINAL_IMAGE_BASE,
+                redirected, g_ThandorFunctionMapCount);
     return 0;
 }
 

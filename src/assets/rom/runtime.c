@@ -595,8 +595,55 @@ RomAssetRecord_ReturnWithoutRootNode:
                   + (record->rootNodeOffsetOrPointer - 0x28));
       pbVar6 = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                (dVar2 - 0x28);
-      iVar4 = 0;
-      goto RomAssetRecord_LoadOrReuseSpriteReference;
+      /* Rewritten from the assembly (0x005463A1-0x00546436): depth-first walk over the serialized
+         sprite-node tree. The original keeps {node, nextChild, remaining} frames on the machine stack
+         (EBX = depth), which Ghidra could only show as unaff_ESI/unaff_EBP. Child offsets are
+         relative to assetBase and are relocated in place while walking. */
+      {
+        struct { byte *node; dword nextChild; dword remaining; } frames[64];
+        int depth = 0;
+        byte *node = pbVar6;
+        for (;;) {
+          WidePath_SetExtensionCode(0x727073,(word *)(node + 0x34)); /* ".spr"; never sets CF */
+          PVar9 = Package_LoadEntry((word *)(node + 0x34));
+          if (PVar9.carry) {
+            SVar8.carry = true;
+            SVar8.valueOrError = (dword)PVar9.bufferOrError;
+            return SVar8;
+          }
+          asset = PVar9.bufferOrError;
+          pSVar3 = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((byte *)asset + 0xb8));
+          if (pSVar3 != (SpriteAssetHeader *)0x0) {
+            *(SpriteAssetHeader **)(node + 0x2c) = pSVar3;
+            Resource_Release(asset);
+          }
+          else {
+            *(int *)(node + 0x30) = *(int *)(node + 0x30) + 1;
+            *(RomAssetHeader **)(node + 0x2c) = asset;
+            SVar10 = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
+            if (SVar10.carry) {
+              SVar8.carry = true;
+              SVar8.valueOrError = (dword)SVar10.assetOrError;
+              return SVar8;
+            }
+          }
+          frames[depth].node = node;
+          frames[depth].nextChild = 0;
+          frames[depth].remaining = *(dword *)(node + 0x10);
+          depth++;
+          while (frames[depth - 1].remaining == 0) {
+            depth--;
+            if (depth == 0) goto RomAssetRecord_ReturnWithoutRootNode;
+          }
+          {
+            dword *child = (dword *)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild;
+            *child = *child + (dword)assetBase;
+            frames[depth - 1].nextChild++;
+            frames[depth - 1].remaining--;
+            node = (byte *)*child;
+          }
+        }
+      }
     }
     pRVar5 = pRVar5 + 1;
     iVar4 = iVar4 + -1;
@@ -607,37 +654,6 @@ RomAssetRecord_ReturnRegistrationResult:
   SVar8.carry = true;
   SVar8.valueOrError = (dword)asset;
   return SVar8;
-RomAssetRecord_LoadOrReuseSpriteReference:
-  bVar7 = WidePath_SetExtensionCode(0x727073,(word *)(pbVar6 + 0x34));
-  asset = assetBase;
-  if (bVar7) goto RomAssetRecord_ReturnRegistrationResult;
-  PVar9 = Package_LoadEntry((word *)(pbVar6 + 0x34));
-  asset = PVar9.bufferOrError;
-  if (PVar9.carry) goto RomAssetRecord_ReturnRegistrationResult;
-  pSVar3 = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((int)asset->reservedB4_1FF + 4));
-  if (pSVar3 == (SpriteAssetHeader *)0x0) {
-    *(int *)(pbVar6 + 0x30) = *(int *)(pbVar6 + 0x30) + 1;
-    *(RomAssetHeader **)(pbVar6 + 0x2c) = asset;
-    SVar10 = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
-    asset = (RomAssetHeader *)SVar10.assetOrError;
-    if (SVar10.carry) goto RomAssetRecord_ReturnRegistrationResult;
-  }
-  else {
-    *(SpriteAssetHeader **)(pbVar6 + 0x2c) = pSVar3;
-    Resource_Release(asset);
-  }
-  iVar4 = iVar4 + 1;
-  while (record == (RomAssetRecordPrefix *)0x0) {
-    iVar4 = iVar4 + -1;
-    if (iVar4 == 0) goto RomAssetRecord_ReturnWithoutRootNode;
-  }
-  piVar1 = (int *)(unaff_ESI + 0x14 + unaff_EBP * 4);
-  *piVar1 = (int)((assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 *piVar1 + -0x28);
-  record = (RomAssetRecordPrefix *)((int)&record[-1].recordId + 3);
-  pbVar6 = *(byte **)(unaff_ESI + 0x14 + unaff_EBP * 4);
-  unaff_EBP = unaff_EBP + 1;
-  goto RomAssetRecord_LoadOrReuseSpriteReference;
 }
 
 

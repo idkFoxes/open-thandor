@@ -1076,130 +1076,64 @@ GraphicsCursor_SaveSurfaceBackground
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface)
 
 {
-  int *piVar1;
-  GraphicsPixelDimension GVar2;
-  byte *pbVar3;
-  int iVar4;
-  TH_LEGACY_HRESULT TVar5;
-  int iVar6;
-  int iVar7;
-  byte *pbVar8;
-  byte *pbVar9;
-  IDirectDrawSurface3 *pIVar10;
-  IDirectDrawSurface3 *pIVar11;
-  GraphicsPixelDimension GStack_24;
-  GraphicsPixelDimension GStack_20;
-  
-  GStack_24 = destinationBuffer->height;
-  GVar2 = destinationBuffer->width;
-  GStack_20 = GVar2;
-  if (destinationBuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-    if (drawX < 0) {
-      GStack_20 = GVar2 + drawX;
-      drawX = 0;
-    }
-    if (drawY < 0) {
-      GStack_24 = GStack_24 + drawY;
-      drawY = 0;
-    }
-    iVar4 = (GStack_20 + drawX) - g_FramebufferWidth;
-    if (iVar4 != 0 && (int)g_FramebufferWidth <= (int)(GStack_20 + drawX)) {
-      GStack_20 = GStack_20 - iVar4;
-    }
-    iVar7 = (GStack_24 + drawY) - g_FramebufferHeight;
-    if (iVar7 != 0 && (int)g_FramebufferHeight <= (int)(GStack_24 + drawY)) {
-      GStack_24 = GStack_24 - iVar7;
-    }
-    if ((0 < (int)GStack_20) && (0 < (int)GStack_24)) {
-      pIVar10 = sourceSurface;
-      TVar5 = (*sourceSurface->lpVtbl->IsLost)(sourceSurface);
-      iVar6 = 0;
-      if (TVar5 != 0) {
-        iVar6 = (*sourceSurface->lpVtbl->Restore)(sourceSurface);
-      }
-      if (iVar6 == 0) {
-        Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
-        g_GraphicsCursorSurfaceDescScratch = 0x6c;
-        iVar6 = (*sourceSurface->lpVtbl->Lock)
-                          (sourceSurface,(TH_LEGACY_RECT *)0x0,
-                           (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
-                           (TH_LEGACY_HANDLE)0x0);
-      }
-      pbVar3 = g_GraphicsCursorSurfacePixels;
-      if (iVar6 == 0) {
-        pbVar8 = g_GraphicsCursorSurfacePixels +
-                 GVar2 * g_GraphicsCursorSurfacePitchBytes + drawY * 2;
-        do {
-          pbVar9 = pbVar8;
-          pIVar11 = pIVar10;
-          for (iVar6 = *(int *)(iVar7 + -4); iVar6 != 0; iVar6 = iVar6 + -1) {
-            *(undefined2 *)&pIVar11->lpVtbl = *(undefined2 *)pbVar9;
-            pbVar9 = pbVar9 + 2;
-            pIVar11 = (IDirectDrawSurface3 *)((int)&pIVar11->lpVtbl + 2);
-          }
-          pIVar10 = (IDirectDrawSurface3 *)((int)&pIVar10->lpVtbl + (int)&GStack_24 * 2);
-          pbVar8 = pbVar8 + g_GraphicsCursorSurfacePitchBytes;
-          piVar1 = (int *)(iVar7 + -8);
-          *piVar1 = *piVar1 + -1;
-        } while (*piVar1 != 0);
-        (**(code **)(**(int **)(iVar7 + 0x2c) + 0x80))(*(int **)(iVar7 + 0x2c),pbVar3,iVar4);
-      }
-    }
+  /* Rewritten from the assembly (0x00579EC0-0x0057A0BD); Ghidra's output confused the frame pointer
+     with the copy cursors. Copies a clipped rectangle of the locked surface into the buffer origin. */
+  int bytesPerPixel;
+  int rowPixels;
+  int copyWidth;
+  int copyHeight;
+  byte *destination;
+  byte *source;
+  byte *surfacePixels;
+  TH_LEGACY_HRESULT result;
+
+  bytesPerPixel = destinationBuffer->bytesPerPixel == 2 ? 2 : 4;
+  rowPixels = (int)destinationBuffer->width;
+  copyWidth = (int)destinationBuffer->width;
+  copyHeight = (int)destinationBuffer->height;
+  destination = destinationBuffer->pixels;
+  if (drawX < 0) {
+    destination = destination + -drawX * bytesPerPixel;
+    copyWidth = copyWidth + drawX;
+    drawX = 0;
   }
-  else {
-    if (drawX < 0) {
-      GStack_20 = GVar2 + drawX;
-      drawX = 0;
-    }
-    if (drawY < 0) {
-      GStack_24 = GStack_24 + drawY;
-      drawY = 0;
-    }
-    iVar4 = (GStack_20 + drawX) - g_FramebufferWidth;
-    if (iVar4 != 0 && (int)g_FramebufferWidth <= (int)(GStack_20 + drawX)) {
-      GStack_20 = GStack_20 - iVar4;
-    }
-    iVar7 = (GStack_24 + drawY) - g_FramebufferHeight;
-    if (iVar7 != 0 && (int)g_FramebufferHeight <= (int)(GStack_24 + drawY)) {
-      GStack_24 = GStack_24 - iVar7;
-    }
-    if ((0 < (int)GStack_20) && (0 < (int)GStack_24)) {
-      pIVar10 = sourceSurface;
-      TVar5 = (*sourceSurface->lpVtbl->IsLost)(sourceSurface);
-      iVar6 = 0;
-      if (TVar5 != 0) {
-        iVar6 = (*sourceSurface->lpVtbl->Restore)(sourceSurface);
-      }
-      if (iVar6 == 0) {
-        Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
-        g_GraphicsCursorSurfaceDescScratch = 0x6c;
-        iVar6 = (*sourceSurface->lpVtbl->Lock)
-                          (sourceSurface,(TH_LEGACY_RECT *)0x0,
-                           (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
-                           (TH_LEGACY_HANDLE)0x0);
-      }
-      pbVar3 = g_GraphicsCursorSurfacePixels;
-      if (iVar6 == 0) {
-        pbVar8 = g_GraphicsCursorSurfacePixels +
-                 GVar2 * g_GraphicsCursorSurfacePitchBytes + drawY * 4;
-        do {
-          pbVar9 = pbVar8;
-          pIVar11 = pIVar10;
-          for (iVar6 = *(int *)(iVar7 + -4); iVar6 != 0; iVar6 = iVar6 + -1) {
-            pIVar11->lpVtbl = *(IDirectDrawSurface3_Vtbl **)pbVar9;
-            pbVar9 = pbVar9 + 4;
-            pIVar11 = pIVar11 + 1;
-          }
-          pIVar10 = pIVar10 + (int)&GStack_24;
-          pbVar8 = pbVar8 + g_GraphicsCursorSurfacePitchBytes;
-          piVar1 = (int *)(iVar7 + -8);
-          *piVar1 = *piVar1 + -1;
-        } while (*piVar1 != 0);
-        (**(code **)(**(int **)(iVar7 + 0x2c) + 0x80))(*(int **)(iVar7 + 0x2c),pbVar3,iVar4);
-      }
-    }
+  if (drawY < 0) {
+    copyHeight = copyHeight + drawY;
+    destination = destination + -drawY * rowPixels * bytesPerPixel;
+    drawY = 0;
   }
-  return;
+  if (copyWidth + drawX - (int)g_FramebufferWidth > 0) {
+    copyWidth = copyWidth - (copyWidth + drawX - (int)g_FramebufferWidth);
+  }
+  if (copyHeight + drawY - (int)g_FramebufferHeight > 0) {
+    copyHeight = copyHeight - (copyHeight + drawY - (int)g_FramebufferHeight);
+  }
+  if (copyWidth <= 0 || copyHeight <= 0) {
+    return;
+  }
+  result = (*sourceSurface->lpVtbl->IsLost)(sourceSurface);
+  if (result != 0) {
+    result = (*sourceSurface->lpVtbl->Restore)(sourceSurface);
+  }
+  if (result == 0) {
+    Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
+    g_GraphicsCursorSurfaceDescScratch = 0x6c;
+    result = (*sourceSurface->lpVtbl->Lock)
+                       (sourceSurface,(TH_LEGACY_RECT *)0x0,
+                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
+                        (TH_LEGACY_HANDLE)0x0);
+  }
+  if (result != 0) {
+    return;
+  }
+  surfacePixels = (byte *)g_GraphicsCursorSurfacePixels;
+  source = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
+  for (; copyHeight != 0; copyHeight = copyHeight - 1) {
+    memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
+    destination = destination + rowPixels * bytesPerPixel;
+    source = source + (int)g_GraphicsCursorSurfacePitchBytes;
+  }
+  (*sourceSurface->lpVtbl->Unlock)(sourceSurface,surfacePixels);
 }
 
 
@@ -1217,134 +1151,63 @@ GraphicsCursor_RestoreSurfaceBackground
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface)
 
 {
-  GraphicsPixelDimension GVar1;
-  byte *pbVar2;
-  int iVar3;
-  TH_LEGACY_HRESULT TVar4;
-  int iVar5;
-  undefined2 *puVar6;
-  byte *pbVar7;
-  undefined4 *puVar8;
-  undefined2 *puVar9;
-  byte *pbVar10;
-  undefined4 *puVar11;
-  byte *pbVar12;
-  GraphicsPixelDimension GStack_24;
-  GraphicsPixelDimension GStack_20;
-  
-  GStack_24 = sourceBuffer->height;
-  GVar1 = sourceBuffer->width;
-  GStack_20 = GVar1;
-  if (sourceBuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-    pbVar7 = sourceBuffer->pixels;
-    if (drawX < 0) {
-      pbVar7 = pbVar7 + drawX * -2;
-      GStack_20 = GVar1 + drawX;
-      drawX = 0;
-    }
-    if (drawY < 0) {
-      GStack_24 = GStack_24 + drawY;
-      pbVar7 = pbVar7 + -drawY * GVar1 * 2;
-      drawY = 0;
-    }
-    iVar3 = (GStack_20 + drawX) - g_FramebufferWidth;
-    if (iVar3 != 0 && (int)g_FramebufferWidth <= (int)(GStack_20 + drawX)) {
-      GStack_20 = GStack_20 - iVar3;
-    }
-    puVar9 = (undefined2 *)((GStack_24 + drawY) - g_FramebufferHeight);
-    if (puVar9 != (undefined2 *)0x0 && (int)g_FramebufferHeight <= (int)(GStack_24 + drawY)) {
-      GStack_24 = GStack_24 - (int)puVar9;
-    }
-    if ((0 < (int)GStack_20) && (0 < (int)GStack_24)) {
-      TVar4 = (*destinationSurface->lpVtbl->IsLost)(destinationSurface);
-      iVar5 = 0;
-      if (TVar4 != 0) {
-        iVar5 = (*destinationSurface->lpVtbl->Restore)(destinationSurface);
-      }
-      if (iVar5 == 0) {
-        Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
-        g_GraphicsCursorSurfaceDescScratch = 0x6c;
-        iVar5 = (*destinationSurface->lpVtbl->Lock)
-                          (destinationSurface,(TH_LEGACY_RECT *)0x0,
-                           (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x21,
-                           (TH_LEGACY_HANDLE)0x0);
-      }
-      pbVar2 = g_GraphicsCursorSurfacePixels;
-      if (iVar5 == 0) {
-        pbVar10 = g_GraphicsCursorSurfacePixels +
-                  GVar1 * g_GraphicsCursorSurfacePitchBytes + drawY * 2;
-        do {
-          puVar6 = puVar9;
-          pbVar12 = pbVar10;
-          for (iVar5 = *(int *)(pbVar7 + -4); iVar5 != 0; iVar5 = iVar5 + -1) {
-            *(undefined2 *)pbVar12 = *puVar6;
-            puVar6 = puVar6 + 1;
-            pbVar12 = pbVar12 + 2;
-          }
-          pbVar10 = pbVar10 + g_GraphicsCursorSurfacePitchBytes;
-          puVar9 = puVar9 + (int)&GStack_24;
-          pbVar12 = pbVar7 + -8;
-          *(int *)pbVar12 = *(int *)pbVar12 + -1;
-        } while (*(int *)pbVar12 != 0);
-        (**(code **)(**(int **)(pbVar7 + 0x2c) + 0x80))(*(int **)(pbVar7 + 0x2c),pbVar2,iVar3);
-      }
-    }
+  /* Rewritten from the assembly (0x0057A0C0-0x0057A2BD), mirror of
+     GraphicsCursor_SaveSurfaceBackground: buffer rows back into the locked surface. */
+  int bytesPerPixel;
+  int rowPixels;
+  int copyWidth;
+  int copyHeight;
+  byte *source;
+  byte *destination;
+  byte *surfacePixels;
+  TH_LEGACY_HRESULT result;
+
+  bytesPerPixel = sourceBuffer->bytesPerPixel == 2 ? 2 : 4;
+  rowPixels = (int)sourceBuffer->width;
+  copyWidth = (int)sourceBuffer->width;
+  copyHeight = (int)sourceBuffer->height;
+  source = sourceBuffer->pixels;
+  if (drawX < 0) {
+    source = source + -drawX * bytesPerPixel;
+    copyWidth = copyWidth + drawX;
+    drawX = 0;
   }
-  else {
-    pbVar7 = sourceBuffer->pixels;
-    if (drawX < 0) {
-      pbVar7 = pbVar7 + drawX * -4;
-      GStack_20 = GVar1 + drawX;
-      drawX = 0;
-    }
-    if (drawY < 0) {
-      GStack_24 = GStack_24 + drawY;
-      pbVar7 = pbVar7 + -drawY * GVar1 * 4;
-      drawY = 0;
-    }
-    iVar3 = (GStack_20 + drawX) - g_FramebufferWidth;
-    if (iVar3 != 0 && (int)g_FramebufferWidth <= (int)(GStack_20 + drawX)) {
-      GStack_20 = GStack_20 - iVar3;
-    }
-    puVar11 = (undefined4 *)((GStack_24 + drawY) - g_FramebufferHeight);
-    if (puVar11 != (undefined4 *)0x0 && (int)g_FramebufferHeight <= (int)(GStack_24 + drawY)) {
-      GStack_24 = GStack_24 - (int)puVar11;
-    }
-    if ((0 < (int)GStack_20) && (0 < (int)GStack_24)) {
-      TVar4 = (*destinationSurface->lpVtbl->IsLost)(destinationSurface);
-      iVar5 = 0;
-      if (TVar4 != 0) {
-        iVar5 = (*destinationSurface->lpVtbl->Restore)(destinationSurface);
-      }
-      if (iVar5 == 0) {
-        Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
-        g_GraphicsCursorSurfaceDescScratch = 0x6c;
-        iVar5 = (*destinationSurface->lpVtbl->Lock)
-                          (destinationSurface,(TH_LEGACY_RECT *)0x0,
-                           (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x21,
-                           (TH_LEGACY_HANDLE)0x0);
-      }
-      pbVar2 = g_GraphicsCursorSurfacePixels;
-      if (iVar5 == 0) {
-        pbVar10 = g_GraphicsCursorSurfacePixels +
-                  GVar1 * g_GraphicsCursorSurfacePitchBytes + drawY * 4;
-        do {
-          puVar8 = puVar11;
-          pbVar12 = pbVar10;
-          for (iVar5 = *(int *)(pbVar7 + -4); iVar5 != 0; iVar5 = iVar5 + -1) {
-            *(undefined4 *)pbVar12 = *puVar8;
-            puVar8 = puVar8 + 1;
-            pbVar12 = pbVar12 + 4;
-          }
-          pbVar10 = pbVar10 + g_GraphicsCursorSurfacePitchBytes;
-          puVar11 = puVar11 + (int)&GStack_24;
-          pbVar12 = pbVar7 + -8;
-          *(int *)pbVar12 = *(int *)pbVar12 + -1;
-        } while (*(int *)pbVar12 != 0);
-        (**(code **)(**(int **)(pbVar7 + 0x2c) + 0x80))(*(int **)(pbVar7 + 0x2c),pbVar2,iVar3);
-      }
-    }
+  if (drawY < 0) {
+    copyHeight = copyHeight + drawY;
+    source = source + -drawY * rowPixels * bytesPerPixel;
+    drawY = 0;
   }
-  return;
+  if (copyWidth + drawX - (int)g_FramebufferWidth > 0) {
+    copyWidth = copyWidth - (copyWidth + drawX - (int)g_FramebufferWidth);
+  }
+  if (copyHeight + drawY - (int)g_FramebufferHeight > 0) {
+    copyHeight = copyHeight - (copyHeight + drawY - (int)g_FramebufferHeight);
+  }
+  if (copyWidth <= 0 || copyHeight <= 0) {
+    return;
+  }
+  result = (*destinationSurface->lpVtbl->IsLost)(destinationSurface);
+  if (result != 0) {
+    result = (*destinationSurface->lpVtbl->Restore)(destinationSurface);
+  }
+  if (result == 0) {
+    Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
+    g_GraphicsCursorSurfaceDescScratch = 0x6c;
+    result = (*destinationSurface->lpVtbl->Lock)
+                       (destinationSurface,(TH_LEGACY_RECT *)0x0,
+                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
+                        (TH_LEGACY_HANDLE)0x0);
+  }
+  if (result != 0) {
+    return;
+  }
+  surfacePixels = (byte *)g_GraphicsCursorSurfacePixels;
+  destination = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
+  for (; copyHeight != 0; copyHeight = copyHeight - 1) {
+    memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
+    destination = destination + (int)g_GraphicsCursorSurfacePitchBytes;
+    source = source + rowPixels * bytesPerPixel;
+  }
+  (*destinationSurface->lpVtbl->Unlock)(destinationSurface,surfacePixels);
 }
 

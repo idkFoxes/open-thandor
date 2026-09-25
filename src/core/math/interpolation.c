@@ -34,20 +34,11 @@ WorldMotionSpline_EvaluateAndApplyAtTime
   uint uVar1;
   AngleTurn32 pitchAngle;
   int iVar2;
-  CubicSplineSegmentIndex segmentIndex;
-  CubicSplineSegmentIndex segmentIndex_00;
-  CubicSplineSegmentIndex segmentIndex_01;
-  CubicSplineSegmentIndex segmentIndex_02;
-  CubicSplineSegmentIndex segmentIndex_03;
-  CubicSplineSegmentIndex segmentIndex_04;
-  CubicSplineSegmentIndex segmentIndex_05;
-  CubicSplineSegmentIndex segmentIndex_06;
-  CubicSplineSegmentIndex segmentIndex_07;
-  CubicSplineSegmentIndex segmentIndex_08;
-  CubicSplineSegmentIndex segmentIndex_09;
   WorldMotionSplineKeyframe *pWVar3;
   WorldRuntimeContext *pWVar4;
   
+  /* Every channel evaluates the same segment (iVar2 - 1); Ghidra showed the re-pushed register
+     as uninitialized segmentIndex_NN locals. */
   iVar2 = 0;
   do {
     pWVar3 = keyframes;
@@ -56,38 +47,38 @@ WorldMotionSpline_EvaluateAndApplyAtTime
       positionX = CubicSpline_EvaluateValueQ12
                             (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[0]);
       positionY = CubicSpline_EvaluateValueQ12
-                            (timeQ12,segmentIndex,g_WorldMotionSplineCoefficientTables[1]);
+                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[1]);
       positionZ = CubicSpline_EvaluateValueQ12
-                            (timeQ12,segmentIndex_00,g_WorldMotionSplineCoefficientTables[2]);
+                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[2]);
       WorldRuntime_SetPosition60AndDistanceFromPosition80(positionZ,positionY,positionX,pWVar4);
       pWVar4 = worldRuntime;
       magnitude = CubicSpline_EvaluateValueQ12
-                            (timeQ12,segmentIndex_01,g_WorldMotionSplineCoefficientTables[3]);
+                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[3]);
       uVar1 = CubicSpline_EvaluateValueQ12
-                        (timeQ12,segmentIndex_02,g_WorldMotionSplineCoefficientTables[4]);
+                        (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[4]);
       uVar1 = uVar1 & 0xffff;
       pitchAngle = CubicSpline_EvaluateValueQ12
-                             (timeQ12,segmentIndex_03,g_WorldMotionSplineCoefficientTables[5]);
+                             (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetMotionParameters6CThrough78Clamped
                 ((worldRuntime->motion).motionValue78,pitchAngle,uVar1,magnitude,pWVar4);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,segmentIndex_04,g_WorldMotionSplineCoefficientTables[0]);
+                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[0]);
       g_WorldMotionSplineCachedDerivatives[1] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,segmentIndex_05,g_WorldMotionSplineCoefficientTables[1]);
+                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[1]);
       g_WorldMotionSplineCachedDerivatives[2] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,segmentIndex_06,g_WorldMotionSplineCoefficientTables[2]);
+                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[2]);
       g_WorldMotionSplineCachedDerivatives[3] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,segmentIndex_07,g_WorldMotionSplineCoefficientTables[3]);
+                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[3]);
       g_WorldMotionSplineCachedDerivatives[4] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,segmentIndex_08,g_WorldMotionSplineCoefficientTables[4]);
+                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[4]);
       g_WorldMotionSplineCachedDerivatives[5] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,segmentIndex_09,g_WorldMotionSplineCoefficientTables[5]);
+                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[5]);
       return true;
     }
     iVar2 = iVar2 + 1;
