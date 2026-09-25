@@ -413,7 +413,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                               (modelNode->modelPayload).worldRotationAngle0,scale);
           EffectRuntimePool_CreateInstanceFromDefinitionCf
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     (ModelRuntimeNode *)(pSVar16->terrainImpactEffectOwnerSlots31 + dVar15),0,
+                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4, (ModelRuntimeNode *)(pSVar16->terrainImpactEffectOwnerSlots31 + dVar15)),0,
                      0x4000,0,FVar24.edx + (modelNode->worldTransform).translation.z,
                      FVar24.ecx + (modelNode->worldTransform).translation.y,
                      FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,pWVar26);
@@ -555,7 +555,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                               mixedScalarOrPointerCarrier);
           EffectRuntimePool_CreateInstanceFromDefinitionCf
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     (ModelRuntimeNode *)(pSVar16->terrainImpactEffectOwnerSlots31 + dVar15),0,
+                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4, (ModelRuntimeNode *)(pSVar16->terrainImpactEffectOwnerSlots31 + dVar15)),0,
                      0x4000,0,FVar24.edx + (modelNode->worldTransform).translation.z,
                      FVar24.ecx + (modelNode->worldTransform).translation.y,
                      FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,worldRuntime);

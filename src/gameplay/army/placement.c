@@ -558,7 +558,7 @@ ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
     if ((iVar4 + 1 < (int)fieldGrid1->gridWidth) && (iVar5 + 1 < (int)fieldGrid1->gridHeight)) {
       iVar4 = iVar5 * fieldGrid1->gridWidth + iVar4;
       fieldGrid1->cells[iVar4].armyRuntimeSavedOffset6C = 0;
-      fieldGrid1->cells[iVar4].runtime7C = 0;
+      fieldGrid1->cells[iVar4].resourceExtractionDescriptor7C = 0;
     }
   }
   return;

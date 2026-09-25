@@ -3117,7 +3117,7 @@ UiTextListControl_DelegateUnhandledKeyboardEvent:
     if (UVar5 != 0) {
       do {
         ppwVar6 = ppwVar2;
-        bVar7 = (*g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
+        bVar7 = (byte)(*(code *)g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
                           (keyCode,*(dword *)*ppwVar6);
         if (!bVar7) break;
         UVar5 = UVar5 - 1;

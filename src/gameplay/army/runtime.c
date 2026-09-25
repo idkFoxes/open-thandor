@@ -1232,9 +1232,9 @@ ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
         iVar1 = FVar3 * fieldGrid1->gridWidth + iVar1;
         FVar2 = 0x800 << ((byte)modelRuntime->modelDefinition->resourceFieldSupportSelectorC0 & 0x1f
                          );
-        fieldGrid1->cells[iVar1].runtime7C =
+        fieldGrid1->cells[iVar1].resourceExtractionDescriptor7C =
              modelRuntime->ownerArmyRuntime->factionIndex << 0xd | FVar2 |
-             *(int *)&modelRuntime->modelDefinition->field_0xc8 << 0x18;
+             *(int *)((byte *)modelRuntime->modelDefinition + 0xc8) << 0x18;
         if ((fieldGrid1->cells[iVar1].flagsAndMaterial & FVar2) != 0) {
           fieldGrid1->cells[iVar1].armyRuntimeSavedOffset6C =
                (int)modelRuntime - g_ModelRuntimeRebaseDelta;
@@ -2336,7 +2336,7 @@ ArmyRuntimeClass_SelectProjectileTargetNode
   }
   else if ((candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
           ((modelRuntime->modelDefinition->shotDefinitionReference2C).definition ==
-           (candidateNode->runtimePayload->definitionOrSavedId).definition)) {
+           (((ModelRuntimeSlot *)candidateNode->runtimePayload)->definitionOrSavedId).definition)) {
     (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime64 = candidateNode->runtimePayload
     ;
   }

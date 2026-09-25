@@ -166,7 +166,7 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
   longlong projectedYProduct;
   
   if (g_ProjectionNumerator.high < viewPoint->z) {
-    perspectiveScaleQ12 = (int)((longlong)g_ProjectionNumerator / (longlong)viewPoint->z);
+    perspectiveScaleQ12 = (int)(THANDOR_BITCAST(GraphicsWideFixed, longlong, g_ProjectionNumerator) / (longlong)viewPoint->z);
     projectedXProduct = (longlong)viewPoint->x * (longlong)perspectiveScaleQ12;
     projectedYProduct = (longlong)viewPoint->y * (longlong)perspectiveScaleQ12;
     GVar1.projectedY =

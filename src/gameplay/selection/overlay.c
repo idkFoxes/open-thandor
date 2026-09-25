@@ -556,7 +556,7 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
              (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
   ;
   GVar5 = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-  bVar4 = (*g_GraphicsFramebufferBeginAccess)(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
+  bVar4 = (*g_GraphicsFramebufferBeginAccess)(); /* Ghidra passed stale register values (worldCoordinate0Q12, worldCoordinate1Q12, fieldGrid); the callee takes none */
   if (!bVar4) {
     GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0xac,g_SelectionPanelTextureSource);
     (*g_SelectionPanelBlitOpaque)

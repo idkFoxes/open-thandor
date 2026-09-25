@@ -51,7 +51,7 @@ ModelRuntimePool_RepairDeferredChild
     ;
     modelNode1 = modelRuntime->attachments140[attachmentIndex].parentModelNodeOrSavedOffset08;
     pMVar1 = modelRuntime->attachments140[attachmentIndex].sourceTransform04;
-    modelNode2 = ((MVar7.modelNode)->rootModelNodeOrSavedOffset).modelNode;
+    modelNode2 = (((ModelRuntimeSlot *)MVar7.modelNode)->rootModelNodeOrSavedOffset).modelNode;
     AVar2 = modelRuntime->attachments140[attachmentIndex].childLocalRotationAngle0;
     AVar3 = modelRuntime->attachments140[attachmentIndex].childLocalRotationAngle1;
     AVar4 = modelRuntime->attachments140[attachmentIndex].childLocalRotationAngle2;

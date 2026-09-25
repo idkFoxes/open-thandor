@@ -635,7 +635,7 @@ DirectSound_PlayOneShot
   }
   pIVar1 = pIVar10->lpVtbl;
   This = (IDirectSoundBuffer_Vtbl *)arg2;
-  (**(code **)(pIVar1->QueryInterface + 0x34))(pIVar1,0,pIVar1);
+  (**(code **)((unsigned char *)pIVar1->QueryInterface + 0x34))(pIVar1,0,pIVar1); /* vtable slot 0x34: first field is the vtable pointer */
 DirectSound_PlayOneShot_UseIdleOrDuplicatedVoice:
   (*((IDirectSoundBuffer_Vtbl *)This->QueryInterface)->Play)((IDirectSoundBuffer *)This,0,0,0);
   if (leftChannelGainQ15 <= rightChannelGainQ15) {
@@ -706,7 +706,7 @@ DirectSound_PlayLooping
   }
   pIVar1 = pIVar9->lpVtbl;
   This = (IDirectSoundBuffer_Vtbl *)arg2;
-  (**(code **)(pIVar1->QueryInterface + 0x34))(pIVar1,0,pIVar1);
+  (**(code **)((unsigned char *)pIVar1->QueryInterface + 0x34))(pIVar1,0,pIVar1); /* vtable slot 0x34: first field is the vtable pointer */
 DirectSound_PlayLooping_UseIdleOrDuplicatedVoice:
   (*((IDirectSoundBuffer_Vtbl *)This->QueryInterface)->Play)((IDirectSoundBuffer *)This,0,0,1);
   if (rightChannelGainQ15 < leftChannelGainQ15) {

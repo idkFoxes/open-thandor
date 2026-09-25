@@ -71,7 +71,7 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
         else if (iVar11 < (int)uVar13) {
           return TVar4;
         }
-        uVar1 = (ulonglong)uVar13 << 0x20 | (ulonglong)TVar4 & 0xffffffff;
+        uVar1 = (ulonglong)uVar13 << 0x20 | THANDOR_BITCAST(TriangleBarycentricWeightsQ12, ulonglong, TVar4) & 0xffffffff;
         iVar10 = (int)((longlong)uVar1 / (longlong)(int)uVar12);
         QVar14 = (Q12)((longlong)uVar1 % (longlong)(int)uVar12);
         TVar7.weightVertexA_Q12 = QVar14;

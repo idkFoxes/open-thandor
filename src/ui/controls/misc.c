@@ -202,14 +202,14 @@ UiImageControl_NonRightDrag
     }
     pUVar1 = (control_00->selectable).base.vtable;
     (*pUVar1->nonRightPress)(0,0x70000000,0x70000000,(UiNodeBase *)control_00);
-    newActiveChild = (UiNodeBase *)(*pUVar1->nonRightDrag)(wheelDelta,pointerY,pointerX,control_01);
+    newActiveChild = (UiNodeBase *)(*(code *)pUVar1->nonRightDrag)(wheelDelta,pointerY,pointerX,control_01);
     LOCK();
     control_02 = control->activeChild;
     control->activeChild = newActiveChild;
     UNLOCK();
   }
   if (control_02 != (UiNodeBase *)0x0) {
-    uVar2 = (*control_02->vtable->nonRightDrag)(0,0x70000000,0x70000000,control_02);
+    uVar2 = (*(code *)control_02->vtable->nonRightDrag)(0,0x70000000,0x70000000,control_02);
     (**(code **)((int)((ulonglong)uVar2 >> 0x20) + 0x14))(0,0x70000000,0x70000000,(int)uVar2);
   }
 UiImageControl_InvalidateAfterNonRightDrag:
@@ -250,7 +250,7 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
           (*pUVar2->nonRightRelease)
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00
                     );
-          uVar3 = (*pUVar2->nonRightPress)
+          uVar3 = (*(code *)pUVar2->nonRightPress)
                             (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,control_00);
           (**(code **)(extraout_ECX + 0x20))
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,uVar3);

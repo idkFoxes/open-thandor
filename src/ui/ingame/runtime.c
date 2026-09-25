@@ -4894,7 +4894,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
            InGameUiCommand_ResetInteractionByMode;
       g_UiRootCallbacks_0054FBC0.keyboardFallbackCf =
            InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf;
-      (*g_UiCommandModeGHandlers[dVar5])
+      (*(code *)g_UiCommandModeGHandlers[dVar5])
                 (root->opaque0058_017B + g_UiCommandModeGControlOffsets[dVar5] + -0x58);
       pIVar8 = root->notificationQueue9E60;
       for (iVar6 = 0x20; iVar6 != 0; iVar6 = iVar6 + -1) {

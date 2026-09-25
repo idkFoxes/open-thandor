@@ -600,7 +600,7 @@ dword Locale_ParseUnsignedDecimalAscii(byte *text)
   digitValue = 0;
   parsedValue = 0;
   currentAsciiCode = digitValue;
-  for (; ((THANDOR_READ_PART(currentAsciiCode, 1, 3) = (undefined3)(currentAsciiCode >> 8),
+  for (; ((/* Ghidra: x._1_3_ = x >> 8 here was a no-op (mov al,[text]) */
           currentAsciiCode = CONCAT31(THANDOR_READ_PART(currentAsciiCode, 1, 3),*text), currentAsciiCode != 0 &&
           (currentAsciiCode = currentAsciiCode - 0x30, 0x2f < currentAsciiCode)) &&
          (currentAsciiCode < 10)); text = text + 1) {
