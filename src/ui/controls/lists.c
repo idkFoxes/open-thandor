@@ -1855,7 +1855,7 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
    remain unchanged.
 */
 UiSelectableNodeEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount)
+UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
 
 {
   int iVar1;
@@ -1866,7 +1866,7 @@ UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount)
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
-  while ((iVar1 = *(int *)(&stack0x00000008 + controlPointerByteOffset),
+  while ((iVar1 = *(int *)((byte *)(&controlCount + 1) + controlPointerByteOffset),
          (*(uint *)(iVar1 + 0x48) & 8) != 0 || ((*(uint *)(iVar1 + 0x4c) & 2) == 0))) {
     controlIndex = controlIndex + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
@@ -1891,7 +1891,7 @@ UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount)
    remain unchanged.
 */
 UiSelectableGroupIndexEcxCf5 __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount)
+UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...)
 
 {
   uint controlIndex;
@@ -1902,7 +1902,7 @@ UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount)
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
-    if ((*(uint *)(*(int *)(&stack0x00000008 + controlPointerByteOffset) + 0x4c) & 2) != 0) {
+    if ((*(uint *)(*(int *)((byte *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & 2) != 0) {
       UVar2.carryNoneSelected = false;
       UVar2.selectedIndexOrCount = controlIndex;
       return UVar2;
@@ -1924,7 +1924,7 @@ UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount)
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl)
+UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
 
 {
   UiNodeBase *node;
@@ -1934,7 +1934,7 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
   controlPointerByteOffset = 0;
   uVar1 = 0;
   do {
-    node = *(UiNodeBase **)(&stack0x0000000c + controlPointerByteOffset);
+    node = *(UiNodeBase **)((byte *)(&selectedControl + 1) + controlPointerByteOffset);
     if (node == selectedControl) {
       node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 2);
     }
@@ -2988,6 +2988,7 @@ UiTimedListControl_DrawRowsAndSelection
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
+  byte thandor_stack_frame[0x100]; /* TODO: unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
   dword dVar1;
   int iVar2;
   int iVar3;
@@ -3018,7 +3019,7 @@ UiTimedListControl_DrawRowsAndSelection
           if (pUStack_20 != (UiNodeBase *)0x0) {
             while (pUVar5 = (UiNodeBase *)((int)&pUVar5[-1].nodeFlags + 3),
                   pUVar5 != (UiNodeBase *)0x0) {
-              if (*(int *)(&stack0xffffffd8 + (int)pUVar5 * 8) != 0) {
+              if (*(int *)(&thandor_stack_frame[0x80 - 0x28] + (int)pUVar5 * 8) != 0) {
                 (*g_GraphicsTextureSourceBlitSourceAlpha)
                           (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,control[1].rightOffset,
                            (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);

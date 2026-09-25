@@ -557,7 +557,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                               soundDirectoryRecordSizeBytes = FVar33.recordSizeBytes;
                             }
                             shrinkResultOrError = (void *)soundDirectoryRecordSizeBytes;
-                            if (&stack0xffffffd0 < (undefined1 *)0xfffffffc) {
+                            if (1 /* Ghidra stack-probe artifact: &stack0x.. < 0xfffffffc always holds */) {
                               g_MoviePlaybackBaseFrameGroup = 6;
                               g_MoviePlaybackScheduleCounter = 0;
                               g_MoviePlaybackScheduleSpan = uVar3;
@@ -1319,7 +1319,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
                                           soundDirectoryRecordSizeBytes = FVar27.recordSizeBytes;
                                         }
                                         shrinkResultOrError = (void *)soundDirectoryRecordSizeBytes;
-                                        if (&stack0xffffffd8 < (undefined1 *)0xfffffffc) {
+                                        if (1 /* Ghidra stack-probe artifact: &stack0x.. < 0xfffffffc always holds */) {
                                           g_MoviePlaybackBaseFrameGroup = 6;
                                           g_MoviePlaybackScheduleCounter = 0;
                                           g_MoviePlaybackScheduleSpan = uVar5;

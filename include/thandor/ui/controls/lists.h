@@ -110,15 +110,15 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
 
 /* 0x004B2D30 */
 UiSelectableNodeEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount);
+UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...);
 
 /* 0x004B2D70 */
 UiSelectableGroupIndexEcxCf5 __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount);
+UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...);
 
 /* 0x004B2DA0 */
 void __thandor_void_preserve_eax_ecx_edx
-UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl);
+UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
 
 /* 0x004B2DE0 */
 byte __thandor_cf_preserve_eax_ecx_edx

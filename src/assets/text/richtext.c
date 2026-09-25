@@ -725,6 +725,7 @@ RichTextStringAssetEaxCf5 __thandor_eax_cf_preserve_edx
 RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
 
 {
+  byte thandor_stack_frame[0x100]; /* TODO: unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
   byte bVar1;
   ushort uVar2;
   wchar_t *memory;
@@ -870,7 +871,7 @@ switchD_0041c155_caseD_23:
                   piVar18 = piVar18 + 1;
                 }
                 while( true ) {
-                  while (piVar16 = piVar18, iVar5 = *(int *)(&stack0xffffffd0 + iVar7 * 8),
+                  while (piVar16 = piVar18, iVar5 = *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar7 * 8),
                         iVar5 == -1) {
                     iVar7 = iVar7 + -1;
                     piVar18 = piVar16;
@@ -879,14 +880,14 @@ switchD_0041c155_caseD_23:
                       dVar17 = (int)piVar16 - (int)RVar24.assetOrError;
                       (*g_MemoryApi.shrinkInPlace)(dVar17,RVar24.assetOrError);
                       iStack_20 = iStack_20 * 8;
-                      *(dword *)(&stack0xffffffd4 + iStack_20) = dVar17;
+                      *(dword *)(&thandor_stack_frame[0x80 - 0x2c] + iStack_20) = dVar17;
                       RVar24.assetOrError[0x2c] = iStack_24;
                       RVar24.assetOrError[1] = dVar17;
                       *RVar24.assetOrError = 0x727473;
                       RVar24.assetOrError[2] = 1;
                       RVar24.assetOrError[3] = 0;
-                      puVar10 = &stack0xffffffd0 + iStack_20;
-                      *(undefined4 *)(&stack0xffffffd0 + iStack_20) = 0x41c7b5;
+                      puVar10 = &thandor_stack_frame[0x80 - 0x30] + iStack_20;
+                      *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iStack_20) = 0x41c7b5;
                       dVar17 = (*g_LocaleGetPackedCurrentTime)();
                       RVar24.assetOrError[4] = dVar17;
                       RVar24.assetOrError[6] = dVar17;
@@ -914,10 +915,10 @@ switchD_0041c155_caseD_23:
                   *piVar16 = 0x10;
                   piVar16[1] = 0;
                   do {
-                    if (iVar5 == *(int *)(&stack0xffffffd0 + iVar7 * 8)) {
-                      iVar8 = *(int *)(&stack0xffffffcc + iVar7 * 8);
+                    if (iVar5 == *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar7 * 8)) {
+                      iVar8 = *(int *)(&thandor_stack_frame[0x80 - 0x34] + iVar7 * 8);
                       piVar16[1] = piVar16[1] + 1;
-                      uVar3 = (iVar8 - *(int *)(&stack0xffffffd4 + iVar7 * 8)) + 4;
+                      uVar3 = (iVar8 - *(int *)(&thandor_stack_frame[0x80 - 0x2c] + iVar7 * 8)) + 4;
                       *piVar16 = *piVar16 + uVar3;
                       bVar20 = uVar4 < uVar3;
                       uVar4 = uVar4 - uVar3;
@@ -933,12 +934,12 @@ switchD_0041c155_caseD_23:
                   piVar18 = piVar6 + piVar16[1];
                   iVar8 = iStack_20;
                   do {
-                    if (iVar5 == *(int *)(&stack0xffffffd0 + iVar8 * 8)) {
-                      *(undefined4 *)(&stack0xffffffd0 + iVar8 * 8) = 0xffffffff;
+                    if (iVar5 == *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar8 * 8)) {
+                      *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iVar8 * 8) = 0xffffffff;
                       iVar7 = (int)piVar18 - (int)piVar16;
-                      piVar14 = *(int **)(&stack0xffffffd4 + iVar8 * 8);
-                      for (uVar3 = (uint)(*(int *)(&stack0xffffffcc + iVar8 * 8) -
-                                         (int)*(int **)(&stack0xffffffd4 + iVar8 * 8)) >> 2;
+                      piVar14 = *(int **)(&thandor_stack_frame[0x80 - 0x2c] + iVar8 * 8);
+                      for (uVar3 = (uint)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + iVar8 * 8) -
+                                         (int)*(int **)(&thandor_stack_frame[0x80 - 0x2c] + iVar8 * 8)) >> 2;
                           uVar3 != 0; uVar3 = uVar3 - 1) {
                         *piVar18 = *piVar14;
                         piVar14 = piVar14 + 1;
@@ -958,9 +959,9 @@ RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapaci
           }
 RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           iStack_20 = iStack_20 * 8;
-          *(wchar_t **)(&stack0xffffffd4 + iStack_20) = memory;
-          *(undefined4 *)(&stack0xffffffd0 + iStack_20) = 0x41c5e3;
-          (*g_MemoryApi.free)(*(void **)(&stack0xffffffd4 + iStack_20));
+          *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + iStack_20) = memory;
+          *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iStack_20) = 0x41c5e3;
+          (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + iStack_20));
           RVar22.carry = true;
           RVar22.assetOrError = (void *)0x14;
           return RVar22;
@@ -1081,20 +1082,20 @@ LAB_0041c5c0:
   return RVar21;
 switchD_0041c155_caseD_0:
   iVar5 = iStack_20 * 8;
-  *(wchar_t **)(&stack0xffffffd4 + iVar5) = memory;
-  *(undefined4 *)(&stack0xffffffd0 + iVar5) = 0x41c5a2;
-  (*g_MemoryApi.free)(*(void **)(&stack0xffffffd4 + iVar5));
-  *(wchar_t **)(&stack0xffffffd4 + iVar5) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
-  *(int *)(&stack0xffffffd0 + iVar5) = (int)pbVar13 - (int)markupBytes;
-  *(undefined4 *)(&stack0xffffffcc + iVar5) = 1;
-  *(undefined4 *)(&stack0xffffffc8 + iVar5) = 10;
+  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5) = memory;
+  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iVar5) = 0x41c5a2;
+  (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5));
+  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
+  *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar5) = (int)pbVar13 - (int)markupBytes;
+  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x34] + iVar5) = 1;
+  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x38] + iVar5) = 10;
   (&dStackY_3c)[iStack_20 * 2] = 0;
   aWStackY_44[iStack_20 * 2 + 1] = 0x40;
   aWStackY_44[iStack_20 * 2] = 0x41c5bb;
   (*g_WideNumberFormatUtf16)
             (aWStackY_44[iStack_20 * 2 + 1],(&dStackY_3c)[iStack_20 * 2],
-             *(dword *)(&stack0xffffffc8 + iVar5),*(dword *)(&stack0xffffffcc + iVar5),
-             *(sdword *)(&stack0xffffffd0 + iVar5),*(word **)(&stack0xffffffd4 + iVar5));
+             *(dword *)(&thandor_stack_frame[0x80 - 0x38] + iVar5),*(dword *)(&thandor_stack_frame[0x80 - 0x34] + iVar5),
+             *(sdword *)(&thandor_stack_frame[0x80 - 0x30] + iVar5),*(word **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5));
   memory = u_error__TXT2STR__unknown_characte_0041afac;
   goto LAB_0041c5c0;
 }

@@ -951,7 +951,7 @@ LAB_004ad066:
                 puVar35 = puVar36 + iVar21;
                 puVar36 = puVar36 + iVar21;
               } while (uVar23 != 0);
-              bVar37 = &stack0x00000000 == (undefined1 *)0x40;
+              bVar37 = 0; /* Ghidra: ZF after an ESP adjustment (&stack0x00000000 == 0x40), never set on a real stack */
               goto code_r0x004ace04;
             }
             iStack_24 = iStack_24 + -1;
@@ -1219,7 +1219,7 @@ LAB_004accf1:
                     pbVar30 = pbVar31 + iVar21;
                     pbVar31 = pbVar31 + iVar21;
                   } while (iVar22 != 0);
-                  bVar38 = &stack0x00000000 == (undefined1 *)0x40;
+                  bVar38 = 0; /* Ghidra: ZF after an ESP adjustment (&stack0x00000000 == 0x40), never set on a real stack */
                   iVar12 = iVar12 + 1;
                   goto code_r0x004acaa4;
                 }

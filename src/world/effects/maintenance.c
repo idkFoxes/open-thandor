@@ -185,6 +185,8 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   FieldGridHeightNormalEaxEdxCf9 FVar35;
   ModelLocalPointRegs12 MVar36;
   FixedDirectionXyzRegs12 FVar37;
+  GraphicsFixedVec3 terrainNormalDirection;
+  GraphicsFixedVec3 motionDirection;
   EffectDefinition *effectDefinition;
   WorldRuntimeContext *worldRuntime_00;
   InGameSimulationStepBatchTicks IStack_20;
@@ -463,15 +465,22 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
                          ((modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
       if (!FVar35.carry) {
-        FixedMath_DirectionFromAnglesScaledRegs
+        /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
+           them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. */
+        FVar37 = FixedMath_DirectionFromAnglesScaledRegs
                   ((int)FVar35.packedNormalAngles >> 0x10,FVar35.packedNormalAngles & 0xffff,
                    0x10000000);
-        FixedMath_DirectionFromAnglesScaledRegs
+        terrainNormalDirection.x = FVar37.eax;
+        terrainNormalDirection.y = FVar37.ecx;
+        terrainNormalDirection.z = FVar37.edx;
+        FVar37 = FixedMath_DirectionFromAnglesScaledRegs
                   ((modelNode->modelPayload).worldRotationAngle1 -
                    pEVar9->effectAgeTicks * pEVar9->effectAgeTicks * effectDefinition1->unknown58,
                    (modelNode->modelPayload).worldRotationAngle0,0x10000000);
-        sVar24 = FixedVec3_DotQ28((GraphicsFixedVec3 *)&stack0xffffffd4,
-                                  (GraphicsFixedVec3 *)&stack0xffffffc8);
+        motionDirection.x = FVar37.eax;
+        motionDirection.y = FVar37.ecx;
+        motionDirection.z = FVar37.edx;
+        sVar24 = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
         if (sVar24 < 0) {
           if (pEVar9->stateTintArgb < 0x1000000) {
             InterpolationState_SetNegatedTargetAndRescaleProgress

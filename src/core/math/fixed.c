@@ -386,14 +386,14 @@ FixedTransform_RotateDirectionScaledRegs
 {
   FixedVectorEaxEcxEdx12 FVar1;
   FixedVectorXEaxYEbxZEdx12 FVar2;
-  undefined8 uVar3;
   
   FVar2 = FixedTransform_RotateDirectionScaledCoreRegs
                     (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
                      rotationAngle2);
+  /* Ghidra split the ECX/EDX halves of the return into uVar3._4_4_ and register0x00000008. */
   FVar1.xQ12 = FVar2.xQ12;
-  THANDOR_PART(dword, uVar3, 4) = FVar2.yQ12;
-  register0x00000008 = FVar2.zQ12;
+  FVar1.yQ12 = FVar2.yQ12;
+  FVar1.zQ12 = FVar2.zQ12;
   return FVar1;
 }
 

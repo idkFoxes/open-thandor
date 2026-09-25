@@ -995,11 +995,11 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 
 {
   WorldVector0EaxEcxEdx12 WVar1;
-  undefined8 uVar2;
   
+  /* Ghidra split the ECX/EDX halves of the return into uVar2._4_4_ and register0x00000008. */
   WVar1.xQ12 = (world->motion).positionXQ12;
-  THANDOR_PART(dword, uVar2, 4) = (world->motion).positionYQ12;
-  register0x00000008 = (world->motion).positionZQ12;
+  WVar1.yQ12 = (world->motion).positionYQ12;
+  WVar1.zQ12 = (world->motion).positionZQ12;
   return WVar1;
 }
 
@@ -1013,11 +1013,11 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
 
 {
   WorldVector1EaxEcxEdx12 WVar1;
-  undefined8 uVar2;
   
+  /* Ghidra split the ECX/EDX halves of the return into uVar2._4_4_ and register0x00000008. */
   WVar1.magnitudeQ12 = (world->motion).positionMagnitudeQ12;
-  THANDOR_PART(dword, uVar2, 4) = (world->motion).headingAngle;
-  register0x00000008 = (world->motion).pitchAngle;
+  WVar1.headingAngle = (world->motion).headingAngle;
+  WVar1.pitchAngle = (world->motion).pitchAngle;
   return WVar1;
 }
 
