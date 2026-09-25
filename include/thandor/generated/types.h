@@ -1342,7 +1342,10 @@ typedef unsigned short    undefined2;
 typedef unsigned int    undefined4;
 typedef unsigned long long    undefined8;
 typedef unsigned short    ushort;
-typedef short    wchar_t;
+#ifndef _WCHAR_T_DEFINED /* Win32 wchar_t: 16-bit unsigned, same as the CRT's */
+#define _WCHAR_T_DEFINED
+typedef unsigned short wchar_t;
+#endif
 typedef unsigned short    word;
 
 struct TextResourceResolveEaxCf5 {

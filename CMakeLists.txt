@@ -4,6 +4,11 @@ project(thandor_curated_reference C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# The recovered code stores pointers in 32-bit fields (pointer32, (int)ptr casts).
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(FATAL_ERROR "open-thandor must be built for 32-bit x86 (e.g. MSVC vcvars32 / -A Win32).")
+endif()
+
 add_library(thandor_curated STATIC
     src/assets/army/catalog.c
     src/assets/effect/catalog.c
