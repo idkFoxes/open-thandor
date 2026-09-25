@@ -25,7 +25,7 @@
    FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], FixedMath_SinCosScaled [core/math/fixed].
 */
 
-int ArmyPlacementCandidate_TestOffsetClearanceCf
+ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestOffsetClearanceCf
               (ArmyPlacementDispatchArg0 dispatchArg0,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3,
@@ -34,7 +34,6 @@ int ArmyPlacementCandidate_TestOffsetClearanceCf
 
 {
   int worldXQ12_00;
-  int in_EAX;
   int iVar1;
   bool bVar2;
   FixedLengthAngleEaxEdx8 FVar3;
@@ -43,8 +42,11 @@ int ArmyPlacementCandidate_TestOffsetClearanceCf
   ModelLookupEntryEaxCf5 MVar6;
   TerrainPlacementTestEaxCf5 TVar7;
   
+  ArmyPlacementCandidateEaxCf5 result;
+
+  /* The table dispatch reads EAX and CF; the decompiled int return lost CF. */
   AVar5 = ArmyPlacementCollision_TestCandidateAndClearanceCf
-                    (in_EAX,dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
+                    (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldXQ12,worldYQ12,modelDefinition,dispatchArg7,worldRuntime);
   iVar1 = AVar5.eax;
   if (!AVar5.carry) {
@@ -64,12 +66,16 @@ int ArmyPlacementCandidate_TestOffsetClearanceCf
                         (0xc00,dispatchArg3,worldXQ12_00,worldYQ12 + iVar1,worldRuntime->fieldGrid);
       iVar1 = TVar7.eax;
       if (!TVar7.carry) {
-        return AVar5.eax;
+        result.eax = AVar5.eax;
+        result.carry = false;
+        return result;
       }
     }
     g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
   }
-  return iVar1;
+  result.eax = iVar1;
+  result.carry = true;
+  return result;
 }
 
 
@@ -200,7 +206,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: ArmyPlacementCollision_TestCandidateAndClearanceCf.
 */
-int ArmyPlacementCandidate_TestFieldOccupancyCf
+ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
               (ArmyPlacementDispatchArg0 dispatchArg0,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3,
@@ -208,17 +214,17 @@ int ArmyPlacementCandidate_TestFieldOccupancyCf
               ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  int in_EAX;
   int iVar1;
   int iVar2;
   int iVar3;
+  ArmyPlacementCandidateEaxCf5 result;
   uint uVar4;
   int iVar5;
   ArmyPlacementCandidateEaxCf5 AVar6;
   FieldGridAsset *fieldGrid1;
   
   AVar6 = ArmyPlacementCollision_TestCandidateAndClearanceCf
-                    (in_EAX,dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
+                    (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldYQ12,worldXQ12,(ModelDefinitionRuntimeSemanticView280 *)modelDefinition,
                      dispatchArg7,worldRuntime);
   iVar1 = AVar6.eax;
@@ -235,12 +241,16 @@ int ArmyPlacementCandidate_TestFieldOccupancyCf
       iVar3 = iVar1;
       if ((fieldGrid1->cells[fieldGrid1->gridWidth * iVar5 + iVar2].flagsAndMaterial &
           0x800 << ((byte)modelDefinition[0x10].byteSize & 0x1f)) != 0) {
-        return iVar1;
+        result.eax = iVar1;
+        result.carry = false;
+        return result;
       }
     }
     g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
   }
-  return iVar3;
+  result.eax = iVar3;
+  result.carry = true;
+  return result;
 }
 
 
@@ -344,7 +354,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
    Cross-module calls: GridScratch_TestProjectedCellMaskBandsCf [world/pathing/grid],
    FieldGrid_TestWorldPointBlockedCf [world/terrain/grid].
 */
-bool ArmyRuntimeCollision_TestShotSpawnPointCf
+ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
                (dword dispatchArg0,dword dispatchArg1,dword dispatchArg2,dword dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
@@ -363,7 +373,13 @@ bool ArmyRuntimeCollision_TestShotSpawnPointCf
                         (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     }
   }
-  return bVar1;
+  {
+    ArmyPlacementCandidateEaxCf5 result;
+
+    result.eax = 0;
+    result.carry = bVar1;
+    return result;
+  }
 }
 
 
@@ -655,13 +671,17 @@ ArmyPlacement_ReleaseClassStateReservation
    army placement asset-class dispatch contract; CF carries acceptance and the first four class-specific dwords
    remain deliberately generic.
 */
-void ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
+ArmyPlacementCandidateEaxCf5 ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
                (dword dispatchArg0,dword dispatchArg1,dword dispatchArg2,dword dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,
                dword dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  return;
+  ArmyPlacementCandidateEaxCf5 result;
+
+  result.eax = 0;
+  result.carry = false;
+  return result;
 }
 
 /* Address: 0x00529CB0.
@@ -1040,7 +1060,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
 
 ArmyPlacementCandidateEaxCf5
 ArmyPlacementCollision_TestCandidateAndClearanceCf
-          (int eaxContinuity,ArmyPlacementDispatchArg0 dispatchArg0,
+          (ArmyPlacementDispatchArg0 dispatchArg0,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,dword dispatchArg2,
           ArmyPlacementDispatchArg3 dispatchArg3,Q12 worldXQ12,Q12 worldYQ12,
           ModelDefinitionRuntimeSemanticView280 *modelDefinition,
@@ -1062,6 +1082,9 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
   int local_18;
   UInt64Half32 local_c;
   UInt64Half32 local_8;
+  /* Was a leading pseudo-parameter for the incoming EAX, which shifted every argument of the
+     nine-argument table dispatch. */
+  int eaxContinuity = 0;
   
   lVar5 = 0x7fffffffffffffff;
   AVar1 = modelDefinition->placementContactKindIndex278;

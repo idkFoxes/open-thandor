@@ -7,6 +7,7 @@
 
 #include <thandor/graphics/backend/software.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: graphics/backend/software. */
 
@@ -209,10 +210,18 @@ SoftwareRenderer_DrawQueueAuxiliary
   GraphicsPrimitivePacketEaxCf5 GVar1;
   uint textureSubresourceIndex;
   
+  static int logged;
+  int packetCount = 0;
   g_SoftwareAuxiliaryTargetBase = targetBase;
   GVar1 = GraphicsPrimitiveQueue_Begin(queue);
   while (packet = GVar1.packet, !GVar1.carry) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
+    if (logged < 6 && packetCount < 3) {
+      Thandor_Log("aux raster: packet %p flags=%08x handler=%s", (void *)packet, packet->renderFlags,
+                  Thandor_SymbolName(*(void **)((int)g_SoftwareRasterHandlersAuxiliary +
+                                                ((packet->renderFlags & 0x3f000) >> 10))));
+    }
+    packetCount++;
     if (((packet->renderFlags & 0x10000) == 0) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
         (packet->textureEntry->subresourceIndex != 0x71)))) {
@@ -221,6 +230,10 @@ SoftwareRenderer_DrawQueueAuxiliary
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
     }
     GVar1 = GraphicsPrimitiveQueue_Next(queue);
+  }
+  if (logged < 6) {
+    Thandor_Log("aux raster: %d packets into %dx%d", packetCount, clipMaxY, clipMaxX);
+    logged++;
   }
   return;
 }
