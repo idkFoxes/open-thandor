@@ -7,6 +7,7 @@
 
 #include <thandor/audio/backend/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: audio/backend/runtime. */
 
@@ -201,6 +202,7 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
      ((DVar5 = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !DVar5.carry &&
       (DVar5 = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !DVar5.carry)))) {
     TVar1 = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
+    Thandor_Log("DirectSoundCreate -> 0x%08X", (dword)TVar1);
     if (TVar1 != 0) {
       return false;
     }
@@ -271,7 +273,11 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
         }
       }
     }
+    Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", local_1c, (dword)TVar1);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,local_1c,g_PackageLastErrorPath);
+  }
+  else {
+    Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
   }
   return true;
 }
@@ -591,6 +597,67 @@ DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 }
 
 
+/*
+Volume and pan as in 0x00583AD0/0x00583C70: the attenuation of the louder channel is the volume,
+and attenuation[first] - attenuation[second] is the pan. The original leaves the pan argument on
+the stack for the following SetPan call, which Ghidra could not follow.
+*/
+static void DirectSound_ApplyChannelGains
+          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+          IDirectSoundBuffer *voice)
+{
+  sdword leftAttenuation = g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8];
+  sdword rightAttenuation = g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
+  (*voice->lpVtbl->SetVolume)
+            (voice,rightChannelGainQ15 < leftChannelGainQ15 ? leftAttenuation : rightAttenuation);
+  (*voice->lpVtbl->SetPan)(voice,leftAttenuation - rightAttenuation);
+}
+
+/* Shared body of PlayOneShot/PlayLooping (0x00583930 / 0x00583A70), rewritten from the assembly:
+   the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
+   voice 0 rewound to position 0; with all eight voices busy CF is set. */
+static SoundPlayVoiceEaxCf5 DirectSound_PlayVoiceSet
+          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+          DirectSoundVoiceSet *voiceSet,TH_LEGACY_DWORD playFlags)
+{
+  SoundPlayVoiceEaxCf5 result;
+  IDirectSoundBuffer *voice;
+  TH_LEGACY_DWORD status;
+  int slot;
+
+  result.eax = (IDirectSoundBuffer *)0x0;
+  result.carry = true;
+  if (voiceSet == (DirectSoundVoiceSet *)0x0) {
+    return result;
+  }
+  for (slot = 0; slot < 8; slot = slot + 1) {
+    voice = voiceSet->voices[slot];
+    if (voice == (IDirectSoundBuffer *)0x0) {
+      if ((*g_DirectSound->lpVtbl->DuplicateSoundBuffer)
+                    (g_DirectSound,voiceSet->voices[0],&voiceSet->voices[slot]) != 0) {
+        return result;
+      }
+      voice = voiceSet->voices[slot];
+      (*voice->lpVtbl->SetCurrentPosition)(voice,0);
+      break;
+    }
+    status = 0;
+    (*voice->lpVtbl->GetStatus)(voice,&status);
+    if ((status & 1) == 0) {
+      break;
+    }
+  }
+  if (slot == 8) {
+    return result;
+  }
+  (*voice->lpVtbl->Play)(voice,0,0,playFlags);
+  DirectSound_ApplyChannelGains(leftChannelGainQ15,rightChannelGainQ15,voice);
+  result.eax = voice;
+  result.carry = false;
+  return result;
+}
+
+
 /* Address: 0x00583940.
    Ownership: audio/backend/runtime.
    Purpose: Finds a non-playing voice or duplicates voices[0] into an empty slot, starts playback without
@@ -604,67 +671,7 @@ DirectSound_PlayOneShot
           DirectSoundVoiceSet *voiceSet)
 
 {
-  IDirectSound_Vtbl *pIVar1;
-  DirectSoundVoiceSet *pDVar2;
-  IDirectSoundBuffer_Vtbl *This;
-  TH_LEGACY_HRESULT TVar3;
-  DirectSoundVoiceSet *pDVar4;
-  SoundPlayVoiceEaxCf5 SVar5;
-  SoundPlayVoiceEaxCf5 SVar7;
-  SoundPlayVoiceEaxCf5 SVar8;
-  int *piVar9;
-  IDirectSound *pIVar10;
-  DirectSoundVoiceSet *arg2;
-  uint uStack_1c;
-  SoundPlayVoiceEaxCf5 SVar6;
-  
-  pDVar4 = (DirectSoundVoiceSet *)0x8;
-  arg2 = voiceSet;
-  pDVar2 = voiceSet;
-  while( true ) {
-    if (pDVar2 == (DirectSoundVoiceSet *)0x0) {
-      SVar5.eax = (IDirectSoundBuffer *)0x0;
-      SVar5.carry = true;
-      return SVar5;
-    }
-    This = (IDirectSoundBuffer_Vtbl *)arg2->voices[0];
-    if (This == (IDirectSoundBuffer_Vtbl *)0x0) break;
-    (*((IDirectSoundBuffer_Vtbl *)This->QueryInterface)->GetStatus)
-              ((IDirectSoundBuffer *)This,&uStack_1c);
-    if ((uStack_1c & 1) == 0) goto DirectSound_PlayOneShot_UseIdleOrDuplicatedVoice;
-    arg2 = (DirectSoundVoiceSet *)(arg2->voices + 1);
-    pDVar4 = (DirectSoundVoiceSet *)((int)pDVar4[-1].voices + 0x1f);
-    pDVar2 = pDVar4;
-  }
-  pIVar10 = g_DirectSound;
-  TVar3 = (*g_DirectSound->lpVtbl->DuplicateSoundBuffer)
-                    (g_DirectSound,voiceSet->voices[0],arg2->voices);
-  if (TVar3 != 0) {
-    SVar6.eax = (IDirectSoundBuffer *)0x0;
-    SVar6.carry = true;
-    return SVar6;
-  }
-  pIVar1 = pIVar10->lpVtbl;
-  This = (IDirectSoundBuffer_Vtbl *)arg2;
-  (**(code **)((unsigned char *)pIVar1->QueryInterface + 0x34))(pIVar1,0,pIVar1); /* vtable slot 0x34: first field is the vtable pointer */
-DirectSound_PlayOneShot_UseIdleOrDuplicatedVoice:
-  (*((IDirectSoundBuffer_Vtbl *)This->QueryInterface)->Play)((IDirectSoundBuffer *)This,0,0,0);
-  if (leftChannelGainQ15 <= rightChannelGainQ15) {
-    piVar9 = (int *)g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
-    (*((IDirectSoundBuffer *)This)->lpVtbl->SetVolume)
-              ((IDirectSoundBuffer *)This,(TH_LEGACY_LONG)piVar9);
-    (**(code **)(*piVar9 + 0x40))();
-    SVar7.carry = false;
-    SVar7.eax = (IDirectSoundBuffer *)piVar9;
-    return SVar7;
-  }
-  piVar9 = (int *)g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8];
-  (*((IDirectSoundBuffer *)This)->lpVtbl->SetVolume)
-            ((IDirectSoundBuffer *)This,(TH_LEGACY_LONG)piVar9);
-  (**(code **)(*piVar9 + 0x40))();
-  SVar8.carry = false;
-  SVar8.eax = (IDirectSoundBuffer *)piVar9;
-  return SVar8;
+  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,0);
 }
 
 
@@ -679,63 +686,7 @@ DirectSound_PlayLooping
           DirectSoundVoiceSet *voiceSet)
 
 {
-  IDirectSound_Vtbl *pIVar1;
-  IDirectSoundBuffer_Vtbl *This;
-  TH_LEGACY_HRESULT TVar2;
-  int iVar3;
-  DirectSoundVoiceSet *arg2;
-  SoundPlayVoiceEaxCf5 SVar4;
-  SoundPlayVoiceEaxCf5 SVar6;
-  SoundPlayVoiceEaxCf5 SVar7;
-  int *piVar8;
-  IDirectSound *pIVar9;
-  uint uStack_1c;
-  SoundPlayVoiceEaxCf5 SVar5;
-  
-  iVar3 = 8;
-  arg2 = voiceSet;
-  while (This = (IDirectSoundBuffer_Vtbl *)arg2->voices[0], This != (IDirectSoundBuffer_Vtbl *)0x0)
-  {
-    (*((IDirectSoundBuffer_Vtbl *)This->QueryInterface)->GetStatus)
-              ((IDirectSoundBuffer *)This,&uStack_1c);
-    if ((uStack_1c & 1) == 0) goto DirectSound_PlayLooping_UseIdleOrDuplicatedVoice;
-    arg2 = (DirectSoundVoiceSet *)(arg2->voices + 1);
-    iVar3 = iVar3 + -1;
-    if (iVar3 == 0) {
-      SVar4.eax = (IDirectSoundBuffer *)0x0;
-      SVar4.carry = true;
-      return SVar4;
-    }
-  }
-  pIVar9 = g_DirectSound;
-  TVar2 = (*g_DirectSound->lpVtbl->DuplicateSoundBuffer)
-                    (g_DirectSound,voiceSet->voices[0],arg2->voices);
-  if (TVar2 != 0) {
-    SVar5.eax = (IDirectSoundBuffer *)0x0;
-    SVar5.carry = true;
-    return SVar5;
-  }
-  pIVar1 = pIVar9->lpVtbl;
-  This = (IDirectSoundBuffer_Vtbl *)arg2;
-  (**(code **)((unsigned char *)pIVar1->QueryInterface + 0x34))(pIVar1,0,pIVar1); /* vtable slot 0x34: first field is the vtable pointer */
-DirectSound_PlayLooping_UseIdleOrDuplicatedVoice:
-  (*((IDirectSoundBuffer_Vtbl *)This->QueryInterface)->Play)((IDirectSoundBuffer *)This,0,0,1);
-  if (rightChannelGainQ15 < leftChannelGainQ15) {
-    piVar8 = (int *)g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8];
-    (*((IDirectSoundBuffer *)This)->lpVtbl->SetVolume)
-              ((IDirectSoundBuffer *)This,(TH_LEGACY_LONG)piVar8);
-    (**(code **)(*piVar8 + 0x40))();
-    SVar7.carry = false;
-    SVar7.eax = (IDirectSoundBuffer *)piVar8;
-    return SVar7;
-  }
-  piVar8 = (int *)g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
-  (*((IDirectSoundBuffer *)This)->lpVtbl->SetVolume)
-            ((IDirectSoundBuffer *)This,(TH_LEGACY_LONG)piVar8);
-  (**(code **)(*piVar8 + 0x40))();
-  SVar6.carry = false;
-  SVar6.eax = (IDirectSoundBuffer *)piVar8;
-  return SVar6;
+  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,1 /* DSBPLAY_LOOPING */);
 }
 
 
@@ -836,29 +787,9 @@ DirectSound_SetVoiceGains
           IDirectSoundBuffer *voice)
 
 {
-  int panAttenuation;
-  int negativePanAttenuation;
-  
-  if (rightChannelGainQ15 < leftChannelGainQ15) {
-    negativePanAttenuation =
-         -(g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8] -
-          g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8]);
-    if (voice != (IDirectSoundBuffer *)0x0) {
-      (*voice->lpVtbl->SetVolume)(voice,g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8]);
-      (*voice->lpVtbl->SetPan)(voice,negativePanAttenuation);
-      return;
-    }
+  if (voice != (IDirectSoundBuffer *)0x0) {
+    DirectSound_ApplyChannelGains(leftChannelGainQ15,rightChannelGainQ15,voice);
   }
-  else {
-    panAttenuation =
-         g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8] -
-         g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
-    if (voice != (IDirectSoundBuffer *)0x0) {
-      (*voice->lpVtbl->SetVolume)(voice,g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8]);
-      (*voice->lpVtbl->SetPan)(voice,panAttenuation);
-    }
-  }
-  return;
 }
 
 

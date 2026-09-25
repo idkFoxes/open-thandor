@@ -1589,6 +1589,7 @@ typedef CHAR *LPSTR;
 
 typedef DWORD LCID;
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct IMAGE_DOS_HEADER {
     char e_magic[2]; 
     word e_cblp; 
@@ -1604,13 +1605,14 @@ struct IMAGE_DOS_HEADER {
     word e_cs; 
     word e_lfarlc; 
     word e_ovno; 
-    word e_res[4][4]; 
+    word e_res[4]; /* Ghidra C export printed [4][4] */
     word e_oemid; 
     word e_oeminfo; 
-    word e_res2[10][10]; 
+    word e_res2[10]; /* Ghidra C export printed [10][10] */
     dword e_lfanew; 
     byte e_program[64]; 
 };
+#pragma pack(pop)
 
 typedef int FactionRuntimeIndex;
 
@@ -4171,16 +4173,17 @@ union UiCommandPayloadTextBatch48 {
     struct UiCommandPayloadTriple12 triples[4]; 
 };
 
-typedef enum NetworkAddressFamily {
+enum /* NetworkAddressFamily, stored in 2 byte(s) */ {
     NETWORK_ADDRESS_FAMILY_UNSPECIFIED=0,
     NETWORK_ADDRESS_FAMILY_IPV4=2,
     NETWORK_ADDRESS_FAMILY_IPX=6
-} NetworkAddressFamily;
+};
+typedef word NetworkAddressFamily;
 
 typedef word NetworkPortNetworkOrder;
 
 struct NetworkEndpointFamilyPortFields4 {
-    enum NetworkAddressFamily addressFamily; 
+    NetworkAddressFamily addressFamily; 
     NetworkPortNetworkOrder portNetworkOrder; 
 };
 
@@ -4544,15 +4547,17 @@ typedef enum GraphicsCursorEventType {
     RIGHT_RELEASE=7
 } GraphicsCursorEventType;
 
-typedef enum FactionRuntimeLifecycleObservedState {
+enum /* FactionRuntimeLifecycleObservedState, stored in 1 byte(s) */ {
     FACTION_RUNTIME_LIFECYCLE_ACTIVE=1,
     FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING=2,
     FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED=3
-} FactionRuntimeLifecycleObservedState;
+};
+typedef byte FactionRuntimeLifecycleObservedState;
 
-typedef enum WinSockIpv4AddressLength {
+enum /* WinSockIpv4AddressLength, stored in 2 byte(s) */ {
     WINSOCK_IPV4_ADDRESS_BYTES=4
-} WinSockIpv4AddressLength;
+};
+typedef word WinSockIpv4AddressLength;
 
 typedef enum RuntimeRegistrationRecordFlags {
     RUNTIME_REGISTRATION_RECORD_ALLOCATED=1073741824
@@ -4626,9 +4631,10 @@ typedef enum UiTransferJoinAvailability {
     UI_TRANSFER_JOIN_AVAILABLE=4294967295
 } UiTransferJoinAvailability;
 
-typedef enum WaveFormatTag {
+enum /* WaveFormatTag, stored in 2 byte(s) */ {
     WAVE_FORMAT_PCM=1
-} WaveFormatTag;
+};
+typedef word WaveFormatTag;
 
 typedef enum FrontendModelPointerContextFlags {
     FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
@@ -5307,8 +5313,9 @@ struct UiNodeVtable {
     void (*pointerWheel)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct WAVEFORMATEX {
-    enum WaveFormatTag wFormatTag; 
+    WaveFormatTag wFormatTag; 
     AudioChannelCount nChannels; 
     AudioSampleRateHz nSamplesPerSec; 
     AudioByteRate nAvgBytesPerSec; 
@@ -5316,6 +5323,7 @@ struct WAVEFORMATEX {
     AudioBitsPerSample wBitsPerSample; 
     WaveFormatExtraByteCount cbSize; 
 };
+#pragma pack(pop)
 
 struct IDirectSoundBuffer_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectSoundBuffer *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
@@ -6428,11 +6436,13 @@ struct UiCommandQueueRecord {
     dword payloadDword0C;
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct LevelArchivePathTemplate18 {
     word prefixCodeUnits[5]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
     word suffixCodeUnits[5]; 
 };
+#pragma pack(pop)
 
 struct RuntimeModelClassPriorityTable24 {
     enum RuntimeModelClassPriority modelClass00Priority; 
@@ -6513,8 +6523,8 @@ struct InGameNotificationPayload18 {
 struct WinSockHostEnt32 {
     byte *canonicalName;
     byte **aliases;
-    enum NetworkAddressFamily addressType; 
-    enum WinSockIpv4AddressLength addressLength; 
+    NetworkAddressFamily addressType; 
+    WinSockIpv4AddressLength addressLength; 
     byte **addressList;
 };
 
@@ -6603,11 +6613,13 @@ struct WorldMotionSplineKeyframe {
     dword reserved1C;
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct PatchArchivePathTemplate18 {
     word prefixCodeUnits[5]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
     word suffixCodeUnits[5]; 
 };
+#pragma pack(pop)
 
 struct TerrainMaterialSuffixEntry {
     word lowercaseLetterUtf16;
@@ -6626,11 +6638,13 @@ struct UiListControl {
     struct DirectSoundVoiceSet *activationSound; 
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct ScenarioCampaignDataPathTemplate2A {
     word prefixCodeUnits[14]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
     word suffixCodeUnits[5]; 
 };
+#pragma pack(pop)
 
 struct SprPointerRelocationRecord40 {
     dword pointerOrSerializedOffset00;
@@ -6667,6 +6681,7 @@ struct WinSockTimeVal32 {
     NetworkTimeoutMicroseconds microseconds; 
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct WinSockData11 {
     WinSockVersionWord version; // WinSock startup metadata.
     WinSockVersionWord highestVersion; // WinSock startup metadata.
@@ -6676,6 +6691,7 @@ struct WinSockData11 {
     NetworkDatagramByteCount16 maximumUdpDatagram; // WinSock startup metadata.
     byte *vendorInfo; // Historical WinSock 1.x vendor info pointer; structure is packed with no alignment padding before this field.
 };
+#pragma pack(pop)
 
 struct UiScrollableControl {
     struct UiNodeBase base; 
@@ -6799,6 +6815,7 @@ struct UiRootNode {
     struct UiRootNode *previousRoot; 
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameRuntimeRootImageC3E4 {
     struct UiRootNode rootUi0000; // Exact UiRootNode prefix used by root-stack and shutdown paths.
     byte opaque0058_017B[292]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
@@ -6870,6 +6887,7 @@ struct InGameRuntimeRootImageC3E4 {
     struct GameEntityRuntime *selectionDetailEntityA068;
     byte opaqueA06C_C3E3[9080]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
 };
+#pragma pack(pop)
 
 struct MovieRuntime {
     struct GeneratedAssetCommonPrefix textureCommon; 
@@ -6923,11 +6941,13 @@ struct InGameScheduledConditionDispatchTable14 {
     void *booleanPostfixExpression;
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct ScenarioLevelDataPathTemplate24 {
     word prefixCodeUnits[11]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
     word suffixCodeUnits[5]; 
 };
+#pragma pack(pop)
 
 typedef dword EnergyDemandQ4;
 
@@ -7487,7 +7507,7 @@ struct InGameFieldImageSaveContext58 {
     struct FieldGridAsset *fieldGridAsset; 
 };
 
-typedef enum RuntimeClassFamilyProfile {
+enum /* RuntimeClassFamilyProfile, stored in 1 byte(s) */ {
     RUNTIME_CLASS_PROFILE_CLASS00=0,
     RUNTIME_CLASS_PROFILE_CLASSES01_02_03_17_18_19=1,
     RUNTIME_CLASS_PROFILE_CLASSES05_06_07_08_09_21=2,
@@ -7496,33 +7516,34 @@ typedef enum RuntimeClassFamilyProfile {
     RUNTIME_CLASS_PROFILE_CLASS13=5,
     RUNTIME_CLASS_PROFILE_CLASS14=6,
     RUNTIME_CLASS_PROFILE_CLASS23=7
-} RuntimeClassFamilyProfile;
+};
+typedef byte RuntimeClassFamilyProfile;
 
 struct RuntimeClassFamilyMap24 {
-    enum RuntimeClassFamilyProfile class00; 
-    enum RuntimeClassFamilyProfile class01; 
-    enum RuntimeClassFamilyProfile class02; 
-    enum RuntimeClassFamilyProfile class03; 
-    enum RuntimeClassFamilyProfile class04; 
-    enum RuntimeClassFamilyProfile class05; 
-    enum RuntimeClassFamilyProfile class06; 
-    enum RuntimeClassFamilyProfile class07; 
-    enum RuntimeClassFamilyProfile class08; 
-    enum RuntimeClassFamilyProfile class09; 
-    enum RuntimeClassFamilyProfile class10; 
-    enum RuntimeClassFamilyProfile class11; 
-    enum RuntimeClassFamilyProfile class12; 
-    enum RuntimeClassFamilyProfile class13; 
-    enum RuntimeClassFamilyProfile class14; 
-    enum RuntimeClassFamilyProfile class15; 
-    enum RuntimeClassFamilyProfile class16; 
-    enum RuntimeClassFamilyProfile class17; 
-    enum RuntimeClassFamilyProfile class18; 
-    enum RuntimeClassFamilyProfile class19; 
-    enum RuntimeClassFamilyProfile class20; 
-    enum RuntimeClassFamilyProfile class21; 
-    enum RuntimeClassFamilyProfile class22; 
-    enum RuntimeClassFamilyProfile class23; 
+    RuntimeClassFamilyProfile class00; 
+    RuntimeClassFamilyProfile class01; 
+    RuntimeClassFamilyProfile class02; 
+    RuntimeClassFamilyProfile class03; 
+    RuntimeClassFamilyProfile class04; 
+    RuntimeClassFamilyProfile class05; 
+    RuntimeClassFamilyProfile class06; 
+    RuntimeClassFamilyProfile class07; 
+    RuntimeClassFamilyProfile class08; 
+    RuntimeClassFamilyProfile class09; 
+    RuntimeClassFamilyProfile class10; 
+    RuntimeClassFamilyProfile class11; 
+    RuntimeClassFamilyProfile class12; 
+    RuntimeClassFamilyProfile class13; 
+    RuntimeClassFamilyProfile class14; 
+    RuntimeClassFamilyProfile class15; 
+    RuntimeClassFamilyProfile class16; 
+    RuntimeClassFamilyProfile class17; 
+    RuntimeClassFamilyProfile class18; 
+    RuntimeClassFamilyProfile class19; 
+    RuntimeClassFamilyProfile class20; 
+    RuntimeClassFamilyProfile class21; 
+    RuntimeClassFamilyProfile class22; 
+    RuntimeClassFamilyProfile class23; 
 };
 
 struct ArmyRuntimeClassCallbackPartitions {
@@ -7564,30 +7585,33 @@ struct RuntimeMaintenanceTerrainStateRefreshCallbacks {
     void (*effect)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); 
 };
 
-typedef enum RuntimeMaintenancePhaseIndex {
+enum /* RuntimeMaintenancePhaseIndex, stored in 1 byte(s) */ {
     PRIMARY_UPDATE=0,
     TERRAIN_STATE_REFRESH=1,
     OCCUPANCY_REBUILD=2,
     AUDIO_REFRESH=3
-} RuntimeMaintenancePhaseIndex;
+};
+typedef byte RuntimeMaintenancePhaseIndex;
 
-typedef enum RuntimeMaintenanceDomainIndex {
+enum /* RuntimeMaintenanceDomainIndex, stored in 1 byte(s) */ {
     ARMY=0,
     SHOT=1,
     EFFECT=2
-} RuntimeMaintenanceDomainIndex;
+};
+typedef byte RuntimeMaintenanceDomainIndex;
 
-typedef enum RuntimeMaintenanceSecondArgumentKind {
+enum /* RuntimeMaintenanceSecondArgumentKind, stored in 1 byte(s) */ {
     WORLD_NODE=0,
     MODEL_NODE=1,
     ARMY_RUNTIME=2,
     OPAQUE=3
-} RuntimeMaintenanceSecondArgumentKind;
+};
+typedef byte RuntimeMaintenanceSecondArgumentKind;
 
 struct RuntimeMaintenanceTargetTypeDescriptor8 {
-    enum RuntimeMaintenancePhaseIndex phase; 
-    enum RuntimeMaintenanceDomainIndex domain; 
-    enum RuntimeMaintenanceSecondArgumentKind secondArgumentKind; 
+    RuntimeMaintenancePhaseIndex phase; 
+    RuntimeMaintenanceDomainIndex domain; 
+    RuntimeMaintenanceSecondArgumentKind secondArgumentKind; 
     byte reserved03; 
     void *callbackTarget; 
 };
@@ -8465,10 +8489,11 @@ typedef enum InGameScheduledConditionKind {
     INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION=26
 } InGameScheduledConditionKind;
 
-typedef enum InGameEndConditionTriggerStateFlags {
+enum /* InGameEndConditionTriggerStateFlags, stored in 1 byte(s) */ {
     INGAME_END_CONDITION_TRIGGER_ACTIVE=1,
     INGAME_END_CONDITION_TRIGGER_PROCESSED=2
-} InGameEndConditionTriggerStateFlags;
+};
+typedef byte InGameEndConditionTriggerStateFlags;
 
 typedef enum InGameScheduledConditionStatusFlags {
     INGAME_SCHEDULED_CONDITION_SATISFIED=1,
@@ -8579,7 +8604,7 @@ struct InGameScheduledConditionRecord10 {
 };
 
 struct InGameEndConditionTriggerRecord8ReferenceView {
-    enum InGameEndConditionTriggerStateFlags stateFlags;
+    InGameEndConditionTriggerStateFlags stateFlags;
     byte movieVariantSelector;
     byte skipArmyDisableWhenOne;
     byte reserved03;
@@ -8670,6 +8695,7 @@ struct RomRecordTableEntry200 {
     byte opaqueEntry20_1FF[480];
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameRuntimeRootObservedView9E70 {
     byte opaque0000_09B7[2488]; 
     struct RecentTextHistoryPointerList recentTextHistory09B8; 
@@ -8693,6 +8719,7 @@ struct InGameRuntimeRootObservedView9E70 {
     byte opaque9B54_9E5F[780]; 
     dword observedPayloadScratch9E60[4]; 
 };
+#pragma pack(pop)
 
 struct ShotDefinitionDisk2E0 {
     dword trajectoryMode; 
@@ -9452,7 +9479,7 @@ typedef dword GameSpeedQ8;
 
 struct GameFactionRuntimeImageTail {
     dword activeFactionCount; // Total active faction count copied from the loaded level runtime tail; faction loops and owner-faction UI cycling use it as their upper index/count.
-    enum FactionRuntimeLifecycleObservedState factionLifecycleStates[8]; // Observed states: 1 active, 2 ending pending, 3 ended/transitioned. Zero remains deliberately unnamed.
+    FactionRuntimeLifecycleObservedState factionLifecycleStates[8]; // Observed states: 1 active, 2 ending pending, 3 ended/transitioned. Zero remains deliberately unnamed.
     InGameSimulationTick simulationTick; // Monotonic simulation tick used for phased maintenance scheduling.
     InGamePresentationTick presentationTick; // Presentation/update cadence counter used by end-game HUD and terrain-composite refresh scheduling.
     InGamePeriodicClockTick periodicClockTick; // Periodic real-time clock tick used by the displayed elapsed-time conversion.
@@ -9570,12 +9597,13 @@ struct UiTooltipState {
     UiPixelCoordinate pointerY; 
 };
 
-typedef enum UiPointerCaptureButton {
+enum /* UiPointerCaptureButton, stored in 1 byte(s) */ {
     UI_POINTER_CAPTURE_LEFT=0,
     UI_POINTER_CAPTURE_MIDDLE=1,
     UI_POINTER_CAPTURE_RIGHT=2,
     UI_POINTER_CAPTURE_NONE=255
-} UiPointerCaptureButton;
+};
+typedef byte UiPointerCaptureButton;
 
 struct UiRuntimeRecord {
     struct UiTransferPacketHeader packetHeader; 
@@ -11202,6 +11230,7 @@ struct RomSerializedNodeHeader34 {
     OwnedNestedResourceFlag ownedNestedResourcePresent; // incremented when relocation owns loaded nested resource
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameRuntimeUiGridViewC3E4 {
     struct UiRootNode rootUi0000; // Exact UiRootNode prefix used by root-stack and shutdown paths.
     byte opaque0058_017B[292]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
@@ -11291,6 +11320,7 @@ struct InGameRuntimeUiGridViewC3E4 {
     struct GameEntityRuntime *selectionDetailEntityA068;
     byte opaqueA06C_C3E3[9080]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
 };
+#pragma pack(pop)
 
 struct EndGameResultsRuntimeView44C4 {
     struct UiRootNode rootUi0000;
@@ -11499,8 +11529,9 @@ struct InGameAction101FTextPanelE8 {
     UiTextResourceId textResourceIdE4;
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameAction101FRootView43DC {
-    struct UiRootNode rootUi0000;
+    union { struct UiNodeBase base; } rootUi0000; /* Ghidra: UiRootNode truncated to its 0x4C-byte UiNodeBase */
     byte opaqueGap004C_0A2F[2532]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct WorldRuntimeContext worldRuntime0A30;
     byte opaqueGap0B8C_0BCF[68]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
@@ -11514,6 +11545,7 @@ struct InGameAction101FRootView43DC {
     byte opaqueGap141C_4387[12140]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiSelectableControl sharedSettingsToggle4388;
 };
+#pragma pack(pop)
 
 struct FrontendPointerHintControl58 {
     struct UiNodeBase base;
@@ -11948,6 +11980,7 @@ struct FrontendResultsColumnSequenceTemplate8_84 {
     dword columnTypes[8];
 };
 
+#pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct ScenarioCatalogRuntimeExpandedRecord100 {
     word identifier[32]; // UTF-16 scenario identifier
     byte opaqueGap0040_004F[16]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
@@ -11968,6 +12001,7 @@ struct ScenarioCatalogRuntimeExpandedRecord100 {
     word *modeResolvedText; // resolved UTF-16 text pointer
     byte opaqueGap008A_00FF[118]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
+#pragma pack(pop)
 
 struct ScenarioCatalogSaveRecord {
     word identifier[32];
@@ -12525,7 +12559,7 @@ struct TerrainProjectedRowSpan {
     int endColumnExclusive;
 };
 struct WinSockIpxAddress16 {
-    enum NetworkAddressFamily addressFamily;
+    NetworkAddressFamily addressFamily;
     byte networkNumber[4];
     byte nodeNumber[6];
     NetworkPortNetworkOrder socketNetworkOrder;

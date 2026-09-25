@@ -5,6 +5,7 @@
 //   imports.jsonl               every external (DLL) function with library and signature
 //   functions.jsonl             every function with entry address and prototype
 //   labels.jsonl                every label (including untyped ones) with its address
+//   layouts.jsonl               size of every enum, size and field offsets of every struct/union
 //
 // Headless:
 //   analyzeHeadless <tmpdir> thandor -import ghidra/thandor.exeV537.gzf -noanalysis ^
@@ -16,7 +17,11 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 
 import ghidra.app.script.GhidraScript;
+import ghidra.program.model.data.Composite;
 import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.DataTypeComponent;
+import ghidra.program.model.data.Enum;
+import ghidra.program.model.data.Union;
 import ghidra.program.model.data.FunctionDefinition;
 import ghidra.program.model.data.ParameterDefinition;
 import ghidra.program.model.listing.Data;
@@ -90,6 +95,33 @@ public class ExportBuildData extends GhidraScript {
                 }
             }
         }
+        int layouts = 0;
+        try (PrintWriter wt = new PrintWriter(new File(out, "layouts.jsonl"), "UTF-8")) {
+            Iterator<DataType> all = currentProgram.getDataTypeManager().getAllDataTypes();
+            while (all.hasNext()) {
+                DataType dt = all.next();
+                if (dt instanceof Enum en) {
+                    wt.println("{\"kind\":\"enum\",\"name\":" + q(en.getName()) + ",\"length\":" + en.getLength() + "}");
+                    layouts++;
+                } else if (dt instanceof Composite comp && !comp.isNotYetDefined()) {
+                    StringBuilder fields = new StringBuilder("[");
+                    for (DataTypeComponent c : comp.getDefinedComponents()) {
+                        if (fields.length() > 1) {
+                            fields.append(',');
+                        }
+                        fields.append("{\"name\":").append(q(c.getFieldName())).append(",\"offset\":")
+                              .append(c.getOffset()).append(",\"length\":").append(c.getLength())
+                              .append(",\"bitfield\":").append(c.isBitFieldComponent()).append('}');
+                    }
+                    fields.append(']');
+                    wt.println("{\"kind\":\"" + (comp instanceof Union ? "union" : "struct") + "\",\"name\":"
+                            + q(comp.getName()) + ",\"length\":" + comp.getLength() + ",\"fields\":" + fields + "}");
+                    layouts++;
+                }
+            }
+        }
+        println("open-thandor export: " + layouts + " layouts");
+
         int labels = 0;
         try (PrintWriter wl = new PrintWriter(new File(out, "labels.jsonl"), "UTF-8")) {
             for (Symbol s : currentProgram.getSymbolTable().getAllSymbols(true)) {
