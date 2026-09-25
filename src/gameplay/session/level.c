@@ -427,6 +427,12 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                   SVar22 = ModelRuntimePool_Init();
                   resultOrPointer = (void *)SVar22.valueOrError;
                   if (!SVar22.carry) {
+                    /* The decompiler lost these two locals; the original reads them from the level header
+                       (+0xC0 army and +0xC8 effect texture base paths). */
+                    graphicsBasePath = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                                      ((levelImage->header).pathOffsets.armyTextureBasePathOffset - 0x28));
+                    mutableBasePath = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                                      ((levelImage->header).pathOffsets.effectTextureBasePathOffset - 0x28));
                     AVar23 = ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath);
                     resultOrPointer = (void *)AVar23.errorOrValue;
                     if (!AVar23.carry) {
@@ -728,6 +734,8 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                                     iVar9 = 0x300;
                                     local_20 = (ArmyAssetRecordPrefix *)0x0;
                                     local_24 = (ArmyAssetRecordPrefix *)0x0;
+                                    local_28 = (ArmyAssetRecordPrefix *)0x0; /* uninitialized in the original */
+                                    local_2c = (ArmyAssetRecordPrefix *)0x0;
                                     do {
                                       armyDefinition1 = *ppAVar11;
                                       armyDefinition3 = local_2c;
@@ -1177,6 +1185,12 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
                   SVar17 = ModelRuntimePool_Init();
                   resultOrPointer = (void *)SVar17.valueOrError;
                   if (!SVar17.carry) {
+                    /* The decompiler lost these two locals; the original reads them from the level header
+                       (+0xC0 army and +0xC8 effect texture base paths). */
+                    graphicsBasePath = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                                      ((levelImage->header).pathState.armyTextureBasePathOffset - 0x28));
+                    mutableBasePath = (word *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                                      ((levelImage->header).pathState.effectTextureBasePathOffset - 0x28));
                     AVar18 = ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath);
                     resultOrPointer = (void *)AVar18.errorOrValue;
                     if (!AVar18.carry) {
