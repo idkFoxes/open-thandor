@@ -2059,7 +2059,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         }
       }
     }
-InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectionScan:
+InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectionScan:;
   }
   if (uVar12 != 0) {
     if (1 < uVar12) {

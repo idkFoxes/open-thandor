@@ -44,6 +44,23 @@ def statement_span(text, line_start):
     return line_start, len(text)
 
 
+def rhs_end(text, i, limit):
+    """End of an assignment's right-hand side: a top-level ',' or the enclosing ')'."""
+    depth = 0
+    while i < limit:
+        c = text[i]
+        if c in "([":
+            depth += 1
+        elif c in ")]":
+            if depth == 0:
+                return i
+            depth -= 1
+        elif c == "," and depth == 0:
+            return i
+        i += 1
+    return limit
+
+
 def operand_end(text, i):
     """End of the unary expression starting at i (after a cast)."""
     while text[i] in " \t\r\n":
@@ -115,7 +132,8 @@ def main(log):
                     print(f"skip {rel}:{lineno} ({len(cands)} assignments)")
                     continue
                 a = start + cands[0].end()
-                edits[(a, end)] = " " + wrap(frm, to, text[a:end])
+                b = rhs_end(text, a, end)
+                edits[(a, b)] = " " + wrap(frm, to, text[a:b])
             else:
                 cands = [m for m in re.finditer(r"\(\s*" + re.escape(to).replace(r"\ ", r"\s*") + r"\s*\)", stmt)]
                 if len(cands) != 1:

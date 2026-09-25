@@ -52,7 +52,7 @@ FileSystem_BuildEnumerationStringTableCf
     if (!FVar13.carry) {
       if (FVar3 == 0) {
         (*g_MemoryApi.free)(outputRecords);
-        return THANDOR_BITCAST(unkuint9, FileSystemStringTableEaxEcxCf9, (unkuint9))0;
+        return THANDOR_BITCAST(unkuint9, FileSystemStringTableEaxEcxCf9, (unkuint9)0);
       }
       outputCapacityBytes = FVar3 * (int)pbVar2;
       AVar10 = (*g_MemoryApi.shrinkInPlace)(outputCapacityBytes,outputRecords);
@@ -1064,7 +1064,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
                                (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
     if (hFindFile == (HANDLE)0xffffffff) {
 LAB_00576af2:
-      return THANDOR_BITCAST(unkuint9, FileSystemEnumerationEaxEcxCf9, (unkuint9))0x200;
+      return THANDOR_BITCAST(unkuint9, FileSystemEnumerationEaxEcxCf9, (unkuint9)0x200);
     }
     uVar2 = 0;
     destination = (word *)outputRecords;

@@ -361,17 +361,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)((unkuint10)in_ST1 >> 0x40),mm1PackedValue0ByteLane1),
+  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)((unkuint10)in_ST2 >> 0x40),mm2PackedValue0ByteLane1),
+  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)((unkuint10)in_ST3 >> 0x40),mm3PackedValue0ByteLane1),
+  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
@@ -639,17 +639,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)((unkuint10)in_ST1 >> 0x40),mm1PackedValue0ByteLane1),
+  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)((unkuint10)in_ST2 >> 0x40),mm2PackedValue0ByteLane1),
+  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)((unkuint10)in_ST3 >> 0x40),mm3PackedValue0ByteLane1),
+  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
@@ -918,17 +918,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)((unkuint10)in_ST1 >> 0x40),mm1PackedValue0ByteLane1),
+  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)((unkuint10)in_ST2 >> 0x40),mm2PackedValue0ByteLane1),
+  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)((unkuint10)in_ST3 >> 0x40),mm3PackedValue0ByteLane1),
+  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
@@ -1196,17 +1196,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)((unkuint10)in_ST1 >> 0x40),mm1PackedValue0ByteLane1),
+  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)((unkuint10)in_ST2 >> 0x40),mm2PackedValue0ByteLane1),
+  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)((unkuint10)in_ST3 >> 0x40),mm3PackedValue0ByteLane1),
+  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);

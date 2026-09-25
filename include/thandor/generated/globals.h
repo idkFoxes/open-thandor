@@ -100,8 +100,8 @@ typedef dword InGameWorldOverlayRebuildCallbackProc(); /* TODO: unrecovered sign
 typedef dword InGameWorldTransientStateClearCallbackProc(); /* TODO: unrecovered signature */
 typedef dword KeyboardFlushEventsProc(); /* TODO: unrecovered signature */
 typedef KeyboardEventEaxEdxCf9 KeyboardReadEventProc(); /* return type from call site; parameters TODO */
-typedef void __thandor_void_preserve_eax_ecx_edx LocaleCopyDefaultComputerLabelUtf16Proc(word *destination); /* recovered from Locale_CopyDefaultComputerLabelUtf16 */
-typedef dword LocaleFormatCurrentDateUtf16Proc(word *destination); /* recovered from Locale_FormatCurrentDateUtf16 */
+typedef dword LocaleCopyDefaultComputerLabelUtf16Proc(); /* return type from call site; parameters TODO */
+typedef dword LocaleFormatCurrentDateUtf16Proc(); /* return type from call site; parameters TODO */
 typedef dword LocaleFormatCurrentTimeUtf16Proc(word *destination); /* recovered from Locale_FormatCurrentTimeUtf16 */
 typedef dword LocaleFormatDateFieldsUtf16Proc(); /* TODO: unrecovered signature */
 typedef dword LocaleFormatTimeFieldsUtf16Proc(LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,word *destination); /* recovered from Locale_FormatTimeFieldsUtf16 */
@@ -109,19 +109,19 @@ typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentDateProc(void
 typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentTimeProc(void); /* recovered from Locale_GetPackedCurrentTime */
 typedef dword __thandor_eax_preserve_ecx_edx LocaleGetTelephoneCountryCodeProc(void); /* recovered from Locale_GetDefaultTelephoneCountryCode */
 typedef dword MovieFrameProviderCfProc(); /* TODO: unrecovered signature */
-typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCleanupCallback(void); /* recovered from NetworkFallback_NoOpBackendCleanup */
+typedef dword NetworkBackendCleanupCallback(); /* return type from call site; parameters TODO */
 typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCloseCallback(void); /* recovered from NetworkFallback_CloseActiveSocket */
 typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendFormatAddressCallback(char *outputText,WinSockAddress *socketAddress); /* recovered from NetworkFallback_FormatPeerAddress */
 typedef NetworkBackendOpenBindEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendOpenBindCallback(NetworkPortHostOrder localPort); /* recovered from NetworkFallback_OpenAndBindUdpSocketCf */
 typedef bool __thandor_cf_preserve_eax_ecx_edx NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText); /* recovered from NetworkFallback_ParsePeerEndpointCf */
 typedef NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendReceiveCallback(WinSockAddress *sourceAddress,NetworkByteCount byteCount,byte *buffer); /* recovered from NetworkFallback_ReceiveDatagramCf */
 typedef NetworkBackendSendEaxCf5 NetworkBackendSendCallback(); /* return type from call site; parameters TODO */
-typedef NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx NetworkBackendSetSessionCallback(void *this,NetworkBackendSessionReturnValue32 returnValue); /* recovered from NetworkBackend_SetSessionContextCf */
+typedef NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx NetworkBackendSetSessionCallback(); /* return type from call site; parameters TODO */
 typedef PckCodecEaxCf5 PckCodecProc(); /* return type from call site; parameters TODO */
 typedef PcxDecodeEaxCf5 PcxDecodeProc(); /* return type from call site; parameters TODO */
 typedef dword PcxEncodeProc(); /* TODO: unrecovered signature */
 typedef void __thandor_void_preserve_eax_ecx_edx PointerFlushEventsProc(void); /* recovered from DirectInputMouse_FlushBufferedEvents */
-typedef void __thandor_void_preserve_eax_ecx PointerSetPositionProc(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX); /* recovered from DirectInputMouse_SetPosition */
+typedef dword PointerSetPositionProc(); /* return type from call site; parameters TODO */
 typedef dword ScenarioCatalogRefreshSelectedRecordCallback(); /* TODO: unrecovered signature */
 typedef dword SoftwareBuildPixelPackTablesProc(); /* TODO: unrecovered signature */
 typedef void __thandor_void_preserve_eax_ecx_edx SoftwareDrawQueueProc(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitiveQueue *queue); /* recovered from SoftwareRenderer_DrawQueueNon16Bit */
@@ -145,7 +145,7 @@ typedef dword UiRootPointerMissPolicyCallback(); /* TODO: unrecovered signature 
 typedef dword UiRuntimePostUnlockCallbackProc(); /* TODO: unrecovered signature */
 typedef int WSAIoctl_Proc(); /* return type from call site; parameters TODO */
 typedef int WSAStringToAddressA_Proc(); /* return type from call site; parameters TODO */
-typedef void __thandor_void_preserve_eax_ecx_edx Win32PumpMessagesProc(void); /* recovered from Win32_PumpMessages */
+typedef dword Win32PumpMessagesProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_WSAAsyncGetHostByAddrProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSAAsyncGetHostByNameProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSAAsyncGetProtoByNameProc(); /* TODO: unrecovered signature */

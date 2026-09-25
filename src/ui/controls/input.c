@@ -178,7 +178,7 @@ UiKeyboard_DispatchEventToRootFallback:
           UVar1 = pUVar3->nodeFlags;
           control = pUVar3;
         }
-joined_r0x004af45a:
+joined_r0x004af45a:;
       } while ((UVar1 & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0);
       if (control == g_UiKeyboardFocusNode) goto UiKeyboard_DispatchEventToRootFallback;
     } while (((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
@@ -1619,7 +1619,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
           candidateNodeFlags = firstChildNode->nodeFlags;
           node = firstChildNode;
         }
-joined_r0x004affea:
+joined_r0x004affea:;
       } while ((candidateNodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET))
                == 0);
       if (node == g_UiKeyboardFocusNode) {

@@ -194,7 +194,7 @@ Movie_OpenResolvePackageOrFallbackStream:
     if ((PVar22.carry) ||
        (FVar16 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)
                            (FILESYSTEM_SEEK_BEGIN,*(int *)(PVar22.eax + 0x1ec) + 0x200,
-                            (MovieRuntime *)PVar22.ebx), FVar16.carry))){
+                            (MovieRuntime *)PVar22.ebx)), FVar16.carry)){
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (word *)&g_ExecutableDirectoryUtf16);
