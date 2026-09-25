@@ -66,6 +66,21 @@ def unrecovered_signatures():
     return sorted(n for n in used if not defined(n))
 
 
+RAM_TYPES = {"u": "dword", "i": "int", "p": "void *", "b": "byte", "c": "char", "s": "short",
+             "us": "word", "ui": "dword", "pp": "void **", "pc": "char *", "pu": "dword *", "f": "float", "d": "double"}
+
+
+def implicit_symbols(globals_):
+    """Scan the split sources for Ghidra-invented symbol spellings."""
+    text = "\n".join(strip_comments(p.read_text(encoding="utf-8", errors="replace"))
+                     for p in (ROOT / "src").rglob("*.c") if p.parent.name != "generated")
+    ram = sorted({(RAM_TYPES[m.group(1)], m.group(0))
+                  for m in re.finditer(r"\b(us|ui|pp|pc|pu|[uipbcsfd])Ram([0-9a-f]{8})\b", text)}, key=lambda x: x[1])
+    aliases = sorted({n for n in re.findall(r"\b_([gks]_\w+)", text) if n in globals_})
+    literals = sorted(set(re.findall(r"\b(k_LowAddressLiteral([0-9A-Fa-f]{8}))\b", text)))
+    return ram, aliases, literals
+
+
 def find_block(lines):
     """The data block is the longest run of top-level `Type name;` lines."""
     best, start = (0, 0), None
@@ -123,10 +138,18 @@ def main(export):
     h += [infer_signatures.render(t, s) for t, s in sigs.items()]
     h += [""]
     h += [f"extern {t} {n}{d};" for t, n, d, _ in decls]
+    ram, aliases, literals = implicit_symbols({n for _, n, _, _ in decls})
+    h += ["", "/* Unnamed memory cells Ghidra prints as <type>Ram<address>; plain globals in this build. */"]
+    h += [f"extern {t} {n};" for t, n in ram]
+    h += ["", "/* _name: dword-sized access to the untyped label `name`. */"]
+    h += [f"#define _{n} (*(dword *)&{n})" for n in aliases]
+    h += ["", "/* Symbols Ghidra invented for absolute low addresses; `&sym` yields the constant. */"]
+    h += [f"#define {n} (*(byte *)0x{a})" for n, a in literals]
     h += ["", "#endif /* THANDOR_GENERATED_GLOBALS_H */", ""]
     c = [HEADER.format(src=rel), "#include <thandor/thandor.h>", ""]
     c += [f"{t} {n}{d} = {i}; /* TODO: verify text against thandor.exe */" if i else f"{t} {n}{d};"
           for t, n, d, i in decls]
+    c += [f"{t} {n};" for t, n in ram]
     c += [""]
 
     (ROOT / "include/thandor/generated/globals.h").write_text("\n".join(h), encoding="utf-8", newline="\n")

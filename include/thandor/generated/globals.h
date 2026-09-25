@@ -1762,4 +1762,40 @@ extern byte g_LocaleInfoScratch[16];
 extern LocaleFormatDateFieldsUtf16Proc * g_LocaleFormatDateFieldsUtf16;
 extern CpuDetectFeaturesProc * g_CPUDetectFeatures;
 
+/* Unnamed memory cells Ghidra prints as <type>Ram<address>; plain globals in this build. */
+extern int iRam004bcf50;
+extern int iRam004bcf54;
+extern int iRam004bcf58;
+extern int iRam0050b5a4;
+extern int iRam0050b5a8;
+extern int iRam0050b5ac;
+extern dword uRam0050b574;
+extern dword uRam0050b578;
+extern dword uRam0050b57c;
+extern dword uRam0050b580;
+extern dword uRam0050b584;
+extern dword uRam0050b588;
+extern dword uRam0050b58c;
+extern dword uRam0050b590;
+extern dword uRam0050b594;
+extern dword uRam0050b598;
+extern dword uRam0050b59c;
+extern dword uRam0050b5a0;
+
+/* _name: dword-sized access to the untyped label `name`. */
+#define _g_Direct3DAlphaTextureFormatAlphaBitMask (*(dword *)&g_Direct3DAlphaTextureFormatAlphaBitMask)
+#define _g_Direct3DOpaqueTextureFormatBlueBitMask (*(dword *)&g_Direct3DOpaqueTextureFormatBlueBitMask)
+#define _g_Direct3DOpaqueTextureFormatGreenBitMask (*(dword *)&g_Direct3DOpaqueTextureFormatGreenBitMask)
+#define _g_Direct3DOpaqueTextureFormatRedBitMask (*(dword *)&g_Direct3DOpaqueTextureFormatRedBitMask)
+#define _k_CameraScreenDeltaDistanceScaleQ16 (*(dword *)&k_CameraScreenDeltaDistanceScaleQ16)
+
+/* Symbols Ghidra invented for absolute low addresses; `&sym` yields the constant. */
+#define k_LowAddressLiteral00000017 (*(byte *)0x00000017)
+#define k_LowAddressLiteral0000001B (*(byte *)0x0000001B)
+#define k_LowAddressLiteral0000002F (*(byte *)0x0000002F)
+#define k_LowAddressLiteral00000033 (*(byte *)0x00000033)
+#define k_LowAddressLiteral0000003B (*(byte *)0x0000003B)
+#define k_LowAddressLiteral0000004F (*(byte *)0x0000004F)
+#define k_LowAddressLiteral00007F00 (*(byte *)0x00007F00)
+
 #endif /* THANDOR_GENERATED_GLOBALS_H */

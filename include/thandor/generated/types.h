@@ -858,13 +858,15 @@ typedef enum LocaleRegionTagPacked {
 } LocaleRegionTagPacked;
 typedef uint32_t pointer32;
 typedef uint32_t undefined3;
-typedef void code;
+typedef unsigned int code(); /* Ghidra: function of unknown signature (unprototyped, callable) */
 
 /* Ghidra built-in data types referenced by the export but never emitted by it. */
 typedef void            *pointer;           /* Ghidra generic pointer */
 /* Ghidra odd-width integers, used when a value spans a register plus flags (e.g. EAX:CF = uint5).
  * Widened to the next native type; the casts that use them still need manual repair. */
+typedef unsigned int uint3;
 typedef unsigned long long uint5;
+typedef unsigned long long unkuint10; /* TODO: 10-byte x87/MMX value, truncated */
 typedef unsigned long long uint6;
 typedef unsigned long long uint7;
 typedef unsigned long long undefined5;
