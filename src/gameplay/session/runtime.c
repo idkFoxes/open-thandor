@@ -471,103 +471,108 @@ EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn:
    Cross-module calls: SpriteAssetRegistry_FindById [assets/sprite/catalog].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime)
+ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
-  FrontendPlayerRuntimeRecord *pFVar1;
-  byte *pbVar2;
-  void *pvVar3;
-  GraphicsTextureSet *pGVar4;
-  SpriteAssetHeader *pSVar5;
-  byte *pbVar6;
-  dword dVar7;
-  GraphicsPaletteAsset *pGVar8;
-  InGameConditionRecord *pIVar9;
-  InGameConditionRecordCount IVar10;
-  byte *pbVar11;
-  InGameConditionRecord *pIVar12;
-  ModelRuntimeSlot *modelSlot1;
+  void *pvVar1;
+  FrontendPlayerRuntimeRecord *pFVar2;
+  byte *pbVar3;
+  undefined *puVar4;
+  GraphicsTextureSet *pGVar5;
+  SpriteAssetHeader *pSVar6;
+  byte *pbVar7;
+  dword dVar8;
+  GraphicsPaletteAsset *pGVar9;
+  ResourceRegistrationRecord100 *pRVar10;
+  dword dVar11;
+  byte *pbVar12;
+  ResourceRegistrationRecord100 *pRVar13;
+  ArmyRuntimeSlot *modelSlot1;
   
-  pIVar9 = runtime->records58;
-  IVar10 = runtime->recordCountAC;
+  pRVar10 = runtimeImage->records58;
+  dVar11 = runtimeImage->recordCountAC;
   do {
-    if ((pIVar9->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
-      pbVar2 = pIVar9->primaryRuntimePointer00;
-      pbVar6 = pIVar9->secondaryRuntimePointer04;
-      pbVar11 = pIVar9->nestedBaseC4;
-      if (pbVar2 != (byte *)0x0) {
-        pbVar2 = pbVar2 + (int)g_RuntimeObjectRebaseBaseMinusOne;
+    if ((pRVar10->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
+      pbVar3 = (byte *)(pRVar10->primaryPointerOrSavedOffset).savedIdOrOffset;
+      pbVar7 = (pRVar10->secondaryPointerOrSavedOffset).runtimePointer;
+      pbVar12 = (pRVar10->nestedBasePointerOrSavedOffset).runtimePointer;
+      if (pbVar3 != (byte *)0x0) {
+        pbVar3 = pbVar3 + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      if (pbVar6 != (byte *)0x0) {
-        pbVar6 = pbVar6 + (int)g_RuntimeObjectRebaseBaseMinusOne;
+      if (pbVar7 != (byte *)0x0) {
+        pbVar7 = pbVar7 + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      if (pbVar11 != (byte *)0x0) {
-        pbVar11 = pbVar11 + (int)g_RuntimeObjectRebaseBaseMinusOne;
+      if (pbVar12 != (byte *)0x0) {
+        pbVar12 = pbVar12 + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      pIVar9->primaryRuntimePointer00 = pbVar2;
-      pIVar9->secondaryRuntimePointer04 = pbVar6;
-      pIVar9->nestedBaseC4 = pbVar11;
-      pIVar9->ownerRuntime08 = runtime;
-      pvVar3 = pIVar9->auxiliaryPointer5C;
-      dVar7 = pIVar9->nestedCountC8;
-      if (pvVar3 != (void *)0x0) {
-        pvVar3 = (void *)((int)pvVar3 + 0x4bed4f);
+      (pRVar10->primaryPointerOrSavedOffset).savedIdOrOffset = (dword)pbVar3;
+      (pRVar10->secondaryPointerOrSavedOffset).runtimePointer = pbVar7;
+      (pRVar10->nestedBasePointerOrSavedOffset).runtimePointer = pbVar12;
+      (pRVar10->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
+      puVar4 = (undefined *)(pRVar10->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
+      dVar8 = pRVar10->nestedCountC8;
+      if (puVar4 != (undefined *)0x0) {
+        puVar4 = &DAT_004bed4f + (int)puVar4;
       }
-      pIVar9->auxiliaryPointer5C = pvVar3;
-      pIVar12 = pIVar9;
-      pGVar8 = g_ShotPalette;
-      for (; g_ShotPalette = pGVar8, dVar7 != 0; dVar7 = dVar7 - 1) {
-        if (pIVar12->nestedPointersCC[0] != (void *)0x0) {
-          pIVar12->nestedPointersCC[0] =
-               (byte *)((int)pIVar12->nestedPointersCC[0] + (int)g_RuntimeObjectRebaseBaseMinusOne);
+      (pRVar10->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (dword)puVar4;
+      pRVar13 = pRVar10;
+      pGVar9 = g_ShotPalette;
+      for (; g_ShotPalette = pGVar9, dVar8 != 0; dVar8 = dVar8 - 1) {
+        if (pRVar13->nestedPointerOrOffsetArray13[0].runtimePointer != (void *)0x0) {
+          pRVar13->nestedPointerOrOffsetArray13[0].runtimePointer =
+               (byte *)((int)pRVar13->nestedPointerOrOffsetArray13[0].runtimePointer +
+                       (int)g_RuntimeObjectRebaseBaseMinusOne);
         }
-        pIVar12 = (InGameConditionRecord *)&pIVar12->secondaryRuntimePointer04;
-        pGVar8 = g_ShotPalette;
+        pRVar13 = (ResourceRegistrationRecord100 *)&pRVar13->secondaryPointerOrSavedOffset;
+        pGVar9 = g_ShotPalette;
       }
-      modelSlot1 = (pIVar9->payload48).modelRuntime;
+      modelSlot1 = (pRVar10->runtimePayload).armyRuntime;
                     // WARNING: Switch is manually overridden
-      switch(pIVar9->conditionKindA4) {
-      case MODEL_RUNTIME:
-        modelSlot1 = (ModelRuntimeSlot *)
-                     (modelSlot1->reserved10_37 + g_ModelRuntimeRebaseDelta + -0x10);
-        pGVar8 = g_ArmyGraphicsBindings[(int)pIVar9->textureSet34].paletteAsset;
-        pIVar9->textureSet34 = g_ArmyGraphicsBindings[(int)pIVar9->textureSet34].textureSet;
-        pIVar9->paletteAsset30 = pGVar8;
+      switch(pRVar10->domainIndex) {
+      case RESOURCE_DOMAIN_ARMY_RUNTIME:
+        modelSlot1 = (ArmyRuntimeSlot *)
+                     ((int)&modelSlot1->modelRuntimeOrSavedOffset + g_ModelRuntimeRebaseDelta);
+        pGVar9 = g_ArmyGraphicsBindings[(int)pRVar10->textureSet].paletteAsset;
+        pRVar10->textureSet = g_ArmyGraphicsBindings[(int)pRVar10->textureSet].textureSet;
+        pRVar10->paletteAsset = pGVar9;
         break;
-      case SHOT_RUNTIME:
-        modelSlot1 = (ModelRuntimeSlot *)
-                     (g_ShotRuntimeRebaseBaseMinusOne + (int)(modelSlot1->reserved10_37 + -0x10));
-        pIVar9->textureSet34 = g_ShotTextureSet;
-        pIVar9->paletteAsset30 = pGVar8;
+      case RESOURCE_DOMAIN_SHOT_RUNTIME:
+        modelSlot1 = (ArmyRuntimeSlot *)
+                     (g_ShotRuntimeRebaseBaseMinusOne + (int)&modelSlot1->modelRuntimeOrSavedOffset)
+        ;
+        pRVar10->textureSet = g_ShotTextureSet;
+        pRVar10->paletteAsset = pGVar9;
         break;
-      case EFFECT_RUNTIME:
-        modelSlot1 = (ModelRuntimeSlot *)
-                     (g_EffectRuntimeRebaseBaseMinusOne + (int)(modelSlot1->reserved10_37 + -0x10));
-        pGVar4 = g_EffectTextureSet;
-        pGVar8 = g_EffectPalette;
-        if ((*(uint *)((modelSlot1->definitionOrSavedId).savedIdOrOffset + 0x30) & 2) != 0) {
-          pGVar4 = g_ArmyGraphicsBindings[0].textureSet;
-          pGVar8 = g_ArmyGraphicsBindings[0].paletteAsset;
+      case RESOURCE_DOMAIN_EFFECT_RUNTIME:
+        modelSlot1 = (ArmyRuntimeSlot *)
+                     (g_EffectRuntimeRebaseBaseMinusOne +
+                     (int)&modelSlot1->modelRuntimeOrSavedOffset);
+        pGVar5 = g_EffectTextureSet;
+        pGVar9 = g_EffectPalette;
+        if ((*(uint *)(((modelSlot1->modelRuntimeOrSavedOffset).modelRuntime)->reserved10_37 + 0x20)
+            & 2) != 0) {
+          pGVar5 = g_ArmyGraphicsBindings[0].textureSet;
+          pGVar9 = g_ArmyGraphicsBindings[0].paletteAsset;
         }
-        pIVar9->textureSet34 = pGVar4;
-        pIVar9->paletteAsset30 = pGVar8;
+        pRVar10->textureSet = pGVar5;
+        pRVar10->paletteAsset = pGVar9;
       }
-      (pIVar9->payload48).modelRuntime = modelSlot1;
-      pSVar5 = SpriteAssetRegistry_FindById((SpriteAssetId)pIVar9->spriteAsset40);
-      pIVar9->spriteAsset40 = pSVar5;
+      (pRVar10->runtimePayload).armyRuntime = modelSlot1;
+      pSVar6 = SpriteAssetRegistry_FindById((SpriteAssetId)pRVar10->spriteAsset);
+      pRVar10->spriteAsset = pSVar6;
     }
-    pFVar1 = g_FrontendPlayerRuntimeBlocks;
-    pIVar9 = pIVar9 + 1;
-    IVar10 = IVar10 - 1;
-  } while (IVar10 != 0);
-  pvVar3 = runtime->records58[runtime->recordCountAC - 1].nestedPointersCC[0xc];
-  pIVar9 = (InGameConditionRecord *)0x0;
-  if (pvVar3 != (void *)0x0) {
-    pIVar9 = (InGameConditionRecord *)(g_RuntimeObjectRebaseBaseMinusOne + (int)pvVar3);
+    pFVar2 = g_FrontendPlayerRuntimeBlocks;
+    pRVar10 = pRVar10 + 1;
+    dVar11 = dVar11 - 1;
+  } while (dVar11 != 0);
+  pvVar1 = runtimeImage->records58[runtimeImage->recordCountAC - 1].nestedPointerOrOffsetArray13
+           [0xc].runtimePointer;
+  pRVar10 = (ResourceRegistrationRecord100 *)0x0;
+  if (pvVar1 != (void *)0x0) {
+    pRVar10 = (ResourceRegistrationRecord100 *)(g_RuntimeObjectRebaseBaseMinusOne + (int)pvVar1);
   }
-  runtime->tailRecordD8 = pIVar9;
-  (pFVar1->factionAssignment).factionAssignmentIndex =
-       (FrontendFactionAssignmentIndex)runtime->worldContext50;
+  runtimeImage->tailRecordD8 = pRVar10;
+  (pFVar2->factionAssignment).factionAssignmentIndex = runtimeImage->levelRuntimeRecordIndex50;
   return;
 }
 

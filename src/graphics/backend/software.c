@@ -5827,18 +5827,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -5966,18 +5965,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -6147,18 +6145,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -6290,18 +6287,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -6498,18 +6494,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -6637,18 +6632,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -6818,18 +6812,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -6961,18 +6954,17 @@ void SoftwareRaster16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar27
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar21;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar21 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar21 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar21 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar15 <= *puVar18) {
                         uVar5 = *(undefined4 *)
@@ -7411,18 +7403,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -7583,18 +7574,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -7797,18 +7787,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -7843,7 +7832,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue19 = psllw(mm6PackedValue21,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue21 >> 0x34);
                         mm0PackedValue14 =
@@ -7892,7 +7881,7 @@ void SoftwareRaster16_Mode22
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue31 >> 8) +
@@ -7973,18 +7962,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -8019,7 +8007,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 = psllw(mm6PackedValue0,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                         mm0PackedValue1 =
@@ -8068,7 +8056,7 @@ void SoftwareRaster16_Mode22
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue7 >> 8) +
@@ -8214,18 +8202,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -8256,7 +8243,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue14 = psllw(mm6PackedValue15,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue15 >> 0x34);
                         mm0PackedValue19 =
@@ -8305,7 +8292,7 @@ void SoftwareRaster16_Mode22
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue37 >> 8) +
@@ -8386,18 +8373,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -8428,7 +8414,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue11 = psllw(mm6PackedValue12,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue12 >> 0x34);
                         mm0PackedValue16 =
@@ -8477,7 +8463,7 @@ void SoftwareRaster16_Mode22
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue33 >> 8) +
@@ -8600,18 +8586,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -8646,7 +8631,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue9 = psllw(mm6PackedValue8,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                         mm0PackedValue12 =
@@ -8695,7 +8680,7 @@ void SoftwareRaster16_Mode22
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue29 >> 8) +
@@ -8776,18 +8761,17 @@ void SoftwareRaster16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -8822,7 +8806,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue3 = psllw(mm6PackedValue5,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue5 >> 0x34);
                         mm0PackedValue6 =
@@ -8871,7 +8855,7 @@ void SoftwareRaster16_Mode22
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue18 >> 8) +
@@ -9259,18 +9243,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -9301,7 +9284,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue20 = psllw(mm6PackedValue36,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue36 >> 0x34);
                         mm0PackedValue22 =
@@ -9350,7 +9333,7 @@ void SoftwareRaster16_Mode17
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue39 >> 8) +
@@ -9428,18 +9411,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -9470,7 +9452,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue18 = psllw(mm6PackedValue29,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue29 >> 0x34);
                         mm0PackedValue18 =
@@ -9519,7 +9501,7 @@ void SoftwareRaster16_Mode17
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue34 >> 8) +
@@ -9639,18 +9621,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -9685,7 +9666,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue21 = psllw(mm6PackedValue16,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue16 >> 0x34);
                         mm0PackedValue12 =
@@ -9734,7 +9715,7 @@ void SoftwareRaster16_Mode17
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue28 >> 8) +
@@ -9812,18 +9793,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -9858,7 +9838,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 = psllw(mm6PackedValue0,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                         mm0PackedValue1 =
@@ -9907,7 +9887,7 @@ void SoftwareRaster16_Mode17
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -10050,18 +10030,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -10092,7 +10071,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue12 = psllw(mm6PackedValue32,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue32 >> 0x34);
                         mm0PackedValue20 =
@@ -10141,7 +10120,7 @@ void SoftwareRaster16_Mode17
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue37 >> 8) +
@@ -10219,18 +10198,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -10261,7 +10239,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue10 = psllw(mm6PackedValue27,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue27 >> 0x34);
                         mm0PackedValue16 =
@@ -10310,7 +10288,7 @@ void SoftwareRaster16_Mode17
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue31 >> 8) +
@@ -10430,18 +10408,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -10476,7 +10453,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue7 = psllw(mm6PackedValue17,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue17 >> 0x34);
                         mm0PackedValue13 =
@@ -10525,7 +10502,7 @@ void SoftwareRaster16_Mode17
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue25 >> 8) +
@@ -10603,18 +10580,17 @@ void SoftwareRaster16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -10649,7 +10625,7 @@ void SoftwareRaster16_Mode17
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue3 = psllw(mm6PackedValue8,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                         mm0PackedValue8 =
@@ -10698,7 +10674,7 @@ void SoftwareRaster16_Mode17
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue15 >> 8) +
@@ -11051,18 +11027,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -11093,7 +11068,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue20 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -11133,7 +11108,7 @@ void SoftwareRaster16_Mode18
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue23 >> 8) +
@@ -11211,18 +11186,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -11253,7 +11227,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue19 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue17 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -11293,7 +11267,7 @@ void SoftwareRaster16_Mode18
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue21 >> 8) +
@@ -11413,18 +11387,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -11459,7 +11432,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue12 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue10 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -11499,7 +11472,7 @@ void SoftwareRaster16_Mode18
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue14 >> 8) +
@@ -11577,18 +11550,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -11623,7 +11595,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue0 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -11662,7 +11634,7 @@ void SoftwareRaster16_Mode18
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -11805,18 +11777,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -11847,7 +11818,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue16 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue15 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -11887,7 +11858,7 @@ void SoftwareRaster16_Mode18
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue18 >> 8) +
@@ -11965,18 +11936,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -12007,7 +11977,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue11 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue9 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -12046,7 +12016,7 @@ void SoftwareRaster16_Mode18
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -12166,18 +12136,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -12212,7 +12181,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue7 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue6 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -12251,7 +12220,7 @@ void SoftwareRaster16_Mode18
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue8 >> 8) +
@@ -12329,18 +12298,17 @@ void SoftwareRaster16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -12375,7 +12343,7 @@ void SoftwareRaster16_Mode18
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue4 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue3 >> 0x30) +
                                             ((ushort)((short)(uVar22 >> 0x30) *
@@ -12414,7 +12382,7 @@ void SoftwareRaster16_Mode18
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -12799,18 +12767,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -12841,7 +12808,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue25 = psllw(mm6PackedValue27,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue27 >> 0x34);
                         mm0PackedValue22 =
@@ -12890,7 +12857,7 @@ void SoftwareRaster16_Mode20
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue39 >> 8) +
@@ -12971,18 +12938,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -13013,7 +12979,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 = psllw(mm6PackedValue23,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue23 >> 0x34);
                         mm0PackedValue18 =
@@ -13062,7 +13028,7 @@ void SoftwareRaster16_Mode20
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue35 >> 8) +
@@ -13185,18 +13151,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -13231,7 +13196,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue19 = psllw(mm6PackedValue21,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue21 >> 0x34);
                         mm0PackedValue14 =
@@ -13280,7 +13245,7 @@ void SoftwareRaster16_Mode20
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue31 >> 8) +
@@ -13361,18 +13326,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -13407,7 +13371,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 = psllw(mm6PackedValue0,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                         mm0PackedValue1 =
@@ -13456,7 +13420,7 @@ void SoftwareRaster16_Mode20
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue7 >> 8) +
@@ -13602,18 +13566,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -13644,7 +13607,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue14 = psllw(mm6PackedValue15,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue15 >> 0x34);
                         mm0PackedValue19 =
@@ -13693,7 +13656,7 @@ void SoftwareRaster16_Mode20
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue37 >> 8) +
@@ -13774,18 +13737,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -13816,7 +13778,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue11 = psllw(mm6PackedValue12,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue12 >> 0x34);
                         mm0PackedValue16 =
@@ -13865,7 +13827,7 @@ void SoftwareRaster16_Mode20
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue33 >> 8) +
@@ -13988,18 +13950,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -14034,7 +13995,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue9 = psllw(mm6PackedValue8,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                         mm0PackedValue12 =
@@ -14083,7 +14044,7 @@ void SoftwareRaster16_Mode20
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue29 >> 8) +
@@ -14164,18 +14125,17 @@ void SoftwareRaster16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar22;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar22 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar22 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar22 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar16 <= *puVar19) {
                         uVar6 = *(undefined4 *)
@@ -14210,7 +14170,7 @@ void SoftwareRaster16_Mode20
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue3 = psllw(mm6PackedValue5,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue5 >> 0x34);
                         mm0PackedValue6 =
@@ -14259,7 +14219,7 @@ void SoftwareRaster16_Mode20
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue18 >> 8) +
@@ -14424,16 +14384,16 @@ void SoftwareRaster16_Mode24
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar23 = (undefined1)(PVar2 >> 0x10);
     uVar22 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar22,uVar22) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar22,uVar22) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar23),CONCAT14(uVar23,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -14578,7 +14538,7 @@ void SoftwareRaster16_Mode24
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue23 >> 8) +
@@ -14678,7 +14638,7 @@ void SoftwareRaster16_Mode24
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue20 >> 8) +
@@ -14815,7 +14775,7 @@ void SoftwareRaster16_Mode24
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue17 >> 8) +
@@ -14919,7 +14879,7 @@ void SoftwareRaster16_Mode24
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -15075,7 +15035,7 @@ void SoftwareRaster16_Mode24
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar12,cVar12) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue14 >> 8) +
@@ -15175,7 +15135,7 @@ void SoftwareRaster16_Mode24
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue11 >> 8) +
@@ -15312,7 +15272,7 @@ void SoftwareRaster16_Mode24
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue8 >> 8) +
@@ -15416,7 +15376,7 @@ void SoftwareRaster16_Mode24
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar12,cVar12) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -15596,16 +15556,16 @@ void SoftwareRaster16_Mode30
     mm4PackedValue0ByteLane3 = (byte)(PVar3 >> 0x18);
     uVar26 = (undefined1)(PVar3 >> 0x10);
     uVar25 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar25,uVar25) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar25,uVar25) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar26),CONCAT14(uVar26,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar8 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -15732,7 +15692,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue26 = psllw(mm6PackedValue27,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue27 >> 0x34);
                         mm0PackedValue14 =
@@ -15781,7 +15741,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar12,cVar12) >> 4,
                                                                 CONCAT11(cVar13,cVar13) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue39 >> 8) +
@@ -15865,7 +15825,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 = psllw(mm6PackedValue23,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue23 >> 0x34);
                         mm0PackedValue12 =
@@ -15914,7 +15874,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue37 >> 8) +
@@ -16035,7 +15995,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue17 = psllw(mm6PackedValue21,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue21 >> 0x34);
                         mm0PackedValue10 =
@@ -16084,7 +16044,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue35 >> 8) +
@@ -16172,7 +16132,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 = psllw(mm6PackedValue0,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                         mm0PackedValue0 =
@@ -16221,7 +16181,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue7 >> 8) +
@@ -16361,7 +16321,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue15 = psllw(mm6PackedValue16,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue16 >> 0x34);
                         mm0PackedValue8 =
@@ -16410,7 +16370,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue33 >> 8) +
@@ -16494,7 +16454,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue11 = psllw(mm6PackedValue12,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue12 >> 0x34);
                         mm0PackedValue6 =
@@ -16543,7 +16503,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue31 >> 8) +
@@ -16664,7 +16624,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue9 = psllw(mm6PackedValue8,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                         mm0PackedValue4 =
@@ -16713,7 +16673,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue29 >> 8) +
@@ -16801,7 +16761,7 @@ void SoftwareRaster16_Mode30
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue3 = psllw(mm6PackedValue5,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue5 >> 0x34);
                         mm0PackedValue2 =
@@ -16850,7 +16810,7 @@ void SoftwareRaster16_Mode30
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -17032,16 +16992,16 @@ void SoftwareRaster16_Mode25
     mm4PackedValue0ByteLane3 = (byte)(PVar3 >> 0x18);
     uVar26 = (undefined1)(PVar3 >> 0x10);
     uVar25 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar25,uVar25) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar25,uVar25) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar26),CONCAT14(uVar26,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar8 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -17168,7 +17128,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 = psllw(mm6PackedValue37,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue37 >> 0x34);
                         mm0PackedValue14 =
@@ -17217,7 +17177,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar12,cVar12) >> 4,
                                                                 CONCAT11(cVar13,cVar13) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue39 >> 8) +
@@ -17298,7 +17258,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue19 = psllw(mm6PackedValue34,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue34 >> 0x34);
                         mm0PackedValue12 =
@@ -17347,7 +17307,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue36 >> 8) +
@@ -17465,7 +17425,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue16 = psllw(mm6PackedValue31,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue31 >> 0x34);
                         mm0PackedValue10 =
@@ -17514,7 +17474,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue33 >> 8) +
@@ -17599,7 +17559,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 = psllw(mm6PackedValue0,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                         mm0PackedValue0 =
@@ -17648,7 +17608,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -17785,7 +17745,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue13 = psllw(mm6PackedValue28,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue28 >> 0x34);
                         mm0PackedValue8 =
@@ -17834,7 +17794,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue30 >> 8) +
@@ -17915,7 +17875,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue10 = psllw(mm6PackedValue25,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue25 >> 0x34);
                         mm0PackedValue6 =
@@ -17964,7 +17924,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue27 >> 8) +
@@ -18082,7 +18042,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue7 = psllw(mm6PackedValue17,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue17 >> 0x34);
                         mm0PackedValue4 =
@@ -18131,7 +18091,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue23 >> 8) +
@@ -18216,7 +18176,7 @@ void SoftwareRaster16_Mode25
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue3 = psllw(mm6PackedValue8,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                         mm0PackedValue2 =
@@ -18265,7 +18225,7 @@ void SoftwareRaster16_Mode25
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue14 >> 8) +
@@ -18411,16 +18371,16 @@ void SoftwareRaster16_Mode26
     mm4PackedValue0ByteLane3 = (byte)(PVar3 >> 0x18);
     uVar25 = (undefined1)(PVar3 >> 0x10);
     uVar24 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar24,uVar24) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar24,uVar24) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar25),CONCAT14(uVar25,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar8 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -18547,7 +18507,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue21 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -18587,7 +18547,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar12,cVar12) >> 4,
                                                                 CONCAT11(cVar13,cVar13) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue23 >> 8) +
@@ -18668,7 +18628,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue19 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue18 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -18708,7 +18668,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue20 >> 8) +
@@ -18826,7 +18786,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue16 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue15 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -18866,7 +18826,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue17 >> 8) +
@@ -18951,7 +18911,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue0 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -18990,7 +18950,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -19127,7 +19087,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue13 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue12 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -19167,7 +19127,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue14 >> 8) +
@@ -19248,7 +19208,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue10 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue9 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -19287,7 +19247,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue11 >> 8) +
@@ -19405,7 +19365,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue7 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue6 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -19444,7 +19404,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue8 >> 8) +
@@ -19529,7 +19489,7 @@ void SoftwareRaster16_Mode26
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar22;
                         uVar23 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue4 =
                              psraw(CONCAT26((short)((ulonglong)mm6PackedValue3 >> 0x30) +
                                             ((ushort)((short)(uVar23 >> 0x30) *
@@ -19568,7 +19528,7 @@ void SoftwareRaster16_Mode26
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar22 =
                              (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -19747,16 +19707,16 @@ void SoftwareRaster16_Mode28
     mm4PackedValue0ByteLane3 = (byte)(PVar3 >> 0x18);
     uVar26 = (undefined1)(PVar3 >> 0x10);
     uVar25 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar25,uVar25) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar25,uVar25) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar26),CONCAT14(uVar26,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar8 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -19883,7 +19843,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue26 = psllw(mm6PackedValue27,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue27 >> 0x34);
                         mm0PackedValue14 =
@@ -19932,7 +19892,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar12,cVar12) >> 4,
                                                                 CONCAT11(cVar13,cVar13) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue39 >> 8) +
@@ -20016,7 +19976,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 = psllw(mm6PackedValue23,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue23 >> 0x34);
                         mm0PackedValue12 =
@@ -20065,7 +20025,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue37 >> 8) +
@@ -20186,7 +20146,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue17 = psllw(mm6PackedValue21,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue21 >> 0x34);
                         mm0PackedValue10 =
@@ -20235,7 +20195,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue35 >> 8) +
@@ -20323,7 +20283,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue1 = psllw(mm6PackedValue0,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                         mm0PackedValue0 =
@@ -20372,7 +20332,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar12) >> 4,
                                                        CONCAT22(CONCAT11(cVar11,cVar11) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue7 >> 8) +
@@ -20512,7 +20472,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue15 = psllw(mm6PackedValue16,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue16 >> 0x34);
                         mm0PackedValue8 =
@@ -20561,7 +20521,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue33 >> 8) +
@@ -20645,7 +20605,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue11 = psllw(mm6PackedValue12,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue12 >> 0x34);
                         mm0PackedValue6 =
@@ -20694,7 +20654,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue31 >> 8) +
@@ -20815,7 +20775,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue9 = psllw(mm6PackedValue8,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                         mm0PackedValue4 =
@@ -20864,7 +20824,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar13) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue29 >> 8) +
@@ -20952,7 +20912,7 @@ void SoftwareRaster16_Mode28
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar23;
                         uVar24 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue3 = psllw(mm6PackedValue5,2);
                         uVar16 = (uint)((ulonglong)mm6PackedValue5 >> 0x34);
                         mm0PackedValue2 =
@@ -21001,7 +20961,7 @@ void SoftwareRaster16_Mode28
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar13,cVar13) >> 4,
                                                                 CONCAT11(cVar12,cVar12) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar23 =
                              (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -21251,18 +21211,17 @@ void SoftwareRaster16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar19
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue7 = psraw(mm4PackedValue1,2);
@@ -21285,7 +21244,7 @@ void SoftwareRaster16_Mode00
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar7,cVar5),cVar5)
                                                      >> 4,CONCAT22(CONCAT11(cVar4,cVar4) >> 4,
                                                                    CONCAT11(cVar3,cVar3) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar15 =
                            (short)((ulonglong)mm6PackedValue11 >> 8) +
@@ -21340,18 +21299,17 @@ void SoftwareRaster16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar19
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -21374,7 +21332,7 @@ void SoftwareRaster16_Mode00
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar7,cVar5),cVar5)
                                                      >> 4,CONCAT22(CONCAT11(cVar4,cVar4) >> 4,
                                                                    CONCAT11(cVar3,cVar3) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar15 =
                            (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -21476,18 +21434,17 @@ void SoftwareRaster16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar19
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue6 = psraw(mm4PackedValue3,2);
@@ -21510,7 +21467,7 @@ void SoftwareRaster16_Mode00
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar7,cVar5),cVar5)
                                                      >> 4,CONCAT22(CONCAT11(cVar4,cVar4) >> 4,
                                                                    CONCAT11(cVar3,cVar3) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar15 =
                            (short)((ulonglong)mm6PackedValue10 >> 8) +
@@ -21565,18 +21522,17 @@ void SoftwareRaster16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar19
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue3 = psraw(mm4PackedValue2,2);
@@ -21599,7 +21555,7 @@ void SoftwareRaster16_Mode00
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar7,cVar5),cVar5)
                                                      >> 4,CONCAT22(CONCAT11(cVar4,cVar4) >> 4,
                                                                    CONCAT11(cVar3,cVar3) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar15 =
                            (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -21872,24 +21828,23 @@ void SoftwareRaster16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue10 = psraw(mm4PackedValue1,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue12 = psllw(mm6PackedValue10,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue10 >> 0x34);
                       mm0PackedValue8 =
@@ -21937,7 +21892,7 @@ void SoftwareRaster16_Mode06
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue17 >> 8) +
@@ -21994,24 +21949,23 @@ void SoftwareRaster16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 = psllw(mm6PackedValue0,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                       mm0PackedValue1 =
@@ -22058,7 +22012,7 @@ void SoftwareRaster16_Mode06
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -22162,24 +22116,23 @@ void SoftwareRaster16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue14 = psraw(mm4PackedValue3,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 = psllw(mm6PackedValue14,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue14 >> 0x34);
                       mm0PackedValue10 =
@@ -22226,7 +22179,7 @@ void SoftwareRaster16_Mode06
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -22283,24 +22236,23 @@ void SoftwareRaster16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue8 = psraw(mm4PackedValue2,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue3 = psllw(mm6PackedValue8,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                       mm0PackedValue6 =
@@ -22347,7 +22299,7 @@ void SoftwareRaster16_Mode06
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -22621,24 +22573,23 @@ void SoftwareRaster16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue10 = psraw(mm4PackedValue1,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue11 = psllw(mm6PackedValue10,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue10 >> 0x34);
                       mm0PackedValue8 =
@@ -22686,7 +22637,7 @@ void SoftwareRaster16_Mode01
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue17 >> 8) +
@@ -22740,24 +22691,23 @@ void SoftwareRaster16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 = psllw(mm6PackedValue0,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                       mm0PackedValue1 =
@@ -22804,7 +22754,7 @@ void SoftwareRaster16_Mode01
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -22905,24 +22855,23 @@ void SoftwareRaster16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue15 = psraw(mm4PackedValue3,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 = psllw(mm6PackedValue15,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue15 >> 0x34);
                       mm0PackedValue10 =
@@ -22969,7 +22918,7 @@ void SoftwareRaster16_Mode01
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -23023,24 +22972,23 @@ void SoftwareRaster16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue8 = psraw(mm4PackedValue2,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue3 = psllw(mm6PackedValue8,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                       mm0PackedValue6 =
@@ -23087,7 +23035,7 @@ void SoftwareRaster16_Mode01
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -23342,24 +23290,23 @@ void SoftwareRaster16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue8 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue6 >> 0x30) +
                                           ((ushort)((short)(uVar17 >> 0x30) *
@@ -23396,7 +23343,7 @@ void SoftwareRaster16_Mode02
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue10 >> 8) +
@@ -23450,24 +23397,23 @@ void SoftwareRaster16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue0 >> 0x30) +
                                           ((ushort)((short)(uVar17 >> 0x30) *
@@ -23504,7 +23450,7 @@ void SoftwareRaster16_Mode02
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -23605,24 +23551,23 @@ void SoftwareRaster16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue7 = psraw(mm4PackedValue3,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue9 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue7 >> 0x30) +
                                           ((ushort)((short)(uVar17 >> 0x30) *
@@ -23659,7 +23604,7 @@ void SoftwareRaster16_Mode02
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue11 >> 8) +
@@ -23713,24 +23658,23 @@ void SoftwareRaster16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue3 = psraw(mm4PackedValue2,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue4 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue3 >> 0x30) +
                                           ((ushort)((short)(uVar17 >> 0x30) *
@@ -23767,7 +23711,7 @@ void SoftwareRaster16_Mode02
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -24039,24 +23983,23 @@ void SoftwareRaster16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue10 = psraw(mm4PackedValue1,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue12 = psllw(mm6PackedValue10,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue10 >> 0x34);
                       mm0PackedValue8 =
@@ -24104,7 +24047,7 @@ void SoftwareRaster16_Mode04
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue17 >> 8) +
@@ -24161,24 +24104,23 @@ void SoftwareRaster16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 = psllw(mm6PackedValue0,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                       mm0PackedValue1 =
@@ -24225,7 +24167,7 @@ void SoftwareRaster16_Mode04
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -24329,24 +24271,23 @@ void SoftwareRaster16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue14 = psraw(mm4PackedValue3,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 = psllw(mm6PackedValue14,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue14 >> 0x34);
                       mm0PackedValue10 =
@@ -24393,7 +24334,7 @@ void SoftwareRaster16_Mode04
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -24450,24 +24391,23 @@ void SoftwareRaster16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar20
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar17;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar17 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar17 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar17 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar11 <= *puVar14) {
                       mm6PackedValue8 = psraw(mm4PackedValue2,2);
                       uVar2 = *(undefined2 *)pbVar16;
                       uVar17 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue3 = psllw(mm6PackedValue8,2);
                       uVar12 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                       mm0PackedValue6 =
@@ -24514,7 +24454,7 @@ void SoftwareRaster16_Mode04
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar8,cVar6),cVar6)
                                                      >> 4,CONCAT22(CONCAT11(cVar5,cVar5) >> 4,
                                                                    CONCAT11(cVar4,cVar4) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -24640,16 +24580,16 @@ void SoftwareRaster16_Mode08
     uVar9 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar9,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar9 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar9 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -24721,7 +24661,7 @@ void SoftwareRaster16_Mode08
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar9,cVar7),cVar7)
                                                      >> 4,CONCAT22(CONCAT11(cVar6,cVar6) >> 4,
                                                                    CONCAT11(cVar5,cVar5) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue11 >> 8) +
@@ -24772,7 +24712,7 @@ void SoftwareRaster16_Mode08
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar9,cVar7),cVar7)
                                                      >> 4,CONCAT22(CONCAT11(cVar6,cVar6) >> 4,
                                                                    CONCAT11(cVar5,cVar5) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -24861,7 +24801,7 @@ void SoftwareRaster16_Mode08
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar9,cVar7),cVar7)
                                                      >> 4,CONCAT22(CONCAT11(cVar6,cVar6) >> 4,
                                                                    CONCAT11(cVar5,cVar5) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue8 >> 8) +
@@ -24912,7 +24852,7 @@ void SoftwareRaster16_Mode08
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar9,cVar7),cVar7)
                                                      >> 4,CONCAT22(CONCAT11(cVar6,cVar6) >> 4,
                                                                    CONCAT11(cVar5,cVar5) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar16 =
                            (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -25038,16 +24978,16 @@ void SoftwareRaster16_Mode14
     uVar10 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar10,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar10 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar10 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -25102,7 +25042,7 @@ void SoftwareRaster16_Mode14
                       mm6PackedValue17 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue10 = psllw(mm6PackedValue17,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue17 >> 0x34);
                       mm0PackedValue6 =
@@ -25150,7 +25090,7 @@ void SoftwareRaster16_Mode14
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -25186,7 +25126,7 @@ void SoftwareRaster16_Mode14
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 = psllw(mm6PackedValue0,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                       mm0PackedValue0 =
@@ -25233,7 +25173,7 @@ void SoftwareRaster16_Mode14
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -25307,7 +25247,7 @@ void SoftwareRaster16_Mode14
                       mm6PackedValue14 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 = psllw(mm6PackedValue14,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue14 >> 0x34);
                       mm0PackedValue4 =
@@ -25354,7 +25294,7 @@ void SoftwareRaster16_Mode14
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue16 >> 8) +
@@ -25390,7 +25330,7 @@ void SoftwareRaster16_Mode14
                       mm6PackedValue8 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue3 = psllw(mm6PackedValue8,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                       mm0PackedValue2 =
@@ -25437,7 +25377,7 @@ void SoftwareRaster16_Mode14
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -25564,16 +25504,16 @@ void SoftwareRaster16_Mode09
     uVar10 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar10,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar10 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar10 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -25628,7 +25568,7 @@ void SoftwareRaster16_Mode09
                       mm6PackedValue17 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue10 = psllw(mm6PackedValue17,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue17 >> 0x34);
                       mm0PackedValue6 =
@@ -25676,7 +25616,7 @@ void SoftwareRaster16_Mode09
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -25709,7 +25649,7 @@ void SoftwareRaster16_Mode09
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 = psllw(mm6PackedValue0,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                       mm0PackedValue0 =
@@ -25756,7 +25696,7 @@ void SoftwareRaster16_Mode09
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -25827,7 +25767,7 @@ void SoftwareRaster16_Mode09
                       mm6PackedValue14 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 = psllw(mm6PackedValue14,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue14 >> 0x34);
                       mm0PackedValue4 =
@@ -25874,7 +25814,7 @@ void SoftwareRaster16_Mode09
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue16 >> 8) +
@@ -25907,7 +25847,7 @@ void SoftwareRaster16_Mode09
                       mm6PackedValue8 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue3 = psllw(mm6PackedValue8,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                       mm0PackedValue2 =
@@ -25954,7 +25894,7 @@ void SoftwareRaster16_Mode09
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -26061,16 +26001,16 @@ void SoftwareRaster16_Mode10
     uVar10 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar10,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar10 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar10 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -26125,7 +26065,7 @@ void SoftwareRaster16_Mode10
                       mm6PackedValue9 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar17;
                       uVar18 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue10 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue9 >> 0x30) +
                                           ((ushort)((short)(uVar18 >> 0x30) *
@@ -26162,7 +26102,7 @@ void SoftwareRaster16_Mode10
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar17 =
                            (short)((ulonglong)mm6PackedValue11 >> 8) +
@@ -26195,7 +26135,7 @@ void SoftwareRaster16_Mode10
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar17;
                       uVar18 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue0 >> 0x30) +
                                           ((ushort)((short)(uVar18 >> 0x30) *
@@ -26232,7 +26172,7 @@ void SoftwareRaster16_Mode10
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar17 =
                            (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -26303,7 +26243,7 @@ void SoftwareRaster16_Mode10
                       mm6PackedValue6 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar17;
                       uVar18 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue6 >> 0x30) +
                                           ((ushort)((short)(uVar18 >> 0x30) *
@@ -26340,7 +26280,7 @@ void SoftwareRaster16_Mode10
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar17 =
                            (short)((ulonglong)mm6PackedValue8 >> 8) +
@@ -26373,7 +26313,7 @@ void SoftwareRaster16_Mode10
                       mm6PackedValue3 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar17;
                       uVar18 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue4 =
                            psraw(CONCAT26((short)((ulonglong)mm6PackedValue3 >> 0x30) +
                                           ((ushort)((short)(uVar18 >> 0x30) *
@@ -26410,7 +26350,7 @@ void SoftwareRaster16_Mode10
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar17 =
                            (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -26535,16 +26475,16 @@ void SoftwareRaster16_Mode12
     uVar10 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar3,(char)PVar3) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar3,(char)PVar3) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar10,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar3)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar10 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar10 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -26599,7 +26539,7 @@ void SoftwareRaster16_Mode12
                       mm6PackedValue17 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue10 = psllw(mm6PackedValue17,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue17 >> 0x34);
                       mm0PackedValue6 =
@@ -26647,7 +26587,7 @@ void SoftwareRaster16_Mode12
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
@@ -26683,7 +26623,7 @@ void SoftwareRaster16_Mode12
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue1 = psllw(mm6PackedValue0,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue0 >> 0x34);
                       mm0PackedValue0 =
@@ -26730,7 +26670,7 @@ void SoftwareRaster16_Mode12
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
@@ -26804,7 +26744,7 @@ void SoftwareRaster16_Mode12
                       mm6PackedValue14 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue7 = psllw(mm6PackedValue14,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue14 >> 0x34);
                       mm0PackedValue4 =
@@ -26851,7 +26791,7 @@ void SoftwareRaster16_Mode12
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue16 >> 8) +
@@ -26887,7 +26827,7 @@ void SoftwareRaster16_Mode12
                       mm6PackedValue8 = psraw(mm4PackedValue0,2);
                       uVar2 = *(undefined2 *)pbVar18;
                       uVar19 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm6PackedValue3 = psllw(mm6PackedValue8,2);
                       uVar11 = (uint)((ulonglong)mm6PackedValue8 >> 0x34);
                       mm0PackedValue2 =
@@ -26934,7 +26874,7 @@ void SoftwareRaster16_Mode12
                                             CONCAT24((ushort)CONCAT31(CONCAT21(uVar10,cVar8),cVar8)
                                                      >> 4,CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                    CONCAT11(cVar6,cVar6) >> 4))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar18 =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -27251,18 +27191,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -27381,18 +27320,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -27553,18 +27491,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -27687,18 +27624,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -27886,18 +27822,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -28016,18 +27951,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -28188,18 +28122,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -28322,18 +28255,17 @@ void SoftwareRasterNon16_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar26
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -28775,18 +28707,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -28939,18 +28870,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -29145,18 +29075,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -29313,18 +29242,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -29543,18 +29471,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -29707,18 +29634,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -29913,18 +29839,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -30081,18 +30006,17 @@ void SoftwareRasterNon16_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -30568,18 +30492,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -30729,18 +30652,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -30932,18 +30854,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -31097,18 +31018,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -31324,18 +31244,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -31485,18 +31404,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -31688,18 +31606,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -31853,18 +31770,17 @@ void SoftwareRasterNon16_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -32283,18 +32199,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -32429,18 +32344,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -32617,18 +32531,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -32767,18 +32680,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -32982,18 +32894,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -33128,18 +33039,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -33316,18 +33226,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -33466,18 +33375,17 @@ void SoftwareRasterNon16_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -33935,18 +33843,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -34099,18 +34006,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -34305,18 +34211,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -34473,18 +34378,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -34703,18 +34607,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -34867,18 +34770,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -35073,18 +34975,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -35241,18 +35142,17 @@ void SoftwareRasterNon16_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar28
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar20;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar20 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar20 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar20 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -35484,16 +35384,16 @@ void SoftwareRasterNon16_Mode24
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar22 = (undefined1)(PVar2 >> 0x10);
     uVar21 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar21,uVar21) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar21,uVar21) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar22),CONCAT14(uVar22,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -36595,15 +36495,15 @@ void SoftwareRasterNon16_Mode30
     uVar12 = CONCAT11(uVar22,uVar22);
     uVar23 = (undefined1)(PVar2 >> 0x10);
     uVar22 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar22,uVar22) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar22,uVar22) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar12,uVar23),CONCAT14(uVar23,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar12 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar12 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -37974,15 +37874,15 @@ void SoftwareRasterNon16_Mode25
     uVar12 = CONCAT11(uVar22,uVar22);
     uVar23 = (undefined1)(PVar2 >> 0x10);
     uVar22 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar22,uVar22) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar22,uVar22) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar12,uVar23),CONCAT14(uVar23,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar12 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar12 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -39274,15 +39174,15 @@ void SoftwareRasterNon16_Mode26
     uVar12 = CONCAT11(uVar21,uVar21);
     uVar22 = (undefined1)(PVar2 >> 0x10);
     uVar21 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar21,uVar21) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar21,uVar21) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar12,uVar22),CONCAT14(uVar22,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar12 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar12 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -40512,15 +40412,15 @@ void SoftwareRasterNon16_Mode28
     uVar12 = CONCAT11(uVar22,uVar22);
     uVar23 = (undefined1)(PVar2 >> 0x10);
     uVar22 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar22,uVar22) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar22,uVar22) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar12,uVar23),CONCAT14(uVar23,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar12 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar12 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -41942,18 +41842,17 @@ void SoftwareRasterNon16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar17
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar14;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar14 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar14 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar14 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -42023,18 +41922,17 @@ void SoftwareRasterNon16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar17
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar14;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar14 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar14 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar14 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -42151,18 +42049,17 @@ void SoftwareRasterNon16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar17
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar14;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar14 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar14 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar14 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -42232,18 +42129,17 @@ void SoftwareRasterNon16_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar17
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar14;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar14 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar14 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar14 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -42537,18 +42433,17 @@ void SoftwareRasterNon16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue9 = psraw(mm4PackedValue1,2);
@@ -42652,18 +42547,17 @@ void SoftwareRasterNon16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -42813,18 +42707,17 @@ void SoftwareRasterNon16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue11 = psraw(mm4PackedValue3,2);
@@ -42927,18 +42820,17 @@ void SoftwareRasterNon16_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue6 = psraw(mm4PackedValue2,2);
@@ -43264,18 +43156,17 @@ void SoftwareRasterNon16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue9 = psraw(mm4PackedValue1,2);
@@ -43376,18 +43267,17 @@ void SoftwareRasterNon16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -43534,18 +43424,17 @@ void SoftwareRasterNon16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue11 = psraw(mm4PackedValue3,2);
@@ -43645,18 +43534,17 @@ void SoftwareRasterNon16_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue6 = psraw(mm4PackedValue2,2);
@@ -43954,18 +43842,17 @@ void SoftwareRasterNon16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar21
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -44050,18 +43937,17 @@ void SoftwareRasterNon16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar21
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -44193,18 +44079,17 @@ void SoftwareRasterNon16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar21
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -44289,18 +44174,17 @@ void SoftwareRasterNon16_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar21
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar16;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar16 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar16 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar16 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar10 <= *puVar13) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -44609,18 +44493,17 @@ void SoftwareRasterNon16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue9 = psraw(mm4PackedValue1,2);
@@ -44724,18 +44607,17 @@ void SoftwareRasterNon16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -44885,18 +44767,17 @@ void SoftwareRasterNon16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue11 = psraw(mm4PackedValue3,2);
@@ -44999,18 +44880,17 @@ void SoftwareRasterNon16_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar18
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar15;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar15 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar15 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar15 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar9 <= *puVar12) {
                       mm6PackedValue6 = psraw(mm4PackedValue2,2);
@@ -45177,16 +45057,16 @@ void SoftwareRasterNon16_Mode08
     uVar8 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar8,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar8 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar8 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -45547,15 +45427,15 @@ void SoftwareRasterNon16_Mode14
     uVar9 = CONCAT11(uVar18,uVar18);
     uVar19 = (undefined1)(PVar2 >> 0x10);
     uVar18 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar18,uVar18) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar18,uVar18) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar9,uVar19),CONCAT14(uVar19,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar9 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar9 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -46045,15 +45925,15 @@ void SoftwareRasterNon16_Mode09
     uVar9 = CONCAT11(uVar18,uVar18);
     uVar19 = (undefined1)(PVar2 >> 0x10);
     uVar18 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar18,uVar18) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar18,uVar18) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar9,uVar19),CONCAT14(uVar19,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar9 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar9 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -46504,15 +46384,15 @@ void SoftwareRasterNon16_Mode10
     uVar9 = CONCAT11(uVar17,uVar17);
     uVar18 = (undefined1)(PVar2 >> 0x10);
     uVar17 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar17,uVar17) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar17,uVar17) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar9,uVar18),CONCAT14(uVar18,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar9 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar9 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -46933,15 +46813,15 @@ void SoftwareRasterNon16_Mode12
     uVar9 = CONCAT11(uVar18,uVar18);
     uVar19 = (undefined1)(PVar2 >> 0x10);
     uVar18 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar18,uVar18) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar18,uVar18) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar9,uVar19),CONCAT14(uVar19,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar9 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar9 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar4 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -47624,18 +47504,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -47754,18 +47633,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -47926,18 +47804,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -48060,18 +47937,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -48259,18 +48135,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -48389,18 +48264,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -48561,18 +48435,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -48695,18 +48568,17 @@ void SoftwareRasterAux_Mode16
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -49099,18 +48971,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -49229,18 +49100,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -49401,18 +49271,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -49535,18 +49404,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -49734,18 +49602,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -49864,18 +49731,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -50036,18 +49902,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -50170,18 +50035,17 @@ void SoftwareRasterAux_Mode22
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -50578,18 +50442,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -50707,18 +50570,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -50878,18 +50740,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -51011,18 +50872,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -51209,18 +51069,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -51338,18 +51197,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -51509,18 +51367,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -51642,18 +51499,17 @@ void SoftwareRasterAux_Mode17
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52047,18 +51903,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52176,18 +52031,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52347,18 +52201,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52480,18 +52333,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52678,18 +52530,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52807,18 +52658,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -52978,18 +52828,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -53111,18 +52960,17 @@ void SoftwareRasterAux_Mode18
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar14 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -53514,18 +53362,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue3._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue3._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue3, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                    mm4PackedValue3._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                    THANDOR_PART(word, mm4PackedValue3, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue3._0_6_ =
-                         CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                    mm4PackedValue3._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                    THANDOR_PART(word, mm4PackedValue3, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                    mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -53644,18 +53491,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue2._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue2._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue2, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                    mm4PackedValue2._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                    THANDOR_PART(word, mm4PackedValue2, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue2._0_6_ =
-                         CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                    mm4PackedValue2._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                    THANDOR_PART(word, mm4PackedValue2, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                    mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -53816,18 +53662,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue1._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue1._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue1, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                    mm4PackedValue1._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                    THANDOR_PART(word, mm4PackedValue1, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue1._0_6_ =
-                         CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                    mm4PackedValue1._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                    THANDOR_PART(word, mm4PackedValue1, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                    mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -53950,18 +53795,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue0._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue0._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue0, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                    mm4PackedValue0._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                    THANDOR_PART(word, mm4PackedValue0, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue0._0_6_ =
-                         CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                    mm4PackedValue0._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                    THANDOR_PART(word, mm4PackedValue0, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -54149,18 +53993,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue7._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue7._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue7, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue7._0_4_ = CONCAT22(mm4PackedValue7._2_2_,(short)mm4PackedValue7);
-                    mm4PackedValue7._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue7, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue7, 2),(short)mm4PackedValue7);
+                    THANDOR_PART(word, mm4PackedValue7, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue7._0_6_ =
-                         CONCAT24(mm4PackedValue7._4_2_,(undefined4)mm4PackedValue7);
-                    mm4PackedValue7._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue7, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue7, 4),(undefined4)mm4PackedValue7));
+                    THANDOR_PART(word, mm4PackedValue7, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue7 = CONCAT26(mm4PackedValue7._6_2_,(undefined6)mm4PackedValue7);
+                    mm4PackedValue7 = CONCAT26(THANDOR_PART(word, mm4PackedValue7, 6),(undefined6)mm4PackedValue7);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -54279,18 +54122,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue6._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue6._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue6, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue6._0_4_ = CONCAT22(mm4PackedValue6._2_2_,(short)mm4PackedValue6);
-                    mm4PackedValue6._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue6, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue6, 2),(short)mm4PackedValue6);
+                    THANDOR_PART(word, mm4PackedValue6, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue6._0_6_ =
-                         CONCAT24(mm4PackedValue6._4_2_,(undefined4)mm4PackedValue6);
-                    mm4PackedValue6._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue6, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue6, 4),(undefined4)mm4PackedValue6));
+                    THANDOR_PART(word, mm4PackedValue6, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue6 = CONCAT26(mm4PackedValue6._6_2_,(undefined6)mm4PackedValue6);
+                    mm4PackedValue6 = CONCAT26(THANDOR_PART(word, mm4PackedValue6, 6),(undefined6)mm4PackedValue6);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -54451,18 +54293,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue5._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue5._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue5, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue5._0_4_ = CONCAT22(mm4PackedValue5._2_2_,(short)mm4PackedValue5);
-                    mm4PackedValue5._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue5, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue5, 2),(short)mm4PackedValue5);
+                    THANDOR_PART(word, mm4PackedValue5, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue5._0_6_ =
-                         CONCAT24(mm4PackedValue5._4_2_,(undefined4)mm4PackedValue5);
-                    mm4PackedValue5._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue5, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue5, 4),(undefined4)mm4PackedValue5));
+                    THANDOR_PART(word, mm4PackedValue5, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue5 = CONCAT26(mm4PackedValue5._6_2_,(undefined6)mm4PackedValue5);
+                    mm4PackedValue5 = CONCAT26(THANDOR_PART(word, mm4PackedValue5, 6),(undefined6)mm4PackedValue5);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -54585,18 +54426,17 @@ void SoftwareRasterAux_Mode20
                                                                  >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar25
                                                   ) >> 4)));
-                    mm4PackedValue4._0_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 0) =
                          g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar19;
-                    mm4PackedValue4._2_2_ =
+                    THANDOR_PART(word, mm4PackedValue4, 2) =
                          g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar19 >> 0x10);
-                    mm4PackedValue4._0_4_ = CONCAT22(mm4PackedValue4._2_2_,(short)mm4PackedValue4);
-                    mm4PackedValue4._4_2_ =
+                    THANDOR_PART(dword, mm4PackedValue4, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue4, 2),(short)mm4PackedValue4);
+                    THANDOR_PART(word, mm4PackedValue4, 4) =
                          g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar19 >> 0x20);
-                    mm4PackedValue4._0_6_ =
-                         CONCAT24(mm4PackedValue4._4_2_,(undefined4)mm4PackedValue4);
-                    mm4PackedValue4._6_2_ =
+                    THANDOR_WRITE_PART(mm4PackedValue4, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue4, 4),(undefined4)mm4PackedValue4));
+                    THANDOR_PART(word, mm4PackedValue4, 6) =
                          g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar19 >> 0x30);
-                    mm4PackedValue4 = CONCAT26(mm4PackedValue4._6_2_,(undefined6)mm4PackedValue4);
+                    mm4PackedValue4 = CONCAT26(THANDOR_PART(word, mm4PackedValue4, 6),(undefined6)mm4PackedValue4);
                     do {
                       if (uVar15 <= *puVar17) {
                         uVar5 = *(undefined4 *)
@@ -54803,16 +54643,16 @@ void SoftwareRasterAux_Mode24
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar21 = (undefined1)(PVar2 >> 0x10);
     uVar20 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar20,uVar20) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar20,uVar20) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar21),CONCAT14(uVar21,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -55867,16 +55707,16 @@ void SoftwareRasterAux_Mode30
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar22 = (undefined1)(PVar2 >> 0x10);
     uVar21 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar21,uVar21) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar21,uVar21) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar22),CONCAT14(uVar22,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -56930,16 +56770,16 @@ void SoftwareRasterAux_Mode25
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar21 = (undefined1)(PVar2 >> 0x10);
     uVar20 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar20,uVar20) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar20,uVar20) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar21),CONCAT14(uVar21,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -57985,16 +57825,16 @@ void SoftwareRasterAux_Mode26
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar21 = (undefined1)(PVar2 >> 0x10);
     uVar20 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar20,uVar20) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar20,uVar20) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar21),CONCAT14(uVar21,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -59041,16 +58881,16 @@ void SoftwareRasterAux_Mode28
     mm4PackedValue0ByteLane3 = (byte)(PVar2 >> 0x18);
     uVar22 = (undefined1)(PVar2 >> 0x10);
     uVar21 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(uVar21,uVar21) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(uVar21,uVar21) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3),
                                     uVar22),CONCAT14(uVar22,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = CONCAT11(mm4PackedValue0ByteLane3,mm4PackedValue0ByteLane3) >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar7 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -60206,18 +60046,17 @@ void SoftwareRasterAux_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -60287,18 +60126,17 @@ void SoftwareRasterAux_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -60415,18 +60253,17 @@ void SoftwareRasterAux_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -60496,18 +60333,17 @@ void SoftwareRasterAux_Mode00
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -60775,18 +60611,17 @@ void SoftwareRasterAux_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -60858,18 +60693,17 @@ void SoftwareRasterAux_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -60988,18 +60822,17 @@ void SoftwareRasterAux_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -61071,18 +60904,17 @@ void SoftwareRasterAux_Mode06
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -61351,18 +61183,17 @@ void SoftwareRasterAux_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -61431,18 +61262,17 @@ void SoftwareRasterAux_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -61558,18 +61388,17 @@ void SoftwareRasterAux_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -61638,18 +61467,17 @@ void SoftwareRasterAux_Mode01
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -61915,18 +61743,17 @@ void SoftwareRasterAux_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -61995,18 +61822,17 @@ void SoftwareRasterAux_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -62122,18 +61948,17 @@ void SoftwareRasterAux_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -62202,18 +62027,17 @@ void SoftwareRasterAux_Mode02
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -62480,18 +62304,17 @@ void SoftwareRasterAux_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue1._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue1._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue1, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue1._0_4_ = CONCAT22(mm4PackedValue1._2_2_,(short)mm4PackedValue1);
-                  mm4PackedValue1._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue1, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue1, 2),(short)mm4PackedValue1);
+                  THANDOR_PART(word, mm4PackedValue1, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue1._0_6_ =
-                       CONCAT24(mm4PackedValue1._4_2_,(undefined4)mm4PackedValue1);
-                  mm4PackedValue1._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue1, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue1, 4),(undefined4)mm4PackedValue1));
+                  THANDOR_PART(word, mm4PackedValue1, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue1 = CONCAT26(mm4PackedValue1._6_2_,(undefined6)mm4PackedValue1);
+                  mm4PackedValue1 = CONCAT26(THANDOR_PART(word, mm4PackedValue1, 6),(undefined6)mm4PackedValue1);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue6 = psraw(mm4PackedValue1,2);
@@ -62563,18 +62386,17 @@ void SoftwareRasterAux_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue0._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue0._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue0, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(short)mm4PackedValue0);
-                  mm4PackedValue0._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(short)mm4PackedValue0);
+                  THANDOR_PART(word, mm4PackedValue0, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue0._0_6_ =
-                       CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-                  mm4PackedValue0._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+                  THANDOR_PART(word, mm4PackedValue0, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+                  mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue0 = psraw(mm4PackedValue0,2);
@@ -62693,18 +62515,17 @@ void SoftwareRasterAux_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue3._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue3._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue3, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue3._0_4_ = CONCAT22(mm4PackedValue3._2_2_,(short)mm4PackedValue3);
-                  mm4PackedValue3._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue3, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue3, 2),(short)mm4PackedValue3);
+                  THANDOR_PART(word, mm4PackedValue3, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue3._0_6_ =
-                       CONCAT24(mm4PackedValue3._4_2_,(undefined4)mm4PackedValue3);
-                  mm4PackedValue3._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue3, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue3, 4),(undefined4)mm4PackedValue3));
+                  THANDOR_PART(word, mm4PackedValue3, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue3 = CONCAT26(mm4PackedValue3._6_2_,(undefined6)mm4PackedValue3);
+                  mm4PackedValue3 = CONCAT26(THANDOR_PART(word, mm4PackedValue3, 6),(undefined6)mm4PackedValue3);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue4 = psraw(mm4PackedValue3,2);
@@ -62776,18 +62597,17 @@ void SoftwareRasterAux_Mode04
                                                                >> 4,(ushort)(
                                                   g_SoftwareRasterScanState.colorStepX.blue * sVar16
                                                   ) >> 4)));
-                  mm4PackedValue2._0_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 0) =
                        g_SoftwareRasterScanState.longEdgeColor.blue + (short)uVar13;
-                  mm4PackedValue2._2_2_ =
+                  THANDOR_PART(word, mm4PackedValue2, 2) =
                        g_SoftwareRasterScanState.longEdgeColor.green + (short)(uVar13 >> 0x10);
-                  mm4PackedValue2._0_4_ = CONCAT22(mm4PackedValue2._2_2_,(short)mm4PackedValue2);
-                  mm4PackedValue2._4_2_ =
+                  THANDOR_PART(dword, mm4PackedValue2, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue2, 2),(short)mm4PackedValue2);
+                  THANDOR_PART(word, mm4PackedValue2, 4) =
                        g_SoftwareRasterScanState.longEdgeColor.red + (short)(uVar13 >> 0x20);
-                  mm4PackedValue2._0_6_ =
-                       CONCAT24(mm4PackedValue2._4_2_,(undefined4)mm4PackedValue2);
-                  mm4PackedValue2._6_2_ =
+                  THANDOR_WRITE_PART(mm4PackedValue2, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue2, 4),(undefined4)mm4PackedValue2));
+                  THANDOR_PART(word, mm4PackedValue2, 6) =
                        g_SoftwareRasterScanState.longEdgeColor.alpha + (short)(uVar13 >> 0x30);
-                  mm4PackedValue2 = CONCAT26(mm4PackedValue2._6_2_,(undefined6)mm4PackedValue2);
+                  mm4PackedValue2 = CONCAT26(THANDOR_PART(word, mm4PackedValue2, 6),(undefined6)mm4PackedValue2);
                   do {
                     if (uVar8 <= *puVar11) {
                       mm6PackedValue2 = psraw(mm4PackedValue2,2);
@@ -62926,16 +62746,16 @@ void SoftwareRasterAux_Mode08
     uVar8 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar8,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar8 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar8 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -63271,16 +63091,16 @@ void SoftwareRasterAux_Mode14
     uVar8 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar8,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar8 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar8 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -63623,16 +63443,16 @@ void SoftwareRasterAux_Mode09
     uVar8 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar8,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar8 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar8 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -63963,16 +63783,16 @@ void SoftwareRasterAux_Mode10
     uVar8 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar8,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar8 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar8 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -64304,16 +64124,16 @@ void SoftwareRasterAux_Mode12
     uVar8 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
     mm4PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
     mm4PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-    mm4PackedValue0._0_2_ = CONCAT11((char)PVar2,(char)PVar2) >> 2;
-    mm4PackedValue0._2_2_ = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
-    mm4PackedValue0._0_4_ = CONCAT22(mm4PackedValue0._2_2_,(ushort)mm4PackedValue0);
-    mm4PackedValue0._4_2_ =
+    THANDOR_PART(word, mm4PackedValue0, 0) = CONCAT11((char)PVar2,(char)PVar2) >> 2;
+    THANDOR_PART(word, mm4PackedValue0, 2) = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1) >> 2;
+    THANDOR_PART(dword, mm4PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm4PackedValue0, 2),(ushort)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) =
          (ushort)(CONCAT35(CONCAT21(uVar8,mm4PackedValue0ByteLane2),
                            CONCAT14(mm4PackedValue0ByteLane2,PVar2)) >> 0x20);
-    mm4PackedValue0._4_2_ = mm4PackedValue0._4_2_ >> 2;
-    mm4PackedValue0._0_6_ = CONCAT24(mm4PackedValue0._4_2_,(undefined4)mm4PackedValue0);
-    mm4PackedValue0._6_2_ = uVar8 >> 2;
-    mm4PackedValue0 = CONCAT26(mm4PackedValue0._6_2_,(undefined6)mm4PackedValue0);
+    THANDOR_PART(word, mm4PackedValue0, 4) = THANDOR_PART(word, mm4PackedValue0, 4) >> 2;
+    THANDOR_WRITE_PART(mm4PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm4PackedValue0, 4),(undefined4)mm4PackedValue0));
+    THANDOR_PART(word, mm4PackedValue0, 6) = uVar8 >> 2;
+    mm4PackedValue0 = CONCAT26(THANDOR_PART(word, mm4PackedValue0, 6),(undefined6)mm4PackedValue0);
     lVar3 = (longlong)(packet->vertices[2].screenX - packet->vertices[0].screenX) *
             (longlong)(packet->vertices[1].screenY - packet->vertices[0].screenY) -
             (longlong)(packet->vertices[1].screenX - packet->vertices[0].screenX) *
@@ -64620,7 +64440,7 @@ SoftwareRenderer_DisplayModeHook
     else {
       g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueueNon16Bit;
     }
-    DVar5 = (DisplayModeEaxCf5)(*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * height);
+    DVar5 = THANDOR_BITCAST(ArenaAllocEaxCf5, DisplayModeEaxCf5, (*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * height));
     memory = g_SoftwareDepthBuffer;
     if (!DVar5.carry) {
       LOCK();

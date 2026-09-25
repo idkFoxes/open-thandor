@@ -600,8 +600,8 @@ dword Locale_ParseUnsignedDecimalAscii(byte *text)
   digitValue = 0;
   parsedValue = 0;
   currentAsciiCode = digitValue;
-  for (; ((currentAsciiCode._1_3_ = (undefined3)(currentAsciiCode >> 8),
-          currentAsciiCode = CONCAT31(currentAsciiCode._1_3_,*text), currentAsciiCode != 0 &&
+  for (; ((THANDOR_READ_PART(currentAsciiCode, 1, 3) = (undefined3)(currentAsciiCode >> 8),
+          currentAsciiCode = CONCAT31(THANDOR_READ_PART(currentAsciiCode, 1, 3),*text), currentAsciiCode != 0 &&
           (currentAsciiCode = currentAsciiCode - 0x30, 0x2f < currentAsciiCode)) &&
          (currentAsciiCode < 10)); text = text + 1) {
     parsedValue = parsedValue * 10 + currentAsciiCode;

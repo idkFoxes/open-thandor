@@ -71,8 +71,8 @@ KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventR
     eventRecord = g_KeyboardEvents + g_KeyboardReadIndex;
     g_KeyboardReadIndex = nextReadIndex;
     KVar1.carry = false;
-    eventRegisterPair._0_4_ = eventRecord->keyCode00;
-    eventRegisterPair._4_4_ = eventRecord->stateMask04;
+    THANDOR_PART(dword, eventRegisterPair, 0) = eventRecord->keyCode00;
+    THANDOR_PART(dword, eventRegisterPair, 4) = eventRecord->stateMask04;
     return KVar1;
   }
   KVar2.eventData = nextReadIndex;
@@ -201,8 +201,8 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
                 if ((uVar2 & 1) != 0) {
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
                 }
-                SVar11.valueOrError._0_2_ = GetKeyState(0x14);
-                SVar11.valueOrError._2_2_ = extraout_var;
+                THANDOR_PART(word, SVar11.valueOrError, 0) = GetKeyState(0x14);
+                THANDOR_PART(word, SVar11.valueOrError, 2) = extraout_var;
                 if (((ushort)SVar11.valueOrError & 1) != 0) {
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
                 }

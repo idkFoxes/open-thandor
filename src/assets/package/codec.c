@@ -478,8 +478,8 @@ PckCodec_DecodeHuffmanRle
   pPVar8 = g_PckHuffmanSymbolWorkspace256;
   frequencyByteCursor = source;
   do {
-    PVar1.frequencyCount._1_3_ = 0;
-    PVar1.frequencyCount._0_1_ = *frequencyByteCursor;
+    THANDOR_WRITE_PART(PVar1.frequencyCount, 1, 3, 0);
+    THANDOR_PART(byte, PVar1.frequencyCount, 0) = *frequencyByteCursor;
     *pPVar8 = PVar1;
     frequencyByteCursor = frequencyByteCursor + 1;
     pPVar8 = pPVar8 + 1;

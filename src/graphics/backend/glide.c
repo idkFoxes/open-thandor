@@ -171,8 +171,8 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
         destination = destination + 2;
       } while (*ppvVar1 != (void *)0x0);
       (*g_GrGlideInit)();
-      dVar5._0_2_ = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
-      dVar5._2_2_ = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
+      THANDOR_PART(word, dVar5, 0) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
+      THANDOR_PART(word, dVar5, 2) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
       (*g_GrSstSelect)(dVar5);
       g_GlideSelectedResolutionQuery = resolutionQueryCode;
       dVar5 = (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,(void *)0x0);
@@ -726,7 +726,7 @@ bool __thandor_void_preserve_ecx_edx Glide3_InitAndEnumerate(void)
       Text_CopyNarrowToUtf16Cf(0x28,pGVar7->deviceNameUtf16,source);
       (pGVar7->adapterGuid).Data1 = 1;
       (pGVar7->adapterGuid).Data2 = (undefined2)local_20;
-      (pGVar7->adapterGuid).Data3 = local_20._2_2_;
+      (pGVar7->adapterGuid).Data3 = THANDOR_PART(word, local_20, 2);
       (pGVar7->deviceGuid).Data1 = 1;
       dVar2 = (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,(void *)0x0);
       if (dVar2 != 0) {

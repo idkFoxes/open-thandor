@@ -5503,14 +5503,14 @@ InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails:
         pbVar1[3] = 0;
         piVar13 = piVar13 + 1;
       }
-      g_InGameSelectionDetailTextSlot05Utf16[0] = (word)g_InGameSelectionDetailTextSlot05Utf16._0_4_
+      g_InGameSelectionDetailTextSlot05Utf16[0] = (word)THANDOR_PART(dword, g_InGameSelectionDetailTextSlot05Utf16, 0)
       ;
       g_InGameSelectionDetailTextSlot05Utf16[1] =
-           SUB42(g_InGameSelectionDetailTextSlot05Utf16._0_4_,2);
-      g_InGameSelectionDetailTextSlot09Utf16[0] = (word)g_InGameSelectionDetailTextSlot09Utf16._0_4_
+           SUB42(THANDOR_PART(dword, g_InGameSelectionDetailTextSlot05Utf16, 0),2);
+      g_InGameSelectionDetailTextSlot09Utf16[0] = (word)THANDOR_PART(dword, g_InGameSelectionDetailTextSlot09Utf16, 0)
       ;
       g_InGameSelectionDetailTextSlot09Utf16[1] =
-           SUB42(g_InGameSelectionDetailTextSlot09Utf16._0_4_,2);
+           SUB42(THANDOR_PART(dword, g_InGameSelectionDetailTextSlot09Utf16, 0),2);
       return;
     }
     UiPageStack_SetActiveIndex(0,stack);

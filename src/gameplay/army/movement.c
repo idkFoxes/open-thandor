@@ -891,7 +891,7 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
     else {
       pAVar2 = modelRuntime->ownerArmyRuntime;
       WVar20 = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)pAVar2);
-      FVar17 = WVar20._0_8_;
+      FVar17 = THANDOR_PART(qword, WVar20, 0);
       pAVar1 = &pAVar2->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -909,8 +909,8 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
                  (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)AVar19.eax,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      FVar17._0_4_ = (modelNode1->worldTransform).translation.x;
-      FVar17._4_4_ = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(dword, FVar17, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(dword, FVar17, 4) = (modelNode1->worldTransform).translation.y;
       pAVar1 = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -1213,7 +1213,7 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
     else {
       pAVar13 = modelRuntime->ownerArmyRuntime;
       WVar20 = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)pAVar13);
-      FVar18 = WVar20._0_8_;
+      FVar18 = THANDOR_PART(qword, WVar20, 0);
       pAVar1 = &pAVar13->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -1231,8 +1231,8 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
                  (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)AVar19.eax,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      FVar18._0_4_ = (modelNode1->worldTransform).translation.x;
-      FVar18._4_4_ = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(dword, FVar18, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(dword, FVar18, 4) = (modelNode1->worldTransform).translation.y;
       pAVar1 = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -1826,7 +1826,7 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
     else {
       pAVar2 = modelRuntime->ownerArmyRuntime;
       WVar17 = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)pAVar2);
-      FVar15 = WVar17._0_8_;
+      FVar15 = THANDOR_PART(qword, WVar17, 0);
       pAVar1 = &pAVar2->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -1844,8 +1844,8 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
                  (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)AVar16.eax,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      FVar15._0_4_ = (modelNode1->worldTransform).translation.x;
-      FVar15._4_4_ = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(dword, FVar15, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(dword, FVar15, 4) = (modelNode1->worldTransform).translation.y;
       pAVar1 = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -2315,7 +2315,7 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     else {
       pAVar2 = modelRuntime->ownerArmyRuntime;
       WVar18 = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)pAVar2);
-      FVar16 = WVar18._0_8_;
+      FVar16 = THANDOR_PART(qword, WVar18, 0);
       pAVar1 = &pAVar2->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -2329,8 +2329,8 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     if (AVar17.carry) {
       modelNode1 = modelRuntime->rootModelNode;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      FVar16._0_4_ = (modelNode1->worldTransform).translation.x;
-      FVar16._4_4_ = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(dword, FVar16, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(dword, FVar16, 4) = (modelNode1->worldTransform).translation.y;
       pAVar1 = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *pAVar1 = *pAVar1 | 0x10;
     }
@@ -3477,8 +3477,8 @@ ArmyRuntime_UpdateMovementAndWaypoints_ReturnStoredMovementPositionWithCarryClea
         (movementRuntime->fallbackPosition).worldXQ12 = EVar16.fallbackWorldXQ12;
         (movementRuntime->fallbackPosition).worldYQ12 = EVar16.fallbackWorldYQ12;
         WVar13.carry = false;
-        WVar13.worldXQ12 = (int)EVar16._0_8_;
-        WVar13.worldYQ12 = (int)(EVar16._0_8_ >> 0x20);
+        WVar13.worldXQ12 = (int)THANDOR_PART(qword, EVar16, 0);
+        WVar13.worldYQ12 = (int)(THANDOR_PART(qword, EVar16, 0) >> 0x20);
         return WVar13;
       }
     }

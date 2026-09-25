@@ -89,11 +89,11 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
                      ((RuntimeModelFactionPrefix10 *)
                       (armyRuntime7->modelRuntimeOrSavedOffset).modelRuntime);
       AVar2 = g_AiCommandGenerationCandidateBase;
-      collectedHierarchyScaleRatioPairQ12._4_4_ =
+      THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4) =
            (uint)(collectedHierarchyScaleRatioPairQ12 >> 0x20);
-      if ((collectedHierarchyScaleRatioPairQ12._4_4_ != 0) &&
+      if ((THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4) != 0) &&
          (uVar4 = uVar4 + (uint)((int)collectedHierarchyScaleRatioPairQ12 << 8) /
-                          collectedHierarchyScaleRatioPairQ12._4_4_, 0x1ff < uVar4)) {
+                          THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4), 0x1ff < uVar4)) {
         uVar3 = 0;
         targetCandidateRecordsRemaining = g_AiWorkspace07Count;
         targetCandidateRecordCursor = g_AiWorkspaceBuffer07_Size0400;
@@ -315,19 +315,19 @@ AiCombatTarget_EvaluateCandidateScore
           hierarchyScaleRatioPairQ12 =
                ModelRuntime_QueryHierarchyScaleRatioQ12Regs
                          ((RuntimeModelFactionPrefix10 *)candidateArmyRuntime);
-          hierarchyScaleRatioPairQ12._4_4_ = (uint)(hierarchyScaleRatioPairQ12 >> 0x20);
+          THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4) = (uint)(hierarchyScaleRatioPairQ12 >> 0x20);
           if ((-1 < sourceClassCount) ||
-             ((uint)hierarchyScaleRatioPairQ12 < hierarchyScaleRatioPairQ12._4_4_)) {
+             ((uint)hierarchyScaleRatioPairQ12 < THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4))) {
             candidateScore =
                  (int)(((int)radialClearanceQ12 * lVar2) / (longlong)(int)sourceRadiusQ12) + iVar5 +
                  (int)(((longlong)g_AiCombatTargetSourceCounterCountWeight * (longlong)iVar3) /
-                      (longlong)(int)hierarchyScaleRatioPairQ12._4_4_) +
+                      (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4)) +
                  (int)(((longlong)g_AiCombatTargetCandidateCounterCountWeight * (longlong)iVar4) /
-                      (longlong)(int)hierarchyScaleRatioPairQ12._4_4_) +
+                      (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4)) +
                  (int)(((longlong)g_AiCombatTargetScaleDeficitWeight *
                        (longlong)
-                       (int)(hierarchyScaleRatioPairQ12._4_4_ - (uint)hierarchyScaleRatioPairQ12)) /
-                      (longlong)(int)hierarchyScaleRatioPairQ12._4_4_);
+                       (int)(THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4) - (uint)hierarchyScaleRatioPairQ12)) /
+                      (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4));
             if (iVar3 == 0) {
               candidateScore = candidateScore >> 2;
             }

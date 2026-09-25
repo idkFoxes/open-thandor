@@ -4142,14 +4142,14 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
   ModelRuntimeNode *modelNode;
   void *definition;
   
-  neighborhoodClassificationPair._4_4_ =
+  THANDOR_PART(dword, neighborhoodClassificationPair, 4) =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                  (*(Q12 *)((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                            definitionOrSavedId).savedIdOrOffset + 0xdc),
                   (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                   (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                   worldRuntime->fieldGrid);
-  armyRuntime->terrainOccupancyMask0 = neighborhoodClassificationPair._4_4_;
+  armyRuntime->terrainOccupancyMask0 = THANDOR_PART(dword, neighborhoodClassificationPair, 4);
   modelNode = armyRuntime->modelNodeRuntime;
   TVar1 = TerrainOccupancyMask_ResolveRuntimeClassFlags
                     (modelNode->runtimeFlags,armyRuntime->terrainOccupancyMask1,

@@ -375,17 +375,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  mm3PackedValue0._0_2_ = CONCAT11((char)PVar1,(char)PVar1) >> 4;
-  mm3PackedValue0._2_2_ = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  mm3PackedValue0._0_4_ = CONCAT22(mm3PackedValue0._2_2_,(ushort)mm3PackedValue0);
-  mm3PackedValue0._4_2_ =
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
+  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) =
        (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
                          CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
-  mm3PackedValue0._4_2_ = mm3PackedValue0._4_2_ >> 4;
-  mm3PackedValue0._0_6_ = CONCAT24(mm3PackedValue0._4_2_,(undefined4)mm3PackedValue0);
-  mm3PackedValue0._6_2_ = (ushort)uVar12;
-  mm3PackedValue0._6_2_ = mm3PackedValue0._6_2_ >> 4;
-  mm3PackedValue0 = CONCAT26(mm3PackedValue0._6_2_,(undefined6)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
+  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
+  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
        pmulhw(CONCAT26((ushort)uVar9 >> 4,
                        CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
@@ -653,17 +653,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  mm3PackedValue0._0_2_ = CONCAT11((char)PVar1,(char)PVar1) >> 4;
-  mm3PackedValue0._2_2_ = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  mm3PackedValue0._0_4_ = CONCAT22(mm3PackedValue0._2_2_,(ushort)mm3PackedValue0);
-  mm3PackedValue0._4_2_ =
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
+  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) =
        (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
                          CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
-  mm3PackedValue0._4_2_ = mm3PackedValue0._4_2_ >> 4;
-  mm3PackedValue0._0_6_ = CONCAT24(mm3PackedValue0._4_2_,(undefined4)mm3PackedValue0);
-  mm3PackedValue0._6_2_ = (ushort)uVar12;
-  mm3PackedValue0._6_2_ = mm3PackedValue0._6_2_ >> 4;
-  mm3PackedValue0 = CONCAT26(mm3PackedValue0._6_2_,(undefined6)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
+  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
+  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
        pmulhw(CONCAT26((ushort)uVar9 >> 4,
                        CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
@@ -932,17 +932,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  mm3PackedValue0._0_2_ = CONCAT11((char)PVar1,(char)PVar1) >> 4;
-  mm3PackedValue0._2_2_ = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  mm3PackedValue0._0_4_ = CONCAT22(mm3PackedValue0._2_2_,(ushort)mm3PackedValue0);
-  mm3PackedValue0._4_2_ =
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
+  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) =
        (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
                          CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
-  mm3PackedValue0._4_2_ = mm3PackedValue0._4_2_ >> 4;
-  mm3PackedValue0._0_6_ = CONCAT24(mm3PackedValue0._4_2_,(undefined4)mm3PackedValue0);
-  mm3PackedValue0._6_2_ = (ushort)uVar12;
-  mm3PackedValue0._6_2_ = mm3PackedValue0._6_2_ >> 4;
-  mm3PackedValue0 = CONCAT26(mm3PackedValue0._6_2_,(undefined6)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
+  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
+  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
        pmulhw(CONCAT26((ushort)uVar9 >> 4,
                        CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
@@ -1210,17 +1210,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  mm3PackedValue0._0_2_ = CONCAT11((char)PVar1,(char)PVar1) >> 4;
-  mm3PackedValue0._2_2_ = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  mm3PackedValue0._0_4_ = CONCAT22(mm3PackedValue0._2_2_,(ushort)mm3PackedValue0);
-  mm3PackedValue0._4_2_ =
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
+  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) =
        (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
                          CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
-  mm3PackedValue0._4_2_ = mm3PackedValue0._4_2_ >> 4;
-  mm3PackedValue0._0_6_ = CONCAT24(mm3PackedValue0._4_2_,(undefined4)mm3PackedValue0);
-  mm3PackedValue0._6_2_ = (ushort)uVar12;
-  mm3PackedValue0._6_2_ = mm3PackedValue0._6_2_ >> 4;
-  mm3PackedValue0 = CONCAT26(mm3PackedValue0._6_2_,(undefined6)mm3PackedValue0);
+  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
+  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
+  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
        pmulhw(CONCAT26((ushort)uVar9 >> 4,
                        CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),

@@ -26,7 +26,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
 
 /* 0x0050EA90 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameConditionRuntime_RebaseLoadedRecords(InGameConditionRuntime *runtime);
+ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
 
 /* 0x00565E10 */
 void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);

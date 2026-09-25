@@ -428,8 +428,8 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
     wVar1 = (*g_Ws2_32_htons)(portHostOrder);
     g_NetworkBackendPortNetworkOrderCarrier = CONCAT22(extraout_var,wVar1);
     g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
-    g_NetworkBackendBindAddress._8_4_ = 0;
-    g_NetworkBackendBindAddress._12_4_ = 0;
+    THANDOR_PART(dword, g_NetworkBackendBindAddress, 8) = 0;
+    THANDOR_PART(dword, g_NetworkBackendBindAddress, 12) = 0;
     g_NetworkBackendBindAddress.ipv4.addressHeader =
          THANDOR_BITCAST(dword, NetworkEndpointAddressHeader4, g_NetworkBackendActiveAddressFamily);
     dVar2 = g_NetworkBackendActiveSocketAddressLength;
@@ -437,12 +437,12 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
       dVar2 = 0x10;
     }
     if (g_NetworkBackendActiveAddressFamily == 2) {
-      g_NetworkBackendBindAddress._2_2_ = wVar1;
+      THANDOR_PART(word, g_NetworkBackendBindAddress, 2) = wVar1;
       g_NetworkBackendBindAddress.ipx.addressFamily = 2;
     }
     else if (g_NetworkBackendActiveAddressFamily == 6) {
-      g_NetworkBackendBindAddress._14_1_ = 0;
-      g_NetworkBackendBindAddress._15_1_ = 0;
+      THANDOR_PART(byte, g_NetworkBackendBindAddress, 14) = 0;
+      THANDOR_PART(byte, g_NetworkBackendBindAddress, 15) = 0;
       g_NetworkBackendBindAddress.ipx.socketNetworkOrder = wVar1;
     }
     iVar3 = (*g_Ws2_32_bind)(dStack_1c,&g_NetworkBackendBindAddress.ipv4,dVar2);
@@ -456,8 +456,8 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
           if (g_NetworkBackendActiveAddressFamily == 2) {
             g_NetworkLocalEndpointDescriptor16.addressHeader.fields.addressFamily =
                  NETWORK_ADDRESS_FAMILY_IPV4;
-            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._0_2_ = 0xffff;
-            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._2_2_ = 0xffff;
+            THANDOR_PART(word, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 0) = 0xffff;
+            THANDOR_PART(word, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 2) = 0xffff;
             g_NetworkLocalEndpointDescriptor16.addressHeader.fields.portNetworkOrder =
                  (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
           }
@@ -465,13 +465,13 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
             g_NetworkLocalEndpointDescriptor16.addressHeader.fields.addressFamily =
                  NETWORK_ADDRESS_FAMILY_IPX;
             g_NetworkLocalEndpointDescriptor16.addressHeader.fields.portNetworkOrder = 0;
-            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._0_2_ = 0;
-            g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder._2_2_ = 0xffff;
+            THANDOR_PART(word, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 0) = 0;
+            THANDOR_PART(word, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 2) = 0xffff;
             g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0xff;
             g_NetworkLocalEndpointDescriptor16.zeroPadding[1] = 0xff;
             g_NetworkLocalEndpointDescriptor16.zeroPadding[2] = 0xff;
             g_NetworkLocalEndpointDescriptor16.zeroPadding[3] = 0xff;
-            g_NetworkLocalEndpointDescriptor16.zeroPadding._4_2_ =
+            THANDOR_PART(word, g_NetworkLocalEndpointDescriptor16.zeroPadding, 4) =
                  (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
           }
           g_NetworkFallbackSocket = dStack_1c;

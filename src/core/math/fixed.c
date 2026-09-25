@@ -43,8 +43,8 @@ FixedTransform_ComposeEulerAnglesRegs
   FVar1 = FixedTransform_ExtractEulerAnglesRegs
                     ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch);
   FVar2.angle2 = FVar1.eaxAngle;
-  FVar2.angle0 = (int)FVar1._4_8_;
-  FVar2.angle1 = (int)((ulonglong)FVar1._4_8_ >> 0x20);
+  FVar2.angle0 = (int)THANDOR_PART(qword, FVar1, 4);
+  FVar2.angle1 = (int)((ulonglong)THANDOR_PART(qword, FVar1, 4) >> 0x20);
   return FVar2;
 }
 
@@ -392,7 +392,7 @@ FixedTransform_RotateDirectionScaledRegs
                     (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
                      rotationAngle2);
   FVar1.xQ12 = FVar2.xQ12;
-  uVar3._4_4_ = FVar2.yQ12;
+  THANDOR_PART(dword, uVar3, 4) = FVar2.yQ12;
   register0x00000008 = FVar2.zQ12;
   return FVar1;
 }

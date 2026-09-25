@@ -973,7 +973,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
       attachmentKind = attachmentTransformCursor->packedKindAndSelector & 0xf;
       if (((attachmentKind == 0) || (attachmentKind == 1)) &&
          (childIndex == attachmentTransformCursor->packedKindAndSelector >> 4)) {
-        recursiveCollectionResult._0_4_ =
+        THANDOR_PART(dword, recursiveCollectionResult, 0) =
              ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntimeContinuityEdi,modelRuntime,
                         (MdlSerializedNodeHeader38 *)

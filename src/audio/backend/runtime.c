@@ -307,7 +307,7 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
   if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == 0x10000)) {
     WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
     WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-    WaveFormat_PCM_22050_Stereo16.nSamplesPerSec._0_2_ = 0x5622;
+    THANDOR_PART(word, WaveFormat_PCM_22050_Stereo16.nSamplesPerSec, 0) = 0x5622;
     WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 0x15888;
     WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4;
     WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 0x10;

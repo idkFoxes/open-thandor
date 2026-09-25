@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 /* Forward declarations (hoisted by tools/sort_types.py). */
-typedef struct InGameConditionRuntime InGameConditionRuntime, *PInGameConditionRuntime; /* opaque: layout not recovered yet */
 /* Forward declarations (hoisted by tools/sort_types.py). */
 
 typedef struct MovieOpenEaxCf5 MovieOpenEaxCf5, *PMovieOpenEaxCf5;

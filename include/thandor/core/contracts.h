@@ -39,6 +39,7 @@ or to other layout-compatible structs, which C only allows through a union.
 #pragma warning(disable: 4116) /* unnamed type definition in parentheses (THANDOR_BITCAST) */
 #endif
 
+#include <thandor/core/ghidra.h>
 #include <thandor/generated/globals.h>
 
 

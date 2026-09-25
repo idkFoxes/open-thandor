@@ -212,7 +212,7 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
     entriesRemaining = entriesRemaining - 1;
   }
   MVar1.carry = false;
-  MVar1._0_12_ = *(undefined1 (*) [12])(packedKeyEntryCursor + 1);
+  THANDOR_WRITE_PART(MVar1, 0, 12, *(undefined1 (*) [12])(packedKeyEntryCursor + 1));
   return MVar1;
 }
 

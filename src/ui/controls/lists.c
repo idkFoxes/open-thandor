@@ -1560,7 +1560,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
-      g_UiTimedListCombinedPathScratch._4_4_ = 0;
+      THANDOR_PART(dword, g_UiTimedListCombinedPathScratch, 4) = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
@@ -1572,7 +1572,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
   }
   else {
     g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061;
-    g_UiTimedListHierarchyParentPathScratch._4_4_ = 0;
+    THANDOR_PART(dword, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
   }
   RVar5 = UiTimedListTree_BuildDirectoryRecordBlockCf
                     (g_UiTimedListHierarchyParentPathScratch.codeUnits);
@@ -1683,7 +1683,7 @@ UiTimedListTree_BuildRecordPathCf(dword *outputPathDwords,UiTimedListTreeRecord1
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
-      g_UiTimedListCombinedPathScratch._4_4_ = 0;
+      THANDOR_PART(dword, g_UiTimedListCombinedPathScratch, 4) = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits

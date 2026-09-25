@@ -440,15 +440,15 @@ WorldRuntime_TranslateCameraByScreenDelta
           0x10;
   angle = (worldRuntime->motion).headingAngle;
   movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaX * iVar2);
-  movementDeltaXYQ12._4_4_ = (int)(movementDeltaXYQ12 >> 0x20);
+  THANDOR_PART(dword, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 0x20);
   (worldRuntime->motion).positionXQ12 =
        (worldRuntime->motion).positionXQ12 - (int)movementDeltaXYQ12;
   motionCoordinateField = &(worldRuntime->motion).positionYQ12;
-  *motionCoordinateField = *motionCoordinateField - movementDeltaXYQ12._4_4_;
+  *motionCoordinateField = *motionCoordinateField - THANDOR_PART(dword, movementDeltaXYQ12, 4);
   pQVar1 = &(worldRuntime->motion).targetPositionXQ12;
   *pQVar1 = *pQVar1 - (int)movementDeltaXYQ12;
   pQVar1 = &(worldRuntime->motion).targetPositionYQ12;
-  *pQVar1 = *pQVar1 - movementDeltaXYQ12._4_4_;
+  *pQVar1 = *pQVar1 - THANDOR_PART(dword, movementDeltaXYQ12, 4);
   FVar3 = FixedMath_SinCosScaled(angle + 0x4000 & 0xffff,screenDeltaY * iVar2);
   iVar2 = (int)(FVar3 >> 0x20);
   (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 - (int)FVar3;

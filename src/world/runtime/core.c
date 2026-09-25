@@ -998,7 +998,7 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
   undefined8 uVar2;
   
   WVar1.xQ12 = (world->motion).positionXQ12;
-  uVar2._4_4_ = (world->motion).positionYQ12;
+  THANDOR_PART(dword, uVar2, 4) = (world->motion).positionYQ12;
   register0x00000008 = (world->motion).positionZQ12;
   return WVar1;
 }
@@ -1016,7 +1016,7 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
   undefined8 uVar2;
   
   WVar1.magnitudeQ12 = (world->motion).positionMagnitudeQ12;
-  uVar2._4_4_ = (world->motion).headingAngle;
+  THANDOR_PART(dword, uVar2, 4) = (world->motion).headingAngle;
   register0x00000008 = (world->motion).pitchAngle;
   return WVar1;
 }
