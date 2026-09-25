@@ -569,8 +569,6 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
   SpriteAssetHeader *pSVar3;
   int iVar4;
   RomRegistrySlot *pRVar5;
-  int unaff_EBP;
-  int unaff_ESI;
   byte *pbVar6;
   bool bVar7;
   StatusValueEaxCf5 SVar8;

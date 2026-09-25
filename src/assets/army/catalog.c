@@ -428,6 +428,23 @@ ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyA
 }
 
 
+static dword ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,byte *node)
+{
+  ModelDefinitionLookupEaxCf5 selected;
+  dword sum;
+  dword i;
+  selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                       (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
+  sum = *(dword *)((byte *)selected.modelDefinition + 0x60);
+  for (i = 0; i < *(dword *)(node + 8); i++) {
+    byte *child = *(byte **)(node + 0xc + i * 4);
+    if (child != (byte *)0x0) {
+      sum = sum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
+    }
+  }
+  return sum;
+}
+
 /* Address: 0x0051C170.
    Ownership: assets/army/catalog.
    Purpose: Traverses the linked model-definition hierarchy, resolves the faction-unlocked definition at each node,
@@ -443,38 +460,30 @@ ArmyAssetHierarchy_SumFactionUnlockedArmour
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  dword dVar1;
-  int iVar2;
-  int unaff_EBP;
-  int unaff_EDI;
-  ModelLinkedDefinitionListAddress32 linkedDefinitionList;
-  ModelDefinitionLookupEaxCf5 MVar3;
-  int iVar4;
-  
-  iVar2 = 0;
-  dVar1 = 0;
-  linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc);
-  do {
-    MVar3 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                      (factionIndex,linkedDefinitionList);
-    dVar1 = dVar1 + MVar3.modelDefinition[8].byteSize;
-    iVar2 = iVar2 + 1;
-    iVar4 = unaff_EDI;
-    do {
-      while (unaff_EBP == 0) {
-        iVar2 = iVar2 + -1;
-        if (iVar2 == 0) {
-          return dVar1;
-        }
-      }
-      unaff_EBP = unaff_EBP + -1;
-      unaff_EDI = iVar4 + 4;
-      linkedDefinitionList = *(int *)(iVar4 + 0xc);
-      iVar4 = unaff_EDI;
-    } while (linkedDefinitionList == 0);
-  } while( true );
+  /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
+     children at +0x0C + 4*i) depth-first with frames on the machine stack. */
+  return ArmyAssetHierarchy_SumArmourFrom(factionIndex,*(byte **)(uintptr_t)(definitionNode + 0xc));
 }
 
+
+static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,byte *node)
+{
+  ModelDefinitionLookupEaxCf5 selected;
+  EnergyDemandQ4 sum;
+  dword childCount;
+  dword i;
+  selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                       (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
+  sum = *(EnergyDemandQ4 *)((byte *)selected.modelDefinition + 0x18c);
+  childCount = *(dword *)(node + 8);
+  if ((*(dword *)((byte *)selected.modelDefinition + 0x68) & 0x80) == 0) {
+    childCount = 0; /* only definitions with flag 0x80 contribute their children */
+  }
+  for (i = 0; i < childCount; i++) {
+    sum = sum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(byte **)(node + 0xc + i * 4));
+  }
+  return sum;
+}
 
 /* Address: 0x0051C2C0.
    Ownership: assets/army/catalog.
@@ -492,31 +501,9 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  EnergyDemandQ4 EVar1;
-  int iVar2;
-  int unaff_EBP;
-  int unaff_EDI;
-  ModelLinkedDefinitionListAddress32 linkedDefinitionList;
-  ModelDefinitionLookupEaxCf5 MVar3;
-  
-  EVar1 = 0;
-  iVar2 = 0;
-  linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc);
-  do {
-    MVar3 = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                      (factionIndex,linkedDefinitionList);
-    EVar1 = EVar1 + MVar3.modelDefinition[0x21].byteSize;
-    iVar2 = iVar2 + 1;
-    while (unaff_EBP == 0) {
-      iVar2 = iVar2 + -1;
-      if (iVar2 == 0) {
-        return EVar1;
-      }
-    }
-    linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(unaff_EDI + 0xc);
-    unaff_EBP = unaff_EBP + -1;
-    unaff_EDI = unaff_EDI + 4;
-  } while( true );
+  /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
+     children at +0x0C + 4*i) depth-first with frames on the machine stack. */
+  return ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(byte **)(uintptr_t)(definitionNode + 0xc));
 }
 
 
@@ -596,97 +583,79 @@ ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
    Local calls: ArmyAssetRegistry_FindByIdCf.
    Cross-module calls: ModelDefinitionRegistry_FindBuildMetricTupleByIdCf [assets/model/definitions].
 */
+/* Relocates one node of an army record's model tree and all of its children (offsets 0x0C + 4*i,
+   count at +0x08) against assetBase, adding each node's model-definition build metrics (looked up by
+   the id at +0x20) to the record. Returns the last lookup error, or 0. */
+static dword ArmyAssetRecord_RelocateModelTree
+          (ArmyAssetRuntimeSemanticView80 *record,byte *assetBase,byte *node)
+{
+  ModelBuildMetricEaxEcxEdxCf13 metrics;
+  dword childCount;
+  dword childIndex;
+  dword error = 0;
+  dword childError;
+
+  metrics = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(*(PckModelDefinitionIdCatalog *)(node + 0x20));
+  if (metrics.carry) {
+    error = (dword)metrics.metric0;
+  }
+  else {
+    record->relocationPointerOrOffset2C = record->relocationPointerOrOffset2C + (dword)metrics.metric0;
+    record->relocationValue24 = record->relocationValue24 + metrics.metric1;
+    record->relocationValue28 = record->relocationValue28 + metrics.metric2;
+  }
+  childCount = *(dword *)(node + 8);
+  for (childIndex = 0; childIndex < childCount; childIndex = childIndex + 1) {
+    byte **child = (byte **)(node + 0xc + childIndex * 4);
+    *child = *child + (uintptr_t)assetBase;
+    childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,*child);
+    if (childError != 0) {
+      error = childError;
+    }
+  }
+  return error;
+}
+
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
 ArmyAssetRecord_RegisterAndRelocate
           (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
 
 {
-  dword dVar1;
-  ArmyAssetRuntimeSemanticView80 *pAVar2;
-  ArmyAssetRuntimeSemanticView80 *pAVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  ArmyAssetRecordPrefix **ppAVar7;
-  int unaff_EBP;
-  int unaff_ESI;
-  byte *unaff_EDI;
-  byte *pbVar8;
-  ArmyRegistryEaxCf5_51b6d0 AVar9;
-  StatusValueEaxCf5 SVar10;
-  StatusValueEaxCf5 SVar11;
-  ModelBuildMetricEaxEcxEdxCf13 MVar12;
-  
-  pAVar2 = record;
-  ppAVar7 = g_ArmyAssetRecordRegistry;
-  iVar5 = 0x300;
-  AVar9 = ArmyAssetRegistry_FindByIdCf(record->registryId);
-  if (AVar9.carry) {
-    do {
-      if (*ppAVar7 == (ArmyAssetRecordPrefix *)0x0) {
-        dVar1 = record->rootNodeOffsetOrPointer;
-        *ppAVar7 = (ArmyAssetRecordPrefix *)record;
-        record = (ArmyAssetRuntimeSemanticView80 *)0x0;
-        if (dVar1 != 0) {
-          pAVar2->rootNodeOffsetOrPointer =
-               (dword)((assetBase->recordCountHeader).common.buildMetadata.
-                       assetRelativeAddressAnchor28 + (pAVar2->rootNodeOffsetOrPointer - 0x28));
-          pbVar8 = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                   + (dVar1 - 0x28);
-          iVar5 = 0;
-          do {
-            MVar12 = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf
-                               (*(PckModelDefinitionIdCatalog *)(pbVar8 + 0x20));
-            pAVar3 = (ArmyAssetRuntimeSemanticView80 *)MVar12.metric0;
-            if (!MVar12.carry) {
-              pAVar2->relocationPointerOrOffset2C =
-                   (dword)(((ArmyAssetRuntimeSemanticView80 *)MVar12.metric0)->reserved018_023 +
-                          (pAVar2->relocationPointerOrOffset2C - 0x18));
-              pAVar2->relocationValue24 = pAVar2->relocationValue24 + MVar12.metric1;
-              pAVar2->relocationValue28 = pAVar2->relocationValue28 + MVar12.metric2;
-              pAVar3 = record;
-            }
-            record = pAVar3;
-            iVar6 = 0;
-            iVar4 = *(int *)((AssetProducerSourceNames *)(pbVar8 + 8))->producerName;
-            while (iVar4 == 0) {
-              iVar5 = iVar5 + -1;
-              if (iVar5 < 0) goto ArmyAssetRecord_RegisterAndRelocate_FinalizeRelocationResult;
-              iVar6 = unaff_ESI + 1;
-              pbVar8 = unaff_EDI;
-              iVar4 = unaff_EBP + -1;
-            }
-            iVar5 = iVar5 + 1;
-            *(byte **)(pbVar8 + iVar6 * 4 + 0xc) =
-                 (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 *(int *)(pbVar8 + iVar6 * 4 + 0xc) + -0x28;
-            pbVar8 = *(byte **)(pbVar8 + iVar6 * 4 + 0xc);
-            unaff_EBP = iVar4;
-          } while( true );
-        }
-ArmyAssetRecord_RegisterAndRelocate_FinalizeRelocationResult:
-        if (record == (ArmyAssetRuntimeSemanticView80 *)0x0) {
-          SVar11.valueOrError = 0;
-          SVar11.carry = false;
-          return SVar11;
-        }
-        goto ArmyAssetRecord_RegisterAndRelocate_ReturnRegistrationStatus;
-      }
-      ppAVar7 = ppAVar7 + 1;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
-    record = (ArmyAssetRuntimeSemanticView80 *)0x42;
-  }
-  else {
+  /* Rewritten from the assembly (0x0051B4A0-0x0051B5D8): the model tree walk kept its recursion on
+     the machine stack, which the decompiler could not express. */
+  ArmyAssetRecordPrefix **slot;
+  int slotsRemaining;
+  ArmyRegistryEaxCf5_51b6d0 existing;
+  StatusValueEaxCf5 status;
+
+  existing = ArmyAssetRegistry_FindByIdCf(record->registryId);
+  if (!existing.carry) {
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
-    record = (ArmyAssetRuntimeSemanticView80 *)0x4c;
+    status.carry = true;
+    status.valueOrError = 0x4c;
+    return status;
   }
-ArmyAssetRecord_RegisterAndRelocate_ReturnRegistrationStatus:
-  SVar10.carry = true;
-  SVar10.valueOrError = (dword)record;
-  return SVar10;
+  slot = g_ArmyAssetRecordRegistry;
+  for (slotsRemaining = 0x300; slotsRemaining != 0; slotsRemaining = slotsRemaining + -1) {
+    if (*slot == (ArmyAssetRecordPrefix *)0x0) {
+      dword error = 0;
+      *slot = (ArmyAssetRecordPrefix *)record;
+      if (record->rootNodeOffsetOrPointer != 0) {
+        record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (dword)(uintptr_t)assetBase;
+        error = ArmyAssetRecord_RelocateModelTree
+                          (record,(byte *)assetBase,(byte *)(uintptr_t)record->rootNodeOffsetOrPointer);
+      }
+      status.carry = error != 0;
+      status.valueOrError = error;
+      return status;
+    }
+    slot = slot + 1;
+  }
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
+  status.carry = true;
+  status.valueOrError = 0x42;
+  return status;
 }
 
 

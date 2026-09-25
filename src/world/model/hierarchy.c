@@ -8,6 +8,8 @@
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/thandor.h>
 
+static void ModelRuntimeHierarchy_ApplyFlags418From(byte *node);
+
 /* Implementation ownership: world/model/hierarchy. */
 
 /* Address: 0x004BD1F0.
@@ -864,33 +866,9 @@ ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
           (WorldRuntimeContext *contextArg,int *modelRuntime)
 
 {
-  int iVar1;
-  int unaff_EBP;
-  int unaff_ESI;
-  int iVar2;
-  int iVar3;
-  
-  iVar1 = 0;
-  iVar2 = *modelRuntime;
-  do {
-    if ((*(uint *)(iVar2 + 0xec) & 8) == 0) {
-      *(uint *)(iVar2 + 0xec) = *(uint *)(iVar2 + 0xec) | 0x418;
-    }
-    iVar1 = iVar1 + 1;
-    iVar3 = unaff_ESI;
-    do {
-      while (unaff_EBP == 0) {
-        iVar1 = iVar1 + -1;
-        if (iVar1 == 0) {
-          return;
-        }
-      }
-      unaff_EBP = unaff_EBP + -1;
-      unaff_ESI = iVar3 + 0x20;
-      iVar2 = *(int *)(iVar3 + 0x140);
-      iVar3 = unaff_ESI;
-    } while (iVar2 == 0);
-  } while( true );
+  /* Rewritten from the assembly (0x0051C100-0x0051C162). */
+  (void)contextArg;
+  ModelRuntimeHierarchy_ApplyFlags418From((byte *)(uintptr_t)*modelRuntime);
 }
 
 
@@ -898,36 +876,43 @@ ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
    Ownership: world/model/hierarchy.
    Purpose: Traverses the model runtime hierarchy and sums the signed dword stored at runtime-node offset 0x3C.
 */
+/* Model runtime nodes keep their child count at +0x0C and child pointers at +0x140 + 32*i (null
+   slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
+static int ModelRuntimeHierarchy_SumMetric3CFrom(byte *node)
+{
+  int sum = *(int *)(node + 0x3c);
+  int childCount = *(int *)(node + 0xc);
+  int i;
+  for (i = 0; i < childCount; i++) {
+    byte *child = *(byte **)(node + 0x140 + i * 0x20);
+    if (child != (byte *)0x0) {
+      sum = sum + ModelRuntimeHierarchy_SumMetric3CFrom(child);
+    }
+  }
+  return sum;
+}
+
+static void ModelRuntimeHierarchy_ApplyFlags418From(byte *node)
+{
+  int childCount;
+  int i;
+  if ((*(uint *)(node + 0xec) & 8) == 0) {
+    *(uint *)(node + 0xec) = *(uint *)(node + 0xec) | 0x418;
+  }
+  childCount = *(int *)(node + 0xc);
+  for (i = 0; i < childCount; i++) {
+    byte *child = *(byte **)(node + 0x140 + i * 0x20);
+    if (child != (byte *)0x0) {
+      ModelRuntimeHierarchy_ApplyFlags418From(child);
+    }
+  }
+}
+
 int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumMetric3C(int *modelRuntimeRoot)
 
 {
-  int iVar1;
-  int iVar2;
-  int unaff_EBP;
-  int unaff_EDI;
-  int iVar3;
-  int iVar4;
-  
-  iVar2 = 0;
-  iVar1 = 0;
-  iVar3 = *modelRuntimeRoot;
-  do {
-    iVar1 = iVar1 + *(int *)(iVar3 + 0x3c);
-    iVar2 = iVar2 + 1;
-    iVar4 = unaff_EDI;
-    do {
-      while (unaff_EBP == 0) {
-        iVar2 = iVar2 + -1;
-        if (iVar2 == 0) {
-          return iVar1;
-        }
-      }
-      unaff_EBP = unaff_EBP + -1;
-      unaff_EDI = iVar4 + 0x20;
-      iVar3 = *(int *)(iVar4 + 0x140);
-      iVar4 = unaff_EDI;
-    } while (iVar3 == 0);
-  } while( true );
+  /* Rewritten from the assembly (0x0051C1F0-0x0051C23F). */
+  return ModelRuntimeHierarchy_SumMetric3CFrom((byte *)(uintptr_t)*modelRuntimeRoot);
 }
 
 

@@ -51,6 +51,17 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
 }
 
 
+static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,byte *node)
+{
+  dword i;
+  ModelDefinition_UnlockLinkedTechnologyForFactionCf
+            (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedIdCf
+                                    (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
+  for (i = 0; i < *(dword *)(node + 8); i++) {
+    ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(byte **)(node + 0xc + i * 4));
+  }
+}
+
 /* Address: 0x0051DB00.
    Ownership: assets/model/definitions.
    Purpose: Traverses the linked model-definition hierarchy, selects each faction-unlocked linked identifier, and
@@ -67,32 +78,27 @@ ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  PckModelDefinitionIdCatalog modelDefinitionId;
-  int iVar1;
-  int unaff_EBP;
-  int unaff_ESI;
-  ModelLinkedDefinitionListAddress32 linkedDefinitionList;
-  
-  iVar1 = 0;
-  linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc);
-  do {
-    modelDefinitionId =
-         ModelDefinition_SelectFactionUnlockedLinkedIdCf(factionIndex,linkedDefinitionList);
-    ModelDefinition_UnlockLinkedTechnologyForFactionCf(factionIndex,modelDefinitionId);
-    iVar1 = iVar1 + 1;
-    while( true ) {
-      if (unaff_EBP != 0) break;
-      iVar1 = iVar1 + -1;
-      if (iVar1 == 0) {
-        return;
-      }
-    }
-    linkedDefinitionList = *(ModelLinkedDefinitionListAddress32 *)(unaff_ESI + 0xc);
-    unaff_ESI = unaff_ESI + 4;
-    unaff_EBP = unaff_EBP + -1;
-  } while( true );
+  /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
+     children at +0x0C + 4*i) depth-first with frames on the machine stack. */
+  ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(byte **)(uintptr_t)(definitionNode + 0xc));
 }
 
+
+/* True (CF set) as soon as one node's technology reports CF from ModelDefinition_IsFactionTechnologyUnlockedCf. */
+static bool ModelDefinitionHierarchy_AnyTechnologyCfFrom(dword *technologyMasks,byte *node)
+{
+  dword i;
+  if (ModelDefinition_IsFactionTechnologyUnlockedCf
+                (technologyMasks,*(PckModelDefinitionIdCatalog *)(node + 0x20))) {
+    return true;
+  }
+  for (i = 0; i < *(dword *)(node + 8); i++) {
+    if (ModelDefinitionHierarchy_AnyTechnologyCfFrom(technologyMasks,*(byte **)(node + 0xc + i * 4))) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /* Address: 0x0051DA60.
    Ownership: assets/model/definitions.
@@ -109,33 +115,11 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
-  int iVar1;
-  int unaff_EBP;
-  int unaff_ESI;
-  int iVar2;
-  bool bVar3;
-  
-  iVar1 = 0;
-  iVar2 = *(int *)(definitionNode + 0xc);
-  do {
-    bVar3 = ModelDefinition_IsFactionTechnologyUnlockedCf
-                      (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                       *(PckModelDefinitionIdCatalog *)(iVar2 + 0x20));
-    if (bVar3) {
-      return true;
-    }
-    iVar1 = iVar1 + 1;
-    while( true ) {
-      if (unaff_EBP != 0) break;
-      iVar1 = iVar1 + -1;
-      if (iVar1 == 0) {
-        return false;
-      }
-    }
-    iVar2 = *(int *)(unaff_ESI + 0xc);
-    unaff_ESI = unaff_ESI + 4;
-    unaff_EBP = unaff_EBP + -1;
-  } while( true );
+  /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
+     children at +0x0C + 4*i) depth-first with frames on the machine stack. */
+  return ModelDefinitionHierarchy_AnyTechnologyCfFrom
+                   (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
+                    *(byte **)(uintptr_t)(definitionNode + 0xc));
 }
 
 

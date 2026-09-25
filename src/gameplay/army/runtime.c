@@ -2269,6 +2269,27 @@ ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *a
 }
 
 
+/* Depth-first over a model runtime tree (count +0x0C, children +0x140 + 32*i, null slots skipped):
+   the last node whose definition (+0x00) has class value 10 at +0x4C, or null. */
+static byte *ArmyRuntimeClass_FindLastClass10Node(byte *node)
+{
+  byte *found = (byte *)0x0;
+  int i;
+  if (*(int *)(*(byte **)node + 0x4c) == 10) {
+    found = node;
+  }
+  for (i = 0; i < *(int *)(node + 0xc); i++) {
+    byte *child = *(byte **)(node + 0x140 + i * 0x20);
+    if (child != (byte *)0x0) {
+      byte *match = ArmyRuntimeClass_FindLastClass10Node(child);
+      if (match != (byte *)0x0) {
+        found = match;
+      }
+    }
+  }
+  return found;
+}
+
 /* Address: 0x00523E70.
    Ownership: gameplay/army/runtime.
    Purpose: Iterator callback that filters candidate world nodes and stores an accepted projectile target into the
@@ -2286,9 +2307,6 @@ ArmyRuntimeClass_SelectProjectileTargetNode
   int iVar3;
   int iVar4;
   ModelRuntimeSlot *pMVar5;
-  int unaff_EBP;
-  int unaff_ESI;
-  ModelRuntimeSlot *pMVar6;
   
   if (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     iVar4 = ((modelRuntime->modelDefinition->shotDefinitionReference2C).definition)->
@@ -2303,35 +2321,13 @@ ArmyRuntimeClass_SelectProjectileTargetNode
                    (uint)((uint)lVar2 < (uint)lVar1)))) &&
         (iVar4 = *(int *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
         iVar4 != modelRuntime->ownerArmyRuntime->factionIndex)) && (iVar4 != 0)) {
-      iVar4 = 0;
-      pMVar6 = candidateNode->runtimePayload;
-      pMVar5 = (ModelRuntimeSlot *)0x0;
-      do {
-        if (*(int *)((pMVar6->definitionOrSavedId).savedIdOrOffset + 0x4c) == 10) {
-          pMVar5 = pMVar6;
-        }
-        iVar4 = iVar4 + 1;
-        iVar3 = unaff_ESI;
-        do {
-          while (unaff_EBP == 0) {
-            iVar4 = iVar4 + -1;
-            if (iVar4 == 0) {
-              if (pMVar5 == (ModelRuntimeSlot *)0x0) {
-                return;
-              }
-              if (((pMVar5->classState).classStateEC & 8) != 0) {
-                return;
-              }
-              (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime60 = pMVar5;
-              return;
-            }
-          }
-          unaff_EBP = unaff_EBP + -1;
-          unaff_ESI = iVar3 + 0x20;
-          pMVar6 = *(ModelRuntimeSlot **)(iVar3 + 0x140);
-          iVar3 = unaff_ESI;
-        } while (pMVar6 == (ModelRuntimeSlot *)0x0);
-      } while( true );
+      /* Rewritten from the assembly (0x00523F09-0x00523F7C): pick the last node, depth-first, whose
+         definition has class 10 (+0x4C); the walk kept its frames on the machine stack. */
+      pMVar5 = (ModelRuntimeSlot *)ArmyRuntimeClass_FindLastClass10Node((byte *)candidateNode->runtimePayload);
+      if ((pMVar5 != (ModelRuntimeSlot *)0x0) && (((pMVar5->classState).classStateEC & 8) == 0)) {
+        (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime60 = pMVar5;
+      }
+      return;
     }
   }
   else if ((candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&

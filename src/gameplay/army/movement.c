@@ -1337,6 +1337,19 @@ ArmyMovementBanking_FinalizeBankingEffectsAndTransforms:
 }
 
 
+/* Model runtime tree: child count at +0x0C, children at +0x140 + 32*i (null slots skipped). */
+static void ArmyRuntime_ClearModelTreeFlags218(byte *node)
+{
+  int i;
+  *(dword *)(node + 0xec) = *(dword *)(node + 0xec) & 0xfffffde7;
+  for (i = 0; i < *(int *)(node + 0xc); i++) {
+    byte *child = *(byte **)(node + 0x140 + i * 0x20);
+    if (child != (byte *)0x0) {
+      ArmyRuntime_ClearModelTreeFlags218(child);
+    }
+  }
+}
+
 /* Address: 0x0051C3E0.
    Ownership: gameplay/army/movement.
    Purpose: Resets movement flags and target state from the current model position, updates the verified command-
@@ -1347,16 +1360,11 @@ void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
 
 {
-  dword *pdVar1;
   GraphicsWorldCoordinateQ12 GVar2;
   GraphicsWorldCoordinateQ12 GVar3;
   ArmyCommandGeneration AVar4;
-  int iVar5;
-  int unaff_EBP;
-  int unaff_EDI;
   ModelRuntimeSlot *pMVar6;
   bool bVar7;
-  int iVar8;
   ModelRuntimeNode *modelNode1;
   
   AVar4 = g_ArmyCommandGenerationStandard;
@@ -1378,28 +1386,12 @@ ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   armyRuntime->movementPosition0Q12 = GVar2;
   armyRuntime->movementPosition1Q12 = GVar3;
   pMVar6 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  iVar5 = 0;
   if ((((pMVar6->classState).classStateEC & 0x10) != 0) && (pMVar6->definitionValue60_3C != 0)) {
-    do {
-      pdVar1 = &(pMVar6->classState).classStateEC;
-      *pdVar1 = *pdVar1 & 0xfffffde7;
-      iVar5 = iVar5 + 1;
-      iVar8 = unaff_EDI;
-      do {
-        while (unaff_EBP == 0) {
-          iVar5 = iVar5 + -1;
-          if (iVar5 == 0) {
-            return;
-          }
-        }
-        unaff_EBP = unaff_EBP + -1;
-        unaff_EDI = iVar8 + 0x20;
-        pMVar6 = *(ModelRuntimeSlot **)(iVar8 + 0x140);
-        iVar8 = unaff_EDI;
-      } while (pMVar6 == (ModelRuntimeSlot *)0x0);
-    } while( true );
+    /* Rewritten from the assembly (0x0051C460-0x0051C4A4): clear 0x218 on the whole model tree. */
+    ArmyRuntime_ClearModelTreeFlags218((byte *)pMVar6);
   }
   return;
+
 }
 
 
