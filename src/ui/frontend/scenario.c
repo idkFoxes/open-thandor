@@ -102,7 +102,10 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   SVar10 = UiPageStack_ActivePageNotInListCf
                      ((UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0x508));
   if (SVar10.valueOrError == 10) {
-    UVar12 = UiSelectableGroup_NoneSelectedCf(3);
+    UVar12 = UiSelectableGroup_NoneSelectedCf(3,
+      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
     if (((!UVar12.carryNoneSelected) && (UVar12.selectedIndexOrCount == 1)) &&
        (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0)) {
       SVar7 = g_ScenarioCatalog->levelRecordCount;

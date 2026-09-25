@@ -194,7 +194,10 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
 void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode)
 
 {
-  UiSelectableGroup_SelectExclusive(3,sourceNode);
+  UiSelectableGroup_SelectExclusive(3,sourceNode,
+      THANDOR_UI_AT(sourceNode,0xc0),
+      THANDOR_UI_AT(sourceNode,0x60),
+      THANDOR_UI_AT(sourceNode,0x0));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&sourceNode[3].bottomAnchorQ31);
   return;
 }
@@ -210,7 +213,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBas
 void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode)
 
 {
-  UiSelectableGroup_SelectExclusive(3,sourceNode);
+  UiSelectableGroup_SelectExclusive(3,sourceNode,
+      THANDOR_UI_AT(sourceNode,0x60),
+      THANDOR_UI_AT(sourceNode,-0x60),
+      THANDOR_UI_AT(sourceNode,0x0));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&sourceNode[2].rightOffset);
   return;
 }
@@ -226,7 +232,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBas
 void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode)
 
 {
-  UiSelectableGroup_SelectExclusive(3,sourceNode);
+  UiSelectableGroup_SelectExclusive(3,sourceNode,
+      THANDOR_UI_AT(sourceNode,-0xc0),
+      THANDOR_UI_AT(sourceNode,-0x60),
+      THANDOR_UI_AT(sourceNode,0x0));
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&sourceNode[1].top);
   return;
 }
@@ -517,7 +526,13 @@ InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState
   else {
     pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
   }
-  UiSelectableGroup_SelectExclusive(6,pUVar4);
+  UiSelectableGroup_SelectExclusive(6,pUVar4,
+      THANDOR_UI_AT(source,0xf78),
+      THANDOR_UI_AT(source,0xf10),
+      THANDOR_UI_AT(source,0xea8),
+      THANDOR_UI_AT(source,0xe40),
+      THANDOR_UI_AT(source,0xdd8),
+      THANDOR_UI_AT(source,0xd70));
   dVar1 = PersistentSettings_ReadDword(1,0x30);
   if (dVar1 == 0) {
     pUVar4 = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
@@ -528,7 +543,10 @@ InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState
   else {
     pUVar4 = (UiNodeBase *)&source->textureResolutionRows;
   }
-  UiSelectableGroup_SelectExclusive(3,pUVar4);
+  UiSelectableGroup_SelectExclusive(3,pUVar4,
+      THANDOR_UI_AT(source,0x1270),
+      THANDOR_UI_AT(source,0x1210),
+      THANDOR_UI_AT(source,0x11b0));
   dVar1 = PersistentSettings_ReadDword(0x10000,0x34);
   source->polygonResolutionLodThresholdQ8 = dVar1;
   return;
@@ -685,7 +703,13 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
     else {
       selectedControl = (UiNodeBase *)&pUVar1[7].nodeFlags;
     }
-    UiSelectableGroup_SelectExclusive(6,selectedControl);
+    UiSelectableGroup_SelectExclusive(6,selectedControl,
+      THANDOR_UI_AT((control->base).parent,0x25c),
+      THANDOR_UI_AT((control->base).parent,0x1f4),
+      THANDOR_UI_AT((control->base).parent,0x18c),
+      THANDOR_UI_AT((control->base).parent,0x124),
+      THANDOR_UI_AT((control->base).parent,0xbc),
+      THANDOR_UI_AT((control->base).parent,0x54));
     return;
   }
   textureDimension = PersistentSettings_ReadDword(0x40,0x14);
@@ -747,7 +771,10 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
     qualityLevel = TEXTURE_QUALITY_HIGH;
     selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[3].leftAnchorQ31;
   }
-  UiSelectableGroup_SelectExclusive(3,selectedQualityControl);
+  UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
+      THANDOR_UI_AT((control->base).parent,0x114),
+      THANDOR_UI_AT((control->base).parent,0xb4),
+      THANDOR_UI_AT((control->base).parent,0x54));
   PersistentSettings_WriteDword(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel;
   (*g_GraphicsRebuildAllStagingTextures)();

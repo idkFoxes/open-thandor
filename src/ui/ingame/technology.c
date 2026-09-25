@@ -35,7 +35,14 @@ InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
   }
   bVar1 = (bool)UiSelectableControl_IsSelectedCf(selectableControl);
   if (bVar1) {
-    UiSelectableGroup_SelectExclusive(7,&selectableControl->base);
+    UiSelectableGroup_SelectExclusive(7,&selectableControl->base,
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x17b4),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x174c),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x16e4),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x167c),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x1614),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x15ac),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x1544));
   }
   InGameTechnologyPanel_Rebuild(inGameRoot);
   return;
@@ -422,7 +429,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
     modelOffset = (int)(entityRuntime1->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     uVar2 = 0;
-    UVar3 = UiSelectableGroup_NoneVisibleSelectedCf(7);
+    UVar3 = UiSelectableGroup_NoneVisibleSelectedCf(7,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x17b4),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x174c),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x16e4),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x167c),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1614),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x15ac),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1544));
     if (!UVar3.carry) {
       uVar2 = UVar3.node[-1].layoutHeight - 0x300000;
     }
@@ -545,7 +559,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       }
       iVar12 = iVar12 + -1;
     } while (iVar12 != 0);
-    UVar22 = UiSelectableGroup_NoneVisibleSelectedCf(7);
+    UVar22 = UiSelectableGroup_NoneVisibleSelectedCf(7,
+      THANDOR_UI_AT(inGameRoot,0x17b4),
+      THANDOR_UI_AT(inGameRoot,0x174c),
+      THANDOR_UI_AT(inGameRoot,0x16e4),
+      THANDOR_UI_AT(inGameRoot,0x167c),
+      THANDOR_UI_AT(inGameRoot,0x1614),
+      THANDOR_UI_AT(inGameRoot,0x15ac),
+      THANDOR_UI_AT(inGameRoot,0x1544));
     if (UVar22.carry) {
       pSVar6 = g_SelectionPlayerRuntimeBlockPointers[(int)inGameRoot[0x20].base.vtable];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;

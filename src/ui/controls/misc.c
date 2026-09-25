@@ -1201,7 +1201,11 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
   if (selectedModeValue == (UiNodeBase *)displaySettingsRoot[0xc].leftOffset) {
     local_20 = (UiNodeBase *)modeWidth;
   }
-  UiSelectableGroup_SelectExclusive(4,local_20);
+  UiSelectableGroup_SelectExclusive(4,local_20,
+      THANDOR_UI_AT(displaySettingsRoot,0x3b8),
+      THANDOR_UI_AT(displaySettingsRoot,0x350),
+      THANDOR_UI_AT(displaySettingsRoot,0x2e8),
+      THANDOR_UI_AT(displaySettingsRoot,0x280));
   bVar1 = GraphicsDisplayMode_IsEnumeratedCf
                     (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
                      displaySettingsRoot[0xd].rightAnchorQ31,
@@ -1310,7 +1314,15 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
      (modeHeight == displaySettingsRoot[0x17].right)) {
     local_20 = (UiNodeBase *)&displaySettingsRoot[0x17].topOffset;
   }
-  UiSelectableGroup_SelectExclusive(8,local_20);
+  UiSelectableGroup_SelectExclusive(8,local_20,
+      THANDOR_UI_AT(displaySettingsRoot,0x6f8),
+      THANDOR_UI_AT(displaySettingsRoot,0x690),
+      THANDOR_UI_AT(displaySettingsRoot,0x628),
+      THANDOR_UI_AT(displaySettingsRoot,0x5c0),
+      THANDOR_UI_AT(displaySettingsRoot,0x558),
+      THANDOR_UI_AT(displaySettingsRoot,0x4f0),
+      THANDOR_UI_AT(displaySettingsRoot,0x488),
+      THANDOR_UI_AT(displaySettingsRoot,0x420));
   bVar1 = GraphicsDisplayMode_IsEnumeratedCf
                     (displaySettingsRoot[0x18].rightAnchorQ31,
                      (FrontendColorDepthBits)selectedModeValue,modeHeight,modeWidth);
@@ -1371,7 +1383,12 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
   if (adapterIndex == displaySettingsRoot[0x1e].left) {
     local_20 = (UiNodeBase *)&displaySettingsRoot[0x1e].right;
   }
-  UiSelectableGroup_SelectExclusive(5,local_20);
+  UiSelectableGroup_SelectExclusive(5,local_20,
+      THANDOR_UI_AT(displaySettingsRoot,0x900),
+      THANDOR_UI_AT(displaySettingsRoot,0x898),
+      THANDOR_UI_AT(displaySettingsRoot,0x830),
+      THANDOR_UI_AT(displaySettingsRoot,0x7c8),
+      THANDOR_UI_AT(displaySettingsRoot,0x760));
   displaySettingsRoot[4].nextSibling = (UiNodeBase *)modeWidth;
   displaySettingsRoot[4].firstChild = (UiNodeBase *)modeHeight;
   displaySettingsRoot[4].parent = selectedModeValue;

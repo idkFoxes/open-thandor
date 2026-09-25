@@ -144,19 +144,28 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     pUVar1 = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *pUVar1 = *pUVar1 | 0x2000;
   }
-  UVar10 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+  UVar10 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+      THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
+      THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
+      THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
   UVar3 = UVar10.controlIndexOrCount;
   if (UVar10.carry) {
     UVar3 = 1;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3);
+    UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
+      THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
+      THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
+      THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
     UVar3 = 1;
   }
   CVar11 = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
   if (!CVar11.carry) {
-    UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3);
+    UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
+      THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
+      THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
+      THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
     UVar3 = 1;
   }
   (*g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[UVar3])(0,0,0,0);
@@ -1136,7 +1145,10 @@ ScenarioCatalog_RebuildSaveRecordListPage
   void **ppvVar3;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x62].bottomAnchorQ31);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x62].bottomAnchorQ31,
+      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
@@ -1190,7 +1202,10 @@ ScenarioCatalog_RebuildLevelRecordListPage
   ScenarioCatalogRuntimeExpandedRecord100 **rowPointers;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[100].firstChild);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[100].firstChild,
+      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     UVar1 = g_ScenarioCatalog->levelRecordCount;
@@ -1264,7 +1279,10 @@ ScenarioCatalog_RebuildCampaignRecordListPage
   void **rowPointers;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x65].right);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x65].right,
+      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
+      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     UVar1 = g_ScenarioCatalog->campaignRecordCount;
@@ -1590,7 +1608,10 @@ FrontendScenarioSelection_ActivateSelectedRecord
   UiSelectableNodeEaxEcxCf9 UVar2;
   int scenarioPathPointerTableAddress;
   
-  UVar2 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+  UVar2 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+      THANDOR_UI_AT(selectionControl,0x60),
+      THANDOR_UI_AT(selectionControl,0xc0),
+      THANDOR_UI_AT(selectionControl,0x120));
   if (UVar2.carry) {
     return;
   }

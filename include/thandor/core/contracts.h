@@ -43,5 +43,19 @@ or to other layout-compatible structs, which C only allows through a union.
 #include <thandor/generated/globals.h>
 #include <thandor/generated/imports.h>
 
+/* Variadic UiSelectableGroup_* helpers take the group's controls as extra stack arguments, which
+   the decompiler dropped at every call site. The original addresses them as base + byte offset. */
+#define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((byte *)(uintptr_t)(base) + (int)(offset)))
+
+/* The top-level UI node: follow parent links until the -1 sentinel (the original's inline loop). */
+static __inline UiNodeBase *Thandor_UiRoot(const void *node)
+{
+    UiNodeBase *current = (UiNodeBase *)node;
+    while (current->parent != (UiNodeBase *)0xffffffff) {
+        current = current->parent;
+    }
+    return current;
+}
+
 
 #endif /* THANDOR_CORE_CONTRACTS_H */

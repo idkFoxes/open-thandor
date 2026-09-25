@@ -581,7 +581,10 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
     else {
       RichTextCommandStream_CopyToNarrowCf
                 (0x30,g_UiSevenSlotCommandPayloadText.textBytes,commandTextEdit->textBuffer);
-      UVar7 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+      UVar7 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+      THANDOR_UI_AT(commandTextEdit,0x1e94),
+      THANDOR_UI_AT(commandTextEdit,0x1e34),
+      THANDOR_UI_AT(commandTextEdit,0x1dd4));
       iVar1 = (int)UVar7.node - (int)commandTextEdit;
       if (iVar1 == 0x1dd4) {
         uVar2 = 0;
@@ -3502,8 +3505,14 @@ InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
     rootNodeCursor = (((UiSelectableControl *)rootNodeCursor)->base).parent;
     parentNodeAddress = *(int *)((int)rootNodeCursor + 8);
   }
-  UiSelectableGroup_SelectExclusive(3,&selectableControl->base);
-  UVar1 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+  UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x644),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x5e4),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x584));
+  UVar1 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x644),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x5e4),
+      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x584));
   UiPageStack_SetActiveIndex
             (UVar1.controlIndexOrCount,
              (UiPageStackControl *)
@@ -3668,7 +3677,10 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     pUVar3 = pUVar3->parent;
     pUVar2 = pUVar3->parent;
   }
-  UiSelectableGroup_SelectExclusive(3,source);
+  UiSelectableGroup_SelectExclusive(3,source,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&pUVar3[0x6a].bottomOffset);
   resourceId = 0x216d;
   uVar7 = 0;
@@ -3731,7 +3743,10 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     pUVar3 = pUVar3->parent;
     pUVar2 = pUVar3->parent;
   }
-  UiSelectableGroup_SelectExclusive(3,source);
+  UiSelectableGroup_SelectExclusive(3,source,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&pUVar3[0x6a].bottomOffset);
   resourceId = 0x216d;
   uVar5 = 0;
@@ -3780,7 +3795,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNode
     rootNodeCursor = rootNodeCursor->parent;
     parentNode = rootNodeCursor->parent;
   }
-  UiSelectableGroup_SelectExclusive(3,source);
+  UiSelectableGroup_SelectExclusive(3,source,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&rootNodeCursor[0x6a].bottomOffset);
   return;
 }
@@ -5135,7 +5153,10 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   psVar1 = &source[0x60].right;
   RichTextCommandStream_CopyToNarrowCf
             (0x30,g_UiSevenSlotCommandPayloadText.textBytes,(word *)&source[0x61].rightAnchorQ31);
-  UVar9 = UiSelectableGroup_NoneVisibleSelectedCf(3);
+  UVar9 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x2ac),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x24c),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ec));
   iVar4 = (int)UVar9.node - (int)psVar1;
   if (iVar4 == 0x1ec) {
     uVar5 = 0;

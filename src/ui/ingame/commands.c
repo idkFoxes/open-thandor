@@ -1115,8 +1115,12 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
     pUVar2 = (UiSelectableControl *)(pUVar2->base).parent;
     pUVar1 = (pUVar2->base).parent;
   }
-  UiSelectableGroup_SelectExclusive(2,&source->base);
-  UVar4 = UiSelectableGroup_NoneVisibleSelectedCf(2);
+  UiSelectableGroup_SelectExclusive(2,&source->base,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x7c4),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x764));
+  UVar4 = UiSelectableGroup_NoneVisibleSelectedCf(2,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x764),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x7c4));
   pUVar3 = (UiNodeVtable *)UVar4.controlIndexOrCount;
   pUVar2[0xd].base.left = (sdword)pUVar3;
   pUVar2[0xe].base.rightAnchorQ31 = (UiAnchorFractionQ31)pUVar3;
@@ -1147,7 +1151,11 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(Ui
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x168),
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0));
   g_UiCommandModeC = 0;
   return;
 }
@@ -1162,7 +1170,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78));
   g_UiCommandModeC = 1;
   return;
 }
@@ -1177,7 +1189,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select1(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0));
   g_UiCommandModeC = 2;
   return;
 }
@@ -1192,7 +1208,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select2(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0),
+      THANDOR_UI_AT(source,-0x168));
   g_UiCommandModeC = 3;
   return;
 }
@@ -1207,7 +1227,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select3(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x168),
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0));
   g_UiCommandModeD = 0;
   return;
 }
@@ -1222,7 +1246,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select0(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78));
   g_UiCommandModeD = 1;
   return;
 }
@@ -1237,7 +1265,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select1(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0));
   g_UiCommandModeD = 2;
   return;
 }
@@ -1252,7 +1284,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select2(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0),
+      THANDOR_UI_AT(source,-0x168));
   g_UiCommandModeD = 3;
   return;
 }
@@ -1267,7 +1303,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select3(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0));
   g_UiCommandModeA = 0;
   return;
 }
@@ -1282,7 +1321,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select0(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0));
   g_UiCommandModeA = 1;
   return;
 }
@@ -1297,7 +1339,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select1(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78));
   g_UiCommandModeA = 2;
   return;
 }
@@ -1312,7 +1357,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select2(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0));
   g_UiCommandModeB = 0;
   return;
 }
@@ -1327,7 +1375,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select0(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0));
   g_UiCommandModeB = 1;
   return;
 }
@@ -1342,7 +1393,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select1(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78));
   g_UiCommandModeB = 2;
   return;
 }
@@ -1357,7 +1411,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select2(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x1e0),
+      THANDOR_UI_AT(source,0xf0),
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0));
   g_UiCommandModeE = 0;
   return;
 }
@@ -1372,7 +1430,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select0(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78));
   g_UiCommandModeE = 1;
   return;
 }
@@ -1387,7 +1448,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select1(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78),
+      THANDOR_UI_AT(source,-0xf0));
   g_UiCommandModeE = 2;
   return;
 }
@@ -1448,7 +1512,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState1(UiNod
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x78),
+      THANDOR_UI_AT(source,0x0));
   g_UiCommandModeF = 0;
   source[-0x181].normalSubresourceEndExclusive = 0;
   return;
@@ -1464,7 +1530,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select0(UiSpriteButt
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select1(UiSpriteButtonControl *source)
 
 {
-  UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source);
+  UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source,
+      THANDOR_UI_AT(source,0x0),
+      THANDOR_UI_AT(source,-0x78));
   g_UiCommandModeF = 1;
   source[-0x182].normalSubresourceEndExclusive = 1;
   return;
@@ -1899,8 +1967,20 @@ UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableContr
     pIVar2 = (InGameRuntimeRootImageC3E4 *)(pIVar2->rootUi0000).base.parent;
     pUVar1 = (pIVar2->rootUi0000).base.parent;
   }
-  UiSelectableGroup_NoneVisibleSelectedCf(6);
-  UiSelectableGroup_SelectExclusive(6,&source->base);
+  UiSelectableGroup_NoneVisibleSelectedCf(6,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x98b8),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x99a8),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x9930),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x4c94),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x4c1c),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x4ba4));
+  UiSelectableGroup_SelectExclusive(6,&source->base,
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x98b8),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x99a8),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x9930),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x4c94),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x4c1c),
+      THANDOR_UI_AT(Thandor_UiRoot(source),0x4ba4));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGPrimaryPageIndices[modeIndex],
              (UiPageStackControl *)(pIVar2->opaque9A74_9B4B + 0x18));

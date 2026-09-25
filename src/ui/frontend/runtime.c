@@ -3347,7 +3347,21 @@ FrontendUiAction2046_IndexedSelectionHelper
       do {
         generationCursor = generationCursor - SESSION_NETWORK_ROLE_CLIENT;
       } while (generationCursor != SESSION_NETWORK_ROLE_LOCAL);
-      UiSelectableGroup_SelectExclusive(7,selectedControl);
+      UiSelectableGroup_SelectExclusive(7,selectedControl,
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[1]),
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[2]),
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[3]),
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[4]),
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[5]),
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[6]),
+          THANDOR_UI_AT(g_FrontendRootNode,
+                        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[7]));
       generationCursor = SESSION_NETWORK_ROLE_LOCAL;
     }
     selectionIndex_00 = g_FrontendFactionAssignmentReadyStateGeneration;

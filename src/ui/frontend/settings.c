@@ -761,7 +761,13 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
   else {
     pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
   }
-  UiSelectableGroup_SelectExclusive(6,pUVar4);
+  UiSelectableGroup_SelectExclusive(6,pUVar4,
+      THANDOR_UI_AT(source,0x1324),
+      THANDOR_UI_AT(source,0x12bc),
+      THANDOR_UI_AT(source,0x1254),
+      THANDOR_UI_AT(source,0x11ec),
+      THANDOR_UI_AT(source,0x1184),
+      THANDOR_UI_AT(source,0x111c));
   dVar1 = PersistentSettings_ReadDword(1,0x30);
   if (dVar1 == 0) {
     pUVar4 = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
@@ -772,7 +778,10 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
   else {
     pUVar4 = (UiNodeBase *)&source->textureResolutionRows;
   }
-  UiSelectableGroup_SelectExclusive(3,pUVar4);
+  UiSelectableGroup_SelectExclusive(3,pUVar4,
+      THANDOR_UI_AT(source,0x161c),
+      THANDOR_UI_AT(source,0x15bc),
+      THANDOR_UI_AT(source,0x155c));
   dVar1 = PersistentSettings_ReadDword(0x10000,0x34);
   source->polygonResolutionLodThresholdQ8 = dVar1;
   return;
@@ -916,7 +925,13 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   else {
     selectedControl = (UiNodeBase *)&pUVar1[7].nodeFlags;
   }
-  UiSelectableGroup_SelectExclusive(6,selectedControl);
+  UiSelectableGroup_SelectExclusive(6,selectedControl,
+      THANDOR_UI_AT((control->base).parent,0x25c),
+      THANDOR_UI_AT((control->base).parent,0x1f4),
+      THANDOR_UI_AT((control->base).parent,0x18c),
+      THANDOR_UI_AT((control->base).parent,0x124),
+      THANDOR_UI_AT((control->base).parent,0xbc),
+      THANDOR_UI_AT((control->base).parent,0x54));
   return;
 }
 
@@ -970,7 +985,10 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
     qualityLevel = TEXTURE_QUALITY_HIGH;
     selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[3].leftAnchorQ31;
   }
-  UiSelectableGroup_SelectExclusive(3,selectedQualityControl);
+  UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
+      THANDOR_UI_AT((control->base).parent,0x114),
+      THANDOR_UI_AT((control->base).parent,0xb4),
+      THANDOR_UI_AT((control->base).parent,0x54));
   PersistentSettings_WriteDword(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel >> 1;
   (*g_GraphicsRebuildAllStagingTextures)();
@@ -1740,7 +1758,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
   else {
     UiNodeList_UnsuppressActionId(0x2021,displaySettingsRoot);
   }
-  UiSelectableGroup_SelectExclusive(4,pUVar3);
+  UiSelectableGroup_SelectExclusive(4,pUVar3,
+      THANDOR_UI_AT(displaySettingsRoot,0x367c),
+      THANDOR_UI_AT(displaySettingsRoot,0x3614),
+      THANDOR_UI_AT(displaySettingsRoot,0x35ac),
+      THANDOR_UI_AT(displaySettingsRoot,0x3544));
   bVar2 = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xa5].nodeFlags,
                      displaySettingsRoot[0xa5].layoutHeight,adapterIndex);
@@ -1838,7 +1860,17 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
   else {
     UiNodeList_UnsuppressActionId(0x202b,displaySettingsRoot);
   }
-  UiSelectableGroup_SelectExclusive(10,pUVar3);
+  UiSelectableGroup_SelectExclusive(10,pUVar3,
+      THANDOR_UI_AT(displaySettingsRoot,0x3488),
+      THANDOR_UI_AT(displaySettingsRoot,0x3420),
+      THANDOR_UI_AT(displaySettingsRoot,0x33b8),
+      THANDOR_UI_AT(displaySettingsRoot,0x3350),
+      THANDOR_UI_AT(displaySettingsRoot,0x32e8),
+      THANDOR_UI_AT(displaySettingsRoot,0x3280),
+      THANDOR_UI_AT(displaySettingsRoot,0x3218),
+      THANDOR_UI_AT(displaySettingsRoot,0x31b0),
+      THANDOR_UI_AT(displaySettingsRoot,0x3148),
+      THANDOR_UI_AT(displaySettingsRoot,0x30e0));
   bVar2 = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,height_00,width_00,0);
   pUVar3 = displaySettingsRoot;
   if (bVar2) {
@@ -1878,7 +1910,12 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
   else {
     UiNodeList_UnsuppressActionId(0x2030,displaySettingsRoot);
   }
-  UiSelectableGroup_SelectExclusive(5,pUVar3);
+  UiSelectableGroup_SelectExclusive(5,pUVar3,
+      THANDOR_UI_AT(displaySettingsRoot,0x3024),
+      THANDOR_UI_AT(displaySettingsRoot,0x2fbc),
+      THANDOR_UI_AT(displaySettingsRoot,0x2f54),
+      THANDOR_UI_AT(displaySettingsRoot,0x2eec),
+      THANDOR_UI_AT(displaySettingsRoot,0x2e84));
   dVar1 = PersistentSettings_ReadDword(1,0);
   if ((((dVar1 == adapterIndex) &&
        (dVar1 = PersistentSettings_ReadDword(0x280,4), dVar1 == width_00)) &&
