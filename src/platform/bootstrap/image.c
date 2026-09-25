@@ -321,9 +321,7 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     {
         SYSTEMTIME now;
         GetLocalTime(&now);
-        fprintf(out, "
-==== %04u-%02u-%02u %02u:%02u:%02u ====
-", now.wYear, now.wMonth, now.wDay,
+        fprintf(out, "\n==== %04u-%02u-%02u %02u:%02u:%02u ====\n", now.wYear, now.wMonth, now.wDay,
                 now.wHour, now.wMinute, now.wSecond);
     }
     fprintf(out, "exception 0x%08lX at 0x%p\n", info->ExceptionRecord->ExceptionCode,
