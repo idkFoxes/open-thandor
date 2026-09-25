@@ -12544,7 +12544,7 @@ struct TerrainPlacementTestEaxCf5 {
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
-    TerrainPlacementTestEaxCf5 (*placementTests[5])(dword, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
+    bool (*placementTests[5])(dword, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition; CF (reject) is the bool result.
     bool (*overlayCallbacks[5])(dword, int, dword, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
 };
 

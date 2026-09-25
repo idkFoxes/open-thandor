@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/army/placement.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: gameplay/army/placement. */
 
@@ -61,10 +62,9 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestOffsetClearanceCf
     bVar2 = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
                       (dispatchArg0,0xc00,worldXQ12_00,worldYQ12 + iVar1,worldRuntime);
     if (!bVar2) {
-      TVar7 = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
+      TVar7.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
                 [modelDefinition->placementContactKindIndex278])
                         (0xc00,dispatchArg3,worldXQ12_00,worldYQ12 + iVar1,worldRuntime->fieldGrid);
-      iVar1 = TVar7.eax;
       if (!TVar7.carry) {
         result.eax = AVar5.eax;
         result.carry = false;
@@ -824,6 +824,18 @@ ArmyPlacement_DispatchAssetAtFieldPoint
               )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,FVar3.heightQ12,
                 worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
                 (WorldRuntimeContext *)inGameRoot));
+      {
+        static int logged;
+        static dword lastKey;
+        dword key = (dword)armyAssetId * 2 + (AVar2.carry ? 1 : 0);
+        if (logged < 60 && key != lastKey) {
+          logged++;
+          lastKey = key;
+          Thandor_Log("placement asset %d class %u contact %u at (%d,%d) height=%d -> %s", (int)armyAssetId,
+                      (unsigned)dVar1, (unsigned)modelDefinition[0x27].registryId, worldYQ12, worldXQ12,
+                      FVar3.heightQ12, AVar2.carry ? "rejected" : "accepted");
+        }
+      }
     }
   }
   AVar4.eax = (dword)AVar2.eax;
@@ -1092,7 +1104,8 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
                     (dispatchArg0,modelDefinition->placementRadiusOrClearanceDC,worldXQ12,worldYQ12,
                      worldRuntime);
   if (!bVar8) {
-    TVar9 = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[AVar1])
+    TVar9.eax = 0;
+    TVar9.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[AVar1])
                       (modelDefinition->placementRadiusOrClearanceDC,dispatchArg3,worldXQ12,
                        worldYQ12,worldRuntime->fieldGrid);
     eaxContinuity = TVar9.eax;
