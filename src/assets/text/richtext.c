@@ -8,6 +8,9 @@
 #include <thandor/assets/text/richtext.h>
 #include <thandor/thandor.h>
 
+/* Depth of the machine-stack return chains the original keeps for nested (0x18) streams. */
+#define RICHTEXT_NESTING_LIMIT 64
+
 /* Implementation ownership: assets/text/richtext. */
 
 /* Address: 0x0041D300.
@@ -109,7 +112,8 @@ RichTextCommandStream_DrawSingleLine
   word *pwVar4;
   RichTextExtentRegs RVar5;
   GraphicsTextureSizeEaxEdxCf9 GVar6;
-  byte *local_1c;
+  word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  int nestedDepth;
   
   RVar5 = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
   uVar1 = RVar5.widthPixels;
@@ -125,7 +129,7 @@ RichTextCommandStream_DrawSingleLine_InitializeStyleAndBeginDrawing:
   g_ActiveFontIndex = packedStyle >> 0x18 & 7;
   g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
-  local_1c = (byte *)0x0;
+  nestedDepth = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
 switchD_0041d537_caseD_7:
@@ -134,11 +138,10 @@ switchD_0041d537_caseD_7:
     glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar4;
     commandStream = pwVar4 + 1;
     if (glyphSubresource != 0) break;
-    if (local_1c == (byte *)0x0) {
+    if (nestedDepth == 0) {
       return false;
     }
-    commandStream = (word *)(local_1c + 8);
-    local_1c = local_1c + -1;
+    commandStream = (word *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if ((int)glyphSubresource < 0) goto code_r0x0041d534;
   goto RichTextCommandStream_DrawSingleLine_DrawGlyphAndAdvanceX;
@@ -202,7 +205,10 @@ RichTextCommandStream_DrawSingleLine_DrawGlyphAndAdvanceX:
     commandStream = pwVar4 + 3;
     break;
   case 0x18:
-    local_1c = (byte *)((int)pwVar4 + 3);
+    if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
+      return false;
+    }
+    nestedReturnStack[nestedDepth++] = commandStream;
     commandStream = *(word **)commandStream;
     break;
   case 0x19:
@@ -631,10 +637,11 @@ RichTextCommandStream_CopyToNarrowCf
   bool newlineCapacityUnderflow;
   StatusValueEaxCf5 SVar2;
   StatusValueEaxCf5 SVar3;
-  int nestedReturnCursor;
+  word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  int nestedDepth;
   ushort commandOrCodeUnit;
   
-  nestedReturnCursor = 0;
+  nestedDepth = 0;
   remainingCapacityBytes = capacityBytes;
   pwVar1 = source;
   while( true ) {
@@ -673,7 +680,9 @@ RichTextCommandStream_CopyToNarrowCf
           pwVar1 = commandCursor + 3;
           break;
         case 0x18:
-          nestedReturnCursor = (int)commandCursor + 3;
+          if (nestedDepth == RICHTEXT_NESTING_LIMIT)
+          goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
+          nestedReturnStack[nestedDepth++] = streamCursor;
           pwVar1 = *(ushort **)streamCursor;
           break;
         case 0x19:
@@ -695,9 +704,8 @@ RichTextCommandStream_CopyToNarrowCf
         }
       }
     }
-    if (nestedReturnCursor == 0) break;
-    pwVar1 = (ushort *)(nestedReturnCursor + 8);
-    nestedReturnCursor = nestedReturnCursor + -1;
+    if (nestedDepth == 0) break;
+    pwVar1 = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
@@ -1120,9 +1128,10 @@ RichTextCommandStream_CopyExpandedCf
   bool bVar5;
   RichTextCopyExpandedEaxCf5 RVar6;
   RichTextCopyExpandedEaxCf5 RVar7;
-  int local_14;
+  word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  int nestedDepth;
   
-  local_14 = 0;
+  nestedDepth = 0;
   puVar4 = destination;
   while( true ) {
     while( true ) {
@@ -1165,7 +1174,9 @@ RichTextCommandStream_CopyExpandedCf
           }
           break;
         case 0x18:
-          local_14 = (int)source + 3;
+          if (nestedDepth == RICHTEXT_NESTING_LIMIT)
+          goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+          nestedReturnStack[nestedDepth++] = puVar3;
           source = *(word **)puVar3;
           break;
         case 0x19:
@@ -1193,9 +1204,8 @@ RichTextCommandStream_CopyExpandedCf
         source = puVar3;
       }
     }
-    if (local_14 == 0) break;
-    source = (ushort *)(local_14 + 8);
-    local_14 = local_14 + -1;
+    if (nestedDepth == 0) break;
+    source = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (1 < (int)capacityBytes) {
     *puVar4 = 0;
@@ -1223,86 +1233,85 @@ RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
 RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,word *commandStream)
 
 {
-  GraphicsSubresourceIndex glyphSubresource;
-  dword dVar1;
-  word *pwVar2;
-  uint uVar3;
-  RichTextExtentRegs RVar4;
-  RichTextExtentRegs RVar5;
-  FontGlyphSizeEaxEdxCf9 FVar6;
-  GraphicsTextureSizeEaxEdxCf9 GVar7;
-  int local_18;
-  
-  dVar1 = 0;
+  /* Rewritten from the assembly (0x0041CF30-0x0041D0E0). Command 0x18 enters a nested stream and pushes
+     the return position on the machine stack; its terminator pops it and resumes 8 bytes later.
+     Ghidra turned that stack into a counter, so nested text was measured forever. */
+  word *returnStack[RICHTEXT_NESTING_LIMIT];
+  int nesting = 0;
+  RichTextExtentRegs extent;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  word *command;
+  int value;
+
+  extent.widthPixels = 0;
+  extent.heightPixels = 0;
   g_ActiveFontIndex = packedStyle >> 0x18 & 7;
-  local_18 = 0;
-  uVar3 = 0;
-switchD_0041cf77_caseD_0:
-  while( true ) {
-    pwVar2 = commandStream;
-    glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar2;
-    commandStream = pwVar2 + 1;
-    if (glyphSubresource != 0) break;
-    if (local_18 == 0) {
-      RVar5.heightPixels = uVar3;
-      RVar5.widthPixels = dVar1;
-      return RVar5;
+  for (;;) {
+    command = commandStream;
+    value = (int)(short)*command;
+    commandStream = command + 1;
+    if (value == 0) {
+      if (nesting == 0) {
+        return extent;
+      }
+      commandStream = (word *)((byte *)returnStack[--nesting] + 8);
+      continue;
     }
-    commandStream = (word *)(local_18 + 8);
-    local_18 = local_18 + -1;
-  }
-  if ((int)glyphSubresource < 0) goto code_r0x0041cf74;
-  goto RichTextCommandStream_Measure_AccumulateGlyphExtent;
-code_r0x0041cf74:
-  switch(glyphSubresource & 0x1f) {
-  case 6:
-    commandStream = pwVar2 + 9;
-    break;
-  case 8:
-  case 9:
-  case 10:
-  case 0xb:
-  case 0xc:
-  case 0xd:
-  case 0xe:
-  case 0xf:
-    g_ActiveFontIndex = glyphSubresource & 0xf;
-    break;
-  case 0x10:
-    glyphSubresource = 0x20;
-RichTextCommandStream_Measure_AccumulateGlyphExtent:
-    FVar6 = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
-    dVar1 = dVar1 + FVar6.width;
-    if (uVar3 < FVar6.lineHeight) {
-      uVar3 = FVar6.lineHeight;
+    if (value > 0) {
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs((GraphicsSubresourceIndex)value);
+      goto accumulate_glyph;
     }
-    break;
-  case 0x12:
-    RVar4.heightPixels = uVar3;
-    RVar4.widthPixels = dVar1;
-    return RVar4;
-  case 0x14:
-  case 0x15:
-  case 0x16:
-    commandStream = pwVar2 + 3;
-    break;
-  case 0x18:
-    local_18 = (int)pwVar2 + 3;
-    commandStream = *(word **)commandStream;
-    break;
-  case 0x19:
-    commandStream = *(word **)commandStream;
-    break;
-  case 0x1a:
-    GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)
-                      (*(dword *)(pwVar2 + 3),*(GraphicsTextureSourceAsset **)commandStream);
-    dVar1 = dVar1 + GVar7.logicalWidthPixels;
-    commandStream = pwVar2 + 5;
-    if (uVar3 < GVar7.logicalHeightPixels) {
-      uVar3 = GVar7.logicalHeightPixels;
+    switch (value & 0x1f) {
+    case 6:
+      commandStream = command + 9;
+      break;
+    case 8:
+    case 9:
+    case 10:
+    case 0xb:
+    case 0xc:
+    case 0xd:
+    case 0xe:
+    case 0xf:
+      g_ActiveFontIndex = value & 0xf;
+      break;
+    case 0x10:
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+accumulate_glyph:
+      extent.widthPixels = extent.widthPixels + glyphSize.width;
+      if (extent.heightPixels < glyphSize.lineHeight) {
+        extent.heightPixels = glyphSize.lineHeight;
+      }
+      break;
+    case 0x12:
+      return extent;
+    case 0x14:
+    case 0x15:
+    case 0x16:
+      commandStream = command + 3;
+      break;
+    case 0x18:
+      if (nesting == RICHTEXT_NESTING_LIMIT) {
+        return extent;
+      }
+      returnStack[nesting++] = commandStream;
+      commandStream = *(word **)commandStream;
+      break;
+    case 0x19:
+      commandStream = *(word **)commandStream;
+      break;
+    case 0x1a:
+      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                              (*(dword *)(command + 3),*(GraphicsTextureSourceAsset **)commandStream);
+      extent.widthPixels = extent.widthPixels + textureSize.logicalWidthPixels;
+      commandStream = command + 5;
+      if (extent.heightPixels < textureSize.logicalHeightPixels) {
+        extent.heightPixels = textureSize.logicalHeightPixels;
+      }
+      break;
     }
   }
-  goto switchD_0041cf77_caseD_0;
 }
 
 
@@ -1629,7 +1638,7 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
   ushort uVar1;
   uint uVar2;
   int iVar3;
-  int unaff_EBP;
+  ushort *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   ushort *puVar4;
   ushort *puVar5;
   
@@ -1648,7 +1657,7 @@ switchD_0041d87b_caseD_7:
       return;
     }
     iVar3 = iVar3 + -1;
-    commandStream = (ushort *)(unaff_EBP + 8);
+    commandStream = (ushort *)((byte *)nestedReturnStack[iVar3] + 8);
   }
   if ((short)uVar1 < 0) goto switchD_0041d87b_switchD;
   goto switchD_0041d87b_caseD_0;
@@ -1687,6 +1696,10 @@ switchD_0041d87b_caseD_0:
   case 0x1f:
     break;
   case 0x18:
+    if (iVar3 == RICHTEXT_NESTING_LIMIT) {
+      break;
+    }
+    nestedReturnStack[iVar3] = commandStream;
     iVar3 = iVar3 + 1;
   case 0x19:
     commandStream = *(ushort **)commandStream;

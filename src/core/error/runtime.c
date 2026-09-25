@@ -251,10 +251,11 @@ int FatalError_CopyRichTextToNarrowCf
   ushort *commandCursor;
   word *streamCursor;
   bool newlineCapacityUnderflow;
-  int nestedReturnCursor;
+  word *nestedReturnStack[64]; /* the original's machine-stack chain */
+  int nestedDepth;
   ushort commandOrCodeUnit;
   
-  nestedReturnCursor = 0;
+  nestedDepth = 0;
   remainingCapacityBytes = capacityBytes;
   pwVar1 = source;
   while( true ) {
@@ -293,7 +294,9 @@ int FatalError_CopyRichTextToNarrowCf
           pwVar1 = commandCursor + 3;
           break;
         case 0x18:
-          nestedReturnCursor = (int)commandCursor + 3;
+          if (nestedDepth == 64)
+          goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
+          nestedReturnStack[nestedDepth++] = streamCursor;
           pwVar1 = *(ushort **)streamCursor;
           break;
         case 0x19:
@@ -315,9 +318,8 @@ int FatalError_CopyRichTextToNarrowCf
         }
       }
     }
-    if (nestedReturnCursor == 0) break;
-    pwVar1 = (ushort *)(nestedReturnCursor + 8);
-    nestedReturnCursor = nestedReturnCursor + -1;
+    if (nestedDepth == 0) break;
+    pwVar1 = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
