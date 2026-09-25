@@ -38,21 +38,21 @@ InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr 
   UVar3 = UVar5.rowIndex;
   pvVar2 = ppvVar1[UVar3];
   if (UVar5.carry) {
-    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&ADJ(catalogList)->detailPageStack);
+    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
     if (UVar3 != UVar4) {
-      InGameSaveGame_SaveSelectedOrTypedName(ADJ(catalogList));
+      InGameSaveGame_SaveSelectedOrTypedName(THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList));
       return;
     }
   }
   else {
-    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&ADJ(catalogList)->detailPageStack);
-    ADJ(catalogList)->activeDetailTextResourceId = 0x215d;
+    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
+    THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = 0x215d;
     if (UVar3 != UVar4) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = *(TextResourceId *)((int)pvVar2 + 0x70);
         TVar6 = TextResource_Resolve(resourceId);
         *TVar6.eax = 0x8000;
-        ADJ(catalogList)->activeDetailTextResourceId = resourceId;
+        THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = resourceId;
       }
       else {
         TVar6 = TextResource_Resolve(0x215e);
@@ -61,16 +61,16 @@ InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr 
         RichTextCommandStream_PatchPayloadBySelector(1,TVar7.eax,TVar6.eax);
         TVar7 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x90));
         RichTextCommandStream_PatchPayloadBySelector(0,TVar7.eax,TVar6.eax);
-        ADJ(catalogList)->activeDetailTextResourceId = 0x215e;
+        THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = 0x215e;
       }
-      firstNode = UiNode_GetRoot(&(ADJ(catalogList)->detailPageStack).base);
+      firstNode = UiNode_GetRoot(&(THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack).base);
       UiNodeList_UnsuppressActionId(0x1219,firstNode);
       goto InGameUiAction120F_Handler_UnsuppressAction1210AndReturn;
     }
   }
   firstNode = UiNode_GetRoot(&catalogList->base);
   UiNodeList_SuppressActionId(0x1219,firstNode);
-  if (((ADJ(catalogList)->action1210Control).nodeFlags & 1) == 0) {
+  if (((THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->action1210Control).nodeFlags & 1) == 0) {
     UiNodeList_SuppressActionId(0x1210,firstNode);
     return;
   }

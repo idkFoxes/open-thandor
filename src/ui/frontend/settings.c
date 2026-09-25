@@ -796,21 +796,21 @@ FrontendAudioSettings_OpenAndSynchronize
   dword dVar3;
   dword dVar4;
   
-  UiPageStack_SetActiveIndex(8,&ADJ(settingsSourceNode)->settingsPageStack);
+  UiPageStack_SetActiveIndex(8,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->settingsPageStack);
   if ((int)g_FramebufferWidth < 0x281) {
-    pUVar1 = &ADJ(settingsSourceNode).pageRoot.nodeFlags;
+    pUVar1 = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->pageRoot.nodeFlags;
     *pUVar1 = *pUVar1 | 0x2000;
   }
   dVar3 = PersistentSettings_ReadDword(3,0x20);
-  UiSelectableControl_SetSelected(dVar3 & 1,&ADJ(settingsSourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(dVar3 & 2,&ADJ(settingsSourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected(dVar3 & 4,&ADJ(settingsSourceNode)->reverseStereoControl);
+  UiSelectableControl_SetSelected(dVar3 & 1,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(dVar3 & 2,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(dVar3 & 4,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->reverseStereoControl);
   dVar4 = PersistentSettings_ReadDword(0x8000,0x24);
-  (ADJ(settingsSourceNode)->soundEffectsGainControl).currentValue = dVar4;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsGainControl).currentValue = dVar4;
   dVar4 = PersistentSettings_ReadDword(0x8000,0x28);
-  (ADJ(settingsSourceNode)->movieDefaultAudioGainControl).currentValue = dVar4;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->movieDefaultAudioGainControl).currentValue = dVar4;
   dVar4 = PersistentSettings_ReadDword(0x8000,0x2c);
-  (ADJ(settingsSourceNode)->musicGainControl).currentValue = dVar4;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicGainControl).currentValue = dVar4;
   pUVar2 = settingsSourceNode->parent;
   while (pUVar2 != (UiNodeBase *)0xffffffff) {
     settingsSourceNode = settingsSourceNode->parent;

@@ -48,7 +48,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   uVar4 = g_FrontendNetworkState;
   frontendRoot = g_FrontendRootNode;
   RecentTextHistory_SortAndBuildPointerList
-            (5,(RecentTextHistoryPointerList *)(g_FrontendRootNode->opaqueGap0000_4B67 + 0x350));
+            (5,(RecentTextHistoryPointerList *)(((struct FrontendNetworkListsRuntimeView5650 *)(uintptr_t)g_FrontendRootNode)->opaqueGap0000_4B67 + 0x350));
                     // WARNING: Switch is manually overridden
   switch(uVar4) {
   case 1:

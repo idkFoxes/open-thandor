@@ -109,7 +109,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
         }
         if (g_FrontendPendingPageAction != 3) break;
         FrontendGameplaySettingsPage_InitializeFromPersistentSettings
-                  ((UiRootNode *)&g_FrontendRootNode->commonState);
+                  ((UiRootNode *)&((union FrontendNetworkSettingsControlView250 *)(uintptr_t)g_FrontendRootNode)->commonState);
         g_FrontendPendingPageAction = 0;
       }
       if (g_FrontendPendingPageAction == 5) {
@@ -194,7 +194,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
           UiTransferMailbox_SetOutgoingBuffer(0,(void *)0x0);
         }
         FrontendScenarioSelectionPage_InitializeAndApplyMapOption
-                  ((FrontendScenarioSelectionPageView26C4 *)&g_FrontendRootNode->commonState);
+                  ((FrontendScenarioSelectionPageView26C4 *)&((union FrontendNetworkSettingsControlView250 *)(uintptr_t)g_FrontendRootNode)->commonState);
         g_FrontendPendingPageAction = 0;
         goto FrontendMainLoop_ProcessFrameAndPendingPageAction;
       }
@@ -213,7 +213,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
           UiTransferMailbox_SetOutgoingBuffer(0,(void *)0x0);
         }
         FrontendTaskAssignmentPage_Initialize
-                  ((FrontendTaskAssignmentPageInitView26C4 *)&g_FrontendRootNode->commonState);
+                  ((FrontendTaskAssignmentPageInitView26C4 *)&((union FrontendNetworkSettingsControlView250 *)(uintptr_t)g_FrontendRootNode)->commonState);
         g_FrontendPendingPageAction = 0;
       }
       else if (g_FrontendPendingPageAction == 8) {
@@ -230,11 +230,11 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
           (*g_MemoryApi.free)(g_UiTransferMailbox.outgoingAllocation);
           UiTransferMailbox_SetOutgoingBuffer(0,(void *)0x0);
         }
-        FrontendMissionBriefingPage_Initialize((UiRootNode *)&g_FrontendRootNode->commonState);
+        FrontendMissionBriefingPage_Initialize((UiRootNode *)&((union FrontendNetworkSettingsControlView250 *)(uintptr_t)g_FrontendRootNode)->commonState);
         g_FrontendPendingPageAction = 0;
       }
       else if (g_FrontendPendingPageAction == 9) {
-        CreditsScreen_Open((FrontendCreditsUiStateView *)&g_FrontendRootNode->commonState);
+        CreditsScreen_Open((FrontendCreditsUiStateView *)&((union FrontendNetworkSettingsControlView250 *)(uintptr_t)g_FrontendRootNode)->commonState);
         g_FrontendPendingPageAction = 0;
       }
       else {
@@ -2435,9 +2435,9 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
       (*g_NetworkBackendSlot7)
                 (&g_FrontendNetworkEndpointTextUtf16,
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
-      UiNodeList_SuppressActionId(0x2002,&ADJ(backendList).rootNode);
+      UiNodeList_SuppressActionId(0x2002,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
-                (0,g_FrontendSessionListRows,&ADJ(backendList)->sessionList);
+                (0,g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->sessionList);
       UiTransfer_SendPacketType10000Value2931Cf();
       return;
     }

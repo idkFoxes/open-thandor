@@ -5150,7 +5150,7 @@ typedef int UiNumericValue32;
 
 typedef dword FileSystemFilePosition;
 
-typedef struct InGamePersistentSettingsPage3508 *InGamePersistentSettingsPageSourceNodePtr;
+typedef struct UiNodeBase *InGamePersistentSettingsPageSourceNodePtr; /* Ghidra shifted pointer: points at InGamePersistentSettingsPage3508.sourceNode; ADJ() -> InGamePersistentSettingsPage3508 */
 
 typedef dword UiPageCount;
 
@@ -5421,7 +5421,7 @@ typedef int PriorityPairHeapCount;
 
 typedef int PersistentModelLodDepthQ8;
 
-typedef struct InGameCatalogDetailPage32C *InGameCatalogDetailPageCatalogListPtr;
+typedef struct UiPointerListControl *InGameCatalogDetailPageCatalogListPtr; /* Ghidra shifted pointer: points at InGameCatalogDetailPage32C.catalogList; ADJ() -> InGameCatalogDetailPage32C */
 
 typedef dword UiTextResourceId;
 
@@ -5767,7 +5767,7 @@ typedef qword FixedSinCosEdxEax8;
 
 typedef dword TextResourceId;
 
-typedef struct FrontendPersistentSettingsPage417C *FrontendPersistentSettingsPageSourceNodePtr;
+typedef struct UiNodeBase *FrontendPersistentSettingsPageSourceNodePtr; /* Ghidra shifted pointer: points at FrontendPersistentSettingsPage417C.sourceNode; ADJ() -> FrontendPersistentSettingsPage417C */
 
 struct FrontendPersistentSettingsPage417C {
     struct UiNodeBase pageRoot; 
@@ -5873,7 +5873,7 @@ typedef dword FrontendCallbackArgument5;
 
 typedef dword GraphicsShadingRecordCount;
 
-typedef struct FrontendNetworkSetupPageState4BCC *FrontendNetworkSetupPageBackendListPtr;
+typedef struct UiPointerListControl *FrontendNetworkSetupPageBackendListPtr; /* Ghidra shifted pointer: points at FrontendNetworkSetupPageState4BCC.backendList; ADJ() -> FrontendNetworkSetupPageState4BCC */
 
 struct FrontendNetworkSetupPageState4BCC {
     struct UiNodeBase rootNode; 
@@ -6120,7 +6120,7 @@ typedef dword ArmyPlacementCandidateCount;
 
 typedef dword ModelNodePoolRelativeOffset;
 
-typedef struct InGameCommandTextEntryPage2320 *InGameCommandTextEntryPageTextEditPtr;
+typedef struct InGameCommandTextEditControlCC *InGameCommandTextEntryPageTextEditPtr; /* Ghidra shifted pointer: points at InGameCommandTextEntryPage2320.commandTextEdit; ADJ() -> InGameCommandTextEntryPage2320 */
 
 struct InGameCommandTextEditControlCC {
     struct UiNodeBase base; 

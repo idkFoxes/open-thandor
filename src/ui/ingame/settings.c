@@ -550,19 +550,19 @@ InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr
   dword dVar2;
   dword dVar3;
   
-  UiPageStack_SetActiveIndex(7,&ADJ(settingsSourceNode).settingsPageStack);
+  UiPageStack_SetActiveIndex(7,&THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->settingsPageStack);
   dVar2 = PersistentSettings_ReadDword(3,0x20);
-  UiSelectableControl_SetSelected(dVar2 & 1,&ADJ(settingsSourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(dVar2 & 2,&ADJ(settingsSourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected(dVar2 & 4,&ADJ(settingsSourceNode)->reverseStereoControl);
+  UiSelectableControl_SetSelected(dVar2 & 1,&THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(dVar2 & 2,&THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(dVar2 & 4,&THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->reverseStereoControl);
   dVar3 = PersistentSettings_ReadDword(0x8000,0x24);
-  (ADJ(settingsSourceNode)->soundEffectsGainControl).currentValue = dVar3;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->soundEffectsGainControl).currentValue = dVar3;
   dVar3 = PersistentSettings_ReadDword(0x8000,0x28);
-  (ADJ(settingsSourceNode)->movieDefaultAudioGainControl).currentValue = dVar3;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->movieDefaultAudioGainControl).currentValue = dVar3;
   dVar3 = PersistentSettings_ReadDword(0x8000,0x4c);
-  (ADJ(settingsSourceNode)->movieAlternateAudioGainControl).currentValue = dVar3;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->movieAlternateAudioGainControl).currentValue = dVar3;
   dVar3 = PersistentSettings_ReadDword(0x8000,0x2c);
-  (ADJ(settingsSourceNode)->musicGainControl).currentValue = dVar3;
+  (THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->musicGainControl).currentValue = dVar3;
   pUVar1 = settingsSourceNode->parent;
   while (pUVar1 != (UiNodeBase *)0xffffffff) {
     settingsSourceNode = settingsSourceNode->parent;

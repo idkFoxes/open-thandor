@@ -693,7 +693,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       }
     }
   }
-  UiPageStack_SetActiveIndex(0,&ADJ(commandTextEdit).commandPageStack);
+  UiPageStack_SetActiveIndex(0,&THANDOR_CONTAINER_OF(commandTextEdit, InGameCommandTextEntryPage2320, commandTextEdit)->commandPageStack);
   return;
 }
 

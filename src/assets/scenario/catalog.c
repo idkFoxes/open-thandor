@@ -1136,7 +1136,7 @@ ScenarioCatalog_RebuildSaveRecordListPage
   void **ppvVar3;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&g_FrontendRootNode[0x62].bottomAnchorQ31);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x62].bottomAnchorQ31);
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
@@ -1190,7 +1190,7 @@ ScenarioCatalog_RebuildLevelRecordListPage
   ScenarioCatalogRuntimeExpandedRecord100 **rowPointers;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&g_FrontendRootNode[100].firstChild);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[100].firstChild);
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     UVar1 = g_ScenarioCatalog->levelRecordCount;
@@ -1264,7 +1264,7 @@ ScenarioCatalog_RebuildCampaignRecordListPage
   void **rowPointers;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&g_FrontendRootNode[0x65].right);
+  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x65].right);
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     UVar1 = g_ScenarioCatalog->campaignRecordCount;

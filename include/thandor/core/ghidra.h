@@ -15,6 +15,7 @@ in 64 bits; results wider than 8 bytes (CONCAT55, CONCAT62, ZEXT513, ...) are tr
 low 8 bytes, which matches every use where the result lands in a register or qword.
 */
 
+#include <stddef.h>
 #include <string.h>
 
 #define THANDOR_MASK_BYTES(n) ((n) >= 8 ? ~0ull : ((1ull << ((n) * 8)) - 1ull))
@@ -83,5 +84,8 @@ static __inline void thandor_write_part(void *base, unsigned off, unsigned size,
 
 #define THANDOR_READ_PART(base, off, size) thandor_read_part(&(base), (off), (size))
 #define THANDOR_WRITE_PART(base, off, size, v) thandor_write_part(&(base), (off), (size), (unsigned long long)(v))
+
+/* ADJ(p) on a Ghidra shifted pointer: the structure that contains the member p points at. */
+#define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
 
 #endif /* THANDOR_CORE_GHIDRA_H */
