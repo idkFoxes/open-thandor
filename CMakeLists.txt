@@ -117,3 +117,6 @@ add_library(thandor_curated STATIC
     src/generated/globals.c
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_executable(thandor WIN32 src/platform/bootstrap/main.c)
+target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32)

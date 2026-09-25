@@ -41,6 +41,7 @@ or to other layout-compatible structs, which C only allows through a union.
 
 #include <thandor/core/ghidra.h>
 #include <thandor/generated/globals.h>
+#include <thandor/generated/imports.h>
 
 
 #endif /* THANDOR_CORE_CONTRACTS_H */

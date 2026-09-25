@@ -2,6 +2,8 @@
 //   function_definitions.jsonl  every FunctionDefinition data type (the *Proc / *Callback types)
 //   strings.jsonl               every defined string with its label, address and value
 //   symbols.jsonl               every labeled defined data item with address, type and length
+//   imports.jsonl               every external (DLL) function with library and signature
+//   functions.jsonl             every function with entry address and prototype
 //
 // Headless:
 //   analyzeHeadless <tmpdir> thandor -import ghidra/thandor.exeV537.gzf -noanalysis ^
@@ -18,6 +20,9 @@ import ghidra.program.model.data.FunctionDefinition;
 import ghidra.program.model.data.ParameterDefinition;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.DataIterator;
+import ghidra.program.model.listing.Function;
+import ghidra.program.model.listing.Parameter;
+import ghidra.program.model.symbol.ExternalLocation;
 import ghidra.program.model.symbol.Symbol;
 
 public class ExportBuildData extends GhidraScript {
@@ -83,8 +88,46 @@ public class ExportBuildData extends GhidraScript {
                 }
             }
         }
+        int imports = 0;
+        int functions = 0;
+        try (PrintWriter wi = new PrintWriter(new File(out, "imports.jsonl"), "UTF-8");
+             PrintWriter wf = new PrintWriter(new File(out, "functions.jsonl"), "UTF-8")) {
+            for (Function f : currentProgram.getFunctionManager().getExternalFunctions()) {
+                ExternalLocation loc = f.getExternalLocation();
+                wi.println("{\"name\":" + q(f.getName())
+                        + ",\"library\":" + q(loc == null ? null : loc.getLibraryName())
+                        + ",\"convention\":" + q(f.getCallingConventionName())
+                        + ",\"return\":" + q(f.getReturnType().getDisplayName())
+                        + ",\"params\":" + params(f)
+                        + ",\"varargs\":" + f.hasVarArgs()
+                        + ",\"prototype\":" + q(f.getPrototypeString(true, false)) + "}");
+                imports++;
+            }
+            for (Function f : currentProgram.getFunctionManager().getFunctions(true)) {
+                wf.println("{\"name\":" + q(f.getName())
+                        + ",\"address\":" + q(f.getEntryPoint().toString())
+                        + ",\"thunk\":" + f.isThunk()
+                        + ",\"convention\":" + q(f.getCallingConventionName())
+                        + ",\"prototype\":" + q(f.getPrototypeString(true, false)) + "}");
+                functions++;
+            }
+        }
         println("open-thandor export: " + defs + " function definitions, " + strings + " strings, "
-                + symbols + " symbols -> " + out.getAbsolutePath());
+                + symbols + " symbols, " + imports + " imports, " + functions + " functions -> "
+                + out.getAbsolutePath());
+    }
+
+    private static String params(Function f) {
+        StringBuilder b = new StringBuilder("[");
+        Parameter[] ps = f.getParameters();
+        for (int i = 0; i < ps.length; i++) {
+            if (i > 0) {
+                b.append(',');
+            }
+            b.append("{\"type\":").append(q(ps[i].getDataType().getDisplayName()))
+             .append(",\"name\":").append(q(ps[i].getName())).append('}');
+        }
+        return b.append(']').toString();
     }
 
     private static String q(String s) {
