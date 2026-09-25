@@ -784,7 +784,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   }
   pUVar9 = senderEndpoint;
   for (iVar6 = 4; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *joiningPlayerRecordDwordCursor = (dword)pUVar9->addressHeader;
+    *joiningPlayerRecordDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, dword, pUVar9->addressHeader);
     pUVar9 = (UiTransferEndpointDescriptor *)&pUVar9->ipv4AddressNetworkOrder;
     joiningPlayerRecordDwordCursor = joiningPlayerRecordDwordCursor + 1;
   }
@@ -1218,7 +1218,7 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets_UpdateOrAppendSessionAdverti
               advertisement).header.sequenceToken;
       }
       for (iVar1 = 4; iVar1 != 0; iVar1 = iVar1 + -1) {
-        *sessionDiscoveryRecordDwordCursor = (dword)senderEndpoint->addressHeader;
+        *sessionDiscoveryRecordDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, dword, senderEndpoint->addressHeader);
         senderEndpoint = (UiTransferEndpointDescriptor *)&senderEndpoint->ipv4AddressNetworkOrder;
         sessionDiscoveryRecordDwordCursor = sessionDiscoveryRecordDwordCursor + 1;
       }
@@ -1668,7 +1668,7 @@ UiTransfer_StagePacketAndSendCf
              &packet->packedTypeAndUnitCount);
   endpointDestinationDwordCursor = (dword *)(pbVar3 + iVar9 + -8);
   for (iVar10 = 4; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *endpointDestinationDwordCursor = (dword)endpoint->addressHeader;
+    *endpointDestinationDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, dword, endpoint->addressHeader);
     endpoint = (UiTransferEndpointDescriptor *)&endpoint->ipv4AddressNetworkOrder;
     endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
   }

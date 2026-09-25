@@ -59,10 +59,9 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
       iVar11 = (int)((ulonglong)lVar3 >> 0x20);
       uVar12 = iVar11 << 0x10 | (uint)lVar3 >> 0x10;
       if (uVar12 != 0) {
-        TVar4 = (TriangleBarycentricWeightsQ12)
-                ((longlong)(vertexCY - pointY) * (longlong)vertexBX +
+        TVar4 = THANDOR_BITCAST(longlong, TriangleBarycentricWeightsQ12, ((longlong)(vertexCY - pointY) * (longlong)vertexBX +
                  (longlong)(pointY - vertexBY) * (longlong)vertexCX +
-                (longlong)(vertexBY - vertexCY) * (longlong)pointX);
+                (longlong)(vertexBY - vertexCY) * (longlong)pointX));
         uVar13 = TVar4.weightVertexA_Q12;
         if (lVar3 < 0) {
           if ((int)uVar13 < iVar11) {
@@ -86,11 +85,11 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
           iVar15 = (int)((ulonglong)(lVar9 + lVar2) >> 0x20);
           if (lVar3 < 0) {
             if (iVar15 < iVar11) {
-              return (TriangleBarycentricWeightsQ12)(lVar9 + lVar2);
+              return THANDOR_BITCAST(longlong, TriangleBarycentricWeightsQ12, (lVar9 + lVar2));
             }
           }
           else if (iVar11 < iVar15) {
-            return (TriangleBarycentricWeightsQ12)(lVar2 + lVar9);
+            return THANDOR_BITCAST(longlong, TriangleBarycentricWeightsQ12, (lVar2 + lVar9));
           }
           iVar11 = (int)((lVar9 + lVar2) / (longlong)(int)uVar12);
           TVar8.weightVertexA_Q12 = iVar10;

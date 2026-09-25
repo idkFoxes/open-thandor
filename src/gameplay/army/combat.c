@@ -717,7 +717,7 @@ LAB_005282dd:
   uVar4 = dVar2 & 0xffff;
   dVar3 = (*g_RandomGeneratorState.next)();
   EffectRuntimePool_CreateInstanceFromDefinitionCf
-            (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,dVar2 >> 0x10,
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),dVar2 >> 0x10,
              (dVar3 & 0x1fff) + 0x1fff,uVar4,worldZQ12,worldXQ12,dVar1,effectDefinition,worldRuntime
             );
   return;

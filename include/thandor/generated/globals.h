@@ -11,35 +11,35 @@
 
 /* Function-signature types Ghidra does not include in its C export. Unprototyped
  * placeholders: they accept any arguments. Replace with the real signature once recovered. */
-typedef dword AiTechnologyCandidateScoreCallback(); /* TODO: unrecovered signature */
+typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(); /* return type from call site; parameters TODO */
 typedef dword ArenaFreeProc(); /* TODO: unrecovered signature */
 typedef dword ArenaShrinkProc(); /* TODO: unrecovered signature */
-typedef dword CommandLineFindOptionProc(); /* TODO: unrecovered signature */
-typedef dword CpuDetectFeaturesProc(); /* TODO: unrecovered signature */
-typedef dword FatalErrorPassThroughProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemCloseProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemCopyCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemCreateDirectoryRecursiveProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemDeleteCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemDriveReadyCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemEnumerateDirectoryOrVolumeEntriesCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemEnumerateDriveLettersEaxEcxProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetCurrentDirectoryCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetDriveTypeCodePreserveProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetFreeAndTotalBytesRegsProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetLastWriteDosDateCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetLastWriteTimeHighCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetPositionCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetSizeCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemGetVolumeSerialNumberCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemMoveCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemOpenCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemReadExactCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemRemoveDirectoryCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemSeekCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemSetCurrentDirectoryCfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemValidateDos83CfProc(); /* TODO: unrecovered signature */
-typedef dword FileSystemWriteExactOrFlushCfProc(); /* TODO: unrecovered signature */
+typedef CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx CommandLineFindOptionProc(CommandLineOptionLengthBytes length,char *option); /* recovered from CommandLine_FindOption */
+typedef dword __cdecl CpuDetectFeaturesProc(void); /* recovered from CPU_DetectFeatures */
+typedef FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx FatalErrorPassThroughProc(dword errorOrValue,bool carryIn); /* recovered from FatalError_Exit */
+typedef void __thandor_void_preserve_eax_ecx_edx FileSystemCloseProc(void *handle); /* recovered from Win32File_Close */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemCopyCfProc(word *destinationPath,word *sourcePath); /* recovered from Win32File_CopyCf */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirectoryFlags flags,word *path); /* recovered from Win32File_CreateDirectoryRecursiveCf */
+typedef dword FileSystemDeleteCfProc(dword unusedFlags,word *path); /* recovered from Win32File_DeleteCf */
+typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemDriveReadyCfProc(DosDriveLetterCode32 driveLetter); /* recovered from Win32Drive_CheckMediaReadyCf */
+typedef FileSystemEnumerationEaxEcxCf9 FileSystemEnumerateDirectoryOrVolumeEntriesCfProc(); /* return type from call site; parameters TODO */
+typedef DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx FileSystemEnumerateDriveLettersEaxEcxProc(byte *lettersOut); /* recovered from Win32Drive_EnumerateLetters */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetCurrentDirectoryCfProc(word *destination); /* recovered from Win32File_GetCurrentDirectoryCf */
+typedef EngineDriveTypeCode __thandor_eax_preserve_ecx_edx FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* recovered from Win32Drive_GetEngineTypeCode */
+typedef Win32DriveCapacityEdxEax8 FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* recovered from Win32Drive_GetFreeAndTotalBytesRegs */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteDosDateCfProc(word *path); /* recovered from Win32File_GetLastWriteDosDateCf */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteTimeHighCfProc(word *path); /* recovered from Win32File_GetLastWriteTimeHighCf */
+typedef dword FileSystemGetPositionCfProc(void *handle); /* recovered from Win32File_GetPositionCf */
+typedef Win32FileSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemGetSizeCfProc(void *handle); /* recovered from Win32File_GetSizeCf */
+typedef dword FileSystemGetVolumeSerialNumberCfProc(byte *outputLabel,char *path); /* recovered from Win32Drive_GetVolumeSerialNumberCf */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemMoveCfProc(word *destinationPath,word *sourcePath); /* recovered from Win32File_MoveCf */
+typedef Win32FileOpenEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemOpenCfProc(FileSystemOpenFlags openFlags,word *path); /* recovered from Win32File_OpenCf */
+typedef Win32FileReadEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemReadExactCfProc(FileIoByteCount byteCount,void *destination,void *handle); /* recovered from Win32File_ReadExactCf */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemRemoveDirectoryCfProc(word *path); /* recovered from Win32File_RemoveDirectoryCf */
+typedef Win32FileSeekEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemSeekCfProc(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle); /* recovered from Win32File_SeekCf */
+typedef StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemSetCurrentDirectoryCfProc(word *path); /* recovered from Win32File_SetCurrentDirectoryCf */
+typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemValidateDos83CfProc(FileSystemDos83ValidationFlags flags,byte *pathAnsi); /* recovered from Win32Path_ValidateDos83Cf */
+typedef Win32FileWriteEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystemWriteExactOrFlushCfProc(FileIoByteCount byteCount,void *source,void *handle); /* recovered from Win32File_WriteExactOrFlushCf */
 typedef dword FrontendModelPointerContextUpdateCallbackProc(); /* TODO: unrecovered signature */
 typedef dword FrontendModelPointerResolvedActionCallbackProc(); /* TODO: unrecovered signature */
 typedef dword GlideTextureUploadProc(); /* TODO: unrecovered signature */
@@ -60,10 +60,10 @@ typedef dword GrGetImportProc(); /* TODO: unrecovered signature */
 typedef dword GrGetStringImportProc(); /* TODO: unrecovered signature */
 typedef dword GrGlideInitImportProc(); /* TODO: unrecovered signature */
 typedef dword GrGlideShutdownImportProc(); /* TODO: unrecovered signature */
-typedef dword GrLfbLockImportProc(); /* TODO: unrecovered signature */
+typedef int GrLfbLockImportProc(); /* return type from call site; parameters TODO */
 typedef dword GrLfbReadRegionImportProc(); /* TODO: unrecovered signature */
 typedef dword GrLfbUnlockImportProc(); /* TODO: unrecovered signature */
-typedef dword GrQueryResolutionsImportProc(); /* TODO: unrecovered signature */
+typedef dword GrQueryResolutionsImportProc(); /* return type from call site; parameters TODO */
 typedef dword GrSstSelectImportProc(); /* TODO: unrecovered signature */
 typedef dword GrSstWinCloseImportProc(); /* TODO: unrecovered signature */
 typedef dword GrSstWinOpenImportProc(); /* TODO: unrecovered signature */
@@ -71,81 +71,81 @@ typedef dword GrTexClampModeImportProc(); /* TODO: unrecovered signature */
 typedef dword GrTexCombineImportProc(); /* TODO: unrecovered signature */
 typedef dword GrTexDownloadMipMapImportProc(); /* TODO: unrecovered signature */
 typedef dword GrTexFilterModeImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexMaxAddressImportProc(); /* TODO: unrecovered signature */
-typedef dword GrTexMinAddressImportProc(); /* TODO: unrecovered signature */
+typedef GraphicsTextureMemoryAddress GrTexMaxAddressImportProc(); /* return type from call site; parameters TODO */
+typedef GraphicsTextureMemoryAddress GrTexMinAddressImportProc(); /* return type from call site; parameters TODO */
 typedef dword GrTexMipMapModeImportProc(); /* TODO: unrecovered signature */
 typedef dword GrTexSourceImportProc(); /* TODO: unrecovered signature */
 typedef dword GrVertexLayoutImportProc(); /* TODO: unrecovered signature */
 typedef dword GrViewportImportProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsBackendRefreshActiveAdapterProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsBeginScenePreserveAllProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsCursorConsumeEventProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsDrawPrimitiveQueueProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsEndSceneProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsOffscreenRenderModelListToTextureSourceProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsPaletteAssetLoadPackageProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsPaletteAssetValidateProc(); /* TODO: unrecovered signature */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBackendRefreshActiveAdapterProc(void); /* recovered from GraphicsBackend_RefreshActiveAdapterIfReady */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBeginScenePreserveAllProc(void); /* recovered from Graphics_BeginScene */
+typedef GraphicsCursorInputEventRegsCf21 GraphicsCursorConsumeEventProc(); /* return type from call site; parameters TODO */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsDrawPrimitiveQueueProc(GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1, GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3, GraphicsPrimitiveQueue *queue); /* recovered from Graphics_DrawPrimitiveQueue */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsEndSceneProc(void); /* recovered from Graphics_EndScene */
+typedef GraphicsOffscreenAllocationEaxCf5 GraphicsOffscreenRenderModelListToTextureSourceProc(); /* return type from call site; parameters TODO */
+typedef GraphicsPaletteAssetEaxCf5 GraphicsPaletteAssetLoadPackageProc(); /* return type from call site; parameters TODO */
+typedef GraphicsPaletteAssetEaxCf5 GraphicsPaletteAssetValidateProc(); /* return type from call site; parameters TODO */
 typedef dword GraphicsPrimitiveQueueRadixSortProc(); /* TODO: unrecovered signature */
 typedef dword GraphicsSetViewportProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsTextureRebuildAllProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsTextureSetCreateProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsTextureSetDestroyProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsTextureSetLoadPackageProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsTextureSetRefreshProc(); /* TODO: unrecovered signature */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureRebuildAllProc(void); /* recovered from GraphicsTexture_RebuildAllStagingTextures */
+typedef GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSetCreateProc(GraphicsTextureSourceAsset *sourceAsset); /* recovered from GraphicsTextureSet_Create */
+typedef GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx GraphicsTextureSetDestroyProc(GraphicsTextureSet *set); /* recovered from GraphicsTextureSet_Destroy */
+typedef GraphicsTextureSetEaxCf5 GraphicsTextureSetLoadPackageProc(); /* return type from call site; parameters TODO */
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSetRefreshProc(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set); /* recovered from GraphicsTextureSet_RefreshColor */
 typedef dword GraphicsTextureSetReleasePackageProc(); /* TODO: unrecovered signature */
-typedef dword GraphicsTextureSourceConvertPaletteEntriesProc(); /* TODO: unrecovered signature */
+typedef GraphicsPaletteTextureSourceEaxCf5 GraphicsTextureSourceConvertPaletteEntriesProc(); /* return type from call site; parameters TODO */
 typedef dword GuGammaCorrectionRGBImportProc(); /* TODO: unrecovered signature */
 typedef dword InGameWorldOverlayPhaseCallbackProc(); /* TODO: unrecovered signature */
 typedef dword InGameWorldOverlayRebuildCallbackProc(); /* TODO: unrecovered signature */
 typedef dword InGameWorldTransientStateClearCallbackProc(); /* TODO: unrecovered signature */
 typedef dword KeyboardFlushEventsProc(); /* TODO: unrecovered signature */
-typedef dword KeyboardReadEventProc(); /* TODO: unrecovered signature */
-typedef dword LocaleCopyDefaultComputerLabelUtf16Proc(); /* TODO: unrecovered signature */
-typedef dword LocaleFormatCurrentDateUtf16Proc(); /* TODO: unrecovered signature */
-typedef dword LocaleFormatCurrentTimeUtf16Proc(); /* TODO: unrecovered signature */
+typedef KeyboardEventEaxEdxCf9 KeyboardReadEventProc(); /* return type from call site; parameters TODO */
+typedef void __thandor_void_preserve_eax_ecx_edx LocaleCopyDefaultComputerLabelUtf16Proc(word *destination); /* recovered from Locale_CopyDefaultComputerLabelUtf16 */
+typedef dword LocaleFormatCurrentDateUtf16Proc(word *destination); /* recovered from Locale_FormatCurrentDateUtf16 */
+typedef dword LocaleFormatCurrentTimeUtf16Proc(word *destination); /* recovered from Locale_FormatCurrentTimeUtf16 */
 typedef dword LocaleFormatDateFieldsUtf16Proc(); /* TODO: unrecovered signature */
-typedef dword LocaleFormatTimeFieldsUtf16Proc(); /* TODO: unrecovered signature */
-typedef dword LocaleGetPackedCurrentDateProc(); /* TODO: unrecovered signature */
-typedef dword LocaleGetPackedCurrentTimeProc(); /* TODO: unrecovered signature */
-typedef dword LocaleGetTelephoneCountryCodeProc(); /* TODO: unrecovered signature */
+typedef dword LocaleFormatTimeFieldsUtf16Proc(LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,word *destination); /* recovered from Locale_FormatTimeFieldsUtf16 */
+typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentDateProc(void); /* recovered from Locale_GetPackedCurrentDate */
+typedef dword __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentTimeProc(void); /* recovered from Locale_GetPackedCurrentTime */
+typedef dword __thandor_eax_preserve_ecx_edx LocaleGetTelephoneCountryCodeProc(void); /* recovered from Locale_GetDefaultTelephoneCountryCode */
 typedef dword MovieFrameProviderCfProc(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendCleanupCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendCloseCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendFormatAddressCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendOpenBindCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendParseEndpointCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendReceiveCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendSendCallback(); /* TODO: unrecovered signature */
-typedef dword NetworkBackendSetSessionCallback(); /* TODO: unrecovered signature */
-typedef dword PckCodecProc(); /* TODO: unrecovered signature */
-typedef dword PcxDecodeProc(); /* TODO: unrecovered signature */
+typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCleanupCallback(void); /* recovered from NetworkFallback_NoOpBackendCleanup */
+typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCloseCallback(void); /* recovered from NetworkFallback_CloseActiveSocket */
+typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendFormatAddressCallback(char *outputText,WinSockAddress *socketAddress); /* recovered from NetworkFallback_FormatPeerAddress */
+typedef NetworkBackendOpenBindEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendOpenBindCallback(NetworkPortHostOrder localPort); /* recovered from NetworkFallback_OpenAndBindUdpSocketCf */
+typedef bool __thandor_cf_preserve_eax_ecx_edx NetworkBackendParseEndpointCallback(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText); /* recovered from NetworkFallback_ParsePeerEndpointCf */
+typedef NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendReceiveCallback(WinSockAddress *sourceAddress,NetworkByteCount byteCount,byte *buffer); /* recovered from NetworkFallback_ReceiveDatagramCf */
+typedef NetworkBackendSendEaxCf5 NetworkBackendSendCallback(); /* return type from call site; parameters TODO */
+typedef NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx NetworkBackendSetSessionCallback(void *this,NetworkBackendSessionReturnValue32 returnValue); /* recovered from NetworkBackend_SetSessionContextCf */
+typedef PckCodecEaxCf5 PckCodecProc(); /* return type from call site; parameters TODO */
+typedef PcxDecodeEaxCf5 PcxDecodeProc(); /* return type from call site; parameters TODO */
 typedef dword PcxEncodeProc(); /* TODO: unrecovered signature */
-typedef dword PointerFlushEventsProc(); /* TODO: unrecovered signature */
-typedef dword PointerSetPositionProc(); /* TODO: unrecovered signature */
+typedef void __thandor_void_preserve_eax_ecx_edx PointerFlushEventsProc(void); /* recovered from DirectInputMouse_FlushBufferedEvents */
+typedef void __thandor_void_preserve_eax_ecx PointerSetPositionProc(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX); /* recovered from DirectInputMouse_SetPosition */
 typedef dword ScenarioCatalogRefreshSelectedRecordCallback(); /* TODO: unrecovered signature */
 typedef dword SoftwareBuildPixelPackTablesProc(); /* TODO: unrecovered signature */
-typedef dword SoftwareDrawQueueProc(); /* TODO: unrecovered signature */
-typedef dword SoftwareFramebufferCreateProc(); /* TODO: unrecovered signature */
+typedef void __thandor_void_preserve_eax_ecx_edx SoftwareDrawQueueProc(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitiveQueue *queue); /* recovered from SoftwareRenderer_DrawQueueNon16Bit */
+typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(); /* return type from call site; parameters TODO */
 typedef dword SoftwareRasterHandler(); /* TODO: unrecovered signature */
-typedef dword SoundQueryVoiceRegsProc(); /* TODO: unrecovered signature */
+typedef qword SoundQueryVoiceRegsProc(IDirectSoundBuffer *voice); /* recovered from DirectSound_QueryVoiceRegsStub */
 typedef dword SpinLockAcquireProc(); /* TODO: unrecovered signature */
 typedef dword SpinLockReleaseAndInvokeProc(); /* TODO: unrecovered signature */
 typedef dword SpinLockReleaseCallbackProc(); /* TODO: unrecovered signature */
 typedef dword SpinLockReleaseProc(); /* TODO: unrecovered signature */
-typedef dword SpinLockTryAcquireFlagsProc(); /* TODO: unrecovered signature */
+typedef bool SpinLockTryAcquireFlagsProc(); /* return type from call site; parameters TODO */
 typedef dword TerrainClassOverlayCallback(); /* TODO: unrecovered signature */
 typedef dword TimerCallbackProc(); /* TODO: unrecovered signature */
-typedef dword TimerRegisterPeriodicProc(); /* TODO: unrecovered signature */
-typedef dword TimerUnregisterPeriodicProc(); /* TODO: unrecovered signature */
+typedef void __thandor_void_preserve_eax_ecx_edx TimerRegisterPeriodicProc(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback); /* recovered from TimerSystem_RegisterPeriodic */
+typedef void __thandor_void_preserve_eax_ecx_edx TimerUnregisterPeriodicProc(TimerCallbackProc *callback); /* recovered from TimerSystem_UnregisterPeriodic */
 typedef dword UiRootCloseCallbackCf(); /* TODO: unrecovered signature */
 typedef dword UiRootFrameCallback(); /* TODO: unrecovered signature */
 typedef dword UiRootKeyboardFallbackCf(); /* TODO: unrecovered signature */
 typedef dword UiRootMethod08Callback(); /* TODO: unrecovered signature */
 typedef dword UiRootPointerMissPolicyCallback(); /* TODO: unrecovered signature */
 typedef dword UiRuntimePostUnlockCallbackProc(); /* TODO: unrecovered signature */
-typedef dword WSAIoctl_Proc(); /* TODO: unrecovered signature */
-typedef dword WSAStringToAddressA_Proc(); /* TODO: unrecovered signature */
-typedef dword Win32PumpMessagesProc(); /* TODO: unrecovered signature */
+typedef int WSAIoctl_Proc(); /* return type from call site; parameters TODO */
+typedef int WSAStringToAddressA_Proc(); /* return type from call site; parameters TODO */
+typedef void __thandor_void_preserve_eax_ecx_edx Win32PumpMessagesProc(void); /* recovered from Win32_PumpMessages */
 typedef dword WinSock_WSAAsyncGetHostByAddrProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSAAsyncGetHostByNameProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSAAsyncGetProtoByNameProc(); /* TODO: unrecovered signature */
@@ -156,17 +156,17 @@ typedef dword WinSock_WSAAsyncSelectProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSACancelAsyncRequestProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSACancelBlockingCallProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSACleanupProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_WSAGetLastErrorProc(); /* TODO: unrecovered signature */
+typedef int WinSock_WSAGetLastErrorProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_WSAIsBlockingProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSASetBlockingHookProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSAStartupProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_WSAUnhookBlockingHookProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_acceptProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_bindProc(); /* TODO: unrecovered signature */
+typedef int WinSock_bindProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_closesocketProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_connectProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_gethostbyaddrProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_gethostbynameProc(); /* TODO: unrecovered signature */
+typedef WinSockHostEnt32 * WinSock_gethostbynameProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_gethostnameProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_getpeernameProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_getprotobynameProc(); /* TODO: unrecovered signature */
@@ -176,21 +176,21 @@ typedef dword WinSock_getservbyportProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_getsocknameProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_getsockoptProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_htonlProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_htonsProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_inet_addrProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_inet_ntoaProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_ioctlsocketProc(); /* TODO: unrecovered signature */
+typedef word WinSock_htonsProc(); /* return type from call site; parameters TODO */
+typedef NetworkIpv4AddressNetworkOrder WinSock_inet_addrProc(); /* return type from call site; parameters TODO */
+typedef byte * WinSock_inet_ntoaProc(); /* return type from call site; parameters TODO */
+typedef int WinSock_ioctlsocketProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_listenProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_ntohlProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_ntohsProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_recvProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_recvfromProc(); /* TODO: unrecovered signature */
+typedef dword WinSock_recvfromProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_selectProc(); /* TODO: unrecovered signature */
 typedef dword WinSock_sendProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_sendtoProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_setsockoptProc(); /* TODO: unrecovered signature */
+typedef dword WinSock_sendtoProc(); /* return type from call site; parameters TODO */
+typedef int WinSock_setsockoptProc(); /* return type from call site; parameters TODO */
 typedef dword WinSock_shutdownProc(); /* TODO: unrecovered signature */
-typedef dword WinSock_socketProc(); /* TODO: unrecovered signature */
+typedef dword WinSock_socketProc(); /* return type from call site; parameters TODO */
 typedef dword WorldRuntimeNodeTraversalCallback(); /* TODO: unrecovered signature */
 
 extern FileSystemOpenCfProc * g_FileSystemOpenCf;

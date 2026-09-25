@@ -19,6 +19,8 @@ import pathlib
 import re
 import sys
 
+import infer_signatures
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # "Type[dims] *name;" where name may be a raw Ghidra string label such as u_engine\font.gfx_0041b030
 # "Type *[8] name" is an array of 8 pointers, i.e. "Type *name[8]" in C
@@ -117,7 +119,8 @@ def main(export):
          "",
          "/* Function-signature types Ghidra does not include in its C export. Unprototyped",
          " * placeholders: they accept any arguments. Replace with the real signature once recovered. */"]
-    h += [f"typedef dword {t}(); /* TODO: unrecovered signature */" for t in unrecovered_signatures()]
+    sigs = infer_signatures.infer(unrecovered_signatures(), [(t, n) for t, n, _, _ in decls])
+    h += [infer_signatures.render(t, s) for t, s in sigs.items()]
     h += [""]
     h += [f"extern {t} {n}{d};" for t, n, d, _ in decls]
     h += ["", "#endif /* THANDOR_GENERATED_GLOBALS_H */", ""]
@@ -126,11 +129,14 @@ def main(export):
           for t, n, d, i in decls]
     c += [""]
 
-    (ROOT / "include/thandor/generated/globals.h").write_text("\n".join(h), encoding="utf-8")
+    (ROOT / "include/thandor/generated/globals.h").write_text("\n".join(h), encoding="utf-8", newline="\n")
     out = ROOT / "src/generated/globals.c"
     out.parent.mkdir(exist_ok=True)
-    out.write_text("\n".join(c), encoding="utf-8")
+    out.write_text("\n".join(c), encoding="utf-8", newline="\n")
+    full = sum(1 for s in sigs.values() if s and s[0] == "full")
+    ret = sum(1 for s in sigs.values() if s and s[0] == "ret")
     print(f"block lines {lo + 1}-{hi}: {len(decls)} globals, {len(skipped)} function labels skipped")
+    print(f"signatures: {full} recovered, {ret} return-type only, {len(sigs) - full - ret} placeholders")
 
 
 if __name__ == "__main__":

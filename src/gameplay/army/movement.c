@@ -77,7 +77,7 @@ ArmyRuntimeClass_UpdateArticulatedMovement
     ArmyRuntime_ApplyDamageAndPropagateToParent(iVar8,(ArmyRuntimeSlot *)modelRuntime);
   }
   iVar8 = (modelRuntime->movementControl).movementAdvancePerTickQ12;
-  x = (ArmyRuntimeCoordinateCommandOrHistoryValue4)pMVar6->movementAdvanceDeltaQ12PerTick18;
+  x = THANDOR_BITCAST(Q12, ArmyRuntimeCoordinateCommandOrHistoryValue4, pMVar6->movementAdvanceDeltaQ12PerTick18);
   if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & 3U) != 0) {
     if (((int)modelRuntime->runtimeStateA8 < 0x801) &&
        ((int)(modelRuntime->articulatedContact).terrainContactMode < 0x801)) {
@@ -86,7 +86,7 @@ ArmyRuntimeClass_UpdateArticulatedMovement
     else {
       x.signedValue = -(x.signedValue - iVar8);
     }
-    (modelRuntime->movementControl).movementAdvancePerTickQ12 = (Q12)x;
+    (modelRuntime->movementControl).movementAdvancePerTickQ12 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, Q12, x);
     steeringAngle16 =
          (ModelRuntimeNode *)
          ((int)(iVar8 * (modelRuntime->articulatedContact).fallbackPosition1Q12 *
@@ -200,8 +200,7 @@ ArmyArticulatedMovement_ClearContactTransitionAndAdvanceWaypoint:
         iVar8 = WVar12.worldXQ12 - (modelNode1->worldTransform).translation.x;
         component0 = WVar12.worldYQ12 - (modelNode1->worldTransform).translation.y;
         if ((iVar8 == 0) && (component0 == 0)) {
-          FStack_24 = (FixedLengthAngleEaxEdx8)
-                      ((ulonglong)(modelNode1->modelPayload).worldRotationAngle2 << 0x20);
+          FStack_24 = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode1->modelPayload).worldRotationAngle2 << 0x20));
         }
         else {
           FStack_24 = FixedMath_Vector2AngleAndLengthRegs(component0,iVar8);
@@ -276,8 +275,7 @@ ArmyArticulatedMovement_SharedContinuation:
     }
     steeringAngle16 =
          (ModelRuntimeNode *)(modelRuntime->rootModelNode->worldTransform).translation.x;
-    x = (ArmyRuntimeCoordinateCommandOrHistoryValue4)
-        (modelRuntime->rootModelNode->worldTransform).translation.y;
+    x = THANDOR_BITCAST(GraphicsWorldCoordinateQ12, ArmyRuntimeCoordinateCommandOrHistoryValue4, (modelRuntime->rootModelNode->worldTransform).translation.y);
     if ((worldRuntime->fieldGrid->runtimeStateFlags & 1) == 0) {
       return;
     }
@@ -310,7 +308,7 @@ ArmyArticulatedMovement_InitializeSelectedTerrainContact:
 ArmyArticulatedMovement_CommitPositionSuspensionAndTransforms:
   modelNode1 = modelRuntime->rootModelNode;
   (modelNode1->worldTransform).translation.x = (GraphicsWorldCoordinateQ12)steeringAngle16;
-  (modelNode1->worldTransform).translation.y = (GraphicsWorldCoordinateQ12)x;
+  (modelNode1->worldTransform).translation.y = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, GraphicsWorldCoordinateQ12, x);
   modelNode1->runtimeFlags = modelNode1->runtimeFlags | 1;
   ArmyArticulatedRuntime_UpdateSuspensionHierarchy(modelNode1,worldRuntime);
   if (((iVar4 != (modelNode1->worldTransform).translation.x) ||
@@ -821,8 +819,7 @@ ArmyGroundMovementCollision_ContinueAfterLinkedRuntimeValidation:
     iVar12 = WVar20.worldYQ12 - (modelNode2->worldTransform).translation.y;
     iVar8 = WVar20.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((iVar8 == 0) && (iVar12 == 0)) {
-      FVar16 = (FixedLengthAngleEaxEdx8)
-               ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20);
+      FVar16 = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       FVar16 = FixedMath_Vector2AngleAndLengthRegs(iVar12,iVar8);
@@ -1152,8 +1149,7 @@ ArmyMovementBanking_ContinueAfterLinkedRuntimeValidation:
     iVar12 = dVar11 - (modelNode2->worldTransform).translation.x;
     iVar14 = (int)pAVar13 - (modelNode2->worldTransform).translation.y;
     if ((iVar12 == 0) && (iVar14 == 0)) {
-      FStack_24 = (FixedLengthAngleEaxEdx8)
-                  ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20);
+      FStack_24 = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       FStack_24 = FixedMath_Vector2AngleAndLengthRegs(iVar14,iVar12);
@@ -1563,10 +1559,9 @@ ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   pAVar1->runtimeState94 = dVar3;
   pAVar1->articulatedCoordinateOrState9C = dVar4;
   pAVar1->runtimeStateA4 = dVar2;
-  AVar1 = (ArmyRuntimeCoordinateCommandOrHistoryValue4)
-          (modelNodeRuntime->modelPayload).worldRotationAngle2;
-  pAVar1->classState60 = (dword)AVar1;
-  pAVar1->ownerValue64 = (dword)AVar1;
+  AVar1 = THANDOR_BITCAST(AngleTurn32, ArmyRuntimeCoordinateCommandOrHistoryValue4, (modelNodeRuntime->modelPayload).worldRotationAngle2);
+  pAVar1->classState60 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, dword, AVar1);
+  pAVar1->ownerValue64 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, dword, AVar1);
   (pAVar1->linkedChildOverloadedState).primaryCoordinateCommandOrHistory = AVar1;
   (pAVar1->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue = AVar1;
   (pAVar1->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory = AVar1;
@@ -1759,8 +1754,7 @@ ArmyGroundMovementVariantA_ContinueAfterLinkedRuntimeValidation:
     iVar10 = WVar17.worldYQ12 - (modelNode2->worldTransform).translation.y;
     iVar7 = WVar17.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((iVar7 == 0) && (iVar10 == 0)) {
-      FVar14 = (FixedLengthAngleEaxEdx8)
-               ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20);
+      FVar14 = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       FVar14 = FixedMath_Vector2AngleAndLengthRegs(iVar10,iVar7);
@@ -2249,8 +2243,7 @@ ArmyGroundMovementVariantB_ContinueAfterLinkedRuntimeValidation:
     iVar11 = WVar18.worldYQ12 - (modelNode2->worldTransform).translation.y;
     iVar8 = WVar18.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((iVar8 == 0) && (iVar11 == 0)) {
-      FVar15 = (FixedLengthAngleEaxEdx8)
-               ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20);
+      FVar15 = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       FVar15 = FixedMath_Vector2AngleAndLengthRegs(iVar11,iVar8);
@@ -2537,7 +2530,7 @@ ArmyArticulatedRuntime_UpdateContactChildAndEffects
   }
   if (effectDefinition != (EffectDefinition *)0x0) {
     EffectRuntimePool_CreateInstanceFromDefinitionCf
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (modelNode1->modelPayload).worldRotationAngle2,
                (modelNode1->modelPayload).worldRotationAngle1,
                (modelNode1->modelPayload).worldRotationAngle0,

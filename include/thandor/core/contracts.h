@@ -29,6 +29,16 @@ typedef unsigned int UQ12;
 #define false 0
 #endif
 
+/*
+Reinterpret the bytes of a register-image value as another type. Ghidra models multi-register
+results as structs ({eax, carry}, {eax, ecx, carry}, ...) and casts them to integers such as uint5
+or to other layout-compatible structs, which C only allows through a union.
+*/
+#define THANDOR_BITCAST(From, To, value) (((union { From from_; To to_; }){ .from_ = (value) }).to_)
+#ifdef _MSC_VER
+#pragma warning(disable: 4116) /* unnamed type definition in parentheses (THANDOR_BITCAST) */
+#endif
+
 #include <thandor/generated/globals.h>
 
 

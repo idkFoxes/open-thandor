@@ -326,7 +326,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         worldZQ12 = MVar36.edx;
         worldXQ12 = MVar36.ecx;
         EffectRuntimePool_CreateInstanceFromDefinitionCf
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                    worldZQ12,worldXQ12,MVar36.eax,effectDefinition,worldRuntime_00);
       }
     }
@@ -342,7 +342,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             MVar36 = ModelNodeRuntime_TransformLocalPointRegs
                                (MVar32.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
                        (modelNode->modelPayload).worldRotationAngle0,MVar36.edx,MVar36.ecx,
@@ -384,7 +384,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             MVar36 = ModelNodeRuntime_TransformLocalPointRegs
                                (MVar32.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
                        (modelNode->modelPayload).worldRotationAngle0,MVar36.edx,MVar36.ecx,

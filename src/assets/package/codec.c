@@ -172,7 +172,7 @@ PckCodec_DecodeFieldGrid
         iVar2 = iVar3;
       } while (rowsRemaining != 0);
       AVar6 = (*g_MemoryApi.free)(compactFieldImageBase);
-      return (PckCodecEaxCf5)((uint5)AVar6 & 0xffffffff);
+      return THANDOR_BITCAST(qword, PckCodecEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, AVar6) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     AVar6 = (*g_MemoryApi.free)(compactFieldImageBase);
     compactFieldImageBase = (AssetMagic *)AVar6.eax;
@@ -310,7 +310,7 @@ PckCodec_EncodeHuffmanRle
   pPVar7 = g_PckHuffmanSymbolWorkspace256;
   pPVar9 = g_PckHuffmanLeafNodeWorkspace256;
   do {
-    pPVar9->weight = (PckHuffmanWeight)*pPVar7;
+    pPVar9->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *pPVar7);
     pPVar7 = pPVar7 + 1;
     pPVar9 = pPVar9 + 1;
   } while (pPVar7 < g_PckHuffmanLeafNodeWorkspace256);
@@ -491,7 +491,7 @@ PckCodec_DecodeHuffmanRle
   pPVar8 = g_PckHuffmanSymbolWorkspace256;
   pPVar9 = g_PckHuffmanLeafNodeWorkspace256;
   do {
-    pPVar9->weight = (PckHuffmanWeight)*pPVar8;
+    pPVar9->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *pPVar8);
     pPVar8 = pPVar8 + 1;
     pPVar9 = pPVar9 + 1;
   } while (pPVar8 < g_PckHuffmanLeafNodeWorkspace256);

@@ -39,7 +39,7 @@ AiCombatDecision_UpdateTargetAssignment
       armyRuntime->commandGeneration = g_AiCommandGenerationRetainedTarget;
     }
     else if ((selectedTargetArmyRuntime == (ArmyRuntimeSlot *)0x0) &&
-            (AVar1.sourceClassCount != 0 && -1 < (longlong)AVar1)) {
+            (AVar1.sourceClassCount != 0 && -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, longlong, AVar1))) {
       ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->runtimeState98,armyRuntime);
       if ((armyRuntime->commandModeFlags & 1) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | 4;

@@ -80,7 +80,7 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
             ((armyRuntime->classState).classStateB0 == 6)) {
       EffectRuntimePool_CreateInstanceFromDefinitionCf
                 (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                 (EffectRuntimeOwnerReference4)modelRuntime,
+                 THANDOR_BITCAST(ModelRuntimeClass21UpdateView200 *, EffectRuntimeOwnerReference4, modelRuntime),
                  (modelNode1->modelPayload).worldRotationAngle2,
                  (modelNode1->modelPayload).worldRotationAngle1,
                  (modelNode1->modelPayload).worldRotationAngle0,
@@ -1364,7 +1364,7 @@ ArmyRuntime_ClassCommandHandlerGroupACf_AdvanceOwnerScanAfterProximityOrImpactDe
       if (!EVar9.carry) {
         EffectRuntimePool_CreateInstanceFromDefinitionCf
                   (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL,
-                   (EffectRuntimeOwnerReference4)armySlot1->linkedEntityRuntime,
+                   THANDOR_BITCAST(GameEntityRuntime *, EffectRuntimeOwnerReference4, armySlot1->linkedEntityRuntime),
                    (modelNode1->modelPayload).worldRotationAngle2,
                    (modelNode1->modelPayload).worldRotationAngle1,
                    (modelNode1->modelPayload).worldRotationAngle0,
@@ -1529,7 +1529,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf_LoadCurrentFactionGraphicsPackageAndBind
         PVar12 = Package_LoadEntry(graphicsBasePath);
         arg0 = PVar12.bufferOrError;
         if (PVar12.carry) {
-          return (ArmyRuntimeInitEaxCf5)PVar12;
+          return THANDOR_BITCAST(PackageLoadEntryEaxCf5, ArmyRuntimeInitEaxCf5, PVar12);
         }
         ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
                   (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)arg0);
@@ -1546,7 +1546,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf_LoadCurrentFactionGraphicsPackageAndBind
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].textureSet = pGVar5;
         WidePath_SetExtensionCode(0x6c6170,graphicsBasePath);
-        AVar14 = (ArmyRuntimeInitEaxCf5)(*g_GraphicsPaletteAssetLoadPackage)(graphicsBasePath);
+        AVar14 = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArmyRuntimeInitEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(graphicsBasePath));
         pGVar4 = (GraphicsPaletteAsset *)AVar14.errorOrValue;
         if (AVar14.carry) {
           return AVar14;
@@ -3179,7 +3179,7 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       pMVar3 = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
       EffectRuntimePool_CreateInstanceFromDefinitionCf
                 (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
-                 (EffectRuntimeOwnerReference4)modelRuntime,
+                 THANDOR_BITCAST(ModelRuntimeSlot *, EffectRuntimeOwnerReference4, modelRuntime),
                  (pMVar3->modelPayload).worldRotationAngle2,
                  (pMVar3->modelPayload).worldRotationAngle1,
                  (pMVar3->modelPayload).worldRotationAngle0,(pMVar3->worldTransform).translation.z,
@@ -4093,7 +4093,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
         if (!bVar7) {
           WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)modelNodeRuntime);
           ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
-          iVar5 = *(int *)armyRuntime->modelRuntimeOrSavedOffset;
+          iVar5 = *THANDOR_BITCAST(ModelRuntimeSlotReferenceOrSavedOffset4, int *, armyRuntime->modelRuntimeOrSavedOffset);
           (*g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(iVar5 + 0x278)])
                     (*(Q12 *)(iVar5 + 0x54),(modelNodeRuntime->worldTransform).translation.y,
                      (modelNodeRuntime->worldTransform).translation.x,modelNodeRuntime,worldRuntime)
@@ -4410,7 +4410,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitt
     orientationAngle2 = orientationAngle0;
   }
   EffectRuntimePool_CreateInstanceFromDefinitionCf
-            (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,orientationAngle0,
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),orientationAngle0,
              orientationAngle1,orientationAngle2,worldZQ12,worldY,dVar4,effectDefinition,
              worldContext1);
   pdVar1 = &(modelRuntime->classState).classStateE0;

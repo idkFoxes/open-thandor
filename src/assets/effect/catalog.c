@@ -85,7 +85,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
         in_EAX = (ShotDefinition *)EVar2.definitionOrError;
         if (EVar2.carry) {
-          return (StatusValueEaxCf5)EVar2;
+          return THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, StatusValueEaxCf5, EVar2);
         }
         currentDefinition->linkedEffectDefinition = (EffectDefinition *)in_EAX;
       }
@@ -94,7 +94,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
                           ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
         in_EAX = SVar3.definitionOrError;
         if (SVar3.carry) {
-          return (StatusValueEaxCf5)SVar3;
+          return THANDOR_BITCAST(ShotDefinitionLookupEaxCf5, StatusValueEaxCf5, SVar3);
         }
         currentDefinition->linkedShotDefinition = in_EAX;
       }

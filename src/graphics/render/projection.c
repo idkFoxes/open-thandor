@@ -143,7 +143,7 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
       g_SoftwareDepthBuffer = psVar1;
       g_SoftwareDepthEpoch = sVar2;
       (*g_MemoryApi.free)(psVar3);
-      return (GraphicsOffscreenAllocationEaxCf5)((uint5)AVar9 & 0xffffffff);
+      return THANDOR_BITCAST(qword, GraphicsOffscreenAllocationEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     (*g_MemoryApi.free)(psVar3);
     psVar3 = psVar5;

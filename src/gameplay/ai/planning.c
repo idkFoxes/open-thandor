@@ -580,7 +580,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)pAVar2);
             ArmyRuntime_DispatchClassCommand(armyRuntime,worldRuntime);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (pAVar2->movementControl).turnVelocityAngle16,
                        (pAVar2->movementControl).movementAdvancePerTickQ12,
                        ((WorldRuntimeNodeModelPayload *)&pAVar2->factionIndex)->worldRotationAngle0,
@@ -621,7 +621,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)pAVar2);
             ArmyRuntime_DispatchClassCommand(armyRuntime,worldRuntime);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (pAVar2->movementControl).turnVelocityAngle16,
                        (pAVar2->movementControl).movementAdvancePerTickQ12,
                        ((WorldRuntimeNodeModelPayload *)&pAVar2->factionIndex)->worldRotationAngle0,
@@ -907,7 +907,7 @@ joined_r0x00539894:
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(armySlot1,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinitionCf
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                    (modelNodeRuntime->movementControl).turnVelocityAngle16,
                    (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
                    ((WorldRuntimeNodeModelPayload *)&modelNodeRuntime->factionIndex)->
@@ -1720,7 +1720,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
             ArmyRuntime_DispatchClassCommand(armySlot1,worldRuntime);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNodeRuntime->movementControl).turnVelocityAngle16,
                        (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
                        ((WorldRuntimeNodeModelPayload *)&modelNodeRuntime->factionIndex)->

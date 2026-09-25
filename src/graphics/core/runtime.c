@@ -252,8 +252,8 @@ Graphics_SetViewProjectionParameters
   projectionAngle16 =
        FixedMath_Atan2Angle16(1 << (0xcU - (char)projectionShift & 0x1f),projectionScale);
   g_ProjectionAngleFactors[0] =
-       (GraphicsWideFixed)FixedMath_SinCosQ28(projectionAngle16 + viewAngle0 & 0xffff);
-  g_ProjectionAngleFactors[1] = (GraphicsWideFixed)FixedMath_SinCosQ28(angle);
+       THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed, FixedMath_SinCosQ28(projectionAngle16 + viewAngle0 & 0xffff));
+  g_ProjectionAngleFactors[1] = THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed, FixedMath_SinCosQ28(angle));
   return;
 }
 

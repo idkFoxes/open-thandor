@@ -52,8 +52,8 @@ TerrainHeightBand_TestAroundWorldPoint
     FVar10 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     uVar2 = FVar10.columnQ12 >> 0xc;
     uVar11 = FVar10.rowQ12 >> 0xc;
-    uVar3 = (uint)((ulonglong)FVar10 & 0xfff00000fff);
-    uVar5 = (uint)(((ulonglong)FVar10 & 0xfff00000fff) >> 0x20);
+    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff);
+    uVar5 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff) >> 0x20);
     uVar1 = uVar5 + uVar3 * 2;
     uVar12 = uVar2;
     if (uVar1 < 0x1000) {
@@ -156,8 +156,8 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
     FVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     uVar2 = FVar9.columnQ12 >> 0xc;
     uVar10 = FVar9.rowQ12 >> 0xc;
-    uVar3 = (uint)((ulonglong)FVar9 & 0xfff00000fff);
-    uVar4 = (uint)(((ulonglong)FVar9 & 0xfff00000fff) >> 0x20);
+    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff);
+    uVar4 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff) >> 0x20);
     uVar1 = uVar4 + uVar3 * 2;
     uVar11 = uVar2;
     if (uVar1 < 0x1000) {

@@ -1295,8 +1295,7 @@ GraphicsTextureSource_LoadPackageAsset(word *pathUtf16)
   PVar1 = Package_LoadEntry(pathUtf16);
   loadedPaletteTextureSource = PVar1.bufferOrError;
   if (!PVar1.carry) {
-    GVar2 = (GraphicsTextureSourceLoadEaxCf5)
-            (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource);
+    GVar2 = THANDOR_BITCAST(GraphicsPaletteTextureSourceEaxCf5, GraphicsTextureSourceLoadEaxCf5, (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource));
     convertedTextureSource = (GraphicsPaletteTextureSourceAsset *)GVar2.eax;
     if (!GVar2.carry) {
       return GVar2;
@@ -1592,7 +1591,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               do {
                 *pDVar18 = DVar13;
                 pDVar18 = pDVar18 + 1;
-                DVar13 = (DirectDrawPaletteEntry)((int)DVar13 + 0x1010101);
+                DVar13 = THANDOR_BITCAST(int, DirectDrawPaletteEntry, (THANDOR_BITCAST(DirectDrawPaletteEntry, int, DVar13) + 0x1010101));
                 iVar12 = iVar12 + -1;
               } while (iVar12 != 0);
               TVar11 = (*g_DirectDraw2->lpVtbl->CreatePalette)
@@ -2030,7 +2029,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               do {
                 *pDVar24 = DVar17;
                 pDVar24 = pDVar24 + 1;
-                DVar17 = (DirectDrawPaletteEntry)((int)DVar17 + 0x1010101);
+                DVar17 = THANDOR_BITCAST(int, DirectDrawPaletteEntry, (THANDOR_BITCAST(DirectDrawPaletteEntry, int, DVar17) + 0x1010101));
                 iVar16 = iVar16 + -1;
               } while (iVar16 != 0);
               TVar15 = (*g_DirectDraw2->lpVtbl->CreatePalette)
@@ -2674,7 +2673,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               do {
                 *pDVar36 = DVar28;
                 pDVar36 = pDVar36 + 1;
-                DVar28 = (DirectDrawPaletteEntry)((int)DVar28 + 0x1010101);
+                DVar28 = THANDOR_BITCAST(int, DirectDrawPaletteEntry, (THANDOR_BITCAST(DirectDrawPaletteEntry, int, DVar28) + 0x1010101));
                 iVar27 = iVar27 + -1;
               } while (iVar27 != 0);
               TVar26 = (*g_DirectDraw2->lpVtbl->CreatePalette)
@@ -4218,7 +4217,7 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
         iVar5 = iVar5 + 1;
         GStackY_20 = GStackY_20 - 1;
         if (GStackY_20 == 0) {
-          return (GraphicsTextureSetEaxCf5)((uint5)AVar9 & 0xffffffff);
+          return THANDOR_BITCAST(qword, GraphicsTextureSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       }
       pGVar4 = (GraphicsPaletteTextureSourceAsset *)&k_LowAddressLiteral0000002F;

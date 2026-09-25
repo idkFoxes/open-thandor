@@ -52,7 +52,7 @@ FileSystem_BuildEnumerationStringTableCf
     if (!FVar13.carry) {
       if (FVar3 == 0) {
         (*g_MemoryApi.free)(outputRecords);
-        return (FileSystemStringTableEaxEcxCf9)(unkuint9)0;
+        return THANDOR_BITCAST(unkuint9, FileSystemStringTableEaxEcxCf9, (unkuint9))0;
       }
       outputCapacityBytes = FVar3 * (int)pbVar2;
       AVar10 = (*g_MemoryApi.shrinkInPlace)(outputCapacityBytes,outputRecords);
@@ -430,14 +430,14 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              (word *)&g_ExecutableDirectoryUtf16);
-  FVar1 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+  FVar1 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
   handle = (void *)FVar1.eax;
   if (FVar1.carry) {
-    FVar1 = (*g_FileSystemOpenCf)(0,pathUtf16);
+    FVar1 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,pathUtf16));
     handle = (void *)FVar1.eax;
     if (FVar1.carry) goto LAB_0040eff4;
   }
-  FVar2 = (*g_FileSystemGetSizeCf)(handle);
+  FVar2 = THANDOR_BITCAST(Win32FileSizeEaxCf5, FileSystemSizeEaxCf5, (*g_FileSystemGetSizeCf)(handle));
   bytes = (void *)FVar2.eax;
   if (!FVar2.carry) {
     AVar3 = (*g_MemoryApi.alloc)((dword)bytes);
@@ -447,11 +447,11 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
       bytes = (void *)0x5;
     }
     else {
-      FVar4 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)AVar3.eax,handle);
+      FVar4 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)AVar3.eax,handle));
       bytes = (void *)FVar4.eax;
       if (!FVar4.carry) {
         (*g_FileSystemClose)(handle);
-        return (FileBufferEaxCf5)((uint5)AVar3 & 0xffffffff);
+        return THANDOR_BITCAST(qword, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar3) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)((void *)AVar3.eax);
     }
@@ -483,14 +483,14 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              (word *)&g_ExecutableDirectoryUtf16);
-  FVar1 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+  FVar1 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
   handle = (void *)FVar1.eax;
   if (FVar1.carry) {
-    FVar1 = (*g_FileSystemOpenCf)(0,pathUtf16);
+    FVar1 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,pathUtf16));
     handle = (void *)FVar1.eax;
     if (FVar1.carry) goto LAB_0040f1c3;
   }
-  FVar2 = (*g_FileSystemGetSizeCf)(handle);
+  FVar2 = THANDOR_BITCAST(Win32FileSizeEaxCf5, FileSystemSizeEaxCf5, (*g_FileSystemGetSizeCf)(handle));
   bytes = (void *)FVar2.eax;
   if (!FVar2.carry) {
     AVar3 = (*g_MemoryApi.alloc)((dword)bytes);
@@ -500,11 +500,11 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
       bytes = (void *)0x5;
     }
     else {
-      FVar4 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)AVar3.eax,handle);
+      FVar4 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)AVar3.eax,handle));
       bytes = (void *)FVar4.eax;
       if (!FVar4.carry) {
         (*g_FileSystemClose)(handle);
-        return (FileBufferEaxCf5)((uint5)AVar3 & 0xffffffff);
+        return THANDOR_BITCAST(qword, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar3) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)((void *)AVar3.eax);
     }
@@ -532,11 +532,11 @@ StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void 
   StatusValueEaxCf5 SVar3;
   StatusValueEaxCf5 SVar4;
   
-  FVar1 = (*g_FileSystemOpenCf)
-                    (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path);
+  FVar1 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)
+                    (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path));
   handle = (void *)FVar1.eax;
   if (!FVar1.carry) {
-    FVar2 = (*g_FileSystemWriteExactOrFlushCf)(byteCount,source,handle);
+    FVar2 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(byteCount,source,handle));
     writeFailureStatusCode = (void *)FVar2.eax;
     if (!FVar2.carry) {
       (*g_FileSystemClose)(handle);
@@ -1064,7 +1064,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
                                (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
     if (hFindFile == (HANDLE)0xffffffff) {
 LAB_00576af2:
-      return (FileSystemEnumerationEaxEcxCf9)(unkuint9)0x200;
+      return THANDOR_BITCAST(unkuint9, FileSystemEnumerationEaxEcxCf9, (unkuint9))0x200;
     }
     uVar2 = 0;
     destination = (word *)outputRecords;
@@ -1205,7 +1205,7 @@ Win32File_GetCurrentDirectoryCf(word *destination)
   narrowPathLength = GetCurrentDirectoryA(0xff,(LPSTR)g_Win32PathScratchA);
   if (narrowPathLength != 0) {
     SVar1 = Text_CopyNarrowToUtf16Cf(0x200,destination,g_Win32PathScratchA);
-    return (StatusValueEaxCf5)((uint5)SVar1 & 0xffffffff);
+    return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(StatusValueEaxCf5, qword, SVar1) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   destination[0] = 0;
   destination[1] = 0;

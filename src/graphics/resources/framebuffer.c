@@ -255,7 +255,7 @@ GraphicsFramebuffer_CaptureRegion16Bit
           puVar12 = puVar7;
         } while (captureHeight != 0);
         (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,arg1);
-        return (GraphicsFramebufferCaptureEaxCf5)((uint5)AVar10 & 0xffffffff);
+        return THANDOR_BITCAST(qword, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar10) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
     (*g_MemoryApi.free)(memory);
@@ -371,7 +371,7 @@ GraphicsFramebuffer_CaptureRegion32Bit
           puVar13 = puVar7;
         } while (captureHeight != 0);
         (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,arg1);
-        return (GraphicsFramebufferCaptureEaxCf5)((uint5)AVar11 & 0xffffffff);
+        return THANDOR_BITCAST(qword, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar11) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
     (*g_MemoryApi.free)(memory);

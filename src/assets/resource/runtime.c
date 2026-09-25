@@ -103,14 +103,14 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                (word *)&g_ExecutableDirectoryUtf16);
-    FVar4 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
     RVar8.eax = (byte *)FVar4.eax;
     if (FVar4.carry) {
-      FVar4 = (*g_FileSystemOpenCf)(0,path);
+      FVar4 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,path));
       RVar8.eax = (byte *)FVar4.eax;
       if (FVar4.carry) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
-    FVar5 = (*g_FileSystemGetSizeCf)(RVar8.eax);
+    FVar5 = THANDOR_BITCAST(Win32FileSizeEaxCf5, FileSystemSizeEaxCf5, (*g_FileSystemGetSizeCf)(RVar8.eax));
     bytes = (byte *)FVar5.eax;
     pbVar1 = bytes;
     if (!FVar5.carry) {
@@ -123,7 +123,7 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
         pbVar1 = (byte *)0x5;
       }
       else {
-        FVar6 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,RVar9.eax,RVar8.eax);
+        FVar6 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,RVar9.eax,RVar8.eax));
         pbVar1 = (byte *)FVar6.eax;
         if (!FVar6.carry) {
           (*g_FileSystemClose)(RVar8.eax);
@@ -395,8 +395,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
          ((int)(runtimeSlotCursor->modelNodeOrSavedOffset).modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     runtimeSlotCursor->completionAction = EVar1;
-    EVar2 = (EffectDefinitionReferenceOrSavedId4)
-            ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId;
+    EVar2 = THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
     (runtimeSlotCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode =
          ownerModelNode;
     runtimeSlotCursor->definitionOrSavedId = EVar2;
@@ -460,8 +459,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
          ((int)(runtimeSlotCursor->modelNodeOrSavedOffset).modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer = pvVar2;
-    SVar1 = (ShotDefinitionReferenceOrSavedId4)
-            ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId;
+    SVar1 = THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
     (runtimeSlotCursor->ownerAndTrajectory).ownerArmyRuntime = ownerArmyRuntime;
     runtimeSlotCursor->definitionOrSavedId = SVar1;
     runtimeSlotCursor = runtimeSlotCursor + 1;

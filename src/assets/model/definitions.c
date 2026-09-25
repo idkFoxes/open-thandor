@@ -47,7 +47,7 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
     iVar1 = iVar1 + -1;
   } while (iVar1 != 0);
   MVar3 = ModelDefinitionRegistry_FindByIdWithErrorCf(definitionId);
-  return (ModelDefinitionLookupEaxCf5)((uint5)MVar3 & 0xffffffff);
+  return THANDOR_BITCAST(qword, ModelDefinitionLookupEaxCf5, ((THANDOR_BITCAST(ModelDefinitionLookupEaxCf5, qword, MVar3) & 0xFFFFFFFFFFull) & 0xffffffff));
 }
 
 
@@ -205,7 +205,7 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
        (uint *)(modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
   while( true ) {
     if (entriesRemaining == 0) {
-      return (ModelLookupPayloadEaxEcxEdxCf13)(ZEXT513(0x100000000) << 0x40);
+      return THANDOR_BITCAST(int, ModelLookupPayloadEaxEcxEdxCf13, (ZEXT513(0x100000000) << 0x40));
     }
     if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) break;
     packedKeyEntryCursor = packedKeyEntryCursor + 4;

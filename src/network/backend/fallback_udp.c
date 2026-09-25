@@ -431,7 +431,7 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
     g_NetworkBackendBindAddress._8_4_ = 0;
     g_NetworkBackendBindAddress._12_4_ = 0;
     g_NetworkBackendBindAddress.ipv4.addressHeader =
-         (NetworkEndpointAddressHeader4)g_NetworkBackendActiveAddressFamily;
+         THANDOR_BITCAST(dword, NetworkEndpointAddressHeader4, g_NetworkBackendActiveAddressFamily);
     dVar2 = g_NetworkBackendActiveSocketAddressLength;
     if (g_NetworkBackendActiveSocketAddressLength < 0x10) {
       dVar2 = 0x10;

@@ -390,7 +390,7 @@ ShotDefinition_ResolveNextPrimaryEffectReference:
     iVar2 = iVar2 + 1;
     iVar3 = iVar3 + -1;
     if (iVar3 == 0) {
-      return (StatusValueEaxCf5)((uint5)EVar9 & 0xffffffff);
+      return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, qword, EVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
 ShotDefinition_ReturnReferenceResolutionResult:

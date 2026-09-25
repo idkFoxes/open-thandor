@@ -679,8 +679,8 @@ FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     uVar2 = FVar10.columnQ12 >> 0xc;
     uVar11 = FVar10.rowQ12 >> 0xc;
-    uVar3 = (uint)((ulonglong)FVar10 & 0xfff00000fff);
-    uVar6 = (uint)(((ulonglong)FVar10 & 0xfff00000fff) >> 0x20);
+    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff);
+    uVar6 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff) >> 0x20);
     uVar5 = uVar6 + uVar3 * 2;
     uVar12 = uVar2;
     if (uVar5 < 0x1000) {
@@ -2787,7 +2787,7 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(dword *sourceImageDwords)
                        (word *)&g_LevelResourcePathScratchUtf16);
     if (!SVar6.carry) {
       AVar7 = (*g_MemoryApi.free)(fieldGridImageCopy);
-      return (StatusValueEaxCf5)((uint5)AVar7 & 0xffffffff);
+      return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, AVar7) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     pFVar1 = (FieldGridAsset *)SVar6.valueOrError;
     (*g_MemoryApi.free)(fieldGridImageCopy);

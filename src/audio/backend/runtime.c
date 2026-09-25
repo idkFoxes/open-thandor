@@ -355,7 +355,7 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
             do {
               if (ppDVar1 == (DirectSoundVoiceSet **)0x0) {
 LAB_00583652:
-                return (SoundCreateSampleVoiceSetEaxCf5)((uint5)AVar10 & 0xffffffff);
+                return THANDOR_BITCAST(qword, SoundCreateSampleVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar10) & 0xFFFFFFFFFFull) & 0xffffffff));
               }
               if (*ppDVar9 == (DirectSoundVoiceSet *)0x0) {
                 *ppDVar9 = (DirectSoundVoiceSet *)ppIVar7;
@@ -510,7 +510,7 @@ DirectSound_CreatePcmVoiceSet
           do {
             if (ppDVar1 == (DirectSoundVoiceSet **)0x0) {
 LAB_00583892:
-              return (SoundCreatePcmVoiceSetEaxCf5)((uint5)AVar11 & 0xffffffff);
+              return THANDOR_BITCAST(qword, SoundCreatePcmVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar11) & 0xFFFFFFFFFFull) & 0xffffffff));
             }
             if (*ppDVar10 == (DirectSoundVoiceSet *)0x0) {
               *ppDVar10 = (DirectSoundVoiceSet *)ppIVar7;

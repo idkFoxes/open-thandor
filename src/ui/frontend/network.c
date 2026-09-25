@@ -134,7 +134,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       pUVar4 = &g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (dword *)&g_FrontendNetworkEndpointScratch;
       for (iVar3 = 4; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *endpointDestinationDwordCursor = (dword)pUVar4->addressHeader;
+        *endpointDestinationDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, dword, pUVar4->addressHeader);
         pUVar4 = (UiTransferEndpointDescriptor *)&pUVar4->ipv4AddressNetworkOrder;
         endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
       }

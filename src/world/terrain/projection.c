@@ -53,8 +53,8 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
     iVar3 = g_TerrainScanReferenceHeight;
     uVar1 = FVar10.columnQ12 >> 0xc;
     uVar11 = FVar10.rowQ12 >> 0xc;
-    uVar4 = (uint)((ulonglong)FVar10 & 0xfff00000fff);
-    uVar6 = (uint)(((ulonglong)FVar10 & 0xfff00000fff) >> 0x20);
+    uVar4 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff);
+    uVar6 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff) >> 0x20);
     uVar5 = uVar6 + uVar4 * 2;
     uVar12 = uVar1;
     if (uVar5 < 0x1000) {
@@ -154,8 +154,8 @@ FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     uVar1 = FVar9.columnQ12 >> 0xc;
     uVar10 = FVar9.rowQ12 >> 0xc;
-    uVar3 = (uint)((ulonglong)FVar9 & 0xfff00000fff);
-    uVar5 = (uint)(((ulonglong)FVar9 & 0xfff00000fff) >> 0x20);
+    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff);
+    uVar5 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff) >> 0x20);
     uVar4 = uVar5 + uVar3 * 2;
     uVar11 = uVar1;
     if (uVar4 < 0x1000) {
@@ -252,8 +252,8 @@ FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     uVar1 = FVar9.columnQ12 >> 0xc;
     uVar10 = FVar9.rowQ12 >> 0xc;
-    uVar3 = (uint)((ulonglong)FVar9 & 0xfff00000fff);
-    uVar5 = (uint)(((ulonglong)FVar9 & 0xfff00000fff) >> 0x20);
+    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff);
+    uVar5 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff) >> 0x20);
     uVar4 = uVar5 + uVar3 * 2;
     uVar11 = uVar1;
     if (uVar4 < 0x1000) {

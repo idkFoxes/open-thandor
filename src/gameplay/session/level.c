@@ -1800,7 +1800,7 @@ InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf(InGameLevelSaveWorldView 
                       (*(FileIoByteCount *)(source + 4),source,g_LevelEndingMovieSourcePath);
     dVar8 = SVar9.valueOrError;
     if (!SVar9.carry) {
-      return (StatusValueEaxCf5)((uint5)SVar9 & 0xffffffff);
+      return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(StatusValueEaxCf5, qword, SVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   SVar9.carry = true;

@@ -361,9 +361,8 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
                      (modelNodeRuntime->modelPayload).worldRotationAngle0 + 0x8000 + uVar1 & 0xffff)
   ;
   FVar2 = FixedMath_VectorToAngles3Regs(FVar3.zQ12,FVar3.yQ12,FVar3.xQ12);
-  return (ModelRelativeDirectionAnglesEaxEdx8)
-         (CONCAT44(FVar2.edx,FVar2.ecx + (modelNodeRuntime->modelPayload).localRotationAngle2) &
-         0xffffffff0000ffff);
+  return THANDOR_BITCAST(unsigned __int64, ModelRelativeDirectionAnglesEaxEdx8, (CONCAT44(FVar2.edx,FVar2.ecx + (modelNodeRuntime->modelPayload).localRotationAngle2) &
+         0xffffffff0000ffff));
 }
 
 
@@ -1092,7 +1091,7 @@ ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure:
   modelNode1->parentNode = (ModelRuntimeNode *)0x0;
   do {
     if (dVar10 == 0) {
-      return (ModelNodeCreateEaxCf5)((uint5)WVar13 & 0xffffffff);
+      return THANDOR_BITCAST(qword, ModelNodeCreateEaxCf5, ((THANDOR_BITCAST(WorldObjectRecordEaxCf5, qword, WVar13) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     pMVar12 = (ModelAttachmentTransformRecord *)
               (pMVar4->reserved00_AF + pMVar4->packedLookupTableRelativeOffset);

@@ -192,7 +192,7 @@ GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entity
   {
     if (entityListHead->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [*(int *)((int)(entityListHead->runtimePayload->common).ownership.definitionOrClassRecord +
+        [*(int *)((int)(((GameEntityRuntime *)entityListHead->runtimePayload)->common).ownership.definitionOrClassRecord +
                  0x4c)])(entityListHead->runtimePayload);
     }
   }

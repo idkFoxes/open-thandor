@@ -794,20 +794,18 @@ ArmyPlacement_DispatchAssetAtFieldPoint
   
   AVar2 = ArmyAssetRegistry_FindByIdCf(armyAssetId);
   if (!AVar2.carry) {
-    AVar2 = (ArmyRegistryEaxCf5_51b6d0)
-            ModelDefinitionRegistry_FindByIdWithErrorCf
+    AVar2 = THANDOR_BITCAST(ModelDefinitionLookupEaxCf5, ArmyRegistryEaxCf5_51b6d0, ModelDefinitionRegistry_FindByIdWithErrorCf
                       (*(PckModelDefinitionIdCatalog *)((AVar2.eax)->rootNodeOffsetOrPointer + 0x20)
-                      );
+                      ));
     modelDefinition = AVar2.eax;
     if (!AVar2.carry) {
       dVar1 = modelDefinition[4].rootNodeOffsetOrPointer;
       FVar3 = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
-      AVar2 = (ArmyRegistryEaxCf5_51b6d0)
-              (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[dVar1]
+      AVar2 = THANDOR_BITCAST(ArmyPlacementDispatchEaxCf5, ArmyRegistryEaxCf5_51b6d0, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[dVar1]
               )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,FVar3.heightQ12,
                 worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
-                (WorldRuntimeContext *)inGameRoot);
+                (WorldRuntimeContext *)inGameRoot));
     }
   }
   AVar4.eax = (dword)AVar2.eax;

@@ -820,7 +820,7 @@ WorldRuntimeNode_IsPositionInsideBoundsCf
             (&g_GraphicsProjectionScratchVec3,(GraphicsFixedVec3 *)&runtimeNode->worldXQ12,
              &g_ViewProjectionMatrixFixed);
   projectedPositionPair =
-       (GraphicsProjectedPointEdxEax8)Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3);
+       THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3));
   boundsMinX = boundsControl->extendedCoordinate160;
   iVar1 = boundsControl->extendedCoordinate168;
   boundsMinY = boundsControl->extendedCoordinate164;

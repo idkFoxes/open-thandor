@@ -373,7 +373,7 @@ SoftwareFramebuffer_Create
       *pGVar1 = 0;
       pGVar1 = pGVar1 + 1;
     }
-    AVar3 = (ArenaAllocEaxCf5)((uint5)AVar3 & 0xffffffff);
+    AVar3 = THANDOR_BITCAST(qword, ArenaAllocEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar3) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   SVar4.framebuffer = (SoftwareFramebufferAccess *)AVar3.eax;
   SVar4.carry = AVar3.carry;
@@ -546,7 +546,7 @@ SoftwareTextureSource_BlitSourceAlpha16
                   mm1PackedValue1ByteLane2 = (byte)(uVar4 >> 0x10);
                   mm1PackedValue1ByteLane1 = (byte)(uVar4 >> 8);
                   uVar14 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue1 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
                                        >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -581,7 +581,7 @@ SoftwareTextureSource_BlitSourceAlpha16
                                                           (short)((ulonglong)mm1PackedValue1 >> 0x10
                                                                  ),(short)mm0PackedValue2 +
                                                                    (short)mm1PackedValue1))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar13 =
                        (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -670,7 +670,7 @@ SoftwareTextureSource_BlitSourceAlpha16
                   mm1PackedValue0ByteLane2 = (byte)(uVar4 >> 0x10);
                   mm1PackedValue0ByteLane1 = (byte)(uVar4 >> 8);
                   uVar14 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue0 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
                                        >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -705,7 +705,7 @@ SoftwareTextureSource_BlitSourceAlpha16
                                                           (short)((ulonglong)mm1PackedValue0 >> 0x10
                                                                  ),(short)mm0PackedValue0 +
                                                                    (short)mm1PackedValue0))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar13 =
                        (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -1133,7 +1133,7 @@ SoftwareTextureSource_BlitHalfSourceRgb16
                 mm1PackedValue1ByteLane2 = (byte)(uVar4 >> 0x10);
                 mm1PackedValue1ByteLane1 = (byte)(uVar4 >> 8);
                 uVar14 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm1PackedValue1 =
                      pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3) >>
                                      3,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -1167,7 +1167,7 @@ SoftwareTextureSource_BlitHalfSourceRgb16
                                                                  ),
                                                         (short)mm0PackedValue2 +
                                                         (short)mm1PackedValue1))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -1244,7 +1244,7 @@ SoftwareTextureSource_BlitHalfSourceRgb16
                 mm1PackedValue0ByteLane2 = (byte)(uVar4 >> 0x10);
                 mm1PackedValue0ByteLane1 = (byte)(uVar4 >> 8);
                 uVar14 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm1PackedValue0 =
                      pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3) >>
                                      3,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -1278,7 +1278,7 @@ SoftwareTextureSource_BlitHalfSourceRgb16
                                                                  ),
                                                         (short)mm0PackedValue0 +
                                                         (short)mm1PackedValue0))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -1877,10 +1877,10 @@ SoftwareTextureSource_StretchDirectColorBilinear16
                                                            cVar18),cVar17),cVar17),
                                 CONCAT11(cVar16,cVar16)),4);
         mm0PackedValue2 =
-             pmaddwd(uVar30 & (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+             pmaddwd(uVar30 & THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                      g_SoftwarePixelMmxConstants.packWeights);
         mm4PackedValue2 =
-             pmaddwd(uVar35 & (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+             pmaddwd(uVar35 & THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                      g_SoftwarePixelMmxConstants.packWeights);
         *(uint *)pbVar28 =
              CONCAT22((short)((ulonglong)mm4PackedValue2 >> 8) +
@@ -2329,7 +2329,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
                       mm1PackedValue1ByteLane2 = (byte)(uVar3 >> 0x10);
                       mm1PackedValue1ByteLane1 = (byte)(uVar3 >> 8);
                       uVar16 = CONCAT44(CONCAT22(sVar2,sVar2),CONCAT22(sVar2,sVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm1PackedValue1 =
                            pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,
                                                     mm1PackedValue1ByteLane3) >> 2,
@@ -2366,7 +2366,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
                                                                      0x10),
                                                               (short)mm0PackedValue2 +
                                                               (short)mm1PackedValue1))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar14 =
                            (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -2440,7 +2440,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
                       mm1PackedValue0ByteLane2 = (byte)(uVar6 >> 0x10);
                       mm1PackedValue0ByteLane1 = (byte)(uVar6 >> 8);
                       uVar16 = CONCAT44(CONCAT22(sVar2,sVar2),CONCAT22(sVar2,sVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm1PackedValue0 =
                            pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,
                                                     mm1PackedValue0ByteLane3) >> 2,
@@ -2477,7 +2477,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
                                                                      0x10),
                                                               (short)mm0PackedValue0 +
                                                               (short)mm1PackedValue0))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar14 =
                            (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -2917,7 +2917,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
                   mm1PackedValue1ByteLane2 = (byte)(uVar3 >> 0x10);
                   mm1PackedValue1ByteLane1 = (byte)(uVar3 >> 8);
                   uVar13 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue1 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
                                        >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -2952,7 +2952,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
                                                           (short)((ulonglong)mm1PackedValue1 >> 0x10
                                                                  ),(short)mm0PackedValue2 +
                                                                    (short)mm1PackedValue1))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar12 =
                        (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -3040,7 +3040,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
                     mm1PackedValue0ByteLane2 = (byte)(uVar3 >> 0x10);
                     mm1PackedValue0ByteLane1 = (byte)(uVar3 >> 8);
                     uVar13 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                     mm1PackedValue0 =
                          pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
                                          >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -3076,7 +3076,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
                                                                    0x10),
                                                             (short)mm0PackedValue0 +
                                                             (short)mm1PackedValue0))) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                  g_SoftwarePixelMmxConstants.packWeights);
                     *(short *)pbVar12 =
                          (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -3500,7 +3500,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
                 uVar16 = (undefined1)(uVar4 >> 0x10);
                 uVar15 = (undefined1)(uVar4 >> 8);
                 uVar14 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue2 =
                      paddusw(CONCAT26((short)(uVar14 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3520,7 +3520,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue2 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue2 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue2 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -3597,7 +3597,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
                 uVar16 = (undefined1)(uVar4 >> 0x10);
                 uVar15 = (undefined1)(uVar4 >> 8);
                 uVar14 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue0 =
                      paddusw(CONCAT26((short)(uVar14 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3617,7 +3617,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue0 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue0 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue0 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -3998,7 +3998,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
                 uVar17 = (undefined1)(uVar4 >> 0x10);
                 uVar16 = (undefined1)(uVar4 >> 8);
                 uVar15 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue2 =
                      paddusw(CONCAT26((short)(uVar15 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -4020,7 +4020,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue2 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue2 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue2 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar14 =
                      (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -4098,7 +4098,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
                 uVar17 = (undefined1)(uVar4 >> 0x10);
                 uVar16 = (undefined1)(uVar4 >> 8);
                 uVar15 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue0 =
                      paddusw(CONCAT26((short)(uVar15 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -4120,7 +4120,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue0 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue0 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue0 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar14 =
                      (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -4537,7 +4537,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
                   mm1PackedValue1ByteLane1 = (byte)(uVar18 >> 8);
                   mm1PackedValue1ByteLane0 = (byte)(uVar5 >> 8);
                   uVar22 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   uVar13 = uVar13 >> 8;
                   mm1PackedValue1 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
@@ -4573,7 +4573,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
                                                           (short)((ulonglong)mm1PackedValue1 >> 0x10
                                                                  ),(short)mm0PackedValue2 +
                                                                    (short)mm1PackedValue1))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar21 =
                        (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -4667,7 +4667,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
                   mm1PackedValue0ByteLane1 = (byte)(uVar18 >> 8);
                   mm1PackedValue0ByteLane0 = (byte)(uVar5 >> 8);
                   uVar22 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   uVar13 = uVar13 >> 8;
                   mm1PackedValue0 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
@@ -4703,7 +4703,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
                                                           (short)((ulonglong)mm1PackedValue0 >> 0x10
                                                                  ),(short)mm0PackedValue0 +
                                                                    (short)mm1PackedValue0))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar21 =
                        (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -5140,7 +5140,7 @@ SoftwareFramebuffer_FillRectArgb16
               mm1PackedValue0ByteLane2 = (undefined1)(argb8888 >> 0x10);
               mm1PackedValue0ByteLane1 = (undefined1)(argb8888 >> 8);
               uVar10 = CONCAT44(CONCAT22(sVar1,sVar1),CONCAT22(sVar1,sVar1)) &
-                       (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                       THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
               mm1PackedValue0 =
                    pmulhw(CONCAT26(uVar6 >> 2,
                                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar6,
@@ -5172,7 +5172,7 @@ SoftwareFramebuffer_FillRectArgb16
                                                       (short)((ulonglong)mm1PackedValue0 >> 0x10),
                                                       (short)mm0PackedValue0 +
                                                       (short)mm1PackedValue0))) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                            g_SoftwarePixelMmxConstants.packWeights);
               *(short *)pbVar9 =
                    (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -5887,7 +5887,7 @@ void SoftwareRaster16_Mode16
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar9,cVar9) >> 4,
                                                                 CONCAT11(cVar10,cVar10) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue23 >> 8) +
@@ -6026,7 +6026,7 @@ void SoftwareRaster16_Mode16
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue22 >> 8) +
@@ -6211,7 +6211,7 @@ void SoftwareRaster16_Mode16
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue15 >> 8) +
@@ -6354,7 +6354,7 @@ void SoftwareRaster16_Mode16
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar7,cVar7) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue2 >> 8) +
@@ -6558,7 +6558,7 @@ void SoftwareRaster16_Mode16
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue17 >> 8) +
@@ -6697,7 +6697,7 @@ void SoftwareRaster16_Mode16
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue13 >> 8) +
@@ -6882,7 +6882,7 @@ void SoftwareRaster16_Mode16
                                                                         cVar10) >> 4,
                                                        CONCAT22(CONCAT11(cVar7,cVar7) >> 4,
                                                                 CONCAT11(cVar8,cVar8) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue8 >> 8) +
@@ -7025,7 +7025,7 @@ void SoftwareRaster16_Mode16
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar20 =
                              (short)((ulonglong)mm6PackedValue5 >> 8) +
@@ -7453,7 +7453,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue25 = psllw(mm6PackedValue27,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue27 >> 0x34);
                         mm0PackedValue22 =
@@ -7502,7 +7502,7 @@ void SoftwareRaster16_Mode22
                                                                        ) >> 4,
                                                        CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                                 CONCAT11(cVar11,cVar11) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue39 >> 8) +
@@ -7625,7 +7625,7 @@ void SoftwareRaster16_Mode22
                                                                2))));
                         uVar2 = *(undefined2 *)pbVar21;
                         uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                         mm6PackedValue22 = psllw(mm6PackedValue23,2);
                         uVar17 = (uint)((ulonglong)mm6PackedValue23 >> 0x34);
                         mm0PackedValue18 =
@@ -7674,7 +7674,7 @@ void SoftwareRaster16_Mode22
                                                                         cVar11) >> 4,
                                                        CONCAT22(CONCAT11(cVar8,cVar8) >> 4,
                                                                 CONCAT11(cVar9,cVar9) >> 4))) &
-                                     (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                     THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                      g_SoftwarePixelMmxConstants.packWeights);
                         *(short *)pbVar21 =
                              (short)((ulonglong)mm6PackedValue35 >> 8) +

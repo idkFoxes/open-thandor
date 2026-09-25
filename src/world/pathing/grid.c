@@ -711,7 +711,7 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + 0x180000);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
         AVar2 = (*g_MemoryApi.free)(memory_00);
-        return (GridScratchAllocEaxCf5)((uint5)AVar2 & 0xffffffff);
+        return THANDOR_BITCAST(qword, GridScratchAllocEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, AVar2) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
@@ -1487,7 +1487,7 @@ GridPathRegion_MarkUnreachableFromCell
   GVar3 = GridPathRegion_MarkUnreachableRecursive
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,0x7fffffff
                      ,(rowBaseIndex + column) * 8);
-  uVar1 = (ulonglong)GVar3 >> 3 & 0x1fffffff;
+  uVar1 = THANDOR_BITCAST(GridPathUnreachableRecursiveEdiEdx8, ulonglong, GVar3) >> 3 & 0x1fffffff;
   GVar2.selectedRow = (FieldGridCellCoordinate)(uVar1 / g_GridScratchWidth);
   GVar2.selectedColumn = (FieldGridCellCoordinate)(uVar1 % (ulonglong)g_GridScratchWidth);
   return GVar2;

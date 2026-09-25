@@ -907,7 +907,7 @@ Glide3_Framebuffer_CaptureRegion
   ushort *destinationPixels;
   
   iVar4 = captureWidth * captureHeight;
-  GVar8 = (GraphicsFramebufferCaptureEaxCf5)(*g_MemoryApi.alloc)(iVar4 * 4 + 0x220);
+  GVar8 = THANDOR_BITCAST(ArenaAllocEaxCf5, GraphicsFramebufferCaptureEaxCf5, (*g_MemoryApi.alloc)(iVar4 * 4 + 0x220));
   pGVar2 = GVar8.eax;
   if (!GVar8.carry) {
     destinationPixels = (ushort *)((int)pGVar2->argb8888Pixels + iVar4 * 2);
@@ -959,7 +959,7 @@ Glide3_Framebuffer_CaptureRegion
       pdVar7 = pdVar7 + 1;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
-    GVar8 = (GraphicsFramebufferCaptureEaxCf5)((uint5)GVar8 & 0xffffffff);
+    GVar8 = THANDOR_BITCAST(qword, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(GraphicsFramebufferCaptureEaxCf5, qword, GVar8) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   return GVar8;
 }
@@ -1882,7 +1882,7 @@ Glide3_TextureSource_BlitSourceAlpha
                   mm1PackedValue1ByteLane1 = (byte)(uVar5 >> 8);
                   pbVar13 = pbVar13 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   uVar14 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue1 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
                                        >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -1917,7 +1917,7 @@ Glide3_TextureSource_BlitSourceAlpha
                                                           (short)((ulonglong)mm1PackedValue1 >> 0x10
                                                                  ),(short)mm0PackedValue2 +
                                                                    (short)mm1PackedValue1))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar13 =
                        (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -2008,7 +2008,7 @@ Glide3_TextureSource_BlitSourceAlpha
                   mm1PackedValue0ByteLane1 = (byte)(uVar5 >> 8);
                   pbVar13 = pbVar13 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   uVar14 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue0 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
                                        >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -2043,7 +2043,7 @@ Glide3_TextureSource_BlitSourceAlpha
                                                           (short)((ulonglong)mm1PackedValue0 >> 0x10
                                                                  ),(short)mm0PackedValue0 +
                                                                    (short)mm1PackedValue0))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar13 =
                        (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -2185,7 +2185,7 @@ Glide3_TextureSource_BlitHalfSourceRgb
                 mm1PackedValue1ByteLane1 = (byte)(uVar5 >> 8);
                 pbVar13 = pbVar13 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 uVar14 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm1PackedValue1 =
                      pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3) >>
                                      3,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -2219,7 +2219,7 @@ Glide3_TextureSource_BlitHalfSourceRgb
                                                                  ),
                                                         (short)mm0PackedValue2 +
                                                         (short)mm1PackedValue1))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -2298,7 +2298,7 @@ Glide3_TextureSource_BlitHalfSourceRgb
                 mm1PackedValue0ByteLane1 = (byte)(uVar5 >> 8);
                 pbVar13 = pbVar13 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 uVar14 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm1PackedValue0 =
                      pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3) >>
                                      3,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -2332,7 +2332,7 @@ Glide3_TextureSource_BlitHalfSourceRgb
                                                                  ),
                                                         (short)mm0PackedValue0 +
                                                         (short)mm1PackedValue0))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -2662,10 +2662,10 @@ Glide3_TextureSource_StretchDirectColorBilinear
                                                                      ),cVar17),cVar16),cVar16),
                                   CONCAT11(cVar15,cVar15)),4);
           mm0PackedValue2 =
-               pmaddwd(uVar32 & (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+               pmaddwd(uVar32 & THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                        g_SoftwarePixelMmxConstants.packWeights);
           mm4PackedValue2 =
-               pmaddwd(uVar37 & (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+               pmaddwd(uVar37 & THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                        g_SoftwarePixelMmxConstants.packWeights);
           *(uint *)pbVar30 =
                CONCAT22((short)((ulonglong)mm4PackedValue2 >> 8) +
@@ -2801,7 +2801,7 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                       mm1PackedValue1ByteLane1 = (byte)(uVar3 >> 8);
                       pbVar14 = pbVar14 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                       uVar16 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm1PackedValue1 =
                            pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,
                                                     mm1PackedValue1ByteLane3) >> 2,
@@ -2838,7 +2838,7 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                                                      0x10),
                                                               (short)mm0PackedValue2 +
                                                               (short)mm1PackedValue1))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar14 =
                            (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -2914,7 +2914,7 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                       mm1PackedValue0ByteLane1 = (byte)(uVar6 >> 8);
                       pbVar14 = pbVar14 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                       uVar16 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm1PackedValue0 =
                            pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,
                                                     mm1PackedValue0ByteLane3) >> 2,
@@ -2951,7 +2951,7 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                                                      0x10),
                                                               (short)mm0PackedValue0 +
                                                               (short)mm1PackedValue0))) &
-                                   (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)pbVar14 =
                            (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -3108,7 +3108,7 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                   mm1PackedValue1ByteLane1 = (byte)(uVar4 >> 8);
                   pbVar12 = pbVar12 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   uVar13 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue1 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
                                        >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -3143,7 +3143,7 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                                                           (short)((ulonglong)mm1PackedValue1 >> 0x10
                                                                  ),(short)mm0PackedValue2 +
                                                                    (short)mm1PackedValue1))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar12 =
                        (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -3233,7 +3233,7 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                     mm1PackedValue0ByteLane1 = (byte)(uVar4 >> 8);
                     pbVar12 = pbVar12 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                     uVar13 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                     mm1PackedValue0 =
                          pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
                                          >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
@@ -3269,7 +3269,7 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                                                                    0x10),
                                                             (short)mm0PackedValue0 +
                                                             (short)mm1PackedValue0))) &
-                                 (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                                 THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                  g_SoftwarePixelMmxConstants.packWeights);
                     *(short *)pbVar12 =
                          (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -3408,7 +3408,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                 uVar15 = (undefined1)(uVar5 >> 8);
                 pbVar13 = pbVar13 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 uVar14 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue2 =
                      paddusw(CONCAT26((short)(uVar14 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3428,7 +3428,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue2 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue2 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue2 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -3507,7 +3507,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                 uVar15 = (undefined1)(uVar5 >> 8);
                 pbVar13 = pbVar13 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 uVar14 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue0 =
                      paddusw(CONCAT26((short)(uVar14 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3527,7 +3527,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue0 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue0 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue0 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar13 =
                      (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -3661,7 +3661,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                 uVar16 = (undefined1)(uVar5 >> 8);
                 pbVar14 = pbVar14 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 uVar15 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue2 =
                      paddusw(CONCAT26((short)(uVar15 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3683,7 +3683,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue2 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue2 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue2 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar14 =
                      (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -3763,7 +3763,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                 uVar16 = (undefined1)(uVar5 >> 8);
                 pbVar14 = pbVar14 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 uVar15 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                         (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                         THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue0 =
                      paddusw(CONCAT26((short)(uVar15 >> 0x30) *
                                       g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3785,7 +3785,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                                       CONCAT24((ushort)((ulonglong)mm0PackedValue0 >> 0x20) >> 4,
                                                CONCAT22((ushort)((ulonglong)mm0PackedValue0 >> 0x10)
                                                         >> 4,(ushort)mm0PackedValue0 >> 4))) &
-                             (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                             THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)pbVar14 =
                      (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -3945,7 +3945,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                   mm1PackedValue1ByteLane0 = (byte)(uVar6 >> 8);
                   pbVar21 = pbVar21 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   uVar13 = uVar13 >> 8;
                   mm1PackedValue1 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
@@ -3981,7 +3981,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                                                           (short)((ulonglong)mm1PackedValue1 >> 0x10
                                                                  ),(short)mm0PackedValue2 +
                                                                    (short)mm1PackedValue1))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar21 =
                        (short)((ulonglong)mm0PackedValue3 >> 8) +
@@ -4077,7 +4077,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                   mm1PackedValue0ByteLane0 = (byte)(uVar6 >> 8);
                   pbVar21 = pbVar21 + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   uVar22 = CONCAT44(CONCAT22(uVar2,uVar2),CONCAT22(uVar2,uVar2)) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   uVar13 = uVar13 >> 8;
                   mm1PackedValue0 =
                        pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
@@ -4113,7 +4113,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                                                           (short)((ulonglong)mm1PackedValue0 >> 0x10
                                                                  ),(short)mm0PackedValue0 +
                                                                    (short)mm1PackedValue0))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)pbVar21 =
                        (short)((ulonglong)mm0PackedValue1 >> 8) +
@@ -4229,7 +4229,7 @@ Glide3_Framebuffer_FillRectArgb
               mm1PackedValue0ByteLane1 = (undefined1)(uVar5 >> 8);
               iVar3 = -g_GlideSecondBufferOffset;
               uVar9 = CONCAT44(CONCAT22(uVar1,uVar1),CONCAT22(uVar1,uVar1)) &
-                      (ulonglong)g_SoftwarePixelMmxConstants.packedPixelMasks;
+                      THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
               mm1PackedValue0 =
                    pmulhw(CONCAT26(uVar4 >> 2,
                                    CONCAT24((ushort)(CONCAT35(CONCAT21(uVar4,
@@ -4260,7 +4260,7 @@ Glide3_Framebuffer_FillRectArgb
                                                       (short)((ulonglong)mm1PackedValue0 >> 0x10),
                                                       (short)mm0PackedValue0 +
                                                       (short)mm1PackedValue0))) &
-                           (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                            g_SoftwarePixelMmxConstants.packWeights);
               *(short *)(pbVar8 + iVar3) =
                    (short)((ulonglong)mm0PackedValue1 >> 8) +

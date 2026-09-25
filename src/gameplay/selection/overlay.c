@@ -168,7 +168,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
                              (pAVar4->movementTarget1Q12,pAVar4->movementTarget0Q12,
                               worldRuntime->fieldGrid);
           EVar18 = EffectRuntimePool_CreateInstanceFromDefinitionCf
-                             (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,
+                             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                               0x4000,0,FVar17.heightQ12,pAVar4->movementTarget1Q12,
                               pAVar4->movementTarget0Q12,EVar16.definitionOrError,worldRuntime);
           if (!EVar18.carry) {
@@ -1006,7 +1006,7 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
     FVar7 = FieldGrid_InterpolateTopSurfaceHeight
                       (worldYQ12,worldXQ12,*(FieldGridAsset **)((int)inGameRuntime + 0x54));
     EVar8 = EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        FVar7.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
     *(EffectRuntimeSlot **)(iVar4 * 4 + 0x562ecc) = EVar8.effectRuntime;
     pMVar2 = ((EVar8.effectRuntime)->modelNodeOrSavedOffset).modelNode;

@@ -1185,7 +1185,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
       outputRecords[6] = 0;
       outputRecords[7] = 1;
       (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputRecords + 8));
-      return (Recovered0040FFE0EaxCf5)((uint5)AVar20 & 0xffffffff);
+      return THANDOR_BITCAST(qword, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar20) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
@@ -1206,7 +1206,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
         *RVar18.recordBlockOrError = (dword)puVar13;
         uVar9 = driveLetter;
         EVar5 = (*g_FileSystemGetDriveTypeCode)(driveLetter);
-        RVar18.recordBlockOrError[1] = EVar5;
+        RVar18.recordBlockOrError[1] = THANDOR_BITCAST(EngineDriveTypeCode, void, EVar5);
         RVar18.recordBlockOrError[2] = 0;
         RVar18.recordBlockOrError[3] = 0;
         u________0040ff58[0] = (wchar_t)driveLetter;
@@ -1258,7 +1258,7 @@ LAB_004102e2:
         pbVar11 = pbVar11 + 1;
         dVar10 = dVar10 - 1;
         if (dVar10 == 0) {
-          return (Recovered0040FFE0EaxCf5)((uint5)AVar20 & 0xffffffff);
+          return THANDOR_BITCAST(qword, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar20) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       } while( true );
     }

@@ -594,7 +594,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(armySlot1,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinitionCf
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                    (modelNodeRuntime->movementControl).turnVelocityAngle16,
                    (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
                    ((WorldRuntimeNodeModelPayload *)&modelNodeRuntime->factionIndex)->

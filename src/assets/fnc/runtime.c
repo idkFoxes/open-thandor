@@ -77,7 +77,7 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
           runtimeCallbackTableCursor[5] = pLVar3;
           runtimeCallbackTableCursor[6] = g_LocaleCopyDefaultComputerLabelUtf16;
         }
-        return (FncModuleLoadEaxCf5)((uint5)AVar9 & 0xffffffff);
+        return THANDOR_BITCAST(qword, FncModuleLoadEaxCf5, ((THANDOR_BITCAST(ArenaLinearReserveEaxCf5, qword, AVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }

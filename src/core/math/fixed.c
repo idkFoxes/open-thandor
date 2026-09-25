@@ -154,7 +154,7 @@ FixedMath_Vector2AngleAndLengthRegs
   
   dVar1 = FixedMath_Atan2Angle16(component0,component1);
   vectorLengthQ12 = FixedMath_Length2(component0,component1);
-  return (FixedLengthAngleEaxEdx8)(CONCAT44(dVar1,vectorLengthQ12) & 0xffffffffffff);
+  return THANDOR_BITCAST(__int64, FixedLengthAngleEaxEdx8, (CONCAT44(dVar1,vectorLengthQ12) & 0xffffffffffff));
 }
 
 
@@ -849,7 +849,7 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
                      (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
   dVar1 = FixedMath_Atan2Angle16(vector->z,dVar1);
   dVar2 = FixedMath_Atan2Angle16(y,x);
-  return (FixedMathVectorAnglesRegs8)(CONCAT44(dVar2,dVar1) & 0xffffffffffff);
+  return THANDOR_BITCAST(__int64, FixedMathVectorAnglesRegs8, (CONCAT44(dVar2,dVar1) & 0xffffffffffff));
 }
 
 
@@ -871,7 +871,7 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
   FVar3.edxAngle = FVar2.edx;
   FVar3.ecxAngle = FVar2.ecx;
-  if ((longlong)FVar2 < 0) {
+  if (THANDOR_BITCAST(FixedMathVectorAnglesRegs8, longlong, FVar2) < 0) {
     dVar1 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
                        transform->basisRow1[1] - transform->basisRow0[0]);
@@ -1148,7 +1148,7 @@ FixedMath_VectorToAngles3Regs
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
   dVar1 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
   dVar2 = FixedMath_Atan2Angle16(y,z);
-  return (FixedMathVectorAnglesRegs8)(CONCAT44(dVar1,dVar2) & 0xffffffff0000ffff);
+  return THANDOR_BITCAST(unsigned __int64, FixedMathVectorAnglesRegs8, (CONCAT44(dVar1,dVar2) & 0xffffffff0000ffff));
 }
 
 

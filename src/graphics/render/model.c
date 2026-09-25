@@ -208,7 +208,7 @@ ModelRender_PrepareProjectedVertex
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
     projectedScreenCoordinatePair =
-         (GraphicsProjectedPointEdxEax8)Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z)
+         THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z))
     ;
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;

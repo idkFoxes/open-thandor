@@ -499,8 +499,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     (modelRuntime->classState).linkedArmyRuntimeSavedOffset = dVar2;
     dVar2 = (modelRuntime->definitionReferenceOrSavedId).definition[6].flags;
     modelRuntime->definitionReferenceOrSavedId =
-         (ModelDefinitionReferenceOrSavedId4)
-         ((modelRuntime->definitionReferenceOrSavedId).definition)->definitionId;
+         THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId4, ((modelRuntime->definitionReferenceOrSavedId).definition)->definitionId);
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[dVar2])
               ((ModelRuntimeSlot *)modelRuntime);
     pMVar6 = modelRuntime;

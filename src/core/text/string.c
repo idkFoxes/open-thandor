@@ -183,7 +183,7 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(word *rightText,word *leftText)
       }
     }
   } while (leftCodeUnit == rightCodeUnit);
-  return (CompareFlagsCfZf2)((ushort)(leftCodeUnit < rightCodeUnit) << 8);
+  return THANDOR_BITCAST(int, CompareFlagsCfZf2, ((ushort)(leftCodeUnit < rightCodeUnit) << 8));
 }
 
 

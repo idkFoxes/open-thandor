@@ -123,12 +123,12 @@ StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(word *mutableBasePath)
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  AVar1 = (ArenaAllocEaxCf5)(*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath);
+  AVar1 = THANDOR_BITCAST(GraphicsTextureSetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
   if (!AVar1.carry) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_ShotTextureSet = (GraphicsTextureSet *)AVar1.eax;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    AVar1 = (ArenaAllocEaxCf5)(*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath);
+    AVar1 = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
     if (!AVar1.carry) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_ShotPalette = (GraphicsPaletteAsset *)AVar1.eax;
@@ -486,7 +486,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
                        (MVar25.entry,(ModelRuntimeNode *)shotModelNode);
     worldXQ12 = MVar28.ecx;
     EffectRuntimePool_CreateInstanceFromDefinitionCf
-              (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (shotModelNode->modelPayload).worldRotationAngle2,
                (shotModelNode->modelPayload).worldRotationAngle1,
                (shotModelNode->modelPayload).worldRotationAngle0,MVar28.edx,worldXQ12,MVar28.eax,

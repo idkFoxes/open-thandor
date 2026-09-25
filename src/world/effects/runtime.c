@@ -64,12 +64,12 @@ StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(word *mutableBasePath)
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  AVar1 = (ArenaAllocEaxCf5)(*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath);
+  AVar1 = THANDOR_BITCAST(GraphicsTextureSetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
   if (!AVar1.carry) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_EffectTextureSet = (GraphicsTextureSet *)AVar1.eax;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    AVar1 = (ArenaAllocEaxCf5)(*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath);
+    AVar1 = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
     if (!AVar1.carry) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_EffectPalette = (GraphicsPaletteAsset *)AVar1.eax;

@@ -57,7 +57,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   puVar5[-0x53] = frameHeightPixels;
   puVar5[-0x52] = 0;
   puVar5[-0x51] = 0;
-  MVar6 = (*frameProvider)((void *)0x0);
+  MVar6 = THANDOR_BITCAST(dword, MovieFrameProviderEaxCf5, (*frameProvider)((void *)0x0));
   frameToReleaseOrNull = MVar6.frameOrError;
   if (!MVar6.carry) {
     uVar4 = 1;
@@ -68,7 +68,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
     puVar5 = (uint *)((int)puVar5 + uVar2);
     frameToReleaseOrNull_00 = frameToReleaseOrNull;
     while( true ) {
-      MVar6 = (*frameProvider)((void *)0x0);
+      MVar6 = THANDOR_BITCAST(dword, MovieFrameProviderEaxCf5, (*frameProvider)((void *)0x0));
       frameToReleaseOrNull = MVar6.frameOrError;
       if (MVar6.carry) break;
       uVar4 = uVar4 + 1;
@@ -183,7 +183,7 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    FVar15 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    FVar15 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
     handle = (MovieRuntime *)FVar15.eax;
     if (FVar15.carry) goto Movie_OpenResolvePackageOrFallbackStream;
   }
@@ -192,16 +192,16 @@ Movie_OpenResolvePackageOrFallbackStream:
     movieOpenFlags = movieOpenFlags & 0x7fffffff;
     PVar22 = Package_FindEntryAcrossMounts(path);
     if ((PVar22.carry) ||
-       (FVar16 = (*g_FileSystemSeekCf)
+       (FVar16 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)
                            (FILESYSTEM_SEEK_BEGIN,*(int *)(PVar22.eax + 0x1ec) + 0x200,
-                            (MovieRuntime *)PVar22.ebx), FVar16.carry)) {
+                            (MovieRuntime *)PVar22.ebx), FVar16.carry))){
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (word *)&g_ExecutableDirectoryUtf16);
-      FVar15 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+      FVar15 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16));
       handle = (MovieRuntime *)FVar15.eax;
       if (FVar15.carry) {
-        FVar15 = (*g_FileSystemOpenCf)(0,path);
+        FVar15 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)(0,path));
         pMVar6 = (MovieRuntime *)FVar15.eax;
         handle = pMVar6;
         if (FVar15.carry) goto LAB_004a8a0b;
@@ -213,7 +213,7 @@ Movie_OpenResolvePackageOrFallbackStream:
     }
   }
   pAVar13 = (AssetMagic *)g_PackageScratchBuffer;
-  FVar17 = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
+  FVar17 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle));
   pMVar6 = (MovieRuntime *)FVar17.eax;
   if (!FVar17.carry) {
     pMVar6 = (MovieRuntime *)0x30;
@@ -241,7 +241,7 @@ Movie_OpenResolvePackageOrFallbackStream:
                    (int)(&(pMVar7->textureCommon).buildMetadata + 1) + 0x50;
         local_20 = handle;
         local_18 = pMVar6;
-        FVar17 = (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,pMVar7,handle);
+        FVar17 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,pMVar7,handle));
         bVar14 = FVar17.carry;
         pMVar7 = (MovieRuntime *)FVar17.eax;
         if ((bVar14) || (pMVar7 = (MovieRuntime *)(*g_FileSystemGetPositionCf)(handle), bVar14))
@@ -344,13 +344,13 @@ Movie_OpenAllocateAndInitializeRuntime:
           }
           dVar9 = pMVar7->currentFrameIndex;
           if (dVar9 == 0) goto LAB_004a87c0;
-          FVar16 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,iVar10 + local_2c,handle);
+          FVar16 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,iVar10 + local_2c,handle));
           pMVar7 = (MovieRuntime *)FVar16.eax;
           if (!FVar16.carry) {
             AVar18 = (*g_MemoryApi.alloc)(dVar9);
             pMVar7 = (MovieRuntime *)AVar18.eax;
             if (AVar18.carry) goto Movie_OpenReleaseHeaderAllocationAfterFailure;
-            FVar17 = (*g_FileSystemReadExactCf)(dVar9,pMVar7,handle);
+            FVar17 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(dVar9,pMVar7,handle));
             pMVar12 = (MovieRuntime *)FVar17.eax;
             if (FVar17.carry) {
 LAB_004a89e8:
@@ -453,7 +453,7 @@ Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
         byteCount = 0x1e000;
       }
       (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,g_ActiveMovie->streamFileOffset,handle);
-      FVar2 = (*g_FileSystemReadExactCf)(byteCount,pMVar1->loadedVideoEnd,handle);
+      FVar2 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(byteCount,pMVar1->loadedVideoEnd,handle));
       if (FVar2.carry) {
         if (pMVar1->streamState != MOVIE_STREAM_SHUTDOWN) {
           pMVar1->streamState = MOVIE_STREAM_READ_FAILED;

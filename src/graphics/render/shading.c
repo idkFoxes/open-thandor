@@ -2995,7 +2995,7 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
       pGVar2 = (GraphicsGeneratedTextureAssetOrEntryView200 *)GVar7.textureSet;
       if (!GVar7.carry) {
         g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&pGVar2->asset;
-        return (StatusValueEaxCf5)((uint5)GVar7 & 0xffffffff);
+        return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(GraphicsTextureSetEaxCf5, qword, GVar7) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)(g_GraphicsShadingGeneratedAsset);
     }

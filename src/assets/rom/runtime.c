@@ -722,7 +722,7 @@ RomRuntime_BuildNodeTreeRecursive_ReturnAllocationOrRecursiveChildFailureWithCar
   pMVar9->parentNode = (ModelRuntimeNode *)0x0;
   do {
     if (dVar12 == 0) {
-      return (ModelNodeCreateEaxCf5)((uint5)WVar15 & 0xffffffff);
+      return THANDOR_BITCAST(qword, ModelNodeCreateEaxCf5, ((THANDOR_BITCAST(WorldObjectRecordEaxCf5, qword, WVar15) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     pbVar14 = pMVar4->reserved00_AF + pMVar4->packedLookupTableRelativeOffset;
     for (MVar11 = pMVar4->packedLookupTableEntryCount; MVar11 != 0; MVar11 = MVar11 - 1) {

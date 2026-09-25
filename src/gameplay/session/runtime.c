@@ -1079,7 +1079,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                             InGameNotificationQueue_InsertPriorityRecord
                                       (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 4);
                           }
-                          return (InGameRuntimeInitEaxCf5)((uint5)AVar21 & 0xffffffff);
+                          return THANDOR_BITCAST(qword, InGameRuntimeInitEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar21) & 0xFFFFFFFFFFull) & 0xffffffff));
                         }
                       }
                     }
@@ -1434,7 +1434,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                                 (*g_GraphicsCursorSetFrame)(0);
                                 (*g_TimerRegisterPeriodic)
                                           (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
-                                return (InGameRuntimeLoadedInitEaxCf5)((uint5)AVar17 & 0xffffffff);
+                                return THANDOR_BITCAST(qword, InGameRuntimeLoadedInitEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar17) & 0xFFFFFFFFFFull) & 0xffffffff));
                               }
                             }
                           }
@@ -2234,7 +2234,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
   FVar3 = FieldGrid_WorldToGridQ12
                     ((g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionXQ12);
-  gameRuntime1->fieldGridPosition9A6C = (FixedPlanarPointEdxEax8)FVar3;
+  gameRuntime1->fieldGridPosition9A6C = THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, FixedPlanarPointEdxEax8, FVar3);
   dVar2 = PersistentSettings_ReadDword(0,0x40);
   UVar1 = (gameRuntime1->worldRuntime0A30).motion.committedDistanceQ12;
   if ((dVar2 & 2) == 0) {

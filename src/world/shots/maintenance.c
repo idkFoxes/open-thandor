@@ -279,7 +279,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                            (MVar18.entry,(ModelRuntimeNode *)modelNode);
         worldXQ12 = MVar22.ecx;
         EffectRuntimePool_CreateInstanceFromDefinitionCf
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                    MVar22.edx,worldXQ12,MVar22.eax,pEVar25,pWVar26);
       }
     }
@@ -348,7 +348,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                ((modelNode->modelPayload).worldRotationAngle1,
                                 (modelNode->modelPayload).worldRotationAngle0,scale_00);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        FVar24.edx + (modelNode->worldTransform).translation.z,
                        FVar24.ecx + (modelNode->worldTransform).translation.y,
                        FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,pWVar26);
@@ -385,7 +385,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                  ((modelNode->modelPayload).worldRotationAngle1,
                                   (modelNode->modelPayload).worldRotationAngle0,uVar10);
               EffectRuntimePool_CreateInstanceFromDefinitionCf
-                        (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                          -(modelNode->modelPayload).worldRotationAngle1,
                          (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
                          FVar24.edx + (modelNode->worldTransform).translation.z,
@@ -488,7 +488,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                ((modelNode->modelPayload).worldRotationAngle1,
                                 (modelNode->modelPayload).worldRotationAngle0,uVar10);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
-                      (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,0x4000,0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        FVar24.edx + (modelNode->worldTransform).translation.z,
                        FVar24.ecx + (modelNode->worldTransform).translation.y,
                        FVar24.eax + (modelNode->worldTransform).translation.x,pEVar25,worldRuntime);
@@ -523,7 +523,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                  ((modelNode->modelPayload).worldRotationAngle1,
                                   (modelNode->modelPayload).worldRotationAngle0,uVar11);
               EffectRuntimePool_CreateInstanceFromDefinitionCf
-                        (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                          -(modelNode->modelPayload).worldRotationAngle1,
                          (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
                          FVar24.edx + (modelNode->worldTransform).translation.z,

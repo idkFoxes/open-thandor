@@ -449,7 +449,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
     pbVar11 = pbVar11 + 4;
     pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
   }
-  return (GraphicsPaletteTextureSourceEaxCf5)((uint5)AVar13 & 0xffffffff);
+  return THANDOR_BITCAST(qword, GraphicsPaletteTextureSourceEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar13) & 0xFFFFFFFFFFull) & 0xffffffff));
 }
 
 

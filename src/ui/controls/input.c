@@ -1134,7 +1134,7 @@ UiSelectionGeometryControl_DrawClipped
                                         CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,cVar11),cVar11) >>
                                                  4,CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
                                                             CONCAT11(cVar9,cVar9) >> 4))) &
-                               (ulonglong)g_SoftwarePixelMmxConstants.quantizeMasksQ12,
+                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
               *(short *)pbVar21 =
                    (short)((ulonglong)uVar31 >> 0x28) + (short)((ulonglong)uVar31 >> 8);

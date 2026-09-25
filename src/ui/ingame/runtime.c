@@ -861,9 +861,9 @@ InGameResourceRegistration_SerializeOldUnitTables:
     (*g_MemoryApi.free)(sourceData_01);
   }
   destination = g_PackageScratchBuffer;
-  FVar11 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
+  FVar11 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle));
   if ((!FVar11.carry) &&
-     (FVar12 = (*g_FileSystemReadExactCf)(0x200,destination,handle), !FVar12.carry)) {
+     (FVar12 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,destination,handle), !FVar12.carry))){
     WidePath_SplitParentAndLeaf
               ((word *)(destination + 0x100),(word *)(destination + 0x200),resourcePath);
     dVar1 = (*g_LocaleGetPackedCurrentDate)();
@@ -881,9 +881,9 @@ InGameResourceRegistration_SerializeOldUnitTables:
     }
     headerDwords[0x5c] = g_InGameLevelTitleTextResourceIndex;
     headerDwords[100] = dVar1;
-    FVar11 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
+    FVar11 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle));
     if ((!FVar11.carry) &&
-       (FVar13 = (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle), !FVar13.carry)) {
+       (FVar13 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle), !FVar13.carry))){
       Package_Unmount((EngineFileHandle)handle);
       g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
       return;

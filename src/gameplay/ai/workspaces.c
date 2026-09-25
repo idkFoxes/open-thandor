@@ -1064,7 +1064,7 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(armySlot1,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinitionCf
-                  (EFFECT_RUNTIME_COMPLETION_NONE,(EffectRuntimeOwnerReference4)0x0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                    (modelNodeRuntime->movementControl).turnVelocityAngle16,
                    (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
                    ((WorldRuntimeNodeModelPayload *)&modelNodeRuntime->factionIndex)->
@@ -1116,57 +1116,57 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void
   PackageLoadEntryEaxCf5 PVar1;
   StatusValueEaxCf5 SVar2;
   
-  PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x400);
+  PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
   workspaceAllocation = PVar1.bufferOrError;
   if (!PVar1.carry) {
     g_AiWorkspaceBuffer00_Size0400 = (AiWorkspace00EntryView8 *)workspaceAllocation;
-    PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x200);
+    PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
     if (!PVar1.carry) {
       g_AiWorkspaceBuffer01_Size0200 = PVar1.bufferOrError;
-      PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x400);
+      PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
       if (!PVar1.carry) {
         g_AiWorkspaceBuffer02_Size0400 = PVar1.bufferOrError;
-        PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x1000);
+        PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x1000));
         if (!PVar1.carry) {
           g_AiWorkspaceBuffer03_Size1000 = PVar1.bufferOrError;
-          PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x40);
+          PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x40));
           if (!PVar1.carry) {
             g_AiWorkspaceBuffer04_Size0040 = PVar1.bufferOrError;
-            PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x200);
+            PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
             if (!PVar1.carry) {
               g_AiWorkspaceBuffer05_Size0200 = PVar1.bufferOrError;
-              PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x400);
+              PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
               if (!PVar1.carry) {
                 g_AiWorkspaceBuffer06_Size0400 = PVar1.bufferOrError;
-                PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x400);
+                PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
                 if (!PVar1.carry) {
                   g_AiWorkspaceBuffer07_Size0400 = PVar1.bufferOrError;
-                  PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x200);
+                  PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
                   if (!PVar1.carry) {
                     g_AiWorkspaceBuffer08_Size0200 = PVar1.bufferOrError;
-                    PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x1000);
+                    PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x1000));
                     if (!PVar1.carry) {
                       g_AiWorkspaceBuffer09_Size1000 = PVar1.bufferOrError;
-                      PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x400);
+                      PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
                       if (!PVar1.carry) {
                         g_AiWorkspaceBuffer10_Size0400 = PVar1.bufferOrError;
-                        PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x1000);
+                        PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x1000));
                         if (!PVar1.carry) {
                           g_AiWorkspaceBuffer11_Size1000 = PVar1.bufferOrError;
-                          PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x200);
+                          PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
                           technologyCandidateWorkspaceAllocation = PVar1.bufferOrError;
                           if (!PVar1.carry) {
                             g_AiWorkspaceBuffer12_Size0200 = technologyCandidateWorkspaceAllocation;
-                            PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x400);
+                            PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
                             if (!PVar1.carry) {
                               g_AiWorkspaceBuffer13_Size0400 = PVar1.bufferOrError;
-                              PVar1 = (PackageLoadEntryEaxCf5)(*g_MemoryApi.alloc)(0x100);
+                              PVar1 = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x100));
                               if (!PVar1.carry) {
                                 g_AiWorkspaceBuffer14_Size0100 = PVar1.bufferOrError;
                                 PVar1 = Package_LoadEntry((word *)u_engine_ki_dat_0053c5e4);
                                 knowledgeDataImage = PVar1.bufferOrError;
                                 if (!PVar1.carry) {
-                                  PVar1 = (PackageLoadEntryEaxCf5)((uint5)PVar1 & 0xffffffff);
+                                  PVar1 = THANDOR_BITCAST(qword, PackageLoadEntryEaxCf5, ((THANDOR_BITCAST(PackageLoadEntryEaxCf5, qword, PVar1) & 0xFFFFFFFFFFull) & 0xffffffff));
                                   g_AiKnowledgeData = knowledgeDataImage;
                                 }
                               }

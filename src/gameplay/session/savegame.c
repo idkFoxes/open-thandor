@@ -186,9 +186,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRoo
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (word *)&g_ScenarioCatalogPathScratchUtf16);
-      FVar9 = (*g_FileSystemOpenCf)
-                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16)
-      ;
+      FVar9 = THANDOR_BITCAST(Win32FileOpenEaxCf5, FileSystemOpenEaxCf5, (*g_FileSystemOpenCf)
+                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16));
       handle = (void *)FVar9.eax;
       if (!FVar9.carry) {
         handle_00 = handle;
