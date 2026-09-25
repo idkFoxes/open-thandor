@@ -484,6 +484,49 @@ ModelDefinition_SelectFactionUnlockedLinkedIdCf
 }
 
 
+/* Serialized model node tree: flags +0x04 (low nibble 0 = has a sprite), sprite path +0x38, sprite
+   asset +0x30, owned-copy count +0x34, child count +0x14, child offsets +0x18 + 4*i (relative to the
+   asset, relocated in place). Loads or reuses each node's sprite; true (CF) with *error on failure. */
+static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node,byte *asset,dword *error)
+{
+  dword i;
+  if ((node->nodeFlags & 0xf) == 0) {
+    word *spritePath = (word *)(node + 1);
+    PackageLoadEntryEaxCf5 loaded;
+    SpriteAssetHeader *registered;
+    WidePath_SetExtensionCode(0x727073,spritePath); /* ".spr" */
+    loaded = Package_LoadEntry(spritePath);
+    if (loaded.carry) {
+      *error = (dword)loaded.bufferOrError;
+      return true;
+    }
+    registered = SpriteAssetRegistry_FindById
+                           (((SpriteAssetHeader *)loaded.bufferOrError)->registryHeader.registryId);
+    if (registered == (SpriteAssetHeader *)0x0) {
+      SpriteRegisterRelocateEaxCf5 relocated;
+      node->ownedNestedResourcePresent = node->ownedNestedResourcePresent + 1;
+      (node->spriteAssetReference).spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
+      relocated = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
+      if (relocated.carry) {
+        *error = (dword)relocated.assetOrError;
+        return true;
+      }
+    }
+    else {
+      (node->spriteAssetReference).spriteAsset = registered;
+      Resource_Release(loaded.bufferOrError);
+    }
+  }
+  for (i = 0; i < (dword)node->childCount; i++) {
+    node->childSerializedOffsets[i] = node->childSerializedOffsets[i] + (int)(uintptr_t)asset;
+    if (ModelDefinition_ResolveNodeSpritesCf
+                  ((MdlSerializedNodeHeader38 *)(uintptr_t)node->childSerializedOffsets[i],asset,error)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /* Address: 0x00528600.
    Ownership: assets/model/definitions.
    Purpose: Registers one variable-size model definition in the fixed 768-slot registry, relocates its embedded
@@ -544,9 +587,12 @@ ModelDefinition_RegisterAndResolveReferencesCf
              (MdlSerializedNodeHeader38 *)
              ((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
              (dVar1 - 0x28));
-        iVar6 = 0;
-        resolverStatusOrSentinel = (dword)asset;
-        goto ModelDefinition_LoadOrReuseSpriteReference;
+        /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
+           {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
+        if (ModelDefinition_ResolveNodeSpritesCf(serializedNodeCursor,(byte *)asset,&resolverStatusOrSentinel)) {
+          goto ModelDefinition_ReturnReferenceResolutionResult;
+        }
+        goto ModelDefinition_ResolveShotAndEffectReferences;
       }
       registrySlotCursor = registrySlotCursor + 1;
       iVar6 = iVar6 + -1;
@@ -563,42 +609,6 @@ ModelDefinition_ReturnReferenceResolutionResult:
   SVar9.carry = true;
   SVar9.valueOrError = resolverStatusOrSentinel;
   return SVar9;
-ModelDefinition_LoadOrReuseSpriteReference:
-  MVar2 = serializedNodeCursor->childCount;
-  pSVar5 = (ShotDefinition *)resolverStatusOrSentinel;
-  if ((serializedNodeCursor->nodeFlags & 0xf) == 0) {
-    bVar7 = WidePath_SetExtensionCode(0x727073,(word *)(serializedNodeCursor + 1));
-    if (bVar7) goto ModelDefinition_ReturnReferenceResolutionResult;
-    PVar10 = Package_LoadEntry((word *)(serializedNodeCursor + 1));
-    loadedSpriteAsset = PVar10.bufferOrError;
-    resolverStatusOrSentinel = (dword)loadedSpriteAsset;
-    if (PVar10.carry) goto ModelDefinition_ReturnReferenceResolutionResult;
-    pSVar4 = SpriteAssetRegistry_FindById((loadedSpriteAsset->registryHeader).registryId);
-    if (pSVar4 == (SpriteAssetHeader *)0x0) {
-      serializedNodeCursor->ownedNestedResourcePresent =
-           serializedNodeCursor->ownedNestedResourcePresent + 1;
-      (serializedNodeCursor->spriteAssetReference).spriteAsset = loadedSpriteAsset;
-      SVar11 = SpriteAsset_RegisterAndRelocatePointers(loadedSpriteAsset);
-      resolverStatusOrSentinel = (dword)SVar11.assetOrError;
-      if (SVar11.carry) goto ModelDefinition_ReturnReferenceResolutionResult;
-    }
-    else {
-      (serializedNodeCursor->spriteAssetReference).spriteAsset = pSVar4;
-      Resource_Release(loadedSpriteAsset);
-    }
-  }
-  iVar6 = iVar6 + 1;
-  while (MVar2 == 0) {
-    iVar6 = iVar6 + -1;
-    if (iVar6 == 0) goto ModelDefinition_ResolveShotAndEffectReferences;
-  }
-  serializedNodeCursor->childSerializedOffsets[0] =
-       (int)pSVar5->terrainImpactEffectDefinitions31 +
-       (serializedNodeCursor->childSerializedOffsets[0] - 0x14);
-  serializedNodeCursor =
-       (MdlSerializedNodeHeader38 *)serializedNodeCursor->childSerializedOffsets[0];
-  resolverStatusOrSentinel = (dword)pSVar5;
-  goto ModelDefinition_LoadOrReuseSpriteReference;
 ModelDefinition_ResolveShotAndEffectReferences:
   SVar12 = ShotDefinitionRegistry_FindByIdWithErrorCf
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);

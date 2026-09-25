@@ -22,13 +22,23 @@ public class DumpDisassembly extends GhidraScript {
         String[] args = getScriptArgs();
         File out = new File(args[0]);
         out.mkdirs();
+        java.util.List<String> names = new java.util.ArrayList<>();
         for (int i = 1; i < args.length; i++) {
-            Function f = getGlobalFunctions(args[i]).stream().findFirst().orElse(null);
+            if (args[i].equals("*")) { // every non-external function
+                for (Function g : currentProgram.getFunctionManager().getFunctions(true)) {
+                    names.add(g.getName());
+                }
+            } else {
+                names.add(args[i]);
+            }
+        }
+        for (String name : names) {
+            Function f = getGlobalFunctions(name).stream().findFirst().orElse(null);
             if (f == null) {
-                println("not found: " + args[i]);
+                println("not found: " + name);
                 continue;
             }
-            try (PrintWriter w = new PrintWriter(new File(out, args[i] + ".asm"), "UTF-8")) {
+            try (PrintWriter w = new PrintWriter(new File(out, name + ".asm"), "UTF-8")) {
                 InstructionIterator it = currentProgram.getListing().getInstructions(f.getBody(), true);
                 while (it.hasNext()) {
                     Instruction ins = it.next();
@@ -46,7 +56,7 @@ public class DumpDisassembly extends GhidraScript {
                     w.println("  " + ins.getAddress() + "  " + ins + refs);
                 }
             }
-            println("dumped " + args[i]);
+            println("dumped " + name);
         }
     }
 }
