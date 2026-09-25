@@ -7,6 +7,7 @@
 
 #include <thandor/world/terrain/projection.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: world/terrain/projection. */
 
@@ -1675,6 +1676,15 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWo
                                     (char)((ulonglong)uVar17 >> 0x10) - (0xff < sVar8),
                                     (0 < sVar7) * (sVar7 < 0x100) * (char)uVar17 - (0xff < sVar7))))
     ;
+  }
+  {
+    static int logged;
+    if (logged < 40 && (logged++ % 4) == 0) {
+      Thandor_Log("terrain vertex: base04=%08X dir58=%08X light68=%08X flags50=%08X shaded60=%08X",
+                  vertex->basePackedColor, vertex->packedColorA,
+                  (unsigned)vertex->lightingLookupIndexOrSentinel, vertex->projectionFlags,
+                  vertex->shadedColorA);
+    }
   }
   return;
 }

@@ -7,6 +7,7 @@
 
 #include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: world/terrain/visuals. */
 
@@ -653,6 +654,8 @@ TerrainLighting_BuildColorRampAndSetBaseColor
   uint *puVar3;
   PackedArgb32 *pPVar4;
   
+  Thandor_Log("terrain lighting: secondary=%08X base=%08X rampStep=%08X",secondaryColorArgb,
+              baseColorArgb,rampStepColorArgb);
   puVar3 = &g_TerrainLightingColorRampArgb256;
   iVar2 = 0x100;
   do {

@@ -178,10 +178,8 @@ UiImageControl_NonRightDrag
 {
   UiNodeVtable *pUVar1;
   UiImageControl *control_00;
-  UiNodeBase *control_01;
   UiNodeBase *newActiveChild;
   UiNodeBase *control_02;
-  undefined8 uVar2;
   UiSelectableStateFlags *stateFlagsField;
   
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
@@ -201,16 +199,19 @@ UiImageControl_NonRightDrag
       goto UiImageControl_InvalidateAfterNonRightDrag;
     }
     pUVar1 = (control_00->selectable).base.vtable;
+    /* The handlers preserve EAX/EDX: the original keeps passing the hit child and its vtable, and
+       stores that child as the new activeChild (the decompiler lost both). */
     (*pUVar1->nonRightPress)(0,0x70000000,0x70000000,(UiNodeBase *)control_00);
-    newActiveChild = (UiNodeBase *)(*(code *)pUVar1->nonRightDrag)(wheelDelta,pointerY,pointerX,control_01);
+    (*pUVar1->nonRightDrag)(wheelDelta,pointerY,pointerX,(UiNodeBase *)control_00);
+    newActiveChild = (UiNodeBase *)control_00;
     LOCK();
     control_02 = control->activeChild;
     control->activeChild = newActiveChild;
     UNLOCK();
   }
   if (control_02 != (UiNodeBase *)0x0) {
-    uVar2 = (*(code *)control_02->vtable->nonRightDrag)(0,0x70000000,0x70000000,control_02);
-    (**(code **)((int)((ulonglong)uVar2 >> 0x20) + 0x14))(0,0x70000000,0x70000000,(int)uVar2);
+    (*control_02->vtable->nonRightDrag)(0,0x70000000,0x70000000,control_02);
+    (*control_02->vtable->nonRightRelease)(0,0x70000000,0x70000000,control_02);
   }
 UiImageControl_InvalidateAfterNonRightDrag:
   UiRootStack_InvalidateAll();
@@ -230,8 +231,6 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
   UiSelectableStateFlags *pUVar1;
   UiNodeVtable *pUVar2;
   UiImageControl *control_00;
-  undefined4 uVar3;
-  int extraout_ECX;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *hoveredControlVtable;
   UiSelectableStateFlags *hoverStateFlagsField;
@@ -250,10 +249,11 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
           (*pUVar2->nonRightRelease)
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00
                     );
-          uVar3 = (*(code *)pUVar2->nonRightPress)
-                            (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,control_00);
-          (**(code **)(extraout_ECX + 0x20))
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,uVar3);
+          /* EAX (the hovered child) and ECX (its vtable) survive the handler calls. */
+          (*pUVar2->nonRightPress)
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00);
+          (*pUVar2->nonRightDrag)
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00);
         }
       }
     }
