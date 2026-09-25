@@ -25,6 +25,13 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # "Type[dims] *name;" where name may be a raw Ghidra string label such as u_engine\font.gfx_0041b030
 # "Type *[8] name" is an array of 8 pointers, i.e. "Type *name[8]" in C
 DECL = re.compile(r"^(?P<type>[A-Za-z_]\w*(?:\s+[A-Za-z_]\w*)*?)\s*(?P<ptr0>(?:\*\s*)*)(?P<dims>(?:\[\w+\])*)\s*(?P<ptr>(?:\*\s*)*)(?P<name>[^\s*].*?)\s*;\s*$")
+# Globals the export types as undefined4 although every use treats them as one pointer type
+# (NULL comparisons against that type, no integer arithmetic).
+TYPE_OVERRIDES = {
+    "g_InGameCommandPreviewArmyRuntime": "GameEntityRuntime *",
+    "g_InGamePlacementPreviewArmyRuntime": "GameEntityRuntime *",
+    "g_FatalErrorUiRootTemplate": "UiRootNode *",
+}
 STRING_TYPES = {"string": ("char", '"'), "TerminatedCString": ("char", '"'),
                 "unicode": ("word", 'L"'), "TerminatedUnicode": ("word", 'L"')}
 HEADER = """/*
@@ -123,7 +130,8 @@ def main(export):
         if typ == "undefined" and name in funcs:
             skipped.append(name)
             continue
-        decls.append((typ + (" " + ptr if ptr else ""), name, dims, init))
+        full_type = TYPE_OVERRIDES.get(name, typ + (" " + ptr if ptr else ""))
+        decls.append((full_type, name, dims, init))
 
     rel = src.relative_to(ROOT).as_posix()
     h = [HEADER.format(src=rel),

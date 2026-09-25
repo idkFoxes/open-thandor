@@ -818,7 +818,7 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
     Package_DeleteEntry((word *)u_campagne_hex_0050e068,(EngineFileHandle)handle);
   }
   else {
-    SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,g_FrontendLoadedCampaignAsset[1],
+    SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((dword *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
                                 g_FrontendLoadedCampaignAsset,(word *)u_campagne_hex_0050e068,
                                 (EngineFileHandle)handle);
     if (SVar9.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
@@ -863,7 +863,7 @@ InGameResourceRegistration_SerializeOldUnitTables:
   destination = g_PackageScratchBuffer;
   FVar11 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle));
   if ((!FVar11.carry) &&
-     (FVar12 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,destination,handle), !FVar12.carry))){
+     (FVar12 = THANDOR_BITCAST(Win32FileReadEaxCf5, FileSystemReadEaxCf5, (*g_FileSystemReadExactCf)(0x200,destination,handle)), !FVar12.carry)){
     WidePath_SplitParentAndLeaf
               ((word *)(destination + 0x100),(word *)(destination + 0x200),resourcePath);
     dVar1 = (*g_LocaleGetPackedCurrentDate)();
@@ -883,7 +883,7 @@ InGameResourceRegistration_SerializeOldUnitTables:
     headerDwords[100] = dVar1;
     FVar11 = THANDOR_BITCAST(Win32FileSeekEaxCf5, FileSystemSeekEaxCf5, (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle));
     if ((!FVar11.carry) &&
-       (FVar13 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle), !FVar13.carry))){
+       (FVar13 = THANDOR_BITCAST(Win32FileWriteEaxCf5, FileSystemWriteEaxCf5, (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle)), !FVar13.carry)){
       Package_Unmount((EngineFileHandle)handle);
       g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
       return;
