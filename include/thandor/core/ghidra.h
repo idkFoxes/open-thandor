@@ -88,4 +88,17 @@ static __inline void thandor_write_part(void *base, unsigned off, unsigned size,
 /* ADJ(p) on a Ghidra shifted pointer: the structure that contains the member p points at. */
 #define THANDOR_CONTAINER_OF(p, Outer, member) ((Outer *)((unsigned char *)(p) - offsetof(Outer, member)))
 
+/*
+Bits 64..79 of an x87 register after an MMX write: the CPU sets them to all ones
+(Intel SDM, MMX/x87 aliasing). Ghidra shows this as `(unkuint10)x >> 0x40`.
+*/
+#define THANDOR_MMX_ST_EXPONENT 0xffff
+
+/*
+Address `offset` bytes past the start of function `fn`. The binary dispatches commands by
+jumping into a code region relative to a handler entry; a recompiled image does not keep that
+layout, so every use needs a real handler table before it can run. TODO
+*/
+#define THANDOR_CODE_AT(fn, offset) ((unsigned char *)(fn) + (offset))
+
 #endif /* THANDOR_CORE_GHIDRA_H */

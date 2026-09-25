@@ -246,8 +246,8 @@ FrontendNetwork_HostTick_AdvanceCommandScanOrRestartUntilBatchNonempty:
           uVar5 = (pFVar9->command).packedCommandAndPlayerId;
           uVar2 = uVar5 >> 8;
           if (uVar2 != 0) {
-            if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar2 < &g_FrontendRootNode) {
-              (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar2))
+            if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar2) < (unsigned char *)&g_FrontendRootNode) {
+              (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar2))
                         (uVar5 & 0xff,(pFVar9->command).payloadDword0C,
                          (pFVar9->command).payloadDword08,(pFVar9->command).payloadDword04);
             }
@@ -441,9 +441,8 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
       do {
         uVar2 = (packet->packet10000Handshake).protocolMagic2931 >> 8;
         if (uVar2 != 0) {
-          if (InGameCommandQueue_AppendLocalPlayerCommand + uVar2 <
-              &InGameCommandHandlerCodeRegionEnd) {
-            (*(InGameCommandQueue_AppendLocalPlayerCommand + uVar2))
+          if (THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, uVar2) < (unsigned char *)&InGameCommandHandlerCodeRegionEnd) {
+            (*(code *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, uVar2))
                       ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                        (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                        (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],

@@ -280,6 +280,7 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
+  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 PVar1;
   PackedArgb32 PVar2;
   PackedArgb32 PVar3;
@@ -321,7 +322,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[0].zWriteEnable);
     in_ST1 = extraout_ST1;
@@ -331,12 +332,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
       in_ST1 = extraout_ST1_00;
     }
     else {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
       pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -345,7 +346,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
       }
       in_ST1 = extraout_ST1_01;
       if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
       }
@@ -356,7 +357,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   PVar3 = packet->vertices[1].diffuseColor;
   PVar4 = packet->vertices[2].diffuseColor;
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)((unkuint10)_sVar19 >> 0x40),mm0PackedValue0ByteLane1),
+  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
@@ -540,6 +541,7 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
+  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 PVar1;
   PackedArgb32 PVar2;
   PackedArgb32 PVar3;
@@ -583,7 +585,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[2].zWriteEnable);
     in_ST1 = extraout_ST1;
@@ -593,12 +595,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
       in_ST1 = extraout_ST1_00;
     }
     else {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
       pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -607,7 +609,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
       }
       in_ST1 = extraout_ST1_01;
       if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
       }
@@ -615,7 +617,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[2].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[2].sourceBlend;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[2].sourceBlend);
     in_ST1 = extraout_ST1_03;
@@ -624,7 +626,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend
     ;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[2].destinationBlend);
     in_ST1 = extraout_ST1_04;
@@ -634,7 +636,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   PVar3 = packet->vertices[1].diffuseColor;
   PVar4 = packet->vertices[2].diffuseColor;
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)((unkuint10)_sVar19 >> 0x40),mm0PackedValue0ByteLane1),
+  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
@@ -819,6 +821,7 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
+  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 PVar1;
   PackedArgb32 PVar2;
   PackedArgb32 PVar3;
@@ -862,7 +865,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[3].zWriteEnable);
     in_ST1 = extraout_ST1;
@@ -872,12 +875,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
       in_ST1 = extraout_ST1_00;
     }
     else {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
       pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -886,7 +889,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
       }
       in_ST1 = extraout_ST1_01;
       if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
       }
@@ -894,7 +897,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[3].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[3].sourceBlend;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[3].sourceBlend);
     in_ST1 = extraout_ST1_03;
@@ -903,7 +906,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend
     ;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[3].destinationBlend);
     in_ST1 = extraout_ST1_04;
@@ -913,7 +916,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   PVar3 = packet->vertices[1].diffuseColor;
   PVar4 = packet->vertices[2].diffuseColor;
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)((unkuint10)_sVar19 >> 0x40),mm0PackedValue0ByteLane1),
+  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
@@ -1097,6 +1100,7 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
+  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 PVar1;
   PackedArgb32 PVar2;
   PackedArgb32 PVar3;
@@ -1140,7 +1144,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[4].zWriteEnable);
     in_ST1 = extraout_ST1;
@@ -1150,12 +1154,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
       in_ST1 = extraout_ST1_00;
     }
     else {
-      _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
       pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -1164,7 +1168,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
       }
       in_ST1 = extraout_ST1_01;
       if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
       }
@@ -1172,7 +1176,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[4].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[4].sourceBlend;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[4].sourceBlend);
     in_ST1 = extraout_ST1_03;
@@ -1181,7 +1185,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend
     ;
-    _sVar19 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[4].destinationBlend);
     in_ST1 = extraout_ST1_04;
@@ -1191,7 +1195,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   PVar3 = packet->vertices[1].diffuseColor;
   PVar4 = packet->vertices[2].diffuseColor;
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)((unkuint10)_sVar19 >> 0x40),mm0PackedValue0ByteLane1),
+  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
   mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);

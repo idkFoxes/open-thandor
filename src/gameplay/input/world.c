@@ -639,14 +639,14 @@ InGameWorldInput_CommitPointerActionCf
       }
       dVar2 = SelectionInfo_CollectAttachmentEffectVariantMask();
       if ((uVar3 & dVar2) != 0) {
-        pcVar1 = *(code **)((uVar3 & dVar2) * 4 + 0x563748);
+        pcVar1 = *(code **)((uVar3 & dVar2) * 4 + 0x563748); /* TODO: absolute handler table in thandor.exe */
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           (*pcVar1)(g_LocalPlayerRuntimeId);
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand
-                    ((UiActionId)(pcVar1 + -0x55f130),g_InGameCommandPreviewHeading16,pointerValue1,
+                    ((UiActionId)((unsigned char *)pcVar1 + -0x55f130) /* TODO: code-address command id, see THANDOR_CODE_AT */,g_InGameCommandPreviewHeading16,pointerValue1,
                      pointerValue2);
         }
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==

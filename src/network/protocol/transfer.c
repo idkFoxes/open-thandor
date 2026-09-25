@@ -315,8 +315,8 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
     do {
       uVar1 = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (uVar1 != 0) {
-        if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar1 < &g_FrontendRootNode) {
-          (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar1))
+        if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar1) < (unsigned char *)&g_FrontendRootNode) {
+          (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar1))
                     ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
@@ -384,8 +384,8 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
     do {
       uVar3 = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (uVar3 != 0) {
-        if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar3 < &g_FrontendRootNode) {
-          (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar3))
+        if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar3) < (unsigned char *)&g_FrontendRootNode) {
+          (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar3))
                     ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
@@ -734,8 +734,8 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           uVar3 = (pFVar11->command).packedCommandAndPlayerId;
           uVar5 = uVar3 >> 8;
           if (uVar5 != 0) {
-            if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar5 < &g_FrontendRootNode) {
-              (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar5))
+            if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar5) < (unsigned char *)&g_FrontendRootNode) {
+              (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar5))
                         (uVar3 & 0xff,(pFVar11->command).payloadDword0C,
                          (pFVar11->command).payloadDword08,(pFVar11->command).payloadDword04);
             }
@@ -946,8 +946,8 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
       uVar5 = (pFVar9->command).packedCommandAndPlayerId;
       uVar2 = uVar5 >> 8;
       if (uVar2 != 0) {
-        if (FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar2 < &g_FrontendRootNode) {
-          (*(FrontendCommandQueue_EnqueueLocalPlayerCommand + uVar2))
+        if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar2) < (unsigned char *)&g_FrontendRootNode) {
+          (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, uVar2))
                     (uVar5 & 0xff,(pFVar9->command).payloadDword0C,(pFVar9->command).payloadDword08,
                      (pFVar9->command).payloadDword04);
         }
@@ -1369,9 +1369,9 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
     uVar1 = (pFVar4->command).packedCommandAndPlayerId;
     uVar2 = uVar1 >> 8;
     if (uVar2 != 0) {
-      if (InGameCommandQueue_AppendLocalPlayerCommand + uVar2 < &InGameCommandHandlerCodeRegionEnd)
+      if (THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, uVar2) < (unsigned char *)&InGameCommandHandlerCodeRegionEnd)
       {
-        (*(InGameCommandQueue_AppendLocalPlayerCommand + uVar2))
+        (*(code *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, uVar2))
                   (uVar1 & 0xff,(pFVar4->command).payloadDword0C,(pFVar4->command).payloadDword08,
                    (pFVar4->command).payloadDword04);
       }
