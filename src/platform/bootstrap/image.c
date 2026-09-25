@@ -401,13 +401,69 @@ static DWORD WINAPI watchdog_thread(void *parameter)
     }
 }
 
+volatile long g_ThandorFrameHeartbeat;
+
+/* Once frames are being presented, a stall of HANG_SECONDS logs three stack samples of the main
+   thread (one second apart) to hang.log, so an endless loop shows which code it spins in. */
+#define HANG_SECONDS 4
+
+static DWORD WINAPI hang_detector_thread(void *parameter)
+{
+    long last = 0;
+    int stalled = 0;
+    int reported = 0;
+    (void)parameter;
+    for (;;) {
+        long now;
+        Sleep(1000);
+        now = g_ThandorFrameHeartbeat;
+        if (now != last || now == 0) {
+            last = now;
+            stalled = 0;
+            reported = 0;
+            continue;
+        }
+        if (++stalled < HANG_SECONDS || reported >= 3) {
+            continue;
+        }
+        {
+            char path[MAX_PATH];
+            FILE *out;
+            CONTEXT context;
+            executable_directory(path, sizeof path);
+            strcat_s(path, sizeof path, "hang.log");
+            if (fopen_s(&out, path, "a") != 0) {
+                continue;
+            }
+            if (reported == 0) {
+                SYSTEMTIME time;
+                GetLocalTime(&time);
+                fprintf(out, "\n==== %04u-%02u-%02u %02u:%02u:%02u no frame for %d s ====\n", time.wYear,
+                        time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, stalled);
+            }
+            SuspendThread(g_watchedThread);
+            memset(&context, 0, sizeof context);
+            context.ContextFlags = CONTEXT_FULL;
+            if (GetThreadContext(g_watchedThread, &context)) {
+                fprintf(out, "sample %d: main thread at %s\n", reported + 1,
+                        Thandor_SymbolName((void *)(uintptr_t)context.Eip));
+                log_stack_thread(out, &context, g_watchedThread);
+            }
+            ResumeThread(g_watchedThread);
+            fclose(out);
+            reported++;
+        }
+    }
+}
+
 void Thandor_InstallCrashHandler(void)
 {
     char seconds[16];
     SetUnhandledExceptionFilter(crash_filter);
+    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_watchedThread, 0, FALSE,
+                    DUPLICATE_SAME_ACCESS);
+    CreateThread(NULL, 0, hang_detector_thread, NULL, 0, NULL);
     if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
-        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_watchedThread, 0, FALSE,
-                        DUPLICATE_SAME_ACCESS);
         CreateThread(NULL, 0, watchdog_thread, (void *)(uintptr_t)atoi(seconds), 0, NULL);
     }
 }

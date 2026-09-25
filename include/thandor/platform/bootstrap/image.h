@@ -43,7 +43,11 @@ void Thandor_LogStack(const char *reason, unsigned value);
 /* Symbol name (+offset) of an address in this executable, for diagnostics. */
 const char *Thandor_SymbolName(const void *address);
 
-/* Writes crash.log next to the executable with a symbolized stack on unhandled exceptions. */
+/* Writes crash.log next to the executable with a symbolized stack on unhandled exceptions, and
+   hang.log when no frame has been presented for a few seconds (see g_ThandorFrameHeartbeat). */
 void Thandor_InstallCrashHandler(void);
+
+/* Incremented on every presented frame; the hang detector watches it. */
+extern volatile long g_ThandorFrameHeartbeat;
 
 #endif /* THANDOR_PLATFORM_BOOTSTRAP_IMAGE_H */

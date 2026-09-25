@@ -7,6 +7,7 @@
 
 #include <thandor/graphics/resources/framebuffer.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: graphics/resources/framebuffer. */
 
@@ -52,7 +53,8 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   sdword sVar6;
   TH_LEGACY_HRESULT TVar7;
   int iVar8;
-  
+
+  g_ThandorFrameHeartbeat = g_ThandorFrameHeartbeat + 1;
   sVar6 = g_GraphicsBackendAccessState;
   sVar5 = g_CursorCurrentDrawY;
   sVar4 = g_CursorCurrentDrawX;
