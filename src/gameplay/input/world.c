@@ -537,8 +537,10 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
       }
       else if ((pointerValue0 != 0x7fffffff) && ((g_InGamePointerInteractionStateFlags & 3) == 0)) {
         if ((g_CursorButtonState & 4) == 0) {
-          iVar2 = (*(code *)g_PointerSetPosition)
-                            (g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
+          /* The original adds the horizontal mouse delta since capture (computed before snapping the
+             pointer back) - not the pointer function's return value. */
+          iVar2 = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
+          (*(code *)g_PointerSetPosition)(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + iVar2 * 0x40;
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
         }
@@ -552,8 +554,10 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
     }
     else if (pointerValue0 != 0x7fffffff) {
       if ((g_CursorButtonState & 4) == 0) {
-        iVar2 = (*(code *)g_PointerSetPosition)
-                          (g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
+        /* The original adds the horizontal mouse delta since capture (computed before snapping the
+           pointer back) - not the pointer function's return value. */
+        iVar2 = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
+        (*(code *)g_PointerSetPosition)(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + iVar2 * 0x40;
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;
       }
