@@ -492,7 +492,7 @@ TerrainProjectedOcclusion_TraceWedge0
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar5 <= (int)uVar4) {
@@ -514,7 +514,7 @@ TerrainProjectedOcclusion_TraceWedge0
       if (0 < *(int *)((int)cell_00 + (0x4c - iVar2))) {
         iVar3 = iVar3 + *(int *)((int)cell_00 + (0x4c - iVar2));
       }
-      lVar1 = (longlong)(iVar3 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar3 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar4 * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar4) {
@@ -568,7 +568,7 @@ TerrainProjectedOcclusion_TraceWedge1
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar5 <= (int)uVar4) {
@@ -590,7 +590,7 @@ TerrainProjectedOcclusion_TraceWedge1
       if (0 < *(int *)((int)cell + (0x4c - iVar2))) {
         iVar3 = iVar3 + *(int *)((int)cell + (0x4c - iVar2));
       }
-      lVar1 = (longlong)(iVar3 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar3 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar4 * 4);
       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar4) {
@@ -643,7 +643,7 @@ TerrainProjectedOcclusion_TraceWedge2
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar4 <= (int)uVar3) {
@@ -664,7 +664,7 @@ TerrainProjectedOcclusion_TraceWedge2
       if (0 < cell[-1].waterSurfaceDelta) {
         iVar2 = iVar2 + cell[-1].waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar3 * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -718,7 +718,7 @@ TerrainProjectedOcclusion_TraceWedge3
       if (0 < cell->waterSurfaceDelta) {
         FVar3 = FVar3 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(int)(FVar3 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(int)(FVar3 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar6 <= (int)uVar5) {
@@ -740,7 +740,7 @@ TerrainProjectedOcclusion_TraceWedge3
       if (0 < *(int *)(cell_00->runtime60_6B + iVar2 + -0x14)) {
         iVar4 = iVar4 + *(int *)(cell_00->runtime60_6B + iVar2 + -0x14);
       }
-      lVar1 = (longlong)(iVar4 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar4 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar5 * 4);
       uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar5) {
@@ -794,7 +794,7 @@ TerrainProjectedOcclusion_TraceWedge4
       if (0 < cell->waterSurfaceDelta) {
         iVar3 = iVar3 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar3 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar3 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar6 <= (int)uVar5) {
@@ -816,7 +816,7 @@ TerrainProjectedOcclusion_TraceWedge4
       if (0 < *(int *)(cell->runtime60_6B + iVar3 + -0x14)) {
         iVar4 = iVar4 + *(int *)(cell->runtime60_6B + iVar3 + -0x14);
       }
-      lVar1 = (longlong)(iVar4 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar4 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar5 * 4);
       uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar5) {
@@ -870,7 +870,7 @@ TerrainProjectedOcclusion_TraceWedge5
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)TVar4 <= (int)uVar3) {
@@ -891,7 +891,7 @@ TerrainProjectedOcclusion_TraceWedge5
       if (0 < cell[1].waterSurfaceDelta) {
         iVar2 = iVar2 + cell[1].waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + uVar3 * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -2356,7 +2356,7 @@ TerrainProjectedOcclusion_ScanDirection0
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -2399,7 +2399,7 @@ TerrainProjectedOcclusion_ScanDirection1
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -2442,7 +2442,7 @@ TerrainProjectedOcclusion_ScanDirection2
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -2485,7 +2485,7 @@ TerrainProjectedOcclusion_ScanDirection3
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -2528,7 +2528,7 @@ TerrainProjectedOcclusion_ScanDirection4
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
@@ -2571,7 +2571,7 @@ TerrainProjectedOcclusion_ScanDirection5
       if (0 < cell->waterSurfaceDelta) {
         iVar2 = iVar2 + cell->waterSurfaceDelta;
       }
-      lVar1 = (longlong)(iVar2 - g_TerrainScanReferenceHeight) *
+      lVar1 = (longlong)(iVar2 - (int)g_TerrainScanReferenceHeight) *
               (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)uVar3) {
