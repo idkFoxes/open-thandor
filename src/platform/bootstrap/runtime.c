@@ -584,6 +584,7 @@ void __cdecl Game_Run(void)
   FVar4 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,bVar2);
   bVar2 = FVar4.carry;
   dVar1 = Game_LoadCoreAssets();
+  Thandor_Log("Game_LoadCoreAssets -> 0x%08X", dVar1);
   FVar4 = (*g_FatalErrorPrimaryDispatchCf)(dVar1,bVar2);
   bVar2 = FVar4.carry;
   Game_PlayIntroMovies();
@@ -745,6 +746,8 @@ dword __cdecl Game_LoadCoreAssets(void)
     return (dword)arg0;
   }
   SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
+  Thandor_Log("button sound voice set via %s: carry=%d eax=0x%08X", Thandor_SymbolName((void *)g_SoundCreateSampleVoiceSet),
+              SVar12.carry, (dword)SVar12.eax);
   module = (FncModuleHeader *)SVar12.eax;
   if (!SVar12.carry) {
     Resource_Release(arg0);
@@ -1159,6 +1162,7 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
       }
       g_IntroMoviePendingTicks = 0;
       UiFrame_FlushInputAndResetPendingTicks();
+      arg0 = MVar6.playbackRateHzEcx; /* PUSH ECX: rate left by Movie_Open (AdvanceFrame preserves ECX) */
       (*g_TimerRegisterPeriodic)(arg0,IntroMovie_TimerTick);
       while( true ) {
         (*g_Win32PumpMessages)();

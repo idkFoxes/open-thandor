@@ -995,6 +995,7 @@ typedef int    sdword;
 struct MovieOpenEaxCf5 {
     dword eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
+    dword playbackRateHzEcx; // ECX on success: header dword +0xFC, the frame-timer frequency callers pass to TimerRegisterPeriodic (lost in the Ghidra EAX/CF view)
 };
 
 struct Win32FileSeekEaxCf5 {

@@ -99,14 +99,13 @@ GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
    clocks. A press within 16 clock units and within plus/minus four pixels of the previous press sets bit 31 in
    g_CursorButtonState.
 */
-InputEventEaxCf5 __cdecl GraphicsCursor_ConsumeNextInputEvent(void)
+GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
 
 {
   GraphicsCursorEventType GVar1;
-  dword in_EAX;
   uint nextReadIndex;
-  InputEventEaxCf5 IVar2;
-  InputEventEaxCf5 IVar3;
+  GraphicsCursorInputEventRegsCf21 IVar2;
+  GraphicsCursorInputEventRegsCf21 IVar3;
   GraphicsCursorEventType eventType;
   GraphicsCursorClockValue eventClock;
   dword eventIndex;
@@ -116,8 +115,8 @@ InputEventEaxCf5 __cdecl GraphicsCursor_ConsumeNextInputEvent(void)
   eventIndex = g_CursorInputReadIndex;
   nextReadIndex = g_CursorInputReadIndex + 1;
   if (g_CursorInputReadIndex == g_CursorInputWriteIndex) {
+    memset(&IVar3, 0, sizeof IVar3);
     IVar3.carry = true;
-    IVar3.eventType = in_EAX;
     return IVar3;
   }
   if (0xff < nextReadIndex) {
@@ -145,8 +144,14 @@ InputEventEaxCf5 __cdecl GraphicsCursor_ConsumeNextInputEvent(void)
     g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX08;
     g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY0C;
   }
+  /* Called through GraphicsCursorConsumeEventProc: the event also leaves the button state in EBX,
+     position in ECX/EDX and wheel delta in ESI, which Ghidra's EAX/CF view of this function dropped. */
+  IVar2.eventCode = GVar1;
+  IVar2.buttonState = g_CursorButtonState;
+  IVar2.pointerX = g_CursorInputEvents[eventIndex].pointerX08;
+  IVar2.pointerY = g_CursorInputEvents[eventIndex].pointerY0C;
+  IVar2.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
   IVar2.carry = false;
-  IVar2.eventType = GVar1;
   return IVar2;
 }
 

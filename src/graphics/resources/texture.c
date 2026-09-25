@@ -4398,7 +4398,6 @@ GraphicsTextureResource * __thandor_eax_preserve_ecx_edx
 GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
 
 {
-  GraphicsTextureResource *in_EAX;
   uint uVar1;
   TH_LEGACY_HRESULT TVar2;
   GraphicsTextureDownsampleShift GVar3;
@@ -4463,7 +4462,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
     texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
     texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
     texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
-    return in_EAX;
+    return texture; /* preserved EAX: callers mirror texture in EAX */
   }
 GraphicsTexture_CommitStagingResourcesAndUpload:
   texture->stagingSurfaceBase = surfaceBase;
@@ -4474,7 +4473,7 @@ GraphicsTexture_CommitStagingResourcesAndUpload:
   texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
   texture->textureHandle = 0;
   (*g_GraphicsDispatchTable.colorUpload[texture->downsampleShift])(texture);
-  return in_EAX;
+  return texture; /* preserved EAX: callers mirror texture in EAX */
 }
 
 

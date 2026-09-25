@@ -7,6 +7,7 @@
 
 #include <thandor/assets/text/resources.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: assets/text/resources. */
 
@@ -136,12 +137,10 @@ AssetRecordCount __thandor_eax_cf_preserve_ecx_edx
 TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
 
 {
-  AssetRecordCount in_EAX;
-  
   if ((asset->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
     return (asset->localeCountHeader).localeBlockCount;
   }
-  return in_EAX;
+  return 0; /* CF-set error path; Ghidra: unchanged in_EAX */
 }
 
 
@@ -317,6 +316,8 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
   TextResourceLoadEaxCf5 TVar12;
   
   PVar10 = Package_LoadEntry(path);
+  Thandor_Log("text page 0x%02X \"%ls\": %s 0x%08X", pageIndex, (wchar_t *)path,
+              PVar10.carry ? "load failed" : "loaded", (dword)PVar10.bufferOrError);
   allocation = PVar10.bufferOrError;
   pTVar3 = allocation;
   if (!PVar10.carry) {
@@ -507,6 +508,8 @@ TextResource_Resolve(TextResourceId resourceId)
       return TVar8;
     }
   }
+  Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
+              g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 0x10].selectedLocaleBlock);
   TVar10.carry = true;
   TVar10.eax = (word *)&k_LowAddressLiteral00000033;
   return TVar10;

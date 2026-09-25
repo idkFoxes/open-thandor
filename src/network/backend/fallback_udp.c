@@ -69,11 +69,14 @@ void __cdecl NetworkBackendFallback_Slot3_NoOp(void)
    Purpose: Default three-argument implementation for network backend slot 4. It sets CF and otherwise preserves
    the incoming register state.
 */
-void NetworkBackendFallback_Slot4_ThreeArgFailureCf
+NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailureCf
                (WinSockAddress *sourceAddress,dword argument1,byte *buffer)
 
 {
-  return;
+  NetworkBackendReceiveEaxCf5 result; /* result type of the backend slot */
+  memset(&result, 0, sizeof result);
+  result.carry = true;
+  return result;
 }
 
 /* Address: 0x0041A5D0.
@@ -82,11 +85,14 @@ void NetworkBackendFallback_Slot4_ThreeArgFailureCf
    operation. The live slot is the submission callback used by UiTransfer_StagePacketAndSendCf. Typed parameters:
    p1 byteCount→NetworkByteCount_V302. Nearby but non-identical semantic domains were explicitly deferred.
 */
-void NetworkBackendFallback_Slot5_ThreeArgSuccessCf
+NetworkBackendSendEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccessCf
                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,byte *buffer)
 
 {
-  return;
+  NetworkBackendSendEaxCf5 result; /* result type of the backend slot */
+  memset(&result, 0, sizeof result);
+  result.carry = false;
+  return result;
 }
 
 /* Address: 0x0041A5E0.

@@ -328,6 +328,7 @@ Movie_OpenAllocateAndInitializeRuntime:
             }
             MVar20.carry = false;
             MVar20.eax = pMVar6->subresourceTableOffset;
+            MVar20.playbackRateHzEcx = *(dword *)((byte *)pMVar6 + 0xfc); /* MOV ECX,[ESI+0xFC] */
             return MVar20;
           }
         }

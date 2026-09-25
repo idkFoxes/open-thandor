@@ -10,6 +10,7 @@
 #include <dbghelp.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <thandor/platform/bootstrap/image.h>
@@ -202,10 +203,9 @@ int Thandor_MapOriginalImage(void)
     return 0;
 }
 
-static void log_stack(FILE *out, CONTEXT *start)
+static void log_stack_thread(FILE *out, CONTEXT *start, HANDLE thread)
 {
     HANDLE process = GetCurrentProcess();
-    HANDLE thread = GetCurrentThread();
     CONTEXT context = *start;
     STACKFRAME64 frame;
     int depth;
@@ -249,6 +249,29 @@ static void log_stack(FILE *out, CONTEXT *start)
     }
 }
 
+const char *Thandor_SymbolName(const void *address)
+{
+    static char name[256];
+    char buffer[sizeof(SYMBOL_INFO) + 256];
+    SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+    DWORD64 displacement = 0;
+    static int initialized;
+    if (!initialized) {
+        SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+        SymInitialize(GetCurrentProcess(), NULL, TRUE);
+        initialized = 1;
+    }
+    memset(buffer, 0, sizeof buffer);
+    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symbol->MaxNameLen = 255;
+    if (SymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)address, &displacement, symbol)) {
+        sprintf_s(name, sizeof name, "%s+0x%llX", symbol->Name, displacement);
+    } else {
+        sprintf_s(name, sizeof name, "%p", address);
+    }
+    return name;
+}
+
 void Thandor_LogStack(const char *reason, unsigned value)
 {
     char path[MAX_PATH];
@@ -262,7 +285,7 @@ void Thandor_LogStack(const char *reason, unsigned value)
     }
     fprintf(out, "%s 0x%08X\n", reason, value);
     RtlCaptureContext(&context);
-    log_stack(out, &context);
+    log_stack_thread(out, &context, GetCurrentThread());
     fclose(out);
 }
 
@@ -330,7 +353,41 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
+static HANDLE g_watchedThread;
+
+/* Diagnostics: with OPEN_THANDOR_WATCHDOG=<seconds>, log the main thread's stack at that interval. */
+static DWORD WINAPI watchdog_thread(void *parameter)
+{
+    DWORD interval = (DWORD)(uintptr_t)parameter;
+    for (;;) {
+        char path[MAX_PATH];
+        FILE *out;
+        CONTEXT context;
+        Sleep(interval * 1000);
+        executable_directory(path, sizeof path);
+        strcat_s(path, sizeof path, "thandor.log");
+        if (fopen_s(&out, path, "a") != 0) {
+            continue;
+        }
+        SuspendThread(g_watchedThread);
+        memset(&context, 0, sizeof context);
+        context.ContextFlags = CONTEXT_FULL;
+        if (GetThreadContext(g_watchedThread, &context)) {
+            fprintf(out, "watchdog: main thread at %s\n", Thandor_SymbolName((void *)(uintptr_t)context.Eip));
+            log_stack_thread(out, &context, g_watchedThread);
+        }
+        ResumeThread(g_watchedThread);
+        fclose(out);
+    }
+}
+
 void Thandor_InstallCrashHandler(void)
 {
+    char seconds[16];
     SetUnhandledExceptionFilter(crash_filter);
+    if (GetEnvironmentVariableA("OPEN_THANDOR_WATCHDOG", seconds, sizeof seconds) != 0 && atoi(seconds) > 0) {
+        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_watchedThread, 0, FALSE,
+                        DUPLICATE_SAME_ACCESS);
+        CreateThread(NULL, 0, watchdog_thread, (void *)(uintptr_t)atoi(seconds), 0, NULL);
+    }
 }

@@ -29,10 +29,10 @@ NetworkBackendFallback_Slot2_ReturnError43Cf(dword argument);
 void __cdecl NetworkBackendFallback_Slot3_NoOp(void);
 
 /* 0x0041A5C0 */
-void NetworkBackendFallback_Slot4_ThreeArgFailureCf (WinSockAddress *sourceAddress,dword argument1,byte *buffer);
+NetworkBackendReceiveEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailureCf (WinSockAddress *sourceAddress,dword argument1,byte *buffer);
 
 /* 0x0041A5D0 */
-void NetworkBackendFallback_Slot5_ThreeArgSuccessCf (WinSockAddress *destinationAddress,NetworkByteCount byteCount,byte *buffer);
+NetworkBackendSendEaxCf5 __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccessCf (WinSockAddress *destinationAddress,NetworkByteCount byteCount,byte *buffer);
 
 /* 0x0041A5E0 */
 bool __thandor_cf_preserve_eax_ecx_edx

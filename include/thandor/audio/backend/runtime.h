@@ -18,7 +18,7 @@
 void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void);
 
 /* 0x00417570 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset);
 
 /* 0x00417580 */
@@ -26,7 +26,7 @@ void __thandor_void_preserve_eax_ecx_edx
 SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x00417590 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
@@ -37,13 +37,13 @@ void __thandor_void_preserve_eax_ecx_edx
 SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet);
 
 /* 0x004175B0 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet);
 
 /* 0x004175C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet);

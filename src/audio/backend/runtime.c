@@ -40,11 +40,15 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
    Purpose: Disabled-backend placeholder. Returns pointer value 0xFFFFFFFF with CF clear and consumes one
    SoundSampleAsset argument.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
-  return false;
+  /* Returned through SoundCreateSampleVoiceSetProc, so it must use that {EAX, CF} result type. */
+  SoundCreateSampleVoiceSetEaxCf5 result;
+  result.eax = (DirectSoundVoiceSet *)0xffffffff;
+  result.carry = false;
+  return result;
 }
 
 
@@ -65,14 +69,17 @@ SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
    Purpose: Disabled-backend placeholder. Returns pointer value 0xFFFFFFFF with CF clear and consumes the five raw-
    PCM arguments.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
           void *pcmData)
 
 {
-  return false;
+  SoundCreatePcmVoiceSetEaxCf5 result; /* slot type SoundCreatePcmVoiceSetProc */
+  result.eax = (DirectSoundVoiceSet *)0xffffffff;
+  result.carry = false;
+  return result;
 }
 
 
@@ -92,13 +99,15 @@ SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
    Ownership: audio/backend/runtime.
    Purpose: Disabled-backend one-shot placeholder. It only clears CF and leaves EAX unchanged.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
 {
-  return false;
+  SoundPlayVoiceEaxCf5 result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
+  memset(&result, 0, sizeof result);
+  return result;
 }
 
 
@@ -106,13 +115,15 @@ SoundBackendDisabled_PlayOneShot
    Ownership: audio/backend/runtime.
    Purpose: Disabled-backend looping placeholder. It only clears CF and leaves EAX unchanged.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
+SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
 {
-  return false;
+  SoundPlayVoiceEaxCf5 result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
+  memset(&result, 0, sizeof result);
+  return result;
 }
 
 

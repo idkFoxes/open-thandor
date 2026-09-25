@@ -40,6 +40,9 @@ void Thandor_Log(const char *format, ...);
 /* Appends `reason value` and the current call stack to thandor.log. */
 void Thandor_LogStack(const char *reason, unsigned value);
 
+/* Symbol name (+offset) of an address in this executable, for diagnostics. */
+const char *Thandor_SymbolName(const void *address);
+
 /* Writes crash.log next to the executable with a symbolized stack on unhandled exceptions. */
 void Thandor_InstallCrashHandler(void);
 

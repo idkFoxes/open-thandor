@@ -22,7 +22,7 @@ GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
 /* 0x004168E0 */
-InputEventEaxCf5 __cdecl GraphicsCursor_ConsumeNextInputEvent(void);
+GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void);
 
 /* 0x00486430 */
 GraphicsProjectedPointPair __thandor_eax_edx_cf_preserve_ecx
