@@ -460,22 +460,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -490,22 +490,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
     pDVar16 = g_ImmediateTLVertices + 1;
@@ -739,22 +739,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -769,22 +769,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
     pDVar16 = g_ImmediateTLVertices + 1;
@@ -1019,22 +1019,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -1049,22 +1049,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
     pDVar16 = g_ImmediateTLVertices + 1;
@@ -1298,22 +1298,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -1328,22 +1328,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
     pDVar16 = g_ImmediateTLVertices + 1;
@@ -1451,22 +1451,22 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   uVar2 = packet->textureEntry->widthLog2;
   uVar3 = packet->textureEntry->heightLog2;
@@ -1495,22 +1495,22 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    g_ImmediateTLVertices[0].tu = (float)((int)g_ImmediateTLVertices[0].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    g_ImmediateTLVertices[0].tv = (float)((int)g_ImmediateTLVertices[0].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    g_ImmediateTLVertices[1].tu = (float)((int)g_ImmediateTLVertices[1].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    g_ImmediateTLVertices[1].tv = (float)((int)g_ImmediateTLVertices[1].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    g_ImmediateTLVertices[2].tu = (float)((int)g_ImmediateTLVertices[2].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    g_ImmediateTLVertices[2].tv = (float)((int)g_ImmediateTLVertices[2].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1519,22 +1519,22 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
   pGVar4 = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
@@ -1655,22 +1655,22 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   uVar2 = packet->textureEntry->widthLog2;
   uVar3 = packet->textureEntry->heightLog2;
@@ -1699,22 +1699,22 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    g_ImmediateTLVertices[0].tu = (float)((int)g_ImmediateTLVertices[0].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    g_ImmediateTLVertices[0].tv = (float)((int)g_ImmediateTLVertices[0].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    g_ImmediateTLVertices[1].tu = (float)((int)g_ImmediateTLVertices[1].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    g_ImmediateTLVertices[1].tv = (float)((int)g_ImmediateTLVertices[1].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    g_ImmediateTLVertices[2].tu = (float)((int)g_ImmediateTLVertices[2].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    g_ImmediateTLVertices[2].tv = (float)((int)g_ImmediateTLVertices[2].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1723,22 +1723,22 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
   pGVar4 = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
@@ -1859,22 +1859,22 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   uVar2 = packet->textureEntry->widthLog2;
   uVar3 = packet->textureEntry->heightLog2;
@@ -1903,22 +1903,22 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    g_ImmediateTLVertices[0].tu = (float)((int)g_ImmediateTLVertices[0].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    g_ImmediateTLVertices[0].tv = (float)((int)g_ImmediateTLVertices[0].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    g_ImmediateTLVertices[1].tu = (float)((int)g_ImmediateTLVertices[1].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    g_ImmediateTLVertices[1].tv = (float)((int)g_ImmediateTLVertices[1].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    g_ImmediateTLVertices[2].tu = (float)((int)g_ImmediateTLVertices[2].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    g_ImmediateTLVertices[2].tv = (float)((int)g_ImmediateTLVertices[2].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1927,22 +1927,22 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
   pGVar4 = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
@@ -2064,22 +2064,22 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   uVar2 = packet->textureEntry->widthLog2;
   uVar3 = packet->textureEntry->heightLog2;
@@ -2108,22 +2108,22 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    g_ImmediateTLVertices[0].tu = (float)((int)g_ImmediateTLVertices[0].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    g_ImmediateTLVertices[0].tv = (float)((int)g_ImmediateTLVertices[0].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    g_ImmediateTLVertices[1].tu = (float)((int)g_ImmediateTLVertices[1].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    g_ImmediateTLVertices[1].tv = (float)((int)g_ImmediateTLVertices[1].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    g_ImmediateTLVertices[2].tu = (float)((int)g_ImmediateTLVertices[2].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    g_ImmediateTLVertices[2].tv = (float)((int)g_ImmediateTLVertices[2].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -2132,22 +2132,22 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
   pGVar4 = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
@@ -2268,22 +2268,22 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    g_ImmediateTLVertices[0].sx = (float)((int)g_ImmediateTLVertices[0].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    g_ImmediateTLVertices[0].sy = (float)((int)g_ImmediateTLVertices[0].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    g_ImmediateTLVertices[1].sx = (float)((int)g_ImmediateTLVertices[1].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    g_ImmediateTLVertices[1].sy = (float)((int)g_ImmediateTLVertices[1].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    g_ImmediateTLVertices[2].sx = (float)((int)g_ImmediateTLVertices[2].sx + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    g_ImmediateTLVertices[2].sy = (float)((int)g_ImmediateTLVertices[2].sy + -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
   uVar2 = packet->textureEntry->widthLog2;
   uVar3 = packet->textureEntry->heightLog2;
@@ -2312,22 +2312,22 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    g_ImmediateTLVertices[0].tu = (float)((int)g_ImmediateTLVertices[0].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    g_ImmediateTLVertices[0].tv = (float)((int)g_ImmediateTLVertices[0].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    g_ImmediateTLVertices[1].tu = (float)((int)g_ImmediateTLVertices[1].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    g_ImmediateTLVertices[1].tv = (float)((int)g_ImmediateTLVertices[1].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    g_ImmediateTLVertices[2].tu = (float)((int)g_ImmediateTLVertices[2].tu + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    g_ImmediateTLVertices[2].tv = (float)((int)g_ImmediateTLVertices[2].tv + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -2336,22 +2336,22 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    g_ImmediateTLVertices[0].sz = (float)((int)g_ImmediateTLVertices[0].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    g_ImmediateTLVertices[0].rhw = (float)((int)g_ImmediateTLVertices[0].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    g_ImmediateTLVertices[1].sz = (float)((int)g_ImmediateTLVertices[1].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    g_ImmediateTLVertices[1].rhw = (float)((int)g_ImmediateTLVertices[1].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    g_ImmediateTLVertices[2].sz = (float)((int)g_ImmediateTLVertices[2].sz + -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    g_ImmediateTLVertices[2].rhw = (float)((int)g_ImmediateTLVertices[2].rhw + 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
   pGVar4 = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {

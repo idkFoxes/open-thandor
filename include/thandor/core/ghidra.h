@@ -220,4 +220,9 @@ static __inline unsigned long long thandor_mmx_bgra(SoftwareBgraWordLanes v) { u
 #define psraw(a, n) thandor_mmx_psraw(THANDOR_MMX_Q(a), (unsigned long long)(n))
 #define psllw(a, n) thandor_mmx_psllw(THANDOR_MMX_Q(a), (unsigned long long)(n))
 
+
+/* The original scales floats by powers of two with integer adds on their bit pattern
+   (e.g. `add dword ptr [x], -0x6000000` divides by 2^12); Ghidra shows those as value casts. */
+#define THANDOR_FLOAT_ADD_EXPONENT_BITS(lvalue, delta) (*(int32_t *)&(lvalue) += (int32_t)(delta))
+
 #endif /* THANDOR_CORE_GHIDRA_H */

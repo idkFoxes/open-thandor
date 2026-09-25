@@ -7,6 +7,7 @@
 
 #include <thandor/ui/frontend/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: ui/frontend/runtime. */
 
@@ -973,6 +974,27 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
     }
   }
 LAB_0050c196:
+  {
+    static int logged;
+    if (logged < 6) {
+      int nodes = 0, visible = 0;
+      ModelRuntimeNode *n;
+      for (n = control->candidateModelListHead; n != (ModelRuntimeNode *)0x0;
+           n = (ModelRuntimeNode *)(n->common).nextNode) {
+        nodes++;
+        if ((n->runtimeFlags & 0x240) == 0 && (n->tintArgb & 0xff000000) != 0) visible++;
+      }
+      Thandor_Log("world view: flags=0x%X nodes=%d visible=%d primitives=%u clip=%d,%d,%d,%d",
+                  control->contextFlags, nodes, visible, control->renderedPrimitiveCount,
+                  clipTop, clipLeft, clipBottom, clipRight);
+      if (logged == 0) {
+        Thandor_Log("  draw=%s sort=%s begin=%s", Thandor_SymbolName((void *)g_GraphicsDrawPrimitiveQueue),
+                    Thandor_SymbolName((void *)PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844),
+                    Thandor_SymbolName((void *)g_GraphicsBeginScene));
+      }
+      logged++;
+    }
+  }
   (*g_GraphicsEndScene)();
   g_RenderedFrameCountSinceDebugRefresh = g_RenderedFrameCountSinceDebugRefresh + 1;
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
