@@ -7,6 +7,7 @@
 
 #include <thandor/platform/bootstrap/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
@@ -55,7 +56,7 @@ void __cdecl ProcessEntry(void)
     g_MainWindowClassIconHandle = LoadIconA(g_hInstance,(LPCSTR)0x1);
     g_MainWindowClassCursorHandle = LoadCursorA((HINSTANCE)0x0,&k_LowAddressLiteral00007F00);
     AVar1 = RegisterClassA((WNDCLASSA *)&g_MainMessage.pointY);
-    if (CONCAT22(extraout_var,AVar1) != 0) {
+    if (AVar1 != 0) { /* Ghidra: CONCAT22(extraout_var,AVar1); only the 16-bit ATOM in AX is set */
       lpParam = (LPVOID)0x0;
       hMenu = (HMENU)0x0;
       pHVar3 = (HWND)0x0;
@@ -85,6 +86,7 @@ void __cdecl ProcessEntry(void)
         SVar6 = DirectInputMouse_Init();
         (*g_FatalErrorPrimaryDispatchCf)(SVar6.valueOrError,SVar6.carry);
         bVar5 = DirectSound_Init();
+        Thandor_Log("DirectSound_Init: %s", bVar5 ? "failed (continuing without sound)" : "ok");
         carryIn = 0;
         if (bVar5) {
           CVar9 = CommandLine_FindOption(6,s_SOUND_00582f28);
@@ -95,7 +97,9 @@ void __cdecl ProcessEntry(void)
           }
         }
         dVar4 = Network_Init();
-        (*g_FatalErrorPrimaryDispatchCf)(dVar4,(bool)carryIn);
+        /* Network_Init returns 0 with CF clear (xor eax,eax) on success and an error code with CF
+           set otherwise; Ghidra dropped its CF and passed the stale carry of the sound block. */
+        (*g_FatalErrorPrimaryDispatchCf)(dVar4,dVar4 != 0);
         PersistentSettings_Load();
         arg3 = 0x280;
         arg2 = 0x1e0;
@@ -338,7 +342,7 @@ DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
   Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
   if ((g_BootstrapApiBindings[0].destination != (void **)dynapi_9) && (g_DynamicModuleCount < 0x10))
   {
-    loadedModule = (HINSTANCE)(*(code *)g_BootstrapApiBindings[0].destination)(moduleName);
+    loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(moduleName);
     moduleSlotIndex = g_DynamicModuleCount;
     if (loadedModule != (HINSTANCE)0x0) {
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
@@ -375,7 +379,7 @@ DynDLL_ReportModuleNotLoaded:
       return 0xf;
     }
     if (moduleName == moduleEntryCursor->name) {
-      dVar1 = (*(code *)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
+      dVar1 = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
       if (dVar1 != 0) {
         return dVar1;
       }
@@ -412,7 +416,7 @@ LAB_00573d6a:
     }
     if (destination == pDVar3->destination) {
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)destination);
-      pvVar1 = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(destination,pDVar3);
+      pvVar1 = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(destination,pDVar3); /* TODO: 2 args to slot 0 (LoadLibraryA); Ghidra register confusion, function is unreferenced */
       if (pvVar1 != (void *)0x0) {
         *destination = pvVar1;
         SVar5.valueOrError = 0xf;
@@ -444,7 +448,7 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
     if (moduleEntryCursor->module != (HINSTANCE)0x0) {
       loadedModule = moduleEntryCursor->module;
       moduleEntryCursor->module = (HINSTANCE)0x0;
-      (*(code *)g_BootstrapApiBindings[1].destination)(loadedModule);
+      ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(loadedModule);
     }
     moduleEntryCursor = moduleEntryCursor + 1;
   }
@@ -460,7 +464,7 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
    Cross-module calls: Keyboard_OnKeyDown [platform/input/devices], Keyboard_OnKeyUp [platform/input/devices],
    Keyboard_OnChar [platform/input/devices].
 */
-LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
+LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
 
 {
   ushort uVar1;
@@ -675,10 +679,10 @@ dword __cdecl Game_LoadCoreAssets(void)
   ResourceLoadEaxEcxCf9 RVar20;
   
   if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
-     (iVar2 = (*(code *)g_BootstrapApiBindings[5].destination)
+     (iVar2 = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[5].destination)
                         (0x80000002,s_Software_Planet4_Thandor_00572e20,0,0x20019,
                          &g_InstallRegistryKeyHandle), iVar2 == 0)) {
-    iVar2 = (*(code *)g_BootstrapApiBindings[6].destination)
+    iVar2 = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[6].destination)
                       (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
                        &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
                        &g_InstallRegistryValueDataCapacityBytes);
@@ -689,7 +693,7 @@ dword __cdecl Game_LoadCoreAssets(void)
                 (g_LooseMoviePathPrefix.codeUnits,(word *)u_Thandor_00572e10,
                  (word *)&g_InstallDirectoryScratchUtf16);
     }
-    (*(code *)g_BootstrapApiBindings[7].destination)(g_InstallRegistryKeyHandle);
+    ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[7].destination)(g_InstallRegistryKeyHandle);
   }
   g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
   do {
@@ -1233,7 +1237,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
         return SVar3;
       }
       hModule = (HINSTANCE)
-                (*(code *)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
+                ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (hModule == (HINSTANCE)0x0) {
         Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);

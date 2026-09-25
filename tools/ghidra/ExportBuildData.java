@@ -4,6 +4,7 @@
 //   symbols.jsonl               every labeled defined data item with address, type and length
 //   imports.jsonl               every external (DLL) function with library and signature
 //   functions.jsonl             every function with entry address and prototype
+//   labels.jsonl                every label (including untyped ones) with its address
 //
 // Headless:
 //   analyzeHeadless <tmpdir> thandor -import ghidra/thandor.exeV537.gzf -noanalysis ^
@@ -24,6 +25,7 @@ import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Parameter;
 import ghidra.program.model.symbol.ExternalLocation;
 import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.SymbolType;
 
 public class ExportBuildData extends GhidraScript {
 
@@ -88,6 +90,19 @@ public class ExportBuildData extends GhidraScript {
                 }
             }
         }
+        int labels = 0;
+        try (PrintWriter wl = new PrintWriter(new File(out, "labels.jsonl"), "UTF-8")) {
+            for (Symbol s : currentProgram.getSymbolTable().getAllSymbols(true)) {
+                if (s.isExternal() || s.getSymbolType() != SymbolType.LABEL) {
+                    continue;
+                }
+                wl.println("{\"name\":" + q(s.getName()) + ",\"address\":" + q(s.getAddress().toString())
+                        + ",\"primary\":" + s.isPrimary() + "}");
+                labels++;
+            }
+        }
+        println("open-thandor export: " + labels + " labels");
+
         int imports = 0;
         int functions = 0;
         try (PrintWriter wi = new PrintWriter(new File(out, "imports.jsonl"), "UTF-8");

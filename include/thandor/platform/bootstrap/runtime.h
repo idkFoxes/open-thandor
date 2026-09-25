@@ -41,7 +41,7 @@ BootstrapApi_ResolveBindingByDestination(void **destination);
 void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void);
 
 /* 0x00585F50 */
-LRESULT MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
+LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
 
 /* 0x00587370 */
 dword __cdecl CPU_DetectFeatures(void);
@@ -67,5 +67,23 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
 /* 0x00586170 */
 void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void);
+
+/*
+g_BootstrapApiBindings (0x00573F74) is resolved at startup from {name, module} pairs; each slot then
+holds the __stdcall entry of that Win32 API. Calls must use these types: the Ghidra `code` type is
+cdecl and would leave the stack unbalanced after every call.
+*/
+typedef HINSTANCE (__stdcall *BootstrapLoadLibraryAProc)(char *moduleName);                 /* [0] */
+typedef BOOL (__stdcall *BootstrapFreeLibraryProc)(HINSTANCE module);                        /* [1] */
+typedef dword (__stdcall *BootstrapTimeSetEventProc)(dword delayMs, dword resolutionMs, void *callback,
+                                                     dword user, dword flags);             /* [2] */
+typedef dword (__stdcall *BootstrapTimeKillEventProc)(dword timerId);                        /* [3] */
+typedef dword (__stdcall *BootstrapMciSendCommandAProc)(dword device, dword message, dword flags,
+                                                        dword params);                     /* [4] */
+typedef long (__stdcall *BootstrapRegOpenKeyExAProc)(dword key, char *subKey, dword options, dword access,
+                                                     void *result);                       /* [5] */
+typedef long (__stdcall *BootstrapRegQueryValueExAProc)(dword key, void *valueName, dword *reserved,
+                                                        void *type, void *data, void *size); /* [6] */
+typedef long (__stdcall *BootstrapRegCloseKeyProc)(dword key);                               /* [7] */
 
 #endif /* THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H */

@@ -5,6 +5,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # The recovered code stores pointers in 32-bit fields (pointer32, (int)ptr casts).
+# Decompiled code reads Ghidra's placeholders for unknown register halves (extraout_var, ...)
+# before assigning them; the debug runtime checks would stop on each one.
+string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
     message(FATAL_ERROR "open-thandor must be built for 32-bit x86 (e.g. MSVC vcvars32 / -A Win32).")
 endif()
@@ -114,9 +118,15 @@ add_library(thandor_curated STATIC
     src/world/terrain/occupancy.c
     src/world/terrain/projection.c
     src/world/terrain/visuals.c
-    src/generated/globals.c
 )
 target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(thandor WIN32 src/platform/bootstrap/main.c)
-target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32)
+# The executable maps the original image at 0x400000 (see platform/bootstrap/image.h),
+# so it must load elsewhere.
+add_executable(thandor WIN32
+    src/platform/bootstrap/main.c
+    src/platform/bootstrap/image.c
+    src/generated/function_map.c
+)
+target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
+target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)

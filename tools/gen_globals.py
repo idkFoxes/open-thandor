@@ -132,6 +132,35 @@ def c_literal(value, wide):
     return ("L" if wide else "") + '"' + "".join(out) + '"'
 
 
+def data_addresses():
+    """Sanitized label -> (address, byte length or None) from the Ghidra export."""
+    out = {}
+    for name in ("symbols", "labels"):
+        path = ROOT / f"ghidra/export/{name}.jsonl"
+        if path.exists():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                d = json.loads(line)
+                out.setdefault(re.sub(r"\W", "_", d["name"]), (int(d["address"], 16), d.get("length")))
+    return out
+
+
+def address_of(name, addrs):
+    if name in addrs:
+        return addrs[name][0]
+    m = re.search(r"(?:Ram|_)([0-9a-fA-F]{8})$", name)
+    return int(m.group(1), 16) if m else None
+
+
+def view(typ, dims, address, length):
+    """An lvalue of `typ dims` at a fixed address."""
+    if dims == "[]":
+        elem = 2 if typ == "word" else 1
+        dims = f"[{max(1, (length or elem) // elem)}]"
+    if dims:
+        return f"(*({typ} (*){dims})0x{address:08x})"
+    return f"(*({typ} *)0x{address:08x})"
+
+
 def main(export):
     src = pathlib.Path(export).resolve()
     lines = src.read_text(encoding="utf-8").splitlines()
@@ -181,25 +210,36 @@ def main(export):
         h += [f"#ifndef {conv}", f"#define {conv}", "#endif"]
     h += [infer_signatures.render(t, s) for t, s in sigs.items()]
     h += [""]
-    h += [f"extern {t} {n}{d};" for t, n, d, _ in decls]
+    addrs = data_addresses()
+    h += ["", "/*",
+          " * Globals live at their original addresses: ProcessEntry's caller maps the data image of",
+          " * thandor_original.exe (its single RWX .text section, 0x401000-0x58C000) there first, see",
+          " * platform/bootstrap/image.c. Neighbouring accesses, tables and absolute addresses in the",
+          " * recovered code therefore behave exactly as in the original.",
+          " */"]
+    unresolved = []
+    for t, n, d, _ in decls:
+        a = address_of(n, addrs)
+        if a is None:
+            unresolved.append(n)
+            h.append(f"extern {t} {n}{d}; /* TODO: no address known */")
+        else:
+            h.append(f"#define {n} {view(t, d, a, addrs.get(n, (None, None))[1])}")
     ram, aliases, literals = implicit_symbols({n for _, n, _, _ in decls})
-    h += ["", "/* Unnamed memory cells Ghidra prints as <type>Ram<address>; plain globals in this build. */"]
-    h += [f"extern {t} {n};" for t, n in ram]
+    h += ["", "/* Unnamed memory cells Ghidra prints as <type>Ram<address>. */"]
+    h += [f"#define {n} {view(t, '', address_of(n, addrs), None)}" for t, n in ram]
     h += ["", "/* _name: dword-sized access to the untyped label `name`. */"]
     h += [f"#define _{n} (*(dword *)&{n})" for n in aliases]
     h += ["", "/* Symbols Ghidra invented for absolute low addresses; `&sym` yields the constant. */"]
     h += [f"#define {n} (*(byte *)0x{a})" for n, a in literals]
     h += ["", "#endif /* THANDOR_GENERATED_GLOBALS_H */", ""]
-    c = [HEADER.format(src=rel), "#include <thandor/thandor.h>", ""]
-    c += [(f"{t} {n}{d} = {i[0]};" if i[1] else f"{t} {n}{d} = {i[0]}; /* TODO: verify text against thandor.exe */")
-          if i else f"{t} {n}{d};" for t, n, d, i in decls]
-    c += [f"{t} {n};" for t, n in ram]
-    c += [""]
 
     (ROOT / "include/thandor/generated/globals.h").write_text("\n".join(h), encoding="utf-8", newline="\n")
-    out = ROOT / "src/generated/globals.c"
-    out.parent.mkdir(exist_ok=True)
-    out.write_text("\n".join(c), encoding="utf-8", newline="\n")
+    old_c = ROOT / "src/generated/globals.c"
+    if old_c.exists():
+        old_c.unlink()
+    if unresolved:
+        print("globals without address:", unresolved)
     kinds = {k: sum(1 for s in sigs.values() if s and s[0] == k) for k in ("ghidra", "full", "ret")}
     print(f"block lines {lo + 1}-{hi}: {len(decls)} globals, {len(skipped)} function labels skipped")
     print(f"signatures: {kinds['ghidra']} from Ghidra, {kinds['full']} from assignments, "

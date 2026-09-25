@@ -468,7 +468,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
       senderEndpoint->ipv4AddressNetworkOrder)) {
     g_FrontendPacket8000ABuffer.snapshotChunkOffset =
          (packet->packet10009SnapshotChunkRequest).snapshotChunkOffset;
-    pbVar11 = g_FrontendPacket8000ABuffer.g_FrontendPacket10009Buffer;
+    pbVar11 = g_FrontendPacket8000ABuffer.packet10009Buffer;
     puVar9 = (undefined4 *)
              (g_FrontendLocalPlayerPcxPreview + g_FrontendPacket8000ABuffer.snapshotChunkOffset);
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A;

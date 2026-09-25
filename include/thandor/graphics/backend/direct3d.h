@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00578270 */
-sdword Direct3D_EnumDeviceCallback (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName, D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc, GraphicsAdapterRecord *adapterContext);
+sdword __stdcall Direct3D_EnumDeviceCallback (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName, D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc, GraphicsAdapterRecord *adapterContext);
 
 /* 0x00578820 */
 sdword __thandor_eax_preserve_ecx_edx

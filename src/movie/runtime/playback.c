@@ -168,7 +168,7 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   PackageFindEntryEaxEbxCf9 PVar22;
   LPSECURITY_ATTRIBUTES lpThreadAttributes;
   SIZE_T dwStackSize;
-  code *lpStartAddress;
+  LPTHREAD_START_ROUTINE lpStartAddress;
   LPVOID lpParameter;
   DWORD dwCreationFlags;
   MovieStreamByteCount *lpThreadId;
@@ -312,7 +312,7 @@ Movie_OpenAllocateAndInitializeRuntime:
               pMVar7->workerActive = pMVar7->workerActive + 1;
               dwCreationFlags = 0;
               lpParameter = (LPVOID)0x0;
-              lpStartAddress = Movie_StreamWorkerThread;
+              lpStartAddress = (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread;
               dwStackSize = 0;
               lpThreadAttributes = (LPSECURITY_ATTRIBUTES)0x0;
               pvVar8 = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
@@ -422,7 +422,7 @@ void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
    below 0x3A2200, advances streamFileOffset/loadedVideoEnd, records read failure as state 2, and clears
    workerActive before returning zero.
 */
-dword Movie_StreamWorkerThread(void *unusedThreadContext)
+dword __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 {
   void *handle;

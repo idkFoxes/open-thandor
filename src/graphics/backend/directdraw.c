@@ -72,7 +72,7 @@ DisplayModeTable_ContainsExactModeCf
    Purpose: DirectDrawEnumerateA callback. Appends one 0x80-byte GraphicsAdapterRecord.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-int DirectDraw_EnumAdapterCallback
+int __stdcall DirectDraw_EnumAdapterCallback
               (TH_LEGACY_GUID *adapterGuid,char *driverDescription,char *driverName,
               void *applicationContext)
 
@@ -111,7 +111,7 @@ int DirectDraw_EnumAdapterCallback
    explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-sdword DirectDraw_EnumDisplayModeCallback
+sdword __stdcall DirectDraw_EnumDisplayModeCallback
                  (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex)
 
 {

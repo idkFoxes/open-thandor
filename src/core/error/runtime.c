@@ -7,6 +7,7 @@
 
 #include <thandor/core/error/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: core/error/runtime. */
 
@@ -214,6 +215,9 @@ FatalError_Exit(dword errorOrValue,bool carryIn)
     FVar1.eax = errorOrValue;
     return FVar1;
   }
+  /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
+  Thandor_Log("fatal error 0x%08X, last path \"%ls\"", errorOrValue, (wchar_t *)g_PackageLastErrorPath);
+  Thandor_LogStack("fatal error stack", errorOrValue);
   if ((errorOrValue & 0xffffff00) == 0) {
     TVar2 = TextResource_Resolve(errorOrValue);
     errorOrValue = (dword)TVar2.eax;

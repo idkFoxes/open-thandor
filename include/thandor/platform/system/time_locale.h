@@ -28,8 +28,7 @@ Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode count
 void __cdecl TimerSystem_Init(void);
 
 /* 0x005867E0 */
-void __thandor_void_preserve_eax_ecx_edx
-WinMM_TimerDispatchCallback
+void __stdcall WinMM_TimerDispatchCallback
           (WinMmTimerId timerId,dword message,TimerCallbackSlotByteOffset slotOffset,
           dword callbackData0,dword callbackData1);
 

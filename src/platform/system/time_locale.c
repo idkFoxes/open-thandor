@@ -155,8 +155,7 @@ void __cdecl TimerSystem_Init(void)
    without arguments. Typed parameters: p0 timerId→WinMmTimerId_V331, p2
    slotOffset→TimerCallbackSlotByteOffset_V331. Nearby but non-identical semantic domains were explicitly deferred.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WinMM_TimerDispatchCallback
+void __stdcall WinMM_TimerDispatchCallback
           (WinMmTimerId timerId,dword message,TimerCallbackSlotByteOffset slotOffset,
           dword callbackData0,dword callbackData1)
 
@@ -190,10 +189,12 @@ TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *cal
     if (*(int *)((int)g_TimerSystemState.callbacks + callbackSlotSearchByteOffset) == 0) {
       *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotSearchByteOffset) =
            callback;
-      winmmTimerId = (*(code *)g_BootstrapApiBindings[2].destination)
+      winmmTimerId = ((BootstrapTimeSetEventProc)g_BootstrapApiBindings[2].destination)
                                (intervalMilliseconds,0,WinMM_TimerDispatchCallback,
-                                callbackSlotSearchByteOffset,1,callbackSlotSearchByteOffset);
-      *(WinMmTimerId *)((int)g_TimerSystemState.winmmTimerIds + intervalMilliseconds) = winmmTimerId
+                                callbackSlotSearchByteOffset,1 /* TIME_PERIODIC */);
+      /* Ghidra showed a stale 6th argument and indexed the ID array by intervalMilliseconds;
+         the ID pairs with the callback slot (see TimerSystem_UnregisterPeriodic). */
+      *(WinMmTimerId *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotSearchByteOffset) = winmmTimerId
       ;
       return;
     }
@@ -575,7 +576,7 @@ void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCal
     if (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) ==
         callback) {
       *(undefined4 *)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = 0;
-      (*(code *)g_BootstrapApiBindings[3].destination)
+      ((BootstrapTimeKillEventProc)g_BootstrapApiBindings[3].destination)
                 (*(undefined4 *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset));
       return;
     }

@@ -33,7 +33,7 @@ MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDime
 void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15);
 
 /* 0x004A8C00 */
-dword Movie_StreamWorkerThread(void *unusedThreadContext);
+dword __stdcall Movie_StreamWorkerThread(void *unusedThreadContext);
 
 /* 0x004A8D50 */
 void Movie_Rewind(void);

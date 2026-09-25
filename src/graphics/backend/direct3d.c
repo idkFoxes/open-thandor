@@ -15,7 +15,7 @@
    Purpose: IDirect3D2::EnumDevices callback. Context points at the adapter record being expanded.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-sdword Direct3D_EnumDeviceCallback
+sdword __stdcall Direct3D_EnumDeviceCallback
                  (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName,
                  D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc,
                  GraphicsAdapterRecord *adapterContext)

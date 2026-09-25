@@ -1452,7 +1452,7 @@ struct _WIN32_FIND_DATAA {
 
 typedef struct _OVERLAPPED *LPOVERLAPPED;
 
-typedef DWORD (*PTHREAD_START_ROUTINE)(LPVOID);
+typedef DWORD (__stdcall *PTHREAD_START_ROUTINE)(LPVOID);
 
 typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
 
@@ -1541,7 +1541,7 @@ struct HWND__ {
 
 typedef LONG_PTR LRESULT;
 
-typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
+typedef LRESULT (__stdcall *WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
 typedef struct HINSTANCE__ *HINSTANCE;
 
@@ -3053,55 +3053,55 @@ struct IDirect3D2 {
 };
 
 struct IDirectDrawSurface3_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectDrawSurface3 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (*AddAttachedSurface)(struct IDirectDrawSurface3 *, struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (*AddOverlayDirtyRect)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *);
-    TH_LEGACY_HRESULT (*Blt)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*BltBatch)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*BltFast)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*DeleteAttachedSurface)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (*EnumAttachedSurfaces)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*EnumOverlayZOrders)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*Flip)(struct IDirectDrawSurface3 *, struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetAttachedSurface)(struct IDirectDrawSurface3 *, struct DDSCAPS *, struct IDirectDrawSurface3 **);
-    TH_LEGACY_HRESULT (*GetBltStatus)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirectDrawSurface3 *, struct DDSCAPS *);
-    TH_LEGACY_HRESULT (*GetClipper)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (*GetColorKey)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (*GetDC)(struct IDirectDrawSurface3 *, TH_LEGACY_HANDLE *);
-    TH_LEGACY_HRESULT (*GetFlipStatus)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetOverlayPosition)(struct IDirectDrawSurface3 *, TH_LEGACY_LONG *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (*GetPalette)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (*GetPixelFormat)(struct IDirectDrawSurface3 *, struct DDPIXELFORMAT *);
-    TH_LEGACY_HRESULT (*GetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectDrawSurface3 *, struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (*IsLost)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (*Lock)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (*ReleaseDC)(struct IDirectDrawSurface3 *, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (*Restore)(struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (*SetClipper)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*SetColorKey)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (*SetOverlayPosition)(struct IDirectDrawSurface3 *, TH_LEGACY_LONG, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (*SetPalette)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*Unlock)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*UpdateOverlay)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*UpdateOverlayDisplay)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*UpdateOverlayZOrder)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *);
-    TH_LEGACY_HRESULT (*GetDDInterface)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (*PageLock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*PageUnlock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDrawSurface3 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDrawSurface3 *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDrawSurface3 *);
+    TH_LEGACY_HRESULT (__stdcall *AddAttachedSurface)(struct IDirectDrawSurface3 *, struct IDirectDrawSurface3 *);
+    TH_LEGACY_HRESULT (__stdcall *AddOverlayDirtyRect)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *);
+    TH_LEGACY_HRESULT (__stdcall *Blt)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *BltBatch)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *BltFast)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *DeleteAttachedSurface)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *);
+    TH_LEGACY_HRESULT (__stdcall *EnumAttachedSurfaces)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *EnumOverlayZOrders)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *Flip)(struct IDirectDrawSurface3 *, struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetAttachedSurface)(struct IDirectDrawSurface3 *, struct DDSCAPS *, struct IDirectDrawSurface3 **);
+    TH_LEGACY_HRESULT (__stdcall *GetBltStatus)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDrawSurface3 *, struct DDSCAPS *);
+    TH_LEGACY_HRESULT (__stdcall *GetClipper)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_HRESULT (__stdcall *GetColorKey)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
+    TH_LEGACY_HRESULT (__stdcall *GetDC)(struct IDirectDrawSurface3 *, TH_LEGACY_HANDLE *);
+    TH_LEGACY_HRESULT (__stdcall *GetFlipStatus)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetOverlayPosition)(struct IDirectDrawSurface3 *, TH_LEGACY_LONG *, TH_LEGACY_LONG *);
+    TH_LEGACY_HRESULT (__stdcall *GetPalette)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_HRESULT (__stdcall *GetPixelFormat)(struct IDirectDrawSurface3 *, struct DDPIXELFORMAT *);
+    TH_LEGACY_HRESULT (__stdcall *GetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDrawSurface3 *, struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *IsLost)(struct IDirectDrawSurface3 *);
+    TH_LEGACY_HRESULT (__stdcall *Lock)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *ReleaseDC)(struct IDirectDrawSurface3 *, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *Restore)(struct IDirectDrawSurface3 *);
+    TH_LEGACY_HRESULT (__stdcall *SetClipper)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *SetColorKey)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
+    TH_LEGACY_HRESULT (__stdcall *SetOverlayPosition)(struct IDirectDrawSurface3 *, TH_LEGACY_LONG, TH_LEGACY_LONG);
+    TH_LEGACY_HRESULT (__stdcall *SetPalette)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *Unlock)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *UpdateOverlay)(struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface3 *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayDisplay)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayZOrder)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD, struct IDirectDrawSurface3 *);
+    TH_LEGACY_HRESULT (__stdcall *GetDDInterface)(struct IDirectDrawSurface3 *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_HRESULT (__stdcall *PageLock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *PageUnlock)(struct IDirectDrawSurface3 *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetSurfaceDesc)(struct IDirectDrawSurface3 *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD);
 };
 
 struct IDirect3DTexture2_Vtbl {
-    sdword (*QueryInterface)(struct IDirect3DTexture2 *, struct TH_LEGACY_GUID *, void **);
-    dword (*AddRef)(struct IDirect3DTexture2 *);
-    dword (*Release)(struct IDirect3DTexture2 *);
-    sdword (*GetHandle)(struct IDirect3DTexture2 *, struct IDirect3DDevice2 *, dword *);
-    sdword (*PaletteChanged)(struct IDirect3DTexture2 *, dword, dword);
-    sdword (*Load)(struct IDirect3DTexture2 *, struct IDirect3DTexture2 *);
+    sdword (__stdcall *QueryInterface)(struct IDirect3DTexture2 *, struct TH_LEGACY_GUID *, void **);
+    dword (__stdcall *AddRef)(struct IDirect3DTexture2 *);
+    dword (__stdcall *Release)(struct IDirect3DTexture2 *);
+    sdword (__stdcall *GetHandle)(struct IDirect3DTexture2 *, struct IDirect3DDevice2 *, dword *);
+    sdword (__stdcall *PaletteChanged)(struct IDirect3DTexture2 *, dword, dword);
+    sdword (__stdcall *Load)(struct IDirect3DTexture2 *, struct IDirect3DTexture2 *);
 };
 
 struct ModelDefinitionRecordPrefix {
@@ -3316,24 +3316,24 @@ struct WorldFieldRegionState {
 };
 
 struct IDirect3DViewport2_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirect3DViewport2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirect3DViewport2 *);
-    TH_LEGACY_ULONG (*Release)(struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirect3DViewport2 *, struct IDirect3D2 *);
-    TH_LEGACY_HRESULT (*GetViewport)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*SetViewport)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*TransformVertices)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*LightElements)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*SetBackground)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetBackground)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID *, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (*SetBackgroundDepth)(struct IDirect3DViewport2 *, struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (*GetBackgroundDepth)(struct IDirect3DViewport2 *, struct IDirectDrawSurface **, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (*Clear)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*AddLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*DeleteLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*NextLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetViewport2)(struct IDirect3DViewport2 *, struct D3DVIEWPORT2 *);
-    TH_LEGACY_HRESULT (*SetViewport2)(struct IDirect3DViewport2 *, struct D3DVIEWPORT2 *);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3DViewport2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3DViewport2 *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3DViewport2 *);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirect3DViewport2 *, struct IDirect3D2 *);
+    TH_LEGACY_HRESULT (__stdcall *GetViewport)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *SetViewport)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *TransformVertices)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *LightElements)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *SetBackground)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetBackground)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID *, TH_LEGACY_BOOL *);
+    TH_LEGACY_HRESULT (__stdcall *SetBackgroundDepth)(struct IDirect3DViewport2 *, struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *GetBackgroundDepth)(struct IDirect3DViewport2 *, struct IDirectDrawSurface **, TH_LEGACY_BOOL *);
+    TH_LEGACY_HRESULT (__stdcall *Clear)(struct IDirect3DViewport2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *AddLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *DeleteLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *NextLight)(struct IDirect3DViewport2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetViewport2)(struct IDirect3DViewport2 *, struct D3DVIEWPORT2 *);
+    TH_LEGACY_HRESULT (__stdcall *SetViewport2)(struct IDirect3DViewport2 *, struct D3DVIEWPORT2 *);
 };
 
 union ModelRuntimeArmyLinkOrState4 {
@@ -3579,15 +3579,15 @@ union ShotDefinitionReferenceOrSavedId4 {
 };
 
 struct IDirect3D2_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirect3D2 *);
-    TH_LEGACY_ULONG (*Release)(struct IDirect3D2 *);
-    sdword (*EnumDevices)(struct IDirect3D2 *, sdword (*)(struct TH_LEGACY_GUID *, char *, char *, struct D3DDEVICEDESC_DX6 *, struct D3DDEVICEDESC_DX6 *, struct GraphicsAdapterRecord *), struct GraphicsAdapterRecord *); 
-    TH_LEGACY_HRESULT (*CreateLight)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreateMaterial)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreateViewport)(struct IDirect3D2 *, struct IDirect3DViewport2 **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*FindDevice)(struct IDirect3D2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreateDevice)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, struct IDirectDrawSurface *, struct IDirect3DDevice2 **);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3D2 *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3D2 *);
+    sdword (__stdcall *EnumDevices)(struct IDirect3D2 *, sdword (__stdcall *)(struct TH_LEGACY_GUID *, char *, char *, struct D3DDEVICEDESC_DX6 *, struct D3DDEVICEDESC_DX6 *, struct GraphicsAdapterRecord *), struct GraphicsAdapterRecord *); 
+    TH_LEGACY_HRESULT (__stdcall *CreateLight)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreateMaterial)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreateViewport)(struct IDirect3D2 *, struct IDirect3DViewport2 **, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *FindDevice)(struct IDirect3D2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreateDevice)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, struct IDirectDrawSurface *, struct IDirect3DDevice2 **);
 };
 
 struct IDirectDrawSurface {
@@ -3602,29 +3602,29 @@ union ModelRuntimeSlotLinkOrState4 {
 };
 
 struct IDirectDraw_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectDraw *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectDraw *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (*Compact)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (*CreateClipper)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreatePalette)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreateSurface)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*DuplicateSurface)(struct IDirectDraw *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
-    sdword (*EnumDisplayModes)(struct IDirectDraw *, dword, struct DDSURFACEDESC_DX6 *, dword, sdword (*)(struct DDSURFACEDESC_DX6 *, dword)); 
-    TH_LEGACY_HRESULT (*EnumSurfaces)(struct IDirectDraw *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*FlipToGDISurface)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirectDraw *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetDisplayMode)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (*GetFourCCCodes)(struct IDirectDraw *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetGDISurface)(struct IDirectDraw *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (*GetMonitorFrequency)(struct IDirectDraw *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetScanLine)(struct IDirectDraw *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetVerticalBlankStatus)(struct IDirectDraw *, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectDraw *, struct TH_LEGACY_GUID *);
-    TH_LEGACY_HRESULT (*RestoreDisplayMode)(struct IDirectDraw *);
-    TH_LEGACY_HRESULT (*SetCooperativeLevel)(struct IDirectDraw *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetDisplayMode)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*WaitForVerticalBlank)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDraw *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDraw *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDraw *);
+    TH_LEGACY_HRESULT (__stdcall *Compact)(struct IDirectDraw *);
+    TH_LEGACY_HRESULT (__stdcall *CreateClipper)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreatePalette)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreateSurface)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *DuplicateSurface)(struct IDirectDraw *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
+    sdword (__stdcall *EnumDisplayModes)(struct IDirectDraw *, dword, struct DDSURFACEDESC_DX6 *, dword, sdword (__stdcall *)(struct DDSURFACEDESC_DX6 *, dword)); 
+    TH_LEGACY_HRESULT (__stdcall *EnumSurfaces)(struct IDirectDraw *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *FlipToGDISurface)(struct IDirectDraw *);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDraw *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetDisplayMode)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *GetFourCCCodes)(struct IDirectDraw *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetGDISurface)(struct IDirectDraw *, struct IDirectDrawSurface **);
+    TH_LEGACY_HRESULT (__stdcall *GetMonitorFrequency)(struct IDirectDraw *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetScanLine)(struct IDirectDraw *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetVerticalBlankStatus)(struct IDirectDraw *, TH_LEGACY_BOOL *);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDraw *, struct TH_LEGACY_GUID *);
+    TH_LEGACY_HRESULT (__stdcall *RestoreDisplayMode)(struct IDirectDraw *);
+    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectDraw *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetDisplayMode)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *WaitForVerticalBlank)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
 };
 
 struct GraphicsTextureSetEntry {
@@ -3965,39 +3965,39 @@ struct IDirectDraw {
 };
 
 struct IDirect3DDevice2_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirect3DDevice2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirect3DDevice2 *);
-    TH_LEGACY_ULONG (*Release)(struct IDirect3DDevice2 *);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*SwapTextureHandles)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetStats)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*AddViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (*DeleteViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (*NextViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *, struct IDirect3DViewport2 **, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*EnumTextureFormats)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*BeginScene)(struct IDirect3DDevice2 *);
-    TH_LEGACY_HRESULT (*EndScene)(struct IDirect3DDevice2 *);
-    TH_LEGACY_HRESULT (*GetDirect3D)(struct IDirect3DDevice2 *, struct IDirect3D2 **);
-    TH_LEGACY_HRESULT (*SetCurrentViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
-    TH_LEGACY_HRESULT (*GetCurrentViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 **);
-    TH_LEGACY_HRESULT (*SetRenderTarget)(struct IDirect3DDevice2 *, struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetRenderTarget)(struct IDirect3DDevice2 *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (*Begin)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*BeginIndexed)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Vertex)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*Index)(struct IDirect3DDevice2 *, TH_LEGACY_WORD);
-    TH_LEGACY_HRESULT (*End)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD);
-    sdword (*GetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, dword *); 
-    sdword (*SetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, dword); 
-    TH_LEGACY_HRESULT (*GetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*SetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*MultiplyTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    sdword (*DrawPrimitive)(struct IDirect3DDevice2 *, dword, dword, struct D3DTLVERTEX_DX6 *, dword, dword); 
-    TH_LEGACY_HRESULT (*DrawIndexedPrimitive)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_WORD *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3DDevice2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3DDevice2 *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3DDevice2 *);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *SwapTextureHandles)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetStats)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *AddViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
+    TH_LEGACY_HRESULT (__stdcall *DeleteViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
+    TH_LEGACY_HRESULT (__stdcall *NextViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *, struct IDirect3DViewport2 **, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *EnumTextureFormats)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *BeginScene)(struct IDirect3DDevice2 *);
+    TH_LEGACY_HRESULT (__stdcall *EndScene)(struct IDirect3DDevice2 *);
+    TH_LEGACY_HRESULT (__stdcall *GetDirect3D)(struct IDirect3DDevice2 *, struct IDirect3D2 **);
+    TH_LEGACY_HRESULT (__stdcall *SetCurrentViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 *);
+    TH_LEGACY_HRESULT (__stdcall *GetCurrentViewport)(struct IDirect3DDevice2 *, struct IDirect3DViewport2 **);
+    TH_LEGACY_HRESULT (__stdcall *SetRenderTarget)(struct IDirect3DDevice2 *, struct IDirectDrawSurface *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetRenderTarget)(struct IDirect3DDevice2 *, struct IDirectDrawSurface **);
+    TH_LEGACY_HRESULT (__stdcall *Begin)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *BeginIndexed)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Vertex)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *Index)(struct IDirect3DDevice2 *, TH_LEGACY_WORD);
+    TH_LEGACY_HRESULT (__stdcall *End)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD);
+    sdword (__stdcall *GetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, dword *); 
+    sdword (__stdcall *SetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, dword); 
+    TH_LEGACY_HRESULT (__stdcall *GetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *SetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *MultiplyTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    sdword (__stdcall *DrawPrimitive)(struct IDirect3DDevice2 *, dword, dword, struct D3DTLVERTEX_DX6 *, dword, dword); 
+    TH_LEGACY_HRESULT (__stdcall *DrawIndexedPrimitive)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_WORD *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
 };
 
 struct D3DVIEWPORT2 {
@@ -4043,42 +4043,42 @@ struct DDPIXELFORMAT {
 };
 
 struct IDirectDrawSurface_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectDrawSurface *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectDrawSurface *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (*AddAttachedSurface)(struct IDirectDrawSurface *, struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (*AddOverlayDirtyRect)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *);
-    TH_LEGACY_HRESULT (*Blt)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*BltBatch)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*BltFast)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*DeleteAttachedSurface)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (*EnumAttachedSurfaces)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*EnumOverlayZOrders)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*Flip)(struct IDirectDrawSurface *, struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetAttachedSurface)(struct IDirectDrawSurface *, struct DDSCAPS *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (*GetBltStatus)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirectDrawSurface *, struct DDSCAPS *);
-    TH_LEGACY_HRESULT (*GetClipper)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (*GetColorKey)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (*GetDC)(struct IDirectDrawSurface *, TH_LEGACY_HANDLE *);
-    TH_LEGACY_HRESULT (*GetFlipStatus)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetOverlayPosition)(struct IDirectDrawSurface *, TH_LEGACY_LONG *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (*GetPalette)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_HRESULT (*GetPixelFormat)(struct IDirectDrawSurface *, struct DDPIXELFORMAT *);
-    TH_LEGACY_HRESULT (*GetSurfaceDesc)(struct IDirectDrawSurface *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectDrawSurface *, struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (*IsLost)(struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (*Lock)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (*ReleaseDC)(struct IDirectDrawSurface *, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (*Restore)(struct IDirectDrawSurface *);
-    TH_LEGACY_HRESULT (*SetClipper)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*SetColorKey)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
-    TH_LEGACY_HRESULT (*SetOverlayPosition)(struct IDirectDrawSurface *, TH_LEGACY_LONG, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (*SetPalette)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*Unlock)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*UpdateOverlay)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*UpdateOverlayDisplay)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*UpdateOverlayZOrder)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDrawSurface *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDrawSurface *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *AddAttachedSurface)(struct IDirectDrawSurface *, struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *AddOverlayDirtyRect)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *);
+    TH_LEGACY_HRESULT (__stdcall *Blt)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *BltBatch)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *BltFast)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *DeleteAttachedSurface)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *EnumAttachedSurfaces)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *EnumOverlayZOrders)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *Flip)(struct IDirectDrawSurface *, struct IDirectDrawSurface *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetAttachedSurface)(struct IDirectDrawSurface *, struct DDSCAPS *, struct IDirectDrawSurface **);
+    TH_LEGACY_HRESULT (__stdcall *GetBltStatus)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDrawSurface *, struct DDSCAPS *);
+    TH_LEGACY_HRESULT (__stdcall *GetClipper)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_HRESULT (__stdcall *GetColorKey)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
+    TH_LEGACY_HRESULT (__stdcall *GetDC)(struct IDirectDrawSurface *, TH_LEGACY_HANDLE *);
+    TH_LEGACY_HRESULT (__stdcall *GetFlipStatus)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetOverlayPosition)(struct IDirectDrawSurface *, TH_LEGACY_LONG *, TH_LEGACY_LONG *);
+    TH_LEGACY_HRESULT (__stdcall *GetPalette)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_HRESULT (__stdcall *GetPixelFormat)(struct IDirectDrawSurface *, struct DDPIXELFORMAT *);
+    TH_LEGACY_HRESULT (__stdcall *GetSurfaceDesc)(struct IDirectDrawSurface *, struct DDSURFACEDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDrawSurface *, struct IDirectDraw *, struct DDSURFACEDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *IsLost)(struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *Lock)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct DDSURFACEDESC_DX6 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *ReleaseDC)(struct IDirectDrawSurface *, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *Restore)(struct IDirectDrawSurface *);
+    TH_LEGACY_HRESULT (__stdcall *SetClipper)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *SetColorKey)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct DDCOLORKEY *);
+    TH_LEGACY_HRESULT (__stdcall *SetOverlayPosition)(struct IDirectDrawSurface *, TH_LEGACY_LONG, TH_LEGACY_LONG);
+    TH_LEGACY_HRESULT (__stdcall *SetPalette)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *Unlock)(struct IDirectDrawSurface *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *UpdateOverlay)(struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, struct IDirectDrawSurface *, struct TH_LEGACY_RECT *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayDisplay)(struct IDirectDrawSurface *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *UpdateOverlayZOrder)(struct IDirectDrawSurface *, TH_LEGACY_DWORD, struct IDirectDrawSurface *);
 };
 
 struct IDirect3DTexture2 {
@@ -5266,17 +5266,17 @@ struct UiNumericTextControl {
 };
 
 struct IDirectSound_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectSound *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectSound *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectSound *);
-    TH_LEGACY_HRESULT (*CreateSoundBuffer)(struct IDirectSound *, struct DSBUFFERDESC_DX6 *, struct IDirectSoundBuffer **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirectSound *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*DuplicateSoundBuffer)(struct IDirectSound *, struct IDirectSoundBuffer *, struct IDirectSoundBuffer **);
-    TH_LEGACY_HRESULT (*SetCooperativeLevel)(struct IDirectSound *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Compact)(struct IDirectSound *);
-    TH_LEGACY_HRESULT (*GetSpeakerConfig)(struct IDirectSound *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*SetSpeakerConfig)(struct IDirectSound *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectSound *, struct TH_LEGACY_GUID *);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectSound *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectSound *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectSound *);
+    TH_LEGACY_HRESULT (__stdcall *CreateSoundBuffer)(struct IDirectSound *, struct DSBUFFERDESC_DX6 *, struct IDirectSoundBuffer **, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectSound *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *DuplicateSoundBuffer)(struct IDirectSound *, struct IDirectSoundBuffer *, struct IDirectSoundBuffer **);
+    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectSound *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Compact)(struct IDirectSound *);
+    TH_LEGACY_HRESULT (__stdcall *GetSpeakerConfig)(struct IDirectSound *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *SetSpeakerConfig)(struct IDirectSound *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectSound *, struct TH_LEGACY_GUID *);
 };
 
 struct UiSelectableControl {
@@ -5317,27 +5317,27 @@ struct WAVEFORMATEX {
 };
 
 struct IDirectSoundBuffer_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectSoundBuffer *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectSoundBuffer *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectSoundBuffer *);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirectSoundBuffer *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetCurrentPosition)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetFormat)(struct IDirectSoundBuffer *, struct WAVEFORMATEX *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetVolume)(struct IDirectSoundBuffer *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (*GetPan)(struct IDirectSoundBuffer *, TH_LEGACY_LONG *);
-    TH_LEGACY_HRESULT (*GetFrequency)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetStatus)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectSoundBuffer *, struct IDirectSound *, struct DSBUFFERDESC_DX6 *);
-    TH_LEGACY_HRESULT (*Lock)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD *, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Play)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetCurrentPosition)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetFormat)(struct IDirectSoundBuffer *, struct WAVEFORMATEX *);
-    TH_LEGACY_HRESULT (*SetVolume)(struct IDirectSoundBuffer *, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (*SetPan)(struct IDirectSoundBuffer *, TH_LEGACY_LONG);
-    TH_LEGACY_HRESULT (*SetFrequency)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Stop)(struct IDirectSoundBuffer *);
-    TH_LEGACY_HRESULT (*Unlock)(struct IDirectSoundBuffer *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Restore)(struct IDirectSoundBuffer *);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectSoundBuffer *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectSoundBuffer *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectSoundBuffer *);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectSoundBuffer *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetCurrentPosition)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetFormat)(struct IDirectSoundBuffer *, struct WAVEFORMATEX *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetVolume)(struct IDirectSoundBuffer *, TH_LEGACY_LONG *);
+    TH_LEGACY_HRESULT (__stdcall *GetPan)(struct IDirectSoundBuffer *, TH_LEGACY_LONG *);
+    TH_LEGACY_HRESULT (__stdcall *GetFrequency)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetStatus)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectSoundBuffer *, struct IDirectSound *, struct DSBUFFERDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *Lock)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD *, TH_LEGACY_LPVOID *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Play)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetCurrentPosition)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetFormat)(struct IDirectSoundBuffer *, struct WAVEFORMATEX *);
+    TH_LEGACY_HRESULT (__stdcall *SetVolume)(struct IDirectSoundBuffer *, TH_LEGACY_LONG);
+    TH_LEGACY_HRESULT (__stdcall *SetPan)(struct IDirectSoundBuffer *, TH_LEGACY_LONG);
+    TH_LEGACY_HRESULT (__stdcall *SetFrequency)(struct IDirectSoundBuffer *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Stop)(struct IDirectSoundBuffer *);
+    TH_LEGACY_HRESULT (__stdcall *Unlock)(struct IDirectSoundBuffer *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Restore)(struct IDirectSoundBuffer *);
 };
 
 struct DSBUFFERDESC_DX6 {
@@ -9872,30 +9872,30 @@ struct DIPROPDWORD {
 };
 
 struct IDirectDraw2_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectDraw2 *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (*Compact)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (*CreateClipper)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreatePalette)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*CreateSurface)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*DuplicateSurface)(struct IDirectDraw2 *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
-    sdword (*EnumDisplayModes)(struct IDirectDraw2 *, dword, struct DDSURFACEDESC_DX6 *, dword, sdword (*)(struct DDSURFACEDESC_DX6 *, dword)); 
-    TH_LEGACY_HRESULT (*EnumSurfaces)(struct IDirectDraw2 *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*FlipToGDISurface)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (*GetCaps)(struct IDirectDraw2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetDisplayMode)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *);
-    TH_LEGACY_HRESULT (*GetFourCCCodes)(struct IDirectDraw2 *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetGDISurface)(struct IDirectDraw2 *, struct IDirectDrawSurface **);
-    TH_LEGACY_HRESULT (*GetMonitorFrequency)(struct IDirectDraw2 *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetScanLine)(struct IDirectDraw2 *, TH_LEGACY_DWORD *);
-    TH_LEGACY_HRESULT (*GetVerticalBlankStatus)(struct IDirectDraw2 *, TH_LEGACY_BOOL *);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *);
-    TH_LEGACY_HRESULT (*RestoreDisplayMode)(struct IDirectDraw2 *);
-    TH_LEGACY_HRESULT (*SetCooperativeLevel)(struct IDirectDraw2 *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetDisplayMode)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*WaitForVerticalBlank)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (*GetAvailableVidMem)(struct IDirectDraw2 *, struct DDSCAPS *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDraw2 *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDraw2 *);
+    TH_LEGACY_HRESULT (__stdcall *Compact)(struct IDirectDraw2 *);
+    TH_LEGACY_HRESULT (__stdcall *CreateClipper)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreatePalette)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *CreateSurface)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *DuplicateSurface)(struct IDirectDraw2 *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
+    sdword (__stdcall *EnumDisplayModes)(struct IDirectDraw2 *, dword, struct DDSURFACEDESC_DX6 *, dword, sdword (__stdcall *)(struct DDSURFACEDESC_DX6 *, dword)); 
+    TH_LEGACY_HRESULT (__stdcall *EnumSurfaces)(struct IDirectDraw2 *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *FlipToGDISurface)(struct IDirectDraw2 *);
+    TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDraw2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetDisplayMode)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *);
+    TH_LEGACY_HRESULT (__stdcall *GetFourCCCodes)(struct IDirectDraw2 *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetGDISurface)(struct IDirectDraw2 *, struct IDirectDrawSurface **);
+    TH_LEGACY_HRESULT (__stdcall *GetMonitorFrequency)(struct IDirectDraw2 *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetScanLine)(struct IDirectDraw2 *, TH_LEGACY_DWORD *);
+    TH_LEGACY_HRESULT (__stdcall *GetVerticalBlankStatus)(struct IDirectDraw2 *, TH_LEGACY_BOOL *);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *);
+    TH_LEGACY_HRESULT (__stdcall *RestoreDisplayMode)(struct IDirectDraw2 *);
+    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectDraw2 *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetDisplayMode)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *WaitForVerticalBlank)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *GetAvailableVidMem)(struct IDirectDraw2 *, struct DDSCAPS *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
 };
 
 struct IDirectDraw2 {
@@ -9909,35 +9909,35 @@ struct IDirectInputDeviceA {
 };
 
 struct IDirectInputDeviceA_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectInputDeviceA *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectInputDeviceA *);
-    TH_LEGACY_HRESULT (*GetCapabilities)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*EnumObjects)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetProperty)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, struct DIPROPHEADER *);
-    TH_LEGACY_HRESULT (*SetProperty)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, struct DIPROPHEADER *);
-    TH_LEGACY_HRESULT (*Acquire)(struct IDirectInputDeviceA *);
-    TH_LEGACY_HRESULT (*Unacquire)(struct IDirectInputDeviceA *);
-    TH_LEGACY_HRESULT (*GetDeviceState)(struct IDirectInputDeviceA *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*GetDeviceData)(struct IDirectInputDeviceA *, TH_LEGACY_DWORD, struct DIDEVICEOBJECTDATA_DX3 *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*SetDataFormat)(struct IDirectInputDeviceA *, struct DIDATAFORMAT *);
-    TH_LEGACY_HRESULT (*SetEventNotification)(struct IDirectInputDeviceA *, TH_LEGACY_HANDLE);
-    TH_LEGACY_HRESULT (*SetCooperativeLevel)(struct IDirectInputDeviceA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetObjectInfo)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetDeviceInfo)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*RunControlPanel)(struct IDirectInputDeviceA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectInputDeviceA *, TH_LEGACY_HINSTANCE, TH_LEGACY_DWORD, struct TH_LEGACY_GUID *);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectInputDeviceA *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectInputDeviceA *);
+    TH_LEGACY_HRESULT (__stdcall *GetCapabilities)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *EnumObjects)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetProperty)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, struct DIPROPHEADER *);
+    TH_LEGACY_HRESULT (__stdcall *SetProperty)(struct IDirectInputDeviceA *, struct TH_LEGACY_GUID *, struct DIPROPHEADER *);
+    TH_LEGACY_HRESULT (__stdcall *Acquire)(struct IDirectInputDeviceA *);
+    TH_LEGACY_HRESULT (__stdcall *Unacquire)(struct IDirectInputDeviceA *);
+    TH_LEGACY_HRESULT (__stdcall *GetDeviceState)(struct IDirectInputDeviceA *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *GetDeviceData)(struct IDirectInputDeviceA *, TH_LEGACY_DWORD, struct DIDEVICEOBJECTDATA_DX3 *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetDataFormat)(struct IDirectInputDeviceA *, struct DIDATAFORMAT *);
+    TH_LEGACY_HRESULT (__stdcall *SetEventNotification)(struct IDirectInputDeviceA *, TH_LEGACY_HANDLE);
+    TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectInputDeviceA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetObjectInfo)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetDeviceInfo)(struct IDirectInputDeviceA *, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *RunControlPanel)(struct IDirectInputDeviceA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectInputDeviceA *, TH_LEGACY_HINSTANCE, TH_LEGACY_DWORD, struct TH_LEGACY_GUID *);
 };
 
 struct IDirectInputA_Vtbl {
-    TH_LEGACY_HRESULT (*QueryInterface)(struct IDirectInputA *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
-    TH_LEGACY_ULONG (*AddRef)(struct IDirectInputA *);
-    TH_LEGACY_ULONG (*Release)(struct IDirectInputA *);
-    TH_LEGACY_HRESULT (*CreateDevice)(struct IDirectInputA *, struct TH_LEGACY_GUID *, struct IDirectInputDeviceA **, TH_LEGACY_LPVOID);
-    TH_LEGACY_HRESULT (*EnumDevices)(struct IDirectInputA *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*GetDeviceStatus)(struct IDirectInputA *, struct TH_LEGACY_GUID *);
-    TH_LEGACY_HRESULT (*RunControlPanel)(struct IDirectInputA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (*Initialize)(struct IDirectInputA *, TH_LEGACY_HINSTANCE, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectInputA *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectInputA *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectInputA *);
+    TH_LEGACY_HRESULT (__stdcall *CreateDevice)(struct IDirectInputA *, struct TH_LEGACY_GUID *, struct IDirectInputDeviceA **, TH_LEGACY_LPVOID);
+    TH_LEGACY_HRESULT (__stdcall *EnumDevices)(struct IDirectInputA *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *GetDeviceStatus)(struct IDirectInputA *, struct TH_LEGACY_GUID *);
+    TH_LEGACY_HRESULT (__stdcall *RunControlPanel)(struct IDirectInputA *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectInputA *, TH_LEGACY_HINSTANCE, TH_LEGACY_DWORD);
 };
 
 struct IDirectInputA {
@@ -10320,7 +10320,7 @@ struct FrontendPacket8000ASnapshotChunk {
     struct UiTransferPacketHeader header; 
     dword reserved10; 
     FrontendSnapshotChunkByteOffset snapshotChunkOffset; 
-    byte g_FrontendPacket10009Buffer[232]; 
+    byte packet10009Buffer[232]; 
 };
 
 struct FrontendPacket10003JoinAck {

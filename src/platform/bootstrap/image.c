@@ -1,0 +1,336 @@
+/*
+ * Open Thandor
+ * Project: https://github.com/idkFoxes/open-thandor/tree/main
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/bootstrap/image.c
+ */
+
+/* Own translation unit: uses the real Windows SDK headers, not generated/types.h. */
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <dbghelp.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <thandor/platform/bootstrap/image.h>
+
+#define ORIGINAL_IMAGE_NAME "thandor_original.exe"
+
+static void executable_directory(char *out, size_t capacity)
+{
+    char *slash;
+    GetModuleFileNameA(NULL, out, (DWORD)capacity);
+    slash = strrchr(out, '\\');
+    if (slash != NULL) {
+        slash[1] = '\0';
+    }
+}
+
+void Thandor_Log(const char *format, ...)
+{
+    char path[MAX_PATH];
+    FILE *out;
+    va_list args;
+    executable_directory(path, sizeof path);
+    strcat_s(path, sizeof path, "thandor.log");
+    if (fopen_s(&out, path, "a") != 0) {
+        return;
+    }
+    va_start(args, format);
+    vfprintf(out, format, args);
+    va_end(args);
+    fputc('\n', out);
+    fclose(out);
+}
+
+static int fail(const char *message)
+{
+    Thandor_Log("error: %s", message);
+    MessageBoxA(NULL, message, "Open Thandor", MB_OK | MB_ICONERROR);
+    return 1;
+}
+
+static void *find_function(unsigned address)
+{
+    unsigned lo = 0;
+    unsigned hi = g_ThandorFunctionMapCount;
+    while (lo < hi) {
+        unsigned mid = (lo + hi) / 2;
+        if (g_ThandorFunctionMap[mid].originalAddress < address) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    if (lo < g_ThandorFunctionMapCount && g_ThandorFunctionMap[lo].originalAddress == address) {
+        return g_ThandorFunctionMap[lo].function;
+    }
+    return NULL;
+}
+
+#define ORIGINAL_IMAGE_BASE 0x400000u
+#define ORIGINAL_IMAGE_SIZE 0x192000u
+#define CHILD_MARKER "OPEN_THANDOR_IMAGE_RESERVED"
+
+/*
+Windows maps NLS tables and the first heaps into the low address space while a process
+initializes, before WinMain runs, so 0x400000 is usually taken by then. The executable
+therefore starts itself again suspended, reserves the original image range in that child
+before its loader runs, resumes it and waits for it.
+Returns -1 in the child (continue), otherwise the child's exit code.
+*/
+int Thandor_RelaunchWithReservedImage(void)
+{
+    char path[MAX_PATH];
+    STARTUPINFOA startup;
+    PROCESS_INFORMATION child;
+    DWORD exitCode = 1;
+    char marker[4];
+
+    if (GetEnvironmentVariableA(CHILD_MARKER, marker, sizeof marker) != 0) {
+        return -1;
+    }
+    SetEnvironmentVariableA(CHILD_MARKER, "1");
+    GetModuleFileNameA(NULL, path, sizeof path);
+    memset(&startup, 0, sizeof startup);
+    startup.cb = sizeof startup;
+    if (!CreateProcessA(path, GetCommandLineA(), NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &startup,
+                        &child)) {
+        Thandor_Log("error: relaunch failed (%lu)", GetLastError());
+        return 1;
+    }
+    if (VirtualAllocEx(child.hProcess, (void *)(uintptr_t)ORIGINAL_IMAGE_BASE, ORIGINAL_IMAGE_SIZE, MEM_RESERVE,
+                       PAGE_READWRITE) == NULL) {
+        Thandor_Log("error: could not reserve 0x%08X in the child (%lu)", ORIGINAL_IMAGE_BASE, GetLastError());
+        TerminateProcess(child.hProcess, 1);
+        return 1;
+    }
+    ResumeThread(child.hThread);
+    WaitForSingleObject(child.hProcess, INFINITE);
+    GetExitCodeProcess(child.hProcess, &exitCode);
+    CloseHandle(child.hThread);
+    CloseHandle(child.hProcess);
+    return (int)exitCode;
+}
+
+int Thandor_MapOriginalImage(void)
+{
+    char path[MAX_PATH];
+    char message[512];
+    HANDLE file;
+    DWORD size;
+    DWORD read;
+    unsigned char *data;
+    IMAGE_DOS_HEADER *dos;
+    IMAGE_NT_HEADERS32 *nt;
+    IMAGE_SECTION_HEADER *section;
+    unsigned char *image;
+    unsigned i;
+    unsigned redirected = 0;
+
+    executable_directory(path, sizeof path);
+    strcat_s(path, sizeof path, ORIGINAL_IMAGE_NAME);
+    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    if (file == INVALID_HANDLE_VALUE) {
+        sprintf_s(message, sizeof message,
+                  "%s not found.\n\nCopy the original thandor.exe next to this executable as %s.",
+                  path, ORIGINAL_IMAGE_NAME);
+        return fail(message);
+    }
+    size = GetFileSize(file, NULL);
+    data = (unsigned char *)HeapAlloc(GetProcessHeap(), 0, size);
+    if (data == NULL || !ReadFile(file, data, size, &read, NULL) || read != size) {
+        CloseHandle(file);
+        return fail("Could not read " ORIGINAL_IMAGE_NAME ".");
+    }
+    CloseHandle(file);
+
+    dos = (IMAGE_DOS_HEADER *)data;
+    nt = (IMAGE_NT_HEADERS32 *)(data + dos->e_lfanew);
+    if (dos->e_magic != IMAGE_DOS_SIGNATURE || nt->Signature != IMAGE_NT_SIGNATURE ||
+        nt->OptionalHeader.ImageBase != 0x400000) {
+        return fail(ORIGINAL_IMAGE_NAME " is not the expected thandor.exe image.");
+    }
+
+    if (nt->OptionalHeader.SizeOfImage != ORIGINAL_IMAGE_SIZE) {
+        return fail(ORIGINAL_IMAGE_NAME " has an unexpected image size.");
+    }
+    /* The range was reserved by Thandor_RelaunchWithReservedImage; commit it. */
+    image = (unsigned char *)VirtualAlloc((void *)(uintptr_t)nt->OptionalHeader.ImageBase,
+                                          nt->OptionalHeader.SizeOfImage, MEM_COMMIT, PAGE_READWRITE);
+    if (image == NULL) {
+        unsigned char *probe = (unsigned char *)(uintptr_t)nt->OptionalHeader.ImageBase;
+        unsigned char *end = probe + nt->OptionalHeader.SizeOfImage;
+        while (probe < end) {
+            MEMORY_BASIC_INFORMATION mbi;
+            char owner[MAX_PATH] = "";
+            if (VirtualQuery(probe, &mbi, sizeof mbi) == 0) {
+                break;
+            }
+            if (mbi.State != MEM_FREE) {
+                GetModuleFileNameA((HMODULE)mbi.AllocationBase, owner, sizeof owner);
+                Thandor_Log("  occupied 0x%p-0x%p state 0x%lX type 0x%lX allocation 0x%p %s", mbi.BaseAddress,
+                            (unsigned char *)mbi.BaseAddress + mbi.RegionSize, mbi.State, mbi.Type,
+                            mbi.AllocationBase, owner);
+            }
+            probe = (unsigned char *)mbi.BaseAddress + mbi.RegionSize;
+        }
+        sprintf_s(message, sizeof message,
+                  "Could not reserve the original image range at 0x%08X (error %lu).",
+                  (unsigned)nt->OptionalHeader.ImageBase, GetLastError());
+        return fail(message);
+    }
+    memcpy(image, data, nt->OptionalHeader.SizeOfHeaders);
+    section = IMAGE_FIRST_SECTION(nt);
+    for (i = 0; i < nt->FileHeader.NumberOfSections; i++, section++) {
+        DWORD raw = section->SizeOfRawData < section->Misc.VirtualSize ? section->SizeOfRawData
+                                                                       : section->Misc.VirtualSize;
+        memcpy(image + section->VirtualAddress, data + section->PointerToRawData, raw);
+    }
+
+    /* Code pointers stored in the image now dispatch into the recovered C functions. */
+    for (i = 0; i + 4 <= nt->OptionalHeader.SizeOfImage; i += 4) {
+        unsigned value = *(unsigned *)(image + i);
+        void *function;
+        if (value >= 0x401000 && value < 0x58C000 && (function = find_function(value)) != NULL) {
+            *(void **)(image + i) = function;
+            redirected++;
+        }
+    }
+    HeapFree(GetProcessHeap(), 0, data);
+    Thandor_Log("original image mapped at 0x%08X, %u code pointers redirected", ORIGINAL_IMAGE_BASE, redirected);
+    return 0;
+}
+
+static void log_stack(FILE *out, CONTEXT *start)
+{
+    HANDLE process = GetCurrentProcess();
+    HANDLE thread = GetCurrentThread();
+    CONTEXT context = *start;
+    STACKFRAME64 frame;
+    int depth;
+    static int initialized;
+
+    if (!initialized) {
+        SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+        SymInitialize(process, NULL, TRUE);
+        initialized = 1;
+    }
+    memset(&frame, 0, sizeof frame);
+    frame.AddrPC.Offset = context.Eip;
+    frame.AddrPC.Mode = AddrModeFlat;
+    frame.AddrFrame.Offset = context.Ebp;
+    frame.AddrFrame.Mode = AddrModeFlat;
+    frame.AddrStack.Offset = context.Esp;
+    frame.AddrStack.Mode = AddrModeFlat;
+    for (depth = 0; depth < 48; depth++) {
+        char buffer[sizeof(SYMBOL_INFO) + 256];
+        SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+        IMAGEHLP_LINE64 line;
+        DWORD64 displacement = 0;
+        DWORD lineDisplacement = 0;
+        if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, &frame, &context, NULL,
+                         SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
+            break;
+        }
+        memset(buffer, 0, sizeof buffer);
+        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+        symbol->MaxNameLen = 255;
+        line.SizeOfStruct = sizeof line;
+        if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
+            fprintf(out, "  %2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
+        } else {
+            fprintf(out, "  %2d  %08llX  ?", depth, frame.AddrPC.Offset);
+        }
+        if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
+            fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
+        }
+        fprintf(out, "\n");
+    }
+}
+
+void Thandor_LogStack(const char *reason, unsigned value)
+{
+    char path[MAX_PATH];
+    FILE *out;
+    CONTEXT context;
+
+    executable_directory(path, sizeof path);
+    strcat_s(path, sizeof path, "thandor.log");
+    if (fopen_s(&out, path, "a") != 0) {
+        return;
+    }
+    fprintf(out, "%s 0x%08X\n", reason, value);
+    RtlCaptureContext(&context);
+    log_stack(out, &context);
+    fclose(out);
+}
+
+static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
+{
+    char path[MAX_PATH];
+    FILE *out;
+    HANDLE process = GetCurrentProcess();
+    HANDLE thread = GetCurrentThread();
+    CONTEXT context = *info->ContextRecord;
+    STACKFRAME64 frame;
+    int depth;
+
+    executable_directory(path, sizeof path);
+    strcat_s(path, sizeof path, "crash.log");
+    if (fopen_s(&out, path, "w") != 0) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+    fprintf(out, "exception 0x%08lX at 0x%p\n", info->ExceptionRecord->ExceptionCode,
+            info->ExceptionRecord->ExceptionAddress);
+    if (info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
+        fprintf(out, "%s address 0x%08IX\n",
+                info->ExceptionRecord->ExceptionInformation[0] == 8 ? "execute" :
+                info->ExceptionRecord->ExceptionInformation[0] == 1 ? "write" : "read",
+                info->ExceptionRecord->ExceptionInformation[1]);
+    }
+    fprintf(out, "eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\n\n",
+            context.Eax, context.Ebx, context.Ecx, context.Edx, context.Esi, context.Edi, context.Ebp,
+            context.Esp);
+
+    SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+    SymInitialize(process, NULL, TRUE);
+    memset(&frame, 0, sizeof frame);
+    frame.AddrPC.Offset = context.Eip;
+    frame.AddrPC.Mode = AddrModeFlat;
+    frame.AddrFrame.Offset = context.Ebp;
+    frame.AddrFrame.Mode = AddrModeFlat;
+    frame.AddrStack.Offset = context.Esp;
+    frame.AddrStack.Mode = AddrModeFlat;
+    for (depth = 0; depth < 64; depth++) {
+        char buffer[sizeof(SYMBOL_INFO) + 256];
+        SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+        IMAGEHLP_LINE64 line;
+        DWORD64 displacement = 0;
+        DWORD lineDisplacement = 0;
+        if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, &frame, &context, NULL,
+                         SymFunctionTableAccess64, SymGetModuleBase64, NULL) || frame.AddrPC.Offset == 0) {
+            break;
+        }
+        memset(buffer, 0, sizeof buffer);
+        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+        symbol->MaxNameLen = 255;
+        line.SizeOfStruct = sizeof line;
+        if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
+            fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
+        } else {
+            fprintf(out, "%2d  %08llX  ?", depth, frame.AddrPC.Offset);
+        }
+        if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
+            fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
+        }
+        fprintf(out, "\n");
+    }
+    fclose(out);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void Thandor_InstallCrashHandler(void)
+{
+    SetUnhandledExceptionFilter(crash_filter);
+}

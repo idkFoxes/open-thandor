@@ -235,1594 +235,1601 @@ typedef int __stdcall WinSock_shutdownProc(dword socket, int how); /* Ghidra Fun
 typedef dword __stdcall WinSock_socketProc(int addressFamily, int socketType, int protocol); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwnerListNode100 * node); /* Ghidra FunctionDefinition /Thandor/World/Callbacks */
 
-extern FileSystemOpenCfProc * g_FileSystemOpenCf;
-extern undefined g_FileSystemCombinedPathScratchUtf16;
-extern FileSystemCloseProc * g_FileSystemClose;
-extern undefined g_ExecutableDirectoryUtf16;
-extern MemoryApiTable g_MemoryApi;
-extern FileSystemReadExactCfProc * g_FileSystemReadExactCf;
-extern dword g_LocaleCountryCodeOverride;
-extern FileSystemGetSizeCfProc * g_FileSystemGetSizeCf;
-extern PersistentSettingsRuntime g_PersistentSettings;
-extern WideNumberFormatState g_WideNumberFormatState;
-extern RandomGeneratorState g_RandomGeneratorState;
-extern undefined g_RandomPrimaryNibbleMixTable5;
-extern undefined g_RandomPrimaryNibbleMixTable6;
-extern undefined g_RandomPrimaryNibbleMixTable7;
-extern undefined g_RandomPrimaryNibbleMixTable0;
-extern undefined g_RandomPrimaryNibbleMixTable1;
-extern undefined g_RandomPrimaryNibbleMixTable2;
-extern undefined g_RandomPrimaryNibbleMixTable3;
-extern undefined g_RandomPrimaryNibbleMixTable4;
-extern undefined4 g_FatalErrorDialogDismissed;
-extern UiNodeBase * g_UiPointerCaptureTarget;
-extern UiPointerCaptureButton g_UiPointerCaptureButton;
-extern FatalErrorPassThroughProc * g_FatalErrorPrimaryDispatchCf;
-extern sdword g_FatalErrorRichTextLeft;
-extern undefined4 g_FatalErrorRichTextRight;
-extern GraphicsCursorSetFrameProc * g_GraphicsCursorSetFrame;
-extern UiRootNode * g_FatalErrorUiRootTemplate;
-extern sdword g_FatalErrorRichTextTop;
-extern UiRootCallbacks g_UiRootCallbacks_00407E28;
-extern sdword g_FatalErrorRichTextBottom;
-extern undefined4 g_FatalErrorRichTextStream;
-extern word g_PackageLastErrorPath[256];
-extern undefined4 g_UiTextStyleNormal;
-extern word g_FatalErrorDetail1Utf16[256];
-extern undefined g_FatalErrorDetail2Utf16;
-extern undefined g_FatalErrorDetail3Utf16;
-extern undefined4 g_FatalErrorUiRootTemplateImage;
-extern FatalErrorPassThroughProc * g_FatalErrorRuntimeDispatchCf;
-extern PckHuffmanNode g_PckHuffmanInternalNodeWorkspace256[256];
-extern PckHuffmanSymbolState g_PckHuffmanSymbolWorkspace256[256];
-extern PckHuffmanNode g_PckHuffmanLeafNodeWorkspace256[256];
-extern LocaleGetPackedCurrentDateProc * g_LocaleGetPackedCurrentDate;
-extern LocaleGetPackedCurrentTimeProc * g_LocaleGetPackedCurrentTime;
-extern LocaleCopyDefaultComputerLabelUtf16Proc * g_LocaleCopyDefaultComputerLabelUtf16;
-extern byte * g_PackageScratchBuffer;
-extern PckMountSlot g_PackageMountSlots[1024];
-extern FileSystemSeekCfProc * g_FileSystemSeekCf;
-extern FileSystemWriteExactOrFlushCfProc * g_FileSystemWriteExactOrFlushCf;
-extern PckCodecProc * g_PckEncoderTable[3];
-extern PckCodecProc * g_PckDecoderTable[3];
-extern WideNumberFormatUtf16Proc * g_WideNumberFormatUtf16;
-extern FileSystemDeleteCfProc * g_FileSystemDeleteCf;
-extern FileSystemEnumerateDirectoryOrVolumeEntriesCfProc * g_FileSystemEnumerateDirectoryOrVolumeEntriesCf;
-extern word u________0040ff58[];
-extern FileSystemEnumerateDriveLettersEaxEcxProc * g_FileSystemEnumerateDriveLetters;
-extern FileSystemGetDriveTypeCodePreserveProc * g_FileSystemGetDriveTypeCode;
-extern WidePathBuffer256 g_UiTimedListRecordPathScratch;
-extern WidePathBuffer256 g_UiTimedListCombinedPathScratch;
-extern WidePathBuffer256 g_UiTimedListSecondaryPathScratch;
-extern FileSystemDriveReadyCfProc * g_FileSystemCheckDriveMediaReady;
-extern WidePathBuffer256 g_UiTimedListHierarchyPathScratch;
-extern WidePathBuffer256 g_UiTimedListHierarchyParentPathScratch;
-extern GraphicsCursorFrameIndex g_CursorFrameIndex;
-extern GraphicsCursorFrameCount g_CursorFrameCount;
-extern GraphicsCursorInputEvent18 g_CursorInputEvents[256];
-extern dword g_CursorInputWriteIndex;
-extern dword g_CursorInputReadIndex;
-extern UiPixelCoordinate g_CursorOverrideX;
-extern dword g_CursorButtonReleaseClock[3];
-extern UiPixelCoordinate g_CursorOverrideY;
-extern UiPointerWheelDelta g_CursorWheelDelta;
-extern dword g_CursorButtonState;
-extern UiPixelCoordinate g_CursorLastClickX;
-extern UiPixelCoordinate g_CursorLastClickY;
-extern KeyboardEventRingIndex g_KeyboardWriteIndex;
-extern KeyboardEventRingIndex g_KeyboardReadIndex;
-extern KeyboardInputEvent g_KeyboardEvents[64];
-extern short * g_CosineDerivedLookupAllocation;
-extern short * g_CosineDerivedLookupSecondTable;
-extern sdword g_FixedCosQ28[65536];
-extern qword g_SoundDecodeMmxWordLaneMask0;
-extern qword g_SoundDecodeMmxWordLaneMask1;
-extern qword g_SoundDecodeMmxWordLaneMask2;
-extern qword g_SoundDecodeMmxWordLaneMask3;
-extern word u_engine_font_gfx_0041b030[];
-extern GraphicsTextureSourceLoadPackageAssetProc * g_GraphicsTextureSourceLoadPackageAsset;
-extern byte * g_FontRuntimeBuffer;
-extern GraphicsTextureSourceAsset * g_FontTextureSources[2];
-extern TextResourceOverrideTable * g_TextResourceOverrides;
-extern word u_error__TXT2STR__unknown_characte_0041afac[];
-extern undefined DAT_00000033;
-extern undefined g_MissingTextResourceFallbackStream;
-extern LocaleGetTelephoneCountryCodeProc * g_LocaleGetDefaultTelephoneCountryCode;
-extern TextResourcePageBinding g_TextResourcePageBindings[256];
-extern GraphicsTextureSourceGetLogicalSizeProc * g_GraphicsTextureSourceGetLogicalSize;
-extern dword g_ActiveFontIndex;
-extern undefined4 g_RichTextRuntimeBufferUsedWords;
-extern undefined4 g_RichTextCurrentColorArgb;
-extern undefined4 g_RichTextCurrentShadowOffset;
-extern undefined4 g_RichTextSavedColorArgb;
-extern undefined4 g_RichTextSavedShadowOffset;
-extern undefined4 g_RichTextColorPalette0Argb;
-extern undefined4 g_RichTextShadowOffsetPalette0;
-extern GraphicsTextureSourceBlitModulatedSourceAlphaProc * g_GraphicsTextureSourceBlitModulatedSourceAlpha;
-extern SoftwareFramebufferAccess * g_FramebufferAccess;
-extern undefined4 g_RichTextColorPalette1Argb;
-extern undefined4 g_RichTextColorPalette2Argb;
-extern undefined4 g_RichTextColorPalette3Argb;
-extern GraphicsTextureSourceBlitProc * g_GraphicsTextureSourceBlitSourceAlpha;
-extern undefined4 g_RichTextShadowOffsetPalette1;
-extern undefined4 g_RichTextShadowOffsetPalette2;
-extern undefined4 g_RichTextShadowOffsetPalette3;
-extern GraphicsAdapterRecord * g_GraphicsAdapters;
-extern undefined g_GraphicsAdapterFormatScratch0Utf16;
-extern undefined g_GraphicsAdapterFormatScratch1Utf16;
-extern SoftwareBuildPixelPackTablesProc * g_SoftwareBuildPixelPackTables;
-extern UiRootCallbacks g_UiDisplaySettingsRootCallbacks;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch0;
-extern dword g_FramebufferWidth;
-extern dword g_FramebufferHeight;
-extern sdword g_SoftwareColorScaleQ16;
-extern sdword g_SoftwareColorBiasQ16;
-extern SoftwarePixelFormatConfig g_SoftwarePixelFormatConfig;
-extern undefined4 g_ActiveGraphicsAdapterIndex;
-extern GraphicsDisplayMode * g_GraphicsDisplayModes;
-extern GraphicsDisplayModeCount g_GraphicsDisplayModeCount;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch1;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch2;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch3;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch4;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch5;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch6;
-extern DisplayModeScratchWord g_UiDisplayModeDistinctValueScratch7;
-extern UiDisplayModeSelectionActionHandlerTable20 g_UiDisplayModeSelectionActionHandlers20;
-extern sdword g_CursorVisibilityToken;
-extern SoftwareDisplayModeHookProc * g_GraphicsDisplayModeHook;
-extern UiRootCallbacks g_UiFourValueDialogRootCallbacks;
-extern undefined4 g_UiFourValueDialogTemplateImage;
-extern UiRootNode * g_UiRootNode;
-extern sdword g_FixedSinQ28[16384];
-extern GraphicsTextureSetCreateProc * g_GraphicsCreateTextureSet;
-extern GraphicsTextureSetDestroyProc * g_GraphicsDestroyTextureSet;
-extern undefined DAT_0000002f;
-extern GraphicsTextureSourceConvertPaletteEntriesProc * g_GraphicsTextureSourceConvertPaletteEntries;
-extern GraphicsFramebufferEndAccessProc * g_GraphicsFramebufferEndAccess;
-extern GraphicsFramebufferFillRectArgbProc * g_GraphicsFramebufferFillRectArgb;
-extern GraphicsFramebufferBeginAccessProc * g_GraphicsFramebufferBeginAccess;
-extern SoftwareDrawQueueProc * g_SoftwareDrawQueueProc;
-extern dword g_PrimitiveRadixBucketWords[256];
-extern qword g_VertexColorAlphaPreserveMaskMMX;
-extern qword g_VertexColorRgbHalveMaskMMX;
-extern GraphicsWideFixed g_ProjectionNumerator;
-extern GraphicsFixedVec2 g_ProjectionCenterFixed;
-extern GraphicsFixedRect g_ProjectionClipRect;
-extern GraphicsFixedMatrix3x4 g_ViewProjectionMatrixFixed;
-extern GraphicsFixedMatrix3x4 g_ViewRotationMatrixFixed;
-extern GraphicsFixedMatrix3x4 g_CameraTransformMatrixFixed;
-extern GraphicsWideFixed g_ProjectionAngleFactors[2];
-extern GraphicsFixedVec3 g_ViewOriginFixed;
-extern dword g_ProjectionScaleFixed;
-extern dword g_ViewAngle0;
-extern dword g_ViewAngle1;
-extern dword g_ProjectionShift;
-extern dword g_ProjectionScaleProduct;
-extern GraphicsFixedVec2 g_AuxiliaryOrientation;
-extern GraphicsFixedMatrix3x4 g_AuxiliaryRotationMatrixFixed;
-extern GraphicsFixedVec3 g_AuxiliaryForwardDirectionFixed;
-extern GraphicsSceneBounds8 g_SceneBoundsFixed;
-extern GraphicsPrimitiveQueue * g_ActivePrimitiveQueue;
-extern GraphicsFixedVec3 g_FrustumPlaneNormalFixed_0[4];
-extern GraphicsFixedVec3 g_FrustumCornerRayFixed_0[4];
-extern sdword * g_SoftwareDepthBuffer;
-extern sdword g_SoftwareDepthEpoch;
-extern GraphicsShadingRecordCount g_GraphicsShadingCompactRecordCount;
-extern qword g_MovieDeltaRgbHighNibbleMask2Pixels;
-extern dword g_MovieChromaLumaToArgb[1024][32];
-extern WidePathBuffer256 g_LooseMoviePathPrefix;
-extern FileSystemGetPositionCfProc * g_FileSystemGetPositionCf;
-extern SoundCreateSampleVoiceSetProc * g_SoundCreateSampleVoiceSet;
-extern MovieRuntime * g_ActiveMovie;
-extern MovieAudioGainQ15 g_MovieDefaultAudioGainQ15;
-extern SoundPlayVoiceProc * g_SoundPlayOneShot;
-extern SoundStopVoiceProc * g_SoundStopVoice;
-extern SoundReleaseSampleVoiceSetProc * g_SoundReleaseSampleVoiceSet;
-extern SoftwarePixelMmxConstants g_SoftwarePixelMmxConstants;
-extern SoftwarePixelPackTables * g_SoftwarePixelPackTables;
-extern SoftwareRgbWordLanes g_SoftwareBlendAlphaFactors[256];
-extern SoftwareRgbWordLanes g_SoftwareBlendInverseAlphaFactors[256];
-extern GraphicsTextureSourceBlitProc * g_GraphicsTextureSourceBlitHalfSourceRgb;
-extern SoftwareBgraWordLanes g_SoftwareBilinearForwardFactors[256];
-extern SoftwareBgraWordLanes g_SoftwareBilinearInverseFactors[256];
-extern qword g_SoftwareBilinearPackedByteClampMask;
-extern GraphicsTextureSourceSaturatedAddRgbProc * g_GraphicsTextureSourceBlitSaturatedAddRgb;
-extern GraphicsTextureSourceSaturatedAddRgbProc * g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd;
-extern GraphicsTextureSourceResolveAllocationBaseProc * g_GraphicsTextureSourceResolveAllocationBase;
-extern GraphicsPaletteAssetValidateProc * g_GraphicsPaletteAssetValidate;
-extern GraphicsPaletteAssetResolveAllocationBaseProc * g_GraphicsPaletteAssetResolveAllocationBase;
-extern char s_mohTG_sakere___e_004ae9d8[];
-extern NetworkBackendReceiveCallback * g_NetworkBackendSlot4;
-extern undefined4 g_FrontendSessionToken;
-extern UiTransferMailboxByteOffset g_UiTransferMailboxChunkOffset;
-extern UiTransferMailboxByteCount g_UiTransferMailboxTransferByteCount;
-extern undefined4 g_UiTransferMailboxReplyPacket10033;
-extern SpinLockTryAcquireFlagsProc * g_SpinLockTryAcquire;
-extern SpinLockReleaseProc * g_SpinLockRelease;
-extern dword g_UiTransferSequenceToken;
-extern UiTransferMailboxState g_UiTransferMailbox;
-extern SessionTransferTimeoutTicks g_SessionTransferTimeoutTicks;
-extern undefined4 g_UiTransferChunkPacketSequenceToken;
-extern undefined4 g_UiTransferMailboxReplyPacket10033SequenceToken;
-extern undefined4 g_UiTransferMailboxReplyPacket10033EchoedTick;
-extern undefined4 g_UiRuntimeAuxiliaryBuffer8000;
-extern UiTransferMailboxTickCounter g_UiTransferMailboxTickCounter;
-extern undefined g_UiTransferRoundKeys16;
-extern FrontendPlayerRuntimeRecord * g_FrontendPlayerRuntimeBlocks;
-extern FrontendPlayerRuntimeBlockCount g_FrontendPlayerRuntimeBlockCount;
-extern UiTransferEndpointDescriptor g_FrontendSelectedNetworkEndpoint;
-extern UiRuntimeRecord * g_UiRuntimeRecordRing;
-extern dword g_UiRuntimeRecordWriteIndex;
-extern RuntimeSpinLockValue g_UiRuntimeRecordRingLock;
-extern undefined4 g_FrontendPlayerRuntimeCount;
-extern SpinLockAcquireProc * g_SpinLockAcquire;
-extern dword g_UiRuntimeRecordReadIndex;
-extern NetworkBackendSendCallback * g_NetworkBackendSlot5;
-extern byte * g_UiTransferDataBuffer;
-extern UiTransferEndpointDescriptor * g_UiTransferEndpointBuffer;
-extern dword g_UiTransferUnitCursor;
-extern dword g_UiTransferSenderContext;
-extern RuntimeSpinLockValue * g_UiRuntimeFrameLock;
-extern UiRuntimePostUnlockCallbackProc * g_UiRuntimePostUnlockCallback;
-extern UiDirtyRectEntry * g_UiDirtyRectEntries;
-extern undefined4 g_UiRuntimeInitializationCount;
-extern TimerRegisterPeriodicProc * g_TimerRegisterPeriodic;
-extern UiActionQueueEntry * g_UiActionQueueEntries;
-extern TimerUnregisterPeriodicProc * g_TimerUnregisterPeriodic;
-extern dword g_UiPendingFrameTicks;
-extern PointerFlushEventsProc * g_PointerFlushEvents;
-extern KeyboardFlushEventsProc * g_KeyboardFlushEvents;
-extern SpinLockReleaseAndInvokeProc * g_SpinLockReleaseAndInvoke;
-extern UiNodeBase * g_UiKeyboardFocusNode;
-extern KeyboardReadEventProc * g_KeyboardReadEvent;
-extern PointerSetPositionProc * g_PointerSetPosition;
-extern GraphicsCursorConsumeEventProc * g_GraphicsCursorConsumeEvent;
-extern UiFrameRefreshCountdownFrames g_DirectInputMouseRefreshCountdown;
-extern Win32PumpMessagesProc * g_Win32PumpMessages;
-extern UiActionQueueUsedBytes g_UiActionQueueUsedBytes;
-extern UiActionHandlerPage * g_UiActionHandlerPages[256];
-extern GraphicsFramebufferPresentProc * g_GraphicsFramebufferPresent;
-extern UiTooltipState g_UiTooltipState;
-extern UiImageControl * g_UiImageControlHoverTarget;
-extern UiCommandRuntimeRecordPrefix * g_UiHoverSelectionRecord;
-extern UiFrameDelayFrames g_UiTooltipDelayFrames;
-extern GraphicsTextureSourceAsset * g_UiWindowTextureSource;
-extern dword g_UiTooltipTextStyle;
-extern word u__engine_winclass_gfx_004b0eb6[];
-extern pointer g_UiRootStackActionHandlerPage;
-extern word u_texte_winclass_str_004b0ee0[];
-extern word u_engine_win_gfx_004b0f06[];
-extern GraphicsTextureSourceAsset * g_UiWindowClassTextureSource;
-extern GraphicsTextureSourceTiledBlitProc * g_GraphicsTextureSourceBlitTiledSourceAlpha;
-extern UiDirtyRectCount g_UiDirtyRectCount;
-extern dword g_UiInvalidationSuppressed;
-extern AudioMixerGainQ15 g_UiSoundGainQ15;
-extern GraphicsTextureSourceTestOpaquePixelProc * g_GraphicsTextureSourceTestOpaquePixel;
-extern UiNodeVtable g_UiSpriteButtonControlVtable;
-extern undefined4 g_UiWindowFrameInset;
-extern undefined4 g_UiTextStyleSelected;
-extern undefined4 g_UiTextStyleDisabled;
-extern undefined4 g_UiTextStyleAlternate;
-extern undefined4 g_UiWindowTitleTextStyle;
-extern GraphicsTextureSourceStretchDirectColorBilinearProc * g_GraphicsTextureSourceStretchDirectColorBilinear;
-extern undefined4 g_UiHorizontalGaugeLabelTopInset;
-extern undefined4 g_UiHorizontalGaugeLabelTextStyle;
-extern word g_UiWindowPercentTextUtf16[5];
-extern undefined4 g_UiRangeSliderDragScale;
-extern undefined4 g_UiResizableWindowTitleTextTopOffset;
-extern undefined4 g_UiResizableWindowTitleTextStyle;
-extern undefined4 g_UiWindowMoveHandleWidth;
-extern undefined4 g_UiWindowResizeBorderThickness;
-extern undefined4 g_UiTextEditActiveTextStyle;
-extern undefined4 g_UiTextEditInactiveTextStyle;
-extern undefined4 g_UiTextEditDisabledTextStyle;
-extern undefined4 g_UiTextEditCaretBlinkPhaseStep;
-extern FileSystemValidateDos83CfProc * g_FileSystemValidateDos83Path;
-extern dword g_CursorUseOverridePosition;
-extern undefined4 g_UiScrollWheelDefaultStep;
-extern undefined4 g_UiScrollWheelListStep;
-extern UiNodeVtable g_UiTextListControlVtable;
-extern UiNodeVtable g_UiListControlVtable;
-extern UiNodeVtable g_UiTimedListControlVtable;
-extern UiNodeVtable g_UiScrollableControlVtable;
-extern undefined4 g_UiListTextStyle;
-extern KeyboardAsciiCaseTransformCallbackTable3 g_KeyboardAsciiCaseTransformCallbacks3;
-extern undefined4 g_UiListActivationPulseFrames;
-extern undefined g_UiPointerListExpandedLeftTextUtf16;
-extern undefined g_UiPointerListExpandedRightTextUtf16;
-extern pointer g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf;
-extern UiFrameDelayFrames g_UiTimedListActionDelayFrames;
-extern undefined4 g_GraphicsIntensityClampTableBase;
-extern undefined4 g_ModelBoundsMinimumX;
-extern undefined4 g_ModelBoundsMaximumX;
-extern undefined4 g_ModelBoundsMinimumY;
-extern undefined4 g_ModelBoundsMaximumY;
-extern undefined4 g_ModelBoundsMinimumZ;
-extern undefined4 g_ModelBoundsMaximumZ;
-extern undefined4 g_ModelBoundsTransformedPointX;
-extern undefined4 g_ModelBoundsTransformedPointY;
-extern undefined4 g_ModelBoundsTransformedPointZ;
-extern undefined g_ModelAuxiliaryForwardDirectionLocal;
-extern undefined g_ModelViewCompositeTransform;
-extern undefined g_ModelViewDirectionLocal;
-extern undefined g_ModelViewDirectionWorld;
-extern undefined4 g_ModelCullViewRelativeX;
-extern sdword g_ModelLodDepthThresholdQ8;
-extern GraphicsShadingRecordCount g_GraphicsShadingNearbyRecordCount;
-extern undefined4 g_ModelCullViewRelativeY;
-extern undefined4 g_ModelCullViewRelativeZ;
-extern int UNK_004bcf50;
-extern int UNK_004bcf54;
-extern int UNK_004bcf58;
-extern sdword g_ModelTransformTranslationX;
-extern sdword g_ModelTransformTranslationY;
-extern sdword g_ModelTransformTranslationZ;
-extern undefined g_ModelTransformScratchMatrix;
-extern SpriteAssetHeader * g_SpriteAssetRegistryHead;
-extern Q12 g_ModelTransformOutputZ;
-extern Q12 g_ModelTransformOutputY;
-extern sdword g_ModelTransformInputX;
-extern sdword g_ModelTransformInputY;
-extern sdword g_ModelTransformInputZ;
-extern Q12 g_ModelTransformOutputX;
-extern undefined g_FixedTransformInputRotationScratch;
-extern undefined g_FixedTransformComposedRotationScratch;
-extern undefined g_PackedLightingLookupTable;
-extern GraphicsShadingRuntimeRecord g_GraphicsShadingNearbyRecords[256];
-extern undefined g_ModelLightingScaleMmxMultiplierTable;
-extern GraphicsFixedVec3 g_ModelLightingVertexToLightVectorScratch;
-extern GraphicsFixedVec3 g_ModelLightingTransformedSurfaceNormalScratch;
-extern GraphicsShadingRuntimeRecord g_GraphicsShadingCompactRecords[256];
-extern GraphicsShadingRuntimeRecord g_GraphicsShadingRuntimeRecords[256];
-extern GraphicsTextureSourceAsset * g_GraphicsShadingGeneratedAsset;
-extern void * g_GraphicsShadingGridScratch;
-extern GraphicsTextureSet * g_GraphicsShadingTextureSet;
-extern undefined4 g_GraphicsShadingGridHalfSize;
-extern dword g_GraphicsShadingSubresourceCount;
-extern dword g_GraphicsShadingGridStepQ20;
-extern dword g_GraphicsShadingGridStepQ20Current;
-extern pointer g_GraphicsShadingGridScratchInterior;
-extern sdword g_GraphicsShadingPositiveGridOriginQ12;
-extern sdword g_GraphicsShadingNegativeGridOriginQ12;
-extern dword g_GraphicsShadingTextureDimension;
-extern GeneratedTextureScratchRuntime1A8 g_GeneratedTextureScratchRuntime;
-extern dword g_TextureDownsampleShift;
-extern byte * g_GraphicsShadingGeneratedTexturePixelCursor;
-extern dword g_GraphicsShadingGeneratedTextureTileX;
-extern dword g_GraphicsShadingGeneratedTextureTileY;
-extern GraphicsSubresourceIndex g_GraphicsShadingGeneratedTextureSubresourceIndex;
-extern dword g_GraphicsShadingGeneratedTextureTileXQ20;
-extern dword g_GraphicsShadingGeneratedTextureTileYQ20;
-extern dword g_GraphicsShadingGeneratedTextureCompletedTraversalCount;
-extern GraphicsTextureSetRefreshProc * g_GraphicsRefreshTextureAlpha;
-extern qword g_GraphicsShadingMmxPacked3BitPerByteMask;
-extern qword g_GraphicsShadingRasterizeMmxPackedDwordOneZero;
-extern GraphicsPrimitiveQueue * g_PrimitiveQueueStorage;
-extern dword g_PrimitiveQueuePoolCapacity;
-extern GraphicsTextureSet * g_TerrainPrimaryTextureSet;
-extern GraphicsPaletteAsset * g_TerrainPrimaryPalette;
-extern dword g_UiCommandModeGColorVariantLimit;
-extern GraphicsTextureSet * g_TerrainMaterialTextureSets[26];
-extern GraphicsPaletteAsset * g_TerrainSecondaryPalette;
-extern dword g_UiCommandModeGColorVariantFlags;
-extern SoftwareRasterHandler * g_SoftwareRasterHandlers16Bit[64];
-extern GraphicsDiagnosticCounter g_PrimitiveDrawCallCount;
-extern SoftwareRasterHandler * g_SoftwareRasterHandlersNon16Bit[64];
-extern void * g_SoftwareAuxiliaryTargetBase;
-extern SoftwareRasterHandler * g_SoftwareRasterHandlersAuxiliary[64];
-extern dword g_FramebufferRowStrideBytes;
-extern dword g_SoftwareDepthRowStrideBytes;
-extern SoftwareRasterScanState g_SoftwareRasterScanState;
-extern SoftwareDisplayModeHookProc * g_SoftwarePreviousDisplayModeHook;
-extern void * g_TerrainSoilPacketTablePayload;
-extern void * g_TerrainSurfacePacketTablePayload;
-extern TerrainProjectedRowSpan g_TerrainProjectedRowSpans[260];
-extern byte * g_TerrainByteClampLookup;
-extern TerrainDirectionRecord g_TerrainDirectionRecordTable256[256];
-extern TerrainMaterialSuffixEntry g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[26];
-extern GraphicsTextureSetLoadPackageProc * g_GraphicsTextureSetLoadPackageCf;
-extern GraphicsPaletteAssetLoadPackageProc * g_GraphicsPaletteAssetLoadPackage;
-extern undefined4 g_MoviePlaybackScheduleSpan;
-extern GraphicsTextureSetReleasePackageProc * g_GraphicsTextureSetReleasePackageCf;
-extern GraphicsPaletteAssetLifecycleCallbackTable3 g_GraphicsPaletteAssetLifecycleCallbacks3;
-extern qword g_FieldGridOccupancyMmxHighBitMask;
-extern undefined4 g_TerrainDirectionalLightColorLut;
-extern undefined4 g_TerrainDirectionalLightSecondaryColor;
-extern undefined4 g_TerrainLightDirectionX;
-extern undefined4 g_TerrainLightDirectionY;
-extern undefined4 g_TerrainLightDirectionZ;
-extern undefined4 g_TerrainLightingColorRampArgb256;
-extern undefined4 g_TerrainScanStepLimit;
-extern undefined4 g_TerrainScanReferenceHeight;
-extern undefined g_TerrainHeightDeltaScaleByStepQ12;
-extern undefined4 g_TerrainScanRowStrideBytes;
-extern TerrainScanSelectorUnion g_TerrainScanSharedSelectorValue;
-extern undefined8 g_TerrainOccupancyMmxSignBiasBytes;
-extern qword g_TerrainOccupancyMmxClearBits1And2Mask;
-extern qword g_TerrainOccupancyMmxAllBitsMask;
-extern qword g_TerrainOccupancyMmxPackedScale0280;
-extern qword g_TerrainOccupancyMmxPackedWeights02_20;
-extern qword g_TerrainOccupancyMmxPackedWeights04_40;
-extern undefined4 g_TerrainHeightBandMaximumDelta;
-extern undefined4 g_TerrainHeightBandMinimumDelta;
-extern undefined4 g_TerrainAuxHeightMinimum;
-extern GraphicsFixedMatrix3x4 g_GraphicsTransformScratchMatrix3x4;
-extern GraphicsFixedVec3 g_GraphicsTransformInputScratchVec3;
-extern GraphicsFixedVec3 g_GraphicsTransformOutputScratchVec3;
-extern GraphicsFixedVec3 g_GraphicsProjectionScratchVec3;
-extern GraphicsProjectedPoint2i g_ModelProjectedBoundsCornerScratch8[8];
-extern RuntimeModelClassPriorityTable24 g_RuntimeModelClassPriorityByModelClassId;
-extern sdword g_ModelRaycastLocalOriginX;
-extern undefined4 g_ModelRaycastMaximumDistance;
-extern sdword g_ModelRaycastLocalOriginY;
-extern sdword g_ModelRaycastLocalOriginZ;
-extern undefined4 g_ModelRaycastLocalDirectionXQ28;
-extern undefined4 g_ModelRaycastLocalDirectionYQ28;
-extern undefined4 g_ModelRaycastLocalDirectionZQ28;
-extern sdword g_ModelRaycastOriginX;
-extern sdword g_ModelRaycastOriginY;
-extern sdword g_ModelRaycastOriginZ;
-extern undefined4 g_ModelRaycastWorldDirectionXQ28;
-extern undefined4 g_ModelRaycastWorldDirectionYQ28;
-extern undefined4 g_ModelRaycastWorldDirectionZQ28;
-extern SpatialSoundSlot * g_SpatialSoundSlots;
-extern undefined4 UNK_0050b574;
-extern undefined4 UNK_0050b578;
-extern undefined4 UNK_0050b57c;
-extern undefined4 UNK_0050b580;
-extern undefined4 UNK_0050b584;
-extern undefined4 UNK_0050b588;
-extern undefined4 UNK_0050b58c;
-extern undefined4 UNK_0050b590;
-extern undefined4 UNK_0050b594;
-extern undefined4 UNK_0050b598;
-extern undefined4 UNK_0050b59c;
-extern undefined4 UNK_0050b5a0;
-extern int UNK_0050b5a4;
-extern int UNK_0050b5a8;
-extern int UNK_0050b5ac;
-extern undefined g_SpatialSoundListenerTransform;
-extern undefined4 g_SpatialSoundRelativeX;
-extern undefined4 g_SpatialSoundRelativeY;
-extern undefined4 g_SpatialSoundRelativeZ;
-extern undefined k_SpatialSoundStereoCosineSecondHalfBaseBias;
-extern AudioMixerGainQ15 g_SoundEffectsGainQ15;
-extern sdword g_ReverseStereoMask;
-extern SoundCreatePcmVoiceSetProc * g_SoundCreatePcmVoiceSet;
-extern SoundReleasePcmVoiceSetProc * g_SoundReleasePcmVoiceSet;
-extern SoundPlayVoiceProc * g_SoundPlayLooping;
-extern SoundSetVoiceGainsProc * g_SoundSetVoiceGains;
-extern GraphicsPrimitiveQueueRadixSortProc * PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844;
-extern dword g_UiCommandRuntimeFlags;
-extern undefined4 g_RenderedFrameCountSinceDebugRefresh;
-extern GraphicsTextureSourceBlitProc * g_SelectionPanelBlitOpaque;
-extern GraphicsTextureSourceTiledBlitProc * g_SelectionPanelBlitClipped;
-extern GraphicsSetViewportProc * g_GraphicsSetViewportAndClearDepth;
-extern GraphicsDrawPrimitiveQueueProc * g_GraphicsDrawPrimitiveQueue;
-extern GraphicsBeginScenePreserveAllProc * g_GraphicsBeginScene;
-extern GraphicsEndSceneProc * g_GraphicsEndScene;
-extern GraphicsTextureSourceTiledBlitProc * g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
-extern dword g_KeyboardStateMask;
-extern undefined k_CameraScreenDeltaDistanceScaleQ16;
-extern AngleTurn32 g_WorldMotionHeadingInputScale;
-extern Q12 g_WorldMotionDistanceInputScaleQ12;
-extern UQ12 g_WorldMotionAlternateMinimumDistanceQ12;
-extern UQ12 g_WorldMotionAlternateMaximumDistanceQ12;
-extern Q12 g_WorldMotionPositionMagnitudeInputScaleQ12;
-extern AngleTurn32 g_WorldMotionAlternateMinimumPitchAngle;
-extern AngleTurn32 g_WorldMotionAlternateMaximumPitchAngle;
-extern AngleTurn32 g_WorldMotionPitchInputScale;
-extern int g_WorldMotionPointerWheelInputScale;
-extern UQ12 g_WorldMotionTargetDistanceConvergenceStepQ12;
-extern dword g_CursorOverflowLeft;
-extern dword g_CursorOverflowRight;
-extern dword g_CursorOverflowTop;
-extern dword g_CursorOverflowBottom;
-extern undefined4 g_InGameFactionScratchBufferSetA8;
-extern undefined4 g_InGameFactionScratchBufferSetB8;
-extern word u_flm_ende0000_flm_0050df06[];
-extern word u_flm_ende0001_flm_0050df28[];
-extern undefined4 g_EndMovieSelectionIndex;
-extern undefined4 g_EndMovieVariantIndex;
-extern InGameLevelRuntimeGlobalBlock20 g_InGameLevelRuntimeGlobalBlock;
-extern ArmyRuntimeOrderHandlerMatrix11x24 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes;
-extern word * g_EndMoviePath;
-extern InGameRuntimeRootImageC3E4 * g_InGameRuntimeRoot;
-extern InGameSimulationStepBatchTicks g_InGameSimulationStepTicks;
-extern GameFactionRuntimeImage g_GameFactionRuntimeImage;
-extern byte * g_EffectRuntimeRebaseBaseMinusOne;
-extern byte * g_ShotRuntimeRebaseBaseMinusOne;
-extern int g_ModelRuntimeRebaseDelta;
-extern byte * g_RuntimeObjectRebaseBaseMinusOne;
-extern undefined DAT_004bed4f;
-extern ArmyGraphicsBinding g_ArmyGraphicsBindings[8];
-extern GraphicsTextureSet * g_EffectTextureSet;
-extern GraphicsPaletteAsset * g_EffectPalette;
-extern GraphicsTextureSet * g_ShotTextureSet;
-extern GraphicsPaletteAsset * g_ShotPalette;
-extern word u_army_hex_0050dfb4[];
-extern word u_effect_hex_0050dfc6[];
-extern word u_shot_hex_0050dfdc[];
-extern word u_modul_hex_0050dfee[];
-extern word u_field_hex_0050e002[];
-extern word u_light_hex_0050e016[];
-extern word u_widget_hex_0050e02a[];
-extern LocaleFormatCurrentDateUtf16Proc * g_LocaleFormatCurrentDateUtf16;
-extern word u_level_hex_0050e040[];
-extern word u_daten_hex_0050e054[];
-extern word u_campagne_hex_0050e068[];
-extern LocaleFormatCurrentTimeUtf16Proc * g_LocaleFormatCurrentTimeUtf16;
-extern word u_stat_hex_0050e082[];
-extern word u_oldunit_hex_0050e094[];
-extern undefined4 g_FrontendLoadedCampaignAsset;
-extern undefined1 g_InGameResourceRegistrationBusyCount;
-extern void * g_GameStatTableImage;
-extern dword * g_OldUnitPrimaryTable;
-extern dword * g_OldUnitSecondaryTable;
-extern OldUnitRecordCount g_OldUnitRecordCount;
-extern undefined4 g_InGameLevelTitleTextResourceIndex;
-extern FileSystemCreateDirectoryRecursiveProc * g_FileSystemCreateDirectoryRecursiveCf;
-extern dword g_InGameLevelCampaignAssociationIndex;
-extern RecentTextHistorySlot * g_RecentTextSlotStorage;
-extern dword g_RecentTextEntrySerials[8];
-extern RecentTextSerialCounter g_RecentTextSerialCounter;
-extern GameDataAuxState g_GameDataAuxState;
-extern void * g_ArmyRuntimeRebaseBaseMinusOne;
-extern TerrainRegionCollectionCount g_TerrainRegionCollectionStoredCount;
-extern TerrainRegionCollectionCount g_TerrainRegionCollectionVisitedCount;
-extern undefined4 g_TerrainRegionCollectionEntries;
-extern undefined g_FactionEnergyAllocationPriorityByModelClass;
-extern TechnologyAsset * g_TechnologyAsset;
-extern SelectionPlayerRuntimeBlock * g_SelectionPlayerRuntimeBlockPointers[8];
-extern undefined g_FrontendCurrentFactionPrimaryResourceTextUtf16;
-extern undefined g_UiNumericPairSecondValueScratchUtf16;
-extern undefined g_UiNumericPairFirstValueScratchUtf16;
-extern UiCommandRuntimeRecordPrefix * g_UiCommandSpriteVariantARecords[24];
-extern dword g_UiCommandSpriteVariantAColumnCount;
-extern sdword * g_UiCommandSpriteVariantAOffsetTables[5];
-extern UiCommandRuntimeRecordPrefix * g_UiCatalogGroup48Records[48];
-extern UiCommandRuntimeRecordPrefix * g_UiCatalogGroup42Records[42];
-extern dword g_UiCatalogGroup48ColumnCount;
-extern dword g_UiCatalogGroup42ColumnCount;
-extern sdword * g_UiCatalogGroup48OffsetTables[9];
-extern sdword * g_UiCatalogGroup42OffsetTables[7];
-extern word g_UiCatalogEntryRichTextScratchUtf16[16];
-extern GraphicsTextureSourceAsset * g_SelectionPanelTextureSource;
-extern GraphicsTextureSourceAsset * g_InfoPanelTextureSource;
-extern void * g_SelectionPanelData;
-extern void * g_InfoPanelData;
-extern dword g_FrontendResultsFactionPackedPixelColors[7];
-extern int g_FrontendResultsColumnAdvance00Pixels;
-extern int g_FrontendResultsColumnAdvance01Pixels;
-extern int g_FrontendResultsColumnAdvanceColourPixels;
-extern int g_FrontendResultsColumnAdvanceEconomyPixels;
-extern int g_FrontendResultsColumnAdvanceMilitaryPixels;
-extern int g_FrontendResultsColumnAdvancePointsPixels;
-extern int g_FrontendResultsColumnAdvancePlayerPixels;
-extern int g_FrontendResultsColumnAdvanceFactionPixels;
-extern int g_FrontendResultsColumnAdvanceFactionField98Pixels;
-extern int g_FrontendResultsColumnAdvanceFactionField9CPixels;
-extern int g_FrontendResultsColumnAdvanceFactionFieldA0Pixels;
-extern int g_FrontendResultsColumnAdvanceFactionFieldA4Pixels;
-extern int g_FrontendResultsColumnAdvanceFactionFieldA8Pixels;
-extern int g_FrontendResultsColumnAdvanceFactionFieldACPixels;
-extern int g_FrontendResultsColumnAdvanceFactionFieldB0Pixels;
-extern dword g_FrontendResultsFramebufferBytesPerPixel;
-extern int g_FrontendResultsColumnAdvanceFactionFieldB4Pixels;
-extern int g_FrontendResultsColumnAdvanceFactionFieldB8Pixels;
-extern dword g_FrontendResultsFramebufferScanlineStrideBytes;
-extern int g_FrontendResultsColumnAdvanceFactionFieldBCPixels;
-extern undefined g_FrontendResultsValueTextUtf16;
-extern SessionNetworkRoleFlags g_SessionNetworkRoleFlags;
-extern undefined g_SoftwareBilinearPackedInterpolationWeights256;
-extern undefined4 g_SoftwarePixelIntensityToNativeColorLut256;
-extern undefined8 g_SoftwareBlendUnityWordLanesQ14;
-extern ArmyAssetRecordPrefix * g_ArmyAssetRecordRegistry[768];
-extern ArmyRuntimeSlot * g_ArmyRuntimeSlots;
-extern ArmyPlacementContactCallbackTable5 g_ArmyPlacementContactKindDispatchTable;
-extern undefined g_ArmyRuntimeDepthBinClassByModelClass;
-extern dword g_ArmyPreviewSecondaryColorArgb;
-extern dword g_ArmyPreviewViewOriginXQ12;
-extern dword g_ArmyPreviewViewOriginYQ12;
-extern dword g_ArmyPreviewViewOriginZQ12;
-extern dword g_ArmyPreviewProjectionScaleQ12;
-extern dword g_ArmyPreviewViewAngle0;
-extern dword g_ArmyPreviewPrimaryColorArgb;
-extern dword g_ArmyPreviewViewAngle1;
-extern undefined g_ArmyPreviewAlphaPremultiplyMmxLut256;
-extern dword g_ArmyPreviewProjectionShift;
-extern dword g_ArmyPreviewAuxiliaryOrientation0;
-extern undefined g_ArmyPreviewAverageAlphaReciprocalMmxLut256;
-extern GraphicsOffscreenRenderModelListToTextureSourceProc * g_GraphicsOffscreenRenderModelListToTextureSourceCf;
-extern dword g_ArmyPreviewAuxiliaryOrientation1;
-extern undefined8 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx;
-extern dword g_ArmyPreviewModelNodePointer;
-extern ArmyCommandGeneration g_ArmyCommandGenerationStandard;
-extern FieldGridInterpolationCallbackTable5 g_FieldGridInterpolationCallbacks5;
-extern TerrainClassPlacementAndOverlayCallbackTable10 g_TerrainClassPlacementAndOverlayCallbacks10;
-extern sdword g_InGamePanelTextureSubresource34Height;
-extern sdword g_InGamePanelTextureSubresource02Width;
-extern undefined4 g_MoviePlaybackScheduleCounter;
-extern sdword g_InGamePanelTextureSubresource34Width;
-extern EffectDefinition * g_EffectDefinitionRegistry[256];
-extern EffectRuntimeSlot * g_EffectRuntimeSlots;
-extern undefined4 g_ArmySuspensionBlendVectorAXQ12;
-extern undefined4 g_ArmySuspensionBlendVectorAYQ12;
-extern undefined4 g_ArmySuspensionBlendVectorAZQ12;
-extern undefined4 g_ArmySuspensionBlendVectorBXQ12;
-extern undefined4 g_ArmySuspensionBlendVectorBYQ12;
-extern undefined4 g_ArmySuspensionBlendVectorBZQ12;
-extern undefined g_ArmySuspensionRotationMatrixScratchA;
-extern undefined g_ArmySuspensionRotationMatrixScratchB;
-extern undefined g_ArmySuspensionRotationMatrixComposedScratch;
-extern ArmyPlacementCandidateCount g_ArmyPlacementAcceptedCandidateCount;
-extern undefined4 g_ArmyLinkedChildAssetIdSlot0;
-extern undefined4 g_ArmyLinkedChildAssetIdSlot1;
-extern undefined4 g_ArmyLinkedChildAssetIdSlot2;
-extern undefined4 g_GridInfluenceRadiusOffset0;
-extern AngleTurn16Stored32 g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16;
-extern ModelDefinitionRecordPrefix * g_ModelDefinitionRegistry[768];
-extern undefined g_ModelTraversalFallbackSecondaryThresholdTable3;
-extern Q12 g_GridTerrainClassBit24MaxWaterSurfaceDelta;
-extern AngleTurn16Stored32 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16;
-extern undefined g_ModelTraversalClass4SecondaryThresholdTable3;
-extern Q12 g_GridTerrainClassBit28MinWaterSurfaceDelta;
-extern ModelRuntimeSlot * g_ModelRuntimeSlots;
-extern IMAGE_DOS_HEADER IMAGE_DOS_HEADER_00400000;
-extern ShotDefinition * g_ShotDefinitionRegistry[256];
-extern ShotRuntimeSlot * g_ShotRuntimeSlots;
-extern word u_gfx_panel_select_gfx_0052ce18[];
-extern word u_gfx_panel_info_gfx_0052ce42[];
-extern word u_gfx_panel_select_dat_0052ce68[];
-extern word u_gfx_panel_info_dat_0052ce92[];
-extern SelectionPlayerRuntimeBlock * g_SelectionPlayerBlocks;
-extern SelectionInfoEntitySlots * g_SelectionInfoEntitySlots;
-extern GraphicsTextureSourceLifecycleCallbackTable3 g_GraphicsTextureSourceLifecycleCallbacks3;
-extern undefined4 g_SelectionPanelNumberTextStyle;
-extern undefined g_SelectionPanelNumberScratchUtf16;
-extern ModelProjectedBoundsPixels g_ModelProjectedBoundsPixels;
-extern word g_LevelEndingMovieSourcePath[256];
-extern undefined DAT_0000004f;
-extern word u_sound_level00_sam_0050df6c[];
-extern word u_sound_music00_sam_0050df90[];
-extern undefined4 g_InGameLevelEffectVoiceSet0;
-extern undefined4 g_InGameLevelEffectVoiceSet1;
-extern undefined4 g_InGameLevelEffectVoiceSet2;
-extern undefined4 g_InGameLevelEffectVoiceSet3;
-extern undefined4 g_InGameActiveEffectVoice;
-extern dword g_InGameEffectsEnabled;
-extern undefined4 g_InGameLevelMusicVoiceSet0;
-extern undefined4 g_InGameLevelMusicVoiceSet1;
-extern undefined4 g_InGameLevelMusicVoiceSet2;
-extern undefined4 g_InGameLevelMusicVoiceSet3;
-extern undefined4 g_InGameActiveMusicVoice;
-extern dword g_InGameMusicEnabled;
-extern void ** g_InGameLoadedResourcePointers;
-extern InGameLoadedResourcePointerCount g_InGameLoadedResourcePointerCount;
-extern undefined g_InGameLevelSoundLeafOrCombinedPathScratchUtf16;
-extern undefined4 g_MoviePlaybackBaseFrameGroup;
-extern undefined g_InGameLevelSoundParentDirectoryScratchUtf16;
-extern dword g_LevelCameraBookmark1PositionXQ12;
-extern dword g_LevelCameraBookmark1PositionYQ12;
-extern dword g_LevelCameraBookmark1PositionZQ12;
-extern dword g_LevelCameraBookmark1PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
-extern dword g_LevelCameraBookmark2PositionXQ12;
-extern dword g_LevelCameraBookmark2PositionYQ12;
-extern dword g_LevelCameraBookmark2PositionZQ12;
-extern dword g_LevelCameraBookmark2PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
-extern dword g_LevelCameraBookmark3PositionXQ12;
-extern dword g_LevelCameraBookmark3PositionYQ12;
-extern dword g_LevelCameraBookmark3PositionZQ12;
-extern dword g_LevelCameraBookmark3PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
-extern dword g_LevelCameraBookmark4PositionXQ12;
-extern dword g_LevelCameraBookmark4PositionYQ12;
-extern dword g_LevelCameraBookmark4PositionZQ12;
-extern dword g_LevelCameraBookmark4PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
-extern dword g_LevelCameraBookmark5PositionXQ12;
-extern dword g_LevelCameraBookmark5PositionYQ12;
-extern dword g_LevelCameraBookmark5PositionZQ12;
-extern dword g_LevelCameraBookmark5PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
-extern dword g_LevelCameraBookmark6PositionXQ12;
-extern dword g_LevelCameraBookmark6PositionYQ12;
-extern dword g_LevelCameraBookmark6PositionZQ12;
-extern dword g_LevelCameraBookmark6PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
-extern dword g_LevelCameraBookmark7PositionXQ12;
-extern dword g_LevelCameraBookmark7PositionYQ12;
-extern dword g_LevelCameraBookmark7PositionZQ12;
-extern dword g_LevelCameraBookmark7PositionMagnitudeQ12;
-extern dword g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
-extern dword g_SoundPackageHandle;
-extern undefined g_LevelResourcePathScratchUtf16;
-extern GridScratchCell ** g_GridPathCostQueueEnd;
-extern GridScratchCell * g_GridScratchPrimary;
-extern GridScratchCell * g_GridScratchSecondary;
-extern GridScratchCell ** g_GridPathCostQueueBegin;
-extern dword g_GridScratchWidth;
-extern dword g_GridScratchHeight;
-extern Q12 g_GridTerrainClassBit29MinWaterSurfaceDelta;
-extern Q12 g_GridTerrainClassBit30MinWaterSurfaceDelta;
-extern AngleTurn16Stored32 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16;
-extern AngleTurn16Stored32 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16;
-extern AngleTurn16Stored32 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16;
-extern AngleTurn16Stored32 g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16;
-extern AngleTurn16Stored32 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16;
-extern dword g_GridPathEntityClassMask;
-extern undefined4 g_GridPathBlockingMask;
-extern undefined4 g_GridPathHighCostMask;
-extern GridScratchCell ** g_GridPathCostQueuePassBoundary;
-extern dword g_GridPathUnreachableRegionReferenceRow;
-extern dword g_GridPathUnreachableRegionReferenceColumn;
-extern undefined4 g_GridInfluenceSquaredThreshold6;
-extern undefined4 g_GridInfluenceRadiusOffset6;
-extern undefined4 g_GridInfluenceSquaredThreshold0;
-extern undefined4 g_GridInfluenceSquaredThreshold1;
-extern undefined4 g_GridInfluenceSquaredThreshold2;
-extern undefined4 g_GridInfluenceSquaredThreshold3;
-extern undefined4 g_GridInfluenceSquaredThreshold4;
-extern undefined4 g_GridInfluenceSquaredThreshold5;
-extern undefined4 g_GridInfluenceSquaredThreshold7;
-extern undefined4 g_GridInfluenceRadiusOffset1;
-extern undefined4 g_GridInfluenceRadiusOffset2;
-extern undefined4 g_GridInfluenceRadiusOffset3;
-extern undefined4 g_GridInfluenceRadiusOffset4;
-extern undefined4 g_GridInfluenceRadiusOffset5;
-extern undefined4 g_GridInfluenceRadiusOffset7;
-extern EntityPathingPriorityPair * g_EntityPathingPriorityPairs;
-extern dword g_EntityPathingPriorityPairCount;
-extern AiCommandGenerationRightShiftBits g_AiCombatTargetSelectedCommandGenerationRightShiftBits;
-extern ArmyCommandGeneration g_AiCommandGenerationCandidateBase;
-extern ArmyCommandGeneration g_AiCommandGenerationRetainedTarget;
-extern undefined g_AiCombatTargetClassBaseScoreTable24;
-extern undefined4 g_AiCombatTargetRadialClearanceWeight;
-extern undefined4 g_AiCombatTargetCandidateCounterCountWeight;
-extern undefined4 g_AiCombatTargetSourceCounterCountWeight;
-extern undefined4 g_AiCombatTargetScaleDeficitWeight;
-extern undefined4 g_AiCombatTargetClassBaseScoreMultiplier;
-extern AiCommandGenerationRightShiftBits g_AiCombatTargetCurrentCommandGenerationRightShiftBits;
-extern undefined4 g_AiCandidateWorkspaceEntryCount;
-extern AiCandidateWorkspaceEntry * g_AiWorkspaceBuffer13_Size0400;
-extern dword g_AiPurchaseAppliedArmyClassMask;
-extern AiWorkspace00EntryView8 * g_AiWorkspaceBuffer00_Size0400;
-extern undefined4 g_AiWorkspace00Count;
-extern undefined4 g_AiWorkspace01Count;
-extern AiRuntimeWorkspaceEntry * g_AiWorkspaceBuffer01_Size0200;
-extern undefined4 g_AiActiveGridMaskClass0;
-extern undefined4 g_AiActiveGridMaskClass1;
-extern undefined4 g_AiActiveGridMaskClass2;
-extern undefined4 g_AiActiveGridMaskClass3;
-extern undefined4 g_AiWorkspace05Count;
-extern AiKnowledgeDataImage * g_AiKnowledgeData;
-extern AiScoredSiteWorkspaceEntry * g_AiWorkspaceBuffer05_Size0200;
-extern undefined4 g_AiWorkspace06Count;
-extern byte * g_AiWorkspaceBuffer06_Size0400;
-extern AiTerrainFeatureWorkspaceEntry * g_AiWorkspaceBuffer08_Size0200;
-extern undefined4 g_AiWorkspace08Count;
-extern FieldGridCell ** g_AiWorkspaceBuffer09_Size1000;
-extern undefined4 g_AiWorkspace09Count;
-extern FieldGridCell ** g_AiWorkspaceBuffer10_Size0400;
-extern undefined4 g_AiWorkspace10Count;
-extern AiTechnologyPlanningCandidate * g_AiWorkspaceBuffer12_Size0200;
-extern AiTechnologyPlanningCandidateCount g_AiWorkspace12Count;
-extern undefined4 g_AiWorkspace02Count;
-extern undefined4 g_AiWorkspace03Count;
-extern undefined4 g_AiWorkspace04Count;
-extern undefined4 g_AiWorkspace07Count;
-extern undefined4 g_AiWorkspace11Count;
-extern AiRuntimeWorkspaceEntry * g_AiWorkspaceBuffer02_Size0400;
-extern AiRuntimeWorkspaceEntry * g_AiWorkspaceBuffer03_Size1000;
-extern ArmyRuntimeSlot * g_AiWorkspaceOwnedAsset300Runtime;
-extern AiRuntimeWorkspaceEntry * g_AiWorkspaceBuffer04_Size0040;
-extern AiTargetWorkspaceEntry * g_AiWorkspaceBuffer07_Size0400;
-extern ArmyAssetRecordPrefix ** g_AiWorkspaceBuffer11_Size1000;
-extern undefined4 g_AiConstructionPendingAssetConsumedCount;
-extern undefined4 g_TechnologyCategoryMaximumReciprocalQ24Table8;
-extern undefined4 g_AiArmyCandidateFlaggedDefinitionValueMaximum;
-extern TechnologyCategoryMasks g_TechnologyCategoryMasks;
-extern undefined4 g_TechnologyCategoryMaximum0;
-extern undefined4 g_TechnologyCategoryMaximum1;
-extern undefined4 g_TechnologyCategoryMaximum2;
-extern undefined4 g_TechnologyCategoryMaximum3;
-extern undefined4 g_TechnologyCategoryMaximum4;
-extern undefined4 g_TechnologyCategoryMaximum5;
-extern undefined4 g_TechnologyCategoryMaximum6;
-extern undefined4 g_TechnologyCategoryMaximum7;
-extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantA15;
-extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantB15;
-extern AiArmyScoreWeights g_AiArmyCandidateScoreWeightsVariantC15;
-extern undefined4 g_AiStrategicClass130WeightComponent0;
-extern undefined4 g_AiStrategicClass130WeightComponent1;
-extern undefined4 g_AiStrategicClass130WeightComponent2;
-extern undefined4 g_AiStrategicClass131WeightComponent0;
-extern undefined4 g_AiStrategicClass131WeightComponent1;
-extern undefined4 g_AiStrategicClass131WeightComponent2;
-extern undefined4 g_AiStrategicClass132WeightComponent0;
-extern undefined4 g_AiStrategicClass132WeightComponent1;
-extern undefined4 g_AiStrategicClass132WeightComponent2;
-extern undefined4 g_AiStrategicClass12FWeightComponent0;
-extern undefined4 g_AiStrategicClass12FWeightComponent1;
-extern undefined4 g_AiStrategicClass12FWeightComponent2;
-extern undefined4 g_AiCollectedEntityCount;
-extern ArmyRuntimeSlot ** g_AiWorkspaceBuffer14_Size0100;
-extern AiTechnologyCandidateScoreCallback * g_AiTechnologyCandidateScoreCallbackTable[6];
-extern word u_engine_ki_dat_0053c5e4[];
-extern float g_WorldMotionSplineCachedDerivatives[6];
-extern float * g_WorldMotionSplineCoefficientTables[6];
-extern float * g_WorldMotionSplineMatrixWorkspaces[6];
-extern sdword g_WorldMotionSplineEquationCounts[6];
-extern float g_Q12FloatScale4096;
-extern TerrainCompositeTextureRuntime * g_TerrainCompositeTexture;
-extern GraphicsTextureSourceAsset * g_InGamePanelTextureSource;
-extern word u_gfx_panel_menue_gfx_00545b78[];
-extern DirectSoundVoiceSet * g_UiButtonSoundVoiceSets7[7];
-extern GraphicsTextureSourceAsset * g_FrontendMenuTextureSource;
-extern FrontendTaskAssignmentControlOffsetTablesA8 g_FrontendTaskAssignmentControlOffsets;
-extern UiCommandQueueRecord * g_FrontendCommandQueueEnd;
-extern undefined4 g_LocalPlayerRuntimeId;
-extern UiCommandQueueRecord g_FrontendCommandQueueRecords[16];
-extern undefined4 g_FrontendNetworkTickCounter;
-extern dword g_FrontendRuntimeFlags;
-extern undefined4 g_FrontendRootNode;
-extern undefined4 g_FrontendScenarioInitializationCount;
-extern FrontendLoadedLevelRuntimeImage370 * g_FrontendLoadedLevelAsset;
-extern undefined4 g_FrontendScenarioTransferState;
-extern undefined4 g_FrontendFactionAssignmentReadyStateGeneration;
-extern word u_level_0050daac[];
-extern ScenarioCatalogHeader * g_ScenarioCatalog;
-extern undefined2 g_FrontendScenarioPathScratchUtf16;
-extern word u_level_0050dab8[];
-extern undefined4 g_FrontendPendingPageAction;
-extern undefined4 g_FrontendRomTransitionPendingCount;
-extern undefined4 g_FrontendMenuSoundVoiceSetTable100;
-extern dword g_NetworkBackendInstanceCount;
-extern undefined4 g_FrontendActiveRomRecordTable;
-extern undefined4 g_FrontendNetworkState;
-extern undefined4 g_FrontendPlayerMessageBuffers;
-extern undefined g_FrontendPlayerMessageScratchUtf16;
-extern char s_NAME__CLIENT__KARTE___00545e91[];
-extern word u_level___lev_005460a6[];
-extern word u_level___str_005460be[];
-extern dword g_DebugOverlayCounterRefreshCountdown;
-extern word g_FrontendDebugOverlayTextSlot00Utf16[16];
-extern GraphicsDiagnosticCounter g_TextureBindStateChangeCount;
-extern word g_FrontendDebugOverlayTextSlot01Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot02Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot03Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot04Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot05Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot06Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot07Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot08Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot09Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot10Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot11Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot12Utf16[16];
-extern word g_FrontendDebugOverlayTextSlot13Utf16[16];
-extern GraphicsDiagnosticCounter g_TextureDeviceReloadCount;
-extern undefined DAT_0000003b;
-extern word u_engine_zentrale_rom_00545aa4[];
-extern RomRegistrySlot * g_RomRegistrySlots;
-extern undefined4 g_FrontendCentralPaletteAsset;
-extern undefined4 g_FrontendCentralTextureSet;
-extern word u_sound_menue01_sam_00545b54[];
-extern word u_gfx_texturen_zentrale_gfx_00545acc[];
-extern word u_gfx_texturen_zentrale_pal_00545b00[];
-extern word u_sound_music00_sam_00545c4e[];
-extern undefined4 g_FrontendMusicVoiceSet;
-extern undefined4 g_FrontendMusicActiveBuffer;
-extern NetworkBackendInstanceDescriptorPrefix * g_NetworkBackendInstanceTable;
-extern UiRootCallbacks g_UiRootCallbacks_0053DA70;
-extern undefined4 g_FrontendTimerCountdownTicks;
-extern undefined4 g_FrontendCentralRomAsset;
-extern WorldObjectRecord * g_FrontendWorldObjectRecords;
-extern dword g_FrontendStateTickSpinLock;
-extern undefined g_FrontendNetworkEndpointTextUtf16;
-extern undefined4 g_FrontendRootInitializationTemplate;
-extern undefined4 g_FrontendLocalPlayerNameUtf16;
-extern undefined4 g_FrontendMenuSoundVoiceSetLoadBaseEntry1;
-extern char s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[];
-extern CommandLineFindOptionProc * g_CommandLineFindOption;
-extern dword g_FrontendPendingPageActionDepth;
-extern dword g_ScenarioCatalogUsedBytes;
-extern undefined4 g_FrontendRootStateSnapshot80;
-extern undefined4 g_SharedWorldStatePointer;
-extern undefined4 g_InGameWorldStatePointerMirror;
-extern FrontendModelPointerContextUpdateCallbackProc * g_FrontendModelPointerContextUpdateCallback;
-extern undefined4 g_FrontendRomTransitionElapsedTicks;
-extern undefined4 g_FrontendRomTransitionSplineKeyframes;
-extern undefined4 g_FrontendRomTransitionSplineKeyframeCount;
-extern UiCommandDispatchRecord g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[3];
-extern undefined4 g_FrontendRomTransitionContextValue;
-extern undefined4 g_FrontendRomTransitionKeyframe0Channel0Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe0Channel1Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe0Channel2Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe0Channel3Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe0Channel4Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe0Channel5Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe1Channel0Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe1Channel1Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe1Channel2Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe1Channel3Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe1Channel4Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe1Channel5Q12;
-extern undefined4 g_FrontendRomTransitionKeyframe0TimeQ12;
-extern undefined4 g_FrontendRomTransitionKeyframe1TimeQ12;
-extern UiCommandPayloadTextBatch48 g_UiSevenSlotCommandPayloadText;
-extern word u_gfx_panel_credits_gfx_00545c22[];
-extern FrontendUiSemanticScratch280 g_FrontendUiDisplayModeAndTaskAssignmentScratch;
-extern word u_save_0050daa2[];
-extern word u_save___sve_0050d9c8[];
-extern ScenarioCampaignDataPathTemplate2A g_ScenarioCampaignDataPathTemplateUtf16;
-extern word u_level_level_dat_0050da0e[];
-extern word u_level_campagne_dat_0050da52[];
-extern undefined g_ScenarioCatalogPathScratchUtf16;
-extern ScenarioLevelDataPathTemplate24 g_ScenarioLevelDataPathTemplateUtf16;
-extern ScenarioCatalogRefreshSelectedRecordCallback * g_FrontendScenarioMapOptionHandlerTable[3];
-extern FrontendUiActionHandlerPage20Prefix86 g_FrontendUiActionHandlersPage20;
-extern dword g_GraphicsAdapterCount;
-extern GraphicsTextureRebuildAllProc * g_GraphicsRebuildAllStagingTextures;
-extern MovieAudioGainQ15 g_MovieAlternateAudioGainQ15;
-extern NetworkBackendOpenBindCallback * g_NetworkBackendSlot2;
-extern NetworkBackendParseEndpointCallback * g_NetworkBackendSlot6;
-extern undefined4 g_FrontendSelectedPlayerToken;
-extern NetworkBackendFormatAddressCallback * g_NetworkBackendSlot7;
-extern dword g_FrontendPendingSessionPlayerCount;
-extern undefined4 g_FrontendPlayerRuntimeRecordPointers32;
-extern FrontendSessionDiscoveryRecordB0 ** g_FrontendSessionListRows;
-extern undefined g_FrontendNetworkRuntimeCountTextUtf16;
-extern UiTransferEndpointDescriptor g_NetworkLocalEndpointDescriptor16;
-extern UiTransferEndpointDescriptor g_FrontendNetworkEndpointScratch;
-extern NetworkBackendSetSessionCallback * g_NetworkBackendSlot0;
-extern NetworkBackendCleanupCallback * g_NetworkBackendSlot1;
-extern NetworkBackendCloseCallback * g_NetworkBackendSlot3;
-extern undefined g_FrontendNetworkPlayerCountTextUtf16;
-extern undefined g_FrontendNetworkPlayerCountLabelUtf16;
-extern undefined4 g_SessionNetworkTickInterval;
-extern undefined g_FrontendMissionBriefingMoviePathUtf16;
-extern undefined g_FrontendMissionBriefingLevelDigitsUtf16;
-extern undefined4 g_FrontendHostSnapshotTransferCountdown;
-extern dword g_FrontendExpectedPlayerRuntimeBlockCount;
-extern NetworkSessionContext * g_NetworkBackendSessionContext;
-extern FncModuleHeader * g_PcxFunctionModule;
-extern PcxDecodeProc * g_PcxFunctionExport2;
-extern FrontendPacket10000Handshake g_FrontendPacket10000Buffer;
-extern dword g_FrontendPlayerListRows;
-extern FrontendSessionDiscoveryRecordB0 * g_FrontendSessionDiscoveryRecords;
-extern FrontendPacket20002PlayerDescriptor g_FrontendPacket20002Buffer;
-extern undefined4 g_FrontendLocalPlayerPcxPreview;
-extern FrontendPacket50001SessionAdvertisement g_FrontendPacket50001Buffer;
-extern FrontendPacket10003JoinAck g_FrontendPacket10003Buffer;
-extern FrontendCommandPacketRecord g_FrontendPlayerCommandRecords[8];
-extern FrontendCommandPacketRecord g_FrontendCommandBatchPacketBuffer[8];
-extern dword g_FrontendHostPublishRoundRobinCounter;
-extern FrontendPacket40008LobbyRosterSnapshot g_FrontendPacket40008Buffer;
-extern FrontendPacket10032HostValue g_FrontendPacket10032Buffer;
-extern FrontendCommandPacketRecord g_FrontendPacket10011Buffer;
-extern FrontendPacket10006CapabilityHeartbeat g_FrontendPacket10006Buffer;
-extern FrontendPacket30005PlayerSnapshot g_FrontendPacket30005Buffer;
-extern FrontendPacket10009SnapshotChunkRequest g_FrontendPacket10009Buffer;
-extern FrontendPacket10012SyncPending g_FrontendPacket10012Buffer;
-extern FrontendPlayerRemovalPacket10007 g_FrontendPlayerRemovalPacket10007;
-extern undefined4 g_FrontendTransferResponsePending;
-extern FrontendPacket8000ASnapshotChunk g_FrontendPacket8000ABuffer;
-extern FrontendPacket10013HeartbeatAck g_FrontendPacket10013Buffer;
-extern FrontendPacket10004PlayerSnapshotRequest g_FrontendPacket10004Buffer;
-extern word u_gfx_panel_panel0_gfx_005630d0[];
-extern word u_gfx_panel_diagram0_gfx_00563120[];
-extern word u_gfx_panel_tech_gfx_005630fa[];
-extern undefined4 g_InGameSelectionDetailControlOffsetTable32;
-extern word u_gfx_panel_window_gfx_0056318e[];
-extern undefined4 g_InGameDiagramTextureSource;
-extern undefined4 g_InGameTechnologyTextureSource;
-extern undefined4 g_InGameWindowTextureSource;
-extern sdword g_InGamePanelTextureSubresource00Width;
-extern sdword g_InGamePanelTextureSubresource01Width;
-extern sdword g_InGamePanelTextureSubresource06Width;
-extern sdword g_InGamePanelTextureSubresource07Width;
-extern sdword g_InGamePanelTextureSubresource27Width;
-extern sdword g_InGamePanelTextureSubresource28Width;
-extern sdword g_InGamePanelTextureSubresource19Width;
-extern sdword g_InGamePanelTextureSubresource20Width;
-extern sdword g_InGamePanelTextureSubresource32Width;
-extern sdword g_InGamePanelTextureSubresource33Width;
-extern sdword g_InGamePanelTextureSubresource02Height;
-extern sdword g_InGamePanelTextureSubresource03Height;
-extern sdword g_InGamePanelTextureSubresource04Height;
-extern sdword g_InGamePanelTextureSubresource05Height;
-extern sdword g_InGamePanelTextureSubresource36Height;
-extern sdword g_InGamePanelTextureSubresource37Height;
-extern sdword g_InGamePanelTextureSubresource06Height;
-extern sdword g_InGamePanelTextureSubresource00Height;
-extern sdword g_InGamePanelTextureSubresource07Height;
-extern sdword g_InGamePanelTextureSubresource26Height;
-extern sdword g_InGamePanelTextureSubresource31Height;
-extern sdword g_InGamePanelTextureSubresource18Height;
-extern sdword g_InGamePanelTextureSubresource23Height;
-extern sdword g_InGamePanelTextureSubresource32Height;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailNameTextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailArmourTextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName0TextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName1TextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailWeaponName2TextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot05Utf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildXeniteCostTextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailBuildTimeTextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailEnergyTextUtf16;
-extern UiSelectionDetailTextBuffer64Utf16 g_InGameSelectionDetailTextSlot09Utf16;
-extern UiCommandQueueRecord * g_InGameCommandQueueEnd;
-extern UiCommandQueueRecord g_InGameCommandQueueRecords[16];
-extern sdword g_InGamePlacementSurfaceHeightQ12OrSentinel;
-extern sdword g_InGamePendingPlacementArmyAsset;
-extern dword g_UiCommandAbsoluteSelectionIndex;
-extern undefined4 g_UiCommandModeGArmyAssetId;
-extern UiRootCallbacks g_UiRootCallbacks_0054FBC0;
-extern PckArmyAssetIdCatalog g_UiCommandMode4ArmyAssetId;
-extern dword g_UiCommandModeG;
-extern dword g_UiCommandModeGPrimaryPageIndices[6];
-extern dword g_UiCommandModeGSecondaryPageIndices[6];
-extern dword g_UiCommandModeGTertiaryPageIndices[6];
-extern sdword g_UiCommandModeGControlOffsets[6];
-extern void * g_UiCommandModeGHandlers[6];
-extern undefined4 g_TerrainMaterialEditFieldGrid;
-extern undefined4 g_TerrainMaterialEditDeltaBuffer;
-extern undefined4 g_TerrainMaterialEditReferenceMaterialByte;
-extern dword g_TerrainMaterialEditReplacementMaterialByte;
-extern dword g_InGameReadyStateToggleFlags;
-extern LocaleFormatTimeFieldsUtf16Proc * g_LocaleFormatTimeFieldsUtf16;
-extern word * g_InGameFactionStatusTextScratchUtf16;
-extern word * g_InGamePlayerListTextScratchUtf16;
-extern undefined4 g_MoviePlaybackCurrentFrame;
-extern InGamePlayerStatusTextSlot g_InGamePlayerStatusTextSlots[8];
-extern dword g_InGameStateTickSpinLock;
-extern dword g_EndGameResultsCurrentMusicTrackId;
-extern undefined g_InGameSessionStartedNetworked;
-extern undefined2 g_InGameSessionNameScratchUtf16;
-extern undefined g_InGameWorldRuntimeDwordArray256;
-extern dword g_InGameSessionNotificationTimeoutTicks;
-extern undefined4 g_HostCommandBatchSyncSentThisInterval;
-extern undefined4 g_InGameRuntimeDefaultImageTemplate;
-extern WorldObjectRecord * g_InGameWorldObjectRecords;
-extern undefined4 g_SessionNetworkTickCounter;
-extern undefined4 g_InGameNetworkTickCountdown;
-extern PckTechnologyIdCatalog g_InGameSelectedTechnologyId;
-extern FrontendPlayerRemovalPacket10007 g_FrontendClientPlayerRemovalPacket10007;
-extern undefined4 g_InGamePendingSimulationTicks;
-extern SoundStopAllVoicesProc * g_SoundStopAllVoices;
-extern dword g_EndMoviePendingTicks;
-extern UiCommandDispatchRecord g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30[2];
-extern word u_flm_ende0000_flm_0050df4a[];
-extern undefined g_EndGameElapsedTimeScratchUtf16;
-extern RuntimeMaintenanceCallbackPhasesTyped g_RuntimeMaintenanceCallbackPhases;
-extern byte g_KeyboardSpecialKeyDown[32];
-extern SoundIsVoicePlayingProc * g_SoundIsVoicePlaying;
-extern UiCommandDispatchRecord g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[15];
-extern UiCommandDispatchRecord g_InGameCommandDispatchRecords_00_Code00030073_Modifier33[63];
-extern undefined4 g_InGameCommandTargetTransientEffectMarkerCount;
-extern undefined4 g_InGameCommandPreviewWorldYQ12;
-extern undefined4 g_InGameCommandPreviewArmyAssetId;
-extern undefined4 g_InGameCommandPreviewWorldXQ12;
-extern undefined4 g_InGamePointerInteractionStateFlags;
-extern undefined4 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel;
-extern dword g_UiAction1012SubresourceByState[16];
-extern undefined4 g_InGameOwnedEntityTransientEffectMarkerCount;
-extern undefined4 g_InGamePlacementHeading16;
-extern GameEntityRuntime * g_InGamePlacementPreviewArmyRuntime;
-extern undefined4 g_InGamePlacementWorldYQ12;
-extern undefined4 g_InGamePlacementWorldXQ12;
-extern GameEntityRuntime * g_InGameCommandPreviewArmyRuntime;
-extern undefined4 g_InGameCommandPreviewHeading16;
-extern undefined4 g_InGameCommandPointerCaptureX;
-extern undefined4 g_InGameCommandPointerCaptureY;
-extern undefined4 g_InGamePlacementPointerCaptureX;
-extern undefined4 g_InGamePlacementPointerCaptureY;
-extern undefined g_InGameSelectionInsertTripletDwords;
-extern undefined g_InGameSelectionRemoveTripletDwords;
-extern undefined4 g_InGameSelectionInsertTripletDwordCount;
-extern undefined4 g_InGameSelectionRemoveTripletDwordCount;
-extern word u_flm_movie000_flm_0056314e[];
-extern sdword g_UiAction1012ControlOffsets[7];
-extern undefined g_EmptyFrontendPlayerNameUtf16;
-extern dword g_UiAction1012TargetPlayerIndices[7];
-extern sdword g_UiAction1012PlayerIndexTextOffsets[7];
-extern sdword g_UiAction1012PlayerLabelTextOffsets[7];
-extern sdword g_UiAction1012IconImageOffsets[7];
-extern sdword g_UiAction1012StateTextOffsets[7];
-extern sdword g_UiAction1012SlotPageOffsets[7];
-extern word u_Hmmm__na_gut________0056321e[];
-extern sdword g_UiSevenSlotSelectionControlOffsets[7];
-extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyResearchTimeTextUtf16;
-extern undefined g_InGameTechnologyCostRichTextScratch;
-extern undefined4 g_RichTextInsufficientResourceColorArgb;
-extern word g_InGameTechnologyCostColorWords8[8];
-extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyXeniteCostTextUtf16;
-extern UiTechnologyValueTextBuffer16Utf16 g_InGameTechnologyEnergyCostTextUtf16;
-extern sdword g_UiAction100AControlOffsets[8];
-extern dword g_UiCommandModeF;
-extern dword g_UiCommandModeC;
-extern dword g_UiCommandModeD;
-extern dword g_UiCommandSelectionPageBaseIndex;
-extern sdword g_UiMappedCommandControlOffsets[12];
-extern dword g_UiCommandModeA;
-extern dword g_UiCommandModeB;
-extern dword g_UiCommandModeE;
-extern word u_Dscreen00_pcx_00572e3a[];
-extern FactionRuntimeIndex g_UiCommandModeGOwnerFactionIndex;
-extern GraphicsFramebufferCaptureRegionProc * g_GraphicsFramebufferCaptureRegion;
-extern InGameCameraCommandDispatchTable g_InGameCameraCommandDispatchRecords16;
-extern sdword g_UiCommandDragReferenceX;
-extern sdword g_UiCommandDragReferenceY;
-extern undefined4 g_UiCommandCallerMaskHighBit;
-extern undefined4 g_UiCommandDragAnchorWorldXQ12;
-extern undefined4 g_UiCommandDragAnchorWorldYQ12;
-extern undefined4 g_UiCommandDragStartScreenX;
-extern undefined4 g_UiCommandDragStartScreenY;
-extern undefined4 g_UiCommandSelectionAnchorWorldXQ12;
-extern undefined4 g_UiCommandSelectionAnchorWorldYQ12;
-extern undefined4 g_UiCommandSelectionCurrentWorldXQ12;
-extern undefined4 g_UiCommandSelectionCurrentWorldYQ12;
-extern undefined4 g_UiCommandTerrainMaskToggleValue;
-extern FrontendCommandPacketRecord g_FrontendClientPlayerCommandRecords[8];
-extern FrontendCommandPacketRecord g_FrontendClientCommandBatchPacketBuffer[8];
-extern FrontendPacket10022StatePending g_FrontendPacket10022Buffer;
-extern undefined InGameCommandHandlerCodeRegionEnd;
-extern FrontendPacket10023StateAck g_FrontendPacket10023Buffer;
-extern FrontendCommandPacketRecord g_FrontendPacket10021Buffer;
-extern InGameUiActionHandlerPage12Prefix28 g_InGameUiActionHandlersPage12;
-extern word u_texte_techno_str_0050dec4[];
-extern word u_texte_neterror_str_0050f104[];
-extern word u_texte_hilfe_str_00545b34[];
-extern word u_texte_menue_str_00545ba0[];
-extern word u_texte_level_str_00545bc0[];
-extern word u_texte_inhalt_str_00545be0[];
-extern word u_texte_help_str_00563170[];
-extern word u_texte_tastatur_str_005631b8[];
-extern word u_Thandor_00572e10[];
-extern char s_Software_Planet4_Thandor_00572e20[];
-extern word u_daten_pck_00572e56[];
-extern word u_modelle_pck_00572e6a[];
-extern word u_graphik_pck_00572e82[];
-extern word u_sound_pck_00572e9a[];
-extern dword g_DataPackageHandle;
-extern word u_filme_pck_00572eae[];
-extern dword g_ModelPackageHandle;
-extern word u_level_pck_00572ec2[];
-extern dword g_GraphicsPackageHandle;
-extern word u_sound_button0_sam_00572f06[];
-extern dword g_MoviePackageHandle;
-extern word u_sound_button1_sam_00572f2a[];
-extern dword g_LevelPackageHandle;
-extern word u_sound_button2_sam_00572f4e[];
-extern word u_sound_button3_sam_00572f72[];
-extern word u_sound_button4_sam_00572f96[];
-extern word u_sound_button5_sam_00572fba[];
-extern word u_sound_button6_sam_00572fde[];
-extern word u_gfx_panel_stat_gfx_00573002[];
-extern word u_engine_pcx_fnc_00573028[];
-extern DynamicApiBinding g_BootstrapApiBindings[8];
-extern GraphicsTextureSourceAsset * g_InGameStatusPanelTextureSource;
-extern byte * g_CoreAssetScratchSlice0;
-extern byte * g_CoreAssetScratchSlice1;
-extern byte * g_CoreAssetScratchSlice2;
-extern byte * g_CoreAssetScratchSlice3;
-extern byte * g_CoreAssetScratchSlice4;
-extern byte * g_CoreAssetScratchSlice5;
-extern byte * g_CoreAssetScratchSlice6;
-extern undefined s_InstallRegistryValueNameCD;
-extern word * g_InGameFactionStatusTextScratchUtf16Mirror;
-extern undefined4 g_InstallRegistryKeyHandle;
-extern InGameUiCommandModeActionHandlerPage11Prefix3 g_InGameUiCommandModeActionHandlers30;
-extern PatchArchivePathTemplate18 g_PatchArchivePathTemplateUtf16;
-extern LevelArchivePathTemplate18 g_LevelArchivePathTemplateUtf16;
-extern PcxEncodeProc * g_PcxFunctionExport3;
-extern undefined g_InstallRegistryValueDataCapacityBytes;
-extern undefined4 g_InstallRegistryValueType;
-extern undefined g_InstallRegistryValueDataA;
-extern undefined g_InstallDirectoryScratchUtf16;
-extern dword g_FrontendPlayerListRow1;
-extern dword g_FrontendPlayerListRow2;
-extern dword g_FrontendPlayerListRow3;
-extern dword g_FrontendPlayerListRow4;
-extern dword g_FrontendPlayerListRow5;
-extern dword g_FrontendPlayerListRow6;
-extern dword g_FrontendPlayerListRow7;
-extern GraphicsTextureSourceAsset * g_CursorSourceAsset;
-extern InGameUiActionHandlerPage10Prefix40 g_InGameUiActionHandlersPage10;
-extern dword g_IntroMoviePendingTicks;
-extern word u_flm_intro0_flm_00573046[];
-extern char s_NOINTRO_00573064[];
-extern DynamicModuleEntry g_DynamicModules[16];
-extern dword g_DynamicModuleCount;
-extern char dynapi_9[];
-extern word u_texte_error_str_00407d20[];
-extern FatalErrorPassThroughProc * g_FatalErrorExitFallbackDispatchCf;
-extern HWND g_MainWindow;
-extern byte g_FatalErrorNarrowBuffer[1024];
-extern word u_THANDOR_cfg_0040e23d[];
-extern word u_engine_pck_0040e255[];
-extern word g_DefaultComputerLabelUtf16[32];
-extern undefined g_FileSystemConfigCharacterNormalizationMap;
-extern pointer g_FileSystemInitComputerNameCapacityOrConfigCursor;
-extern dword g_FileSystemConfigRemainingBytes;
-extern dword g_EnginePackageLowPriorityMountHandle;
-extern FileSystemGetCurrentDirectoryCfProc * g_FileSystemGetCurrentDirectoryCf;
-extern FileSystemSetCurrentDirectoryCfProc * g_FileSystemSetCurrentDirectoryCf;
-extern FileSystemRemoveDirectoryCfProc * g_FileSystemRemoveDirectoryCf;
-extern FileSystemGetFreeAndTotalBytesRegsProc * g_FileSystemGetFreeAndTotalBytesRegs;
-extern FileSystemGetLastWriteDosDateCfProc * g_FileSystemGetLastWriteDosDateCf;
-extern FileSystemGetLastWriteTimeHighCfProc * g_FileSystemGetLastWriteTimeHighCf;
-extern FileSystemGetVolumeSerialNumberCfProc * g_FileSystemGetVolumeSerialNumberCf;
-extern FileSystemMoveCfProc * g_FileSystemMoveCf;
-extern FileSystemCopyCfProc * g_FileSystemCopyCf;
-extern WidePathBuffer256 g_InitialWorkingDirectory;
-extern byte g_Win32PathScratchA[256];
-extern dword g_Win32FileBytesTransferred;
-extern byte g_Win32PathScratchB[256];
-extern undefined4 g_Win32FileCreationTimeOrDosDateScratch;
-extern undefined g_Win32FileLastWriteTimeScratch;
-extern undefined4 g_Win32FileLastWriteTimeHighScratch;
-extern undefined g_Win32FileLastAccessTimeScratch;
-extern undefined4 g_Win32DiskSectorsPerClusterScratch;
-extern undefined g_Win32DriveRootPathScratchA;
-extern undefined4 g_Win32DiskBytesPerSectorScratch;
-extern undefined4 g_Win32DiskFreeClustersScratch;
-extern undefined4 g_Win32DiskTotalClustersScratch;
-extern undefined g_Win32FindDataFileNameSecondCharA;
-extern undefined g_Win32FindDataFileNameThirdCharA;
-extern undefined g_Win32FindDataFileNameA;
-extern undefined4 g_GraphicsCursorAnimationCountdown;
-extern dword g_CursorInputClockValue;
-extern dword g_MouseEventsProcessed;
-extern sdword g_GraphicsBackendAccessState;
-extern IDirectDrawSurface3 * g_PrimarySurface3;
-extern GraphicsCursorFrameRecord * g_CursorFrameRecords;
-extern IDirectInputA * g_DirectInput;
-extern word u_engine_mouse_gfx_00416864[];
-extern IDirectInputDeviceA * g_MouseDevice;
-extern word u_engine_mouse_dat_00416886[];
-extern SoftwareDisplayModeHookProc * g_DirectInputMousePreviousDisplayModeHookCf;
-extern char dynapi_3[];
-extern HINSTANCE g_hInstance;
-extern DirectInputCreateA * pDirectInputCreateA;
-extern char dynapi_19[];
-extern dword g_CursorMaxWidth;
-extern dword g_CursorMaxHeight;
-extern TH_LEGACY_GUID GUID_SysMouse_Local;
-extern DIDATAFORMAT MouseDataFormat;
-extern DIPROPDWORD MouseBufferProperty;
-extern dword g_MousePollBusy;
-extern GraphicsCursorButtonState g_MouseButtonMask;
-extern undefined DAT_00007f00;
-extern dword g_MouseDeviceDataCount;
-extern DIDEVICEOBJECTDATA_DX3 g_MouseDeviceEvent;
-extern UiPixelCoordinate g_MouseX;
-extern UiPixelCoordinate g_MouseY;
-extern UiPointerWheelDelta g_MouseWheelDelta;
-extern SoftwareFramebufferCreateProc * g_SoftwareFramebufferCreate;
-extern SoftwareFramebufferAccess * g_CursorSavedBackground;
-extern SoftwareFramebufferAccess * g_CursorCompositeBuffer;
-extern SoftwareFramebufferAccess * g_CursorAlternateSavedBackground;
-extern dword g_KeyboardToggleLatchMask;
-extern dword g_GraphicsEnumerateAllDevicesFlag;
-extern undefined DAT_00000017;
-extern char s_D3DALL_00578078[];
-extern char s_GLIDE_0057ee84[];
-extern TH_LEGACY_GUID IID_IDirect3D2_Local;
-extern char dynapi_2[];
-extern GraphicsTextureSetRefreshProc * g_GraphicsRefreshTextureColor;
-extern GraphicsTextureResource ** g_GraphicsTextureSlots;
-extern DirectDrawPaletteEntry * g_TexturePaletteEntries;
-extern DirectDrawCreate * pDirectDrawCreate;
-extern DirectDrawEnumerateA * pDirectDrawEnumerateA;
-extern char dynapi_17[];
-extern char dynapi_18[];
-extern GraphicsBackendRefreshActiveAdapterProc * g_GraphicsBackendRefreshActiveAdapterCf;
-extern SoftwareDisplayModeHookProc * g_GraphicsDisplayModeFinalizeCf;
-extern undefined4 g_Direct3DOpaqueTextureFormatBitsPerPixel;
-extern undefined g_Direct3DOpaqueTextureFormatRedBitMask;
-extern undefined g_Direct3DOpaqueTextureFormatGreenBitMask;
-extern undefined g_Direct3DOpaqueTextureFormatBlueBitMask;
-extern undefined g_Direct3DAlphaTextureFormatAlphaBitMask;
-extern undefined4 g_Direct3DAlphaTextureFormatBitsPerPixel;
-extern TH_LEGACY_GUID IID_IDirectDraw2_Local;
-extern SoftwareFramebufferAccess g_DisplayFramebufferAccess;
-extern TH_LEGACY_GUID IID_IDirectDrawSurface3_Local;
-extern IDirectDraw * g_DirectDraw;
-extern IDirectDraw2 * g_DirectDraw2;
-extern IDirectDrawSurface * g_PrimarySurfaceBase;
-extern IDirectDrawSurface * g_BackSurfaceBase;
-extern IDirectDrawSurface3 * g_BackSurface3;
-extern IDirect3D2 * g_Direct3D2;
-extern IDirect3DDevice2 * g_Direct3DDevice2;
-extern IDirectDrawSurface * g_ZSurfaceBase;
-extern IDirectDrawSurface3 * g_ZSurface3;
-extern IDirect3DViewport2 * g_Direct3DViewport2;
-extern DDSURFACEDESC_DX6 g_SurfaceDesc;
-extern GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc * g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha;
-extern dword g_ImmediateVertexCount;
-extern D3DRECT_DX6 g_LastViewportRect;
-extern undefined4 g_Direct3DTextureFilterMode;
-extern undefined4 g_Direct3DTexturePerspectiveEnabled;
-extern undefined4 g_Direct3DAntialiasMode;
-extern GraphicsPrimitiveRenderStateCache g_PrimitiveRenderStateCache;
-extern dword g_BoundTextureHandle;
-extern GraphicsTextureSourceBlitSourceAlphaPaletteBankProc * g_GraphicsTextureSourceBlitSourceAlphaPaletteBank;
-extern sdword g_CursorCurrentVisibilityToken;
-extern sdword g_CursorAlternateVisibilityToken;
-extern undefined4 g_GlideRuntimeActiveCount;
-extern sdword g_CursorAlternateDrawY;
-extern D3DRECT_DX6 g_CurrentClearRect;
-extern sdword g_CursorCurrentDrawX;
-extern sdword g_CursorCurrentDrawY;
-extern sdword g_CursorAlternateDrawX;
-extern undefined DAT_0000001b;
-extern dword g_ActiveTextureUploads;
-extern dword g_GraphicsCursorSurfaceDescScratch;
-extern sdword g_GraphicsCursorSurfacePitchBytes;
-extern byte * g_GraphicsCursorSurfacePixels;
-extern D3DVIEWPORT2 g_Direct3DViewportState;
-extern TH_LEGACY_GUID IID_IDirect3DTexture2_Local;
-extern GraphicsDispatchTable g_GraphicsDispatchTable;
-extern GraphicsPrimitiveRenderStatePreset g_PrimitiveRenderStatePresets[5];
-extern D3DTLVERTEX_DX6 g_ImmediateTLVertices[4];
-extern dword g_TextureUseSerial;
-extern undefined g_GrAADrawTriangle;
-extern undefined g_GlideEnumerationResolutionQuery;
-extern GrGetImportProc * g_GrGet;
-extern GrGetStringImportProc * g_GrGetString;
-extern GrGlideInitImportProc * g_GrGlideInit;
-extern GrQueryResolutionsImportProc * g_GrQueryResolutions;
-extern GrSstSelectImportProc * g_GrSstSelect;
-extern char dynapi_5[];
-extern GrGlideShutdownImportProc * g_GrGlideShutdown;
-extern GuGammaCorrectionRGBImportProc * g_GuGammaCorrectionRGB;
-extern GrSstWinCloseImportProc * g_GrSstWinClose;
-extern undefined4 g_GlideWindowContextHandle;
-extern GrDepthMaskImportProc * g_GrDepthMask;
-extern GrColorCombineImportProc * g_GrColorCombine;
-extern GrAlphaCombineImportProc * g_GrAlphaCombine;
-extern GrAlphaBlendFunctionImportProc * g_GrAlphaBlendFunction;
-extern GrCoordinateSpaceImportProc * g_GrCoordinateSpace;
-extern GrCullModeImportProc * g_GrCullMode;
-extern GrDepthBufferFunctionImportProc * g_GrDepthBufferFunction;
-extern GrDepthBufferModeImportProc * g_GrDepthBufferMode;
-extern dword g_GlideTmuCount;
-extern GraphicsTextureResource * g_GlideBoundTexture;
-extern dword g_GlideTmuMinAddress[16];
-extern dword g_GlideTmuMaxAddress[16];
-extern GraphicsTextureResource * g_GlideResidentTextureTail;
-extern GraphicsTextureResource * g_GlideResidentTextureHead;
-extern GrVertexLayoutImportProc * g_GrVertexLayout;
-extern undefined4 g_GlideSelectedResolutionQuery;
-extern GrSstWinOpenImportProc * g_GrSstWinOpen;
-extern GrTexClampModeImportProc * g_GrTexClampMode;
-extern GrTexCombineImportProc * g_GrTexCombine;
-extern GrTexFilterModeImportProc * g_GrTexFilterMode;
-extern GrTexMaxAddressImportProc * g_GrTexMaxAddress;
-extern undefined4 g_GlideDepthWriteEnabledState;
-extern GrTexMinAddressImportProc * g_GrTexMinAddress;
-extern dword g_GlideTexturingDisabledState;
-extern GrTexMipMapModeImportProc * g_GrTexMipMapMode;
-extern dword g_GlideBlendModeState;
-extern GrFinishImportProc * g_GrFinish;
-extern GrLfbLockImportProc * g_GrLfbLock;
-extern undefined g_GlidePrimaryLfbInfo;
-extern undefined4 g_GlidePrimaryLfbPixels;
-extern undefined4 g_GlidePrimaryLfbStrideBytes;
-extern sdword g_GlideSecondBufferOffset;
-extern undefined g_GlideSecondaryLfbInfo;
-extern byte * g_GlideSecondBufferBase;
-extern undefined4 g_GlideSecondaryLfbStrideBytes;
-extern GrLfbUnlockImportProc * g_GrLfbUnlock;
-extern GrViewportImportProc * g_GrViewport;
-extern GrClipWindowImportProc * g_GrClipWindow;
-extern GrBufferClearImportProc * g_GrBufferClear;
-extern dword g_GlideVertex0ReciprocalDepth;
-extern GrTexSourceImportProc * g_GrTexSource;
-extern dword g_GlideVertex0PerspectiveScale;
-extern dword g_GlideVertex1ReciprocalDepth;
-extern dword g_GlideVertex1PerspectiveScale;
-extern dword g_GlideVertex2ReciprocalDepth;
-extern dword g_GlideVertex2PerspectiveScale;
-extern dword g_GlideVertex0ProjectedTextureU;
-extern dword g_GlideVertex0ProjectedTextureV;
-extern dword g_GlideVertex1ProjectedTextureU;
-extern dword g_GlideVertex1ProjectedTextureV;
-extern dword g_GlideVertex2ProjectedTextureU;
-extern dword g_GlideVertex2ProjectedTextureV;
-extern dword g_GlideVertex0DiffuseColor;
-extern dword g_GlideVertex1DiffuseColor;
-extern dword g_GlideVertex2DiffuseColor;
-extern dword g_GlideVertex0ScreenX;
-extern dword g_GlideVertex0ScreenY;
-extern dword g_GlideVertex1ScreenX;
-extern dword g_GlideVertex1ScreenY;
-extern dword g_GlideVertex2ScreenX;
-extern dword g_GlideVertex2ScreenY;
-extern GrDrawTriangleImportProc * g_GrDrawTriangle;
-extern GlideTextureUploadProc * g_GlideTextureColorUpload[3];
-extern GrTexDownloadMipMapImportProc * g_GrTexDownloadMipMap;
-extern GlideTextureUploadProc * g_GlideTextureAlphaUpload[3];
-extern GrBufferSwapImportProc * g_GrBufferSwap;
-extern GrLfbReadRegionImportProc * g_GrLfbReadRegion;
-extern WAVEFORMATEX WaveFormat_PCM_22050_Stereo16;
-extern DSBUFFERDESC_DX6 PrimarySoundBufferDesc;
-extern char dynapi_4[];
-extern IDirectSound * g_DirectSound;
-extern IDirectSoundBuffer * g_PrimarySoundBuffer;
-extern TH_LEGACY_LONG g_PrimaryVolume;
-extern TH_LEGACY_LONG g_PrimaryPan;
-extern SoundQueryVoiceRegsProc * g_SoundQueryVoiceRegs;
-extern DirectSoundCreate * pDirectSoundCreate;
-extern DirectSoundEnumerateA * pDirectSoundEnumerateA;
-extern char dynapi_20[];
-extern DirectSoundVoiceSet ** g_DirectSoundVoiceSetRegistry;
-extern DirectSoundCaptureCreate * pDirectSoundCaptureCreate;
-extern char dynapi_21[];
-extern DirectSoundCaptureEnumerateA * pDirectSoundCaptureEnumerateA;
-extern char dynapi_22[];
-extern char dynapi_23[];
-extern sdword g_DirectSoundGainAttenuation[129];
-extern NetworkBackendInstanceDescriptorPrefix NetworkBackendInstanceDescriptorPrefix_00584040;
-extern dword g_NetworkBackendMode;
-extern WinSockData11 g_WinSockStartupData;
-extern char s_Wsock32Export_accept[];
-extern char s_Wsock32Export_bind[];
-extern char s_Wsock32Export_closesocket[];
-extern char s_Wsock32Export_connect[];
-extern char s_Wsock32Export_getpeername[];
-extern char s_Wsock32Export_getsockname[];
-extern char s_Wsock32Export_getsockopt[];
-extern char s_Wsock32Export_htonl[];
-extern char s_Wsock32Export_htons[];
-extern char s_Wsock32Export_inet_addr[];
-extern char s_Wsock32Export_inet_ntoa[];
-extern char s_Wsock32Export_ioctlsocket[];
-extern char s_Wsock32Export_listen[];
-extern char s_Wsock32Export_ntohl[];
-extern char s_Wsock32Export_ntohs[];
-extern char s_Wsock32Export_recv[];
-extern char s_Wsock32Export_recvfrom[];
-extern char s_Wsock32Export_select[];
-extern char s_Wsock32Export_send[];
-extern char s_Wsock32Export_sendto[];
-extern char s_Wsock32Export_setsockopt[];
-extern char s_Wsock32Export_shutdown[];
-extern char s_Wsock32Export_socket[];
-extern char s_Wsock32Export_gethostbyaddr[];
-extern char s_Wsock32Export_gethostbyname[];
-extern char s_Wsock32Export_gethostname[];
-extern char s_Wsock32Export_getprotobyname[];
-extern char s_Wsock32Export_getprotobynumber[];
-extern char s_Wsock32Export_getservbyname[];
-extern char s_Wsock32Export_getservbyport[];
-extern char s_Wsock32Export_WSAAsyncGetHostByAddr[];
-extern char s_Wsock32Export_WSAAsyncGetHostByName[];
-extern char s_Wsock32Export_WSAAsyncGetProtoByName[];
-extern char s_Wsock32Export_WSAAsyncGetProtoByNumber[];
-extern char s_Wsock32Export_WSAAsyncGetServByName[];
-extern char s_Wsock32Export_WSAAsyncGetServByPort[];
-extern char s_Wsock32Export_WSAAsyncSelect[];
-extern char s_Wsock32Export_WSACancelAsyncRequest[];
-extern char s_Wsock32Export_WSACancelBlockingCall[];
-extern char s_Wsock32Export_WSACleanup[];
-extern char s_Wsock32Export_WSAGetLastError[];
-extern char s_Wsock32Export_WSAIsBlocking[];
-extern char s_Wsock32Export_WSASetBlockingHook[];
-extern char s_Wsock32Export_WSAStartup[];
-extern char s_Wsock32Export_WSAUnhookBlockingHook[];
-extern WinSock_acceptProc * g_WinSock_accept;
-extern WinSock_bindProc * g_WinSock_bind;
-extern WinSock_closesocketProc * g_WinSock_closesocket;
-extern WinSock_connectProc * g_WinSock_connect;
-extern WinSock_getpeernameProc * g_WinSock_getpeername;
-extern WinSock_getsocknameProc * g_WinSock_getsockname;
-extern WinSock_getsockoptProc * g_WinSock_getsockopt;
-extern WinSock_htonlProc * g_WinSock_htonl;
-extern WinSock_htonsProc * g_WinSock_htons;
-extern WinSock_inet_addrProc * g_WinSock_inet_addr;
-extern WinSock_inet_ntoaProc * g_WinSock_inet_ntoa;
-extern WinSock_ioctlsocketProc * g_WinSock_ioctlsocket;
-extern WinSock_listenProc * g_WinSock_listen;
-extern WinSock_ntohlProc * g_WinSock_ntohl;
-extern WinSock_ntohsProc * g_WinSock_ntohs;
-extern WinSock_recvProc * g_WinSock_recv;
-extern WinSock_recvfromProc * g_WinSock_recvfrom;
-extern WinSock_selectProc * g_WinSock_select;
-extern WinSock_sendProc * g_WinSock_send;
-extern WinSock_sendtoProc * g_WinSock_sendto;
-extern char s_Wsock32ModuleName[];
-extern WinSock_setsockoptProc * g_WinSock_setsockopt;
-extern WinSock_shutdownProc * g_WinSock_shutdown;
-extern WinSock_socketProc * g_WinSock_socket;
-extern WinSock_gethostbyaddrProc * g_WinSock_gethostbyaddr;
-extern WinSock_gethostbynameProc * g_WinSock_gethostbyname;
-extern WinSock_gethostnameProc * g_WinSock_gethostname;
-extern WinSock_getprotobynameProc * g_WinSock_getprotobyname;
-extern WinSock_getprotobynumberProc * g_WinSock_getprotobynumber;
-extern WinSock_getservbynameProc * g_WinSock_getservbyname;
-extern WinSock_getservbyportProc * g_WinSock_getservbyport;
-extern WinSock_WSAAsyncGetHostByAddrProc * g_WinSock_WSAAsyncGetHostByAddr;
-extern WinSock_WSAAsyncGetHostByNameProc * g_WinSock_WSAAsyncGetHostByName;
-extern WinSock_WSAAsyncGetProtoByNameProc * g_WinSock_WSAAsyncGetProtoByName;
-extern WinSock_WSAAsyncGetProtoByNumberProc * g_WinSock_WSAAsyncGetProtoByNumber;
-extern WinSock_WSAAsyncGetServByNameProc * g_WinSock_WSAAsyncGetServByName;
-extern WinSock_WSAAsyncGetServByPortProc * g_WinSock_WSAAsyncGetServByPort;
-extern WinSock_WSAAsyncSelectProc * g_WinSock_WSAAsyncSelect;
-extern WinSock_WSACancelAsyncRequestProc * g_WinSock_WSACancelAsyncRequest;
-extern WinSock_WSACancelBlockingCallProc * g_WinSock_WSACancelBlockingCall;
-extern WinSock_WSACleanupProc * g_WinSock_WSACleanup;
-extern WinSock_WSAGetLastErrorProc * g_WinSock_WSAGetLastError;
-extern WinSock_WSAIsBlockingProc * g_WinSock_WSAIsBlocking;
-extern WinSock_WSASetBlockingHookProc * g_WinSock_WSASetBlockingHook;
-extern WinSock_WSAStartupProc * g_WinSock_WSAStartup;
-extern WinSock_WSAUnhookBlockingHookProc * g_WinSock_WSAUnhookBlockingHook;
-extern WinSock_WSACleanupProc * g_Ws2_32_WSACleanup;
-extern NetworkSocketHandle32 g_NetworkFallbackSocket;
-extern WinSockAddress g_NetworkFallbackBindEndpoint;
-extern dword g_NetworkFallbackAddressLength;
-extern undefined g_NetworkEndpointTextScratchA;
-extern dword g_NetworkBackendActiveSocketAddressLength;
-extern dword g_NetworkBackendActiveSocketType;
-extern dword g_NetworkBackendActiveProtocol;
-extern dword g_NetworkBackendActiveAddressFamily;
-extern WSAIoctl_Proc * g_Ws2_32_WSAIoctl;
-extern WinSock_setsockoptProc * g_Ws2_32_setsockopt;
-extern WinSock_socketProc * g_Ws2_32_socket;
-extern WinSock_closesocketProc * g_Ws2_32_closesocket;
-extern WinSock_WSAGetLastErrorProc * g_Ws2_32_WSAGetLastError;
-extern WinSock_bindProc * g_Ws2_32_bind;
-extern NetworkBackendSocketAddress16 g_NetworkBackendBindAddress;
-extern WinSock_htonsProc * g_Ws2_32_htons;
-extern dword g_NetworkBackendPortNetworkOrderCarrier;
-extern WinSock_recvfromProc * g_Ws2_32_recvfrom;
-extern WinSock_sendtoProc * g_Ws2_32_sendto;
-extern WSAStringToAddressA_Proc * g_Ws2_32_WSAStringToAddressA;
-extern WinSock_gethostbynameProc * g_Ws2_32_gethostbyname;
-extern WSAAddressToStringA_Proc * g_Ws2_32_WSAAddressToStringA;
-extern dword g_CpuFeatureFlags;
-extern char sz_MainWindowTitle[];
-extern char sz_MainWindowClass[];
-extern Win32Message32 g_MainMessage;
-extern char s_SOUND_00582f28[];
-extern HINSTANCE g_MainWindowClassInstanceHandle;
-extern HICON g_MainWindowClassIconHandle;
-extern HCURSOR g_MainWindowClassCursorHandle;
-extern dword g_WindowDestroyDepth;
-extern dword g_AppActive;
-extern CommandLineArgumentMirrorState500 g_CommandLine;
-extern CommandLineWideArguments g_CommandLineWideArguments;
-extern ArenaState g_Arena;
-extern TimerSystemState g_TimerSystemState;
-extern LocaleSystemState g_LocaleSystemState;
-extern byte g_LocaleInfoScratch[16];
-extern LocaleFormatDateFieldsUtf16Proc * g_LocaleFormatDateFieldsUtf16;
-extern CpuDetectFeaturesProc * g_CPUDetectFeatures;
 
-/* Unnamed memory cells Ghidra prints as <type>Ram<address>; plain globals in this build. */
-extern int iRam004bcf50;
-extern int iRam004bcf54;
-extern int iRam004bcf58;
-extern int iRam0050b5a4;
-extern int iRam0050b5a8;
-extern int iRam0050b5ac;
-extern dword uRam0050b574;
-extern dword uRam0050b578;
-extern dword uRam0050b57c;
-extern dword uRam0050b580;
-extern dword uRam0050b584;
-extern dword uRam0050b588;
-extern dword uRam0050b58c;
-extern dword uRam0050b590;
-extern dword uRam0050b594;
-extern dword uRam0050b598;
-extern dword uRam0050b59c;
-extern dword uRam0050b5a0;
+/*
+ * Globals live at their original addresses: ProcessEntry's caller maps the data image of
+ * thandor_original.exe (its single RWX .text section, 0x401000-0x58C000) there first, see
+ * platform/bootstrap/image.c. Neighbouring accesses, tables and absolute addresses in the
+ * recovered code therefore behave exactly as in the original.
+ */
+#define g_FileSystemOpenCf (*(FileSystemOpenCfProc * *)0x0040b1c0)
+#define g_FileSystemCombinedPathScratchUtf16 (*(undefined *)0x0040adc0)
+#define g_FileSystemClose (*(FileSystemCloseProc * *)0x0040b1c4)
+#define g_ExecutableDirectoryUtf16 (*(undefined *)0x0040afc0)
+#define g_MemoryApi (*(MemoryApiTable *)0x00402000)
+#define g_FileSystemReadExactCf (*(FileSystemReadExactCfProc * *)0x0040b1c8)
+#define g_LocaleCountryCodeOverride (*(dword *)0x004027c0)
+#define g_FileSystemGetSizeCf (*(FileSystemGetSizeCfProc * *)0x0040b1d0)
+#define g_PersistentSettings (*(PersistentSettingsRuntime *)0x004028d0)
+#define g_WideNumberFormatState (*(WideNumberFormatState *)0x0040262c)
+#define g_RandomGeneratorState (*(RandomGeneratorState *)0x004030a0)
+#define g_RandomPrimaryNibbleMixTable5 (*(undefined *)0x00404560)
+#define g_RandomPrimaryNibbleMixTable6 (*(undefined *)0x00404960)
+#define g_RandomPrimaryNibbleMixTable7 (*(undefined *)0x00404d60)
+#define g_RandomPrimaryNibbleMixTable0 (*(undefined *)0x00403160)
+#define g_RandomPrimaryNibbleMixTable1 (*(undefined *)0x00403560)
+#define g_RandomPrimaryNibbleMixTable2 (*(undefined *)0x00403960)
+#define g_RandomPrimaryNibbleMixTable3 (*(undefined *)0x00403d60)
+#define g_RandomPrimaryNibbleMixTable4 (*(undefined *)0x00404160)
+#define g_FatalErrorDialogDismissed (*(undefined4 *)0x00407e24)
+#define g_UiPointerCaptureTarget (*(UiNodeBase * *)0x004b0e3c)
+#define g_UiPointerCaptureButton (*(UiPointerCaptureButton *)0x004b0f24)
+#define g_FatalErrorPrimaryDispatchCf (*(FatalErrorPassThroughProc * *)0x00407d14)
+#define g_FatalErrorRichTextLeft (*(sdword *)0x00407e5c)
+#define g_FatalErrorRichTextRight (*(undefined4 *)0x00407e64)
+#define g_GraphicsCursorSetFrame (*(GraphicsCursorSetFrameProc * *)0x00416848)
+#define g_FatalErrorUiRootTemplate (*(UiRootNode * *)0x00407e20)
+#define g_FatalErrorRichTextTop (*(sdword *)0x00407eb4)
+#define g_UiRootCallbacks_00407E28 (*(UiRootCallbacks *)0x00407e28)
+#define g_FatalErrorRichTextBottom (*(sdword *)0x00407ebc)
+#define g_FatalErrorRichTextStream (*(undefined4 *)0x00407ee8)
+#define g_PackageLastErrorPath (*(word (*)[256])0x00407514)
+#define g_UiTextStyleNormal (*(undefined4 *)0x004b0e78)
+#define g_FatalErrorDetail1Utf16 (*(word (*)[256])0x00407714)
+#define g_FatalErrorDetail2Utf16 (*(undefined *)0x00407914)
+#define g_FatalErrorDetail3Utf16 (*(undefined *)0x00407b14)
+#define g_FatalErrorUiRootTemplateImage (*(undefined4 *)0x00407e3c)
+#define g_FatalErrorRuntimeDispatchCf (*(FatalErrorPassThroughProc * *)0x00407d18)
+#define g_PckHuffmanInternalNodeWorkspace256 (*(PckHuffmanNode (*)[256])0x004094c0)
+#define g_PckHuffmanSymbolWorkspace256 (*(PckHuffmanSymbolState (*)[256])0x004080c0)
+#define g_PckHuffmanLeafNodeWorkspace256 (*(PckHuffmanNode (*)[256])0x004084c0)
+#define g_LocaleGetPackedCurrentDate (*(LocaleGetPackedCurrentDateProc * *)0x0040279c)
+#define g_LocaleGetPackedCurrentTime (*(LocaleGetPackedCurrentTimeProc * *)0x004027a8)
+#define g_LocaleCopyDefaultComputerLabelUtf16 (*(LocaleCopyDefaultComputerLabelUtf16Proc * *)0x004027b4)
+#define g_PackageScratchBuffer (*(byte * *)0x0040b21c)
+#define g_PackageMountSlots (*(PckMountSlot (*)[1024])0x0040b224)
+#define g_FileSystemSeekCf (*(FileSystemSeekCfProc * *)0x0040b1d8)
+#define g_FileSystemWriteExactOrFlushCf (*(FileSystemWriteExactOrFlushCfProc * *)0x0040b1cc)
+#define g_PckEncoderTable (*(PckCodecProc * (*)[3])0x0040e224)
+#define g_PckDecoderTable (*(PckCodecProc * (*)[3])0x0040e230)
+#define g_WideNumberFormatUtf16 (*(WideNumberFormatUtf16Proc * *)0x00402628)
+#define g_FileSystemDeleteCf (*(FileSystemDeleteCfProc * *)0x0040b1dc)
+#define g_FileSystemEnumerateDirectoryOrVolumeEntriesCf (*(FileSystemEnumerateDirectoryOrVolumeEntriesCfProc * *)0x0040b214)
+#define u________0040ff58 (*(word (*)[7])0x0040ff58)
+#define g_FileSystemEnumerateDriveLetters (*(FileSystemEnumerateDriveLettersEaxEcxProc * *)0x0040b1f0)
+#define g_FileSystemGetDriveTypeCode (*(FileSystemGetDriveTypeCodePreserveProc * *)0x0040b1f4)
+#define g_UiTimedListRecordPathScratch (*(WidePathBuffer256 *)0x0040f550)
+#define g_UiTimedListCombinedPathScratch (*(WidePathBuffer256 *)0x0040f750)
+#define g_UiTimedListSecondaryPathScratch (*(WidePathBuffer256 *)0x0040f950)
+#define g_FileSystemCheckDriveMediaReady (*(FileSystemDriveReadyCfProc * *)0x0040b1f8)
+#define g_UiTimedListHierarchyPathScratch (*(WidePathBuffer256 *)0x0040fb50)
+#define g_UiTimedListHierarchyParentPathScratch (*(WidePathBuffer256 *)0x0040fd50)
+#define g_CursorFrameIndex (*(GraphicsCursorFrameIndex *)0x00416814)
+#define g_CursorFrameCount (*(GraphicsCursorFrameCount *)0x0041681c)
+#define g_CursorInputEvents (*(GraphicsCursorInputEvent18 (*)[256])0x004107f0)
+#define g_CursorInputWriteIndex (*(dword *)0x004167f0)
+#define g_CursorInputReadIndex (*(dword *)0x004167f4)
+#define g_CursorOverrideX (*(UiPixelCoordinate *)0x00416828)
+#define g_CursorButtonReleaseClock (*(dword (*)[3])0x00416800)
+#define g_CursorOverrideY (*(UiPixelCoordinate *)0x0041682c)
+#define g_CursorWheelDelta (*(UiPointerWheelDelta *)0x00416830)
+#define g_CursorButtonState (*(dword *)0x00416838)
+#define g_CursorLastClickX (*(UiPixelCoordinate *)0x0041683c)
+#define g_CursorLastClickY (*(UiPixelCoordinate *)0x00416840)
+#define g_KeyboardWriteIndex (*(KeyboardEventRingIndex *)0x004171e0)
+#define g_KeyboardReadIndex (*(KeyboardEventRingIndex *)0x004171e4)
+#define g_KeyboardEvents (*(KeyboardInputEvent (*)[64])0x004169e0)
+#define g_CosineDerivedLookupAllocation (*(short * *)0x00417330)
+#define g_CosineDerivedLookupSecondTable (*(short * *)0x00417334)
+#define g_FixedCosQ28 (*(sdword (*)[65536])0x004446a0)
+#define g_SoundDecodeMmxWordLaneMask0 (*(qword *)0x00417300)
+#define g_SoundDecodeMmxWordLaneMask1 (*(qword *)0x00417308)
+#define g_SoundDecodeMmxWordLaneMask2 (*(qword *)0x00417310)
+#define g_SoundDecodeMmxWordLaneMask3 (*(qword *)0x00417318)
+#define u_engine_font_gfx_0041b030 (*(word (*)[16])0x0041b030)
+#define g_GraphicsTextureSourceLoadPackageAsset (*(GraphicsTextureSourceLoadPackageAssetProc * *)0x004a8f3c)
+#define g_FontRuntimeBuffer (*(byte * *)0x0041af98)
+#define g_FontTextureSources (*(GraphicsTextureSourceAsset * (*)[2])0x0041b028)
+#define g_TextResourceOverrides (*(TextResourceOverrideTable * *)0x0041af94)
+#define u_error__TXT2STR__unknown_characte_0041afac (*(word (*)[62])0x0041afac)
+#define DAT_00000033 (*(undefined *)0x00000033)
+#define g_MissingTextResourceFallbackStream (*(undefined *)0x0041afa8)
+#define g_LocaleGetDefaultTelephoneCountryCode (*(LocaleGetTelephoneCountryCodeProc * *)0x004027ac)
+#define g_TextResourcePageBindings (*(TextResourcePageBinding (*)[256])0x0041a794)
+#define g_GraphicsTextureSourceGetLogicalSize (*(GraphicsTextureSourceGetLogicalSizeProc * *)0x004a8ef4)
+#define g_ActiveFontIndex (*(dword *)0x0041a780)
+#define g_RichTextRuntimeBufferUsedWords (*(undefined4 *)0x0041af9c)
+#define g_RichTextCurrentColorArgb (*(undefined4 *)0x0041a784)
+#define g_RichTextCurrentShadowOffset (*(undefined4 *)0x0041a788)
+#define g_RichTextSavedColorArgb (*(undefined4 *)0x0041a78c)
+#define g_RichTextSavedShadowOffset (*(undefined4 *)0x0041a790)
+#define g_RichTextColorPalette0Argb (*(undefined4 *)0x0041a750)
+#define g_RichTextShadowOffsetPalette0 (*(undefined4 *)0x0041a768)
+#define g_GraphicsTextureSourceBlitModulatedSourceAlpha (*(GraphicsTextureSourceBlitModulatedSourceAlphaProc * *)0x004a8f18)
+#define g_FramebufferAccess (*(SoftwareFramebufferAccess * *)0x004a8e70)
+#define g_RichTextColorPalette1Argb (*(undefined4 *)0x0041a754)
+#define g_RichTextColorPalette2Argb (*(undefined4 *)0x0041a758)
+#define g_RichTextColorPalette3Argb (*(undefined4 *)0x0041a75c)
+#define g_GraphicsTextureSourceBlitSourceAlpha (*(GraphicsTextureSourceBlitProc * *)0x004a8efc)
+#define g_RichTextShadowOffsetPalette1 (*(undefined4 *)0x0041a76c)
+#define g_RichTextShadowOffsetPalette2 (*(undefined4 *)0x0041a770)
+#define g_RichTextShadowOffsetPalette3 (*(undefined4 *)0x0041a774)
+#define g_GraphicsAdapters (*(GraphicsAdapterRecord * *)0x004a8ea4)
+#define g_GraphicsAdapterFormatScratch0Utf16 (*(undefined *)0x00422768)
+#define g_GraphicsAdapterFormatScratch1Utf16 (*(undefined *)0x00422788)
+#define g_SoftwareBuildPixelPackTables (*(SoftwareBuildPixelPackTablesProc * *)0x004a8ee8)
+#define g_UiDisplaySettingsRootCallbacks (*(UiRootCallbacks *)0x004229a0)
+#define g_UiDisplayModeDistinctValueScratch0 (*(DisplayModeScratchWord *)0x004235d8)
+#define g_FramebufferWidth (*(dword *)0x004a8e88)
+#define g_FramebufferHeight (*(dword *)0x004a8e8c)
+#define g_SoftwareColorScaleQ16 (*(sdword *)0x004a8e94)
+#define g_SoftwareColorBiasQ16 (*(sdword *)0x004a8e98)
+#define g_SoftwarePixelFormatConfig (*(SoftwarePixelFormatConfig *)0x004a8eac)
+#define g_ActiveGraphicsAdapterIndex (*(undefined4 *)0x004a8e90)
+#define g_GraphicsDisplayModes (*(GraphicsDisplayMode * *)0x004a8e9c)
+#define g_GraphicsDisplayModeCount (*(GraphicsDisplayModeCount *)0x004a8ea0)
+#define g_UiDisplayModeDistinctValueScratch1 (*(DisplayModeScratchWord *)0x004235dc)
+#define g_UiDisplayModeDistinctValueScratch2 (*(DisplayModeScratchWord *)0x004235e0)
+#define g_UiDisplayModeDistinctValueScratch3 (*(DisplayModeScratchWord *)0x004235e4)
+#define g_UiDisplayModeDistinctValueScratch4 (*(DisplayModeScratchWord *)0x004235e8)
+#define g_UiDisplayModeDistinctValueScratch5 (*(DisplayModeScratchWord *)0x004235ec)
+#define g_UiDisplayModeDistinctValueScratch6 (*(DisplayModeScratchWord *)0x004235f0)
+#define g_UiDisplayModeDistinctValueScratch7 (*(DisplayModeScratchWord *)0x004235f4)
+#define g_UiDisplayModeSelectionActionHandlers20 (*(UiDisplayModeSelectionActionHandlerTable20 *)0x00423588)
+#define g_CursorVisibilityToken (*(sdword *)0x00416834)
+#define g_GraphicsDisplayModeHook (*(SoftwareDisplayModeHookProc * *)0x004a8ed0)
+#define g_UiFourValueDialogRootCallbacks (*(UiRootCallbacks *)0x00424324)
+#define g_UiFourValueDialogTemplateImage (*(undefined4 *)0x00424338)
+#define g_UiRootNode (*(UiRootNode * *)0x004b0e30)
+#define g_FixedSinQ28 (*(sdword (*)[16384])0x004346a0)
+#define g_GraphicsCreateTextureSet (*(GraphicsTextureSetCreateProc * *)0x00485834)
+#define g_GraphicsDestroyTextureSet (*(GraphicsTextureSetDestroyProc * *)0x00485838)
+#define DAT_0000002f (*(undefined *)0x0000002f)
+#define g_GraphicsTextureSourceConvertPaletteEntries (*(GraphicsTextureSourceConvertPaletteEntriesProc * *)0x004a8f4c)
+#define g_GraphicsFramebufferEndAccess (*(GraphicsFramebufferEndAccessProc * *)0x004a8ef0)
+#define g_GraphicsFramebufferFillRectArgb (*(GraphicsFramebufferFillRectArgbProc * *)0x004a8f30)
+#define g_GraphicsFramebufferBeginAccess (*(GraphicsFramebufferBeginAccessProc * *)0x004a8eec)
+#define g_SoftwareDrawQueueProc (*(SoftwareDrawQueueProc * *)0x004d1248)
+#define g_PrimitiveRadixBucketWords (*(dword (*)[256])0x00485a40)
+#define g_VertexColorAlphaPreserveMaskMMX (*(qword *)0x0041f700)
+#define g_VertexColorRgbHalveMaskMMX (*(qword *)0x0041f708)
+#define g_ProjectionNumerator (*(GraphicsWideFixed *)0x0048587c)
+#define g_ProjectionCenterFixed (*(GraphicsFixedVec2 *)0x00485884)
+#define g_ProjectionClipRect (*(GraphicsFixedRect *)0x00485890)
+#define g_ViewProjectionMatrixFixed (*(GraphicsFixedMatrix3x4 *)0x004858a0)
+#define g_ViewRotationMatrixFixed (*(GraphicsFixedMatrix3x4 *)0x004858d0)
+#define g_CameraTransformMatrixFixed (*(GraphicsFixedMatrix3x4 *)0x00485900)
+#define g_ProjectionAngleFactors (*(GraphicsWideFixed (*)[2])0x00485930)
+#define g_ViewOriginFixed (*(GraphicsFixedVec3 *)0x0048585c)
+#define g_ProjectionScaleFixed (*(dword *)0x00485868)
+#define g_ViewAngle0 (*(dword *)0x0048586c)
+#define g_ViewAngle1 (*(dword *)0x00485870)
+#define g_ProjectionShift (*(dword *)0x00485874)
+#define g_ProjectionScaleProduct (*(dword *)0x00485878)
+#define g_AuxiliaryOrientation (*(GraphicsFixedVec2 *)0x00485940)
+#define g_AuxiliaryRotationMatrixFixed (*(GraphicsFixedMatrix3x4 *)0x00485954)
+#define g_AuxiliaryForwardDirectionFixed (*(GraphicsFixedVec3 *)0x00485948)
+#define g_SceneBoundsFixed (*(GraphicsSceneBounds8 *)0x004859e4)
+#define g_ActivePrimitiveQueue (*(GraphicsPrimitiveQueue * *)0x0048588c)
+#define g_FrustumPlaneNormalFixed_0 (*(GraphicsFixedVec3 (*)[4])0x00485984)
+#define g_FrustumCornerRayFixed_0 (*(GraphicsFixedVec3 (*)[4])0x004859b4)
+#define g_SoftwareDepthBuffer (*(sdword * *)0x004d1238)
+#define g_SoftwareDepthEpoch (*(sdword *)0x004d1240)
+#define g_GraphicsShadingCompactRecordCount (*(GraphicsShadingRecordCount *)0x004c6d50)
+#define g_MovieDeltaRgbHighNibbleMask2Pixels (*(qword *)0x004a6d90)
+#define g_MovieChromaLumaToArgb (*(dword (*)[1024][32])0x00486d90)
+#define g_LooseMoviePathPrefix (*(WidePathBuffer256 *)0x004a6da4)
+#define g_FileSystemGetPositionCf (*(FileSystemGetPositionCfProc * *)0x0040b1d4)
+#define g_SoundCreateSampleVoiceSet (*(SoundCreateSampleVoiceSetProc * *)0x00417338)
+#define g_ActiveMovie (*(MovieRuntime * *)0x004a6d98)
+#define g_MovieDefaultAudioGainQ15 (*(MovieAudioGainQ15 *)0x004a6d9c)
+#define g_SoundPlayOneShot (*(SoundPlayVoiceProc * *)0x00417348)
+#define g_SoundStopVoice (*(SoundStopVoiceProc * *)0x00417350)
+#define g_SoundReleaseSampleVoiceSet (*(SoundReleaseSampleVoiceSetProc * *)0x0041733c)
+#define g_SoftwarePixelMmxConstants (*(SoftwarePixelMmxConstants *)0x0041f6e0)
+#define g_SoftwarePixelPackTables (*(SoftwarePixelPackTables * *)0x004a8e80)
+#define g_SoftwareBlendAlphaFactors (*(SoftwareRgbWordLanes (*)[256])0x00421720)
+#define g_SoftwareBlendInverseAlphaFactors (*(SoftwareRgbWordLanes (*)[256])0x00421f20)
+#define g_GraphicsTextureSourceBlitHalfSourceRgb (*(GraphicsTextureSourceBlitProc * *)0x004a8f04)
+#define g_SoftwareBilinearForwardFactors (*(SoftwareBgraWordLanes (*)[256])0x0041ff20)
+#define g_SoftwareBilinearInverseFactors (*(SoftwareBgraWordLanes (*)[256])0x00420f20)
+#define g_SoftwareBilinearPackedByteClampMask (*(qword *)0x0041f688)
+#define g_GraphicsTextureSourceBlitSaturatedAddRgb (*(GraphicsTextureSourceSaturatedAddRgbProc * *)0x004a8f1c)
+#define g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd (*(GraphicsTextureSourceSaturatedAddRgbProc * *)0x004a8f24)
+#define g_GraphicsTextureSourceResolveAllocationBase (*(GraphicsTextureSourceResolveAllocationBaseProc * *)0x004a8f50)
+#define g_GraphicsPaletteAssetValidate (*(GraphicsPaletteAssetValidateProc * *)0x004a8f64)
+#define g_GraphicsPaletteAssetResolveAllocationBase (*(GraphicsPaletteAssetResolveAllocationBaseProc * *)0x004a8f68)
+#define s_mohTG_sakere___e_004ae9d8 (*(char (*)[1])0x004ae9d8)
+#define g_NetworkBackendSlot4 (*(NetworkBackendReceiveCallback * *)0x0041a55c)
+#define g_FrontendSessionToken (*(undefined4 *)0x0050f0a0)
+#define g_UiTransferMailboxChunkOffset (*(UiTransferMailboxByteOffset *)0x004ae9f8)
+#define g_UiTransferMailboxTransferByteCount (*(UiTransferMailboxByteCount *)0x004ae9fc)
+#define g_UiTransferMailboxReplyPacket10033 (*(undefined4 *)0x004aeae8)
+#define g_SpinLockTryAcquire (*(SpinLockTryAcquireFlagsProc * *)0x00402788)
+#define g_SpinLockRelease (*(SpinLockReleaseProc * *)0x0040278c)
+#define g_UiTransferSequenceToken (*(dword *)0x004ae97c)
+#define g_UiTransferMailbox (*(UiTransferMailboxState *)0x004ae990)
+#define g_SessionTransferTimeoutTicks (*(SessionTransferTimeoutTicks *)0x0050f0a4)
+#define g_UiTransferChunkPacketSequenceToken (*(undefined4 *)0x004ae9ec)
+#define g_UiTransferMailboxReplyPacket10033SequenceToken (*(undefined4 *)0x004aeaec)
+#define g_UiTransferMailboxReplyPacket10033EchoedTick (*(undefined4 *)0x004aeaf8)
+#define g_UiRuntimeAuxiliaryBuffer8000 (*(undefined4 *)0x004ae964)
+#define g_UiTransferMailboxTickCounter (*(UiTransferMailboxTickCounter *)0x004aeb08)
+#define g_UiTransferRoundKeys16 (*(undefined *)0x004ae9a8)
+#define g_FrontendPlayerRuntimeBlocks (*(FrontendPlayerRuntimeRecord * *)0x0050f0c0)
+#define g_FrontendPlayerRuntimeBlockCount (*(FrontendPlayerRuntimeBlockCount *)0x0050f0c4)
+#define g_FrontendSelectedNetworkEndpoint (*(UiTransferEndpointDescriptor *)0x0050f090)
+#define g_UiRuntimeRecordRing (*(UiRuntimeRecord * *)0x004ae960)
+#define g_UiRuntimeRecordWriteIndex (*(dword *)0x004ae974)
+#define g_UiRuntimeRecordRingLock (*(RuntimeSpinLockValue *)0x004ae98c)
+#define g_FrontendPlayerRuntimeCount (*(undefined4 *)0x0050f050)
+#define g_SpinLockAcquire (*(SpinLockAcquireProc * *)0x00402784)
+#define g_UiRuntimeRecordReadIndex (*(dword *)0x004ae970)
+#define g_NetworkBackendSlot5 (*(NetworkBackendSendCallback * *)0x0041a560)
+#define g_UiTransferDataBuffer (*(byte * *)0x004ae968)
+#define g_UiTransferEndpointBuffer (*(UiTransferEndpointDescriptor * *)0x004ae96c)
+#define g_UiTransferUnitCursor (*(dword *)0x004ae978)
+#define g_UiTransferSenderContext (*(dword *)0x004ae980)
+#define g_UiRuntimeFrameLock (*(RuntimeSpinLockValue * *)0x004ae984)
+#define g_UiRuntimePostUnlockCallback (*(UiRuntimePostUnlockCallbackProc * *)0x004ae988)
+#define g_UiDirtyRectEntries (*(UiDirtyRectEntry * *)0x004af1f8)
+#define g_UiRuntimeInitializationCount (*(undefined4 *)0x004af204)
+#define g_TimerRegisterPeriodic (*(TimerRegisterPeriodicProc * *)0x00402018)
+#define g_UiActionQueueEntries (*(UiActionQueueEntry * *)0x004af200)
+#define g_TimerUnregisterPeriodic (*(TimerUnregisterPeriodicProc * *)0x0040201c)
+#define g_UiPendingFrameTicks (*(dword *)0x004af1f0)
+#define g_PointerFlushEvents (*(PointerFlushEventsProc * *)0x00416844)
+#define g_KeyboardFlushEvents (*(KeyboardFlushEventsProc * *)0x00417210)
+#define g_SpinLockReleaseAndInvoke (*(SpinLockReleaseAndInvokeProc * *)0x00402790)
+#define g_UiKeyboardFocusNode (*(UiNodeBase * *)0x004b0e40)
+#define g_KeyboardReadEvent (*(KeyboardReadEventProc * *)0x00417214)
+#define g_PointerSetPosition (*(PointerSetPositionProc * *)0x0041684c)
+#define g_GraphicsCursorConsumeEvent (*(GraphicsCursorConsumeEventProc * *)0x00416850)
+#define g_DirectInputMouseRefreshCountdown (*(UiFrameRefreshCountdownFrames *)0x00576c24)
+#define g_Win32PumpMessages (*(Win32PumpMessagesProc * *)0x00402020)
+#define g_UiActionQueueUsedBytes (*(UiActionQueueUsedBytes *)0x004af1fc)
+#define g_UiActionHandlerPages (*(UiActionHandlerPage * (*)[256])0x004b0a30)
+#define g_GraphicsFramebufferPresent (*(GraphicsFramebufferPresentProc * *)0x004a8ee0)
+#define g_UiTooltipState (*(UiTooltipState *)0x004af1e0)
+#define g_UiImageControlHoverTarget (*(UiImageControl * *)0x004b0f28)
+#define g_UiHoverSelectionRecord (*(UiCommandRuntimeRecordPrefix * *)0x005632fc)
+#define g_UiTooltipDelayFrames (*(UiFrameDelayFrames *)0x004b0e48)
+#define g_UiWindowTextureSource (*(GraphicsTextureSourceAsset * *)0x004b0e34)
+#define g_UiTooltipTextStyle (*(dword *)0x004b0e4c)
+#define u__engine_winclass_gfx_004b0eb6 (*(word (*)[1])0x004b0eb6)
+#define g_UiRootStackActionHandlerPage (*(pointer *)0x004b0eb0)
+#define u_texte_winclass_str_004b0ee0 (*(word (*)[19])0x004b0ee0)
+#define u_engine_win_gfx_004b0f06 (*(word (*)[15])0x004b0f06)
+#define g_UiWindowClassTextureSource (*(GraphicsTextureSourceAsset * *)0x004b0e38)
+#define g_GraphicsTextureSourceBlitTiledSourceAlpha (*(GraphicsTextureSourceTiledBlitProc * *)0x004a8f00)
+#define g_UiDirtyRectCount (*(UiDirtyRectCount *)0x004af1f4)
+#define g_UiInvalidationSuppressed (*(dword *)0x004af208)
+#define g_UiSoundGainQ15 (*(AudioMixerGainQ15 *)0x004b0e44)
+#define g_GraphicsTextureSourceTestOpaquePixel (*(GraphicsTextureSourceTestOpaquePixelProc * *)0x004a8ef8)
+#define g_UiSpriteButtonControlVtable (*(UiNodeVtable *)0x004b15d0)
+#define g_UiWindowFrameInset (*(undefined4 *)0x004b0e8c)
+#define g_UiTextStyleSelected (*(undefined4 *)0x004b0e74)
+#define g_UiTextStyleDisabled (*(undefined4 *)0x004b0e7c)
+#define g_UiTextStyleAlternate (*(undefined4 *)0x004b0e80)
+#define g_UiWindowTitleTextStyle (*(undefined4 *)0x004b0e88)
+#define g_GraphicsTextureSourceStretchDirectColorBilinear (*(GraphicsTextureSourceStretchDirectColorBilinearProc * *)0x004a8f10)
+#define g_UiHorizontalGaugeLabelTopInset (*(undefined4 *)0x004b0ea8)
+#define g_UiHorizontalGaugeLabelTextStyle (*(undefined4 *)0x004b0eac)
+#define g_UiWindowPercentTextUtf16 (*(word (*)[5])0x004b3c68)
+#define g_UiRangeSliderDragScale (*(undefined4 *)0x004b0e58)
+#define g_UiResizableWindowTitleTextTopOffset (*(undefined4 *)0x004b0e64)
+#define g_UiResizableWindowTitleTextStyle (*(undefined4 *)0x004b0e68)
+#define g_UiWindowMoveHandleWidth (*(undefined4 *)0x004b0e6c)
+#define g_UiWindowResizeBorderThickness (*(undefined4 *)0x004b0e70)
+#define g_UiTextEditActiveTextStyle (*(undefined4 *)0x004b0e98)
+#define g_UiTextEditInactiveTextStyle (*(undefined4 *)0x004b0e9c)
+#define g_UiTextEditDisabledTextStyle (*(undefined4 *)0x004b0ea0)
+#define g_UiTextEditCaretBlinkPhaseStep (*(undefined4 *)0x004b0ea4)
+#define g_FileSystemValidateDos83Path (*(FileSystemValidateDos83CfProc * *)0x0040b218)
+#define g_CursorUseOverridePosition (*(dword *)0x00416818)
+#define g_UiScrollWheelDefaultStep (*(undefined4 *)0x004b0e50)
+#define g_UiScrollWheelListStep (*(undefined4 *)0x004b0e54)
+#define g_UiTextListControlVtable (*(UiNodeVtable *)0x004b9e40)
+#define g_UiListControlVtable (*(UiNodeVtable *)0x004ba590)
+#define g_UiTimedListControlVtable (*(UiNodeVtable *)0x004bb990)
+#define g_UiScrollableControlVtable (*(UiNodeVtable *)0x004b7920)
+#define g_UiListTextStyle (*(undefined4 *)0x004b0e90)
+#define g_KeyboardAsciiCaseTransformCallbacks3 (*(KeyboardAsciiCaseTransformCallbackTable3 *)0x00417218)
+#define g_UiListActivationPulseFrames (*(undefined4 *)0x004b0e60)
+#define g_UiPointerListExpandedLeftTextUtf16 (*(undefined *)0x004ba5d8)
+#define g_UiPointerListExpandedRightTextUtf16 (*(undefined *)0x004ba9d8)
+#define g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf (*(pointer *)0x004027bc)
+#define g_UiTimedListActionDelayFrames (*(UiFrameDelayFrames *)0x004b0e5c)
+#define g_GraphicsIntensityClampTableBase (*(undefined4 *)0x004bcf68)
+#define g_ModelBoundsMinimumX (*(undefined4 *)0x004bd2e0)
+#define g_ModelBoundsMaximumX (*(undefined4 *)0x004bd2e4)
+#define g_ModelBoundsMinimumY (*(undefined4 *)0x004bd2e8)
+#define g_ModelBoundsMaximumY (*(undefined4 *)0x004bd2ec)
+#define g_ModelBoundsMinimumZ (*(undefined4 *)0x004bd2f0)
+#define g_ModelBoundsMaximumZ (*(undefined4 *)0x004bd2f4)
+#define g_ModelBoundsTransformedPointX (*(undefined4 *)0x004bd2f8)
+#define g_ModelBoundsTransformedPointY (*(undefined4 *)0x004bd2fc)
+#define g_ModelBoundsTransformedPointZ (*(undefined4 *)0x004bd300)
+#define g_ModelAuxiliaryForwardDirectionLocal (*(undefined *)0x004bd498)
+#define g_ModelViewCompositeTransform (*(undefined *)0x004bd450)
+#define g_ModelViewDirectionLocal (*(undefined *)0x004bd480)
+#define g_ModelViewDirectionWorld (*(undefined *)0x004bd48c)
+#define g_ModelCullViewRelativeX (*(undefined4 *)0x004bd8b0)
+#define g_ModelLodDepthThresholdQ8 (*(sdword *)0x00485a04)
+#define g_GraphicsShadingNearbyRecordCount (*(GraphicsShadingRecordCount *)0x004cad54)
+#define g_ModelCullViewRelativeY (*(undefined4 *)0x004bd8b4)
+#define g_ModelCullViewRelativeZ (*(undefined4 *)0x004bd8b8)
+#define UNK_004bcf50 (*(int *)0x004bcf50)
+#define UNK_004bcf54 (*(int *)0x004bcf54)
+#define UNK_004bcf58 (*(int *)0x004bcf58)
+#define g_ModelTransformTranslationX (*(sdword *)0x004bea94)
+#define g_ModelTransformTranslationY (*(sdword *)0x004bea98)
+#define g_ModelTransformTranslationZ (*(sdword *)0x004bea9c)
+#define g_ModelTransformScratchMatrix (*(undefined *)0x004bea70)
+#define g_SpriteAssetRegistryHead (*(SpriteAssetHeader * *)0x004bd8c8)
+#define g_ModelTransformOutputZ (*(Q12 *)0x004beb14)
+#define g_ModelTransformOutputY (*(Q12 *)0x004beb10)
+#define g_ModelTransformInputX (*(sdword *)0x004beb00)
+#define g_ModelTransformInputY (*(sdword *)0x004beb04)
+#define g_ModelTransformInputZ (*(sdword *)0x004beb08)
+#define g_ModelTransformOutputX (*(Q12 *)0x004beb0c)
+#define g_FixedTransformInputRotationScratch (*(undefined *)0x004beaa0)
+#define g_FixedTransformComposedRotationScratch (*(undefined *)0x004bead0)
+#define g_PackedLightingLookupTable (*(undefined *)0x0041de80)
+#define g_GraphicsShadingNearbyRecords (*(GraphicsShadingRuntimeRecord (*)[256])0x004c6d54)
+#define g_ModelLightingScaleMmxMultiplierTable (*(undefined *)0x004cc2b0)
+#define g_ModelLightingVertexToLightVectorScratch (*(GraphicsFixedVec3 *)0x004cc6f8)
+#define g_ModelLightingTransformedSurfaceNormalScratch (*(GraphicsFixedVec3 *)0x004cc704)
+#define g_GraphicsShadingCompactRecords (*(GraphicsShadingRuntimeRecord (*)[256])0x004c2d50)
+#define g_GraphicsShadingRuntimeRecords (*(GraphicsShadingRuntimeRecord (*)[256])0x004bed50)
+#define g_GraphicsShadingGeneratedAsset (*(GraphicsTextureSourceAsset * *)0x004cce2c)
+#define g_GraphicsShadingGridScratch (*(void * *)0x004cce30)
+#define g_GraphicsShadingTextureSet (*(GraphicsTextureSet * *)0x004cce38)
+#define g_GraphicsShadingGridHalfSize (*(undefined4 *)0x004cce04)
+#define g_GraphicsShadingSubresourceCount (*(dword *)0x004cce18)
+#define g_GraphicsShadingGridStepQ20 (*(dword *)0x004cce24)
+#define g_GraphicsShadingGridStepQ20Current (*(dword *)0x004cce28)
+#define g_GraphicsShadingGridScratchInterior (*(pointer *)0x004cce34)
+#define g_GraphicsShadingPositiveGridOriginQ12 (*(sdword *)0x004cce40)
+#define g_GraphicsShadingNegativeGridOriginQ12 (*(sdword *)0x004cce44)
+#define g_GraphicsShadingTextureDimension (*(dword *)0x004cce00)
+#define g_GeneratedTextureScratchRuntime (*(GeneratedTextureScratchRuntime1A8 *)0x004cce48)
+#define g_TextureDownsampleShift (*(dword *)0x00485814)
+#define g_GraphicsShadingGeneratedTexturePixelCursor (*(byte * *)0x004cce08)
+#define g_GraphicsShadingGeneratedTextureTileX (*(dword *)0x004cce0c)
+#define g_GraphicsShadingGeneratedTextureTileY (*(dword *)0x004cce10)
+#define g_GraphicsShadingGeneratedTextureSubresourceIndex (*(GraphicsSubresourceIndex *)0x004cce14)
+#define g_GraphicsShadingGeneratedTextureTileXQ20 (*(dword *)0x004cce1c)
+#define g_GraphicsShadingGeneratedTextureTileYQ20 (*(dword *)0x004cce20)
+#define g_GraphicsShadingGeneratedTextureCompletedTraversalCount (*(dword *)0x004cce3c)
+#define g_GraphicsRefreshTextureAlpha (*(GraphicsTextureSetRefreshProc * *)0x00485840)
+#define g_GraphicsShadingMmxPacked3BitPerByteMask (*(qword *)0x0041f6c8)
+#define g_GraphicsShadingRasterizeMmxPackedDwordOneZero (*(qword *)0x0041f680)
+#define g_PrimitiveQueueStorage (*(GraphicsPrimitiveQueue * *)0x004d0a00)
+#define g_PrimitiveQueuePoolCapacity (*(dword *)0x004d0a04)
+#define g_TerrainPrimaryTextureSet (*(GraphicsTextureSet * *)0x00503a74)
+#define g_TerrainPrimaryPalette (*(GraphicsPaletteAsset * *)0x00503a84)
+#define g_UiCommandModeGColorVariantLimit (*(dword *)0x00503a8c)
+#define g_TerrainMaterialTextureSets (*(GraphicsTextureSet * (*)[26])0x005039dc)
+#define g_TerrainSecondaryPalette (*(GraphicsPaletteAsset * *)0x00503a80)
+#define g_UiCommandModeGColorVariantFlags (*(dword *)0x00503a88)
+#define g_SoftwareRasterHandlers16Bit (*(SoftwareRasterHandler * (*)[64])0x004d1260)
+#define g_PrimitiveDrawCallCount (*(GraphicsDiagnosticCounter *)0x00485850)
+#define g_SoftwareRasterHandlersNon16Bit (*(SoftwareRasterHandler * (*)[64])0x004d1360)
+#define g_SoftwareAuxiliaryTargetBase (*(void * *)0x004d123c)
+#define g_SoftwareRasterHandlersAuxiliary (*(SoftwareRasterHandler * (*)[64])0x004d1460)
+#define g_FramebufferRowStrideBytes (*(dword *)0x004a8e84)
+#define g_SoftwareDepthRowStrideBytes (*(dword *)0x004d1234)
+#define g_SoftwareRasterScanState (*(SoftwareRasterScanState *)0x004d11c0)
+#define g_SoftwarePreviousDisplayModeHook (*(SoftwareDisplayModeHookProc * *)0x004d1244)
+#define g_TerrainSoilPacketTablePayload (*(void * *)0x00503a78)
+#define g_TerrainSurfacePacketTablePayload (*(void * *)0x00503a7c)
+#define g_TerrainProjectedRowSpans (*(TerrainProjectedRowSpan (*)[260])0x004ffc80)
+#define g_TerrainByteClampLookup (*(byte * *)0x005019a4)
+#define g_TerrainDirectionRecordTable256 (*(TerrainDirectionRecord (*)[256])0x005019a8)
+#define g_TerrainMaterialTextureSuffixLettersUtf16AtoZ (*(TerrainMaterialSuffixEntry (*)[26])0x00503a90)
+#define g_GraphicsTextureSetLoadPackageCf (*(GraphicsTextureSetLoadPackageProc * *)0x0048582c)
+#define g_GraphicsPaletteAssetLoadPackage (*(GraphicsPaletteAssetLoadPackageProc * *)0x004a8f54)
+#define g_MoviePlaybackScheduleSpan (*(undefined4 *)0x00563328)
+#define g_GraphicsTextureSetReleasePackageCf (*(GraphicsTextureSetReleasePackageProc * *)0x00485830)
+#define g_GraphicsPaletteAssetLifecycleCallbacks3 (*(GraphicsPaletteAssetLifecycleCallbackTable3 *)0x004a8f58)
+#define g_FieldGridOccupancyMmxHighBitMask (*(qword *)0x0041f6c0)
+#define g_TerrainDirectionalLightColorLut (*(undefined4 *)0x00501590)
+#define g_TerrainDirectionalLightSecondaryColor (*(undefined4 *)0x00501994)
+#define g_TerrainLightDirectionX (*(undefined4 *)0x00501998)
+#define g_TerrainLightDirectionY (*(undefined4 *)0x0050199c)
+#define g_TerrainLightDirectionZ (*(undefined4 *)0x005019a0)
+#define g_TerrainLightingColorRampArgb256 (*(undefined4 *)0x00501190)
+#define g_TerrainScanStepLimit (*(undefined4 *)0x005063a4)
+#define g_TerrainScanReferenceHeight (*(undefined4 *)0x005063ac)
+#define g_TerrainHeightDeltaScaleByStepQ12 (*(undefined *)0x00505fa0)
+#define g_TerrainScanRowStrideBytes (*(undefined4 *)0x005063a0)
+#define g_TerrainScanSharedSelectorValue (*(TerrainScanSelectorUnion *)0x005063a8)
+#define g_TerrainOccupancyMmxSignBiasBytes (*(undefined8 *)0x0041f690)
+#define g_TerrainOccupancyMmxClearBits1And2Mask (*(qword *)0x0041f698)
+#define g_TerrainOccupancyMmxAllBitsMask (*(qword *)0x0041f6a0)
+#define g_TerrainOccupancyMmxPackedScale0280 (*(qword *)0x0041f6a8)
+#define g_TerrainOccupancyMmxPackedWeights02_20 (*(qword *)0x0041f6b0)
+#define g_TerrainOccupancyMmxPackedWeights04_40 (*(qword *)0x0041f6b8)
+#define g_TerrainHeightBandMaximumDelta (*(undefined4 *)0x00503af8)
+#define g_TerrainHeightBandMinimumDelta (*(undefined4 *)0x00503afc)
+#define g_TerrainAuxHeightMinimum (*(undefined4 *)0x00503b00)
+#define g_GraphicsTransformScratchMatrix3x4 (*(GraphicsFixedMatrix3x4 *)0x0050a350)
+#define g_GraphicsTransformInputScratchVec3 (*(GraphicsFixedVec3 *)0x0050a380)
+#define g_GraphicsTransformOutputScratchVec3 (*(GraphicsFixedVec3 *)0x0050a3b0)
+#define g_GraphicsProjectionScratchVec3 (*(GraphicsFixedVec3 *)0x0050a3e0)
+#define g_ModelProjectedBoundsCornerScratch8 (*(GraphicsProjectedPoint2i (*)[8])0x0050a3f0)
+#define g_RuntimeModelClassPriorityByModelClassId (*(RuntimeModelClassPriorityTable24 *)0x0051fbd8)
+#define g_ModelRaycastLocalOriginX (*(sdword *)0x0050ae70)
+#define g_ModelRaycastMaximumDistance (*(undefined4 *)0x0050ae60)
+#define g_ModelRaycastLocalOriginY (*(sdword *)0x0050ae74)
+#define g_ModelRaycastLocalOriginZ (*(sdword *)0x0050ae78)
+#define g_ModelRaycastLocalDirectionXQ28 (*(undefined4 *)0x0050ae88)
+#define g_ModelRaycastLocalDirectionYQ28 (*(undefined4 *)0x0050ae8c)
+#define g_ModelRaycastLocalDirectionZQ28 (*(undefined4 *)0x0050ae90)
+#define g_ModelRaycastOriginX (*(sdword *)0x0050ae64)
+#define g_ModelRaycastOriginY (*(sdword *)0x0050ae68)
+#define g_ModelRaycastOriginZ (*(sdword *)0x0050ae6c)
+#define g_ModelRaycastWorldDirectionXQ28 (*(undefined4 *)0x0050ae7c)
+#define g_ModelRaycastWorldDirectionYQ28 (*(undefined4 *)0x0050ae80)
+#define g_ModelRaycastWorldDirectionZQ28 (*(undefined4 *)0x0050ae84)
+#define g_SpatialSoundSlots (*(SpatialSoundSlot * *)0x0050b5c4)
+#define UNK_0050b574 (*(undefined4 *)0x0050b574)
+#define UNK_0050b578 (*(undefined4 *)0x0050b578)
+#define UNK_0050b57c (*(undefined4 *)0x0050b57c)
+#define UNK_0050b580 (*(undefined4 *)0x0050b580)
+#define UNK_0050b584 (*(undefined4 *)0x0050b584)
+#define UNK_0050b588 (*(undefined4 *)0x0050b588)
+#define UNK_0050b58c (*(undefined4 *)0x0050b58c)
+#define UNK_0050b590 (*(undefined4 *)0x0050b590)
+#define UNK_0050b594 (*(undefined4 *)0x0050b594)
+#define UNK_0050b598 (*(undefined4 *)0x0050b598)
+#define UNK_0050b59c (*(undefined4 *)0x0050b59c)
+#define UNK_0050b5a0 (*(undefined4 *)0x0050b5a0)
+#define UNK_0050b5a4 (*(int *)0x0050b5a4)
+#define UNK_0050b5a8 (*(int *)0x0050b5a8)
+#define UNK_0050b5ac (*(int *)0x0050b5ac)
+#define g_SpatialSoundListenerTransform (*(undefined *)0x0050b520)
+#define g_SpatialSoundRelativeX (*(undefined4 *)0x0050b5b0)
+#define g_SpatialSoundRelativeY (*(undefined4 *)0x0050b5b4)
+#define g_SpatialSoundRelativeZ (*(undefined4 *)0x0050b5b8)
+#define k_SpatialSoundStereoCosineSecondHalfBaseBias (*(undefined *)0x004046a0)
+#define g_SoundEffectsGainQ15 (*(AudioMixerGainQ15 *)0x0050b5bc)
+#define g_ReverseStereoMask (*(sdword *)0x0050b5c0)
+#define g_SoundCreatePcmVoiceSet (*(SoundCreatePcmVoiceSetProc * *)0x00417340)
+#define g_SoundReleasePcmVoiceSet (*(SoundReleasePcmVoiceSetProc * *)0x00417344)
+#define g_SoundPlayLooping (*(SoundPlayVoiceProc * *)0x0041734c)
+#define g_SoundSetVoiceGains (*(SoundSetVoiceGainsProc * *)0x00417360)
+#define PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 (*(GraphicsPrimitiveQueueRadixSortProc * *)0x00485844)
+#define g_UiCommandRuntimeFlags (*(dword *)0x00563260)
+#define g_RenderedFrameCountSinceDebugRefresh (*(undefined4 *)0x0048584c)
+#define g_SelectionPanelBlitOpaque (*(GraphicsTextureSourceBlitProc * *)0x0052ced8)
+#define g_SelectionPanelBlitClipped (*(GraphicsTextureSourceTiledBlitProc * *)0x0052cedc)
+#define g_GraphicsSetViewportAndClearDepth (*(GraphicsSetViewportProc * *)0x00485818)
+#define g_GraphicsDrawPrimitiveQueue (*(GraphicsDrawPrimitiveQueueProc * *)0x0048581c)
+#define g_GraphicsBeginScene (*(GraphicsBeginScenePreserveAllProc * *)0x00485820)
+#define g_GraphicsEndScene (*(GraphicsEndSceneProc * *)0x00485824)
+#define g_GraphicsTextureSourceBlitTiledHalfSourceRgb (*(GraphicsTextureSourceTiledBlitProc * *)0x004a8f08)
+#define g_KeyboardStateMask (*(dword *)0x004171e8)
+#define k_CameraScreenDeltaDistanceScaleQ16 (*(undefined *)0x0050bae6)
+#define g_WorldMotionHeadingInputScale (*(AngleTurn32 *)0x0050baee)
+#define g_WorldMotionDistanceInputScaleQ12 (*(Q12 *)0x0050baea)
+#define g_WorldMotionAlternateMinimumDistanceQ12 (*(UQ12 *)0x0050bb02)
+#define g_WorldMotionAlternateMaximumDistanceQ12 (*(UQ12 *)0x0050bb06)
+#define g_WorldMotionPositionMagnitudeInputScaleQ12 (*(Q12 *)0x0050bae2)
+#define g_WorldMotionAlternateMinimumPitchAngle (*(AngleTurn32 *)0x0050bafa)
+#define g_WorldMotionAlternateMaximumPitchAngle (*(AngleTurn32 *)0x0050bafe)
+#define g_WorldMotionPitchInputScale (*(AngleTurn32 *)0x0050baf2)
+#define g_WorldMotionPointerWheelInputScale (*(int *)0x0050baf6)
+#define g_WorldMotionTargetDistanceConvergenceStepQ12 (*(UQ12 *)0x0050bade)
+#define g_CursorOverflowLeft (*(dword *)0x00416854)
+#define g_CursorOverflowRight (*(dword *)0x00416858)
+#define g_CursorOverflowTop (*(dword *)0x0041685c)
+#define g_CursorOverflowBottom (*(dword *)0x00416860)
+#define g_InGameFactionScratchBufferSetA8 (*(undefined4 *)0x00514d64)
+#define g_InGameFactionScratchBufferSetB8 (*(undefined4 *)0x00514d84)
+#define u_flm_ende0000_flm_0050df06 (*(word (*)[17])0x0050df06)
+#define u_flm_ende0001_flm_0050df28 (*(word (*)[17])0x0050df28)
+#define g_EndMovieSelectionIndex (*(undefined4 *)0x00563bac)
+#define g_EndMovieVariantIndex (*(undefined4 *)0x00563bb0)
+#define g_InGameLevelRuntimeGlobalBlock (*(InGameLevelRuntimeGlobalBlock20 *)0x00531060)
+#define g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes (*(ArmyRuntimeOrderHandlerMatrix11x24 *)0x0051fc98)
+#define g_EndMoviePath (*(word * *)0x00563bb4)
+#define g_InGameRuntimeRoot (*(InGameRuntimeRootImageC3E4 * *)0x0056327c)
+#define g_InGameSimulationStepTicks (*(InGameSimulationStepBatchTicks *)0x00563264)
+#define g_GameFactionRuntimeImage (*(GameFactionRuntimeImage *)0x0050f340)
+#define g_EffectRuntimeRebaseBaseMinusOne (*(byte * *)0x0051dbcc)
+#define g_ShotRuntimeRebaseBaseMinusOne (*(byte * *)0x0052af4c)
+#define g_ModelRuntimeRebaseDelta (*(int *)0x005200bc)
+#define g_RuntimeObjectRebaseBaseMinusOne (*(byte * *)0x00563700)
+#define DAT_004bed4f (*(undefined *)0x004bed4f)
+#define g_ArmyGraphicsBindings (*(ArmyGraphicsBinding (*)[8])0x00519738)
+#define g_EffectTextureSet (*(GraphicsTextureSet * *)0x0051dbc0)
+#define g_EffectPalette (*(GraphicsPaletteAsset * *)0x0051dbc4)
+#define g_ShotTextureSet (*(GraphicsTextureSet * *)0x0052af40)
+#define g_ShotPalette (*(GraphicsPaletteAsset * *)0x0052af44)
+#define u_army_hex_0050dfb4 (*(word (*)[9])0x0050dfb4)
+#define u_effect_hex_0050dfc6 (*(word (*)[11])0x0050dfc6)
+#define u_shot_hex_0050dfdc (*(word (*)[9])0x0050dfdc)
+#define u_modul_hex_0050dfee (*(word (*)[10])0x0050dfee)
+#define u_field_hex_0050e002 (*(word (*)[10])0x0050e002)
+#define u_light_hex_0050e016 (*(word (*)[10])0x0050e016)
+#define u_widget_hex_0050e02a (*(word (*)[11])0x0050e02a)
+#define g_LocaleFormatCurrentDateUtf16 (*(LocaleFormatCurrentDateUtf16Proc * *)0x00402798)
+#define u_level_hex_0050e040 (*(word (*)[10])0x0050e040)
+#define u_daten_hex_0050e054 (*(word (*)[10])0x0050e054)
+#define u_campagne_hex_0050e068 (*(word (*)[13])0x0050e068)
+#define g_LocaleFormatCurrentTimeUtf16 (*(LocaleFormatCurrentTimeUtf16Proc * *)0x004027a4)
+#define u_stat_hex_0050e082 (*(word (*)[9])0x0050e082)
+#define u_oldunit_hex_0050e094 (*(word (*)[12])0x0050e094)
+#define g_FrontendLoadedCampaignAsset (*(undefined4 *)0x00545914)
+#define g_InGameResourceRegistrationBusyCount (*(undefined1 *)0x0050e0ac)
+#define g_GameStatTableImage (*(void * *)0x00512d6c)
+#define g_OldUnitPrimaryTable (*(dword * *)0x00563bc0)
+#define g_OldUnitSecondaryTable (*(dword * *)0x00563bbc)
+#define g_OldUnitRecordCount (*(OldUnitRecordCount *)0x00563bc4)
+#define g_InGameLevelTitleTextResourceIndex (*(undefined4 *)0x00531028)
+#define g_FileSystemCreateDirectoryRecursiveCf (*(FileSystemCreateDirectoryRecursiveProc * *)0x0040b1e8)
+#define g_InGameLevelCampaignAssociationIndex (*(dword *)0x0053102c)
+#define g_RecentTextSlotStorage (*(RecentTextHistorySlot * *)0x0050f0e0)
+#define g_RecentTextEntrySerials (*(dword (*)[8])0x0050f0e4)
+#define g_RecentTextSerialCounter (*(RecentTextSerialCounter *)0x0050f0d0)
+#define g_GameDataAuxState (*(GameDataAuxState *)0x00512d70)
+#define g_ArmyRuntimeRebaseBaseMinusOne (*(void * *)0x00519734)
+#define g_TerrainRegionCollectionStoredCount (*(TerrainRegionCollectionCount *)0x00512d60)
+#define g_TerrainRegionCollectionVisitedCount (*(TerrainRegionCollectionCount *)0x00512d64)
+#define g_TerrainRegionCollectionEntries (*(undefined4 *)0x00512d68)
+#define g_FactionEnergyAllocationPriorityByModelClass (*(undefined *)0x0051fb18)
+#define g_TechnologyAsset (*(TechnologyAsset * *)0x0050d930)
+#define g_SelectionPlayerRuntimeBlockPointers (*(SelectionPlayerRuntimeBlock * (*)[8])0x00514960)
+#define g_FrontendCurrentFactionPrimaryResourceTextUtf16 (*(undefined *)0x005504dc)
+#define g_UiNumericPairSecondValueScratchUtf16 (*(undefined *)0x00515678)
+#define g_UiNumericPairFirstValueScratchUtf16 (*(undefined *)0x00515658)
+#define g_UiCommandSpriteVariantARecords (*(UiCommandRuntimeRecordPrefix * (*)[24])0x00563680)
+#define g_UiCommandSpriteVariantAColumnCount (*(dword *)0x00562650)
+#define g_UiCommandSpriteVariantAOffsetTables (*(sdword * (*)[5])0x00562694)
+#define g_UiCatalogGroup48Records (*(UiCommandRuntimeRecordPrefix * (*)[48])0x00563518)
+#define g_UiCatalogGroup42Records (*(UiCommandRuntimeRecordPrefix * (*)[42])0x005635d8)
+#define g_UiCatalogGroup48ColumnCount (*(dword *)0x00562648)
+#define g_UiCatalogGroup42ColumnCount (*(dword *)0x0056264c)
+#define g_UiCatalogGroup48OffsetTables (*(sdword * (*)[9])0x00562654)
+#define g_UiCatalogGroup42OffsetTables (*(sdword * (*)[7])0x00562678)
+#define g_UiCatalogEntryRichTextScratchUtf16 (*(word (*)[16])0x00516510)
+#define g_SelectionPanelTextureSource (*(GraphicsTextureSourceAsset * *)0x0052cdf0)
+#define g_InfoPanelTextureSource (*(GraphicsTextureSourceAsset * *)0x0052cdf4)
+#define g_SelectionPanelData (*(void * *)0x0052cdf8)
+#define g_InfoPanelData (*(void * *)0x0052cdfc)
+#define g_FrontendResultsFactionPackedPixelColors (*(dword (*)[7])0x00516ff8)
+#define g_FrontendResultsColumnAdvance00Pixels (*(int *)0x00516fa8)
+#define g_FrontendResultsColumnAdvance01Pixels (*(int *)0x00516fac)
+#define g_FrontendResultsColumnAdvanceColourPixels (*(int *)0x00516fb0)
+#define g_FrontendResultsColumnAdvanceEconomyPixels (*(int *)0x00516fb4)
+#define g_FrontendResultsColumnAdvanceMilitaryPixels (*(int *)0x00516fb8)
+#define g_FrontendResultsColumnAdvancePointsPixels (*(int *)0x00516fbc)
+#define g_FrontendResultsColumnAdvancePlayerPixels (*(int *)0x00516fc0)
+#define g_FrontendResultsColumnAdvanceFactionPixels (*(int *)0x00516fc4)
+#define g_FrontendResultsColumnAdvanceFactionField98Pixels (*(int *)0x00516fc8)
+#define g_FrontendResultsColumnAdvanceFactionField9CPixels (*(int *)0x00516fcc)
+#define g_FrontendResultsColumnAdvanceFactionFieldA0Pixels (*(int *)0x00516fd0)
+#define g_FrontendResultsColumnAdvanceFactionFieldA4Pixels (*(int *)0x00516fd4)
+#define g_FrontendResultsColumnAdvanceFactionFieldA8Pixels (*(int *)0x00516fd8)
+#define g_FrontendResultsColumnAdvanceFactionFieldACPixels (*(int *)0x00516fdc)
+#define g_FrontendResultsColumnAdvanceFactionFieldB0Pixels (*(int *)0x00516fe0)
+#define g_FrontendResultsFramebufferBytesPerPixel (*(dword *)0x00516ff0)
+#define g_FrontendResultsColumnAdvanceFactionFieldB4Pixels (*(int *)0x00516fe4)
+#define g_FrontendResultsColumnAdvanceFactionFieldB8Pixels (*(int *)0x00516fe8)
+#define g_FrontendResultsFramebufferScanlineStrideBytes (*(dword *)0x00516ff4)
+#define g_FrontendResultsColumnAdvanceFactionFieldBCPixels (*(int *)0x00516fec)
+#define g_FrontendResultsValueTextUtf16 (*(undefined *)0x00516ea0)
+#define g_SessionNetworkRoleFlags (*(SessionNetworkRoleFlags *)0x0050f0c8)
+#define g_SoftwareBilinearPackedInterpolationWeights256 (*(undefined *)0x00518080)
+#define g_SoftwarePixelIntensityToNativeColorLut256 (*(undefined4 *)0x00518880)
+#define g_SoftwareBlendUnityWordLanesQ14 (*(undefined8 *)0x00518c80)
+#define g_ArmyAssetRecordRegistry (*(ArmyAssetRecordPrefix * (*)[768])0x00519778)
+#define g_ArmyRuntimeSlots (*(ArmyRuntimeSlot * *)0x00519730)
+#define g_ArmyPlacementContactKindDispatchTable (*(ArmyPlacementContactCallbackTable5 *)0x004bd890)
+#define g_ArmyRuntimeDepthBinClassByModelClass (*(undefined *)0x0051fc38)
+#define g_ArmyPreviewSecondaryColorArgb (*(dword *)0x00485a30)
+#define g_ArmyPreviewViewOriginXQ12 (*(dword *)0x00485a08)
+#define g_ArmyPreviewViewOriginYQ12 (*(dword *)0x00485a0c)
+#define g_ArmyPreviewViewOriginZQ12 (*(dword *)0x00485a10)
+#define g_ArmyPreviewProjectionScaleQ12 (*(dword *)0x00485a14)
+#define g_ArmyPreviewViewAngle0 (*(dword *)0x00485a18)
+#define g_ArmyPreviewPrimaryColorArgb (*(dword *)0x00485a2c)
+#define g_ArmyPreviewViewAngle1 (*(dword *)0x00485a1c)
+#define g_ArmyPreviewAlphaPremultiplyMmxLut256 (*(undefined *)0x0051a380)
+#define g_ArmyPreviewProjectionShift (*(dword *)0x00485a20)
+#define g_ArmyPreviewAuxiliaryOrientation0 (*(dword *)0x00485a24)
+#define g_ArmyPreviewAverageAlphaReciprocalMmxLut256 (*(undefined *)0x0051ab80)
+#define g_GraphicsOffscreenRenderModelListToTextureSourceCf (*(GraphicsOffscreenRenderModelListToTextureSourceProc * *)0x00485848)
+#define g_ArmyPreviewAuxiliaryOrientation1 (*(dword *)0x00485a28)
+#define g_ArmyPreviewDownsampleAlphaRoundingBiasMmx (*(undefined8 *)0x0051b380)
+#define g_ArmyPreviewModelNodePointer (*(dword *)0x00485a34)
+#define g_ArmyCommandGenerationStandard (*(ArmyCommandGeneration *)0x0051b388)
+#define g_FieldGridInterpolationCallbacks5 (*(FieldGridInterpolationCallbackTable5 *)0x004fea30)
+#define g_TerrainClassPlacementAndOverlayCallbacks10 (*(TerrainClassPlacementAndOverlayCallbackTable10 *)0x0051faf0)
+#define g_InGamePanelTextureSubresource34Height (*(sdword *)0x005632f4)
+#define g_InGamePanelTextureSubresource02Width (*(sdword *)0x00563298)
+#define g_MoviePlaybackScheduleCounter (*(undefined4 *)0x00563324)
+#define g_InGamePanelTextureSubresource34Width (*(sdword *)0x005632b4)
+#define g_EffectDefinitionRegistry (*(EffectDefinition * (*)[256])0x0051dbd0)
+#define g_EffectRuntimeSlots (*(EffectRuntimeSlot * *)0x0051dbc8)
+#define g_ArmySuspensionBlendVectorAXQ12 (*(undefined4 *)0x00520eb0)
+#define g_ArmySuspensionBlendVectorAYQ12 (*(undefined4 *)0x00520eb4)
+#define g_ArmySuspensionBlendVectorAZQ12 (*(undefined4 *)0x00520eb8)
+#define g_ArmySuspensionBlendVectorBXQ12 (*(undefined4 *)0x00520ebc)
+#define g_ArmySuspensionBlendVectorBYQ12 (*(undefined4 *)0x00520ec0)
+#define g_ArmySuspensionBlendVectorBZQ12 (*(undefined4 *)0x00520ec4)
+#define g_ArmySuspensionRotationMatrixScratchA (*(undefined *)0x00520ec8)
+#define g_ArmySuspensionRotationMatrixScratchB (*(undefined *)0x00520ef8)
+#define g_ArmySuspensionRotationMatrixComposedScratch (*(undefined *)0x00520f28)
+#define g_ArmyPlacementAcceptedCandidateCount (*(ArmyPlacementCandidateCount *)0x005637a8)
+#define g_ArmyLinkedChildAssetIdSlot0 (*(undefined4 *)0x0056378c)
+#define g_ArmyLinkedChildAssetIdSlot1 (*(undefined4 *)0x00563790)
+#define g_ArmyLinkedChildAssetIdSlot2 (*(undefined4 *)0x00563798)
+#define g_GridInfluenceRadiusOffset0 (*(undefined4 *)0x00536f60)
+#define g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f3c)
+#define g_ModelDefinitionRegistry (*(ModelDefinitionRecordPrefix * (*)[768])0x0051eef0)
+#define g_ModelTraversalFallbackSecondaryThresholdTable3 (*(undefined *)0x00536f48)
+#define g_GridTerrainClassBit24MaxWaterSurfaceDelta (*(Q12 *)0x00536f10)
+#define g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f18)
+#define g_ModelTraversalClass4SecondaryThresholdTable3 (*(undefined *)0x00536f24)
+#define g_GridTerrainClassBit28MinWaterSurfaceDelta (*(Q12 *)0x00536f30)
+#define g_ModelRuntimeSlots (*(ModelRuntimeSlot * *)0x005200b8)
+#define IMAGE_DOS_HEADER_00400000 (*(IMAGE_DOS_HEADER *)0x00400000)
+#define g_ShotDefinitionRegistry (*(ShotDefinition * (*)[256])0x0052af50)
+#define g_ShotRuntimeSlots (*(ShotRuntimeSlot * *)0x0052af48)
+#define u_gfx_panel_select_gfx_0052ce18 (*(word (*)[21])0x0052ce18)
+#define u_gfx_panel_info_gfx_0052ce42 (*(word (*)[19])0x0052ce42)
+#define u_gfx_panel_select_dat_0052ce68 (*(word (*)[21])0x0052ce68)
+#define u_gfx_panel_info_dat_0052ce92 (*(word (*)[19])0x0052ce92)
+#define g_SelectionPlayerBlocks (*(SelectionPlayerRuntimeBlock * *)0x00514d60)
+#define g_SelectionInfoEntitySlots (*(SelectionInfoEntitySlots * *)0x0052ce14)
+#define g_GraphicsTextureSourceLifecycleCallbacks3 (*(GraphicsTextureSourceLifecycleCallbackTable3 *)0x004a8f40)
+#define g_SelectionPanelNumberTextStyle (*(undefined4 *)0x0052ce00)
+#define g_SelectionPanelNumberScratchUtf16 (*(undefined *)0x0052ceb8)
+#define g_ModelProjectedBoundsPixels (*(ModelProjectedBoundsPixels *)0x0052ce04)
+#define g_LevelEndingMovieSourcePath (*(word (*)[256])0x00530e28)
+#define DAT_0000004f (*(undefined *)0x0000004f)
+#define u_sound_level00_sam_0050df6c (*(word (*)[18])0x0050df6c)
+#define u_sound_music00_sam_0050df90 (*(word (*)[18])0x0050df90)
+#define g_InGameLevelEffectVoiceSet0 (*(undefined4 *)0x00531030)
+#define g_InGameLevelEffectVoiceSet1 (*(undefined4 *)0x00531034)
+#define g_InGameLevelEffectVoiceSet2 (*(undefined4 *)0x00531038)
+#define g_InGameLevelEffectVoiceSet3 (*(undefined4 *)0x0053103c)
+#define g_InGameActiveEffectVoice (*(undefined4 *)0x00531040)
+#define g_InGameEffectsEnabled (*(dword *)0x00531044)
+#define g_InGameLevelMusicVoiceSet0 (*(undefined4 *)0x00531048)
+#define g_InGameLevelMusicVoiceSet1 (*(undefined4 *)0x0053104c)
+#define g_InGameLevelMusicVoiceSet2 (*(undefined4 *)0x00531050)
+#define g_InGameLevelMusicVoiceSet3 (*(undefined4 *)0x00531054)
+#define g_InGameActiveMusicVoice (*(undefined4 *)0x00531058)
+#define g_InGameMusicEnabled (*(dword *)0x0053105c)
+#define g_InGameLoadedResourcePointers (*(void ** *)0x00530820)
+#define g_InGameLoadedResourcePointerCount (*(InGameLoadedResourcePointerCount *)0x00530824)
+#define g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 (*(undefined *)0x00530828)
+#define g_MoviePlaybackBaseFrameGroup (*(undefined4 *)0x00563320)
+#define g_InGameLevelSoundParentDirectoryScratchUtf16 (*(undefined *)0x00530a28)
+#define g_LevelCameraBookmark1PositionXQ12 (*(dword *)0x0050d934)
+#define g_LevelCameraBookmark1PositionYQ12 (*(dword *)0x0050d938)
+#define g_LevelCameraBookmark1PositionZQ12 (*(dword *)0x0050d93c)
+#define g_LevelCameraBookmark1PositionMagnitudeQ12 (*(dword *)0x0050d940)
+#define g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d944)
+#define g_LevelCameraBookmark2PositionXQ12 (*(dword *)0x0050d948)
+#define g_LevelCameraBookmark2PositionYQ12 (*(dword *)0x0050d94c)
+#define g_LevelCameraBookmark2PositionZQ12 (*(dword *)0x0050d950)
+#define g_LevelCameraBookmark2PositionMagnitudeQ12 (*(dword *)0x0050d954)
+#define g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d958)
+#define g_LevelCameraBookmark3PositionXQ12 (*(dword *)0x0050d95c)
+#define g_LevelCameraBookmark3PositionYQ12 (*(dword *)0x0050d960)
+#define g_LevelCameraBookmark3PositionZQ12 (*(dword *)0x0050d964)
+#define g_LevelCameraBookmark3PositionMagnitudeQ12 (*(dword *)0x0050d968)
+#define g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d96c)
+#define g_LevelCameraBookmark4PositionXQ12 (*(dword *)0x0050d970)
+#define g_LevelCameraBookmark4PositionYQ12 (*(dword *)0x0050d974)
+#define g_LevelCameraBookmark4PositionZQ12 (*(dword *)0x0050d978)
+#define g_LevelCameraBookmark4PositionMagnitudeQ12 (*(dword *)0x0050d97c)
+#define g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d980)
+#define g_LevelCameraBookmark5PositionXQ12 (*(dword *)0x0050d984)
+#define g_LevelCameraBookmark5PositionYQ12 (*(dword *)0x0050d988)
+#define g_LevelCameraBookmark5PositionZQ12 (*(dword *)0x0050d98c)
+#define g_LevelCameraBookmark5PositionMagnitudeQ12 (*(dword *)0x0050d990)
+#define g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d994)
+#define g_LevelCameraBookmark6PositionXQ12 (*(dword *)0x0050d998)
+#define g_LevelCameraBookmark6PositionYQ12 (*(dword *)0x0050d99c)
+#define g_LevelCameraBookmark6PositionZQ12 (*(dword *)0x0050d9a0)
+#define g_LevelCameraBookmark6PositionMagnitudeQ12 (*(dword *)0x0050d9a4)
+#define g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d9a8)
+#define g_LevelCameraBookmark7PositionXQ12 (*(dword *)0x0050d9ac)
+#define g_LevelCameraBookmark7PositionYQ12 (*(dword *)0x0050d9b0)
+#define g_LevelCameraBookmark7PositionZQ12 (*(dword *)0x0050d9b4)
+#define g_LevelCameraBookmark7PositionMagnitudeQ12 (*(dword *)0x0050d9b8)
+#define g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 (*(dword *)0x0050d9bc)
+#define g_SoundPackageHandle (*(dword *)0x00572acc)
+#define g_LevelResourcePathScratchUtf16 (*(undefined *)0x00530c28)
+#define g_GridPathCostQueueEnd (*(GridScratchCell ** *)0x005332ac)
+#define g_GridScratchPrimary (*(GridScratchCell * *)0x005332a0)
+#define g_GridScratchSecondary (*(GridScratchCell * *)0x005332a4)
+#define g_GridPathCostQueueBegin (*(GridScratchCell ** *)0x005332a8)
+#define g_GridScratchWidth (*(dword *)0x005332b4)
+#define g_GridScratchHeight (*(dword *)0x005332b8)
+#define g_GridTerrainClassBit29MinWaterSurfaceDelta (*(Q12 *)0x00536f34)
+#define g_GridTerrainClassBit30MinWaterSurfaceDelta (*(Q12 *)0x00536f38)
+#define g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f40)
+#define g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f44)
+#define g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f14)
+#define g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f1c)
+#define g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 (*(AngleTurn16Stored32 *)0x00536f20)
+#define g_GridPathEntityClassMask (*(dword *)0x00533ed0)
+#define g_GridPathBlockingMask (*(undefined4 *)0x00533ed4)
+#define g_GridPathHighCostMask (*(undefined4 *)0x00533ed8)
+#define g_GridPathCostQueuePassBoundary (*(GridScratchCell ** *)0x005332b0)
+#define g_GridPathUnreachableRegionReferenceRow (*(dword *)0x00533ee0)
+#define g_GridPathUnreachableRegionReferenceColumn (*(dword *)0x00533edc)
+#define g_GridInfluenceSquaredThreshold6 (*(undefined4 *)0x00536f98)
+#define g_GridInfluenceRadiusOffset6 (*(undefined4 *)0x00536f78)
+#define g_GridInfluenceSquaredThreshold0 (*(undefined4 *)0x00536f80)
+#define g_GridInfluenceSquaredThreshold1 (*(undefined4 *)0x00536f84)
+#define g_GridInfluenceSquaredThreshold2 (*(undefined4 *)0x00536f88)
+#define g_GridInfluenceSquaredThreshold3 (*(undefined4 *)0x00536f8c)
+#define g_GridInfluenceSquaredThreshold4 (*(undefined4 *)0x00536f90)
+#define g_GridInfluenceSquaredThreshold5 (*(undefined4 *)0x00536f94)
+#define g_GridInfluenceSquaredThreshold7 (*(undefined4 *)0x00536f9c)
+#define g_GridInfluenceRadiusOffset1 (*(undefined4 *)0x00536f64)
+#define g_GridInfluenceRadiusOffset2 (*(undefined4 *)0x00536f68)
+#define g_GridInfluenceRadiusOffset3 (*(undefined4 *)0x00536f6c)
+#define g_GridInfluenceRadiusOffset4 (*(undefined4 *)0x00536f70)
+#define g_GridInfluenceRadiusOffset5 (*(undefined4 *)0x00536f74)
+#define g_GridInfluenceRadiusOffset7 (*(undefined4 *)0x00536f7c)
+#define g_EntityPathingPriorityPairs (*(EntityPathingPriorityPair * *)0x005367d0)
+#define g_EntityPathingPriorityPairCount (*(dword *)0x005368d4)
+#define g_AiCombatTargetSelectedCommandGenerationRightShiftBits (*(AiCommandGenerationRightShiftBits *)0x00536fb4)
+#define g_AiCommandGenerationCandidateBase (*(ArmyCommandGeneration *)0x0051b38c)
+#define g_AiCommandGenerationRetainedTarget (*(ArmyCommandGeneration *)0x0051b390)
+#define g_AiCombatTargetClassBaseScoreTable24 (*(undefined *)0x0051fb78)
+#define g_AiCombatTargetRadialClearanceWeight (*(undefined4 *)0x00536fa0)
+#define g_AiCombatTargetCandidateCounterCountWeight (*(undefined4 *)0x00536fa4)
+#define g_AiCombatTargetSourceCounterCountWeight (*(undefined4 *)0x00536fa8)
+#define g_AiCombatTargetScaleDeficitWeight (*(undefined4 *)0x00536fac)
+#define g_AiCombatTargetClassBaseScoreMultiplier (*(undefined4 *)0x00536fb0)
+#define g_AiCombatTargetCurrentCommandGenerationRightShiftBits (*(AiCommandGenerationRightShiftBits *)0x00536fb8)
+#define g_AiCandidateWorkspaceEntryCount (*(undefined4 *)0x00537414)
+#define g_AiWorkspaceBuffer13_Size0400 (*(AiCandidateWorkspaceEntry * *)0x00537410)
+#define g_AiPurchaseAppliedArmyClassMask (*(dword *)0x00537418)
+#define g_AiWorkspaceBuffer00_Size0400 (*(AiWorkspace00EntryView8 * *)0x00537960)
+#define g_AiWorkspace00Count (*(undefined4 *)0x00537964)
+#define g_AiWorkspace01Count (*(undefined4 *)0x0053796c)
+#define g_AiWorkspaceBuffer01_Size0200 (*(AiRuntimeWorkspaceEntry * *)0x00537968)
+#define g_AiActiveGridMaskClass0 (*(undefined4 *)0x005379c8)
+#define g_AiActiveGridMaskClass1 (*(undefined4 *)0x005379cc)
+#define g_AiActiveGridMaskClass2 (*(undefined4 *)0x005379d0)
+#define g_AiActiveGridMaskClass3 (*(undefined4 *)0x005379d4)
+#define g_AiWorkspace05Count (*(undefined4 *)0x0053798c)
+#define g_AiKnowledgeData (*(AiKnowledgeDataImage * *)0x0053c5e0)
+#define g_AiWorkspaceBuffer05_Size0200 (*(AiScoredSiteWorkspaceEntry * *)0x00537988)
+#define g_AiWorkspace06Count (*(undefined4 *)0x00537994)
+#define g_AiWorkspaceBuffer06_Size0400 (*(byte * *)0x00537990)
+#define g_AiWorkspaceBuffer08_Size0200 (*(AiTerrainFeatureWorkspaceEntry * *)0x005379a0)
+#define g_AiWorkspace08Count (*(undefined4 *)0x005379a4)
+#define g_AiWorkspaceBuffer09_Size1000 (*(FieldGridCell ** *)0x005379a8)
+#define g_AiWorkspace09Count (*(undefined4 *)0x005379ac)
+#define g_AiWorkspaceBuffer10_Size0400 (*(FieldGridCell ** *)0x005379b0)
+#define g_AiWorkspace10Count (*(undefined4 *)0x005379b4)
+#define g_AiWorkspaceBuffer12_Size0200 (*(AiTechnologyPlanningCandidate * *)0x005379c0)
+#define g_AiWorkspace12Count (*(AiTechnologyPlanningCandidateCount *)0x005379c4)
+#define g_AiWorkspace02Count (*(undefined4 *)0x00537974)
+#define g_AiWorkspace03Count (*(undefined4 *)0x0053797c)
+#define g_AiWorkspace04Count (*(undefined4 *)0x00537984)
+#define g_AiWorkspace07Count (*(undefined4 *)0x0053799c)
+#define g_AiWorkspace11Count (*(undefined4 *)0x005379bc)
+#define g_AiWorkspaceBuffer02_Size0400 (*(AiRuntimeWorkspaceEntry * *)0x00537970)
+#define g_AiWorkspaceBuffer03_Size1000 (*(AiRuntimeWorkspaceEntry * *)0x00537978)
+#define g_AiWorkspaceOwnedAsset300Runtime (*(ArmyRuntimeSlot * *)0x005379d8)
+#define g_AiWorkspaceBuffer04_Size0040 (*(AiRuntimeWorkspaceEntry * *)0x00537980)
+#define g_AiWorkspaceBuffer07_Size0400 (*(AiTargetWorkspaceEntry * *)0x00537998)
+#define g_AiWorkspaceBuffer11_Size1000 (*(ArmyAssetRecordPrefix ** *)0x005379b8)
+#define g_AiConstructionPendingAssetConsumedCount (*(undefined4 *)0x00539060)
+#define g_TechnologyCategoryMaximumReciprocalQ24Table8 (*(undefined4 *)0x00539980)
+#define g_AiArmyCandidateFlaggedDefinitionValueMaximum (*(undefined4 *)0x005399c0)
+#define g_TechnologyCategoryMasks (*(TechnologyCategoryMasks *)0x00539a00)
+#define g_TechnologyCategoryMaximum0 (*(undefined4 *)0x005399a0)
+#define g_TechnologyCategoryMaximum1 (*(undefined4 *)0x005399a4)
+#define g_TechnologyCategoryMaximum2 (*(undefined4 *)0x005399a8)
+#define g_TechnologyCategoryMaximum3 (*(undefined4 *)0x005399ac)
+#define g_TechnologyCategoryMaximum4 (*(undefined4 *)0x005399b0)
+#define g_TechnologyCategoryMaximum5 (*(undefined4 *)0x005399b4)
+#define g_TechnologyCategoryMaximum6 (*(undefined4 *)0x005399b8)
+#define g_TechnologyCategoryMaximum7 (*(undefined4 *)0x005399bc)
+#define g_AiArmyCandidateScoreWeightsVariantA15 (*(AiArmyScoreWeights *)0x0053c63c)
+#define g_AiArmyCandidateScoreWeightsVariantB15 (*(AiArmyScoreWeights *)0x0053c600)
+#define g_AiArmyCandidateScoreWeightsVariantC15 (*(AiArmyScoreWeights *)0x0053c678)
+#define g_AiStrategicClass130WeightComponent0 (*(undefined4 *)0x005399d0)
+#define g_AiStrategicClass130WeightComponent1 (*(undefined4 *)0x005399d4)
+#define g_AiStrategicClass130WeightComponent2 (*(undefined4 *)0x005399d8)
+#define g_AiStrategicClass131WeightComponent0 (*(undefined4 *)0x005399dc)
+#define g_AiStrategicClass131WeightComponent1 (*(undefined4 *)0x005399e0)
+#define g_AiStrategicClass131WeightComponent2 (*(undefined4 *)0x005399e4)
+#define g_AiStrategicClass132WeightComponent0 (*(undefined4 *)0x005399e8)
+#define g_AiStrategicClass132WeightComponent1 (*(undefined4 *)0x005399ec)
+#define g_AiStrategicClass132WeightComponent2 (*(undefined4 *)0x005399f0)
+#define g_AiStrategicClass12FWeightComponent0 (*(undefined4 *)0x005399c4)
+#define g_AiStrategicClass12FWeightComponent1 (*(undefined4 *)0x005399c8)
+#define g_AiStrategicClass12FWeightComponent2 (*(undefined4 *)0x005399cc)
+#define g_AiCollectedEntityCount (*(undefined4 *)0x0053b0d4)
+#define g_AiWorkspaceBuffer14_Size0100 (*(ArmyRuntimeSlot ** *)0x0053b0d0)
+#define g_AiTechnologyCandidateScoreCallbackTable (*(AiTechnologyCandidateScoreCallback * (*)[6])0x0053b9e0)
+#define u_engine_ki_dat_0053c5e4 (*(word (*)[14])0x0053c5e4)
+#define g_WorldMotionSplineCachedDerivatives (*(float (*)[6])0x0053c9d0)
+#define g_WorldMotionSplineCoefficientTables (*(float * (*)[6])0x0053c9b8)
+#define g_WorldMotionSplineMatrixWorkspaces (*(float * (*)[6])0x0053c9a0)
+#define g_WorldMotionSplineEquationCounts (*(sdword (*)[6])0x0053c9e8)
+#define g_Q12FloatScale4096 (*(float *)0x0053ca00)
+#define g_TerrainCompositeTexture (*(TerrainCompositeTextureRuntime * *)0x0053d360)
+#define g_InGamePanelTextureSource (*(GraphicsTextureSourceAsset * *)0x00563280)
+#define u_gfx_panel_menue_gfx_00545b78 (*(word (*)[20])0x00545b78)
+#define g_UiButtonSoundVoiceSets7 (*(DirectSoundVoiceSet * (*)[7])0x00572ad8)
+#define g_FrontendMenuTextureSource (*(GraphicsTextureSourceAsset * *)0x0054570c)
+#define g_FrontendTaskAssignmentControlOffsets (*(FrontendTaskAssignmentControlOffsetTablesA8 *)0x0054345c)
+#define g_FrontendCommandQueueEnd (*(UiCommandQueueRecord * *)0x00543f40)
+#define g_LocalPlayerRuntimeId (*(undefined4 *)0x0050f0ac)
+#define g_FrontendCommandQueueRecords (*(UiCommandQueueRecord (*)[16])0x00543e40)
+#define g_FrontendNetworkTickCounter (*(undefined4 *)0x00545710)
+#define g_FrontendRuntimeFlags (*(dword *)0x00545700)
+#define g_FrontendRootNode (*(undefined4 *)0x005456f0)
+#define g_FrontendScenarioInitializationCount (*(undefined4 *)0x00545928)
+#define g_FrontendLoadedLevelAsset (*(FrontendLoadedLevelRuntimeImage370 * *)0x00545780)
+#define g_FrontendScenarioTransferState (*(undefined4 *)0x00545918)
+#define g_FrontendFactionAssignmentReadyStateGeneration (*(undefined4 *)0x00545718)
+#define u_level_0050daac (*(word (*)[6])0x0050daac)
+#define g_ScenarioCatalog (*(ScenarioCatalogHeader * *)0x0050d9c0)
+#define g_FrontendScenarioPathScratchUtf16 (*(undefined2 *)0x00545c72)
+#define u_level_0050dab8 (*(word (*)[6])0x0050dab8)
+#define g_FrontendPendingPageAction (*(undefined4 *)0x005456f4)
+#define g_FrontendRomTransitionPendingCount (*(undefined4 *)0x00545728)
+#define g_FrontendMenuSoundVoiceSetTable100 (*(undefined4 *)0x00545784)
+#define g_NetworkBackendInstanceCount (*(dword *)0x0041a544)
+#define g_FrontendActiveRomRecordTable (*(undefined4 *)0x005456fc)
+#define g_FrontendNetworkState (*(undefined4 *)0x00545714)
+#define g_FrontendPlayerMessageBuffers (*(undefined4 *)0x0054591c)
+#define g_FrontendPlayerMessageScratchUtf16 (*(undefined *)0x00514da4)
+#define s_NAME__CLIENT__KARTE___00545e91 (*(char (*)[23])0x00545e91)
+#define u_level___lev_005460a6 (*(word (*)[12])0x005460a6)
+#define u_level___str_005460be (*(word (*)[12])0x005460be)
+#define g_DebugOverlayCounterRefreshCountdown (*(dword *)0x00563330)
+#define g_FrontendDebugOverlayTextSlot00Utf16 (*(word (*)[16])0x00563334)
+#define g_TextureBindStateChangeCount (*(GraphicsDiagnosticCounter *)0x00485854)
+#define g_FrontendDebugOverlayTextSlot01Utf16 (*(word (*)[16])0x00563354)
+#define g_FrontendDebugOverlayTextSlot02Utf16 (*(word (*)[16])0x00563374)
+#define g_FrontendDebugOverlayTextSlot03Utf16 (*(word (*)[16])0x00563394)
+#define g_FrontendDebugOverlayTextSlot04Utf16 (*(word (*)[16])0x005633b4)
+#define g_FrontendDebugOverlayTextSlot05Utf16 (*(word (*)[16])0x005633d4)
+#define g_FrontendDebugOverlayTextSlot06Utf16 (*(word (*)[16])0x005633f4)
+#define g_FrontendDebugOverlayTextSlot07Utf16 (*(word (*)[16])0x00563414)
+#define g_FrontendDebugOverlayTextSlot08Utf16 (*(word (*)[16])0x00563434)
+#define g_FrontendDebugOverlayTextSlot09Utf16 (*(word (*)[16])0x00563454)
+#define g_FrontendDebugOverlayTextSlot10Utf16 (*(word (*)[16])0x00563474)
+#define g_FrontendDebugOverlayTextSlot11Utf16 (*(word (*)[16])0x00563494)
+#define g_FrontendDebugOverlayTextSlot12Utf16 (*(word (*)[16])0x005634b4)
+#define g_FrontendDebugOverlayTextSlot13Utf16 (*(word (*)[16])0x005634d4)
+#define g_TextureDeviceReloadCount (*(GraphicsDiagnosticCounter *)0x00485858)
+#define DAT_0000003b (*(undefined *)0x0000003b)
+#define u_engine_zentrale_rom_00545aa4 (*(word (*)[20])0x00545aa4)
+#define g_RomRegistrySlots (*(RomRegistrySlot * *)0x00545778)
+#define g_FrontendCentralPaletteAsset (*(undefined4 *)0x00545708)
+#define g_FrontendCentralTextureSet (*(undefined4 *)0x00545704)
+#define u_sound_menue01_sam_00545b54 (*(word (*)[18])0x00545b54)
+#define u_gfx_texturen_zentrale_gfx_00545acc (*(word (*)[26])0x00545acc)
+#define u_gfx_texturen_zentrale_pal_00545b00 (*(word (*)[26])0x00545b00)
+#define u_sound_music00_sam_00545c4e (*(word (*)[18])0x00545c4e)
+#define g_FrontendMusicVoiceSet (*(undefined4 *)0x0054592c)
+#define g_FrontendMusicActiveBuffer (*(undefined4 *)0x00545930)
+#define g_NetworkBackendInstanceTable (*(NetworkBackendInstanceDescriptorPrefix * *)0x0041a540)
+#define g_UiRootCallbacks_0053DA70 (*(UiRootCallbacks *)0x0053da70)
+#define g_FrontendTimerCountdownTicks (*(undefined4 *)0x00545730)
+#define g_FrontendCentralRomAsset (*(undefined4 *)0x00545774)
+#define g_FrontendWorldObjectRecords (*(WorldObjectRecord * *)0x0054577c)
+#define g_FrontendStateTickSpinLock (*(dword *)0x0054572c)
+#define g_FrontendNetworkEndpointTextUtf16 (*(undefined *)0x0054de30)
+#define g_FrontendRootInitializationTemplate (*(undefined4 *)0x0053da8c)
+#define g_FrontendLocalPlayerNameUtf16 (*(undefined4 *)0x0050f054)
+#define g_FrontendMenuSoundVoiceSetLoadBaseEntry1 (*(undefined4 *)0x00545788)
+#define s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 (*(char (*)[31])0x00545e72)
+#define g_CommandLineFindOption (*(CommandLineFindOptionProc * *)0x00402024)
+#define g_FrontendPendingPageActionDepth (*(dword *)0x00545934)
+#define g_ScenarioCatalogUsedBytes (*(dword *)0x0050d9c4)
+#define g_FrontendRootStateSnapshot80 (*(undefined4 *)0x00542854)
+#define g_SharedWorldStatePointer (*(undefined4 *)0x00542230)
+#define g_InGameWorldStatePointerMirror (*(undefined4 *)0x00552978)
+#define g_FrontendModelPointerContextUpdateCallback (*(FrontendModelPointerContextUpdateCallbackProc * *)0x0050bb5f)
+#define g_FrontendRomTransitionElapsedTicks (*(undefined4 *)0x0054571c)
+#define g_FrontendRomTransitionSplineKeyframes (*(undefined4 *)0x00545720)
+#define g_FrontendRomTransitionSplineKeyframeCount (*(undefined4 *)0x00545724)
+#define g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 (*(UiCommandDispatchRecord (*)[3])0x00548100)
+#define g_FrontendRomTransitionContextValue (*(undefined4 *)0x005456f8)
+#define g_FrontendRomTransitionKeyframe0Channel0Q12 (*(undefined4 *)0x00545734)
+#define g_FrontendRomTransitionKeyframe0Channel1Q12 (*(undefined4 *)0x00545738)
+#define g_FrontendRomTransitionKeyframe0Channel2Q12 (*(undefined4 *)0x0054573c)
+#define g_FrontendRomTransitionKeyframe0Channel3Q12 (*(undefined4 *)0x00545740)
+#define g_FrontendRomTransitionKeyframe0Channel4Q12 (*(undefined4 *)0x00545744)
+#define g_FrontendRomTransitionKeyframe0Channel5Q12 (*(undefined4 *)0x00545748)
+#define g_FrontendRomTransitionKeyframe1Channel0Q12 (*(undefined4 *)0x00545754)
+#define g_FrontendRomTransitionKeyframe1Channel1Q12 (*(undefined4 *)0x00545758)
+#define g_FrontendRomTransitionKeyframe1Channel2Q12 (*(undefined4 *)0x0054575c)
+#define g_FrontendRomTransitionKeyframe1Channel3Q12 (*(undefined4 *)0x00545760)
+#define g_FrontendRomTransitionKeyframe1Channel4Q12 (*(undefined4 *)0x00545764)
+#define g_FrontendRomTransitionKeyframe1Channel5Q12 (*(undefined4 *)0x00545768)
+#define g_FrontendRomTransitionKeyframe0TimeQ12 (*(undefined4 *)0x0054574c)
+#define g_FrontendRomTransitionKeyframe1TimeQ12 (*(undefined4 *)0x0054576c)
+#define g_UiSevenSlotCommandPayloadText (*(UiCommandPayloadTextBatch48 *)0x00514e04)
+#define u_gfx_panel_credits_gfx_00545c22 (*(word (*)[22])0x00545c22)
+#define g_FrontendUiDisplayModeAndTaskAssignmentScratch (*(FrontendUiSemanticScratch280 *)0x005438ec)
+#define u_save_0050daa2 (*(word (*)[5])0x0050daa2)
+#define u_save___sve_0050d9c8 (*(word (*)[11])0x0050d9c8)
+#define g_ScenarioCampaignDataPathTemplateUtf16 (*(ScenarioCampaignDataPathTemplate2A *)0x0050da78)
+#define u_level_level_dat_0050da0e (*(word (*)[16])0x0050da0e)
+#define u_level_campagne_dat_0050da52 (*(word (*)[19])0x0050da52)
+#define g_ScenarioCatalogPathScratchUtf16 (*(undefined *)0x0050dac4)
+#define g_ScenarioLevelDataPathTemplateUtf16 (*(ScenarioLevelDataPathTemplate24 *)0x0050da2e)
+#define g_FrontendScenarioMapOptionHandlerTable (*(ScenarioCatalogRefreshSelectedRecordCallback * (*)[3])0x00545a98)
+#define g_FrontendUiActionHandlersPage20 (*(FrontendUiActionHandlerPage20Prefix86 *)0x00545938)
+#define g_GraphicsAdapterCount (*(dword *)0x004a8ea8)
+#define g_GraphicsRebuildAllStagingTextures (*(GraphicsTextureRebuildAllProc * *)0x00485828)
+#define g_MovieAlternateAudioGainQ15 (*(MovieAudioGainQ15 *)0x004a6da0)
+#define g_NetworkBackendSlot2 (*(NetworkBackendOpenBindCallback * *)0x0041a554)
+#define g_NetworkBackendSlot6 (*(NetworkBackendParseEndpointCallback * *)0x0041a564)
+#define g_FrontendSelectedPlayerToken (*(undefined4 *)0x0050f0cc)
+#define g_NetworkBackendSlot7 (*(NetworkBackendFormatAddressCallback * *)0x0041a568)
+#define g_FrontendPendingSessionPlayerCount (*(dword *)0x0054dda0)
+#define g_FrontendPlayerRuntimeRecordPointers32 (*(undefined4 *)0x005433e0)
+#define g_FrontendSessionListRows (*(FrontendSessionDiscoveryRecordB0 ** *)0x0053da84)
+#define g_FrontendNetworkRuntimeCountTextUtf16 (*(undefined *)0x0054dde0)
+#define g_NetworkLocalEndpointDescriptor16 (*(UiTransferEndpointDescriptor *)0x0041a56c)
+#define g_FrontendNetworkEndpointScratch (*(UiTransferEndpointDescriptor *)0x0054ddd0)
+#define g_NetworkBackendSlot0 (*(NetworkBackendSetSessionCallback * *)0x0041a54c)
+#define g_NetworkBackendSlot1 (*(NetworkBackendCleanupCallback * *)0x0041a550)
+#define g_NetworkBackendSlot3 (*(NetworkBackendCloseCallback * *)0x0041a558)
+#define g_FrontendNetworkPlayerCountTextUtf16 (*(undefined *)0x0054dde8)
+#define g_FrontendNetworkPlayerCountLabelUtf16 (*(undefined *)0x0054ddf0)
+#define g_SessionNetworkTickInterval (*(undefined4 *)0x0050f0d4)
+#define g_FrontendMissionBriefingMoviePathUtf16 (*(undefined *)0x00545c02)
+#define g_FrontendMissionBriefingLevelDigitsUtf16 (*(undefined *)0x00545c10)
+#define g_FrontendHostSnapshotTransferCountdown (*(undefined4 *)0x00545924)
+#define g_FrontendExpectedPlayerRuntimeBlockCount (*(dword *)0x0054dda8)
+#define g_NetworkBackendSessionContext (*(NetworkSessionContext * *)0x0041a548)
+#define g_PcxFunctionModule (*(FncModuleHeader * *)0x00572af4)
+#define g_PcxFunctionExport2 (*(PcxDecodeProc * *)0x00572afc)
+#define g_FrontendPacket10000Buffer (*(FrontendPacket10000Handshake *)0x0054d7a0)
+#define g_FrontendPlayerListRows (*(dword *)0x0054ddb0)
+#define g_FrontendSessionDiscoveryRecords (*(FrontendSessionDiscoveryRecordB0 * *)0x0053da88)
+#define g_FrontendPacket20002Buffer (*(FrontendPacket20002PlayerDescriptor *)0x0054d860)
+#define g_FrontendLocalPlayerPcxPreview (*(undefined4 *)0x00545920)
+#define g_FrontendPacket50001Buffer (*(FrontendPacket50001SessionAdvertisement *)0x0054d7c0)
+#define g_FrontendPacket10003Buffer (*(FrontendPacket10003JoinAck *)0x0054d8a0)
+#define g_FrontendPlayerCommandRecords (*(FrontendCommandPacketRecord (*)[8])0x0054db20)
+#define g_FrontendCommandBatchPacketBuffer (*(FrontendCommandPacketRecord (*)[8])0x0054dc20)
+#define g_FrontendHostPublishRoundRobinCounter (*(dword *)0x0054ddac)
+#define g_FrontendPacket40008Buffer (*(FrontendPacket40008LobbyRosterSnapshot *)0x0054d960)
+#define g_FrontendPacket10032Buffer (*(FrontendPacket10032HostValue *)0x0054dd80)
+#define g_FrontendPacket10011Buffer (*(FrontendCommandPacketRecord *)0x0054dd20)
+#define g_FrontendPacket10006Buffer (*(FrontendPacket10006CapabilityHeartbeat *)0x0054d940)
+#define g_FrontendPacket30005Buffer (*(FrontendPacket30005PlayerSnapshot *)0x0054d8e0)
+#define g_FrontendPacket10009Buffer (*(FrontendPacket10009SnapshotChunkRequest *)0x0054d9e0)
+#define g_FrontendPacket10012Buffer (*(FrontendPacket10012SyncPending *)0x0054dd40)
+#define g_FrontendPlayerRemovalPacket10007 (*(FrontendPlayerRemovalPacket10007 *)0x0054db00)
+#define g_FrontendTransferResponsePending (*(undefined4 *)0x0050f0a8)
+#define g_FrontendPacket8000ABuffer (*(FrontendPacket8000ASnapshotChunk *)0x0054da00)
+#define g_FrontendPacket10013Buffer (*(FrontendPacket10013HeartbeatAck *)0x0054dd60)
+#define g_FrontendPacket10004Buffer (*(FrontendPacket10004PlayerSnapshotRequest *)0x0054d8c0)
+#define u_gfx_panel_panel0_gfx_005630d0 (*(word (*)[21])0x005630d0)
+#define u_gfx_panel_diagram0_gfx_00563120 (*(word (*)[23])0x00563120)
+#define u_gfx_panel_tech_gfx_005630fa (*(word (*)[19])0x005630fa)
+#define g_InGameSelectionDetailControlOffsetTable32 (*(undefined4 *)0x00562da0)
+#define u_gfx_panel_window_gfx_0056318e (*(word (*)[21])0x0056318e)
+#define g_InGameDiagramTextureSource (*(undefined4 *)0x00563284)
+#define g_InGameTechnologyTextureSource (*(undefined4 *)0x00563288)
+#define g_InGameWindowTextureSource (*(undefined4 *)0x0056328c)
+#define g_InGamePanelTextureSubresource00Width (*(sdword *)0x00563290)
+#define g_InGamePanelTextureSubresource01Width (*(sdword *)0x00563294)
+#define g_InGamePanelTextureSubresource06Width (*(sdword *)0x0056329c)
+#define g_InGamePanelTextureSubresource07Width (*(sdword *)0x005632a0)
+#define g_InGamePanelTextureSubresource27Width (*(sdword *)0x005632a4)
+#define g_InGamePanelTextureSubresource28Width (*(sdword *)0x005632a8)
+#define g_InGamePanelTextureSubresource19Width (*(sdword *)0x005632ac)
+#define g_InGamePanelTextureSubresource20Width (*(sdword *)0x005632b0)
+#define g_InGamePanelTextureSubresource32Width (*(sdword *)0x005632b8)
+#define g_InGamePanelTextureSubresource33Width (*(sdword *)0x005632bc)
+#define g_InGamePanelTextureSubresource02Height (*(sdword *)0x005632c0)
+#define g_InGamePanelTextureSubresource03Height (*(sdword *)0x005632c4)
+#define g_InGamePanelTextureSubresource04Height (*(sdword *)0x005632c8)
+#define g_InGamePanelTextureSubresource05Height (*(sdword *)0x005632cc)
+#define g_InGamePanelTextureSubresource36Height (*(sdword *)0x005632d0)
+#define g_InGamePanelTextureSubresource37Height (*(sdword *)0x005632d4)
+#define g_InGamePanelTextureSubresource06Height (*(sdword *)0x005632d8)
+#define g_InGamePanelTextureSubresource00Height (*(sdword *)0x005632dc)
+#define g_InGamePanelTextureSubresource07Height (*(sdword *)0x005632e0)
+#define g_InGamePanelTextureSubresource26Height (*(sdword *)0x005632e4)
+#define g_InGamePanelTextureSubresource31Height (*(sdword *)0x005632e8)
+#define g_InGamePanelTextureSubresource18Height (*(sdword *)0x005632ec)
+#define g_InGamePanelTextureSubresource23Height (*(sdword *)0x005632f0)
+#define g_InGamePanelTextureSubresource32Height (*(sdword *)0x005632f8)
+#define g_InGameSelectionDetailNameTextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x0054ffdc)
+#define g_InGameSelectionDetailArmourTextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x0055005c)
+#define g_InGameSelectionDetailWeaponName0TextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x005500dc)
+#define g_InGameSelectionDetailWeaponName1TextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x0055015c)
+#define g_InGameSelectionDetailWeaponName2TextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x005501dc)
+#define g_InGameSelectionDetailTextSlot05Utf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x0055025c)
+#define g_InGameSelectionDetailBuildXeniteCostTextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x005502dc)
+#define g_InGameSelectionDetailBuildTimeTextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x0055035c)
+#define g_InGameSelectionDetailEnergyTextUtf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x005503dc)
+#define g_InGameSelectionDetailTextSlot09Utf16 (*(UiSelectionDetailTextBuffer64Utf16 *)0x0055045c)
+#define g_InGameCommandQueueEnd (*(UiCommandQueueRecord * *)0x0055f0c0)
+#define g_InGameCommandQueueRecords (*(UiCommandQueueRecord (*)[16])0x0055efc0)
+#define g_InGamePlacementSurfaceHeightQ12OrSentinel (*(sdword *)0x00563720)
+#define g_InGamePendingPlacementArmyAsset (*(sdword *)0x00563710)
+#define g_UiCommandAbsoluteSelectionIndex (*(dword *)0x0056d740)
+#define g_UiCommandModeGArmyAssetId (*(undefined4 *)0x0056d750)
+#define g_UiRootCallbacks_0054FBC0 (*(UiRootCallbacks *)0x0054fbc0)
+#define g_UiCommandMode4ArmyAssetId (*(PckArmyAssetIdCatalog *)0x0056d75c)
+#define g_UiCommandModeG (*(dword *)0x0056d720)
+#define g_UiCommandModeGPrimaryPageIndices (*(dword (*)[6])0x0056d764)
+#define g_UiCommandModeGSecondaryPageIndices (*(dword (*)[6])0x0056d77c)
+#define g_UiCommandModeGTertiaryPageIndices (*(dword (*)[6])0x0056d794)
+#define g_UiCommandModeGControlOffsets (*(sdword (*)[6])0x0056d7ac)
+#define g_UiCommandModeGHandlers (*(void * (*)[6])0x0056d7c4)
+#define g_TerrainMaterialEditFieldGrid (*(undefined4 *)0x0056d82c)
+#define g_TerrainMaterialEditDeltaBuffer (*(undefined4 *)0x0056d830)
+#define g_TerrainMaterialEditReferenceMaterialByte (*(undefined4 *)0x0056d834)
+#define g_TerrainMaterialEditReplacementMaterialByte (*(dword *)0x0056d838)
+#define g_InGameReadyStateToggleFlags (*(dword *)0x00563514)
+#define g_LocaleFormatTimeFieldsUtf16 (*(LocaleFormatTimeFieldsUtf16Proc * *)0x004027a0)
+#define g_InGameFactionStatusTextScratchUtf16 (*(word * *)0x0054fbd4)
+#define g_InGamePlayerListTextScratchUtf16 (*(word * *)0x0054fbd8)
+#define g_MoviePlaybackCurrentFrame (*(undefined4 *)0x0056332c)
+#define g_InGamePlayerStatusTextSlots (*(InGamePlayerStatusTextSlot (*)[8])0x0054fbdc)
+#define g_InGameStateTickSpinLock (*(dword *)0x00563278)
+#define g_EndGameResultsCurrentMusicTrackId (*(dword *)0x00563270)
+#define g_InGameSessionStartedNetworked (*(undefined *)0x0056a604)
+#define g_InGameSessionNameScratchUtf16 (*(undefined2 *)0x00553538)
+#define g_InGameWorldRuntimeDwordArray256 (*(undefined *)0x005637ac)
+#define g_InGameSessionNotificationTimeoutTicks (*(dword *)0x0056326c)
+#define g_HostCommandBatchSyncSentThisInterval (*(undefined4 *)0x0050f0dc)
+#define g_InGameRuntimeDefaultImageTemplate (*(undefined4 *)0x005505a0)
+#define g_InGameWorldObjectRecords (*(WorldObjectRecord * *)0x005636fc)
+#define g_SessionNetworkTickCounter (*(undefined4 *)0x0050f0d8)
+#define g_InGameNetworkTickCountdown (*(undefined4 *)0x00563274)
+#define g_InGameSelectedTechnologyId (*(PckTechnologyIdCatalog *)0x00563300)
+#define g_FrontendClientPlayerRemovalPacket10007 (*(FrontendPlayerRemovalPacket10007 *)0x00572040)
+#define g_InGamePendingSimulationTicks (*(undefined4 *)0x00563268)
+#define g_SoundStopAllVoices (*(SoundStopAllVoicesProc * *)0x00417354)
+#define g_EndMoviePendingTicks (*(dword *)0x00563bb8)
+#define g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30 (*(UiCommandDispatchRecord (*)[2])0x005658c0)
+#define u_flm_ende0000_flm_0050df4a (*(word (*)[17])0x0050df4a)
+#define g_EndGameElapsedTimeScratchUtf16 (*(undefined *)0x00516ee0)
+#define g_RuntimeMaintenanceCallbackPhases (*(RuntimeMaintenanceCallbackPhasesTyped *)0x00562dec)
+#define g_KeyboardSpecialKeyDown (*(byte (*)[32])0x004171f0)
+#define g_SoundIsVoicePlaying (*(SoundIsVoicePlayingProc * *)0x00417358)
+#define g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 (*(UiCommandDispatchRecord (*)[15])0x00567110)
+#define g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 (*(UiCommandDispatchRecord (*)[63])0x005679b0)
+#define g_InGameCommandTargetTransientEffectMarkerCount (*(undefined4 *)0x005630cc)
+#define g_InGameCommandPreviewWorldYQ12 (*(undefined4 *)0x0056372c)
+#define g_InGameCommandPreviewArmyAssetId (*(undefined4 *)0x00563740)
+#define g_InGameCommandPreviewWorldXQ12 (*(undefined4 *)0x00563730)
+#define g_InGamePointerInteractionStateFlags (*(undefined4 *)0x00563744)
+#define g_InGameCommandPreviewSurfaceHeightQ12OrSentinel (*(undefined4 *)0x00563734)
+#define g_UiAction1012SubresourceByState (*(dword (*)[16])0x00562e1c)
+#define g_InGameOwnedEntityTransientEffectMarkerCount (*(undefined4 *)0x00562ec8)
+#define g_InGamePlacementHeading16 (*(undefined4 *)0x00563704)
+#define g_InGamePlacementPreviewArmyRuntime (*(GameEntityRuntime * *)0x00563714)
+#define g_InGamePlacementWorldYQ12 (*(undefined4 *)0x00563718)
+#define g_InGamePlacementWorldXQ12 (*(undefined4 *)0x0056371c)
+#define g_InGameCommandPreviewArmyRuntime (*(GameEntityRuntime * *)0x00563724)
+#define g_InGameCommandPreviewHeading16 (*(undefined4 *)0x00563728)
+#define g_InGameCommandPointerCaptureX (*(undefined4 *)0x00563738)
+#define g_InGameCommandPointerCaptureY (*(undefined4 *)0x0056373c)
+#define g_InGamePlacementPointerCaptureX (*(undefined4 *)0x00563708)
+#define g_InGamePlacementPointerCaptureY (*(undefined4 *)0x0056370c)
+#define g_InGameSelectionInsertTripletDwords (*(undefined *)0x0055f0c4)
+#define g_InGameSelectionRemoveTripletDwords (*(undefined *)0x0055f0f4)
+#define g_InGameSelectionInsertTripletDwordCount (*(undefined4 *)0x0055f124)
+#define g_InGameSelectionRemoveTripletDwordCount (*(undefined4 *)0x0055f128)
+#define u_flm_movie000_flm_0056314e (*(word (*)[1])0x0056314e)
+#define g_UiAction1012ControlOffsets (*(sdword (*)[7])0x00562d30)
+#define g_EmptyFrontendPlayerNameUtf16 (*(undefined *)0x0055058e)
+#define g_UiAction1012TargetPlayerIndices (*(dword (*)[7])0x005636e0)
+#define g_UiAction1012PlayerIndexTextOffsets (*(sdword (*)[7])0x00562cc0)
+#define g_UiAction1012PlayerLabelTextOffsets (*(sdword (*)[7])0x00562cdc)
+#define g_UiAction1012IconImageOffsets (*(sdword (*)[7])0x00562cf8)
+#define g_UiAction1012StateTextOffsets (*(sdword (*)[7])0x00562d14)
+#define g_UiAction1012SlotPageOffsets (*(sdword (*)[7])0x00562d4c)
+#define u_Hmmm__na_gut________0056321e (*(word (*)[1])0x0056321e)
+#define g_UiSevenSlotSelectionControlOffsets (*(sdword (*)[7])0x00562dd0)
+#define g_InGameTechnologyResearchTimeTextUtf16 (*(UiTechnologyValueTextBuffer16Utf16 *)0x0055054e)
+#define g_InGameTechnologyCostRichTextScratch (*(undefined *)0x005504fc)
+#define g_RichTextInsufficientResourceColorArgb (*(undefined4 *)0x0041a764)
+#define g_InGameTechnologyCostColorWords8 (*(word (*)[8])0x005504fe)
+#define g_InGameTechnologyXeniteCostTextUtf16 (*(UiTechnologyValueTextBuffer16Utf16 *)0x0055050e)
+#define g_InGameTechnologyEnergyCostTextUtf16 (*(UiTechnologyValueTextBuffer16Utf16 *)0x0055052e)
+#define g_UiAction100AControlOffsets (*(sdword (*)[8])0x00562628)
+#define g_UiCommandModeF (*(dword *)0x0056d73c)
+#define g_UiCommandModeC (*(dword *)0x0056d724)
+#define g_UiCommandModeD (*(dword *)0x0056d728)
+#define g_UiCommandSelectionPageBaseIndex (*(dword *)0x0056d744)
+#define g_UiMappedCommandControlOffsets (*(sdword (*)[12])0x0056d7dc)
+#define g_UiCommandModeA (*(dword *)0x0056d730)
+#define g_UiCommandModeB (*(dword *)0x0056d734)
+#define g_UiCommandModeE (*(dword *)0x0056d72c)
+#define u_Dscreen00_pcx_00572e3a (*(word (*)[1])0x00572e3a)
+#define g_UiCommandModeGOwnerFactionIndex (*(FactionRuntimeIndex *)0x0056d74c)
+#define g_GraphicsFramebufferCaptureRegion (*(GraphicsFramebufferCaptureRegionProc * *)0x004a8ee4)
+#define g_InGameCameraCommandDispatchRecords16 (*(InGameCameraCommandDispatchTable *)0x0056f280)
+#define g_UiCommandDragReferenceX (*(sdword *)0x0056d754)
+#define g_UiCommandDragReferenceY (*(sdword *)0x0056d758)
+#define g_UiCommandCallerMaskHighBit (*(undefined4 *)0x0056d760)
+#define g_UiCommandDragAnchorWorldXQ12 (*(undefined4 *)0x0056d81c)
+#define g_UiCommandDragAnchorWorldYQ12 (*(undefined4 *)0x0056d820)
+#define g_UiCommandDragStartScreenX (*(undefined4 *)0x0056d824)
+#define g_UiCommandDragStartScreenY (*(undefined4 *)0x0056d828)
+#define g_UiCommandSelectionAnchorWorldXQ12 (*(undefined4 *)0x0056d80c)
+#define g_UiCommandSelectionAnchorWorldYQ12 (*(undefined4 *)0x0056d810)
+#define g_UiCommandSelectionCurrentWorldXQ12 (*(undefined4 *)0x0056d814)
+#define g_UiCommandSelectionCurrentWorldYQ12 (*(undefined4 *)0x0056d818)
+#define g_UiCommandTerrainMaskToggleValue (*(undefined4 *)0x0056d748)
+#define g_FrontendClientPlayerCommandRecords (*(FrontendCommandPacketRecord (*)[8])0x00572060)
+#define g_FrontendClientCommandBatchPacketBuffer (*(FrontendCommandPacketRecord (*)[8])0x00572160)
+#define g_FrontendPacket10022Buffer (*(FrontendPacket10022StatePending *)0x00572280)
+#define InGameCommandHandlerCodeRegionEnd (*(undefined *)0x00562499)
+#define g_FrontendPacket10023Buffer (*(FrontendPacket10023StateAck *)0x005722a0)
+#define g_FrontendPacket10021Buffer (*(FrontendCommandPacketRecord *)0x00572260)
+#define g_InGameUiActionHandlersPage12 (*(InGameUiActionHandlerPage12Prefix28 *)0x005625b8)
+#define u_texte_techno_str_0050dec4 (*(word (*)[17])0x0050dec4)
+#define u_texte_neterror_str_0050f104 (*(word (*)[19])0x0050f104)
+#define u_texte_hilfe_str_00545b34 (*(word (*)[16])0x00545b34)
+#define u_texte_menue_str_00545ba0 (*(word (*)[16])0x00545ba0)
+#define u_texte_level_str_00545bc0 (*(word (*)[16])0x00545bc0)
+#define u_texte_inhalt_str_00545be0 (*(word (*)[17])0x00545be0)
+#define u_texte_help_str_00563170 (*(word (*)[15])0x00563170)
+#define u_texte_tastatur_str_005631b8 (*(word (*)[19])0x005631b8)
+#define u_Thandor_00572e10 (*(word (*)[8])0x00572e10)
+#define s_Software_Planet4_Thandor_00572e20 (*(char (*)[25])0x00572e20)
+#define u_daten_pck_00572e56 (*(word (*)[10])0x00572e56)
+#define u_modelle_pck_00572e6a (*(word (*)[12])0x00572e6a)
+#define u_graphik_pck_00572e82 (*(word (*)[12])0x00572e82)
+#define u_sound_pck_00572e9a (*(word (*)[10])0x00572e9a)
+#define g_DataPackageHandle (*(dword *)0x00572ac0)
+#define u_filme_pck_00572eae (*(word (*)[10])0x00572eae)
+#define g_ModelPackageHandle (*(dword *)0x00572ac4)
+#define u_level_pck_00572ec2 (*(word (*)[10])0x00572ec2)
+#define g_GraphicsPackageHandle (*(dword *)0x00572ac8)
+#define u_sound_button0_sam_00572f06 (*(word (*)[18])0x00572f06)
+#define g_MoviePackageHandle (*(dword *)0x00572ad0)
+#define u_sound_button1_sam_00572f2a (*(word (*)[18])0x00572f2a)
+#define g_LevelPackageHandle (*(dword *)0x00572ad4)
+#define u_sound_button2_sam_00572f4e (*(word (*)[18])0x00572f4e)
+#define u_sound_button3_sam_00572f72 (*(word (*)[18])0x00572f72)
+#define u_sound_button4_sam_00572f96 (*(word (*)[18])0x00572f96)
+#define u_sound_button5_sam_00572fba (*(word (*)[18])0x00572fba)
+#define u_sound_button6_sam_00572fde (*(word (*)[18])0x00572fde)
+#define u_gfx_panel_stat_gfx_00573002 (*(word (*)[19])0x00573002)
+#define u_engine_pcx_fnc_00573028 (*(word (*)[15])0x00573028)
+#define g_BootstrapApiBindings (*(DynamicApiBinding (*)[8])0x00573f74)
+#define g_InGameStatusPanelTextureSource (*(GraphicsTextureSourceAsset * *)0x00550944)
+#define g_CoreAssetScratchSlice0 (*(byte * *)0x00551ae0)
+#define g_CoreAssetScratchSlice1 (*(byte * *)0x00551b48)
+#define g_CoreAssetScratchSlice2 (*(byte * *)0x00551bb0)
+#define g_CoreAssetScratchSlice3 (*(byte * *)0x00551c18)
+#define g_CoreAssetScratchSlice4 (*(byte * *)0x00551c80)
+#define g_CoreAssetScratchSlice5 (*(byte * *)0x00551ce8)
+#define g_CoreAssetScratchSlice6 (*(byte * *)0x00551d50)
+#define s_InstallRegistryValueNameCD (*(undefined *)0x00572e39)
+#define g_InGameFactionStatusTextScratchUtf16Mirror (*(word * *)0x00552a8c)
+#define g_InstallRegistryKeyHandle (*(undefined4 *)0x00572b04)
+#define g_InGameUiCommandModeActionHandlers30 (*(InGameUiCommandModeActionHandlerPage11Prefix3 *)0x00562540)
+#define g_PatchArchivePathTemplateUtf16 (*(PatchArchivePathTemplate18 *)0x00572ed6)
+#define g_LevelArchivePathTemplateUtf16 (*(LevelArchivePathTemplate18 *)0x00572eee)
+#define g_PcxFunctionExport3 (*(PcxEncodeProc * *)0x00572af8)
+#define g_InstallRegistryValueDataCapacityBytes (*(undefined *)0x00572b08)
+#define g_InstallRegistryValueType (*(undefined4 *)0x00572b0c)
+#define g_InstallRegistryValueDataA (*(undefined *)0x00572b10)
+#define g_InstallDirectoryScratchUtf16 (*(undefined *)0x00572c10)
+#define g_FrontendPlayerListRow1 (*(dword *)0x0054ddb4)
+#define g_FrontendPlayerListRow2 (*(dword *)0x0054ddb8)
+#define g_FrontendPlayerListRow3 (*(dword *)0x0054ddbc)
+#define g_FrontendPlayerListRow4 (*(dword *)0x0054ddc0)
+#define g_FrontendPlayerListRow5 (*(dword *)0x0054ddc4)
+#define g_FrontendPlayerListRow6 (*(dword *)0x0054ddc8)
+#define g_FrontendPlayerListRow7 (*(dword *)0x0054ddcc)
+#define g_CursorSourceAsset (*(GraphicsTextureSourceAsset * *)0x0041680c)
+#define g_InGameUiActionHandlersPage10 (*(InGameUiActionHandlerPage10Prefix40 *)0x005624a0)
+#define g_IntroMoviePendingTicks (*(dword *)0x00572b00)
+#define u_flm_intro0_flm_00573046 (*(word (*)[15])0x00573046)
+#define s_NOINTRO_00573064 (*(char (*)[8])0x00573064)
+#define g_DynamicModules (*(DynamicModuleEntry (*)[16])0x00573ef0)
+#define g_DynamicModuleCount (*(dword *)0x00573f70)
+#define dynapi_9 (*(char (*)[13])0x005744ec)
+#define u_texte_error_str_00407d20 (*(word (*)[16])0x00407d20)
+#define g_FatalErrorExitFallbackDispatchCf (*(FatalErrorPassThroughProc * *)0x00407d1c)
+#define g_MainWindow (*(HWND *)0x005856b4)
+#define g_FatalErrorNarrowBuffer (*(byte (*)[1024])0x00575480)
+#define u_THANDOR_cfg_0040e23d (*(word (*)[12])0x0040e23d)
+#define u_engine_pck_0040e255 (*(word (*)[11])0x0040e255)
+#define g_DefaultComputerLabelUtf16 (*(word (*)[32])0x0040e270)
+#define g_FileSystemConfigCharacterNormalizationMap (*(undefined *)0x004027d0)
+#define g_FileSystemInitComputerNameCapacityOrConfigCursor (*(pointer *)0x00575a94)
+#define g_FileSystemConfigRemainingBytes (*(dword *)0x00575a98)
+#define g_EnginePackageLowPriorityMountHandle (*(dword *)0x0040b220)
+#define g_FileSystemGetCurrentDirectoryCf (*(FileSystemGetCurrentDirectoryCfProc * *)0x0040b1e0)
+#define g_FileSystemSetCurrentDirectoryCf (*(FileSystemSetCurrentDirectoryCfProc * *)0x0040b1e4)
+#define g_FileSystemRemoveDirectoryCf (*(FileSystemRemoveDirectoryCfProc * *)0x0040b1ec)
+#define g_FileSystemGetFreeAndTotalBytesRegs (*(FileSystemGetFreeAndTotalBytesRegsProc * *)0x0040b1fc)
+#define g_FileSystemGetLastWriteDosDateCf (*(FileSystemGetLastWriteDosDateCfProc * *)0x0040b200)
+#define g_FileSystemGetLastWriteTimeHighCf (*(FileSystemGetLastWriteTimeHighCfProc * *)0x0040b204)
+#define g_FileSystemGetVolumeSerialNumberCf (*(FileSystemGetVolumeSerialNumberCfProc * *)0x0040b208)
+#define g_FileSystemMoveCf (*(FileSystemMoveCfProc * *)0x0040b20c)
+#define g_FileSystemCopyCf (*(FileSystemCopyCfProc * *)0x0040b210)
+#define g_InitialWorkingDirectory (*(WidePathBuffer256 *)0x0040abc0)
+#define g_Win32PathScratchA (*(byte (*)[256])0x00575a9c)
+#define g_Win32FileBytesTransferred (*(dword *)0x00575950)
+#define g_Win32PathScratchB (*(byte (*)[256])0x00575b9c)
+#define g_Win32FileCreationTimeOrDosDateScratch (*(undefined4 *)0x00575954)
+#define g_Win32FileLastWriteTimeScratch (*(undefined *)0x00575964)
+#define g_Win32FileLastWriteTimeHighScratch (*(undefined4 *)0x00575968)
+#define g_Win32FileLastAccessTimeScratch (*(undefined *)0x0057595c)
+#define g_Win32DiskSectorsPerClusterScratch (*(undefined4 *)0x0057596c)
+#define g_Win32DriveRootPathScratchA (*(undefined *)0x00575c9c)
+#define g_Win32DiskBytesPerSectorScratch (*(undefined4 *)0x00575970)
+#define g_Win32DiskFreeClustersScratch (*(undefined4 *)0x00575974)
+#define g_Win32DiskTotalClustersScratch (*(undefined4 *)0x00575978)
+#define g_Win32FindDataFileNameSecondCharA (*(undefined *)0x00575981)
+#define g_Win32FindDataFileNameThirdCharA (*(undefined *)0x00575982)
+#define g_Win32FindDataFileNameA (*(undefined *)0x00575980)
+#define g_GraphicsCursorAnimationCountdown (*(undefined4 *)0x004167fc)
+#define g_CursorInputClockValue (*(dword *)0x004167f8)
+#define g_MouseEventsProcessed (*(dword *)0x00576c1c)
+#define g_GraphicsBackendAccessState (*(sdword *)0x00577e4c)
+#define g_PrimarySurface3 (*(IDirectDrawSurface3 * *)0x00577c4c)
+#define g_CursorFrameRecords (*(GraphicsCursorFrameRecord * *)0x00416810)
+#define g_DirectInput (*(IDirectInputA * *)0x00576b10)
+#define u_engine_mouse_gfx_00416864 (*(word (*)[17])0x00416864)
+#define g_MouseDevice (*(IDirectInputDeviceA * *)0x00576b14)
+#define u_engine_mouse_dat_00416886 (*(word (*)[17])0x00416886)
+#define g_DirectInputMousePreviousDisplayModeHookCf (*(SoftwareDisplayModeHookProc * *)0x00576c20)
+#define dynapi_3 (*(char (*)[7])0x005744ba)
+#define g_hInstance (*(HINSTANCE *)0x005856b0)
+#define pDirectInputCreateA (*(DirectInputCreateA * *)0x00573fc4)
+#define dynapi_19 (*(char (*)[19])0x00574586)
+#define g_CursorMaxWidth (*(dword *)0x00416820)
+#define g_CursorMaxHeight (*(dword *)0x00416824)
+#define GUID_SysMouse_Local (*(TH_LEGACY_GUID *)0x00576b18)
+#define MouseDataFormat (*(DIDATAFORMAT *)0x00576b58)
+#define MouseBufferProperty (*(DIPROPDWORD *)0x00576be0)
+#define g_MousePollBusy (*(dword *)0x00576bf8)
+#define g_MouseButtonMask (*(GraphicsCursorButtonState *)0x00576c18)
+#define DAT_00007f00 (*(undefined *)0x00007f00)
+#define g_MouseDeviceDataCount (*(dword *)0x00576bf4)
+#define g_MouseDeviceEvent (*(DIDEVICEOBJECTDATA_DX3 *)0x00576bfc)
+#define g_MouseX (*(UiPixelCoordinate *)0x00576c0c)
+#define g_MouseY (*(UiPixelCoordinate *)0x00576c10)
+#define g_MouseWheelDelta (*(UiPointerWheelDelta *)0x00576c14)
+#define g_SoftwareFramebufferCreate (*(SoftwareFramebufferCreateProc * *)0x004a8ed8)
+#define g_CursorSavedBackground (*(SoftwareFramebufferAccess * *)0x004a8e74)
+#define g_CursorCompositeBuffer (*(SoftwareFramebufferAccess * *)0x004a8e78)
+#define g_CursorAlternateSavedBackground (*(SoftwareFramebufferAccess * *)0x004a8e7c)
+#define g_KeyboardToggleLatchMask (*(dword *)0x004171ec)
+#define g_GraphicsEnumerateAllDevicesFlag (*(dword *)0x00578074)
+#define DAT_00000017 (*(undefined *)0x00000017)
+#define s_D3DALL_00578078 (*(char (*)[7])0x00578078)
+#define s_GLIDE_0057ee84 (*(char (*)[6])0x0057ee84)
+#define IID_IDirect3D2_Local (*(TH_LEGACY_GUID *)0x00577c20)
+#define dynapi_2 (*(char (*)[6])0x005744b4)
+#define g_GraphicsRefreshTextureColor (*(GraphicsTextureSetRefreshProc * *)0x0048583c)
+#define g_GraphicsTextureSlots (*(GraphicsTextureResource ** *)0x0057805c)
+#define g_TexturePaletteEntries (*(DirectDrawPaletteEntry * *)0x00578058)
+#define pDirectDrawCreate (*(DirectDrawCreate * *)0x00573fbc)
+#define pDirectDrawEnumerateA (*(DirectDrawEnumerateA * *)0x00573fc0)
+#define dynapi_17 (*(char (*)[17])0x0057455e)
+#define dynapi_18 (*(char (*)[21])0x00574570)
+#define g_GraphicsBackendRefreshActiveAdapterCf (*(GraphicsBackendRefreshActiveAdapterProc * *)0x004a8ed4)
+#define g_GraphicsDisplayModeFinalizeCf (*(SoftwareDisplayModeHookProc * *)0x00577e30)
+#define g_Direct3DOpaqueTextureFormatBitsPerPixel (*(undefined4 *)0x00577d9c)
+#define g_Direct3DOpaqueTextureFormatRedBitMask (*(undefined *)0x00577da0)
+#define g_Direct3DOpaqueTextureFormatGreenBitMask (*(undefined *)0x00577da4)
+#define g_Direct3DOpaqueTextureFormatBlueBitMask (*(undefined *)0x00577da8)
+#define g_Direct3DAlphaTextureFormatAlphaBitMask (*(undefined *)0x00577dcc)
+#define g_Direct3DAlphaTextureFormatBitsPerPixel (*(undefined4 *)0x00577dbc)
+#define IID_IDirectDraw2_Local (*(TH_LEGACY_GUID *)0x00577c00)
+#define g_DisplayFramebufferAccess (*(SoftwareFramebufferAccess *)0x00578060)
+#define IID_IDirectDrawSurface3_Local (*(TH_LEGACY_GUID *)0x00577c10)
+#define g_DirectDraw (*(IDirectDraw * *)0x00577c40)
+#define g_DirectDraw2 (*(IDirectDraw2 * *)0x00577c44)
+#define g_PrimarySurfaceBase (*(IDirectDrawSurface * *)0x00577c48)
+#define g_BackSurfaceBase (*(IDirectDrawSurface * *)0x00577c50)
+#define g_BackSurface3 (*(IDirectDrawSurface3 * *)0x00577c54)
+#define g_Direct3D2 (*(IDirect3D2 * *)0x00577c58)
+#define g_Direct3DDevice2 (*(IDirect3DDevice2 * *)0x00577c5c)
+#define g_ZSurfaceBase (*(IDirectDrawSurface * *)0x00577c60)
+#define g_ZSurface3 (*(IDirectDrawSurface3 * *)0x00577c64)
+#define g_Direct3DViewport2 (*(IDirect3DViewport2 * *)0x00577c68)
+#define g_SurfaceDesc (*(DDSURFACEDESC_DX6 *)0x00577c80)
+#define g_GraphicsTextureSourceBlitIntegerScaledSourceAlpha (*(GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc * *)0x004a8f0c)
+#define g_ImmediateVertexCount (*(dword *)0x00578050)
+#define g_LastViewportRect (*(D3DRECT_DX6 *)0x00578040)
+#define g_Direct3DTextureFilterMode (*(undefined4 *)0x00577e10)
+#define g_Direct3DTexturePerspectiveEnabled (*(undefined4 *)0x00577e14)
+#define g_Direct3DAntialiasMode (*(undefined4 *)0x00577e18)
+#define g_PrimitiveRenderStateCache (*(GraphicsPrimitiveRenderStateCache *)0x00577e1c)
+#define g_BoundTextureHandle (*(dword *)0x00577e2c)
+#define g_GraphicsTextureSourceBlitSourceAlphaPaletteBank (*(GraphicsTextureSourceBlitSourceAlphaPaletteBankProc * *)0x004a8f14)
+#define g_CursorCurrentVisibilityToken (*(sdword *)0x00577e34)
+#define g_CursorAlternateVisibilityToken (*(sdword *)0x00577e38)
+#define g_GlideRuntimeActiveCount (*(undefined4 *)0x0057ed18)
+#define g_CursorAlternateDrawY (*(sdword *)0x00577e48)
+#define g_CurrentClearRect (*(D3DRECT_DX6 *)0x00577c70)
+#define g_CursorCurrentDrawX (*(sdword *)0x00577e3c)
+#define g_CursorCurrentDrawY (*(sdword *)0x00577e40)
+#define g_CursorAlternateDrawX (*(sdword *)0x00577e44)
+#define DAT_0000001b (*(undefined *)0x0000001b)
+#define g_ActiveTextureUploads (*(dword *)0x00578070)
+#define g_GraphicsCursorSurfaceDescScratch (*(dword *)0x00577cf0)
+#define g_GraphicsCursorSurfacePitchBytes (*(sdword *)0x00577d00)
+#define g_GraphicsCursorSurfacePixels (*(byte * *)0x00577d14)
+#define g_Direct3DViewportState (*(D3DVIEWPORT2 *)0x00577d60)
+#define IID_IDirect3DTexture2_Local (*(TH_LEGACY_GUID *)0x00577c30)
+#define g_GraphicsDispatchTable (*(GraphicsDispatchTable *)0x00577ea0)
+#define g_PrimitiveRenderStatePresets (*(GraphicsPrimitiveRenderStatePreset (*)[5])0x00577e50)
+#define g_ImmediateTLVertices (*(D3DTLVERTEX_DX6 (*)[4])0x00577fc0)
+#define g_TextureUseSerial (*(dword *)0x00578054)
+#define g_GrAADrawTriangle (*(undefined *)0x00573fd8)
+#define g_GlideEnumerationResolutionQuery (*(undefined *)0x0057ecd0)
+#define g_GrGet (*(GrGetImportProc * *)0x005740f8)
+#define g_GrGetString (*(GrGetStringImportProc * *)0x00574108)
+#define g_GrGlideInit (*(GrGlideInitImportProc * *)0x00574120)
+#define g_GrQueryResolutions (*(GrQueryResolutionsImportProc * *)0x00574178)
+#define g_GrSstSelect (*(GrSstSelectImportProc * *)0x005741a0)
+#define dynapi_5 (*(char (*)[8])0x005744ca)
+#define g_GrGlideShutdown (*(GrGlideShutdownImportProc * *)0x00574138)
+#define g_GuGammaCorrectionRGB (*(GuGammaCorrectionRGBImportProc * *)0x00574290)
+#define g_GrSstWinClose (*(GrSstWinCloseImportProc * *)0x005741a8)
+#define g_GlideWindowContextHandle (*(undefined4 *)0x0057ed14)
+#define g_GrDepthMask (*(GrDepthMaskImportProc * *)0x00574070)
+#define g_GrColorCombine (*(GrColorCombineImportProc * *)0x00574030)
+#define g_GrAlphaCombine (*(GrAlphaCombineImportProc * *)0x00573fe8)
+#define g_GrAlphaBlendFunction (*(GrAlphaBlendFunctionImportProc * *)0x00573fe0)
+#define g_GrCoordinateSpace (*(GrCoordinateSpaceImportProc * *)0x00574048)
+#define g_GrCullMode (*(GrCullModeImportProc * *)0x00574050)
+#define g_GrDepthBufferFunction (*(GrDepthBufferFunctionImportProc * *)0x00574060)
+#define g_GrDepthBufferMode (*(GrDepthBufferModeImportProc * *)0x00574068)
+#define g_GlideTmuCount (*(dword *)0x0057edc8)
+#define g_GlideBoundTexture (*(GraphicsTextureResource * *)0x0057edf0)
+#define g_GlideTmuMinAddress (*(dword (*)[16])0x0057edf4)
+#define g_GlideTmuMaxAddress (*(dword (*)[16])0x0057ee34)
+#define g_GlideResidentTextureTail (*(GraphicsTextureResource * *)0x0057ee74)
+#define g_GlideResidentTextureHead (*(GraphicsTextureResource * *)0x0057ee78)
+#define g_GrVertexLayout (*(GrVertexLayoutImportProc * *)0x00574250)
+#define g_GlideSelectedResolutionQuery (*(undefined4 *)0x0057ece0)
+#define g_GrSstWinOpen (*(GrSstWinOpenImportProc * *)0x005741b0)
+#define g_GrTexClampMode (*(GrTexClampModeImportProc * *)0x005741c0)
+#define g_GrTexCombine (*(GrTexCombineImportProc * *)0x005741c8)
+#define g_GrTexFilterMode (*(GrTexFilterModeImportProc * *)0x00574200)
+#define g_GrTexMaxAddress (*(GrTexMaxAddressImportProc * *)0x00574210)
+#define g_GlideDepthWriteEnabledState (*(undefined4 *)0x0057edec)
+#define g_GrTexMinAddress (*(GrTexMinAddressImportProc * *)0x00574218)
+#define g_GlideTexturingDisabledState (*(dword *)0x0057ede4)
+#define g_GrTexMipMapMode (*(GrTexMipMapModeImportProc * *)0x00574220)
+#define g_GlideBlendModeState (*(dword *)0x0057ede8)
+#define g_GrFinish (*(GrFinishImportProc * *)0x005740d0)
+#define g_GrLfbLock (*(GrLfbLockImportProc * *)0x00574150)
+#define g_GlidePrimaryLfbInfo (*(undefined *)0x0057ed20)
+#define g_GlidePrimaryLfbPixels (*(undefined4 *)0x0057ed24)
+#define g_GlidePrimaryLfbStrideBytes (*(undefined4 *)0x0057ed28)
+#define g_GlideSecondBufferOffset (*(sdword *)0x0057ee7c)
+#define g_GlideSecondaryLfbInfo (*(undefined *)0x0057ed34)
+#define g_GlideSecondBufferBase (*(byte * *)0x0057ee80)
+#define g_GlideSecondaryLfbStrideBytes (*(undefined4 *)0x0057ed3c)
+#define g_GrLfbUnlock (*(GrLfbUnlockImportProc * *)0x00574160)
+#define g_GrViewport (*(GrViewportImportProc * *)0x00574258)
+#define g_GrClipWindow (*(GrClipWindowImportProc * *)0x00574028)
+#define g_GrBufferClear (*(GrBufferClearImportProc * *)0x00574008)
+#define g_GlideVertex0ReciprocalDepth (*(dword *)0x0057ed5c)
+#define g_GrTexSource (*(GrTexSourceImportProc * *)0x00574240)
+#define g_GlideVertex0PerspectiveScale (*(dword *)0x0057ed60)
+#define g_GlideVertex1ReciprocalDepth (*(dword *)0x0057ed7c)
+#define g_GlideVertex1PerspectiveScale (*(dword *)0x0057ed80)
+#define g_GlideVertex2ReciprocalDepth (*(dword *)0x0057ed9c)
+#define g_GlideVertex2PerspectiveScale (*(dword *)0x0057eda0)
+#define g_GlideVertex0ProjectedTextureU (*(dword *)0x0057ed68)
+#define g_GlideVertex0ProjectedTextureV (*(dword *)0x0057ed6c)
+#define g_GlideVertex1ProjectedTextureU (*(dword *)0x0057ed88)
+#define g_GlideVertex1ProjectedTextureV (*(dword *)0x0057ed8c)
+#define g_GlideVertex2ProjectedTextureU (*(dword *)0x0057eda8)
+#define g_GlideVertex2ProjectedTextureV (*(dword *)0x0057edac)
+#define g_GlideVertex0DiffuseColor (*(dword *)0x0057ed70)
+#define g_GlideVertex1DiffuseColor (*(dword *)0x0057ed90)
+#define g_GlideVertex2DiffuseColor (*(dword *)0x0057edb0)
+#define g_GlideVertex0ScreenX (*(dword *)0x0057ed54)
+#define g_GlideVertex0ScreenY (*(dword *)0x0057ed58)
+#define g_GlideVertex1ScreenX (*(dword *)0x0057ed74)
+#define g_GlideVertex1ScreenY (*(dword *)0x0057ed78)
+#define g_GlideVertex2ScreenX (*(dword *)0x0057ed94)
+#define g_GlideVertex2ScreenY (*(dword *)0x0057ed98)
+#define g_GrDrawTriangle (*(GrDrawTriangleImportProc * *)0x005740a8)
+#define g_GlideTextureColorUpload (*(GlideTextureUploadProc * (*)[3])0x0057edcc)
+#define g_GrTexDownloadMipMap (*(GrTexDownloadMipMapImportProc * *)0x005741d8)
+#define g_GlideTextureAlphaUpload (*(GlideTextureUploadProc * (*)[3])0x0057edd8)
+#define g_GrBufferSwap (*(GrBufferSwapImportProc * *)0x00574010)
+#define g_GrLfbReadRegion (*(GrLfbReadRegionImportProc * *)0x00574158)
+#define WaveFormat_PCM_22050_Stereo16 (*(WAVEFORMATEX *)0x00582ef0)
+#define PrimarySoundBufferDesc (*(DSBUFFERDESC_DX6 *)0x00582f10)
+#define dynapi_4 (*(char (*)[7])0x005744c2)
+#define g_DirectSound (*(IDirectSound * *)0x00582ee0)
+#define g_PrimarySoundBuffer (*(IDirectSoundBuffer * *)0x00582ee4)
+#define g_PrimaryVolume (*(TH_LEGACY_LONG *)0x00582ee8)
+#define g_PrimaryPan (*(TH_LEGACY_LONG *)0x00582eec)
+#define g_SoundQueryVoiceRegs (*(SoundQueryVoiceRegsProc * *)0x0041735c)
+#define pDirectSoundCreate (*(DirectSoundCreate * *)0x00573fc8)
+#define pDirectSoundEnumerateA (*(DirectSoundEnumerateA * *)0x00573fcc)
+#define dynapi_20 (*(char (*)[18])0x0057459a)
+#define g_DirectSoundVoiceSetRegistry (*(DirectSoundVoiceSet ** *)0x00582f24)
+#define pDirectSoundCaptureCreate (*(DirectSoundCaptureCreate * *)0x00573fd0)
+#define dynapi_21 (*(char (*)[22])0x005745ac)
+#define pDirectSoundCaptureEnumerateA (*(DirectSoundCaptureEnumerateA * *)0x00573fd4)
+#define dynapi_22 (*(char (*)[25])0x005745c2)
+#define dynapi_23 (*(char (*)[29])0x005745dc)
+#define g_DirectSoundGainAttenuation (*(sdword (*)[129])0x00582f2e)
+#define NetworkBackendInstanceDescriptorPrefix_00584040 (*(NetworkBackendInstanceDescriptorPrefix *)0x00584040)
+#define g_NetworkBackendMode (*(dword *)0x00583d60)
+#define g_WinSockStartupData (*(WinSockData11 *)0x00583d64)
+#define s_Wsock32Export_accept (*(char (*)[7])0x00574d40)
+#define s_Wsock32Export_bind (*(char (*)[5])0x00574d48)
+#define s_Wsock32Export_closesocket (*(char (*)[12])0x00574d4e)
+#define s_Wsock32Export_connect (*(char (*)[8])0x00574d5a)
+#define s_Wsock32Export_getpeername (*(char (*)[12])0x00574d62)
+#define s_Wsock32Export_getsockname (*(char (*)[12])0x00574d6e)
+#define s_Wsock32Export_getsockopt (*(char (*)[11])0x00574d7a)
+#define s_Wsock32Export_htonl (*(char (*)[6])0x00574d86)
+#define s_Wsock32Export_htons (*(char (*)[6])0x00574d8c)
+#define s_Wsock32Export_inet_addr (*(char (*)[10])0x00574d92)
+#define s_Wsock32Export_inet_ntoa (*(char (*)[10])0x00574d9c)
+#define s_Wsock32Export_ioctlsocket (*(char (*)[12])0x00574da6)
+#define s_Wsock32Export_listen (*(char (*)[7])0x00574db2)
+#define s_Wsock32Export_ntohl (*(char (*)[6])0x00574dba)
+#define s_Wsock32Export_ntohs (*(char (*)[6])0x00574dc0)
+#define s_Wsock32Export_recv (*(char (*)[5])0x00574dc6)
+#define s_Wsock32Export_recvfrom (*(char (*)[9])0x00574dcc)
+#define s_Wsock32Export_select (*(char (*)[7])0x00574dd6)
+#define s_Wsock32Export_send (*(char (*)[5])0x00574dde)
+#define s_Wsock32Export_sendto (*(char (*)[7])0x00574de4)
+#define s_Wsock32Export_setsockopt (*(char (*)[11])0x00574dec)
+#define s_Wsock32Export_shutdown (*(char (*)[9])0x00574df8)
+#define s_Wsock32Export_socket (*(char (*)[7])0x00574e02)
+#define s_Wsock32Export_gethostbyaddr (*(char (*)[14])0x00574e0a)
+#define s_Wsock32Export_gethostbyname (*(char (*)[14])0x00574e18)
+#define s_Wsock32Export_gethostname (*(char (*)[12])0x00574e26)
+#define s_Wsock32Export_getprotobyname (*(char (*)[15])0x00574e32)
+#define s_Wsock32Export_getprotobynumber (*(char (*)[17])0x00574e42)
+#define s_Wsock32Export_getservbyname (*(char (*)[14])0x00574e54)
+#define s_Wsock32Export_getservbyport (*(char (*)[14])0x00574e62)
+#define s_Wsock32Export_WSAAsyncGetHostByAddr (*(char (*)[22])0x00574e70)
+#define s_Wsock32Export_WSAAsyncGetHostByName (*(char (*)[22])0x00574e86)
+#define s_Wsock32Export_WSAAsyncGetProtoByName (*(char (*)[23])0x00574e9c)
+#define s_Wsock32Export_WSAAsyncGetProtoByNumber (*(char (*)[25])0x00574eb4)
+#define s_Wsock32Export_WSAAsyncGetServByName (*(char (*)[22])0x00574ece)
+#define s_Wsock32Export_WSAAsyncGetServByPort (*(char (*)[22])0x00574ee4)
+#define s_Wsock32Export_WSAAsyncSelect (*(char (*)[15])0x00574efa)
+#define s_Wsock32Export_WSACancelAsyncRequest (*(char (*)[22])0x00574f0a)
+#define s_Wsock32Export_WSACancelBlockingCall (*(char (*)[22])0x00574f20)
+#define s_Wsock32Export_WSACleanup (*(char (*)[11])0x00574f36)
+#define s_Wsock32Export_WSAGetLastError (*(char (*)[16])0x00574f42)
+#define s_Wsock32Export_WSAIsBlocking (*(char (*)[14])0x00574f52)
+#define s_Wsock32Export_WSASetBlockingHook (*(char (*)[19])0x00574f60)
+#define s_Wsock32Export_WSAStartup (*(char (*)[11])0x00574f84)
+#define s_Wsock32Export_WSAUnhookBlockingHook (*(char (*)[22])0x00574f90)
+#define g_WinSock_accept (*(WinSock_acceptProc * *)0x005742a0)
+#define g_WinSock_bind (*(WinSock_bindProc * *)0x005742a4)
+#define g_WinSock_closesocket (*(WinSock_closesocketProc * *)0x005742a8)
+#define g_WinSock_connect (*(WinSock_connectProc * *)0x005742ac)
+#define g_WinSock_getpeername (*(WinSock_getpeernameProc * *)0x005742b0)
+#define g_WinSock_getsockname (*(WinSock_getsocknameProc * *)0x005742b4)
+#define g_WinSock_getsockopt (*(WinSock_getsockoptProc * *)0x005742b8)
+#define g_WinSock_htonl (*(WinSock_htonlProc * *)0x005742bc)
+#define g_WinSock_htons (*(WinSock_htonsProc * *)0x005742c0)
+#define g_WinSock_inet_addr (*(WinSock_inet_addrProc * *)0x005742c4)
+#define g_WinSock_inet_ntoa (*(WinSock_inet_ntoaProc * *)0x005742c8)
+#define g_WinSock_ioctlsocket (*(WinSock_ioctlsocketProc * *)0x005742cc)
+#define g_WinSock_listen (*(WinSock_listenProc * *)0x005742d0)
+#define g_WinSock_ntohl (*(WinSock_ntohlProc * *)0x005742d4)
+#define g_WinSock_ntohs (*(WinSock_ntohsProc * *)0x005742d8)
+#define g_WinSock_recv (*(WinSock_recvProc * *)0x005742dc)
+#define g_WinSock_recvfrom (*(WinSock_recvfromProc * *)0x005742e0)
+#define g_WinSock_select (*(WinSock_selectProc * *)0x005742e4)
+#define g_WinSock_send (*(WinSock_sendProc * *)0x005742e8)
+#define g_WinSock_sendto (*(WinSock_sendtoProc * *)0x005742ec)
+#define s_Wsock32ModuleName (*(char (*)[8])0x005744dc)
+#define g_WinSock_setsockopt (*(WinSock_setsockoptProc * *)0x005742f0)
+#define g_WinSock_shutdown (*(WinSock_shutdownProc * *)0x005742f4)
+#define g_WinSock_socket (*(WinSock_socketProc * *)0x005742f8)
+#define g_WinSock_gethostbyaddr (*(WinSock_gethostbyaddrProc * *)0x005742fc)
+#define g_WinSock_gethostbyname (*(WinSock_gethostbynameProc * *)0x00574300)
+#define g_WinSock_gethostname (*(WinSock_gethostnameProc * *)0x00574304)
+#define g_WinSock_getprotobyname (*(WinSock_getprotobynameProc * *)0x00574308)
+#define g_WinSock_getprotobynumber (*(WinSock_getprotobynumberProc * *)0x0057430c)
+#define g_WinSock_getservbyname (*(WinSock_getservbynameProc * *)0x00574310)
+#define g_WinSock_getservbyport (*(WinSock_getservbyportProc * *)0x00574314)
+#define g_WinSock_WSAAsyncGetHostByAddr (*(WinSock_WSAAsyncGetHostByAddrProc * *)0x00574318)
+#define g_WinSock_WSAAsyncGetHostByName (*(WinSock_WSAAsyncGetHostByNameProc * *)0x0057431c)
+#define g_WinSock_WSAAsyncGetProtoByName (*(WinSock_WSAAsyncGetProtoByNameProc * *)0x00574320)
+#define g_WinSock_WSAAsyncGetProtoByNumber (*(WinSock_WSAAsyncGetProtoByNumberProc * *)0x00574324)
+#define g_WinSock_WSAAsyncGetServByName (*(WinSock_WSAAsyncGetServByNameProc * *)0x00574328)
+#define g_WinSock_WSAAsyncGetServByPort (*(WinSock_WSAAsyncGetServByPortProc * *)0x0057432c)
+#define g_WinSock_WSAAsyncSelect (*(WinSock_WSAAsyncSelectProc * *)0x00574330)
+#define g_WinSock_WSACancelAsyncRequest (*(WinSock_WSACancelAsyncRequestProc * *)0x00574334)
+#define g_WinSock_WSACancelBlockingCall (*(WinSock_WSACancelBlockingCallProc * *)0x00574338)
+#define g_WinSock_WSACleanup (*(WinSock_WSACleanupProc * *)0x0057433c)
+#define g_WinSock_WSAGetLastError (*(WinSock_WSAGetLastErrorProc * *)0x00574340)
+#define g_WinSock_WSAIsBlocking (*(WinSock_WSAIsBlockingProc * *)0x00574344)
+#define g_WinSock_WSASetBlockingHook (*(WinSock_WSASetBlockingHookProc * *)0x00574348)
+#define g_WinSock_WSAStartup (*(WinSock_WSAStartupProc * *)0x00574350)
+#define g_WinSock_WSAUnhookBlockingHook (*(WinSock_WSAUnhookBlockingHookProc * *)0x00574354)
+#define g_Ws2_32_WSACleanup (*(WinSock_WSACleanupProc * *)0x005743b8)
+#define g_NetworkFallbackSocket (*(NetworkSocketHandle32 *)0x00583ef2)
+#define g_NetworkFallbackBindEndpoint (*(WinSockAddress *)0x00583efe)
+#define g_NetworkFallbackAddressLength (*(dword *)0x00583efa)
+#define g_NetworkEndpointTextScratchA (*(undefined *)0x00583f40)
+#define g_NetworkBackendActiveSocketAddressLength (*(dword *)0x00583f12)
+#define g_NetworkBackendActiveSocketType (*(dword *)0x00583f16)
+#define g_NetworkBackendActiveProtocol (*(dword *)0x00583f1a)
+#define g_NetworkBackendActiveAddressFamily (*(dword *)0x00583f0e)
+#define g_Ws2_32_WSAIoctl (*(WSAIoctl_Proc * *)0x005743ec)
+#define g_Ws2_32_setsockopt (*(WinSock_setsockoptProc * *)0x005743a0)
+#define g_Ws2_32_socket (*(WinSock_socketProc * *)0x005743a8)
+#define g_Ws2_32_closesocket (*(WinSock_closesocketProc * *)0x00574360)
+#define g_Ws2_32_WSAGetLastError (*(WinSock_WSAGetLastErrorProc * *)0x005743d8)
+#define g_Ws2_32_bind (*(WinSock_bindProc * *)0x0057435c)
+#define g_NetworkBackendBindAddress (*(NetworkBackendSocketAddress16 *)0x00583f22)
+#define g_Ws2_32_htons (*(WinSock_htonsProc * *)0x00574378)
+#define g_NetworkBackendPortNetworkOrderCarrier (*(dword *)0x00583f1e)
+#define g_Ws2_32_recvfrom (*(WinSock_recvfromProc * *)0x00574390)
+#define g_Ws2_32_sendto (*(WinSock_sendtoProc * *)0x0057439c)
+#define g_Ws2_32_WSAStringToAddressA (*(WSAStringToAddressA_Proc * *)0x005744a0)
+#define g_Ws2_32_gethostbyname (*(WinSock_gethostbynameProc * *)0x00574444)
+#define g_Ws2_32_WSAAddressToStringA (*(WSAAddressToStringA_Proc * *)0x00574478)
+#define g_CpuFeatureFlags (*(dword *)0x004027c4)
+#define sz_MainWindowTitle (*(char (*)[15])0x00585d1c)
+#define sz_MainWindowClass (*(char (*)[17])0x00585d2b)
+#define g_MainMessage (*(Win32Message32 *)0x005856c0)
+#define s_SOUND_00582f28 (*(char (*)[6])0x00582f28)
+#define g_MainWindowClassInstanceHandle (*(HINSTANCE *)0x005856e8)
+#define g_MainWindowClassIconHandle (*(HICON *)0x005856ec)
+#define g_MainWindowClassCursorHandle (*(HCURSOR *)0x005856f0)
+#define g_WindowDestroyDepth (*(dword *)0x005856b8)
+#define g_AppActive (*(dword *)0x005856bc)
+#define g_CommandLine (*(CommandLineArgumentMirrorState500 *)0x0058581c)
+#define g_CommandLineWideArguments (*(CommandLineWideArguments *)0x00402028)
+#define g_Arena (*(ArenaState *)0x00585708)
+#define g_TimerSystemState (*(TimerSystemState *)0x0058571c)
+#define g_LocaleSystemState (*(LocaleSystemState *)0x00586a70)
+#define g_LocaleInfoScratch (*(byte (*)[16])0x00586950)
+#define g_LocaleFormatDateFieldsUtf16 (*(LocaleFormatDateFieldsUtf16Proc * *)0x00402794)
+#define g_CPUDetectFeatures (*(CpuDetectFeaturesProc * *)0x004027b8)
+
+/* Unnamed memory cells Ghidra prints as <type>Ram<address>. */
+#define iRam004bcf50 (*(int *)0x004bcf50)
+#define iRam004bcf54 (*(int *)0x004bcf54)
+#define iRam004bcf58 (*(int *)0x004bcf58)
+#define iRam0050b5a4 (*(int *)0x0050b5a4)
+#define iRam0050b5a8 (*(int *)0x0050b5a8)
+#define iRam0050b5ac (*(int *)0x0050b5ac)
+#define uRam0050b574 (*(dword *)0x0050b574)
+#define uRam0050b578 (*(dword *)0x0050b578)
+#define uRam0050b57c (*(dword *)0x0050b57c)
+#define uRam0050b580 (*(dword *)0x0050b580)
+#define uRam0050b584 (*(dword *)0x0050b584)
+#define uRam0050b588 (*(dword *)0x0050b588)
+#define uRam0050b58c (*(dword *)0x0050b58c)
+#define uRam0050b590 (*(dword *)0x0050b590)
+#define uRam0050b594 (*(dword *)0x0050b594)
+#define uRam0050b598 (*(dword *)0x0050b598)
+#define uRam0050b59c (*(dword *)0x0050b59c)
+#define uRam0050b5a0 (*(dword *)0x0050b5a0)
 
 /* _name: dword-sized access to the untyped label `name`. */
 #define _g_Direct3DAlphaTextureFormatAlphaBitMask (*(dword *)&g_Direct3DAlphaTextureFormatAlphaBitMask)

@@ -27,10 +27,10 @@ DisplayModeTable_ContainsExactModeCf
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex);
 
 /* 0x00578080 */
-int DirectDraw_EnumAdapterCallback (TH_LEGACY_GUID *adapterGuid,char *driverDescription,char *driverName, void *applicationContext);
+int __stdcall DirectDraw_EnumAdapterCallback (TH_LEGACY_GUID *adapterGuid,char *driverDescription,char *driverName, void *applicationContext);
 
 /* 0x005780F0 */
-sdword DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex);
+sdword __stdcall DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex);
 
 /* 0x00578920 */
 DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
