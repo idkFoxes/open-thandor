@@ -135,7 +135,9 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   int iVar7;
   int iVar8;
   int iVar9;
-  int unaff_ESI;
+  /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
+     all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
+  int unaff_ESI = 0;
   dword *pdVar10;
   dword *pdVar11;
   
