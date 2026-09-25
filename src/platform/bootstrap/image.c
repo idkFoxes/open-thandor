@@ -362,7 +362,19 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
         if (SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol)) {
             fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset, symbol->Name, displacement);
         } else {
-            fprintf(out, "%2d  %08llX  ?", depth, frame.AddrPC.Offset);
+            HMODULE module;
+            char moduleName[MAX_PATH];
+            if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                                       GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                   (LPCSTR)(uintptr_t)frame.AddrPC.Offset, &module) &&
+                GetModuleFileNameA(module, moduleName, sizeof moduleName)) {
+                const char *base = strrchr(moduleName, '\\');
+                fprintf(out, "%2d  %08llX  %s+0x%llX", depth, frame.AddrPC.Offset,
+                        base ? base + 1 : moduleName,
+                        frame.AddrPC.Offset - (DWORD64)(uintptr_t)module);
+            } else {
+                fprintf(out, "%2d  %08llX  ?", depth, frame.AddrPC.Offset);
+            }
         }
         if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line)) {
             fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
