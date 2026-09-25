@@ -380,7 +380,11 @@ dword Locale_FormatTimeFieldsUtf16
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
+    /* The decompiler dropped the designator selection (ECX in the original); note the original
+       picks the field exported as pmDesignator for hours below 12. */
+    source = g_LocaleSystemState.pmDesignator;
     if (0xb < hour) {
+      source = g_LocaleSystemState.amDesignator;
       hour = hour - 0xc;
     }
     dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,destination);
@@ -441,7 +445,10 @@ dword Locale_FormatCurrentTimeUtf16(word *destination)
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
     uVar1 = (uint)g_LocaleSystemState.localTime.hour;
+    /* See Locale_FormatTimeFieldsUtf16: the designator selection was lost in decompilation. */
+    source = g_LocaleSystemState.pmDesignator;
     if (0xb < uVar1) {
+      source = g_LocaleSystemState.amDesignator;
       uVar1 = uVar1 - 0xc;
     }
     currentAppendByteLength =

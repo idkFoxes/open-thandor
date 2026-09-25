@@ -757,6 +757,9 @@ InGameWorldInput_TestCandidateCapability:
       if (pointerValue0 != 0x7fffffff) {
         dVar2 = WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                           (pointerValue1,pointerValue2,inGameRuntime);
+        /* The original passes the same EDX/ECX point on (lost locals in the decompilation). */
+        payloadDword08 = pointerValue1;
+        payloadDword0C = pointerValue2;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           InGamePlayerSelection_ApplyTargetPositionCommand

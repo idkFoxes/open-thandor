@@ -115,6 +115,9 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
         PVar11 = 0x4fffffff;
       }
       armyAssetId = *(PckArmyAssetIdCatalog *)(sVar6 + 8);
+      /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
+      worldXQ12 = g_ArmyPlacementValidatedWorldXQ12;
+      worldYQ12_00 = g_ArmyPlacementValidatedWorldYQ12;
       g_ArmyPlacementAcceptedCandidateCount = 1;
       worldRuntime_00 = worldRuntime;
       AVar15 = ArmyPlacement_DispatchAssetAtFieldPoint
@@ -293,7 +296,6 @@ SelectionOverlay_RenderSelectedArmyMetrics
 {
   ModelRuntimeNode *modelNode;
   int iVar1;
-  RuntimeModelFactionPrefix10 *runtimeEntry;
   GameEntityRuntime **ppGVar2;
   
   iVar1 = 0x20;
@@ -312,7 +314,8 @@ SelectionOverlay_RenderSelectedArmyMetrics
         SelectionPanel_RenderArmyRuntimeMetrics
                   (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
                    g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
-                   g_ModelProjectedBoundsPixels.minX,runtimeEntry);
+                   g_ModelProjectedBoundsPixels.minX,
+                   (RuntimeModelFactionPrefix10 *)*ppGVar2); /* EDX: the entity (lost local) */
       }
     }
     ppGVar2 = ppGVar2 + 1;
@@ -337,7 +340,6 @@ SelectionOverlay_RenderArmyMetricsForEntity
   ModelRuntimeNode *modelNode;
   GraphicsTextureSourceAsset *pGVar1;
   void *pvVar2;
-  RuntimeModelFactionPrefix10 *runtimeEntry;
   
   modelNode = (entity->common).ownership.modelNode;
   if (((modelNode->runtimeFlags & 4) != 0) ||
@@ -358,7 +360,8 @@ SelectionOverlay_RenderArmyMetricsForEntity
       SelectionPanel_RenderArmyRuntimeMetrics
                 (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
-                 g_ModelProjectedBoundsPixels.minX,runtimeEntry);
+                 g_ModelProjectedBoundsPixels.minX,
+                 (RuntimeModelFactionPrefix10 *)entity); /* EDX: the entity (lost local) */
       g_SelectionPanelTextureSource = pGVar1;
       g_SelectionPanelData = pvVar2;
     }

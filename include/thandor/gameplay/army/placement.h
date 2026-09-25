@@ -22,6 +22,10 @@ bool __thandor_cf_preserve_eax_ecx_edx
 ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
 
+/* ECX/EDX results of ArmyPlacement_ValidateAssetAtPointAndCellCornersCf: the accepted point. */
+extern Q12 g_ArmyPlacementValidatedWorldXQ12;
+extern Q12 g_ArmyPlacementValidatedWorldYQ12;
+
 /* 0x0051D380 */
 bool __thandor_preserve_eax
 ArmyPlacement_ValidateAssetAtPointAndCellCornersCf

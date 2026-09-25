@@ -1070,6 +1070,11 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                           UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
                           Movie_Close();
                           (*g_GraphicsCursorSetFrame)(0);
+                          /* Lost load: the original reads the first of five level intro
+                             notification movies from conditionStorage+0x324. */
+                          notificationMovieId =
+                               *(InGameNotificationMovieId *)
+                                ((byte *)g_InGameLevelRuntimeGlobalBlock.conditionStorage + 0x324);
                           (*g_TimerRegisterPeriodic)
                                     (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                           if (notificationMovieId != 0) {

@@ -137,6 +137,9 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
 }
 
 
+Q12 g_ArmyPlacementValidatedWorldXQ12;
+Q12 g_ArmyPlacementValidatedWorldYQ12;
+
 /* Address: 0x0051D380.
    Ownership: gameplay/army/placement.
    Purpose: Validates one army asset placement at the requested point and aligned cell corners; CF carries
@@ -152,42 +155,37 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
           void *inGameRuntime)
 
 {
-  uint worldXQ12_01;
-  Q12 worldXQ12_00;
-  uint worldYQ12_02;
-  Q12 worldYQ12_00;
-  Q12 worldYQ12_01;
-  ArmyPlacementDispatchEaxCf5 AVar1;
-  
-  AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
-                    (placementMode,0,armyAssetId,worldYQ12,worldXQ12,placementContext,ownerFactionId
-                     ,inGameRuntime);
-  if (AVar1.carry) {
-    worldXQ12_01 = worldXQ12 & 0xffffff00;
-    worldYQ12_02 = worldYQ12 & 0xffffff00;
-    AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
-                      (placementMode,0,armyAssetId,worldYQ12_02,worldXQ12_01,placementContext,
-                       ownerFactionId,inGameRuntime);
-    if (AVar1.carry) {
-      AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
-                        (placementMode,0,armyAssetId,worldYQ12_02,worldXQ12_01 + 0x240,
-                         placementContext,ownerFactionId,inGameRuntime);
-      if (AVar1.carry) {
-        AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
-                          (placementMode,0,armyAssetId,worldYQ12_02 + 0x240,worldXQ12_01 + 0x240,
-                           placementContext,ownerFactionId,inGameRuntime);
-        if (AVar1.carry) {
-          AVar1 = ArmyPlacement_DispatchAssetAtFieldPoint
-                            (placementMode,0,armyAssetId,worldYQ12_02 + 0x240,worldXQ12_01,
-                             placementContext,ownerFactionId,inGameRuntime);
-          if (AVar1.carry) {
-            return true;
-          }
-        }
-      }
+  /* Rewritten from the assembly (0x0051D380-0x0051D447): the original also returns the point it
+     accepted in ECX (x) / EDX (y) - the input point, or the first free snapped cell corner - which the
+     decompiler dropped. Callers read it from g_ArmyPlacementValidatedWorldX/YQ12. */
+  static const int cornerDx[4] = {0,0x240,0x240,0};
+  static const int cornerDy[4] = {0,0,0x240,0x240};
+  ArmyPlacementDispatchEaxCf5 dispatched;
+  int corner;
+
+  g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
+  g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
+  dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
+                         (placementMode,0,armyAssetId,worldYQ12,worldXQ12,placementContext,
+                          ownerFactionId,inGameRuntime);
+  if (!dispatched.carry) {
+    return false;
+  }
+  for (corner = 0; corner < 4; corner++) {
+    Q12 x = (Q12)(((uint)worldXQ12 & 0xffffff00) + cornerDx[corner]);
+    Q12 y = (Q12)(((uint)worldYQ12 & 0xffffff00) + cornerDy[corner]);
+    dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
+                           (placementMode,0,armyAssetId,y,x,placementContext,ownerFactionId,
+                            inGameRuntime);
+    if (!dispatched.carry) {
+      g_ArmyPlacementValidatedWorldXQ12 = x;
+      g_ArmyPlacementValidatedWorldYQ12 = y;
+      return false;
     }
   }
-  return false;
+  g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
+  g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
+  return true;
 }
 
 

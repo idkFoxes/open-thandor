@@ -575,8 +575,10 @@ InGameCommand_ExecuteLocalPlacementFromSelection
                        *(ArmyPlacementContext *)(dVar2 + 8),pSVar3->primaryEntityOrFactionToken8080,
                        worldRuntime);
     if (!bVar7) {
+      /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
       AVar8 = ArmyRuntime_CreateInstanceFromAssetCf
-                        (4,payloadDword04,(Q12)worldXQ12,worldYQ12,
+                        (4,payloadDword04,g_ArmyPlacementValidatedWorldYQ12,
+                         g_ArmyPlacementValidatedWorldXQ12,
                          pSVar3->primaryEntityOrFactionToken8080,
                          *(PckArmyAssetIdCatalog *)(dVar2 + 8),worldRuntime);
       armySlot1 = (ArmyRuntimeSlot **)AVar8.eax;
