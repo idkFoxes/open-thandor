@@ -109,6 +109,42 @@ for a, n in common.ghidra_labels():
             not re.match(r'(DAT|LAB|UNK|PTR|switchD|caseD|override|s_|u_|[a-z]Ram)', n):
         names_at[a] = [n]
 
+# ---- islands: objects at unaligned addresses that hold function pointers (vtables the original
+# placed inline between functions). A dword array cannot carry a symbol at an unaligned offset,
+# so each island becomes its own aligned array and every reference to it points there.
+islands = []  # (start, end, name)
+for a in sorted(anchors):
+    if a % 4 == 0 or not names_at.get(a):
+        continue
+    end = a
+    while end + 4 <= END and end - a < 0x400 and not any(code[x - START] for x in range(end, end + 4)):
+        end += 4
+    entries = [struct.unpack_from('<I', text, x - START)[0] for x in range(a, end, 4)]
+    if any(v in funcs for v in entries):
+        if islands and a < islands[-1][1]:
+            continue  # alias inside an island already found (e.g. a named vtable slot)
+        islands.append((a, end, names_at[a][0]))
+
+def island_of(addr):
+    for start, end, name in islands:
+        if start <= addr < end:
+            return start, end, name
+    return None
+
+def island_name(start):
+    return 'g_ImageObject_%08X' % start
+
+def pointer_expression(value):
+    island = island_of(value)
+    if island is not None:
+        index, rest = divmod(value - island[0], 4)
+        base = '&%s[0x%X]' % (island_name(island[0]), index)
+    else:
+        t = block_of(value)
+        index, rest = divmod(value - blocks[t][0], 4)
+        base = '&%s[0x%X]' % (block_name(t), index)
+    return '(dword)%s' % base if rest == 0 else '(dword)((byte *)%s + %d)' % (base, rest)
+
 # ---- emit
 pointers = []
 out = []
@@ -138,10 +174,7 @@ for k, (a, b) in enumerate(blocks):
             expr = '(dword)%s' % funcs[value]
             pointers.append((addr, value, 'function', funcs[value]))
         elif value in anchors and not numeric:
-            t = block_of(value)
-            index, rest = divmod(value - blocks[t][0], 4)
-            expr = '(dword)&%s[0x%X]' % (block_name(t), index) if rest == 0 else \
-                   '(dword)((byte *)&%s[0x%X] + %d)' % (block_name(t), index, rest)
+            expr = pointer_expression(value)
             if names_at.get(value):
                 expr += ' /* %s */' % sorted(names_at[value])[0]
             pointers.append((addr, value, 'data', owner[2] if owner else '-'))
@@ -151,6 +184,21 @@ for k, (a, b) in enumerate(blocks):
             line = []
     if line:
         out.append('    %s,\n' % ', '.join(line))
+    out.append('};\n\n')
+for start, end, name in islands:
+    out.append('/* %08X %s: placed unaligned between functions in the original; kept aligned here and\n'
+               '   referenced instead of its original bytes. */\n' % (start, name))
+    out.append('dword %s[0x%X] = {\n' % (island_name(start), (end - start) // 4))
+    for addr in range(start, end, 4):
+        value = struct.unpack_from('<I', text, addr - START)[0]
+        if value in funcs:
+            out.append('    (dword)%s,\n' % funcs[value])
+            pointers.append((addr, value, 'function', funcs[value]))
+        elif value in anchors:
+            out.append('    %s,\n' % pointer_expression(value))
+            pointers.append((addr, value, 'data', name))
+        else:
+            out.append('    0x%08X,\n' % value)
     out.append('};\n\n')
 open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'w', encoding='utf-8').write(''.join(out))
 
@@ -163,9 +211,17 @@ hdr = ['/*\n * Open Thandor\n * Project: https://github.com/idkFoxes/open-thando
        '#include <thandor/generated/types.h>\n\n']
 for k, (a, b) in enumerate(blocks):
     hdr.append('extern dword %s[0x%X];\n' % (block_name(k), (b - a) // 4))
+for start, end, name in islands:
+    hdr.append('extern dword %s[0x%X]; /* %s, unaligned in the original */\n' % (island_name(start),
+                                                                              (end - start) // 4, name))
 hdr.append('\n/* Original address -> generated storage. */\n')
 missing = []
 for addr in sorted(used):
+    island = island_of(addr)
+    if island is not None:
+        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)%s + 0x%X)\n' % (addr, island_name(island[0]),
+                                                                         addr - island[0]))
+        continue
     k = block_of(addr)
     if k is None:
         if not START <= addr < END:
@@ -177,18 +233,21 @@ for addr in sorted(used):
     hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)%s + 0x%X)\n' % (addr, block_name(k), addr - blocks[k][0]))
 hdr.append('\n/* Blocks for the comparison self-test: original start, end, storage. */\n'
            'typedef struct ThandorImageBlock { dword start; dword end; dword *data; } ThandorImageBlock;\n'
-           'extern const ThandorImageBlock g_ThandorImageBlocks[%d];\n\n#endif\n' % len(blocks))
+           'extern const ThandorImageBlock g_ThandorImageBlocks[%d];\n\n#endif\n' % (len(blocks) + len(islands)))
 open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'image_data.h'), 'w',
      encoding='utf-8').write(''.join(hdr))
 with open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'a', encoding='utf-8') as f:
-    f.write('const ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))
+    f.write('const ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % (len(blocks) + len(islands)))
     for k, (a, b) in enumerate(blocks):
         f.write('    {0x%08X, 0x%08X, %s},\n' % (a, b, block_name(k)))
+    for start, end, name in islands:
+        f.write('    {0x%08X, 0x%08X, %s},\n' % (start, end, island_name(start)))
     f.write('};\n')
 
 with open(os.path.join(args.work, 'image_pointers.tsv'), 'w', encoding='utf-8') as f:
     for p in pointers:
         f.write('%08x\t%08x\t%s\t%s\n' % p)
+print('islands: ' + ', '.join('%08x-%08x %s' % i for i in islands))
 print('%d blocks, %d bytes, %d function pointers, %d data pointers' % (
     len(blocks), sum(b - a for a, b in blocks), sum(1 for p in pointers if p[2] == 'function'),
     sum(1 for p in pointers if p[2] == 'data')))

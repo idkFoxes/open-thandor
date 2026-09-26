@@ -1226,7 +1226,8 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndTog
 {
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
        ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
-  return 0x4000004bed50;
+  /* EDX:EAX = byte size 0x4000, shading runtime records */
+  return ((qword)0x4000 << 32) | (dword)(uintptr_t)g_GraphicsShadingRuntimeRecords;
 }
 
 /* Address: 0x0050ECA0.

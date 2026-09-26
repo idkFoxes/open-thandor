@@ -116,7 +116,7 @@ def address_macros():
     for header in (os.path.join(REPO, 'include', 'thandor', 'generated', 'globals.h'),
                    os.path.join(REPO, 'include', 'thandor', 'data', 'recovered.h')):
         text = open(header, encoding='utf-8', errors='replace').read()
-        for m in re.finditer(r'^#define (\w+) \(\*\((.+)\)(0x[0-9a-fA-F]+)\)\s*$', text, re.M):
+        for m in re.finditer(r'^#define (\w+) \(\*\((.+)\)(?:THANDOR_IMAGE\()?(0x[0-9a-fA-F]+)\)?\)\s*$', text, re.M):
             out[m.group(1)] = (m.group(2), int(m.group(3), 16))
     return out
 

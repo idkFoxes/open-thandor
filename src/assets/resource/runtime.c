@@ -339,7 +339,8 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
     factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
     factionRecordsRemaining = factionRecordsRemaining + -1;
   } while (factionRecordsRemaining != 0);
-  return 0x50f34000003a20;
+  /* EDX:EAX = faction runtime image, byte size 0x3A20 */
+  return ((qword)(dword)(uintptr_t)&g_GameFactionRuntimeImage << 32) | 0x3a20;
 }
 
 /* Address: 0x0051E2B0.

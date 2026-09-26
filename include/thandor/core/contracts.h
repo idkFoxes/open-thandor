@@ -40,6 +40,15 @@ or to other layout-compatible structs, which C only allows through a union.
 #endif
 
 #include <thandor/core/ghidra.h>
+/* Where the original image data lives. By default the generated C data (src/generated/image_data.c,
+   tools/data/gen_image_data.py); with THANDOR_MAPPED_IMAGE the copy of the original executable mapped
+   at its original address (platform/bootstrap/image.c), as before the data was generated. */
+#ifdef THANDOR_MAPPED_IMAGE
+#define THANDOR_IMAGE(address) ((uintptr_t)(address))
+#else
+#include <thandor/generated/image_data.h>
+#define THANDOR_IMAGE(address) THANDOR_IMAGE_##address
+#endif
 #include <thandor/generated/globals.h>
 #include <thandor/data/recovered.h>
 #include <thandor/generated/imports.h>

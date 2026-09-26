@@ -1558,7 +1558,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf_LoadCurrentFactionGraphicsPackageAndBind
         pGVar4 = (GraphicsPaletteAsset *)(frontendPlayerRuntimeId * 0x740);
         MoviePlayback_AdvanceScheduledFrameAndTick();
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[frontendPlayerRuntimeId] != 0) {
-          uVar2 = *(uint *)(pGVar4[0x27da].reserved08_AF + 0xa0);
+          uVar2 = *(uint *)THANDOR_BYTE_AT(g_GameFactionRuntimeImage, frontendPlayerRuntimeId * 0x740 + 0x38);
           g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + -1;
           if (uVar2 < 10) {
             iVar7 = uVar2 + 0x30;

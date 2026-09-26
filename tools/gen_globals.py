@@ -157,8 +157,8 @@ def view(typ, dims, address, length):
         elem = 2 if typ == "word" else 1
         dims = f"[{max(1, (length or elem) // elem)}]"
     if dims:
-        return f"(*({typ} (*){dims})0x{address:08x})"
-    return f"(*({typ} *)0x{address:08x})"
+        return f"(*({typ} (*){dims})THANDOR_IMAGE(0x{address:08x}))"
+    return f"(*({typ} *)THANDOR_IMAGE(0x{address:08x}))"
 
 
 def main(export):

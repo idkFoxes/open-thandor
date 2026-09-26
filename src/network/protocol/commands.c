@@ -69,7 +69,7 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
     outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
   }
   copyDestinationCursor = g_FrontendCommandQueueRecords;
-  trailingDwordCount = (uint)(queueEndSnapshot + -0x543e5) >> 2;
+  trailingDwordCount = (uint)((byte *)queueEndSnapshot - (byte *)&g_FrontendCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount = trailingDwordCount - 1) {
       copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
@@ -141,7 +141,7 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
     outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
   }
   copyDestinationCursor = g_InGameCommandQueueRecords;
-  trailingDwordCount = (uint)(queueEndSnapshot + -0x55efd) >> 2;
+  trailingDwordCount = (uint)((byte *)queueEndSnapshot - (byte *)&g_InGameCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount = trailingDwordCount - 1) {
       copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;

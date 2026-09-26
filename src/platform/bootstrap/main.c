@@ -426,6 +426,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     (void)previousInstance;
     (void)commandLine;
     (void)showCommand;
+#ifdef THANDOR_MAPPED_IMAGE
     int relaunch = Thandor_RelaunchWithReservedImage();
     if (relaunch != -1) {
         return relaunch;
@@ -434,6 +435,12 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     if (Thandor_MapOriginalImage() != 0) {
         return 1;
     }
+#else
+    /* The original data is compiled in (src/generated/image_data.c); nothing is mapped. */
+    Thandor_InstallCrashHandler();
+    Thandor_Log("open-thandor: generated image data, %u blocks",
+                (unsigned)(sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0]));
+#endif
     {
         const char *value = getenv("OPEN_THANDOR_SELFTEST");
         if (value != NULL && strcmp(value, "codec") == 0) {

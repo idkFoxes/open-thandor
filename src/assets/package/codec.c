@@ -532,7 +532,9 @@ PckCodec_DecodeHuffmanRle
     lowestWeightNode->weight = 0;
     pPVar9->weight = 0;
     nextInternalNode = nextInternalNode + 1;
-  } while (nextInternalNode < PckCodec_EncodeHuffmanRle);
+  /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
+     where the internal node workspace ends. */
+  } while (nextInternalNode < g_PckHuffmanInternalNodeWorkspace256 + 256);
   runLength = 0x14;
   bVar10 = true;
   goto LAB_0040a953;
@@ -553,7 +555,7 @@ LAB_0040a890:
         runLength = runLength >> 1;
         nextBitOffset = nextBitOffset + 1;
       } while (pPVar5->zeroChild != (PckHuffmanNodePtr)0x0);
-      *destination = (byte)((uint)(pPVar5 + -0x4084c) >> 4);
+      *destination = (byte)(pPVar5 - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
       destination = destination + 1;
       for (inputBitOffset = nextBitOffset; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8)
       {
@@ -581,7 +583,7 @@ LAB_0040a890:
     }
     runLength = (uVar2 >> 1 & 0xf) + 3;
     do {
-      *destination = (byte)((uint)(currentHuffmanNode + -0x4084c) >> 4);
+      *destination = (byte)(currentHuffmanNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
       destination = destination + 1;
       outputSizeBytes = outputSizeBytes - 1;
       if (outputSizeBytes == 0) break;

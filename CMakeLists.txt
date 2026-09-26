@@ -9,6 +9,13 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # before assigning them; the debug runtime checks would stop on each one.
 string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
+# OFF (default): the original data is compiled in from src/generated/image_data.c.
+# ON: map thandor_original.exe at 0x400000 and use its data there (the former runtime model).
+option(THANDOR_MAPPED_IMAGE "Use the data of a mapped thandor_original.exe" OFF)
+if(THANDOR_MAPPED_IMAGE)
+    add_compile_definitions(THANDOR_MAPPED_IMAGE)
+endif()
+
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
     message(FATAL_ERROR "open-thandor must be built for 32-bit x86 (e.g. MSVC vcvars32 / -A Win32).")
 endif()

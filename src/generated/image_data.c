@@ -28110,7 +28110,7 @@ dword g_ImageData_0053DA68[0x1842] = {
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000010, 0xFFFFFFE3, 0x000001B0, 0x0000001D,
     0x00000000, 0x08000000, 0x00000000, 0x08000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000,
     0x00000000, 0x0000200E, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000508, 0xFFFFFFFF, 0x00000058, (dword)((byte *)&g_ImageData_0050BB34[0x0] + 3) /* g_FrontendModelPointerContextVtable */,
+    0x00000508, 0xFFFFFFFF, 0x00000058, (dword)&g_ImageObject_0050BB37[0x0] /* g_FrontendModelPointerContextVtable */,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x10000000, 0x80000000, 0x70000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000020, 0x00091000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -29790,7 +29790,7 @@ dword g_ImageData_0054FBB0[0x3378] = {
     0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000017C, (dword)&g_ImageData_004B4648[0x2] /* g_UiLayoutContainerControlVtable */,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x80000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000001,
-    0x00000A30, 0x00000BD0, 0x00002384, 0x000009DC, (dword)((byte *)&g_ImageData_0050BB34[0x0] + 3) /* g_FrontendModelPointerContextVtable */,
+    0x00000A30, 0x00000BD0, 0x00002384, 0x000009DC, (dword)&g_ImageObject_0050BB37[0x0] /* g_FrontendModelPointerContextVtable */,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x80000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000020, 0x00034600,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -34908,7 +34908,30 @@ dword g_ImageData_005873BC[0x1311] = {
     0x00000000,
 };
 
-const ThandorImageBlock g_ThandorImageBlocks[203] = {
+/* 0050BB37 g_FrontendModelPointerContextVtable: placed unaligned between functions in the original; kept aligned here and
+   referenced instead of its original bytes. */
+dword g_ImageObject_0050BB37[0x12] = {
+    (dword)FrontendModelPointerContext_Relocate,
+    (dword)UiNode_DefaultMethod04_NoOp,
+    (dword)FrontendModelPointerContext_RenderWorldViewQueuesClipped,
+    (dword)FrontendModelPointerContext_Layout,
+    (dword)FrontendModelPointerContext_NonRightPress,
+    (dword)FrontendModelPointerContext_NonRightRelease,
+    (dword)FrontendModelPointerContext_RightPress,
+    (dword)FrontendModelPointerContext_RightRelease,
+    (dword)FrontendModelPointerContext_NonRightDrag,
+    (dword)FrontendModelPointerContext_DispatchWorldCameraPointerInput,
+    (dword)FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction,
+    (dword)UiContainer_HitTestChildren,
+    (dword)FrontendModelPointerContext_KeyboardEventCf,
+    (dword)UiNode_ApplyFlagsRecursive,
+    (dword)UiContainer_SuppressActionId,
+    (dword)UiContainer_UnsuppressActionId,
+    (dword)FrontendModelPointerContext_Tick,
+    (dword)FrontendModelPointerContext_PointerWheel,
+};
+
+const ThandorImageBlock g_ThandorImageBlocks[204] = {
     {0x00401000, 0x00402B00, g_ImageData_00401000},
     {0x00403080, 0x004030B0, g_ImageData_00403080},
     {0x00403158, 0x00407160, g_ImageData_00403158},
@@ -35112,4 +35135,5 @@ const ThandorImageBlock g_ThandorImageBlocks[203] = {
     {0x005856A0, 0x00585D40, g_ImageData_005856A0},
     {0x00586950, 0x00586B70, g_ImageData_00586950},
     {0x005873BC, 0x0058C000, g_ImageData_005873BC},
+    {0x0050BB37, 0x0050BB7F, g_ImageObject_0050BB37},
 };

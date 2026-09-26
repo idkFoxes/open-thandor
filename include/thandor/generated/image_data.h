@@ -214,6 +214,7 @@ extern dword g_ImageData_00584E44[0x3];
 extern dword g_ImageData_005856A0[0x1A8];
 extern dword g_ImageData_00586950[0x88];
 extern dword g_ImageData_005873BC[0x1311];
+extern dword g_ImageObject_0050BB37[0x12]; /* g_FrontendModelPointerContextVtable, unaligned in the original */
 
 /* Original address -> generated storage. */
 #define THANDOR_IMAGE_0x00000017 ((uintptr_t)0x00000017u)
@@ -792,7 +793,7 @@ extern dword g_ImageData_005873BC[0x1311];
 #define THANDOR_IMAGE_0x0050bafe ((uintptr_t)g_ImageData_0050BADC + 0x22)
 #define THANDOR_IMAGE_0x0050bb02 ((uintptr_t)g_ImageData_0050BADC + 0x26)
 #define THANDOR_IMAGE_0x0050bb06 ((uintptr_t)g_ImageData_0050BADC + 0x2A)
-#define THANDOR_IMAGE_0x0050bb5f ((uintptr_t)g_ImageData_0050BB34 + 0x2B)
+#define THANDOR_IMAGE_0x0050bb5f ((uintptr_t)g_ImageObject_0050BB37 + 0x28)
 #define THANDOR_IMAGE_0x0050d930 ((uintptr_t)g_ImageData_0050D928 + 0x8)
 #define THANDOR_IMAGE_0x0050d934 ((uintptr_t)g_ImageData_0050D928 + 0xC)
 #define THANDOR_IMAGE_0x0050d938 ((uintptr_t)g_ImageData_0050D928 + 0x10)
@@ -1825,6 +1826,6 @@ extern dword g_ImageData_005873BC[0x1311];
 
 /* Blocks for the comparison self-test: original start, end, storage. */
 typedef struct ThandorImageBlock { dword start; dword end; dword *data; } ThandorImageBlock;
-extern const ThandorImageBlock g_ThandorImageBlocks[203];
+extern const ThandorImageBlock g_ThandorImageBlocks[204];
 
 #endif
