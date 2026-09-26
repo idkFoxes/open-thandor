@@ -446,6 +446,10 @@ def typed_member(start, end, name, member):
         init = items[0]
     return decl, init, typed_pointers, start + width * count
 
+# objects the program computes at startup instead (see WinMain): storage only, no initializer
+COMPUTED = {'g_FixedSinQ28': 'FixedMath_BuildSinCosTables', 'g_FixedCosQ28': 'FixedMath_BuildSinCosTables',
+            'g_MovieChromaLumaToArgb': 'Movie_BuildChromaLumaTable'}
+
 layout_lines = []   # struct member declarations per block
 init_lines = []     # initializer per block
 typed_count = 0
@@ -461,6 +465,12 @@ for k, (a, b) in enumerate(blocks):
             ctype, count, literal = s
             decls.append('    %s %s[%d]; %s' % (ctype, member, count, comment))
             inits.append('    %s, %s' % (literal, comment))
+            continue
+        if name in COMPUTED:
+            count, tail = divmod(end - start, 4)
+            assert not tail
+            decls.append('    dword %s[%d]; %s' % (member, count, comment))
+            inits.append('    {0}, /* %08X %s: filled at startup by %s */' % (start, name, COMPUTED[name]))
             continue
         typed = typed_member(start, end, name, member) if name else None
         if typed is not None:

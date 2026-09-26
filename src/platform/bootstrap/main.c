@@ -446,6 +446,9 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     Thandor_Log("open-thandor: generated image data, %u blocks",
                 (unsigned)(sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0]));
 #endif
+    /* tables the original executable carried precomputed */
+    FixedMath_BuildSinCosTables();
+    Movie_BuildChromaLumaTable();
     {
         const char *value = getenv("OPEN_THANDOR_SELFTEST");
         if (value != NULL && strcmp(value, "codec") == 0) {

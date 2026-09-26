@@ -180,4 +180,7 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt
 /* 0x004846A0 */
 dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue);
 
+/* Not in the original: fills g_FixedSinQ28/g_FixedCosQ28 (the original shipped them precomputed). */
+void FixedMath_BuildSinCosTables(void);
+
 #endif /* THANDOR_CORE_MATH_FIXED_H */

@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <math.h>
 #include <thandor/core/math/fixed.h>
 #include <thandor/thandor.h>
 
@@ -1414,3 +1415,26 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt
   return (int)(CONCAT44(high,low) / (ulonglong)secondRootEstimate) + secondRootEstimate >> 1;
 }
 
+
+/* Not in the original: the original executable carries these tables precomputed (0x004346A0,
+   81920 dwords). g_FixedSinQ28 holds the first quarter turn and g_FixedCosQ28 directly follows
+   it, so together they are one sine over 1.25 turns: g_FixedCosQ28[i] = sin(i + quarter turn),
+   and sine lookups up to a full turn run on into the cosine table.
+   Entry i is sin(i * 2pi / 65536) in Q28, rounded half up, computed with pi = 3.141592654; this
+   reproduces every entry of the original. Called once at startup. */
+static sdword FixedMath_SineTableEntry(int index)
+{
+  return (sdword)floor(sin(index * (3.141592654 / 32768.0)) * 268435456.0 + 0.5);
+}
+
+void FixedMath_BuildSinCosTables(void)
+{
+  int index;
+
+  for (index = 0; index < 16384; index++) {
+    g_FixedSinQ28[index] = FixedMath_SineTableEntry(index);
+  }
+  for (index = 0; index < 65536; index++) {
+    g_FixedCosQ28[index] = FixedMath_SineTableEntry(index + 16384);
+  }
+}

@@ -83,4 +83,7 @@ uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(Packe
 /* 0x004A7000 */
 uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888);
 
+/* Not in the original: fills g_MovieChromaLumaToArgb (the original shipped it precomputed). */
+void Movie_BuildChromaLumaTable(void);
+
 #endif /* THANDOR_MOVIE_RUNTIME_PLAYBACK_H */
