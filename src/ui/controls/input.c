@@ -7,6 +7,26 @@
 
 #include <thandor/ui/controls/input.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
+
+/* Diagnostics: a UI link that is neither -1 nor a readable node ends the walk and is logged once
+   per holder, instead of crashing the focus traversal. */
+static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,UiNodeBase *link)
+{
+  static int logged;
+  if ((link == (UiNodeBase *)0xffffffff) || Thandor_IsReadable(link,0x4c)) {
+    return link;
+  }
+  if (logged < 20) {
+    logged++;
+    Thandor_Log("ui focus walk: node %p (vtable %s flags %08x) has bad %s link %p; focus %p (vtable %s)",
+                (void *)holder,Thandor_SymbolName(holder->vtable),holder->nodeFlags,field,(void *)link,
+                (void *)g_UiKeyboardFocusNode,
+                g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff ?
+                Thandor_SymbolName(g_UiKeyboardFocusNode->vtable) : "-");
+  }
+  return (UiNodeBase *)0xffffffff;
+}
 
 /* Implementation ownership: ui/controls/input. */
 
@@ -158,17 +178,17 @@ UiKeyboard_DispatchEventToRootFallback:
     } while (!bVar4);
     do {
       do {
-        pUVar3 = control->firstChild;
+        pUVar3 = UiKeyboard_CheckedLink(control,"firstChild",control->firstChild);
         if (pUVar3 == (UiNodeBase *)0xffffffff) {
           do {
             pUVar3 = control;
-            control = pUVar3->nextSibling;
+            control = UiKeyboard_CheckedLink(pUVar3,"nextSibling",pUVar3->nextSibling);
             if (control != (UiNodeBase *)0xffffffff) {
               UVar1 = control->nodeFlags;
               goto joined_r0x004af45a;
             }
-            control = pUVar3->parent;
-          } while (pUVar3->parent != (UiNodeBase *)0xffffffff);
+            control = UiKeyboard_CheckedLink(pUVar3,"parent",pUVar3->parent);
+          } while (control != (UiNodeBase *)0xffffffff);
           if (bVar2) goto UiKeyboard_DispatchEventToRootFallback;
           bVar2 = true;
           UVar1 = pUVar3->nodeFlags;

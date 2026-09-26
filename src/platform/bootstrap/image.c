@@ -479,3 +479,18 @@ void Thandor_InstallCrashHandler(void)
         CreateThread(NULL, 0, watchdog_thread, (void *)(uintptr_t)atoi(seconds), 0, NULL);
     }
 }
+
+int Thandor_IsReadable(const void *address, unsigned size)
+{
+    MEMORY_BASIC_INFORMATION mbi;
+    const char *p = (const char *)address;
+    const char *end = p + size;
+    while (p < end) {
+        if (VirtualQuery(p, &mbi, sizeof mbi) == 0 || mbi.State != MEM_COMMIT ||
+            (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) != 0) {
+            return 0;
+        }
+        p = (const char *)mbi.BaseAddress + mbi.RegionSize;
+    }
+    return 1;
+}
