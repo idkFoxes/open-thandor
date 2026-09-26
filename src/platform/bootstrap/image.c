@@ -303,10 +303,63 @@ void Thandor_LogStack(const char *reason, unsigned value)
     fclose(out);
 }
 
+/* First thing in the crash filter: registers and raw stack words to crash_raw.log using only
+   kernel32/user32 calls, so a corrupted CRT heap or stack cannot stop it. Symbolize the code
+   addresses offline with build-x86/thandor.map. */
+static void raw_crash_dump(EXCEPTION_POINTERS *info)
+{
+    char path[MAX_PATH];
+    char line[256];
+    char *slash;
+    HANDLE file;
+    DWORD written;
+    const CONTEXT *c = info->ContextRecord;
+    const DWORD *stack = (const DWORD *)(uintptr_t)c->Esp;
+    SYSTEMTIME now;
+    int i;
+    int n;
+
+    if (GetModuleFileNameA(NULL, path, MAX_PATH) == 0) {
+        return;
+    }
+    slash = path;
+    for (i = 0; path[i] != 0; i++) {
+        if (path[i] == '\\') slash = path + i + 1;
+    }
+    lstrcpyA(slash, "crash_raw.log");
+    file = CreateFileA(path, FILE_APPEND_DATA, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
+                       FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file == INVALID_HANDLE_VALUE) {
+        return;
+    }
+    GetLocalTime(&now);
+    n = wsprintfA(line, "\r\n==== %04u-%02u-%02u %02u:%02u:%02u ====\r\nexception %08lX at %08lX info %08lX %08lX\r\n",
+                  now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond,
+                  info->ExceptionRecord->ExceptionCode,
+                  (DWORD)(uintptr_t)info->ExceptionRecord->ExceptionAddress,
+                  (DWORD)info->ExceptionRecord->ExceptionInformation[0],
+                  (DWORD)info->ExceptionRecord->ExceptionInformation[1]);
+    WriteFile(file, line, n, &written, NULL);
+    n = wsprintfA(line, "eip=%08lX eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\r\n",
+                  c->Eip, c->Eax, c->Ebx, c->Ecx, c->Edx, c->Esi, c->Edi, c->Ebp, c->Esp);
+    WriteFile(file, line, n, &written, NULL);
+    for (i = 0; i < 512; i += 8) {
+        if (!Thandor_IsReadable(stack + i, 32)) {
+            break;
+        }
+        n = wsprintfA(line, "  +%03X: %08lX %08lX %08lX %08lX %08lX %08lX %08lX %08lX\r\n", i * 4,
+                      stack[i], stack[i + 1], stack[i + 2], stack[i + 3], stack[i + 4], stack[i + 5],
+                      stack[i + 6], stack[i + 7]);
+        WriteFile(file, line, n, &written, NULL);
+    }
+    CloseHandle(file);
+}
+
 static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
 {
     char path[MAX_PATH];
     FILE *out;
+    raw_crash_dump(info);
     HANDLE process = GetCurrentProcess();
     HANDLE thread = GetCurrentThread();
     CONTEXT context = *info->ContextRecord;
