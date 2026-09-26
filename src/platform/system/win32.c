@@ -87,6 +87,8 @@ static void Win32_AutoShotTick(void)
      <ms> key <vk>          key press and release (Windows virtual-key code, decimal)
      <ms> shot              save the framebuffer now (shots\script_NNNN.bmp, needs AUTOSHOT's folder)
      <ms> quit              end the process
+     <ms> layout <w> <h>    the following coordinates are for a w x h screen; they are moved by half
+                            the difference to the current resolution (dialogs and the view are centred)
      <ms> ingame            wait until the level has loaded and the game runs; the times of the
                             following lines count from that moment
    <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
@@ -126,6 +128,8 @@ static void Win32_ScriptTick(void)
   static unsigned releaseAt;
   static int releaseX;
   static int releaseY;
+  static int layoutWidth;
+  static int layoutHeight;
   char line[128];
   unsigned now;
   if (state < 0) {
@@ -173,6 +177,15 @@ static void Win32_ScriptTick(void)
       continue;
     }
     state = 1;
+    if (strcmp(command, "layout") == 0) {
+      layoutWidth = x;
+      layoutHeight = y;
+      continue;
+    }
+    if (layoutWidth > 0) {
+      x += ((int)g_FramebufferWidth - layoutWidth) / 2;
+      y += ((int)g_FramebufferHeight - layoutHeight) / 2;
+    }
     Thandor_Log("script: %u ms %s %d %d", now, command, x, y);
     if (strcmp(command, "click") == 0 || strcmp(command, "rclick") == 0) {
       int right = command[0] == 'r';
