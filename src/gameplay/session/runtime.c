@@ -1053,7 +1053,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
       inGameRoot = (InGameRuntimeRootImageC3E4 *)AVar21.eax;
       gameRuntime1 = inGameRoot;
       if (!AVar21.carry) {
-        puVar11 = &g_InGameRuntimeDefaultImageTemplate;
+        puVar11 = (undefined4 *)&g_InGameRuntimeDefaultImageTemplate;
         g_InGameRuntimeRoot = inGameRoot;
         for (iVar7 = 0x30f9; iVar7 != 0; iVar7 = iVar7 + -1) {
           (gameRuntime1->rootUi0000).base.nextSibling = (UiNodeBase *)*puVar11;
@@ -1429,7 +1429,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
           inGameRoot = (InGameRuntimeRootImageC3E4 *)AVar17.eax;
           pIVar3 = inGameRoot;
           if (!AVar17.carry) {
-            puVar6 = &g_InGameRuntimeDefaultImageTemplate;
+            puVar6 = (undefined4 *)&g_InGameRuntimeDefaultImageTemplate;
             g_InGameRuntimeRoot = inGameRoot;
             for (iVar4 = 0x30f9; iVar4 != 0; iVar4 = iVar4 + -1) {
               (pIVar3->rootUi0000).base.nextSibling = (UiNodeBase *)*puVar6;

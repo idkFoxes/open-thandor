@@ -2841,7 +2841,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
             pFVar5 = frontendUiState;
             if (!AVar20.carry) {
               worldRuntime = (WorldRuntimeContext *)(frontendUiState->opaqueGap0000_05DF + 0x368);
-              frontendInitTemplateDwords = &g_FrontendRootInitializationTemplate;
+              frontendInitTemplateDwords = (dword *)&g_FrontendRootInitializationTemplate;
               g_FrontendRootNode = frontendUiState;
               for (iVar8 = 0x1655; iVar8 != 0; iVar8 = iVar8 + -1) {
                 *(dword *)pFVar5->opaqueGap0000_05DF = *frontendInitTemplateDwords;
