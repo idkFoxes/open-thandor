@@ -1115,7 +1115,6 @@ FrontendModelPointerContext_DispatchWorldCameraPointerInput
   InGameWorldTransientStateClearCallbackProc *clearTransientCallback;
   dword screenDeltaY;
   AngleTurn32 elevationAngle;
-  int pitchDeltaInput;
   
   screenDeltaY = pointerX - callbackContext->pointerCaptureX;
   elevationAngle = pointerY - callbackContext->pointerCaptureY;
@@ -1150,7 +1149,8 @@ FrontendModelPointerContext_DispatchWorldCameraPointerInput
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffffa;
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 10;
         WorldMotion_AdjustHeadingAndClearFieldGridDirty(screenDeltaY,callbackContext);
-        WorldMotion_AdjustPitchClampAndClearFieldGridDirty(pitchDeltaInput,callbackContext);
+        /* EDX: the pointer Y delta, as in the other pitch branches (the decompile lost it). */
+        WorldMotion_AdjustPitchClampAndClearFieldGridDirty(elevationAngle,callbackContext);
       }
     }
     else if ((g_KeyboardStateMask & 0xc) == 0) {
