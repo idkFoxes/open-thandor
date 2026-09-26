@@ -24,8 +24,8 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 
 {
-  int iVar1;
-  word *pwVar2;
+  int remainingPairs;
+  word *textCursor;
   
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
   if ((textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
@@ -100,11 +100,11 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
     textEditControl->cursorIndex = 0;
     textEditControl->selectionStart = 0;
     textEditControl->selectionEnd = 0;
-    pwVar2 = textEditControl->textPrefix6C;
-    for (iVar1 = 0x18; iVar1 != 0; iVar1 = iVar1 + -1) {
-      pwVar2[0] = 0;
-      pwVar2[1] = 0;
-      pwVar2 = pwVar2 + 2;
+    textCursor = textEditControl->textPrefix6C;
+    for (remainingPairs = 0x18; remainingPairs != 0; remainingPairs = remainingPairs + -1) {
+      textCursor[0] = 0;
+      textCursor[1] = 0;
+      textCursor = textCursor + 2;
     }
   }
   return;
@@ -185,14 +185,14 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 
 {
-  UiNodeBase *pUVar1;
+  UiNodeBase *parentCursor;
   FrontendPlayerRuntimeRecord **selectedPlayerRuntimeSlot;
   
-  pUVar1 = (rootNode->base).parent;
-  while (pUVar1 != (UiNodeBase *)0xffffffff) {
+  parentCursor = (rootNode->base).parent;
+  while (parentCursor != (UiNodeBase *)0xffffffff) {
     rootNode = *(UiRootNode **)
                 (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
-    pUVar1 = *(UiNodeBase **)
+    parentCursor = *(UiNodeBase **)
               (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
   }
   selectedPlayerRuntimeSlot =
@@ -220,84 +220,84 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 {
-  FrontendHeartbeatTickCount *pFVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  FrontendPlayerRuntimeRecord *pFVar6;
-  FrontendCommandPacketRecord *pFVar7;
-  FrontendPlayerRuntimeRecord *pFVar8;
+  FrontendHeartbeatTickCount *heartbeatTicks;
+  FrontendPlayerRuntimeBlockCount sendRemaining;
+  int copyRemaining;
+  int scanRemaining;
+  int removedCount;
+  FrontendPlayerRuntimeRecord *sourceBlock;
+  FrontendCommandPacketRecord *commandSource;
+  FrontendPlayerRuntimeRecord *nextSourceBlock;
   UiTransferEndpointDescriptor *endpoint;
-  FrontendPlayerRuntimeRecord *pFVar9;
-  FrontendPlayerRuntimeRecord *pFVar10;
-  TextResourceResolveEaxCf5 TVar11;
-  FrontendCommandPacketRecord *pFVar12;
-  FrontendPlayerRemovalPacket10007 *pFVar13;
-  FrontendCommandPacketRecord *pFStack_20;
+  FrontendPlayerRuntimeRecord *destBlock;
+  FrontendPlayerRuntimeRecord *nextDestBlock;
+  TextResourceResolveEaxCf5 removalText;
+  FrontendCommandPacketRecord *removedTokenOrCommandDest;
+  FrontendPlayerRemovalPacket10007 *commandDestOrPacket;
+  FrontendCommandPacketRecord *commandCursor;
   
-  iVar5 = 0;
-  pFStack_20 = g_FrontendPlayerCommandRecords;
-  pFVar12 = g_FrontendPlayerCommandRecords;
-  iVar4 = g_FrontendPlayerRuntimeBlockCount - 1;
-  pFVar6 = g_FrontendPlayerRuntimeBlocks + 1;
-  pFVar9 = g_FrontendPlayerRuntimeBlocks + 1;
-  pFVar13 = (FrontendPlayerRemovalPacket10007 *)pFVar12;
-  if (iVar4 != 0 && 0 < (int)g_FrontendPlayerRuntimeBlockCount) {
+  removedCount = 0;
+  commandCursor = g_FrontendPlayerCommandRecords;
+  removedTokenOrCommandDest = g_FrontendPlayerCommandRecords;
+  scanRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
+  sourceBlock = g_FrontendPlayerRuntimeBlocks + 1;
+  destBlock = g_FrontendPlayerRuntimeBlocks + 1;
+  commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)removedTokenOrCommandDest;
+  if (scanRemaining != 0 && 0 < (int)g_FrontendPlayerRuntimeBlockCount) {
     do {
-      pFVar1 = &pFVar6->heartbeatExpiryTicks;
-      *pFVar1 = *pFVar1 - 1;
-      if (*pFVar1 == 0) {
+      heartbeatTicks = &sourceBlock->heartbeatExpiryTicks;
+      *heartbeatTicks = *heartbeatTicks - 1;
+      if (*heartbeatTicks == 0) {
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
-        TVar11 = TextResource_Resolve(0xff00);
-        RichTextCommandStream_PatchPayloadBySelector(0,&pFVar6->playerName,TVar11.eax);
-        FrontendRecentTextHistory_InsertAndRebuild5(TVar11.eax);
-        pFVar12 = (FrontendCommandPacketRecord *)pFVar6->playerRuntimeId;
-        iVar5 = iVar5 + 1;
-        pFVar8 = pFVar6 + 1;
-        pFVar10 = pFVar9;
+        removalText = TextResource_Resolve(0xff00);
+        RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText.eax);
+        FrontendRecentTextHistory_InsertAndRebuild5(removalText.eax);
+        removedTokenOrCommandDest = (FrontendCommandPacketRecord *)sourceBlock->playerRuntimeId;
+        removedCount = removedCount + 1;
+        nextSourceBlock = sourceBlock + 1;
+        nextDestBlock = destBlock;
       }
       else {
-        pFVar8 = pFVar6 + 1;
-        pFVar10 = pFVar9 + 1;
-        pFVar12 = (FrontendCommandPacketRecord *)(pFVar13 + 1);
-        iVar3 = 0x4ec;
-        if (pFVar10 != pFVar8) {
-          for (; pFVar10 = pFVar9, pFVar8 = pFVar6, iVar3 != 0; iVar3 = iVar3 + -1) {
-            pFVar10->runtimeState00 = pFVar8->runtimeState00;
-            pFVar6 = (FrontendPlayerRuntimeRecord *)&pFVar8->peerSequenceToken;
-            pFVar9 = (FrontendPlayerRuntimeRecord *)&pFVar10->peerSequenceToken;
+        nextSourceBlock = sourceBlock + 1;
+        nextDestBlock = destBlock + 1;
+        removedTokenOrCommandDest = (FrontendCommandPacketRecord *)(commandDestOrPacket + 1);
+        copyRemaining = 0x4ec;
+        if (nextDestBlock != nextSourceBlock) {
+          for (; nextDestBlock = destBlock, nextSourceBlock = sourceBlock, copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+            nextDestBlock->runtimeState00 = nextSourceBlock->runtimeState00;
+            sourceBlock = (FrontendPlayerRuntimeRecord *)&nextSourceBlock->peerSequenceToken;
+            destBlock = (FrontendPlayerRuntimeRecord *)&nextDestBlock->peerSequenceToken;
           }
-          pFVar7 = pFStack_20;
-          for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
-            (pFVar13->header).packedTypeAndUnitCount = (pFVar7->header).packedTypeAndUnitCount;
-            pFVar7 = (FrontendCommandPacketRecord *)&(pFVar7->header).sequenceToken;
-            pFVar13 = (FrontendPlayerRemovalPacket10007 *)&(pFVar13->header).sequenceToken;
+          commandSource = commandCursor;
+          for (copyRemaining = 8; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+            (commandDestOrPacket->header).packedTypeAndUnitCount = (commandSource->header).packedTypeAndUnitCount;
+            commandSource = (FrontendCommandPacketRecord *)&(commandSource->header).sequenceToken;
+            commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)&(commandDestOrPacket->header).sequenceToken;
           }
         }
       }
-      pFStack_20 = pFStack_20 + 1;
-      iVar4 = iVar4 + -1;
-      pFVar6 = pFVar8;
-      pFVar9 = pFVar10;
-      pFVar13 = (FrontendPlayerRemovalPacket10007 *)pFVar12;
-    } while (iVar4 != 0);
+      commandCursor = commandCursor + 1;
+      scanRemaining = scanRemaining + -1;
+      sourceBlock = nextSourceBlock;
+      destBlock = nextDestBlock;
+      commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)removedTokenOrCommandDest;
+    } while (scanRemaining != 0);
   }
-  if (iVar5 != 0) {
+  if (removedCount != 0) {
     do {
       endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
       g_FrontendPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
            FRONTEND_PACKET_10007_PLAYER_REMOVAL;
-      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)pFVar12;
-      FVar2 = g_FrontendPlayerRuntimeBlockCount;
-      while (FVar2 = FVar2 - 1, FVar2 != 0) {
-        pFVar13 = &g_FrontendPlayerRemovalPacket10007;
+      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)removedTokenOrCommandDest;
+      sendRemaining = g_FrontendPlayerRuntimeBlockCount;
+      while (sendRemaining = sendRemaining - 1, sendRemaining != 0) {
+        commandDestOrPacket = &g_FrontendPlayerRemovalPacket10007;
         UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
         endpoint = endpoint + 0x13b;
-        pFVar12 = (FrontendCommandPacketRecord *)pFVar13;
+        removedTokenOrCommandDest = (FrontendCommandPacketRecord *)commandDestOrPacket;
       }
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      removedCount = removedCount + -1;
+    } while (removedCount != 0);
     FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(0xffffffff,0,0,0);
   }
   return;
@@ -315,17 +315,17 @@ FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeRecord *pFVar2;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar1 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar2 = g_FrontendPlayerRuntimeBlocks;
-  while ((pFVar2->playerRuntimeId == excludedPlayerId ||
-         (g_SelectionPlayerRuntimeBlockPointers[pFVar2->playerRuntimeId]->assignmentToken80A0 !=
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  while ((playerBlock->playerRuntimeId == excludedPlayerId ||
+         (g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId]->assignmentToken80A0 !=
           assignmentToken))) {
-    pFVar2 = pFVar2 + 1;
-    FVar1 = FVar1 - 1;
-    if (FVar1 == 0) {
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+    if (remainingBlocks == 0) {
       return false;
     }
   }
@@ -373,11 +373,11 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
           (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeRecord *pFVar2;
-  SessionNetworkRoleFlags SVar3;
-  SessionNetworkRoleFlags SVar4;
-  FrontendPlayerRuntimeRecord *pFVar5;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *nextBlock;
+  SessionNetworkRoleFlags hostFlagOrRemaining;
+  SessionNetworkRoleFlags searchRemaining;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     if (playerId != g_LocalPlayerRuntimeId) {
@@ -386,30 +386,30 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
     *(uint *)(g_FrontendRootNode + 0x750) = *(uint *)(g_FrontendRootNode + 0x750) | 8;
     return;
   }
-  SVar4 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar5 = g_FrontendPlayerRuntimeBlocks;
-  SVar3 = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST;
+  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  hostFlagOrRemaining = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST;
   while( true ) {
-    if (SVar3 == SESSION_NETWORK_ROLE_LOCAL) {
+    if (hostFlagOrRemaining == SESSION_NETWORK_ROLE_LOCAL) {
       return;
     }
-    if (playerId == pFVar5->playerRuntimeId) break;
-    pFVar5 = pFVar5 + 1;
-    SVar4 = SVar4 - SESSION_NETWORK_ROLE_CLIENT;
-    SVar3 = SVar4;
+    if (playerId == playerBlock->playerRuntimeId) break;
+    playerBlock = playerBlock + 1;
+    searchRemaining = searchRemaining - SESSION_NETWORK_ROLE_CLIENT;
+    hostFlagOrRemaining = searchRemaining;
   }
-  (pFVar5->factionAssignment).readyOrWaitState = 1;
-  pFVar5 = g_FrontendPlayerRuntimeBlocks;
-  FVar1 = g_FrontendPlayerRuntimeBlockCount;
+  (playerBlock->factionAssignment).readyOrWaitState = 1;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   do {
-    FVar1 = FVar1 - 1;
-    if (FVar1 == 0) {
+    remainingBlocks = remainingBlocks - 1;
+    if (remainingBlocks == 0) {
       *(uint *)(g_FrontendRootNode + 0x750) = *(uint *)(g_FrontendRootNode + 0x750) & 0xfffffff7;
       return;
     }
-    pFVar2 = pFVar5 + 1;
-    pFVar5 = pFVar5 + 1;
-  } while ((pFVar2->factionAssignment).readyOrWaitState != 0);
+    nextBlock = playerBlock + 1;
+    playerBlock = playerBlock + 1;
+  } while ((nextBlock->factionAssignment).readyOrWaitState != 0);
   return;
 }
 
@@ -427,21 +427,21 @@ FrontendPlayerRuntime_MarkFlag08ById
           (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
 
 {
-  FrontendRoleStateFlags *pFVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
+  FrontendRoleStateFlags *roleFlags;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar2 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (playerId == pFVar3->playerRuntimeId) {
-      pFVar1 = &(pFVar3->factionAssignment).roleStateFlags;
-      *pFVar1 = *pFVar1 | 8;
+    if (playerId == playerBlock->playerRuntimeId) {
+      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
+      *roleFlags = *roleFlags | 8;
       return;
     }
-    pFVar3 = pFVar3 + 1;
-    FVar2 = FVar2 - 1;
-  } while (FVar2 != 0);
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -455,19 +455,19 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
           (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword stateMask)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeRecord *pFVar2;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar1 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar2 = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (playerId == pFVar2->playerRuntimeId) {
-      pFVar2->runtimeState64 = pFVar2->runtimeState64 ^ stateMask;
+    if (playerId == playerBlock->playerRuntimeId) {
+      playerBlock->runtimeState64 = playerBlock->runtimeState64 ^ stateMask;
       return;
     }
-    pFVar2 = pFVar2 + 1;
-    FVar1 = FVar1 - 1;
-  } while (FVar1 != 0);
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -485,21 +485,21 @@ FrontendPlayerRuntime_MarkFlag04ById
           (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
 
 {
-  FrontendRoleStateFlags *pFVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
+  FrontendRoleStateFlags *roleFlags;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar2 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (playerId == pFVar3->playerRuntimeId) {
-      pFVar1 = &(pFVar3->factionAssignment).roleStateFlags;
-      *pFVar1 = *pFVar1 | 4;
+    if (playerId == playerBlock->playerRuntimeId) {
+      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
+      *roleFlags = *roleFlags | 4;
       return;
     }
-    pFVar3 = pFVar3 + 1;
-    FVar2 = FVar2 - 1;
-  } while (FVar2 != 0);
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -517,21 +517,21 @@ FrontendPlayerRuntime_MarkFlag02ById
           (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
 
 {
-  FrontendRoleStateFlags *pFVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
+  FrontendRoleStateFlags *roleFlags;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar2 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (playerId == pFVar3->playerRuntimeId) {
-      pFVar1 = &(pFVar3->factionAssignment).roleStateFlags;
-      *pFVar1 = *pFVar1 | 2;
+    if (playerId == playerBlock->playerRuntimeId) {
+      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
+      *roleFlags = *roleFlags | 2;
       return;
     }
-    pFVar3 = pFVar3 + 1;
-    FVar2 = FVar2 - 1;
-  } while (FVar2 != 0);
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -551,24 +551,24 @@ FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
           FrontendPlayerValue84 scenarioAvailabilityMask0)
 
 {
-  FrontendRoleStateFlags *pFVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
+  FrontendRoleStateFlags *roleFlags;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar2 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (playerId == pFVar3->playerRuntimeId) {
-      pFVar1 = &(pFVar3->factionAssignment).roleStateFlags;
-      *pFVar1 = *pFVar1 | 1;
-      pFVar3->scenarioAvailabilityMask0 = scenarioAvailabilityMask0;
-      pFVar3->scenarioAvailabilityMask1 = scenarioAvailabilityMask1;
-      pFVar3->scenarioAvailabilityMask2 = scenarioAvailabilityMask2;
+    if (playerId == playerBlock->playerRuntimeId) {
+      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
+      *roleFlags = *roleFlags | 1;
+      playerBlock->scenarioAvailabilityMask0 = scenarioAvailabilityMask0;
+      playerBlock->scenarioAvailabilityMask1 = scenarioAvailabilityMask1;
+      playerBlock->scenarioAvailabilityMask2 = scenarioAvailabilityMask2;
       return;
     }
-    pFVar3 = pFVar3 + 1;
-    FVar2 = FVar2 - 1;
-  } while (FVar2 != 0);
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -581,47 +581,47 @@ FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
 void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
 {
-  FrontendLoadedLevelRuntimeImage370 *pFVar1;
-  dword dVar2;
-  uint uVar3;
-  FrontendPlayerRuntimeBlockCount FVar4;
-  dword dVar5;
-  FrontendPlayerRuntimeRecord *pFVar6;
+  FrontendLoadedLevelRuntimeImage370 *loadedLevel;
+  dword activeRemaining;
+  uint factionSlot;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  dword assignableRemaining;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  pFVar1 = g_FrontendLoadedLevelAsset;
-  uVar3 = 1;
-  dVar2 = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
-  dVar5 = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
+  loadedLevel = g_FrontendLoadedLevelAsset;
+  factionSlot = 1;
+  activeRemaining = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
+  assignableRemaining = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
   do {
-    g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    dVar2 = dVar2 - 1;
-    uVar3 = uVar3 + 1;
-    dVar5 = dVar5 - 1;
-  } while (dVar5 != 0);
-  for (; dVar2 != 0; dVar2 = dVar2 - 1) {
-    g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    uVar3 = uVar3 + 1;
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
+    activeRemaining = activeRemaining - 1;
+    factionSlot = factionSlot + 1;
+    assignableRemaining = assignableRemaining - 1;
+  } while (assignableRemaining != 0);
+  for (; activeRemaining != 0; activeRemaining = activeRemaining - 1) {
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
+    factionSlot = factionSlot + 1;
   }
-  if (uVar3 < 7) {
+  if (factionSlot < 7) {
     do {
-      g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] = 0;
-      uVar3 = uVar3 + 1;
-    } while (uVar3 < 8);
+      g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = 0;
+      factionSlot = factionSlot + 1;
+    } while (factionSlot < 8);
   }
-  uVar3 = 1;
-  FVar4 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar6 = g_FrontendPlayerRuntimeBlocks;
+  factionSlot = 1;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    (pFVar6->factionAssignment).factionAssignmentIndex = uVar3;
-    (pFVar6->factionAssignment).readyOrWaitState = 0;
-    (pFVar6->factionAssignment).consensusValue = 0;
-    uVar3 = uVar3 + 1;
-    pFVar6 = pFVar6 + 1;
-    if ((pFVar1->runtimeTail2E0).assignableFactionCount < uVar3) {
-      uVar3 = uVar3 - (pFVar1->runtimeTail2E0).assignableFactionCount;
+    (playerBlock->factionAssignment).factionAssignmentIndex = factionSlot;
+    (playerBlock->factionAssignment).readyOrWaitState = 0;
+    (playerBlock->factionAssignment).consensusValue = 0;
+    factionSlot = factionSlot + 1;
+    playerBlock = playerBlock + 1;
+    if ((loadedLevel->runtimeTail2E0).assignableFactionCount < factionSlot) {
+      factionSlot = factionSlot - (loadedLevel->runtimeTail2E0).assignableFactionCount;
     }
-    FVar4 = FVar4 - 1;
-  } while (FVar4 != 0);
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -637,7 +637,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFaction
 void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 
 {
-  FrontendPlayerRuntimeRecord *pFVar1;
+  FrontendPlayerRuntimeRecord *firstPlayerBlock;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
   uint sessionTickInterval;
   
@@ -648,17 +648,17 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
   }
   g_FrontendNetworkState = 0;
   source[-8].rightOffset = sessionTickInterval >> 1;
-  pFVar1 = g_FrontendPlayerRuntimeBlocks;
+  firstPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_LocalPlayerRuntimeId = 0;
   localPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   (localPlayerRecord->playerName).textUtf16[0] = 0;
   (localPlayerRecord->playerName).textUtf16[1] = 0;
-  pFVar1->playerRuntimeId = 0;
-  (pFVar1->factionAssignment).roleStateFlags = 0;
-  pFVar1->runtimeState64 = 0;
-  pFVar1->snapshotTransferFlags = 0;
+  firstPlayerBlock->playerRuntimeId = 0;
+  (firstPlayerBlock->factionAssignment).roleStateFlags = 0;
+  firstPlayerBlock->runtimeState64 = 0;
+  firstPlayerBlock->snapshotTransferFlags = 0;
   return;
 }
 
@@ -675,13 +675,13 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
 void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
 
 {
-  TextResourceResolveEaxCf5 TVar1;
+  TextResourceResolveEaxCf5 labelText;
   
   g_SessionNetworkTickInterval = source[1].vtable;
-  TVar1 = TextResource_Resolve
+  labelText = TextResource_Resolve
                     ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
   RichTextCommandStream_CopyExpandedCf
-            (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,TVar1.eax);
+            (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.eax);
   g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
   return;
 }
@@ -698,21 +698,21 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
+  int flaggedCount;
+  uint remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  iVar1 = 0;
-  uVar2 = g_FrontendPlayerRuntimeCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  flaggedCount = 0;
+  remainingBlocks = g_FrontendPlayerRuntimeCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if ((pFVar3->capabilityFlags & 0x100) != 0) {
-      iVar1 = iVar1 + 1;
+    if ((playerBlock->capabilityFlags & 0x100) != 0) {
+      flaggedCount = flaggedCount + 1;
     }
-    pFVar3 = pFVar3 + 1;
-    uVar2 = uVar2 - 1;
-  } while (uVar2 != 0);
-  if ((uint)(iVar1 * 3) < g_FrontendPlayerRuntimeCount) {
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
+  if ((uint)(flaggedCount * 3) < g_FrontendPlayerRuntimeCount) {
     UiNodeList_SuppressActionId(0x2006,g_FrontendRootNode);
   }
   else {
@@ -761,36 +761,36 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRuntimeId)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeRecord *pFVar2;
-  FrontendPlayerRuntimeBlockCount FVar3;
-  FrontendPlayerRuntimeRecord *pFVar4;
+  FrontendPlayerRuntimeBlockCount readyScanRemaining;
+  FrontendPlayerRuntimeRecord *readyScanBlock;
+  FrontendPlayerRuntimeBlockCount searchRemaining;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    FVar3 = g_FrontendPlayerRuntimeBlockCount;
-    pFVar4 = g_FrontendPlayerRuntimeBlocks;
+    searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+    playerBlock = g_FrontendPlayerRuntimeBlocks;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       do {
-        if (playerRuntimeId == pFVar4->playerRuntimeId) {
-          (pFVar4->factionAssignment).readyOrWaitState = 1;
-          pFVar2 = g_FrontendPlayerRuntimeBlocks;
-          FVar1 = g_FrontendPlayerRuntimeBlockCount;
+        if (playerRuntimeId == playerBlock->playerRuntimeId) {
+          (playerBlock->factionAssignment).readyOrWaitState = 1;
+          readyScanBlock = g_FrontendPlayerRuntimeBlocks;
+          readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
           break;
         }
-        FVar3 = FVar3 - 1;
-        pFVar4 = pFVar4 + 1;
-        pFVar2 = g_FrontendPlayerRuntimeBlocks;
-        FVar1 = g_FrontendPlayerRuntimeBlockCount;
-      } while (FVar3 != 0);
+        searchRemaining = searchRemaining - 1;
+        playerBlock = playerBlock + 1;
+        readyScanBlock = g_FrontendPlayerRuntimeBlocks;
+        readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
+      } while (searchRemaining != 0);
       do {
-        FVar1 = FVar1 - 1;
-        if (FVar1 == 0) {
+        readyScanRemaining = readyScanRemaining - 1;
+        if (readyScanRemaining == 0) {
           UiNodeList_UnsuppressActionId(0x101b,(UiNodeBase *)g_InGameRuntimeRoot);
           return;
         }
-        pFVar4 = pFVar2 + 1;
-        pFVar2 = pFVar2 + 1;
-      } while ((pFVar4->factionAssignment).readyOrWaitState != 0);
+        playerBlock = readyScanBlock + 1;
+        readyScanBlock = readyScanBlock + 1;
+      } while ((playerBlock->factionAssignment).readyOrWaitState != 0);
     }
   }
   else if (playerRuntimeId == g_LocalPlayerRuntimeId) {
@@ -814,27 +814,27 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
           (PlayerRuntimeId playerRuntimeId,dword reserved0,dword reserved1,dword reserved2)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
-  FrontendPlayerRuntimeRecord *pFVar4;
+  FrontendPlayerRuntimeBlockCount searchRemaining;
+  FrontendPlayerRuntimeBlockCount readyScanRemaining;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendPlayerRuntimeRecord *readyScanBlock;
   
-  FVar1 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
     do {
-      if (playerRuntimeId == pFVar3->playerRuntimeId) {
-        (pFVar3->factionAssignment).readyOrWaitState =
-             (pFVar3->factionAssignment).readyOrWaitState + 1;
-        FVar2 = g_FrontendPlayerRuntimeBlockCount;
-        pFVar4 = g_FrontendPlayerRuntimeBlocks;
+      if (playerRuntimeId == playerBlock->playerRuntimeId) {
+        (playerBlock->factionAssignment).readyOrWaitState =
+             (playerBlock->factionAssignment).readyOrWaitState + 1;
+        readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
+        readyScanBlock = g_FrontendPlayerRuntimeBlocks;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL)
         {
           if (playerRuntimeId != 0) {
             return;
           }
-          if ((pFVar3->factionAssignment).readyOrWaitState < 2) {
+          if ((playerBlock->factionAssignment).readyOrWaitState < 2) {
             return;
           }
           goto 
@@ -843,18 +843,18 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
         }
         break;
       }
-      FVar1 = FVar1 - 1;
-      FVar2 = g_FrontendPlayerRuntimeBlockCount;
-      pFVar4 = g_FrontendPlayerRuntimeBlocks;
-      pFVar3 = pFVar3 + 1;
-    } while (FVar1 != 0);
+      searchRemaining = searchRemaining - 1;
+      readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
+      readyScanBlock = g_FrontendPlayerRuntimeBlocks;
+      playerBlock = playerBlock + 1;
+    } while (searchRemaining != 0);
     do {
-      if ((pFVar4->factionAssignment).readyOrWaitState == 0) {
+      if ((readyScanBlock->factionAssignment).readyOrWaitState == 0) {
         return;
       }
-      FVar2 = FVar2 - 1;
-      pFVar4 = pFVar4 + 1;
-    } while (FVar2 != 0);
+      readyScanRemaining = readyScanRemaining - 1;
+      readyScanBlock = readyScanBlock + 1;
+    } while (readyScanRemaining != 0);
     if ((g_FrontendPlayerRuntimeBlocks->factionAssignment).readyOrWaitState < 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -1010,90 +1010,90 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           FrontendFactionAssignmentIndex selectionGroupIndex)
 
 {
-  GameEntityRuntime *pGVar1;
+  GameEntityRuntime *selectionEntry;
   InGameRuntimeRootImageC3E4 *node;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  ArmyRuntimeSlot **ppAVar5;
-  SelectionPlayerRuntimeBlock *pSVar6;
-  SelectionPlayerRuntimeBlock *pSVar7;
-  SelectionPlayerRuntimeBlock *pSVar8;
-  SelectionPlayerRuntimeBlock *pSVar9;
-  bool bVar10;
-  WorldPositionEaxEcxEdxCf13 WVar11;
+  int memberOrEntryRemaining;
+  int scanRemaining;
+  int entriesRemaining;
+  ArmyRuntimeSlot **groupMemberSlot;
+  SelectionPlayerRuntimeBlock *sourceCursor;
+  SelectionPlayerRuntimeBlock *groupOrScanCursor;
+  SelectionPlayerRuntimeBlock *nextScanCursor;
+  SelectionPlayerRuntimeBlock *destCursor;
+  bool foundEmpty;
+  WorldPositionEaxEcxEdxCf13 averagePosition;
   
-  pSVar7 = (SelectionPlayerRuntimeBlock *)
+  groupOrScanCursor = (SelectionPlayerRuntimeBlock *)
            (selectionGroupIndex * 0x80 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x2e0) + factionIndex * 0x740);
-  pSVar6 = pSVar7;
-  pSVar9 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  sourceCursor = groupOrScanCursor;
+  destCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   if ((transferModeFlags & 1) != 0) {
-    iVar4 = 0x20;
-    pSVar6 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+    entriesRemaining = 0x20;
+    sourceCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
     do {
-      pSVar9 = pSVar6;
-      pGVar1 = (pSVar9->selection).entries[0];
-      if (pGVar1 != (GameEntityRuntime *)0x0) {
-        iVar2 = 0x100;
-        ppAVar5 = g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32;
+      destCursor = sourceCursor;
+      selectionEntry = (destCursor->selection).entries[0];
+      if (selectionEntry != (GameEntityRuntime *)0x0) {
+        memberOrEntryRemaining = 0x100;
+        groupMemberSlot = g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32;
         do {
-          if (pGVar1 == (GameEntityRuntime *)*ppAVar5) {
-            *ppAVar5 = (ArmyRuntimeSlot *)0x0;
+          if (selectionEntry == (GameEntityRuntime *)*groupMemberSlot) {
+            *groupMemberSlot = (ArmyRuntimeSlot *)0x0;
           }
-          ppAVar5 = ppAVar5 + 1;
-          iVar2 = iVar2 + -1;
-        } while (iVar2 != 0);
+          groupMemberSlot = groupMemberSlot + 1;
+          memberOrEntryRemaining = memberOrEntryRemaining + -1;
+        } while (memberOrEntryRemaining != 0);
       }
-      iVar4 = iVar4 + -1;
-      pSVar6 = (SelectionPlayerRuntimeBlock *)((pSVar9->selection).entries + 1);
-    } while (iVar4 != 0);
-    pSVar6 = (SelectionPlayerRuntimeBlock *)&pSVar9[-1].packedSelectionState809C;
-    pSVar9 = pSVar7;
+      entriesRemaining = entriesRemaining + -1;
+      sourceCursor = (SelectionPlayerRuntimeBlock *)((destCursor->selection).entries + 1);
+    } while (entriesRemaining != 0);
+    sourceCursor = (SelectionPlayerRuntimeBlock *)&destCursor[-1].packedSelectionState809C;
+    destCursor = groupOrScanCursor;
   }
-  iVar4 = 0x20;
+  entriesRemaining = 0x20;
   if ((transferModeFlags & 2) == 0) {
-    for (; iVar4 != 0; iVar4 = iVar4 + -1) {
-      (pSVar9->selection).entries[0] = (pSVar6->selection).entries[0];
-      pSVar6 = (SelectionPlayerRuntimeBlock *)((pSVar6->selection).entries + 1);
-      pSVar9 = (SelectionPlayerRuntimeBlock *)((pSVar9->selection).entries + 1);
+    for (; entriesRemaining != 0; entriesRemaining = entriesRemaining + -1) {
+      (destCursor->selection).entries[0] = (sourceCursor->selection).entries[0];
+      sourceCursor = (SelectionPlayerRuntimeBlock *)((sourceCursor->selection).entries + 1);
+      destCursor = (SelectionPlayerRuntimeBlock *)((destCursor->selection).entries + 1);
     }
   }
   else {
-    iVar2 = 0x20;
+    memberOrEntryRemaining = 0x20;
     do {
-      pGVar1 = (pSVar6->selection).entries[0];
-      iVar3 = iVar4;
-      pSVar7 = pSVar9;
-      if (pGVar1 != (GameEntityRuntime *)0x0) {
+      selectionEntry = (sourceCursor->selection).entries[0];
+      scanRemaining = entriesRemaining;
+      groupOrScanCursor = destCursor;
+      if (selectionEntry != (GameEntityRuntime *)0x0) {
         do {
-          if (pGVar1 == (pSVar7->selection).entries[0])
+          if (selectionEntry == (groupOrScanCursor->selection).entries[0])
           goto 
           FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDuplicateOrAppendDecision
           ;
-          iVar3 = iVar3 + -1;
-          pSVar7 = (SelectionPlayerRuntimeBlock *)((pSVar7->selection).entries + 1);
-        } while (iVar3 != 0);
-        bVar10 = true;
-        iVar3 = iVar4;
-        pSVar7 = pSVar9;
+          scanRemaining = scanRemaining + -1;
+          groupOrScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
+        } while (scanRemaining != 0);
+        foundEmpty = true;
+        scanRemaining = entriesRemaining;
+        groupOrScanCursor = destCursor;
         do {
-          pSVar8 = pSVar7;
-          if (iVar3 == 0) break;
-          iVar3 = iVar3 + -1;
-          pSVar8 = (SelectionPlayerRuntimeBlock *)((pSVar7->selection).entries + 1);
-          bVar10 = (pSVar7->selection).entries[0] == (GameEntityRuntime *)0x0;
-          pSVar7 = pSVar8;
-        } while (!bVar10);
-        if (bVar10) {
-          *(GameEntityRuntime **)(pSVar8[-1].reserved80B0_8117 + 100) =
-               (pSVar6->selection).entries[0];
+          nextScanCursor = groupOrScanCursor;
+          if (scanRemaining == 0) break;
+          scanRemaining = scanRemaining + -1;
+          nextScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
+          foundEmpty = (groupOrScanCursor->selection).entries[0] == (GameEntityRuntime *)0x0;
+          groupOrScanCursor = nextScanCursor;
+        } while (!foundEmpty);
+        if (foundEmpty) {
+          *(GameEntityRuntime **)(nextScanCursor[-1].reserved80B0_8117 + 100) =
+               (sourceCursor->selection).entries[0];
         }
       }
 FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDuplicateOrAppendDecision
       :
-      pSVar6 = (SelectionPlayerRuntimeBlock *)((pSVar6->selection).entries + 1);
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
+      sourceCursor = (SelectionPlayerRuntimeBlock *)((sourceCursor->selection).entries + 1);
+      memberOrEntryRemaining = memberOrEntryRemaining + -1;
+    } while (memberOrEntryRemaining != 0);
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             (&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -1102,13 +1102,13 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDupli
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
     if ((transferModeFlags & 4) != 0) {
-      WVar11 = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
-      if (!WVar11.carry) {
+      averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
+      if (!averagePosition.carry) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                   ((node->worldRuntime0A30).motion.pitchAngle,
                    (node->worldRuntime0A30).motion.headingAngle,
-                   (node->worldRuntime0A30).motion.committedDistanceQ12,WVar11.worldZQ12,
-                   WVar11.worldYQ12,WVar11.worldXQ12,&node->worldRuntime0A30);
+                   (node->worldRuntime0A30).motion.committedDistanceQ12,averagePosition.worldZQ12,
+                   averagePosition.worldYQ12,averagePosition.worldXQ12,&node->worldRuntime0A30);
       }
     }
   }
@@ -1128,23 +1128,23 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDupli
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
-          (FrontendPlayerIndex playerIndex,dword arg1,
+          (FrontendPlayerIndex playerIndex,dword unusedArg1,
           TechnologyIndexOrRestoreCode technologyIndexOrRestore,ArmyRuntimeSavedOffset modelOffset)
 
 {
-  GameEntityRuntimeFlags *pGVar1;
-  SelectionPlayerRuntimeBlock *pSVar2;
+  GameEntityRuntimeFlags *entityFlags;
+  SelectionPlayerRuntimeBlock *playerBlock;
   GameEntityRuntime *entity;
   
-  pSVar2 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((modelOffset != 0) &&
      (entity = (GameEntityRuntime *)(modelOffset + g_ModelRuntimeRebaseDelta),
      (entity->common).ownership.modelNode != (ModelRuntimeNode *)0x0)) {
-    pSVar2->assignmentToken80A0 = 0;
+    playerBlock->assignmentToken80A0 = 0;
     if (technologyIndexOrRestore != 0) {
       if ((int)technologyIndexOrRestore < 0) {
-        pGVar1 = &(entity->common).runtimeFlags;
-        *pGVar1 = *pGVar1 | pSVar2->assignmentFlags80A4;
+        entityFlags = &(entity->common).runtimeFlags;
+        *entityFlags = *entityFlags | playerBlock->assignmentFlags80A4;
       }
       else {
         Technology_ApplyRecordToEntity(technologyIndexOrRestore,entity);
@@ -1161,7 +1161,7 @@ FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
 */
 void __thandor_preserve_eax_edx
 FrontendPlayerTextCommand_SetPackedState
-          (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,
+          (FrontendPlayerIndex playerIndex,dword unusedArg1,dword unusedArg2,
           FrontendPackedTextCommandState packedState)
 
 {
@@ -1185,21 +1185,21 @@ FrontendPlayerTextCommand_AppendTripleClamped
           FrontendTextCommandValue1 value1,FrontendTextCommandValue0 value0)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
-  uint uVar2;
-  uint uVar3;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  uint writeOffset;
+  uint nextOffset;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  uVar2 = pSVar1->packedSelectionState809C & 0xff;
-  *(FrontendTextCommandValue0 *)(pSVar1->reserved80B0_8117 + uVar2 + 0x10) = value0;
-  *(FrontendTextCommandValue1 *)(pSVar1->reserved80B0_8117 + uVar2 + 0x14) = value1;
-  uVar3 = uVar2 + 0xc;
-  pSVar1->packedSelectionState809C = pSVar1->packedSelectionState809C & 0xffffff00;
-  if (0x24 < uVar3) {
-    uVar3 = 0x24;
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  writeOffset = playerBlock->packedSelectionState809C & 0xff;
+  *(FrontendTextCommandValue0 *)(playerBlock->reserved80B0_8117 + writeOffset + 0x10) = value0;
+  *(FrontendTextCommandValue1 *)(playerBlock->reserved80B0_8117 + writeOffset + 0x14) = value1;
+  nextOffset = writeOffset + 0xc;
+  playerBlock->packedSelectionState809C = playerBlock->packedSelectionState809C & 0xffffff00;
+  if (0x24 < nextOffset) {
+    nextOffset = 0x24;
   }
-  *(FrontendTextCommandValue2 *)(pSVar1->reserved80B0_8117 + uVar2 + 0x18) = value2;
-  pSVar1->packedSelectionState809C = pSVar1->packedSelectionState809C | uVar3;
+  *(FrontendTextCommandValue2 *)(playerBlock->reserved80B0_8117 + writeOffset + 0x18) = value2;
+  playerBlock->packedSelectionState809C = playerBlock->packedSelectionState809C | nextOffset;
   return;
 }
 
@@ -1215,27 +1215,27 @@ FrontendPlayerTextCommand_AppendTripleClamped
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerTextCommand_PublishConditionalRichText
-          (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,dword arg3)
+          (FrontendPlayerIndex playerIndex,dword unusedArg1,dword unusedArg2,dword unusedArg3)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
+  SelectionPlayerRuntimeBlock *playerBlock;
   word *stream;
-  TextResourceResolveEaxCf5 TVar2;
+  TextResourceResolveEaxCf5 messageText;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  if ((((pSVar1->packedSelectionState809C &
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  if ((((playerBlock->packedSelectionState809C &
         1 << ((char)(g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex + 8U & 0x1f))
         != 0) ||
-      ((pSVar1->packedSelectionState809C &
+      ((playerBlock->packedSelectionState809C &
        1 << ((char)(g_InGameRuntimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId + 0x10U &
             0x1f)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
     Text_CopyNarrowToUtf16Cf
-              (0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,pSVar1->reserved80B0_8117 + 0x10);
-    TVar2 = TextResource_Resolve(0xff07);
-    stream = TVar2.eax;
-    RichTextCommandStream_PatchPayloadBySelector(0,pSVar1->reserved80B0_8117 + 0x40,stream);
+              (0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
+    messageText = TextResource_Resolve(0xff07);
+    stream = messageText.eax;
+    RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->reserved80B0_8117 + 0x40,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
   }
@@ -1258,29 +1258,29 @@ FrontendPlayerSelection_ApplyEntryOrAll
           RuntimeToken selectionEntryToken)
 
 {
-  GameEntityRuntime *pGVar1;
-  int iVar2;
+  GameEntityRuntime *targetEntity;
+  int remainingEntries;
   WorldRuntimeContext *worldRuntime;
   SelectionPlayerRuntimeBlock *array;
-  bool bVar3;
+  bool isSelected;
   
   array = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  pGVar1 = (GameEntityRuntime *)(selectionEntryToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+  targetEntity = (GameEntityRuntime *)(selectionEntryToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-  iVar2 = 0x20;
-  bVar3 = SelectionPointerArray_ContainsCf(pGVar1,&array->selection);
-  if (bVar3) {
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,pGVar1);
+  remainingEntries = 0x20;
+  isSelected = SelectionPointerArray_ContainsCf(targetEntity,&array->selection);
+  if (isSelected) {
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     return;
   }
   do {
-    pGVar1 = (array->selection).entries[0];
-    if (pGVar1 != (GameEntityRuntime *)0x0) {
-      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,pGVar1);
+    targetEntity = (array->selection).entries[0];
+    if (targetEntity != (GameEntityRuntime *)0x0) {
+      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     }
     array = (SelectionPlayerRuntimeBlock *)((array->selection).entries + 1);
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    remainingEntries = remainingEntries + -1;
+  } while (remainingEntries != 0);
   return;
 }
 
@@ -1298,27 +1298,27 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
           (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
-  FrontendPlayerRuntimeRecord *pFVar4;
+  FrontendPlayerRuntimeBlockCount searchRemaining;
+  FrontendPlayerRuntimeBlockCount readyScanRemaining;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  FrontendPlayerRuntimeRecord *readyScanBlock;
   
-  FVar1 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
+  searchRemaining = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
     do {
-      if (playerId == pFVar3->playerRuntimeId) {
-        (pFVar3->factionAssignment).readyOrWaitState =
-             (pFVar3->factionAssignment).readyOrWaitState + 1;
-        FVar2 = g_FrontendPlayerRuntimeBlockCount;
-        pFVar4 = g_FrontendPlayerRuntimeBlocks;
+      if (playerId == playerBlock->playerRuntimeId) {
+        (playerBlock->factionAssignment).readyOrWaitState =
+             (playerBlock->factionAssignment).readyOrWaitState + 1;
+        readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
+        readyScanBlock = g_FrontendPlayerRuntimeBlocks;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL)
         {
           if (playerId != 0) {
             return;
           }
-          if ((pFVar3->factionAssignment).readyOrWaitState < 2) {
+          if ((playerBlock->factionAssignment).readyOrWaitState < 2) {
             return;
           }
           goto 
@@ -1327,18 +1327,18 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
         }
         break;
       }
-      FVar1 = FVar1 - 1;
-      FVar2 = g_FrontendPlayerRuntimeBlockCount;
-      pFVar4 = g_FrontendPlayerRuntimeBlocks;
-      pFVar3 = pFVar3 + 1;
-    } while (FVar1 != 0);
+      searchRemaining = searchRemaining - 1;
+      readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
+      readyScanBlock = g_FrontendPlayerRuntimeBlocks;
+      playerBlock = playerBlock + 1;
+    } while (searchRemaining != 0);
     do {
-      if ((pFVar4->factionAssignment).readyOrWaitState == 0) {
+      if ((readyScanBlock->factionAssignment).readyOrWaitState == 0) {
         return;
       }
-      FVar2 = FVar2 - 1;
-      pFVar4 = pFVar4 + 1;
-    } while (FVar2 != 0);
+      readyScanRemaining = readyScanRemaining - 1;
+      readyScanBlock = readyScanBlock + 1;
+    } while (readyScanRemaining != 0);
     if ((g_FrontendPlayerRuntimeBlocks->factionAssignment).readyOrWaitState < 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -1372,41 +1372,41 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
           FrontendConsensusValue consensusValue)
 
 {
-  UiAnchorFractionQ31 *pUVar1;
+  UiAnchorFractionQ31 *rootAnchorFlags;
   UiRootNode *taskAssignmentRoot;
-  uint uVar2;
-  FrontendPlayerRuntimeBlockCount FVar3;
-  FrontendPlayerRuntimeRecord *pFVar4;
+  uint combinedConsensus;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
   
-  FVar3 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar4 = g_FrontendPlayerRuntimeBlocks;
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (playerId == pFVar4->playerRuntimeId) {
-      (pFVar4->factionAssignment).consensusValue = consensusValue;
+    if (playerId == playerBlock->playerRuntimeId) {
+      (playerBlock->factionAssignment).consensusValue = consensusValue;
       taskAssignmentRoot = g_FrontendRootNode;
-      uVar2 = 0xffffffff;
-      FVar3 = g_FrontendPlayerRuntimeBlockCount;
-      pFVar4 = g_FrontendPlayerRuntimeBlocks;
+      combinedConsensus = 0xffffffff;
+      remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+      playerBlock = g_FrontendPlayerRuntimeBlocks;
       do {
-        uVar2 = uVar2 & (pFVar4->factionAssignment).consensusValue;
-        pFVar4 = pFVar4 + 1;
-        FVar3 = FVar3 - 1;
-      } while (FVar3 != 0);
-      if (uVar2 == 0) {
-        pUVar1 = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
-        *pUVar1 = *pUVar1 | 8;
+        combinedConsensus = combinedConsensus & (playerBlock->factionAssignment).consensusValue;
+        playerBlock = playerBlock + 1;
+        remainingBlocks = remainingBlocks - 1;
+      } while (remainingBlocks != 0);
+      if (combinedConsensus == 0) {
+        rootAnchorFlags = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
+        *rootAnchorFlags = *rootAnchorFlags | 8;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL
               ) {
-        pUVar1 = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
-        *pUVar1 = *pUVar1 & 0xfffffff7;
+        rootAnchorFlags = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
+        *rootAnchorFlags = *rootAnchorFlags & 0xfffffff7;
       }
       FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(0,playerId,taskAssignmentRoot);
       return;
     }
-    pFVar4 = pFVar4 + 1;
-    FVar3 = FVar3 - 1;
-  } while (FVar3 != 0);
+    playerBlock = playerBlock + 1;
+    remainingBlocks = remainingBlocks - 1;
+  } while (remainingBlocks != 0);
   return;
 }
 
@@ -1420,29 +1420,29 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
-          (PlayerRuntimeId playerId,dword arg1,dword arg2,dword arg3)
+          (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword unusedArg3)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeRecord *pFVar2;
-  undefined4 *puVar3;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  undefined4 *messageBuffer;
   
-  pFVar2 = g_FrontendPlayerRuntimeBlocks;
-  puVar3 = g_FrontendPlayerMessageBuffers;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  messageBuffer = g_FrontendPlayerMessageBuffers;
   if ((g_FrontendNetworkState == 3) ||
-     (FVar1 = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
-    FVar1 = g_FrontendPlayerRuntimeCount;
+     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
+    remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
   while( true ) {
-    if (FVar1 == 0) {
+    if (remainingBlocks == 0) {
       return;
     }
-    if (playerId == pFVar2->playerRuntimeId) break;
-    FVar1 = FVar1 - 1;
-    pFVar2 = pFVar2 + 1;
-    puVar3 = puVar3 + 0x19;
+    if (playerId == playerBlock->playerRuntimeId) break;
+    remainingBlocks = remainingBlocks - 1;
+    playerBlock = playerBlock + 1;
+    messageBuffer = messageBuffer + 0x19;
   }
-  *puVar3 = 4;
+  *messageBuffer = 4;
   return;
 }
 
@@ -1462,31 +1462,31 @@ FrontendPlayerMessageBuffer_AppendTripleById
           FrontendMessageValueC valueC)
 
 {
-  int iVar1;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
-  int *piVar4;
+  int writeOffset;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  int *messageBuffer;
   
-  pFVar3 = g_FrontendPlayerRuntimeBlocks;
-  piVar4 = g_FrontendPlayerMessageBuffers;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  messageBuffer = g_FrontendPlayerMessageBuffers;
   if ((g_FrontendNetworkState == 3) ||
-     (FVar2 = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
-    FVar2 = g_FrontendPlayerRuntimeCount;
+     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
+    remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
   while( true ) {
-    if (FVar2 == 0) {
+    if (remainingBlocks == 0) {
       return;
     }
-    if (playerId == pFVar3->playerRuntimeId) break;
-    FVar2 = FVar2 - 1;
-    pFVar3 = pFVar3 + 1;
-    piVar4 = piVar4 + 0x19;
+    if (playerId == playerBlock->playerRuntimeId) break;
+    remainingBlocks = remainingBlocks - 1;
+    playerBlock = playerBlock + 1;
+    messageBuffer = messageBuffer + 0x19;
   }
-  iVar1 = *piVar4;
-  *piVar4 = *piVar4 + 0xc;
-  *(FrontendMessageValueC *)(iVar1 + (int)piVar4) = valueC;
-  *(FrontendMessageValueB *)(iVar1 + 4 + (int)piVar4) = valueB;
-  *(FrontendMessageValueA *)(iVar1 + 8 + (int)piVar4) = valueA;
+  writeOffset = *messageBuffer;
+  *messageBuffer = *messageBuffer + 0xc;
+  *(FrontendMessageValueC *)(writeOffset + (int)messageBuffer) = valueC;
+  *(FrontendMessageValueB *)(writeOffset + 4 + (int)messageBuffer) = valueB;
+  *(FrontendMessageValueA *)(writeOffset + 8 + (int)messageBuffer) = valueA;
   return;
 }
 
@@ -1504,34 +1504,34 @@ FrontendPlayerMessageBuffer_AppendTripleById
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerMessageBuffer_PublishTextById
-          (PlayerRuntimeId playerId,dword arg1,dword arg2,dword arg3)
+          (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword unusedArg3)
 
 {
-  FrontendPlayerRuntimeBlockCount FVar1;
-  FrontendPlayerRuntimeRecord *pFVar2;
-  int iVar3;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  FrontendPlayerRuntimeRecord *playerBlock;
+  int messageBuffer;
   word *stream;
-  TextResourceResolveEaxCf5 TVar4;
+  TextResourceResolveEaxCf5 messageText;
   
-  pFVar2 = g_FrontendPlayerRuntimeBlocks;
-  iVar3 = g_FrontendPlayerMessageBuffers;
+  playerBlock = g_FrontendPlayerRuntimeBlocks;
+  messageBuffer = g_FrontendPlayerMessageBuffers;
   if ((g_FrontendNetworkState == 3) ||
-     (FVar1 = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
-    FVar1 = g_FrontendPlayerRuntimeCount;
+     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
+    remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
   while( true ) {
-    if (FVar1 == 0) {
+    if (remainingBlocks == 0) {
       return;
     }
-    if (playerId == pFVar2->playerRuntimeId) break;
-    FVar1 = FVar1 - 1;
-    pFVar2 = pFVar2 + 1;
-    iVar3 = iVar3 + 100;
+    if (playerId == playerBlock->playerRuntimeId) break;
+    remainingBlocks = remainingBlocks - 1;
+    playerBlock = playerBlock + 1;
+    messageBuffer = messageBuffer + 100;
   }
-  Text_CopyNarrowToUtf16Cf(0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,(byte *)(iVar3 + 4));
-  TVar4 = TextResource_Resolve(0xff07);
-  stream = TVar4.eax;
-  RichTextCommandStream_PatchPayloadBySelector(0,&pFVar2->playerName,stream);
+  Text_CopyNarrowToUtf16Cf(0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,(byte *)(messageBuffer + 4));
+  messageText = TextResource_Resolve(0xff07);
+  stream = messageText.eax;
+  RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);
   RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
   FrontendRecentTextHistory_InsertAndRebuild5(stream);
   return;
@@ -1549,62 +1549,62 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
           (FrontendNetworkListsRuntimeView5650 *frontendRoot)
 
 {
-  FrontendHeartbeatTickCount *pFVar1;
-  UiListRowCount *pUVar2;
-  void ***pppvVar3;
-  void **ppvVar4;
-  UiListRowCount UVar5;
-  void **ppvVar6;
-  int iVar7;
-  int iVar8;
-  FrontendPlayerRuntimeRecord *pFVar9;
-  FrontendPlayerRuntimeRecord *pFVar10;
-  FrontendPlayerRuntimeRecord *pFVar11;
-  FrontendPlayerRuntimeRecord *pFVar12;
+  FrontendHeartbeatTickCount *heartbeatTicks;
+  UiListRowCount *rowCountField;
+  void ***selectedSlotField;
+  void **selectedSlot;
+  UiListRowCount initialRowCount;
+  void **rowSlotCursor;
+  int copyRemaining;
+  int blocksRemaining;
+  FrontendPlayerRuntimeRecord *sourceBlock;
+  FrontendPlayerRuntimeRecord *nextSourceBlock;
+  FrontendPlayerRuntimeRecord *destBlock;
+  FrontendPlayerRuntimeRecord *nextDestBlock;
   
-  UVar5 = (frontendRoot->playerRuntimeList).rowCount;
-  iVar8 = UVar5 - 1;
-  if (iVar8 != 0 && 0 < (int)UVar5) {
-    ppvVar6 = (frontendRoot->playerRuntimeList).rowSlots + 1;
-    pFVar9 = g_FrontendPlayerRuntimeBlocks + 1;
-    pFVar11 = g_FrontendPlayerRuntimeBlocks + 1;
+  initialRowCount = (frontendRoot->playerRuntimeList).rowCount;
+  blocksRemaining = initialRowCount - 1;
+  if (blocksRemaining != 0 && 0 < (int)initialRowCount) {
+    rowSlotCursor = (frontendRoot->playerRuntimeList).rowSlots + 1;
+    sourceBlock = g_FrontendPlayerRuntimeBlocks + 1;
+    destBlock = g_FrontendPlayerRuntimeBlocks + 1;
     do {
-      pFVar1 = &pFVar9->heartbeatExpiryTicks;
-      *pFVar1 = *pFVar1 - 1;
-      pFVar12 = pFVar11;
-      if (*pFVar1 == 0) {
-        pFVar10 = pFVar9 + 1;
-        pUVar2 = &(frontendRoot->playerRuntimeList).rowCount;
-        *pUVar2 = *pUVar2 - 1;
+      heartbeatTicks = &sourceBlock->heartbeatExpiryTicks;
+      *heartbeatTicks = *heartbeatTicks - 1;
+      nextDestBlock = destBlock;
+      if (*heartbeatTicks == 0) {
+        nextSourceBlock = sourceBlock + 1;
+        rowCountField = &(frontendRoot->playerRuntimeList).rowCount;
+        *rowCountField = *rowCountField - 1;
         g_FrontendPlayerRuntimeCount = g_FrontendPlayerRuntimeCount + -1;
-        ppvVar4 = (frontendRoot->playerRuntimeList).selectedRowSlot;
-        if (ppvVar6 == ppvVar4) {
+        selectedSlot = (frontendRoot->playerRuntimeList).selectedRowSlot;
+        if (rowSlotCursor == selectedSlot) {
           (frontendRoot->playerRuntimeList).selectedRowSlot =
                (frontendRoot->playerRuntimeList).rowSlots;
         }
-        else if (ppvVar6 <= ppvVar4) {
-          pppvVar3 = &(frontendRoot->playerRuntimeList).selectedRowSlot;
-          *pppvVar3 = *pppvVar3 + -1;
+        else if (rowSlotCursor <= selectedSlot) {
+          selectedSlotField = &(frontendRoot->playerRuntimeList).selectedRowSlot;
+          *selectedSlotField = *selectedSlotField + -1;
         }
       }
       else {
-        pFVar10 = pFVar9 + 1;
-        pFVar12 = pFVar11 + 1;
-        ppvVar6 = ppvVar6 + 1;
-        if (pFVar12 != pFVar10) {
-          pFVar10 = pFVar9;
-          pFVar12 = pFVar11;
-          for (iVar7 = 0x4ec; iVar7 != 0; iVar7 = iVar7 + -1) {
-            pFVar12->runtimeState00 = pFVar10->runtimeState00;
-            pFVar10 = (FrontendPlayerRuntimeRecord *)&pFVar10->peerSequenceToken;
-            pFVar12 = (FrontendPlayerRuntimeRecord *)&pFVar12->peerSequenceToken;
+        nextSourceBlock = sourceBlock + 1;
+        nextDestBlock = destBlock + 1;
+        rowSlotCursor = rowSlotCursor + 1;
+        if (nextDestBlock != nextSourceBlock) {
+          nextSourceBlock = sourceBlock;
+          nextDestBlock = destBlock;
+          for (copyRemaining = 0x4ec; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+            nextDestBlock->runtimeState00 = nextSourceBlock->runtimeState00;
+            nextSourceBlock = (FrontendPlayerRuntimeRecord *)&nextSourceBlock->peerSequenceToken;
+            nextDestBlock = (FrontendPlayerRuntimeRecord *)&nextDestBlock->peerSequenceToken;
           }
         }
       }
-      iVar8 = iVar8 + -1;
-      pFVar9 = pFVar10;
-      pFVar11 = pFVar12;
-    } while (iVar8 != 0);
+      blocksRemaining = blocksRemaining + -1;
+      sourceBlock = nextSourceBlock;
+      destBlock = nextDestBlock;
+    } while (blocksRemaining != 0);
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(frontendRoot->playerRuntimeList).rowCount,
                (word *)&g_FrontendNetworkRuntimeCountTextUtf16);
@@ -1656,20 +1656,20 @@ FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
-          (FrontendPlayerIndex playerIndex,dword arg1,dword arg2,ArmyRuntimeSavedOffset modelOffset)
+          (FrontendPlayerIndex playerIndex,dword unusedArg1,dword unusedArg2,ArmyRuntimeSavedOffset modelOffset)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
-  uint uVar2;
-  dword dVar3;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  uint armyFlags;
+  dword armyAddress;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((modelOffset != 0) &&
-     (dVar3 = modelOffset + g_ModelRuntimeRebaseDelta, *(int *)(dVar3 + 4) != 0)) {
-    uVar2 = *(uint *)(dVar3 + 0xec);
-    pSVar1->assignmentToken80A0 = dVar3;
-    pSVar1->assignmentFlags80A4 = uVar2 & 0x80;
-    *(uint *)(dVar3 + 0xec) = *(uint *)(dVar3 + 0xec) & 0xffffff7f;
+     (armyAddress = modelOffset + g_ModelRuntimeRebaseDelta, *(int *)(armyAddress + 4) != 0)) {
+    armyFlags = *(uint *)(armyAddress + 0xec);
+    playerBlock->assignmentToken80A0 = armyAddress;
+    playerBlock->assignmentFlags80A4 = armyFlags & 0x80;
+    *(uint *)(armyAddress + 0xec) = *(uint *)(armyAddress + 0xec) & 0xffffff7f;
   }
   return;
 }
