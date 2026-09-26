@@ -27,8 +27,8 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit);
 
 /* 0x0050ECE0 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath);
+bool __thandor_cf_preserve_eax_ecx_edx
+InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath); /* CF: true = failed */
 
 /* 0x0053D9F0 */
 void __thandor_void_preserve_eax_ecx_edx

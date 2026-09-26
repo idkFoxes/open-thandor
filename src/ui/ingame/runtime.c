@@ -709,7 +709,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
    [assets/package/runtime], ArmyRuntimePool_RebaseAfterLoad [gameplay/army/runtime].
 */
 
-void __thandor_void_preserve_eax_ecx_edx
+bool __thandor_cf_preserve_eax_ecx_edx
 InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath)
 
 {
@@ -762,6 +762,10 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   ArmyRuntimePool_RebaseAfterLoad();
   if ((uVar15 & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   ModelRuntimePool_UnrebaseBeforeSave();
+  /* The unrebase returns the model runtime slot image in EAX and its size (0x400000) in EDX;
+     the decompiler lost both. */
+  sourceData_00 = (dword *)g_ModelRuntimeSlots;
+  unpackedSize = 0x400000;
   SVar9 = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,sourceData_00,
                               (word *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
   uVar15 = (uint)(SVar9.carry & 1);
@@ -862,6 +866,7 @@ InGameResourceRegistration_SerializeOldUnitTables:
     (*g_MemoryApi.free)(sourceData_01);
   }
   destination = g_PackageScratchBuffer;
+  headerDwords = (dword *)destination; /* EDX: the 0x200-byte package header just read */
   FVar11 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
   if ((!FVar11.carry) &&
      (FVar12 = (*g_FileSystemReadExactCf)(0x200,destination,handle), !FVar12.carry)){
@@ -873,8 +878,8 @@ InGameResourceRegistration_SerializeOldUnitTables:
     *(dword *)(destination + 500) = dVar1;
     dVar1 = (*g_LocaleFormatCurrentDateUtf16)((word *)(destination + 0x1c0));
     arg0 = (word *)(dVar1 + 4 + (int)(destination + 0x1c0));
-    arg0[-0xffffffff00000002] = 0x2c;
-    arg0[-0xffffffff00000001] = 0x20;
+    arg0[-2] = 0x2c; /* ", " between date and time */
+    arg0[-1] = 0x20;
     (*g_LocaleFormatCurrentTimeUtf16)(arg0);
     dVar1 = g_InGameLevelCampaignAssociationIndex;
     if (g_FrontendLoadedCampaignAsset == (dword *)0x0) {
@@ -887,12 +892,12 @@ InGameResourceRegistration_SerializeOldUnitTables:
        (FVar13 = (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle), !FVar13.carry)){
       Package_Unmount((EngineFileHandle)handle);
       g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
-      return;
+      return false;
     }
   }
 InGameResourceRegistration_DecrementBusyCountAndReturn:
   g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
-  return;
+  return true;
 }
 
 

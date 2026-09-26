@@ -287,9 +287,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
              (word *)&g_ScenarioCatalogPathScratchUtf16);
-  bVar1 = WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
-  InGameUiAction1210_ResourceRegistrationHelper
-            ((void *)((int)source + -0x2220),&g_ScenarioCatalogPathScratchUtf16);
+  WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
+  /* The error check below uses the save routine's CF, not the extension helper's. */
+  bVar1 = InGameUiAction1210_ResourceRegistrationHelper
+                    ((void *)((int)source + -0x2220),&g_ScenarioCatalogPathScratchUtf16);
   uVar3 = (uint)(bVar1 & 1);
   (*g_GraphicsCursorSetFrame)(0);
   (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(uVar3 & 1) != 0);

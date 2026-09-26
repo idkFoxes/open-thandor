@@ -59,7 +59,6 @@ KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventR
 {
   undefined4 in_EAX;
   uint nextReadIndex;
-  qword eventRegisterPair;
   KeyboardEventEaxEdxCf9 KVar1;
   KeyboardEventEaxEdxCf9 KVar2;
   KeyboardInputEvent *eventRecord;
@@ -71,9 +70,10 @@ KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventR
     }
     eventRecord = g_KeyboardEvents + g_KeyboardReadIndex;
     g_KeyboardReadIndex = nextReadIndex;
+    /* EAX = key code, EDX = state mask; the decompiled version filled an unused local instead. */
     KVar1.carry = false;
-    THANDOR_PART(dword, eventRegisterPair, 0) = eventRecord->keyCode00;
-    THANDOR_PART(dword, eventRegisterPair, 4) = eventRecord->stateMask04;
+    KVar1.eventCode = eventRecord->keyCode00;
+    KVar1.eventData = eventRecord->stateMask04;
     return KVar1;
   }
   KVar2.eventData = nextReadIndex;
