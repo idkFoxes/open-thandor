@@ -520,6 +520,9 @@ def typed_member(start, end, name, member):
         while items and items[-1] in ('0', '{0}'):
             items.pop()
         init = '{%s}' % ', '.join(items) if items else '{0}'
+        if len(init) > 100 and any('&' in item or '(void *)' in item for item in items):
+            # pointer tables: one entry per line
+            init = '{\n        %s}' % ',\n        '.join(items)
         text_literal = array_string(element, start, count, width)
         if text_literal is not None and not typed_pointers:
             init = text_literal
@@ -629,6 +632,8 @@ for k, (a, b) in enumerate(blocks):
     inits = []
     for start, end, member, name in members[k]:
         comment = '/* %08X %s */' % (start, name if name else 'gap')
+        if name and ('_SwitchTable_' in name or name.startswith('switchdata')):
+            comment = '/* %08X %s: jump table of the original code, not used by the C code */' % (start, name)
         owner = containing_object(start)
         numeric = owner is not None and bool(NUMERIC.match(types.get(owner[2], 'struct').strip()))
         s = string_member(start, end) if name else None

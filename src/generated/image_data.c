@@ -769,7 +769,7 @@ ImageData_0041A740 g_ImageData_0041A740 = {
 
 ImageData_0041B128 g_ImageData_0041B128 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B128 gap */
-    /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130 */
+    /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
     {
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B1C0, 0x0041B110,
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110,
@@ -784,7 +784,7 @@ ImageData_0041B128 g_ImageData_0041B128 = {
 
 ImageData_0041B228 g_ImageData_0041B228 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B228 gap */
-    /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230 */
+    /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
     {
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B2D0, 0x0041B210,
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210,
@@ -799,7 +799,7 @@ ImageData_0041B228 g_ImageData_0041B228 = {
 
 ImageData_0041B338 g_ImageData_0041B338 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B338 gap */
-    /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340 */
+    /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340: jump table of the original code, not used by the C code */
     {
         0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B3E0, 0x0041B320,
         0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320,
@@ -810,7 +810,7 @@ ImageData_0041B338 g_ImageData_0041B338 = {
 
 ImageData_0041B448 g_ImageData_0041B448 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B448 gap */
-    /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450 */
+    /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450: jump table of the original code, not used by the C code */
     {
         0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B4E0, 0x0041B430,
         0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430,
@@ -820,7 +820,7 @@ ImageData_0041B448 g_ImageData_0041B448 = {
 
 ImageData_0041B548 g_ImageData_0041B548 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B548 gap */
-    /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550 */
+    /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550: jump table of the original code, not used by the C code */
     {
         0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B5F0, 0x0041B530,
         0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530,
@@ -830,7 +830,7 @@ ImageData_0041B548 g_ImageData_0041B548 = {
 
 ImageData_0041B648 g_ImageData_0041B648 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B648 gap */
-    /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650 */
+    /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650: jump table of the original code, not used by the C code */
     {
         0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B6F0, 0x0041B630,
         0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630,
@@ -841,7 +841,7 @@ ImageData_0041B648 g_ImageData_0041B648 = {
 
 ImageData_0041B758 g_ImageData_0041B758 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B758 gap */
-    /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760 */
+    /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760: jump table of the original code, not used by the C code */
     {
         0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B800, 0x0041B740,
         0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740,
@@ -852,7 +852,7 @@ ImageData_0041B758 g_ImageData_0041B758 = {
 
 ImageData_0041B868 g_ImageData_0041B868 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B868 gap */
-    /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870 */
+    /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870: jump table of the original code, not used by the C code */
     {
         0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B910, 0x0041B850,
         0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850,
@@ -863,7 +863,7 @@ ImageData_0041B868 g_ImageData_0041B868 = {
 
 ImageData_0041B9C8 g_ImageData_0041B9C8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B9C8 gap */
-    /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0 */
+    /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
     {
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041BA50, 0x0041B970,
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970,
@@ -878,7 +878,7 @@ ImageData_0041B9C8 g_ImageData_0041B9C8 = {
 
 ImageData_0041BB78 g_ImageData_0041BB78 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041BB78 gap */
-    /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80 */
+    /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
     {
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BC00, 0x0041BB20,
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20,
@@ -893,7 +893,7 @@ ImageData_0041BB78 g_ImageData_0041BB78 = {
 
 ImageData_0041BCEC g_ImageData_0041BCEC = {
     {0x90, 0x90, 0x90, 0x90}, /* 0041BCEC gap */
-    /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0 */
+    /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0: jump table of the original code, not used by the C code */
     {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041BCE0, 0x0041BCE0, 0x0041C593, 0x0041C593, 0x0041C0F0, 0x0041C593, 0x0041C593,
@@ -931,7 +931,7 @@ ImageData_0041BCEC g_ImageData_0041BCEC = {
 
 ImageData_0041C15C g_ImageData_0041C15C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0041C15C gap */
-    /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160 */
+    /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
     {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C580, 0x0041C593, 0x0041C593, 0x0041C580, 0x0041C593, 0x0041C593,
@@ -973,7 +973,7 @@ ImageData_0041C15C g_ImageData_0041C15C = {
 
 ImageData_0041C94C g_ImageData_0041C94C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041C94C gap */
-    /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950 */
+    /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950: jump table of the original code, not used by the C code */
     {
         0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9E9, 0x0041C9D0,
         0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0,
@@ -987,7 +987,7 @@ ImageData_0041CAFC g_ImageData_0041CAFC = {
 
 ImageData_0041CB68 g_ImageData_0041CB68 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041CB68 gap */
-    /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70 */
+    /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
     {
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CC00, 0x0041CB50,
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50,
@@ -1002,7 +1002,7 @@ ImageData_0041CB68 g_ImageData_0041CB68 = {
 
 ImageData_0041CF7C g_ImageData_0041CF7C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041CF7C gap */
-    /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80 */
+    /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
     {
         0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041D010, 0x0041CF60},
     /* 0041CFA0 g_SoundDispatchTable_0041CFA0 */
@@ -1023,7 +1023,7 @@ ImageData_0041D07C g_ImageData_0041D07C = {
 
 ImageData_0041D144 g_ImageData_0041D144 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D144 gap */
-    /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150 */
+    /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
     {
         0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D1D0, 0x0041D120},
     /* 0041D170 g_SoundDispatchTable_0041D170 */
@@ -1035,7 +1035,7 @@ ImageData_0041D144 g_ImageData_0041D144 = {
 
 ImageData_0041D53C g_ImageData_0041D53C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041D53C gap */
-    /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540 */
+    /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
     {
         0x0041D5D0, 0x0041D5F0, 0x0041D610, 0x0041D630, 0x0041D650, 0x0041D670, 0x0041D690, 0x0041D520},
     /* 0041D560 g_SoundDispatchTable_0041D560 */
@@ -1056,7 +1056,7 @@ ImageData_0041D75C g_ImageData_0041D75C = {
 
 ImageData_0041D880 g_ImageData_0041D880 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D880 gap */
-    /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890 */
+    /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
     {
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D910, 0x0041D860},
     /* 0041D8B0 g_SoundDispatchTable_0041D8B0 */
@@ -1068,7 +1068,7 @@ ImageData_0041D880 g_ImageData_0041D880 = {
 
 ImageData_0041DA44 g_ImageData_0041DA44 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DA44 gap */
-    /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50 */
+    /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50: jump table of the original code, not used by the C code */
     {
         0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DAD0, 0x0041DA20,
         0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10,
@@ -1078,7 +1078,7 @@ ImageData_0041DA44 g_ImageData_0041DA44 = {
 
 ImageData_0041DBD4 g_ImageData_0041DBD4 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DBD4 gap */
-    /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0 */
+    /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0: jump table of the original code, not used by the C code */
     {
         0x0041DC60, 0x0041DC80, 0x0041DCA0, 0x0041DCC0, 0x0041DCE0, 0x0041DD00, 0x0041DD20, 0x0041DBB0,
         0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70,
@@ -2591,9 +2591,201 @@ ImageData_004D11B8 g_ImageData_004D11B8 = {
     0, /* 004D1248 g_SoftwareDrawQueueProc */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
-    {(void *)SoftwareRaster16_Mode00, (void *)SoftwareRaster16_Mode01, (void *)SoftwareRaster16_Mode02, 0, (void *)SoftwareRaster16_Mode04, 0, (void *)SoftwareRaster16_Mode06, 0, (void *)SoftwareRaster16_Mode08, (void *)SoftwareRaster16_Mode09, (void *)SoftwareRaster16_Mode10, 0, (void *)SoftwareRaster16_Mode12, 0, (void *)SoftwareRaster16_Mode14, 0, (void *)SoftwareRaster16_Mode16, (void *)SoftwareRaster16_Mode17, (void *)SoftwareRaster16_Mode18, 0, (void *)SoftwareRaster16_Mode20, 0, (void *)SoftwareRaster16_Mode22, 0, (void *)SoftwareRaster16_Mode24, (void *)SoftwareRaster16_Mode25, (void *)SoftwareRaster16_Mode26, 0, (void *)SoftwareRaster16_Mode28, 0, (void *)SoftwareRaster16_Mode30, 0, (void *)SoftwareRaster16_Mode01, (void *)SoftwareRaster16_Mode01, (void *)SoftwareRaster16_Mode02, 0, (void *)SoftwareRaster16_Mode01, 0, (void *)SoftwareRaster16_Mode01, 0, (void *)SoftwareRaster16_Mode09, (void *)SoftwareRaster16_Mode09, (void *)SoftwareRaster16_Mode10, 0, (void *)SoftwareRaster16_Mode09, 0, (void *)SoftwareRaster16_Mode09, 0, (void *)SoftwareRaster16_Mode17, (void *)SoftwareRaster16_Mode17, (void *)SoftwareRaster16_Mode18, 0, (void *)SoftwareRaster16_Mode17, 0, (void *)SoftwareRaster16_Mode17, 0, (void *)SoftwareRaster16_Mode25, (void *)SoftwareRaster16_Mode25, (void *)SoftwareRaster16_Mode26, 0, (void *)SoftwareRaster16_Mode25, 0, (void *)SoftwareRaster16_Mode25}, /* 004D1260 g_SoftwareRasterHandlers16Bit */
-    {(void *)SoftwareRasterNon16_Mode00, (void *)SoftwareRasterNon16_Mode01, (void *)SoftwareRasterNon16_Mode02, 0, (void *)SoftwareRasterNon16_Mode04, 0, (void *)SoftwareRasterNon16_Mode06, 0, (void *)SoftwareRasterNon16_Mode08, (void *)SoftwareRasterNon16_Mode09, (void *)SoftwareRasterNon16_Mode10, 0, (void *)SoftwareRasterNon16_Mode12, 0, (void *)SoftwareRasterNon16_Mode14, 0, (void *)SoftwareRasterNon16_Mode16, (void *)SoftwareRasterNon16_Mode17, (void *)SoftwareRasterNon16_Mode18, 0, (void *)SoftwareRasterNon16_Mode20, 0, (void *)SoftwareRasterNon16_Mode22, 0, (void *)SoftwareRasterNon16_Mode24, (void *)SoftwareRasterNon16_Mode25, (void *)SoftwareRasterNon16_Mode26, 0, (void *)SoftwareRasterNon16_Mode28, 0, (void *)SoftwareRasterNon16_Mode30, 0, (void *)SoftwareRasterNon16_Mode01, (void *)SoftwareRasterNon16_Mode01, (void *)SoftwareRasterNon16_Mode02, 0, (void *)SoftwareRasterNon16_Mode01, 0, (void *)SoftwareRasterNon16_Mode01, 0, (void *)SoftwareRasterNon16_Mode09, (void *)SoftwareRasterNon16_Mode09, (void *)SoftwareRasterNon16_Mode10, 0, (void *)SoftwareRasterNon16_Mode09, 0, (void *)SoftwareRasterNon16_Mode09, 0, (void *)SoftwareRasterNon16_Mode17, (void *)SoftwareRasterNon16_Mode17, (void *)SoftwareRasterNon16_Mode18, 0, (void *)SoftwareRasterNon16_Mode17, 0, (void *)SoftwareRasterNon16_Mode17, 0, (void *)SoftwareRasterNon16_Mode25, (void *)SoftwareRasterNon16_Mode25, (void *)SoftwareRasterNon16_Mode26, 0, (void *)SoftwareRasterNon16_Mode25, 0, (void *)SoftwareRasterNon16_Mode25}, /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
-    {(void *)SoftwareRasterAux_Mode00, (void *)SoftwareRasterAux_Mode01, (void *)SoftwareRasterAux_Mode02, 0, (void *)SoftwareRasterAux_Mode04, 0, (void *)SoftwareRasterAux_Mode06, 0, (void *)SoftwareRasterAux_Mode08, (void *)SoftwareRasterAux_Mode09, (void *)SoftwareRasterAux_Mode10, 0, (void *)SoftwareRasterAux_Mode12, 0, (void *)SoftwareRasterAux_Mode14, 0, (void *)SoftwareRasterAux_Mode16, (void *)SoftwareRasterAux_Mode17, (void *)SoftwareRasterAux_Mode18, 0, (void *)SoftwareRasterAux_Mode20, 0, (void *)SoftwareRasterAux_Mode22, 0, (void *)SoftwareRasterAux_Mode24, (void *)SoftwareRasterAux_Mode25, (void *)SoftwareRasterAux_Mode26, 0, (void *)SoftwareRasterAux_Mode28, 0, (void *)SoftwareRasterAux_Mode30, 0, (void *)SoftwareRasterAux_Mode01, (void *)SoftwareRasterAux_Mode01, (void *)SoftwareRasterAux_Mode02, 0, (void *)SoftwareRasterAux_Mode01, 0, (void *)SoftwareRasterAux_Mode01, 0, (void *)SoftwareRasterAux_Mode09, (void *)SoftwareRasterAux_Mode09, (void *)SoftwareRasterAux_Mode10, 0, (void *)SoftwareRasterAux_Mode09, 0, (void *)SoftwareRasterAux_Mode09, 0, (void *)SoftwareRasterAux_Mode17, (void *)SoftwareRasterAux_Mode17, (void *)SoftwareRasterAux_Mode18, 0, (void *)SoftwareRasterAux_Mode17, 0, (void *)SoftwareRasterAux_Mode17, 0, (void *)SoftwareRasterAux_Mode25, (void *)SoftwareRasterAux_Mode25, (void *)SoftwareRasterAux_Mode26, 0, (void *)SoftwareRasterAux_Mode25, 0, (void *)SoftwareRasterAux_Mode25}, /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
+    /* 004D1260 g_SoftwareRasterHandlers16Bit */
+    {
+        (void *)SoftwareRaster16_Mode00,
+        (void *)SoftwareRaster16_Mode01,
+        (void *)SoftwareRaster16_Mode02,
+        0,
+        (void *)SoftwareRaster16_Mode04,
+        0,
+        (void *)SoftwareRaster16_Mode06,
+        0,
+        (void *)SoftwareRaster16_Mode08,
+        (void *)SoftwareRaster16_Mode09,
+        (void *)SoftwareRaster16_Mode10,
+        0,
+        (void *)SoftwareRaster16_Mode12,
+        0,
+        (void *)SoftwareRaster16_Mode14,
+        0,
+        (void *)SoftwareRaster16_Mode16,
+        (void *)SoftwareRaster16_Mode17,
+        (void *)SoftwareRaster16_Mode18,
+        0,
+        (void *)SoftwareRaster16_Mode20,
+        0,
+        (void *)SoftwareRaster16_Mode22,
+        0,
+        (void *)SoftwareRaster16_Mode24,
+        (void *)SoftwareRaster16_Mode25,
+        (void *)SoftwareRaster16_Mode26,
+        0,
+        (void *)SoftwareRaster16_Mode28,
+        0,
+        (void *)SoftwareRaster16_Mode30,
+        0,
+        (void *)SoftwareRaster16_Mode01,
+        (void *)SoftwareRaster16_Mode01,
+        (void *)SoftwareRaster16_Mode02,
+        0,
+        (void *)SoftwareRaster16_Mode01,
+        0,
+        (void *)SoftwareRaster16_Mode01,
+        0,
+        (void *)SoftwareRaster16_Mode09,
+        (void *)SoftwareRaster16_Mode09,
+        (void *)SoftwareRaster16_Mode10,
+        0,
+        (void *)SoftwareRaster16_Mode09,
+        0,
+        (void *)SoftwareRaster16_Mode09,
+        0,
+        (void *)SoftwareRaster16_Mode17,
+        (void *)SoftwareRaster16_Mode17,
+        (void *)SoftwareRaster16_Mode18,
+        0,
+        (void *)SoftwareRaster16_Mode17,
+        0,
+        (void *)SoftwareRaster16_Mode17,
+        0,
+        (void *)SoftwareRaster16_Mode25,
+        (void *)SoftwareRaster16_Mode25,
+        (void *)SoftwareRaster16_Mode26,
+        0,
+        (void *)SoftwareRaster16_Mode25,
+        0,
+        (void *)SoftwareRaster16_Mode25},
+    /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
+    {
+        (void *)SoftwareRasterNon16_Mode00,
+        (void *)SoftwareRasterNon16_Mode01,
+        (void *)SoftwareRasterNon16_Mode02,
+        0,
+        (void *)SoftwareRasterNon16_Mode04,
+        0,
+        (void *)SoftwareRasterNon16_Mode06,
+        0,
+        (void *)SoftwareRasterNon16_Mode08,
+        (void *)SoftwareRasterNon16_Mode09,
+        (void *)SoftwareRasterNon16_Mode10,
+        0,
+        (void *)SoftwareRasterNon16_Mode12,
+        0,
+        (void *)SoftwareRasterNon16_Mode14,
+        0,
+        (void *)SoftwareRasterNon16_Mode16,
+        (void *)SoftwareRasterNon16_Mode17,
+        (void *)SoftwareRasterNon16_Mode18,
+        0,
+        (void *)SoftwareRasterNon16_Mode20,
+        0,
+        (void *)SoftwareRasterNon16_Mode22,
+        0,
+        (void *)SoftwareRasterNon16_Mode24,
+        (void *)SoftwareRasterNon16_Mode25,
+        (void *)SoftwareRasterNon16_Mode26,
+        0,
+        (void *)SoftwareRasterNon16_Mode28,
+        0,
+        (void *)SoftwareRasterNon16_Mode30,
+        0,
+        (void *)SoftwareRasterNon16_Mode01,
+        (void *)SoftwareRasterNon16_Mode01,
+        (void *)SoftwareRasterNon16_Mode02,
+        0,
+        (void *)SoftwareRasterNon16_Mode01,
+        0,
+        (void *)SoftwareRasterNon16_Mode01,
+        0,
+        (void *)SoftwareRasterNon16_Mode09,
+        (void *)SoftwareRasterNon16_Mode09,
+        (void *)SoftwareRasterNon16_Mode10,
+        0,
+        (void *)SoftwareRasterNon16_Mode09,
+        0,
+        (void *)SoftwareRasterNon16_Mode09,
+        0,
+        (void *)SoftwareRasterNon16_Mode17,
+        (void *)SoftwareRasterNon16_Mode17,
+        (void *)SoftwareRasterNon16_Mode18,
+        0,
+        (void *)SoftwareRasterNon16_Mode17,
+        0,
+        (void *)SoftwareRasterNon16_Mode17,
+        0,
+        (void *)SoftwareRasterNon16_Mode25,
+        (void *)SoftwareRasterNon16_Mode25,
+        (void *)SoftwareRasterNon16_Mode26,
+        0,
+        (void *)SoftwareRasterNon16_Mode25,
+        0,
+        (void *)SoftwareRasterNon16_Mode25},
+    /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
+    {
+        (void *)SoftwareRasterAux_Mode00,
+        (void *)SoftwareRasterAux_Mode01,
+        (void *)SoftwareRasterAux_Mode02,
+        0,
+        (void *)SoftwareRasterAux_Mode04,
+        0,
+        (void *)SoftwareRasterAux_Mode06,
+        0,
+        (void *)SoftwareRasterAux_Mode08,
+        (void *)SoftwareRasterAux_Mode09,
+        (void *)SoftwareRasterAux_Mode10,
+        0,
+        (void *)SoftwareRasterAux_Mode12,
+        0,
+        (void *)SoftwareRasterAux_Mode14,
+        0,
+        (void *)SoftwareRasterAux_Mode16,
+        (void *)SoftwareRasterAux_Mode17,
+        (void *)SoftwareRasterAux_Mode18,
+        0,
+        (void *)SoftwareRasterAux_Mode20,
+        0,
+        (void *)SoftwareRasterAux_Mode22,
+        0,
+        (void *)SoftwareRasterAux_Mode24,
+        (void *)SoftwareRasterAux_Mode25,
+        (void *)SoftwareRasterAux_Mode26,
+        0,
+        (void *)SoftwareRasterAux_Mode28,
+        0,
+        (void *)SoftwareRasterAux_Mode30,
+        0,
+        (void *)SoftwareRasterAux_Mode01,
+        (void *)SoftwareRasterAux_Mode01,
+        (void *)SoftwareRasterAux_Mode02,
+        0,
+        (void *)SoftwareRasterAux_Mode01,
+        0,
+        (void *)SoftwareRasterAux_Mode01,
+        0,
+        (void *)SoftwareRasterAux_Mode09,
+        (void *)SoftwareRasterAux_Mode09,
+        (void *)SoftwareRasterAux_Mode10,
+        0,
+        (void *)SoftwareRasterAux_Mode09,
+        0,
+        (void *)SoftwareRasterAux_Mode09,
+        0,
+        (void *)SoftwareRasterAux_Mode17,
+        (void *)SoftwareRasterAux_Mode17,
+        (void *)SoftwareRasterAux_Mode18,
+        0,
+        (void *)SoftwareRasterAux_Mode17,
+        0,
+        (void *)SoftwareRasterAux_Mode17,
+        0,
+        (void *)SoftwareRasterAux_Mode25,
+        (void *)SoftwareRasterAux_Mode25,
+        (void *)SoftwareRasterAux_Mode26,
+        0,
+        (void *)SoftwareRasterAux_Mode25,
+        0,
+        (void *)SoftwareRasterAux_Mode25},
 };
 
 ImageData_004FEA24 g_ImageData_004FEA24 = {
@@ -2867,7 +3059,7 @@ ImageData_0050D928 g_ImageData_0050D928 = {
 
 ImageData_0050E164 g_ImageData_0050E164 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050E164 gap */
-    /* 0050E170 switchdataD_0050e170 */
+    /* 0050E170 switchdataD_0050e170: jump table of the original code, not used by the C code */
     {
         0x0050E610, 0x0050E3F0, 0x0050E450, 0x0050E530, 0x0050E390, 0x0050E260, 0x0050E290, 0x0050E2C0,
         0x0050E590, 0x0050E320, 0x0050E1B0, 0x0050E2F0, 0x0050E4C0, 0x0050E1E0, 0x90909090, 0x90909090},
@@ -2886,7 +3078,7 @@ ImageData_0050E95C g_ImageData_0050E95C = {
 
 ImageData_0050EB5C g_ImageData_0050EB5C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050EB5C gap */
-    /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60 */
+    /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
     {
         0x0050EB70, 0x0050EBA0, 0x0050EBC0, 0x90909090},
 };
@@ -2935,7 +3127,7 @@ ImageData_0050F328 g_ImageData_0050F328 = {
 
 ImageData_00513DA4 g_ImageData_00513DA4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00513DA4 gap */
-    /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 */
+    /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0: jump table of the original code, not used by the C code */
     {
         0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0,
         0x00513DF0, 0x00513DF0, 0x00513DF0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0},
@@ -3467,7 +3659,7 @@ ImageData_005191F0 g_ImageData_005191F0 = {
 
 ImageData_0051936C g_ImageData_0051936C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0051936C gap */
-    /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 */
+    /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
     {
         0x005193B0, 0x00519460, 0x00519450, 0x005194A0, 0x00519490, 0x005193D0, 0x00519450, 0x005193F0,
         0x005194A0, 0x00519410, 0x00519430, 0x00519480, 0x00519410, 0x90909090, 0x90909090},
@@ -3983,21 +4175,21 @@ ImageData_00520EA0 g_ImageData_00520EA0 = {
 
 ImageData_00524110 g_ImageData_00524110 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00524110 gap */
-    /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120 */
+    /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
     {
         0x00524130, 0x00524280, 0x90909090, 0x90909090},
 };
 
 ImageData_005247C0 g_ImageData_005247C0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005247C0 gap */
-    /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 */
+    /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0: jump table of the original code, not used by the C code */
     {
         0x00524B80, 0x005248C0, 0x005247F0, 0x00524AA0, 0x00524870, 0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_00525A8C g_ImageData_00525A8C = {
     {0x00, 0x00, 0x90, 0x90}, /* 00525A8C gap */
-    /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 */
+    /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90: jump table of the original code, not used by the C code */
     {
         0x00526270, 0x00525AB0, 0x00526150, 0x00525B90, 0x00525C80, 0x00525D90, 0x00526080, 0x90909090},
 };
@@ -4011,7 +4203,7 @@ ImageData_005266B0 g_ImageData_005266B0 = {
 
 ImageData_00526988 g_ImageData_00526988 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00526988 gap */
-    /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 */
+    /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990: jump table of the original code, not used by the C code */
     {
         0x005269C0, 0x00526C00, 0x00526CA0, 0x00526DE0, 0x00526CF0, 0x00526DB0, 0x005269B0, 0x90909090},
 };
@@ -4288,14 +4480,21 @@ ImageData_0053B0CC g_ImageData_0053B0CC = {
 
 ImageData_0053B9CC g_ImageData_0053B9CC = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053B9CC gap */
-    {(void *)AiWorkspace12Score_DefaultZero, (void *)AiTechnologyScore_ComputeFactionScaledCandidateValue, (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind2, (void *)AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue, (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind4, (void *)AiTechnologyScore_ComputeCategoryCompatibleCandidateValue}, /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
+    /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
+    {
+        (void *)AiWorkspace12Score_DefaultZero,
+        (void *)AiTechnologyScore_ComputeFactionScaledCandidateValue,
+        (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind2,
+        (void *)AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue,
+        (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind4,
+        (void *)AiTechnologyScore_ComputeCategoryCompatibleCandidateValue},
     {
         0x90909090, 0x90909090},
 };
 
 ImageData_0053C154 g_ImageData_0053C154 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053C154 gap */
-    /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 */
+    /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160: jump table of the original code, not used by the C code */
     {
         0x0053C310, 0x0053C270, 0x0053C290, 0x0053C2D0, 0x0053C260, 0x0053C310, 0x0053C310, 0x0053C310,
         0x0053C2F0, 0x0053C250, 0x0053C1A0, 0x0053C240, 0x0053C2B0, 0x0053C1C0, 0x90909090, 0x90909090},
@@ -6570,7 +6769,11 @@ ImageData_005456F0 g_ImageData_005456F0 = {
         (dword)ScenarioCatalog_RebuildSaveRecordListPage,
         (dword)ScenarioCatalog_RebuildLevelRecordListPage,
         (dword)ScenarioCatalog_RebuildCampaignRecordListPage},
-    {(void *)ScenarioCatalog_RefreshSelectedRecordLocalizedText, (void *)ScenarioCatalog_RefreshSelectedRecordField70DisplayId, (void *)ScenarioCatalog_RefreshSelectedRecordField50DisplayId}, /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
+    /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
+    {
+        (void *)ScenarioCatalog_RefreshSelectedRecordLocalizedText,
+        (void *)ScenarioCatalog_RefreshSelectedRecordField70DisplayId,
+        (void *)ScenarioCatalog_RefreshSelectedRecordField50DisplayId},
     L"engine\\zentrale.rom", /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
     L"gfx\\texturen\\zentrale.gfx", /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
     L"gfx\\texturen\\zentrale.pal", /* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
@@ -6614,7 +6817,7 @@ ImageData_00547660 g_ImageData_00547660 = {
 
 ImageData_00547D88 g_ImageData_00547D88 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00547D88 gap */
-    /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 */
+    /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90: jump table of the original code, not used by the C code */
     {
         0x00547DF5, 0x00547DB0, 0x00547DC0, 0x00547DD0, 0x00547DE0, 0x00547DF0, 0x90909090, 0x90909090},
 };
@@ -10577,7 +10780,7 @@ ImageData_0055EFB0 g_ImageData_0055EFB0 = {
 
 ImageData_0055F7B4 g_ImageData_0055F7B4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F7B4 gap */
-    /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0 */
+    /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
     {
         0x0055F820, 0x0055F820},
     /* 0055F7C8 g_CodePointerTable_0055F7C8 */
@@ -10588,7 +10791,7 @@ ImageData_0055F7B4 g_ImageData_0055F7B4 = {
 
 ImageData_0055F934 g_ImageData_0055F934 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F934 gap */
-    /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940 */
+    /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
     {
         0x0055FA13},
     /* 0055F944 g_CodePointerTable_0055F944 */
@@ -10715,9 +10918,33 @@ ImageData_00562498 g_ImageData_00562498 = {
     0, /* 00562648 g_UiCatalogGroup48ColumnCount */
     0, /* 0056264C g_UiCatalogGroup42ColumnCount */
     0, /* 00562650 g_UiCommandSpriteVariantAColumnCount */
-    {(void *)&g_UiCatalogGroup48OffsetTables_0, (void *)&g_UiCatalogGroup48OffsetTables_0, (void *)&g_UiCatalogGroup48OffsetTables_0, (void *)&g_UiCatalogGroup48OffsetTables_0, (void *)&g_UiCatalogGroup48OffsetTables_0, (void *)&g_UiCatalogGroup48OffsetTables_5, (void *)&g_UiCatalogGroup48OffsetTables_6, (void *)&g_UiCatalogGroup48OffsetTables_7, (void *)&g_UiCatalogGroup48OffsetTables_8}, /* 00562654 g_UiCatalogGroup48OffsetTables */
-    {(void *)&g_UiCatalogGroup42OffsetTables_0, (void *)&g_UiCatalogGroup42OffsetTables_0, (void *)&g_UiCatalogGroup42OffsetTables_0, (void *)&g_UiCatalogGroup42OffsetTables_0, (void *)&g_UiCatalogGroup42OffsetTables_0, (void *)&g_UiCatalogGroup42OffsetTables_5, (void *)&g_UiCatalogGroup42OffsetTables_6}, /* 00562678 g_UiCatalogGroup42OffsetTables */
-    {(void *)&g_UiCommandSpriteVariantAOffsetTables_0, (void *)&g_UiCommandSpriteVariantAOffsetTables_0, (void *)&g_UiCommandSpriteVariantAOffsetTables_0, (void *)&g_UiCommandSpriteVariantAOffsetTables_0, (void *)&g_UiCommandSpriteVariantAOffsetTables_0}, /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
+    /* 00562654 g_UiCatalogGroup48OffsetTables */
+    {
+        (void *)&g_UiCatalogGroup48OffsetTables_0,
+        (void *)&g_UiCatalogGroup48OffsetTables_0,
+        (void *)&g_UiCatalogGroup48OffsetTables_0,
+        (void *)&g_UiCatalogGroup48OffsetTables_0,
+        (void *)&g_UiCatalogGroup48OffsetTables_0,
+        (void *)&g_UiCatalogGroup48OffsetTables_5,
+        (void *)&g_UiCatalogGroup48OffsetTables_6,
+        (void *)&g_UiCatalogGroup48OffsetTables_7,
+        (void *)&g_UiCatalogGroup48OffsetTables_8},
+    /* 00562678 g_UiCatalogGroup42OffsetTables */
+    {
+        (void *)&g_UiCatalogGroup42OffsetTables_0,
+        (void *)&g_UiCatalogGroup42OffsetTables_0,
+        (void *)&g_UiCatalogGroup42OffsetTables_0,
+        (void *)&g_UiCatalogGroup42OffsetTables_0,
+        (void *)&g_UiCatalogGroup42OffsetTables_0,
+        (void *)&g_UiCatalogGroup42OffsetTables_5,
+        (void *)&g_UiCatalogGroup42OffsetTables_6},
+    /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
+    {
+        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
+        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
+        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
+        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
+        (void *)&g_UiCommandSpriteVariantAOffsetTables_0},
     /* 005626A8 g_UiCatalogGroup48OffsetTables_0 */
     {
         0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x0000607C, 0x000060FC, 0x0000617C, 0x000061FC,
@@ -10919,7 +11146,16 @@ ImageData_00562498 g_ImageData_00562498 = {
     0, /* 0056373C g_InGameCommandPointerCaptureY */
     0, /* 00563740 g_InGameCommandPreviewArmyAssetId */
     0, /* 00563744 g_InGamePointerInteractionStateFlags */
-    {0, (void *)InGameSelection_ApplyType16MarkerCoordinatesVariant1, (void *)InGameSelection_ApplyType16MarkerCoordinatesVariant2, (void *)SelectionMarkerCoordinates_ApplyType3, (void *)SelectionMarkerCoordinates_ApplyType4, (void *)SelectionMarkerCoordinates_ApplyType5, (void *)SelectionMarkerCoordinates_ApplyType6, (void *)SelectionMarkerCoordinates_ApplyType7}, /* 00563748 g_InGamePointerModeHandlers */
+    /* 00563748 g_InGamePointerModeHandlers */
+    {
+        0,
+        (void *)InGameSelection_ApplyType16MarkerCoordinatesVariant1,
+        (void *)InGameSelection_ApplyType16MarkerCoordinatesVariant2,
+        (void *)SelectionMarkerCoordinates_ApplyType3,
+        (void *)SelectionMarkerCoordinates_ApplyType4,
+        (void *)SelectionMarkerCoordinates_ApplyType5,
+        (void *)SelectionMarkerCoordinates_ApplyType6,
+        (void *)SelectionMarkerCoordinates_ApplyType7},
     {0x1A, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C}, /* 00563768 g_InGamePointerModeCommandIds */
     {0, 0xF0, 0xF2, 0xF0, 0xF4, 0xF0, 0xF2, 0xF0}, /* 00563788 g_InGamePointerModePreviewArmyIds */
     0, /* 005637A8 g_ArmyPlacementAcceptedCandidateCount */
@@ -10951,7 +11187,7 @@ ImageData_00565E2C g_ImageData_00565E2C = {
 
 ImageData_00566034 g_ImageData_00566034 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00566034 gap */
-    /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 */
+    /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040: jump table of the original code, not used by the C code */
     {
         0x00566060, 0x00566080, 0x00566090, 0x005660A0, 0x005660F0, 0x00566100, 0x00566110, 0x00566120},
 };
@@ -10981,7 +11217,7 @@ ImageData_0056A604 g_ImageData_0056A604 = {
 
 ImageData_0056D33C g_ImageData_0056D33C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0056D33C gap */
-    /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 */
+    /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340: jump table of the original code, not used by the C code */
     {
         0x0056D4A0, 0x0056D3A0, 0x0056D3F0, 0x0056D380, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0,
         0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0},
@@ -11012,7 +11248,14 @@ ImageData_0056D71C g_ImageData_0056D71C = {
     {0x1, 0x2, 0x3, 0x4, 0x5, 0x7}, /* 0056D77C g_UiCommandModeGSecondaryPageIndices */
     {0x1, 0x2, 0x3, 0x4, 0x5, 0x7}, /* 0056D794 g_UiCommandModeGTertiaryPageIndices */
     {0x4BA4, 0x4C1C, 0x4C94, 0x9930, 0x99A8, 0x98B8}, /* 0056D7AC g_UiCommandModeGControlOffsets */
-    {(void *)InGameCommandModeG_Select0, (void *)InGameCommandModeG_Select1, (void *)InGameCommandModeG_Select2, (void *)InGameCommandModeG_Select3, (void *)InGameCommandModeG_Select4, (void *)InGameCommandModeG_Select5}, /* 0056D7C4 g_UiCommandModeGHandlers */
+    /* 0056D7C4 g_UiCommandModeGHandlers */
+    {
+        (void *)InGameCommandModeG_Select0,
+        (void *)InGameCommandModeG_Select1,
+        (void *)InGameCommandModeG_Select2,
+        (void *)InGameCommandModeG_Select3,
+        (void *)InGameCommandModeG_Select4,
+        (void *)InGameCommandModeG_Select5},
     {0xA78C, 0xA844, 0xA8FC, 0xA9B4, 0xAA6C, 0xAB24, 0xABDC, 0xAC94, 0xAD4C, 0xAE04, 0xAEBC, 0xAF74}, /* 0056D7DC g_UiMappedCommandControlOffsets */
     0, /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
     0, /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
@@ -11178,21 +11421,30 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00573EE8 gap */
     {0}, /* 00573EF0 g_DynamicModules */
     0, /* 00573F70 g_DynamicModuleCount */
-    {{.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32}, {
+    /* 00573F74 g_BootstrapApiBindings */
+    {
+        {.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_10,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32}, {
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_14,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_15,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_16,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_11,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}, {
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_12,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}, {
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32},
+        {
         .destination = (void *)&g_ImageData_00573EE8.at_dynapi_13,
-        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}}, /* 00573F74 g_BootstrapApiBindings */
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}},
     {0},
     0, /* 00573FBC pDirectDrawCreate */
     0, /* 00573FC0 pDirectDrawEnumerateA */
