@@ -575,7 +575,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_ModelTransformOutputX (*(Q12 *)THANDOR_IMAGE(0x004beb0c))
 #define g_FixedTransformInputRotationScratch (*(undefined *)THANDOR_IMAGE(0x004beaa0))
 #define g_FixedTransformComposedRotationScratch (*(undefined *)THANDOR_IMAGE(0x004bead0))
-#define g_PackedLightingLookupTable (*(undefined *)THANDOR_IMAGE(0x0041de80))
+#define g_PackedLightingLookupTable (*(qword (*)[512])THANDOR_IMAGE(0x0041de80))
 #define g_GraphicsShadingNearbyRecords (*(GraphicsShadingRuntimeRecord (*)[256])THANDOR_IMAGE(0x004c6d54))
 #define g_ModelLightingScaleMmxMultiplierTable (*(undefined *)THANDOR_IMAGE(0x004cc2b0))
 #define g_ModelLightingVertexToLightVectorScratch (*(GraphicsFixedVec3 *)THANDOR_IMAGE(0x004cc6f8))

@@ -1973,19 +1973,19 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                                                           CONCAT14(color0Red,vertex0Color)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(color0AlphaOrGreen,color0AlphaOrGreen) >> 4,
                                                  CONCAT11((char)vertex0Color,(char)vertex0Color) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + yOrTableIndexA * 8));
+                      g_PackedLightingLookupTable[yOrTableIndexA]);
       litProduct1 = pmulhw(CONCAT26(color1AlphaPair >> 4,
                                CONCAT24((ushort)(CONCAT35(CONCAT21(color1AlphaPair,color1Red),
                                                           CONCAT14(color1Red,vertex1Color)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(color1AlphaOrGreen,color1AlphaOrGreen) >> 4,
                                                  CONCAT11((char)vertex1Color,(char)vertex1Color) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + yOrTableIndexB * 8));
+                      g_PackedLightingLookupTable[yOrTableIndexB]);
       litProduct2 = pmulhw(CONCAT26(color2AlphaPair >> 4,
                                CONCAT24((ushort)(CONCAT35(CONCAT21(color2AlphaPair,color2Red),
                                                           CONCAT14(color2Red,vertex2Color)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(color2AlphaOrGreen,color2AlphaOrGreen) >> 4,
                                                  CONCAT11((char)vertex2Color,(char)vertex2Color) >> 4))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + yOrTableIndexC * 8));
+                      g_PackedLightingLookupTable[yOrTableIndexC]);
       channelWord0 = (short)litProduct0;
       channelWord1 = (short)((ulonglong)litProduct0 >> 0x10);
       channelWord2 = (short)((ulonglong)litProduct0 >> 0x20);
@@ -2156,22 +2156,19 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                                                           CONCAT14(color0Red,vertex0Color)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(color0AlphaOrGreen,color0AlphaOrGreen) >> 4,
                                                  CONCAT11((char)vertex0Color,(char)vertex0Color) >> 4))),
-                      *(undefined8 *)
-                       (&g_PackedLightingLookupTable + vertex0->lightingLookupIndexOrSentinel * 8));
+                      g_PackedLightingLookupTable[vertex0->lightingLookupIndexOrSentinel]);
       litProduct1 = pmulhw(CONCAT26(color1AlphaPair >> 4,
                                CONCAT24((ushort)(CONCAT35(CONCAT21(color1AlphaPair,color1Red),
                                                           CONCAT14(color1Red,vertex1Color)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(color1AlphaOrGreen,color1AlphaOrGreen) >> 4,
                                                  CONCAT11((char)vertex1Color,(char)vertex1Color) >> 4))),
-                      *(undefined8 *)
-                       (&g_PackedLightingLookupTable + vertex1->lightingLookupIndexOrSentinel * 8));
+                      g_PackedLightingLookupTable[vertex1->lightingLookupIndexOrSentinel]);
       litProduct2 = pmulhw(CONCAT26(color2AlphaPair >> 4,
                                CONCAT24((ushort)(CONCAT35(CONCAT21(color2AlphaPair,color2Red),
                                                           CONCAT14(color2Red,vertex2Color)) >> 0x20) >> 4,
                                         CONCAT22(CONCAT11(color2AlphaOrGreen,color2AlphaOrGreen) >> 4,
                                                  CONCAT11((char)vertex2Color,(char)vertex2Color) >> 4))),
-                      *(undefined8 *)
-                       (&g_PackedLightingLookupTable + vertex2->lightingLookupIndexOrSentinel * 8));
+                      g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
       channelWord0 = (short)litProduct0;
       channelWord3 = (short)((ulonglong)litProduct0 >> 0x10);
       channelWord6 = (short)((ulonglong)litProduct0 >> 0x20);

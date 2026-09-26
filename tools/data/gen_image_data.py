@@ -501,7 +501,8 @@ def typed_member(start, end, name, member):
 # objects the program computes at startup instead (see WinMain): storage only, no initializer
 COMPUTED = {'g_FixedSinBeforeZeroQ28': 'FixedMath_BuildSinCosTables',
             'g_FixedSinQ28': 'FixedMath_BuildSinCosTables', 'g_FixedCosQ28': 'FixedMath_BuildSinCosTables',
-            'g_MovieChromaLumaToArgb': 'Movie_BuildChromaLumaTable'}
+            'g_MovieChromaLumaToArgb': 'Movie_BuildChromaLumaTable',
+            'g_PackedLightingLookupTable': 'GraphicsLighting_BuildPackedLookupTable'}
 
 # UI templates: images of UI node sets the code copies whole (e.g. FrontendRuntime_Initialize) and
 # then links up. Every node starts with a UiNodeBase whose vtable points to a UI vtable; the node

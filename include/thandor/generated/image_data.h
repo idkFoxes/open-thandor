@@ -527,13 +527,7 @@ extern ImageData_0041DDFC g_ImageData_0041DDFC;
 /* original 0x0041DE7C-0x004227B0 */
 typedef struct ImageData_0041DE7C {
     byte at_gap_0041DE7C[4]; /* 0041DE7C gap */
-    undefined at_g_PackedLightingLookupTable; /* 0041DE80 g_PackedLightingLookupTable */
-    dword at_g_PackedLightingLookupTable_rest[223]; /* beyond the declared type */
-    byte at_g_PackedLightingLookupTable_rest_tail[3];
-    dword at_DAT_0041e200[32]; /* 0041E200 DAT_0041e200 */
-    dword at_DAT_0041e280[126]; /* 0041E280 DAT_0041e280 */
-    dword at_DAT_0041e478[32]; /* 0041E478 DAT_0041e478 */
-    dword at_DAT_0041e4f8[610]; /* 0041E4F8 DAT_0041e4f8 */
+    dword at_g_PackedLightingLookupTable[1024]; /* 0041DE80 g_PackedLightingLookupTable */
     SoftwareBgraWordLanes at_g_ShadingIntensityScaleMmx[256]; /* 0041EE80 g_ShadingIntensityScaleMmx */
     qword at_g_GraphicsShadingRasterizeMmxPackedDwordOneZero; /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
     qword at_g_SoftwareBilinearPackedByteClampMask; /* 0041F688 g_SoftwareBilinearPackedByteClampMask */

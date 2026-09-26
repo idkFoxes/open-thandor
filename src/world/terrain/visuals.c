@@ -819,7 +819,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
                                       CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                         mm0PackedValue0ByteLane1) >> 3,
                                                CONCAT11((char)materialColorArgb,(char)materialColorArgb) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+                    g_PackedLightingLookupTable[lightingLevelIndex]);
         shadedLane0 = (short)mm0PackedValue0;
         shadedLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
         shadedLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
@@ -861,7 +861,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
                                       CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
                                                         mm0PackedValue1ByteLane1) >> 3,
                                                CONCAT11((char)waterColorArgb,(char)waterColorArgb) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+                    g_PackedLightingLookupTable[lightingLevelIndex]);
         shadedLane0 = (short)mm0PackedValue1;
         shadedLane1 = (short)((ulonglong)mm0PackedValue1 >> 0x10);
         shadedLane2 = (short)((ulonglong)mm0PackedValue1 >> 0x20);
@@ -971,7 +971,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
                                         CONCAT22(CONCAT11(mm0PackedValue3ByteLane1,
                                                           mm0PackedValue3ByteLane1) >> 3,
                                                  CONCAT11((char)soilColorArgb,(char)soilColorArgb) >> 3))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+                      g_PackedLightingLookupTable[lightingLevelIndex]);
           shadedLane0 = (short)mm0PackedValue3;
           shadedLane1 = (short)((ulonglong)mm0PackedValue3 >> 0x10);
           shadedLane2 = (short)((ulonglong)mm0PackedValue3 >> 0x20);
@@ -1012,7 +1012,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
                                         CONCAT22(CONCAT11(mm0PackedValue2ByteLane1,
                                                           mm0PackedValue2ByteLane1) >> 3,
                                                  CONCAT11((char)tritiumColorArgb,(char)tritiumColorArgb) >> 3))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+                      g_PackedLightingLookupTable[lightingLevelIndex]);
           shadedLane0 = (short)mm0PackedValue2;
           shadedLane1 = (short)((ulonglong)mm0PackedValue2 >> 0x10);
           shadedLane2 = (short)((ulonglong)mm0PackedValue2 >> 0x20);
@@ -1054,7 +1054,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
                                       CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                         mm0PackedValue0ByteLane1) >> 3,
                                                CONCAT11((char)xeniteColorArgb,(char)xeniteColorArgb) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+                    g_PackedLightingLookupTable[lightingLevelIndex]);
         shadedLane0 = (short)mm0PackedValue0;
         shadedLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
         shadedLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
@@ -1098,7 +1098,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
                                       CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
                                                         mm0PackedValue1ByteLane1) >> 3,
                                                CONCAT11((char)waterColorArgb,(char)waterColorArgb) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+                    g_PackedLightingLookupTable[lightingLevelIndex]);
         blendedLane0 = (ushort)((short)mm0PackedValue1 + (ushort)(byte)existingPixelArgb) >> 1;
         blendedLane1 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
                          ((ushort)(((ulonglong)(byte)((uint)existingPixelArgb >> 8) << 0x18) >> 0x10) >> 8)) >>

@@ -449,6 +449,7 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
     /* tables the original executable carried precomputed */
     FixedMath_BuildSinCosTables();
     Movie_BuildChromaLumaTable();
+    GraphicsLighting_BuildPackedLookupTable();
     {
         const char *value = getenv("OPEN_THANDOR_SELFTEST");
         if (value != NULL && strcmp(value, "codec") == 0) {

@@ -2719,9 +2719,7 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
                                                 >> 2,CONCAT22(CONCAT11(colorByteHighOrMid,colorByteHighOrMid) >> 2,
                                                               CONCAT11((char)packedColor,(char)packedColor) >> 2
                                                              ))),
-                              *(undefined8 *)
-                               (&g_PackedLightingLookupTable +
-                               ((remainingHigh * 0x8000000 | remainingLowOrSquareLow - squareLow >> 5) / remainingLowOrRadiusScale) * 8));
+                              g_PackedLightingLookupTable[(remainingHigh * 0x8000000 | remainingLowOrSquareLow - squareLow >> 5) / remainingLowOrRadiusScale]);
               packedLightAccumulatorMmx = paddusw(packedLightAccumulatorMmx,scaledLight);
             }
           }
@@ -4023,3 +4021,17 @@ GraphicsShadingGeneratedTexture_RasterizeTriangleMask
   return;
 }
 
+
+/* Not in the original: the original executable carries g_PackedLightingLookupTable precomputed
+   (0x0041DE80, 512 entries). Each entry holds one light level as four Q12 words for PMULHW: the
+   same factor in the three colour lanes and 0x1000 (1.0) in the alpha lane. Levels 0..255 map to
+   (level * 0x101) >> 4, i.e. 0..0x0FFF; levels 256..511 saturate at 0x1000. Called once at startup. */
+void GraphicsLighting_BuildPackedLookupTable(void)
+{
+  int level;
+
+  for (level = 0; level < 512; level++) {
+    qword factor = level < 256 ? (qword)((level * 0x101) >> 4) : 0x1000;
+    g_PackedLightingLookupTable[level] = factor | factor << 16 | factor << 32 | (qword)0x1000 << 48;
+  }
+}

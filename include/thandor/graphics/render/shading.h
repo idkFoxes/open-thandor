@@ -133,4 +133,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC);
 
+/* Not in the original: fills g_PackedLightingLookupTable (the original shipped it precomputed). */
+void GraphicsLighting_BuildPackedLookupTable(void);
+
 #endif /* THANDOR_GRAPHICS_RENDER_SHADING_H */

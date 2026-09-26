@@ -778,9 +778,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
                                                               CONCAT14(colorByte2,lightPackedColor)) >> 0x20) >> 2,
                                             CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
                                                      CONCAT11((char)lightPackedColor,(char)lightPackedColor) >> 2))),
-                          *(undefined8 *)
-                           (&g_PackedLightingLookupTable +
-                           ((remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor) * 8));
+                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor]);
               accumulatedLanes = paddusb(accumulatedLanes,mm4PackedValue0);
             }
           }
@@ -932,9 +930,7 @@ ModelRender_ComputeVertexIntensityScaledPath
                                                               CONCAT14(colorByte2,lightPackedColor)) >> 0x20) >> 2,
                                             CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
                                                      CONCAT11((char)lightPackedColor,(char)lightPackedColor) >> 2))),
-                          *(undefined8 *)
-                           (&g_PackedLightingLookupTable +
-                           ((remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor) * 8));
+                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor]);
               mm0PackedValue1 = paddusb(mm0PackedValue1,mm4PackedValue0);
             }
           }
