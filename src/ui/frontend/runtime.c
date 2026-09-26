@@ -2569,6 +2569,8 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
       g_EndMoviePendingTicks = 0;
       arg0 = MVar13.playbackRateHzEcx; /* ECX left by Movie_Open */
       (*g_TimerRegisterPeriodic)(arg0,FrontendSession_PeriodicTick);
+      /* EDX = g_InGameRuntimeRoot + 0x17C in the original; the decompiler lost it. */
+      stack = (UiPageStackControl *)((byte *)pIVar4 + 0x17c);
       UiPageStack_SetActiveIndex(1,stack);
       MVar14 = Movie_AdvanceFrame();
       if (!MVar14.carry) {
