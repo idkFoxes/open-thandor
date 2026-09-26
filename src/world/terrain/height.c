@@ -655,9 +655,9 @@ TerrainTriangle_IntersectRayDistanceCf_ComputeFirstTriangleIntersectionDistance:
                 edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
                 edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
               }
-              edgeHighOrCoord0 = (int)(CONCAT44(edgeHighOrCoord0,edgeSumLowA) / (longlong)(int)heightDeltaOrLowWord);
+              edgeHighOrCoord0 = (int)((longlong)CONCAT44(edgeHighOrCoord0,edgeSumLowA) / (longlong)(int)heightDeltaOrLowWord);
               combinedHigh = cellLocalCoord1Q12 + edgeHighOrCoord0;
-              edgeHighOrCoord1 = (int)(CONCAT44(edgeHighOrCoord1,edgeSumLowB) / (longlong)(int)heightDeltaOrLowWord);
+              edgeHighOrCoord1 = (int)((longlong)CONCAT44(edgeHighOrCoord1,edgeSumLowB) / (longlong)(int)heightDeltaOrLowWord);
               planeTermOrProductB = (longlong)edgeHighOrCoord1 * (longlong)(cornerHeight2Q12 - cornerHeight3Q12);
               planeTermOrProductA = (longlong)edgeHighOrCoord0 * (longlong)(cornerHeight1Q12 - cornerHeight3Q12);
               lengthZProduct = (longlong)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * 0x901;
@@ -791,9 +791,9 @@ LAB_00504912:
           combinedHigh = combinedHigh >> 0xc;
           edgeHighD = edgeHighD >> 0xc;
         }
-        combinedHigh = (int)(CONCAT44(combinedHigh,heightDeltaOrLowWord) / (longlong)(int)productLowOrDivisor);
+        combinedHigh = (int)((longlong)CONCAT44(combinedHigh,heightDeltaOrLowWord) / (longlong)(int)productLowOrDivisor);
         edgeHighOrCoord1 = edgeHighOrCoord1 - combinedHigh;
-        edgeHighC = (int)(CONCAT44(edgeHighD,rateHighOrEdgeSumLow) / (longlong)(int)productLowOrDivisor);
+        edgeHighC = (int)((longlong)CONCAT44(edgeHighD,rateHighOrEdgeSumLow) / (longlong)(int)productLowOrDivisor);
         planeTermOrProductB = (longlong)edgeHighC * (longlong)(cornerHeight1Q12 - cornerHeight0Q12);
         planeTermOrProductA = (longlong)combinedHigh * (longlong)(cornerHeight2Q12 - cornerHeight0Q12);
         lengthZProduct = (longlong)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * 0x901;

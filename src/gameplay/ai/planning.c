@@ -1931,21 +1931,21 @@ AiArmyCandidate_ComputeFactionWeightedScore
                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         weightedDefinitionScore =
              weightedDefinitionScore +
-             (int)(CONCAT44(pressureWeightedDamage0 >> 0x16,pressureWeightedDamage0 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage0 >> 0x16,pressureWeightedDamage0 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum0) +
-             (int)(CONCAT44(pressureWeightedDamage1 >> 0x16,pressureWeightedDamage1 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage1 >> 0x16,pressureWeightedDamage1 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum1) +
-             (int)(CONCAT44(pressureWeightedDamage2 >> 0x16,pressureWeightedDamage2 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage2 >> 0x16,pressureWeightedDamage2 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum2) +
-             (int)(CONCAT44(pressureWeightedDamage3 >> 0x16,pressureWeightedDamage3 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage3 >> 0x16,pressureWeightedDamage3 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum3) +
-             (int)(CONCAT44(pressureWeightedDamage4 >> 0x16,pressureWeightedDamage4 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage4 >> 0x16,pressureWeightedDamage4 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum4) +
-             (int)(CONCAT44(pressureWeightedDamage5 >> 0x16,pressureWeightedDamage5 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage5 >> 0x16,pressureWeightedDamage5 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum5) +
-             (int)(CONCAT44(pressureWeightedDamage6 >> 0x16,pressureWeightedDamage6 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage6 >> 0x16,pressureWeightedDamage6 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum6) +
-             (int)(CONCAT44(pressureWeightedDamage7 >> 0x16,pressureWeightedDamage7 << 10) /
+             (int)((longlong)CONCAT44(pressureWeightedDamage7 >> 0x16,pressureWeightedDamage7 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum7);
       }
     }
@@ -2019,20 +2019,20 @@ AiArmyCandidate_ComputeFactionWeightedScore
                      / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           weightedDefinitionScore =
                weightedDefinitionScore +
-               (int)(CONCAT44(childCountOrWeightedDamage >> 0x16,childCountOrWeightedDamage << 10) / (longlong)(int)g_TechnologyCategoryMaximum0) +
-               (int)(CONCAT44(pressureWeightedDamage0 >> 0x16,pressureWeightedDamage0 << 10) /
+               (int)((longlong)CONCAT44(childCountOrWeightedDamage >> 0x16,childCountOrWeightedDamage << 10) / (longlong)(int)g_TechnologyCategoryMaximum0) +
+               (int)((longlong)CONCAT44(pressureWeightedDamage0 >> 0x16,pressureWeightedDamage0 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum1) +
-               (int)(CONCAT44(pressureWeightedDamage1 >> 0x16,pressureWeightedDamage1 << 10) /
+               (int)((longlong)CONCAT44(pressureWeightedDamage1 >> 0x16,pressureWeightedDamage1 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum2) +
-               (int)(CONCAT44(pressureWeightedDamage2 >> 0x16,pressureWeightedDamage2 << 10) /
+               (int)((longlong)CONCAT44(pressureWeightedDamage2 >> 0x16,pressureWeightedDamage2 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum3) +
-               (int)(CONCAT44(pressureWeightedDamage3 >> 0x16,pressureWeightedDamage3 << 10) /
+               (int)((longlong)CONCAT44(pressureWeightedDamage3 >> 0x16,pressureWeightedDamage3 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum4) +
-               (int)(CONCAT44(pressureWeightedDamage4 >> 0x16,pressureWeightedDamage4 << 10) /
+               (int)((longlong)CONCAT44(pressureWeightedDamage4 >> 0x16,pressureWeightedDamage4 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum5) +
-               (int)(CONCAT44(pressureWeightedDamage5 >> 0x16,pressureWeightedDamage5 << 10) /
+               (int)((longlong)CONCAT44(pressureWeightedDamage5 >> 0x16,pressureWeightedDamage5 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum6) +
-               (int)(CONCAT44(pressureWeightedDamage6 >> 0x16,pressureWeightedDamage6 << 10) /
+               (int)((longlong)CONCAT44(pressureWeightedDamage6 >> 0x16,pressureWeightedDamage6 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum7);
         }
       }
