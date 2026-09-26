@@ -30,7 +30,7 @@ Frontend_MainLoop(RomRecordId frontendEntryRecordId)
   SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
   ScenarioCatalogHeader *source;
   dword statusOrByteCount;
-  uint extraout_EAX;
+  uint extraout_EAX = 0; /* EAX on the normal exit is left over from the page loop; the caller ignores it with CF clear */
   FieldGridAsset *sourceGrid;
   RomRecordId initialRomRecordId;
   int countOrSelectedId;
@@ -2725,7 +2725,7 @@ FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
   FrontendRootResourceSlots5954 *fillCursorOrResult;
   FrontendRootResourceSlots5954 *frontendUiState;
   DirectSoundVoiceSet *musicVoiceSet;
-  FrontendRootResourceSlots5954 *extraout_EAX = (FrontendRootResourceSlots5954 *)0; /* error value of RomRuntime_BuildAllRegistryNodeTrees, which reports only CF here */
+  FrontendRootResourceSlots5954 *extraout_EAX = (FrontendRootResourceSlots5954 *)0x14; /* EAX when RomRuntime_BuildAllRegistryNodeTrees fails: its only failure is WorldObjectArray_AllocateFreeRecordCf's 0x14 (object array full), passed up unchanged */
   dword *nameSlotOrSourceDwords;
   dword *settingsCopySourceDwordsB;
   SessionNetworkRoleFlags remainingBlockCount;
