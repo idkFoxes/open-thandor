@@ -1148,7 +1148,7 @@ ScenarioCatalog_RebuildSaveRecordListPage
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
     saveRecord = (void *)((int)&g_ScenarioCatalog->levelRecordsOffset +
@@ -1160,7 +1160,7 @@ ScenarioCatalog_RebuildSaveRecordListPage
       rowPointerCursor = rowPointerCursor + 1;
       saveRecord = (void *)((int)saveRecord + 0x100);
     }
-    control = &firstNode[0x6a].layoutHeight;
+    control = (sdword *)FRONTEND_UI(firstNode,savedGamesList);
     if (rowCount != 0) {
       UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
       UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)control);
@@ -1170,7 +1170,7 @@ ScenarioCatalog_RebuildSaveRecordListPage
     }
   }
   UiPointerList_InitializeColumnLayout
-            (0,(void **)0x0,(UiPointerListControl *)&firstNode[0x6a].layoutHeight);
+            (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,savedGamesList));
   UiNodeList_SuppressActionId(0x2038,firstNode);
   return;
 }
@@ -1205,7 +1205,7 @@ ScenarioCatalog_RebuildLevelRecordListPage
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     remainingRows = g_ScenarioCatalog->levelRecordCount;
     scenarioRecord =
@@ -1232,7 +1232,7 @@ ScenarioCatalog_RebuildLevelRecordListPage
       rowPointerCursor = rowPointerCursor + 1;
       scenarioRecord = scenarioRecord + 1;
     }
-    control = &firstNode[0x70].layoutHeight;
+    control = (sdword *)FRONTEND_UI(firstNode,missionsList);
     if (rowCount != 0) {
       UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
       UiPointerList_SortByExpandedTextFieldAscending(0x74,(UiPointerListControl *)control);
@@ -1246,7 +1246,7 @@ ScenarioCatalog_RebuildLevelRecordListPage
     }
   }
   UiPointerList_InitializeColumnLayout
-            (0,(void **)0x0,(UiPointerListControl *)&firstNode[0x70].layoutHeight);
+            (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
 LAB_00544ffc:
   UiNodeList_SuppressActionId(0x2038,firstNode);
   UiNodeList_SuppressActionId(0x203a,firstNode);
@@ -1282,7 +1282,7 @@ ScenarioCatalog_RebuildCampaignRecordListPage
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
+  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     remainingRows = g_ScenarioCatalog->campaignRecordCount;
     campaignRecord = (void *)((int)&g_ScenarioCatalog->levelRecordsOffset +
@@ -1298,7 +1298,7 @@ ScenarioCatalog_RebuildCampaignRecordListPage
       rowPointerCursor = rowPointerCursor + 1;
       campaignRecord = (void *)((int)campaignRecord + 0x100);
     }
-    control = &firstNode[0x77].left;
+    control = (sdword *)FRONTEND_UI(firstNode,campaignsList);
     if (rowCount != 0) {
       UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
       UiPointerList_SortByDwordFieldAscending(0x50,(UiPointerListControl *)control);
@@ -1311,7 +1311,7 @@ ScenarioCatalog_RebuildCampaignRecordListPage
       goto LAB_00545113;
     }
   }
-  UiPointerList_InitializeColumnLayout(0,(void **)0x0,(UiPointerListControl *)&firstNode[0x77].left)
+  UiPointerList_InitializeColumnLayout(0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList))
   ;
 LAB_00545113:
   UiNodeList_SuppressActionId(0x2038,firstNode);

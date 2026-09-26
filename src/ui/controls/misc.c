@@ -54,10 +54,10 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateAdapterSelection(UiNodeBas
   
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)displaySettingsRoot[4].vtable,
+            ((FrontendDisplayAdapterIndex)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x68,struct UiNodeVtable *),
              (UiNodeBase *)sourceNode[-1].layoutHeight,
-             (FrontendDisplayDimensionPixels)displaySettingsRoot[4].firstChild,
-             (FrontendDisplayDimensionPixels)displaySettingsRoot[4].nextSibling,displaySettingsRoot)
+             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x60,struct UiNodeBase *),
+             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x5C,struct UiNodeBase *),displaySettingsRoot)
   ;
   return;
 }
@@ -80,8 +80,8 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateResolutionSelection(UiNode
   
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)displaySettingsRoot[4].vtable,
-             displaySettingsRoot[4].parent,sourceNode[-1].layoutWidth,sourceNode[-1].layoutHeight,
+            ((FrontendDisplayAdapterIndex)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x68,struct UiNodeVtable *),
+             DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x64,struct UiNodeBase *),sourceNode[-1].layoutWidth,sourceNode[-1].layoutHeight,
              displaySettingsRoot);
   return;
 }
@@ -103,9 +103,9 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateColorDepthSelection(UiNode
   
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (sourceNode[-1].layoutHeight,displaySettingsRoot[4].parent,
-             (FrontendDisplayDimensionPixels)displaySettingsRoot[4].firstChild,
-             (FrontendDisplayDimensionPixels)displaySettingsRoot[4].nextSibling,displaySettingsRoot)
+            (sourceNode[-1].layoutHeight,DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x64,struct UiNodeBase *),
+             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x60,struct UiNodeBase *),
+             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x5C,struct UiNodeBase *),displaySettingsRoot)
   ;
   return;
 }
@@ -340,8 +340,8 @@ UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   UiNodeBase *displaySettingsRoot;
   
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  colorBiasQ16 = displaySettingsRoot[4].rightOffset;
-  colorScaleQ16 = displaySettingsRoot[4].bottomOffset;
+  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x84,sdword);
+  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x88,sdword);
   UiRootStack_PopCf((UiRootNode *)sourceNode);
   (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
   return;
