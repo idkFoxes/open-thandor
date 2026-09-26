@@ -2209,13 +2209,6 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
   FieldGridRaycastEaxEdxCf9 FVar12;
   FieldGridRaycastEaxEdxCf9 FVar13;
   FixedDirectionXyzRegs12 FVar14;
-  {
-    static int logged;
-    if (logged < 6) {
-      logged++;
-      Thandor_Log("FieldGrid_RaycastTerrainSurfaceDistanceCf: elevationAngle=%d azimuthAngle=%d rayScaleQ12=%d rayOriginZQ12=%d rayOriginXQ12=%d rayOriginYQ12=%d",(int)elevationAngle,(int)azimuthAngle,(int)rayScaleQ12,(int)rayOriginZQ12,(int)rayOriginXQ12,(int)rayOriginYQ12);
-    }
-  }
   
   FVar1 = fieldGrid->gridWidth;
   FVar2 = fieldGrid->gridHeight;
@@ -2315,13 +2308,6 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
   FieldGridRaycastEaxEdxCf9 FVar12;
   FieldGridRaycastEaxEdxCf9 FVar13;
   FixedDirectionXyzRegs12 FVar14;
-  {
-    static int logged;
-    if (logged < 6) {
-      logged++;
-      Thandor_Log("FieldGrid_RaycastSecondarySurfaceDistanceCf: elevationAngle=%d azimuthAngle=%d rayScaleQ12=%d rayOriginZQ12=%d rayOriginXQ12=%d rayOriginYQ12=%d",(int)elevationAngle,(int)azimuthAngle,(int)rayScaleQ12,(int)rayOriginZQ12,(int)rayOriginXQ12,(int)rayOriginYQ12);
-    }
-  }
   
   FVar1 = fieldGrid->gridWidth;
   FVar2 = fieldGrid->gridHeight;
@@ -2428,13 +2414,6 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
   FieldCellPersistedAux cornerHeight1Q12;
   FieldCellPersistedAux cornerHeight2Q12;
   FieldCellPersistedAux cornerHeight3Q12;
-  {
-    static int logged;
-    if (logged < 6) {
-      logged++;
-      Thandor_Log("FieldGrid_RaycastTerrainTrianglesAlongDirection: elevationAngle=%d azimuthAngle=%d rayScaleQ12=%d rayOriginZQ12=%d rayOriginXQ12=%d rayOriginYQ12=%d",(int)elevationAngle,(int)azimuthAngle,(int)rayScaleQ12,(int)rayOriginZQ12,(int)rayOriginXQ12,(int)rayOriginYQ12);
-    }
-  }
   
   iVar10 = fieldGrid->gridWidth - 1;
   iVar6 = fieldGrid->gridHeight - 1;
@@ -3745,21 +3724,6 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
         0x10];
   cell->secondarySurfaceDirectionalLightColor5C = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor58 = directionalLightColor;
-  {
-    static int logged;
-    int dot = ((int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)(int)g_TerrainLightDirectionX) >> 0x20) +
-               (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)(int)g_TerrainLightDirectionY) >> 0x20) +
-               (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)(int)g_TerrainLightDirectionZ) >> 0x20)) >> 0x10;
-    if (logged < 6 || dot < 0 || dot > 0x100) {
-      if (logged < 30) {
-        Thandor_Log("light cell %p: angles=%08X dir=(%d,%d,%d) light=(%d,%d,%d) index=%d color=%08X",
-                    (void *)cell, cell->triangle0NormalAngles, FVar1.eax, FVar1.ecx, FVar1.edx,
-                    g_TerrainLightDirectionX, g_TerrainLightDirectionY, g_TerrainLightDirectionZ,
-                    dot, directionalLightColor);
-      }
-      logged++;
-    }
-  }
   return;
 }
 

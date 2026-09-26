@@ -967,10 +967,6 @@ Graphics_DrawPrimitiveQueue
   TH_LEGACY_DWORD graphicsBackendSelector;
   
   graphicsBackendSelector = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  {
-    static int logged;
-    if (!logged++) Thandor_Log("draw queue: backend selector %u", graphicsBackendSelector);
-  }
   if (graphicsBackendSelector == 0) {
     SoftwareRenderer_DrawPrimitiveQueueBridge(coordinate0,coordinate1,coordinate2,coordinate3,queue)
     ;
@@ -979,23 +975,10 @@ Graphics_DrawPrimitiveQueue
   if (graphicsBackendSelector != 1) {
     GVar1 = GraphicsPrimitiveQueue_Begin(queue);
     while (!GVar1.carry) {
-      {
-        static int logged;
-        code *handler = *(code **)((int)g_GraphicsDispatchTable.primitive +
-                                   (((GVar1.packet)->renderFlags & 0x3f000) >> 10));
-        sdword hr;
-        (*handler)(GVar1.packet);
-        hr = (*g_Direct3DDevice2->lpVtbl->DrawPrimitive)
-                  (g_Direct3DDevice2,6,3,g_ImmediateTLVertices,g_ImmediateVertexCount,8);
-        if (logged < 8) {
-          D3DTLVERTEX_DX6 *v = g_ImmediateTLVertices;
-          Thandor_Log("d3d prim: flags=0x%X handler=%s n=%u hr=0x%X v0=(%.1f,%.1f,%.4f,%.4f c=%08X uv=%.3f,%.3f)",
-                      (GVar1.packet)->renderFlags, Thandor_SymbolName((void *)handler),
-                      g_ImmediateVertexCount, (unsigned)hr, v[0].sx, v[0].sy, v[0].sz, v[0].rhw,
-                      v[0].color, v[0].tu, v[0].tv);
-          logged++;
-        }
-      }
+      (**(code **)((int)g_GraphicsDispatchTable.primitive +
+                  (((GVar1.packet)->renderFlags & 0x3f000) >> 10)))(GVar1.packet);
+      (*g_Direct3DDevice2->lpVtbl->DrawPrimitive)
+                (g_Direct3DDevice2,6,3,g_ImmediateTLVertices,g_ImmediateVertexCount,8);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
       GVar1 = GraphicsPrimitiveQueue_Next(queue);
     }

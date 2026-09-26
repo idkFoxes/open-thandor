@@ -9,7 +9,6 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-extern int g_ThandorDiagPreviewCull;
 
 /* Implementation ownership: graphics/render/projection. */
 
@@ -131,29 +130,12 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
       queue = GVar11.queue;
       if (!GVar11.carry) {
         Graphics_SetActivePrimitiveQueue(queue);
-        {
-          static int logged;
-          if (logged < 3) {
-            logged++;
-            g_ThandorDiagPreviewCull = 12;
-            Thandor_Log("preview view: origin=(%d,%d,%d) scale=%d angles=%d,%d shift=%d aux=%d,%d extents=%d,%d root=(%d,%d,%d)",
-                        viewParameters->originX,viewParameters->originY,viewParameters->originZ,
-                        viewParameters->projectionScale,viewParameters->viewAngle0,
-                        viewParameters->viewAngle1,viewParameters->projectionShift,
-                        auxiliaryOrientationAngles[0],auxiliaryOrientationAngles[1],
-                        sceneExtents->horizontalExtent,sceneExtents->verticalExtent,
-                        (*modelNodes) ? (*modelNodes)->worldTransform.translation.x : 0,
-                        (*modelNodes) ? (*modelNodes)->worldTransform.translation.y : 0,
-                        (*modelNodes) ? (*modelNodes)->worldTransform.translation.z : 0);
-          }
-        }
         for (; modelCount != 0; modelCount = modelCount - 1) {
           if (*modelNodes != (ModelRuntimeNode *)0x0) {
             ModelRuntime_CullAndRenderHierarchyRecursive(*modelNodes);
           }
           modelNodes = modelNodes + 1;
         }
-        g_ThandorDiagPreviewCull = 0;
         GraphicsPrimitiveQueue_RadixSortForRendering(GRAPHICS_STATE_DISABLED,queue);
         SoftwareRenderer_DrawQueueAuxiliary(outputWidth,outputHeight,psVar3 + 0x88,queue);
       }

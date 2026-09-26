@@ -772,8 +772,6 @@ dword __cdecl Game_LoadCoreAssets(void)
     return (dword)arg0;
   }
   SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-  Thandor_Log("button sound voice set via %s: carry=%d eax=0x%08X", Thandor_SymbolName((void *)g_SoundCreateSampleVoiceSet),
-              SVar12.carry, (dword)SVar12.eax);
   module = (FncModuleHeader *)SVar12.eax;
   if (!SVar12.carry) {
     Resource_Release(arg0);

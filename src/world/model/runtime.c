@@ -10,7 +10,6 @@
 #include <thandor/platform/bootstrap/image.h>
 
 /* Diagnostics: set by the offscreen preview renderer while it submits models. */
-int g_ThandorDiagPreviewCull;
 
 /* Implementation ownership: world/model/runtime. */
 
@@ -114,16 +113,6 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
     iVar7 = pMVar2->boundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
     sVar4 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
                              (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-    if (g_ThandorDiagPreviewCull > 0) {
-      g_ThandorDiagPreviewCull--;
-      Thandor_Log("preview cull node %p: rel=(%d,%d,%d) radius=%d/%d planes=%d,%d,%d,%d scale=%d",
-                  (void *)modelNodeRuntime,(int)g_ModelCullViewRelativeX,(int)g_ModelCullViewRelativeY,
-                  (int)g_ModelCullViewRelativeZ,iVar6,iVar7,sVar4,
-                  FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,(GraphicsFixedVec3 *)&g_ModelCullViewRelativeX),
-                  FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 2,(GraphicsFixedVec3 *)&g_ModelCullViewRelativeX),
-                  FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 3,(GraphicsFixedVec3 *)&g_ModelCullViewRelativeX),
-                  (int)g_ProjectionScaleFixed);
-    }
     if (sVar4 <= iVar6) {
       if (sVar4 <= iVar7) {
         sVar4 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,
@@ -158,12 +147,6 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
                          &(modelNodeRuntime->worldTransform).translation,
                          &g_ViewProjectionMatrixFixed);
               pMVar2 = (modelNodeRuntime->modelPayload).modelResource;
-              if (g_ThandorDiagPreviewCull > 0) {
-                Thandor_Log("preview cull depth: view=(%d,%d,%d) resourceRadius=%d meshGroups=%u",
-                            (int)g_ModelCullViewRelativeX,(int)g_ModelCullViewRelativeY,
-                            (int)g_ModelCullViewRelativeZ,(int)pMVar2->boundingRadiusQ12,
-                            (unsigned)pMVar2->meshGroupCount);
-              }
               if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed) {
                 return;
               }

@@ -2960,23 +2960,6 @@ ArmyRuntime_RenderPreviewTextureCf
                         previewHeight * 2,previewWidth * 2,1,
                         (ModelRuntimeNode **)&g_ArmyPreviewModelNodePointer);
     memory = GVar31.allocation;
-    {
-      static int logged;
-      if (logged < 6) {
-        int nonZero = 0;
-        int i;
-        if (!GVar31.carry) {
-          Q12 *pixels = &memory[1].common.commandTarget.targetWorldXQ12;
-          for (i = 0; i < (int)(previewHeight * previewWidth * 4); i++) {
-            if (pixels[i] != 0) nonZero++;
-          }
-        }
-        Thandor_Log("army preview %d: carry=%d size=%ux%u nonzero=%d/%u render=%s", armyAssetId,
-                    GVar31.carry, previewWidth, previewHeight, nonZero, previewHeight * previewWidth * 4,
-                    Thandor_SymbolName((void *)g_GraphicsOffscreenRenderModelListToTextureSourceCf));
-        logged++;
-      }
-    }
     if (!GVar31.carry) {
       pQVar12 = &memory[1].common.commandTarget.targetWorldXQ12;
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime1);

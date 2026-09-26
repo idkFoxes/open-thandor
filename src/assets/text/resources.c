@@ -316,8 +316,10 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
   TextResourceLoadEaxCf5 TVar12;
   
   PVar10 = Package_LoadEntry(path);
-  Thandor_Log("text page 0x%02X \"%ls\": %s 0x%08X", pageIndex, (wchar_t *)path,
-              PVar10.carry ? "load failed" : "loaded", (dword)PVar10.bufferOrError);
+  if (PVar10.carry) {
+    Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
+                (dword)PVar10.bufferOrError);
+  }
   allocation = PVar10.bufferOrError;
   pTVar3 = allocation;
   if (!PVar10.carry) {

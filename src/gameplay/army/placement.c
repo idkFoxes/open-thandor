@@ -824,18 +824,6 @@ ArmyPlacement_DispatchAssetAtFieldPoint
               )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,FVar3.heightQ12,
                 worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
                 (WorldRuntimeContext *)inGameRoot));
-      {
-        static int logged;
-        static dword lastKey;
-        dword key = (dword)armyAssetId * 2 + (AVar2.carry ? 1 : 0);
-        if (logged < 60 && key != lastKey) {
-          logged++;
-          lastKey = key;
-          Thandor_Log("placement asset %d class %u contact %u at (%d,%d) height=%d -> %s", (int)armyAssetId,
-                      (unsigned)dVar1, (unsigned)modelDefinition[0x27].registryId, worldYQ12, worldXQ12,
-                      FVar3.heightQ12, AVar2.carry ? "rejected" : "accepted");
-        }
-      }
     }
   }
   AVar4.eax = (dword)AVar2.eax;
