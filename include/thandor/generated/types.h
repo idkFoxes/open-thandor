@@ -1626,6 +1626,12 @@ typedef dword ArmyCommandGeneration;
 
 typedef dword FieldGridRegionMask;
 
+typedef enum WorldOwnerRuntimeClassId {
+    WORLD_OWNER_RUNTIME_MODEL=0,
+    WORLD_OWNER_RUNTIME_SHOT=1,
+    WORLD_OWNER_RUNTIME_EFFECT=2
+} WorldOwnerRuntimeClassId;
+
 typedef enum ModelRuntimeClassId {
     MODEL_RUNTIME_CLASS_00=0,
     MODEL_RUNTIME_CLASS_01_GROUND=1,
@@ -3804,7 +3810,7 @@ struct ModelRuntimeNode {
     ModelTextureOffsetTexel primaryTextureOffsetV; 
     struct GraphicsFixedMatrix3x4 worldTransform; 
     dword runtimeStateA0; 
-    enum ModelRuntimeClassId ownerClassId; 
+    enum WorldOwnerRuntimeClassId ownerClassId; 
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel secondaryTextureOffsetU; 
     ModelTextureOffsetTexel secondaryTextureOffsetV; 
@@ -8433,7 +8439,7 @@ struct EffectModelRuntimeNodeClassView100 {
     ModelTextureOffsetTexel primaryTextureOffsetV; 
     struct GraphicsFixedMatrix3x4 worldTransform; 
     dword runtimeStateA0; 
-    enum ModelRuntimeClassId ownerClassId; 
+    enum WorldOwnerRuntimeClassId ownerClassId; 
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel secondaryTextureOffsetU; 
     ModelTextureOffsetTexel secondaryTextureOffsetV; 
@@ -12038,11 +12044,6 @@ typedef int WSAAddressToStringA_Proc(WinSockAddress *address, dword addressLengt
 #define __thandor_void_preserve_ecx_edx_mm1
 #endif
 
-typedef enum WorldOwnerRuntimeClassId {
-    WORLD_OWNER_RUNTIME_MODEL=0,
-    WORLD_OWNER_RUNTIME_SHOT=1,
-    WORLD_OWNER_RUNTIME_EFFECT=2
-} WorldOwnerRuntimeClassId;
 
 struct WorldOwnerListNode100 {
     struct WorldOwnerListNode100 *previousNode;
@@ -12390,7 +12391,7 @@ struct ShotModelRuntimeNodeClassView100 {
     ModelTextureOffsetTexel primaryTextureOffsetV; // Primary animated texture V offset.
     struct GraphicsFixedMatrix3x4 worldTransform; // Composed world transform.
     dword runtimeStateA0; // Class-specific runtime state.
-    enum ModelRuntimeClassId ownerClassId; // Runtime owner/class discriminator.
+    enum WorldOwnerRuntimeClassId ownerClassId; // Runtime owner/class discriminator.
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; // Secondary animated texture subresource index.
     ModelTextureOffsetTexel secondaryTextureOffsetU; // Secondary animated texture U offset.
     ModelTextureOffsetTexel secondaryTextureOffsetV; // Secondary animated texture V offset.

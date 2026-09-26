@@ -761,7 +761,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
   if (clearanceRadiusQ12 != 0) {
     for (; candidateModelNode != (ModelRuntimeNode *)0x0;
         candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
-      if (((((candidateModelNode->ownerClassId == MODEL_RUNTIME_CLASS_00) &&
+      if (((((candidateModelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (hit = DepthBinMasks_OverlapCf
                                (currentRuntime->modelNodeRuntime->depthBinMaskFar,
                                 currentRuntime->modelNodeRuntime->depthBinMaskNear,

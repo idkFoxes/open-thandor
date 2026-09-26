@@ -2628,7 +2628,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
     if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) == 0) {
       for (; modelNode != (ModelRuntimeNode *)0x0;
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-        if (modelNode->ownerClassId == MODEL_RUNTIME_CLASS_00) {
+        if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
           modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset
           ;
           (*g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(modelDefinition + 0x278)])

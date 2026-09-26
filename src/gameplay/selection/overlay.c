@@ -161,7 +161,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
         return;
       }
       do {
-        if (((modelNodeCursor->ownerClassId == MODEL_RUNTIME_CLASS_00) &&
+        if (((modelNodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armySlot = (modelNodeCursor->runtimePayload).armyRuntime,
             ((armySlot->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)) &&
            (((armySlot->runtimeFlags & 0x800) != 0 &&

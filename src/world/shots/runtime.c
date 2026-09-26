@@ -375,7 +375,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
   WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)shotModelNode);
   (shotRuntimeCursor->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)shotModelNode;
   (shotRuntimeCursor->definitionOrSavedId).definition = shotDefinition;
-  shotModelNode->ownerClassId = MODEL_RUNTIME_CLASS_01_GROUND;
+  shotModelNode->ownerClassId = WORLD_OWNER_RUNTIME_SHOT;
   shotModelNode->shotRuntime = shotRuntimeCursor;
   (shotModelNode->worldTransform).translation.x = launchWorldXQ12;
   (shotModelNode->worldTransform).translation.y = launchWorldYQ12;

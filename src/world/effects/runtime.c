@@ -276,7 +276,7 @@ EffectRuntimePool_CreateInstance_ReturnAllocationFailure:
         (effectRuntimeCursor->modelNodeOrSavedOffset).modelNode =
              (ModelRuntimeNode *)effectModelNode;
         (effectRuntimeCursor->definitionOrSavedId).definition = effectDefinition;
-        effectModelNode->ownerClassId = MODEL_RUNTIME_CLASS_02_TRACKED;
+        effectModelNode->ownerClassId = WORLD_OWNER_RUNTIME_EFFECT;
         effectModelNode->effectRuntime = effectRuntimeCursor;
         effectModelNode->renderDepthBiasOrState = 0;
         (effectModelNode->worldTransform).translation.x = worldYQ12;

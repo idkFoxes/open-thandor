@@ -1029,7 +1029,7 @@ ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure:
     failureResult.modelNode = childOrFailedNode;
     return failureResult;
   }
-  newNode->ownerClassId = MODEL_RUNTIME_CLASS_00;
+  newNode->ownerClassId = WORLD_OWNER_RUNTIME_MODEL;
   (newNode->modelPayload).localTranslationXQ12 = 0;
   (newNode->modelPayload).localTranslationYQ12 = 0;
   (newNode->modelPayload).localTranslationZQ12 = 0;

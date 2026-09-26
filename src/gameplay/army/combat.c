@@ -462,7 +462,7 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
   GraphicsWorldCoordinateQ12 originZQ12;
   GraphicsWorldCoordinateQ12 originYQ12;
   GraphicsWorldCoordinateQ12 originXQ12;
-  ModelRuntimeClassId requiredOwnerId;
+  WorldOwnerRuntimeClassId requiredOwnerId;
   ModelRuntimeNode *excludedNode;
   GameEntityRuntime *hitEntity;
   GameEntityRuntime *ownOrTargetEntity;
@@ -502,7 +502,7 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
                        (angleOrDistance,horizontalVector.angle & 0xffff,horizontalVector.length,
                         (originNode->worldTransform).translation.z,
                         (originNode->worldTransform).translation.y,
-                        (originNode->worldTransform).translation.x,MODEL_RUNTIME_CLASS_00,
+                        (originNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                         (armyRuntime->linkedEntityRuntime->common).ownership.modelNode,worldRuntime)
     ;
     if (!modelHit.carry) {
@@ -540,7 +540,7 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
     }
   }
   excludedNode = (ownOrTargetEntity->common).ownership.modelNode;
-  requiredOwnerId = MODEL_RUNTIME_CLASS_00;
+  requiredOwnerId = WORLD_OWNER_RUNTIME_MODEL;
   originXQ12 = (originNode->worldTransform).translation.x;
   maxAngleOrRange = shotDefinitionWords[3] * shotDefinitionWords[0x34];
   originYQ12 = (originNode->worldTransform).translation.y;

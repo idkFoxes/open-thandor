@@ -297,7 +297,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->modelPayload).worldRotationAngle0,frameCountDistanceOrAge,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
-                          (modelNode->worldTransform).translation.x,MODEL_RUNTIME_CLASS_00,
+                          (modelNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                           ownerModelNode,worldRuntime);
       nearestArmyHit = armyRaycast.edxCarrier;
       frameAccumulatorOrDistance = armyRaycast.nearestDistanceQ12;
@@ -439,7 +439,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
                           (modelNode->worldTransform).translation.z,
                           (modelNode->worldTransform).translation.y,
-                          (modelNode->worldTransform).translation.x,MODEL_RUNTIME_CLASS_00,
+                          (modelNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                           ownerModelNode,worldRuntime);
       nearestArmyHit = armyRaycast.edxCarrier;
       frameCountDistanceOrAge = armyRaycast.nearestDistanceQ12;

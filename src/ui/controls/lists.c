@@ -3235,7 +3235,7 @@ UiCatalogEntryControl_DrawClipped
                 (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           modelNodePrimary != (ModelRuntimeNode *)0x0;
           modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
-        if (((modelNodePrimary->ownerClassId == MODEL_RUNTIME_CLASS_00) &&
+        if (((modelNodePrimary->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armyRuntime = (modelNodePrimary->runtimePayload).armyRuntime,
             ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xb))
            && (((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1 &&
@@ -3297,7 +3297,7 @@ UiCatalogEntryControl_DrawClipped
   for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
       modelNode != (ModelRuntimeNode *)0x0;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-    if (modelNode->ownerClassId == MODEL_RUNTIME_CLASS_00) {
+    if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       slotArmyRuntime = (modelNode->runtimePayload).armyRuntime;
       if (((slotArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0x16) {
         if ((((slotArmyRuntime->articulatedContact).terrainContactMode ==

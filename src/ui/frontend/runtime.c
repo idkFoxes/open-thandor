@@ -3575,7 +3575,7 @@ qword FrontendModelPointerContext_FindBestEligibleModelHitTarget
     if (modelNode == (ModelRuntimeNode *)0x0) {
       return CONCAT44(bestModelNode,bestHitMetric);
     }
-    if ((((modelNode->runtimeFlags & 2) != 0) && (modelNode->ownerClassId == MODEL_RUNTIME_CLASS_00)
+    if ((((modelNode->runtimeFlags & 2) != 0) && (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)
         ) && (((context->contextFlags &
                FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_MODEL_WITHOUT_RUNTIME_FLAG_20) != 0 ||
               ((modelNode->runtimeFlags & 0x20) != 0)))) {
