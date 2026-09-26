@@ -266,14 +266,14 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
    Local calls: FrontendDisplaySettingsPage_UpdateModeActionAvailability.
 */
 void __thandor_preserve_eax_edx
-FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *displaySettingsRoot)
+FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-       displaySettingsRoot[1].top;
+       THANDOR_UI_FIELD(optionButton,0x60,sdword) /* the option's value */;
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-       displaySettingsRoot[1].right;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability(displaySettingsRoot);
+       THANDOR_UI_FIELD(optionButton,0x64,sdword);
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
   return;
 }
 
@@ -288,12 +288,12 @@ FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *displaySettings
    Local calls: FrontendDisplaySettingsPage_UpdateModeActionAvailability.
 */
 void __thandor_preserve_eax
-FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *displaySettingsRoot)
+FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  bitsPerPixel = displaySettingsRoot[1].top;
-  FrontendDisplaySettingsPage_UpdateModeActionAvailability(displaySettingsRoot);
+  bitsPerPixel = THANDOR_UI_FIELD(optionButton,0x60,sdword) /* the option's value */;
+  FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
   return;
 }
 
@@ -1687,7 +1687,7 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
    UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_ReadDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySettingsRoot)
+FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
 
 {
   undefined4 adapterIndex;
@@ -1708,221 +1708,222 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
              width;
   adapterIndex = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                  persistentSelection.adapterIndex;
-  parentCursorOrSelectedRow = displaySettingsRoot->parent;
+  /* called with any node of the page: walk up to the frontend root */
+  parentCursorOrSelectedRow = frontendRoot->parent;
   while (parentCursorOrSelectedRow != (UiNodeBase *)0xffffffff) {
-    displaySettingsRoot = displaySettingsRoot->parent;
-    parentCursorOrSelectedRow = displaySettingsRoot->parent;
+    frontendRoot = frontendRoot->parent;
+    parentCursorOrSelectedRow = frontendRoot->parent;
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (displaySettingsRoot[0xb4].topAnchorQ31,
+                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,dword),
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex);
-  parentCursorOrSelectedRow = displaySettingsRoot;
+  parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x201e,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x201e,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201e,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x201e,frontendRoot);
   }
-  if (bitsPerPixel == displaySettingsRoot[0xb4].topAnchorQ31) {
-    parentCursorOrSelectedRow = (UiNodeBase *)&displaySettingsRoot[0xb3].leftOffset;
+  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,dword)) {
+    parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    ((FrontendColorDepthBits)displaySettingsRoot[0xb6].firstChild,pendingHeight,pendingWidth
+                    ((FrontendColorDepthBits)FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,struct UiNodeBase *),pendingHeight,pendingWidth
                      ,adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x201f,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x201f,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201f,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x201f,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (displaySettingsRoot[0xb7].leftOffset,pendingHeight,pendingWidth,adapterIndex);
+                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,sdword),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2020,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2020,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2020,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2020,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (displaySettingsRoot[0xb8].bottomAnchorQ31,pendingHeight,pendingWidth,adapterIndex);
+                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,dword),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2021,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2021,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2021,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2021,frontendRoot);
   }
   UiSelectableGroup_SelectExclusive(4,parentCursorOrSelectedRow,
-      THANDOR_UI_AT(displaySettingsRoot,0x367c),
-      THANDOR_UI_AT(displaySettingsRoot,0x3614),
-      THANDOR_UI_AT(displaySettingsRoot,0x35ac),
-      THANDOR_UI_AT(displaySettingsRoot,0x3544));
+      FRONTEND_UI(frontendRoot,displayColorDepthOption4),
+      FRONTEND_UI(frontendRoot,displayColorDepthOption3),
+      FRONTEND_UI(frontendRoot,displayColorDepthOption2),
+      FRONTEND_UI(frontendRoot,displayColorDepthOption1));
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xa5].nodeFlags,
-                     displaySettingsRoot[0xa5].layoutHeight,adapterIndex);
-  parentCursorOrSelectedRow = displaySettingsRoot;
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,sdword),adapterIndex);
+  parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2022,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2022,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2022,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2022,frontendRoot);
   }
-  if ((pendingWidth == displaySettingsRoot[0xa5].layoutHeight) &&
-     (pendingHeight == displaySettingsRoot[0xa5].nodeFlags)) {
-    parentCursorOrSelectedRow = (UiNodeBase *)&displaySettingsRoot[0xa4].leftAnchorQ31;
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,sdword)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags))) {
+    parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xa7].right,displaySettingsRoot[0xa7].top,
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,sdword),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,sdword),
                      adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2023,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2023,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2023,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2023,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xa8].topAnchorQ31,
-                     displaySettingsRoot[0xa8].leftAnchorQ31,adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,dword),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,dword),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2024,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2024,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2024,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2024,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,
-                     (FrontendDisplayDimensionPixels)displaySettingsRoot[0xaa].firstChild,
-                     (FrontendDisplayDimensionPixels)displaySettingsRoot[0xaa].nextSibling,
+                     (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x64,struct UiNodeBase *),
+                     (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x60,struct UiNodeBase *),
                      adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2025,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2025,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2025,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2025,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xab].leftOffset,
-                     displaySettingsRoot[0xab].bottom,adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,sdword),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,sdword),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2026,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2026,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2026,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2026,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xac].bottomAnchorQ31,
-                     displaySettingsRoot[0xac].rightAnchorQ31,adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,dword),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,dword),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2027,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2027,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2027,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2027,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,(FrontendDisplayDimensionPixels)displaySettingsRoot[0xae].vtable,
-                     (FrontendDisplayDimensionPixels)displaySettingsRoot[0xae].parent,adapterIndex);
+                    (bitsPerPixel,(FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,struct UiNodeVtable *),
+                     (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,struct UiNodeBase *),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2028,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2028,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2028,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2028,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xaf].rightOffset,
-                     displaySettingsRoot[0xaf].topOffset,adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,sdword),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,sdword),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2029,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2029,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2029,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2029,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xb0].layoutHeight,
-                     displaySettingsRoot[0xb0].layoutWidth,adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,sdword),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,sdword),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202a,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x202a,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202a,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x202a,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,displaySettingsRoot[0xb2].top,displaySettingsRoot[0xb2].left,
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,sdword),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,sdword),
                      adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202b,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x202b,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202b,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x202b,frontendRoot);
   }
   UiSelectableGroup_SelectExclusive(10,parentCursorOrSelectedRow,
-      THANDOR_UI_AT(displaySettingsRoot,0x3488),
-      THANDOR_UI_AT(displaySettingsRoot,0x3420),
-      THANDOR_UI_AT(displaySettingsRoot,0x33b8),
-      THANDOR_UI_AT(displaySettingsRoot,0x3350),
-      THANDOR_UI_AT(displaySettingsRoot,0x32e8),
-      THANDOR_UI_AT(displaySettingsRoot,0x3280),
-      THANDOR_UI_AT(displaySettingsRoot,0x3218),
-      THANDOR_UI_AT(displaySettingsRoot,0x31b0),
-      THANDOR_UI_AT(displaySettingsRoot,0x3148),
-      THANDOR_UI_AT(displaySettingsRoot,0x30e0));
+      FRONTEND_UI(frontendRoot,displayResolutionOption10),
+      FRONTEND_UI(frontendRoot,displayResolutionOption9),
+      FRONTEND_UI(frontendRoot,displayResolutionOption8),
+      FRONTEND_UI(frontendRoot,displayResolutionOption7),
+      FRONTEND_UI(frontendRoot,displayResolutionOption6),
+      FRONTEND_UI(frontendRoot,displayResolutionOption5),
+      FRONTEND_UI(frontendRoot,displayResolutionOption4),
+      FRONTEND_UI(frontendRoot,displayResolutionOption3),
+      FRONTEND_UI(frontendRoot,displayResolutionOption2),
+      FRONTEND_UI(frontendRoot,displayResolutionOption1));
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,0);
-  parentCursorOrSelectedRow = displaySettingsRoot;
+  parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202c,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x202c,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202c,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x202c,frontendRoot);
   }
   if (adapterIndex == 0) {
-    parentCursorOrSelectedRow = (UiNodeBase *)&displaySettingsRoot[0x9c].topAnchorQ31;
+    parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,1);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202d,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x202d,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202d,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x202d,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,2);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202e,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x202e,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202e,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x202e,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,3);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202f,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x202f,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202f,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x202f,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,4);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2030,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2030,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2030,displaySettingsRoot);
+    UiNodeList_UnsuppressActionId(0x2030,frontendRoot);
   }
   UiSelectableGroup_SelectExclusive(5,parentCursorOrSelectedRow,
-      THANDOR_UI_AT(displaySettingsRoot,0x3024),
-      THANDOR_UI_AT(displaySettingsRoot,0x2fbc),
-      THANDOR_UI_AT(displaySettingsRoot,0x2f54),
-      THANDOR_UI_AT(displaySettingsRoot,0x2eec),
-      THANDOR_UI_AT(displaySettingsRoot,0x2e84));
+      FRONTEND_UI(frontendRoot,displayAdapterOption5),
+      FRONTEND_UI(frontendRoot,displayAdapterOption4),
+      FRONTEND_UI(frontendRoot,displayAdapterOption3),
+      FRONTEND_UI(frontendRoot,displayAdapterOption2),
+      FRONTEND_UI(frontendRoot,displayAdapterOption1));
   persistedValue = PersistentSettings_ReadDword(1,0);
   if ((((persistedValue == adapterIndex) &&
        (persistedValue = PersistentSettings_ReadDword(0x280,4), persistedValue == pendingWidth)) &&
       (persistedValue = PersistentSettings_ReadDword(0x1e0,8), persistedValue == pendingHeight)) &&
      (persistedValue = PersistentSettings_ReadDword(0x10,0xc), persistedValue == bitsPerPixel)) {
-    UiNodeList_SuppressActionId(0x2031,displaySettingsRoot);
+    UiNodeList_SuppressActionId(0x2031,frontendRoot);
     return;
   }
-  UiNodeList_UnsuppressActionId(0x2031,displaySettingsRoot);
+  UiNodeList_UnsuppressActionId(0x2031,frontendRoot);
   return;
 }
 

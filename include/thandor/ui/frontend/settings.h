@@ -20,11 +20,11 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
 
 /* 0x0054BA90 */
 void __thandor_preserve_eax_edx
-FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *displaySettingsRoot);
+FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton);
 
 /* 0x0054BAC0 */
 void __thandor_preserve_eax
-FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *displaySettingsRoot);
+FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton);
 
 /* 0x0054BAF0 */
 void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void *control);
@@ -141,6 +141,6 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
 
 /* 0x0054B160 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySettingsRoot);
+FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);
 
 #endif /* THANDOR_UI_FRONTEND_SETTINGS_H */
