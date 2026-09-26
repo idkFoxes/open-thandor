@@ -164,8 +164,23 @@ for k, (a, b) in enumerate(blocks):
         fields.append((cursor, b, identifier('gap_%08X' % cursor, used), None))
     members.append(fields)
 
+# objects known only by a Ghidra label (vtables, handler tables) get an alias in image_data.h so the
+# data can name them
+label_aliases = {}
+for k, fields in enumerate(members):
+    for start, end, member, name in fields:
+        if name and re.match(r'^[gk]_\w+$', name) and name not in macros and name not in label_aliases:
+            label_aliases[name] = (start, '%s.%s' % (block_name(k), member))
+
 def address_expression(value):
-    """C constant expression for the generated address of original data address value."""
+    """C constant expression for the generated address of original data address value: through the
+    object's own name where globals.h / recovered.h define one (&g_Name, (byte *)&g_Name + 0x10),
+    else through the block member."""
+    owner = containing_object(value)
+    if owner is not None and ((owner[2] in macros and macros[owner[2]][1] == owner[0]) or
+                              label_aliases.get(owner[2], (None,))[0] == owner[0]):
+        offset = value - owner[0]
+        return '&%s' % owner[2] if offset == 0 else '(byte *)&%s + 0x%X' % (owner[2], offset)
     if value in member_at:
         k, member = member_at[value]
         return '&%s.%s' % (block_name(k), member)
@@ -226,7 +241,9 @@ def value_expression(field_addr, owner_numeric):
     if not owner_numeric and value in funcs:
         pointers.append((field_addr, value, 'function', funcs[value]))
         return '(dword)%s' % funcs[value]
-    if not owner_numeric and (value in anchors or inner_pointer(value)):
+    # a UI vtable address is never a number: UI node images typed as plain words (the fatal error
+    # dialog, g_UiDisplaySettingsRootTemplate) need it as a pointer
+    if (not owner_numeric and (value in anchors or inner_pointer(value))) or value in ui_vtables:
         pointers.append((field_addr, value, 'data', ''))
         target = address_expression(value)
         return '(dword)(%s)' % target if '+' in target else '(dword)%s' % target
@@ -294,7 +311,8 @@ def scalar_init(t, addr, typed_pointers):
             return '(void *)%s' % funcs[value]
         if value in anchors:
             typed_pointers.append((addr, value, 'data', ''))
-            return '(void *)(%s)' % address_expression(value)
+            target = address_expression(value)
+            return '(void *)(%s)' % target if '+' in target else '(void *)%s' % target
         return '(void *)0x%08X' % value
     if r.startswith('enum '):
         size = 4
@@ -451,6 +469,93 @@ COMPUTED = {'g_FixedSinBeforeZeroQ28': 'FixedMath_BuildSinCosTables',
             'g_FixedSinQ28': 'FixedMath_BuildSinCosTables', 'g_FixedCosQ28': 'FixedMath_BuildSinCosTables',
             'g_MovieChromaLumaToArgb': 'Movie_BuildChromaLumaTable'}
 
+# UI templates: images of UI node sets the code copies whole (e.g. FrontendRuntime_Initialize) and
+# then links up. Every node starts with a UiNodeBase whose vtable points to a UI vtable; the node
+# links are offsets from the template start (-1: none). Written as one member per node.
+UI_TEMPLATES = ('g_FrontendRootInitializationTemplate', 'g_InGameRuntimeDefaultImageTemplate',
+                'g_UiDisplaySettingsRootTemplate')
+ui_vtables = set(a for a, _, n in objects if 'vtable' in n.lower())
+NODE_BASE = type_layouts.get('UiNodeBase')
+NODE_LINKS = ('nextSibling', 'firstChild', 'parent')
+extra_types = {}    # block index -> typedefs the block struct needs
+
+def signed_literal(value):
+    value = value - (1 << 32) if value & 0x80000000 else value
+    if -0x10000 < value < 0x10000:
+        return '%d' % value
+    return '-0x%X' % -value if value < 0 else '0x%X' % value
+
+def node_starts(start, size):
+    nodes = []
+    for offset in range(0, size - NODE_BASE['size'] + 1, 4):
+        if dword_at(start + offset + 12) not in ui_vtables:
+            continue
+        links = [dword_at(start + offset + 4 * i) for i in range(3)]
+        if any(v != 0xFFFFFFFF and v >= size for v in links):
+            continue
+        if nodes and offset < nodes[-1] + NODE_BASE['size']:
+            continue
+        nodes.append(offset)
+    return nodes
+
+NODE_LINE_BREAKS = ('vtable', 'left', 'leftOffset', 'leftAnchorQ31', 'layoutWidth')
+
+def node_base_init(addr, typed_pointers, label):
+    lines = []
+    parts = []
+    for field in NODE_BASE['fields']:
+        if field['name'] in NODE_LINE_BREAKS and parts:
+            lines.append(', '.join(parts))
+            parts = []
+        value = dword_at(addr + field['offset'])
+        if field['name'] in NODE_LINKS:
+            text = 'UI_TEMPLATE_NO_LINK' if value == 0xFFFFFFFF else 'UI_TEMPLATE_LINK(0x%X)' % value
+        elif field['kind'] == 'pointer':
+            text = scalar_init(field['type'], addr + field['offset'], typed_pointers)
+        elif field['type'] == 'sdword':
+            text = signed_literal(value)
+        else:
+            text = '0x%X' % value if value else '0'
+        if text != '0':
+            parts.append('.%s = %s' % (field['name'], text))
+    if parts:
+        lines.append(', '.join(parts))
+    return '{ /* %s */\n            %s}' % (label, ',\n            '.join(lines))
+
+def template_member(k, start, end, name, member):
+    if name not in UI_TEMPLATES or NODE_BASE is None:
+        return None
+    size = end - start
+    nodes = node_starts(start, size)
+    if not nodes or size % 4:
+        return None
+    type_name = 'UiTemplate_%08X' % start
+    fields, inits = [], []
+    typed_pointers = []
+    pieces = ([(0, nodes[0], False)] if nodes[0] else []) + \
+        [(o, nodes[i + 1] if i + 1 < len(nodes) else size, True) for i, o in enumerate(nodes)]
+    for piece_start, piece_end, is_node in pieces:
+        addr = start + piece_start
+        rest_start = piece_start
+        if is_node:
+            target = containing_object(dword_at(addr + 12))
+            vtable_name = target[2] if target else ''
+            fields.append('    UiNodeBase node%04X; /* %s */' % (piece_start, vtable_name))
+            inits.append('        %s,' % node_base_init(addr, typed_pointers, '+%04X %s' % (piece_start, vtable_name)))
+            rest_start = piece_start + NODE_BASE['size']
+        count = (piece_end - rest_start) // 4
+        if count:
+            label = 'node%04X_fields' % piece_start if is_node else 'header'
+            fields.append('    dword %s[%d];' % (label, count))
+            before = len(pointers)
+            inits.append('        %s,' % dword_list(start + rest_start, count, False).replace('\n        ',
+                                                                                             '\n            '))
+            typed_pointers.extend(pointers[before:])
+            del pointers[before:]
+    extra_types.setdefault(k, []).append('/* %s: %d UI nodes */\ntypedef struct %s {\n%s\n} %s;\n' % (
+        name, len(nodes), type_name, '\n'.join(fields), type_name))
+    return '    %s %s;' % (type_name, member), '{\n%s\n    }' % '\n'.join(inits), typed_pointers
+
 layout_lines = []   # struct member declarations per block
 init_lines = []     # initializer per block
 typed_count = 0
@@ -472,6 +577,13 @@ for k, (a, b) in enumerate(blocks):
             assert not tail
             decls.append('    dword %s[%d]; %s' % (member, count, comment))
             inits.append('    {0}, /* %08X %s: filled at startup by %s */' % (start, name, COMPUTED[name]))
+            continue
+        template = template_member(k, start, end, name, member) if name else None
+        if template is not None:
+            decl, init, typed_pointers = template
+            pointers.extend(typed_pointers)
+            decls.append('%s %s' % (decl, comment))
+            inits.append('    %s, %s' % (init, comment))
             continue
         typed = typed_member(start, end, name, member) if name else None
         if typed is not None:
@@ -506,11 +618,20 @@ for k, (a, b) in enumerate(blocks):
 hdr = [HEADER % 'include/thandor/generated/image_data.h',
        '/* Generated by tools/data/gen_image_data.py from the original thandor.exe. Do not edit. */\n\n'
        '#ifndef THANDOR_GENERATED_IMAGE_DATA_H\n#define THANDOR_GENERATED_IMAGE_DATA_H\n\n'
-       '#include <thandor/generated/types.h>\n\n#pragma pack(push, 1)\n']
+       '#include <thandor/generated/types.h>\n\n'
+       '/* UI template node links: offsets from the template start, made into pointers when the\n'
+       '   template is copied and linked. */\n'
+       '#define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))\n'
+       '#define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)\n\n#pragma pack(push, 1)\n']
 for k, (a, b) in enumerate(blocks):
+    if k in extra_types:
+        hdr.append('\n' + '\n'.join(extra_types[k]))
     hdr.append('\n/* original 0x%08X-0x%08X */\ntypedef struct ImageData_%08X {\n%s\n} ImageData_%08X;\n'
                'extern ImageData_%08X %s;\n' % (a, b, a, '\n'.join(layout_lines[k]), a, a, block_name(k)))
-hdr.append('\n#pragma pack(pop)\n\n/* Original address -> generated storage. */\n')
+hdr.append('\n#pragma pack(pop)\n\n/* Objects the headers do not declare, by their Ghidra label. */\n')
+for name, (start, target) in sorted(label_aliases.items(), key=lambda x: x[1][0]):
+    hdr.append('#define %s (%s)\n' % (name, target))
+hdr.append('\n/* Original address -> generated storage. */\n')
 missing = []
 for addr in sorted(set(a for _, (_, a) in macros.items())):
     if addr in member_at:
