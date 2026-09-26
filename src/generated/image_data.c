@@ -532,30 +532,34 @@ ImageData_00407510 g_ImageData_00407510 = {
     {
         .method08 = (void *)ErrorRuntime_CallbackAlwaysFailCf,
         .pointerMissPolicy = (void *)ErrorRuntime_CallbackReturnCode8},
-    0xFFFFFFFF, /* 00407E3C g_FatalErrorUiRootTemplateImage */
-    /* 00407E40 DAT_00407e40 */
+    /* 00407E3C g_FatalErrorUiRootTemplateImage */
     {
-        0x00000058, 0xFFFFFFFF, (dword)&g_UiPanelControlVtable,
-        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
-    0xFFFFFF60, /* 00407E5C g_FatalErrorRichTextLeft */
-    {0},
-    0xA0, /* 00407E64 g_FatalErrorRichTextRight */
-    {
-        0x0000002C, 0x50000000, 0x50000000, 0x50000000, 0x50000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,
-        0x00000003, 0xFFFFFFFF, 0xFFFFFFFF, 0x000000B4, 0xFFFFFFFF, 0x00000000, (dword)&g_UiListOffsetControlVtable},
-    0x6, /* 00407EB4 g_FatalErrorRichTextTop */
-    {
-        0x00000006},
-    0xFFFFFFFA, /* 00407EBC g_FatalErrorRichTextBottom */
-    {
-        0xFFFFFFDA, 0x00000000, 0x00000000, 0x80000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,
-        0x00000015},
-    0, /* 00407EE8 g_FatalErrorRichTextStream */
-    {
-        0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, (dword)&g_UiNodeVtable_004B1D80,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFF94, 0xFFFFFFE0, 0xFFFFFFF4, 0xFFFFFFFA,
-        0x80000000, 0x80000000, 0x80000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000002, 0x0000000C,
-        0x00000001, 0x00000100, 0x00000000, 0x90909090},
+        { /* +0000 g_UiPanelControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
+            .vtable = (void *)&g_UiPanelControlVtable,
+            .left = -1, .top = -1, .right = -1, .bottom = -1,
+            .leftOffset = -160, .rightOffset = 160, .bottomOffset = 44,
+            .leftAnchorQ31 = 0x50000000, .topAnchorQ31 = 0x50000000, .rightAnchorQ31 = 0x50000000, .bottomAnchorQ31 = 0x50000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000003, 0xFFFFFFFF, 0xFFFFFFFF},
+        { /* +0058 g_UiListOffsetControlVtable */
+            .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = (void *)&g_UiListOffsetControlVtable,
+            .leftOffset = 6, .topOffset = 6, .rightOffset = -6, .bottomOffset = -38,
+            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000015},
+        { /* +00B4 g_UiNodeVtable_004B1D80 */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .leftOffset = -108, .topOffset = -32, .rightOffset = -12, .bottomOffset = -6,
+            .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
+        {
+            0x0000000C, 0x00000001, 0x00000100, 0x00000000, 0x90909090},
+    },
 };
 
 ImageData_004080B4 g_ImageData_004080B4 = {
@@ -1401,24 +1405,43 @@ ImageData_00424324 g_ImageData_00424324 = {
         .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
         .method08 = (void *)UiRootCallbacks_NoOpMethod08,
         .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
-    0xFFFFFFFF, /* 00424338 g_UiFourValueDialogTemplateImage */
-    /* 0042433C DAT_0042433c */
+    /* 00424338 g_UiFourValueDialogTemplateImage */
     {
-        0x00000058, 0xFFFFFFFF, (dword)&g_UiPanelControlVtable,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFF80, 0xFFFFFFD0, 0x00000080, 0x00000030,
-        0x40000000, 0x40000000, 0x40000000, 0x40000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000021, 0x00000003,
-        0x00000000, 0x00000000, 0x000000B4, 0xFFFFFFFF, 0x00000000, (dword)&g_UiNodeVtable_004B1D80,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000010, 0xFFFFFFE0, 0x00000070, 0xFFFFFFF8,
-        0x00000000, 0x80000000, 0x00000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000002, 0x00000008,
-        0x0000020D, 0x00000101, 0x00000000, 0x00000110, 0xFFFFFFFF, 0x00000000, (dword)&g_UiNodeVtable_004B1D80,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000080, 0xFFFFFFE0, 0x000000F0, 0xFFFFFFF8,
-        0x00000000, 0x80000000, 0x00000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000020, 0x00000004,
-        0x00000000, 0x00000100, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, (dword)&g_UiListOffsetControlVtable,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000008, 0x00000008, 0xFFFFFFF8, 0xFFFFFFD8,
-        0x00000000, 0x00000000, 0x80000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000004,
-        0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x90909090},
+        { /* +0000 g_UiPanelControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
+            .vtable = (void *)&g_UiPanelControlVtable,
+            .leftOffset = -128, .topOffset = -48, .rightOffset = 128, .bottomOffset = 48,
+            .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x21},
+        {
+            0x00000003},
+        { /* +0058 g_UiNodeVtable_004B1D80 */
+            .nextSibling = UI_TEMPLATE_LINK(0xB4), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .leftOffset = 16, .topOffset = -32, .rightOffset = 112, .bottomOffset = -8,
+            .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
+        {
+            0x00000008, 0x0000020D, 0x00000101},
+        { /* +00B4 g_UiNodeVtable_004B1D80 */
+            .nextSibling = UI_TEMPLATE_LINK(0x110), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = (void *)&g_UiNodeVtable_004B1D80,
+            .leftOffset = 128, .topOffset = -32, .rightOffset = 240, .bottomOffset = -8,
+            .topAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
+        {
+            0x00000004, 0x00000000, 0x00000100},
+        { /* +0110 g_UiListOffsetControlVtable */
+            .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
+            .vtable = (void *)&g_UiListOffsetControlVtable,
+            .leftOffset = 8, .topOffset = 8, .rightOffset = -8, .bottomOffset = -40,
+            .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
+            .layoutWidth = -1, .layoutHeight = -1},
+        {
+            0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014, 0x00000000, 0x00000000,
+            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+            0x00000000, 0x00000000, 0x90909090},
+    },
 };
 
 ImageData_00424684 g_ImageData_00424684 = {

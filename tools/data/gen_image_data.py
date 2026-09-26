@@ -508,6 +508,7 @@ COMPUTED = {'g_FixedSinBeforeZeroQ28': 'FixedMath_BuildSinCosTables',
 # then links up. Every node starts with a UiNodeBase whose vtable points to a UI vtable; the node
 # links are offsets from the template start (-1: none). Written as one member per node.
 UI_TEMPLATES = ('g_FrontendRootInitializationTemplate', 'g_InGameRuntimeDefaultImageTemplate',
+                'g_UiFourValueDialogTemplateImage', 'g_FatalErrorUiRootTemplateImage',
                 'g_UiDisplaySettingsRootTemplate')
 ui_vtables = set(a for a, _, n in objects if 'vtable' in n.lower())
 NODE_BASE = type_layouts.get('UiNodeBase')

@@ -110,7 +110,7 @@ FatalErrorRuntime_DispatchPendingErrorCf(dword errorOrValue,bool carryIn)
     RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,stream);
   }
-  templateImageCursor = &g_FatalErrorUiRootTemplateImage;
+  templateImageCursor = g_FatalErrorUiRootTemplateImage;
   templateCopyCursor = g_FatalErrorUiRootTemplate;
   g_FatalErrorRichTextStream = stream;
   for (remainingDwords = 0x44; uiRootTemplate = g_FatalErrorUiRootTemplate, remainingDwords != 0; remainingDwords = remainingDwords + -1) {

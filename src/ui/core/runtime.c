@@ -92,7 +92,7 @@ UiRuntime_OpenFourValueDialogCf
   allocResult = (*g_MemoryApi.alloc)(0x1a4);
   root = (UiRootNode *)allocResult.eax;
   if (!allocResult.carry) {
-    templateCursor = &g_UiFourValueDialogTemplateImage;
+    templateCursor = g_UiFourValueDialogTemplateImage;
     copyCursor = root;
     for (remainingDwords = 0x69; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
       (copyCursor->base).nextSibling = (UiNodeBase *)*templateCursor;

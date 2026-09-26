@@ -97,6 +97,16 @@ typedef struct ImageData_00403158 {
 } ImageData_00403158;
 extern ImageData_00403158 g_ImageData_00403158;
 
+/* g_FatalErrorUiRootTemplateImage: 3 UI nodes */
+typedef struct UiTemplate_00407E3C {
+    UiNodeBase node0000; /* g_UiPanelControlVtable */
+    dword node0000_fields[3];
+    UiNodeBase node0058; /* g_UiListOffsetControlVtable */
+    dword node0058_fields[4];
+    UiNodeBase node00B4; /* g_UiNodeVtable_004B1D80 */
+    dword node00B4_fields[5];
+} UiTemplate_00407E3C;
+
 /* original 0x00407510-0x00407F50 */
 typedef struct ImageData_00407510 {
     byte at_gap_00407510[4]; /* 00407510 gap */
@@ -119,18 +129,7 @@ typedef struct ImageData_00407510 {
     UiRootNode * at_g_FatalErrorUiRootTemplate; /* 00407E20 g_FatalErrorUiRootTemplate */
     undefined4 at_g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
     UiRootCallbacks at_g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks_00407E28 */
-    undefined4 at_g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
-    dword at_DAT_00407e40[7]; /* 00407E40 DAT_00407e40 */
-    sdword at_g_FatalErrorRichTextLeft; /* 00407E5C g_FatalErrorRichTextLeft */
-    dword at_g_FatalErrorRichTextLeft_rest[1]; /* beyond the declared type */
-    undefined4 at_g_FatalErrorRichTextRight; /* 00407E64 g_FatalErrorRichTextRight */
-    dword at_g_FatalErrorRichTextRight_rest[19]; /* beyond the declared type */
-    sdword at_g_FatalErrorRichTextTop; /* 00407EB4 g_FatalErrorRichTextTop */
-    dword at_g_FatalErrorRichTextTop_rest[1]; /* beyond the declared type */
-    sdword at_g_FatalErrorRichTextBottom; /* 00407EBC g_FatalErrorRichTextBottom */
-    dword at_g_FatalErrorRichTextBottom_rest[10]; /* beyond the declared type */
-    undefined4 at_g_FatalErrorRichTextStream; /* 00407EE8 g_FatalErrorRichTextStream */
-    dword at_g_FatalErrorRichTextStream_rest[25]; /* beyond the declared type */
+    UiTemplate_00407E3C at_g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
 } ImageData_00407510;
 extern ImageData_00407510 g_ImageData_00407510;
 
@@ -640,11 +639,22 @@ typedef struct ImageData_00422978 {
 } ImageData_00422978;
 extern ImageData_00422978 g_ImageData_00422978;
 
+/* g_UiFourValueDialogTemplateImage: 4 UI nodes */
+typedef struct UiTemplate_00424338 {
+    UiNodeBase node0000; /* g_UiPanelControlVtable */
+    dword node0000_fields[3];
+    UiNodeBase node0058; /* g_UiNodeVtable_004B1D80 */
+    dword node0058_fields[4];
+    UiNodeBase node00B4; /* g_UiNodeVtable_004B1D80 */
+    dword node00B4_fields[4];
+    UiNodeBase node0110; /* g_UiListOffsetControlVtable */
+    dword node0110_fields[19];
+} UiTemplate_00424338;
+
 /* original 0x00424324-0x004244E0 */
 typedef struct ImageData_00424324 {
     UiRootCallbacks at_g_UiFourValueDialogRootCallbacks; /* 00424324 g_UiFourValueDialogRootCallbacks */
-    undefined4 at_g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
-    dword at_DAT_0042433c[105]; /* 0042433C DAT_0042433c */
+    UiTemplate_00424338 at_g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
 } ImageData_00424324;
 extern ImageData_00424324 g_ImageData_00424324;
 
@@ -5345,11 +5355,11 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00407e24 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDialogDismissed)
 #define THANDOR_IMAGE_0x00407e28 ((uintptr_t)&g_ImageData_00407510.at_g_UiRootCallbacks_00407E28)
 #define THANDOR_IMAGE_0x00407e3c ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorUiRootTemplateImage)
-#define THANDOR_IMAGE_0x00407e5c ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorRichTextLeft)
-#define THANDOR_IMAGE_0x00407e64 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorRichTextRight)
-#define THANDOR_IMAGE_0x00407eb4 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorRichTextTop)
-#define THANDOR_IMAGE_0x00407ebc ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorRichTextBottom)
-#define THANDOR_IMAGE_0x00407ee8 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorRichTextStream)
+#define THANDOR_IMAGE_0x00407e5c ((uintptr_t)&g_ImageData_00407510 + 0x94C)
+#define THANDOR_IMAGE_0x00407e64 ((uintptr_t)&g_ImageData_00407510 + 0x954)
+#define THANDOR_IMAGE_0x00407eb4 ((uintptr_t)&g_ImageData_00407510 + 0x9A4)
+#define THANDOR_IMAGE_0x00407ebc ((uintptr_t)&g_ImageData_00407510 + 0x9AC)
+#define THANDOR_IMAGE_0x00407ee8 ((uintptr_t)&g_ImageData_00407510 + 0x9D8)
 #define THANDOR_IMAGE_0x004080c0 ((uintptr_t)&g_ImageData_004080B4.at_g_PckHuffmanSymbolWorkspace256)
 #define THANDOR_IMAGE_0x004084c0 ((uintptr_t)&g_ImageData_004080B4.at_g_PckHuffmanLeafNodeWorkspace256)
 #define THANDOR_IMAGE_0x004094c0 ((uintptr_t)&g_ImageData_004080B4.at_g_PckHuffmanInternalNodeWorkspace256)
