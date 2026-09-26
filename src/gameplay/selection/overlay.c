@@ -28,38 +28,38 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime)
 
 {
-  PackedArgb32 *pPVar1;
-  ModelRuntimeNode *pMVar2;
-  int *piVar3;
-  ArmyRuntimeSlot *pAVar4;
-  EffectRuntimeSlot *pEVar5;
-  sdword sVar6;
-  ArmyPlacementCandidateCount AVar7;
-  GameEntityRuntime *pGVar8;
+  PackedArgb32 *childTint;
+  ModelRuntimeNode *currentModelNode;
+  int *classRecord;
+  ArmyRuntimeSlot *armySlot;
+  EffectRuntimeSlot *effectSlot;
+  sdword pendingPlacementAsset;
+  ArmyPlacementCandidateCount acceptedCandidateCount;
+  GameEntityRuntime *entityRuntime;
   Q12 worldXQ12;
   Q12 worldYQ12;
-  uint uVar9;
-  int iVar10;
-  Q12 worldYQ12_00;
-  Q12 worldXQ12_00;
+  uint indexOrCount;
+  int recordOrCount;
+  Q12 validatedWorldYQ12;
+  Q12 worldXQ12Unused;
   EffectDefinition *effectDefinition;
-  PackedArgb32 PVar11;
-  GameEntityRuntime **ppGVar12;
+  PackedArgb32 previewTint;
+  GameEntityRuntime **selectionSlotCursor;
   ModelRuntimeNode *modelNodeCursor;
   EffectRuntimeSlot **ownedEffectCursor;
   EffectRuntimeSlot **commandTargetEffectCursor;
-  bool bVar13;
-  ArmyRuntimeCreateEaxCf5 AVar14;
-  ArmyPlacementDispatchEaxCf5 AVar15;
-  EffectDefinitionLookupEaxCf5 EVar16;
-  FieldGridHeightEaxCf5 FVar17;
-  EffectRuntimeCreateEaxCf5 EVar18;
-  EffectDefinitionLookupEaxCf5 EVar19;
+  bool checkResult;
+  ArmyRuntimeCreateEaxCf5 createdArmy;
+  ArmyPlacementDispatchEaxCf5 dispatchResult;
+  EffectDefinitionLookupEaxCf5 markerDefinition;
+  FieldGridHeightEaxCf5 surfaceHeight;
+  EffectRuntimeCreateEaxCf5 createdEffect;
+  EffectDefinitionLookupEaxCf5 targetDefinition;
   PckArmyAssetIdCatalog armyAssetId;
-  WorldRuntimeContext *worldRuntime_00;
-  GameEntityRuntime *entityRuntime2;
+  WorldRuntimeContext *worldRuntimeCopy;
+  GameEntityRuntime *commandTargetEntity;
   
-  sVar6 = g_InGamePendingPlacementArmyAsset;
+  pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
   if (((worldRuntime->interaction).interactionFlags48 & 8) != 0) {
     return;
   }
@@ -70,24 +70,24 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
     return;
   }
   if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-    bVar13 = SelectionInfo_ValidateOwnerType16AndAnyActiveCf
+    checkResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf
                        (worldRuntime->activeFactionRuntimeIndex);
-    if (!bVar13) {
+    if (!checkResult) {
       if (releaseMode == GRAPHICS_STATE_DISABLED) {
         g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)0x0;
         if ((((g_InGamePointerInteractionStateFlags & 3) == 0) &&
             (g_InGameCommandPreviewArmyAssetId != 0)) &&
            (g_InGameCommandPreviewSurfaceHeightQ12OrSentinel != 0x7fffffff)) {
-          AVar14 = ArmyRuntime_CreateInstanceFromAssetCf
+          createdArmy = ArmyRuntime_CreateInstanceFromAssetCf
                              (1,g_InGameCommandPreviewHeading16,g_InGameCommandPreviewWorldXQ12,
                               g_InGameCommandPreviewWorldYQ12,
                               worldRuntime->activeFactionRuntimeIndex,
                               g_InGameCommandPreviewArmyAssetId,worldRuntime);
-          if (!AVar14.carry) {
-            pMVar2 = (((GameEntityRuntime *)AVar14.eax)->common).ownership.modelNode;
-            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)AVar14.eax;
-            pMVar2->tintArgb = 0xcfffffff;
-            ModelNodeRuntime_RebuildTransformsFromRoot(pMVar2);
+          if (!createdArmy.carry) {
+            currentModelNode = (((GameEntityRuntime *)createdArmy.eax)->common).ownership.modelNode;
+            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy.eax;
+            currentModelNode->tintArgb = 0xcfffffff;
+            ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
           }
         }
       }
@@ -101,48 +101,48 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
     g_InGamePlacementPreviewArmyRuntime = (GameEntityRuntime *)0x0;
     if ((g_InGamePendingPlacementArmyAsset != 0) &&
        (g_InGamePlacementSurfaceHeightQ12OrSentinel != 0x7fffffff)) {
-      PVar11 = 0xcfffffff;
+      previewTint = 0xcfffffff;
       g_ArmyPlacementAcceptedCandidateCount = 1;
-      bVar13 = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+      checkResult = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
                          (0,g_InGamePlacementHeading16,g_InGamePlacementWorldXQ12,
                           g_InGamePlacementWorldYQ12,
                           *(ArmyPlacementContext *)(g_InGamePendingPlacementArmyAsset + 8),
                           worldRuntime->activeFactionRuntimeIndex,worldRuntime);
-      AVar7 = g_ArmyPlacementAcceptedCandidateCount;
-      if (bVar13) {
+      acceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount;
+      if (checkResult) {
         g_ArmyPlacementAcceptedCandidateCount = 0;
-        if (AVar7 < 2) goto InGameWorldOverlay_RefreshTransientEffectMarkers;
-        PVar11 = 0x4fffffff;
+        if (acceptedCandidateCount < 2) goto InGameWorldOverlay_RefreshTransientEffectMarkers;
+        previewTint = 0x4fffffff;
       }
-      armyAssetId = *(PckArmyAssetIdCatalog *)(sVar6 + 8);
+      armyAssetId = *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8);
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
       worldXQ12 = g_ArmyPlacementValidatedWorldXQ12;
-      worldYQ12_00 = g_ArmyPlacementValidatedWorldYQ12;
+      validatedWorldYQ12 = g_ArmyPlacementValidatedWorldYQ12;
       g_ArmyPlacementAcceptedCandidateCount = 1;
-      worldRuntime_00 = worldRuntime;
-      AVar15 = ArmyPlacement_DispatchAssetAtFieldPoint
-                         (1,0,g_InGamePlacementHeading16,worldYQ12_00,worldXQ12,
-                          *(PckArmyAssetIdCatalog *)(sVar6 + 8),
+      worldRuntimeCopy = worldRuntime;
+      dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
+                         (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
+                          *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8),
                           worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime);
-      if ((AVar15.carry) && (g_ArmyPlacementAcceptedCandidateCount < 2)) {
-        PVar11 = PVar11 & 0xff707070;
+      if ((dispatchResult.carry) && (g_ArmyPlacementAcceptedCandidateCount < 2)) {
+        previewTint = previewTint & 0xff707070;
       }
       g_ArmyPlacementAcceptedCandidateCount = 0;
-      AVar14 = ArmyRuntime_CreateInstanceFromAssetCf
-                         (1,g_InGamePlacementHeading16,worldYQ12_00,worldXQ12,
-                          worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntime_00);
-      pGVar8 = (GameEntityRuntime *)AVar14.eax;
-      if (!AVar14.carry) {
-        pMVar2 = (pGVar8->common).ownership.modelNode;
-        piVar3 = (pGVar8->common).ownership.definitionOrClassRecord;
-        g_InGamePlacementPreviewArmyRuntime = pGVar8;
-        pMVar2->tintArgb = PVar11;
-        iVar10 = *piVar3;
-        ModelNodeRuntime_RebuildTransformsFromRoot(pMVar2);
-        if (((*(int *)(iVar10 + 0x4c) == 0xd) && (3 < pMVar2->childCount)) &&
-           (pMVar2->childNodes[3] != (ModelRuntimeNode *)0x0)) {
-          pPVar1 = &pMVar2->childNodes[3]->tintArgb;
-          *pPVar1 = *pPVar1 | 0xff000000;
+      createdArmy = ArmyRuntime_CreateInstanceFromAssetCf
+                         (1,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
+                          worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy);
+      entityRuntime = (GameEntityRuntime *)createdArmy.eax;
+      if (!createdArmy.carry) {
+        currentModelNode = (entityRuntime->common).ownership.modelNode;
+        classRecord = (entityRuntime->common).ownership.definitionOrClassRecord;
+        g_InGamePlacementPreviewArmyRuntime = entityRuntime;
+        currentModelNode->tintArgb = previewTint;
+        recordOrCount = *classRecord;
+        ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
+        if (((*(int *)(recordOrCount + 0x4c) == 0xd) && (3 < currentModelNode->childCount)) &&
+           (currentModelNode->childNodes[3] != (ModelRuntimeNode *)0x0)) {
+          childTint = &currentModelNode->childNodes[3]->tintArgb;
+          *childTint = *childTint | 0xff000000;
         }
       }
     }
@@ -153,128 +153,128 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
   }
 InGameWorldOverlay_RefreshTransientEffectMarkers:
   if (releaseMode == GRAPHICS_STATE_DISABLED) {
-    EVar16 = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0143_EGATH0);
-    if (!EVar16.carry) {
+    markerDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0143_EGATH0);
+    if (!markerDefinition.carry) {
       modelNodeCursor = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-      uVar9 = 0;
+      indexOrCount = 0;
       if (modelNodeCursor == (ModelRuntimeNode *)0x0) {
         return;
       }
       do {
         if (((modelNodeCursor->ownerClassId == MODEL_RUNTIME_CLASS_00) &&
-            (pAVar4 = (modelNodeCursor->runtimePayload).armyRuntime,
-            ((pAVar4->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)) &&
-           (((pAVar4->runtimeFlags & 0x800) != 0 &&
-            ((pAVar4->linkedEntityRuntime->common).ownership.ownerIndex ==
+            (armySlot = (modelNodeCursor->runtimePayload).armyRuntime,
+            ((armySlot->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)) &&
+           (((armySlot->runtimeFlags & 0x800) != 0 &&
+            ((armySlot->linkedEntityRuntime->common).ownership.ownerIndex ==
              worldRuntime->activeFactionRuntimeIndex)))) {
-          FVar17 = FieldGrid_InterpolateTopSurfaceHeight
-                             (pAVar4->movementTarget1Q12,pAVar4->movementTarget0Q12,
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
+                             (armySlot->movementTarget1Q12,armySlot->movementTarget0Q12,
                               worldRuntime->fieldGrid);
-          EVar18 = EffectRuntimePool_CreateInstanceFromDefinitionCf
+          createdEffect = EffectRuntimePool_CreateInstanceFromDefinitionCf
                              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
-                              0x4000,0,FVar17.heightQ12,pAVar4->movementTarget1Q12,
-                              pAVar4->movementTarget0Q12,EVar16.definitionOrError,worldRuntime);
-          if (!EVar18.carry) {
-            g_UiAction1012SubresourceByState[uVar9 + 0xb] = (dword)EVar18.effectRuntime;
-            uVar9 = uVar9 + 1;
-            (((EVar18.effectRuntime)->modelNodeOrSavedOffset).modelNode)->tintArgb = 0xffffffff;
+                              0x4000,0,surfaceHeight.heightQ12,armySlot->movementTarget1Q12,
+                              armySlot->movementTarget0Q12,markerDefinition.definitionOrError,worldRuntime);
+          if (!createdEffect.carry) {
+            g_UiAction1012SubresourceByState[indexOrCount + 0xb] = (dword)createdEffect.effectRuntime;
+            indexOrCount = indexOrCount + 1;
+            (((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode)->tintArgb = 0xffffffff;
             g_InGameOwnedEntityTransientEffectMarkerCount =
                  g_InGameOwnedEntityTransientEffectMarkerCount + 1;
-            if (0x1f < uVar9) break;
+            if (0x1f < indexOrCount) break;
           }
         }
         modelNodeCursor = (ModelRuntimeNode *)(modelNodeCursor->common).nextNode;
       } while (modelNodeCursor != (ModelRuntimeNode *)0x0);
     }
-    EVar16 = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0148_EWAYP0);
-    if (!EVar16.carry) {
-      EVar19 = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0149_ETARG0);
-      if (!EVar19.carry) {
-        iVar10 = 0x20;
-        ppGVar12 = g_SelectionInfoEntitySlots->entries;
+    markerDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0148_EWAYP0);
+    if (!markerDefinition.carry) {
+      targetDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0149_ETARG0);
+      if (!targetDefinition.carry) {
+        recordOrCount = 0x20;
+        selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
         do {
-          pGVar8 = *ppGVar12;
-          if ((pGVar8 != (GameEntityRuntime *)0x0) &&
-             (worldRuntime->activeFactionRuntimeIndex == (pGVar8->common).ownership.ownerIndex)) {
-            if ((*(int *)(*(int *)(pGVar8->common).ownership.definitionOrClassRecord + 0x18) != 0)
-               && (((pGVar8->common).commandFlags & 1) != 0)) {
+          entityRuntime = *selectionSlotCursor;
+          if ((entityRuntime != (GameEntityRuntime *)0x0) &&
+             (worldRuntime->activeFactionRuntimeIndex == (entityRuntime->common).ownership.ownerIndex)) {
+            if ((*(int *)(*(int *)(entityRuntime->common).ownership.definitionOrClassRecord + 0x18) != 0)
+               && (((entityRuntime->common).commandFlags & 1) != 0)) {
               InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                        (0x1000,(pGVar8->common).ownership.modelNode,
-                         (pGVar8->common).pathCoordinate1Q12,(pGVar8->common).pathCoordinate0Q12,
-                         EVar16.definitionOrError,worldRuntime);
+                        (0x1000,(entityRuntime->common).ownership.modelNode,
+                         (entityRuntime->common).pathCoordinate1Q12,(entityRuntime->common).pathCoordinate0Q12,
+                         markerDefinition.definitionOrError,worldRuntime);
               if (0x7f < g_InGameCommandTargetTransientEffectMarkerCount) {
                 return;
               }
-              if (((pGVar8->common).commandFlags & 8) != 0) {
-                uVar9 = 0;
+              if (((entityRuntime->common).commandFlags & 8) != 0) {
+                indexOrCount = 0;
                 do {
                   InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                            (0x1000,(pGVar8->common).ownership.modelNode,
-                             *(Q12 *)((pGVar8->common).reservedC0_EB + uVar9 * 8 + 4),
-                             *(Q12 *)((pGVar8->common).reservedC0_EB + uVar9 * 8),
-                             EVar16.definitionOrError,worldRuntime);
-                  uVar9 = uVar9 + 1;
+                            (0x1000,(entityRuntime->common).ownership.modelNode,
+                             *(Q12 *)((entityRuntime->common).reservedC0_EB + indexOrCount * 8 + 4),
+                             *(Q12 *)((entityRuntime->common).reservedC0_EB + indexOrCount * 8),
+                             markerDefinition.definitionOrError,worldRuntime);
+                  indexOrCount = indexOrCount + 1;
                   if (0x7f < g_InGameCommandTargetTransientEffectMarkerCount) {
                     return;
                   }
-                } while (uVar9 < *(uint *)((pGVar8->common).reservedA4_B7 + 4));
+                } while (indexOrCount < *(uint *)((entityRuntime->common).reservedA4_B7 + 4));
               }
             }
-            if ((((pGVar8->common).commandTarget.targetFlags & 2) != 0) &&
+            if ((((entityRuntime->common).commandTarget.targetFlags & 2) != 0) &&
                (InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                          (0x1000,(pGVar8->common).ownership.modelNode,
-                           (pGVar8->common).commandTarget.targetWorldYQ12,
-                           (pGVar8->common).commandTarget.targetWorldXQ12,EVar19.definitionOrError,
+                          (0x1000,(entityRuntime->common).ownership.modelNode,
+                           (entityRuntime->common).commandTarget.targetWorldYQ12,
+                           (entityRuntime->common).commandTarget.targetWorldXQ12,targetDefinition.definitionOrError,
                            worldRuntime), 0x7f < g_InGameCommandTargetTransientEffectMarkerCount)) {
               return;
             }
-            entityRuntime2 = (pGVar8->common).commandTarget.targetEntity;
-            if (((((pGVar8->common).commandTarget.targetFlags & 1) != 0) &&
-                (entityRuntime2 != (GameEntityRuntime *)0x0)) &&
-               (pMVar2 = (entityRuntime2->common).ownership.modelNode,
+            commandTargetEntity = (entityRuntime->common).commandTarget.targetEntity;
+            if (((((entityRuntime->common).commandTarget.targetFlags & 1) != 0) &&
+                (commandTargetEntity != (GameEntityRuntime *)0x0)) &&
+               (currentModelNode = (commandTargetEntity->common).ownership.modelNode,
                InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                         (*(Q12 *)(*(int *)(entityRuntime2->common).ownership.
+                         (*(Q12 *)(*(int *)(commandTargetEntity->common).ownership.
                                            definitionOrClassRecord + 0xdc),
-                          (pGVar8->common).ownership.modelNode,
-                          (pMVar2->worldTransform).translation.y,
-                          (pMVar2->worldTransform).translation.x,EVar19.definitionOrError,
+                          (entityRuntime->common).ownership.modelNode,
+                          (currentModelNode->worldTransform).translation.y,
+                          (currentModelNode->worldTransform).translation.x,targetDefinition.definitionOrError,
                           worldRuntime), 0x7f < g_InGameCommandTargetTransientEffectMarkerCount)) {
               return;
             }
           }
-          ppGVar12 = ppGVar12 + 1;
-          iVar10 = iVar10 + -1;
-        } while (iVar10 != 0);
+          selectionSlotCursor = selectionSlotCursor + 1;
+          recordOrCount = recordOrCount + -1;
+        } while (recordOrCount != 0);
       }
     }
   }
   else {
     ownedEffectCursor = (EffectRuntimeSlot **)(g_UiAction1012SubresourceByState + 0xb);
-    iVar10 = g_InGameOwnedEntityTransientEffectMarkerCount;
+    recordOrCount = g_InGameOwnedEntityTransientEffectMarkerCount;
     if (g_InGameOwnedEntityTransientEffectMarkerCount != 0) {
       do {
-        pEVar5 = *ownedEffectCursor;
-        pMVar2 = (pEVar5->modelNodeOrSavedOffset).modelNode;
-        InterpolationState_SetNegatedTargetAndRescaleProgress(0,pMVar2->shadingRecord);
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)pMVar2);
-        (pEVar5->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+        effectSlot = *ownedEffectCursor;
+        currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
+        InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
+        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)currentModelNode);
+        (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
         ownedEffectCursor = ownedEffectCursor + 1;
-        iVar10 = iVar10 + -1;
-      } while (iVar10 != 0);
+        recordOrCount = recordOrCount + -1;
+      } while (recordOrCount != 0);
       g_InGameOwnedEntityTransientEffectMarkerCount = 0;
     }
     commandTargetEffectCursor = (EffectRuntimeSlot **)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
-    uVar9 = g_InGameCommandTargetTransientEffectMarkerCount;
+    indexOrCount = g_InGameCommandTargetTransientEffectMarkerCount;
     if (g_InGameCommandTargetTransientEffectMarkerCount != 0) {
       do {
-        pEVar5 = *commandTargetEffectCursor;
-        pMVar2 = (pEVar5->modelNodeOrSavedOffset).modelNode;
-        InterpolationState_SetNegatedTargetAndRescaleProgress(0,pMVar2->shadingRecord);
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)pMVar2);
-        (pEVar5->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+        effectSlot = *commandTargetEffectCursor;
+        currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
+        InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
+        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)currentModelNode);
+        (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
         commandTargetEffectCursor = commandTargetEffectCursor + 1;
-        uVar9 = uVar9 - 1;
-      } while (uVar9 != 0);
+        indexOrCount = indexOrCount - 1;
+      } while (indexOrCount != 0);
       g_InGameCommandTargetTransientEffectMarkerCount = 0;
     }
   }
@@ -295,14 +295,14 @@ SelectionOverlay_RenderSelectedArmyMetrics
 
 {
   ModelRuntimeNode *modelNode;
-  int iVar1;
-  GameEntityRuntime **ppGVar2;
+  int remainingSlots;
+  GameEntityRuntime **selectionSlotCursor;
   
-  iVar1 = 0x20;
-  ppGVar2 = g_SelectionInfoEntitySlots->entries;
+  remainingSlots = 0x20;
+  selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if ((*ppGVar2 != (GameEntityRuntime *)0x0) &&
-       ((modelNode = ((*ppGVar2)->common).ownership.modelNode, (modelNode->runtimeFlags & 4) != 0 ||
+    if ((*selectionSlotCursor != (GameEntityRuntime *)0x0) &&
+       ((modelNode = ((*selectionSlotCursor)->common).ownership.modelNode, (modelNode->runtimeFlags & 4) != 0 ||
         (((modelNode->runtimeFlags & 0x10) == 0 && ((modelNode->runtimeFlags & 8) != 0)))))) {
       g_ModelProjectedBoundsPixels.minX = 0x10000;
       g_ModelProjectedBoundsPixels.minY = 0x10000;
@@ -315,12 +315,12 @@ SelectionOverlay_RenderSelectedArmyMetrics
                   (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
                    g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                    g_ModelProjectedBoundsPixels.minX,
-                   (RuntimeModelFactionPrefix10 *)*ppGVar2); /* EDX: the entity (lost local) */
+                   (RuntimeModelFactionPrefix10 *)*selectionSlotCursor); /* EDX: the entity (lost local) */
       }
     }
-    ppGVar2 = ppGVar2 + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    selectionSlotCursor = selectionSlotCursor + 1;
+    remainingSlots = remainingSlots + -1;
+  } while (remainingSlots != 0);
   return;
 }
 
@@ -338,8 +338,8 @@ SelectionOverlay_RenderArmyMetricsForEntity
 
 {
   ModelRuntimeNode *modelNode;
-  GraphicsTextureSourceAsset *pGVar1;
-  void *pvVar2;
+  GraphicsTextureSourceAsset *savedTextureSource;
+  void *savedPanelData;
   
   modelNode = (entity->common).ownership.modelNode;
   if (((modelNode->runtimeFlags & 4) != 0) ||
@@ -349,10 +349,10 @@ SelectionOverlay_RenderArmyMetricsForEntity
     g_ModelProjectedBoundsPixels.maxX = -0x10000;
     g_ModelProjectedBoundsPixels.maxY = -0x10000;
     ModelProjectedBounds_AccumulateHierarchyRecursive(&g_ModelProjectedBoundsPixels,modelNode);
-    pvVar2 = g_SelectionPanelData;
-    pGVar1 = g_SelectionPanelTextureSource;
-    g_SelectionPanelTextureSource = pGVar1;
-    g_SelectionPanelData = pvVar2;
+    savedPanelData = g_SelectionPanelData;
+    savedTextureSource = g_SelectionPanelTextureSource;
+    g_SelectionPanelTextureSource = savedTextureSource;
+    g_SelectionPanelData = savedPanelData;
     if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
        (g_ModelProjectedBoundsPixels.minY < g_ModelProjectedBoundsPixels.maxY)) {
       g_SelectionPanelTextureSource = g_InfoPanelTextureSource;
@@ -362,8 +362,8 @@ SelectionOverlay_RenderArmyMetricsForEntity
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                  g_ModelProjectedBoundsPixels.minX,
                  (RuntimeModelFactionPrefix10 *)entity); /* EDX: the entity (lost local) */
-      g_SelectionPanelTextureSource = pGVar1;
-      g_SelectionPanelData = pvVar2;
+      g_SelectionPanelTextureSource = savedTextureSource;
+      g_SelectionPanelData = savedPanelData;
     }
   }
   return;
@@ -382,61 +382,61 @@ SelectionOverlay_DrawBoundsFrame
           UiPixelCoordinate frameCoordinate1B)
 
 {
-  int iVar1;
-  int iVar2;
-  UiPixelCoordinate UVar3;
-  UiPixelCoordinate UVar4;
-  dword dVar5;
-  bool bVar6;
-  GraphicsTextureSizeEaxEdxCf9 GVar7;
+  int edgeX;
+  int edgeY;
+  UiPixelCoordinate originalCoordinate0B;
+  UiPixelCoordinate originalCoordinate1B;
+  dword cornerWidth;
+  bool accessFailed;
+  GraphicsTextureSizeEaxEdxCf9 cornerSize;
   
-  UVar4 = frameCoordinate1B;
-  UVar3 = frameCoordinate0B;
+  originalCoordinate1B = frameCoordinate1B;
+  originalCoordinate0B = frameCoordinate0B;
   if (frameCoordinate1A <= frameCoordinate1B) {
     if (frameCoordinate1B == frameCoordinate1A) {
       return;
     }
     frameCoordinate1B = frameCoordinate1A;
-    frameCoordinate1A = UVar4;
+    frameCoordinate1A = originalCoordinate1B;
   }
   if (frameCoordinate0A <= frameCoordinate0B) {
     if (frameCoordinate0B == frameCoordinate0A) {
       return;
     }
     frameCoordinate0B = frameCoordinate0A;
-    frameCoordinate0A = UVar3;
+    frameCoordinate0A = originalCoordinate0B;
   }
-  bVar6 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar6) {
-    GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(0xa4,g_SelectionPanelTextureSource);
-    dVar5 = GVar7.logicalWidthPixels;
-    iVar1 = frameCoordinate1B - dVar5;
-    iVar2 = frameCoordinate0B - GVar7.logicalHeightPixels;
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
+    cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xa4,g_SelectionPanelTextureSource);
+    cornerWidth = cornerSize.logicalWidthPixels;
+    edgeX = frameCoordinate1B - cornerWidth;
+    edgeY = frameCoordinate0B - cornerSize.logicalHeightPixels;
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar2,iVar1,0xa4,g_SelectionPanelTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,edgeY,edgeX,0xa4,g_SelectionPanelTextureSource,
                g_FramebufferAccess);
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar2,frameCoordinate1A,0xa6,
+              (clipTop,clipLeft,clipBottom,clipRight,edgeY,frameCoordinate1A,0xa6,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,iVar1,0xa9,
+              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,edgeX,0xa9,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_SelectionPanelBlitOpaque)
               (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,frameCoordinate1A,0xab,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    iVar1 = iVar1 + dVar5;
+    edgeX = edgeX + cornerWidth;
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,iVar2,iVar1,0xa5,
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,edgeY,edgeX,0xa5,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_SelectionPanelBlitClipped)
               (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,frameCoordinate0A
-               ,iVar1,0xaa,g_SelectionPanelTextureSource,g_FramebufferAccess);
-    iVar2 = iVar2 + GVar7.logicalHeightPixels;
+               ,edgeX,0xaa,g_SelectionPanelTextureSource,g_FramebufferAccess);
+    edgeY = edgeY + cornerSize.logicalHeightPixels;
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,iVar2,
-               iVar1 - dVar5,0xa7,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,edgeY,
+               edgeX - cornerWidth,0xa7,g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,iVar2,
+              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,edgeY,
                frameCoordinate1A,0xa8,g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -457,47 +457,47 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
           FieldGridAsset *fieldGrid)
 
 {
-  longlong lVar1;
-  longlong lVar2;
-  int iVar3;
-  int iVar4;
-  bool bVar5;
-  GraphicsProjectedPointPair GVar6;
-  GraphicsTextureSizeEaxEdxCf9 GVar7;
-  FieldGridNearestPointRegsCf13 FVar8;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *arg8;
+  longlong packedCoordinate1;
+  longlong packedCoordinate0;
+  int screenX;
+  int screenY;
+  bool accessFailed;
+  GraphicsProjectedPointPair projectedPoint;
+  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  FieldGridNearestPointRegsCf13 terrainPoint;
+  dword blitTextureId;
+  GraphicsTextureSourceAsset *blitTextureSource;
+  SoftwareFramebufferAccess *blitFramebuffer;
   
   if (markerPointCount != 0) {
-    bVar5 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar5) {
+    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    if (!accessFailed) {
       do {
-        lVar1 = (longlong)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
-        lVar2 = (longlong)gridCoordinatePairs[1] * -1999;
-        FVar8 = FieldGrid_GetNearestTerrainPoint
-                          ((int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc,
-                           (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd,fieldGrid);
-        if (!FVar8.carry) {
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = FVar8.eax;
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = FVar8.ecx;
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = FVar8.edx;
+        packedCoordinate1 = (longlong)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
+        packedCoordinate0 = (longlong)gridCoordinatePairs[1] * -1999;
+        terrainPoint = FieldGrid_GetNearestTerrainPoint
+                          ((int)((ulonglong)packedCoordinate0 >> 0x20) << 0x14 | (uint)packedCoordinate0 >> 0xc,
+                           (int)((ulonglong)packedCoordinate1 >> 0x20) << 0x13 | (uint)packedCoordinate1 >> 0xd,fieldGrid);
+        if (!terrainPoint.carry) {
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.eax;
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.ecx;
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.edx;
           FixedTransform_ApplyPoint
                     (&g_GraphicsTransformInputScratchVec3,
                      (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,
                      &g_ViewProjectionMatrixFixed);
           if (0x10 < g_GraphicsTransformInputScratchVec3.z) {
-            GVar6 = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-            iVar3 = GVar6.projectedX >> 0xc;
-            iVar4 = GVar6.projectedY >> 0xc;
-            arg6 = 0xad;
-            arg7 = g_SelectionPanelTextureSource;
-            arg8 = g_FramebufferAccess;
-            GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(0xad,g_SelectionPanelTextureSource);
+            projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
+            screenX = projectedPoint.projectedX >> 0xc;
+            screenY = projectedPoint.projectedY >> 0xc;
+            blitTextureId = 0xad;
+            blitTextureSource = g_SelectionPanelTextureSource;
+            blitFramebuffer = g_FramebufferAccess;
+            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xad,g_SelectionPanelTextureSource);
             (*g_SelectionPanelBlitOpaque)
                       (clipTop,clipLeft,clipBottom,clipRight,
-                       iVar4 - ((int)GVar7.logicalHeightPixels >> 1),
-                       iVar3 - ((int)GVar7.logicalWidthPixels >> 1),arg6,arg7,arg8);
+                       screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                       screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
           }
         }
         gridCoordinatePairs = gridCoordinatePairs + 2;
@@ -524,48 +524,48 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
           Q12 worldCoordinate1Q12,FieldGridAsset *fieldGrid)
 
 {
-  dword dVar1;
-  dword dVar2;
-  dword dVar3;
-  bool bVar4;
-  GraphicsProjectedPointPair GVar5;
-  GraphicsTextureSizeEaxEdxCf9 GVar6;
-  FieldGridSurfacePointEaxEcxEdxCf13 FVar7;
-  FieldGridNearestPointRegsCf13 FVar8;
+  dword pointX;
+  dword pointY;
+  dword pointZ;
+  bool accessFailed;
+  GraphicsProjectedPointPair projectedPoint;
+  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  FieldGridSurfacePointEaxEcxEdxCf13 topSurfacePoint;
+  FieldGridNearestPointRegsCf13 terrainPoint;
   
   if (useTopSurface == 0) {
-    FVar8 = FieldGrid_GetNearestTerrainPoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
-    dVar3 = FVar8.edx;
-    dVar2 = FVar8.ecx;
-    dVar1 = FVar8.eax;
-    if (FVar8.carry) {
+    terrainPoint = FieldGrid_GetNearestTerrainPoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
+    pointZ = terrainPoint.edx;
+    pointY = terrainPoint.ecx;
+    pointX = terrainPoint.eax;
+    if (terrainPoint.carry) {
       return;
     }
   }
   else {
-    FVar7 = FieldGrid_GetNearestTopSurfacePoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
-    dVar3 = FVar7.worldZQ12;
-    dVar2 = FVar7.worldYQ12;
-    dVar1 = FVar7.worldXQ12;
-    if (FVar7.carry) {
+    topSurfacePoint = FieldGrid_GetNearestTopSurfacePoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
+    pointZ = topSurfacePoint.worldZQ12;
+    pointY = topSurfacePoint.worldYQ12;
+    pointX = topSurfacePoint.worldXQ12;
+    if (topSurfacePoint.carry) {
       return;
     }
   }
-  g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = dVar1;
-  g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = dVar2;
-  g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = dVar3;
+  g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = pointX;
+  g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = pointY;
+  g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = pointZ;
   FixedTransform_ApplyPoint
             (&g_GraphicsTransformInputScratchVec3,
              (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
   ;
-  GVar5 = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-  bVar4 = (*g_GraphicsFramebufferBeginAccess)(); /* Ghidra passed stale register values (worldCoordinate0Q12, worldCoordinate1Q12, fieldGrid); the callee takes none */
-  if (!bVar4) {
-    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0xac,g_SelectionPanelTextureSource);
+  projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)(); /* Ghidra passed stale register values (worldCoordinate0Q12, worldCoordinate1Q12, fieldGrid); the callee takes none */
+  if (!accessFailed) {
+    markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xac,g_SelectionPanelTextureSource);
     (*g_SelectionPanelBlitOpaque)
               (clipTop,clipLeft,clipBottom,clipRight,
-               (GVar5.projectedY >> 0xc) - ((int)GVar6.logicalHeightPixels >> 1),
-               (GVar5.projectedX >> 0xc) - ((int)GVar6.logicalWidthPixels >> 1),0xac,
+               (projectedPoint.projectedY >> 0xc) - ((int)markerSize.logicalHeightPixels >> 1),
+               (projectedPoint.projectedX >> 0xc) - ((int)markerSize.logicalWidthPixels >> 1),0xac,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -583,55 +583,55 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  int iVar6;
-  byte *pbVar7;
-  int iVar8;
-  bool bVar9;
-  GraphicsTextureSizeEaxEdxCf9 GVar10;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *arg8;
-  byte *pbStack_20;
+  uint gridColumns;
+  int screenX;
+  uint columnCount;
+  uint columnsRemaining;
+  uint rowsRemaining;
+  int screenY;
+  byte *vertexCursor;
+  int coordinateOffset;
+  bool accessFailed;
+  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  dword blitTextureId;
+  GraphicsTextureSourceAsset *blitTextureSource;
+  SoftwareFramebufferAccess *blitFramebuffer;
+  byte *rowStart;
   
-  bVar9 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar9) {
-    iVar8 = 0;
-    uVar1 = fieldGrid->gridWidth;
-    uVar3 = uVar1 >> 2;
-    uVar5 = fieldGrid->gridHeight >> 2;
-    pbVar7 = fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 + uVar1 * 0x80 + -0x28;
-    uVar4 = uVar3;
-    pbStack_20 = pbVar7;
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
+    coordinateOffset = 0;
+    gridColumns = fieldGrid->gridWidth;
+    columnCount = gridColumns >> 2;
+    rowsRemaining = fieldGrid->gridHeight >> 2;
+    vertexCursor = fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 + gridColumns * 0x80 + -0x28;
+    columnsRemaining = columnCount;
+    rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
-      iVar8 = 0x20;
+      coordinateOffset = 0x20;
     }
     do {
       do {
-        if ((*(uint *)(pbVar7 + 0x50) & 0x200000) == 0) {
-          iVar2 = *(int *)(pbVar7 + iVar8 + 0xc) >> 0xc;
-          iVar6 = *(int *)(pbVar7 + iVar8 + 0x10) >> 0xc;
-          arg6 = 0xae;
-          arg7 = g_SelectionPanelTextureSource;
-          arg8 = g_FramebufferAccess;
-          GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0xae,g_SelectionPanelTextureSource);
+        if ((*(uint *)(vertexCursor + 0x50) & 0x200000) == 0) {
+          screenX = *(int *)(vertexCursor + coordinateOffset + 0xc) >> 0xc;
+          screenY = *(int *)(vertexCursor + coordinateOffset + 0x10) >> 0xc;
+          blitTextureId = 0xae;
+          blitTextureSource = g_SelectionPanelTextureSource;
+          blitFramebuffer = g_FramebufferAccess;
+          markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xae,g_SelectionPanelTextureSource);
           (*g_SelectionPanelBlitOpaque)
                     (clipTop,clipLeft,clipBottom,clipRight,
-                     iVar6 - ((int)GVar10.logicalHeightPixels >> 1),
-                     iVar2 - ((int)GVar10.logicalWidthPixels >> 1),arg6,arg7,arg8);
+                     screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                     screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
         }
-        pbVar7 = pbVar7 + 0x200;
-        uVar4 = uVar4 - 1;
-      } while (-1 < (int)uVar4);
-      pbVar7 = pbStack_20 + uVar1 * 0x200;
-      uVar5 = uVar5 - 1;
-      uVar4 = uVar3;
-      pbStack_20 = pbVar7;
-    } while (-1 < (int)uVar5);
+        vertexCursor = vertexCursor + 0x200;
+        columnsRemaining = columnsRemaining - 1;
+      } while (-1 < (int)columnsRemaining);
+      vertexCursor = rowStart + gridColumns * 0x200;
+      rowsRemaining = rowsRemaining - 1;
+      columnsRemaining = columnCount;
+      rowStart = vertexCursor;
+    } while (-1 < (int)rowsRemaining);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
@@ -648,71 +648,71 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  FieldGridDimension FVar3;
-  int iVar4;
-  FieldGridDimension FVar5;
-  FieldGridCell *pFVar6;
-  bool bVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *arg8;
-  int iVar9;
-  int iVar10;
-  dword arg6_00;
-  GraphicsTextureSourceAsset *arg7_00;
-  SoftwareFramebufferAccess *arg8_00;
-  FieldGridCell *pFStack_1c;
+  FieldGridDimension gridColumns;
+  int screenX;
+  FieldGridDimension columnsRemaining;
+  int screenY;
+  FieldGridDimension rowsRemaining;
+  FieldGridCell *cellCursor;
+  bool accessFailed;
+  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  dword receiverTextureId;
+  GraphicsTextureSourceAsset *receiverTextureSource;
+  SoftwareFramebufferAccess *receiverFramebuffer;
+  int savedScreenY;
+  int savedScreenX;
+  dword sourceTextureId;
+  GraphicsTextureSourceAsset *sourceTextureSource;
+  SoftwareFramebufferAccess *sourceFramebuffer;
+  FieldGridCell *rowStartCell;
   
-  bVar7 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar7) {
-    FVar1 = fieldGrid->gridWidth;
-    FVar5 = fieldGrid->gridHeight;
-    pFVar6 = fieldGrid->cells;
-    FVar3 = FVar1;
-    pFStack_1c = pFVar6;
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
+    gridColumns = fieldGrid->gridWidth;
+    rowsRemaining = fieldGrid->gridHeight;
+    cellCursor = fieldGrid->cells;
+    columnsRemaining = gridColumns;
+    rowStartCell = cellCursor;
     do {
       do {
-        if (((pFVar6->flagsAndMaterial & 0x4000000) == 0) &&
-           ((pFVar6->flagsAndMaterial &
+        if (((cellCursor->flagsAndMaterial & 0x4000000) == 0) &&
+           ((cellCursor->flagsAndMaterial &
             (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) != 0)) {
-          iVar2 = *(int *)(pFVar6->runtime0C_3F + 0x20) >> 0xc;
-          iVar4 = *(int *)(pFVar6->runtime0C_3F + 0x24) >> 0xc;
-          arg6_00 = 0xb0;
-          arg6 = 0xaf;
-          arg7_00 = g_SelectionPanelTextureSource;
-          arg8_00 = g_FramebufferAccess;
-          if ((pFVar6->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) != 0) {
-            arg7 = g_SelectionPanelTextureSource;
-            arg8 = g_FramebufferAccess;
-            iVar9 = iVar4;
-            iVar10 = iVar2;
-            GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_SelectionPanelTextureSource);
+          screenX = *(int *)(cellCursor->runtime0C_3F + 0x20) >> 0xc;
+          screenY = *(int *)(cellCursor->runtime0C_3F + 0x24) >> 0xc;
+          sourceTextureId = 0xb0;
+          receiverTextureId = 0xaf;
+          sourceTextureSource = g_SelectionPanelTextureSource;
+          sourceFramebuffer = g_FramebufferAccess;
+          if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) != 0) {
+            receiverTextureSource = g_SelectionPanelTextureSource;
+            receiverFramebuffer = g_FramebufferAccess;
+            savedScreenY = screenY;
+            savedScreenX = screenX;
+            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_SelectionPanelTextureSource);
             (*g_SelectionPanelBlitOpaque)
                       (clipTop,clipLeft,clipBottom,clipRight,
-                       iVar4 - ((int)GVar8.logicalHeightPixels >> 1),
-                       iVar2 - ((int)GVar8.logicalWidthPixels >> 1),arg6,arg7,arg8);
-            iVar4 = iVar9;
-            iVar2 = iVar10;
+                       screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                       screenX - ((int)markerSize.logicalWidthPixels >> 1),receiverTextureId,receiverTextureSource,receiverFramebuffer);
+            screenY = savedScreenY;
+            screenX = savedScreenX;
           }
-          if ((pFVar6->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
-            GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0xb0,g_SelectionPanelTextureSource);
+          if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
+            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb0,g_SelectionPanelTextureSource);
             (*g_SelectionPanelBlitOpaque)
                       (clipTop,clipLeft,clipBottom,clipRight,
-                       iVar4 - ((int)GVar8.logicalHeightPixels >> 1),
-                       iVar2 - ((int)GVar8.logicalWidthPixels >> 1),arg6_00,arg7_00,arg8_00);
+                       screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                       screenX - ((int)markerSize.logicalWidthPixels >> 1),sourceTextureId,sourceTextureSource,sourceFramebuffer);
           }
         }
-        pFVar6 = pFVar6 + 1;
-        FVar3 = FVar3 - 1;
-      } while (FVar3 != 0);
-      pFVar6 = pFStack_1c + FVar1;
-      FVar5 = FVar5 - 1;
-      FVar3 = FVar1;
-      pFStack_1c = pFVar6;
-    } while (FVar5 != 0);
+        cellCursor = cellCursor + 1;
+        columnsRemaining = columnsRemaining - 1;
+      } while (columnsRemaining != 0);
+      cellCursor = rowStartCell + gridColumns;
+      rowsRemaining = rowsRemaining - 1;
+      columnsRemaining = gridColumns;
+      rowStartCell = cellCursor;
+    } while (rowsRemaining != 0);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
@@ -729,73 +729,73 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           UiPixelCoordinate clipRight,byte markerBitIndex,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  FieldGridDimension FVar3;
-  int iVar4;
-  FieldGridDimension FVar5;
-  FieldGridCell *pFVar6;
-  FieldCellPackedFlagsAndMaterial FVar7;
-  bool bVar8;
-  GraphicsTextureSizeEaxEdxCf9 GVar9;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *arg8;
-  int iVar10;
-  int iVar11;
-  dword arg6_00;
-  GraphicsTextureSourceAsset *arg7_00;
-  SoftwareFramebufferAccess *arg8_00;
-  FieldGridCell *pFStack_20;
+  FieldGridDimension gridColumns;
+  int screenX;
+  FieldGridDimension columnsRemaining;
+  int screenY;
+  FieldGridDimension rowsRemaining;
+  FieldGridCell *cellCursor;
+  FieldCellPackedFlagsAndMaterial markerFlagMask;
+  bool accessFailed;
+  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  dword flaggedTextureId;
+  GraphicsTextureSourceAsset *flaggedTextureSource;
+  SoftwareFramebufferAccess *flaggedFramebuffer;
+  int savedScreenY;
+  int savedScreenX;
+  dword otherTextureId;
+  GraphicsTextureSourceAsset *otherTextureSource;
+  SoftwareFramebufferAccess *otherFramebuffer;
+  FieldGridCell *rowStartCell;
   
-  FVar7 = 0x800 << (markerBitIndex & 0x1f);
-  bVar8 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar8) {
-    FVar1 = fieldGrid->gridWidth;
-    FVar5 = fieldGrid->gridHeight;
-    pFVar6 = fieldGrid->cells;
-    FVar3 = FVar1;
-    pFStack_20 = pFVar6;
+  markerFlagMask = 0x800 << (markerBitIndex & 0x1f);
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
+    gridColumns = fieldGrid->gridWidth;
+    rowsRemaining = fieldGrid->gridHeight;
+    cellCursor = fieldGrid->cells;
+    columnsRemaining = gridColumns;
+    rowStartCell = cellCursor;
     do {
       do {
-        if (((pFVar6->flagsAndMaterial & 0x200000) == 0) &&
-           ((pFVar6->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
-          iVar2 = *(int *)pFVar6->runtime0C_3F >> 0xc;
-          iVar4 = *(int *)(pFVar6->runtime0C_3F + 4) >> 0xc;
-          arg6_00 = 0xb2;
-          arg6 = 0xb1;
-          arg7_00 = g_SelectionPanelTextureSource;
-          arg8_00 = g_FramebufferAccess;
-          if ((pFVar6->flagsAndMaterial & FVar7) != 0) {
-            arg7 = g_SelectionPanelTextureSource;
-            arg8 = g_FramebufferAccess;
-            iVar10 = iVar4;
-            iVar11 = iVar2;
-            GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0xb1,g_SelectionPanelTextureSource);
+        if (((cellCursor->flagsAndMaterial & 0x200000) == 0) &&
+           ((cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
+          screenX = *(int *)cellCursor->runtime0C_3F >> 0xc;
+          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 0xc;
+          otherTextureId = 0xb2;
+          flaggedTextureId = 0xb1;
+          otherTextureSource = g_SelectionPanelTextureSource;
+          otherFramebuffer = g_FramebufferAccess;
+          if ((cellCursor->flagsAndMaterial & markerFlagMask) != 0) {
+            flaggedTextureSource = g_SelectionPanelTextureSource;
+            flaggedFramebuffer = g_FramebufferAccess;
+            savedScreenY = screenY;
+            savedScreenX = screenX;
+            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb1,g_SelectionPanelTextureSource);
             (*g_SelectionPanelBlitOpaque)
                       (clipTop,clipLeft,clipBottom,clipRight,
-                       iVar4 - ((int)GVar9.logicalHeightPixels >> 1),
-                       iVar2 - ((int)GVar9.logicalWidthPixels >> 1),arg6,arg7,arg8);
-            iVar4 = iVar10;
-            iVar2 = iVar11;
+                       screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                       screenX - ((int)markerSize.logicalWidthPixels >> 1),flaggedTextureId,flaggedTextureSource,flaggedFramebuffer);
+            screenY = savedScreenY;
+            screenX = savedScreenX;
           }
-          if ((pFVar6->flagsAndMaterial & (FVar7 ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
+          if ((cellCursor->flagsAndMaterial & (markerFlagMask ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
           {
-            GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0xb2,g_SelectionPanelTextureSource);
+            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb2,g_SelectionPanelTextureSource);
             (*g_SelectionPanelBlitOpaque)
                       (clipTop,clipLeft,clipBottom,clipRight,
-                       iVar4 - ((int)GVar9.logicalHeightPixels >> 1),
-                       iVar2 - ((int)GVar9.logicalWidthPixels >> 1),arg6_00,arg7_00,arg8_00);
+                       screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                       screenX - ((int)markerSize.logicalWidthPixels >> 1),otherTextureId,otherTextureSource,otherFramebuffer);
           }
         }
-        pFVar6 = pFVar6 + 1;
-        FVar3 = FVar3 - 1;
-      } while (FVar3 != 0);
-      pFVar6 = pFStack_20 + FVar1;
-      FVar5 = FVar5 - 1;
-      FVar3 = FVar1;
-      pFStack_20 = pFVar6;
-    } while (FVar5 != 0);
+        cellCursor = cellCursor + 1;
+        columnsRemaining = columnsRemaining - 1;
+      } while (columnsRemaining != 0);
+      cellCursor = rowStartCell + gridColumns;
+      rowsRemaining = rowsRemaining - 1;
+      columnsRemaining = gridColumns;
+      rowStartCell = cellCursor;
+    } while (rowsRemaining != 0);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
@@ -812,49 +812,49 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  FieldGridDimension FVar3;
-  int iVar4;
-  FieldGridDimension FVar5;
-  FieldGridCell *pFVar6;
-  bool bVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *arg8;
-  FieldGridCell *pFStack_1c;
+  FieldGridDimension gridColumns;
+  int screenX;
+  FieldGridDimension columnsRemaining;
+  int screenY;
+  FieldGridDimension rowsRemaining;
+  FieldGridCell *cellCursor;
+  bool accessFailed;
+  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  dword blitTextureId;
+  GraphicsTextureSourceAsset *blitTextureSource;
+  SoftwareFramebufferAccess *blitFramebuffer;
+  FieldGridCell *rowStartCell;
   
-  bVar7 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar7) {
-    FVar1 = fieldGrid->gridWidth;
-    FVar5 = fieldGrid->gridHeight;
-    pFVar6 = fieldGrid->cells;
-    FVar3 = FVar1;
-    pFStack_1c = pFVar6;
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
+    gridColumns = fieldGrid->gridWidth;
+    rowsRemaining = fieldGrid->gridHeight;
+    cellCursor = fieldGrid->cells;
+    columnsRemaining = gridColumns;
+    rowStartCell = cellCursor;
     do {
       do {
-        if (((pFVar6->flagsAndMaterial & FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15) != 0) &&
-           ((pFVar6->flagsAndMaterial & 0x200000) == 0)) {
-          iVar2 = *(int *)pFVar6->runtime0C_3F >> 0xc;
-          iVar4 = *(int *)(pFVar6->runtime0C_3F + 4) >> 0xc;
-          arg6 = 0xaf;
-          arg7 = g_SelectionPanelTextureSource;
-          arg8 = g_FramebufferAccess;
-          GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_SelectionPanelTextureSource);
+        if (((cellCursor->flagsAndMaterial & FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15) != 0) &&
+           ((cellCursor->flagsAndMaterial & 0x200000) == 0)) {
+          screenX = *(int *)cellCursor->runtime0C_3F >> 0xc;
+          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 0xc;
+          blitTextureId = 0xaf;
+          blitTextureSource = g_SelectionPanelTextureSource;
+          blitFramebuffer = g_FramebufferAccess;
+          markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_SelectionPanelTextureSource);
           (*g_SelectionPanelBlitOpaque)
                     (clipTop,clipLeft,clipBottom,clipRight,
-                     iVar4 - ((int)GVar8.logicalHeightPixels >> 1),
-                     iVar2 - ((int)GVar8.logicalWidthPixels >> 1),arg6,arg7,arg8);
+                     screenY - ((int)markerSize.logicalHeightPixels >> 1),
+                     screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
         }
-        pFVar6 = pFVar6 + 1;
-        FVar3 = FVar3 - 1;
-      } while (FVar3 != 0);
-      pFVar6 = pFStack_1c + FVar1;
-      FVar5 = FVar5 - 1;
-      FVar3 = FVar1;
-      pFStack_1c = pFVar6;
-    } while (FVar5 != 0);
+        cellCursor = cellCursor + 1;
+        columnsRemaining = columnsRemaining - 1;
+      } while (columnsRemaining != 0);
+      cellCursor = rowStartCell + gridColumns;
+      rowsRemaining = rowsRemaining - 1;
+      columnsRemaining = gridColumns;
+      rowStartCell = cellCursor;
+    } while (rowsRemaining != 0);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
@@ -986,42 +986,42 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
           void *inGameRuntime)
 
 {
-  GraphicsWorldCoordinateQ12 *pGVar1;
-  ModelRuntimeNode *pMVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  int *piVar6;
-  FieldGridHeightEaxCf5 FVar7;
-  EffectRuntimeCreateEaxCf5 EVar8;
+  GraphicsWorldCoordinateQ12 *translationZ;
+  ModelRuntimeNode *markerModelNode;
+  uint boundingRadius;
+  int markerSlotIndex;
+  int remainingMarkers;
+  int *markerCursor;
+  FieldGridHeightEaxCf5 surfaceHeight;
+  EffectRuntimeCreateEaxCf5 createdEffect;
   
-  iVar4 = g_InGameCommandTargetTransientEffectMarkerCount;
+  markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
   if ((worldXQ12 != *(int *)((int)sourceWorldNode + 0x94)) ||
      (worldYQ12 != *(int *)((int)sourceWorldNode + 0x98))) {
-    piVar6 = (int *)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
-    for (iVar5 = g_InGameCommandTargetTransientEffectMarkerCount; iVar5 != 0; iVar5 = iVar5 + -1) {
-      if ((worldXQ12 == *(int *)(*(int *)(*piVar6 + 4) + 0x94)) &&
-         (worldYQ12 == *(int *)(*(int *)(*piVar6 + 4) + 0x98))) {
+    markerCursor = (int *)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
+    for (remainingMarkers = g_InGameCommandTargetTransientEffectMarkerCount; remainingMarkers != 0; remainingMarkers = remainingMarkers + -1) {
+      if ((worldXQ12 == *(int *)(*(int *)(*markerCursor + 4) + 0x94)) &&
+         (worldYQ12 == *(int *)(*(int *)(*markerCursor + 4) + 0x98))) {
         return;
       }
-      piVar6 = piVar6 + 1;
+      markerCursor = markerCursor + 1;
     }
-    FVar7 = FieldGrid_InterpolateTopSurfaceHeight
+    surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                       (worldYQ12,worldXQ12,*(FieldGridAsset **)((int)inGameRuntime + 0x54));
-    EVar8 = EffectRuntimePool_CreateInstanceFromDefinitionCf
+    createdEffect = EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                       FVar7.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
-    *(EffectRuntimeSlot **)(iVar4 * 4 + THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0)) = EVar8.effectRuntime;
-    pMVar2 = ((EVar8.effectRuntime)->modelNodeOrSavedOffset).modelNode;
+                       surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
+    *(EffectRuntimeSlot **)(markerSlotIndex * 4 + THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0)) = createdEffect.effectRuntime;
+    markerModelNode = ((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode;
     g_InGameCommandTargetTransientEffectMarkerCount =
          g_InGameCommandTargetTransientEffectMarkerCount + 1;
-    uVar3 = pMVar2->subtreeBoundingRadiusQ12;
-    pMVar2->tintArgb = 0xffffffff;
-    if ((scaleQ12 != 0x1000) && (uVar3 != 0)) {
-      pGVar1 = &(pMVar2->worldTransform).translation.z;
-      *pGVar1 = *pGVar1 + 0x144;
-      pMVar2->runtimeFlags = pMVar2->runtimeFlags | 0x800;
-      pMVar2->modelScaleQ12 = (Q12)(((ulonglong)(uint)scaleQ12 * 0x1a00) / (ulonglong)uVar3);
+    boundingRadius = markerModelNode->subtreeBoundingRadiusQ12;
+    markerModelNode->tintArgb = 0xffffffff;
+    if ((scaleQ12 != 0x1000) && (boundingRadius != 0)) {
+      translationZ = &(markerModelNode->worldTransform).translation.z;
+      *translationZ = *translationZ + 0x144;
+      markerModelNode->runtimeFlags = markerModelNode->runtimeFlags | 0x800;
+      markerModelNode->modelScaleQ12 = (Q12)(((ulonglong)(uint)scaleQ12 * 0x1a00) / (ulonglong)boundingRadius);
     }
   }
   return;

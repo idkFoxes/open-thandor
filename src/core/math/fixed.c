@@ -27,8 +27,8 @@ FixedTransform_ComposeEulerAnglesRegs
 
 {
   FixedEulerPairEdxEax8 composedEulerAnglePair;
-  FixedEulerAnglesEaxEcxEdx12 FVar1;
-  FixedEulerAnglesEaxEbxEdx12 FVar2;
+  FixedEulerAnglesEaxEcxEdx12 extractedAngles;
+  FixedEulerAnglesEaxEbxEdx12 composedAngles;
   
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,basisAngle0,basisAngle1,
@@ -40,12 +40,12 @@ FixedTransform_ComposeEulerAnglesRegs
             ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch,
              (GraphicsFixedMatrix3x4 *)&g_FixedTransformInputRotationScratch,
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
-  FVar1 = FixedTransform_ExtractEulerAnglesRegs
+  extractedAngles = FixedTransform_ExtractEulerAnglesRegs
                     ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch);
-  FVar2.angle2 = FVar1.eaxAngle;
-  FVar2.angle0 = (int)THANDOR_PART(qword, FVar1, 4);
-  FVar2.angle1 = (int)((ulonglong)THANDOR_PART(qword, FVar1, 4) >> 0x20);
-  return FVar2;
+  composedAngles.angle2 = extractedAngles.eaxAngle;
+  composedAngles.angle0 = (int)THANDOR_PART(qword, extractedAngles, 4);
+  composedAngles.angle1 = (int)((ulonglong)THANDOR_PART(qword, extractedAngles, 4) >> 0x20);
+  return composedAngles;
 }
 
 
@@ -63,12 +63,12 @@ FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
-  ulonglong uVar1;
+  ulonglong lengthAzimuthPair;
   dword elevationAngle16;
-  dword dVar2;
-  dword dVar3;
+  dword elevationAngleResult;
+  dword azimuthAngle16;
   dword vectorLengthQ12;
-  FixedLengthAnglesEaxEcxEdx12 FVar4;
+  FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
   longlong squaredLengthAccumulatorQ24;
   longlong totalSquaredLengthQ24;
   
@@ -77,18 +77,18 @@ FixedMath_VectorToAnglesAndLength3Regs
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
-  dVar2 = FixedMath_Atan2Angle16(x,elevationAngle16);
-  dVar3 = FixedMath_Atan2Angle16(y,z);
+  elevationAngleResult = FixedMath_Atan2Angle16(x,elevationAngle16);
+  azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
   totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (longlong)x * (longlong)x;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
-  uVar1 = CONCAT44(dVar3,vectorLengthQ12) & 0xffffffffffff;
-  FVar4.elevationAngle = dVar2;
-  FVar4.lengthQ12 = (int)uVar1;
-  FVar4.azimuthAngle = (int)(uVar1 >> 0x20);
-  return FVar4;
+  lengthAzimuthPair = CONCAT44(azimuthAngle16,vectorLengthQ12) & 0xffffffffffff;
+  lengthAnglesResult.elevationAngle = elevationAngleResult;
+  lengthAnglesResult.lengthQ12 = (int)lengthAzimuthPair;
+  lengthAnglesResult.azimuthAngle = (int)(lengthAzimuthPair >> 0x20);
+  return lengthAnglesResult;
 }
 
 
@@ -101,12 +101,12 @@ FixedMath_VectorToAnglesAndLength3Regs
 FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  ulonglong uVar1;
+  ulonglong lengthAzimuthPair;
   dword elevationAngle16;
-  dword dVar2;
-  dword dVar3;
+  dword elevationAngleResult;
+  dword azimuthAngle16;
   dword vectorLengthQ12;
-  FixedLengthAnglesEaxEcxEdx12 FVar4;
+  FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
   int y;
   int x;
   longlong totalSquaredLengthQ24;
@@ -121,18 +121,18 @@ FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsF
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
-  dVar2 = FixedMath_Atan2Angle16(vector->z,elevationAngle16);
-  dVar3 = FixedMath_Atan2Angle16(y,x);
+  elevationAngleResult = FixedMath_Atan2Angle16(vector->z,elevationAngle16);
+  azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
   totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (longlong)inputZQ12 * (longlong)inputZQ12;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
-  uVar1 = CONCAT44(dVar3,vectorLengthQ12) & 0xffffffffffff;
-  FVar4.elevationAngle = dVar2;
-  FVar4.lengthQ12 = (int)uVar1;
-  FVar4.azimuthAngle = (int)(uVar1 >> 0x20);
-  return FVar4;
+  lengthAzimuthPair = CONCAT44(azimuthAngle16,vectorLengthQ12) & 0xffffffffffff;
+  lengthAnglesResult.elevationAngle = elevationAngleResult;
+  lengthAnglesResult.lengthQ12 = (int)lengthAzimuthPair;
+  lengthAnglesResult.azimuthAngle = (int)(lengthAzimuthPair >> 0x20);
+  return lengthAnglesResult;
 }
 
 
@@ -149,12 +149,12 @@ FixedMath_Vector2AngleAndLengthRegs
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1)
 
 {
-  dword dVar1;
+  dword vectorAngle16;
   dword vectorLengthQ12;
   
-  dVar1 = FixedMath_Atan2Angle16(component0,component1);
+  vectorAngle16 = FixedMath_Atan2Angle16(component0,component1);
   vectorLengthQ12 = FixedMath_Length2(component0,component1);
-  return THANDOR_BITCAST(__int64, FixedLengthAngleEaxEdx8, (CONCAT44(dVar1,vectorLengthQ12) & 0xffffffffffff));
+  return THANDOR_BITCAST(__int64, FixedLengthAngleEaxEdx8, (CONCAT44(vectorAngle16,vectorLengthQ12) & 0xffffffffffff));
 }
 
 
@@ -173,7 +173,7 @@ FixedTransform_ApplyEulerRotationToVectorRegs
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorEaxEcxEdx12 FVar1;
+  FixedVectorEaxEcxEdx12 rotatedVector;
   
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,
@@ -185,10 +185,10 @@ FixedTransform_ApplyEulerRotationToVectorRegs
             ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,
              (GraphicsFixedVec3 *)&g_ModelTransformInputX,
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
-  FVar1.yQ12 = g_ModelTransformOutputY;
-  FVar1.xQ12 = g_ModelTransformOutputX;
-  FVar1.zQ12 = g_ModelTransformOutputZ;
-  return FVar1;
+  rotatedVector.yQ12 = g_ModelTransformOutputY;
+  rotatedVector.xQ12 = g_ModelTransformOutputX;
+  rotatedVector.zQ12 = g_ModelTransformOutputZ;
+  return rotatedVector;
 }
 
 
@@ -208,14 +208,14 @@ FixedVector_StepBackwardAlongOwnDirection
 
 {
   FixedDirectionXZEdxEax8 stepDirectionXZQ12;
-  FixedDirectionXyzRegs12 FVar1;
-  FixedMathVectorAnglesRegs8 FVar2;
+  FixedDirectionXyzRegs12 stepDirection;
+  FixedMathVectorAnglesRegs8 vectorAngles;
   
-  FVar2 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
-  FVar1 = FixedMath_DirectionFromAnglesScaledRegs(FVar2.ecx,FVar2.edx,directionScale);
-  *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - FVar1.eax * stepMultiplier;
-  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - FVar1.ecx * stepMultiplier;
-  *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - FVar1.edx * stepMultiplier;
+  vectorAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
+  stepDirection = FixedMath_DirectionFromAnglesScaledRegs(vectorAngles.ecx,vectorAngles.edx,directionScale);
+  *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - stepDirection.eax * stepMultiplier;
+  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - stepDirection.ecx * stepMultiplier;
+  *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - stepDirection.edx * stepMultiplier;
   return;
 }
 
@@ -232,59 +232,59 @@ FixedTriangleJointAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
-  longlong lVar1;
-  longlong lVar2;
-  longlong lVar3;
-  longlong lVar4;
-  uint uVar5;
-  int iVar6;
-  uint uVar7;
-  dword dVar8;
-  dword dVar9;
-  AngleTurn32 AVar10;
-  AngleTurn32 AVar11;
-  uint uVar12;
-  FixedTriangleJointAnglesEaxEdx8 FVar13;
-  FixedTriangleJointAnglesEaxEdx8 FVar14;
-  longlong lVar15;
+  longlong projectionOrHeightSquared;
+  longlong side2Squared;
+  longlong side1Squared;
+  longlong side0Squared;
+  uint negatedSquaredLow;
+  int projectionOrSquaredLow;
+  uint side1SquaredLow;
+  dword triangleHeight;
+  dword firstAngle16;
+  AngleTurn32 fallbackAngle0;
+  AngleTurn32 fallbackAngle1;
+  uint partialDifferenceLow;
+  FixedTriangleJointAnglesEaxEdx8 solvedAngles;
+  FixedTriangleJointAnglesEaxEdx8 fallbackAngles;
+  longlong cosineNumerator0;
   
-  iVar6 = (int)(((longlong)sideLength0Q12 * (longlong)sideLength0Q12 -
+  projectionOrSquaredLow = (int)(((longlong)sideLength0Q12 * (longlong)sideLength0Q12 -
                 (longlong)sideLength1Q12 * (longlong)sideLength1Q12) / (longlong)sideLength2Q12);
-  lVar1 = (longlong)iVar6 * (longlong)iVar6;
-  iVar6 = (int)lVar1;
-  uVar5 = -iVar6;
-  lVar2 = (longlong)sideLength2Q12 * (longlong)sideLength2Q12;
-  uVar12 = uVar5 - (uint)lVar2;
-  lVar3 = (longlong)sideLength1Q12 * (longlong)sideLength1Q12;
-  uVar7 = (uint)lVar3;
-  lVar4 = (longlong)sideLength0Q12 * (longlong)sideLength0Q12;
-  lVar15 = (lVar2 - lVar3) + lVar4;
-  lVar1 = lVar4 * 2 +
-          CONCAT44((((-(uint)(iVar6 != 0) - (int)((ulonglong)lVar1 >> 0x20)) -
-                    (int)((ulonglong)lVar2 >> 0x20)) - (uint)(uVar5 < (uint)lVar2)) +
-                   (int)((ulonglong)lVar3 >> 0x20) * 2 + (uint)CARRY4(uVar7,uVar7) +
-                   (uint)CARRY4(uVar12,uVar7 * 2),uVar12 + uVar7 * 2);
-  if ((-1 < lVar1) && (0x10 < sideLength2Q12)) {
-    dVar8 = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)lVar1 >> 0x20),(UInt64Half32)lVar1);
-    dVar9 = FixedMath_Atan2Angle16((int)dVar8 >> 1,(int)(lVar15 / (longlong)sideLength2Q12) >> 1);
-    FVar13.jointAngle0 =
+  projectionOrHeightSquared = (longlong)projectionOrSquaredLow * (longlong)projectionOrSquaredLow;
+  projectionOrSquaredLow = (int)projectionOrHeightSquared;
+  negatedSquaredLow = -projectionOrSquaredLow;
+  side2Squared = (longlong)sideLength2Q12 * (longlong)sideLength2Q12;
+  partialDifferenceLow = negatedSquaredLow - (uint)side2Squared;
+  side1Squared = (longlong)sideLength1Q12 * (longlong)sideLength1Q12;
+  side1SquaredLow = (uint)side1Squared;
+  side0Squared = (longlong)sideLength0Q12 * (longlong)sideLength0Q12;
+  cosineNumerator0 = (side2Squared - side1Squared) + side0Squared;
+  projectionOrHeightSquared = side0Squared * 2 +
+          CONCAT44((((-(uint)(projectionOrSquaredLow != 0) - (int)((ulonglong)projectionOrHeightSquared >> 0x20)) -
+                    (int)((ulonglong)side2Squared >> 0x20)) - (uint)(negatedSquaredLow < (uint)side2Squared)) +
+                   (int)((ulonglong)side1Squared >> 0x20) * 2 + (uint)CARRY4(side1SquaredLow,side1SquaredLow) +
+                   (uint)CARRY4(partialDifferenceLow,side1SquaredLow * 2),partialDifferenceLow + side1SquaredLow * 2);
+  if ((-1 < projectionOrHeightSquared) && (0x10 < sideLength2Q12)) {
+    triangleHeight = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)projectionOrHeightSquared >> 0x20),(UInt64Half32)projectionOrHeightSquared);
+    firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,(int)(cosineNumerator0 / (longlong)sideLength2Q12) >> 1);
+    solvedAngles.jointAngle0 =
          FixedMath_Atan2Angle16
-                   ((int)dVar8 >> 1,(int)(((lVar3 + lVar2) - lVar4) / (longlong)sideLength2Q12) >> 1
+                   ((int)triangleHeight >> 1,(int)(((side1Squared + side2Squared) - side0Squared) / (longlong)sideLength2Q12) >> 1
                    );
-    FVar13.jointAngle1 = dVar9 + FVar13.jointAngle0;
-    return FVar13;
+    solvedAngles.jointAngle1 = firstAngle16 + solvedAngles.jointAngle0;
+    return solvedAngles;
   }
   if ((uint)sideLength0Q12 < (uint)sideLength2Q12) {
-    AVar10 = 0;
-    AVar11 = 0;
+    fallbackAngle0 = 0;
+    fallbackAngle1 = 0;
   }
   else {
-    AVar10 = 0x8000;
-    AVar11 = 0x8000;
+    fallbackAngle0 = 0x8000;
+    fallbackAngle1 = 0x8000;
   }
-  FVar14.jointAngle1 = AVar11;
-  FVar14.jointAngle0 = AVar10;
-  return FVar14;
+  fallbackAngles.jointAngle1 = fallbackAngle1;
+  fallbackAngles.jointAngle0 = fallbackAngle0;
+  return fallbackAngles;
 }
 
 
@@ -324,11 +324,11 @@ FixedMathVectorAnglesRegs8 __thandor_preserve_eax
 FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
-  FixedMathVectorAnglesRegs8 FVar1;
+  FixedMathVectorAnglesRegs8 forwardAngles;
   
-  FVar1 = FixedMath_VectorToAngles3Regs
+  forwardAngles = FixedMath_VectorToAngles3Regs
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  return FVar1;
+  return forwardAngles;
 }
 
 
@@ -384,17 +384,17 @@ FixedTransform_RotateDirectionScaledRegs
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorEaxEcxEdx12 FVar1;
-  FixedVectorXEaxYEbxZEdx12 FVar2;
+  FixedVectorEaxEcxEdx12 rotatedVector;
+  FixedVectorXEaxYEbxZEdx12 coreRotatedVector;
   
-  FVar2 = FixedTransform_RotateDirectionScaledCoreRegs
+  coreRotatedVector = FixedTransform_RotateDirectionScaledCoreRegs
                     (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
                      rotationAngle2);
   /* Ghidra split the ECX/EDX halves of the return into uVar3._4_4_ and register0x00000008. */
-  FVar1.xQ12 = FVar2.xQ12;
-  FVar1.yQ12 = FVar2.yQ12;
-  FVar1.zQ12 = FVar2.zQ12;
-  return FVar1;
+  rotatedVector.xQ12 = coreRotatedVector.xQ12;
+  rotatedVector.yQ12 = coreRotatedVector.yQ12;
+  rotatedVector.zQ12 = coreRotatedVector.zQ12;
+  return rotatedVector;
 }
 
 
@@ -409,15 +409,15 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
   short *outputCursor;
   int entriesRemainingInRow;
   uint angleStep16;
-  uint uVar1;
-  int iVar2;
+  uint secondAngleStep16;
+  int entriesRemaining;
   uint angleIndex16;
-  uint uVar3;
-  ArenaAllocEaxCf5 AVar4;
+  uint secondAngleIndex16;
+  ArenaAllocEaxCf5 allocResult;
   
-  AVar4 = (*g_MemoryApi.alloc)(0x40000);
-  outputCursor = (short *)AVar4.eax;
-  if (!AVar4.carry) {
+  allocResult = (*g_MemoryApi.alloc)(0x40000);
+  outputCursor = (short *)allocResult.eax;
+  if (!allocResult.carry) {
     g_CosineDerivedLookupAllocation = outputCursor;
     for (entriesRemainingInRow = 0x80; entriesRemainingInRow != 0;
         entriesRemainingInRow = entriesRemainingInRow + -1) {
@@ -427,38 +427,38 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
     }
     angleIndex16 = 0x40;
     angleStep16 = 0x40;
-    iVar2 = 0x100;
+    entriesRemaining = 0x100;
     do {
       do {
         *outputCursor = (short)((uint)g_FixedCosQ28[angleIndex16] >> 0x10);
         outputCursor = outputCursor + 1;
         angleIndex16 = angleIndex16 + angleStep16 * 2 & 0xffff;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
+        entriesRemaining = entriesRemaining + -1;
+      } while (entriesRemaining != 0);
       angleStep16 = angleStep16 + 0x40;
-      iVar2 = 0x100;
+      entriesRemaining = 0x100;
       angleIndex16 = angleStep16 & 0xffff;
     } while (angleStep16 < 0x4000);
-    uVar3 = 0;
-    iVar2 = 0x100;
-    uVar1 = 0x40;
+    secondAngleIndex16 = 0;
+    entriesRemaining = 0x100;
+    secondAngleStep16 = 0x40;
     g_CosineDerivedLookupSecondTable = outputCursor;
     do {
       do {
-        if (iVar2 == 0x100) {
+        if (entriesRemaining == 0x100) {
           *outputCursor = 0x2d41;
         }
         else {
-          *outputCursor = (short)(g_FixedCosQ28[uVar3] >> 0xe);
+          *outputCursor = (short)(g_FixedCosQ28[secondAngleIndex16] >> 0xe);
         }
         outputCursor = outputCursor + 1;
-        uVar3 = uVar3 + uVar1 & 0xffff;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
-      uVar1 = uVar1 + 0x80;
-      iVar2 = 0x100;
-      uVar3 = 0;
-    } while (uVar1 < 0x8000);
+        secondAngleIndex16 = secondAngleIndex16 + secondAngleStep16 & 0xffff;
+        entriesRemaining = entriesRemaining + -1;
+      } while (entriesRemaining != 0);
+      secondAngleStep16 = secondAngleStep16 + 0x80;
+      entriesRemaining = 0x100;
+      secondAngleIndex16 = 0;
+    } while (secondAngleStep16 < 0x8000);
   }
   return;
 }
@@ -478,7 +478,7 @@ FixedMath_WriteDirectionQ28
 {
   uint azimuthPlusElevationAngle16;
   uint azimuthMinusElevationAngle16;
-  uint uVar1;
+  uint azimuthMinusElevationIndex16;
   sdword verticalSinQ28;
   int azimuthPlusElevationSinQ28;
   int azimuthMinusElevationSinQ28;
@@ -486,10 +486,10 @@ FixedMath_WriteDirectionQ28
   azimuthMinusElevationAngle16 = elevationAngle & 0xffff;
   verticalSinQ28 = g_FixedSinQ28[azimuthMinusElevationAngle16];
   azimuthPlusElevationAngle16 = azimuthMinusElevationAngle16 + azimuthAngle & 0xffff;
-  uVar1 = azimuthAngle - azimuthMinusElevationAngle16 & 0xffff;
+  azimuthMinusElevationIndex16 = azimuthAngle - azimuthMinusElevationAngle16 & 0xffff;
   azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
-  azimuthMinusElevationSinQ28 = g_FixedSinQ28[uVar1];
-  output->x = g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[uVar1] >> 1;
+  azimuthMinusElevationSinQ28 = g_FixedSinQ28[azimuthMinusElevationIndex16];
+  output->x = g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationIndex16] >> 1;
   output->y = azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28 >> 1;
   output->z = verticalSinQ28;
   return;
@@ -538,8 +538,8 @@ FixedTransform_ApplyDirection
           (GraphicsFixedVec3 *output,GraphicsFixedVec3 *direction,GraphicsFixedMatrix3x4 *transform)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int basisRow2Component0Q28;
+  longlong finalBasisDotProductQ40;
   int currentBasisRowComponent0Q28;
   longlong currentBasisDotProductQ40;
   longlong basisDotProductAccumulatorQ40;
@@ -555,13 +555,13 @@ FixedTransform_ApplyDirection
        (longlong)transform->basisRow1[1] * (longlong)direction->y +
        (longlong)currentBasisRowComponent0Q28 * (longlong)direction->x +
        (longlong)transform->basisRow1[2] * (longlong)direction->z;
-  iVar1 = transform->basisRow2[0];
+  basisRow2Component0Q28 = transform->basisRow2[0];
   output->y = (int)((ulonglong)currentBasisDotProductQ40 >> 0x20) << 4 |
               (uint)currentBasisDotProductQ40 >> 0x1c;
-  lVar2 = (longlong)transform->basisRow2[1] * (longlong)direction->y +
-          (longlong)iVar1 * (longlong)direction->x +
+  finalBasisDotProductQ40 = (longlong)transform->basisRow2[1] * (longlong)direction->y +
+          (longlong)basisRow2Component0Q28 * (longlong)direction->x +
           (longlong)transform->basisRow2[2] * (longlong)direction->z;
-  output->z = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
+  output->z = (int)((ulonglong)finalBasisDotProductQ40 >> 0x20) << 4 | (uint)finalBasisDotProductQ40 >> 0x1c;
   return;
 }
 
@@ -575,8 +575,8 @@ FixedTransform_ApplyTransposeDirection
           (GraphicsFixedVec3 *output,GraphicsFixedMatrix3x4 *transform,GraphicsFixedVec3 *direction)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int basisRow0Component2Q28;
+  longlong finalBasisDotProductQ40;
   longlong currentBasisDotProductQ40;
   int currentBasisColumnRow0ComponentQ28;
   longlong basisDotProductAccumulatorQ40;
@@ -592,13 +592,13 @@ FixedTransform_ApplyTransposeDirection
        (longlong)transform->basisRow1[1] * (longlong)direction->y +
        (longlong)currentBasisColumnRow0ComponentQ28 * (longlong)direction->x +
        (longlong)transform->basisRow2[1] * (longlong)direction->z;
-  iVar1 = transform->basisRow0[2];
+  basisRow0Component2Q28 = transform->basisRow0[2];
   output->y = (int)((ulonglong)currentBasisDotProductQ40 >> 0x20) << 4 |
               (uint)currentBasisDotProductQ40 >> 0x1c;
-  lVar2 = (longlong)transform->basisRow1[2] * (longlong)direction->y +
-          (longlong)iVar1 * (longlong)direction->x +
+  finalBasisDotProductQ40 = (longlong)transform->basisRow1[2] * (longlong)direction->y +
+          (longlong)basisRow0Component2Q28 * (longlong)direction->x +
           (longlong)transform->basisRow2[2] * (longlong)direction->z;
-  output->z = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
+  output->z = (int)((ulonglong)finalBasisDotProductQ40 >> 0x20) << 4 | (uint)finalBasisDotProductQ40 >> 0x1c;
   return;
 }
 
@@ -611,89 +611,89 @@ void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
 
 {
-  longlong lVar1;
-  longlong lVar2;
-  longlong lVar3;
-  uint uVar4;
-  int iVar5;
-  uint uVar6;
-  uint uVar7;
-  int iVar8;
-  uint uVar9;
+  longlong cofactorOrTranslationProduct;
+  longlong translationYProduct;
+  longlong translationZProduct;
+  uint negatedProductXLow;
+  int productXLow;
+  uint productYLow;
+  uint productZLow;
+  int componentOrProductLow;
+  uint partialDifferenceLow;
   
-  lVar1 = (longlong)input->basisRow1[1] * (longlong)input->basisRow2[2] -
+  cofactorOrTranslationProduct = (longlong)input->basisRow1[1] * (longlong)input->basisRow2[2] -
           (longlong)input->basisRow1[2] * (longlong)input->basisRow2[1];
-  iVar8 = input->basisRow1[2];
-  output->basisRow0[0] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow2[0] -
+  componentOrProductLow = input->basisRow1[2];
+  output->basisRow0[0] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[0] -
           (longlong)input->basisRow1[0] * (longlong)input->basisRow2[2];
-  iVar8 = input->basisRow1[0];
-  output->basisRow1[0] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow2[1] -
+  componentOrProductLow = input->basisRow1[0];
+  output->basisRow1[0] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[1] -
           (longlong)input->basisRow1[1] * (longlong)input->basisRow2[0];
-  iVar8 = input->basisRow0[2];
-  output->basisRow2[0] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow2[1] -
+  componentOrProductLow = input->basisRow0[2];
+  output->basisRow2[0] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[1] -
           (longlong)input->basisRow0[1] * (longlong)input->basisRow2[2];
-  iVar8 = input->basisRow0[0];
-  output->basisRow0[1] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow2[2] -
+  componentOrProductLow = input->basisRow0[0];
+  output->basisRow0[1] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[2] -
           (longlong)input->basisRow0[2] * (longlong)input->basisRow2[0];
-  iVar8 = input->basisRow0[1];
-  output->basisRow1[1] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow2[0] -
+  componentOrProductLow = input->basisRow0[1];
+  output->basisRow1[1] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[0] -
           (longlong)input->basisRow0[0] * (longlong)input->basisRow2[1];
-  iVar8 = input->basisRow0[1];
-  output->basisRow2[1] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow1[2] -
+  componentOrProductLow = input->basisRow0[1];
+  output->basisRow2[1] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow1[2] -
           (longlong)input->basisRow0[2] * (longlong)input->basisRow1[1];
-  iVar8 = input->basisRow0[2];
-  output->basisRow0[2] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow1[0] -
+  componentOrProductLow = input->basisRow0[2];
+  output->basisRow0[2] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow1[0] -
           (longlong)input->basisRow0[0] * (longlong)input->basisRow1[2];
-  iVar8 = input->basisRow0[0];
-  output->basisRow1[2] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)input->basisRow1[1] -
+  componentOrProductLow = input->basisRow0[0];
+  output->basisRow1[2] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow1[1] -
           (longlong)input->basisRow0[1] * (longlong)input->basisRow1[0];
-  output->basisRow2[2] = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c;
-  lVar1 = (longlong)(input->translation).x * (longlong)output->basisRow0[0];
-  iVar5 = (int)lVar1;
-  uVar4 = -iVar5;
-  lVar2 = (longlong)(input->translation).y * (longlong)output->basisRow0[1];
-  uVar6 = (uint)lVar2;
-  uVar9 = uVar4 - uVar6;
-  lVar3 = (longlong)(input->translation).z * (longlong)output->basisRow0[2];
-  uVar7 = (uint)lVar3;
-  iVar8 = (input->translation).x;
+  output->basisRow2[2] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)(input->translation).x * (longlong)output->basisRow0[0];
+  productXLow = (int)cofactorOrTranslationProduct;
+  negatedProductXLow = -productXLow;
+  translationYProduct = (longlong)(input->translation).y * (longlong)output->basisRow0[1];
+  productYLow = (uint)translationYProduct;
+  partialDifferenceLow = negatedProductXLow - productYLow;
+  translationZProduct = (longlong)(input->translation).z * (longlong)output->basisRow0[2];
+  productZLow = (uint)translationZProduct;
+  componentOrProductLow = (input->translation).x;
   (output->translation).x =
-       (((((-(uint)(iVar5 != 0) - (int)((ulonglong)lVar1 >> 0x20)) - (int)((ulonglong)lVar2 >> 0x20)
-          ) - (uint)(uVar4 < uVar6)) - (int)((ulonglong)lVar3 >> 0x20)) - (uint)(uVar9 < uVar7)) *
-       0x10 | uVar9 - uVar7 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)output->basisRow1[0];
-  iVar5 = (int)lVar1;
-  uVar4 = -iVar5;
-  lVar2 = (longlong)(input->translation).y * (longlong)output->basisRow1[1];
-  uVar6 = (uint)lVar2;
-  uVar9 = uVar4 - uVar6;
-  lVar3 = (longlong)(input->translation).z * (longlong)output->basisRow1[2];
-  uVar7 = (uint)lVar3;
-  iVar8 = (input->translation).x;
+       (((((-(uint)(productXLow != 0) - (int)((ulonglong)cofactorOrTranslationProduct >> 0x20)) - (int)((ulonglong)translationYProduct >> 0x20)
+          ) - (uint)(negatedProductXLow < productYLow)) - (int)((ulonglong)translationZProduct >> 0x20)) - (uint)(partialDifferenceLow < productZLow)) *
+       0x10 | partialDifferenceLow - productZLow >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)output->basisRow1[0];
+  productXLow = (int)cofactorOrTranslationProduct;
+  negatedProductXLow = -productXLow;
+  translationYProduct = (longlong)(input->translation).y * (longlong)output->basisRow1[1];
+  productYLow = (uint)translationYProduct;
+  partialDifferenceLow = negatedProductXLow - productYLow;
+  translationZProduct = (longlong)(input->translation).z * (longlong)output->basisRow1[2];
+  productZLow = (uint)translationZProduct;
+  componentOrProductLow = (input->translation).x;
   (output->translation).y =
-       (((((-(uint)(iVar5 != 0) - (int)((ulonglong)lVar1 >> 0x20)) - (int)((ulonglong)lVar2 >> 0x20)
-          ) - (uint)(uVar4 < uVar6)) - (int)((ulonglong)lVar3 >> 0x20)) - (uint)(uVar9 < uVar7)) *
-       0x10 | uVar9 - uVar7 >> 0x1c;
-  lVar1 = (longlong)iVar8 * (longlong)output->basisRow2[0];
-  iVar8 = (int)lVar1;
-  uVar4 = -iVar8;
-  lVar2 = (longlong)(input->translation).y * (longlong)output->basisRow2[1];
-  uVar6 = (uint)lVar2;
-  uVar9 = uVar4 - uVar6;
-  lVar3 = (longlong)(input->translation).z * (longlong)output->basisRow2[2];
-  uVar7 = (uint)lVar3;
+       (((((-(uint)(productXLow != 0) - (int)((ulonglong)cofactorOrTranslationProduct >> 0x20)) - (int)((ulonglong)translationYProduct >> 0x20)
+          ) - (uint)(negatedProductXLow < productYLow)) - (int)((ulonglong)translationZProduct >> 0x20)) - (uint)(partialDifferenceLow < productZLow)) *
+       0x10 | partialDifferenceLow - productZLow >> 0x1c;
+  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)output->basisRow2[0];
+  componentOrProductLow = (int)cofactorOrTranslationProduct;
+  negatedProductXLow = -componentOrProductLow;
+  translationYProduct = (longlong)(input->translation).y * (longlong)output->basisRow2[1];
+  productYLow = (uint)translationYProduct;
+  partialDifferenceLow = negatedProductXLow - productYLow;
+  translationZProduct = (longlong)(input->translation).z * (longlong)output->basisRow2[2];
+  productZLow = (uint)translationZProduct;
   (output->translation).z =
-       (((((-(uint)(iVar8 != 0) - (int)((ulonglong)lVar1 >> 0x20)) - (int)((ulonglong)lVar2 >> 0x20)
-          ) - (uint)(uVar4 < uVar6)) - (int)((ulonglong)lVar3 >> 0x20)) - (uint)(uVar9 < uVar7)) *
-       0x10 | uVar9 - uVar7 >> 0x1c;
+       (((((-(uint)(componentOrProductLow != 0) - (int)((ulonglong)cofactorOrTranslationProduct >> 0x20)) - (int)((ulonglong)translationYProduct >> 0x20)
+          ) - (uint)(negatedProductXLow < productYLow)) - (int)((ulonglong)translationZProduct >> 0x20)) - (uint)(partialDifferenceLow < productZLow)) *
+       0x10 | partialDifferenceLow - productZLow >> 0x1c;
   return;
 }
 
@@ -744,8 +744,8 @@ FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
                   GraphicsFixedVec3 *leftOperand)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int leftXQ12;
+  longlong finalCrossProductDifferenceQ24;
   int currentLeftComponentQ12;
   longlong currentCrossProductDifferenceQ24;
   longlong crossComponentProductDifferenceQ24;
@@ -759,12 +759,12 @@ FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
   currentCrossProductDifferenceQ24 =
        (longlong)currentLeftComponentQ12 * (longlong)rightOperand->x -
        (longlong)leftOperand->x * (longlong)rightOperand->z;
-  iVar1 = leftOperand->x;
+  leftXQ12 = leftOperand->x;
   output->y = (int)((ulonglong)currentCrossProductDifferenceQ24 >> 0x20) << 0x14 |
               (uint)currentCrossProductDifferenceQ24 >> 0xc;
-  lVar2 = (longlong)iVar1 * (longlong)rightOperand->y -
+  finalCrossProductDifferenceQ24 = (longlong)leftXQ12 * (longlong)rightOperand->y -
           (longlong)leftOperand->y * (longlong)rightOperand->x;
-  output->z = (int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc;
+  output->z = (int)((ulonglong)finalCrossProductDifferenceQ24 >> 0x20) << 0x14 | (uint)finalCrossProductDifferenceQ24 >> 0xc;
   return;
 }
 
@@ -807,7 +807,7 @@ FixedTransform_RotateDirectionScaledCoreRegs
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorXEaxYEbxZEdx12 FVar1;
+  FixedVectorXEaxYEbxZEdx12 rotatedVector;
   
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,
@@ -819,10 +819,10 @@ FixedTransform_RotateDirectionScaledCoreRegs
             ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,
              (GraphicsFixedVec3 *)&g_ModelTransformInputX,
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
-  FVar1.yQ12 = g_ModelTransformOutputY;
-  FVar1.xQ12 = g_ModelTransformOutputX;
-  FVar1.zQ12 = g_ModelTransformOutputZ;
-  return FVar1;
+  rotatedVector.yQ12 = g_ModelTransformOutputY;
+  rotatedVector.xQ12 = g_ModelTransformOutputX;
+  rotatedVector.zQ12 = g_ModelTransformOutputZ;
+  return rotatedVector;
 }
 
 
@@ -835,8 +835,8 @@ FixedMathVectorAnglesRegs8 __thandor_preserve_eax
 FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  dword dVar1;
-  dword dVar2;
+  dword magnitudeOrElevationAngle;
+  dword azimuthAngle16;
   int y;
   int x;
   longlong horizontalSquaredLengthAccumulatorQ24;
@@ -844,12 +844,12 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
   x = vector->x;
   y = vector->y;
   horizontalSquaredLengthAccumulatorQ24 = (longlong)y * (longlong)y + (longlong)x * (longlong)x;
-  dVar1 = FixedMath_UInt64Sqrt
+  magnitudeOrElevationAngle = FixedMath_UInt64Sqrt
                     ((UInt64Half32)((ulonglong)horizontalSquaredLengthAccumulatorQ24 >> 0x20),
                      (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
-  dVar1 = FixedMath_Atan2Angle16(vector->z,dVar1);
-  dVar2 = FixedMath_Atan2Angle16(y,x);
-  return THANDOR_BITCAST(__int64, FixedMathVectorAnglesRegs8, (CONCAT44(dVar2,dVar1) & 0xffffffffffff));
+  magnitudeOrElevationAngle = FixedMath_Atan2Angle16(vector->z,magnitudeOrElevationAngle);
+  azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
+  return THANDOR_BITCAST(__int64, FixedMathVectorAnglesRegs8, (CONCAT44(azimuthAngle16,magnitudeOrElevationAngle) & 0xffffffffffff));
 }
 
 
@@ -863,19 +863,19 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
 
 {
   dword extractedRotationAngle2;
-  dword dVar1;
-  FixedMathVectorAnglesRegs8 FVar2;
-  FixedEulerAnglesEaxEcxEdx12 FVar3;
+  dword gimbalAngle16;
+  FixedMathVectorAnglesRegs8 forwardAngles;
+  FixedEulerAnglesEaxEcxEdx12 eulerAngles;
   
-  FVar2 = FixedMath_VectorToAngles3Regs
+  forwardAngles = FixedMath_VectorToAngles3Regs
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  FVar3.edxAngle = FVar2.edx;
-  FVar3.ecxAngle = FVar2.ecx;
-  if (THANDOR_BITCAST(FixedMathVectorAnglesRegs8, longlong, FVar2) < 0) {
-    dVar1 = FixedMath_Atan2Angle16
+  eulerAngles.edxAngle = forwardAngles.edx;
+  eulerAngles.ecxAngle = forwardAngles.ecx;
+  if (THANDOR_BITCAST(FixedMathVectorAnglesRegs8, longlong, forwardAngles) < 0) {
+    gimbalAngle16 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
                        transform->basisRow1[1] - transform->basisRow0[0]);
-    extractedRotationAngle2 = dVar1 + FVar3.ecxAngle * 2 & 0xffff;
+    extractedRotationAngle2 = gimbalAngle16 + eulerAngles.ecxAngle * 2 & 0xffff;
   }
   else {
     extractedRotationAngle2 =
@@ -883,8 +883,8 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
                    (transform->basisRow1[0] - transform->basisRow0[1],
                     transform->basisRow1[1] + transform->basisRow0[0]);
   }
-  FVar3.eaxAngle = extractedRotationAngle2;
-  return FVar3;
+  eulerAngles.eaxAngle = extractedRotationAngle2;
+  return eulerAngles;
 }
 
 
@@ -945,26 +945,26 @@ FixedMath_DirectionFromAnglesScaledRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale)
 
 {
-  longlong lVar1;
-  uint uVar2;
+  longlong scaledYComponentProduct;
+  uint sumAngle16;
   uint elevationAngle16;
-  uint uVar3;
-  FixedDirectionXyzRegs12 FVar4;
+  uint differenceAngle16;
+  FixedDirectionXyzRegs12 scaledDirection;
   longlong scaledHorizontalComponentProduct;
   
   elevationAngle16 = elevationAngle & 0xffff;
-  uVar2 = elevationAngle16 + azimuthAngle & 0xffff;
-  uVar3 = azimuthAngle - elevationAngle16 & 0xffff;
+  sumAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
+  differenceAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
   scaledHorizontalComponentProduct =
-       (longlong)(g_FixedCosQ28[uVar2] + g_FixedCosQ28[uVar3]) * (longlong)scale;
-  lVar1 = (longlong)(g_FixedSinQ28[uVar2] + g_FixedSinQ28[uVar3]) * (longlong)scale;
-  FVar4.edx = (int)((ulonglong)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x20
+       (longlong)(g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16]) * (longlong)scale;
+  scaledYComponentProduct = (longlong)(g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16]) * (longlong)scale;
+  scaledDirection.edx = (int)((ulonglong)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x20
                    ) << 4 |
               (uint)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x1c;
-  FVar4.ecx = (int)((ulonglong)lVar1 >> 0x20) << 3 | (uint)lVar1 >> 0x1d;
-  FVar4.eax = (int)((ulonglong)scaledHorizontalComponentProduct >> 0x20) << 3 |
+  scaledDirection.ecx = (int)((ulonglong)scaledYComponentProduct >> 0x20) << 3 | (uint)scaledYComponentProduct >> 0x1d;
+  scaledDirection.eax = (int)((ulonglong)scaledHorizontalComponentProduct >> 0x20) << 3 |
               (uint)scaledHorizontalComponentProduct >> 0x1d;
-  return FVar4;
+  return scaledDirection;
 }
 
 
@@ -979,18 +979,18 @@ FixedDirectionXyzRegs12
 FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  uint uVar1;
+  uint sumAngle16;
   uint elevationAngle16;
-  uint uVar2;
-  FixedDirectionXyzRegs12 FVar3;
+  uint differenceAngle16;
+  FixedDirectionXyzRegs12 directionQ28;
   
   elevationAngle16 = elevationAngle & 0xffff;
-  uVar1 = elevationAngle16 + azimuthAngle & 0xffff;
-  uVar2 = azimuthAngle - elevationAngle16 & 0xffff;
-  FVar3.eax = g_FixedCosQ28[uVar1] + g_FixedCosQ28[uVar2] >> 1;
-  FVar3.ecx = g_FixedSinQ28[uVar1] + g_FixedSinQ28[uVar2] >> 1;
-  FVar3.edx = g_FixedSinQ28[elevationAngle16];
-  return FVar3;
+  sumAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
+  differenceAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
+  directionQ28.eax = g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16] >> 1;
+  directionQ28.ecx = g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16] >> 1;
+  directionQ28.edx = g_FixedSinQ28[elevationAngle16];
+  return directionQ28;
 }
 
 
@@ -1008,21 +1008,21 @@ FixedMath_WriteDirectionScaled
 
 {
   uint azimuthPlusElevationAngle16;
-  uint uVar1;
+  uint elevationOrDifferenceAngle16;
   int verticalSinQ28;
   int azimuthPlusElevationSinQ28;
   int azimuthMinusElevationSinQ28;
   longlong yComponentScaleProduct;
   longlong horizontalComponentScaleProduct;
   
-  uVar1 = elevationAngle & 0xffff;
-  verticalSinQ28 = g_FixedSinQ28[uVar1];
-  azimuthPlusElevationAngle16 = uVar1 + azimuthAngle & 0xffff;
-  uVar1 = azimuthAngle - uVar1 & 0xffff;
+  elevationOrDifferenceAngle16 = elevationAngle & 0xffff;
+  verticalSinQ28 = g_FixedSinQ28[elevationOrDifferenceAngle16];
+  azimuthPlusElevationAngle16 = elevationOrDifferenceAngle16 + azimuthAngle & 0xffff;
+  elevationOrDifferenceAngle16 = azimuthAngle - elevationOrDifferenceAngle16 & 0xffff;
   azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
-  azimuthMinusElevationSinQ28 = g_FixedSinQ28[uVar1];
+  azimuthMinusElevationSinQ28 = g_FixedSinQ28[elevationOrDifferenceAngle16];
   horizontalComponentScaleProduct =
-       (longlong)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[uVar1]) *
+       (longlong)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[elevationOrDifferenceAngle16]) *
        (longlong)scale;
   output->x = (int)((ulonglong)horizontalComponentScaleProduct >> 0x20) << 3 |
               (uint)horizontalComponentScaleProduct >> 0x1d;
@@ -1048,8 +1048,8 @@ FixedTransform_Compose
           GraphicsFixedMatrix3x4 *transformB)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int rightBasisComponent0Q28;
+  longlong composedProductSumQ56;
   int currentRightBasisRowComponent0Q28;
   longlong currentComposedComponentProductSumQ56;
   
@@ -1061,63 +1061,63 @@ FixedTransform_Compose
   output->basisRow0[0] =
        (int)((ulonglong)currentComposedComponentProductSumQ56 >> 0x20) << 4 |
        (uint)currentComposedComponentProductSumQ56 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[1] +
+  composedProductSumQ56 = (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[1] +
           (longlong)currentRightBasisRowComponent0Q28 * (longlong)transformA->basisRow0[1] +
           (longlong)transformB->basisRow0[2] * (longlong)transformA->basisRow2[1];
-  iVar1 = transformB->basisRow0[0];
-  output->basisRow0[1] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[2] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[2] +
+  rightBasisComponent0Q28 = transformB->basisRow0[0];
+  output->basisRow0[1] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[2] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[2] +
           (longlong)transformB->basisRow0[2] * (longlong)transformA->basisRow2[2];
-  iVar1 = transformB->basisRow0[0];
-  output->basisRow0[2] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow0[1] * (longlong)(transformA->translation).y +
-          (longlong)iVar1 * (longlong)(transformA->translation).x +
+  rightBasisComponent0Q28 = transformB->basisRow0[0];
+  output->basisRow0[2] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow0[1] * (longlong)(transformA->translation).y +
+          (longlong)rightBasisComponent0Q28 * (longlong)(transformA->translation).x +
           (longlong)transformB->basisRow0[2] * (longlong)(transformA->translation).z;
-  iVar1 = transformB->basisRow1[0];
+  rightBasisComponent0Q28 = transformB->basisRow1[0];
   (output->translation).x =
-       ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) + (transformB->translation).x;
-  lVar2 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[0] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[0] +
+       ((int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c) + (transformB->translation).x;
+  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[0] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[0] +
           (longlong)transformB->basisRow1[2] * (longlong)transformA->basisRow2[0];
-  iVar1 = transformB->basisRow1[0];
-  output->basisRow1[0] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[1] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[1] +
+  rightBasisComponent0Q28 = transformB->basisRow1[0];
+  output->basisRow1[0] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[1] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[1] +
           (longlong)transformB->basisRow1[2] * (longlong)transformA->basisRow2[1];
-  iVar1 = transformB->basisRow1[0];
-  output->basisRow1[1] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[2] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[2] +
+  rightBasisComponent0Q28 = transformB->basisRow1[0];
+  output->basisRow1[1] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[2] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[2] +
           (longlong)transformB->basisRow1[2] * (longlong)transformA->basisRow2[2];
-  iVar1 = transformB->basisRow1[0];
-  output->basisRow1[2] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow1[1] * (longlong)(transformA->translation).y +
-          (longlong)iVar1 * (longlong)(transformA->translation).x +
+  rightBasisComponent0Q28 = transformB->basisRow1[0];
+  output->basisRow1[2] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)(transformA->translation).y +
+          (longlong)rightBasisComponent0Q28 * (longlong)(transformA->translation).x +
           (longlong)transformB->basisRow1[2] * (longlong)(transformA->translation).z;
-  iVar1 = transformB->basisRow2[0];
+  rightBasisComponent0Q28 = transformB->basisRow2[0];
   (output->translation).y =
-       ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) + (transformB->translation).y;
-  lVar2 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[0] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[0] +
+       ((int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c) + (transformB->translation).y;
+  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[0] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[0] +
           (longlong)transformB->basisRow2[2] * (longlong)transformA->basisRow2[0];
-  iVar1 = transformB->basisRow2[0];
-  output->basisRow2[0] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[1] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[1] +
+  rightBasisComponent0Q28 = transformB->basisRow2[0];
+  output->basisRow2[0] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[1] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[1] +
           (longlong)transformB->basisRow2[2] * (longlong)transformA->basisRow2[1];
-  iVar1 = transformB->basisRow2[0];
-  output->basisRow2[1] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[2] +
-          (longlong)iVar1 * (longlong)transformA->basisRow0[2] +
+  rightBasisComponent0Q28 = transformB->basisRow2[0];
+  output->basisRow2[1] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[2] +
+          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[2] +
           (longlong)transformB->basisRow2[2] * (longlong)transformA->basisRow2[2];
-  iVar1 = transformB->basisRow2[0];
-  output->basisRow2[2] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)transformB->basisRow2[1] * (longlong)(transformA->translation).y +
-          (longlong)iVar1 * (longlong)(transformA->translation).x +
+  rightBasisComponent0Q28 = transformB->basisRow2[0];
+  output->basisRow2[2] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)(transformA->translation).y +
+          (longlong)rightBasisComponent0Q28 * (longlong)(transformA->translation).x +
           (longlong)transformB->basisRow2[2] * (longlong)(transformA->translation).z;
   (output->translation).z =
-       ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) + (transformB->translation).z;
+       ((int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c) + (transformB->translation).z;
   return;
 }
 
@@ -1137,8 +1137,8 @@ FixedMath_VectorToAngles3Regs
 
 {
   dword horizontalMagnitudeQ12;
-  dword dVar1;
-  dword dVar2;
+  dword elevationAngle16;
+  dword azimuthAngle16;
   longlong horizontalMagnitudeSquaredQ24;
   
   horizontalMagnitudeSquaredQ24 = (longlong)y * (longlong)y + (longlong)z * (longlong)z;
@@ -1146,9 +1146,9 @@ FixedMath_VectorToAngles3Regs
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)horizontalMagnitudeSquaredQ24 >> 0x20),
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
-  dVar1 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
-  dVar2 = FixedMath_Atan2Angle16(y,z);
-  return THANDOR_BITCAST(unsigned __int64, FixedMathVectorAnglesRegs8, (CONCAT44(dVar1,dVar2) & 0xffffffff0000ffff));
+  elevationAngle16 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
+  azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
+  return THANDOR_BITCAST(unsigned __int64, FixedMathVectorAnglesRegs8, (CONCAT44(elevationAngle16,azimuthAngle16) & 0xffffffff0000ffff));
 }
 
 
@@ -1162,8 +1162,8 @@ FixedTransform_ApplyPoint
           (GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int basisRow2Component0Q28;
+  longlong basisDotProductQ40;
   int currentBasisRowComponent0Q28;
   longlong currentBasisDotProductQ40;
   
@@ -1174,16 +1174,16 @@ FixedTransform_ApplyPoint
   currentBasisRowComponent0Q28 = transform->basisRow1[0];
   output->x = ((int)((ulonglong)currentBasisDotProductQ40 >> 0x20) << 4 |
               (uint)currentBasisDotProductQ40 >> 0x1c) + (transform->translation).x;
-  lVar2 = (longlong)transform->basisRow1[1] * (longlong)point->y +
+  basisDotProductQ40 = (longlong)transform->basisRow1[1] * (longlong)point->y +
           (longlong)currentBasisRowComponent0Q28 * (longlong)point->x +
           (longlong)transform->basisRow1[2] * (longlong)point->z;
-  iVar1 = transform->basisRow2[0];
-  output->y = ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) +
+  basisRow2Component0Q28 = transform->basisRow2[0];
+  output->y = ((int)((ulonglong)basisDotProductQ40 >> 0x20) << 4 | (uint)basisDotProductQ40 >> 0x1c) +
               (transform->translation).y;
-  lVar2 = (longlong)transform->basisRow2[1] * (longlong)point->y +
-          (longlong)iVar1 * (longlong)point->x +
+  basisDotProductQ40 = (longlong)transform->basisRow2[1] * (longlong)point->y +
+          (longlong)basisRow2Component0Q28 * (longlong)point->x +
           (longlong)transform->basisRow2[2] * (longlong)point->z;
-  output->z = ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) +
+  output->z = ((int)((ulonglong)basisDotProductQ40 >> 0x20) << 4 | (uint)basisDotProductQ40 >> 0x1c) +
               (transform->translation).z;
   return;
 }
@@ -1202,50 +1202,50 @@ FixedTransform_BuildRotationBasis
           (GraphicsFixedMatrix3x4 *output,AngleTurn32 angle0,AngleTurn32 angle1,AngleTurn32 angle2)
 
 {
-  longlong lVar1;
+  longlong rowComponentTimesVerticalSinProduct;
   int currentSymmetricComponentQ28;
-  int iVar2;
-  uint uVar3;
+  int symmetricComponentQ28;
+  uint differenceAngleIndex16;
   uint secondarySymmetricAngleIndex16;
   uint primarySymmetricAngleIndex16;
   FixedDirectionXZEdxEax8 directionSamplePairQ28;
   FixedDirectionXZEdxEax8 secondaryDirectionSamplePairQ28;
-  FixedDirectionXyzRegs12 FVar4;
+  FixedDirectionXyzRegs12 directionRow;
   longlong currentComponentTimesVerticalSinProduct;
   int verticalSinQ28;
   longlong componentTimesVerticalSinProduct;
   longlong secondaryComponentTimesVerticalSinProduct;
   
-  FVar4 = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle2);
-  output->basisRow0[2] = FVar4.eax;
-  output->basisRow1[2] = FVar4.ecx;
-  output->basisRow2[2] = FVar4.edx;
-  FVar4 = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle0 - angle2);
+  directionRow = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle2);
+  output->basisRow0[2] = directionRow.eax;
+  output->basisRow1[2] = directionRow.ecx;
+  output->basisRow2[2] = directionRow.edx;
+  directionRow = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle0 - angle2);
   secondarySymmetricAngleIndex16 = (angle0 - angle2) + angle2;
-  output->basisRow2[1] = FVar4.ecx;
-  output->basisRow2[0] = -FVar4.eax;
+  output->basisRow2[1] = directionRow.ecx;
+  output->basisRow2[0] = -directionRow.eax;
   primarySymmetricAngleIndex16 = secondarySymmetricAngleIndex16 & 0xffff;
-  uVar3 = secondarySymmetricAngleIndex16 + angle2 * -2 & 0xffff;
+  differenceAngleIndex16 = secondarySymmetricAngleIndex16 + angle2 * -2 & 0xffff;
   currentSymmetricComponentQ28 =
-       g_FixedCosQ28[primarySymmetricAngleIndex16] - g_FixedCosQ28[uVar3] >> 1;
+       g_FixedCosQ28[primarySymmetricAngleIndex16] - g_FixedCosQ28[differenceAngleIndex16] >> 1;
   verticalSinQ28 = g_FixedSinQ28[angle1 & 0xffff];
   output->basisRow0[0] = currentSymmetricComponentQ28;
-  iVar2 = g_FixedCosQ28[primarySymmetricAngleIndex16] + g_FixedCosQ28[uVar3] >> 1;
+  symmetricComponentQ28 = g_FixedCosQ28[primarySymmetricAngleIndex16] + g_FixedCosQ28[differenceAngleIndex16] >> 1;
   output->basisRow1[1] =
        ((int)((ulonglong)((longlong)currentSymmetricComponentQ28 * (longlong)verticalSinQ28) >> 0x20
              ) << 4 |
-       (uint)((longlong)currentSymmetricComponentQ28 * (longlong)verticalSinQ28) >> 0x1c) + iVar2;
-  currentComponentTimesVerticalSinProduct = (longlong)iVar2 * (longlong)verticalSinQ28;
+       (uint)((longlong)currentSymmetricComponentQ28 * (longlong)verticalSinQ28) >> 0x1c) + symmetricComponentQ28;
+  currentComponentTimesVerticalSinProduct = (longlong)symmetricComponentQ28 * (longlong)verticalSinQ28;
   output->basisRow0[0] =
        output->basisRow0[0] +
        ((int)((ulonglong)currentComponentTimesVerticalSinProduct >> 0x20) << 4 |
        (uint)currentComponentTimesVerticalSinProduct >> 0x1c);
-  iVar2 = g_FixedSinQ28[primarySymmetricAngleIndex16] + g_FixedSinQ28[uVar3] >> 1;
-  output->basisRow1[0] = iVar2;
-  lVar1 = (longlong)iVar2 * (longlong)verticalSinQ28;
-  iVar2 = g_FixedSinQ28[uVar3] - g_FixedSinQ28[primarySymmetricAngleIndex16] >> 1;
-  secondaryComponentTimesVerticalSinProduct = (longlong)iVar2 * (longlong)verticalSinQ28;
-  output->basisRow0[1] = iVar2 - ((int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c);
+  symmetricComponentQ28 = g_FixedSinQ28[primarySymmetricAngleIndex16] + g_FixedSinQ28[differenceAngleIndex16] >> 1;
+  output->basisRow1[0] = symmetricComponentQ28;
+  rowComponentTimesVerticalSinProduct = (longlong)symmetricComponentQ28 * (longlong)verticalSinQ28;
+  symmetricComponentQ28 = g_FixedSinQ28[differenceAngleIndex16] - g_FixedSinQ28[primarySymmetricAngleIndex16] >> 1;
+  secondaryComponentTimesVerticalSinProduct = (longlong)symmetricComponentQ28 * (longlong)verticalSinQ28;
+  output->basisRow0[1] = symmetricComponentQ28 - ((int)((ulonglong)rowComponentTimesVerticalSinProduct >> 0x20) << 4 | (uint)rowComponentTimesVerticalSinProduct >> 0x1c);
   output->basisRow1[0] =
        output->basisRow1[0] -
        ((int)((ulonglong)secondaryComponentTimesVerticalSinProduct >> 0x20) << 4 |
@@ -1266,74 +1266,74 @@ FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x
 
 {
   dword angle16Result;
-  int iVar1;
+  int denominatorOrRatio;
   uint reducedAngleNumerator;
-  int iVar2;
+  int doubledYOrRatioSquared;
   AngleTurn16Stored32 octantBaseAngle16;
   
   octantBaseAngle16 = 0;
-  iVar1 = x * 2;
-  iVar2 = y * 2;
-  if (iVar2 - x == 0 || iVar2 < x) {
-    if (iVar1 < -y) {
-      if (y < iVar1) {
+  denominatorOrRatio = x * 2;
+  doubledYOrRatioSquared = y * 2;
+  if (doubledYOrRatioSquared - x == 0 || doubledYOrRatioSquared < x) {
+    if (denominatorOrRatio < -y) {
+      if (y < denominatorOrRatio) {
         octantBaseAngle16 = -0x4000;
-        iVar1 = -y;
+        denominatorOrRatio = -y;
         reducedAngleNumerator = x;
       }
       else {
         reducedAngleNumerator = x - y;
         octantBaseAngle16 = -0x6000;
-        iVar1 = -(x + y);
+        denominatorOrRatio = -(x + y);
       }
     }
     else {
-      iVar1 = x;
+      denominatorOrRatio = x;
       reducedAngleNumerator = y;
-      if (iVar2 < -x) {
+      if (doubledYOrRatioSquared < -x) {
         reducedAngleNumerator = x + y;
         octantBaseAngle16 = -0x2000;
-        iVar1 = x - y;
+        denominatorOrRatio = x - y;
       }
     }
   }
-  else if (iVar1 < -y) {
-    if (iVar2 < -x) {
+  else if (denominatorOrRatio < -y) {
+    if (doubledYOrRatioSquared < -x) {
       octantBaseAngle16 = 0x8000;
-      iVar1 = -x;
+      denominatorOrRatio = -x;
       reducedAngleNumerator = -y;
       if (0 < (int)reducedAngleNumerator) {
         octantBaseAngle16 = -0x8000;
       }
     }
     else {
-      iVar1 = y - x;
+      denominatorOrRatio = y - x;
       octantBaseAngle16 = 0x6000;
       reducedAngleNumerator = -(x + y);
     }
   }
-  else if (y < iVar1) {
-    iVar1 = x + y;
+  else if (y < denominatorOrRatio) {
+    denominatorOrRatio = x + y;
     octantBaseAngle16 = 0x2000;
     reducedAngleNumerator = y - x;
   }
   else {
     octantBaseAngle16 = 0x4000;
     reducedAngleNumerator = -x;
-    iVar1 = y;
+    denominatorOrRatio = y;
   }
   angle16Result = 0;
-  if (iVar1 * 2 != 0) {
-    iVar1 = (int)((longlong)((ulonglong)reducedAngleNumerator << 0x20) / (longlong)(iVar1 * 2));
-    iVar2 = (int)((ulonglong)((longlong)iVar1 * (longlong)iVar1) >> 0x20);
+  if (denominatorOrRatio * 2 != 0) {
+    denominatorOrRatio = (int)((longlong)((ulonglong)reducedAngleNumerator << 0x20) / (longlong)(denominatorOrRatio * 2));
+    doubledYOrRatioSquared = (int)((ulonglong)((longlong)denominatorOrRatio * (longlong)denominatorOrRatio) >> 0x20);
     angle16Result =
          octantBaseAngle16 +
          (int)((ulonglong)
-               ((longlong)iVar1 *
+               ((longlong)denominatorOrRatio *
                (longlong)
                ((int)((ulonglong)
-                      ((longlong)iVar2 *
-                      (longlong)((int)((ulonglong)((longlong)iVar2 * 0x104c2) >> 0x20) + -0x6ca6))
+                      ((longlong)doubledYOrRatioSquared *
+                      (longlong)((int)((ulonglong)((longlong)doubledYOrRatioSquared * 0x104c2) >> 0x20) + -0x6ca6))
                      >> 0x20) + 0x517d)) >> 0x20);
   }
   return angle16Result;
@@ -1347,25 +1347,25 @@ FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x
 dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue)
 
 {
-  int iVar1;
-  uint uVar2;
+  int highestBitOrNormalized;
+  uint normalizeShift;
   
-  iVar1 = 0x1f;
+  highestBitOrNormalized = 0x1f;
   if (inputValue != 0) {
-    for (; inputValue >> iVar1 == 0; iVar1 = iVar1 + -1) {
+    for (; inputValue >> highestBitOrNormalized == 0; highestBitOrNormalized = highestBitOrNormalized + -1) {
     }
   }
   if (inputValue != 0) {
-    uVar2 = 0x1cU - iVar1 & 0x1e;
-    iVar1 = inputValue << (sbyte)uVar2;
+    normalizeShift = 0x1cU - highestBitOrNormalized & 0x1e;
+    highestBitOrNormalized = inputValue << (sbyte)normalizeShift;
     return (int)((ulonglong)
-                 ((longlong)iVar1 *
+                 ((longlong)highestBitOrNormalized *
                  (longlong)
                  ((int)((ulonglong)
-                        ((longlong)iVar1 *
+                        ((longlong)highestBitOrNormalized *
                         (longlong)
-                        ((int)((ulonglong)((longlong)iVar1 * 0x25ed098) >> 0x20) + -0x1c71c71)) >>
-                       0x20) + 0xb1c71c)) >> 0x20) + 0x66b75U >> (sbyte)(uVar2 >> 1);
+                        ((int)((ulonglong)((longlong)highestBitOrNormalized * 0x25ed098) >> 0x20) + -0x1c71c71)) >>
+                       0x20) + 0xb1c71c)) >> 0x20) + 0x66b75U >> (sbyte)(normalizeShift >> 1);
   }
   return 0;
 }

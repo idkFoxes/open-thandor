@@ -21,80 +21,80 @@ void __thandor_void_preserve_eax_ecx_edx
 WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 
 {
-  SoftwareBgraWordLanes SVar1;
-  SoftwareBgraWordLanes SVar2;
-  PackedArgb32 PVar3;
-  PackedArgb32 PVar4;
-  PackedArgb32 PVar5;
-  InGameLevelConditionStorageView800 *pIVar6;
+  SoftwareBgraWordLanes forwardFactors;
+  SoftwareBgraWordLanes inverseFactors;
+  PackedArgb32 primaryColorB;
+  PackedArgb32 alternateColorA;
+  PackedArgb32 alternateColorB;
+  InGameLevelConditionStorageView800 *levelConditions;
   byte mm0PackedValue0ByteLane3;
   byte mm0PackedValue0ByteLane1;
-  short sVar16;
+  short mixedValue0ColorALane0;
   byte mm0PackedValue1ByteLane1;
-  short sVar20;
+  short mixedValue0ColorALane1;
   byte mm0PackedValue1ByteLane3;
-  short sVar17;
+  short mixedValue1ColorALane0;
   byte mm0PackedValue2ByteLane1;
-  short sVar21;
+  short mixedValue1ColorALane1;
   byte mm0PackedValue2ByteLane3;
-  short sVar18;
+  short mixedValue2ColorALane0;
   byte mm0PackedValue3ByteLane1;
-  short sVar19;
+  short mixedValue3ColorALane0;
   byte mm0PackedValue0ByteLane2;
-  uint uVar7;
-  int iVar8;
-  int iVar9;
-  uint uVar10;
-  uint uVar11;
-  uint uVar12;
-  int iVar13;
-  int iVar14;
+  uint cycleDurationOrPhase;
+  int primaryOriginXWeighted;
+  int primaryWidthWeighted;
+  uint phaseByteOrAlternateSize;
+  uint blendIndexOrPrimaryValue;
+  uint alternateOriginOrBlendWeight;
+  int alternateOriginXWeighted;
+  int alternateWidthWeighted;
   WorldRuntimeContext *worldRuntime;
-  int iVar15;
-  short sVar23;
-  short sVar24;
-  short sVar27;
+  int inverseBlendWeight;
+  short mixedValue3ColorALane1;
+  short mixedValue0ColorALane2;
+  short mixedValue3ColorALane2;
   undefined8 mm0PackedValue0;
   byte mm0PackedValue1ByteLane2;
   undefined8 mm0PackedValue1;
-  short sVar22;
+  short mixedValue2ColorALane1;
   byte mm0PackedValue3ByteLane3;
   byte mm0PackedValue2ByteLane2;
-  short sVar25;
+  short mixedValue1ColorALane2;
   undefined8 mm0PackedValue2;
   byte mm0PackedValue3ByteLane2;
-  short sVar26;
+  short mixedValue2ColorALane2;
   undefined8 mm0PackedValue3;
-  short sVar31;
+  short mixedValue3ColorBLane0;
   byte mm1PackedValue0ByteLane2;
   byte mm1PackedValue0ByteLane3;
-  short sVar28;
+  short mixedValue0ColorBLane0;
   byte mm1PackedValue1ByteLane1;
-  short sVar32;
+  short mixedValue0ColorBLane1;
   byte mm1PackedValue1ByteLane3;
   byte mm1PackedValue0ByteLane1;
-  short sVar35;
-  short sVar36;
-  short sVar39;
+  short mixedValue3ColorBLane1;
+  short mixedValue0ColorBLane2;
+  short mixedValue3ColorBLane2;
   undefined8 mm1PackedValue0;
   byte mm1PackedValue1ByteLane2;
-  short sVar40;
+  short mixedValue0ColorBLane3;
   undefined8 mm1PackedValue1;
-  short sVar29;
+  short mixedValue1ColorBLane0;
   byte mm1PackedValue2ByteLane1;
-  short sVar33;
+  short mixedValue1ColorBLane1;
   byte mm1PackedValue2ByteLane3;
-  short sVar30;
+  short mixedValue2ColorBLane0;
   byte mm1PackedValue3ByteLane1;
-  short sVar34;
+  short mixedValue2ColorBLane1;
   byte mm1PackedValue3ByteLane3;
   byte mm1PackedValue2ByteLane2;
-  short sVar37;
-  short sVar41;
+  short mixedValue1ColorBLane2;
+  short mixedValue1ColorBLane3;
   undefined8 mm1PackedValue2;
   byte mm1PackedValue3ByteLane2;
-  short sVar38;
-  short sVar42;
+  short mixedValue2ColorBLane2;
+  short mixedValue2ColorBLane3;
   undefined8 mm1PackedValue3;
   byte mm2PackedValue0ByteLane2;
   byte mm2PackedValue1ByteLane2;
@@ -102,7 +102,7 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   byte mm2PackedValue3ByteLane2;
   byte mm2PackedValue0ByteLane3;
   byte mm2PackedValue0ByteLane1;
-  short sVar43;
+  short mixedValue3ColorBLane3;
   undefined8 mm2PackedValue0;
   byte mm2PackedValue1ByteLane1;
   byte mm2PackedValue1ByteLane3;
@@ -129,413 +129,413 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   byte mm3PackedValue3ByteLane3;
   undefined8 mm3PackedValue2;
   undefined8 mm3PackedValue3;
-  PackedArgb32 worldContext1;
+  PackedArgb32 primaryColorA;
   
-  pIVar6 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  uVar7 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+  levelConditions = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  cycleDurationOrPhase = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
           terrainLightingCycleDurationTicks;
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-  if (uVar7 != 0) {
-    uVar7 = (g_GameFactionRuntimeImage.tail.simulationTick % uVar7 << 0x10) / uVar7;
-    uVar11 = g_FixedCosQ28[uVar7] + 0x10000000U >> 0x15;
-    worldContext1 =
+  if (cycleDurationOrPhase != 0) {
+    cycleDurationOrPhase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 0x10) / cycleDurationOrPhase;
+    blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 0x15;
+    primaryColorA =
          ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
          terrainBaseColorArgb;
-    PVar3 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             terrainRampColor124Argb;
-    PVar4 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainBaseColorArgb;
-    PVar5 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainRampColor124Argb;
-    SVar1 = g_SoftwareBilinearForwardFactors[uVar11];
-    SVar2 = g_SoftwareBilinearInverseFactors[uVar11];
-    mm0PackedValue0ByteLane3 = (byte)(worldContext1 >> 0x18);
-    mm0PackedValue0ByteLane2 = (byte)(worldContext1 >> 0x10);
-    mm0PackedValue0ByteLane1 = (byte)(worldContext1 >> 8);
-    mm1PackedValue0ByteLane3 = (byte)(PVar3 >> 0x18);
-    mm1PackedValue0ByteLane2 = (byte)(PVar3 >> 0x10);
-    mm1PackedValue0ByteLane1 = (byte)(PVar3 >> 8);
-    mm2PackedValue0ByteLane3 = (byte)(PVar4 >> 0x18);
-    mm2PackedValue0ByteLane2 = (byte)(PVar4 >> 0x10);
-    mm2PackedValue0ByteLane1 = (byte)(PVar4 >> 8);
-    mm3PackedValue0ByteLane3 = (byte)(PVar5 >> 0x18);
-    mm3PackedValue0ByteLane2 = (byte)(PVar5 >> 0x10);
-    mm3PackedValue0ByteLane1 = (byte)(PVar5 >> 8);
+    forwardFactors = g_SoftwareBilinearForwardFactors[blendIndexOrPrimaryValue];
+    inverseFactors = g_SoftwareBilinearInverseFactors[blendIndexOrPrimaryValue];
+    mm0PackedValue0ByteLane3 = (byte)(primaryColorA >> 0x18);
+    mm0PackedValue0ByteLane2 = (byte)(primaryColorA >> 0x10);
+    mm0PackedValue0ByteLane1 = (byte)(primaryColorA >> 8);
+    mm1PackedValue0ByteLane3 = (byte)(primaryColorB >> 0x18);
+    mm1PackedValue0ByteLane2 = (byte)(primaryColorB >> 0x10);
+    mm1PackedValue0ByteLane1 = (byte)(primaryColorB >> 8);
+    mm2PackedValue0ByteLane3 = (byte)(alternateColorA >> 0x18);
+    mm2PackedValue0ByteLane2 = (byte)(alternateColorA >> 0x10);
+    mm2PackedValue0ByteLane1 = (byte)(alternateColorA >> 8);
+    mm3PackedValue0ByteLane3 = (byte)(alternateColorB >> 0x18);
+    mm3PackedValue0ByteLane2 = (byte)(alternateColorB >> 0x10);
+    mm3PackedValue0ByteLane1 = (byte)(alternateColorB >> 8);
     mm0PackedValue0 =
          pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
                                                                       mm0PackedValue0ByteLane3),
                                                              mm0PackedValue0ByteLane2),
-                                                    CONCAT14(mm0PackedValue0ByteLane2,worldContext1)
+                                                    CONCAT14(mm0PackedValue0ByteLane2,primaryColorA)
                                                    ) >> 0x20) >> 6,
                                   CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                     mm0PackedValue0ByteLane1) >> 6,
-                                           CONCAT11((char)worldContext1,(char)worldContext1) >> 6)))
-                ,SVar1);
+                                           CONCAT11((char)primaryColorA,(char)primaryColorA) >> 6)))
+                ,forwardFactors);
     mm1PackedValue0 =
          pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm1PackedValue0ByteLane3,
                                                                       mm1PackedValue0ByteLane3),
                                                              mm1PackedValue0ByteLane2),
-                                                    CONCAT14(mm1PackedValue0ByteLane2,PVar3)) >>
+                                                    CONCAT14(mm1PackedValue0ByteLane2,primaryColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
                                                     mm1PackedValue0ByteLane1) >> 6,
-                                           CONCAT11((char)PVar3,(char)PVar3) >> 6))),SVar1);
+                                           CONCAT11((char)primaryColorB,(char)primaryColorB) >> 6))),forwardFactors);
     mm2PackedValue0 =
          pmulhw(CONCAT26(CONCAT11(mm2PackedValue0ByteLane3,mm2PackedValue0ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm2PackedValue0ByteLane3,
                                                                       mm2PackedValue0ByteLane3),
                                                              mm2PackedValue0ByteLane2),
-                                                    CONCAT14(mm2PackedValue0ByteLane2,PVar4)) >>
+                                                    CONCAT14(mm2PackedValue0ByteLane2,alternateColorA)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
                                                     mm2PackedValue0ByteLane1) >> 6,
-                                           CONCAT11((char)PVar4,(char)PVar4) >> 6))),SVar2);
+                                           CONCAT11((char)alternateColorA,(char)alternateColorA) >> 6))),inverseFactors);
     mm3PackedValue0 =
          pmulhw(CONCAT26(CONCAT11(mm3PackedValue0ByteLane3,mm3PackedValue0ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm3PackedValue0ByteLane3,
                                                                       mm3PackedValue0ByteLane3),
                                                              mm3PackedValue0ByteLane2),
-                                                    CONCAT14(mm3PackedValue0ByteLane2,PVar5)) >>
+                                                    CONCAT14(mm3PackedValue0ByteLane2,alternateColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm3PackedValue0ByteLane1,
                                                     mm3PackedValue0ByteLane1) >> 6,
-                                           CONCAT11((char)PVar5,(char)PVar5) >> 6))),SVar2);
-    sVar16 = (short)mm0PackedValue0 + (short)mm2PackedValue0;
-    sVar20 = (short)((ulonglong)mm0PackedValue0 >> 0x10) +
+                                           CONCAT11((char)alternateColorB,(char)alternateColorB) >> 6))),inverseFactors);
+    mixedValue0ColorALane0 = (short)mm0PackedValue0 + (short)mm2PackedValue0;
+    mixedValue0ColorALane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10) +
              (short)((ulonglong)mm2PackedValue0 >> 0x10);
-    sVar24 = (short)((ulonglong)mm0PackedValue0 >> 0x20) +
+    mixedValue0ColorALane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20) +
              (short)((ulonglong)mm2PackedValue0 >> 0x20);
-    sVar28 = (short)mm1PackedValue0 + (short)mm3PackedValue0;
-    sVar32 = (short)((ulonglong)mm1PackedValue0 >> 0x10) +
+    mixedValue0ColorBLane0 = (short)mm1PackedValue0 + (short)mm3PackedValue0;
+    mixedValue0ColorBLane1 = (short)((ulonglong)mm1PackedValue0 >> 0x10) +
              (short)((ulonglong)mm3PackedValue0 >> 0x10);
-    sVar36 = (short)((ulonglong)mm1PackedValue0 >> 0x20) +
+    mixedValue0ColorBLane2 = (short)((ulonglong)mm1PackedValue0 >> 0x20) +
              (short)((ulonglong)mm3PackedValue0 >> 0x20);
-    sVar40 = (short)((ulonglong)mm1PackedValue0 >> 0x30) +
+    mixedValue0ColorBLane3 = (short)((ulonglong)mm1PackedValue0 >> 0x30) +
              (short)((ulonglong)mm3PackedValue0 >> 0x30);
-    worldContext1 =
+    primaryColorA =
          ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
          terrainLightingColor128Argb;
-    PVar3 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             terrainRampColor12CArgb;
-    PVar4 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainLightingColor128Argb;
-    PVar5 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainRampColor12CArgb;
-    mm0PackedValue1ByteLane3 = (byte)(worldContext1 >> 0x18);
-    mm0PackedValue1ByteLane2 = (byte)(worldContext1 >> 0x10);
-    mm0PackedValue1ByteLane1 = (byte)(worldContext1 >> 8);
-    mm1PackedValue1ByteLane3 = (byte)(PVar3 >> 0x18);
-    mm1PackedValue1ByteLane2 = (byte)(PVar3 >> 0x10);
-    mm1PackedValue1ByteLane1 = (byte)(PVar3 >> 8);
-    mm2PackedValue1ByteLane3 = (byte)(PVar4 >> 0x18);
-    mm2PackedValue1ByteLane2 = (byte)(PVar4 >> 0x10);
-    mm2PackedValue1ByteLane1 = (byte)(PVar4 >> 8);
-    mm3PackedValue1ByteLane3 = (byte)(PVar5 >> 0x18);
-    mm3PackedValue1ByteLane2 = (byte)(PVar5 >> 0x10);
-    mm3PackedValue1ByteLane1 = (byte)(PVar5 >> 8);
+    mm0PackedValue1ByteLane3 = (byte)(primaryColorA >> 0x18);
+    mm0PackedValue1ByteLane2 = (byte)(primaryColorA >> 0x10);
+    mm0PackedValue1ByteLane1 = (byte)(primaryColorA >> 8);
+    mm1PackedValue1ByteLane3 = (byte)(primaryColorB >> 0x18);
+    mm1PackedValue1ByteLane2 = (byte)(primaryColorB >> 0x10);
+    mm1PackedValue1ByteLane1 = (byte)(primaryColorB >> 8);
+    mm2PackedValue1ByteLane3 = (byte)(alternateColorA >> 0x18);
+    mm2PackedValue1ByteLane2 = (byte)(alternateColorA >> 0x10);
+    mm2PackedValue1ByteLane1 = (byte)(alternateColorA >> 8);
+    mm3PackedValue1ByteLane3 = (byte)(alternateColorB >> 0x18);
+    mm3PackedValue1ByteLane2 = (byte)(alternateColorB >> 0x10);
+    mm3PackedValue1ByteLane1 = (byte)(alternateColorB >> 8);
     mm0PackedValue1 =
          pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue1ByteLane3,
                                                                       mm0PackedValue1ByteLane3),
                                                              mm0PackedValue1ByteLane2),
-                                                    CONCAT14(mm0PackedValue1ByteLane2,worldContext1)
+                                                    CONCAT14(mm0PackedValue1ByteLane2,primaryColorA)
                                                    ) >> 0x20) >> 6,
                                   CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
                                                     mm0PackedValue1ByteLane1) >> 6,
-                                           CONCAT11((char)worldContext1,(char)worldContext1) >> 6)))
-                ,SVar1);
+                                           CONCAT11((char)primaryColorA,(char)primaryColorA) >> 6)))
+                ,forwardFactors);
     mm1PackedValue1 =
          pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm1PackedValue1ByteLane3,
                                                                       mm1PackedValue1ByteLane3),
                                                              mm1PackedValue1ByteLane2),
-                                                    CONCAT14(mm1PackedValue1ByteLane2,PVar3)) >>
+                                                    CONCAT14(mm1PackedValue1ByteLane2,primaryColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
                                                     mm1PackedValue1ByteLane1) >> 6,
-                                           CONCAT11((char)PVar3,(char)PVar3) >> 6))),SVar1);
+                                           CONCAT11((char)primaryColorB,(char)primaryColorB) >> 6))),forwardFactors);
     mm2PackedValue1 =
          pmulhw(CONCAT26(CONCAT11(mm2PackedValue1ByteLane3,mm2PackedValue1ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm2PackedValue1ByteLane3,
                                                                       mm2PackedValue1ByteLane3),
                                                              mm2PackedValue1ByteLane2),
-                                                    CONCAT14(mm2PackedValue1ByteLane2,PVar4)) >>
+                                                    CONCAT14(mm2PackedValue1ByteLane2,alternateColorA)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm2PackedValue1ByteLane1,
                                                     mm2PackedValue1ByteLane1) >> 6,
-                                           CONCAT11((char)PVar4,(char)PVar4) >> 6))),SVar2);
+                                           CONCAT11((char)alternateColorA,(char)alternateColorA) >> 6))),inverseFactors);
     mm3PackedValue1 =
          pmulhw(CONCAT26(CONCAT11(mm3PackedValue1ByteLane3,mm3PackedValue1ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm3PackedValue1ByteLane3,
                                                                       mm3PackedValue1ByteLane3),
                                                              mm3PackedValue1ByteLane2),
-                                                    CONCAT14(mm3PackedValue1ByteLane2,PVar5)) >>
+                                                    CONCAT14(mm3PackedValue1ByteLane2,alternateColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm3PackedValue1ByteLane1,
                                                     mm3PackedValue1ByteLane1) >> 6,
-                                           CONCAT11((char)PVar5,(char)PVar5) >> 6))),SVar2);
-    sVar17 = (short)mm0PackedValue1 + (short)mm2PackedValue1;
-    sVar21 = (short)((ulonglong)mm0PackedValue1 >> 0x10) +
+                                           CONCAT11((char)alternateColorB,(char)alternateColorB) >> 6))),inverseFactors);
+    mixedValue1ColorALane0 = (short)mm0PackedValue1 + (short)mm2PackedValue1;
+    mixedValue1ColorALane1 = (short)((ulonglong)mm0PackedValue1 >> 0x10) +
              (short)((ulonglong)mm2PackedValue1 >> 0x10);
-    sVar25 = (short)((ulonglong)mm0PackedValue1 >> 0x20) +
+    mixedValue1ColorALane2 = (short)((ulonglong)mm0PackedValue1 >> 0x20) +
              (short)((ulonglong)mm2PackedValue1 >> 0x20);
-    sVar29 = (short)mm1PackedValue1 + (short)mm3PackedValue1;
-    sVar33 = (short)((ulonglong)mm1PackedValue1 >> 0x10) +
+    mixedValue1ColorBLane0 = (short)mm1PackedValue1 + (short)mm3PackedValue1;
+    mixedValue1ColorBLane1 = (short)((ulonglong)mm1PackedValue1 >> 0x10) +
              (short)((ulonglong)mm3PackedValue1 >> 0x10);
-    sVar37 = (short)((ulonglong)mm1PackedValue1 >> 0x20) +
+    mixedValue1ColorBLane2 = (short)((ulonglong)mm1PackedValue1 >> 0x20) +
              (short)((ulonglong)mm3PackedValue1 >> 0x20);
-    sVar41 = (short)((ulonglong)mm1PackedValue1 >> 0x30) +
+    mixedValue1ColorBLane3 = (short)((ulonglong)mm1PackedValue1 >> 0x30) +
              (short)((ulonglong)mm3PackedValue1 >> 0x30);
-    worldContext1 =
+    primaryColorA =
          ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
          terrainLightingColor130Argb;
-    PVar3 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             terrainLightingColor134Argb;
-    PVar4 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainLightingColor130Argb;
-    PVar5 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainLightingColor134Argb;
-    mm0PackedValue2ByteLane3 = (byte)(worldContext1 >> 0x18);
-    mm0PackedValue2ByteLane2 = (byte)(worldContext1 >> 0x10);
-    mm0PackedValue2ByteLane1 = (byte)(worldContext1 >> 8);
-    mm1PackedValue2ByteLane3 = (byte)(PVar3 >> 0x18);
-    mm1PackedValue2ByteLane2 = (byte)(PVar3 >> 0x10);
-    mm1PackedValue2ByteLane1 = (byte)(PVar3 >> 8);
-    mm2PackedValue2ByteLane3 = (byte)(PVar4 >> 0x18);
-    mm2PackedValue2ByteLane2 = (byte)(PVar4 >> 0x10);
-    mm2PackedValue2ByteLane1 = (byte)(PVar4 >> 8);
-    mm3PackedValue2ByteLane3 = (byte)(PVar5 >> 0x18);
-    mm3PackedValue2ByteLane2 = (byte)(PVar5 >> 0x10);
-    mm3PackedValue2ByteLane1 = (byte)(PVar5 >> 8);
+    mm0PackedValue2ByteLane3 = (byte)(primaryColorA >> 0x18);
+    mm0PackedValue2ByteLane2 = (byte)(primaryColorA >> 0x10);
+    mm0PackedValue2ByteLane1 = (byte)(primaryColorA >> 8);
+    mm1PackedValue2ByteLane3 = (byte)(primaryColorB >> 0x18);
+    mm1PackedValue2ByteLane2 = (byte)(primaryColorB >> 0x10);
+    mm1PackedValue2ByteLane1 = (byte)(primaryColorB >> 8);
+    mm2PackedValue2ByteLane3 = (byte)(alternateColorA >> 0x18);
+    mm2PackedValue2ByteLane2 = (byte)(alternateColorA >> 0x10);
+    mm2PackedValue2ByteLane1 = (byte)(alternateColorA >> 8);
+    mm3PackedValue2ByteLane3 = (byte)(alternateColorB >> 0x18);
+    mm3PackedValue2ByteLane2 = (byte)(alternateColorB >> 0x10);
+    mm3PackedValue2ByteLane1 = (byte)(alternateColorB >> 8);
     mm0PackedValue2 =
          pmulhw(CONCAT26(CONCAT11(mm0PackedValue2ByteLane3,mm0PackedValue2ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue2ByteLane3,
                                                                       mm0PackedValue2ByteLane3),
                                                              mm0PackedValue2ByteLane2),
-                                                    CONCAT14(mm0PackedValue2ByteLane2,worldContext1)
+                                                    CONCAT14(mm0PackedValue2ByteLane2,primaryColorA)
                                                    ) >> 0x20) >> 6,
                                   CONCAT22(CONCAT11(mm0PackedValue2ByteLane1,
                                                     mm0PackedValue2ByteLane1) >> 6,
-                                           CONCAT11((char)worldContext1,(char)worldContext1) >> 6)))
-                ,SVar1);
+                                           CONCAT11((char)primaryColorA,(char)primaryColorA) >> 6)))
+                ,forwardFactors);
     mm1PackedValue2 =
          pmulhw(CONCAT26(CONCAT11(mm1PackedValue2ByteLane3,mm1PackedValue2ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm1PackedValue2ByteLane3,
                                                                       mm1PackedValue2ByteLane3),
                                                              mm1PackedValue2ByteLane2),
-                                                    CONCAT14(mm1PackedValue2ByteLane2,PVar3)) >>
+                                                    CONCAT14(mm1PackedValue2ByteLane2,primaryColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm1PackedValue2ByteLane1,
                                                     mm1PackedValue2ByteLane1) >> 6,
-                                           CONCAT11((char)PVar3,(char)PVar3) >> 6))),SVar1);
+                                           CONCAT11((char)primaryColorB,(char)primaryColorB) >> 6))),forwardFactors);
     mm2PackedValue2 =
          pmulhw(CONCAT26(CONCAT11(mm2PackedValue2ByteLane3,mm2PackedValue2ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm2PackedValue2ByteLane3,
                                                                       mm2PackedValue2ByteLane3),
                                                              mm2PackedValue2ByteLane2),
-                                                    CONCAT14(mm2PackedValue2ByteLane2,PVar4)) >>
+                                                    CONCAT14(mm2PackedValue2ByteLane2,alternateColorA)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm2PackedValue2ByteLane1,
                                                     mm2PackedValue2ByteLane1) >> 6,
-                                           CONCAT11((char)PVar4,(char)PVar4) >> 6))),SVar2);
+                                           CONCAT11((char)alternateColorA,(char)alternateColorA) >> 6))),inverseFactors);
     mm3PackedValue2 =
          pmulhw(CONCAT26(CONCAT11(mm3PackedValue2ByteLane3,mm3PackedValue2ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm3PackedValue2ByteLane3,
                                                                       mm3PackedValue2ByteLane3),
                                                              mm3PackedValue2ByteLane2),
-                                                    CONCAT14(mm3PackedValue2ByteLane2,PVar5)) >>
+                                                    CONCAT14(mm3PackedValue2ByteLane2,alternateColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm3PackedValue2ByteLane1,
                                                     mm3PackedValue2ByteLane1) >> 6,
-                                           CONCAT11((char)PVar5,(char)PVar5) >> 6))),SVar2);
-    sVar18 = (short)mm0PackedValue2 + (short)mm2PackedValue2;
-    sVar22 = (short)((ulonglong)mm0PackedValue2 >> 0x10) +
+                                           CONCAT11((char)alternateColorB,(char)alternateColorB) >> 6))),inverseFactors);
+    mixedValue2ColorALane0 = (short)mm0PackedValue2 + (short)mm2PackedValue2;
+    mixedValue2ColorALane1 = (short)((ulonglong)mm0PackedValue2 >> 0x10) +
              (short)((ulonglong)mm2PackedValue2 >> 0x10);
-    sVar26 = (short)((ulonglong)mm0PackedValue2 >> 0x20) +
+    mixedValue2ColorALane2 = (short)((ulonglong)mm0PackedValue2 >> 0x20) +
              (short)((ulonglong)mm2PackedValue2 >> 0x20);
-    sVar30 = (short)mm1PackedValue2 + (short)mm3PackedValue2;
-    sVar34 = (short)((ulonglong)mm1PackedValue2 >> 0x10) +
+    mixedValue2ColorBLane0 = (short)mm1PackedValue2 + (short)mm3PackedValue2;
+    mixedValue2ColorBLane1 = (short)((ulonglong)mm1PackedValue2 >> 0x10) +
              (short)((ulonglong)mm3PackedValue2 >> 0x10);
-    sVar38 = (short)((ulonglong)mm1PackedValue2 >> 0x20) +
+    mixedValue2ColorBLane2 = (short)((ulonglong)mm1PackedValue2 >> 0x20) +
              (short)((ulonglong)mm3PackedValue2 >> 0x20);
-    sVar42 = (short)((ulonglong)mm1PackedValue2 >> 0x30) +
+    mixedValue2ColorBLane3 = (short)((ulonglong)mm1PackedValue2 >> 0x30) +
              (short)((ulonglong)mm3PackedValue2 >> 0x30);
-    worldContext1 =
+    primaryColorA =
          ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
          terrainLightingColor138Argb;
-    PVar3 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             terrainLightingColor13CArgb;
-    PVar4 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainLightingColor138Argb;
-    PVar5 = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
             alternateTerrainLightingColor13CArgb;
-    mm0PackedValue3ByteLane3 = (byte)(worldContext1 >> 0x18);
-    mm0PackedValue3ByteLane2 = (byte)(worldContext1 >> 0x10);
-    mm0PackedValue3ByteLane1 = (byte)(worldContext1 >> 8);
-    mm1PackedValue3ByteLane3 = (byte)(PVar3 >> 0x18);
-    mm1PackedValue3ByteLane2 = (byte)(PVar3 >> 0x10);
-    mm1PackedValue3ByteLane1 = (byte)(PVar3 >> 8);
-    mm2PackedValue3ByteLane3 = (byte)(PVar4 >> 0x18);
-    mm2PackedValue3ByteLane2 = (byte)(PVar4 >> 0x10);
-    mm2PackedValue3ByteLane1 = (byte)(PVar4 >> 8);
-    mm3PackedValue3ByteLane3 = (byte)(PVar5 >> 0x18);
-    mm3PackedValue3ByteLane2 = (byte)(PVar5 >> 0x10);
-    mm3PackedValue3ByteLane1 = (byte)(PVar5 >> 8);
+    mm0PackedValue3ByteLane3 = (byte)(primaryColorA >> 0x18);
+    mm0PackedValue3ByteLane2 = (byte)(primaryColorA >> 0x10);
+    mm0PackedValue3ByteLane1 = (byte)(primaryColorA >> 8);
+    mm1PackedValue3ByteLane3 = (byte)(primaryColorB >> 0x18);
+    mm1PackedValue3ByteLane2 = (byte)(primaryColorB >> 0x10);
+    mm1PackedValue3ByteLane1 = (byte)(primaryColorB >> 8);
+    mm2PackedValue3ByteLane3 = (byte)(alternateColorA >> 0x18);
+    mm2PackedValue3ByteLane2 = (byte)(alternateColorA >> 0x10);
+    mm2PackedValue3ByteLane1 = (byte)(alternateColorA >> 8);
+    mm3PackedValue3ByteLane3 = (byte)(alternateColorB >> 0x18);
+    mm3PackedValue3ByteLane2 = (byte)(alternateColorB >> 0x10);
+    mm3PackedValue3ByteLane1 = (byte)(alternateColorB >> 8);
     mm0PackedValue3 =
          pmulhw(CONCAT26(CONCAT11(mm0PackedValue3ByteLane3,mm0PackedValue3ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue3ByteLane3,
                                                                       mm0PackedValue3ByteLane3),
                                                              mm0PackedValue3ByteLane2),
-                                                    CONCAT14(mm0PackedValue3ByteLane2,worldContext1)
+                                                    CONCAT14(mm0PackedValue3ByteLane2,primaryColorA)
                                                    ) >> 0x20) >> 6,
                                   CONCAT22(CONCAT11(mm0PackedValue3ByteLane1,
                                                     mm0PackedValue3ByteLane1) >> 6,
-                                           CONCAT11((char)worldContext1,(char)worldContext1) >> 6)))
-                ,SVar1);
+                                           CONCAT11((char)primaryColorA,(char)primaryColorA) >> 6)))
+                ,forwardFactors);
     mm1PackedValue3 =
          pmulhw(CONCAT26(CONCAT11(mm1PackedValue3ByteLane3,mm1PackedValue3ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm1PackedValue3ByteLane3,
                                                                       mm1PackedValue3ByteLane3),
                                                              mm1PackedValue3ByteLane2),
-                                                    CONCAT14(mm1PackedValue3ByteLane2,PVar3)) >>
+                                                    CONCAT14(mm1PackedValue3ByteLane2,primaryColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm1PackedValue3ByteLane1,
                                                     mm1PackedValue3ByteLane1) >> 6,
-                                           CONCAT11((char)PVar3,(char)PVar3) >> 6))),SVar1);
+                                           CONCAT11((char)primaryColorB,(char)primaryColorB) >> 6))),forwardFactors);
     mm2PackedValue3 =
          pmulhw(CONCAT26(CONCAT11(mm2PackedValue3ByteLane3,mm2PackedValue3ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm2PackedValue3ByteLane3,
                                                                       mm2PackedValue3ByteLane3),
                                                              mm2PackedValue3ByteLane2),
-                                                    CONCAT14(mm2PackedValue3ByteLane2,PVar4)) >>
+                                                    CONCAT14(mm2PackedValue3ByteLane2,alternateColorA)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm2PackedValue3ByteLane1,
                                                     mm2PackedValue3ByteLane1) >> 6,
-                                           CONCAT11((char)PVar4,(char)PVar4) >> 6))),SVar2);
+                                           CONCAT11((char)alternateColorA,(char)alternateColorA) >> 6))),inverseFactors);
     mm3PackedValue3 =
          pmulhw(CONCAT26(CONCAT11(mm3PackedValue3ByteLane3,mm3PackedValue3ByteLane3) >> 6,
                          CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm3PackedValue3ByteLane3,
                                                                       mm3PackedValue3ByteLane3),
                                                              mm3PackedValue3ByteLane2),
-                                                    CONCAT14(mm3PackedValue3ByteLane2,PVar5)) >>
+                                                    CONCAT14(mm3PackedValue3ByteLane2,alternateColorB)) >>
                                           0x20) >> 6,
                                   CONCAT22(CONCAT11(mm3PackedValue3ByteLane1,
                                                     mm3PackedValue3ByteLane1) >> 6,
-                                           CONCAT11((char)PVar5,(char)PVar5) >> 6))),SVar2);
-    sVar19 = (short)mm0PackedValue3 + (short)mm2PackedValue3;
-    sVar23 = (short)((ulonglong)mm0PackedValue3 >> 0x10) +
+                                           CONCAT11((char)alternateColorB,(char)alternateColorB) >> 6))),inverseFactors);
+    mixedValue3ColorALane0 = (short)mm0PackedValue3 + (short)mm2PackedValue3;
+    mixedValue3ColorALane1 = (short)((ulonglong)mm0PackedValue3 >> 0x10) +
              (short)((ulonglong)mm2PackedValue3 >> 0x10);
-    sVar27 = (short)((ulonglong)mm0PackedValue3 >> 0x20) +
+    mixedValue3ColorALane2 = (short)((ulonglong)mm0PackedValue3 >> 0x20) +
              (short)((ulonglong)mm2PackedValue3 >> 0x20);
-    sVar31 = (short)mm1PackedValue3 + (short)mm3PackedValue3;
-    sVar35 = (short)((ulonglong)mm1PackedValue3 >> 0x10) +
+    mixedValue3ColorBLane0 = (short)mm1PackedValue3 + (short)mm3PackedValue3;
+    mixedValue3ColorBLane1 = (short)((ulonglong)mm1PackedValue3 >> 0x10) +
              (short)((ulonglong)mm3PackedValue3 >> 0x10);
-    sVar39 = (short)((ulonglong)mm1PackedValue3 >> 0x20) +
+    mixedValue3ColorBLane2 = (short)((ulonglong)mm1PackedValue3 >> 0x20) +
              (short)((ulonglong)mm3PackedValue3 >> 0x20);
-    sVar43 = (short)((ulonglong)mm1PackedValue3 >> 0x30) +
+    mixedValue3ColorBLane3 = (short)((ulonglong)mm1PackedValue3 >> 0x30) +
              (short)((ulonglong)mm3PackedValue3 >> 0x30);
     WorldRuntime_SetTerrainLightingConfiguration
-              (CONCAT13((0 < sVar43) * (sVar43 < 0x100) * (char)sVar43 - (0xff < sVar43),
-                        CONCAT12((0 < sVar39) * (sVar39 < 0x100) * (char)sVar39 - (0xff < sVar39),
-                                 CONCAT11((0 < sVar35) * (sVar35 < 0x100) * (char)sVar35 -
-                                          (0xff < sVar35),
-                                          (0 < sVar31) * (sVar31 < 0x100) * (char)sVar31 -
-                                          (0xff < sVar31)))) | 0xff000000,
-               (uint)CONCAT12((0 < sVar27) * (sVar27 < 0x100) * (char)sVar27 - (0xff < sVar27),
-                              CONCAT11((0 < sVar23) * (sVar23 < 0x100) * (char)sVar23 -
-                                       (0xff < sVar23),
-                                       (0 < sVar19) * (sVar19 < 0x100) * (char)sVar19 -
-                                       (0xff < sVar19))),
-               CONCAT13((0 < sVar42) * (sVar42 < 0x100) * (char)sVar42 - (0xff < sVar42),
-                        CONCAT12((0 < sVar38) * (sVar38 < 0x100) * (char)sVar38 - (0xff < sVar38),
-                                 CONCAT11((0 < sVar34) * (sVar34 < 0x100) * (char)sVar34 -
-                                          (0xff < sVar34),
-                                          (0 < sVar30) * (sVar30 < 0x100) * (char)sVar30 -
-                                          (0xff < sVar30)))) | 0xff000000,
-               (uint)CONCAT12((0 < sVar26) * (sVar26 < 0x100) * (char)sVar26 - (0xff < sVar26),
-                              CONCAT11((0 < sVar22) * (sVar22 < 0x100) * (char)sVar22 -
-                                       (0xff < sVar22),
-                                       (0 < sVar18) * (sVar18 < 0x100) * (char)sVar18 -
-                                       (0xff < sVar18))),
-               CONCAT13((0 < sVar41) * (sVar41 < 0x100) * (char)sVar41 - (0xff < sVar41),
-                        CONCAT12((0 < sVar37) * (sVar37 < 0x100) * (char)sVar37 - (0xff < sVar37),
-                                 CONCAT11((0 < sVar33) * (sVar33 < 0x100) * (char)sVar33 -
-                                          (0xff < sVar33),
-                                          (0 < sVar29) * (sVar29 < 0x100) * (char)sVar29 -
-                                          (0xff < sVar29)))) |
+              (CONCAT13((0 < mixedValue3ColorBLane3) * (mixedValue3ColorBLane3 < 0x100) * (char)mixedValue3ColorBLane3 - (0xff < mixedValue3ColorBLane3),
+                        CONCAT12((0 < mixedValue3ColorBLane2) * (mixedValue3ColorBLane2 < 0x100) * (char)mixedValue3ColorBLane2 - (0xff < mixedValue3ColorBLane2),
+                                 CONCAT11((0 < mixedValue3ColorBLane1) * (mixedValue3ColorBLane1 < 0x100) * (char)mixedValue3ColorBLane1 -
+                                          (0xff < mixedValue3ColorBLane1),
+                                          (0 < mixedValue3ColorBLane0) * (mixedValue3ColorBLane0 < 0x100) * (char)mixedValue3ColorBLane0 -
+                                          (0xff < mixedValue3ColorBLane0)))) | 0xff000000,
+               (uint)CONCAT12((0 < mixedValue3ColorALane2) * (mixedValue3ColorALane2 < 0x100) * (char)mixedValue3ColorALane2 - (0xff < mixedValue3ColorALane2),
+                              CONCAT11((0 < mixedValue3ColorALane1) * (mixedValue3ColorALane1 < 0x100) * (char)mixedValue3ColorALane1 -
+                                       (0xff < mixedValue3ColorALane1),
+                                       (0 < mixedValue3ColorALane0) * (mixedValue3ColorALane0 < 0x100) * (char)mixedValue3ColorALane0 -
+                                       (0xff < mixedValue3ColorALane0))),
+               CONCAT13((0 < mixedValue2ColorBLane3) * (mixedValue2ColorBLane3 < 0x100) * (char)mixedValue2ColorBLane3 - (0xff < mixedValue2ColorBLane3),
+                        CONCAT12((0 < mixedValue2ColorBLane2) * (mixedValue2ColorBLane2 < 0x100) * (char)mixedValue2ColorBLane2 - (0xff < mixedValue2ColorBLane2),
+                                 CONCAT11((0 < mixedValue2ColorBLane1) * (mixedValue2ColorBLane1 < 0x100) * (char)mixedValue2ColorBLane1 -
+                                          (0xff < mixedValue2ColorBLane1),
+                                          (0 < mixedValue2ColorBLane0) * (mixedValue2ColorBLane0 < 0x100) * (char)mixedValue2ColorBLane0 -
+                                          (0xff < mixedValue2ColorBLane0)))) | 0xff000000,
+               (uint)CONCAT12((0 < mixedValue2ColorALane2) * (mixedValue2ColorALane2 < 0x100) * (char)mixedValue2ColorALane2 - (0xff < mixedValue2ColorALane2),
+                              CONCAT11((0 < mixedValue2ColorALane1) * (mixedValue2ColorALane1 < 0x100) * (char)mixedValue2ColorALane1 -
+                                       (0xff < mixedValue2ColorALane1),
+                                       (0 < mixedValue2ColorALane0) * (mixedValue2ColorALane0 < 0x100) * (char)mixedValue2ColorALane0 -
+                                       (0xff < mixedValue2ColorALane0))),
+               CONCAT13((0 < mixedValue1ColorBLane3) * (mixedValue1ColorBLane3 < 0x100) * (char)mixedValue1ColorBLane3 - (0xff < mixedValue1ColorBLane3),
+                        CONCAT12((0 < mixedValue1ColorBLane2) * (mixedValue1ColorBLane2 < 0x100) * (char)mixedValue1ColorBLane2 - (0xff < mixedValue1ColorBLane2),
+                                 CONCAT11((0 < mixedValue1ColorBLane1) * (mixedValue1ColorBLane1 < 0x100) * (char)mixedValue1ColorBLane1 -
+                                          (0xff < mixedValue1ColorBLane1),
+                                          (0 < mixedValue1ColorBLane0) * (mixedValue1ColorBLane0 < 0x100) * (char)mixedValue1ColorBLane0 -
+                                          (0xff < mixedValue1ColorBLane0)))) |
                ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
                terrainRampColor12CArgb & 0xff000000,
-               (uint)CONCAT12((0 < sVar25) * (sVar25 < 0x100) * (char)sVar25 - (0xff < sVar25),
-                              CONCAT11((0 < sVar21) * (sVar21 < 0x100) * (char)sVar21 -
-                                       (0xff < sVar21),
-                                       (0 < sVar17) * (sVar17 < 0x100) * (char)sVar17 -
-                                       (0xff < sVar17))),
-               CONCAT13((0 < sVar40) * (sVar40 < 0x100) * (char)sVar40 - (0xff < sVar40),
-                        CONCAT12((0 < sVar36) * (sVar36 < 0x100) * (char)sVar36 - (0xff < sVar36),
-                                 CONCAT11((0 < sVar32) * (sVar32 < 0x100) * (char)sVar32 -
-                                          (0xff < sVar32),
-                                          (0 < sVar28) * (sVar28 < 0x100) * (char)sVar28 -
-                                          (0xff < sVar28)))) | 0xff000000,
-               (uint)CONCAT12((0 < sVar24) * (sVar24 < 0x100) * (char)sVar24 - (0xff < sVar24),
-                              CONCAT11((0 < sVar20) * (sVar20 < 0x100) * (char)sVar20 -
-                                       (0xff < sVar20),
-                                       (0 < sVar16) * (sVar16 < 0x100) * (char)sVar16 -
-                                       (0xff < sVar16))),worldRuntime);
-    uVar10 = uVar7 >> 8;
-    uVar11 = (uint)(ushort)(pIVar6->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
-    uVar12 = (uint)(ushort)(pIVar6->levelImage).runtimeTail2E0.
+               (uint)CONCAT12((0 < mixedValue1ColorALane2) * (mixedValue1ColorALane2 < 0x100) * (char)mixedValue1ColorALane2 - (0xff < mixedValue1ColorALane2),
+                              CONCAT11((0 < mixedValue1ColorALane1) * (mixedValue1ColorALane1 < 0x100) * (char)mixedValue1ColorALane1 -
+                                       (0xff < mixedValue1ColorALane1),
+                                       (0 < mixedValue1ColorALane0) * (mixedValue1ColorALane0 < 0x100) * (char)mixedValue1ColorALane0 -
+                                       (0xff < mixedValue1ColorALane0))),
+               CONCAT13((0 < mixedValue0ColorBLane3) * (mixedValue0ColorBLane3 < 0x100) * (char)mixedValue0ColorBLane3 - (0xff < mixedValue0ColorBLane3),
+                        CONCAT12((0 < mixedValue0ColorBLane2) * (mixedValue0ColorBLane2 < 0x100) * (char)mixedValue0ColorBLane2 - (0xff < mixedValue0ColorBLane2),
+                                 CONCAT11((0 < mixedValue0ColorBLane1) * (mixedValue0ColorBLane1 < 0x100) * (char)mixedValue0ColorBLane1 -
+                                          (0xff < mixedValue0ColorBLane1),
+                                          (0 < mixedValue0ColorBLane0) * (mixedValue0ColorBLane0 < 0x100) * (char)mixedValue0ColorBLane0 -
+                                          (0xff < mixedValue0ColorBLane0)))) | 0xff000000,
+               (uint)CONCAT12((0 < mixedValue0ColorALane2) * (mixedValue0ColorALane2 < 0x100) * (char)mixedValue0ColorALane2 - (0xff < mixedValue0ColorALane2),
+                              CONCAT11((0 < mixedValue0ColorALane1) * (mixedValue0ColorALane1 < 0x100) * (char)mixedValue0ColorALane1 -
+                                       (0xff < mixedValue0ColorALane1),
+                                       (0 < mixedValue0ColorALane0) * (mixedValue0ColorALane0 < 0x100) * (char)mixedValue0ColorALane0 -
+                                       (0xff < mixedValue0ColorALane0))),worldRuntime);
+    phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
+    blendIndexOrPrimaryValue = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
+    alternateOriginOrBlendWeight = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.
                            alternatePackedFieldRegionOriginYHigh16XLow16;
-    if (uVar10 < 0x80) {
-      if (uVar12 < uVar11) {
-        uVar12 = uVar12 + 0x10000;
+    if (phaseByteOrAlternateSize < 0x80) {
+      if (alternateOriginOrBlendWeight < blendIndexOrPrimaryValue) {
+        alternateOriginOrBlendWeight = alternateOriginOrBlendWeight + 0x10000;
       }
-      iVar13 = uVar12 * uVar10;
-      iVar8 = uVar11 * (0x80 - uVar10);
+      alternateOriginXWeighted = alternateOriginOrBlendWeight * phaseByteOrAlternateSize;
+      primaryOriginXWeighted = blendIndexOrPrimaryValue * (0x80 - phaseByteOrAlternateSize);
     }
     else {
-      if (uVar11 < uVar12) {
-        uVar11 = uVar11 + 0x10000;
+      if (blendIndexOrPrimaryValue < alternateOriginOrBlendWeight) {
+        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + 0x10000;
       }
-      iVar8 = uVar11 * (uVar10 - 0x80);
-      iVar13 = uVar12 * (0x80 - (uVar10 - 0x80));
+      primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 0x80);
+      alternateOriginXWeighted = alternateOriginOrBlendWeight * (0x80 - (phaseByteOrAlternateSize - 0x80));
     }
-    uVar12 = g_FixedCosQ28[uVar7] + 0x10000000U >> 0x15;
-    iVar15 = 0x100 - uVar12;
-    uVar11 = (uint)(ushort)(pIVar6->levelImage).runtimeTail2E0.
+    alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 0x15;
+    inverseBlendWeight = 0x100 - alternateOriginOrBlendWeight;
+    blendIndexOrPrimaryValue = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.
                            packedFieldRegionHeightHigh16WidthLow16;
-    uVar7 = uVar7 >> 8;
-    uVar10 = (uint)(ushort)(pIVar6->levelImage).runtimeTail2E0.
+    cycleDurationOrPhase = cycleDurationOrPhase >> 8;
+    phaseByteOrAlternateSize = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.
                            alternatePackedFieldRegionHeightHigh16WidthLow16;
-    if (uVar7 < 0x80) {
-      if (uVar10 < uVar11) {
-        uVar10 = uVar10 + 0x10000;
+    if (cycleDurationOrPhase < 0x80) {
+      if (phaseByteOrAlternateSize < blendIndexOrPrimaryValue) {
+        phaseByteOrAlternateSize = phaseByteOrAlternateSize + 0x10000;
       }
-      iVar14 = uVar10 * uVar7;
-      iVar9 = uVar11 * (0x80 - uVar7);
+      alternateWidthWeighted = phaseByteOrAlternateSize * cycleDurationOrPhase;
+      primaryWidthWeighted = blendIndexOrPrimaryValue * (0x80 - cycleDurationOrPhase);
     }
     else {
-      if (uVar11 < uVar10) {
-        uVar11 = uVar11 + 0x10000;
+      if (blendIndexOrPrimaryValue < phaseByteOrAlternateSize) {
+        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + 0x10000;
       }
-      iVar9 = uVar11 * (uVar7 - 0x80);
-      iVar14 = uVar10 * (0x80 - (uVar7 - 0x80));
+      primaryWidthWeighted = blendIndexOrPrimaryValue * (cycleDurationOrPhase - 0x80);
+      alternateWidthWeighted = phaseByteOrAlternateSize * (0x80 - (cycleDurationOrPhase - 0x80));
     }
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
               ((int)((uint)*(ushort *)
-                            ((int)&(pIVar6->levelImage).runtimeTail2E0.
-                                   alternatePackedFieldRegionHeightHigh16WidthLow16 + 2) * iVar15 +
+                            ((int)&(levelConditions->levelImage).runtimeTail2E0.
+                                   alternatePackedFieldRegionHeightHigh16WidthLow16 + 2) * inverseBlendWeight +
                     (uint)*(ushort *)
-                           ((int)&(pIVar6->levelImage).runtimeTail2E0.
-                                  packedFieldRegionHeightHigh16WidthLow16 + 2) * (0x100 - iVar15))
-               >> 8,(uint)(iVar9 + iVar14) >> 7 & 0xffff,
+                           ((int)&(levelConditions->levelImage).runtimeTail2E0.
+                                  packedFieldRegionHeightHigh16WidthLow16 + 2) * (0x100 - inverseBlendWeight))
+               >> 8,(uint)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
                (int)((uint)*(ushort *)
-                            ((int)&(pIVar6->levelImage).runtimeTail2E0.
-                                   alternatePackedFieldRegionOriginYHigh16XLow16 + 2) * iVar15 +
+                            ((int)&(levelConditions->levelImage).runtimeTail2E0.
+                                   alternatePackedFieldRegionOriginYHigh16XLow16 + 2) * inverseBlendWeight +
                     *(ushort *)
-                     ((int)&(pIVar6->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16
-                     + 2) * uVar12) >> 8,(uint)(iVar8 + iVar13) >> 7 & 0xffff,worldRuntime);
+                     ((int)&(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16
+                     + 2) * alternateOriginOrBlendWeight) >> 8,(uint)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
   }
   return;
 }
@@ -624,7 +624,7 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
 
 {
   FixedDirectionXZEdxEax8 positionOffsetXZQ12;
-  FixedDirectionXyzRegs12 FVar1;
+  FixedDirectionXyzRegs12 directionOffset;
   
   (runtime->motion).targetPositionXQ12 = originX;
   (runtime->motion).targetPositionYQ12 = originY;
@@ -633,10 +633,10 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
   (runtime->motion).headingAngle = headingAngle;
   (runtime->motion).targetDistanceQ12 = distance;
   (runtime->motion).committedDistanceQ12 = distance;
-  FVar1 = FixedMath_DirectionFromAnglesScaledRegs(-pitchAngle,headingAngle ^ 0x8000,distance);
-  (runtime->motion).positionXQ12 = FVar1.eax + (runtime->motion).targetPositionXQ12;
-  (runtime->motion).positionYQ12 = FVar1.ecx + (runtime->motion).targetPositionYQ12;
-  (runtime->motion).positionZQ12 = FVar1.edx + (runtime->motion).targetPositionZQ12;
+  directionOffset = FixedMath_DirectionFromAnglesScaledRegs(-pitchAngle,headingAngle ^ 0x8000,distance);
+  (runtime->motion).positionXQ12 = directionOffset.eax + (runtime->motion).targetPositionXQ12;
+  (runtime->motion).positionYQ12 = directionOffset.ecx + (runtime->motion).targetPositionYQ12;
+  (runtime->motion).positionZQ12 = directionOffset.edx + (runtime->motion).targetPositionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
   return;
 }
@@ -651,8 +651,8 @@ void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
 
 {
-  AngleTurn32 AVar1;
-  AngleTurn32 AVar2;
+  AngleTurn32 snapshotHeadingAngle;
+  AngleTurn32 snapshotPitchAngle;
   Q12 snapshotPositionYQ12;
   Q12 snapshotPositionZQ12;
   UQ12 snapshotDistanceQ12;
@@ -662,12 +662,12 @@ WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
   (worldRuntime->motion).positionXQ12 = (worldRuntime->snapshot).positionXQ12;
   (worldRuntime->motion).positionYQ12 = snapshotPositionYQ12;
   (worldRuntime->motion).positionZQ12 = snapshotPositionZQ12;
-  AVar1 = (worldRuntime->snapshot).headingAngle;
-  AVar2 = (worldRuntime->snapshot).pitchAngle;
+  snapshotHeadingAngle = (worldRuntime->snapshot).headingAngle;
+  snapshotPitchAngle = (worldRuntime->snapshot).pitchAngle;
   snapshotDistanceQ12 = (worldRuntime->snapshot).distanceQ12;
   (worldRuntime->motion).positionMagnitudeQ12 = (worldRuntime->snapshot).magnitudeQ12;
-  (worldRuntime->motion).headingAngle = AVar1;
-  (worldRuntime->motion).pitchAngle = AVar2;
+  (worldRuntime->motion).headingAngle = snapshotHeadingAngle;
+  (worldRuntime->motion).pitchAngle = snapshotPitchAngle;
   (worldRuntime->motion).targetDistanceQ12 = snapshotDistanceQ12;
   (worldRuntime->motion).committedDistanceQ12 = snapshotDistanceQ12;
   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -737,15 +737,15 @@ Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
               (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 QVar1;
-  FieldGridHeightEaxCf5 FVar2;
+  Q12 interpolatedHeightQ12;
+  FieldGridHeightEaxCf5 heightResult;
   
-  QVar1 = 0x7ffff000;
+  interpolatedHeightQ12 = 0x7ffff000;
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar2 = FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    QVar1 = FVar2.heightQ12;
+    heightResult = FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
+    interpolatedHeightQ12 = heightResult.heightQ12;
   }
-  return QVar1;
+  return interpolatedHeightQ12;
 }
 
 
@@ -758,15 +758,15 @@ Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
               (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 QVar1;
-  FieldGridHeightEaxCf5 FVar2;
+  Q12 waterSurfaceHeightQ12;
+  FieldGridHeightEaxCf5 heightResult;
   
-  QVar1 = 0x7ffff000;
+  waterSurfaceHeightQ12 = 0x7ffff000;
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar2 = FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    QVar1 = FVar2.heightQ12;
+    heightResult = FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
+    waterSurfaceHeightQ12 = heightResult.heightQ12;
   }
-  return QVar1;
+  return waterSurfaceHeightQ12;
 }
 
 
@@ -781,12 +781,12 @@ dword WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 
 {
   dword topSurfaceHeightQ12;
-  FieldGridHeightEaxCf5 FVar1;
+  FieldGridHeightEaxCf5 heightResult;
   
   topSurfaceHeightQ12 = 0x7ffff000;
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar1 = FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
-    topSurfaceHeightQ12 = FVar1.heightQ12;
+    heightResult = FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
+    topSurfaceHeightQ12 = heightResult.heightQ12;
   }
   return topSurfaceHeightQ12;
 }
@@ -806,11 +806,11 @@ WorldRuntimeNode_IsPositionInsideBoundsCf
           (WorldOwnerListNode100 *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int boundsSecondX;
+  int boundsSecondY;
+  int projectedGridX;
   int boundsMaxX;
-  int iVar4;
+  int projectedGridY;
   int boundsMinX;
   int boundsMaxY;
   int boundsMinY;
@@ -822,23 +822,23 @@ WorldRuntimeNode_IsPositionInsideBoundsCf
   projectedPositionPair =
        THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3));
   boundsMinX = boundsControl->extendedCoordinate160;
-  iVar1 = boundsControl->extendedCoordinate168;
+  boundsSecondX = boundsControl->extendedCoordinate168;
   boundsMinY = boundsControl->extendedCoordinate164;
-  iVar2 = boundsControl->extendedCoordinate16C;
-  iVar3 = (int)projectedPositionPair >> 0xc;
-  iVar4 = (int)((longlong)projectedPositionPair >> 0x2c);
-  boundsMaxX = iVar1;
-  if (iVar1 < boundsMinX) {
+  boundsSecondY = boundsControl->extendedCoordinate16C;
+  projectedGridX = (int)projectedPositionPair >> 0xc;
+  projectedGridY = (int)((longlong)projectedPositionPair >> 0x2c);
+  boundsMaxX = boundsSecondX;
+  if (boundsSecondX < boundsMinX) {
     boundsMaxX = boundsMinX;
-    boundsMinX = iVar1;
+    boundsMinX = boundsSecondX;
   }
-  boundsMaxY = iVar2;
-  if (iVar2 < boundsMinY) {
+  boundsMaxY = boundsSecondY;
+  if (boundsSecondY < boundsMinY) {
     boundsMaxY = boundsMinY;
-    boundsMinY = iVar2;
+    boundsMinY = boundsSecondY;
   }
-  if ((((boundsMinX <= iVar3) && (iVar3 <= boundsMaxX)) && (boundsMinY <= iVar4)) &&
-     (iVar4 <= boundsMaxY)) {
+  if ((((boundsMinX <= projectedGridX) && (projectedGridX <= boundsMaxX)) && (boundsMinY <= projectedGridY)) &&
+     (projectedGridY <= boundsMaxY)) {
     return true;
   }
   return false;
@@ -994,13 +994,13 @@ WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 
 {
-  WorldVector0EaxEcxEdx12 WVar1;
+  WorldVector0EaxEcxEdx12 positionVector;
   
   /* Ghidra split the ECX/EDX halves of the return into uVar2._4_4_ and register0x00000008. */
-  WVar1.xQ12 = (world->motion).positionXQ12;
-  WVar1.yQ12 = (world->motion).positionYQ12;
-  WVar1.zQ12 = (world->motion).positionZQ12;
-  return WVar1;
+  positionVector.xQ12 = (world->motion).positionXQ12;
+  positionVector.yQ12 = (world->motion).positionYQ12;
+  positionVector.zQ12 = (world->motion).positionZQ12;
+  return positionVector;
 }
 
 
@@ -1012,13 +1012,13 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
 
 {
-  WorldVector1EaxEcxEdx12 WVar1;
+  WorldVector1EaxEcxEdx12 motionVector;
   
   /* Ghidra split the ECX/EDX halves of the return into uVar2._4_4_ and register0x00000008. */
-  WVar1.magnitudeQ12 = (world->motion).positionMagnitudeQ12;
-  WVar1.headingAngle = (world->motion).headingAngle;
-  WVar1.pitchAngle = (world->motion).pitchAngle;
-  return WVar1;
+  motionVector.magnitudeQ12 = (world->motion).positionMagnitudeQ12;
+  motionVector.headingAngle = (world->motion).headingAngle;
+  motionVector.pitchAngle = (world->motion).pitchAngle;
+  return motionVector;
 }
 
 
@@ -1030,11 +1030,11 @@ WorldRuntimeFlagsEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 WorldRuntime_GetFlagsCf(WorldRuntimeContext *world)
 
 {
-  WorldRuntimeFlagsEaxCf5 WVar1;
+  WorldRuntimeFlagsEaxCf5 flagsResult;
   
-  WVar1.carry = false;
-  WVar1.flags = world->runtimeControlFlags;
-  return WVar1;
+  flagsResult.carry = false;
+  flagsResult.flags = world->runtimeControlFlags;
+  return flagsResult;
 }
 
 
@@ -1115,16 +1115,16 @@ WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime)
 {
   WorldObjectRecordCount recordsRemaining;
   WorldObjectRecord *recordCursor;
-  WorldObjectRecordEaxCf5 WVar1;
-  WorldObjectRecordEaxCf5 WVar2;
+  WorldObjectRecordEaxCf5 exhaustedResult;
+  WorldObjectRecordEaxCf5 allocatedResult;
   
   recordsRemaining = worldRuntime->objectCount;
   recordCursor = worldRuntime->objectArray;
   while( true ) {
     if (recordsRemaining == 0) {
-      WVar1.carry = true;
-      WVar1.recordOrError = (WorldObjectRecord *)0x14;
-      return WVar1;
+      exhaustedResult.carry = true;
+      exhaustedResult.recordOrError = (WorldObjectRecord *)0x14;
+      return exhaustedResult;
     }
     if (((recordCursor->common).allocationFlags & 0x40000000) == 0) break;
     recordCursor = recordCursor + 1;
@@ -1132,9 +1132,9 @@ WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime)
   }
   (recordCursor->common).allocationFlags = 0x40000000;
   (recordCursor->common).ownerWorld = worldRuntime;
-  WVar2.carry = false;
-  WVar2.recordOrError = recordCursor;
-  return WVar2;
+  allocatedResult.carry = false;
+  allocatedResult.recordOrError = recordCursor;
+  return allocatedResult;
 }
 
 
@@ -1312,38 +1312,38 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
           (void *sourceRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  dword dVar1;
-  TerrainClassOverlayCallback *pTVar2;
-  int iVar3;
-  ModelDefinitionRecordPrefix *pMVar4;
-  WorldOwnerListNode100 *pWVar5;
-  ModelDefinitionLookupEaxCf5 MVar6;
-  dword dStack_28;
+  dword overlayBaseOffset;
+  TerrainClassOverlayCallback *overlayCallback;
+  int modelOverlayBase;
+  ModelDefinitionRecordPrefix *definitionRecord;
+  WorldOwnerListNode100 *ownerNode;
+  ModelDefinitionLookupEaxCf5 definitionLookup;
+  dword overlayExtent;
   
   if (sourceRuntime != (void *)0x0) {
-    MVar6 = ModelDefinitionRegistry_FindByIdWithErrorCf
+    definitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
                       (*(PckModelDefinitionIdCatalog *)(*(int *)((int)sourceRuntime + 0xc) + 0x20));
-    pMVar4 = MVar6.modelDefinition;
-    if (!MVar6.carry) {
-      dStack_28 = 0xffffffff;
-      pWVar5 = worldRuntime->ownerListHead;
-      dVar1 = pMVar4[0x23].flags;
-      if (pWVar5 != (WorldOwnerListNode100 *)0x0) {
-        if (pMVar4[6].flags == 0xe) {
-          dStack_28 = 0x800 << ((byte)pMVar4[0x10].byteSize & 0x1f);
+    definitionRecord = definitionLookup.modelDefinition;
+    if (!definitionLookup.carry) {
+      overlayExtent = 0xffffffff;
+      ownerNode = worldRuntime->ownerListHead;
+      overlayBaseOffset = definitionRecord[0x23].flags;
+      if (ownerNode != (WorldOwnerListNode100 *)0x0) {
+        if (definitionRecord[6].flags == 0xe) {
+          overlayExtent = 0x800 << ((byte)definitionRecord[0x10].byteSize & 0x1f);
         }
-        pTVar2 = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
-                 [pMVar4[0x34].definitionId];
+        overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
+                 [definitionRecord[0x34].definitionId];
         do {
-          if (((pWVar5->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+          if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
               (worldRuntime->activeFactionRuntimeIndex ==
-               *(int *)(*(int *)((int)pWVar5->runtimePayload + 8) + 0xc))) &&
-             (iVar3 = *(int *)(*(int *)pWVar5->runtimePayload + 0x19c), iVar3 != 0)) {
-            (*pTVar2)(dStack_28,-1,iVar3 + dVar1,pWVar5->worldYQ12,pWVar5->worldXQ12,
+               *(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc))) &&
+             (modelOverlayBase = *(int *)(*(int *)ownerNode->runtimePayload + 0x19c), modelOverlayBase != 0)) {
+            (*overlayCallback)(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,ownerNode->worldXQ12,
                       worldRuntime->fieldGrid);
           }
-          pWVar5 = pWVar5->nextNode;
-        } while (pWVar5 != (WorldOwnerListNode100 *)0x0);
+          ownerNode = ownerNode->nextNode;
+        } while (ownerNode != (WorldOwnerListNode100 *)0x0);
       }
     }
   }
@@ -1518,61 +1518,61 @@ void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *worldRuntime)
 
 {
-  AngleTurn32 AVar1;
+  AngleTurn32 currentPitchAngle;
   UQ12 scale;
-  dword dVar2;
-  int iVar3;
-  FixedSinCosEdxEax8 FVar4;
-  FieldGridRaycastEaxEdxCf9 FVar5;
-  FixedDirectionXyzRegs12 FVar6;
+  dword endpointDistanceQ12;
+  int rayLengthOrOffsetY;
+  FixedSinCosEdxEax8 groundOffsetXY;
+  FieldGridRaycastEaxEdxCf9 raycastResult;
+  FixedDirectionXyzRegs12 endpointOffset;
   
   if ((worldRuntime->runtimeFlags & 0x1000000) == 0) {
-    iVar3 = worldRuntime->maximumCameraDistanceQ12 << 2;
-    FVar5 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                      ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,iVar3,
+    rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
+    raycastResult = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                      ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-    scale = FVar5.distanceQ12;
-    if (!FVar5.carry) {
+    scale = raycastResult.distanceQ12;
+    if (!raycastResult.carry) {
 WorldRuntime_RecomputeMotionEndpoint_UseGroundPlaneFallback:
-      AVar1 = (worldRuntime->motion).pitchAngle;
-      FVar4 = FixedMath_SinCosScaled
+      currentPitchAngle = (worldRuntime->motion).pitchAngle;
+      groundOffsetXY = FixedMath_SinCosScaled
                         ((worldRuntime->motion).headingAngle,
                          (FixedMathScale32)
                          (((longlong)(worldRuntime->motion).positionZQ12 *
-                          (longlong)g_FixedCosQ28[-AVar1]) / (longlong)g_FixedSinQ28[-AVar1]));
-      iVar3 = (int)(FVar4 >> 0x20);
-      (worldRuntime->motion).targetPositionXQ12 = (int)FVar4 + (worldRuntime->motion).positionXQ12;
-      (worldRuntime->motion).targetPositionYQ12 = iVar3 + (worldRuntime->motion).positionYQ12;
+                          (longlong)g_FixedCosQ28[-currentPitchAngle]) / (longlong)g_FixedSinQ28[-currentPitchAngle]));
+      rayLengthOrOffsetY = (int)(groundOffsetXY >> 0x20);
+      (worldRuntime->motion).targetPositionXQ12 = (int)groundOffsetXY + (worldRuntime->motion).positionXQ12;
+      (worldRuntime->motion).targetPositionYQ12 = rayLengthOrOffsetY + (worldRuntime->motion).positionYQ12;
       (worldRuntime->motion).targetPositionZQ12 = 0;
-      dVar2 = FixedMath_Length3((worldRuntime->motion).positionZQ12,iVar3,(int)FVar4);
-      (worldRuntime->motion).targetDistanceQ12 = dVar2;
+      endpointDistanceQ12 = FixedMath_Length3((worldRuntime->motion).positionZQ12,rayLengthOrOffsetY,(int)groundOffsetXY);
+      (worldRuntime->motion).targetDistanceQ12 = endpointDistanceQ12;
       WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
       return;
     }
-    FVar5 = FieldGrid_RaycastSecondarySurfaceDistanceCf
-                      ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,iVar3,
+    raycastResult = FieldGrid_RaycastSecondarySurfaceDistanceCf
+                      ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-    if ((FVar5.carry) && (FVar5.distanceQ12 < (int)scale)) {
-      scale = FVar5.distanceQ12;
+    if ((raycastResult.carry) && (raycastResult.distanceQ12 < (int)scale)) {
+      scale = raycastResult.distanceQ12;
     }
   }
   else {
-    FVar5 = FieldGrid_RaycastSecondarySurfaceDistanceCf
+    raycastResult = FieldGrid_RaycastSecondarySurfaceDistanceCf
                       ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,
                        worldRuntime->maximumCameraDistanceQ12 << 2,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-    scale = FVar5.distanceQ12;
-    if (!FVar5.carry) goto WorldRuntime_RecomputeMotionEndpoint_UseGroundPlaneFallback;
+    scale = raycastResult.distanceQ12;
+    if (!raycastResult.carry) goto WorldRuntime_RecomputeMotionEndpoint_UseGroundPlaneFallback;
   }
   (worldRuntime->motion).targetDistanceQ12 = scale;
-  FVar6 = FixedMath_DirectionFromAnglesScaledRegs
+  endpointOffset = FixedMath_DirectionFromAnglesScaledRegs
                     ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,scale);
-  (worldRuntime->motion).targetPositionXQ12 = FVar6.eax + (worldRuntime->motion).positionXQ12;
-  (worldRuntime->motion).targetPositionYQ12 = FVar6.ecx + (worldRuntime->motion).positionYQ12;
-  (worldRuntime->motion).targetPositionZQ12 = FVar6.edx + (worldRuntime->motion).positionZQ12;
+  (worldRuntime->motion).targetPositionXQ12 = endpointOffset.eax + (worldRuntime->motion).positionXQ12;
+  (worldRuntime->motion).targetPositionYQ12 = endpointOffset.ecx + (worldRuntime->motion).positionYQ12;
+  (worldRuntime->motion).targetPositionZQ12 = endpointOffset.edx + (worldRuntime->motion).positionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }

@@ -79,20 +79,20 @@ void __thandor_void_preserve_eax_ecx_edx
 GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
-  void *pvVar1;
+  void *linkedRuntime;
   Q12 worldXQ12;
   Q12 worldYQ12;
   ModelRuntimeNode *modelNode;
   void *entityDefinition;
   
-  pvVar1 = (entityRuntime->common).ownership.runtimeLink;
+  linkedRuntime = (entityRuntime->common).ownership.runtimeLink;
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
   if (*(int *)((int)entityDefinition + 0xdc) != 0) {
     worldXQ12 = (modelNode->worldTransform).translation.x;
     worldYQ12 = (modelNode->worldTransform).translation.y;
-    *(Q12 *)((int)pvVar1 + 0x68) = worldXQ12;
-    *(Q12 *)((int)pvVar1 + 0x6c) = worldYQ12;
+    *(Q12 *)((int)linkedRuntime + 0x68) = worldXQ12;
+    *(Q12 *)((int)linkedRuntime + 0x6c) = worldYQ12;
     GridInfluence_SetHighDistanceBandsAroundWorldPoint
               (*(FieldGridRadiusUnits *)((int)entityDefinition + 0xdc),worldYQ12,worldXQ12);
   }
@@ -113,15 +113,15 @@ void __thandor_void_preserve_eax_ecx_edx
 GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
-  void *pvVar1;
+  void *linkedRuntime;
   void *entityDefinition;
   
-  pvVar1 = (entityRuntime->common).ownership.runtimeLink;
+  linkedRuntime = (entityRuntime->common).ownership.runtimeLink;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
   if (*(int *)((int)entityDefinition + 0xdc) != 0) {
     GridInfluence_ClearHighDistanceBandsAroundWorldPoint
-              (*(FieldGridRadiusUnits *)((int)entityDefinition + 0xdc),*(Q12 *)((int)pvVar1 + 0x6c),
-               *(Q12 *)((int)pvVar1 + 0x68));
+              (*(FieldGridRadiusUnits *)((int)entityDefinition + 0xdc),*(Q12 *)((int)linkedRuntime + 0x6c),
+               *(Q12 *)((int)linkedRuntime + 0x68));
   }
   return;
 }
@@ -215,103 +215,103 @@ GridInfluence_SetLowDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong lVar1;
+  longlong fixedPointProduct;
   uint scanGridMetric1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint scaledYOrLeftScanMetric;
+  int cellRowOrScanValue;
+  uint centerScanMetric1;
   uint scanGridMetric0;
-  int iVar5;
+  int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar6;
+  int radiusColumnOrScanValue;
   
-  iVar6 = radiusMetric + 499;
+  radiusColumnOrScanValue = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
+       (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
+       (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
+       (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
+       (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
+       (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
+       (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
+       (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
-  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
+  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
-  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
-      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
-    iVar3 = iVar3 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
-    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar3 * -1999;
-    scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar2 = uVar4;
+  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
+      (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
+    cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
+    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
+    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while ((iVar6 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
-             (iVar6 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , iVar6 != 0))) {
+      while ((radiusColumnOrScanValue = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , scanGridMetric1 = centerScanMetric1, scratchCell3 = scratchCell1, radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , radiusColumnOrScanValue != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar2 = uVar2 - 0x240;
+        scaledYOrLeftScanMetric = scaledYOrLeftScanMetric - 0x240;
       }
-      while ((iVar6 = GridInfluence_SetLowDistanceBandsDiagonalPositive
+      while ((radiusColumnOrScanValue = GridInfluence_SetLowDistanceBandsDiagonalPositive
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0 &&
-             (iVar6 = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_SetLowDistanceBandsDiagonalNegative
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0))) {
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0))) {
         scratchCell3 = scratchCell3 + 1;
         scanGridMetric1 = scanGridMetric1 + 0x240;
       }
-      iVar3 = uVar4 - 0x120;
+      cellRowOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-      iVar6 = uVar4 + 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 + 0x120;
       scratchCell3 = scratchCell2;
-      while (iVar5 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
-                                &scratchCell3->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,cellRowOrScanValue,
+                                &scratchCell3->stateMask), walkResult != 0) {
         scratchCell3 = scratchCell3 + -1;
-        iVar3 = iVar3 + -0x240;
+        cellRowOrScanValue = cellRowOrScanValue + -0x240;
       }
       while( true ) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        cellRowOrScanValue = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,radiusColumnOrScanValue,&scratchCell2->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + 0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + 0x240;
       }
-      iVar3 = uVar4 + 0x120;
+      cellRowOrScanValue = centerScanMetric1 + 0x120;
       scratchCell1 = scratchCell1 + g_GridScratchWidth;
-      iVar6 = uVar4 - 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1;
-      while (iVar5 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
-                                &scratchCell2->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,cellRowOrScanValue,
+                                &scratchCell2->stateMask), walkResult != 0) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = iVar3 + 0x240;
+        cellRowOrScanValue = cellRowOrScanValue + 0x240;
       }
       while( true ) {
         scratchCell1 = scratchCell1 + -1;
-        iVar3 = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        cellRowOrScanValue = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,radiusColumnOrScanValue,&scratchCell1->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + -0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + -0x240;
       }
       return;
     }
@@ -335,103 +335,103 @@ GridInfluence_SetHighDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong lVar1;
+  longlong fixedPointProduct;
   uint scanGridMetric1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint scaledYOrLeftScanMetric;
+  int cellRowOrScanValue;
+  uint centerScanMetric1;
   uint scanGridMetric0;
-  int iVar5;
+  int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar6;
+  int radiusColumnOrScanValue;
   
-  iVar6 = radiusMetric + 499;
+  radiusColumnOrScanValue = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
+       (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
+       (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
+       (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
+       (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
+       (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
+       (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
+       (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
-  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
+  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
-  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
-      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
-    iVar3 = iVar3 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
-    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar3 * -1999;
-    scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar2 = uVar4;
+  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
+      (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
+    cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
+    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
+    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while ((iVar6 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
-             (iVar6 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , iVar6 != 0))) {
+      while ((radiusColumnOrScanValue = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , scanGridMetric1 = centerScanMetric1, scratchCell3 = scratchCell1, radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , radiusColumnOrScanValue != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar2 = uVar2 - 0x240;
+        scaledYOrLeftScanMetric = scaledYOrLeftScanMetric - 0x240;
       }
-      while ((iVar6 = GridInfluence_SetHighDistanceBandsDiagonalPositive
+      while ((radiusColumnOrScanValue = GridInfluence_SetHighDistanceBandsDiagonalPositive
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0 &&
-             (iVar6 = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_SetHighDistanceBandsDiagonalNegative
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0))) {
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0))) {
         scratchCell3 = scratchCell3 + 1;
         scanGridMetric1 = scanGridMetric1 + 0x240;
       }
-      iVar3 = uVar4 - 0x120;
+      cellRowOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-      iVar6 = uVar4 + 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 + 0x120;
       scratchCell3 = scratchCell2;
-      while (iVar5 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
-                                &scratchCell3->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,cellRowOrScanValue,
+                                &scratchCell3->stateMask), walkResult != 0) {
         scratchCell3 = scratchCell3 + -1;
-        iVar3 = iVar3 + -0x240;
+        cellRowOrScanValue = cellRowOrScanValue + -0x240;
       }
       while( true ) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        cellRowOrScanValue = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,radiusColumnOrScanValue,&scratchCell2->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + 0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + 0x240;
       }
-      iVar3 = uVar4 + 0x120;
+      cellRowOrScanValue = centerScanMetric1 + 0x120;
       scratchCell1 = scratchCell1 + g_GridScratchWidth;
-      iVar6 = uVar4 - 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1;
-      while (iVar5 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
-                                &scratchCell2->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,cellRowOrScanValue,
+                                &scratchCell2->stateMask), walkResult != 0) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = iVar3 + 0x240;
+        cellRowOrScanValue = cellRowOrScanValue + 0x240;
       }
       while( true ) {
         scratchCell1 = scratchCell1 + -1;
-        iVar3 = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        cellRowOrScanValue = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,radiusColumnOrScanValue,&scratchCell1->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + -0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + -0x240;
       }
       return;
     }
@@ -455,103 +455,103 @@ GridInfluence_ClearLowDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong lVar1;
+  longlong fixedPointProduct;
   uint scanGridMetric1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint scaledYOrLeftScanMetric;
+  int cellRowOrScanValue;
+  uint centerScanMetric1;
   uint scanGridMetric0;
-  int iVar5;
+  int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar6;
+  int radiusColumnOrScanValue;
   
-  iVar6 = radiusMetric + 499;
+  radiusColumnOrScanValue = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
+       (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
+       (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
+       (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
+       (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
+       (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
+       (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
+       (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
-  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
+  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
-  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
-      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
-    iVar3 = iVar3 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
-    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar3 * -1999;
-    scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar2 = uVar4;
+  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
+      (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
+    cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
+    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
+    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while ((iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
-             (iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , iVar6 != 0))) {
+      while ((radiusColumnOrScanValue = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , scanGridMetric1 = centerScanMetric1, scratchCell3 = scratchCell1, radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , radiusColumnOrScanValue != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar2 = uVar2 - 0x240;
+        scaledYOrLeftScanMetric = scaledYOrLeftScanMetric - 0x240;
       }
-      while ((iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+      while ((radiusColumnOrScanValue = GridInfluence_ClearLowDistanceBandsDiagonalPositive
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0 &&
-             (iVar6 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_ClearLowDistanceBandsDiagonalNegative
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0))) {
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0))) {
         scratchCell3 = scratchCell3 + 1;
         scanGridMetric1 = scanGridMetric1 + 0x240;
       }
-      iVar3 = uVar4 - 0x120;
+      cellRowOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-      iVar6 = uVar4 + 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 + 0x120;
       scratchCell3 = scratchCell2;
-      while (iVar5 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
-                                &scratchCell3->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,cellRowOrScanValue,
+                                &scratchCell3->stateMask), walkResult != 0) {
         scratchCell3 = scratchCell3 + -1;
-        iVar3 = iVar3 + -0x240;
+        cellRowOrScanValue = cellRowOrScanValue + -0x240;
       }
       while( true ) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        cellRowOrScanValue = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,radiusColumnOrScanValue,&scratchCell2->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + 0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + 0x240;
       }
-      iVar3 = uVar4 + 0x120;
+      cellRowOrScanValue = centerScanMetric1 + 0x120;
       scratchCell1 = scratchCell1 + g_GridScratchWidth;
-      iVar6 = uVar4 - 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1;
-      while (iVar5 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
-                                &scratchCell2->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,cellRowOrScanValue,
+                                &scratchCell2->stateMask), walkResult != 0) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = iVar3 + 0x240;
+        cellRowOrScanValue = cellRowOrScanValue + 0x240;
       }
       while( true ) {
         scratchCell1 = scratchCell1 + -1;
-        iVar3 = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        cellRowOrScanValue = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,radiusColumnOrScanValue,&scratchCell1->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + -0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + -0x240;
       }
       return;
     }
@@ -575,103 +575,103 @@ GridInfluence_ClearHighDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong lVar1;
+  longlong fixedPointProduct;
   uint scanGridMetric1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint scaledYOrLeftScanMetric;
+  int cellRowOrScanValue;
+  uint centerScanMetric1;
   uint scanGridMetric0;
-  int iVar5;
+  int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
   GridScratchCell *scratchCell2;
-  int iVar6;
+  int radiusColumnOrScanValue;
   
-  iVar6 = radiusMetric + 499;
+  radiusColumnOrScanValue = radiusMetric + 499;
   g_GridInfluenceSquaredThreshold0 =
-       (g_GridInfluenceRadiusOffset0 + iVar6) * (g_GridInfluenceRadiusOffset0 + iVar6);
+       (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset0 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold1 =
-       (g_GridInfluenceRadiusOffset1 + iVar6) * (g_GridInfluenceRadiusOffset1 + iVar6);
+       (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset1 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold2 =
-       (g_GridInfluenceRadiusOffset2 + iVar6) * (g_GridInfluenceRadiusOffset2 + iVar6);
+       (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset2 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold3 =
-       (g_GridInfluenceRadiusOffset3 + iVar6) * (g_GridInfluenceRadiusOffset3 + iVar6);
+       (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset3 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold4 =
-       (g_GridInfluenceRadiusOffset4 + iVar6) * (g_GridInfluenceRadiusOffset4 + iVar6);
+       (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset4 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold5 =
-       (g_GridInfluenceRadiusOffset5 + iVar6) * (g_GridInfluenceRadiusOffset5 + iVar6);
+       (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset5 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold6 =
-       (g_GridInfluenceRadiusOffset6 + iVar6) * (g_GridInfluenceRadiusOffset6 + iVar6);
+       (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
-       (g_GridInfluenceRadiusOffset7 + iVar6) * (g_GridInfluenceRadiusOffset7 + iVar6);
-  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+       (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
+  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar6 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
-  if ((((-1 < iVar6) && (iVar3 = (int)(uVar2 * 2 + 0x800) >> 10, -1 < iVar3)) &&
-      (iVar6 < (int)g_GridScratchWidth)) && (iVar3 < (int)g_GridScratchHeight)) {
-    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * iVar3 + iVar6;
-    iVar3 = iVar3 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar3 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
-    uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar3 * -1999;
-    scanGridMetric0 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar2 = uVar4;
+  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
+      (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
+    scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
+    cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
+    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
+    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
-      while ((iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , scanGridMetric1 = uVar4, scratchCell3 = scratchCell1, iVar6 != 0 &&
-             (iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                                (worldYQ12,worldXQ12,scanGridMetric0,uVar2,&scratchCell2->stateMask)
-             , iVar6 != 0))) {
+      while ((radiusColumnOrScanValue = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , scanGridMetric1 = centerScanMetric1, scratchCell3 = scratchCell1, radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                                (worldYQ12,worldXQ12,scanGridMetric0,scaledYOrLeftScanMetric,&scratchCell2->stateMask)
+             , radiusColumnOrScanValue != 0))) {
         scratchCell2 = scratchCell2 + -1;
-        uVar2 = uVar2 - 0x240;
+        scaledYOrLeftScanMetric = scaledYOrLeftScanMetric - 0x240;
       }
-      while ((iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+      while ((radiusColumnOrScanValue = GridInfluence_ClearHighDistanceBandsDiagonalPositive
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0 &&
-             (iVar6 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0 &&
+             (radiusColumnOrScanValue = GridInfluence_ClearHighDistanceBandsDiagonalNegative
                                 (worldYQ12,worldXQ12,scanGridMetric0,scanGridMetric1,
-                                 &scratchCell3->stateMask), iVar6 != 0))) {
+                                 &scratchCell3->stateMask), radiusColumnOrScanValue != 0))) {
         scratchCell3 = scratchCell3 + 1;
         scanGridMetric1 = scanGridMetric1 + 0x240;
       }
-      iVar3 = uVar4 - 0x120;
+      cellRowOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1 + -g_GridScratchWidth;
-      iVar6 = uVar4 + 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 + 0x120;
       scratchCell3 = scratchCell2;
-      while (iVar5 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar3,
-                                &scratchCell3->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                               (worldYQ12,worldXQ12,scanGridMetric0 + 499,cellRowOrScanValue,
+                                &scratchCell3->stateMask), walkResult != 0) {
         scratchCell3 = scratchCell3 + -1;
-        iVar3 = iVar3 + -0x240;
+        cellRowOrScanValue = cellRowOrScanValue + -0x240;
       }
       while( true ) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,iVar6,&scratchCell2->stateMask)
+        cellRowOrScanValue = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                          (worldYQ12,worldXQ12,scanGridMetric0 + 499,radiusColumnOrScanValue,&scratchCell2->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + 0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + 0x240;
       }
-      iVar3 = uVar4 + 0x120;
+      cellRowOrScanValue = centerScanMetric1 + 0x120;
       scratchCell1 = scratchCell1 + g_GridScratchWidth;
-      iVar6 = uVar4 - 0x120;
+      radiusColumnOrScanValue = centerScanMetric1 - 0x120;
       scratchCell2 = scratchCell1;
-      while (iVar5 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar3,
-                                &scratchCell2->stateMask), iVar5 != 0) {
+      while (walkResult = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                               (worldYQ12,worldXQ12,scanGridMetric0 - 500,cellRowOrScanValue,
+                                &scratchCell2->stateMask), walkResult != 0) {
         scratchCell2 = scratchCell2 + 1;
-        iVar3 = iVar3 + 0x240;
+        cellRowOrScanValue = cellRowOrScanValue + 0x240;
       }
       while( true ) {
         scratchCell1 = scratchCell1 + -1;
-        iVar3 = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,iVar6,&scratchCell1->stateMask)
+        cellRowOrScanValue = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                          (worldYQ12,worldXQ12,scanGridMetric0 - 500,radiusColumnOrScanValue,&scratchCell1->stateMask)
         ;
-        if (iVar3 == 0) break;
-        iVar6 = iVar6 + -0x240;
+        if (cellRowOrScanValue == 0) break;
+        radiusColumnOrScanValue = radiusColumnOrScanValue + -0x240;
       }
       return;
     }
@@ -694,18 +694,18 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -714,16 +714,16 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + -999;
-    *scratchCell = *scratchCell | iVar1 * 0x100;
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell | bandMaskOrNextStep * 0x100;
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -742,18 +742,18 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -762,16 +762,16 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + 999;
-    *scratchCell = *scratchCell | iVar1 * 0x100;
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell | bandMaskOrNextStep * 0x100;
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -790,18 +790,18 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -810,16 +810,16 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + -999;
-    *scratchCell = *scratchCell | iVar1 * 0x10000;
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell | bandMaskOrNextStep * 0x10000;
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -838,18 +838,18 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -858,16 +858,16 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + 999;
-    *scratchCell = *scratchCell | iVar1 * 0x10000;
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell | bandMaskOrNextStep * 0x10000;
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -886,18 +886,18 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -906,16 +906,16 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + -999;
-    *scratchCell = *scratchCell & (iVar1 * 0x100 ^ 0xffffffffU);
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell & (bandMaskOrNextStep * 0x100 ^ 0xffffffffU);
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -934,18 +934,18 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -954,16 +954,16 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + 999;
-    *scratchCell = *scratchCell & (iVar1 * 0x100 ^ 0xffffffffU);
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell & (bandMaskOrNextStep * 0x100 ^ 0xffffffffU);
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -982,18 +982,18 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -1002,16 +1002,16 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + -999;
-    *scratchCell = *scratchCell & (iVar1 * 0x10000 ^ 0xffffffffU);
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell & (bandMaskOrNextStep * 0x10000 ^ 0xffffffffU);
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * 4 + -2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 
 
@@ -1030,18 +1030,18 @@ GridInfluence_ClearHighDistanceBandsDiagonalPositive
           uint *scratchCell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int bandMaskOrNextStep;
+  int metric0DeltaSquared;
+  int cellsWritten;
   uint squaredDistanceMetric;
   
-  iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
-  iVar1 = 0;
+  metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+  bandMaskOrNextStep = 0;
   do {
-    iVar3 = iVar1;
+    cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
-         iVar2 + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    iVar1 = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+         metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
+    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
@@ -1050,15 +1050,15 @@ GridInfluence_ClearHighDistanceBandsDiagonalPositive
             ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
             (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
-    if (iVar1 == 0) {
-      return iVar3;
+    if (bandMaskOrNextStep == 0) {
+      return cellsWritten;
     }
     scanGridMetric0 = scanGridMetric0 + 999;
-    *scratchCell = *scratchCell & (iVar1 * 0x10000 ^ 0xffffffffU);
-    iVar2 = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
+    *scratchCell = *scratchCell & (bandMaskOrNextStep * 0x10000 ^ 0xffffffffU);
+    metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
     scratchCell = scratchCell + g_GridScratchWidth * -4 + 2;
-    iVar1 = iVar3 + 1;
+    bandMaskOrNextStep = cellsWritten + 1;
   } while ((*scratchCell & 0x80000000) == 0);
-  return iVar3;
+  return cellsWritten;
 }
 

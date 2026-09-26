@@ -22,164 +22,164 @@ bool __thandor_cf_preserve_ecx_edx
 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
 
 {
-  int iVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  uint *puVar7;
-  int iVar8;
-  uint *puVar9;
-  byte *pbVar10;
-  int *piVar11;
-  uint *puVar12;
-  int iStack_1c;
+  int subresourceBank;
+  uint indexOrColor;
+  uint colorOrCombinedCount;
+  int remainingCount;
+  int remainingPixels;
+  uint secondIndex;
+  uint *entryCursor;
+  int cursorOrBankIndex;
+  uint *scanOrBankStart;
+  byte *pixelCursor;
+  int *bankSlotCursor;
+  uint *bankCursor;
+  int bankIndex;
   
-  iVar4 = *(int *)(textureSourceBase + 0xb4) << 8;
-  if (iVar4 != 0) {
-    puVar7 = (uint *)(textureSourceBase + 0x200);
+  remainingCount = *(int *)(textureSourceBase + 0xb4) << 8;
+  if (remainingCount != 0) {
+    entryCursor = (uint *)(textureSourceBase + 0x200);
     do {
-      if ((*puVar7 & 0xff000000) == 0) {
-        uVar2 = 0x70707;
+      if ((*entryCursor & 0xff000000) == 0) {
+        indexOrColor = 0x70707;
       }
       else {
-        uVar2 = *puVar7 | 0x70707;
+        indexOrColor = *entryCursor | 0x70707;
       }
-      *puVar7 = uVar2;
-      puVar7 = puVar7 + 2;
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
-    iVar4 = *(int *)(textureSourceBase + 0xb0);
-    iVar8 = textureSourceBase + *(int *)(textureSourceBase + 0xb8);
-    if (iVar4 != 0) {
+      *entryCursor = indexOrColor;
+      entryCursor = entryCursor + 2;
+      remainingCount = remainingCount + -1;
+    } while (remainingCount != 0);
+    remainingCount = *(int *)(textureSourceBase + 0xb0);
+    cursorOrBankIndex = textureSourceBase + *(int *)(textureSourceBase + 0xb8);
+    if (remainingCount != 0) {
       do {
-        iVar1 = *(int *)(iVar8 + 8);
-        iVar5 = *(int *)(iVar8 + 0x18) * *(int *)(iVar8 + 0x1c);
-        if (iVar1 != -1) {
-          pbVar10 = (byte *)(*(int *)(iVar8 + 0xc) + textureSourceBase);
-          for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-            puVar7 = (uint *)(textureSourceBase + 0x200 + iVar1 * 0x800 + (uint)*pbVar10 * 8);
-            *puVar7 = *puVar7 & 0xfff8f8f8;
-            pbVar10 = pbVar10 + 1;
+        subresourceBank = *(int *)(cursorOrBankIndex + 8);
+        remainingPixels = *(int *)(cursorOrBankIndex + 0x18) * *(int *)(cursorOrBankIndex + 0x1c);
+        if (subresourceBank != -1) {
+          pixelCursor = (byte *)(*(int *)(cursorOrBankIndex + 0xc) + textureSourceBase);
+          for (; remainingPixels != 0; remainingPixels = remainingPixels + -1) {
+            entryCursor = (uint *)(textureSourceBase + 0x200 + subresourceBank * 0x800 + (uint)*pixelCursor * 8);
+            *entryCursor = *entryCursor & 0xfff8f8f8;
+            pixelCursor = pixelCursor + 1;
           }
         }
-        iVar8 = iVar8 + 0x20;
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
-      piVar11 = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
-      uVar2 = *(uint *)(textureSourceBase + 0xb4);
-      puVar7 = (uint *)(textureSourceBase + 0x200);
-      if (0x200 < uVar2) {
-        uVar2 = 0x200;
+        cursorOrBankIndex = cursorOrBankIndex + 0x20;
+        remainingCount = remainingCount + -1;
+      } while (remainingCount != 0);
+      bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
+      indexOrColor = *(uint *)(textureSourceBase + 0xb4);
+      entryCursor = (uint *)(textureSourceBase + 0x200);
+      if (0x200 < indexOrColor) {
+        indexOrColor = 0x200;
       }
       do {
-        iVar8 = 0x100;
-        iVar4 = 0;
+        cursorOrBankIndex = 0x100;
+        remainingCount = 0;
         do {
-          if ((*puVar7 & 0x70707) == 0) {
-            iVar4 = iVar4 + 1;
+          if ((*entryCursor & 0x70707) == 0) {
+            remainingCount = remainingCount + 1;
           }
-          puVar7 = puVar7 + 2;
-          iVar8 = iVar8 + -1;
-        } while (iVar8 != 0);
-        *piVar11 = iVar4;
-        piVar11 = piVar11 + 1;
-        uVar2 = uVar2 - 1;
-      } while (uVar2 != 0);
+          entryCursor = entryCursor + 2;
+          cursorOrBankIndex = cursorOrBankIndex + -1;
+        } while (cursorOrBankIndex != 0);
+        *bankSlotCursor = remainingCount;
+        bankSlotCursor = bankSlotCursor + 1;
+        indexOrColor = indexOrColor - 1;
+      } while (indexOrColor != 0);
 LAB_004ae640:
-      piVar11 = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
-      iVar4 = *(int *)(textureSourceBase + 0xb4);
-      iVar8 = 0;
+      bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
+      remainingCount = *(int *)(textureSourceBase + 0xb4);
+      cursorOrBankIndex = 0;
       do {
-        if (*piVar11 == 0) goto code_r0x004ae655;
-        piVar11 = piVar11 + 1;
-        iVar8 = iVar8 + 1;
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
-      iVar8 = 0;
-      iVar4 = *(int *)(textureSourceBase + 0xb4);
-      puVar7 = (uint *)(textureSourceBase + 0x200);
+        if (*bankSlotCursor == 0) goto code_r0x004ae655;
+        bankSlotCursor = bankSlotCursor + 1;
+        cursorOrBankIndex = cursorOrBankIndex + 1;
+        remainingCount = remainingCount + -1;
+      } while (remainingCount != 0);
+      cursorOrBankIndex = 0;
+      remainingCount = *(int *)(textureSourceBase + 0xb4);
+      entryCursor = (uint *)(textureSourceBase + 0x200);
       do {
-        uVar2 = 0;
-        puVar12 = puVar7;
+        indexOrColor = 0;
+        bankCursor = entryCursor;
         do {
-          uVar3 = *puVar7;
-          uVar6 = uVar2 + 1;
-          puVar7 = puVar7 + 2;
-          puVar9 = puVar7;
-          if ((uVar3 & 0x70707) == 0) {
+          colorOrCombinedCount = *entryCursor;
+          secondIndex = indexOrColor + 1;
+          entryCursor = entryCursor + 2;
+          scanOrBankStart = entryCursor;
+          if ((colorOrCombinedCount & 0x70707) == 0) {
             do {
-              if (uVar3 == *puVar9) {
+              if (colorOrCombinedCount == *scanOrBankStart) {
                 GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
-                          (uVar6,uVar2,iVar8,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase)
+                          (secondIndex,indexOrColor,cursorOrBankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase)
                 ;
-                *puVar9 = *puVar9 | 0x70707;
+                *scanOrBankStart = *scanOrBankStart | 0x70707;
               }
-              uVar6 = uVar6 + 1;
-              puVar9 = puVar9 + 2;
-            } while (uVar6 < 0x100);
+              secondIndex = secondIndex + 1;
+              scanOrBankStart = scanOrBankStart + 2;
+            } while (secondIndex < 0x100);
           }
-          uVar2 = uVar2 + 1;
-        } while (uVar2 < 0xff);
-        iVar8 = iVar8 + 1;
-        puVar7 = puVar12 + 0x200;
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
-      uVar2 = 0;
+          indexOrColor = indexOrColor + 1;
+        } while (indexOrColor < 0xff);
+        cursorOrBankIndex = cursorOrBankIndex + 1;
+        entryCursor = bankCursor + 0x200;
+        remainingCount = remainingCount + -1;
+      } while (remainingCount != 0);
+      indexOrColor = 0;
 LAB_004ae6f0:
       do {
-        uVar6 = uVar2 + 1;
-        if (*(uint *)(textureSourceBase + 0xb4) <= uVar6) break;
+        secondIndex = indexOrColor + 1;
+        if (*(uint *)(textureSourceBase + 0xb4) <= secondIndex) break;
         do {
-          uVar3 = GraphicsPaletteTextureSource_CountCombinedUsedColors
-                            (uVar6,uVar2,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
-          if (uVar3 < 0x101) {
+          colorOrCombinedCount = GraphicsPaletteTextureSource_CountCombinedUsedColors
+                            (secondIndex,indexOrColor,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
+          if (colorOrCombinedCount < 0x101) {
             GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
-                      (uVar6,uVar2,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
+                      (secondIndex,indexOrColor,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
             goto LAB_004ae6f0;
           }
-          uVar6 = uVar6 + 1;
-        } while (uVar6 < *(uint *)(textureSourceBase + 0xb4));
-        uVar2 = uVar2 + 1;
-      } while (uVar2 < *(uint *)(textureSourceBase + 0xb4));
-      iStack_1c = 0;
-      iVar4 = *(int *)(textureSourceBase + 0xb4);
-      puVar7 = (uint *)(textureSourceBase + 0x200);
+          secondIndex = secondIndex + 1;
+        } while (secondIndex < *(uint *)(textureSourceBase + 0xb4));
+        indexOrColor = indexOrColor + 1;
+      } while (indexOrColor < *(uint *)(textureSourceBase + 0xb4));
+      bankIndex = 0;
+      remainingCount = *(int *)(textureSourceBase + 0xb4);
+      entryCursor = (uint *)(textureSourceBase + 0x200);
       do {
-        uVar6 = 0;
-        uVar2 = 0;
-        puVar12 = puVar7;
-        puVar9 = puVar7;
+        secondIndex = 0;
+        indexOrColor = 0;
+        bankCursor = entryCursor;
+        scanOrBankStart = entryCursor;
         do {
-          puVar12[1] = puVar7[1];
-          uVar3 = *puVar7;
-          *puVar12 = uVar3;
-          puVar7 = puVar7 + 2;
-          if ((uVar3 & 0x70707) == 0) {
+          bankCursor[1] = entryCursor[1];
+          colorOrCombinedCount = *entryCursor;
+          *bankCursor = colorOrCombinedCount;
+          entryCursor = entryCursor + 2;
+          if ((colorOrCombinedCount & 0x70707) == 0) {
             GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
-                      (uVar2,uVar6,iStack_1c,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase)
+                      (indexOrColor,secondIndex,bankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase)
             ;
-            puVar12 = puVar12 + 2;
-            uVar6 = uVar6 + 1;
+            bankCursor = bankCursor + 2;
+            secondIndex = secondIndex + 1;
           }
-          uVar2 = uVar2 + 1;
-        } while (uVar2 < 0x100);
-        for (iVar8 = uVar2 - uVar6; iVar8 != 0; iVar8 = iVar8 + -1) {
-          *puVar12 = 0;
-          puVar12 = puVar12 + 2;
+          indexOrColor = indexOrColor + 1;
+        } while (indexOrColor < 0x100);
+        for (cursorOrBankIndex = indexOrColor - secondIndex; cursorOrBankIndex != 0; cursorOrBankIndex = cursorOrBankIndex + -1) {
+          *bankCursor = 0;
+          bankCursor = bankCursor + 2;
         }
-        iStack_1c = iStack_1c + 1;
-        puVar7 = puVar9 + 0x200;
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
+        bankIndex = bankIndex + 1;
+        entryCursor = scanOrBankStart + 0x200;
+        remainingCount = remainingCount + -1;
+      } while (remainingCount != 0);
       return false;
     }
   }
   return true;
 code_r0x004ae655:
   GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
-            (iVar8,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
+            (cursorOrBankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
   goto LAB_004ae640;
 }
 
@@ -208,23 +208,23 @@ GraphicsPaletteAsset_LoadPackage(word *pathUtf16)
 {
   GraphicsPaletteAsset *loadedPaletteAsset;
   GraphicsPaletteAsset *validatedPaletteAsset;
-  PackageLoadEntryEaxCf5 PVar1;
-  GraphicsPaletteAssetEaxCf5 GVar2;
+  PackageLoadEntryEaxCf5 loadResult;
+  GraphicsPaletteAssetEaxCf5 validateResult;
   
-  PVar1 = Package_LoadEntry(pathUtf16);
-  loadedPaletteAsset = PVar1.bufferOrError;
-  if (!PVar1.carry) {
-    GVar2 = (*g_GraphicsPaletteAssetValidate)(loadedPaletteAsset);
-    validatedPaletteAsset = GVar2.paletteAsset;
-    if (!GVar2.carry) {
-      return GVar2;
+  loadResult = Package_LoadEntry(pathUtf16);
+  loadedPaletteAsset = loadResult.bufferOrError;
+  if (!loadResult.carry) {
+    validateResult = (*g_GraphicsPaletteAssetValidate)(loadedPaletteAsset);
+    validatedPaletteAsset = validateResult.paletteAsset;
+    if (!validateResult.carry) {
+      return validateResult;
     }
     Resource_Release(loadedPaletteAsset);
     loadedPaletteAsset = validatedPaletteAsset;
   }
-  GVar2.carry = true;
-  GVar2.paletteAsset = loadedPaletteAsset;
-  return GVar2;
+  validateResult.carry = true;
+  validateResult.paletteAsset = loadedPaletteAsset;
+  return validateResult;
 }
 
 
@@ -256,31 +256,31 @@ GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
 GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteAsset)
 
 {
-  GraphicsPaletteAsset *arg0;
-  uint uVar1;
-  GraphicsPaletteAsset *pGVar2;
-  ArenaAllocEaxCf5 AVar3;
-  GraphicsPaletteAssetEaxCf5 GVar4;
-  ArenaFreeEaxCf5 AVar5;
+  GraphicsPaletteAsset *clonedAsset;
+  uint sizeOrDwordCount;
+  GraphicsPaletteAsset *destinationCursor;
+  ArenaAllocEaxCf5 allocResult;
+  GraphicsPaletteAssetEaxCf5 validateResult;
+  ArenaFreeEaxCf5 freeResult;
   
-  uVar1 = paletteAsset->allocationSizeBytes;
-  AVar3 = (*g_MemoryApi.alloc)(uVar1);
-  arg0 = (GraphicsPaletteAsset *)AVar3.eax;
-  if (!AVar3.carry) {
-    pGVar2 = arg0;
-    for (uVar1 = uVar1 >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
-      pGVar2->magic = paletteAsset->magic;
+  sizeOrDwordCount = paletteAsset->allocationSizeBytes;
+  allocResult = (*g_MemoryApi.alloc)(sizeOrDwordCount);
+  clonedAsset = (GraphicsPaletteAsset *)allocResult.eax;
+  if (!allocResult.carry) {
+    destinationCursor = clonedAsset;
+    for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount = sizeOrDwordCount - 1) {
+      destinationCursor->magic = paletteAsset->magic;
       paletteAsset = (GraphicsPaletteAsset *)&paletteAsset->allocationSizeBytes;
-      pGVar2 = (GraphicsPaletteAsset *)&pGVar2->allocationSizeBytes;
+      destinationCursor = (GraphicsPaletteAsset *)&destinationCursor->allocationSizeBytes;
     }
-    GVar4 = (*g_GraphicsPaletteAssetValidate)(arg0);
-    if (!GVar4.carry) {
-      return GVar4.paletteAsset;
+    validateResult = (*g_GraphicsPaletteAssetValidate)(clonedAsset);
+    if (!validateResult.carry) {
+      return validateResult.paletteAsset;
     }
-    AVar5 = (*g_MemoryApi.free)(arg0);
-    arg0 = (GraphicsPaletteAsset *)AVar5.eax;
+    freeResult = (*g_MemoryApi.free)(clonedAsset);
+    clonedAsset = (GraphicsPaletteAsset *)freeResult.eax;
   }
-  return arg0;
+  return clonedAsset;
 }
 
 
@@ -311,17 +311,17 @@ GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
 
 {
-  GraphicsPaletteAssetEaxCf5 GVar1;
-  GraphicsPaletteAssetEaxCf5 GVar2;
+  GraphicsPaletteAssetEaxCf5 successResult;
+  GraphicsPaletteAssetEaxCf5 failureResult;
   
   if (paletteAsset->magic == ASSET_MAGIC_PAL) {
-    GVar1.carry = false;
-    GVar1.paletteAsset = paletteAsset;
-    return GVar1;
+    successResult.carry = false;
+    successResult.paletteAsset = paletteAsset;
+    return successResult;
   }
-  GVar2.carry = true;
-  GVar2.paletteAsset = (GraphicsPaletteAsset *)0x35;
-  return GVar2;
+  failureResult.carry = true;
+  failureResult.paletteAsset = (GraphicsPaletteAsset *)0x35;
+  return failureResult;
 }
 
 
@@ -348,108 +348,108 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           GraphicsPaletteTextureSourceAsset *baseAsset)
 
 {
-  GraphicsPaletteBankCount GVar1;
-  GraphicsAssetAllocationByteSize GVar2;
+  GraphicsPaletteBankCount appendedBankCount;
+  GraphicsAssetAllocationByteSize baseAllocationSize;
   dword bytes;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  GraphicsAssetSubresourceCount GVar7;
-  GraphicsAssetSubresourceCount GVar8;
-  GraphicsPaletteTextureSourceAsset *pGVar9;
-  GraphicsTexturePaletteEntry *pGVar10;
-  byte *pbVar11;
-  GraphicsPaletteTextureSourceAsset *pGVar12;
-  ArenaAllocEaxCf5 AVar13;
-  GraphicsPaletteTextureSourceEaxCf5 GVar14;
+  int headerCountOrBaseBanks;
+  int appendedPaletteBytesOrCount;
+  int remainingDwords;
+  uint tailDwordCount;
+  GraphicsAssetSubresourceCount remainingBaseSubresources;
+  GraphicsAssetSubresourceCount appendedSubresourceCount;
+  GraphicsPaletteTextureSourceAsset *sourceCursor;
+  GraphicsTexturePaletteEntry *paletteEntryCursor;
+  byte *byteSourceCursor;
+  GraphicsPaletteTextureSourceAsset *destinationCursor;
+  ArenaAllocEaxCf5 allocResult;
+  GraphicsPaletteTextureSourceEaxCf5 result;
   
   bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - 0x200;
-  AVar13 = (*g_MemoryApi.alloc)(bytes);
-  GVar14.paletteSource = (GraphicsPaletteTextureSourceAsset *)AVar13.eax;
-  if (AVar13.carry) {
-    GVar14.carry = true;
-    return GVar14;
+  allocResult = (*g_MemoryApi.alloc)(bytes);
+  result.paletteSource = (GraphicsPaletteTextureSourceAsset *)allocResult.eax;
+  if (allocResult.carry) {
+    result.carry = true;
+    return result;
   }
-  pGVar9 = baseAsset;
-  pGVar12 = GVar14.paletteSource;
-  for (iVar3 = 0x80; iVar3 != 0; iVar3 = iVar3 + -1) {
-    pGVar12->magic = pGVar9->magic;
-    pGVar9 = (GraphicsPaletteTextureSourceAsset *)&pGVar9->allocationSizeBytes;
-    pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+  sourceCursor = baseAsset;
+  destinationCursor = result.paletteSource;
+  for (headerCountOrBaseBanks = 0x80; headerCountOrBaseBanks != 0; headerCountOrBaseBanks = headerCountOrBaseBanks + -1) {
+    destinationCursor->magic = sourceCursor->magic;
+    sourceCursor = (GraphicsPaletteTextureSourceAsset *)&sourceCursor->allocationSizeBytes;
+    destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  GVar1 = appendedAsset->paletteBankCount;
-  GVar8 = appendedAsset->subresourceCount;
-  pGVar12[-1].reserved0C = bytes;
-  *(GraphicsPaletteBankCount *)pGVar12[-1].reservedBC_1FF =
-       *(int *)pGVar12[-1].reservedBC_1FF + GVar1;
-  pGVar12[-1].subresourceTableOffset = pGVar12[-1].subresourceTableOffset + GVar8;
-  iVar4 = GVar1 * 0x800;
-  *(int *)(pGVar12[-1].reservedBC_1FF + 4) = *(int *)(pGVar12[-1].reservedBC_1FF + 4) + iVar4;
-  iVar3 = *(int *)pGVar9[-1].reservedBC_1FF;
-  iVar5 = iVar3 << 9;
-  if (iVar5 != 0) {
-    for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-      pGVar12->magic = pGVar9->magic;
-      pGVar9 = (GraphicsPaletteTextureSourceAsset *)&pGVar9->allocationSizeBytes;
-      pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+  appendedBankCount = appendedAsset->paletteBankCount;
+  appendedSubresourceCount = appendedAsset->subresourceCount;
+  destinationCursor[-1].reserved0C = bytes;
+  *(GraphicsPaletteBankCount *)destinationCursor[-1].reservedBC_1FF =
+       *(int *)destinationCursor[-1].reservedBC_1FF + appendedBankCount;
+  destinationCursor[-1].subresourceTableOffset = destinationCursor[-1].subresourceTableOffset + appendedSubresourceCount;
+  appendedPaletteBytesOrCount = appendedBankCount * 0x800;
+  *(int *)(destinationCursor[-1].reservedBC_1FF + 4) = *(int *)(destinationCursor[-1].reservedBC_1FF + 4) + appendedPaletteBytesOrCount;
+  headerCountOrBaseBanks = *(int *)sourceCursor[-1].reservedBC_1FF;
+  remainingDwords = headerCountOrBaseBanks << 9;
+  if (remainingDwords != 0) {
+    for (; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destinationCursor->magic = sourceCursor->magic;
+      sourceCursor = (GraphicsPaletteTextureSourceAsset *)&sourceCursor->allocationSizeBytes;
+      destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
   }
-  pGVar10 = appendedAsset->paletteEntries;
-  iVar5 = appendedAsset->paletteBankCount << 9;
-  if (iVar5 != 0) {
-    for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-      pGVar12->magic = pGVar10->argb8888;
-      pGVar10 = (GraphicsTexturePaletteEntry *)&pGVar10->framebufferPixel;
-      pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+  paletteEntryCursor = appendedAsset->paletteEntries;
+  remainingDwords = appendedAsset->paletteBankCount << 9;
+  if (remainingDwords != 0) {
+    for (; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destinationCursor->magic = paletteEntryCursor->argb8888;
+      paletteEntryCursor = (GraphicsTexturePaletteEntry *)&paletteEntryCursor->framebufferPixel;
+      destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
   }
-  GVar2 = baseAsset->allocationSizeBytes;
-  GVar7 = baseAsset->subresourceCount;
-  pbVar11 = baseAsset->reserved10_AF + (baseAsset->subresourceTableOffset - 0x10);
+  baseAllocationSize = baseAsset->allocationSizeBytes;
+  remainingBaseSubresources = baseAsset->subresourceCount;
+  byteSourceCursor = baseAsset->reserved10_AF + (baseAsset->subresourceTableOffset - 0x10);
   do {
-    for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
-      pGVar12->magic = *(GraphicsPaletteTextureAssetMagic *)pbVar11;
-      pbVar11 = pbVar11 + 4;
-      pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
+      byteSourceCursor = byteSourceCursor + 4;
+      destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
-    *(GraphicsAssetSubresourceCount *)(pGVar12[-1].reservedBC_1FF + 0x138) =
-         *(int *)(pGVar12[-1].reservedBC_1FF + 0x138) + iVar4 + GVar8 * 0x20;
-    GVar7 = GVar7 - 1;
-  } while (GVar7 != 0);
-  pbVar11 = appendedAsset->reserved10_AF + (appendedAsset->subresourceTableOffset - 0x10);
-  GVar8 = appendedAsset->subresourceCount;
+    *(GraphicsAssetSubresourceCount *)(destinationCursor[-1].reservedBC_1FF + 0x138) =
+         *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + appendedPaletteBytesOrCount + appendedSubresourceCount * 0x20;
+    remainingBaseSubresources = remainingBaseSubresources - 1;
+  } while (remainingBaseSubresources != 0);
+  byteSourceCursor = appendedAsset->reserved10_AF + (appendedAsset->subresourceTableOffset - 0x10);
+  appendedSubresourceCount = appendedAsset->subresourceCount;
   do {
-    for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
-      pGVar12->magic = *(GraphicsPaletteTextureAssetMagic *)pbVar11;
-      pbVar11 = pbVar11 + 4;
-      pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+    for (appendedPaletteBytesOrCount = 8; appendedPaletteBytesOrCount != 0; appendedPaletteBytesOrCount = appendedPaletteBytesOrCount + -1) {
+      destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
+      byteSourceCursor = byteSourceCursor + 4;
+      destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
-    *(GraphicsAssetAllocationByteSize *)(pGVar12[-1].reservedBC_1FF + 0x138) =
-         *(int *)(pGVar12[-1].reservedBC_1FF + 0x138) + (GVar2 - 0x200);
-    if (-1 < *(int *)(pGVar12[-1].reservedBC_1FF + 0x134)) {
-      *(int *)(pGVar12[-1].reservedBC_1FF + 0x134) =
-           *(int *)(pGVar12[-1].reservedBC_1FF + 0x134) + iVar3;
+    *(GraphicsAssetAllocationByteSize *)(destinationCursor[-1].reservedBC_1FF + 0x138) =
+         *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + (baseAllocationSize - 0x200);
+    if (-1 < *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134)) {
+      *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134) =
+           *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134) + headerCountOrBaseBanks;
     }
-    GVar8 = GVar8 - 1;
-  } while (GVar8 != 0);
-  pbVar11 = baseAsset->reserved10_AF +
+    appendedSubresourceCount = appendedSubresourceCount - 1;
+  } while (appendedSubresourceCount != 0);
+  byteSourceCursor = baseAsset->reserved10_AF +
             baseAsset->subresourceCount * 0x20 + baseAsset->subresourceTableOffset + -0x10;
-  for (uVar6 = (baseAsset->allocationSizeBytes - baseAsset->subresourceTableOffset) +
-               baseAsset->subresourceCount * -0x20 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
-    pGVar12->magic = *(GraphicsPaletteTextureAssetMagic *)pbVar11;
-    pbVar11 = pbVar11 + 4;
-    pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+  for (tailDwordCount = (baseAsset->allocationSizeBytes - baseAsset->subresourceTableOffset) +
+               baseAsset->subresourceCount * -0x20 >> 2; tailDwordCount != 0; tailDwordCount = tailDwordCount - 1) {
+    destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
+    byteSourceCursor = byteSourceCursor + 4;
+    destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  pbVar11 = appendedAsset->reserved10_AF +
+  byteSourceCursor = appendedAsset->reserved10_AF +
             appendedAsset->subresourceCount * 0x20 + appendedAsset->subresourceTableOffset + -0x10;
-  for (uVar6 = (appendedAsset->allocationSizeBytes - appendedAsset->subresourceTableOffset) +
-               appendedAsset->subresourceCount * -0x20 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
-    pGVar12->magic = *(GraphicsPaletteTextureAssetMagic *)pbVar11;
-    pbVar11 = pbVar11 + 4;
-    pGVar12 = (GraphicsPaletteTextureSourceAsset *)&pGVar12->allocationSizeBytes;
+  for (tailDwordCount = (appendedAsset->allocationSizeBytes - appendedAsset->subresourceTableOffset) +
+               appendedAsset->subresourceCount * -0x20 >> 2; tailDwordCount != 0; tailDwordCount = tailDwordCount - 1) {
+    destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
+    byteSourceCursor = byteSourceCursor + 4;
+    destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  return THANDOR_BITCAST(qword, GraphicsPaletteTextureSourceEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar13) & 0xFFFFFFFFFFull) & 0xffffffff));
+  return THANDOR_BITCAST(qword, GraphicsPaletteTextureSourceEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
 }
 
 
@@ -464,69 +464,69 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {
-  uint *puVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  AssetSubresourceCount AVar6;
-  uint *puVar7;
-  word *pwVar8;
-  uint *puVar9;
-  byte *pbVar10;
+  uint *destinationBankEntries;
+  uint packedColor;
+  uint destinationColorIndex;
+  int remainingPixels;
+  uint sourceColorIndex;
+  AssetSubresourceCount remainingSubresources;
+  uint *sourceEntry;
+  word *subresourceEntry;
+  uint *destinationEntry;
+  byte *pixelCursor;
   
-  puVar7 = (uint *)((int)textureSource + sourcePaletteBank * 0x800 + 0x200);
-  puVar1 = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
-  uVar5 = 0;
-  while (uVar2 = *puVar7, (uVar2 & 0x70707) != 0) {
+  sourceEntry = (uint *)((int)textureSource + sourcePaletteBank * 0x800 + 0x200);
+  destinationBankEntries = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
+  sourceColorIndex = 0;
+  while (packedColor = *sourceEntry, (packedColor & 0x70707) != 0) {
 LAB_004ae480:
-    uVar5 = uVar5 + 1;
-    puVar7 = puVar7 + 2;
-    if (0xff < uVar5) {
-      AVar6 = (textureSource->tableDescriptor).subresourceCount;
-      pwVar8 = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+    sourceColorIndex = sourceColorIndex + 1;
+    sourceEntry = sourceEntry + 2;
+    if (0xff < sourceColorIndex) {
+      remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
+      subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                        ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
       do {
-        if (sourcePaletteBank == *(int *)((AssetProducerSourceNames *)(pwVar8 + 4))->producerName) {
-          *(GraphicsPaletteIndex *)((AssetProducerSourceNames *)(pwVar8 + 4))->producerName =
+        if (sourcePaletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
+          *(GraphicsPaletteIndex *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName =
                destinationPaletteBank;
-          pbVar10 = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                    *(int *)(pwVar8 + 6) + -0x28;
-          iVar4 = *(int *)(pwVar8 + 0xc) * *(int *)(pwVar8 + 0xe);
+          pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+                    *(int *)(subresourceEntry + 6) + -0x28;
+          remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
           do {
-            *pbVar10 = *(byte *)(*pbVar10 + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
-            pbVar10 = pbVar10 + 1;
-            iVar4 = iVar4 + -1;
-          } while (iVar4 != 0);
+            *pixelCursor = *(byte *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
+            pixelCursor = pixelCursor + 1;
+            remainingPixels = remainingPixels + -1;
+          } while (remainingPixels != 0);
         }
-        pwVar8 = pwVar8 + 0x10;
-        AVar6 = AVar6 - 1;
-      } while (AVar6 != 0);
+        subresourceEntry = subresourceEntry + 0x10;
+        remainingSubresources = remainingSubresources - 1;
+      } while (remainingSubresources != 0);
       GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
                 (sourcePaletteBank,textureSource);
       return;
     }
   }
-  uVar3 = 0;
-  puVar9 = puVar1;
+  destinationColorIndex = 0;
+  destinationEntry = destinationBankEntries;
   do {
-    if (uVar2 == *puVar9) goto LAB_004ae478;
-    uVar3 = uVar3 + 1;
-    puVar9 = puVar9 + 2;
-  } while (uVar3 < 0x100);
-  uVar3 = 0;
-  puVar9 = puVar1;
+    if (packedColor == *destinationEntry) goto LAB_004ae478;
+    destinationColorIndex = destinationColorIndex + 1;
+    destinationEntry = destinationEntry + 2;
+  } while (destinationColorIndex < 0x100);
+  destinationColorIndex = 0;
+  destinationEntry = destinationBankEntries;
 LAB_004ae450:
-  if ((*puVar9 & 0x70707) == 0) goto code_r0x004ae458;
-  *puVar9 = uVar2;
-  puVar9[1] = puVar7[1];
+  if ((*destinationEntry & 0x70707) == 0) goto code_r0x004ae458;
+  *destinationEntry = packedColor;
+  destinationEntry[1] = sourceEntry[1];
 LAB_004ae478:
-  *(char *)(uVar5 + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)uVar3;
+  *(char *)(sourceColorIndex + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)destinationColorIndex;
   goto LAB_004ae480;
 code_r0x004ae458:
-  uVar3 = uVar3 + 1;
-  puVar9 = puVar9 + 2;
-  if (0xff < uVar3) goto LAB_004ae480;
+  destinationColorIndex = destinationColorIndex + 1;
+  destinationEntry = destinationEntry + 2;
+  if (0xff < destinationColorIndex) goto LAB_004ae480;
   goto LAB_004ae450;
 }
 
@@ -541,31 +541,31 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {
-  int iVar1;
-  AssetSubresourceCount AVar2;
-  word *pwVar3;
-  byte *pbVar4;
+  int remainingPixels;
+  AssetSubresourceCount remainingSubresources;
+  word *subresourceEntry;
+  byte *pixelCursor;
   
-  AVar2 = (textureSource->tableDescriptor).subresourceCount;
-  pwVar3 = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+  remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
+  subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   if (newColorIndex != oldColorIndex) {
     do {
-      if (paletteBank == *(int *)((AssetProducerSourceNames *)(pwVar3 + 4))->producerName) {
-        pbVar4 = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                 *(int *)(pwVar3 + 6) + -0x28;
-        iVar1 = *(int *)(pwVar3 + 0xc) * *(int *)(pwVar3 + 0xe);
+      if (paletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
+        pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+                 *(int *)(subresourceEntry + 6) + -0x28;
+        remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
         do {
-          if ((byte)oldColorIndex == *pbVar4) {
-            *pbVar4 = (byte)newColorIndex;
+          if ((byte)oldColorIndex == *pixelCursor) {
+            *pixelCursor = (byte)newColorIndex;
           }
-          pbVar4 = pbVar4 + 1;
-          iVar1 = iVar1 + -1;
-        } while (iVar1 != 0);
+          pixelCursor = pixelCursor + 1;
+          remainingPixels = remainingPixels + -1;
+        } while (remainingPixels != 0);
       }
-      pwVar3 = pwVar3 + 0x10;
-      AVar2 = AVar2 - 1;
-    } while (AVar2 != 0);
+      subresourceEntry = subresourceEntry + 0x10;
+      remainingSubresources = remainingSubresources - 1;
+    } while (remainingSubresources != 0);
   }
   return;
 }
@@ -581,41 +581,41 @@ GraphicsPaletteTextureSource_CountCombinedUsedColors
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  uint *puVar4;
-  uint *puVar5;
-  uint *puVar6;
+  int remainingCandidateEntries;
+  int remainingEntries;
+  uint usedColorCount;
+  uint *destinationEntry;
+  uint *candidateEntry;
+  uint *candidateBankCursor;
   
-  puVar4 = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
-  puVar6 = (uint *)((int)textureSource + candidatePaletteBank * 0x800 + 0x200);
-  iVar2 = 0x100;
-  uVar3 = 0;
+  destinationEntry = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
+  candidateBankCursor = (uint *)((int)textureSource + candidatePaletteBank * 0x800 + 0x200);
+  remainingEntries = 0x100;
+  usedColorCount = 0;
   do {
-    if ((*puVar4 & 0x70707) == 0) {
-      iVar1 = 0x100;
-      puVar5 = puVar6;
+    if ((*destinationEntry & 0x70707) == 0) {
+      remainingCandidateEntries = 0x100;
+      candidateEntry = candidateBankCursor;
       do {
-        if (*puVar4 == *puVar5) goto LAB_004ae3c0;
-        puVar5 = puVar5 + 2;
-        iVar1 = iVar1 + -1;
-      } while (iVar1 != 0);
-      uVar3 = uVar3 + 1;
+        if (*destinationEntry == *candidateEntry) goto LAB_004ae3c0;
+        candidateEntry = candidateEntry + 2;
+        remainingCandidateEntries = remainingCandidateEntries + -1;
+      } while (remainingCandidateEntries != 0);
+      usedColorCount = usedColorCount + 1;
     }
 LAB_004ae3c0:
-    puVar4 = puVar4 + 2;
-    iVar2 = iVar2 + -1;
-    if (iVar2 == 0) {
-      iVar2 = 0x100;
+    destinationEntry = destinationEntry + 2;
+    remainingEntries = remainingEntries + -1;
+    if (remainingEntries == 0) {
+      remainingEntries = 0x100;
       do {
-        if ((*puVar6 & 0x70707) == 0) {
-          uVar3 = uVar3 + 1;
+        if ((*candidateBankCursor & 0x70707) == 0) {
+          usedColorCount = usedColorCount + 1;
         }
-        puVar6 = puVar6 + 2;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
-      return uVar3;
+        candidateBankCursor = candidateBankCursor + 2;
+        remainingEntries = remainingEntries + -1;
+      } while (remainingEntries != 0);
+      return usedColorCount;
     }
   } while( true );
 }
@@ -630,52 +630,52 @@ GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
           (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {
-  AssetPaletteBankCount *pAVar1;
-  AssetRelativeOffset *pAVar2;
-  AssetAllocationSizeBytes *pAVar3;
-  uint uVar4;
-  int iVar5;
-  dword *pdVar6;
-  word *pwVar7;
+  AssetPaletteBankCount *paletteBankCountField;
+  AssetRelativeOffset *subresourceTableOffsetField;
+  AssetAllocationSizeBytes *allocationSizeField;
+  uint remainingDwords;
+  int bankOffsetOrCount;
+  dword *copyCursor;
+  word *subresourceEntry;
   dword *sourceDwordCursor;
   dword *destinationDwordCursor;
-  AssetSubresourceCount AVar8;
+  AssetSubresourceCount remainingSubresources;
   
-  iVar5 = paletteIndex * 0x800 + 0x200;
-  destinationDwordCursor = (dword *)((int)textureSource + iVar5);
-  pdVar6 = (dword *)(paletteIndex * 0x800 + 0xa00 + (int)textureSource);
-  uVar4 = ((textureSource->common).allocationSizeBytes - 0x800) - iVar5 >> 2;
-  if (uVar4 != 0) {
-    for (; uVar4 != 0; uVar4 = uVar4 - 1) {
-      *destinationDwordCursor = *pdVar6;
-      pdVar6 = pdVar6 + 1;
+  bankOffsetOrCount = paletteIndex * 0x800 + 0x200;
+  destinationDwordCursor = (dword *)((int)textureSource + bankOffsetOrCount);
+  copyCursor = (dword *)(paletteIndex * 0x800 + 0xa00 + (int)textureSource);
+  remainingDwords = ((textureSource->common).allocationSizeBytes - 0x800) - bankOffsetOrCount >> 2;
+  if (remainingDwords != 0) {
+    for (; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
+      *destinationDwordCursor = *copyCursor;
+      copyCursor = copyCursor + 1;
       destinationDwordCursor = destinationDwordCursor + 1;
     }
   }
-  pAVar1 = &(textureSource->tableDescriptor).paletteBankCount;
-  *pAVar1 = *pAVar1 - 1;
-  pAVar2 = &(textureSource->tableDescriptor).subresourceTableOffset;
-  *pAVar2 = *pAVar2 - 0x800;
-  pAVar3 = &(textureSource->common).allocationSizeBytes;
-  *pAVar3 = *pAVar3 - 0x800;
-  pwVar7 = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+  paletteBankCountField = &(textureSource->tableDescriptor).paletteBankCount;
+  *paletteBankCountField = *paletteBankCountField - 1;
+  subresourceTableOffsetField = &(textureSource->tableDescriptor).subresourceTableOffset;
+  *subresourceTableOffsetField = *subresourceTableOffsetField - 0x800;
+  allocationSizeField = &(textureSource->common).allocationSizeBytes;
+  *allocationSizeField = *allocationSizeField - 0x800;
+  subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
-  for (AVar8 = (textureSource->tableDescriptor).subresourceCount; AVar8 != 0; AVar8 = AVar8 - 1) {
-    *(int *)(pwVar7 + 6) = *(int *)(pwVar7 + 6) + -0x800;
-    if (paletteIndex < *(int *)((AssetProducerSourceNames *)(pwVar7 + 4))->producerName) {
-      *(int *)((AssetProducerSourceNames *)(pwVar7 + 4))->producerName =
-           *(int *)((AssetProducerSourceNames *)(pwVar7 + 4))->producerName + -1;
+  for (remainingSubresources = (textureSource->tableDescriptor).subresourceCount; remainingSubresources != 0; remainingSubresources = remainingSubresources - 1) {
+    *(int *)(subresourceEntry + 6) = *(int *)(subresourceEntry + 6) + -0x800;
+    if (paletteIndex < *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
+      *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName =
+           *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName + -1;
     }
-    pwVar7 = pwVar7 + 0x10;
+    subresourceEntry = subresourceEntry + 0x10;
   }
-  pdVar6 = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
+  copyCursor = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
   sourceDwordCursor = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0x4));
-  iVar5 = 0x1ff - paletteIndex;
-  if (iVar5 != 0) {
-    for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *pdVar6 = *sourceDwordCursor;
+  bankOffsetOrCount = 0x1ff - paletteIndex;
+  if (bankOffsetOrCount != 0) {
+    for (; bankOffsetOrCount != 0; bankOffsetOrCount = bankOffsetOrCount + -1) {
+      *copyCursor = *sourceDwordCursor;
       sourceDwordCursor = sourceDwordCursor + 1;
-      pdVar6 = pdVar6 + 1;
+      copyCursor = copyCursor + 1;
     }
   }
   return;
