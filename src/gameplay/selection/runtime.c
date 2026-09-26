@@ -37,432 +37,432 @@ SelectionPanel_RenderArmyRuntimeMetrics
           RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
-  dword dVar1;
-  ModelRuntimeSlot *pMVar2;
+  dword childDefinitionAddress;
+  ModelRuntimeSlot *childModelRuntime;
   ArmyCommandGeneration maximumValue;
-  InGameRuntimeRootImageC3E4 *pIVar3;
-  uint uVar4;
+  InGameRuntimeRootImageC3E4 *inGameRoot;
+  uint runtimeKindOrValue;
   SelectionPanelSegmentCount totalSegmentCount;
   SelectionPanelSegmentCount totalSegmentCount_00;
   SelectionPanelSegmentCount totalSegmentCount_01;
-  int maximumValue_00;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
+  int activeMetricMaximum;
+  int workingValue;
+  int capacityOrMetric;
+  uint halfFilledSegments;
   ModelRuntimeSlot *armyRuntime;
-  bool bVar8;
-  ModelRuntimeActiveTotalMetricRegisterPair MVar9;
-  SelectionPanelAdvanceEaxEdx8 SVar10;
-  SelectionPanelAdvanceEaxEdx8 SVar11;
-  SelectionPanelAdvanceEaxEdx8 SVar12;
-  SelectionPanelAdvanceEaxEdx8 SVar13;
-  ModelRuntimeScaleRatioRegisterPairQ12 MVar14;
-  FactionRuntimeGroupIndexEaxCf5 FVar15;
-  ArmyMetric6CDefinitionC4Regs8 AVar16;
+  bool framebufferBusy;
+  ModelRuntimeActiveTotalMetricRegisterPair activeTotalMetrics;
+  SelectionPanelAdvanceEaxEdx8 topLeftAdvance;
+  SelectionPanelAdvanceEaxEdx8 topRightAdvance;
+  SelectionPanelAdvanceEaxEdx8 bottomLeftAdvance;
+  SelectionPanelAdvanceEaxEdx8 bottomRightAdvance;
+  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
+  FactionRuntimeGroupIndexEaxCf5 groupIndexResult;
+  ArmyMetric6CDefinitionC4Regs8 armyMetrics;
   
-  pIVar3 = g_InGameRuntimeRoot;
-  bVar8 = (*g_GraphicsFramebufferBeginAccess)();
-  if (bVar8) {
+  inGameRoot = g_InGameRuntimeRoot;
+  framebufferBusy = (*g_GraphicsFramebufferBeginAccess)();
+  if (framebufferBusy) {
     return;
   }
-  uVar4 = runtimeEntry->runtimeLinkOrKind08;
+  runtimeKindOrValue = runtimeEntry->runtimeLinkOrKind08;
   armyRuntime = runtimeEntry->modelRuntime;
-  if (runtimeEntry->factionIndex == (pIVar3->worldRuntime0A30).activeFactionRuntimeIndex) {
-    if (uVar4 != 0) {
-      if (uVar4 == 1) {
+  if (runtimeEntry->factionIndex == (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
+    if (runtimeKindOrValue != 0) {
+      if (runtimeKindOrValue == 1) {
         if (((armyRuntime->classState).classStateB8 == 1) &&
            ((((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
              definitionValue9C_4C == 0xd ||
             (((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
              definitionValue9C_4C == 0xb)))) {
-          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                              (UiNumericValue32)(MVar9 >> 0x20),(UiNumericValue32)MVar9,0x12);
-          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-          if (FVar15.carry) {
-            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,0x12);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (groupIndexResult.carry) {
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                FVar15.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,0xb);
           }
-          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
-                     SVar10.nextDrawY,(armyRuntime->classLinkState).classState68,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
+                     topLeftAdvance.nextDrawY,(armyRuntime->classLinkState).classState68,
                      (armyRuntime->classLinkState).classState64,0x16);
-          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
-                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
+                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
                      panelLeft,5);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
                      panelRight,6);
           goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
         }
       }
-      else if (uVar4 < 3) {
-        pMVar2 = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
+      else if (runtimeKindOrValue < 3) {
+        childModelRuntime = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
                  childModelRuntimeOrSavedOffset00;
-        if (((armyRuntime->attachmentCount0C != 0) && (pMVar2 != (ModelRuntimeSlot *)0x0)) &&
-           ((dVar1 = (pMVar2->definitionOrSavedId).savedIdOrOffset, *(int *)(dVar1 + 0x4c) == 5 ||
-            (((*(int *)(dVar1 + 0x4c) == 6 || (*(int *)(dVar1 + 0x4c) == 7)) ||
-             (*(int *)(dVar1 + 0x4c) == 8)))))) {
-          iVar5 = *(int *)(pMVar2->reserved10_37 + 0x14);
-          iVar6 = *(int *)((pMVar2->definitionOrSavedId).savedIdOrOffset + 0x30);
-          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          maximumValue_00 = (int)(MVar9 >> 0x20);
-          if (maximumValue_00 == 0) {
-            SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+        if (((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != (ModelRuntimeSlot *)0x0)) &&
+           ((childDefinitionAddress = (childModelRuntime->definitionOrSavedId).savedIdOrOffset, *(int *)(childDefinitionAddress + 0x4c) == 5 ||
+            (((*(int *)(childDefinitionAddress + 0x4c) == 6 || (*(int *)(childDefinitionAddress + 0x4c) == 7)) ||
+             (*(int *)(childDefinitionAddress + 0x4c) == 8)))))) {
+          workingValue = *(int *)(childModelRuntime->reserved10_37 + 0x14);
+          capacityOrMetric = *(int *)((childModelRuntime->definitionOrSavedId).savedIdOrOffset + 0x30);
+          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          activeMetricMaximum = (int)(activeTotalMetrics >> 0x20);
+          if (activeMetricMaximum == 0) {
+            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
           }
           else {
-            SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                                maximumValue_00,(UiNumericValue32)MVar9,0x12);
+                                activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,0x12);
           }
-          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-          if (FVar15.carry) {
-            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (groupIndexResult.carry) {
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                FVar15.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,0xb);
           }
-          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
-                     SVar10.nextDrawY,iVar6,iVar6 - iVar5,0x16);
-          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
+                     topLeftAdvance.nextDrawY,capacityOrMetric,capacityOrMetric - workingValue,0x16);
+          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
-                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
+                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
                      panelLeft,5);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
                      panelRight,6);
           goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
         }
       }
-      else if (uVar4 == 3) {
-        pMVar2 = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
+      else if (runtimeKindOrValue == 3) {
+        childModelRuntime = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
                  childModelRuntimeOrSavedOffset00;
-        if ((armyRuntime->attachmentCount0C != 0) && (pMVar2 != (ModelRuntimeSlot *)0x0)) {
-          armyRuntime = (ModelRuntimeSlot *)(pMVar2->definitionOrSavedId).savedIdOrOffset;
-          uVar4 = 0xffffffff;
-          iVar5 = 7;
+        if ((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != (ModelRuntimeSlot *)0x0)) {
+          armyRuntime = (ModelRuntimeSlot *)(childModelRuntime->definitionOrSavedId).savedIdOrOffset;
+          runtimeKindOrValue = 0xffffffff;
+          workingValue = 7;
           if (armyRuntime->definitionValue9C_4C == 9) {
             do {
-              if (*(uint *)((pMVar2->classState).reserved84_A7 + iVar5 * 4 + -0x24) < uVar4) {
-                uVar4 = *(uint *)((pMVar2->classState).reserved84_A7 + iVar5 * 4 + -0x24);
+              if (*(uint *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 + -0x24) < runtimeKindOrValue) {
+                runtimeKindOrValue = *(uint *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 + -0x24);
               }
-              iVar5 = iVar5 + -1;
-            } while (-1 < iVar5);
-            if ((int)uVar4 < (int)(pMVar2->classLinkState).classState80) {
-              uVar4 = (pMVar2->classLinkState).classState80;
+              workingValue = workingValue + -1;
+            } while (-1 < workingValue);
+            if ((int)runtimeKindOrValue < (int)(childModelRuntime->classLinkState).classState80) {
+              runtimeKindOrValue = (childModelRuntime->classLinkState).classState80;
             }
-            iVar5 = 0;
+            workingValue = 0;
             maximumValue = *(ArmyCommandGeneration *)
                             ((ArmyRuntimeMovementControlState *)armyRuntime->reserved10_37 + 4);
-            if (0 < (int)uVar4) {
-              iVar5 = -uVar4;
+            if (0 < (int)runtimeKindOrValue) {
+              workingValue = -runtimeKindOrValue;
             }
-            MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-            iVar6 = (int)(MVar9 >> 0x20);
-            if (iVar6 == 0) {
-              SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+            capacityOrMetric = (int)(activeTotalMetrics >> 0x20);
+            if (capacityOrMetric == 0) {
+              topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
             }
             else {
-              SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar6,
-                                  (UiNumericValue32)MVar9,0x12);
+              topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,capacityOrMetric,
+                                  (UiNumericValue32)activeTotalMetrics,0x12);
             }
-            FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-            if (FVar15.carry) {
-              SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+            if (groupIndexResult.carry) {
+              topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
             }
             else {
-              SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+              topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                  FVar15.runtimeGroupIndex,0xb);
+                                  groupIndexResult.runtimeGroupIndex,0xb);
             }
-            SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-            SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+            bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
-                       SVar10.nextDrawY,maximumValue,iVar5 + maximumValue,0x16);
-            MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
+                       topLeftAdvance.nextDrawY,maximumValue,workingValue + maximumValue,0x16);
+            scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
-                       SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
+                       bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                        0x19);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
+                      (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
                        panelLeft,5);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
+                      (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
                        panelRight,6);
             goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
           }
         }
       }
-      else if ((3 < uVar4) &&
+      else if ((3 < runtimeKindOrValue) &&
               (((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
                definitionValue9C_4C == 0x16)) {
         if (((ArmyRuntimeArticulatedContactState14 *)&(armyRuntime->classState).classStateAC)->
             terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
-          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                              (UiNumericValue32)(MVar9 >> 0x20),(UiNumericValue32)MVar9,0x12);
-          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-          if (FVar15.carry) {
-            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,0x12);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (groupIndexResult.carry) {
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                FVar15.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,0xb);
           }
-          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
-                     SVar10.nextDrawY,(armyRuntime->classLinkState).classState68,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
+                     topLeftAdvance.nextDrawY,(armyRuntime->classLinkState).classState68,
                      (armyRuntime->classLinkState).classState64,0x16);
-          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
-                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
+                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
-          AVar16 = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
-          uVar7 = AVar16.ebx >> 1;
-          uVar4 = AVar16.ecx >> 1;
+          armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          halfFilledSegments = armyMetrics.ebx >> 1;
+          runtimeKindOrValue = armyMetrics.ecx >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
-                     panelLeft,AVar16.ecx - uVar4,AVar16.ebx - uVar7,0xf);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
+                     panelLeft,armyMetrics.ecx - runtimeKindOrValue,armyMetrics.ebx - halfFilledSegments,0xf);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
-                     panelRight,uVar4,uVar7,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
+                     panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
         }
         else if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
-          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          iVar5 = (int)(MVar9 >> 0x20);
-          if (iVar5 == 0) {
-            SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          workingValue = (int)(activeTotalMetrics >> 0x20);
+          if (workingValue == 0) {
+            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
           }
           else {
-            SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
-                                (UiNumericValue32)MVar9,0x12);
+            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                                (UiNumericValue32)activeTotalMetrics,0x12);
           }
-          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-          if (FVar15.carry) {
-            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (groupIndexResult.carry) {
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                FVar15.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,0xb);
           }
-          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawForwardCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
-                     SVar10.nextDrawY,4);
-          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
+                     topLeftAdvance.nextDrawY,4);
+          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
-                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
+                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
-          AVar16 = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
-          uVar7 = AVar16.ebx >> 1;
-          uVar4 = AVar16.ecx >> 1;
+          armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          halfFilledSegments = armyMetrics.ebx >> 1;
+          runtimeKindOrValue = armyMetrics.ecx >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
-                     panelLeft,AVar16.ecx - uVar4,AVar16.ebx - uVar7,0xf);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
+                     panelLeft,armyMetrics.ecx - runtimeKindOrValue,armyMetrics.ebx - halfFilledSegments,0xf);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
-                     panelRight,uVar4,uVar7,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
+                     panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
         }
         else {
-          MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          iVar5 = (int)(MVar9 >> 0x20);
-          if (iVar5 == 0) {
-            SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+          workingValue = (int)(activeTotalMetrics >> 0x20);
+          if (workingValue == 0) {
+            topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
           }
           else {
-            SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
-                                (UiNumericValue32)MVar9,0x12);
+            topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                                (UiNumericValue32)activeTotalMetrics,0x12);
           }
-          FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-          if (FVar15.carry) {
-            SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          if (groupIndexResult.carry) {
+            topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
           }
           else {
-            SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+            topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                FVar15.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,0xb);
           }
-          SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-          SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+          bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,
-                     SVar10.nextDrawY,*(dword *)(armyRuntime->reserved100_117 + 4),
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
+                     topLeftAdvance.nextDrawY,*(dword *)(armyRuntime->reserved100_117 + 4),
                      *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),0x16);
-          MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+          scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,
-                     SVar12.nextDrawY,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
+                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
-          AVar16 = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
-          uVar7 = AVar16.ebx >> 1;
-          uVar4 = AVar16.ecx >> 1;
+          armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          halfFilledSegments = armyMetrics.ebx >> 1;
+          runtimeKindOrValue = armyMetrics.ecx >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,
-                     panelLeft,AVar16.ecx - uVar4,AVar16.ebx - uVar7,0xf);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
+                     panelLeft,armyMetrics.ecx - runtimeKindOrValue,armyMetrics.ebx - halfFilledSegments,0xf);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,
-                     panelRight,uVar4,uVar7,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
+                     panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
         }
         goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
       }
     }
     if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
-      MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-      iVar5 = (int)(MVar9 >> 0x20);
-      if (iVar5 == 0) {
-        SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+      workingValue = (int)(activeTotalMetrics >> 0x20);
+      if (workingValue == 0) {
+        topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
       }
       else {
-        SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
-                            (UiNumericValue32)MVar9,0x12);
+        topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                            (UiNumericValue32)activeTotalMetrics,0x12);
       }
-      FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-      if (FVar15.carry) {
-        SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+      if (groupIndexResult.carry) {
+        topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
       }
       else {
-        SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+        topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                            FVar15.runtimeGroupIndex,0xb);
+                            groupIndexResult.runtimeGroupIndex,0xb);
       }
-      SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-      SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
       SelectionPanel_DrawForwardCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,SVar10.nextDrawY,4)
+                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,topLeftAdvance.nextDrawY,4)
       ;
-      MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+      scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,SVar12.nextDrawY
-                 ,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,0x19);
+                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,bottomLeftAdvance.nextDrawY
+                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,0x19);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,panelLeft,5
+                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,panelLeft,5
                 );
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,panelRight,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,panelRight,
                  6);
     }
     else {
-      MVar9 = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-      iVar5 = (int)(MVar9 >> 0x20);
-      if (iVar5 == 0) {
-        SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
+      workingValue = (int)(activeTotalMetrics >> 0x20);
+      if (workingValue == 0) {
+        topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
       }
       else {
-        SVar10 = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,iVar5,
-                            (UiNumericValue32)MVar9,0x12);
+        topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                            (UiNumericValue32)activeTotalMetrics,0x12);
       }
-      FVar15 = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
-      if (FVar15.carry) {
-        SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+      if (groupIndexResult.carry) {
+        topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
       }
       else {
-        SVar11 = SelectionPanel_DrawNumberCellAndAdvanceRegs
+        topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                            FVar15.runtimeGroupIndex,0xb);
+                            groupIndexResult.runtimeGroupIndex,0xb);
       }
-      SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-      SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+      bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,SVar10.nextDrawY,
+                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,topLeftAdvance.nextDrawY,
                  *(dword *)(armyRuntime->reserved100_117 + 4),
                  *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),0x16);
-      MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+      scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,SVar12.nextDrawY
-                 ,(UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,0x19);
+                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,bottomLeftAdvance.nextDrawY
+                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,0x19);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,panelLeft,5
+                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,panelLeft,5
                 );
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,panelRight,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,panelRight,
                  6);
     }
   }
   else {
-    SVar10 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
-    SVar11 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
-    SVar12 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
-    SVar13 = SelectionPanel_DrawIconCellAndAdvanceRegs
+    bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                        (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
     SelectionPanel_DrawForwardCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelTop,SVar11.nextDrawY,SVar10.nextDrawY,4);
-    MVar14 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
+              (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,topLeftAdvance.nextDrawY,4);
+    scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
     SelectionPanel_DrawProportionalCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,SVar13.nextDrawY,SVar12.nextDrawY,
-               (UiNumericValue32)(MVar14 >> 0x20),(UiNumericValue32)MVar14,0x19);
+              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,bottomLeftAdvance.nextDrawY,
+               (UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,0x19);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,SVar12.nextDrawX,SVar10.nextDrawX,panelLeft,5);
+              (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,panelLeft,5);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,SVar13.nextDrawX,SVar11.nextDrawX,panelRight,6)
+              (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,panelRight,6)
     ;
   }
 SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
@@ -483,17 +483,17 @@ InGameSelection_RebuildOwnedClass16Selection
           (PlayerRuntimeId playerRuntimeId,dword callbackArg1,dword callbackArg2,dword callbackArg3)
 
 {
-  WorldOwnerListNode100 *pWVar1;
+  WorldOwnerListNode100 *ownerNode;
   GameEntityRuntime *entityRuntime;
-  InGameRuntimeRootImageC3E4 *pIVar2;
+  InGameRuntimeRootImageC3E4 *inGameRoot;
   
-  pIVar2 = g_InGameRuntimeRoot;
+  inGameRoot = g_InGameRuntimeRoot;
   SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-  for (pWVar1 = (pIVar2->worldRuntime0A30).ownerListHead; pWVar1 != (WorldOwnerListNode100 *)0x0;
-      pWVar1 = pWVar1->nextNode) {
-    if (pWVar1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      entityRuntime = *(GameEntityRuntime **)((int)pWVar1->runtimePayload + 8);
-      if ((*(int *)(*(int *)pWVar1->runtimePayload + 0x4c) == 0x16) &&
+  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+      ownerNode = ownerNode->nextNode) {
+    if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      entityRuntime = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8);
+      if ((*(int *)(*(int *)ownerNode->runtimePayload + 0x4c) == 0x16) &&
          ((entityRuntime->common).ownership.ownerIndex ==
           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primaryEntityOrFactionToken8080))
       {
@@ -758,25 +758,25 @@ SelectionPlayerRuntime_ReissuePrimarySelectionPosition
           (PlayerRuntimeId playerRuntimeId,dword reserved,Q12 deltaYQ12,Q12 deltaXQ12)
 
 {
-  dword dVar1;
+  dword primaryEntityOffset;
   ModelRuntimeNode *modelNode;
-  int iVar2;
-  int iVar3;
+  int classRecordAddress;
+  int placementContactKind;
   int worldYQ12;
   GameEntityRuntime *target;
   int worldXQ12;
   WorldRuntimeContext *worldRuntime;
   
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-  dVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
-  if (dVar1 != 0) {
-    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + dVar1);
+  primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
+  if (primaryEntityOffset != 0) {
+    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
     SelectionPointerArray_ContainsCf
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNode = (target->common).ownership.modelNode;
     worldYQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
     worldXQ12 = deltaYQ12 + (modelNode->worldTransform).translation.y;
-    iVar2 = *(int *)(target->common).ownership.definitionOrClassRecord;
+    classRecordAddress = *(int *)(target->common).ownership.definitionOrClassRecord;
     (target->common).pathCoordinate0Q12 = worldYQ12;
     (target->common).pathCoordinate1Q12 = worldXQ12;
     (target->common).trackedCoordinate0Q12 = worldYQ12;
@@ -784,15 +784,15 @@ SelectionPlayerRuntime_ReissuePrimarySelectionPosition
     (target->common).damageState.trackedCoordinate0Q12 = worldYQ12;
     (target->common).damageState.trackedCoordinate1Q12 = worldXQ12;
     (modelNode->worldTransform).translation.x = worldYQ12;
-    iVar3 = *(int *)(iVar2 + 0x278);
+    placementContactKind = *(int *)(classRecordAddress + 0x278);
     (modelNode->worldTransform).translation.y = worldXQ12;
-    if (iVar3 == 3) {
+    if (placementContactKind == 3) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
     }
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks[iVar3])
-              (*(Q12 *)(iVar2 + 0x54),worldXQ12,worldYQ12,modelNode,worldRuntime);
+    (*g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind])
+              (*(Q12 *)(classRecordAddress + 0x54),worldXQ12,worldYQ12,modelNode,worldRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
-    ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(iVar2 + 0xdc),modelNode);
+    ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(classRecordAddress + 0xdc),modelNode);
   }
   return;
 }
@@ -811,13 +811,13 @@ SelectionPlayerRuntime_AdvancePrimarySelectionCycle
           (PlayerRuntimeId playerRuntimeId,dword reserved0,dword reserved1,AngleTurn32 angleDelta)
 
 {
-  dword dVar1;
+  dword primaryEntityOffset;
   ModelRuntimeNode *modelNodeRuntime;
   GameEntityRuntime *target;
   
-  dVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
-  if (dVar1 != 0) {
-    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + dVar1);
+  primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
+  if (primaryEntityOffset != 0) {
+    target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
     SelectionPointerArray_ContainsCf
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNodeRuntime = (target->common).ownership.modelNode;
@@ -840,269 +840,269 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
 
 {
-  byte *pbVar1;
-  AssetRelativeOffset AVar2;
-  GraphicsTextureSourceAsset *pGVar3;
-  int iVar4;
-  int iVar5;
-  SelectionPlayerRuntimeBlock *pSVar6;
-  GraphicsTextureSourceLoadEaxCf5 GVar7;
-  PackageLoadEntryEaxCf5 PVar8;
-  StatusValueEaxCf5 SVar9;
-  StatusValueEaxCf5 SVar10;
+  byte *patchBytes;
+  AssetRelativeOffset tableOffset;
+  GraphicsTextureSourceAsset *loadedResource;
+  int entriesRemaining;
+  int blockCountOrRecordOffset;
+  SelectionPlayerRuntimeBlock *playerBlockCursor;
+  GraphicsTextureSourceLoadEaxCf5 textureLoad;
+  PackageLoadEntryEaxCf5 packageLoad;
+  StatusValueEaxCf5 successStatus;
+  StatusValueEaxCf5 failureStatus;
   AssetRelativeOffset swappedSelectionDataOffset;
   dword referencePayloadValue;
   
-  GVar7 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_select_gfx_0052ce18);
-  pGVar3 = GVar7.eax;
-  if (!GVar7.carry) {
-    g_SelectionPanelTextureSource = pGVar3;
-    GVar7 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_info_gfx_0052ce42);
-    pGVar3 = GVar7.eax;
-    if (!GVar7.carry) {
-      g_InfoPanelTextureSource = pGVar3;
-      PVar8 = Package_LoadEntry((word *)u_gfx_panel_select_dat_0052ce68);
-      pGVar3 = PVar8.bufferOrError;
-      if (!PVar8.carry) {
-        g_SelectionPanelData = pGVar3;
-        PVar8 = Package_LoadEntry((word *)u_gfx_panel_info_dat_0052ce92);
-        pGVar3 = PVar8.bufferOrError;
-        if (!PVar8.carry) {
-          iVar5 = 8;
-          pSVar6 = g_SelectionPlayerBlocks;
-          g_InfoPanelData = pGVar3;
+  textureLoad = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_select_gfx_0052ce18);
+  loadedResource = textureLoad.eax;
+  if (!textureLoad.carry) {
+    g_SelectionPanelTextureSource = loadedResource;
+    textureLoad = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_info_gfx_0052ce42);
+    loadedResource = textureLoad.eax;
+    if (!textureLoad.carry) {
+      g_InfoPanelTextureSource = loadedResource;
+      packageLoad = Package_LoadEntry((word *)u_gfx_panel_select_dat_0052ce68);
+      loadedResource = packageLoad.bufferOrError;
+      if (!packageLoad.carry) {
+        g_SelectionPanelData = loadedResource;
+        packageLoad = Package_LoadEntry((word *)u_gfx_panel_info_dat_0052ce92);
+        loadedResource = packageLoad.bufferOrError;
+        if (!packageLoad.carry) {
+          blockCountOrRecordOffset = 8;
+          playerBlockCursor = g_SelectionPlayerBlocks;
+          g_InfoPanelData = loadedResource;
           do {
-            for (iVar4 = 0x20; pGVar3 = g_SelectionPanelTextureSource, iVar4 != 0;
-                iVar4 = iVar4 + -1) {
-              (pSVar6->selection).entries[0] = (GameEntityRuntime *)0x0;
-              pSVar6 = (SelectionPlayerRuntimeBlock *)((pSVar6->selection).entries + 1);
+            for (entriesRemaining = 0x20; loadedResource = g_SelectionPanelTextureSource, entriesRemaining != 0;
+                entriesRemaining = entriesRemaining + -1) {
+              (playerBlockCursor->selection).entries[0] = (GameEntityRuntime *)0x0;
+              playerBlockCursor = (SelectionPlayerRuntimeBlock *)((playerBlockCursor->selection).entries + 1);
             }
-            pSVar6 = (SelectionPlayerRuntimeBlock *)&pSVar6->pendingSelectionEntityOffset8098;
-            iVar5 = iVar5 + -1;
-          } while (iVar5 != 0);
+            playerBlockCursor = (SelectionPlayerRuntimeBlock *)&playerBlockCursor->pendingSelectionEntityOffset8098;
+            blockCountOrRecordOffset = blockCountOrRecordOffset + -1;
+          } while (blockCountOrRecordOffset != 0);
           g_SelectionInfoEntitySlots = entitySlots;
-          AVar2 = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
+          tableOffset = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
           LOCK();
           swappedSelectionDataOffset =
                *(AssetRelativeOffset *)
-                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0x110);
+                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x110);
           *(AssetRelativeOffset *)
-           (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0x110) =
+           (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x110) =
                *(AssetRelativeOffset *)
-                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0xf0);
+                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0);
           UNLOCK();
-          *(AssetRelativeOffset *)(pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0xf0) =
+          *(AssetRelativeOffset *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0) =
                swappedSelectionDataOffset;
-          pGVar3 = g_InfoPanelTextureSource;
-          AVar2 = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
+          loadedResource = g_InfoPanelTextureSource;
+          tableOffset = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
           referencePayloadValue =
                *(dword *)((g_InfoPanelTextureSource->common).buildMetadata.
                           assetRelativeAddressAnchor28 +
                          *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF +
-                                 AVar2 + 0xd0) + -0x28);
-          iVar5 = *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF + AVar2 + 0x130);
-          pbVar1 = (g_InfoPanelTextureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   iVar5 + -0x28;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+                                 tableOffset + 0xd0) + -0x28);
+          blockCountOrRecordOffset = *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x130);
+          patchBytes = (g_InfoPanelTextureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+                   blockCountOrRecordOffset + -0x28;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
                referencePayloadValue;
-          iVar5 = *(int *)(pGVar3[3].common.buildMetadata.assetRelativeAddressAnchor28 +
-                          (AVar2 - 0x1c));
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+          blockCountOrRecordOffset = *(int *)(loadedResource[3].common.buildMetadata.assetRelativeAddressAnchor28 +
+                          (tableOffset - 0x1c));
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
                referencePayloadValue;
-          iVar5 = *(int *)(pGVar3[3].common.buildMetadata.assetRelativeAddressAnchor28 + AVar2 + 4);
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+          blockCountOrRecordOffset = *(int *)(loadedResource[3].common.buildMetadata.assetRelativeAddressAnchor28 + tableOffset + 4);
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
                referencePayloadValue;
-          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x2c) = 4
+          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x2c) = 4
           ;
-          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x14) = 4
+          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x14) = 4
           ;
-          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.sourceName + AVar2 + 0xc) = 4;
-          *(undefined4 *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x34) = 4
+          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.sourceName + tableOffset + 0xc) = 4;
+          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x34) = 4
           ;
-          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x100;
-          pbVar1[0] = 4;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0xe8;
-          pbVar1[0] = 4;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x120;
-          pbVar1[0] = 4;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          pbVar1 = pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x108;
-          pbVar1[0] = 4;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          iVar5 = *(int *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x1c);
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x100;
+          patchBytes[0] = 4;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xe8;
+          patchBytes[0] = 4;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x120;
+          patchBytes[0] = 4;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x108;
+          patchBytes[0] = 4;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          blockCountOrRecordOffset = *(int *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x1c);
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
                referencePayloadValue;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc) =
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc) =
                referencePayloadValue;
-          iVar5 = *(int *)((int)pGVar3[3].common.buildMetadata.names.producerName + AVar2 + 0x3c);
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24) =
+          blockCountOrRecordOffset = *(int *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x3c);
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
                referencePayloadValue;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc) =
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc) =
                referencePayloadValue;
-          iVar5 = *(int *)(pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0xf0);
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28) =
+          blockCountOrRecordOffset = *(int *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0);
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28) =
                referencePayloadValue;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10) =
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10) =
                referencePayloadValue;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          iVar5 = *(int *)(pGVar3[2].opaqueTablePayloadBC_1FF + AVar2 + 0x110);
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x28) =
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          blockCountOrRecordOffset = *(int *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x110);
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28) =
                referencePayloadValue;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x24;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x20;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x1c;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x18;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x14;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0xff;
-          pbVar1[3] = 0xff;
-          *(dword *)((pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0x10) =
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0xff;
+          patchBytes[3] = 0xff;
+          *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10) =
                referencePayloadValue;
-          pbVar1 = (pGVar3->common).buildMetadata.assetRelativeAddressAnchor28 + iVar5 + -0xc;
-          pbVar1[0] = 0;
-          pbVar1[1] = 0;
-          pbVar1[2] = 0;
-          pbVar1[3] = 0;
-          SVar9.valueOrError = 0xffff0000;
-          SVar9.carry = false;
-          return SVar9;
+          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc;
+          patchBytes[0] = 0;
+          patchBytes[1] = 0;
+          patchBytes[2] = 0;
+          patchBytes[3] = 0;
+          successStatus.valueOrError = 0xffff0000;
+          successStatus.carry = false;
+          return successStatus;
         }
       }
     }
   }
-  SVar10.carry = true;
-  SVar10.valueOrError = (dword)pGVar3;
-  return SVar10;
+  failureStatus.carry = true;
+  failureStatus.valueOrError = (dword)loadedResource;
+  return failureStatus;
 }
 
 
@@ -1171,28 +1171,28 @@ SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 WorldPositionEaxEcxEdxCf13 __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void)
 
 {
-  ModelRuntimeNode *pMVar1;
+  ModelRuntimeNode *slotModelNode;
   int worldXAggregateQ12;
-  int iVar2;
+  int worldYAggregateQ12;
   int worldZAggregateQ12;
   GameEntityRuntime **selectionEntitySlotCursor;
-  WorldPositionEaxEcxEdxCf13 WVar3;
+  WorldPositionEaxEcxEdxCf13 averagePosition;
   int selectedEntityCount;
   int selectionSlotsRemaining;
   ModelRuntimeNode *selectedModelNode;
   
   worldXAggregateQ12 = 0;
-  iVar2 = 0;
+  worldYAggregateQ12 = 0;
   worldZAggregateQ12 = 0;
   selectionSlotsRemaining = 0x20;
   selectedEntityCount = 0;
   selectionEntitySlotCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntitySlotCursor != (GameEntityRuntime *)0x0) {
-      pMVar1 = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
-      worldXAggregateQ12 = worldXAggregateQ12 + (pMVar1->worldTransform).translation.x;
-      iVar2 = iVar2 + (pMVar1->worldTransform).translation.y;
-      worldZAggregateQ12 = worldZAggregateQ12 + (pMVar1->worldTransform).translation.z;
+      slotModelNode = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
+      worldXAggregateQ12 = worldXAggregateQ12 + (slotModelNode->worldTransform).translation.x;
+      worldYAggregateQ12 = worldYAggregateQ12 + (slotModelNode->worldTransform).translation.y;
+      worldZAggregateQ12 = worldZAggregateQ12 + (slotModelNode->worldTransform).translation.z;
       selectedEntityCount = selectedEntityCount + 1;
     }
     selectionEntitySlotCursor = selectionEntitySlotCursor + 1;
@@ -1200,14 +1200,14 @@ WorldPositionEaxEcxEdxCf13 __cdecl SelectionInfoEntitySlots_ComputeAverageWorldP
   } while (selectionSlotsRemaining != 0);
   if (selectedEntityCount != 0) {
     worldXAggregateQ12 = worldXAggregateQ12 / selectedEntityCount;
-    iVar2 = iVar2 / selectedEntityCount;
+    worldYAggregateQ12 = worldYAggregateQ12 / selectedEntityCount;
     worldZAggregateQ12 = worldZAggregateQ12 / selectedEntityCount;
   }
-  WVar3.worldYQ12 = iVar2;
-  WVar3.worldXQ12 = worldXAggregateQ12;
-  WVar3.carry = selectedEntityCount == 0;
-  WVar3.worldZQ12 = worldZAggregateQ12;
-  return WVar3;
+  averagePosition.worldYQ12 = worldYAggregateQ12;
+  averagePosition.worldXQ12 = worldXAggregateQ12;
+  averagePosition.carry = selectedEntityCount == 0;
+  averagePosition.worldZQ12 = worldZAggregateQ12;
+  return averagePosition;
 }
 
 
@@ -1250,20 +1250,20 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntryCf(void)
 {
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  bool bVar1;
+  bool entryIsEmpty;
   GameEntityRuntime *currentEntry;
   
   entriesRemaining = 0x20;
-  bVar1 = true;
+  entryIsEmpty = true;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (entriesRemaining == 0) break;
     entriesRemaining = entriesRemaining + -1;
     currentEntry = *selectionEntryCursor;
-    bVar1 = currentEntry == (GameEntityRuntime *)0x0;
+    entryIsEmpty = currentEntry == (GameEntityRuntime *)0x0;
     selectionEntryCursor = selectionEntryCursor + 1;
-  } while (bVar1);
-  return !bVar1;
+  } while (entryIsEmpty);
+  return !entryIsEmpty;
 }
 
 
@@ -1307,7 +1307,7 @@ bool __thandor_cf_preserve_eax_ecx_edx
 SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex)
 
 {
-  int *piVar1;
+  int *classRecord;
   int entriesRemaining;
   int activeEntryCount;
   GameEntityRuntime **selectionEntryCursor;
@@ -1319,14 +1319,14 @@ SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex)
   do {
     currentEntry = *selectionEntryCursor;
     if (currentEntry != (GameEntityRuntime *)0x0) {
-      piVar1 = (currentEntry->common).ownership.definitionOrClassRecord;
+      classRecord = (currentEntry->common).ownership.definitionOrClassRecord;
       if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
         return true;
       }
-      if (*(int *)(*piVar1 + 0x4c) != 0x16) {
+      if (*(int *)(*classRecord + 0x4c) != 0x16) {
         return true;
       }
-      if (piVar1[0x1c] != 0) {
+      if (classRecord[0x1c] != 0) {
         activeEntryCount = activeEntryCount + 1;
       }
     }
@@ -1391,62 +1391,62 @@ SelectionInfo_TestPositionCommandAtWorldPointCf
           (Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
-  GraphicsFixedVec3 *pGVar1;
-  GraphicsWorldCoordinateQ12 *pGVar2;
-  GraphicsWorldCoordinateQ12 GVar3;
-  GraphicsWorldCoordinateQ12 GVar4;
-  ModelRuntimeNode *pMVar5;
-  int iVar6;
-  uint uVar7;
-  int iVar8;
+  GraphicsFixedVec3 *translationPtr;
+  GraphicsWorldCoordinateQ12 *translationYPtr;
+  GraphicsWorldCoordinateQ12 savedTranslationX;
+  GraphicsWorldCoordinateQ12 savedTranslationY;
+  ModelRuntimeNode *selectedModelNode;
+  int class13Definition;
+  uint capabilityFlags;
+  int entriesRemaining;
   byte highBandIndex;
-  GameEntityRuntime **ppGVar9;
-  bool bVar10;
+  GameEntityRuntime **selectionEntryCursor;
+  bool testResult;
   GameEntityRuntime *selectedEntity;
   
-  iVar8 = 0x20;
-  ppGVar9 = g_SelectionInfoEntitySlots->entries;
-  while ((selectedEntity = *ppGVar9, selectedEntity == (GameEntityRuntime *)0x0 ||
-         (pMVar5 = (selectedEntity->common).ownership.modelNode,
+  entriesRemaining = 0x20;
+  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
+  while ((selectedEntity = *selectionEntryCursor, selectedEntity == (GameEntityRuntime *)0x0 ||
+         (selectedModelNode = (selectedEntity->common).ownership.modelNode,
          *(int *)(*(int *)(selectedEntity->common).ownership.definitionOrClassRecord + 0x18) == 0)))
   {
-    ppGVar9 = ppGVar9 + 1;
-    iVar8 = iVar8 + -1;
-    if (iVar8 == 0) {
-      iVar8 = 0x20;
-      ppGVar9 = g_SelectionInfoEntitySlots->entries;
-      while ((*ppGVar9 == (GameEntityRuntime *)0x0 ||
-             (iVar6 = *(int *)((*ppGVar9)->common).ownership.definitionOrClassRecord,
-             *(int *)(iVar6 + 0x4c) != 0xd))) {
-        ppGVar9 = ppGVar9 + 1;
-        iVar8 = iVar8 + -1;
-        if (iVar8 == 0) {
+    selectionEntryCursor = selectionEntryCursor + 1;
+    entriesRemaining = entriesRemaining + -1;
+    if (entriesRemaining == 0) {
+      entriesRemaining = 0x20;
+      selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
+      while ((*selectionEntryCursor == (GameEntityRuntime *)0x0 ||
+             (class13Definition = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord,
+             *(int *)(class13Definition + 0x4c) != 0xd))) {
+        selectionEntryCursor = selectionEntryCursor + 1;
+        entriesRemaining = entriesRemaining + -1;
+        if (entriesRemaining == 0) {
           return true;
         }
       }
-      uVar7 = *(uint *)(iVar6 + 0xc4);
+      capabilityFlags = *(uint *)(class13Definition + 0xc4);
       highBandIndex = 3;
-      if (((uVar7 & 0x80) == 0) && (highBandIndex = 1, (uVar7 & 4) == 0)) {
+      if (((capabilityFlags & 0x80) == 0) && (highBandIndex = 1, (capabilityFlags & 4) == 0)) {
         highBandIndex = 6;
       }
-      bVar10 = GridScratch_TestProjectedCellMaskBandsCf(worldXQ12,worldYQ12,7,highBandIndex);
-      return bVar10;
+      testResult = GridScratch_TestProjectedCellMaskBandsCf(worldXQ12,worldYQ12,7,highBandIndex);
+      return testResult;
     }
   }
   LOCK();
-  pGVar1 = &(pMVar5->worldTransform).translation;
-  GVar3 = pGVar1->x;
-  pGVar1->x = worldYQ12;
+  translationPtr = &(selectedModelNode->worldTransform).translation;
+  savedTranslationX = translationPtr->x;
+  translationPtr->x = worldYQ12;
   UNLOCK();
   LOCK();
-  pGVar2 = &(pMVar5->worldTransform).translation.y;
-  GVar4 = *pGVar2;
-  *pGVar2 = worldXQ12;
+  translationYPtr = &(selectedModelNode->worldTransform).translation.y;
+  savedTranslationY = *translationYPtr;
+  *translationYPtr = worldXQ12;
   UNLOCK();
-  bVar10 = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)selectedEntity,inGameRuntime);
-  (pMVar5->worldTransform).translation.x = GVar3;
-  (pMVar5->worldTransform).translation.y = GVar4;
-  return bVar10;
+  testResult = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)selectedEntity,inGameRuntime);
+  (selectedModelNode->worldTransform).translation.x = savedTranslationX;
+  (selectedModelNode->worldTransform).translation.y = savedTranslationY;
+  return testResult;
 }
 
 
@@ -1462,17 +1462,17 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonposi
   GameEntityRuntime *armyRuntime;
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  bool bVar1;
+  bool stateTestResult;
   
   entriesRemaining = 0x20;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     armyRuntime = *selectionEntryCursor;
     if (armyRuntime != (GameEntityRuntime *)0x0) {
-      bVar1 = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)armyRuntime);
-      if (bVar1) {
-        bVar1 = ArmyRuntime_TestStateField100ZeroCf((ArmyRuntimeSlot *)armyRuntime);
-        if (!bVar1) {
+      stateTestResult = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)armyRuntime);
+      if (stateTestResult) {
+        stateTestResult = ArmyRuntime_TestStateField100ZeroCf((ArmyRuntimeSlot *)armyRuntime);
+        if (!stateTestResult) {
           return false;
         }
       }
@@ -1494,14 +1494,14 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnega
 {
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  bool bVar1;
+  bool stateTestResult;
   
   entriesRemaining = 0x20;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      bVar1 = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)*selectionEntryCursor);
-      if (bVar1) {
+      stateTestResult = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)*selectionEntryCursor);
+      if (stateTestResult) {
         return true;
       }
     }
@@ -1582,7 +1582,7 @@ dword __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVarian
 {
   dword effectVariantMask;
   int entriesRemaining;
-  uint uVar1;
+  uint entryVariantMask;
   GameEntityRuntime **selectionEntryCursor;
   
   entriesRemaining = 0x20;
@@ -1590,9 +1590,9 @@ dword __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVarian
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      uVar1 = ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs
+      entryVariantMask = ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs
                         (((*selectionEntryCursor)->common).ownership.definitionOrClassRecord);
-      effectVariantMask = effectVariantMask | uVar1;
+      effectVariantMask = effectVariantMask | entryVariantMask;
     }
     selectionEntryCursor = selectionEntryCursor + 1;
     entriesRemaining = entriesRemaining + -1;
@@ -1700,39 +1700,39 @@ SelectionPointerArray_ApplyPositionCommandVariantB
 
 {
   ArmyMovementRuntime *movementRuntime;
-  void *pvVar1;
-  int iVar2;
+  void *class13Record;
+  int entriesRemaining;
   Q12 targetWorldY;
   int selectedEntryCount;
   Q12 targetWorldX;
   int *singleClass13Entry;
-  GameEntityRuntime **ppGVar3;
+  GameEntityRuntime **commandEntryCursor;
   GameEntityRuntime **selectionEntryCursor;
-  bool bVar4;
+  bool spreadTooLarge;
   int entityDefinitionAddress;
   
-  iVar2 = 0x20;
-  bVar4 = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
+  entriesRemaining = 0x20;
+  spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
   targetWorldY = coordinateA;
   targetWorldX = coordinateB;
-  ppGVar3 = selection->entries;
+  commandEntryCursor = selection->entries;
   do {
-    movementRuntime = (ArmyMovementRuntime *)*ppGVar3;
+    movementRuntime = (ArmyMovementRuntime *)*commandEntryCursor;
     if (movementRuntime != (ArmyMovementRuntime *)0x0) {
-      if (!bVar4) {
+      if (!spreadTooLarge) {
         targetWorldX = targetWorldX - movementRuntime->classState60;
         targetWorldY = targetWorldY - movementRuntime->ownerValue64;
       }
       ArmyRuntime_QueueOrStartMoveCommandVariantA(targetWorldY,targetWorldX,movementRuntime);
-      if (!bVar4) {
+      if (!spreadTooLarge) {
         targetWorldX = targetWorldX + movementRuntime->classState60;
         targetWorldY = targetWorldY + movementRuntime->ownerValue64;
       }
     }
-    ppGVar3 = ppGVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  iVar2 = 0x20;
+    commandEntryCursor = commandEntryCursor + 1;
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
+  entriesRemaining = 0x20;
   selectedEntryCount = 0;
   singleClass13Entry = (int *)0x0;
   selectionEntryCursor = selection->entries;
@@ -1749,14 +1749,14 @@ SelectionPointerArray_ApplyPositionCommandVariantB
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
   if ((selectedEntryCount == 1) &&
      ((GameEntityRuntime *)singleClass13Entry != (GameEntityRuntime *)0x0)) {
-    pvVar1 = (((GameEntityRuntime *)singleClass13Entry)->common).ownership.definitionOrClassRecord;
-    *(Q12 *)((int)pvVar1 + 0x78) = coordinateB;
-    *(Q12 *)((int)pvVar1 + 0x7c) = coordinateA;
-    *(uint *)((int)pvVar1 + 0xec) = *(uint *)((int)pvVar1 + 0xec) | 0x800;
+    class13Record = (((GameEntityRuntime *)singleClass13Entry)->common).ownership.definitionOrClassRecord;
+    *(Q12 *)((int)class13Record + 0x78) = coordinateB;
+    *(Q12 *)((int)class13Record + 0x7c) = coordinateA;
+    *(uint *)((int)class13Record + 0xec) = *(uint *)((int)class13Record + 0xec) | 0x800;
     SelectionPointerArray_Clear32(selection);
   }
   return;
@@ -1775,70 +1775,70 @@ void __thandor_void_preserve_eax_ecx_edx
 SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
 
 {
-  ModelRuntimeSlot *pMVar1;
-  int iVar2;
-  void *pvVar3;
+  ModelRuntimeSlot *entryModelRuntime;
+  int definitionAddress;
+  void *class13Record;
   ModelRuntimeNode *modelNodeRuntime;
-  int iVar4;
-  int iVar5;
-  GameEntityRuntime *pGVar6;
-  GameEntityRuntime **ppGVar7;
-  ModelLookupEntryEaxCf5 MVar8;
-  ModelLocalPointRegs12 MVar9;
+  int entriesRemaining;
+  int selectedEntryCount;
+  GameEntityRuntime *currentEntity;
+  GameEntityRuntime **selectionEntryCursor;
+  ModelLookupEntryEaxCf5 lookupEntry;
+  ModelLocalPointRegs12 localPoint;
   
-  iVar4 = 0x20;
-  ppGVar7 = selectionEntries;
+  entriesRemaining = 0x20;
+  selectionEntryCursor = selectionEntries;
   do {
-    pGVar6 = *ppGVar7;
-    if ((pGVar6 != (GameEntityRuntime *)0x0) &&
-       ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[6].savedIdOrOffset & 2) == 0))
+    currentEntity = *selectionEntryCursor;
+    if ((currentEntity != (GameEntityRuntime *)0x0) &&
+       ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset & 2) == 0))
     {
-      ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)pGVar6);
-      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[0xb].savedIdOrOffset =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[0xb].savedIdOrOffset &
+      ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)currentEntity);
+      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[0xb].savedIdOrOffset =
+           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[0xb].savedIdOrOffset &
            0xffffffef;
-      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[6].savedIdOrOffset =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)[6].savedIdOrOffset &
+      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset =
+           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset &
            0xfffffdff;
-      pMVar1 = ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&pGVar6->common)->modelRuntime;
-      if (*(int *)((pMVar1->definitionOrSavedId).savedIdOrOffset + 0x4c) == 0x16) {
-        *ppGVar7 = (GameEntityRuntime *)0x0;
-        (pMVar1->classState).classStateDC = 0;
+      entryModelRuntime = ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)->modelRuntime;
+      if (*(int *)((entryModelRuntime->definitionOrSavedId).savedIdOrOffset + 0x4c) == 0x16) {
+        *selectionEntryCursor = (GameEntityRuntime *)0x0;
+        (entryModelRuntime->classState).classStateDC = 0;
       }
     }
-    ppGVar7 = ppGVar7 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  iVar4 = 0x20;
-  iVar5 = 0;
-  pGVar6 = (GameEntityRuntime *)0x0;
+    selectionEntryCursor = selectionEntryCursor + 1;
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
+  entriesRemaining = 0x20;
+  selectedEntryCount = 0;
+  currentEntity = (GameEntityRuntime *)0x0;
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             ((SelectionPointerArray32 *)selectionEntries);
-  ppGVar7 = selectionEntries;
+  selectionEntryCursor = selectionEntries;
   do {
-    if (*ppGVar7 != (GameEntityRuntime *)0x0) {
-      iVar5 = iVar5 + 1;
-      iVar2 = *(int *)((*ppGVar7)->common).ownership.definitionOrClassRecord;
-      if (*(int *)(iVar2 + 0x18) != 0) {
+    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
+      selectedEntryCount = selectedEntryCount + 1;
+      definitionAddress = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
+      if (*(int *)(definitionAddress + 0x18) != 0) {
         return;
       }
-      if (*(int *)(iVar2 + 0x4c) == 0xd) {
-        pGVar6 = *ppGVar7;
+      if (*(int *)(definitionAddress + 0x4c) == 0xd) {
+        currentEntity = *selectionEntryCursor;
       }
     }
-    ppGVar7 = ppGVar7 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  if ((iVar5 == 1) && (pGVar6 != (GameEntityRuntime *)0x0)) {
-    pvVar3 = (pGVar6->common).ownership.definitionOrClassRecord;
-    modelNodeRuntime = (pGVar6->common).ownership.modelNode;
-    *(uint *)((int)pvVar3 + 0xec) = *(uint *)((int)pvVar3 + 0xec) & 0xfffff7ff;
-    MVar8 = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
+    selectionEntryCursor = selectionEntryCursor + 1;
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
+  if ((selectedEntryCount == 1) && (currentEntity != (GameEntityRuntime *)0x0)) {
+    class13Record = (currentEntity->common).ownership.definitionOrClassRecord;
+    modelNodeRuntime = (currentEntity->common).ownership.modelNode;
+    *(uint *)((int)class13Record + 0xec) = *(uint *)((int)class13Record + 0xec) & 0xfffff7ff;
+    lookupEntry = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
     ;
-    if (!MVar8.carry) {
-      MVar9 = ModelNodeRuntime_TransformLocalPointRegs(MVar8.entry,modelNodeRuntime);
-      *(dword *)((int)pvVar3 + 0x78) = MVar9.eax;
-      *(dword *)((int)pvVar3 + 0x7c) = MVar9.ecx;
+    if (!lookupEntry.carry) {
+      localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
+      *(dword *)((int)class13Record + 0x78) = localPoint.eax;
+      *(dword *)((int)class13Record + 0x7c) = localPoint.ecx;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
     }
   }
@@ -1856,22 +1856,22 @@ SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
           (ArmyRuntimeSlot *sourceArmyRuntime,SelectionPointerArray32 *selection)
 
 {
-  PckArmyAssetIdCatalog PVar1;
-  int iVar2;
+  PckArmyAssetIdCatalog sourceArmyAssetId;
+  int sourceFactionIndex;
   GameEntityRuntime *entityRuntime;
   RuntimeToken runtimeIdentity;
   int ownerIndex;
   WorldRuntimeNode *worldNodeCursor;
   
-  PVar1 = sourceArmyRuntime->armyAssetId;
-  iVar2 = sourceArmyRuntime->factionIndex;
+  sourceArmyAssetId = sourceArmyRuntime->armyAssetId;
+  sourceFactionIndex = sourceArmyRuntime->factionIndex;
   for (worldNodeCursor = (WorldRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
       worldNodeCursor != (WorldRuntimeNode *)0x0;
       worldNodeCursor = (worldNodeCursor->common).nextNode) {
     if (((worldNodeCursor[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
         (entityRuntime = *(GameEntityRuntime **)((int)worldNodeCursor->runtimePayload + 8),
-        PVar1 == (entityRuntime->common).runtimeIdentityOrArmyAssetId)) &&
-       (iVar2 == (entityRuntime->common).ownership.ownerIndex)) {
+        sourceArmyAssetId == (entityRuntime->common).runtimeIdentityOrArmyAssetId)) &&
+       (sourceFactionIndex == (entityRuntime->common).ownership.ownerIndex)) {
       SelectionPointerArray_InsertUniqueAndRecenter(entityRuntime,selection);
     }
   }
@@ -1895,19 +1895,19 @@ SelectionPointerArray_ApplyPositionCommand
 {
   ArmyMovementRuntime *movementRuntime;
   int entriesRemaining;
-  bool bVar1;
+  bool spreadTooLarge;
   
   entriesRemaining = 0x20;
-  bVar1 = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
+  spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
   do {
     movementRuntime = *(ArmyMovementRuntime **)selection;
     if (movementRuntime != (ArmyMovementRuntime *)0x0) {
-      if (!bVar1) {
+      if (!spreadTooLarge) {
         coordinateB = coordinateB - movementRuntime->classState60;
         coordinateA = coordinateA - movementRuntime->ownerValue64;
       }
       ArmyRuntime_QueueWaypointOrStartMoveVariantA(coordinateA,coordinateB,movementRuntime);
-      if (!bVar1) {
+      if (!spreadTooLarge) {
         coordinateB = coordinateB + movementRuntime->classState60;
         coordinateA = coordinateA + movementRuntime->ownerValue64;
       }
@@ -1931,137 +1931,137 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
           word *commandStream,SelectionPanelCellIndex cellIndex)
 
 {
-  int iVar1;
-  dword arg0;
-  void *pvVar2;
-  dword dVar3;
-  dword dVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  dword arg0_00;
-  uint uVar8;
-  uint *puVar9;
-  RichTextExtentRegs RVar10;
-  GraphicsTextureSizeEaxEdxCf9 GVar11;
-  GraphicsTextureSizeEaxEdxCf9 GVar12;
-  GraphicsTextureSizeEaxEdxCf9 GVar13;
-  GraphicsTextureSizeEaxEdxCf9 GVar14;
+  int rightCapStart;
+  dword baseSubresource;
+  void *panelData;
+  dword textWidth;
+  dword leftCapWidth;
+  int segmentCursor;
+  int innerCursor;
+  int rowCoordinate;
+  dword textRightBorderSubresource;
+  uint requiredEnd;
+  uint *cellFlags;
+  RichTextExtentRegs textExtent;
+  GraphicsTextureSizeEaxEdxCf9 pieceSize;
+  GraphicsTextureSizeEaxEdxCf9 textLeftBorderSize;
+  GraphicsTextureSizeEaxEdxCf9 textRightBorderSize;
+  GraphicsTextureSizeEaxEdxCf9 leftCapSize;
   
-  RVar10 = RichTextCommandStream_MeasureRegs(g_SelectionPanelNumberTextStyle,commandStream);
-  pvVar2 = g_SelectionPanelData;
-  dVar3 = RVar10.widthPixels;
-  puVar9 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  iVar7 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-  arg0_00 = arg0 + 5;
-  GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0_00,g_SelectionPanelTextureSource);
-  GVar14 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
-  dVar4 = GVar14.logicalWidthPixels;
-  uVar8 = dVar3 + GVar11.logicalWidthPixels + GVar12.logicalWidthPixels + GVar13.logicalWidthPixels
-          + spanStartCoordinate + dVar4;
-  if ((uint)spanEndCoordinate < uVar8) {
+  textExtent = RichTextCommandStream_MeasureRegs(g_SelectionPanelNumberTextStyle,commandStream);
+  panelData = g_SelectionPanelData;
+  textWidth = textExtent.widthPixels;
+  cellFlags = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  rowCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  textLeftBorderSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+  textRightBorderSubresource = baseSubresource + 5;
+  textRightBorderSize = (*g_GraphicsTextureSourceGetLogicalSize)(textRightBorderSubresource,g_SelectionPanelTextureSource);
+  leftCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
+  leftCapWidth = leftCapSize.logicalWidthPixels;
+  requiredEnd = textWidth + pieceSize.logicalWidthPixels + textLeftBorderSize.logicalWidthPixels + textRightBorderSize.logicalWidthPixels
+          + spanStartCoordinate + leftCapWidth;
+  if ((uint)spanEndCoordinate < requiredEnd) {
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar7,spanStartCoordinate,arg0,
+              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,spanStartCoordinate,baseSubresource,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-    iVar6 = spanEndCoordinate - GVar11.logicalWidthPixels;
+    pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+    innerCursor = spanEndCoordinate - pieceSize.logicalWidthPixels;
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar6,arg0 + 2,
+              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar6,iVar7,
-               spanStartCoordinate + dVar4,arg0 + 1,g_SelectionPanelTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,innerCursor,rowCoordinate,
+               spanStartCoordinate + leftCapWidth,baseSubresource + 1,g_SelectionPanelTextureSource,
                g_FramebufferAccess);
   }
   else {
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar7,spanStartCoordinate,arg0,
+              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,spanStartCoordinate,baseSubresource,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    iVar6 = spanStartCoordinate + dVar4;
-    GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-    iVar1 = spanEndCoordinate - GVar11.logicalWidthPixels;
+    innerCursor = spanStartCoordinate + leftCapWidth;
+    pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+    rightCapStart = spanEndCoordinate - pieceSize.logicalWidthPixels;
     (*g_SelectionPanelBlitOpaque)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar1,arg0 + 2,
+              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    if ((*puVar9 & 0x100) == 0) {
-      if ((*puVar9 & 0x200) == 0) {
-        iVar5 = ((int)(iVar1 - uVar8) >> 1) + iVar6;
+    if ((*cellFlags & 0x100) == 0) {
+      if ((*cellFlags & 0x200) == 0) {
+        segmentCursor = ((int)(rightCapStart - requiredEnd) >> 1) + innerCursor;
         (*g_SelectionPanelBlitClipped)
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar7,iVar6,arg0 + 1,
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,arg0 + 3,
+                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-        iVar5 = iVar5 + GVar11.logicalWidthPixels;
-        iVar6 = dVar3 + iVar5;
+        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+        segmentCursor = segmentCursor + pieceSize.logicalWidthPixels;
+        innerCursor = textWidth + segmentCursor;
         (*g_SelectionPanelBlitClipped)
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar6,iVar7,iVar5,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,innerCursor,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        iVar7 = iVar7 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+        rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
-                   commandStream,iVar7,iVar5);
-        iVar7 = iVar7 - *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+                   commandStream,rowCoordinate,segmentCursor);
+        rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar6,arg0 + 5,
+                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 5,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 5,g_SelectionPanelTextureSource);
+        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 5,g_SelectionPanelTextureSource);
         (*g_SelectionPanelBlitClipped)
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar1,iVar7,
-                   iVar6 + GVar11.logicalWidthPixels,arg0 + 1,g_SelectionPanelTextureSource,
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,
+                   innerCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                    g_FramebufferAccess);
       }
       else {
-        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0_00,g_SelectionPanelTextureSource);
-        iVar1 = iVar1 - GVar11.logicalWidthPixels;
+        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(textRightBorderSubresource,g_SelectionPanelTextureSource);
+        rightCapStart = rightCapStart - pieceSize.logicalWidthPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar1,arg0_00,
+                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,textRightBorderSubresource,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        iVar5 = iVar1 - dVar3;
+        segmentCursor = rightCapStart - textWidth;
         (*g_SelectionPanelBlitClipped)
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar1,iVar7,iVar5,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        iVar7 = iVar7 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+        rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
-                   commandStream,iVar7,iVar5);
-        iVar7 = iVar7 - *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
-        GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-        iVar5 = iVar5 - GVar11.logicalWidthPixels;
+                   commandStream,rowCoordinate,segmentCursor);
+        rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+        segmentCursor = segmentCursor - pieceSize.logicalWidthPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,arg0 + 3,
+                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         (*g_SelectionPanelBlitClipped)
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar7,iVar6,arg0 + 1,
+                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
       }
     }
     else {
       (*g_SelectionPanelBlitOpaque)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar6,arg0 + 3,
+                (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 3,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-      iVar6 = iVar6 + GVar11.logicalWidthPixels;
-      iVar5 = dVar3 + iVar6;
+      pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+      innerCursor = innerCursor + pieceSize.logicalWidthPixels;
+      segmentCursor = textWidth + innerCursor;
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar7,iVar6,arg0 + 4,
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      iVar7 = iVar7 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+      rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,commandStream
-                 ,iVar7,iVar6);
-      iVar7 = iVar7 - *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc);
+                 ,rowCoordinate,innerCursor);
+      rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
       (*g_SelectionPanelBlitOpaque)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,arg0_00,
+                (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,textRightBorderSubresource,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0_00,g_SelectionPanelTextureSource);
+      pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(textRightBorderSubresource,g_SelectionPanelTextureSource);
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar1,iVar7,
-                 iVar5 + GVar11.logicalWidthPixels,arg0 + 1,g_SelectionPanelTextureSource,
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,
+                 segmentCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                  g_FramebufferAccess);
     }
   }
@@ -2087,48 +2087,48 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex)
 
 {
-  uint uVar1;
-  void *pvVar2;
-  dword dVar3;
-  int arg4;
-  dword dVar4;
-  int arg5;
-  uint *puVar5;
-  RichTextExtentRegs RVar6;
-  SelectionPanelAdvanceEaxEdx8 SVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
+  uint cellFlags;
+  void *panelData;
+  dword subresourceOrWidth;
+  int cellDrawX;
+  dword spriteHeight;
+  int cellDrawY;
+  uint *cellFlagsPtr;
+  RichTextExtentRegs textExtent;
+  SelectionPanelAdvanceEaxEdx8 cellAdvance;
+  GraphicsTextureSizeEaxEdxCf9 spriteSize;
   
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,0xf,1,value,
              (word *)&g_SelectionPanelNumberScratchUtf16);
-  RVar6 = RichTextCommandStream_MeasureRegs
+  textExtent = RichTextCommandStream_MeasureRegs
                     (g_SelectionPanelNumberTextStyle,(word *)&g_SelectionPanelNumberScratchUtf16);
-  pvVar2 = g_SelectionPanelData;
-  puVar5 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  arg5 = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  arg4 = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  dVar3 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  panelData = g_SelectionPanelData;
+  cellFlagsPtr = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  cellDrawY = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  cellDrawX = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  subresourceOrWidth = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,dVar3,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar3,g_SelectionPanelTextureSource);
-  dVar4 = GVar8.logicalHeightPixels;
-  dVar3 = GVar8.logicalWidthPixels;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceOrWidth,g_SelectionPanelTextureSource);
+  spriteHeight = spriteSize.logicalHeightPixels;
+  subresourceOrWidth = spriteSize.logicalWidthPixels;
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
              (word *)&g_SelectionPanelNumberScratchUtf16,
-             ((int)(dVar4 - RVar6.heightPixels) >> 1) + arg4,
-             ((int)(dVar3 - RVar6.widthPixels) >> 1) + arg5);
-  uVar1 = *puVar5;
-  if ((uVar1 & 4) != 0) {
-    dVar3 = 0;
+             ((int)(spriteHeight - textExtent.heightPixels) >> 1) + cellDrawX,
+             ((int)(subresourceOrWidth - textExtent.widthPixels) >> 1) + cellDrawY);
+  cellFlags = *cellFlagsPtr;
+  if ((cellFlags & 4) != 0) {
+    subresourceOrWidth = 0;
   }
-  if ((uVar1 & 8) != 0) {
-    dVar4 = 0;
+  if ((cellFlags & 8) != 0) {
+    spriteHeight = 0;
   }
-  SVar7.nextDrawY = dVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY;
-  SVar7.nextDrawX = dVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX;
-  return SVar7;
+  cellAdvance.nextDrawY = subresourceOrWidth + *(int *)((int)panelData + cellIndex * 0x10 + 0xc) + drawY;
+  cellAdvance.nextDrawX = spriteHeight + *(int *)((int)panelData + cellIndex * 0x10 + 0x10) + drawX;
+  return cellAdvance;
 }
 
 
@@ -2148,35 +2148,35 @@ SelectionPanel_DrawIconCellAndAdvanceRegs
           SelectionPanelCellIndex cellIndex)
 
 {
-  uint uVar1;
-  void *pvVar2;
-  dword dVar3;
-  dword dVar4;
-  uint *puVar5;
-  SelectionPanelAdvanceEaxEdx8 SVar6;
-  GraphicsTextureSizeEaxEdxCf9 GVar7;
+  uint cellFlags;
+  void *panelData;
+  dword subresourceOrWidth;
+  dword spriteHeight;
+  uint *cellFlagsPtr;
+  SelectionPanelAdvanceEaxEdx8 cellAdvance;
+  GraphicsTextureSizeEaxEdxCf9 spriteSize;
   
-  pvVar2 = g_SelectionPanelData;
-  puVar5 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  dVar3 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  panelData = g_SelectionPanelData;
+  cellFlagsPtr = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  subresourceOrWidth = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
   (*g_SelectionPanelBlitOpaque)
             (clipTop,clipLeft,clipBottom,clipRight,
              drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10),
-             drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),dVar3,
+             drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),subresourceOrWidth,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar3,g_SelectionPanelTextureSource);
-  dVar4 = GVar7.logicalHeightPixels;
-  dVar3 = GVar7.logicalWidthPixels;
-  uVar1 = *puVar5;
-  if ((uVar1 & 4) != 0) {
-    dVar3 = 0;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceOrWidth,g_SelectionPanelTextureSource);
+  spriteHeight = spriteSize.logicalHeightPixels;
+  subresourceOrWidth = spriteSize.logicalWidthPixels;
+  cellFlags = *cellFlagsPtr;
+  if ((cellFlags & 4) != 0) {
+    subresourceOrWidth = 0;
   }
-  if ((uVar1 & 8) != 0) {
-    dVar4 = 0;
+  if ((cellFlags & 8) != 0) {
+    spriteHeight = 0;
   }
-  SVar6.nextDrawY = dVar3 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0xc) + drawY;
-  SVar6.nextDrawX = dVar4 + *(int *)((int)pvVar2 + cellIndex * 0x10 + 0x10) + drawX;
-  return SVar6;
+  cellAdvance.nextDrawY = subresourceOrWidth + *(int *)((int)panelData + cellIndex * 0x10 + 0xc) + drawY;
+  cellAdvance.nextDrawX = spriteHeight + *(int *)((int)panelData + cellIndex * 0x10 + 0x10) + drawX;
+  return cellAdvance;
 }
 
 
@@ -2198,19 +2198,19 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
           SelectionPanelCellIndex cellIndex)
 
 {
-  int iVar1;
-  uint uVar2;
-  void *pvVar3;
-  int iVar4;
-  int arg5;
-  dword dVar5;
-  int arg4;
-  dword dVar6;
-  uint *puVar7;
-  SelectionPanelAdvanceEaxEdx8 SVar8;
-  GraphicsTextureSizeEaxEdxCf9 GVar9;
+  int baseSubresource;
+  uint cellFlags;
+  void *panelData;
+  int meterFrame;
+  int cellDrawY;
+  dword subresourceOrWidth;
+  int cellDrawX;
+  dword spriteHeight;
+  uint *cellFlagsPtr;
+  SelectionPanelAdvanceEaxEdx8 cellAdvance;
+  GraphicsTextureSizeEaxEdxCf9 spriteSize;
   
-  pvVar3 = g_SelectionPanelData;
+  panelData = g_SelectionPanelData;
   if (currentValue < 0) {
     currentValue = 0;
   }
@@ -2218,35 +2218,35 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
     currentValue = maximumValue;
   }
   if (maximumValue == 0) {
-    iVar4 = 0x11;
+    meterFrame = 0x11;
   }
   else {
-    iVar4 = ((uint)(currentValue * 0x20 + maximumValue) / (uint)maximumValue >> 1) + 1;
+    meterFrame = ((uint)(currentValue * 0x20 + maximumValue) / (uint)maximumValue >> 1) + 1;
   }
-  puVar7 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  iVar1 = *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  arg5 = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  arg4 = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  dVar5 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlagsPtr = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  baseSubresource = *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellDrawY = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  cellDrawX = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  subresourceOrWidth = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,dVar5,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,iVar4 + iVar1,
+            (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,meterFrame + baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar5,g_SelectionPanelTextureSource);
-  dVar6 = GVar9.logicalHeightPixels;
-  dVar5 = GVar9.logicalWidthPixels;
-  uVar2 = *puVar7;
-  if ((uVar2 & 4) != 0) {
-    dVar5 = 0;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceOrWidth,g_SelectionPanelTextureSource);
+  spriteHeight = spriteSize.logicalHeightPixels;
+  subresourceOrWidth = spriteSize.logicalWidthPixels;
+  cellFlags = *cellFlagsPtr;
+  if ((cellFlags & 4) != 0) {
+    subresourceOrWidth = 0;
   }
-  if ((uVar2 & 8) != 0) {
-    dVar6 = 0;
+  if ((cellFlags & 8) != 0) {
+    spriteHeight = 0;
   }
-  SVar8.nextDrawY = dVar5 + *(int *)((int)pvVar3 + cellIndex * 0x10 + 0xc) + drawY;
-  SVar8.nextDrawX = dVar6 + *(int *)((int)pvVar3 + cellIndex * 0x10 + 0x10) + drawX;
-  return SVar8;
+  cellAdvance.nextDrawY = subresourceOrWidth + *(int *)((int)panelData + cellIndex * 0x10 + 0xc) + drawY;
+  cellAdvance.nextDrawX = spriteHeight + *(int *)((int)panelData + cellIndex * 0x10 + 0x10) + drawX;
+  return cellAdvance;
 }
 
 
@@ -2270,28 +2270,28 @@ SelectionPanel_DrawProportionalCappedBar
           SelectionPanelCellIndex cellIndex)
 
 {
-  int arg7;
-  int arg5;
-  dword arg0;
-  longlong lVar1;
-  int iVar2;
-  int iVar3;
-  int arg4;
-  GraphicsTextureSizeEaxEdxCf9 GVar4;
+  int interiorStart;
+  int endCapCoordinate;
+  dword baseSubresource;
+  longlong interiorSpan64;
+  int filledSpan;
+  int fillFrame;
+  int fixedDrawCoordinate;
+  GraphicsTextureSizeEaxEdxCf9 capSize;
   
-  arg4 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,barStartCoordinate,arg0,
+            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  arg7 = barStartCoordinate + GVar4.logicalWidthPixels;
-  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  arg5 = barEndCoordinate - GVar4.logicalWidthPixels;
+  interiorStart = barStartCoordinate + capSize.logicalWidthPixels;
+  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapCoordinate = barEndCoordinate - capSize.logicalWidthPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  iVar2 = arg5 - arg7;
+  filledSpan = endCapCoordinate - interiorStart;
   if (currentValue < 0) {
     currentValue = 0;
   }
@@ -2299,24 +2299,24 @@ SelectionPanel_DrawProportionalCappedBar
     currentValue = maximumValue;
   }
   if ((maximumValue != 0) &&
-     (lVar1 = (longlong)iVar2, iVar2 = (int)((lVar1 * currentValue) / (longlong)maximumValue),
-     maximumValue < (int)((lVar1 * currentValue) % (longlong)maximumValue) * 2)) {
-    iVar2 = iVar2 + 1;
+     (interiorSpan64 = (longlong)filledSpan, filledSpan = (int)((interiorSpan64 * currentValue) / (longlong)maximumValue),
+     maximumValue < (int)((interiorSpan64 * currentValue) % (longlong)maximumValue) * 2)) {
+    filledSpan = filledSpan + 1;
   }
   if (maximumValue == 0) {
-    iVar3 = 6;
+    fillFrame = 6;
   }
   else {
-    iVar3 = (int)(((longlong)currentValue * 6) / (longlong)maximumValue);
+    fillFrame = (int)(((longlong)currentValue * 6) / (longlong)maximumValue);
     if (maximumValue < (int)(((longlong)currentValue * 6) % (longlong)maximumValue) * 2) {
-      iVar3 = iVar3 + 1;
+      fillFrame = fillFrame + 1;
     }
   }
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar2 + arg7,arg4,arg7,
-             iVar3 + 2 + arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
+             fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,arg5,arg4,iVar2 + arg7,arg0 + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
@@ -2335,28 +2335,28 @@ SelectionPanel_DrawVerticalProportionalCappedBar
           SelectionPanelCellIndex cellIndex)
 
 {
-  int arg6;
-  int arg4;
-  dword arg0;
-  longlong lVar1;
-  int iVar2;
-  int iVar3;
-  int arg5;
-  GraphicsTextureSizeEaxEdxCf9 GVar4;
+  int interiorStart;
+  int endCapCoordinate;
+  dword baseSubresource;
+  longlong interiorSpan64;
+  int filledSpan;
+  int fillFrame;
+  int fixedDrawCoordinate;
+  GraphicsTextureSizeEaxEdxCf9 capSize;
   
-  arg5 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0,
+            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  arg6 = barStartCoordinate + GVar4.logicalHeightPixels;
-  GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  arg4 = barEndCoordinate - GVar4.logicalHeightPixels;
+  interiorStart = barStartCoordinate + capSize.logicalHeightPixels;
+  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapCoordinate = barEndCoordinate - capSize.logicalHeightPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  iVar2 = arg4 - arg6;
+  filledSpan = endCapCoordinate - interiorStart;
   if (currentValue < 0) {
     currentValue = 0;
   }
@@ -2364,24 +2364,24 @@ SelectionPanel_DrawVerticalProportionalCappedBar
     currentValue = maximumValue;
   }
   if ((maximumValue != 0) &&
-     (lVar1 = (longlong)iVar2, iVar2 = (int)((lVar1 * currentValue) / (longlong)maximumValue),
-     maximumValue < (int)((lVar1 * currentValue) % (longlong)maximumValue) * 2)) {
-    iVar2 = iVar2 + 1;
+     (interiorSpan64 = (longlong)filledSpan, filledSpan = (int)((interiorSpan64 * currentValue) / (longlong)maximumValue),
+     maximumValue < (int)((interiorSpan64 * currentValue) % (longlong)maximumValue) * 2)) {
+    filledSpan = filledSpan + 1;
   }
   if (maximumValue == 0) {
-    iVar3 = 6;
+    fillFrame = 6;
   }
   else {
-    iVar3 = (int)(((longlong)currentValue * 6) / (longlong)maximumValue);
+    fillFrame = (int)(((longlong)currentValue * 6) / (longlong)maximumValue);
     if (maximumValue < (int)(((longlong)currentValue * 6) % (longlong)maximumValue) * 2) {
-      iVar3 = iVar3 + 1;
+      fillFrame = fillFrame + 1;
     }
   }
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,arg4 - iVar2,arg5,
-             iVar3 + 2 + arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,endCapCoordinate - filledSpan,fixedDrawCoordinate,
+             fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4 - iVar2,-0x80000000,arg6,arg5,arg0 + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate - filledSpan,-0x80000000,interiorStart,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
@@ -2403,26 +2403,26 @@ SelectionPanel_DrawForwardCappedBar
           SelectionPanelCellIndex cellIndex)
 
 {
-  int arg5;
-  dword arg0;
-  int arg4;
-  GraphicsTextureSizeEaxEdxCf9 GVar1;
-  GraphicsTextureSizeEaxEdxCf9 GVar2;
+  int endCapCoordinate;
+  dword baseSubresource;
+  int fixedDrawCoordinate;
+  GraphicsTextureSizeEaxEdxCf9 startCapSize;
+  GraphicsTextureSizeEaxEdxCf9 endCapSize;
   
-  arg4 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  startCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,barStartCoordinate,arg0,
+            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  arg5 = barEndCoordinate - GVar2.logicalWidthPixels;
+  endCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapCoordinate = barEndCoordinate - endCapSize.logicalWidthPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,arg5,arg4,
-             barStartCoordinate + GVar1.logicalWidthPixels,arg0 + 1,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,endCapCoordinate,fixedDrawCoordinate,
+             barStartCoordinate + startCapSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   return;
 }
@@ -2445,26 +2445,26 @@ SelectionPanel_DrawSolidCappedBar
           SelectionPanelCellIndex cellIndex)
 
 {
-  int arg4;
-  dword arg0;
-  int arg5;
-  GraphicsTextureSizeEaxEdxCf9 GVar1;
-  GraphicsTextureSizeEaxEdxCf9 GVar2;
+  int endCapCoordinate;
+  dword baseSubresource;
+  int fixedDrawCoordinate;
+  GraphicsTextureSizeEaxEdxCf9 startCapSize;
+  GraphicsTextureSizeEaxEdxCf9 endCapSize;
   
-  arg5 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  startCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0,
+            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  arg4 = barEndCoordinate - GVar2.logicalHeightPixels;
+  endCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapCoordinate = barEndCoordinate - endCapSize.logicalHeightPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   (*g_SelectionPanelBlitClipped)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,
-             barStartCoordinate + GVar1.logicalHeightPixels,arg5,arg0 + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,
+             barStartCoordinate + startCapSize.logicalHeightPixels,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
@@ -2483,106 +2483,106 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
           ,SelectionPanelCellIndex cellIndex)
 
 {
-  int arg7;
-  dword arg0;
-  int iVar1;
-  int arg4;
-  uint *puVar2;
-  GraphicsTextureSizeEaxEdxCf9 GVar3;
+  int interiorStart;
+  dword baseSubresource;
+  int segmentsEnd;
+  int fixedDrawCoordinate;
+  uint *cellFlags;
+  GraphicsTextureSizeEaxEdxCf9 spriteSize;
   
-  puVar2 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  arg4 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  cellFlags = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0,
+            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  arg7 = spanStartCoordinate + GVar3.logicalWidthPixels;
-  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  spanEndCoordinate = spanEndCoordinate - GVar3.logicalWidthPixels;
+  interiorStart = spanStartCoordinate + spriteSize.logicalWidthPixels;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,spanEndCoordinate,arg0 + 2,
+            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 2,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-  iVar1 = filledSegmentCount;
-  if ((*puVar2 & 0x400) != 0) {
-    iVar1 = totalSegmentCount;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+  segmentsEnd = filledSegmentCount;
+  if ((*cellFlags & 0x400) != 0) {
+    segmentsEnd = totalSegmentCount;
   }
-  iVar1 = GVar3.logicalWidthPixels * iVar1 + arg7;
-  if (spanEndCoordinate < iVar1) {
+  segmentsEnd = spriteSize.logicalWidthPixels * segmentsEnd + interiorStart;
+  if (spanEndCoordinate < segmentsEnd) {
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,arg7,
-               arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
+               baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
-  else if ((*puVar2 & 0x100) == 0) {
-    if ((*puVar2 & 0x200) == 0) {
-      spanStartCoordinate = (spanEndCoordinate - iVar1 >> 1) + arg7;
+  else if ((*cellFlags & 0x100) == 0) {
+    if ((*cellFlags & 0x200) == 0) {
+      spanStartCoordinate = (spanEndCoordinate - segmentsEnd >> 1) + interiorStart;
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanStartCoordinate,arg4,arg7,
-                 arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
-      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanStartCoordinate,fixedDrawCoordinate,interiorStart,
+                 baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+        spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
         totalSegmentCount = totalSegmentCount + -1;
       }
-      if ((*puVar2 & 0x400) != 0) {
+      if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
           (*g_SelectionPanelBlitOpaque)
-                    (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 3,
+                    (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
-          spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+          spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
         }
       }
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,
-                 spanStartCoordinate,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,
+                 spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
     else {
-      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-        spanEndCoordinate = spanEndCoordinate - GVar3.logicalWidthPixels;
+        spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,arg4,spanEndCoordinate,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
       }
-      if ((*puVar2 & 0x400) != 0) {
+      if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-          spanEndCoordinate = spanEndCoordinate - GVar3.logicalWidthPixels;
+          spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
           (*g_SelectionPanelBlitOpaque)
-                    (clipTop,clipLeft,clipBottom,clipRight,arg4,spanEndCoordinate,arg0 + 3,
+                    (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,arg7,
-                 arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
+                 baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
   }
   else {
-    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
-    spanStartCoordinate = arg7;
+    spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+    spanStartCoordinate = interiorStart;
     for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
       (*g_SelectionPanelBlitOpaque)
-                (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 4,
+                (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+      spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
       totalSegmentCount = totalSegmentCount + -1;
     }
-    if ((*puVar2 & 0x400) != 0) {
+    if ((*cellFlags & 0x400) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,arg4,spanStartCoordinate,arg0 + 3,
+                  (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        spanStartCoordinate = spanStartCoordinate + GVar3.logicalWidthPixels;
+        spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
       }
     }
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,arg4,
-               spanStartCoordinate,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,
+               spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;
 }
@@ -2608,108 +2608,108 @@ SelectionPanel_DrawSegmentedCappedBar
           ,SelectionPanelCellIndex cellIndex)
 
 {
-  int arg4;
-  dword arg0;
-  int arg5;
-  int iVar1;
-  uint *puVar2;
-  GraphicsTextureSizeEaxEdxCf9 GVar3;
+  int endCapCoordinate;
+  dword baseSubresource;
+  int fixedDrawCoordinate;
+  int segmentsEnd;
+  uint *cellFlags;
+  GraphicsTextureSizeEaxEdxCf9 spriteSize;
   
-  puVar2 = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  arg5 = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  arg0 = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0,g_SelectionPanelTextureSource);
+  cellFlags = (uint *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
+  baseSubresource = *(dword *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0,
+            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  barStartCoordinate = barStartCoordinate + GVar3.logicalHeightPixels;
-  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 2,g_SelectionPanelTextureSource);
-  arg4 = barEndCoordinate - GVar3.logicalHeightPixels;
+  barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
   (*g_SelectionPanelBlitOpaque)
-            (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg0 + 2,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 3,g_SelectionPanelTextureSource);
-  iVar1 = filledSegmentCount;
-  if ((*puVar2 & 0x400) != 0) {
-    iVar1 = totalSegmentCount;
+  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+  segmentsEnd = filledSegmentCount;
+  if ((*cellFlags & 0x400) != 0) {
+    segmentsEnd = totalSegmentCount;
   }
-  iVar1 = GVar3.logicalHeightPixels * iVar1 + barStartCoordinate;
-  if (arg4 < iVar1) {
+  segmentsEnd = spriteSize.logicalHeightPixels * segmentsEnd + barStartCoordinate;
+  if (endCapCoordinate < segmentsEnd) {
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,barStartCoordinate,arg5,
-               arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barStartCoordinate,fixedDrawCoordinate,
+               baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
-  else if ((*puVar2 & 0x100) == 0) {
-    if ((*puVar2 & 0x200) == 0) {
-      barEndCoordinate = arg4 - (arg4 - iVar1 >> 1);
+  else if ((*cellFlags & 0x100) == 0) {
+    if ((*cellFlags & 0x200) == 0) {
+      barEndCoordinate = endCapCoordinate - (endCapCoordinate - segmentsEnd >> 1);
       (*g_SelectionPanelBlitClipped)
-                (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,barEndCoordinate,arg5,
-                 arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
-      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+                (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barEndCoordinate,fixedDrawCoordinate,
+                 baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-        barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
+        barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
       }
-      if ((*puVar2 & 0x400) != 0) {
+      if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-          barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
+          barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
           (*g_SelectionPanelBlitOpaque)
-                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 3,
+                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
       (*g_SelectionPanelBlitClipped)
                 (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
-                 barStartCoordinate,arg5,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
+                 barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
     else {
-      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
-      barEndCoordinate = arg4;
+      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+      barEndCoordinate = endCapCoordinate;
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-        barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
+        barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
       }
-      if ((*puVar2 & 0x400) != 0) {
+      if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-          barEndCoordinate = barEndCoordinate - GVar3.logicalHeightPixels;
+          barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
           (*g_SelectionPanelBlitOpaque)
-                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,arg5,arg0 + 3,
+                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
       (*g_SelectionPanelBlitClipped)
                 (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
-                 barStartCoordinate,arg5,arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
+                 barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
   }
   else {
-    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(arg0 + 4,g_SelectionPanelTextureSource);
+    spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
     for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
       (*g_SelectionPanelBlitOpaque)
-                (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0 + 4,
+                (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      barStartCoordinate = barStartCoordinate + GVar3.logicalHeightPixels;
+      barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
       totalSegmentCount = totalSegmentCount + -1;
     }
-    if ((*puVar2 & 0x400) != 0) {
+    if ((*cellFlags & 0x400) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
         (*g_SelectionPanelBlitOpaque)
-                  (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,arg5,arg0 + 3,
+                  (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        barStartCoordinate = barStartCoordinate + GVar3.logicalHeightPixels;
+        barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
       }
     }
     (*g_SelectionPanelBlitClipped)
-              (clipTop,clipLeft,clipBottom,clipRight,arg4,-0x80000000,barStartCoordinate,arg5,
-               arg0 + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barStartCoordinate,fixedDrawCoordinate,
+               baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;
 }
@@ -2728,14 +2728,14 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
 {
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
-  bool bVar1;
+  bool stateIsZero;
   
   entriesRemaining = 0x20;
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
     if (runtimeState != (ArmyRuntimeSlot *)0x0) {
-      bVar1 = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
-      if (!bVar1) {
+      stateIsZero = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
+      if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
         runtimeState->runtimeState98 = (dword)targetArmyRuntime;
         runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
@@ -2763,15 +2763,15 @@ SelectionPointerArray_ApplyTargetPositionCommand
 
 {
   ArmyRuntimeSlot *runtimeState;
-  int iVar1;
-  bool bVar2;
+  int entriesRemaining;
+  bool stateIsZero;
   
-  iVar1 = 0x20;
+  entriesRemaining = 0x20;
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
     if (runtimeState != (ArmyRuntimeSlot *)0x0) {
-      bVar2 = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
-      if (!bVar2) {
+      stateIsZero = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
+      if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
         runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
         runtimeState->movementStateFlags = runtimeState->movementStateFlags & 0xfffffdff;
@@ -2779,8 +2779,8 @@ SelectionPointerArray_ApplyTargetPositionCommand
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
   return;
 }
 
@@ -2796,22 +2796,22 @@ SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
           (GameEntityRuntime **selectionEntries)
 
 {
-  GameEntityCommandFlags *pGVar1;
+  GameEntityCommandFlags *commandFlagsPtr;
   GameEntityRuntime *entityRuntime;
-  int iVar2;
+  int entriesRemaining;
   
-  iVar2 = 0x20;
+  entriesRemaining = 0x20;
   do {
     entityRuntime = *selectionEntries;
     if ((entityRuntime != (GameEntityRuntime *)0x0) &&
        (((entityRuntime->common).commandFlags & 2) == 0)) {
       GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(entityRuntime);
-      pGVar1 = &(entityRuntime->common).commandFlags;
-      *pGVar1 = *pGVar1 & 0xfffffdff;
+      commandFlagsPtr = &(entityRuntime->common).commandFlags;
+      *commandFlagsPtr = *commandFlagsPtr & 0xfffffdff;
     }
     selectionEntries = selectionEntries + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
   return;
 }
 
@@ -2827,9 +2827,9 @@ SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
 
 {
   GameEntityRuntime *armyRuntime;
-  int iVar1;
+  int entriesRemaining;
   
-  iVar1 = 0x20;
+  entriesRemaining = 0x20;
   do {
     armyRuntime = *selectionEntries;
     if ((armyRuntime != (GameEntityRuntime *)0x0) &&
@@ -2841,8 +2841,8 @@ SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
            0xffffffef;
     }
     selectionEntries = selectionEntries + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
   return;
 }
 
@@ -2857,10 +2857,10 @@ SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **se
 
 {
   GameEntityRuntime *modelRuntime;
-  int iVar1;
+  int entriesRemaining;
   WorldRuntimeContext *contextArg;
   
-  iVar1 = 0x20;
+  entriesRemaining = 0x20;
   contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
   do {
     modelRuntime = *selectionEntries;
@@ -2869,8 +2869,8 @@ SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **se
       ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,(int *)modelRuntime);
     }
     selectionEntries = selectionEntries + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
   return;
 }
 
@@ -2886,34 +2886,34 @@ SelectionPointerArray_InsertUniqueAndRecenter
           (GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection)
 
 {
-  int iVar1;
-  GameEntityRuntime **ppGVar2;
-  GameEntityRuntime **ppGVar3;
+  int entriesRemaining;
+  GameEntityRuntime **entryCursor;
+  GameEntityRuntime **nextEntryCursor;
   undefined1 in_ZF;
-  bool bVar4;
+  bool slotIsEmpty;
   
-  iVar1 = 0x20;
-  ppGVar2 = selection->entries;
+  entriesRemaining = 0x20;
+  entryCursor = selection->entries;
   do {
-    if (iVar1 == 0) break;
-    iVar1 = iVar1 + -1;
-    in_ZF = entityRuntime == *ppGVar2;
-    ppGVar2 = ppGVar2 + 1;
+    if (entriesRemaining == 0) break;
+    entriesRemaining = entriesRemaining + -1;
+    in_ZF = entityRuntime == *entryCursor;
+    entryCursor = entryCursor + 1;
   } while (!(bool)in_ZF);
   if (!(bool)in_ZF) {
-    bVar4 = true;
-    iVar1 = 0x20;
-    ppGVar2 = selection->entries;
+    slotIsEmpty = true;
+    entriesRemaining = 0x20;
+    entryCursor = selection->entries;
     do {
-      ppGVar3 = ppGVar2;
-      if (iVar1 == 0) break;
-      iVar1 = iVar1 + -1;
-      ppGVar3 = ppGVar2 + 1;
-      bVar4 = *ppGVar2 == (GameEntityRuntime *)0x0;
-      ppGVar2 = ppGVar3;
-    } while (!bVar4);
-    if (bVar4) {
-      ppGVar3[-1] = entityRuntime;
+      nextEntryCursor = entryCursor;
+      if (entriesRemaining == 0) break;
+      entriesRemaining = entriesRemaining + -1;
+      nextEntryCursor = entryCursor + 1;
+      slotIsEmpty = *entryCursor == (GameEntityRuntime *)0x0;
+      entryCursor = nextEntryCursor;
+    } while (!slotIsEmpty);
+    if (slotIsEmpty) {
+      nextEntryCursor[-1] = entityRuntime;
     }
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition(selection);
@@ -2930,46 +2930,46 @@ void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  GameEntityRuntime **ppGVar6;
+  int positionRecord;
+  int averageXQ12;
+  int selectedCountOrRemaining;
+  int averageYQ12;
+  int remainingOrEntryAddress;
+  GameEntityRuntime **entryCursor;
   
-  iVar2 = 0;
-  iVar4 = 0;
-  iVar3 = 0;
-  iVar5 = 0x20;
-  ppGVar6 = selection->entries;
+  averageXQ12 = 0;
+  averageYQ12 = 0;
+  selectedCountOrRemaining = 0;
+  remainingOrEntryAddress = 0x20;
+  entryCursor = selection->entries;
   do {
-    if (*ppGVar6 != (GameEntityRuntime *)0x0) {
-      iVar1 = *(int *)((int)*ppGVar6 + 4);
-      iVar3 = iVar3 + 1;
-      iVar2 = iVar2 + *(int *)(iVar1 + 0x94);
-      iVar4 = iVar4 + *(int *)(iVar1 + 0x98);
+    if (*entryCursor != (GameEntityRuntime *)0x0) {
+      positionRecord = *(int *)((int)*entryCursor + 4);
+      selectedCountOrRemaining = selectedCountOrRemaining + 1;
+      averageXQ12 = averageXQ12 + *(int *)(positionRecord + 0x94);
+      averageYQ12 = averageYQ12 + *(int *)(positionRecord + 0x98);
     }
-    ppGVar6 = ppGVar6 + 1;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
-  if (iVar3 != 0) {
-    iVar2 = iVar2 / iVar3;
-    iVar4 = iVar4 / iVar3;
-    iVar3 = 0x20;
+    entryCursor = entryCursor + 1;
+    remainingOrEntryAddress = remainingOrEntryAddress + -1;
+  } while (remainingOrEntryAddress != 0);
+  if (selectedCountOrRemaining != 0) {
+    averageXQ12 = averageXQ12 / selectedCountOrRemaining;
+    averageYQ12 = averageYQ12 / selectedCountOrRemaining;
+    selectedCountOrRemaining = 0x20;
     do {
-      iVar5 = *(int *)selection;
-      if (iVar5 != 0) {
-        iVar1 = *(int *)(iVar5 + 4);
-        iVar2 = iVar2 - *(int *)(iVar1 + 0x94);
-        iVar4 = iVar4 - *(int *)(iVar1 + 0x98);
-        *(int *)(iVar5 + 0x60) = iVar2;
-        *(int *)(iVar5 + 100) = iVar4;
-        iVar2 = iVar2 + *(int *)(iVar1 + 0x94);
-        iVar4 = iVar4 + *(int *)(iVar1 + 0x98);
+      remainingOrEntryAddress = *(int *)selection;
+      if (remainingOrEntryAddress != 0) {
+        positionRecord = *(int *)(remainingOrEntryAddress + 4);
+        averageXQ12 = averageXQ12 - *(int *)(positionRecord + 0x94);
+        averageYQ12 = averageYQ12 - *(int *)(positionRecord + 0x98);
+        *(int *)(remainingOrEntryAddress + 0x60) = averageXQ12;
+        *(int *)(remainingOrEntryAddress + 100) = averageYQ12;
+        averageXQ12 = averageXQ12 + *(int *)(positionRecord + 0x94);
+        averageYQ12 = averageYQ12 + *(int *)(positionRecord + 0x98);
       }
       selection = (SelectionPointerArray32 *)((int)selection + 4);
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
+      selectedCountOrRemaining = selectedCountOrRemaining + -1;
+    } while (selectedCountOrRemaining != 0);
   }
   return;
 }
@@ -3011,46 +3011,46 @@ bool __thandor_cf_preserve_eax_ecx_edx
 SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *selection)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  int local_20;
+  int entryAddress;
+  int minOffset60;
+  int maxOffset60;
+  int maxOffset64;
+  int firstEntryOrMinOffset64;
+  int entriesRemaining;
   
-  local_20 = 0x20;
-  while (iVar5 = *(int *)selection, iVar5 == 0) {
+  entriesRemaining = 0x20;
+  while (firstEntryOrMinOffset64 = *(int *)selection, firstEntryOrMinOffset64 == 0) {
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    local_20 = local_20 + -1;
-    if (local_20 == 0) {
+    entriesRemaining = entriesRemaining + -1;
+    if (entriesRemaining == 0) {
       return false;
     }
   }
-  iVar2 = *(int *)(iVar5 + 0x60);
-  iVar4 = *(int *)(iVar5 + 100);
-  iVar3 = iVar2;
-  iVar5 = iVar4;
+  minOffset60 = *(int *)(firstEntryOrMinOffset64 + 0x60);
+  maxOffset64 = *(int *)(firstEntryOrMinOffset64 + 100);
+  maxOffset60 = minOffset60;
+  firstEntryOrMinOffset64 = maxOffset64;
   do {
-    iVar1 = *(int *)selection;
-    if (iVar1 != 0) {
-      if (*(int *)(iVar1 + 0x60) < iVar2) {
-        iVar2 = *(int *)(iVar1 + 0x60);
+    entryAddress = *(int *)selection;
+    if (entryAddress != 0) {
+      if (*(int *)(entryAddress + 0x60) < minOffset60) {
+        minOffset60 = *(int *)(entryAddress + 0x60);
       }
-      if (*(int *)(iVar1 + 100) < iVar5) {
-        iVar5 = *(int *)(iVar1 + 100);
+      if (*(int *)(entryAddress + 100) < firstEntryOrMinOffset64) {
+        firstEntryOrMinOffset64 = *(int *)(entryAddress + 100);
       }
-      if (iVar3 < *(int *)(iVar1 + 0x60)) {
-        iVar3 = *(int *)(iVar1 + 0x60);
+      if (maxOffset60 < *(int *)(entryAddress + 0x60)) {
+        maxOffset60 = *(int *)(entryAddress + 0x60);
       }
-      if (iVar4 < *(int *)(iVar1 + 100)) {
-        iVar4 = *(int *)(iVar1 + 100);
+      if (maxOffset64 < *(int *)(entryAddress + 100)) {
+        maxOffset64 = *(int *)(entryAddress + 100);
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    local_20 = local_20 + -1;
-  } while (local_20 != 0);
-  if (((iVar3 - iVar2 < 0x5001) && (iVar4 - iVar5 < 0x5001)) &&
-     ((iVar3 - iVar2) + (iVar4 - iVar5) < 0x7001)) {
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
+  if (((maxOffset60 - minOffset60 < 0x5001) && (maxOffset64 - firstEntryOrMinOffset64 < 0x5001)) &&
+     ((maxOffset60 - minOffset60) + (maxOffset64 - firstEntryOrMinOffset64) < 0x7001)) {
     return false;
   }
   return true;
@@ -3074,53 +3074,53 @@ SelectionPointerArray_ApplyType16MarkerCoordinates
           SelectionPointerArray32 *selection)
 
 {
-  int *piVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
+  int *classRecord;
+  int markerSourceId;
+  int entriesRemaining;
+  int packedMarkerMatches;
+  int markerSlotIndex;
   
-  iVar3 = 0x20;
+  entriesRemaining = 0x20;
   do {
     if ((*(int **)selection != (int *)0x0) &&
-       (piVar1 = (int *)**(int **)selection, *(int *)(*piVar1 + 0x4c) == 0x16)) {
-      iVar5 = 0xc;
-      iVar4 = 0;
+       (classRecord = (int *)**(int **)selection, *(int *)(*classRecord + 0x4c) == 0x16)) {
+      markerSlotIndex = 0xc;
+      packedMarkerMatches = 0;
       do {
-        iVar2 = piVar1[iVar5 + 0x1e];
-        if (iVar2 == g_ArmyLinkedChildAssetIdSlot0) {
-          iVar4 = iVar4 + 1;
+        markerSourceId = classRecord[markerSlotIndex + 0x1e];
+        if (markerSourceId == g_ArmyLinkedChildAssetIdSlot0) {
+          packedMarkerMatches = packedMarkerMatches + 1;
         }
-        if (iVar2 == g_ArmyLinkedChildAssetIdSlot1) {
-          iVar4 = iVar4 + 0x100;
+        if (markerSourceId == g_ArmyLinkedChildAssetIdSlot1) {
+          packedMarkerMatches = packedMarkerMatches + 0x100;
         }
-        if (iVar2 == g_ArmyLinkedChildAssetIdSlot2) {
-          iVar4 = iVar4 + 0x10000;
+        if (markerSourceId == g_ArmyLinkedChildAssetIdSlot2) {
+          packedMarkerMatches = packedMarkerMatches + 0x10000;
         }
-        iVar5 = iVar5 + -1;
-      } while (-1 < iVar5);
+        markerSlotIndex = markerSlotIndex + -1;
+      } while (-1 < markerSlotIndex);
       if ((laneMask & 1) != 0) {
-        *(char *)(piVar1 + 0x37) = (char)iVar4;
-        piVar1[0x2e] = valueA;
-        piVar1[0x2f] = valueB;
-        piVar1[0x30] = valueC;
+        *(char *)(classRecord + 0x37) = (char)packedMarkerMatches;
+        classRecord[0x2e] = valueA;
+        classRecord[0x2f] = valueB;
+        classRecord[0x30] = valueC;
       }
       if ((laneMask & 2) != 0) {
-        *(char *)((int)piVar1 + 0xdd) = (char)((uint)iVar4 >> 8);
-        piVar1[0x31] = valueA;
-        piVar1[0x32] = valueB;
-        piVar1[0x33] = valueC;
+        *(char *)((int)classRecord + 0xdd) = (char)((uint)packedMarkerMatches >> 8);
+        classRecord[0x31] = valueA;
+        classRecord[0x32] = valueB;
+        classRecord[0x33] = valueC;
       }
       if ((laneMask & 4) != 0) {
-        *(char *)((int)piVar1 + 0xde) = (char)((uint)iVar4 >> 0x10);
-        piVar1[0x34] = valueA;
-        piVar1[0x35] = valueB;
-        piVar1[0x36] = valueC;
+        *(char *)((int)classRecord + 0xde) = (char)((uint)packedMarkerMatches >> 0x10);
+        classRecord[0x34] = valueA;
+        classRecord[0x35] = valueB;
+        classRecord[0x36] = valueC;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    entriesRemaining = entriesRemaining + -1;
+  } while (entriesRemaining != 0);
   return;
 }
 
