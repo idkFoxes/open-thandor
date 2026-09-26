@@ -28,7 +28,7 @@ FrontendCommandQueue_EnqueueLocalPlayerCommand
   
   writeRecord = g_FrontendCommandQueueEnd;
   packedCommandAndPlayerId = commandCode << 8 | g_LocalPlayerRuntimeId;
-  if (g_FrontendCommandQueueEnd < &g_FrontendCommandQueueEnd) {
+  if (g_FrontendCommandQueueEnd < g_FrontendCommandQueueRecords + 16) { /* the end of the record buffer */
     g_FrontendCommandQueueEnd->payloadDword04 = payloadDword04;
     writeRecord->payloadDword08 = payloadDword08;
     writeRecord->payloadDword0C = payloadDword0C;
@@ -100,7 +100,7 @@ InGameCommandQueue_AppendLocalPlayerCommand
   
   writeRecord = g_InGameCommandQueueEnd;
   packedCommandAndPlayerId = commandCode << 8 | g_LocalPlayerRuntimeId;
-  if (g_InGameCommandQueueEnd < &g_InGameCommandQueueEnd) {
+  if (g_InGameCommandQueueEnd < g_InGameCommandQueueRecords + 16) { /* the end of the record buffer */
     g_InGameCommandQueueEnd->payloadDword04 = payloadDword04;
     writeRecord->payloadDword08 = payloadDword08;
     writeRecord->payloadDword0C = payloadDword0C;
