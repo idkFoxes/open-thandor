@@ -132,6 +132,35 @@ if split:
     objects = new_objects
     object_starts = [o[0] for o in objects]
 
+# unnamed DAT_ objects a named table points to take the table's name and the first index that
+# points to them (g_Table_5); a DAT_ label nothing points to, directly after such an object, is a
+# part of it (Ghidra labelled an inner address the code indexes from)
+all_dwords = set()
+for a, b in blocks:
+    for x in range(a, b - 3, 4):
+        all_dwords.add(dword_at(x))
+index_of = {o[0]: i for i, o in enumerate(objects)}
+pointed = {}
+for start, size, name in objects:
+    if name.startswith('DAT_') or name not in macros:
+        continue
+    for i in range(size // 4):
+        target = index_of.get(dword_at(start + 4 * i))
+        if target is not None and objects[target][2].startswith('DAT_'):
+            pointed.setdefault(target, '%s_%d' % (name, i))
+renamed = []
+for k, (start, size, name) in enumerate(objects):
+    if k in pointed:
+        renamed.append((start, size, pointed[k]))
+    elif (name.startswith('DAT_') and start not in all_dwords and renamed and
+          renamed[-1][0] + renamed[-1][1] == start and renamed[-1][2] in pointed.values()):
+        previous = renamed.pop()
+        renamed.append((previous[0], previous[1] + size, previous[2]))
+    else:
+        renamed.append((start, size, name))
+objects = renamed
+object_starts = [o[0] for o in objects]
+
 # ---- member layout per block
 def identifier(name, used):
     # leading underscore: the object names are also macros (globals.h), which would expand here

@@ -3875,18 +3875,15 @@ typedef struct ImageData_00562498 {
     sdword * at_g_UiCatalogGroup48OffsetTables[9]; /* 00562654 g_UiCatalogGroup48OffsetTables */
     sdword * at_g_UiCatalogGroup42OffsetTables[7]; /* 00562678 g_UiCatalogGroup42OffsetTables */
     sdword * at_g_UiCommandSpriteVariantAOffsetTables[5]; /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
-    dword at_DAT_005626a8[48]; /* 005626A8 DAT_005626a8 */
-    dword at_DAT_00562768[48]; /* 00562768 DAT_00562768 */
-    dword at_DAT_00562828[48]; /* 00562828 DAT_00562828 */
-    dword at_DAT_005628e8[48]; /* 005628E8 DAT_005628e8 */
-    dword at_DAT_005629a8[1]; /* 005629A8 DAT_005629a8 */
-    dword at_DAT_005629ac[47]; /* 005629AC DAT_005629ac */
-    dword at_DAT_00562a68[42]; /* 00562A68 DAT_00562a68 */
-    dword at_DAT_00562b10[42]; /* 00562B10 DAT_00562b10 */
-    dword at_DAT_00562bb8[1]; /* 00562BB8 DAT_00562bb8 */
-    dword at_DAT_00562bbc[41]; /* 00562BBC DAT_00562bbc */
-    dword at_DAT_00562c60[1]; /* 00562C60 DAT_00562c60 */
-    dword at_DAT_00562c64[23]; /* 00562C64 DAT_00562c64 */
+    dword at_g_UiCatalogGroup48OffsetTables_0[48]; /* 005626A8 g_UiCatalogGroup48OffsetTables_0 */
+    dword at_g_UiCatalogGroup48OffsetTables_5[48]; /* 00562768 g_UiCatalogGroup48OffsetTables_5 */
+    dword at_g_UiCatalogGroup48OffsetTables_6[48]; /* 00562828 g_UiCatalogGroup48OffsetTables_6 */
+    dword at_g_UiCatalogGroup48OffsetTables_7[48]; /* 005628E8 g_UiCatalogGroup48OffsetTables_7 */
+    dword at_g_UiCatalogGroup48OffsetTables_8[48]; /* 005629A8 g_UiCatalogGroup48OffsetTables_8 */
+    dword at_g_UiCatalogGroup42OffsetTables_0[42]; /* 00562A68 g_UiCatalogGroup42OffsetTables_0 */
+    dword at_g_UiCatalogGroup42OffsetTables_5[42]; /* 00562B10 g_UiCatalogGroup42OffsetTables_5 */
+    dword at_g_UiCatalogGroup42OffsetTables_6[42]; /* 00562BB8 g_UiCatalogGroup42OffsetTables_6 */
+    dword at_g_UiCommandSpriteVariantAOffsetTables_0[24]; /* 00562C60 g_UiCommandSpriteVariantAOffsetTables_0 */
     sdword at_g_UiAction1012PlayerIndexTextOffsets[7]; /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
     sdword at_g_UiAction1012PlayerLabelTextOffsets[7]; /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
     sdword at_g_UiAction1012IconImageOffsets[7]; /* 00562CF8 g_UiAction1012IconImageOffsets */
@@ -5084,8 +5081,8 @@ extern ImageData_00586950 g_ImageData_00586950;
 /* original 0x005873BC-0x0058C000 */
 typedef struct ImageData_005873BC {
     byte at_gap_005873BC[68]; /* 005873BC gap */
-    dword at_DAT_00587400[4096]; /* 00587400 DAT_00587400 */
-    dword at_DAT_0058b400[768]; /* 0058B400 DAT_0058b400 */
+    dword at_g_Arena_3[4096]; /* 00587400 g_Arena_3 */
+    dword at_g_Arena_4[768]; /* 0058B400 g_Arena_4 */
 } ImageData_005873BC;
 extern ImageData_005873BC g_ImageData_005873BC;
 
@@ -5195,6 +5192,15 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define g_CodePointerTable_0055F960 (g_ImageData_0055F934.at_g_CodePointerTable_0055F960)
 #define g_UiActionPage11Group1Handlers (g_ImageData_00562498.at_g_UiActionPage11Group1Handlers)
 #define g_UiActionPage11InitializedHandlers (g_ImageData_00562498.at_g_UiActionPage11InitializedHandlers)
+#define g_UiCatalogGroup48OffsetTables_0 (g_ImageData_00562498.at_g_UiCatalogGroup48OffsetTables_0)
+#define g_UiCatalogGroup48OffsetTables_5 (g_ImageData_00562498.at_g_UiCatalogGroup48OffsetTables_5)
+#define g_UiCatalogGroup48OffsetTables_6 (g_ImageData_00562498.at_g_UiCatalogGroup48OffsetTables_6)
+#define g_UiCatalogGroup48OffsetTables_7 (g_ImageData_00562498.at_g_UiCatalogGroup48OffsetTables_7)
+#define g_UiCatalogGroup48OffsetTables_8 (g_ImageData_00562498.at_g_UiCatalogGroup48OffsetTables_8)
+#define g_UiCatalogGroup42OffsetTables_0 (g_ImageData_00562498.at_g_UiCatalogGroup42OffsetTables_0)
+#define g_UiCatalogGroup42OffsetTables_5 (g_ImageData_00562498.at_g_UiCatalogGroup42OffsetTables_5)
+#define g_UiCatalogGroup42OffsetTables_6 (g_ImageData_00562498.at_g_UiCatalogGroup42OffsetTables_6)
+#define g_UiCommandSpriteVariantAOffsetTables_0 (g_ImageData_00562498.at_g_UiCommandSpriteVariantAOffsetTables_0)
 #define g_EndMovieCommandDispatchRecords_Terminator (g_ImageData_005658BC.at_g_EndMovieCommandDispatchRecords_Terminator)
 #define g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 (g_ImageData_00566034.at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040)
 #define g_EndGameResultsCommandDispatchRecords_Terminator (g_ImageData_0056710C.at_g_EndGameResultsCommandDispatchRecords_Terminator)
@@ -5294,6 +5300,8 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define g_Ws2_32_WSAAsyncGetServByPort (g_ImageData_00573EE8.at_g_Ws2_32_WSAAsyncGetServByPort)
 #define g_Ws2_32_WSACancelAsyncRequest (g_ImageData_00573EE8.at_g_Ws2_32_WSACancelAsyncRequest)
 #define g_GlideTextureRefreshHandlers (g_ImageData_0057ECC8.at_g_GlideTextureRefreshHandlers)
+#define g_Arena_3 (g_ImageData_005873BC.at_g_Arena_3)
+#define g_Arena_4 (g_ImageData_005873BC.at_g_Arena_4)
 
 /* Original address -> generated storage. */
 #define THANDOR_IMAGE_0x00000017 ((uintptr_t)0x00000017u)
