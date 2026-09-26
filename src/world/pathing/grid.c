@@ -769,7 +769,7 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
   scratchCellCursor = &g_GridScratchPrimary->stateMask;
   do {
     do {
-      currentFieldCell = currentFieldCell + 1;
+      /* the original advances first and tests [ESI-0x30]: the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
       if ((currentFieldCell->flagsAndMaterial & 0x88006000) == 0) {
         propagatedOccupancyGroupMask =
@@ -851,7 +851,7 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
       }
       scratchCellCursor = nextScratchCellCursor;
       columnsRemaining = columnsRemaining - 1;
-      currentFieldCell = currentFieldCell;
+      currentFieldCell = currentFieldCell + 1;
     } while (columnsRemaining != 0);
     scratchCellCursor = scratchCellCursor + scratchWidth * 6;
     rowsRemaining = rowsRemaining - 1;
