@@ -5240,6 +5240,6 @@ extern ImageData_005873BC g_ImageData_005873BC;
 typedef struct ThandorImageBlock { dword start; dword end; const byte *data; } ThandorImageBlock;
 typedef struct ThandorImagePointer { dword location; dword originalValue; } ThandorImagePointer;
 extern const ThandorImageBlock g_ThandorImageBlocks[203];
-extern const ThandorImagePointer g_ThandorImagePointers[2356];
+extern const ThandorImagePointer g_ThandorImagePointers[2362];
 
 #endif

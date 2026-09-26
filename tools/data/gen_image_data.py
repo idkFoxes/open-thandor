@@ -215,12 +215,18 @@ def string_member(start, end):
 
 pointers = []
 
+def inner_pointer(value):
+    """A dword-aligned address inside a known data object (an element of a table, such as the
+    fifth player-name buffer); unaligned values of that range are text or numbers."""
+    return value & 3 == 0 and block_of(value) is not None and not code[value - START] and \
+        containing_object(value) is not None
+
 def value_expression(field_addr, owner_numeric):
     value = dword_at(field_addr)
     if not owner_numeric and value in funcs:
         pointers.append((field_addr, value, 'function', funcs[value]))
         return '(dword)%s' % funcs[value]
-    if not owner_numeric and value in anchors:
+    if not owner_numeric and (value in anchors or inner_pointer(value)):
         pointers.append((field_addr, value, 'data', ''))
         target = address_expression(value)
         return '(dword)(%s)' % target if '+' in target else '(dword)%s' % target
