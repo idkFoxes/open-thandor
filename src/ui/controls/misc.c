@@ -1153,168 +1153,53 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
           UiNodeBase *displaySettingsRoot)
 
 {
-  bool bVar1;
-  UiNodeBase *local_20;
-  
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,displaySettingsRoot[8].right,modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x201,displaySettingsRoot);
+  /* Rewritten from the assembly (0x00423D70): every option button is a 0x68-byte node; the dwords
+     just before each button hold its mode value(s). The decompiled struct indexing picked wrong
+     fields, so no resolution button was ever marked as selected. */
+  static const unsigned depthButtons[4] = {0x280,0x2e8,0x350,0x3b8};
+  static const unsigned sizeButtons[8] = {0x420,0x488,0x4f0,0x558,0x5c0,0x628,0x690,0x6f8};
+  static const unsigned adapterButtons[5] = {0x760,0x7c8,0x830,0x898,0x900};
+  byte *root = (byte *)displaySettingsRoot;
+  dword bitsPerPixel = (dword)(uintptr_t)selectedModeValue;
+  void *selected = (void *)0;
+  bool enumerated;
+  int i;
+
+#define DISPLAY_MODE_FIELD(offset) (*(dword *)(root + (offset)))
+  for (i = 0; i < 4; i++) {
+    dword depth = DISPLAY_MODE_FIELD(depthButtons[i] - 8);
+    enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapterIndex,depth,modeHeight,modeWidth);
+    if (enumerated) {
+      UiNodeList_SuppressActionId(0x201 + i,displaySettingsRoot);
+    }
+    else {
+      UiNodeList_UnsuppressActionId(0x201 + i,displaySettingsRoot);
+    }
+    if (bitsPerPixel == depth) {
+      /* The original stores EAX (the width) instead of the button for the fourth depth. */
+      selected = (i == 3) ? (void *)(uintptr_t)modeWidth : (void *)(root + depthButtons[i]);
+    }
   }
-  else {
-    UiNodeList_UnsuppressActionId(0x201,displaySettingsRoot);
-  }
-  if (selectedModeValue == (UiNodeBase *)displaySettingsRoot[8].right) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[8].leftOffset;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,displaySettingsRoot[9].topAnchorQ31,modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x202,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x202,displaySettingsRoot);
-  }
-  if (selectedModeValue == (UiNodeBase *)displaySettingsRoot[9].topAnchorQ31) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[9].bottomAnchorQ31;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)displaySettingsRoot[0xb].firstChild,
-                     modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x203,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x203,displaySettingsRoot);
-  }
-  if (selectedModeValue == displaySettingsRoot[0xb].firstChild) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0xb].vtable;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,displaySettingsRoot[0xc].leftOffset,modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x204,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x204,displaySettingsRoot);
-  }
-  if (selectedModeValue == (UiNodeBase *)displaySettingsRoot[0xc].leftOffset) {
-    local_20 = (UiNodeBase *)modeWidth;
-  }
-  UiSelectableGroup_SelectExclusive(4,local_20,
+  UiSelectableGroup_SelectExclusive(4,selected,
       THANDOR_UI_AT(displaySettingsRoot,0x3b8),
       THANDOR_UI_AT(displaySettingsRoot,0x350),
       THANDOR_UI_AT(displaySettingsRoot,0x2e8),
       THANDOR_UI_AT(displaySettingsRoot,0x280));
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0xd].rightAnchorQ31,
-                     displaySettingsRoot[0xd].bottomAnchorQ31);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x205,displaySettingsRoot);
+  for (i = 0; i < 8; i++) {
+    dword height = DISPLAY_MODE_FIELD(sizeButtons[i] - 0xc);
+    dword width = DISPLAY_MODE_FIELD(sizeButtons[i] - 8);
+    enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapterIndex,bitsPerPixel,height,width);
+    if (enumerated) {
+      UiNodeList_SuppressActionId(0x205 + i,displaySettingsRoot);
+    }
+    else {
+      UiNodeList_UnsuppressActionId(0x205 + i,displaySettingsRoot);
+    }
+    if ((modeWidth == width) && (modeHeight == height)) {
+      selected = root + sizeButtons[i];
+    }
   }
-  else {
-    UiNodeList_UnsuppressActionId(0x205,displaySettingsRoot);
-  }
-  if ((modeWidth == displaySettingsRoot[0xd].bottomAnchorQ31) &&
-     (modeHeight == displaySettingsRoot[0xd].rightAnchorQ31)) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0xd].layoutHeight;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     (FrontendDisplayDimensionPixels)displaySettingsRoot[0xf].parent,
-                     (FrontendDisplayDimensionPixels)displaySettingsRoot[0xf].vtable);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x206,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x206,displaySettingsRoot);
-  }
-  if (((UiNodeVtable *)modeWidth == displaySettingsRoot[0xf].vtable) &&
-     ((UiNodeBase *)modeHeight == displaySettingsRoot[0xf].parent)) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0xf].top;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0x10].topOffset,displaySettingsRoot[0x10].rightOffset);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x207,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x207,displaySettingsRoot);
-  }
-  if ((modeWidth == displaySettingsRoot[0x10].rightOffset) &&
-     (modeHeight == displaySettingsRoot[0x10].topOffset)) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x10].leftAnchorQ31;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0x11].layoutWidth,displaySettingsRoot[0x11].layoutHeight);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x208,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x208,displaySettingsRoot);
-  }
-  if ((modeWidth == displaySettingsRoot[0x11].layoutHeight) &&
-     (modeHeight == displaySettingsRoot[0x11].layoutWidth)) {
-    local_20 = displaySettingsRoot + 0x12;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0x13].left,displaySettingsRoot[0x13].top);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x209,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x209,displaySettingsRoot);
-  }
-  if ((modeWidth == displaySettingsRoot[0x13].top) && (modeHeight == displaySettingsRoot[0x13].left)
-     ) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x13].bottom;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0x14].bottomOffset,displaySettingsRoot[0x14].leftAnchorQ31)
-  ;
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x20a,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x20a,displaySettingsRoot);
-  }
-  if ((modeWidth == displaySettingsRoot[0x14].leftAnchorQ31) &&
-     (modeHeight == displaySettingsRoot[0x14].bottomOffset)) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x14].rightAnchorQ31;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0x15].nodeFlags,
-                     (FrontendDisplayDimensionPixels)displaySettingsRoot[0x16].nextSibling);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x20b,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x20b,displaySettingsRoot);
-  }
-  if (((UiNodeBase *)modeWidth == displaySettingsRoot[0x16].nextSibling) &&
-     (modeHeight == displaySettingsRoot[0x15].nodeFlags)) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x16].parent;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (adapterIndex,(FrontendColorDepthBits)selectedModeValue,
-                     displaySettingsRoot[0x17].right,displaySettingsRoot[0x17].bottom);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x20c,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x20c,displaySettingsRoot);
-  }
-  if ((modeWidth == displaySettingsRoot[0x17].bottom) &&
-     (modeHeight == displaySettingsRoot[0x17].right)) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x17].topOffset;
-  }
-  UiSelectableGroup_SelectExclusive(8,local_20,
+  UiSelectableGroup_SelectExclusive(8,selected,
       THANDOR_UI_AT(displaySettingsRoot,0x6f8),
       THANDOR_UI_AT(displaySettingsRoot,0x690),
       THANDOR_UI_AT(displaySettingsRoot,0x628),
@@ -1323,86 +1208,39 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
       THANDOR_UI_AT(displaySettingsRoot,0x4f0),
       THANDOR_UI_AT(displaySettingsRoot,0x488),
       THANDOR_UI_AT(displaySettingsRoot,0x420));
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (displaySettingsRoot[0x18].rightAnchorQ31,
-                     (FrontendColorDepthBits)selectedModeValue,modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x20f,displaySettingsRoot);
+  for (i = 0; i < 5; i++) {
+    dword adapter = DISPLAY_MODE_FIELD(adapterButtons[i] - 8);
+    enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapter,bitsPerPixel,modeHeight,modeWidth);
+    if (enumerated) {
+      UiNodeList_SuppressActionId(0x20f + i,displaySettingsRoot);
+    }
+    else {
+      UiNodeList_UnsuppressActionId(0x20f + i,displaySettingsRoot);
+    }
+    if (adapterIndex == adapter) {
+      selected = root + adapterButtons[i];
+    }
   }
-  else {
-    UiNodeList_UnsuppressActionId(0x20f,displaySettingsRoot);
-  }
-  if (adapterIndex == displaySettingsRoot[0x18].rightAnchorQ31) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x18].layoutWidth;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    ((FrontendDisplayAdapterIndex)displaySettingsRoot[0x1a].parent,
-                     (FrontendColorDepthBits)selectedModeValue,modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x210,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x210,displaySettingsRoot);
-  }
-  if ((UiNodeBase *)adapterIndex == displaySettingsRoot[0x1a].parent) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x1a].left;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (displaySettingsRoot[0x1b].topOffset,(FrontendColorDepthBits)selectedModeValue,
-                     modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x211,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x211,displaySettingsRoot);
-  }
-  if (adapterIndex == displaySettingsRoot[0x1b].topOffset) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x1b].bottomOffset;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (displaySettingsRoot[0x1c].layoutWidth,(FrontendColorDepthBits)selectedModeValue
-                     ,modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x212,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x212,displaySettingsRoot);
-  }
-  if (adapterIndex == displaySettingsRoot[0x1c].layoutWidth) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x1c].nodeFlags;
-  }
-  bVar1 = GraphicsDisplayMode_IsEnumeratedCf
-                    (displaySettingsRoot[0x1e].left,(FrontendColorDepthBits)selectedModeValue,
-                     modeHeight,modeWidth);
-  if (bVar1) {
-    UiNodeList_SuppressActionId(0x213,displaySettingsRoot);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x213,displaySettingsRoot);
-  }
-  if (adapterIndex == displaySettingsRoot[0x1e].left) {
-    local_20 = (UiNodeBase *)&displaySettingsRoot[0x1e].right;
-  }
-  UiSelectableGroup_SelectExclusive(5,local_20,
+  UiSelectableGroup_SelectExclusive(5,selected,
       THANDOR_UI_AT(displaySettingsRoot,0x900),
       THANDOR_UI_AT(displaySettingsRoot,0x898),
       THANDOR_UI_AT(displaySettingsRoot,0x830),
       THANDOR_UI_AT(displaySettingsRoot,0x7c8),
       THANDOR_UI_AT(displaySettingsRoot,0x760));
-  displaySettingsRoot[4].nextSibling = (UiNodeBase *)modeWidth;
-  displaySettingsRoot[4].firstChild = (UiNodeBase *)modeHeight;
-  displaySettingsRoot[4].parent = selectedModeValue;
-  displaySettingsRoot[4].vtable = (UiNodeVtable *)adapterIndex;
-  if ((((modeWidth == displaySettingsRoot[4].right) && (modeHeight == displaySettingsRoot[4].bottom)
-       ) && (selectedModeValue == (UiNodeBase *)displaySettingsRoot[4].leftOffset)) &&
-     (((adapterIndex == displaySettingsRoot[4].topOffset &&
-       (displaySettingsRoot[4].left == displaySettingsRoot[4].rightOffset)) &&
-      (displaySettingsRoot[4].top == displaySettingsRoot[4].bottomOffset)))) {
+  DISPLAY_MODE_FIELD(0x130) = modeWidth;
+  DISPLAY_MODE_FIELD(0x134) = modeHeight;
+  DISPLAY_MODE_FIELD(0x138) = bitsPerPixel;
+  DISPLAY_MODE_FIELD(0x13c) = adapterIndex;
+  if ((modeWidth == DISPLAY_MODE_FIELD(0x148)) && (modeHeight == DISPLAY_MODE_FIELD(0x14c)) &&
+      (bitsPerPixel == DISPLAY_MODE_FIELD(0x150)) && (adapterIndex == DISPLAY_MODE_FIELD(0x154)) &&
+      (DISPLAY_MODE_FIELD(0x140) == DISPLAY_MODE_FIELD(0x158)) &&
+      (DISPLAY_MODE_FIELD(0x144) == DISPLAY_MODE_FIELD(0x15c))) {
     UiNodeList_SuppressActionId(0x200,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x200,displaySettingsRoot);
   }
+#undef DISPLAY_MODE_FIELD
   return;
 }
 

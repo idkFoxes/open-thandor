@@ -9922,7 +9922,7 @@ struct IDirectDraw2_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *Initialize)(struct IDirectDraw2 *, struct TH_LEGACY_GUID *);
     TH_LEGACY_HRESULT (__stdcall *RestoreDisplayMode)(struct IDirectDraw2 *);
     TH_LEGACY_HRESULT (__stdcall *SetCooperativeLevel)(struct IDirectDraw2 *, TH_LEGACY_HWND, TH_LEGACY_DWORD);
-    TH_LEGACY_HRESULT (__stdcall *SetDisplayMode)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
+    TH_LEGACY_HRESULT (__stdcall *SetDisplayMode)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_DWORD); /* width, height, bpp, refresh rate, flags */
     TH_LEGACY_HRESULT (__stdcall *WaitForVerticalBlank)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_HANDLE);
     TH_LEGACY_HRESULT (__stdcall *GetAvailableVidMem)(struct IDirectDraw2 *, struct DDSCAPS *, TH_LEGACY_DWORD *, TH_LEGACY_DWORD *);
 };

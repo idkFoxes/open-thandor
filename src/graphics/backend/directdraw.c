@@ -339,7 +339,7 @@ GraphicsDirectDraw_CreateOrSwitchBackend:
       goto GraphicsDirectDraw_CreateOrSwitchBackend;
     }
   }
-  TVar3 = (*g_DirectDraw2->lpVtbl->SetDisplayMode)(g_DirectDraw2,width,height,bitsPerPixel);
+  TVar3 = (*g_DirectDraw2->lpVtbl->SetDisplayMode)(g_DirectDraw2,width,height,bitsPerPixel,0,0);
   pGVar2 = g_GraphicsAdapters;
   dVar6 = 0x1a;
   iVar5 = iStack_1c;
