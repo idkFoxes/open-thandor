@@ -601,18 +601,13 @@ void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCal
 dword Locale_ParseUnsignedDecimalAscii(byte *text)
 
 {
-  dword parsedValue;
-  uint digitValue;
-  uint currentAsciiCode;
-  
-  digitValue = 0;
-  parsedValue = 0;
-  currentAsciiCode = digitValue;
-  for (; ((/* Ghidra: x._1_3_ = x >> 8 here was a no-op (mov al,[text]) */
-          currentAsciiCode = CONCAT31(THANDOR_READ_PART(currentAsciiCode, 1, 3),*text), currentAsciiCode != 0 &&
-          (currentAsciiCode = currentAsciiCode - 0x30, 0x2f < currentAsciiCode)) &&
-         (currentAsciiCode < 10)); text = text + 1) {
-    parsedValue = parsedValue * 10 + currentAsciiCode;
+  /* The decompiled loop tested (c - '0') > 0x2f instead of "no borrow", so every digit ended the
+     parse and the locale's day-month order and 24-hour flag always read as 0 (US format). */
+  dword parsedValue = 0;
+
+  while ((*text >= 0x30) && (*text < 0x3a)) {
+    parsedValue = parsedValue * 10 + (dword)(*text - 0x30);
+    text = text + 1;
   }
   return parsedValue;
 }

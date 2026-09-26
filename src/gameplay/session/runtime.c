@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/session/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: gameplay/session/runtime. */
 
@@ -608,46 +609,217 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
           EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
 {
-  uint uVar1;
-  UiCommandDispatchRecord *pUVar2;
-  UiCommandDispatchRecord *pUVar3;
-  bool bVar4;
-  
-  pUVar3 = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
-  do {
-    while( true ) {
-      while( true ) {
-        while( true ) {
-          do {
-            pUVar2 = pUVar3;
-            uVar1 = pUVar2->modifierClassFlags;
-            if (pUVar2->commandCode == 0) {
-              return false;
-            }
-            pUVar3 = pUVar2 + 1;
-          } while (pUVar2->commandCode != commandCode);
-          if (uVar1 != 0) break;
-          bVar4 = false;
-          if ((modifierFlags & 0x3c) == 0) {
-            (*(code *)pUVar2->continuationEntryAddress)();
-            return bVar4;
-          }
-        }
-        if ((uVar1 & 0x30) != 0) break;
-        if (((modifierFlags & 0xc) != 0) && (bVar4 = false, (modifierFlags & 0x30) == 0)) {
-          (*(code *)pUVar2->continuationEntryAddress)();
-          return bVar4;
-        }
+  /* Rewritten from the assembly (0x00567060-0x005678B9). The record table holds continuation
+     addresses inside this function; the decompiled version jumped into the original machine code,
+     which then called the recovered C functions with the wrong calling convention (crash on ESC
+     after loading). Each continuation is translated below; EBX is the runtime root. */
+  byte *rt = (byte *)endGameResultsRuntime;
+  UiCommandDispatchRecord *record = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
+  dword target = 0;
+  bool localSession = (g_SessionNetworkRoleFlags & 3) == 0;
+
+#define RT(offset) ((void *)(rt + (offset)))
+#define RT_DWORD(offset) (*(dword *)(rt + (offset)))
+  for (;; record++) {
+    uint flags = record->modifierClassFlags;
+    if (record->commandCode == 0) {
+      return false;
+    }
+    if (record->commandCode != commandCode) {
+      continue;
+    }
+    if (flags == 0) {
+      if ((modifierFlags & 0x3c) != 0) continue;
+    }
+    else if ((flags & 0x30) == 0) {
+      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+    }
+    else if ((flags & 0xc) == 0) {
+      if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+    }
+    else {
+      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+    }
+    target = (dword)record->continuationEntryAddress;
+    break;
+  }
+  switch (target) {
+  case 0x5671e0: /* cheat: toggle runtime flag 0x100000 */
+    if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
+      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 0x100000;
+    }
+    break;
+  case 0x567200: /* cheat: add xenite */
+    if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
+      *(dword *)((byte *)&g_GameFactionRuntimeImage + RT_DWORD(0xa80) * 0x740) += 0x3e80;
+    }
+    break;
+  case 0x567230: /* cheat: add energy */
+    if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
+      *(dword *)((byte *)&g_GameFactionRuntimeImage + RT_DWORD(0xa80) * 0x740 + 0x20) += 0x640;
+      *(dword *)((byte *)&g_GameFactionRuntimeImage + RT_DWORD(0xa80) * 0x740 + 0x24) += 0x640;
+    }
+    break;
+  case 0x567270:
+    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)RT(0x58));
+    RT_DWORD(0x10c) = 0;
+    RT_DWORD(0x110) = 0;
+    RT_DWORD(0x114) = 0;
+    if (!localSession) {
+      UiSelectableNodeEaxEcxCf9 visible;
+      int i;
+      for (i = 0; i < 0x18; i++) {
+        RT_DWORD(0x11c + i * 4) = 0;
       }
-      if ((uVar1 & 0xc) != 0) break;
-      if (((modifierFlags & 0xc) == 0) && (bVar4 = false, (modifierFlags & 0x30) != 0)) {
-        (*(code *)pUVar2->continuationEntryAddress)();
-        return bVar4;
+      visible = UiSelectableGroup_NoneVisibleSelectedCf(3,RT(0x1f44),RT(0x1ee4),RT(0x1e84));
+      (*(void (**)(void *))(uintptr_t)(0x5624a0 + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
+                (visible.node);
+    }
+    UiKeyboardFocus_Set((UiNodeBase *)RT(0xb0));
+    break;
+  case 0x567340:
+  case 0x5673a0:
+  case 0x567410:
+  case 0x567460: {
+    UiSelectableControl *toggle;
+    if ((target == 0x5673a0) && !localSession) {
+      break;
+    }
+    toggle = (UiSelectableControl *)RT(target == 0x567460 ? 0x4400 : 0x4388);
+    UiSelectableControl_SetSelected(1,toggle);
+    if (((*(dword *)((byte *)toggle + 0x4c) & 0x200) != 0) &&
+        (*(dword *)((byte *)toggle + 0x70) != 0)) {
+      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,
+                            *(DirectSoundVoiceSet **)((byte *)toggle + 0x70));
+    }
+    if (target == 0x567460) {
+      InGameUiAction101F_Handler((UiNodeBase *)toggle);
+      break;
+    }
+    InGameSettingsPage_ToggleAndSynchronizeControls(toggle);
+    if (target == 0x567340) {
+      InGameCommandPanel_OpenPage4AndRefreshAvailability((InGameCommandPanelSourceAddress32)RT(0x25b0));
+    }
+    else if (target == 0x5673a0) {
+      InGameSaveGamePage_RebuildCatalog((UiRootNode *)RT(0x2550));
+    }
+    break;
+  }
+  case 0x5674b0: {
+    UiPageStackControl *stack;
+    dword index;
+    UiSelectableNodeEaxEcxCf9 visible;
+    int i;
+    if (localSession) {
+      break;
+    }
+    stack = (UiPageStackControl *)RT(0xbd0);
+    index = (UiPageStack_ActivePageNotInListCf(stack).valueOrError == 1) ? 0 : 1;
+    UiPageStack_SetActiveIndex(index,stack);
+    RT_DWORD(0xa78) = RT_DWORD(0xa78) & 0xfffffff7;
+    if (index != 1) {
+      break;
+    }
+    RT_DWORD(0xa78) = RT_DWORD(0xa78) | 8;
+    UiKeyboardFocus_ReleaseNode((UiNodeBase *)RT(0xa30));
+    RT_DWORD(0x1cf4) = 0;
+    RT_DWORD(0x1cf8) = 0;
+    RT_DWORD(0x1cfc) = 0;
+    for (i = 0; i < 0x18; i++) {
+      RT_DWORD(0x1d04 + i * 4) = 0;
+    }
+    visible = UiSelectableGroup_NoneVisibleSelectedCf(3,RT(0x1f44),RT(0x1ee4),RT(0x1e84));
+    (*(void (**)(void *))(uintptr_t)(0x5624a0 + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
+              (visible.node);
+    (*g_KeyboardFlushEvents)();
+    break;
+  }
+  case 0x5675e0: /* pause */
+    if (localSession) {
+      InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    else {
+      InGameCommandQueue_AppendLocalPlayerCommand(0x370,0,0,0);
+    }
+    break;
+  case 0x567620: /* faster */
+  case 0x567660: /* slower */ {
+    int step = (target == 0x567620) ? 1 : -1;
+    if (localSession) {
+      InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks(g_LocalPlayerRuntimeId,0,0,step);
+    }
+    else {
+      InGameCommandQueue_AppendLocalPlayerCommand(0x3f0,0,0,step);
+    }
+    break;
+  }
+  case 0x5676a0: {
+    dword settings = PersistentSettings_ReadDword(0,0x40);
+    UiPageStackControl *stack = (UiPageStackControl *)RT(0x40ac);
+    if (UiPageStack_ActivePageNotInListCf(stack).valueOrError != 0) {
+      UiPageStack_SetActiveIndex(0,stack);
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4530));
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4644));
+      RT_DWORD(0xa04) = RT_DWORD(0x4124);
+      settings = settings & 0xfffffffb;
+    }
+    else {
+      UiPageStack_SetActiveIndex(1,stack);
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4530));
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4644));
+      RT_DWORD(0xa04) = 0;
+      settings = settings | 4;
+    }
+    UiContainer_LayoutChildren((UiNodeBase *)rt);
+    PersistentSettings_WriteDword(settings,0x40);
+    break;
+  }
+  case 0x5677e0: { /* screenshot */
+    GraphicsFramebufferCaptureEaxCf5 capture =
+         (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+    PcxEncodeEaxEcxCf9 pcx;
+    word *digitHigh = (word *)(uintptr_t)0x572e48;
+    word *digitLow = (word *)(uintptr_t)0x572e4a;
+    if (capture.carry) {
+      break;
+    }
+    pcx = (*g_PcxFunctionExport3)(g_PcxFunctionModule,capture.eax);
+    if (pcx.carry) {
+      (*g_MemoryApi.free)(capture.eax);
+      break;
+    }
+    FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
+                                   (word *)(uintptr_t)0x572e3c);
+    (*g_MemoryApi.free)(pcx.encodedBytesOrError);
+    (*g_MemoryApi.free)(capture.eax);
+    *digitLow = *digitLow + 1;
+    if (*digitLow > 0x39) {
+      *digitHigh = *digitHigh + 1;
+      *digitLow = *digitLow - 10;
+      if (*digitHigh > 0x39) {
+        *digitHigh = *digitHigh - 10;
       }
     }
-  } while (((modifierFlags & 0xc) == 0) || (bVar4 = false, (modifierFlags & 0x30) == 0));
-  (*(code *)pUVar2->continuationEntryAddress)();
-  return bVar4;
+    break;
+  }
+  case 0x567870:
+    if ((g_SessionNetworkRoleFlags & 2) != 0) {
+      break;
+    }
+    if (localSession) {
+      InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    else {
+      InGameCommandQueue_AppendLocalPlayerCommand(0x150,0,0,0);
+    }
+    break;
+  default:
+    Thandor_Log("EndGameResults dispatch: unhandled continuation %08x",target);
+    break;
+  }
+#undef RT
+#undef RT_DWORD
+  return false;
 }
 
 
