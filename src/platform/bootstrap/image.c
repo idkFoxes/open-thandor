@@ -335,9 +335,35 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
     fprintf(out, "eax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\n\n",
             context.Eax, context.Ebx, context.Ecx, context.Edx, context.Esi, context.Edi, context.Ebp,
             context.Esp);
+    fflush(out);
+    /* Raw stack words first: the stack walk below can fault on a corrupted stack. */
+    {
+        const DWORD *stack = (const DWORD *)(uintptr_t)context.Esp;
+        int i;
+        fprintf(out, "stack:");
+        for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
+            fprintf(out, "%s%08lX", (i % 8) ? " " : "\n  ", stack[i]);
+        }
+        fprintf(out, "\n\n");
+        fflush(out);
+    }
 
     SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
     SymInitialize(process, NULL, TRUE);
+    /* Code addresses among the raw stack words (return addresses of the frames). */
+    {
+        const DWORD *stack = (const DWORD *)(uintptr_t)context.Esp;
+        int i;
+        for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
+            if (stack[i] >= 0x10001000u && stack[i] < 0x10400000u) {
+                fprintf(out, "  [esp+%03X] %s\n", i * 4,
+                        Thandor_SymbolName((const void *)(uintptr_t)stack[i]));
+            }
+        }
+        fprintf(out, "\n");
+        fflush(out);
+    }
+    __try {
     memset(&frame, 0, sizeof frame);
     frame.AddrPC.Offset = context.Eip;
     frame.AddrPC.Mode = AddrModeFlat;
@@ -380,6 +406,9 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
             fprintf(out, "  (%s:%lu)", line.FileName, line.LineNumber);
         }
         fprintf(out, "\n");
+    }
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        fprintf(out, "(stack walk faulted)\n");
     }
     fclose(out);
     return EXCEPTION_CONTINUE_SEARCH;
