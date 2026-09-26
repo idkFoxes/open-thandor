@@ -19,7 +19,8 @@ for path in common.c_sources():
     if os.sep + 'generated' + os.sep in path:
         continue
     code = common.strip_comments(open(path, encoding='utf-8', errors='replace').read())
-    for m in re.finditer(r'\n(?:[\w \*]+?)\b(\w+)\s*\n?\s*\([^;{]*?\)\s*\n\{', code):
+    # the return type may be on the line before the name (Ghidra's layout for long types)
+    for m in re.finditer(r'\n(?:[\w\*][\w \*]*?\s+)?(\w+)\s*\([^;{]*?\)\s*\n\{', code):
         start = m.end()
         end = code.find('\n}\n', start)
         body = code[start:end if end > 0 else len(code)]
