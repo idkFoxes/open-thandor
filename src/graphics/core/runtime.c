@@ -578,7 +578,6 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
 dword __cdecl Graphics_Init(void)
 
 {
-  dword errorOrValue;
   TH_LEGACY_HRESULT hresult;
   SoftwareDisplayModeHookProc *displayModeHook;
   int remainingDwords;
@@ -586,7 +585,7 @@ dword __cdecl Graphics_Init(void)
   GraphicsAdapterRecord *cursorOrResult;
   dword displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
-  bool glideDetected;
+  StatusValueEaxCf5 glideResult;
   ArenaAllocEaxCf5 allocResult;
   DynDllLoadEaxCf5 moduleLoad;
   DynApiResolveEaxCf5 procResolve;
@@ -622,9 +621,10 @@ dword __cdecl Graphics_Init(void)
         if (!allocResult.carry) {
           g_GraphicsDisplayModeCount = 0;
           g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.eax;
-          glideDetected = Glide3_InitAndEnumerate();
-          if ((glideDetected) && (optionResult = CommandLine_FindOption(6,s_GLIDE_0057ee84), !optionResult.carry)) {
-            (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
+          /* Glide is optional, unless -GLIDE asks for it */
+          glideResult = Glide3_InitAndEnumerate();
+          if ((glideResult.carry) && (optionResult = CommandLine_FindOption(6,s_GLIDE_0057ee84), !optionResult.carry)) {
+            (*g_FatalErrorPrimaryDispatchCf)(glideResult.valueOrError,true);
           }
           moduleLoad = DynDLL_Load(dynapi_2);
           adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;

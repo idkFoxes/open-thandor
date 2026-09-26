@@ -46,7 +46,7 @@ void __thandor_void_preserve_eax_ecx_edx
 Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer);
 
 /* 0x0057EE90 */
-bool __thandor_void_preserve_ecx_edx Glide3_InitAndEnumerate(void);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void);
 
 /* 0x0057F0D0 */
 void __thandor_void_preserve_eax_ecx_edx GlideBackend_BeginSceneNoOp(void);

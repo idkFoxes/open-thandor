@@ -673,11 +673,12 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 /* Address: 0x0057EE90.
    Ownership: graphics/backend/glide.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
+   Purpose: Loads Glide 3 and appends its boards and resolutions to the adapter and display mode
+   lists. CF=1 when the DLL or one of its entry points is missing; EAX is then that error code.
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
    DynDLL_Unload [platform/bootstrap/runtime], Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-bool __thandor_void_preserve_ecx_edx Glide3_InitAndEnumerate(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
 
 {
   void **nextImportName;
@@ -697,17 +698,22 @@ bool __thandor_void_preserve_ecx_edx Glide3_InitAndEnumerate(void)
   ArenaAllocEaxCf5 resolutionAlloc;
   dword sstIndex;
   int remainingBoards;
+  StatusValueEaxCf5 result;
   
   glideDll = DynDLL_Load(dynapi_5);
   if (glideDll.carry) {
-    return true;
+    result.valueOrError = (dword)glideDll.moduleOrError;
+    result.carry = true;
+    return result;
   }
   destination = (void **)&g_GrAADrawTriangle;
   do {
     resolveResult = DynAPI_Resolve(destination,glideDll.moduleOrError,destination[1]);
     if (resolveResult.carry) {
       DynDLL_Unload(dynapi_5);
-      return true;
+      result.valueOrError = (dword)resolveResult.procedureOrError;
+      result.carry = true;
+      return result;
     }
     nextImportName = destination + 3;
     destination = destination + 2;
@@ -781,7 +787,9 @@ Glide3_AppendEnumeratedDisplayMode:
     } while (remainingBoards != 0);
   }
   DynDLL_Unload(dynapi_5);
-  return false;
+  result.valueOrError = 0;
+  result.carry = false;
+  return result;
 }
 
 
