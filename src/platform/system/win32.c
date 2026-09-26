@@ -5,8 +5,12 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <thandor/platform/system/win32.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: platform/system/win32. */
 
@@ -19,9 +23,67 @@
    Local calls: Win32_ShouldTranslateMessageFlags.
    Cross-module calls: Runtime_Shutdown [core/memory/synchronization].
 */
+/* Test aid: OPEN_THANDOR_AUTOSHOT=<milliseconds> saves the game's own framebuffer to
+   shots\shot_NNNN.bmp at that interval (checked from the message pump), so automated runs can be
+   looked at without capturing the desktop. */
+static void Win32_AutoShotTick(void)
+{
+  static int interval = -1;
+  static unsigned last;
+  static unsigned number;
+  unsigned now;
+  GraphicsFramebufferCaptureEaxCf5 capture;
+  if (interval < 0) {
+    const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
+    interval = (value != NULL) ? atoi(value) : 0;
+    if (interval > 0) {
+      CreateDirectoryA("shots", NULL);
+    }
+    last = Thandor_TickCount();
+  }
+  if (interval <= 0 || g_GraphicsFramebufferCaptureRegion == NULL || g_FramebufferWidth == 0) {
+    return;
+  }
+  now = Thandor_TickCount();
+  if (now - last < (unsigned)interval) {
+    return;
+  }
+  last = now;
+  capture = (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+  if (!capture.carry && capture.eax != NULL) {
+    GraphicsTextureSourceEntry *entry = &capture.eax->sourceEntry;
+    const dword *pixels = (const dword *)((byte *)capture.eax + entry->dataOffset);
+    dword width = entry->pixelWidth;
+    dword height = entry->pixelHeight;
+    char name[64];
+    FILE *file;
+    sprintf(name, "shots\\shot_%04u.bmp", number++);
+    file = fopen(name, "wb");
+    if (file != NULL) {
+      dword header[13];
+      dword imageBytes = width * height * 4;
+      memset(header, 0, sizeof header);
+      fwrite("BM", 1, 2, file);
+      header[0] = 54 + imageBytes;
+      header[2] = 54;
+      header[3] = 40;
+      header[4] = width;
+      header[5] = (dword)-(int)height;
+      header[6] = 1 | (32 << 16);
+      header[8] = imageBytes;
+      fwrite(header, 4, 13, file);
+      fwrite(pixels, 4, width * height, file);
+      fclose(file);
+      Thandor_Log("autoshot %s (%ux%u)", name, width, height);
+    }
+    (*g_MemoryApi.free)(capture.eax);
+  }
+}
+
 void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
 
 {
+  Win32_AutoShotTick();
   BOOL messageAvailable;
   bool shouldTranslateMessage;
   bool bVar1;
