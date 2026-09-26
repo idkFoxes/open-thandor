@@ -114,6 +114,59 @@ int Thandor_RelaunchWithReservedImage(void)
     return (int)exitCode;
 }
 
+/* Diagnostics: OPEN_THANDOR_POISON=1 writes INT3 over every original instruction start listed in
+   code_starts.bin (next to the executable, generated from the disassembly), except the five entry
+   jump bytes of each mapped function. Any remaining jump into original code then stops at a
+   breakpoint and shows up in the crash log. */
+static void poison_original_code(unsigned char *image)
+{
+    char path[MAX_PATH];
+    char flag[4];
+    HANDLE file;
+    DWORD size;
+    DWORD read;
+    unsigned *starts;
+    unsigned char *keep;
+    unsigned count;
+    unsigned i;
+    unsigned poisoned = 0;
+
+    if (GetEnvironmentVariableA("OPEN_THANDOR_POISON", flag, sizeof flag) == 0 || flag[0] != '1') {
+        return;
+    }
+    executable_directory(path, sizeof path);
+    strcat_s(path, sizeof path, "code_starts.bin");
+    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    if (file == INVALID_HANDLE_VALUE) {
+        Thandor_Log("poison: code_starts.bin not found");
+        return;
+    }
+    size = GetFileSize(file, NULL);
+    starts = (unsigned *)HeapAlloc(GetProcessHeap(), 0, size);
+    keep = (unsigned char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ORIGINAL_IMAGE_SIZE);
+    if (starts == NULL || keep == NULL || !ReadFile(file, starts, size, &read, NULL) || read != size) {
+        CloseHandle(file);
+        Thandor_Log("poison: could not read code_starts.bin");
+        return;
+    }
+    CloseHandle(file);
+    for (i = 0; i < g_ThandorFunctionMapCount; i++) {
+        unsigned offset = g_ThandorFunctionMap[i].originalAddress - ORIGINAL_IMAGE_BASE;
+        memset(keep + offset, 1, 5);
+    }
+    count = size / 4;
+    for (i = 0; i < count; i++) {
+        unsigned offset = starts[i] - ORIGINAL_IMAGE_BASE;
+        if (offset >= 0x1000 && offset < ORIGINAL_IMAGE_SIZE && !keep[offset]) {
+            image[offset] = 0xCC;
+            poisoned++;
+        }
+    }
+    HeapFree(GetProcessHeap(), 0, starts);
+    HeapFree(GetProcessHeap(), 0, keep);
+    Thandor_Log("poison: INT3 written to %u of %u original instruction starts", poisoned, count);
+}
+
 int Thandor_MapOriginalImage(void)
 {
     char path[MAX_PATH];
@@ -211,6 +264,7 @@ int Thandor_MapOriginalImage(void)
         DWORD previous;
         VirtualProtect(image + 0x1000, 0x18B000, PAGE_EXECUTE_READWRITE, &previous);
     }
+    poison_original_code(image);
     HeapFree(GetProcessHeap(), 0, data);
     Thandor_Log("original image mapped at 0x%08X, %u code pointers redirected, %u entry jumps", ORIGINAL_IMAGE_BASE,
                 redirected, g_ThandorFunctionMapCount);
