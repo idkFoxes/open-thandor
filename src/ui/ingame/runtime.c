@@ -34,11 +34,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   UiNodeVtable *pUVar4;
   dword dVar5;
   UiCommandModeIndex UVar6;
-  sdword unaff_EDX;
   int iVar7;
-  dword unaff_EBP;
-  dword unaff_ESI;
-  sdword unaff_EDI;
   dword *pdVar8;
   dword *pdVar9;
   StatusValueEaxCf5 SVar10;
@@ -482,7 +478,9 @@ override_jmp_0056e406_switch:
     InGameCommandModeG_Select5((UiSelectableControl *)&uiRoot[0x1bc].base.right);
     break;
   case 0x56f160:
-    GVar21 = (*g_GraphicsFramebufferCaptureRegion)(unaff_EBP,unaff_ESI,unaff_EDI,unaff_EDX);
+    /* The original calls this without pushing arguments (stale stack, RET 0x10); capture the whole
+       framebuffer like the end-game and end-movie screenshot commands. */
+    GVar21 = (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
     if (!GVar21.carry) {
       FileSystem_WriteBufferToPathCf
                 (((GVar21.eax)->common).allocationSizeBytes,GVar21.eax,

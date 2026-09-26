@@ -2962,117 +2962,113 @@ UiTimedListControl_DrawRowsAndSelection
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
-  byte thandor_stack_frame[0x100]; /* TODO: unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
-  dword dVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  sdword *unaff_EBP;
-  UiNodeBase *pUVar5;
-  UiNodeBase *pUVar6;
-  sdword *psVar7;
-  sdword *psVar8;
-  bool bVar9;
-  RichTextExtentRegs RVar10;
-  GraphicsTextureSizeEaxEdxCf9 GVar11;
-  UiNodeBase *pUStack_20;
-  
-  bVar9 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar9) {
-    pUStack_20 = (UiNodeBase *)0x0;
-    pUVar5 = control[1].firstChild;
-    iVar3 = 0;
-    if (pUVar5 != (UiNodeBase *)0x0) {
-      pUVar6 = pUVar5->nextSibling;
-      psVar7 = &pUVar5->left;
-      if (pUVar6 != (UiNodeBase *)0x0) {
-        do {
-          iVar4 = control->left;
-          iVar3 = iVar3 + control->top;
-          pUVar5 = pUStack_20;
-          if (pUStack_20 != (UiNodeBase *)0x0) {
-            while (pUVar5 = (UiNodeBase *)((int)&pUVar5[-1].nodeFlags + 3),
-                  pUVar5 != (UiNodeBase *)0x0) {
-              if (*(int *)(&thandor_stack_frame[0x80 - 0x28] + (int)pUVar5 * 8) != 0) {
-                (*g_GraphicsTextureSourceBlitSourceAlpha)
-                          (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,control[1].rightOffset,
-                           (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
-              }
-              iVar4 = iVar4 + control[1].topAnchorQ31;
-            }
-            if (pUVar6 < (UiNodeBase *)0x2) {
-              dVar1 = control[1].leftAnchorQ31;
-            }
-            else {
-              dVar1 = control[1].bottomOffset;
-            }
+  /* Rewritten from the assembly (0x004BBA00-0x004BBCCC). Expanded records push (record,
+     remaining) on the machine stack and descend; the tree connector columns test the saved
+     remaining counts of the parent levels. The decompiler kept only one level. Argument
+     positions follow the original pushes. */
+  enum { TREE_DEPTH_LIMIT = 64 };
+  UiTimedListRuntimeExtendedView88 *list = (UiTimedListRuntimeExtendedView88 *)control;
+  UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
+  dword savedRemaining[TREE_DEPTH_LIMIT];
+  UiTimedListTreeRecord16 *header;
+  UiTimedListTreeRecord16 *record;
+  dword remaining;
+  int depth;
+  int rowY;
+  int x;
+  int y;
+  int level;
+  GraphicsTextureSourceAsset *rowTexture;
+
+  if ((*g_GraphicsFramebufferBeginAccess)()) {
+    return;
+  }
+  header = list->base.recordTree;
+  if ((header != (UiTimedListTreeRecord16 *)0x0) && (header->recordCountOrRowPayload00 != 0)) {
+    rowTexture = list->base.rowTextureSource;
+    remaining = header->recordCountOrRowPayload00;
+    record = header + 1;
+    depth = 0;
+    rowY = 0;
+    while (remaining != 0) {
+      x = control->left;
+      y = rowY + control->top;
+      if (depth != 0) {
+        /* Connector columns of the ancestor levels: a vertical line where that level still has
+           entries below. The root level's saved count is not drawn. */
+        for (level = 1; level < depth; level++) {
+          if (savedRemaining[level] != 0) {
             (*g_GraphicsTextureSourceBlitSourceAlpha)
-                      (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,dVar1,
-                       (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
-            if ((psVar7[3] & 1U) != 0) {
-              if ((psVar7[3] & 2U) == 0) {
-                dVar1 = control[1].leftOffset;
-              }
-              else {
-                dVar1 = control[1].topOffset;
-              }
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,dVar1,
-                         (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
-            }
-            iVar4 = iVar4 + control[1].topAnchorQ31;
+                      (clipTop,clipLeft,clipBottom,clipRight,y,x,list->observedDrawParameter74,
+                       rowTexture,g_FramebufferAccess);
           }
+          x = x + (int)list->observedDrawParameter80;
+        }
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (clipTop,clipLeft,clipBottom,clipRight,y,x,
+                   (remaining <= 1) ? list->observedDrawParameter7C : list->observedDrawParameter78,
+                   rowTexture,g_FramebufferAccess);
+        if ((record->recordFlags0C & 1) != 0) {
           (*g_GraphicsTextureSourceBlitSourceAlpha)
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar4,psVar7[1],
-                     (GraphicsTextureSourceAsset *)control[1].bottom,g_FramebufferAccess);
-          iVar3 = iVar3 - control->top;
-          iVar4 = (iVar4 + control[1].rightAnchorQ31) - control->left;
-          if ((uint *)psVar7 == (uint *)control[1].top) {
-            RVar10 = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)*psVar7);
-            iVar2 = RVar10.widthPixels + 6;
-            if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
-              UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x82,iVar2 + iVar4,iVar3,iVar4,
-                         control);
-            }
-            else {
-              GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
-              iVar2 = (iVar2 - GVar11.logicalWidthPixels) + iVar4;
-              UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x84,iVar2,iVar3,
-                         GVar11.logicalWidthPixels + iVar4,control);
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,
-                         iVar4 + control->left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,iVar3 + control->top,
-                         iVar2 + control->left,0x85,g_UiWindowTextureSource,g_FramebufferAccess);
-            }
-          }
-          RichTextCommandStream_DrawSingleLine
-                    (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,(word *)*psVar7,
-                     iVar3 + 1 + control->top,iVar4 + 3 + control->left);
-          psVar8 = psVar7 + 4;
-          iVar3 = iVar3 + (int)control[1].vtable;
-          pUVar5 = (UiNodeBase *)((int)&pUVar6[-1].nodeFlags + 3);
-          pUVar6 = pUVar5;
-          if ((((psVar7[3] & 1U) != 0) && ((psVar7[3] & 2U) != 0)) && (psVar7[2] != 0)) {
-            pUVar6 = *(UiNodeBase **)psVar7[2];
-            psVar8 = (sdword *)((uint *)psVar7[2] + 4);
-            pUStack_20 = pUVar5;
-          }
-          while (psVar7 = psVar8, pUVar6 == (UiNodeBase *)0x0) {
-            if (pUStack_20 == (UiNodeBase *)0x0) goto UiTimedListDraw_EndFramebufferAccess;
-            pUVar6 = (UiNodeBase *)((int)&pUStack_20[-1].nodeFlags + 3);
-            psVar8 = unaff_EBP;
-            pUStack_20 = pUVar6;
-          }
-        } while( true );
+                    (clipTop,clipLeft,clipBottom,clipRight,y,x,
+                     ((record->recordFlags0C & 2) != 0) ? list->observedDrawParameter70 :
+                                                          list->base.observedDrawParameter6C,
+                     rowTexture,g_FramebufferAccess);
+        }
+        x = x + (int)list->observedDrawParameter80;
+      }
+      (*g_GraphicsTextureSourceBlitSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,y,x,record->rowPayload04,rowTexture,
+                 g_FramebufferAccess);
+      x = x + (int)list->observedDrawParameter84 - control->left;
+      if (record == list->base.selectedRecord) {
+        RichTextExtentRegs extent =
+             RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)record->recordCountOrRowPayload00);
+        int width = (int)extent.widthPixels + 6;
+        if ((control->nodeFlags & 4) != 0) {
+          GraphicsTextureSizeEaxEdxCf9 cap =
+               (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+          int capWidth = (int)cap.logicalWidthPixels;
+          int endX = width - capWidth + x;
+          UiWindow_BlitTiledHorizontalEdge
+                    (clipTop,clipLeft,clipBottom,clipRight,0x84,endX,rowY,capWidth + x,control);
+          (*g_GraphicsTextureSourceBlitSourceAlpha)
+                    (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,x + control->left,
+                     0x83,g_UiWindowTextureSource,g_FramebufferAccess);
+          (*g_GraphicsTextureSourceBlitSourceAlpha)
+                    (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,endX + control->left,
+                     0x85,g_UiWindowTextureSource,g_FramebufferAccess);
+        }
+        else {
+          UiWindow_BlitTiledHorizontalEdge
+                    (clipTop,clipLeft,clipBottom,clipRight,0x82,width + x,rowY,x,control);
+        }
+      }
+      RichTextCommandStream_DrawSingleLine
+                (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
+                 (word *)record->recordCountOrRowPayload00,rowY + 1 + control->top,
+                 x + 3 + control->left);
+      rowY = rowY + (int)list->base.rowHeight;
+      record = record + 1;
+      remaining = remaining - 1;
+      if (((record[-1].recordFlags0C & 1) != 0) && ((record[-1].recordFlags0C & 2) != 0) &&
+          (record[-1].nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0) &&
+          (depth < TREE_DEPTH_LIMIT)) {
+        UiTimedListTreeRecord16 *children = record[-1].nestedRecordBlockOrParentLink08;
+        savedRecord[depth] = record;
+        savedRemaining[depth] = remaining;
+        depth = depth + 1;
+        remaining = children->recordCountOrRowPayload00;
+        record = children + 1;
+      }
+      while ((remaining == 0) && (depth != 0)) {
+        depth = depth - 1;
+        record = savedRecord[depth];
+        remaining = savedRemaining[depth];
       }
     }
-UiTimedListDraw_EndFramebufferAccess:
-    (*g_GraphicsFramebufferEndAccess)();
   }
+  (*g_GraphicsFramebufferEndAccess)();
   return;
 }
 
@@ -3539,76 +3535,62 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
           (UiTimedListTreeRecord16 *recordTree,UiTimedListRuntimeExtendedView88 *control)
 
 {
-  UiListRowCount *pUVar1;
-  UiNodeBase *control_00;
-  UiListRowCount UVar2;
-  UiNodeVtable *pUVar3;
-  UiPixelExtent UVar4;
-  uint uVar5;
-  dword dVar6;
-  dword dVar7;
-  UiTimedListTreeRecord16 *unaff_EBP;
-  uint uVar8;
-  UiTimedListTreeRecord16 *pUVar9;
-  UiTimedListTreeRecord16 *pUVar10;
-  RichTextExtentRegs RVar11;
-  FontGlyphSizeEaxEdxCf9 FVar12;
-  dword dStack_20;
-  
-  FVar12 = FontGlyph_GetLogicalSizeActiveRegs(0);
-  if (recordTree == (UiTimedListTreeRecord16 *)0x0) {
-    dVar6 = 0;
-  }
-  else {
-    dVar6 = recordTree->recordCountOrRowPayload00;
-  }
-  (control->base).rowHeight = FVar12.lineHeight + 1;
-  (control->base).rowCount = dVar6;
+  /* Rewritten from the assembly (0x004BC1C0): expanded records with children push their position
+     on the machine stack and descend; the decompiler kept only one level. */
+  enum { TREE_DEPTH_LIMIT = 64 };
+  UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
+  dword savedRemaining[TREE_DEPTH_LIMIT];
+  UiTimedListTreeRecord16 *record;
+  UiNodeBase *parent;
+  FontGlyphSizeEaxEdxCf9 glyph;
+  dword remaining;
+  uint widest;
+  uint width;
+  int depth;
+
+  glyph = FontGlyph_GetLogicalSizeActiveRegs(0);
+  remaining = (recordTree == (UiTimedListTreeRecord16 *)0x0) ? 0 : recordTree->recordCountOrRowPayload00;
+  (control->base).rowHeight = glyph.lineHeight + 1;
+  (control->base).rowCount = remaining;
   (control->base).recordTree = recordTree;
-  (control->base).selectedRecord = recordTree + 1;
-  uVar8 = 0;
-  if (dVar6 != 0) {
-    dStack_20 = 0;
-    pUVar9 = recordTree + 1;
-    do {
-      RVar11 = RichTextCommandStream_MeasureRegs
-                         (g_UiListTextStyle,(word *)pUVar9->recordCountOrRowPayload00);
-      uVar5 = RVar11.widthPixels + control->observedDrawParameter84 +
-              control->observedDrawParameter80 * dStack_20;
-      pUVar10 = pUVar9 + 1;
-      dVar7 = dVar6 - 1;
-      if (uVar8 < uVar5) {
-        uVar8 = uVar5;
-      }
-      dVar6 = dVar7;
-      if ((((pUVar9->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
-          ((pUVar9->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
-         (pUVar9->nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0)) {
-        pUVar9 = pUVar9->nestedRecordBlockOrParentLink08;
-        dVar6 = pUVar9->recordCountOrRowPayload00;
-        pUVar1 = &(control->base).rowCount;
-        *pUVar1 = *pUVar1 + dVar6;
-        pUVar10 = pUVar9 + 1;
-        dStack_20 = dVar7;
-      }
-      while (pUVar9 = pUVar10, dVar6 == 0) {
-        if (dStack_20 == 0) goto LAB_004bc299;
-        dVar6 = dStack_20 - 1;
-        pUVar10 = unaff_EBP;
-        dStack_20 = dVar6;
-      }
-    } while( true );
+  record = recordTree + 1;
+  (control->base).selectedRecord = record;
+  widest = 0;
+  depth = 0;
+  while (remaining != 0) {
+    RichTextExtentRegs extent =
+         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)record->recordCountOrRowPayload00);
+    width = extent.widthPixels + control->observedDrawParameter84 +
+            control->observedDrawParameter80 * (dword)depth;
+    record = record + 1;
+    remaining = remaining - 1;
+    if (widest < width) {
+      widest = width;
+    }
+    if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
+        ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) &&
+        (record[-1].nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0) &&
+        (depth < TREE_DEPTH_LIMIT)) {
+      UiTimedListTreeRecord16 *children = record[-1].nestedRecordBlockOrParentLink08;
+      savedRecord[depth] = record;
+      savedRemaining[depth] = remaining;
+      depth = depth + 1;
+      remaining = children->recordCountOrRowPayload00;
+      record = children + 1;
+      (control->base).rowCount = (control->base).rowCount + remaining;
+    }
+    while ((remaining == 0) && (depth != 0)) {
+      depth = depth - 1;
+      record = savedRecord[depth];
+      remaining = savedRemaining[depth];
+    }
   }
-LAB_004bc299:
-  control_00 = (control->base).base.parent;
-  UVar2 = (control->base).rowCount;
-  pUVar3 = control_00->vtable;
-  UVar4 = (control->base).rowHeight;
-  (control->base).base.rightOffset = uVar8 + 6;
+  parent = (control->base).base.parent;
+  (control->base).base.rightOffset = widest + 6;
   (control->base).base.leftOffset = 0;
   (control->base).base.topOffset = 0;
-  (control->base).base.bottomOffset = UVar2 * UVar4 + 1;
-  (*pUVar3->layout)(control_00);
+  (control->base).base.bottomOffset = (control->base).rowCount * (control->base).rowHeight + 1;
+  (*parent->vtable->layout)(parent);
   return;
 }
 

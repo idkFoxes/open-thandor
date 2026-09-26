@@ -16,27 +16,23 @@
    g_UiSpriteButtonControlVtable.
    Local calls: UiSpriteButtonControl_AdvanceAnimation.
 */
+/* Rewritten from the assembly (0x004B1D20): a depth-first walk that pushes each node's next
+   sibling on the machine stack before descending; the decompiler kept only one level. */
+static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node)
+{
+  while (node != (UiNodeBase *)0xffffffff) {
+    if (node->vtable == (UiNodeVtable *)&g_UiSpriteButtonControlVtable) {
+      UiSpriteButtonControl_AdvanceAnimation((UiSpriteButtonControl *)node);
+    }
+    UiTree_AdvanceSpriteButtonAnimationsFrom(node->firstChild);
+    node = node->nextSibling;
+  }
+}
+
 void __thandor_void_preserve_eax_ecx_edx UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 
 {
-  int iVar1;
-  UiSpriteButtonControl *control;
-  UiSpriteButtonControl *unaff_EBP;
-  
-  iVar1 = 1;
-  control = (UiSpriteButtonControl *)root->firstChild;
-  do {
-    for (; control != (UiSpriteButtonControl *)0xffffffff;
-        control = (UiSpriteButtonControl *)(control->selectable).base.firstChild) {
-      if ((control->selectable).base.vtable == &g_UiSpriteButtonControlVtable) {
-        UiSpriteButtonControl_AdvanceAnimation(control);
-      }
-      unaff_EBP = (UiSpriteButtonControl *)(control->selectable).base.nextSibling;
-      iVar1 = iVar1 + 1;
-    }
-    iVar1 = iVar1 + -1;
-    control = unaff_EBP;
-  } while (iVar1 != 0);
+  UiTree_AdvanceSpriteButtonAnimationsFrom(root->firstChild);
   return;
 }
 

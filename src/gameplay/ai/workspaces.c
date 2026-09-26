@@ -517,10 +517,18 @@ AiStrategicCandidate_AddBestWorkspace12Entry
   
   bVar5 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0330_BUILDING_MDL0303);
   if (bVar5) {
-    iVar2 = 8;
-    do {
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
+    /* EDX side channel for the category score callback: bit 2 / bit 4 when the faction owns any
+       technology of category 2 / 3 (the decompiler kept only the empty loop). */
+    g_AiTechnologyScoreCategoryMaskEdx = 0;
+    for (iVar2 = 0; iVar2 < 8; iVar2++) {
+      dword owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[iVar2];
+      if ((g_TechnologyCategoryMasks.category2[iVar2] & owned) != 0) {
+        g_AiTechnologyScoreCategoryMaskEdx = g_AiTechnologyScoreCategoryMaskEdx | 2;
+      }
+      if ((g_TechnologyCategoryMasks.category3[iVar2] & owned) != 0) {
+        g_AiTechnologyScoreCategoryMaskEdx = g_AiTechnologyScoreCategoryMaskEdx | 4;
+      }
+    }
     iVar2 = 0;
     if (g_AiWorkspace12Count != 0) {
       entryKind = 2;

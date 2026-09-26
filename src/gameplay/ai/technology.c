@@ -212,10 +212,13 @@ AiTechnologyPlanning_AddCandidateRecord
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeFactionScaledCandidateValue
-          (AiKnowledgeDataImage *knowledgeData,FactionRuntimeIndex factionIndex,
-          PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime)
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime)
 
 {
+  /* EDI side channel: the caller loads g_AiKnowledgeData. It was a leading pseudo-parameter,
+     which shifted every argument of the three-argument table call. */
+  AiKnowledgeDataImage *knowledgeData = g_AiKnowledgeData;
   EnergyDemandQ4 totalEnergyDemandQ4;
   UQ8 energyDemandPressureRatioQ8;
   
@@ -280,8 +283,25 @@ AiTechnologyScore_ReturnBaseCandidateValueForKind4
    locked.
    Cross-module calls: AiArmyCandidate_ComputeAverageCompatibleAssetScore [gameplay/ai/planning].
 */
+AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
+
+AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
+AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
+          (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
+          PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
+
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime)
+
+{
+  return AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
+                   (g_AiTechnologyScoreCategoryMaskEdx,factionIndex,technologyId,worldRuntime);
+}
+
+AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
+AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
           (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime)
 

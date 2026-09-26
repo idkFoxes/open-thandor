@@ -35,8 +35,8 @@ AiTechnologyPlanning_AddCandidateRecord
 /* 0x0053BCC0 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeFactionScaledCandidateValue
-          (AiKnowledgeDataImage *knowledgeData,FactionRuntimeIndex factionIndex,
-          PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BD60 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
@@ -53,8 +53,12 @@ AiTechnologyScore_ReturnBaseCandidateValueForKind4
 /* 0x0053BEC0 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
-          (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
-          PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
+          (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
+          WorldRuntimeContext *worldRuntime);
+
+/* EDX side channel of the score callbacks: the category mask the only caller
+   (AiStrategicCandidate_AddBestWorkspace12Entry) computes before its loop. */
+extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 
 /* 0x0053BC00 */
 bool __thandor_cf_preserve_eax_ecx_edx
