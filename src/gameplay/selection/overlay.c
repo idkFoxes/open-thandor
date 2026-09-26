@@ -175,7 +175,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
                               0x4000,0,surfaceHeight.heightQ12,armySlot->movementTarget1Q12,
                               armySlot->movementTarget0Q12,markerDefinition.definitionOrError,worldRuntime);
           if (!createdEffect.carry) {
-            g_UiAction1012SubresourceByState[indexOrCount + 0xb] = (dword)createdEffect.effectRuntime;
+            g_InGameOwnedEntityTransientEffectMarkers[indexOrCount] = createdEffect.effectRuntime;
             indexOrCount = indexOrCount + 1;
             (((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode)->tintArgb = 0xffffffff;
             g_InGameOwnedEntityTransientEffectMarkerCount =
@@ -249,7 +249,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
     }
   }
   else {
-    ownedEffectCursor = (EffectRuntimeSlot **)(g_UiAction1012SubresourceByState + 0xb);
+    ownedEffectCursor = g_InGameOwnedEntityTransientEffectMarkers;
     recordOrCount = g_InGameOwnedEntityTransientEffectMarkerCount;
     if (g_InGameOwnedEntityTransientEffectMarkerCount != 0) {
       do {

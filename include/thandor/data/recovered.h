@@ -93,7 +93,8 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 #define g_InGamePointerModePreviewArmyIds (*(dword (*)[8])THANDOR_IMAGE(0x00563788))
 
 /* ---- ui/ingame: keyboard dispatch records {key code, modifier mask, handler} ending in 0. */
-#define g_InGameKeyboardDispatchRecords (*(dword (*)[308][3])THANDOR_IMAGE(0x0056e410))
+#define g_InGameKeyboardDispatchRecords (*(UiCommandDispatchRecord (*)[36])THANDOR_IMAGE(0x0056e410))
+#define g_InGameKeyboardDispatchRecordsTerminator (*(dword *)THANDOR_IMAGE(0x0056e5c0))
 
 /* ---- screenshots: "screen00.pcx" with its two-digit counter at code units 6 and 7. */
 #define g_ScreenshotFileNameUtf16 (*(word (*)[13])THANDOR_IMAGE(0x00572e3c))
@@ -116,5 +117,37 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* The address of a named object plus a byte offset as an integer, where recovered code does
    address arithmetic (table base + scaled index, pre-decremented cursors, saved offsets). */
 #define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
+
+/* ---- ui/core: the path of the window class image, after the root-stack action page. */
+#define u_engine_winclass_gfx_004b0eb8 (*(word (*)[20])THANDOR_IMAGE(0x004b0eb8))
+
+/* ---- gameplay/selection: transient effect markers over the owned entities (count:
+   g_InGameOwnedEntityTransientEffectMarkerCount). */
+#define g_InGameOwnedEntityTransientEffectMarkers (*(EffectRuntimeSlot * (*)[32])THANDOR_IMAGE(0x00562e48))
+
+/* ---- platform/input: the DirectInput mouse data format's object list and axis GUIDs. */
+#define GUID_XAxis_Local (*(TH_LEGACY_GUID *)THANDOR_IMAGE(0x00576b28))
+#define GUID_YAxis_Local (*(TH_LEGACY_GUID *)THANDOR_IMAGE(0x00576b38))
+#define GUID_ZAxis_Local (*(TH_LEGACY_GUID *)THANDOR_IMAGE(0x00576b48))
+#define MouseObjectFormats (*(DIOBJECTDATAFORMAT (*)[7])THANDOR_IMAGE(0x00576b70))
+
+/* ---- ui/frontend: vtable of the 3D model pointer context (unaligned; slot 10 is
+   g_FrontendModelPointerContextUpdateCallback). */
+#define g_FrontendModelPointerContextVtable (*(UiNodeVtable *)THANDOR_IMAGE(0x0050bb37))
+
+/* ---- graphics/backend/glide: the import table walked by Glide3_InitAndEnumerate. */
+#define g_GlideImportBindings (*(GlideImportBinding (*)[89])THANDOR_IMAGE(0x00573fd8))
+
+/* ---- ui/ingame: offsets of the catalog grid cells in the in-game UI image, per column count
+   (the pointer tables g_UiCatalogGroup48OffsetTables etc. share the default for 0..4 columns). */
+#define g_UiCatalogGroup48OffsetsDefault (*(sdword (*)[48])THANDOR_IMAGE(0x005626a8))
+#define g_UiCatalogGroup48Offsets5Columns (*(sdword (*)[48])THANDOR_IMAGE(0x00562768))
+#define g_UiCatalogGroup48Offsets6Columns (*(sdword (*)[48])THANDOR_IMAGE(0x00562828))
+#define g_UiCatalogGroup48Offsets7Columns (*(sdword (*)[48])THANDOR_IMAGE(0x005628e8))
+#define g_UiCatalogGroup48Offsets8Columns (*(sdword (*)[48])THANDOR_IMAGE(0x005629a8))
+#define g_UiCatalogGroup42OffsetsDefault (*(sdword (*)[42])THANDOR_IMAGE(0x00562a68))
+#define g_UiCatalogGroup42Offsets5Columns (*(sdword (*)[42])THANDOR_IMAGE(0x00562b10))
+#define g_UiCatalogGroup42Offsets6Columns (*(sdword (*)[42])THANDOR_IMAGE(0x00562bb8))
+#define g_UiCommandSpriteVariantAOffsets (*(sdword (*)[24])THANDOR_IMAGE(0x00562c60))
 
 #endif /* THANDOR_DATA_RECOVERED_H */

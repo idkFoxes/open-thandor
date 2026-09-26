@@ -1259,7 +1259,7 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
   loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_engine_win_gfx_004b0f06);
   checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadResult.eax,loadResult.carry);
   g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.eax;
-  loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)(u__engine_winclass_gfx_004b0eb6 + 1));
+  loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)(u_engine_winclass_gfx_004b0eb8);
   checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadResult.eax,loadResult.carry);
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.eax;
   pageLoadResult = TextResourcePage_Load(1,(word *)u_texte_winclass_str_004b0ee0);

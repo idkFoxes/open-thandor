@@ -1693,13 +1693,8 @@ ImageData_004B0A20 g_ImageData_004B0A20 = {
     0x8, /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
     0x4, /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     0, /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
-    (void *)UiRootStack_PopCf, /* 004B0EB0 g_UiRootStackActionHandlerPage */
-    {0x70, 0x7F},
-    {0x40}, /* 004B0EB6 u__engine_winclass_gfx_004b0eb6 */
-    /* 004B0EB8 u_engine\winclass.gfx_004b0eb6+2 */
-    {
-        0x006E0065, 0x00690067, 0x0065006E, 0x0077005C, 0x006E0069, 0x006C0063, 0x00730061, 0x002E0073,
-        0x00660067, 0x00000078},
+    {.handlers = {(void *)UiRootStack_PopCf, (void *)FatalErrorDialog_DismissAndPopRoot}}, /* 004B0EB0 g_UiRootStackActionHandlerPage */
+    L"engine\\winclass.gfx", /* 004B0EB8 u_engine_winclass_gfx_004b0eb8 */
     L"texte\\winclass.str", /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
     L"engine\\win.gfx", /* 004B0F06 u_engine_win_gfx_004b0f06 */
     0xFF, /* 004B0F24 g_UiPointerCaptureButton */
@@ -2927,25 +2922,24 @@ ImageData_0050BB34 g_ImageData_0050BB34 = {
     {0}, /* 0050BB34 gap */
     /* 0050BB37 g_FrontendModelPointerContextVtable */
     {
-        (dword)FrontendModelPointerContext_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)FrontendModelPointerContext_RenderWorldViewQueuesClipped,
-        (dword)FrontendModelPointerContext_Layout,
-        (dword)FrontendModelPointerContext_NonRightPress,
-        (dword)FrontendModelPointerContext_NonRightRelease,
-        (dword)FrontendModelPointerContext_RightPress,
-        (dword)FrontendModelPointerContext_RightRelease,
-        (dword)FrontendModelPointerContext_NonRightDrag,
-        (dword)FrontendModelPointerContext_DispatchWorldCameraPointerInput},
-    (void *)FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction, /* 0050BB5F g_FrontendModelPointerContextUpdateCallback */
-    {
-        (dword)UiContainer_HitTestChildren,
-        (dword)FrontendModelPointerContext_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)FrontendModelPointerContext_Tick,
-        (dword)FrontendModelPointerContext_PointerWheel},
+        .relocate = (void *)FrontendModelPointerContext_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)FrontendModelPointerContext_RenderWorldViewQueuesClipped,
+        .layout = (void *)FrontendModelPointerContext_Layout,
+        .nonRightPress = (void *)FrontendModelPointerContext_NonRightPress,
+        .nonRightRelease = (void *)FrontendModelPointerContext_NonRightRelease,
+        .rightPress = (void *)FrontendModelPointerContext_RightPress,
+        .rightRelease = (void *)FrontendModelPointerContext_RightRelease,
+        .nonRightDrag = (void *)FrontendModelPointerContext_NonRightDrag,
+        .rightDrag = (void *)FrontendModelPointerContext_DispatchWorldCameraPointerInput,
+        .pointerMove = (void *)FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)FrontendModelPointerContext_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)FrontendModelPointerContext_Tick,
+        .pointerWheel = (void *)FrontendModelPointerContext_PointerWheel},
     {0x90},
 };
 
@@ -10826,38 +10820,35 @@ ImageData_00562498 g_ImageData_00562498 = {
         .handlers = {
             /*  0 */ (void *)InGameCommandModeG_Select0,
             /*  1 */ (void *)InGameCommandModeG_Select1,
-            /*  2 */ (void *)InGameCommandModeG_Select2
+            /*  2 */ (void *)InGameCommandModeG_Select2,
+            /*  3 */ 0,
+            /*  4 */ (void *)InGameCommandModeG_Select5,
+            /*  5 */ (void *)InGameCommandModeG_Select3,
+            /*  6 */ (void *)InGameCommandModeG_Select4,
+            /*  7 */ 0,
+            /*  8 */ (void *)InGameCommandModeC_Select0,
+            /*  9 */ (void *)InGameCommandModeC_Select1,
+            /* 10 */ (void *)InGameCommandModeC_Select2,
+            /* 11 */ (void *)InGameCommandModeC_Select3,
+            /* 12 */ (void *)InGameCommandModeD_Select0,
+            /* 13 */ (void *)InGameCommandModeD_Select1,
+            /* 14 */ (void *)InGameCommandModeD_Select2,
+            /* 15 */ (void *)InGameCommandModeD_Select3,
+            /* 16 */ (void *)InGameCommandMatrix_SelectMappedControl,
+            /* 17 */ (void *)InGameCommandModeA_Select0,
+            /* 18 */ (void *)InGameCommandModeA_Select1,
+            /* 19 */ (void *)InGameCommandModeA_Select2,
+            /* 20 */ (void *)InGameCommandModeB_Select0,
+            /* 21 */ (void *)InGameCommandModeB_Select1,
+            /* 22 */ (void *)InGameCommandModeB_Select2,
+            /* 23 */ (void *)InGameCommandModeE_Select0,
+            /* 24 */ (void *)InGameCommandModeE_Select1,
+            /* 25 */ (void *)InGameCommandModeE_Select2,
+            /* 26 */ (void *)InGameCommandRange_DispatchState0,
+            /* 27 */ (void *)InGameCommandRange_DispatchState1,
+            /* 28 */ (void *)InGameCommandModeF_Select0,
+            /* 29 */ (void *)InGameCommandModeF_Select1
         }},
-    {0},
-    /* 00562550 g_UiActionPage11Group1Handlers */
-    {
-        (dword)InGameCommandModeG_Select5,
-        (dword)InGameCommandModeG_Select3,
-        (dword)InGameCommandModeG_Select4},
-    /* 00562560 g_UiActionPage11InitializedHandlers */
-    {
-        (dword)InGameCommandModeC_Select0,
-        (dword)InGameCommandModeC_Select1,
-        (dword)InGameCommandModeC_Select2,
-        (dword)InGameCommandModeC_Select3,
-        (dword)InGameCommandModeD_Select0,
-        (dword)InGameCommandModeD_Select1,
-        (dword)InGameCommandModeD_Select2,
-        (dword)InGameCommandModeD_Select3,
-        (dword)InGameCommandMatrix_SelectMappedControl,
-        (dword)InGameCommandModeA_Select0,
-        (dword)InGameCommandModeA_Select1,
-        (dword)InGameCommandModeA_Select2,
-        (dword)InGameCommandModeB_Select0,
-        (dword)InGameCommandModeB_Select1,
-        (dword)InGameCommandModeB_Select2,
-        (dword)InGameCommandModeE_Select0,
-        (dword)InGameCommandModeE_Select1,
-        (dword)InGameCommandModeE_Select2,
-        (dword)InGameCommandRange_DispatchState0,
-        (dword)InGameCommandRange_DispatchState1,
-        (dword)InGameCommandModeF_Select0,
-        (dword)InGameCommandModeF_Select1},
     /* 005625B8 g_InGameUiActionHandlersPage12 */
     {
         .handlers = {
@@ -10896,100 +10887,40 @@ ImageData_00562498 g_ImageData_00562498 = {
     0, /* 00562650 g_UiCommandSpriteVariantAColumnCount */
     /* 00562654 g_UiCatalogGroup48OffsetTables */
     {
-        (void *)&g_UiCatalogGroup48OffsetTables_0,
-        (void *)&g_UiCatalogGroup48OffsetTables_0,
-        (void *)&g_UiCatalogGroup48OffsetTables_0,
-        (void *)&g_UiCatalogGroup48OffsetTables_0,
-        (void *)&g_UiCatalogGroup48OffsetTables_0,
-        (void *)&g_UiCatalogGroup48OffsetTables_5,
-        (void *)&g_UiCatalogGroup48OffsetTables_6,
-        (void *)&g_UiCatalogGroup48OffsetTables_7,
-        (void *)&g_UiCatalogGroup48OffsetTables_8},
+        (void *)&g_UiCatalogGroup48OffsetsDefault,
+        (void *)&g_UiCatalogGroup48OffsetsDefault,
+        (void *)&g_UiCatalogGroup48OffsetsDefault,
+        (void *)&g_UiCatalogGroup48OffsetsDefault,
+        (void *)&g_UiCatalogGroup48OffsetsDefault,
+        (void *)&g_UiCatalogGroup48Offsets5Columns,
+        (void *)&g_UiCatalogGroup48Offsets6Columns,
+        (void *)&g_UiCatalogGroup48Offsets7Columns,
+        (void *)&g_UiCatalogGroup48Offsets8Columns},
     /* 00562678 g_UiCatalogGroup42OffsetTables */
     {
-        (void *)&g_UiCatalogGroup42OffsetTables_0,
-        (void *)&g_UiCatalogGroup42OffsetTables_0,
-        (void *)&g_UiCatalogGroup42OffsetTables_0,
-        (void *)&g_UiCatalogGroup42OffsetTables_0,
-        (void *)&g_UiCatalogGroup42OffsetTables_0,
-        (void *)&g_UiCatalogGroup42OffsetTables_5,
-        (void *)&g_UiCatalogGroup42OffsetTables_6},
+        (void *)&g_UiCatalogGroup42OffsetsDefault,
+        (void *)&g_UiCatalogGroup42OffsetsDefault,
+        (void *)&g_UiCatalogGroup42OffsetsDefault,
+        (void *)&g_UiCatalogGroup42OffsetsDefault,
+        (void *)&g_UiCatalogGroup42OffsetsDefault,
+        (void *)&g_UiCatalogGroup42Offsets5Columns,
+        (void *)&g_UiCatalogGroup42Offsets6Columns},
     /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
     {
-        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
-        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
-        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
-        (void *)&g_UiCommandSpriteVariantAOffsetTables_0,
-        (void *)&g_UiCommandSpriteVariantAOffsetTables_0},
-    /* 005626A8 g_UiCatalogGroup48OffsetTables_0 */
-    {
-        0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x0000607C, 0x000060FC, 0x0000617C, 0x000061FC,
-        0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC, 0x0000647C, 0x000064FC, 0x0000657C, 0x000065FC,
-        0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC, 0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC,
-        0x00006A7C, 0x00006AFC, 0x00006B7C, 0x00006BFC, 0x00006C7C, 0x00006CFC, 0x00006D7C, 0x00006DFC,
-        0x00006E7C, 0x00006EFC, 0x00006F7C, 0x00006FFC, 0x0000707C, 0x000070FC, 0x0000717C, 0x000071FC,
-        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
-    /* 00562768 g_UiCatalogGroup48OffsetTables_5 */
-    {
-        0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x0000607C, 0x000060FC, 0x0000617C,
-        0x000061FC, 0x00006AFC, 0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC, 0x00006B7C, 0x0000647C,
-        0x000064FC, 0x0000657C, 0x000065FC, 0x00006BFC, 0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC,
-        0x00006C7C, 0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC, 0x00006D7C, 0x00006DFC,
-        0x00006E7C, 0x00006EFC, 0x00006F7C, 0x00006FFC, 0x0000707C, 0x000070FC, 0x0000717C, 0x000071FC,
-        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
-    /* 00562828 g_UiCatalogGroup48OffsetTables_6 */
-    {
-        0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x00006D7C, 0x0000607C, 0x000060FC,
-        0x0000617C, 0x000061FC, 0x00006AFC, 0x00006DFC, 0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC,
-        0x00006B7C, 0x00006E7C, 0x0000647C, 0x000064FC, 0x0000657C, 0x000065FC, 0x00006BFC, 0x00006EFC,
-        0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC, 0x00006C7C, 0x00006F7C, 0x0000687C, 0x000068FC,
-        0x0000697C, 0x000069FC, 0x00006CFC, 0x00006FFC, 0x0000707C, 0x000070FC, 0x0000717C, 0x000071FC,
-        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
-    /* 005628E8 g_UiCatalogGroup48OffsetTables_7 */
-    {
-        0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x00006D7C, 0x0000707C, 0x0000607C,
-        0x000060FC, 0x0000617C, 0x000061FC, 0x00006AFC, 0x00006DFC, 0x000070FC, 0x0000627C, 0x000062FC,
-        0x0000637C, 0x000063FC, 0x00006B7C, 0x00006E7C, 0x0000717C, 0x0000647C, 0x000064FC, 0x0000657C,
-        0x000065FC, 0x00006BFC, 0x00006EFC, 0x000071FC, 0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC,
-        0x00006C7C, 0x00006F7C, 0x0000727C, 0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC,
-        0x00006FFC, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
-    /* 005629A8 g_UiCatalogGroup48OffsetTables_8 */
-    {
-        0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x00006D7C, 0x0000707C, 0x0000737C,
-        0x0000607C, 0x000060FC, 0x0000617C, 0x000061FC, 0x00006AFC, 0x00006DFC, 0x000070FC, 0x000073FC,
-        0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC, 0x00006B7C, 0x00006E7C, 0x0000717C, 0x0000747C,
-        0x0000647C, 0x000064FC, 0x0000657C, 0x000065FC, 0x00006BFC, 0x00006EFC, 0x000071FC, 0x000074FC,
-        0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC, 0x00006C7C, 0x00006F7C, 0x0000727C, 0x0000757C,
-        0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC, 0x00006FFC, 0x000072FC, 0x000075FC},
-    /* 00562A68 g_UiCatalogGroup42OffsetTables_0 */
-    {
-        0x00007748, 0x000077C8, 0x00007848, 0x000078C8, 0x00007948, 0x000079C8, 0x00007A48, 0x00007AC8,
-        0x00007B48, 0x00007BC8, 0x00007C48, 0x00007CC8, 0x00007D48, 0x00007DC8, 0x00007E48, 0x00007EC8,
-        0x00007F48, 0x00007FC8, 0x00008048, 0x000080C8, 0x00008148, 0x000081C8, 0x00008248, 0x000082C8,
-        0x00008348, 0x000083C8, 0x00008448, 0x000084C8, 0x00008548, 0x000085C8, 0x00008648, 0x000086C8,
-        0x00008748, 0x000087C8, 0x00008848, 0x000088C8, 0x00008948, 0x000089C8, 0x00008A48, 0x00008AC8,
-        0x00008B48, 0x00008BC8},
-    /* 00562B10 g_UiCatalogGroup42OffsetTables_5 */
-    {
-        0x00007748, 0x000077C8, 0x00007848, 0x000078C8, 0x00008548, 0x00007948, 0x000079C8, 0x00007A48,
-        0x00007AC8, 0x000085C8, 0x00007B48, 0x00007BC8, 0x00007C48, 0x00007CC8, 0x00008648, 0x00007D48,
-        0x00007DC8, 0x00007E48, 0x00007EC8, 0x000086C8, 0x00007F48, 0x00007FC8, 0x00008048, 0x000080C8,
-        0x00008748, 0x00008148, 0x000081C8, 0x00008248, 0x000082C8, 0x000087C8, 0x00008348, 0x000083C8,
-        0x00008448, 0x000084C8, 0x00008848, 0x000088C8, 0x00008948, 0x000089C8, 0x00008A48, 0x00008AC8,
-        0x00008B48, 0x00008BC8},
-    /* 00562BB8 g_UiCatalogGroup42OffsetTables_6 */
-    {
-        0x00007748, 0x000077C8, 0x00007848, 0x000078C8, 0x00008548, 0x000088C8, 0x00007948, 0x000079C8,
-        0x00007A48, 0x00007AC8, 0x000085C8, 0x00008948, 0x00007B48, 0x00007BC8, 0x00007C48, 0x00007CC8,
-        0x00008648, 0x000089C8, 0x00007D48, 0x00007DC8, 0x00007E48, 0x00007EC8, 0x000086C8, 0x00008A48,
-        0x00007F48, 0x00007FC8, 0x00008048, 0x000080C8, 0x00008748, 0x00008AC8, 0x00008148, 0x000081C8,
-        0x00008248, 0x000082C8, 0x000087C8, 0x00008B48, 0x00008348, 0x000083C8, 0x00008448, 0x000084C8,
-        0x00008848, 0x00008BC8},
-    /* 00562C60 g_UiCommandSpriteVariantAOffsetTables_0 */
-    {
-        0x00008D14, 0x00008D90, 0x00008E0C, 0x00008E88, 0x00008F04, 0x00008F80, 0x00008FFC, 0x00009078,
-        0x000090F4, 0x00009170, 0x000091EC, 0x00009268, 0x000092E4, 0x00009360, 0x000093DC, 0x00009458,
-        0x000094D4, 0x00009550, 0x000095CC, 0x00009648, 0x000096C4, 0x00009740, 0x000097BC, 0x00009838},
+        (void *)&g_UiCommandSpriteVariantAOffsets,
+        (void *)&g_UiCommandSpriteVariantAOffsets,
+        (void *)&g_UiCommandSpriteVariantAOffsets,
+        (void *)&g_UiCommandSpriteVariantAOffsets,
+        (void *)&g_UiCommandSpriteVariantAOffsets},
+    {0x5E7C, 0x5EFC, 0x5F7C, 0x5FFC, 0x607C, 0x60FC, 0x617C, 0x61FC, 0x627C, 0x62FC, 0x637C, 0x63FC, 0x647C, 0x64FC, 0x657C, 0x65FC, 0x667C, 0x66FC, 0x677C, 0x67FC, 0x687C, 0x68FC, 0x697C, 0x69FC, 0x6A7C, 0x6AFC, 0x6B7C, 0x6BFC, 0x6C7C, 0x6CFC, 0x6D7C, 0x6DFC, 0x6E7C, 0x6EFC, 0x6F7C, 0x6FFC, 0x707C, 0x70FC, 0x717C, 0x71FC, 0x727C, 0x72FC, 0x737C, 0x73FC, 0x747C, 0x74FC, 0x757C, 0x75FC}, /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
+    {0x5E7C, 0x5EFC, 0x5F7C, 0x5FFC, 0x6A7C, 0x607C, 0x60FC, 0x617C, 0x61FC, 0x6AFC, 0x627C, 0x62FC, 0x637C, 0x63FC, 0x6B7C, 0x647C, 0x64FC, 0x657C, 0x65FC, 0x6BFC, 0x667C, 0x66FC, 0x677C, 0x67FC, 0x6C7C, 0x687C, 0x68FC, 0x697C, 0x69FC, 0x6CFC, 0x6D7C, 0x6DFC, 0x6E7C, 0x6EFC, 0x6F7C, 0x6FFC, 0x707C, 0x70FC, 0x717C, 0x71FC, 0x727C, 0x72FC, 0x737C, 0x73FC, 0x747C, 0x74FC, 0x757C, 0x75FC}, /* 00562768 g_UiCatalogGroup48Offsets5Columns */
+    {0x5E7C, 0x5EFC, 0x5F7C, 0x5FFC, 0x6A7C, 0x6D7C, 0x607C, 0x60FC, 0x617C, 0x61FC, 0x6AFC, 0x6DFC, 0x627C, 0x62FC, 0x637C, 0x63FC, 0x6B7C, 0x6E7C, 0x647C, 0x64FC, 0x657C, 0x65FC, 0x6BFC, 0x6EFC, 0x667C, 0x66FC, 0x677C, 0x67FC, 0x6C7C, 0x6F7C, 0x687C, 0x68FC, 0x697C, 0x69FC, 0x6CFC, 0x6FFC, 0x707C, 0x70FC, 0x717C, 0x71FC, 0x727C, 0x72FC, 0x737C, 0x73FC, 0x747C, 0x74FC, 0x757C, 0x75FC}, /* 00562828 g_UiCatalogGroup48Offsets6Columns */
+    {0x5E7C, 0x5EFC, 0x5F7C, 0x5FFC, 0x6A7C, 0x6D7C, 0x707C, 0x607C, 0x60FC, 0x617C, 0x61FC, 0x6AFC, 0x6DFC, 0x70FC, 0x627C, 0x62FC, 0x637C, 0x63FC, 0x6B7C, 0x6E7C, 0x717C, 0x647C, 0x64FC, 0x657C, 0x65FC, 0x6BFC, 0x6EFC, 0x71FC, 0x667C, 0x66FC, 0x677C, 0x67FC, 0x6C7C, 0x6F7C, 0x727C, 0x687C, 0x68FC, 0x697C, 0x69FC, 0x6CFC, 0x6FFC, 0x72FC, 0x737C, 0x73FC, 0x747C, 0x74FC, 0x757C, 0x75FC}, /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
+    {0x5E7C, 0x5EFC, 0x5F7C, 0x5FFC, 0x6A7C, 0x6D7C, 0x707C, 0x737C, 0x607C, 0x60FC, 0x617C, 0x61FC, 0x6AFC, 0x6DFC, 0x70FC, 0x73FC, 0x627C, 0x62FC, 0x637C, 0x63FC, 0x6B7C, 0x6E7C, 0x717C, 0x747C, 0x647C, 0x64FC, 0x657C, 0x65FC, 0x6BFC, 0x6EFC, 0x71FC, 0x74FC, 0x667C, 0x66FC, 0x677C, 0x67FC, 0x6C7C, 0x6F7C, 0x727C, 0x757C, 0x687C, 0x68FC, 0x697C, 0x69FC, 0x6CFC, 0x6FFC, 0x72FC, 0x75FC}, /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
+    {0x7748, 0x77C8, 0x7848, 0x78C8, 0x7948, 0x79C8, 0x7A48, 0x7AC8, 0x7B48, 0x7BC8, 0x7C48, 0x7CC8, 0x7D48, 0x7DC8, 0x7E48, 0x7EC8, 0x7F48, 0x7FC8, 0x8048, 0x80C8, 0x8148, 0x81C8, 0x8248, 0x82C8, 0x8348, 0x83C8, 0x8448, 0x84C8, 0x8548, 0x85C8, 0x8648, 0x86C8, 0x8748, 0x87C8, 0x8848, 0x88C8, 0x8948, 0x89C8, 0x8A48, 0x8AC8, 0x8B48, 0x8BC8}, /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
+    {0x7748, 0x77C8, 0x7848, 0x78C8, 0x8548, 0x7948, 0x79C8, 0x7A48, 0x7AC8, 0x85C8, 0x7B48, 0x7BC8, 0x7C48, 0x7CC8, 0x8648, 0x7D48, 0x7DC8, 0x7E48, 0x7EC8, 0x86C8, 0x7F48, 0x7FC8, 0x8048, 0x80C8, 0x8748, 0x8148, 0x81C8, 0x8248, 0x82C8, 0x87C8, 0x8348, 0x83C8, 0x8448, 0x84C8, 0x8848, 0x88C8, 0x8948, 0x89C8, 0x8A48, 0x8AC8, 0x8B48, 0x8BC8}, /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
+    {0x7748, 0x77C8, 0x7848, 0x78C8, 0x8548, 0x88C8, 0x7948, 0x79C8, 0x7A48, 0x7AC8, 0x85C8, 0x8948, 0x7B48, 0x7BC8, 0x7C48, 0x7CC8, 0x8648, 0x89C8, 0x7D48, 0x7DC8, 0x7E48, 0x7EC8, 0x86C8, 0x8A48, 0x7F48, 0x7FC8, 0x8048, 0x80C8, 0x8748, 0x8AC8, 0x8148, 0x81C8, 0x8248, 0x82C8, 0x87C8, 0x8B48, 0x8348, 0x83C8, 0x8448, 0x84C8, 0x8848, 0x8BC8}, /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
+    {0x8D14, 0x8D90, 0x8E0C, 0x8E88, 0x8F04, 0x8F80, 0x8FFC, 0x9078, 0x90F4, 0x9170, 0x91EC, 0x9268, 0x92E4, 0x9360, 0x93DC, 0x9458, 0x94D4, 0x9550, 0x95CC, 0x9648, 0x96C4, 0x9740, 0x97BC, 0x9838}, /* 00562C60 g_UiCommandSpriteVariantAOffsets */
     {0x503C, 0x5098, 0x50F4, 0x5150, 0x51AC, 0x5208, 0x5264}, /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
     {0x52C0, 0x531C, 0x5378, 0x53D4, 0x5430, 0x548C, 0x54E8}, /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
     {0x57C8, 0x5824, 0x5880, 0x58DC, 0x5938, 0x5994, 0x59F0}, /* 00562CF8 g_UiAction1012IconImageOffsets */
@@ -11007,7 +10938,7 @@ ImageData_00562498 g_ImageData_00562498 = {
         .occupancyRebuild = {.army = (void *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback, .shot = (void *)ShotRuntimeMaintenance_OccupancyRebuildNoOp, .effect = (void *)EffectRuntimeMaintenance_OccupancyRebuildNoOp},
         .audioRefresh = {.army = (void *)ArmyRuntimeMaintenance_DispatchClassMethodDRecursive, .shot = (void *)ShotRuntimeMaintenance_UpdateHierarchyProjectedSound, .effect = (void *)EffectRuntimeMaintenance_AudioRefreshNoOp}},
     {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB}, /* 00562E1C g_UiAction1012SubresourceByState */
-    {0},
+    {0}, /* 00562E48 g_InGameOwnedEntityTransientEffectMarkers */
     0, /* 00562EC8 g_InGameOwnedEntityTransientEffectMarkerCount */
     {0}, /* 00562ECC g_InGameCommandTargetTransientEffectMarkers */
     0, /* 005630CC g_InGameCommandTargetTransientEffectMarkerCount */
@@ -11240,22 +11171,10 @@ ImageData_0056D71C g_ImageData_0056D71C = {
 
 ImageData_0056E408 g_ImageData_0056E408 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056E408 gap */
-    /* 0056E410 g_InGameKeyboardDispatchRecords */
+    {{.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56F1C0}, {.commandCode = 0x30069, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E670}, {.commandCode = 0x20002, .continuationEntryAddress = 0x56E6A0}, {.commandCode = 0x30070, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56F160}, {.commandCode = 0x30069, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E5E0}, {.commandCode = 0x30065, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E6E0}, {.commandCode = 0x30075, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x56E720}, {.commandCode = 0x30075, .continuationEntryAddress = 0x56E720}, {.commandCode = 0x10012, .continuationEntryAddress = 0x56ED80}, {.commandCode = 0x1001A, .continuationEntryAddress = 0x56EDC0}, {.commandCode = 0x10014, .continuationEntryAddress = 0x56E7C0}, {.commandCode = 0x10016, .continuationEntryAddress = 0x56E930}, {.commandCode = 0x10011, .continuationEntryAddress = 0x56EAA0}, {.commandCode = 0x10019, .continuationEntryAddress = 0x56EC10}, {.commandCode = 0x10014, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E7C0}, {.commandCode = 0x10016, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56E930}, {.commandCode = 0x10011, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56EAA0}, {.commandCode = 0x10019, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x56EC10}, {.commandCode = 0x30061, .continuationEntryAddress = 0x56EE00}, {.commandCode = 0x30068, .continuationEntryAddress = 0x56EE20}, {.commandCode = 0x30067, .continuationEntryAddress = 0x56EE40}, {.commandCode = 0x30073, .continuationEntryAddress = 0x56EE60}, {.commandCode = 0x30070, .continuationEntryAddress = 0x56EEB0}, {.commandCode = 0x30066, .continuationEntryAddress = 0x56EED0}, {.commandCode = 0x30074, .continuationEntryAddress = 0x56EEF0}, {.commandCode = 0x3006C, .continuationEntryAddress = 0x56F020}, {.commandCode = 0x3006E, .continuationEntryAddress = 0x56EFB0}, {.commandCode = 0x30076, .continuationEntryAddress = 0x56F090}, {.commandCode = 0x30065, .continuationEntryAddress = 0x56F100}, {.commandCode = 0x30062, .continuationEntryAddress = 0x56F120}, {.commandCode = 0x30063, .continuationEntryAddress = 0x56EF70}, {.commandCode = 0x30064, .continuationEntryAddress = 0x56EF90}, {.commandCode = 0x30077, .continuationEntryAddress = 0x56EF10}, {.commandCode = 0x30071, .continuationEntryAddress = 0x56EF30}, {.commandCode = 0x30079, .continuationEntryAddress = 0x56EF50}, {.commandCode = 0x30072, .continuationEntryAddress = 0x56F140}}, /* 0056E410 g_InGameKeyboardDispatchRecords */
+    0, /* 0056E5C0 g_InGameKeyboardDispatchRecordsTerminator */
     {
-        0x00030071, 0x00000030, 0x0056F1C0, 0x00030069, 0x0000000C, 0x0056E670, 0x00020002, 0x00000000,
-        0x0056E6A0, 0x00030070, 0x0000000C, 0x0056F160, 0x00030069, 0x00000030, 0x0056E5E0, 0x00030065,
-        0x00000030, 0x0056E6E0, 0x00030075, 0x00000030, 0x0056E720, 0x00030075, 0x00000000, 0x0056E720,
-        0x00010012, 0x00000000, 0x0056ED80, 0x0001001A, 0x00000000, 0x0056EDC0, 0x00010014, 0x00000000,
-        0x0056E7C0, 0x00010016, 0x00000000, 0x0056E930, 0x00010011, 0x00000000, 0x0056EAA0, 0x00010019,
-        0x00000000, 0x0056EC10, 0x00010014, 0x0000000C, 0x0056E7C0, 0x00010016, 0x0000000C, 0x0056E930,
-        0x00010011, 0x0000000C, 0x0056EAA0, 0x00010019, 0x0000000C, 0x0056EC10, 0x00030061, 0x00000000,
-        0x0056EE00, 0x00030068, 0x00000000, 0x0056EE20, 0x00030067, 0x00000000, 0x0056EE40, 0x00030073,
-        0x00000000, 0x0056EE60, 0x00030070, 0x00000000, 0x0056EEB0, 0x00030066, 0x00000000, 0x0056EED0,
-        0x00030074, 0x00000000, 0x0056EEF0, 0x0003006C, 0x00000000, 0x0056F020, 0x0003006E, 0x00000000,
-        0x0056EFB0, 0x00030076, 0x00000000, 0x0056F090, 0x00030065, 0x00000000, 0x0056F100, 0x00030062,
-        0x00000000, 0x0056F120, 0x00030063, 0x00000000, 0x0056EF70, 0x00030064, 0x00000000, 0x0056EF90,
-        0x00030077, 0x00000000, 0x0056EF10, 0x00030071, 0x00000000, 0x0056EF30, 0x00030079, 0x00000000,
-        0x0056EF50, 0x00030072, 0x00000000, 0x0056F140, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
+        0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_0056F278 g_ImageData_0056F278 = {
@@ -11421,273 +11340,96 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00573FCC pDirectSoundEnumerateA */
     0, /* 00573FD0 pDirectSoundCaptureCreate */
     0, /* 00573FD4 pDirectSoundCaptureEnumerateA */
-    0, /* 00573FD8 g_GrAADrawTriangle */
-    {0},
-    /* 00573FDC PTR_dynapi_24_00573fdc */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_24},
-    0, /* 00573FE0 g_GrAlphaBlendFunction */
-    /* 00573FE4 PTR_dynapi_25_00573fe4 */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_25},
-    0, /* 00573FE8 g_GrAlphaCombine */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_26},
-    /* 00573FF0 g_GrAlphaControlsITRGBLighting */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_27},
-    /* 00573FF8 g_GrAlphaTestFunction */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_28},
-    /* 00574000 g_GrAlphaTestReferenceValue */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_29},
-    0, /* 00574008 g_GrBufferClear */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_30},
-    0, /* 00574010 g_GrBufferSwap */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_31},
-    /* 00574018 g_GrChromakeyMode */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_32},
-    /* 00574020 g_GrChromakeyValue */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_33},
-    0, /* 00574028 g_GrClipWindow */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_36},
-    0, /* 00574030 g_GrColorCombine */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_37},
-    /* 00574038 g_GrColorMask */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_38},
-    /* 00574040 g_GrConstantColorValue */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_39},
-    0, /* 00574048 g_GrCoordinateSpace */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_40},
-    0, /* 00574050 g_GrCullMode */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_41},
-    /* 00574058 g_GrDepthBiasLevel */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_42},
-    0, /* 00574060 g_GrDepthBufferFunction */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_43},
-    0, /* 00574068 g_GrDepthBufferMode */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_44},
-    0, /* 00574070 g_GrDepthMask */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_45},
-    /* 00574078 g_GrDepthRange */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_46},
-    /* 00574080 g_GrDisable */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_47},
-    /* 00574088 g_GrDisableAllEffects */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_48},
-    /* 00574090 g_GrDitherMode */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_49},
-    /* 00574098 g_GrDrawLine */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_50},
-    /* 005740A0 g_GrDrawPoint */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_51},
-    0, /* 005740A8 g_GrDrawTriangle */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_52},
-    /* 005740B0 g_GrDrawVertexArray */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_53},
-    /* 005740B8 g_GrDrawVertexArrayContiguous */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_54},
-    /* 005740C0 g_GrEnable */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_55},
-    /* 005740C8 g_GrErrorSetCallback */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_56},
-    0, /* 005740D0 g_GrFinish */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_57},
-    /* 005740D8 g_GrFlush */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_58},
-    /* 005740E0 g_GrFogColorValue */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_59},
-    /* 005740E8 g_GrFogMode */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_60},
-    /* 005740F0 g_GrFogTable */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_61},
-    0, /* 005740F8 g_GrGet */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_62},
-    /* 00574100 g_GrGetProcAddress */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_63},
-    0, /* 00574108 g_GrGetString */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_64},
-    /* 00574110 g_GrGlideGetState */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_65},
-    /* 00574118 g_GrGlideGetVertexLayout */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_66},
-    0, /* 00574120 g_GrGlideInit */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_67},
-    /* 00574128 g_GrGlideSetState */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_68},
-    /* 00574130 g_GrGlideSetVertexLayout */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_69},
-    0, /* 00574138 g_GrGlideShutdown */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_70},
-    /* 00574140 g_GrLfbConstantAlpha */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_71},
-    /* 00574148 g_GrLfbConstantDepth */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_72},
-    0, /* 00574150 g_GrLfbLock */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_73},
-    0, /* 00574158 g_GrLfbReadRegion */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_74},
-    0, /* 00574160 g_GrLfbUnlock */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_75},
-    /* 00574168 g_GrLfbWriteRegion */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_76},
-    /* 00574170 g_GrLoadGammaTable */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_77},
-    0, /* 00574178 g_GrQueryResolutions */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_78},
-    /* 00574180 g_GrRenderBuffer */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_79},
-    /* 00574188 g_GrReset */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_80},
-    /* 00574190 g_GrSelectContext */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_81},
-    /* 00574198 g_GrSstOrigin */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_82},
-    0, /* 005741A0 g_GrSstSelect */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_83},
-    0, /* 005741A8 g_GrSstWinClose */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_84},
-    0, /* 005741B0 g_GrSstWinOpen */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_85},
-    /* 005741B8 g_GrTexCalcMemRequired */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_86},
-    0, /* 005741C0 g_GrTexClampMode */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_89},
-    0, /* 005741C8 g_GrTexCombine */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_90},
-    /* 005741D0 g_GrTexDetailControl */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_91},
-    0, /* 005741D8 g_GrTexDownloadMipMap */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_92},
-    /* 005741E0 g_GrTexDownloadMipMapLevel */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_93},
-    /* 005741E8 g_GrTexDownloadMipMapLevelPartial */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_94},
-    /* 005741F0 g_GrTexDownloadTable */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_95},
-    /* 005741F8 g_GrTexDownloadTablePartial */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_96},
-    0, /* 00574200 g_GrTexFilterMode */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_97},
-    /* 00574208 g_GrTexLodBiasValue */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_98},
-    0, /* 00574210 g_GrTexMaxAddress */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_99},
-    0, /* 00574218 g_GrTexMinAddress */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_100},
-    0, /* 00574220 g_GrTexMipMapMode */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_101},
-    /* 00574228 g_GrTexMultibase */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_102},
-    /* 00574230 g_GrTexMultibaseAddress */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_103},
-    /* 00574238 g_GrTexNCCTable */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_104},
-    0, /* 00574240 g_GrTexSource */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_105},
-    /* 00574248 g_GrTexTextureMemRequired */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_106},
-    0, /* 00574250 g_GrVertexLayout */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_107},
-    0, /* 00574258 g_GrViewport */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_108},
-    /* 00574260 g_Gu3dfGetInfo */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_109},
-    /* 00574268 g_Gu3dfLoad */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_110},
-    /* 00574270 g_GuFogGenerateExp */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_111},
-    /* 00574278 g_GuFogGenerateExp2 */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_112},
-    /* 00574280 g_GuFogGenerateLinear */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_113},
-    /* 00574288 g_GuFogTableIndexToW */
-    {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_114},
-    0, /* 00574290 g_GuGammaCorrectionRGB */
-    {
-        (dword)&g_ImageData_00573EE8.at_dynapi_115},
+    /* 00573FD8 g_GlideImportBindings */
+    {
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_24},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_25},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_26},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_27},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_28},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_29},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_30},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_31},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_32},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_33},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_36},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_37},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_38},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_39},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_40},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_41},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_42},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_43},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_44},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_45},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_46},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_47},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_48},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_49},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_50},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_51},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_52},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_53},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_54},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_55},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_56},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_57},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_58},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_59},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_60},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_61},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_62},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_63},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_64},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_65},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_66},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_67},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_68},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_69},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_70},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_71},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_72},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_73},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_74},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_75},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_76},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_77},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_78},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_79},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_80},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_81},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_82},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_83},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_84},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_85},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_86},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_89},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_90},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_91},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_92},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_93},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_94},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_95},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_96},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_97},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_98},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_99},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_100},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_101},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_102},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_103},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_104},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_105},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_106},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_107},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_108},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_109},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_110},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_111},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_112},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_113},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_114},
+        {.importName = (void *)&g_ImageData_00573EE8.at_dynapi_115}},
     0, /* 005742A0 g_WinSock_accept */
     0, /* 005742A4 g_WinSock_bind */
     0, /* 005742A8 g_WinSock_closesocket */
@@ -12197,15 +11939,9 @@ ImageData_00576B04 g_ImageData_00576B04 = {
     0, /* 00576B10 g_DirectInput */
     0, /* 00576B14 g_MouseDevice */
     {.Data1 = 0x6F1D2B60, .Data2 = 0xD5A0, .Data3 = 0x11CF, .Data4 = "\277\307DEST"}, /* 00576B18 GUID_SysMouse_Local */
-    /* 00576B28 GUID_XAxis_Local */
-    {
-        0xA36D02E0, 0x11CFC9F3, 0x4544C7BF, 0x00005453},
-    /* 00576B38 GUID_YAxis_Local */
-    {
-        0xA36D02E1, 0x11CFC9F3, 0x4544C7BF, 0x00005453},
-    /* 00576B48 GUID_ZAxis_Local */
-    {
-        0xA36D02E2, 0x11CFC9F3, 0x4544C7BF, 0x00005453},
+    {.Data1 = 0xA36D02E0, .Data2 = 0xC9F3, .Data3 = 0x11CF, .Data4 = "\277\307DEST"}, /* 00576B28 GUID_XAxis_Local */
+    {.Data1 = 0xA36D02E1, .Data2 = 0xC9F3, .Data3 = 0x11CF, .Data4 = "\277\307DEST"}, /* 00576B38 GUID_YAxis_Local */
+    {.Data1 = 0xA36D02E2, .Data2 = 0xC9F3, .Data3 = 0x11CF, .Data4 = "\277\307DEST"}, /* 00576B48 GUID_ZAxis_Local */
     /* 00576B58 MouseDataFormat */
     {
         .dwSize = 0x18,
@@ -12213,15 +11949,16 @@ ImageData_00576B04 g_ImageData_00576B04 = {
         .dwFlags = 0x2,
         .dwDataSize = 0x10,
         .dwNumObjs = 0x7,
-        .rgodf = (void *)&g_ImageData_00576B04.at_MouseObjectFormats},
+        .rgodf = (void *)&MouseObjectFormats},
     /* 00576B70 MouseObjectFormats */
     {
-        (dword)&g_ImageData_00576B04.at_GUID_XAxis_Local,
-        0x00000000, 0x00FFFF03, 0x00000000, (dword)&g_ImageData_00576B04.at_GUID_YAxis_Local,
-        0x00000004, 0x00FFFF03, 0x00000000, (dword)&g_ImageData_00576B04.at_GUID_ZAxis_Local,
-        0x00000008, 0x80FFFF03, 0x00000000, 0x00000000, 0x0000000C, 0x00FFFF0C, 0x00000000, 0x00000000,
-        0x0000000D, 0x00FFFF0C, 0x00000000, 0x00000000, 0x0000000E, 0x80FFFF0C, 0x00000000, 0x00000000,
-        0x0000000F, 0x80FFFF0C},
+        {.pguid = (void *)&GUID_XAxis_Local, .dwType = 0xFFFF03},
+        {.pguid = (void *)&GUID_YAxis_Local, .dwOfs = 0x4, .dwType = 0xFFFF03},
+        {.pguid = (void *)&GUID_ZAxis_Local, .dwOfs = 0x8, .dwType = 0x80FFFF03},
+        {.dwOfs = 0xC, .dwType = 0xFFFF0C},
+        {.dwOfs = 0xD, .dwType = 0xFFFF0C},
+        {.dwOfs = 0xE, .dwType = 0x80FFFF0C},
+        {.dwOfs = 0xF, .dwType = 0x80FFFF0C}},
     {.diph = {.dwSize = 0x14, .dwHeaderSize = 0x10}, .dwData = 0x100}, /* 00576BE0 MouseBufferProperty */
     0, /* 00576BF4 g_MouseDeviceDataCount */
     0, /* 00576BF8 g_MousePollBusy */
@@ -12770,7 +12507,7 @@ const ThandorImageBlock g_ThandorImageBlocks[203] = {
     {0x005873BC, 0x0058C000, (const byte *)&g_ImageData_005873BC},
 };
 
-const ThandorImagePointer g_ThandorImagePointers[2392] = {
+const ThandorImagePointer g_ThandorImagePointers[2393] = {
     {0x00402628, 0x00402D50},
     {0x00402784, 0x00407470},
     {0x00402788, 0x004074A0},
@@ -12937,6 +12674,7 @@ const ThandorImagePointer g_ThandorImagePointers[2392] = {
     {0x004A8F64, 0x004AD8F0},
     {0x004A8F68, 0x004AD920},
     {0x004B0EB0, 0x004B1110},
+    {0x004B0EB4, 0x00407F70},
     {0x004B15D0, 0x004B1620},
     {0x004B15D4, 0x004B05A0},
     {0x004B15D8, 0x004B16E0},

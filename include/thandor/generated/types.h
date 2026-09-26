@@ -543,7 +543,7 @@ typedef struct UiDisplayModeSelectionActionHandlerTable20 UiDisplayModeSelection
 typedef struct FrontendUiActionHandlerPage20Prefix86 FrontendUiActionHandlerPage20Prefix86, *PFrontendUiActionHandlerPage20Prefix86;
 typedef struct InGameUiActionHandlerPage12Prefix28 InGameUiActionHandlerPage12Prefix28, *PInGameUiActionHandlerPage12Prefix28;
 typedef struct InGameUiActionHandlerPage10Prefix40 InGameUiActionHandlerPage10Prefix40, *PInGameUiActionHandlerPage10Prefix40;
-typedef struct InGameUiCommandModeActionHandlerPage11Prefix3 InGameUiCommandModeActionHandlerPage11Prefix3, *PInGameUiCommandModeActionHandlerPage11Prefix3;
+typedef struct InGameUiCommandModeActionHandlerPage11 InGameUiCommandModeActionHandlerPage11, *PInGameUiCommandModeActionHandlerPage11;
 typedef struct FrontendTaskAssignmentControlOffsetRow1C FrontendTaskAssignmentControlOffsetRow1C, *PFrontendTaskAssignmentControlOffsetRow1C;
 typedef struct FrontendTaskAssignmentControlOffsetTablesA8 FrontendTaskAssignmentControlOffsetTablesA8, *PFrontendTaskAssignmentControlOffsetTablesA8;
 typedef struct UiCommandDispatchRecord UiCommandDispatchRecord, *PUiCommandDispatchRecord;
@@ -9759,8 +9759,8 @@ struct InGameUiActionHandlerPage10Prefix40 {
     void (*handlers[40])(void *); 
 };
 
-struct InGameUiCommandModeActionHandlerPage11Prefix3 {
-    void (*handlers[3])(void *); 
+struct InGameUiCommandModeActionHandlerPage11 {
+    void (*handlers[30])(void *); 
 };
 
 struct FrontendTaskAssignmentControlOffsetRow1C {
@@ -14392,5 +14392,18 @@ struct LevelInitialArmyPlacementRecord20 {
     byte reserved14_1F[12]; // Unresolved trailing bytes of the 0x20 placement record.
 };
 
+
+/* The two handlers of the root-stack action page: UiRootStack_PopCf, FatalErrorDialog_DismissAndPopRoot. */
+typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;
+struct UiRootStackActionHandlerPage2 {
+    void (*handlers[2])(void *);
+};
+
+/* Glide 3 import table: each entry point's destination and its exported name; {0,0} ends it. */
+typedef struct GlideImportBinding GlideImportBinding;
+struct GlideImportBinding {
+    void *procedure;
+    char *importName;
+};
 
 #endif /* THANDOR_GENERATED_TYPES_H */
