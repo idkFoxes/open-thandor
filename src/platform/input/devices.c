@@ -245,11 +245,17 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
   if (_InterlockedCompareExchange((volatile long *)&g_MousePollBusy,1,0) != 0) {
     return;
   }
+  /* Deviation from the original: it released and recreated the mouse device (and a new
+     DirectInput object) every 48 frames. On current Windows DirectInput services an exclusive
+     mouse from a low-level hook thread, which crashed (DINPUT.DLL+0x8ADE, null device) when the
+     device vanished under it. Reacquiring the existing device covers the lost-device case the
+     refresh was for; the device is only (re)created when there is none. */
+  if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
+    (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+    g_MousePollBusy = 0;
+    return;
+  }
   if ((g_MouseButtonMask & LEFT_MIDDLE_RIGHT) == CURSOR_BUTTON_NONE) {
-    if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
-      (*g_MouseDevice->lpVtbl->Release)(g_MouseDevice);
-      g_MouseDevice = (IDirectInputDeviceA *)0x0;
-    }
     /* The original created a new DirectInput object every refresh without releasing the old one,
        accumulating thousands per session in dinput's hook thread. */
     if (g_DirectInput != (IDirectInputA *)0x0) {
