@@ -1199,7 +1199,7 @@ extern ImageData_004BEA6C g_ImageData_004BEA6C;
 /* original 0x004BED4C-0x004CC710 */
 typedef struct ImageData_004BED4C {
     byte at_gap_004BED4C[3]; /* 004BED4C gap */
-    undefined at_DAT_004bed4f; /* 004BED4F DAT_004bed4f */
+    byte at_DAT_004bed4f[1]; /* 004BED4F DAT_004bed4f */
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingRuntimeRecords[256]; /* 004BED50 g_GraphicsShadingRuntimeRecords */
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingCompactRecords[256]; /* 004C2D50 g_GraphicsShadingCompactRecords */
     GraphicsShadingRecordCount at_g_GraphicsShadingCompactRecordCount; /* 004C6D50 g_GraphicsShadingCompactRecordCount */
@@ -1520,8 +1520,7 @@ extern ImageData_0050EB5C g_ImageData_0050EB5C;
 typedef struct ImageData_0050F044 {
     byte at_gap_0050F044[12]; /* 0050F044 gap */
     sdword at_g_FrontendPlayerRuntimeCount; /* 0050F050 g_FrontendPlayerRuntimeCount */
-    undefined4 at_g_FrontendLocalPlayerNameUtf16; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
-    dword at_DAT_0050f058[9]; /* 0050F058 DAT_0050f058 */
+    word at_g_FrontendLocalPlayerNameUtf16[20]; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
     word at_g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16 */
     dword at_g_GameVersionUtf16_rest[1]; /* beyond the declared type */
     byte at_g_GameVersionUtf16_rest_tail[2];
@@ -2680,8 +2679,7 @@ typedef struct ImageData_0053DA68 {
     FrontendSessionDiscoveryRecordB0 ** at_g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
     FrontendSessionDiscoveryRecordB0 * at_g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
     UiTemplate_0053DA8C at_g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
-    undefined4 at_g_FrontendPlayerRuntimeRecordPointers32; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
-    dword at_DAT_005433e4[30]; /* 005433E4 DAT_005433e4 */
+    FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[31]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
     FrontendTaskAssignmentControlOffsetTablesA8 at_g_FrontendTaskAssignmentControlOffsets; /* 0054345C g_FrontendTaskAssignmentControlOffsets */
     dword at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
     dword at_g_FrontendUiDisplayModeAndTaskAssignmentScratch[161]; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
@@ -5738,7 +5736,6 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004beb0c ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformOutputX)
 #define THANDOR_IMAGE_0x004beb10 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformOutputY)
 #define THANDOR_IMAGE_0x004beb14 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformOutputZ)
-#define THANDOR_IMAGE_0x004bed4f ((uintptr_t)&g_ImageData_004BED4C.at_DAT_004bed4f)
 #define THANDOR_IMAGE_0x004bed50 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingRuntimeRecords)
 #define THANDOR_IMAGE_0x004c2d50 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingCompactRecords)
 #define THANDOR_IMAGE_0x004c6d50 ((uintptr_t)&g_ImageData_004BED4C.at_g_GraphicsShadingCompactRecordCount)

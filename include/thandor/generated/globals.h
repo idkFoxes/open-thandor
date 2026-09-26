@@ -742,7 +742,6 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_ShotRuntimeRebaseBaseMinusOne (*(byte * *)THANDOR_IMAGE(0x0052af4c))
 #define g_ModelRuntimeRebaseDelta (*(int *)THANDOR_IMAGE(0x005200bc))
 #define g_RuntimeObjectRebaseBaseMinusOne (*(byte * *)THANDOR_IMAGE(0x00563700))
-#define DAT_004bed4f (*(undefined *)THANDOR_IMAGE(0x004bed4f))
 #define g_ArmyGraphicsBindings (*(ArmyGraphicsBinding (*)[8])THANDOR_IMAGE(0x00519738))
 #define g_EffectTextureSet (*(GraphicsTextureSet * *)THANDOR_IMAGE(0x0051dbc0))
 #define g_EffectPalette (*(GraphicsPaletteAsset * *)THANDOR_IMAGE(0x0051dbc4))
@@ -1121,7 +1120,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_FrontendStateTickSpinLock (*(dword *)THANDOR_IMAGE(0x0054572c))
 #define g_FrontendNetworkEndpointTextUtf16 (*(undefined *)THANDOR_IMAGE(0x0054de30))
 #define g_FrontendRootInitializationTemplate (*(FrontendRootResourceSlots5954 *)THANDOR_IMAGE(0x0053da8c))
-#define g_FrontendLocalPlayerNameUtf16 (*(undefined4 *)THANDOR_IMAGE(0x0050f054))
+#define g_FrontendLocalPlayerNameUtf16 (*(word (*)[20])THANDOR_IMAGE(0x0050f054))
 #define g_FrontendMenuSoundVoiceSetLoadBaseEntry1 (*(undefined4 *)THANDOR_IMAGE(0x00545788))
 #define s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 (*(char (*)[31])THANDOR_IMAGE(0x00545e72))
 #define g_CommandLineFindOption (*(CommandLineFindOptionProc * *)THANDOR_IMAGE(0x00402024))
@@ -1170,7 +1169,9 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_FrontendSelectedPlayerToken (*(undefined4 *)THANDOR_IMAGE(0x0050f0cc))
 #define g_NetworkBackendSlot7 (*(NetworkBackendFormatAddressCallback * *)THANDOR_IMAGE(0x0041a568))
 #define g_FrontendPendingSessionPlayerCount (*(dword *)THANDOR_IMAGE(0x0054dda0))
-#define g_FrontendPlayerRuntimeRecordPointers32 (*(undefined4 *)THANDOR_IMAGE(0x005433e0))
+/* 31 slots before g_FrontendTaskAssignmentControlOffsets; Game_LoadCoreAssets fills 32, the last one
+   landing in that table's unused slot 0 (original behaviour) */
+#define g_FrontendPlayerRuntimeRecordPointers32 (*(FrontendPlayerRuntimeRecord * (*)[31])THANDOR_IMAGE(0x005433e0))
 #define g_FrontendSessionListRows (*(FrontendSessionDiscoveryRecordB0 ** *)THANDOR_IMAGE(0x0053da84))
 #define g_FrontendNetworkRuntimeCountTextUtf16 (*(undefined *)THANDOR_IMAGE(0x0054dde0))
 #define g_NetworkLocalEndpointDescriptor16 (*(UiTransferEndpointDescriptor *)THANDOR_IMAGE(0x0041a56c))

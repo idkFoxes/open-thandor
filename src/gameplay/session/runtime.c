@@ -514,7 +514,8 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
       auxiliaryPointer = (undefined *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
       nestedRemaining = registrationRecord->nestedCountC8;
       if (auxiliaryPointer != (undefined *)0x0) {
-        auxiliaryPointer = &DAT_004bed4f + (int)auxiliaryPointer;
+        /* 1-based offset from the shading records; 0 is null */
+        auxiliaryPointer = (undefined *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
       }
       (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (dword)auxiliaryPointer;
       nestedCursor = registrationRecord;

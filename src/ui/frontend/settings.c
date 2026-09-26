@@ -433,7 +433,7 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
               ((FrontendNetworkSettingsControlView250 *)&firstNode[0x96].activationSound);
     PersistentSettings_WriteDwords(0x28,(dword *)control->textPrefix6C,0x60);
     sourceDwordCursor = (dword *)control->textPrefix6C;
-    playerNameDwordCursor = &g_FrontendLocalPlayerNameUtf16;
+    playerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
       *playerNameDwordCursor = *sourceDwordCursor;
       sourceDwordCursor = sourceDwordCursor + 1;
@@ -1347,7 +1347,7 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
   }
   if ((((networkSettings->textEditView).textEdit.base.left == 0) ||
       (*(int *)(*(int *)(networkSettings->textEditView).textEdit.base.bottom + 0x14) == 0)) ||
-     ((short)g_FrontendLocalPlayerNameUtf16 == 0)) {
+     (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
     UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&firstNode->commonState);
   }
   else {

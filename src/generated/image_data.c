@@ -2461,7 +2461,7 @@ ImageData_004BEA6C g_ImageData_004BEA6C = {
 
 ImageData_004BED4C g_ImageData_004BED4C = {
     {0x90, 0x90, 0x90}, /* 004BED4C gap */
-    0x90, /* 004BED4F DAT_004bed4f */
+    {0x90}, /* 004BED4F DAT_004bed4f */
     {0}, /* 004BED50 g_GraphicsShadingRuntimeRecords */
     {0}, /* 004C2D50 g_GraphicsShadingCompactRecords */
     0, /* 004C6D50 g_GraphicsShadingCompactRecordCount */
@@ -3084,8 +3084,7 @@ ImageData_0050EB5C g_ImageData_0050EB5C = {
 ImageData_0050F044 g_ImageData_0050F044 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050F044 gap */
     0, /* 0050F050 g_FrontendPlayerRuntimeCount */
-    0, /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
-    {0}, /* 0050F058 DAT_0050f058 */
+    {0}, /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
     L"1.5.45", /* 0050F07C g_GameVersionUtf16 */
     {
         0x90909090},
@@ -6570,8 +6569,7 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
         {
             0x00000008, 0x00000000, 0x00002117},
     },
-    0, /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
-    {0}, /* 005433E4 DAT_005433e4 */
+    {0}, /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
     /* 0054345C g_FrontendTaskAssignmentControlOffsets */
     {
         .assignmentControls = {.offsets = {0, 0xCC0, 0xD1C, 0xD78, 0xDD4, 0xE30, 0xE8C}},

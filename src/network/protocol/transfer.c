@@ -588,7 +588,7 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(
   
   g_FrontendPacket20002Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_20002;
   g_FrontendPacket20002Buffer.payloadByteCount = 0x40;
-  nameSourceCursor = &g_FrontendLocalPlayerNameUtf16;
+  nameSourceCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   payloadCursor = g_FrontendPacket20002Buffer.playerDescriptorPayload;
   for (dwordCount = 10; dwordCount != 0; dwordCount = dwordCount + -1) {
     *payloadCursor = *nameSourceCursor;
@@ -597,7 +597,7 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(
   }
   *(undefined2 *)((int)payloadCursor + -2) = 0;
   callCarry = PcxPreview_Load64x64PaletteAndPixelsCf
-                    (g_FrontendLocalPlayerPcxPreview,(word *)&g_FrontendLocalPlayerNameUtf16);
+                    (g_FrontendLocalPlayerPcxPreview,g_FrontendLocalPlayerNameUtf16);
   if (!callCarry) {
     *(ushort *)((int)payloadCursor + -2) = *(ushort *)((int)payloadCursor + -2) | 1;
   }
@@ -657,7 +657,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     textResolveResult = TextResource_Resolve(0x211b);
     resolvedText = textResolveResult.eax;
     RichTextCommandStream_PatchPayloadBySelector(0,(void *)(rootNodeOrCount + 0x50c0),resolvedText);
-    RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendLocalPlayerNameUtf16,resolvedText);
+    RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
     RichTextCommandStream_CopyExpandedCf
               (0x58,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
     textResolveResult = TextResource_Resolve(0x211c);

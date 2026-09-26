@@ -2928,7 +2928,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                 fillCursorOrResult = (FrontendRootResourceSlots5954 *)statusResult.valueOrError;
                 if (!statusResult.carry) {
                   nameSlotOrSourceDwords = PersistentSettings_GetRegionOrFallback
-                                     (0x28,&g_FrontendLocalPlayerNameUtf16,0x60);
+                                     (0x28,g_FrontendLocalPlayerNameUtf16,0x60);
                   settingsCopySourceDwordsA = nameSlotOrSourceDwords;
                   settingsCopyDestDwordsA = (dword *)frontendUiState->opaqueGap4EB4_4F2F;
                   for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -2936,7 +2936,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                     settingsCopySourceDwordsA = settingsCopySourceDwordsA + 1;
                     settingsCopyDestDwordsA = settingsCopyDestDwordsA + 1;
                   }
-                  playerNameDestDwords = &g_FrontendLocalPlayerNameUtf16;
+                  playerNameDestDwords = (void *)g_FrontendLocalPlayerNameUtf16;
                   for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
                     *playerNameDestDwords = *nameSlotOrSourceDwords;
                     nameSlotOrSourceDwords = nameSlotOrSourceDwords + 1;
@@ -2944,7 +2944,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                   }
                   settingsCopySourceDwordsB =
                        PersistentSettings_GetRegionOrFallback
-                                 (0x28,&g_FrontendLocalPlayerNameUtf16,0x88);
+                                 (0x28,g_FrontendLocalPlayerNameUtf16,0x88);
                   settingsCopyDestDwordsB = (dword *)frontendUiState->opaqueGap50C0_514B;
                   for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
                     *settingsCopyDestDwordsB = *settingsCopySourceDwordsB;

@@ -59,7 +59,7 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendNetworkSettingsControlVie
     }
     g_FrontendNetworkState = 2;
     UiPointerList_InitializeColumnLayout
-              (1,(void **)&g_FrontendPlayerRuntimeRecordPointers32,
+              (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
                (UiPointerListControl *)((int)networkPage + 0x55ec));
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(word *)&g_FrontendNetworkRuntimeCountTextUtf16
@@ -68,7 +68,7 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendNetworkSettingsControlVie
     sequenceTokenOrBackendIndex = g_UiTransferSequenceToken;
     g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff;
     firstPlayerRecord->peerSequenceToken = sequenceTokenOrBackendIndex;
-    localPlayerNameDwordCursor = &g_FrontendLocalPlayerNameUtf16;
+    localPlayerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     localPlayerRecordDwordCursor = (dword *)&firstPlayerRecord->playerName;
     for (remainingOrRootNode = 10; remainingOrRootNode != 0; remainingOrRootNode = remainingOrRootNode + -1) {
       *(dword *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 =
@@ -158,7 +158,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
           *commandLineOptionBytes = 0x6e;
           Text_CopyNarrowToUtf16Cf(0x28,destination,commandLineOptionBytes + 6);
           Text_CopyNarrowToUtf16Cf
-                    (0x28,(word *)&g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
+                    (0x28,g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
           *optionTextCursor = 0x22;
         }
       }
@@ -171,7 +171,7 @@ FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
         *(uint *)((int)networkPage + 0x3b4) = *(uint *)((int)networkPage + 0x3b4) | 0x2000;
       }
       g_FrontendNetworkState = 1;
-      if ((short)g_FrontendLocalPlayerNameUtf16 == 0) {
+      if (g_FrontendLocalPlayerNameUtf16[0] == 0) {
         UiNodeList_SuppressActionId(0x2001,(UiNodeBase *)&networkPage->commonState);
       }
       else {
@@ -466,7 +466,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer
   }
   g_FrontendNetworkState = 2;
   UiPointerList_InitializeColumnLayout
-            (1,(void **)&g_FrontendPlayerRuntimeRecordPointers32,
+            (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
              (UiPointerListControl *)((int)networkPage + 0x5f8));
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(word *)&g_FrontendNetworkRuntimeCountTextUtf16);
@@ -475,7 +475,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer
   g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff;
   firstPlayerRecord->peerSequenceToken = sequenceToken;
   firstPlayerRecord->playerRuntimeId = 0;
-  localPlayerNameCursor = &g_FrontendLocalPlayerNameUtf16;
+  localPlayerNameCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   localPlayerRecordDwordCursor = (dword *)&firstPlayerRecord->playerName;
   for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
     *(undefined4 *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 = *localPlayerNameCursor

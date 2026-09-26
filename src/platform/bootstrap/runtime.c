@@ -1085,7 +1085,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                         return (dword)playerRecordCursor;
                       }
                       playerRuntimePointerTableWriteCursor =
-                           (FrontendPlayerRuntimeRecord **)&g_FrontendPlayerRuntimeRecordPointers32;
+                           g_FrontendPlayerRuntimeRecordPointers32;
                       g_FrontendPlayerRuntimeBlockCount = 1;
                       g_LocalPlayerRuntimeId = 0;
                       g_FrontendPlayerRuntimeBlocks = playerRecordCursor;
