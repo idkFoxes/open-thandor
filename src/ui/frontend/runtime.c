@@ -2460,17 +2460,17 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
   NetworkBackendSetSessionEaxCf5 setSessionResult;
   FatalErrorEaxCf5 fatalCheckResult;
   NetworkBackendOpenBindEaxCf5 openBindResult;
-  NetworkSessionContext *pNVar5;
-  UiListRowIndex UVar6;
+  NetworkSessionContext *staleSessionContext;
+  UiListRowIndex staleBackendIndex;
   
   selectedBackendIndex = UiPointerList_GetSelectedIndexVariantACf(backendList);
-  pNVar5 = g_NetworkBackendSessionContext;
+  staleSessionContext = g_NetworkBackendSessionContext;
   if (g_NetworkBackendInstanceCount <= selectedBackendIndex) {
     return;
   }
   (*g_NetworkBackendSlot3)();
   (*g_NetworkBackendSlot1)();
-  UVar6 = selectedBackendIndex;
+  staleBackendIndex = selectedBackendIndex;
   setSessionResult = (*g_NetworkBackendSlot0)(selectedBackendIndex);
   fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(setSessionResult.eax,setSessionResult.carry);
   if (!fatalCheckResult.carry) {
@@ -2493,7 +2493,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
       UiTransfer_SendPacketType10000Value2931Cf();
       return;
     }
-    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale UVar6 */
+    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale staleBackendIndex */
   }
   setSessionResult = (*g_NetworkBackendSlot0)(selectedBackendIndex);
   if (!setSessionResult.carry) {
@@ -2501,7 +2501,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
     if (!openBindResult.carry) {
       return;
     }
-    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale pNVar5 */
+    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale staleSessionContext */
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {

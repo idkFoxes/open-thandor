@@ -205,15 +205,15 @@ void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
   Win32_ScriptTick();
   BOOL messageAvailable;
   bool shouldTranslateMessage;
-  bool bVar1;
+  bool shouldTranslate;
   
   while( true ) {
     messageAvailable = PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,1);
     if (messageAvailable == 0) break;
     if ((g_WindowDestroyDepth != 0) || (g_MainMessage.message == 0x12))
     goto Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest;
-    bVar1 = Win32_ShouldTranslateMessageFlags(&g_MainMessage);
-    if (bVar1) {
+    shouldTranslate = Win32_ShouldTranslateMessageFlags(&g_MainMessage);
+    if (shouldTranslate) {
       TranslateMessage((MSG *)&g_MainMessage);
     }
     DispatchMessageA((MSG *)&g_MainMessage);
