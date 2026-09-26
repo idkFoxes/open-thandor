@@ -576,3 +576,18 @@ int Thandor_IsReadable(const void *address, unsigned size)
     }
     return 1;
 }
+
+void Thandor_SetWindowTitle(void *window, const char *title)
+{
+    SetWindowTextA((HWND)window, title);
+}
+
+unsigned Thandor_TickCount(void)
+{
+    return GetTickCount();
+}
+
+void Thandor_SleepMs(unsigned milliseconds)
+{
+    Sleep(milliseconds);
+}

@@ -5,7 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <thandor/platform/bootstrap/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -1109,6 +1111,224 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
 }
 
 
+/* Debug tool: movie test player.
+   OPEN_THANDOR_MOVIE=<name>  plays flm\<name>.flm,
+   OPEN_THANDOR_MOVIE=all     plays every name listed in movies.txt (one per line, working dir).
+   Each movie runs at its own rate for at most 10 seconds; a key or mouse click skips to the next.
+   The name and frame counter are drawn top left. OPEN_THANDOR_MOVIE_STRETCH=1 draws full screen
+   with the end-movie bilinear stretch. The process exits after the last movie. */
+
+static const byte g_DebugFont5x7[][8] = {
+  /* char, 7 rows of 5 bits */
+  {' ',0x00,0x00,0x00,0x00,0x00,0x00,0x00},{'.',0x00,0x00,0x00,0x00,0x00,0x0c,0x0c},
+  {'/',0x01,0x02,0x02,0x04,0x08,0x08,0x10},{':',0x00,0x0c,0x0c,0x00,0x0c,0x0c,0x00},
+  {'-',0x00,0x00,0x00,0x1f,0x00,0x00,0x00},{'_',0x00,0x00,0x00,0x00,0x00,0x00,0x1f},
+  {'0',0x0e,0x11,0x13,0x15,0x19,0x11,0x0e},{'1',0x04,0x0c,0x04,0x04,0x04,0x04,0x0e},
+  {'2',0x0e,0x11,0x01,0x02,0x04,0x08,0x1f},{'3',0x1f,0x02,0x04,0x02,0x01,0x11,0x0e},
+  {'4',0x02,0x06,0x0a,0x12,0x1f,0x02,0x02},{'5',0x1f,0x10,0x1e,0x01,0x01,0x11,0x0e},
+  {'6',0x06,0x08,0x10,0x1e,0x11,0x11,0x0e},{'7',0x1f,0x01,0x02,0x04,0x08,0x08,0x08},
+  {'8',0x0e,0x11,0x11,0x0e,0x11,0x11,0x0e},{'9',0x0e,0x11,0x11,0x0f,0x01,0x02,0x0c},
+  {'a',0x0e,0x11,0x11,0x1f,0x11,0x11,0x11},{'b',0x1e,0x11,0x11,0x1e,0x11,0x11,0x1e},
+  {'c',0x0e,0x11,0x10,0x10,0x10,0x11,0x0e},{'d',0x1c,0x12,0x11,0x11,0x11,0x12,0x1c},
+  {'e',0x1f,0x10,0x10,0x1e,0x10,0x10,0x1f},{'f',0x1f,0x10,0x10,0x1e,0x10,0x10,0x10},
+  {'g',0x0e,0x11,0x10,0x17,0x11,0x11,0x0f},{'h',0x11,0x11,0x11,0x1f,0x11,0x11,0x11},
+  {'i',0x0e,0x04,0x04,0x04,0x04,0x04,0x0e},{'j',0x07,0x02,0x02,0x02,0x02,0x12,0x0c},
+  {'k',0x11,0x12,0x14,0x18,0x14,0x12,0x11},{'l',0x10,0x10,0x10,0x10,0x10,0x10,0x1f},
+  {'m',0x11,0x1b,0x15,0x15,0x11,0x11,0x11},{'n',0x11,0x11,0x19,0x15,0x13,0x11,0x11},
+  {'o',0x0e,0x11,0x11,0x11,0x11,0x11,0x0e},{'p',0x1e,0x11,0x11,0x1e,0x10,0x10,0x10},
+  {'q',0x0e,0x11,0x11,0x11,0x15,0x12,0x0d},{'r',0x1e,0x11,0x11,0x1e,0x14,0x12,0x11},
+  {'s',0x0f,0x10,0x10,0x0e,0x01,0x01,0x1e},{'t',0x1f,0x04,0x04,0x04,0x04,0x04,0x04},
+  {'u',0x11,0x11,0x11,0x11,0x11,0x11,0x0e},{'v',0x11,0x11,0x11,0x11,0x11,0x0a,0x04},
+  {'w',0x11,0x11,0x11,0x15,0x15,0x15,0x0a},{'x',0x11,0x11,0x0a,0x04,0x0a,0x11,0x11},
+  {'y',0x11,0x11,0x11,0x0a,0x04,0x04,0x04},{'z',0x1f,0x01,0x02,0x04,0x08,0x10,0x1f},
+};
+
+/* Draws text at 3x scale with a black box behind it; framebuffer: [0] pitch in pixels,
+   [2] bytes per pixel, [3] pixels. */
+static void DebugMovie_DrawText(int x0, int y0, const char *text)
+{
+  dword *fb = (dword *)g_FramebufferAccess;
+  int scale = 3;
+  int length = (int)strlen(text);
+  int boxWidth = length * 6 * scale + 2 * scale;
+  int boxHeight = 9 * scale;
+  dword pitch;
+  dword bpp;
+  byte *pixels;
+  int x;
+  int y;
+  int c;
+  if (fb == NULL) {
+    return;
+  }
+  pitch = fb[0];
+  bpp = fb[2];
+  pixels = (byte *)(uintptr_t)fb[3];
+  if ((pixels == NULL) || ((bpp != 4) && (bpp != 2))) {
+    return;
+  }
+  if (x0 + boxWidth > (int)g_FramebufferWidth) boxWidth = (int)g_FramebufferWidth - x0;
+#define DEBUG_PUT(px, py, white)                                                          \
+  do {                                                                                    \
+    if (bpp == 4) ((dword *)pixels)[(py) * pitch + (px)] = (white) ? 0xffffff40 : 0xff000000; \
+    else ((word *)pixels)[(py) * pitch + (px)] = (white) ? 0xffe8 : 0;                    \
+  } while (0)
+  for (y = 0; y < boxHeight; y++) {
+    for (x = 0; x < boxWidth; x++) {
+      DEBUG_PUT(x0 + x, y0 + y, 0);
+    }
+  }
+  for (c = 0; c < length; c++) {
+    char ch = text[c];
+    const byte *glyph = NULL;
+    unsigned g;
+    if ((ch >= 'A') && (ch <= 'Z')) ch = (char)(ch - 'A' + 'a');
+    for (g = 0; g < sizeof g_DebugFont5x7 / sizeof g_DebugFont5x7[0]; g++) {
+      if (g_DebugFont5x7[g][0] == (byte)ch) { glyph = g_DebugFont5x7[g] + 1; break; }
+    }
+    if (glyph == NULL) continue;
+    for (y = 0; y < 7 * scale; y++) {
+      for (x = 0; x < 5 * scale; x++) {
+        int px = x0 + scale + c * 6 * scale + x;
+        if (px >= (int)g_FramebufferWidth) break;
+        if ((glyph[y / scale] >> (4 - x / scale)) & 1) {
+          DEBUG_PUT(px, y0 + scale + y, 1);
+        }
+      }
+    }
+  }
+#undef DEBUG_PUT
+}
+
+static void DebugMovie_ClearScreen(void)
+{
+  if (!(*g_GraphicsFramebufferBeginAccess)()) {
+    (*g_GraphicsFramebufferFillRectArgb)
+              (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0,
+               0xff000000,g_FramebufferAccess);
+    (*g_GraphicsFramebufferEndAccess)();
+    (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+  }
+}
+
+/* Plays one movie; returns after the end, 10 seconds, or a key/click. */
+static void DebugMovie_PlayOne(const char *name, int index, int count, int stretch)
+{
+  word path[0x40];
+  char label[0x80];
+  int n = 0;
+  int i;
+  unsigned start;
+  MovieOpenEaxCf5 opened;
+  MovieAdvanceFrameEaxCf5 frame;
+  path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm'; path[n++] = '\\';
+  for (i = 0; name[i] != 0 && n < 0x38; i++) path[n++] = (word)name[i];
+  path[n++] = '.'; path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm';
+  path[n] = 0;
+  DebugMovie_ClearScreen();
+  DebugMovie_ClearScreen();
+  opened = Movie_Open(1,path);
+  if (opened.carry) {
+    Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, opened.eax);
+    sprintf(label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
+    if (!(*g_GraphicsFramebufferBeginAccess)()) {
+      DebugMovie_DrawText(8, 8, label);
+      (*g_GraphicsFramebufferEndAccess)();
+      (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+    }
+    Thandor_SleepMs(1500);
+    return;
+  }
+  frame = Movie_AdvanceFrame();
+  if (frame.carry) {
+    Thandor_Log("debug movie %d/%d %s: first frame failed", index, count, name);
+    Movie_Close();
+    return;
+  }
+  Thandor_Log("debug movie %d/%d %s: playing, %u frames at %u Hz", index, count, name,
+              g_ActiveMovie->fileHeader->frameCount, opened.playbackRateHzEcx);
+  g_IntroMoviePendingTicks = 0;
+  UiFrame_FlushInputAndResetPendingTicks();
+  (*g_TimerRegisterPeriodic)(opened.playbackRateHzEcx,IntroMovie_TimerTick);
+  start = Thandor_TickCount();
+  for (;;) {
+    KeyboardEventEaxEdxCf9 key;
+    GraphicsCursorInputEventRegsCf21 cursor;
+    (*g_Win32PumpMessages)();
+    key = (*g_KeyboardReadEvent)();
+    if (!key.carry) break;
+    cursor = (*g_GraphicsCursorConsumeEvent)();
+    if ((!cursor.carry) && (3 < cursor.eventCode)) break;
+    if (Thandor_TickCount() - start > 10000) break;
+    if (g_IntroMoviePendingTicks != 0) {
+      int burst = 3;
+      MovieAdvanceFrameEaxCf5 next;
+      int ended = 0;
+      do {
+        next = Movie_AdvanceFrame();
+        if (next.carry) { ended = 1; break; }
+        g_IntroMoviePendingTicks = g_IntroMoviePendingTicks - 1;
+      } while ((g_IntroMoviePendingTicks != 0) && (--burst != 0));
+      if (ended) break;
+      if ((*g_GraphicsFramebufferBeginAccess)()) break;
+      if (stretch) {
+        (*g_GraphicsTextureSourceStretchDirectColorBilinear)
+                  (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
+                   (GraphicsTextureSourceAsset *)frame.eax,g_FramebufferAccess);
+      }
+      else {
+        MovieFrameDimensionsEdxEax8 size = Movie_GetFrameDimensions();
+        dword height = g_FramebufferHeight;
+        (*g_GraphicsTextureSourceBlitSourceAlpha)
+                  (g_FramebufferHeight,g_FramebufferWidth,0,0,
+                   ((int)((height - (height >> 2)) - (int)(size >> 0x20)) >> 1) + (height >> 3),
+                   (int)(g_FramebufferWidth - (int)size) >> 1,0,
+                   (GraphicsTextureSourceAsset *)frame.eax,g_FramebufferAccess);
+      }
+      sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
+              g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount);
+      DebugMovie_DrawText(8, 8, label);
+      (*g_GraphicsFramebufferEndAccess)();
+      (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+    }
+  }
+  Thandor_Log("debug movie %d/%d %s: stopped at frame %u/%u after %u ms", index, count, name,
+              g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount,
+              Thandor_TickCount() - start);
+  (*g_TimerUnregisterPeriodic)(IntroMovie_TimerTick);
+  Movie_Close();
+}
+
+static void DebugMovie_Run(const char *which)
+{
+  const char *stretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");
+  int stretch = (stretchValue != NULL) && (stretchValue[0] == '1');
+  if (strcmp(which, "all") == 0) {
+    static char names[256][24];
+    int count = 0;
+    int i;
+    FILE *list = fopen("movies.txt", "r");
+    if (list == NULL) {
+      Thandor_Log("debug movie: movies.txt not found");
+      ExitProcess(1);
+    }
+    while ((count < 256) && (fgets(names[count], sizeof names[count], list) != NULL)) {
+      char *end = names[count] + strlen(names[count]);
+      while ((end > names[count]) && ((end[-1] == '\n') || (end[-1] == '\r') || (end[-1] == ' '))) *--end = 0;
+      if (names[count][0] != 0) count++;
+    }
+    fclose(list);
+    for (i = 0; i < count; i++) {
+      DebugMovie_PlayOne(names[i], i + 1, count, stretch);
+    }
+  }
+  else {
+    DebugMovie_PlayOne(which, 1, 1, stretch);
+  }
+  Thandor_Log("debug movie: finished");
+  ExitProcess(0);
+}
+
 /* Address: 0x005739D0.
    Ownership: platform/bootstrap/runtime.
    Purpose: Clears and presents the framebuffer, honors the NOINTRO option, plays sequentially numbered files
@@ -1135,13 +1355,11 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
   CommandLineFindOptionEbxCf5 CVar10;
   GraphicsCursorInputEventRegsCf21 GVar11;
   
-  bVar4 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar4) {
-    (*g_GraphicsFramebufferFillRectArgb)
-              (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
-               ,0xff000000,g_FramebufferAccess);
-    (*g_GraphicsFramebufferEndAccess)();
-    (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+    {
+    const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
+    if ((debugMovie != NULL) && (debugMovie[0] != 0)) {
+      DebugMovie_Run(debugMovie);
+    }
   }
   bVar4 = (*g_GraphicsFramebufferBeginAccess)();
   if (!bVar4) {
@@ -1151,33 +1369,18 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-  /* Debug tool: OPEN_THANDOR_MOVIE=<name> (e.g. ende0001) plays flm\<name>.flm through this player
-     instead of the intro; OPEN_THANDOR_MOVIE_STRETCH=1 draws it with the full-screen bilinear
-     stretch the end movie uses. */
-  static word debugMoviePath[0x40];
-  const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
-  const char *debugStretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");
-  int debugStretch = (debugStretchValue != NULL) && (debugStretchValue[0] == '1');
-  if ((debugMovie != NULL) && (debugMovie[0] != 0)) {
-    static const char prefix[] = "flm\\";
-    int n = 0;
-    int i;
-    for (i = 0; prefix[i] != 0; i++) debugMoviePath[n++] = (word)prefix[i];
-    for (i = 0; debugMovie[i] != 0 && n < 0x30; i++) debugMoviePath[n++] = (word)debugMovie[i];
-    debugMoviePath[n++] = '.';
-    debugMoviePath[n++] = 'f';
-    debugMoviePath[n++] = 'l';
-    debugMoviePath[n++] = 'm';
-    debugMoviePath[n] = 0;
-    Thandor_Log("debug movie: playing flm\\%s.flm stretch=%d", debugMovie, debugStretch);
+  bVar4 = (*g_GraphicsFramebufferBeginAccess)();
+  if (!bVar4) {
+    (*g_GraphicsFramebufferFillRectArgb)
+              (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
+               ,0xff000000,g_FramebufferAccess);
+    (*g_GraphicsFramebufferEndAccess)();
+    (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
   CVar10 = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
-  if (CVar10.carry || (debugMoviePath[0] != 0)) {
+  if (CVar10.carry) {
     while( true ) {
-      MVar6 = Movie_Open(1,(debugMoviePath[0] != 0) ? debugMoviePath : (word *)u_flm_intro0_flm_00573046);
-      if (MVar6.carry && (debugMoviePath[0] != 0)) {
-        Thandor_Log("debug movie: Movie_Open failed (eax=%08x)", MVar6.eax);
-      }
+      MVar6 = Movie_Open(1,(word *)u_flm_intro0_flm_00573046);
       if (MVar6.carry) break;
       MVar7 = Movie_AdvanceFrame();
       if (MVar7.carry) {
@@ -1206,12 +1409,6 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
           bVar4 = (*g_GraphicsFramebufferBeginAccess)();
           if (bVar4) goto GameIntroMovies_StopCurrentPlayback;
           MVar5 = Movie_GetFrameDimensions();
-          if (debugStretch) {
-            (*g_GraphicsTextureSourceStretchDirectColorBilinear)
-                      (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
-                       (GraphicsTextureSourceAsset *)MVar7.eax,g_FramebufferAccess);
-          }
-          else
           (*g_GraphicsTextureSourceBlitSourceAlpha)
                     (g_FramebufferHeight,g_FramebufferWidth,0,0,
                      ((int)((dVar1 - uVar2) - (int)(MVar5 >> 0x20)) >> 1) + (dVar1 >> 3),
@@ -1227,9 +1424,6 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 GameIntroMovies_StopCurrentPlayback:
       (*g_TimerUnregisterPeriodic)(IntroMovie_TimerTick);
       Movie_Close();
-      if (debugMoviePath[0] != 0) {
-        return; /* debug movie: play once, then continue to the menu */
-      }
       u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + L'\x01';
     }
   }

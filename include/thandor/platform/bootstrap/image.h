@@ -42,6 +42,10 @@ void Thandor_LogStack(const char *reason, unsigned value);
 
 /* Nonzero when [address, address + size) is committed, readable memory (diagnostics). */
 int Thandor_IsReadable(const void *address, unsigned size);
+/* Debug tool: sets the main window caption (ANSI). */
+void Thandor_SetWindowTitle(void *window, const char *title);
+unsigned Thandor_TickCount(void);
+void Thandor_SleepMs(unsigned milliseconds);
 
 /* Symbol name (+offset) of an address in this executable, for diagnostics. */
 const char *Thandor_SymbolName(const void *address);
