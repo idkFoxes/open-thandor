@@ -2633,7 +2633,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
             extern volatile long g_ThandorDiagSessionTickCalls;
             extern volatile long g_ThandorDiagSessionTickLockBusy;
             static int iterations;
-            if ((iterations++ % 20) == 0 && iterations < 1200) {
+            if ((iterations++ % 200) == 0 && iterations < 3000) {
               Thandor_Log("end movie loop %d: pending=%u flags=%08x countdown=%u lock=%08x tickCalls=%ld lockBusy=%ld rate=%u frame=%u",
                           iterations, g_EndMoviePendingTicks, g_UiCommandRuntimeFlags,
                           g_InGameNetworkTickCountdown, *(dword *)&g_InGameStateTickSpinLock,
@@ -2651,12 +2651,6 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
           UiNode_InvalidateRoot((UiNodeBase *)pIVar4);
           UiFrame_ProcessAndPresent();
         } while ((g_UiCommandRuntimeFlags & 0x800) != 0);
-        Thandor_Log("end movie loop exit: flags=%08x pending=%u frame=%u lastCarry=%d",
-                    g_UiCommandRuntimeFlags, g_EndMoviePendingTicks,
-                    g_ActiveMovie ? g_ActiveMovie->currentFrameIndex : 0, MVar14.carry);
-      }
-      else {
-        Thandor_Log("end movie: first Movie_AdvanceFrame failed (eax=%08x)", MVar14.eax);
       }
       g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
       UiPageStack_SetActiveIndex(1,&pIVar4->endMoviePageStack02F8);
