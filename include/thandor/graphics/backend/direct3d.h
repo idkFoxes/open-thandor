@@ -18,7 +18,8 @@
 sdword __stdcall Direct3D_EnumDeviceCallback (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName, D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc, GraphicsAdapterRecord *adapterContext);
 
 /* 0x00578820 */
-sdword __thandor_eax_preserve_ecx_edx
+/* Called by IDirect3DDevice2::EnumTextureFormats: __stdcall (the original returns with RET 8). */
+sdword __stdcall
 GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context);
 

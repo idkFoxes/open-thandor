@@ -97,7 +97,8 @@ sdword __stdcall Direct3D_EnumDeviceCallback
    Ownership: graphics/backend/direct3d.
    Purpose: Semantic ABI remains deferred.
 */
-sdword __thandor_eax_preserve_ecx_edx
+/* Called by IDirect3DDevice2::EnumTextureFormats: __stdcall (the original returns with RET 8). */
+sdword __stdcall
 GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context)
 
