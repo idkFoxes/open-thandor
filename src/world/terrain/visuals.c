@@ -22,71 +22,71 @@
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void)
 
 {
-  FieldGridAsset *pFVar1;
-  AssetDimension AVar2;
-  AssetDimension AVar3;
-  InGameRuntimeRootImageC3E4 *pIVar4;
-  AssetRelativeOffset AVar6;
-  uint uVar7;
-  int iVar8;
-  ArenaAllocEaxCf5 AVar9;
-  StatusValueEaxCf5 SVar10;
-  TerrainCompositeTextureRuntime *pTVar5;
+  FieldGridAsset *terrainFieldGrid;
+  AssetDimension fieldWidth;
+  AssetDimension fieldHeight;
+  InGameRuntimeRootImageC3E4 *inGameRoot;
+  AssetRelativeOffset plane2DataOffset;
+  uint totalImageBytes;
+  int planeSizeBytes;
+  ArenaAllocEaxCf5 allocResult;
+  StatusValueEaxCf5 resultStatus;
+  TerrainCompositeTextureRuntime *compositeTexture;
   
-  pIVar4 = g_InGameRuntimeRoot;
-  pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  AVar2 = pFVar1->gridWidth;
-  AVar3 = pFVar1->gridHeight;
-  AVar9 = (*g_MemoryApi.alloc)(AVar2 * 0xc * AVar3 + 0x260);
-  pTVar5 = (TerrainCompositeTextureRuntime *)AVar9.eax;
-  if (!AVar9.carry) {
-    g_TerrainCompositeTexture = pTVar5;
-    *(TerrainCompositeTextureRuntime **)(pIVar4->opaque9A74_9B4B + 8) = pTVar5;
-    pTVar5->sourceEntries[0].pixelWidth = AVar2;
-    pTVar5->sourceEntries[0].pixelHeight = AVar3;
-    pTVar5->sourceEntries[0].originX = 0;
-    pTVar5->sourceEntries[0].originY = 0;
-    iVar8 = AVar2 * 4 * AVar3;
-    pTVar5->sourceEntries[0].paletteIndex = -1;
-    pTVar5->sourceEntries[0].logicalWidth = AVar2;
-    pTVar5->sourceEntries[0].logicalHeight = AVar3;
-    pTVar5->sourceEntries[0].dataOffset = 0x260;
-    pTVar5->sourceEntries[1].pixelWidth = AVar2;
-    pTVar5->sourceEntries[1].pixelHeight = AVar3;
-    pTVar5->sourceEntries[1].originX = 0;
-    pTVar5->sourceEntries[1].originY = 0;
-    pTVar5->sourceEntries[1].paletteIndex = -1;
-    pTVar5->sourceEntries[1].logicalWidth = AVar2;
-    pTVar5->sourceEntries[1].logicalHeight = AVar3;
-    pTVar5->sourceEntries[1].dataOffset = iVar8 + 0x260U;
-    pTVar5->sourceEntries[2].pixelWidth = AVar2;
-    pTVar5->sourceEntries[2].pixelHeight = AVar3;
-    pTVar5->sourceEntries[2].originX = 0;
-    pTVar5->sourceEntries[2].originY = 0;
-    AVar6 = iVar8 + 0x260U + iVar8;
-    pTVar5->sourceEntries[2].paletteIndex = -1;
-    pTVar5->sourceEntries[2].logicalWidth = AVar2;
-    pTVar5->sourceEntries[2].logicalHeight = AVar3;
-    pTVar5->sourceEntries[2].dataOffset = AVar6;
-    (pTVar5->textureSource).common.magic = ASSET_MAGIC_GFX;
-    uVar7 = AVar6 + iVar8;
-    (pTVar5->textureSource).tableDescriptor.subresourceCount = 3;
-    (pTVar5->textureSource).tableDescriptor.paletteBankCount = 0;
-    (pTVar5->textureSource).tableDescriptor.subresourceTableOffset = 0x200;
-    (pTVar5->textureSource).opaqueTablePayloadBC_1FF[0] = 0;
-    (pTVar5->textureSource).opaqueTablePayloadBC_1FF[1] = 0;
-    (pTVar5->textureSource).opaqueTablePayloadBC_1FF[2] = 0;
-    (pTVar5->textureSource).opaqueTablePayloadBC_1FF[3] = 0;
-    (pTVar5->textureSource).common.allocationSizeBytes = uVar7;
+  inGameRoot = g_InGameRuntimeRoot;
+  terrainFieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldWidth = terrainFieldGrid->gridWidth;
+  fieldHeight = terrainFieldGrid->gridHeight;
+  allocResult = (*g_MemoryApi.alloc)(fieldWidth * 0xc * fieldHeight + 0x260);
+  compositeTexture = (TerrainCompositeTextureRuntime *)allocResult.eax;
+  if (!allocResult.carry) {
+    g_TerrainCompositeTexture = compositeTexture;
+    *(TerrainCompositeTextureRuntime **)(inGameRoot->opaque9A74_9B4B + 8) = compositeTexture;
+    compositeTexture->sourceEntries[0].pixelWidth = fieldWidth;
+    compositeTexture->sourceEntries[0].pixelHeight = fieldHeight;
+    compositeTexture->sourceEntries[0].originX = 0;
+    compositeTexture->sourceEntries[0].originY = 0;
+    planeSizeBytes = fieldWidth * 4 * fieldHeight;
+    compositeTexture->sourceEntries[0].paletteIndex = -1;
+    compositeTexture->sourceEntries[0].logicalWidth = fieldWidth;
+    compositeTexture->sourceEntries[0].logicalHeight = fieldHeight;
+    compositeTexture->sourceEntries[0].dataOffset = 0x260;
+    compositeTexture->sourceEntries[1].pixelWidth = fieldWidth;
+    compositeTexture->sourceEntries[1].pixelHeight = fieldHeight;
+    compositeTexture->sourceEntries[1].originX = 0;
+    compositeTexture->sourceEntries[1].originY = 0;
+    compositeTexture->sourceEntries[1].paletteIndex = -1;
+    compositeTexture->sourceEntries[1].logicalWidth = fieldWidth;
+    compositeTexture->sourceEntries[1].logicalHeight = fieldHeight;
+    compositeTexture->sourceEntries[1].dataOffset = planeSizeBytes + 0x260U;
+    compositeTexture->sourceEntries[2].pixelWidth = fieldWidth;
+    compositeTexture->sourceEntries[2].pixelHeight = fieldHeight;
+    compositeTexture->sourceEntries[2].originX = 0;
+    compositeTexture->sourceEntries[2].originY = 0;
+    plane2DataOffset = planeSizeBytes + 0x260U + planeSizeBytes;
+    compositeTexture->sourceEntries[2].paletteIndex = -1;
+    compositeTexture->sourceEntries[2].logicalWidth = fieldWidth;
+    compositeTexture->sourceEntries[2].logicalHeight = fieldHeight;
+    compositeTexture->sourceEntries[2].dataOffset = plane2DataOffset;
+    (compositeTexture->textureSource).common.magic = ASSET_MAGIC_GFX;
+    totalImageBytes = plane2DataOffset + planeSizeBytes;
+    (compositeTexture->textureSource).tableDescriptor.subresourceCount = 3;
+    (compositeTexture->textureSource).tableDescriptor.paletteBankCount = 0;
+    (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = 0x200;
+    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[0] = 0;
+    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[1] = 0;
+    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[2] = 0;
+    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[3] = 0;
+    (compositeTexture->textureSource).common.allocationSizeBytes = totalImageBytes;
     TerrainCompositeTexture_FillPlane1();
     TerrainCompositeTexture_FillPlane2();
     TerrainCompositeTexture_RebuildPlane0();
-    AVar9.carry = false;
-    AVar9.eax = uVar7;
+    allocResult.carry = false;
+    allocResult.eax = totalImageBytes;
   }
-  SVar10.valueOrError = AVar9.eax;
-  SVar10.carry = AVar9.carry;
-  return SVar10;
+  resultStatus.valueOrError = allocResult.eax;
+  resultStatus.carry = allocResult.carry;
+  return resultStatus;
 }
 
 
@@ -100,16 +100,16 @@ bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
 {
   void *lookupAllocationBase;
   int lookupRowsRemaining;
-  int iVar1;
-  byte bVar2;
+  int finalRowsRemaining;
+  byte nextInputByte;
   uint clampInputValue;
-  uint uVar3;
+  uint lookupInputValue;
   byte *lookupWriteCursor;
-  ArenaAllocEaxCf5 AVar4;
+  ArenaAllocEaxCf5 allocResult;
   
-  AVar4 = (*g_MemoryApi.alloc)(0x20000);
-  lookupAllocationBase = (void *)AVar4.eax;
-  if (AVar4.carry) {
+  allocResult = (*g_MemoryApi.alloc)(0x20000);
+  lookupAllocationBase = (void *)allocResult.eax;
+  if (allocResult.carry) {
     return true;
   }
   clampInputValue = 0;
@@ -128,113 +128,113 @@ bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
         *lookupWriteCursor = (byte)(clampInputValue - 0x15);
       }
       lookupWriteCursor = lookupWriteCursor + 1;
-      bVar2 = (char)clampInputValue + 1;
-      clampInputValue = (uint)bVar2;
-    } while (bVar2 != 0);
-    uVar3 = 0;
+      nextInputByte = (char)clampInputValue + 1;
+      clampInputValue = (uint)nextInputByte;
+    } while (nextInputByte != 0);
+    lookupInputValue = 0;
     do {
-      if (uVar3 < 0x100) {
-        if (uVar3 + 0x15 < 0xff) {
-          *lookupWriteCursor = (byte)(uVar3 + 0x15);
+      if (lookupInputValue < 0x100) {
+        if (lookupInputValue + 0x15 < 0xff) {
+          *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
         }
         else {
           *lookupWriteCursor = 0xff;
         }
       }
-      else if ((int)(uVar3 - 0x15) < 0x100) {
+      else if ((int)(lookupInputValue - 0x15) < 0x100) {
         *lookupWriteCursor = 0xff;
       }
       else {
-        *lookupWriteCursor = (byte)(uVar3 - 0x15);
+        *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
       }
       lookupWriteCursor = lookupWriteCursor + 1;
-      bVar2 = (char)uVar3 + 1;
-      uVar3 = (uint)bVar2;
-    } while (bVar2 != 0);
+      nextInputByte = (char)lookupInputValue + 1;
+      lookupInputValue = (uint)nextInputByte;
+    } while (nextInputByte != 0);
     lookupRowsRemaining = lookupRowsRemaining + -1;
     clampInputValue = 0;
   } while (lookupRowsRemaining != 0);
-  uVar3 = 0;
+  lookupInputValue = 0;
   do {
-    if (uVar3 < 0x88) {
-      if (uVar3 + 0x15 < 0x87) {
-        *lookupWriteCursor = (byte)(uVar3 + 0x15);
+    if (lookupInputValue < 0x88) {
+      if (lookupInputValue + 0x15 < 0x87) {
+        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0x87;
       }
     }
-    else if ((int)(uVar3 - 0x15) < 0x88) {
+    else if ((int)(lookupInputValue - 0x15) < 0x88) {
       *lookupWriteCursor = 0x87;
     }
     else {
-      *lookupWriteCursor = (byte)(uVar3 - 0x15);
+      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
-    bVar2 = (char)uVar3 + 1;
-    uVar3 = (uint)bVar2;
-  } while (bVar2 != 0);
-  uVar3 = 0;
+    nextInputByte = (char)lookupInputValue + 1;
+    lookupInputValue = (uint)nextInputByte;
+  } while (nextInputByte != 0);
+  lookupInputValue = 0;
   do {
-    if (uVar3 < 0x100) {
-      if (uVar3 + 0x15 < 0xff) {
-        *lookupWriteCursor = (byte)(uVar3 + 0x15);
+    if (lookupInputValue < 0x100) {
+      if (lookupInputValue + 0x15 < 0xff) {
+        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0xff;
       }
     }
-    else if ((int)(uVar3 - 0x15) < 0x100) {
+    else if ((int)(lookupInputValue - 0x15) < 0x100) {
       *lookupWriteCursor = 0xff;
     }
     else {
-      *lookupWriteCursor = (byte)(uVar3 - 0x15);
+      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
-    bVar2 = (char)uVar3 + 1;
-    uVar3 = (uint)bVar2;
-  } while (bVar2 != 0);
-  uVar3 = 0;
+    nextInputByte = (char)lookupInputValue + 1;
+    lookupInputValue = (uint)nextInputByte;
+  } while (nextInputByte != 0);
+  lookupInputValue = 0;
   do {
-    if (uVar3 < 0x88) {
-      if (uVar3 + 0x15 < 0x87) {
-        *lookupWriteCursor = (byte)(uVar3 + 0x15);
+    if (lookupInputValue < 0x88) {
+      if (lookupInputValue + 0x15 < 0x87) {
+        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0x87;
       }
     }
-    else if ((int)(uVar3 - 0x15) < 0x88) {
+    else if ((int)(lookupInputValue - 0x15) < 0x88) {
       *lookupWriteCursor = 0x87;
     }
     else {
-      *lookupWriteCursor = (byte)(uVar3 - 0x15);
+      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
-    bVar2 = (char)uVar3 + 1;
-    uVar3 = (uint)bVar2;
-  } while (bVar2 != 0);
-  iVar1 = 0x7d;
-  uVar3 = 0;
+    nextInputByte = (char)lookupInputValue + 1;
+    lookupInputValue = (uint)nextInputByte;
+  } while (nextInputByte != 0);
+  finalRowsRemaining = 0x7d;
+  lookupInputValue = 0;
   do {
-    if (uVar3 < 0x100) {
-      if (uVar3 + 0x15 < 0xff) {
-        *lookupWriteCursor = (byte)(uVar3 + 0x15);
+    if (lookupInputValue < 0x100) {
+      if (lookupInputValue + 0x15 < 0xff) {
+        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0xff;
       }
     }
-    else if ((int)(uVar3 - 0x15) < 0x100) {
+    else if ((int)(lookupInputValue - 0x15) < 0x100) {
       *lookupWriteCursor = 0xff;
     }
     else {
-      *lookupWriteCursor = (byte)(uVar3 - 0x15);
+      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
-    bVar2 = (char)uVar3 + 1;
-    uVar3 = (uint)bVar2;
-  } while ((bVar2 != 0) || (iVar1 = iVar1 + -1, iVar1 != 0));
+    nextInputByte = (char)lookupInputValue + 1;
+    lookupInputValue = (uint)nextInputByte;
+  } while ((nextInputByte != 0) || (finalRowsRemaining = finalRowsRemaining + -1, finalRowsRemaining != 0));
   return false;
 }
 
@@ -253,149 +253,149 @@ TerrainVisualResources_LoadPrimary
           (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field)
 
 {
-  GraphicsPaletteAsset *pGVar1;
-  GraphicsTextureSet *pGVar2;
-  dword dVar3;
-  int iVar4;
-  int iVar5;
-  word wVar6;
-  uint uVar7;
-  TerrainMaterialSuffixEntry *pTVar8;
-  word *pwVar9;
-  word *pwVar10;
-  GraphicsTextureSet **ppGVar12;
-  TerrainDirectionRecord *pTVar13;
-  GraphicsTextureSetEaxCf5 GVar14;
-  PackageLoadEntryEaxCf5 PVar15;
-  GraphicsPaletteAssetEaxCf5 GVar16;
-  StatusValueEaxCf5 SVar17;
-  StatusValueEaxCf5 SVar18;
-  TerrainMaterialSuffixEntry *pTVar11;
+  GraphicsPaletteAsset *loadedResourceOrError;
+  GraphicsTextureSet *materialTextureSet;
+  dword randomValue;
+  int loopCounter;
+  int materialSlotsRemaining;
+  word pathCharOrRotationRate;
+  uint materialFlagBits;
+  TerrainMaterialSuffixEntry *suffixLetterCursor;
+  word *pathScanCursor;
+  word *pathScanNext;
+  GraphicsTextureSet **materialTextureSetSlot;
+  TerrainDirectionRecord *directionRecord;
+  GraphicsTextureSetEaxCf5 textureSetLoad;
+  PackageLoadEntryEaxCf5 packageLoad;
+  GraphicsPaletteAssetEaxCf5 paletteLoad;
+  StatusValueEaxCf5 randomOrSuccessStatus;
+  StatusValueEaxCf5 failureStatus;
+  TerrainMaterialSuffixEntry *pathSuffixEntry;
   
-  iVar4 = 0x100;
-  pwVar9 = secondaryResourcePath;
+  loopCounter = 0x100;
+  pathScanCursor = secondaryResourcePath;
   do {
-    pwVar10 = pwVar9;
-    if (iVar4 == 0) break;
-    iVar4 = iVar4 + -1;
-    pwVar10 = pwVar9 + 1;
-    wVar6 = *pwVar9;
-    pwVar9 = pwVar10;
-  } while (wVar6 != 0);
-  pTVar11 = (TerrainMaterialSuffixEntry *)(pwVar10 + -1);
-  pGVar1 = (GraphicsPaletteAsset *)0x38;
+    pathScanNext = pathScanCursor;
+    if (loopCounter == 0) break;
+    loopCounter = loopCounter + -1;
+    pathScanNext = pathScanCursor + 1;
+    pathCharOrRotationRate = *pathScanCursor;
+    pathScanCursor = pathScanNext;
+  } while (pathCharOrRotationRate != 0);
+  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext + -1);
+  loadedResourceOrError = (GraphicsPaletteAsset *)0x38;
   if (((field->common).magic == ASSET_MAGIC_FLD) &&
      ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    uVar7 = field->fieldFlags;
-    iVar4 = 0;
+    materialFlagBits = field->fieldFlags;
+    loopCounter = 0;
     do {
-      if ((uVar7 & 1) != 0) {
-        iVar4 = iVar4 + 1;
+      if ((materialFlagBits & 1) != 0) {
+        loopCounter = loopCounter + 1;
       }
-      uVar7 = uVar7 >> 1;
-    } while (uVar7 != 0);
-    iVar5 = 0x1a;
-    uVar7 = field->fieldFlags;
-    g_MoviePlaybackScheduleSpan = iVar4 * 2 + 10;
-    pTVar8 = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
-    ppGVar12 = g_TerrainMaterialTextureSets;
+      materialFlagBits = materialFlagBits >> 1;
+    } while (materialFlagBits != 0);
+    materialSlotsRemaining = 0x1a;
+    materialFlagBits = field->fieldFlags;
+    g_MoviePlaybackScheduleSpan = loopCounter * 2 + 10;
+    suffixLetterCursor = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
+    materialTextureSetSlot = g_TerrainMaterialTextureSets;
     do {
-      if ((uVar7 & 1) == 0) {
-        *pTVar11 = *pTVar8;
+      if ((materialFlagBits & 1) == 0) {
+        *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
-        GVar14 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        pGVar2 = GVar14.textureSet;
-        if (GVar14.carry) {
-          pGVar2 = (GraphicsTextureSet *)0x0;
+        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        materialTextureSet = textureSetLoad.textureSet;
+        if (textureSetLoad.carry) {
+          materialTextureSet = (GraphicsTextureSet *)0x0;
         }
-        *ppGVar12 = pGVar2;
+        *materialTextureSetSlot = materialTextureSet;
       }
       else {
-        *pTVar11 = *pTVar8;
+        *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        GVar14 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        pGVar1 = (GraphicsPaletteAsset *)GVar14.textureSet;
-        if (GVar14.carry)
+        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
+        if (textureSetLoad.carry)
         goto TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus;
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        *ppGVar12 = (GraphicsTextureSet *)pGVar1;
+        *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
       }
-      pTVar8 = pTVar8 + 1;
-      ppGVar12 = ppGVar12 + 1;
-      uVar7 = uVar7 >> 1;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      suffixLetterCursor = suffixLetterCursor + 1;
+      materialTextureSetSlot = materialTextureSetSlot + 1;
+      materialFlagBits = materialFlagBits >> 1;
+      materialSlotsRemaining = materialSlotsRemaining + -1;
+    } while (materialSlotsRemaining != 0);
     WidePath_SetExtensionCode(0x746164,primaryResourcePath);
-    PVar15 = Package_LoadEntry(primaryResourcePath);
-    pGVar1 = PVar15.bufferOrError;
-    if (!PVar15.carry) {
+    packageLoad = Package_LoadEntry(primaryResourcePath);
+    loadedResourceOrError = packageLoad.bufferOrError;
+    if (!packageLoad.carry) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_TerrainSurfacePacketTablePayload =
-           &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
+           &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
       WidePath_SetExtensionCode(0x786667,primaryResourcePath);
-      GVar14 = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
-      pGVar1 = (GraphicsPaletteAsset *)GVar14.textureSet;
-      if (!GVar14.carry) {
+      textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
+      loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
+      if (!textureSetLoad.carry) {
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)pGVar1;
+        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)loadedResourceOrError;
         WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
-        GVar16 = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
-        pGVar1 = GVar16.paletteAsset;
-        if (!GVar16.carry) {
+        paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
+        loadedResourceOrError = paletteLoad.paletteAsset;
+        if (!paletteLoad.carry) {
           MoviePlayback_AdvanceScheduledFrameAndTick();
-          g_TerrainPrimaryPalette = pGVar1;
-          pTVar11->lowercaseLetterUtf16 = 0;
-          pTVar11->terminator = 0;
+          g_TerrainPrimaryPalette = loadedResourceOrError;
+          pathSuffixEntry->lowercaseLetterUtf16 = 0;
+          pathSuffixEntry->terminator = 0;
           WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
-          GVar16 = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
-          pGVar1 = GVar16.paletteAsset;
-          if (!GVar16.carry) {
+          paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
+          loadedResourceOrError = paletteLoad.paletteAsset;
+          if (!paletteLoad.carry) {
             MoviePlayback_AdvanceScheduledFrameAndTick();
-            g_TerrainSecondaryPalette = pGVar1;
-            pTVar11->lowercaseLetterUtf16 = 0;
-            pTVar11->terminator = 0;
+            g_TerrainSecondaryPalette = loadedResourceOrError;
+            pathSuffixEntry->lowercaseLetterUtf16 = 0;
+            pathSuffixEntry->terminator = 0;
             WidePath_SetExtensionCode(0x746164,secondaryResourcePath);
-            PVar15 = Package_LoadEntry(secondaryResourcePath);
-            pGVar1 = PVar15.bufferOrError;
-            if (!PVar15.carry) {
+            packageLoad = Package_LoadEntry(secondaryResourcePath);
+            loadedResourceOrError = packageLoad.bufferOrError;
+            if (!packageLoad.carry) {
               MoviePlayback_AdvanceScheduledFrameAndTick();
               g_TerrainSoilPacketTablePayload =
-                   &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
+                   &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
               FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              iVar4 = 0x100;
-              pTVar13 = g_TerrainDirectionRecordTable256;
+              loopCounter = 0x100;
+              directionRecord = g_TerrainDirectionRecordTable256;
               do {
-                dVar3 = Random_NextPrimary();
-                pTVar13->scaleA = (dVar3 & 0x1f) + 0x80;
-                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
-                dVar3 = Random_NextPrimary();
-                if ((int)dVar3 < 0) {
-                  wVar6 = -wVar6;
+                randomValue = Random_NextPrimary();
+                directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
+                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                randomValue = Random_NextPrimary();
+                if ((int)randomValue < 0) {
+                  pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
-                pTVar13->rateA = wVar6;
-                *(short *)&pTVar13->packedAngleA_low16_AngleB_high16 = (short)dVar3;
-                dVar3 = Random_NextPrimary();
-                pTVar13->scaleB = (dVar3 & 0x1f) + 0x80;
-                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
-                SVar17.valueOrError = Random_NextPrimary();
-                if ((int)SVar17.valueOrError < 0) {
-                  wVar6 = -wVar6;
+                directionRecord->rateA = pathCharOrRotationRate;
+                *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
+                randomValue = Random_NextPrimary();
+                directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
+                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                randomOrSuccessStatus.valueOrError = Random_NextPrimary();
+                if ((int)randomOrSuccessStatus.valueOrError < 0) {
+                  pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
-                pTVar13->rateB = wVar6;
-                *(short *)((int)&pTVar13->packedAngleA_low16_AngleB_high16 + 2) =
-                     (short)SVar17.valueOrError;
-                pTVar13->angleAComponent0ScaledQ28 = 0;
-                pTVar13->angleAComponent1ScaledQ28 = 0;
-                pTVar13->angleBComponent0ScaledQ28 = 0;
-                pTVar13 = pTVar13 + 1;
-                iVar4 = iVar4 + -1;
-              } while (iVar4 != 0);
+                directionRecord->rateB = pathCharOrRotationRate;
+                *(short *)((int)&directionRecord->packedAngleA_low16_AngleB_high16 + 2) =
+                     (short)randomOrSuccessStatus.valueOrError;
+                directionRecord->angleAComponent0ScaledQ28 = 0;
+                directionRecord->angleAComponent1ScaledQ28 = 0;
+                directionRecord->angleBComponent0ScaledQ28 = 0;
+                directionRecord = directionRecord + 1;
+                loopCounter = loopCounter + -1;
+              } while (loopCounter != 0);
               MoviePlayback_AdvanceScheduledFrameAndTick();
               TerrainDirectionTable_AdvanceAndRebuildVectors();
-              SVar17.carry = false;
-              return SVar17;
+              randomOrSuccessStatus.carry = false;
+              return randomOrSuccessStatus;
             }
           }
         }
@@ -403,9 +403,9 @@ TerrainVisualResources_LoadPrimary
     }
   }
 TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus:
-  SVar18.carry = true;
-  SVar18.valueOrError = (dword)pGVar1;
-  return SVar18;
+  failureStatus.carry = true;
+  failureStatus.valueOrError = (dword)loadedResourceOrError;
+  return failureStatus;
 }
 
 
@@ -426,160 +426,160 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
           (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field)
 
 {
-  GraphicsPaletteAsset *pGVar1;
-  GraphicsTextureSet *pGVar2;
-  dword dVar3;
-  int iVar4;
-  int iVar5;
-  word wVar6;
-  uint uVar7;
-  TerrainMaterialSuffixEntry *pTVar8;
-  FieldGridCell *pFVar9;
-  word *pwVar10;
-  word *pwVar11;
-  GraphicsTextureSet **ppGVar13;
-  TerrainDirectionRecord *pTVar14;
-  GraphicsTextureSetEaxCf5 GVar15;
-  PackageLoadEntryEaxCf5 PVar16;
-  GraphicsPaletteAssetEaxCf5 GVar17;
-  StatusValueEaxCf5 SVar18;
-  StatusValueEaxCf5 SVar19;
-  TerrainMaterialSuffixEntry *pTVar12;
+  GraphicsPaletteAsset *loadedResourceOrError;
+  GraphicsTextureSet *materialTextureSet;
+  dword randomValue;
+  int loopCounter;
+  int materialSlotsRemaining;
+  word pathCharOrRotationRate;
+  uint materialFlagBits;
+  TerrainMaterialSuffixEntry *suffixLetterCursor;
+  FieldGridCell *fieldCell;
+  word *pathScanCursor;
+  word *pathScanNext;
+  GraphicsTextureSet **materialTextureSetSlot;
+  TerrainDirectionRecord *directionRecord;
+  GraphicsTextureSetEaxCf5 textureSetLoad;
+  PackageLoadEntryEaxCf5 packageLoad;
+  GraphicsPaletteAssetEaxCf5 paletteLoad;
+  StatusValueEaxCf5 randomOrSuccessStatus;
+  StatusValueEaxCf5 failureStatus;
+  TerrainMaterialSuffixEntry *pathSuffixEntry;
   
-  iVar4 = 0x100;
-  pwVar10 = secondaryResourcePath;
+  loopCounter = 0x100;
+  pathScanCursor = secondaryResourcePath;
   do {
-    pwVar11 = pwVar10;
-    if (iVar4 == 0) break;
-    iVar4 = iVar4 + -1;
-    pwVar11 = pwVar10 + 1;
-    wVar6 = *pwVar10;
-    pwVar10 = pwVar11;
-  } while (wVar6 != 0);
-  pTVar12 = (TerrainMaterialSuffixEntry *)(pwVar11 + -1);
-  pGVar1 = (GraphicsPaletteAsset *)0x38;
+    pathScanNext = pathScanCursor;
+    if (loopCounter == 0) break;
+    loopCounter = loopCounter + -1;
+    pathScanNext = pathScanCursor + 1;
+    pathCharOrRotationRate = *pathScanCursor;
+    pathScanCursor = pathScanNext;
+  } while (pathCharOrRotationRate != 0);
+  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext + -1);
+  loadedResourceOrError = (GraphicsPaletteAsset *)0x38;
   if (((field->common).magic == ASSET_MAGIC_FLD) &&
      ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    uVar7 = field->fieldFlags;
-    iVar4 = 0;
+    materialFlagBits = field->fieldFlags;
+    loopCounter = 0;
     do {
-      if ((uVar7 & 1) != 0) {
-        iVar4 = iVar4 + 1;
+      if ((materialFlagBits & 1) != 0) {
+        loopCounter = loopCounter + 1;
       }
-      uVar7 = uVar7 >> 1;
-    } while (uVar7 != 0);
-    iVar5 = 0x1a;
-    uVar7 = field->fieldFlags;
-    g_MoviePlaybackScheduleSpan = iVar4 * 2 + 10;
-    pTVar8 = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
-    ppGVar13 = g_TerrainMaterialTextureSets;
+      materialFlagBits = materialFlagBits >> 1;
+    } while (materialFlagBits != 0);
+    materialSlotsRemaining = 0x1a;
+    materialFlagBits = field->fieldFlags;
+    g_MoviePlaybackScheduleSpan = loopCounter * 2 + 10;
+    suffixLetterCursor = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
+    materialTextureSetSlot = g_TerrainMaterialTextureSets;
     do {
-      if ((uVar7 & 1) == 0) {
-        *pTVar12 = *pTVar8;
+      if ((materialFlagBits & 1) == 0) {
+        *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
-        GVar15 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        pGVar2 = GVar15.textureSet;
-        if (GVar15.carry) {
-          pGVar2 = (GraphicsTextureSet *)0x0;
+        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        materialTextureSet = textureSetLoad.textureSet;
+        if (textureSetLoad.carry) {
+          materialTextureSet = (GraphicsTextureSet *)0x0;
         }
-        *ppGVar13 = pGVar2;
+        *materialTextureSetSlot = materialTextureSet;
       }
       else {
-        *pTVar12 = *pTVar8;
+        *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        GVar15 = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
-        pGVar1 = (GraphicsPaletteAsset *)GVar15.textureSet;
-        if (GVar15.carry)
+        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
+        if (textureSetLoad.carry)
         goto 
         TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFailureStatus;
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        *ppGVar13 = (GraphicsTextureSet *)pGVar1;
+        *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
       }
-      pTVar8 = pTVar8 + 1;
-      ppGVar13 = ppGVar13 + 1;
-      uVar7 = uVar7 >> 1;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      suffixLetterCursor = suffixLetterCursor + 1;
+      materialTextureSetSlot = materialTextureSetSlot + 1;
+      materialFlagBits = materialFlagBits >> 1;
+      materialSlotsRemaining = materialSlotsRemaining + -1;
+    } while (materialSlotsRemaining != 0);
     WidePath_SetExtensionCode(0x746164,primaryResourcePath);
-    PVar16 = Package_LoadEntry(primaryResourcePath);
-    pGVar1 = PVar16.bufferOrError;
-    if (!PVar16.carry) {
+    packageLoad = Package_LoadEntry(primaryResourcePath);
+    loadedResourceOrError = packageLoad.bufferOrError;
+    if (!packageLoad.carry) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_TerrainSurfacePacketTablePayload =
-           &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
+           &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
       WidePath_SetExtensionCode(0x786667,primaryResourcePath);
-      GVar15 = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
-      pGVar1 = (GraphicsPaletteAsset *)GVar15.textureSet;
-      if (!GVar15.carry) {
+      textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
+      loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
+      if (!textureSetLoad.carry) {
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)pGVar1;
+        g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)loadedResourceOrError;
         WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
-        GVar17 = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
-        pGVar1 = GVar17.paletteAsset;
-        if (!GVar17.carry) {
+        paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
+        loadedResourceOrError = paletteLoad.paletteAsset;
+        if (!paletteLoad.carry) {
           MoviePlayback_AdvanceScheduledFrameAndTick();
-          g_TerrainPrimaryPalette = pGVar1;
-          pTVar12->lowercaseLetterUtf16 = 0;
-          pTVar12->terminator = 0;
+          g_TerrainPrimaryPalette = loadedResourceOrError;
+          pathSuffixEntry->lowercaseLetterUtf16 = 0;
+          pathSuffixEntry->terminator = 0;
           WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
-          GVar17 = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
-          pGVar1 = GVar17.paletteAsset;
-          if (!GVar17.carry) {
+          paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
+          loadedResourceOrError = paletteLoad.paletteAsset;
+          if (!paletteLoad.carry) {
             MoviePlayback_AdvanceScheduledFrameAndTick();
-            g_TerrainSecondaryPalette = pGVar1;
-            pTVar12->lowercaseLetterUtf16 = 0;
-            pTVar12->terminator = 0;
+            g_TerrainSecondaryPalette = loadedResourceOrError;
+            pathSuffixEntry->lowercaseLetterUtf16 = 0;
+            pathSuffixEntry->terminator = 0;
             WidePath_SetExtensionCode(0x746164,secondaryResourcePath);
-            PVar16 = Package_LoadEntry(secondaryResourcePath);
-            pGVar1 = PVar16.bufferOrError;
-            if (!PVar16.carry) {
+            packageLoad = Package_LoadEntry(secondaryResourcePath);
+            loadedResourceOrError = packageLoad.bufferOrError;
+            if (!packageLoad.carry) {
               MoviePlayback_AdvanceScheduledFrameAndTick();
               g_TerrainSoilPacketTablePayload =
-                   &((GraphicsTextureSetEntry *)pGVar1->reserved08_AF)->reserved18;
+                   &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
               FieldGrid_RebuildCellLookupPointers(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              iVar4 = 0x100;
-              pTVar14 = g_TerrainDirectionRecordTable256;
+              loopCounter = 0x100;
+              directionRecord = g_TerrainDirectionRecordTable256;
               do {
-                dVar3 = Random_NextPrimary();
-                pTVar14->scaleA = (dVar3 & 0x1f) + 0x80;
-                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
-                dVar3 = Random_NextPrimary();
-                if ((int)dVar3 < 0) {
-                  wVar6 = -wVar6;
+                randomValue = Random_NextPrimary();
+                directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
+                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                randomValue = Random_NextPrimary();
+                if ((int)randomValue < 0) {
+                  pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
-                pTVar14->rateA = wVar6;
-                *(short *)&pTVar14->packedAngleA_low16_AngleB_high16 = (short)dVar3;
-                dVar3 = Random_NextPrimary();
-                pTVar14->scaleB = (dVar3 & 0x1f) + 0x80;
-                wVar6 = ((ushort)(dVar3 >> 0x10) & 0x7f) + 0x200;
-                SVar18.valueOrError = Random_NextPrimary();
-                if ((int)SVar18.valueOrError < 0) {
-                  wVar6 = -wVar6;
+                directionRecord->rateA = pathCharOrRotationRate;
+                *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
+                randomValue = Random_NextPrimary();
+                directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
+                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                randomOrSuccessStatus.valueOrError = Random_NextPrimary();
+                if ((int)randomOrSuccessStatus.valueOrError < 0) {
+                  pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
-                pTVar14->rateB = wVar6;
-                *(short *)((int)&pTVar14->packedAngleA_low16_AngleB_high16 + 2) =
-                     (short)SVar18.valueOrError;
-                pTVar14->angleAComponent0ScaledQ28 = 0;
-                pTVar14->angleAComponent1ScaledQ28 = 0;
-                pTVar14->angleBComponent0ScaledQ28 = 0;
-                pTVar14 = pTVar14 + 1;
-                iVar4 = iVar4 + -1;
-              } while (iVar4 != 0);
+                directionRecord->rateB = pathCharOrRotationRate;
+                *(short *)((int)&directionRecord->packedAngleA_low16_AngleB_high16 + 2) =
+                     (short)randomOrSuccessStatus.valueOrError;
+                directionRecord->angleAComponent0ScaledQ28 = 0;
+                directionRecord->angleAComponent1ScaledQ28 = 0;
+                directionRecord->angleBComponent0ScaledQ28 = 0;
+                directionRecord = directionRecord + 1;
+                loopCounter = loopCounter + -1;
+              } while (loopCounter != 0);
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              iVar4 = field->gridWidth * field->gridHeight;
-              pFVar9 = field->cells;
+              loopCounter = field->gridWidth * field->gridHeight;
+              fieldCell = field->cells;
               do {
-                pFVar9->flagsAndMaterial =
-                     pFVar9->flagsAndMaterial &
+                fieldCell->flagsAndMaterial =
+                     fieldCell->flagsAndMaterial &
                      ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
-                pFVar9 = pFVar9 + 1;
-                iVar4 = iVar4 + -1;
-              } while (iVar4 != 0);
+                fieldCell = fieldCell + 1;
+                loopCounter = loopCounter + -1;
+              } while (loopCounter != 0);
               TerrainDirectionTable_AdvanceAndRebuildVectors();
-              SVar18.carry = false;
-              return SVar18;
+              randomOrSuccessStatus.carry = false;
+              return randomOrSuccessStatus;
             }
           }
         }
@@ -587,9 +587,9 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
     }
   }
 TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFailureStatus:
-  SVar19.carry = true;
-  SVar19.valueOrError = (dword)pGVar1;
-  return SVar19;
+  failureStatus.carry = true;
+  failureStatus.valueOrError = (dword)loadedResourceOrError;
+  return failureStatus;
 }
 
 
@@ -649,56 +649,56 @@ TerrainLighting_BuildColorRampAndSetBaseColor
           )
 
 {
-  uint uVar1;
-  int iVar2;
-  uint *puVar3;
-  PackedArgb32 *pPVar4;
+  uint channelValue;
+  int rampStepsRemaining;
+  uint *rampEntryCursor;
+  PackedArgb32 *lightLutCursor;
   
-  puVar3 = &g_TerrainLightingColorRampArgb256;
-  iVar2 = 0x100;
+  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampStepsRemaining = 0x100;
   do {
-    uVar1 = ((rampStepColorArgb & 0xff) * iVar2 >> 8) + (baseColorArgb & 0xff);
-    if (0xff < uVar1) {
-      uVar1 = 0xff;
+    channelValue = ((rampStepColorArgb & 0xff) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff);
+    if (0xff < channelValue) {
+      channelValue = 0xff;
     }
-    *puVar3 = uVar1;
-    puVar3 = puVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  puVar3 = &g_TerrainLightingColorRampArgb256;
-  iVar2 = 0x100;
+    *rampEntryCursor = channelValue;
+    rampEntryCursor = rampEntryCursor + 1;
+    rampStepsRemaining = rampStepsRemaining + -1;
+  } while (rampStepsRemaining != 0);
+  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampStepsRemaining = 0x100;
   do {
-    uVar1 = ((rampStepColorArgb & 0xff00) * iVar2 >> 8) + (baseColorArgb & 0xff00);
-    if (0xffff < uVar1) {
-      uVar1 = 0xff00;
+    channelValue = ((rampStepColorArgb & 0xff00) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff00);
+    if (0xffff < channelValue) {
+      channelValue = 0xff00;
     }
-    *puVar3 = *puVar3 | uVar1 & 0xff00;
-    puVar3 = puVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  puVar3 = &g_TerrainLightingColorRampArgb256;
-  iVar2 = 0x100;
+    *rampEntryCursor = *rampEntryCursor | channelValue & 0xff00;
+    rampEntryCursor = rampEntryCursor + 1;
+    rampStepsRemaining = rampStepsRemaining + -1;
+  } while (rampStepsRemaining != 0);
+  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampStepsRemaining = 0x100;
   do {
-    uVar1 = ((rampStepColorArgb & 0xff0000) * iVar2 >> 8) + (baseColorArgb & 0xff0000);
-    if (0xffffff < uVar1) {
-      uVar1 = 0xff0000;
+    channelValue = ((rampStepColorArgb & 0xff0000) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff0000);
+    if (0xffffff < channelValue) {
+      channelValue = 0xff0000;
     }
-    *puVar3 = *puVar3 | uVar1 & 0xff0000;
-    puVar3 = puVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  puVar3 = &g_TerrainLightingColorRampArgb256;
-  iVar2 = 0x100;
+    *rampEntryCursor = *rampEntryCursor | channelValue & 0xff0000;
+    rampEntryCursor = rampEntryCursor + 1;
+    rampStepsRemaining = rampStepsRemaining + -1;
+  } while (rampStepsRemaining != 0);
+  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampStepsRemaining = 0x100;
   do {
-    *puVar3 = *puVar3 | baseColorArgb & 0xff000000;
-    puVar3 = puVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    *rampEntryCursor = *rampEntryCursor | baseColorArgb & 0xff000000;
+    rampEntryCursor = rampEntryCursor + 1;
+    rampStepsRemaining = rampStepsRemaining + -1;
+  } while (rampStepsRemaining != 0);
   g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
-  pPVar4 = &g_TerrainDirectionalLightColorLut;
-  for (iVar2 = 0x101; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *pPVar4 = baseColorArgb;
-    pPVar4 = pPVar4 + 1;
+  lightLutCursor = &g_TerrainDirectionalLightColorLut;
+  for (rampStepsRemaining = 0x101; rampStepsRemaining != 0; rampStepsRemaining = rampStepsRemaining + -1) {
+    *lightLutCursor = baseColorArgb;
+    lightLutCursor = lightLutCursor + 1;
   }
   return;
 }
@@ -757,132 +757,132 @@ TerrainLighting_AdjustDirectionAndRecomputeField
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void)
 
 {
-  AssetDimension AVar1;
-  int iVar2;
-  undefined4 uVar3;
-  PackedArgb32 PVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  GraphicsTextureSourceAsset *pGVar9;
+  AssetDimension textureWidth;
+  int panelSubresourceIndex;
+  undefined4 materialColorArgb;
+  PackedArgb32 waterColorArgb;
+  short shadedLane0;
+  short shadedLane1;
+  short shadedLane2;
+  short shadedLane3;
+  GraphicsTextureSourceAsset *panelTextureSource;
   byte mm0PackedValue1ByteLane2;
   byte mm0PackedValue0ByteLane2;
   byte mm0PackedValue0ByteLane3;
   byte mm0PackedValue0ByteLane1;
-  int iVar10;
-  AssetDimension AVar11;
-  byte *pbVar12;
-  FieldGridCell *pFVar13;
+  int lightingLevelIndex;
+  AssetDimension columnsRemaining;
+  byte *planePixelCursor;
+  FieldGridCell *fieldCell;
   undefined8 mm0PackedValue0;
   byte mm0PackedValue1ByteLane1;
   byte mm0PackedValue1ByteLane3;
   undefined8 mm0PackedValue1;
-  AssetDimension local_1c;
+  AssetDimension rowsRemaining;
   
-  pGVar9 = g_InGamePanelTextureSource;
-  AVar1 = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
-  local_1c = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  pbVar12 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
+  panelTextureSource = g_InGamePanelTextureSource;
+  textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
+  rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
+  planePixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
             assetRelativeAddressAnchor28 +
             (g_TerrainCompositeTexture->sourceEntries[1].dataOffset - 0x28);
-  iVar2 = *(int *)((int)g_InGamePanelTextureSource[2].common.buildMetadata.names.sourceName +
+  panelSubresourceIndex = *(int *)((int)g_InGamePanelTextureSource[2].common.buildMetadata.names.sourceName +
                   (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset + 0x18);
-  pFVar13 = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
-  AVar11 = AVar1;
+  fieldCell = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
+  columnsRemaining = textureWidth;
   do {
     do {
-      if (pFVar13->waterSurfaceDelta < 1) {
-        iVar10 = pFVar13->terrainHeight >> 7;
-        uVar3 = *(undefined4 *)
-                 (pGVar9[iVar2 * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 (pFVar13->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK) * 8 + -0x28);
-        if (iVar10 < 0) {
-          iVar10 = 0x70;
+      if (fieldCell->waterSurfaceDelta < 1) {
+        lightingLevelIndex = fieldCell->terrainHeight >> 7;
+        materialColorArgb = *(undefined4 *)
+                 (panelTextureSource[panelSubresourceIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                 (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK) * 8 + -0x28);
+        if (lightingLevelIndex < 0) {
+          lightingLevelIndex = 0x70;
         }
-        else if (iVar10 < 0x60) {
-          iVar10 = iVar10 + 0x70;
+        else if (lightingLevelIndex < 0x60) {
+          lightingLevelIndex = lightingLevelIndex + 0x70;
         }
         else {
-          iVar10 = 0xcf;
+          lightingLevelIndex = 0xcf;
         }
-        mm0PackedValue0ByteLane3 = (byte)((uint)uVar3 >> 0x18);
-        mm0PackedValue0ByteLane2 = (byte)((uint)uVar3 >> 0x10);
-        mm0PackedValue0ByteLane1 = (byte)((uint)uVar3 >> 8);
+        mm0PackedValue0ByteLane3 = (byte)((uint)materialColorArgb >> 0x18);
+        mm0PackedValue0ByteLane2 = (byte)((uint)materialColorArgb >> 0x10);
+        mm0PackedValue0ByteLane1 = (byte)((uint)materialColorArgb >> 8);
         mm0PackedValue0 =
              pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 3,
                              CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
                                                                           mm0PackedValue0ByteLane3),
                                                                  mm0PackedValue0ByteLane2),
-                                                        CONCAT14(mm0PackedValue0ByteLane2,uVar3)) >>
+                                                        CONCAT14(mm0PackedValue0ByteLane2,materialColorArgb)) >>
                                               0x20) >> 3,
                                       CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                         mm0PackedValue0ByteLane1) >> 3,
-                                               CONCAT11((char)uVar3,(char)uVar3) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + iVar10 * 8));
-        sVar5 = (short)mm0PackedValue0;
-        sVar6 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-        sVar7 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-        sVar8 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
-        *(uint *)pbVar12 =
-             CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                      (0xff < sVar8),
-                      CONCAT12((0 < sVar7) * (sVar7 < 0x100) *
-                               (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < sVar7),
-                               CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                        (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar6),
-                                        (0 < sVar5) * (sVar5 < 0x100) * (char)mm0PackedValue0 -
-                                        (0xff < sVar5))));
+                                               CONCAT11((char)materialColorArgb,(char)materialColorArgb) >> 3))),
+                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+        shadedLane0 = (short)mm0PackedValue0;
+        shadedLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+        shadedLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+        shadedLane3 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+        *(uint *)planePixelCursor =
+             CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                      (0xff < shadedLane3),
+                      CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
+                               (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < shadedLane2),
+                               CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
+                                        (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < shadedLane1),
+                                        (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue0 -
+                                        (0xff < shadedLane0))));
       }
       else {
-        iVar10 = -pFVar13->waterSurfaceDelta >> 5;
-        PVar4 = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
-        if (iVar10 < 0) {
-          if (iVar10 < -0x3f) {
-            iVar10 = 0x80;
+        lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
+        waterColorArgb = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
+        if (lightingLevelIndex < 0) {
+          if (lightingLevelIndex < -0x3f) {
+            lightingLevelIndex = 0x80;
           }
           else {
-            iVar10 = iVar10 + 0xc0;
+            lightingLevelIndex = lightingLevelIndex + 0xc0;
           }
         }
         else {
-          iVar10 = 0xbf;
+          lightingLevelIndex = 0xbf;
         }
-        mm0PackedValue1ByteLane3 = (byte)(PVar4 >> 0x18);
-        mm0PackedValue1ByteLane2 = (byte)(PVar4 >> 0x10);
-        mm0PackedValue1ByteLane1 = (byte)(PVar4 >> 8);
+        mm0PackedValue1ByteLane3 = (byte)(waterColorArgb >> 0x18);
+        mm0PackedValue1ByteLane2 = (byte)(waterColorArgb >> 0x10);
+        mm0PackedValue1ByteLane1 = (byte)(waterColorArgb >> 8);
         mm0PackedValue1 =
              pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3) >> 3,
                              CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue1ByteLane3,
                                                                           mm0PackedValue1ByteLane3),
                                                                  mm0PackedValue1ByteLane2),
-                                                        CONCAT14(mm0PackedValue1ByteLane2,PVar4)) >>
+                                                        CONCAT14(mm0PackedValue1ByteLane2,waterColorArgb)) >>
                                               0x20) >> 3,
                                       CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
                                                         mm0PackedValue1ByteLane1) >> 3,
-                                               CONCAT11((char)PVar4,(char)PVar4) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + iVar10 * 8));
-        sVar5 = (short)mm0PackedValue1;
-        sVar6 = (short)((ulonglong)mm0PackedValue1 >> 0x10);
-        sVar7 = (short)((ulonglong)mm0PackedValue1 >> 0x20);
-        sVar8 = (short)((ulonglong)mm0PackedValue1 >> 0x30);
-        *(uint *)pbVar12 =
-             CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm0PackedValue1 >> 0x30) -
-                      (0xff < sVar8),
-                      CONCAT12((0 < sVar7) * (sVar7 < 0x100) *
-                               (char)((ulonglong)mm0PackedValue1 >> 0x20) - (0xff < sVar7),
-                               CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                        (char)((ulonglong)mm0PackedValue1 >> 0x10) - (0xff < sVar6),
-                                        (0 < sVar5) * (sVar5 < 0x100) * (char)mm0PackedValue1 -
-                                        (0xff < sVar5))));
+                                               CONCAT11((char)waterColorArgb,(char)waterColorArgb) >> 3))),
+                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+        shadedLane0 = (short)mm0PackedValue1;
+        shadedLane1 = (short)((ulonglong)mm0PackedValue1 >> 0x10);
+        shadedLane2 = (short)((ulonglong)mm0PackedValue1 >> 0x20);
+        shadedLane3 = (short)((ulonglong)mm0PackedValue1 >> 0x30);
+        *(uint *)planePixelCursor =
+             CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue1 >> 0x30) -
+                      (0xff < shadedLane3),
+                      CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
+                               (char)((ulonglong)mm0PackedValue1 >> 0x20) - (0xff < shadedLane2),
+                               CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
+                                        (char)((ulonglong)mm0PackedValue1 >> 0x10) - (0xff < shadedLane1),
+                                        (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue1 -
+                                        (0xff < shadedLane0))));
       }
-      pFVar13 = pFVar13 + 1;
-      pbVar12 = pbVar12 + 4;
-      AVar11 = AVar11 - 1;
-    } while (AVar11 != 0);
-    local_1c = local_1c - 1;
-    AVar11 = AVar1;
-  } while (local_1c != 0);
+      fieldCell = fieldCell + 1;
+      planePixelCursor = planePixelCursor + 4;
+      columnsRemaining = columnsRemaining - 1;
+    } while (columnsRemaining != 0);
+    rowsRemaining = rowsRemaining - 1;
+    columnsRemaining = textureWidth;
+  } while (rowsRemaining != 0);
   return;
 }
 
@@ -895,33 +895,33 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void)
 
 {
-  AssetDimension AVar1;
-  int iVar2;
-  AssetFormatVersion AVar3;
-  AssetPackedDate AVar4;
-  AssetMagic AVar5;
-  PackedArgb32 PVar6;
-  undefined4 uVar7;
-  short sVar8;
-  short sVar9;
-  short sVar10;
-  short sVar11;
-  GraphicsTextureSourceAsset *pGVar12;
+  AssetDimension textureWidth;
+  int panelSubresourceIndex;
+  AssetFormatVersion xeniteColorArgb;
+  AssetPackedDate tritiumColorArgb;
+  AssetMagic soilColorArgb;
+  PackedArgb32 waterColorArgb;
+  undefined4 existingPixelArgb;
+  short shadedLane0;
+  short shadedLane1;
+  short shadedLane2;
+  short shadedLane3;
+  GraphicsTextureSourceAsset *panelTextureSource;
   byte mm0PackedValue2ByteLane2;
   byte mm0PackedValue3ByteLane2;
   byte mm0PackedValue1ByteLane2;
   byte mm0PackedValue1ByteLane1;
-  ushort uVar17;
+  ushort blendedLane0;
   byte mm0PackedValue0ByteLane2;
   byte mm0PackedValue0ByteLane3;
   byte mm0PackedValue1ByteLane3;
   byte mm0PackedValue0ByteLane1;
-  int iVar13;
-  AssetDimension AVar14;
-  byte *pbVar15;
-  FieldGridCell *pFVar16;
-  ushort uVar18;
-  ushort uVar19;
+  int lightingLevelIndex;
+  AssetDimension columnsRemaining;
+  byte *planePixelCursor;
+  FieldGridCell *fieldCell;
+  ushort blendedLane1;
+  ushort blendedLane2;
   undefined8 mm0PackedValue0;
   byte mm0PackedValue2ByteLane1;
   byte mm0PackedValue2ByteLane3;
@@ -930,198 +930,198 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
   undefined8 mm0PackedValue2;
   undefined8 mm0PackedValue3;
   undefined8 mm0PackedValue1;
-  ushort uVar20;
-  AssetDimension local_1c;
+  ushort alphaOrBlendedLane3;
+  AssetDimension rowsRemaining;
   
-  pGVar12 = g_InGamePanelTextureSource;
-  AVar1 = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
-  local_1c = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  pbVar15 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
+  panelTextureSource = g_InGamePanelTextureSource;
+  textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
+  rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
+  planePixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
             assetRelativeAddressAnchor28 +
             (g_TerrainCompositeTexture->sourceEntries[2].dataOffset - 0x28);
-  iVar2 = *(int *)((int)g_InGamePanelTextureSource[2].common.buildMetadata.names.sourceName +
+  panelSubresourceIndex = *(int *)((int)g_InGamePanelTextureSource[2].common.buildMetadata.names.sourceName +
                   (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset + 0x18);
-  pFVar16 = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
-  AVar14 = AVar1;
+  fieldCell = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
+  columnsRemaining = textureWidth;
   do {
     do {
-      if ((pFVar16->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
-        if ((pFVar16->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
-          iVar13 = pFVar16->terrainHeight >> 7;
-          AVar5 = pGVar12[iVar2 * 4 + 2].common.magic;
-          if (iVar13 < 0) {
-            iVar13 = 0x70;
+      if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
+        if ((fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
+          lightingLevelIndex = fieldCell->terrainHeight >> 7;
+          soilColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.magic;
+          if (lightingLevelIndex < 0) {
+            lightingLevelIndex = 0x70;
           }
-          else if (iVar13 < 0x60) {
-            iVar13 = iVar13 + 0x70;
+          else if (lightingLevelIndex < 0x60) {
+            lightingLevelIndex = lightingLevelIndex + 0x70;
           }
           else {
-            iVar13 = 0xcf;
+            lightingLevelIndex = 0xcf;
           }
-          mm0PackedValue3ByteLane3 = (byte)(AVar5 >> 0x18);
-          mm0PackedValue3ByteLane2 = (byte)(AVar5 >> 0x10);
-          mm0PackedValue3ByteLane1 = (byte)(AVar5 >> 8);
+          mm0PackedValue3ByteLane3 = (byte)(soilColorArgb >> 0x18);
+          mm0PackedValue3ByteLane2 = (byte)(soilColorArgb >> 0x10);
+          mm0PackedValue3ByteLane1 = (byte)(soilColorArgb >> 8);
           mm0PackedValue3 =
                pmulhw(CONCAT26(CONCAT11(mm0PackedValue3ByteLane3,mm0PackedValue3ByteLane3) >> 3,
                                CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue3ByteLane3
                                                                             ,
                                                   mm0PackedValue3ByteLane3),mm0PackedValue3ByteLane2
-                                                  ),CONCAT14(mm0PackedValue3ByteLane2,AVar5)) >>
+                                                  ),CONCAT14(mm0PackedValue3ByteLane2,soilColorArgb)) >>
                                                 0x20) >> 3,
                                         CONCAT22(CONCAT11(mm0PackedValue3ByteLane1,
                                                           mm0PackedValue3ByteLane1) >> 3,
-                                                 CONCAT11((char)AVar5,(char)AVar5) >> 3))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar13 * 8));
-          sVar8 = (short)mm0PackedValue3;
-          sVar9 = (short)((ulonglong)mm0PackedValue3 >> 0x10);
-          sVar10 = (short)((ulonglong)mm0PackedValue3 >> 0x20);
-          sVar11 = (short)((ulonglong)mm0PackedValue3 >> 0x30);
-          *(uint *)pbVar15 =
-               CONCAT13((0 < sVar11) * (sVar11 < 0x100) * (char)((ulonglong)mm0PackedValue3 >> 0x30)
-                        - (0xff < sVar11),
-                        CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                                 (char)((ulonglong)mm0PackedValue3 >> 0x20) - (0xff < sVar10),
-                                 CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
+                                                 CONCAT11((char)soilColorArgb,(char)soilColorArgb) >> 3))),
+                      *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+          shadedLane0 = (short)mm0PackedValue3;
+          shadedLane1 = (short)((ulonglong)mm0PackedValue3 >> 0x10);
+          shadedLane2 = (short)((ulonglong)mm0PackedValue3 >> 0x20);
+          shadedLane3 = (short)((ulonglong)mm0PackedValue3 >> 0x30);
+          *(uint *)planePixelCursor =
+               CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue3 >> 0x30)
+                        - (0xff < shadedLane3),
+                        CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
+                                 (char)((ulonglong)mm0PackedValue3 >> 0x20) - (0xff < shadedLane2),
+                                 CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
                                           (char)((ulonglong)mm0PackedValue3 >> 0x10) -
-                                          (0xff < sVar9),
-                                          (0 < sVar8) * (sVar8 < 0x100) * (char)mm0PackedValue3 -
-                                          (0xff < sVar8))));
+                                          (0xff < shadedLane1),
+                                          (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue3 -
+                                          (0xff < shadedLane0))));
         }
         else {
-          iVar13 = pFVar16->terrainHeight >> 7;
-          AVar4 = pGVar12[iVar2 * 4 + 2].common.buildMetadata.timestamps.dateValue0;
-          if (iVar13 < 0) {
-            iVar13 = 0x70;
+          lightingLevelIndex = fieldCell->terrainHeight >> 7;
+          tritiumColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.buildMetadata.timestamps.dateValue0;
+          if (lightingLevelIndex < 0) {
+            lightingLevelIndex = 0x70;
           }
-          else if (iVar13 < 0x60) {
-            iVar13 = iVar13 + 0x70;
+          else if (lightingLevelIndex < 0x60) {
+            lightingLevelIndex = lightingLevelIndex + 0x70;
           }
           else {
-            iVar13 = 0xcf;
+            lightingLevelIndex = 0xcf;
           }
-          mm0PackedValue2ByteLane3 = (byte)(AVar4 >> 0x18);
-          mm0PackedValue2ByteLane2 = (byte)(AVar4 >> 0x10);
-          mm0PackedValue2ByteLane1 = (byte)(AVar4 >> 8);
+          mm0PackedValue2ByteLane3 = (byte)(tritiumColorArgb >> 0x18);
+          mm0PackedValue2ByteLane2 = (byte)(tritiumColorArgb >> 0x10);
+          mm0PackedValue2ByteLane1 = (byte)(tritiumColorArgb >> 8);
           mm0PackedValue2 =
                pmulhw(CONCAT26(CONCAT11(mm0PackedValue2ByteLane3,mm0PackedValue2ByteLane3) >> 3,
                                CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue2ByteLane3
                                                                             ,
                                                   mm0PackedValue2ByteLane3),mm0PackedValue2ByteLane2
-                                                  ),CONCAT14(mm0PackedValue2ByteLane2,AVar4)) >>
+                                                  ),CONCAT14(mm0PackedValue2ByteLane2,tritiumColorArgb)) >>
                                                 0x20) >> 3,
                                         CONCAT22(CONCAT11(mm0PackedValue2ByteLane1,
                                                           mm0PackedValue2ByteLane1) >> 3,
-                                                 CONCAT11((char)AVar4,(char)AVar4) >> 3))),
-                      *(undefined8 *)(&g_PackedLightingLookupTable + iVar13 * 8));
-          sVar8 = (short)mm0PackedValue2;
-          sVar9 = (short)((ulonglong)mm0PackedValue2 >> 0x10);
-          sVar10 = (short)((ulonglong)mm0PackedValue2 >> 0x20);
-          sVar11 = (short)((ulonglong)mm0PackedValue2 >> 0x30);
-          *(uint *)pbVar15 =
-               CONCAT13((0 < sVar11) * (sVar11 < 0x100) * (char)((ulonglong)mm0PackedValue2 >> 0x30)
-                        - (0xff < sVar11),
-                        CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                                 (char)((ulonglong)mm0PackedValue2 >> 0x20) - (0xff < sVar10),
-                                 CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
+                                                 CONCAT11((char)tritiumColorArgb,(char)tritiumColorArgb) >> 3))),
+                      *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+          shadedLane0 = (short)mm0PackedValue2;
+          shadedLane1 = (short)((ulonglong)mm0PackedValue2 >> 0x10);
+          shadedLane2 = (short)((ulonglong)mm0PackedValue2 >> 0x20);
+          shadedLane3 = (short)((ulonglong)mm0PackedValue2 >> 0x30);
+          *(uint *)planePixelCursor =
+               CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue2 >> 0x30)
+                        - (0xff < shadedLane3),
+                        CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
+                                 (char)((ulonglong)mm0PackedValue2 >> 0x20) - (0xff < shadedLane2),
+                                 CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
                                           (char)((ulonglong)mm0PackedValue2 >> 0x10) -
-                                          (0xff < sVar9),
-                                          (0 < sVar8) * (sVar8 < 0x100) * (char)mm0PackedValue2 -
-                                          (0xff < sVar8))));
+                                          (0xff < shadedLane1),
+                                          (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue2 -
+                                          (0xff < shadedLane0))));
         }
       }
       else {
-        iVar13 = pFVar16->terrainHeight >> 7;
-        AVar3 = pGVar12[iVar2 * 4 + 2].common.formatVersion;
-        if (iVar13 < 0) {
-          iVar13 = 0x70;
+        lightingLevelIndex = fieldCell->terrainHeight >> 7;
+        xeniteColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.formatVersion;
+        if (lightingLevelIndex < 0) {
+          lightingLevelIndex = 0x70;
         }
-        else if (iVar13 < 0x60) {
-          iVar13 = iVar13 + 0x70;
+        else if (lightingLevelIndex < 0x60) {
+          lightingLevelIndex = lightingLevelIndex + 0x70;
         }
         else {
-          iVar13 = 0xcf;
+          lightingLevelIndex = 0xcf;
         }
-        mm0PackedValue0ByteLane3 = (byte)(AVar3 >> 0x18);
-        mm0PackedValue0ByteLane2 = (byte)(AVar3 >> 0x10);
-        mm0PackedValue0ByteLane1 = (byte)(AVar3 >> 8);
+        mm0PackedValue0ByteLane3 = (byte)(xeniteColorArgb >> 0x18);
+        mm0PackedValue0ByteLane2 = (byte)(xeniteColorArgb >> 0x10);
+        mm0PackedValue0ByteLane1 = (byte)(xeniteColorArgb >> 8);
         mm0PackedValue0 =
              pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 3,
                              CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
                                                                           mm0PackedValue0ByteLane3),
                                                                  mm0PackedValue0ByteLane2),
-                                                        CONCAT14(mm0PackedValue0ByteLane2,AVar3)) >>
+                                                        CONCAT14(mm0PackedValue0ByteLane2,xeniteColorArgb)) >>
                                               0x20) >> 3,
                                       CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                         mm0PackedValue0ByteLane1) >> 3,
-                                               CONCAT11((char)AVar3,(char)AVar3) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + iVar13 * 8));
-        sVar8 = (short)mm0PackedValue0;
-        sVar9 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-        sVar10 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-        sVar11 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
-        *(uint *)pbVar15 =
-             CONCAT13((0 < sVar11) * (sVar11 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                      (0xff < sVar11),
-                      CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                               (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < sVar10),
-                               CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
-                                        (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar9),
-                                        (0 < sVar8) * (sVar8 < 0x100) * (char)mm0PackedValue0 -
-                                        (0xff < sVar8))));
+                                               CONCAT11((char)xeniteColorArgb,(char)xeniteColorArgb) >> 3))),
+                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+        shadedLane0 = (short)mm0PackedValue0;
+        shadedLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+        shadedLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+        shadedLane3 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+        *(uint *)planePixelCursor =
+             CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                      (0xff < shadedLane3),
+                      CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
+                               (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < shadedLane2),
+                               CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
+                                        (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < shadedLane1),
+                                        (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue0 -
+                                        (0xff < shadedLane0))));
       }
-      if (0 < pFVar16->waterSurfaceDelta) {
-        iVar13 = -pFVar16->waterSurfaceDelta >> 5;
-        PVar6 = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
-        if (iVar13 < 0) {
-          if (iVar13 < -0x3f) {
-            iVar13 = 0x80;
+      if (0 < fieldCell->waterSurfaceDelta) {
+        lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
+        waterColorArgb = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
+        if (lightingLevelIndex < 0) {
+          if (lightingLevelIndex < -0x3f) {
+            lightingLevelIndex = 0x80;
           }
           else {
-            iVar13 = iVar13 + 0xc0;
+            lightingLevelIndex = lightingLevelIndex + 0xc0;
           }
         }
         else {
-          iVar13 = 0xbf;
+          lightingLevelIndex = 0xbf;
         }
-        uVar7 = *(undefined4 *)pbVar15;
-        mm0PackedValue1ByteLane3 = (byte)(PVar6 >> 0x18);
-        mm0PackedValue1ByteLane2 = (byte)(PVar6 >> 0x10);
-        mm0PackedValue1ByteLane1 = (byte)(PVar6 >> 8);
-        uVar20 = (ushort)(((ulonglong)(byte)((uint)uVar7 >> 0x18) << 0x38) >> 0x30);
+        existingPixelArgb = *(undefined4 *)planePixelCursor;
+        mm0PackedValue1ByteLane3 = (byte)(waterColorArgb >> 0x18);
+        mm0PackedValue1ByteLane2 = (byte)(waterColorArgb >> 0x10);
+        mm0PackedValue1ByteLane1 = (byte)(waterColorArgb >> 8);
+        alphaOrBlendedLane3 = (ushort)(((ulonglong)(byte)((uint)existingPixelArgb >> 0x18) << 0x38) >> 0x30);
         mm0PackedValue1 =
              pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3) >> 3,
                              CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue1ByteLane3,
                                                                           mm0PackedValue1ByteLane3),
                                                                  mm0PackedValue1ByteLane2),
-                                                        CONCAT14(mm0PackedValue1ByteLane2,PVar6)) >>
+                                                        CONCAT14(mm0PackedValue1ByteLane2,waterColorArgb)) >>
                                               0x20) >> 3,
                                       CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
                                                         mm0PackedValue1ByteLane1) >> 3,
-                                               CONCAT11((char)PVar6,(char)PVar6) >> 3))),
-                    *(undefined8 *)(&g_PackedLightingLookupTable + iVar13 * 8));
-        uVar17 = (ushort)((short)mm0PackedValue1 + (ushort)(byte)uVar7) >> 1;
-        uVar18 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
-                         ((ushort)(((ulonglong)(byte)((uint)uVar7 >> 8) << 0x18) >> 0x10) >> 8)) >>
+                                               CONCAT11((char)waterColorArgb,(char)waterColorArgb) >> 3))),
+                    *(undefined8 *)(&g_PackedLightingLookupTable + lightingLevelIndex * 8));
+        blendedLane0 = (ushort)((short)mm0PackedValue1 + (ushort)(byte)existingPixelArgb) >> 1;
+        blendedLane1 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
+                         ((ushort)(((ulonglong)(byte)((uint)existingPixelArgb >> 8) << 0x18) >> 0x10) >> 8)) >>
                  1;
-        uVar19 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
-                         ((ushort)(((ulonglong)CONCAT21(uVar20,(char)((uint)uVar7 >> 0x10)) << 0x28)
+        blendedLane2 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
+                         ((ushort)(((ulonglong)CONCAT21(alphaOrBlendedLane3,(char)((uint)existingPixelArgb >> 0x10)) << 0x28)
                                   >> 0x20) >> 8)) >> 1;
-        uVar20 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) + (uVar20 >> 8)) >> 1;
-        *(uint *)pbVar15 =
-             CONCAT13((uVar20 != 0) * (uVar20 < 0x100) * (char)uVar20 - (0xff < uVar20),
-                      CONCAT12((uVar19 != 0) * (uVar19 < 0x100) * (char)uVar19 - (0xff < uVar19),
-                               CONCAT11((uVar18 != 0) * (uVar18 < 0x100) * (char)uVar18 -
-                                        (0xff < uVar18),
-                                        (uVar17 != 0) * (uVar17 < 0x100) * (char)uVar17 -
-                                        (0xff < uVar17))));
+        alphaOrBlendedLane3 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) + (alphaOrBlendedLane3 >> 8)) >> 1;
+        *(uint *)planePixelCursor =
+             CONCAT13((alphaOrBlendedLane3 != 0) * (alphaOrBlendedLane3 < 0x100) * (char)alphaOrBlendedLane3 - (0xff < alphaOrBlendedLane3),
+                      CONCAT12((blendedLane2 != 0) * (blendedLane2 < 0x100) * (char)blendedLane2 - (0xff < blendedLane2),
+                               CONCAT11((blendedLane1 != 0) * (blendedLane1 < 0x100) * (char)blendedLane1 -
+                                        (0xff < blendedLane1),
+                                        (blendedLane0 != 0) * (blendedLane0 < 0x100) * (char)blendedLane0 -
+                                        (0xff < blendedLane0))));
       }
-      pFVar16 = pFVar16 + 1;
-      pbVar15 = pbVar15 + 4;
-      AVar14 = AVar14 - 1;
-    } while (AVar14 != 0);
-    local_1c = local_1c - 1;
-    AVar14 = AVar1;
-  } while (local_1c != 0);
+      fieldCell = fieldCell + 1;
+      planePixelCursor = planePixelCursor + 4;
+      columnsRemaining = columnsRemaining - 1;
+    } while (columnsRemaining != 0);
+    rowsRemaining = rowsRemaining - 1;
+    columnsRemaining = textureWidth;
+  } while (rowsRemaining != 0);
   return;
 }
 
@@ -1137,90 +1137,90 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(void)
 
 {
-  byte bVar1;
-  AssetDimension AVar2;
-  AssetDimension AVar3;
-  WorldOwnerListNode100 *pWVar4;
-  GameEntityRuntime *entry;
-  InGameRuntimeRootImageC3E4 *pIVar5;
-  GraphicsTextureSourceAsset *pGVar6;
-  uint uVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  dword dVar11;
-  AssetRelativeOffset AVar12;
-  byte *pbVar13;
-  FieldGridCell *pFVar14;
-  byte *pbVar15;
-  byte *pbVar16;
-  bool bVar17;
-  FieldGridCoordinatesEaxEdx8 FVar18;
+  byte visibilityFlags;
+  AssetDimension textureWidth;
+  AssetDimension textureHeight;
+  WorldOwnerListNode100 *ownerNode;
+  GameEntityRuntime *ownerEntity;
+  InGameRuntimeRootImageC3E4 *inGameRoot;
+  GraphicsTextureSourceAsset *panelTextureSource;
+  uint pixelArgb;
+  int cellsRemainingOrRowQ12;
+  int counterOrGridColumn;
+  int gridRow;
+  dword colorVariant;
+  AssetRelativeOffset assetOffset;
+  byte *pixelCursor;
+  FieldGridCell *fieldCell;
+  byte *plane0Pixels;
+  byte *plane0WriteCursor;
+  bool isSelected;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
   
-  pIVar5 = g_InGameRuntimeRoot;
+  inGameRoot = g_InGameRuntimeRoot;
   if ((g_InGameRuntimeRoot->observedTerrainCompositeFlags4938 & 2) == 0) {
-    AVar12 = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
+    assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {
-    AVar12 = g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
+    assetOffset = g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
   }
-  AVar2 = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
-  AVar3 = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  pbVar15 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
+  textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
+  textureHeight = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
+  plane0Pixels = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
             assetRelativeAddressAnchor28 +
             (g_TerrainCompositeTexture->sourceEntries[0].dataOffset - 0x28);
-  iVar8 = AVar2 * AVar3;
-  pbVar13 = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
-            assetRelativeAddressAnchor28 + (AVar12 - 0x28);
-  pbVar16 = pbVar15;
-  for (iVar9 = iVar8; iVar9 != 0; iVar9 = iVar9 + -1) {
-    *(uint *)pbVar16 = *(uint *)pbVar13;
-    pbVar13 = pbVar13 + 4;
-    pbVar16 = pbVar16 + 4;
+  cellsRemainingOrRowQ12 = textureWidth * textureHeight;
+  pixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
+            assetRelativeAddressAnchor28 + (assetOffset - 0x28);
+  plane0WriteCursor = plane0Pixels;
+  for (counterOrGridColumn = cellsRemainingOrRowQ12; counterOrGridColumn != 0; counterOrGridColumn = counterOrGridColumn + -1) {
+    *(uint *)plane0WriteCursor = *(uint *)pixelCursor;
+    pixelCursor = pixelCursor + 4;
+    plane0WriteCursor = plane0WriteCursor + 4;
   }
-  iVar9 = (pIVar5->worldRuntime0A30).activeFactionRuntimeIndex;
-  pFVar14 = ((pIVar5->worldRuntime0A30).fieldGrid)->cells;
-  pbVar13 = pbVar15;
+  counterOrGridColumn = (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+  fieldCell = ((inGameRoot->worldRuntime0A30).fieldGrid)->cells;
+  pixelCursor = plane0Pixels;
   do {
-    bVar1 = pFVar14->runtime60_6B[iVar9 + 0x10];
-    uVar7 = (uint)bVar1;
-    if ((bVar1 & 0x79) == 0) {
-      if ((bVar1 & 0xf9) != 0) {
-        uVar7 = (*(uint *)pbVar13 & 0xfefefefe) >> 1;
+    visibilityFlags = fieldCell->runtime60_6B[counterOrGridColumn + 0x10];
+    pixelArgb = (uint)visibilityFlags;
+    if ((visibilityFlags & 0x79) == 0) {
+      if ((visibilityFlags & 0xf9) != 0) {
+        pixelArgb = (*(uint *)pixelCursor & 0xfefefefe) >> 1;
       }
-      *(uint *)pbVar13 = uVar7;
+      *(uint *)pixelCursor = pixelArgb;
     }
-    pFVar14 = pFVar14 + 1;
-    pbVar13 = pbVar13 + 4;
-    iVar8 = iVar8 + -1;
-  } while (iVar8 != 0);
-  for (pWVar4 = (pIVar5->worldRuntime0A30).ownerListHead; pWVar4 != (WorldOwnerListNode100 *)0x0;
-      pWVar4 = pWVar4->nextNode) {
-    if ((pWVar4->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < pWVar4->modelTintArgb)) {
-      FVar18 = FieldGrid_WorldToGridQ12(pWVar4->worldYQ12,pWVar4->worldXQ12);
-      pGVar6 = g_InGamePanelTextureSource;
-      iVar8 = FVar18.rowQ12;
-      iVar9 = FVar18.columnQ12 + 0x800 >> 0xc;
-      if ((SCARRY4(iVar8,0x800) == iVar9 < 0) &&
-         (((iVar10 = iVar8 + 0x800 >> 0xc, SCARRY4(iVar8,0x800) == iVar10 < 0 &&
-           (iVar9 < (int)AVar2)) && (iVar10 < (int)AVar3)))) {
-        entry = *(GameEntityRuntime **)((int)pWVar4->runtimePayload + 8);
-        dVar11 = g_GameFactionRuntimeImage.records[(entry->common).ownership.ownerIndex].
+    fieldCell = fieldCell + 1;
+    pixelCursor = pixelCursor + 4;
+    cellsRemainingOrRowQ12 = cellsRemainingOrRowQ12 + -1;
+  } while (cellsRemainingOrRowQ12 != 0);
+  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+      ownerNode = ownerNode->nextNode) {
+    if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < ownerNode->modelTintArgb)) {
+      gridCoordinates = FieldGrid_WorldToGridQ12(ownerNode->worldYQ12,ownerNode->worldXQ12);
+      panelTextureSource = g_InGamePanelTextureSource;
+      cellsRemainingOrRowQ12 = gridCoordinates.rowQ12;
+      counterOrGridColumn = gridCoordinates.columnQ12 + 0x800 >> 0xc;
+      if ((SCARRY4(cellsRemainingOrRowQ12,0x800) == counterOrGridColumn < 0) &&
+         (((gridRow = cellsRemainingOrRowQ12 + 0x800 >> 0xc, SCARRY4(cellsRemainingOrRowQ12,0x800) == gridRow < 0 &&
+           (counterOrGridColumn < (int)textureWidth)) && (gridRow < (int)textureHeight)))) {
+        ownerEntity = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8);
+        colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].
                  factionClassOrMode;
-        AVar12 = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
-        if (dVar11 != 0) {
-          bVar17 = SelectionInfo_FindEntryCf(entry);
-          if (!bVar17) {
-            dVar11 = 0;
+        assetOffset = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
+        if (colorVariant != 0) {
+          isSelected = SelectionInfo_FindEntryCf(ownerEntity);
+          if (!isSelected) {
+            colorVariant = 0;
           }
-          uVar7 = *(uint *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
-                           *(int *)((int)pGVar6[2].common.buildMetadata.names.sourceName +
-                                   AVar12 + 0x18) * 0x20 + dVar11 * 8 + 0x44);
-          if (pWVar4->modelTintArgb < 0xff000000) {
-            uVar7 = (uVar7 & 0xfefefefe) +
-                    (*(uint *)(pbVar15 + (iVar10 * AVar2 + iVar9) * 4) & 0xfefefefe) >> 1;
+          pixelArgb = *(uint *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
+                           *(int *)((int)panelTextureSource[2].common.buildMetadata.names.sourceName +
+                                   assetOffset + 0x18) * 0x20 + colorVariant * 8 + 0x44);
+          if (ownerNode->modelTintArgb < 0xff000000) {
+            pixelArgb = (pixelArgb & 0xfefefefe) +
+                    (*(uint *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & 0xfefefefe) >> 1;
           }
-          *(uint *)(pbVar15 + (iVar10 * AVar2 + iVar9) * 4) = uVar7;
+          *(uint *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) = pixelArgb;
         }
       }
     }

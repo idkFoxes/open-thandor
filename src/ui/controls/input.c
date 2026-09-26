@@ -1742,9 +1742,9 @@ UiNode_ForwardPointerWheelToParent
 
 /* Address: 0x004B08C0.
    Ownership: ui/controls/input.
-   Purpose: Shared three-argument keyboard fallback in vtable slot +0x30. Event value 0x00010002 calls
-   UiKeyboardFocus_MoveNext and returns CF clear; other values return CF set. EAX and companion registers remain
-   untouched by the prototype.
+   Purpose: Shared three-argument keyboard fallback in vtable slot +0x30. It always returns CF set (event not
+   handled): the original compares the event with 0x00010002 but then sets CF unconditionally (CMP; STC; RET 0xc),
+   so the focus move its name suggests never happens.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiNode_DefaultKeyboardEventMoveFocusNextCf

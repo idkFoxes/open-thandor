@@ -23,16 +23,16 @@ void __thandor_preserve_eax
 FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl)
 
 {
-  UiListRowIndexEaxCf5 UVar1;
+  UiListRowIndexEaxCf5 selectedRow;
   
-  UVar1 = UiPointerList_GetSelectedIndexVariantBCf(listControl);
-  if (!UVar1.carry) {
+  selectedRow = UiPointerList_GetSelectedIndexVariantBCf(listControl);
+  if (!selectedRow.carry) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_RefreshSelectedRecordLocalizedText(g_LocalPlayerRuntimeId,0,0,UVar1.rowIndex);
+      ScenarioCatalog_RefreshSelectedRecordLocalizedText(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x11f0,0,0,UVar1.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x11f0,0,0,selectedRow.rowIndex);
     }
     return;
   }
@@ -55,17 +55,17 @@ void __thandor_preserve_eax
 FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listControl)
 
 {
-  UiListRowIndexEaxCf5 UVar1;
+  UiListRowIndexEaxCf5 selectedRow;
   
-  UVar1 = UiPointerList_GetSelectedIndexVariantBCf(listControl);
-  if (!UVar1.carry) {
+  selectedRow = UiPointerList_GetSelectedIndexVariantBCf(listControl);
+  if (!selectedRow.carry) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       ScenarioCatalog_RefreshSelectedRecordField70DisplayId
-                (g_LocalPlayerRuntimeId,0,0,UVar1.rowIndex);
+                (g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x12a0,0,0,UVar1.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x12a0,0,0,selectedRow.rowIndex);
     }
     return;
   }
@@ -88,17 +88,17 @@ void __thandor_preserve_eax
 FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listControl)
 
 {
-  UiListRowIndexEaxCf5 UVar1;
+  UiListRowIndexEaxCf5 selectedRow;
   
-  UVar1 = UiPointerList_GetSelectedIndexVariantBCf(listControl);
-  if (!UVar1.carry) {
+  selectedRow = UiPointerList_GetSelectedIndexVariantBCf(listControl);
+  if (!selectedRow.carry) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       ScenarioCatalog_RefreshSelectedRecordField50DisplayId
-                (g_LocalPlayerRuntimeId,0,0,UVar1.rowIndex);
+                (g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x12f0,0,0,UVar1.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x12f0,0,0,selectedRow.rowIndex);
     }
     return;
   }
@@ -123,34 +123,34 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
           (FrontendScenarioSelectionPageView26C4 *scenarioSelectionPage)
 
 {
-  UiNodeFlags *pUVar1;
-  short sVar2;
+  UiNodeFlags *controlFlags;
+  short codeUnit;
   CommandPayloadDword04 selectionIndex;
-  UiControlCount UVar3;
-  int iVar4;
-  uint uVar5;
-  byte *pbVar6;
-  byte *pbVar7;
-  short *psVar8;
-  bool bVar9;
-  UiSelectableNodeEaxEcxCf9 UVar10;
-  CommandLineFindOptionEbxCf5 CVar11;
+  UiControlCount activeGroupIndex;
+  int remainingCount;
+  uint compareUnitsRemaining;
+  byte *scanCursor;
+  byte *textCursor;
+  short *levelNameCursor;
+  bool namesMatch;
+  UiSelectableNodeEaxEcxCf9 selectedGroup;
+  CommandLineFindOptionEbxCf5 mapOption;
   dword zeroDispatchArg6;
   dword zeroDispatchArg5;
   dword zeroDispatchArg4;
   
   UiPageStack_SetActiveIndex(10,&scenarioSelectionPage->primaryPageStack);
   if ((int)g_FramebufferWidth < 0x281) {
-    pUVar1 = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
-    *pUVar1 = *pUVar1 | 0x2000;
+    controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
+    *controlFlags = *controlFlags | 0x2000;
   }
-  UVar10 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+  selectedGroup = UiSelectableGroup_NoneVisibleSelectedCf(3,
       THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
       THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
       THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
-  UVar3 = UVar10.controlIndexOrCount;
-  if (UVar10.carry) {
-    UVar3 = 1;
+  activeGroupIndex = selectedGroup.controlIndexOrCount;
+  if (selectedGroup.carry) {
+    activeGroupIndex = 1;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -158,85 +158,85 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
       THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
       THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
       THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
-    UVar3 = 1;
+    activeGroupIndex = 1;
   }
-  CVar11 = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
-  if (!CVar11.carry) {
+  mapOption = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
+  if (!mapOption.carry) {
     UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
       THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
       THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
       THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
-    UVar3 = 1;
+    activeGroupIndex = 1;
   }
-  (*g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[UVar3])(0,0,0,0);
-  (*g_FrontendScenarioMapOptionHandlerTable[UVar3])(0,0,0,0);
+  (*g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeGroupIndex])(0,0,0,0);
+  (*g_FrontendScenarioMapOptionHandlerTable[activeGroupIndex])(0,0,0,0);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow1).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow1).control.base.nodeFlags;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
     return;
   }
-  CVar11 = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
-  pbVar7 = CVar11.ebx;
-  if (!CVar11.carry) {
-    iVar4 = 0x3fffff;
-    for (pbVar6 = pbVar7 + 7; *pbVar6 != 0x22; pbVar6 = pbVar6 + 1) {
-      if ((*pbVar6 < 0x20) || (iVar4 = iVar4 + -1, iVar4 == 0))
+  mapOption = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
+  textCursor = mapOption.ebx;
+  if (!mapOption.carry) {
+    remainingCount = 0x3fffff;
+    for (scanCursor = textCursor + 7; *scanCursor != 0x22; scanCursor = scanCursor + 1) {
+      if ((*scanCursor < 0x20) || (remainingCount = remainingCount + -1, remainingCount == 0))
       goto 
       FrontendScenarioSelectionPage_InitializeAndApplyMapOption_UpdateNetworkRoleActionAvailabilityAndReturn
       ;
     }
-    *pbVar6 = 0;
-    if (pbVar6[1] == 0) {
-      Text_CopyNarrowToUtf16Cf(0x800000,(word *)g_PackageScratchBuffer,pbVar7 + 7);
+    *scanCursor = 0;
+    if (scanCursor[1] == 0) {
+      Text_CopyNarrowToUtf16Cf(0x800000,(word *)g_PackageScratchBuffer,textCursor + 7);
       WidePath_SetExtensionCode(0,(word *)g_PackageScratchBuffer);
-      *pbVar6 = 0x22;
-      *pbVar7 = 0x6b;
-      iVar4 = 0x400000;
-      pbVar7 = g_PackageScratchBuffer;
+      *scanCursor = 0x22;
+      *textCursor = 0x6b;
+      remainingCount = 0x400000;
+      textCursor = g_PackageScratchBuffer;
       do {
-        pbVar6 = pbVar7;
-        if (iVar4 == 0) break;
-        iVar4 = iVar4 + -1;
-        pbVar6 = pbVar7 + 2;
-        sVar2 = *(short *)pbVar7;
-        pbVar7 = pbVar6;
-      } while (sVar2 != 0);
-      iVar4 = *(int *)(g_FrontendRootNode + 0x21d8);
-      if (iVar4 != 0) {
+        scanCursor = textCursor;
+        if (remainingCount == 0) break;
+        remainingCount = remainingCount + -1;
+        scanCursor = textCursor + 2;
+        codeUnit = *(short *)textCursor;
+        textCursor = scanCursor;
+      } while (codeUnit != 0);
+      remainingCount = *(int *)(g_FrontendRootNode + 0x21d8);
+      if (remainingCount != 0) {
         selectionIndex = 0;
-        bVar9 = true;
+        namesMatch = true;
         do {
-          uVar5 = (uint)((int)pbVar6 - (int)g_PackageScratchBuffer) >> 1;
-          pbVar7 = g_PackageScratchBuffer;
-          psVar8 = *(short **)(*(int *)(g_FrontendRootNode + 0x21d4) + selectionIndex * 4);
+          compareUnitsRemaining = (uint)((int)scanCursor - (int)g_PackageScratchBuffer) >> 1;
+          textCursor = g_PackageScratchBuffer;
+          levelNameCursor = *(short **)(*(int *)(g_FrontendRootNode + 0x21d4) + selectionIndex * 4);
           do {
-            if (uVar5 == 0) break;
-            uVar5 = uVar5 - 1;
-            bVar9 = *(short *)pbVar7 == *psVar8;
-            pbVar7 = pbVar7 + 2;
-            psVar8 = psVar8 + 1;
-          } while (bVar9);
-          if (bVar9) {
-            pUVar1 = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
-            *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-            pUVar1 = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
-            *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-            pUVar1 = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-            *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-            pUVar1 = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
-            *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
+            if (compareUnitsRemaining == 0) break;
+            compareUnitsRemaining = compareUnitsRemaining - 1;
+            namesMatch = *(short *)textCursor == *levelNameCursor;
+            textCursor = textCursor + 2;
+            levelNameCursor = levelNameCursor + 1;
+          } while (namesMatch);
+          if (namesMatch) {
+            controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
+            *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+            controlFlags = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
+            *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+            controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+            *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+            controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
+            *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
-              pUVar1 = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-              *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
+              controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+              *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
             }
             Resource_Release(g_FrontendLoadedCampaignAsset);
             g_FrontendLoadedCampaignAsset = (void *)0x0;
@@ -259,9 +259,9 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
             return;
           }
           selectionIndex = selectionIndex + 1;
-          iVar4 = iVar4 + -1;
-          bVar9 = iVar4 == 0;
-        } while (!bVar9);
+          remainingCount = remainingCount + -1;
+          namesMatch = remainingCount == 0;
+        } while (!namesMatch);
       }
     }
   }
@@ -269,24 +269,24 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   FrontendScenarioSelectionPage_InitializeAndApplyMapOption_UpdateNetworkRoleActionAvailabilityAndReturn
   :
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-    pUVar1 = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
-    *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
+    *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
+    *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+    *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+    controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
+    *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
     return;
   }
-  pUVar1 = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
-  *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-  pUVar1 = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
-  *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
-  pUVar1 = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
-  *pUVar1 = *pUVar1 | UI_NODE_SUPPRESSED;
-  pUVar1 = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
-  *pUVar1 = *pUVar1 & ~UI_NODE_SUPPRESSED;
+  controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
+  *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+  controlFlags = &(scenarioSelectionPage->scenarioOptionRow3).control.base.nodeFlags;
+  *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
+  controlFlags = &(scenarioSelectionPage->scenarioOptionRow2).control.base.nodeFlags;
+  *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+  controlFlags = &(scenarioSelectionPage->scenarioOptionRow4).control.base.nodeFlags;
+  *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
   return;
 }
 
@@ -443,59 +443,59 @@ void FrontendScenarioAction_StartFieldGridLoad(void *source)
 void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
 
 {
-  ScenarioCatalogByteOffset *pSVar1;
-  ScenarioCatalogRecordCount *pSVar2;
-  ScenarioCatalogHeader *pSVar3;
-  uint uVar4;
+  ScenarioCatalogByteOffset *saveOffsetField;
+  ScenarioCatalogRecordCount *campaignCountField;
+  ScenarioCatalogHeader *catalog;
+  uint recordCount;
   void *handle;
-  uint uVar5;
-  dword dVar6;
+  uint dwordsRemaining;
+  dword saveFilesRemaining;
   word *leaf;
   dword *recordCopyDwordsLevel;
   dword *recordCopyDwordsCampaign;
-  ScenarioCatalogRecord *pSVar7;
-  ScenarioCatalogRecord *pSVar8;
+  ScenarioCatalogRecord *recordsBase;
+  ScenarioCatalogRecord *recordCopyCursor;
   ScenarioCatalogSaveRecord *saveRecord;
-  ArenaAllocEaxCf5 AVar9;
-  FatalErrorEaxCf5 FVar10;
-  FileSystemOpenEaxCf5 FVar11;
-  ResourceLoadEaxEcxCf9 RVar12;
-  FileSystemEnumerationEaxEcxCf9 FVar13;
-  void *handle_00;
+  ArenaAllocEaxCf5 allocation;
+  FatalErrorEaxCf5 checkedResult;
+  FileSystemOpenEaxCf5 openResult;
+  ResourceLoadEaxEcxCf9 loadedResource;
+  FileSystemEnumerationEaxEcxCf9 saveEnumeration;
+  void *handleToClose;
   
   (*g_MemoryApi.free)(g_ScenarioCatalog);
-  AVar9 = (*g_MemoryApi.alloc)(0x30000);
-  FVar10 = (*g_FatalErrorPrimaryDispatchCf)(AVar9.eax,AVar9.carry);
-  pSVar3 = (ScenarioCatalogHeader *)FVar10.eax;
+  allocation = (*g_MemoryApi.alloc)(0x30000);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+  catalog = (ScenarioCatalogHeader *)checkedResult.eax;
   g_ScenarioCatalogUsedBytes = 0x18;
-  g_ScenarioCatalog = pSVar3;
-  pSVar3->levelRecordsOffset = 0x18;
-  pSVar3->campaignRecordsOffset = 0x18;
-  pSVar3->saveRecordsOffset = 0x18;
-  pSVar3->levelRecordCount = 0;
-  pSVar3->campaignRecordCount = 0;
-  pSVar3->saveRecordCount = 0;
-  RVar12 = Resource_Load((word *)u_level_level_dat_0050da0e);
-  pSVar3 = g_ScenarioCatalog;
-  if (!RVar12.carry) {
-    uVar4 = RVar12.ecx / 0x100;
-    pSVar7 = (ScenarioCatalogRecord *)
+  g_ScenarioCatalog = catalog;
+  catalog->levelRecordsOffset = 0x18;
+  catalog->campaignRecordsOffset = 0x18;
+  catalog->saveRecordsOffset = 0x18;
+  catalog->levelRecordCount = 0;
+  catalog->campaignRecordCount = 0;
+  catalog->saveRecordCount = 0;
+  loadedResource = Resource_Load((word *)u_level_level_dat_0050da0e);
+  catalog = g_ScenarioCatalog;
+  if (!loadedResource.carry) {
+    recordCount = loadedResource.ecx / 0x100;
+    recordsBase = (ScenarioCatalogRecord *)
              ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset);
-    recordCopyDwordsLevel = (dword *)RVar12.eax;
-    pSVar8 = pSVar7;
-    for (uVar5 = RVar12.ecx >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *(dword *)pSVar8->identifier = *recordCopyDwordsLevel;
+    recordCopyDwordsLevel = (dword *)loadedResource.eax;
+    recordCopyCursor = recordsBase;
+    for (dwordsRemaining = loadedResource.ecx >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
+      *(dword *)recordCopyCursor->identifier = *recordCopyDwordsLevel;
       recordCopyDwordsLevel = recordCopyDwordsLevel + 1;
-      pSVar8 = (ScenarioCatalogRecord *)(pSVar8->identifier + 2);
+      recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
-    Resource_Release((dword *)RVar12.eax);
+    Resource_Release((dword *)loadedResource.eax);
     g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
     do {
-      RVar12 = Resource_Load(g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits);
-      if (!RVar12.carry) {
-        uVar4 = ScenarioCatalog_MergeRecordsByName
-                          (RVar12.ecx,(ScenarioCatalogRecord *)RVar12.eax,uVar4,pSVar7);
-        Resource_Release((ScenarioCatalogRecord *)RVar12.eax);
+      loadedResource = Resource_Load(g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits);
+      if (!loadedResource.carry) {
+        recordCount = ScenarioCatalog_MergeRecordsByName
+                          (loadedResource.ecx,(ScenarioCatalogRecord *)loadedResource.eax,recordCount,recordsBase);
+        Resource_Release((ScenarioCatalogRecord *)loadedResource.eax);
       }
       g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] =
            g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] + 1;
@@ -504,35 +504,35 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
                   g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits - 0x9ffff,
             g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[0] < 0x3a));
     do {
-      pSVar3->campaignRecordsOffset = pSVar3->campaignRecordsOffset + 0x104;
-      pSVar3->saveRecordsOffset = pSVar3->saveRecordsOffset + 0x104;
-      pSVar3->levelRecordCount = pSVar3->levelRecordCount + 1;
+      catalog->campaignRecordsOffset = catalog->campaignRecordsOffset + 0x104;
+      catalog->saveRecordsOffset = catalog->saveRecordsOffset + 0x104;
+      catalog->levelRecordCount = catalog->levelRecordCount + 1;
       g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + 0x104;
-      uVar4 = uVar4 - 1;
-    } while (uVar4 != 0);
+      recordCount = recordCount - 1;
+    } while (recordCount != 0);
   }
-  RVar12 = Resource_Load((word *)u_level_campagne_dat_0050da52);
-  pSVar3 = g_ScenarioCatalog;
-  if (!RVar12.carry) {
-    uVar4 = RVar12.ecx / 0x100;
-    pSVar7 = (ScenarioCatalogRecord *)
+  loadedResource = Resource_Load((word *)u_level_campagne_dat_0050da52);
+  catalog = g_ScenarioCatalog;
+  if (!loadedResource.carry) {
+    recordCount = loadedResource.ecx / 0x100;
+    recordsBase = (ScenarioCatalogRecord *)
              ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->campaignRecordsOffset
              );
-    recordCopyDwordsCampaign = (dword *)RVar12.eax;
-    pSVar8 = pSVar7;
-    for (uVar5 = RVar12.ecx >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *(dword *)pSVar8->identifier = *recordCopyDwordsCampaign;
+    recordCopyDwordsCampaign = (dword *)loadedResource.eax;
+    recordCopyCursor = recordsBase;
+    for (dwordsRemaining = loadedResource.ecx >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
+      *(dword *)recordCopyCursor->identifier = *recordCopyDwordsCampaign;
       recordCopyDwordsCampaign = recordCopyDwordsCampaign + 1;
-      pSVar8 = (ScenarioCatalogRecord *)(pSVar8->identifier + 2);
+      recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
-    Resource_Release((dword *)RVar12.eax);
+    Resource_Release((dword *)loadedResource.eax);
     g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
     do {
-      RVar12 = Resource_Load(g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits);
-      if (!RVar12.carry) {
-        uVar4 = ScenarioCatalog_MergeRecordsByName
-                          (RVar12.ecx,(ScenarioCatalogRecord *)RVar12.eax,uVar4,pSVar7);
-        Resource_Release((ScenarioCatalogRecord *)RVar12.eax);
+      loadedResource = Resource_Load(g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits);
+      if (!loadedResource.carry) {
+        recordCount = ScenarioCatalog_MergeRecordsByName
+                          (loadedResource.ecx,(ScenarioCatalogRecord *)loadedResource.eax,recordCount,recordsBase);
+        Resource_Release((ScenarioCatalogRecord *)loadedResource.eax);
       }
       g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] =
            g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] + 1;
@@ -541,23 +541,23 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
                   g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits - 0x9ffff,
             g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[0] < 0x3a));
     do {
-      pSVar1 = &pSVar3->saveRecordsOffset;
-      *pSVar1 = *pSVar1 + 0x104;
-      pSVar2 = &pSVar3->campaignRecordCount;
-      *pSVar2 = *pSVar2 + 1;
+      saveOffsetField = &catalog->saveRecordsOffset;
+      *saveOffsetField = *saveOffsetField + 0x104;
+      campaignCountField = &catalog->campaignRecordCount;
+      *campaignCountField = *campaignCountField + 1;
       g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + 0x104;
-      uVar4 = uVar4 - 1;
-    } while (uVar4 != 0);
+      recordCount = recordCount - 1;
+    } while (recordCount != 0);
   }
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save___sve_0050d9c8,
              (word *)&g_ExecutableDirectoryUtf16);
-  FVar13 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+  saveEnumeration = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
-  pSVar3 = g_ScenarioCatalog;
-  dVar6 = FVar13.entryCount;
-  if ((!FVar13.carry) && (dVar6 != 0)) {
+  catalog = g_ScenarioCatalog;
+  saveFilesRemaining = saveEnumeration.entryCount;
+  if ((!saveEnumeration.carry) && (saveFilesRemaining != 0)) {
     saveRecord = (ScenarioCatalogSaveRecord *)
                  ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->saveRecordsOffset
                  );
@@ -569,25 +569,25 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (word *)&g_ScenarioCatalogPathScratchUtf16);
-      FVar11 = (*g_FileSystemOpenCf)
+      openResult = (*g_FileSystemOpenCf)
                          (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16
                          );
-      FVar10 = (*g_FatalErrorPrimaryDispatchCf)(FVar11.eax,FVar11.carry);
-      handle = (void *)FVar10.eax;
-      handle_00 = handle;
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(openResult.eax,openResult.carry);
+      handle = (void *)checkedResult.eax;
+      handleToClose = handle;
       (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
       (*g_FileSystemReadExactCf)(0x100,saveRecord,handle);
-      (*g_FileSystemClose)(handle_00);
+      (*g_FileSystemClose)(handleToClose);
       saveRecord->localizedStringId70 = saveRecord->localizedStringId70 + 0x2230;
       if (-1 < saveRecord->optionalLocalizedStringId90) {
         saveRecord->optionalLocalizedStringId90 = saveRecord->optionalLocalizedStringId90 + 0x2220;
       }
       saveRecord = saveRecord + 1;
-      pSVar3->saveRecordCount = pSVar3->saveRecordCount + 1;
+      catalog->saveRecordCount = catalog->saveRecordCount + 1;
       g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + 0x104;
-      leaf = (word *)((int)leaf + FVar13.recordSizeBytes);
-      dVar6 = dVar6 - 1;
-    } while (dVar6 != 0);
+      leaf = (word *)((int)leaf + saveEnumeration.recordSizeBytes);
+      saveFilesRemaining = saveFilesRemaining - 1;
+    } while (saveFilesRemaining != 0);
   }
   return;
 }
@@ -600,7 +600,7 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
    Cross-module calls: FrontendRomTransition_RequestStop [assets/rom/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RequestRomTransitionStopCallback(dword arg0,dword arg1,dword arg2,dword arg3)
+ScenarioCatalog_RequestRomTransitionStopCallback(dword unusedArg0,dword unusedArg1,dword unusedArg2,dword unusedArg3)
 
 {
   FrontendRomTransition_RequestStop();
@@ -625,79 +625,79 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
      received catalog: the original ORs bit n into [ESP + EBX*4] (EBX 3..1), and those slots are
      the 0xE00 command's arguments. Index 1 is the first argument after the command code. */
   dword changedLevelMask[4];
-  dword dVar1;
+  dword payloadSizeBytes;
   ScenarioCatalogRecordCount recordCount;
-  ScenarioCatalogByteOffset SVar2;
-  ScenarioCatalogByteOffset *pSVar3;
-  dword *pdVar4;
-  FrontendLoadedLevelRuntimeImage370 *pFVar5;
-  byte *pbVar6;
-  uint uVar7;
-  int iVar8;
-  ScenarioCatalogRecordCount SVar9;
-  byte *pbVar10;
-  bool bVar11;
-  ArenaAllocEaxCf5 AVar12;
-  FatalErrorEaxCf5 FVar13;
-  UiTransferMailboxReceivedEaxEcxCf9 UVar14;
-  ScenarioCatalogHeader *memory;
+  ScenarioCatalogByteOffset oldLevelRecordsOffset;
+  ScenarioCatalogByteOffset *oldCatalogBase;
+  dword *receivedDwords;
+  FrontendLoadedLevelRuntimeImage370 *levelAsset;
+  byte *levelPathOrSelectedId;
+  uint maskBit;
+  int maskSlotOrRecordsLeft;
+  ScenarioCatalogRecordCount newRecordsRemaining;
+  byte *streamOrRecordCursor;
+  bool recordAlreadyKnown;
+  ArenaAllocEaxCf5 allocation;
+  FatalErrorEaxCf5 checkedResult;
+  UiTransferMailboxReceivedEaxEcxCf9 received;
+  ScenarioCatalogHeader *previousCatalog;
   
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&
      (g_FrontendScenarioTransferState != 0)) {
     if (g_FrontendScenarioTransferState == 1) {
-      UVar14 = UiTransferMailbox_GetReceivedBufferCf();
-      pdVar4 = (dword *)UVar14.eax;
-      if (!UVar14.carry) {
-        dVar1 = *pdVar4;
-        AVar12 = (*g_MemoryApi.alloc)(dVar1);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
+      received = UiTransferMailbox_GetReceivedBufferCf();
+      receivedDwords = (dword *)received.eax;
+      if (!received.carry) {
+        payloadSizeBytes = *receivedDwords;
+        allocation = (*g_MemoryApi.alloc)(payloadSizeBytes);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
         changedLevelMask[1] = 0;
         changedLevelMask[2] = 0;
         changedLevelMask[3] = 0;
-        memory = g_ScenarioCatalog;
-        g_ScenarioCatalog = (ScenarioCatalogHeader *)FVar13.eax;
-        g_ScenarioCatalogUsedBytes = dVar1;
-        PckCodec_DecodeHuffmanRle(dVar1,(byte *)FVar13.eax,UVar14.ecx - 4,(byte *)(pdVar4 + 1));
-        (*g_MemoryApi.free)(pdVar4);
+        previousCatalog = g_ScenarioCatalog;
+        g_ScenarioCatalog = (ScenarioCatalogHeader *)checkedResult.eax;
+        g_ScenarioCatalogUsedBytes = payloadSizeBytes;
+        PckCodec_DecodeHuffmanRle(payloadSizeBytes,(byte *)checkedResult.eax,received.ecx - 4,(byte *)(receivedDwords + 1));
+        (*g_MemoryApi.free)(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
         g_FrontendScenarioTransferState = 0;
-        SVar9 = g_ScenarioCatalog->levelRecordCount;
-        if (memory != (ScenarioCatalogHeader *)0x0) {
-          recordCount = memory->levelRecordCount;
-          pdVar4 = (dword *)((int)&g_ScenarioCatalog->levelRecordsOffset +
+        newRecordsRemaining = g_ScenarioCatalog->levelRecordCount;
+        if (previousCatalog != (ScenarioCatalogHeader *)0x0) {
+          recordCount = previousCatalog->levelRecordCount;
+          receivedDwords = (dword *)((int)&g_ScenarioCatalog->levelRecordsOffset +
                             g_ScenarioCatalog->levelRecordsOffset);
-          SVar2 = memory->levelRecordsOffset;
-          pSVar3 = &memory->levelRecordsOffset;
-          if ((SVar9 != 0) && (recordCount != 0)) {
-            uVar7 = 1;
-            iVar8 = 3;
+          oldLevelRecordsOffset = previousCatalog->levelRecordsOffset;
+          oldCatalogBase = &previousCatalog->levelRecordsOffset;
+          if ((newRecordsRemaining != 0) && (recordCount != 0)) {
+            maskBit = 1;
+            maskSlotOrRecordsLeft = 3;
             do {
-              bVar11 = DwordBlock64Array_ContainsExactRecordCf
-                                 (recordCount,(dword *)((int)pSVar3 + SVar2),pdVar4);
-              if (!bVar11) {
-                changedLevelMask[iVar8] = changedLevelMask[iVar8] | uVar7;
+              recordAlreadyKnown = DwordBlock64Array_ContainsExactRecordCf
+                                 (recordCount,(dword *)((int)oldCatalogBase + oldLevelRecordsOffset),receivedDwords);
+              if (!recordAlreadyKnown) {
+                changedLevelMask[maskSlotOrRecordsLeft] = changedLevelMask[maskSlotOrRecordsLeft] | maskBit;
               }
-              pdVar4 = pdVar4 + 0x40;
-              uVar7 = uVar7 * 2;
-              if (uVar7 == 0) {
-                uVar7 = 1;
-                iVar8 = iVar8 + -1;
-                if (iVar8 == 0) break;
+              receivedDwords = receivedDwords + 0x40;
+              maskBit = maskBit * 2;
+              if (maskBit == 0) {
+                maskBit = 1;
+                maskSlotOrRecordsLeft = maskSlotOrRecordsLeft + -1;
+                if (maskSlotOrRecordsLeft == 0) break;
               }
-              SVar9 = SVar9 - 1;
-            } while (SVar9 != 0);
+              newRecordsRemaining = newRecordsRemaining - 1;
+            } while (newRecordsRemaining != 0);
           }
         }
-        (*g_MemoryApi.free)(memory);
+        (*g_MemoryApi.free)(previousCatalog);
         FrontendCommandQueue_EnqueueLocalPlayerCommand
                   (0xe00,changedLevelMask[1],changedLevelMask[2],changedLevelMask[3]);
       }
     }
     else if (g_FrontendScenarioTransferState < 3) {
-      UVar14 = UiTransferMailbox_GetReceivedBufferCf();
-      pdVar4 = (dword *)UVar14.eax;
-      if (!UVar14.carry) {
-        dVar1 = *pdVar4;
+      received = UiTransferMailbox_GetReceivedBufferCf();
+      receivedDwords = (dword *)received.eax;
+      if (!received.carry) {
+        payloadSizeBytes = *receivedDwords;
         if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
@@ -706,11 +706,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         Resource_Release(g_FrontendLoadedLevelAsset);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
-        AVar12 = (*g_MemoryApi.alloc)(dVar1);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)FVar13.eax;
+        allocation = (*g_MemoryApi.alloc)(payloadSizeBytes);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.eax;
         PckCodec_DecodeHuffmanRle
-                  (dVar1,(byte *)g_FrontendLoadedLevelAsset,UVar14.ecx - 4,(byte *)(pdVar4 + 1));
+                  (payloadSizeBytes,(byte *)g_FrontendLoadedLevelAsset,received.ecx - 4,(byte *)(receivedDwords + 1));
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_MarkFlag02ById(g_LocalPlayerRuntimeId,0,0,0);
@@ -718,22 +718,22 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         else {
           FrontendCommandQueue_EnqueueLocalPlayerCommand(0x8d0,0,0,0);
         }
-        (*g_MemoryApi.free)(pdVar4);
+        (*g_MemoryApi.free)(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
         g_FrontendScenarioTransferState = 0;
       }
     }
     else if (g_FrontendScenarioTransferState == 3) {
-      UVar14 = UiTransferMailbox_GetReceivedBufferCf();
-      pdVar4 = (dword *)UVar14.eax;
-      if (!UVar14.carry) {
-        dVar1 = *pdVar4;
-        AVar12 = (*g_MemoryApi.alloc)(dVar1);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = FVar13.eax
+      received = UiTransferMailbox_GetReceivedBufferCf();
+      receivedDwords = (dword *)received.eax;
+      if (!received.carry) {
+        payloadSizeBytes = *receivedDwords;
+        allocation = (*g_MemoryApi.alloc)(payloadSizeBytes);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.eax
         ;
         PckCodec_DecodeFieldGrid
-                  (dVar1,(FieldGridAsset *)FVar13.eax,UVar14.ecx - 4,(byte *)(pdVar4 + 1));
+                  (payloadSizeBytes,(FieldGridAsset *)checkedResult.eax,received.ecx - 4,(byte *)(receivedDwords + 1));
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_MarkFlag08ById(g_LocalPlayerRuntimeId,0,0,0);
@@ -741,15 +741,15 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         else {
           FrontendCommandQueue_EnqueueLocalPlayerCommand(0x360,0,0,0);
         }
-        (*g_MemoryApi.free)(pdVar4);
+        (*g_MemoryApi.free)(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
         g_FrontendScenarioTransferState = 0;
       }
     }
     else if (g_FrontendScenarioTransferState < 5) {
-      UVar14 = UiTransferMailbox_GetReceivedBufferCf();
-      pdVar4 = (dword *)UVar14.eax;
-      if (!UVar14.carry) {
+      received = UiTransferMailbox_GetReceivedBufferCf();
+      receivedDwords = (dword *)received.eax;
+      if (!received.carry) {
         if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
@@ -758,30 +758,30 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         Resource_Release(g_FrontendLoadedLevelAsset);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
-        AVar12 = (*g_MemoryApi.alloc)(*pdVar4);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)FVar13.eax;
+        allocation = (*g_MemoryApi.alloc)(*receivedDwords);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.eax;
         PckCodec_DecodeHuffmanRle
-                  (*pdVar4,(byte *)g_FrontendLoadedLevelAsset,pdVar4[3],(byte *)(pdVar4 + 6));
-        pbVar10 = (byte *)((int)(pdVar4 + 6) + pdVar4[3]);
-        AVar12 = (*g_MemoryApi.alloc)(pdVar4[1]);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        g_FrontendLoadedCampaignAsset = (byte *)FVar13.eax;
-        PckCodec_DecodeHuffmanRle(pdVar4[1],g_FrontendLoadedCampaignAsset,pdVar4[4],pbVar10);
-        pFVar5 = g_FrontendLoadedLevelAsset;
-        dVar1 = pdVar4[4];
-        pbVar6 = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
+                  (*receivedDwords,(byte *)g_FrontendLoadedLevelAsset,receivedDwords[3],(byte *)(receivedDwords + 6));
+        streamOrRecordCursor = (byte *)((int)(receivedDwords + 6) + receivedDwords[3]);
+        allocation = (*g_MemoryApi.alloc)(receivedDwords[1]);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        g_FrontendLoadedCampaignAsset = (byte *)checkedResult.eax;
+        PckCodec_DecodeHuffmanRle(receivedDwords[1],g_FrontendLoadedCampaignAsset,receivedDwords[4],streamOrRecordCursor);
+        levelAsset = g_FrontendLoadedLevelAsset;
+        payloadSizeBytes = receivedDwords[4];
+        levelPathOrSelectedId = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
                  assetRelativeAddressAnchor28 +
                  ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
                  0x28);
-        WidePath_SetExtensionCode(0x646c66,(word *)pbVar6);
+        WidePath_SetExtensionCode(0x646c66,(word *)levelPathOrSelectedId);
         WidePath_CombineDirectoryAndLeaf
-                  ((word *)&g_LevelResourcePathScratchUtf16,(word *)pbVar6,
+                  ((word *)&g_LevelResourcePathScratchUtf16,(word *)levelPathOrSelectedId,
                    (word *)&g_ExecutableDirectoryUtf16);
-        AVar12 = (*g_MemoryApi.alloc)(pdVar4[2]);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        (pFVar5->header).pathState.levelPathOffsetOrLoadedFieldGrid = FVar13.eax;
-        PckCodec_DecodeFieldGrid(pdVar4[2],(FieldGridAsset *)FVar13.eax,pdVar4[5],pbVar10 + dVar1);
+        allocation = (*g_MemoryApi.alloc)(receivedDwords[2]);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.eax;
+        PckCodec_DecodeFieldGrid(receivedDwords[2],(FieldGridAsset *)checkedResult.eax,receivedDwords[5],streamOrRecordCursor + payloadSizeBytes);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_MarkFlag04ById(g_LocalPlayerRuntimeId,0,0,0);
@@ -789,29 +789,29 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         else {
           FrontendCommandQueue_EnqueueLocalPlayerCommand(0x410,0,0,0);
         }
-        (*g_MemoryApi.free)(pdVar4);
+        (*g_MemoryApi.free)(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
-        pbVar10 = g_FrontendLoadedCampaignAsset;
+        streamOrRecordCursor = g_FrontendLoadedCampaignAsset;
         g_FrontendScenarioTransferState = 0;
-        pbVar6 = g_FrontendLoadedCampaignAsset + 0xb4;
-        iVar8 = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
-        *(int *)(g_FrontendLoadedCampaignAsset + 0xc4) = *(int *)pbVar6;
+        levelPathOrSelectedId = g_FrontendLoadedCampaignAsset + 0xb4;
+        maskSlotOrRecordsLeft = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
+        *(int *)(g_FrontendLoadedCampaignAsset + 0xc4) = *(int *)levelPathOrSelectedId;
         do {
-          if (*(int *)pbVar6 == *(int *)(pbVar10 + 0x300)) break;
-          pbVar10 = pbVar10 + 0x180;
-          iVar8 = iVar8 + -1;
-        } while (iVar8 != 0);
+          if (*(int *)levelPathOrSelectedId == *(int *)(streamOrRecordCursor + 0x300)) break;
+          streamOrRecordCursor = streamOrRecordCursor + 0x180;
+          maskSlotOrRecordsLeft = maskSlotOrRecordsLeft + -1;
+        } while (maskSlotOrRecordsLeft != 0);
         WidePath_CombineDirectoryAndLeaf
-                  (&g_FrontendScenarioPathScratchUtf16,(word *)(pbVar10 + 0x30c),
+                  (&g_FrontendScenarioPathScratchUtf16,(word *)(streamOrRecordCursor + 0x30c),
                    (word *)u_level_0050daac);
         WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
         FrontendPlayerRuntime_InitializeFactionAssignments();
       }
     }
     else {
-      UVar14 = UiTransferMailbox_GetReceivedBufferCf();
-      pdVar4 = (dword *)UVar14.eax;
-      if (!UVar14.carry) {
+      received = UiTransferMailbox_GetReceivedBufferCf();
+      receivedDwords = (dword *)received.eax;
+      if (!received.carry) {
         if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
@@ -820,24 +820,24 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         Resource_Release(g_FrontendLoadedLevelAsset);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
-        AVar12 = (*g_MemoryApi.alloc)(*pdVar4);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        pFVar5 = (FrontendLoadedLevelRuntimeImage370 *)FVar13.eax;
-        g_FrontendLoadedLevelAsset = pFVar5;
-        PckCodec_DecodeHuffmanRle(*pdVar4,(byte *)pFVar5,pdVar4[2],(byte *)(pdVar4 + 4));
-        dVar1 = pdVar4[2];
-        pbVar6 = (pFVar5->header).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((pFVar5->header).pathState.levelPathOffsetOrLoadedFieldGrid - 0x28);
-        WidePath_SetExtensionCode(0x646c66,(word *)pbVar6);
+        allocation = (*g_MemoryApi.alloc)(*receivedDwords);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        levelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.eax;
+        g_FrontendLoadedLevelAsset = levelAsset;
+        PckCodec_DecodeHuffmanRle(*receivedDwords,(byte *)levelAsset,receivedDwords[2],(byte *)(receivedDwords + 4));
+        payloadSizeBytes = receivedDwords[2];
+        levelPathOrSelectedId = (levelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                 ((levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid - 0x28);
+        WidePath_SetExtensionCode(0x646c66,(word *)levelPathOrSelectedId);
         WidePath_CombineDirectoryAndLeaf
-                  ((word *)&g_LevelResourcePathScratchUtf16,(word *)pbVar6,
+                  ((word *)&g_LevelResourcePathScratchUtf16,(word *)levelPathOrSelectedId,
                    (word *)&g_ExecutableDirectoryUtf16);
-        AVar12 = (*g_MemoryApi.alloc)(pdVar4[1]);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        (pFVar5->header).pathState.levelPathOffsetOrLoadedFieldGrid = FVar13.eax;
+        allocation = (*g_MemoryApi.alloc)(receivedDwords[1]);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.eax;
         PckCodec_DecodeFieldGrid
-                  (pdVar4[1],(FieldGridAsset *)FVar13.eax,pdVar4[3],
-                   (byte *)((int)(pdVar4 + 4) + dVar1));
+                  (receivedDwords[1],(FieldGridAsset *)checkedResult.eax,receivedDwords[3],
+                   (byte *)((int)(receivedDwords + 4) + payloadSizeBytes));
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_MarkFlag04ById(g_LocalPlayerRuntimeId,0,0,0);
@@ -845,7 +845,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         else {
           FrontendCommandQueue_EnqueueLocalPlayerCommand(0x410,0,0,0);
         }
-        (*g_MemoryApi.free)(pdVar4);
+        (*g_MemoryApi.free)(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
         g_FrontendScenarioTransferState = 0;
         FrontendPlayerRuntime_InitializeFactionAssignments();
@@ -872,112 +872,112 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex)
 
 {
-  FrontendRoleStateFlags *pFVar1;
+  FrontendRoleStateFlags *roleFlags;
   uint bytes;
-  dword dVar2;
+  dword levelPathOffset;
   PckDecodedByteCount sourceImageSizeBytes;
-  FrontendPlayerRuntimeBlockCount FVar3;
-  FrontendLoadedLevelRuntimeImage370 *pFVar4;
-  FrontendLoadedLevelRuntimeImage370 *pFVar5;
-  FrontendPlayerRuntimeRecord *pFVar6;
+  FrontendPlayerRuntimeBlockCount playersRemaining;
+  FrontendLoadedLevelRuntimeImage370 *levelAsset;
+  FrontendLoadedLevelRuntimeImage370 *clientLevelAsset;
+  FrontendPlayerRuntimeRecord *playerScanBase;
   FieldGridAsset *sourceGrid;
-  FrontendPlayerRuntimeBlockCount FVar7;
-  uint uVar8;
-  int iVar9;
-  byte *pbVar10;
+  FrontendPlayerRuntimeBlockCount playersToCheck;
+  uint dwordsRemaining;
+  int otherPlayersRemaining;
+  byte *pathOrEncodeBuffer;
   dword *encodedSourceDwords;
-  FrontendPlayerRuntimeRecord *pFVar11;
+  FrontendPlayerRuntimeRecord *playerRecord;
   dword *outgoingDwordCursor;
-  PackageLoadEntryEaxCf5 PVar12;
-  FatalErrorEaxCf5 FVar13;
-  PckCodecEaxCf5 PVar14;
-  ArenaAllocEaxCf5 AVar15;
+  PackageLoadEntryEaxCf5 loadedEntry;
+  FatalErrorEaxCf5 checkedResult;
+  PckCodecEaxCf5 encodeResult;
+  ArenaAllocEaxCf5 allocation;
   
-  pFVar4 = g_FrontendLoadedLevelAsset;
-  FVar7 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar11 = g_FrontendPlayerRuntimeBlocks;
+  levelAsset = g_FrontendLoadedLevelAsset;
+  playersToCheck = g_FrontendPlayerRuntimeBlockCount;
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (((pFVar11->factionAssignment).roleStateFlags & 8) == 0) {
-      dVar2 = (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
-      pFVar1 = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
-      *pFVar1 = *pFVar1 | 8;
-      pbVar10 = (pFVar4->header).common.buildMetadata.assetRelativeAddressAnchor28 + (dVar2 - 0x28);
-      WidePath_SetExtensionCode(0x646c66,(word *)pbVar10);
+    if (((playerRecord->factionAssignment).roleStateFlags & 8) == 0) {
+      levelPathOffset = (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
+      roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
+      *roleFlags = *roleFlags | 8;
+      pathOrEncodeBuffer = (levelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28 + (levelPathOffset - 0x28);
+      WidePath_SetExtensionCode(0x646c66,(word *)pathOrEncodeBuffer);
       WidePath_CombineDirectoryAndLeaf
-                ((word *)&g_LevelResourcePathScratchUtf16,(word *)pbVar10,
+                ((word *)&g_LevelResourcePathScratchUtf16,(word *)pathOrEncodeBuffer,
                  (word *)&g_ExecutableDirectoryUtf16);
-      pFVar5 = g_FrontendLoadedLevelAsset;
+      clientLevelAsset = g_FrontendLoadedLevelAsset;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
-        pFVar11 = g_FrontendPlayerRuntimeBlocks + 1;
-        iVar9 = g_FrontendPlayerRuntimeBlockCount - 1;
+        playerRecord = g_FrontendPlayerRuntimeBlocks + 1;
+        otherPlayersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
         goto FrontendScenarioSession_CheckNextPlayerForFieldGridRequest;
       }
-      PVar12 = Package_LoadEntry((word *)pbVar10);
-      FVar13 = (*g_FatalErrorPrimaryDispatchCf)((dword)PVar12.bufferOrError,PVar12.carry);
-      sourceGrid = (FieldGridAsset *)FVar13.eax;
-      (pFVar4->header).pathState.levelPathOffsetOrLoadedFieldGrid = (dword)sourceGrid;
+      loadedEntry = Package_LoadEntry((word *)pathOrEncodeBuffer);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
+      sourceGrid = (FieldGridAsset *)checkedResult.eax;
+      (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (dword)sourceGrid;
       encodedSourceDwords = (dword *)g_PackageScratchBuffer;
-      pFVar6 = g_FrontendPlayerRuntimeBlocks;
-      FVar3 = g_FrontendPlayerRuntimeBlockCount;
+      playerScanBase = g_FrontendPlayerRuntimeBlocks;
+      playersRemaining = g_FrontendPlayerRuntimeBlockCount;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
         sourceImageSizeBytes = (sourceGrid->common).allocationSizeBytes;
-        pbVar10 = g_PackageScratchBuffer + 4;
+        pathOrEncodeBuffer = g_PackageScratchBuffer + 4;
         *(PckDecodedByteCount *)g_PackageScratchBuffer = sourceImageSizeBytes;
-        PVar14 = PckCodec_EncodeFieldGrid(0x7ffffc,pbVar10,sourceImageSizeBytes,sourceGrid);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(PVar14.eax,PVar14.carry);
-        bytes = FVar13.eax + 4;
-        AVar15 = (*g_MemoryApi.alloc)(bytes);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar15.eax,AVar15.carry);
-        outgoingDwordCursor = (dword *)FVar13.eax;
-        for (uVar8 = bytes >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+        encodeResult = PckCodec_EncodeFieldGrid(0x7ffffc,pathOrEncodeBuffer,sourceImageSizeBytes,sourceGrid);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
+        bytes = checkedResult.eax + 4;
+        allocation = (*g_MemoryApi.alloc)(bytes);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+        outgoingDwordCursor = (dword *)checkedResult.eax;
+        for (dwordsRemaining = bytes >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
           *outgoingDwordCursor = *encodedSourceDwords;
           encodedSourceDwords = encodedSourceDwords + 1;
           outgoingDwordCursor = outgoingDwordCursor + 1;
         }
-        UiTransferMailbox_SetOutgoingBuffer(bytes,(dword *)FVar13.eax);
-        pFVar6 = g_FrontendPlayerRuntimeBlocks;
-        FVar3 = g_FrontendPlayerRuntimeBlockCount;
+        UiTransferMailbox_SetOutgoingBuffer(bytes,(dword *)checkedResult.eax);
+        playerScanBase = g_FrontendPlayerRuntimeBlocks;
+        playersRemaining = g_FrontendPlayerRuntimeBlockCount;
       }
       break;
     }
-    pFVar11 = pFVar11 + 1;
-    FVar7 = FVar7 - 1;
-    pFVar6 = g_FrontendPlayerRuntimeBlocks;
-    FVar3 = g_FrontendPlayerRuntimeBlockCount;
-  } while (FVar7 != 0);
+    playerRecord = playerRecord + 1;
+    playersToCheck = playersToCheck - 1;
+    playerScanBase = g_FrontendPlayerRuntimeBlocks;
+    playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  } while (playersToCheck != 0);
   goto joined_r0x00544553;
   while( true ) {
-    pFVar11 = pFVar11 + 1;
-    iVar9 = iVar9 + -1;
-    if (iVar9 == 0) break;
+    playerRecord = playerRecord + 1;
+    otherPlayersRemaining = otherPlayersRemaining + -1;
+    if (otherPlayersRemaining == 0) break;
 FrontendScenarioSession_CheckNextPlayerForFieldGridRequest:
-    if (g_LocalPlayerRuntimeId == pFVar11->playerRuntimeId) {
-      if (((pFVar11->factionAssignment).roleStateFlags & 0x10) != 0) {
-        PVar12 = Package_LoadEntry((word *)pbVar10);
-        FVar13 = (*g_FatalErrorPrimaryDispatchCf)((dword)PVar12.bufferOrError,PVar12.carry);
-        (pFVar5->header).pathState.levelPathOffsetOrLoadedFieldGrid = FVar13.eax;
-        pFVar6 = g_FrontendPlayerRuntimeBlocks;
-        FVar3 = g_FrontendPlayerRuntimeBlockCount;
+    if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
+      if (((playerRecord->factionAssignment).roleStateFlags & 0x10) != 0) {
+        loadedEntry = Package_LoadEntry((word *)pathOrEncodeBuffer);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
+        (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.eax;
+        playerScanBase = g_FrontendPlayerRuntimeBlocks;
+        playersRemaining = g_FrontendPlayerRuntimeBlockCount;
         goto joined_r0x00544553;
       }
       break;
     }
   }
-  pFVar11->snapshotPayloadB0_13AF[0] = 0;
-  pFVar11->snapshotPayloadB0_13AF[1] = 0;
-  pFVar11->snapshotPayloadB0_13AF[2] = 0;
-  pFVar11->snapshotPayloadB0_13AF[3] = 0;
+  playerRecord->snapshotPayloadB0_13AF[0] = 0;
+  playerRecord->snapshotPayloadB0_13AF[1] = 0;
+  playerRecord->snapshotPayloadB0_13AF[2] = 0;
+  playerRecord->snapshotPayloadB0_13AF[3] = 0;
   UiTransferMailbox_MarkUnavailable();
   g_FrontendScenarioTransferState = 3;
-  pFVar6 = g_FrontendPlayerRuntimeBlocks;
-  FVar3 = g_FrontendPlayerRuntimeBlockCount;
+  playerScanBase = g_FrontendPlayerRuntimeBlocks;
+  playersRemaining = g_FrontendPlayerRuntimeBlockCount;
 joined_r0x00544553:
-  while (pFVar11 = pFVar6, FVar3 = FVar3 - 1, FVar3 != 0) {
-    pFVar6 = pFVar11 + 1;
-    if ((pFVar11[1].factionAssignment.roleStateFlags & 0x10) != 0) {
-      pFVar1 = &pFVar11[1].factionAssignment.roleStateFlags;
-      *pFVar1 = *pFVar1 | 8;
-      pFVar11[1].runtimeState70 = 0x7fffffff;
+  while (playerRecord = playerScanBase, playersRemaining = playersRemaining - 1, playersRemaining != 0) {
+    playerScanBase = playerRecord + 1;
+    if ((playerRecord[1].factionAssignment.roleStateFlags & 0x10) != 0) {
+      roleFlags = &playerRecord[1].factionAssignment.roleStateFlags;
+      *roleFlags = *roleFlags | 8;
+      playerRecord[1].runtimeState70 = 0x7fffffff;
     }
   }
   FrontendSession_ReturnToMainPage(selectedLevelIndex,0,0,1);
@@ -996,49 +996,49 @@ joined_r0x00544553:
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestCampaignBundle
-          (dword arg0,dword arg1,dword arg2,dword selectedRecordIndex)
+          (dword playerRuntimeId,dword unusedArg1,dword unusedArg2,dword selectedRecordIndex)
 
 {
-  FrontendRoleStateFlags *pFVar1;
+  FrontendRoleStateFlags *roleFlags;
   FieldGridAsset *sourceGrid;
-  dword dVar2;
-  dword dVar3;
-  int iVar4;
-  uint uVar5;
-  byte *pbVar6;
-  int iVar7;
-  byte *pbVar8;
+  dword encodedLevelBytes;
+  dword encodedCampaignBytes;
+  int campaignRecordsRemaining;
+  uint dwordsRemaining;
+  byte *cursorOrSize;
+  int frontendRoot;
+  byte *recordOrEncodeCursor;
   byte *transferBundleBytes;
   FrontendLoadedLevelRuntimeImage370 *source;
   dword *transferCopyDestination;
-  PackageLoadEntryEaxCf5 PVar9;
-  FatalErrorEaxCf5 FVar10;
-  PckCodecEaxCf5 PVar11;
-  ArenaAllocEaxCf5 AVar12;
+  PackageLoadEntryEaxCf5 loadedEntry;
+  FatalErrorEaxCf5 checkedResult;
+  PckCodecEaxCf5 encodeResult;
+  ArenaAllocEaxCf5 allocation;
   PckDecodedByteCount campaignDecodedSizeBytes;
   
-  iVar7 = g_FrontendRootNode;
-  pFVar1 = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
-  *pFVar1 = *pFVar1 | 4;
+  frontendRoot = g_FrontendRootNode;
+  roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
+  *roleFlags = *roleFlags | 4;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     WidePath_CombineDirectoryAndLeaf
               (&g_FrontendScenarioPathScratchUtf16,
-               *(word **)(*(int *)(iVar7 + 0x23b4) + selectedRecordIndex * 4),
+               *(word **)(*(int *)(frontendRoot + 0x23b4) + selectedRecordIndex * 4),
                (word *)u_level_0050dab8);
     WidePath_SetExtensionCode(0x6e6763,&g_FrontendScenarioPathScratchUtf16);
-    PVar9 = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-    FVar10 = (*g_FatalErrorPrimaryDispatchCf)((dword)PVar9.bufferOrError,PVar9.carry);
-    pbVar8 = (byte *)FVar10.eax;
-    pbVar6 = pbVar8 + 0xb4;
-    iVar4 = *(int *)(pbVar8 + 0xb8);
-    g_FrontendLoadedCampaignAsset = pbVar8;
-    *(int *)(pbVar8 + 0xc4) = *(int *)pbVar6;
+    loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
+    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
+    recordOrEncodeCursor = (byte *)checkedResult.eax;
+    cursorOrSize = recordOrEncodeCursor + 0xb4;
+    campaignRecordsRemaining = *(int *)(recordOrEncodeCursor + 0xb8);
+    g_FrontendLoadedCampaignAsset = recordOrEncodeCursor;
+    *(int *)(recordOrEncodeCursor + 0xc4) = *(int *)cursorOrSize;
     do {
-      if (*(int *)pbVar6 == *(int *)(pbVar8 + 0x300))
+      if (*(int *)cursorOrSize == *(int *)(recordOrEncodeCursor + 0x300))
       goto FrontendScenarioSession_UseSelectedCampaignLevelRecord;
-      pbVar8 = pbVar8 + 0x180;
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      recordOrEncodeCursor = recordOrEncodeCursor + 0x180;
+      campaignRecordsRemaining = campaignRecordsRemaining + -1;
+    } while (campaignRecordsRemaining != 0);
     (*g_FatalErrorPrimaryDispatchCf)(0,false);
 FrontendScenarioSession_UseSelectedCampaignLevelRecord:
     if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
@@ -1049,59 +1049,59 @@ FrontendScenarioSession_UseSelectedCampaignLevelRecord:
     Resource_Release(g_FrontendLoadedLevelAsset);
     g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
     WidePath_CombineDirectoryAndLeaf
-              (&g_FrontendScenarioPathScratchUtf16,(word *)(pbVar8 + 0x30c),(word *)u_level_0050daac
+              (&g_FrontendScenarioPathScratchUtf16,(word *)(recordOrEncodeCursor + 0x30c),(word *)u_level_0050daac
               );
     WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
-    PVar9 = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-    FVar10 = (*g_FatalErrorPrimaryDispatchCf)((dword)PVar9.bufferOrError,PVar9.carry);
-    g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)FVar10.eax;
-    pbVar6 = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28
+    loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
+    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
+    g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.eax;
+    cursorOrSize = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28
              + ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
                0x28);
-    WidePath_SetExtensionCode(0x646c66,(word *)pbVar6);
+    WidePath_SetExtensionCode(0x646c66,(word *)cursorOrSize);
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_LevelResourcePathScratchUtf16,(word *)pbVar6,
+              ((word *)&g_LevelResourcePathScratchUtf16,(word *)cursorOrSize,
                (word *)&g_ExecutableDirectoryUtf16);
-    PVar9 = Package_LoadEntry((word *)pbVar6);
-    pbVar6 = g_FrontendLoadedCampaignAsset;
+    loadedEntry = Package_LoadEntry((word *)cursorOrSize);
+    cursorOrSize = g_FrontendLoadedCampaignAsset;
     source = g_FrontendLoadedLevelAsset;
     transferBundleBytes = g_PackageScratchBuffer;
-    sourceGrid = PVar9.bufferOrError;
+    sourceGrid = loadedEntry.bufferOrError;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       *(AssetAllocationSizeBytes *)g_PackageScratchBuffer =
            (g_FrontendLoadedLevelAsset->header).common.allocationSizeBytes;
-      campaignDecodedSizeBytes = *(PckDecodedByteCount *)(pbVar6 + 4);
+      campaignDecodedSizeBytes = *(PckDecodedByteCount *)(cursorOrSize + 4);
       *(AssetAllocationSizeBytes *)(transferBundleBytes + 8) =
            (sourceGrid->common).allocationSizeBytes;
       *(PckDecodedByteCount *)(transferBundleBytes + 4) = campaignDecodedSizeBytes;
-      pbVar8 = transferBundleBytes + 0x18;
-      PVar11 = PckCodec_EncodeHuffmanRle
-                         (0x7fffe8,pbVar8,(source->header).common.allocationSizeBytes,(byte *)source
+      recordOrEncodeCursor = transferBundleBytes + 0x18;
+      encodeResult = PckCodec_EncodeHuffmanRle
+                         (0x7fffe8,recordOrEncodeCursor,(source->header).common.allocationSizeBytes,(byte *)source
                          );
-      FVar10 = (*g_FatalErrorPrimaryDispatchCf)(PVar11.eax,PVar11.carry);
-      dVar2 = FVar10.eax;
-      *(dword *)(transferBundleBytes + 0xc) = dVar2;
-      pbVar8 = pbVar8 + dVar2;
-      PVar11 = PckCodec_EncodeHuffmanRle
-                         (0x7fffe8 - dVar2,pbVar8,*(PckDecodedByteCount *)(pbVar6 + 4),pbVar6);
-      FVar10 = (*g_FatalErrorPrimaryDispatchCf)(PVar11.eax,PVar11.carry);
-      dVar3 = FVar10.eax;
-      *(dword *)(transferBundleBytes + 0x10) = dVar3;
-      PVar11 = PckCodec_EncodeFieldGrid
-                         ((0x7fffe8 - dVar2) - dVar3,pbVar8 + dVar3,
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
+      encodedLevelBytes = checkedResult.eax;
+      *(dword *)(transferBundleBytes + 0xc) = encodedLevelBytes;
+      recordOrEncodeCursor = recordOrEncodeCursor + encodedLevelBytes;
+      encodeResult = PckCodec_EncodeHuffmanRle
+                         (0x7fffe8 - encodedLevelBytes,recordOrEncodeCursor,*(PckDecodedByteCount *)(cursorOrSize + 4),cursorOrSize);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
+      encodedCampaignBytes = checkedResult.eax;
+      *(dword *)(transferBundleBytes + 0x10) = encodedCampaignBytes;
+      encodeResult = PckCodec_EncodeFieldGrid
+                         ((0x7fffe8 - encodedLevelBytes) - encodedCampaignBytes,recordOrEncodeCursor + encodedCampaignBytes,
                           (sourceGrid->common).allocationSizeBytes,sourceGrid);
-      FVar10 = (*g_FatalErrorPrimaryDispatchCf)(PVar11.eax,PVar11.carry);
-      *(dword *)(transferBundleBytes + 0x14) = FVar10.eax;
-      pbVar6 = pbVar8 + dVar3 + (FVar10.eax - (int)transferBundleBytes);
-      AVar12 = (*g_MemoryApi.alloc)((dword)pbVar6);
-      FVar10 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-      transferCopyDestination = (dword *)FVar10.eax;
-      for (uVar5 = (uint)pbVar6 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
+      *(dword *)(transferBundleBytes + 0x14) = checkedResult.eax;
+      cursorOrSize = recordOrEncodeCursor + encodedCampaignBytes + (checkedResult.eax - (int)transferBundleBytes);
+      allocation = (*g_MemoryApi.alloc)((dword)cursorOrSize);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+      transferCopyDestination = (dword *)checkedResult.eax;
+      for (dwordsRemaining = (uint)cursorOrSize >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
         *transferCopyDestination = *(dword *)transferBundleBytes;
         transferBundleBytes = transferBundleBytes + 4;
         transferCopyDestination = transferCopyDestination + 1;
       }
-      UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)pbVar6,(dword *)FVar10.eax);
+      UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)cursorOrSize,(dword *)checkedResult.eax);
     }
     (source->header).pathState.levelPathOffsetOrLoadedFieldGrid = (dword)sourceGrid;
     FrontendPlayerRuntime_InitializeFactionAssignments();
@@ -1110,8 +1110,8 @@ FrontendScenarioSession_UseSelectedCampaignLevelRecord:
     UiTransferMailbox_MarkUnavailable();
     g_FrontendScenarioTransferState = 4;
   }
-  *(uint *)(iVar7 + 0x3b4) = *(uint *)(iVar7 + 0x3b4) & 0xffffdfff;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(iVar7 + 0x508));
+  *(uint *)(frontendRoot + 0x3b4) = *(uint *)(frontendRoot + 0x3b4) & 0xffffdfff;
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(frontendRoot + 0x508));
   OldUnitRuntime_ResetPendingTables();
   FrontendState_DispatchCode(3);
   return;
@@ -1138,10 +1138,10 @@ ScenarioCatalog_RebuildSaveRecordListPage
   sdword *control;
   UiListRowCount rowCount;
   UiNodeBase *firstNode;
-  UiListRowCount UVar1;
-  void *pvVar2;
+  UiListRowCount remainingRows;
+  void *saveRecord;
   void **rowPointers;
-  void **ppvVar3;
+  void **rowPointerCursor;
   
   firstNode = g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x62].bottomAnchorQ31,
@@ -1151,14 +1151,14 @@ ScenarioCatalog_RebuildSaveRecordListPage
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
-    pvVar2 = (void *)((int)&g_ScenarioCatalog->levelRecordsOffset +
+    saveRecord = (void *)((int)&g_ScenarioCatalog->levelRecordsOffset +
                      g_ScenarioCatalog->saveRecordsOffset);
-    rowPointers = (void **)(rowCount * 0x100 + (int)pvVar2);
-    ppvVar3 = rowPointers;
-    for (UVar1 = rowCount; UVar1 != 0; UVar1 = UVar1 - 1) {
-      *ppvVar3 = pvVar2;
-      ppvVar3 = ppvVar3 + 1;
-      pvVar2 = (void *)((int)pvVar2 + 0x100);
+    rowPointers = (void **)(rowCount * 0x100 + (int)saveRecord);
+    rowPointerCursor = rowPointers;
+    for (remainingRows = rowCount; remainingRows != 0; remainingRows = remainingRows - 1) {
+      *rowPointerCursor = saveRecord;
+      rowPointerCursor = rowPointerCursor + 1;
+      saveRecord = (void *)((int)saveRecord + 0x100);
     }
     control = &firstNode[0x6a].layoutHeight;
     if (rowCount != 0) {
@@ -1193,10 +1193,10 @@ ScenarioCatalog_RebuildLevelRecordListPage
 {
   sdword *control;
   UiNodeBase *firstNode;
-  UiListRowCount UVar1;
+  UiListRowCount remainingRows;
   ScenarioCatalogRuntimeExpandedRecord100 *scenarioRecord;
   ScenarioCatalogRuntimeExpandedRecord100 **rowPointerCursor;
-  TextResourceResolveEaxCf5 TVar2;
+  TextResourceResolveEaxCf5 resolvedText;
   UiListRowCount rowCount;
   ScenarioCatalogRuntimeExpandedRecord100 **rowPointers;
   
@@ -1207,28 +1207,28 @@ ScenarioCatalog_RebuildLevelRecordListPage
       THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
-    UVar1 = g_ScenarioCatalog->levelRecordCount;
+    remainingRows = g_ScenarioCatalog->levelRecordCount;
     scenarioRecord =
          (ScenarioCatalogRuntimeExpandedRecord100 *)
          ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset);
-    rowPointerCursor = (ScenarioCatalogRuntimeExpandedRecord100 **)(scenarioRecord + UVar1);
-    rowCount = UVar1;
+    rowPointerCursor = (ScenarioCatalogRuntimeExpandedRecord100 **)(scenarioRecord + remainingRows);
+    rowCount = remainingRows;
     rowPointers = rowPointerCursor;
-    for (; UVar1 != 0; UVar1 = UVar1 - 1) {
+    for (; remainingRows != 0; remainingRows = remainingRows - 1) {
       *rowPointerCursor = scenarioRecord;
-      TVar2 = TextResource_Resolve(scenarioRecord->titleTextResourceId + 0x220a);
+      resolvedText = TextResource_Resolve(scenarioRecord->titleTextResourceId + 0x220a);
       scenarioRecord->titleDisplayTag = 0x8019;
-      scenarioRecord->titleResolvedText = TVar2.eax;
-      TVar2 = TextResource_Resolve(scenarioRecord->subtitleTextResourceId + 0x2200);
+      scenarioRecord->titleResolvedText = resolvedText.eax;
+      resolvedText = TextResource_Resolve(scenarioRecord->subtitleTextResourceId + 0x2200);
       scenarioRecord->subtitleDisplayTag = 0x8019;
-      scenarioRecord->subtitleResolvedText = TVar2.eax;
-      TVar2 = TextResource_Resolve(scenarioRecord->scenarioTextResourceId + 0x2230);
-      *TVar2.eax = 0x8001;
+      scenarioRecord->subtitleResolvedText = resolvedText.eax;
+      resolvedText = TextResource_Resolve(scenarioRecord->scenarioTextResourceId + 0x2230);
+      *resolvedText.eax = 0x8001;
       scenarioRecord->scenarioDisplayTag = 0x8019;
-      scenarioRecord->scenarioResolvedText = TVar2.eax;
-      TVar2 = TextResource_Resolve(scenarioRecord->modeTextResourceId + 0x2205);
+      scenarioRecord->scenarioResolvedText = resolvedText.eax;
+      resolvedText = TextResource_Resolve(scenarioRecord->modeTextResourceId + 0x2205);
       scenarioRecord->modeDisplayTag = 0x8019;
-      scenarioRecord->modeResolvedText = TVar2.eax;
+      scenarioRecord->modeResolvedText = resolvedText.eax;
       rowPointerCursor = rowPointerCursor + 1;
       scenarioRecord = scenarioRecord + 1;
     }
@@ -1270,10 +1270,10 @@ ScenarioCatalog_RebuildCampaignRecordListPage
 {
   sdword *control;
   UiNodeBase *firstNode;
-  UiListRowCount UVar1;
-  void *pvVar2;
-  void **ppvVar3;
-  TextResourceResolveEaxCf5 TVar4;
+  UiListRowCount remainingRows;
+  void *campaignRecord;
+  void **rowPointerCursor;
+  TextResourceResolveEaxCf5 resolvedText;
   UiListRowCount rowCount;
   void **rowPointers;
   
@@ -1284,19 +1284,19 @@ ScenarioCatalog_RebuildCampaignRecordListPage
       THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
-    UVar1 = g_ScenarioCatalog->campaignRecordCount;
-    pvVar2 = (void *)((int)&g_ScenarioCatalog->levelRecordsOffset +
+    remainingRows = g_ScenarioCatalog->campaignRecordCount;
+    campaignRecord = (void *)((int)&g_ScenarioCatalog->levelRecordsOffset +
                      g_ScenarioCatalog->campaignRecordsOffset);
-    ppvVar3 = (void **)(UVar1 * 0x100 + (int)pvVar2);
-    rowCount = UVar1;
-    rowPointers = ppvVar3;
-    for (; UVar1 != 0; UVar1 = UVar1 - 1) {
-      *ppvVar3 = pvVar2;
-      TVar4 = TextResource_Resolve(*(int *)((int)pvVar2 + 0x50) + 0x2220);
-      *(undefined2 *)((int)pvVar2 + 0x54) = 0x8019;
-      *(word **)((int)pvVar2 + 0x56) = TVar4.eax;
-      ppvVar3 = ppvVar3 + 1;
-      pvVar2 = (void *)((int)pvVar2 + 0x100);
+    rowPointerCursor = (void **)(remainingRows * 0x100 + (int)campaignRecord);
+    rowCount = remainingRows;
+    rowPointers = rowPointerCursor;
+    for (; remainingRows != 0; remainingRows = remainingRows - 1) {
+      *rowPointerCursor = campaignRecord;
+      resolvedText = TextResource_Resolve(*(int *)((int)campaignRecord + 0x50) + 0x2220);
+      *(undefined2 *)((int)campaignRecord + 0x54) = 0x8019;
+      *(word **)((int)campaignRecord + 0x56) = resolvedText.eax;
+      rowPointerCursor = rowPointerCursor + 1;
+      campaignRecord = (void *)((int)campaignRecord + 0x100);
     }
     control = &firstNode[0x77].left;
     if (rowCount != 0) {
@@ -1334,7 +1334,7 @@ ScenarioCatalog_MergeRecordsByName
 {
   uint sourceRecordsRemaining;
   int dwordsRemaining;
-  int iVar1;
+  int copyDwordsRemaining;
   ScenarioCatalogRecordCount destinationRecordsRemaining;
   ScenarioCatalogRecord *sourceNameCursor;
   ScenarioCatalogRecord *destinationRecordCursor;
@@ -1366,7 +1366,7 @@ ScenarioCatalog_MergeRecordsByName_ScanDestinationForMatchingRecordName:
       goto ScenarioCatalog_MergeRecordsByName_ScanDestinationForMatchingRecordName;
       existingRecordCount = existingRecordCount + 1;
     }
-    for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
+    for (copyDwordsRemaining = 0x40; copyDwordsRemaining != 0; copyDwordsRemaining = copyDwordsRemaining + -1) {
       *(undefined4 *)destinationRecordCursor->identifier = *(undefined4 *)sourceRecords->identifier;
       sourceRecords = (ScenarioCatalogRecord *)(sourceRecords->identifier + 2);
       destinationRecordCursor = (ScenarioCatalogRecord *)(destinationRecordCursor->identifier + 2);
@@ -1392,28 +1392,28 @@ ScenarioCatalog_MergeRecordsByName_ScanDestinationForMatchingRecordName:
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestLevelAsset
-          (dword arg0,dword arg1,dword arg2,dword selectedRecordIndex)
+          (dword playerRuntimeId,dword unusedArg1,dword unusedArg2,dword selectedRecordIndex)
 
 {
-  FrontendRoleStateFlags *pFVar1;
+  FrontendRoleStateFlags *roleFlags;
   UiPageStackControl *stack;
   PckDecodedByteCount sourceSizeBytes;
-  FrontendPlayerRuntimeBlockCount FVar2;
-  FrontendPlayerRuntimeRecord *pFVar3;
+  FrontendPlayerRuntimeBlockCount playersRemaining;
+  FrontendPlayerRuntimeRecord *playerRecord;
   FrontendLoadedLevelRuntimeImage370 *source;
-  uint uVar4;
-  uint uVar5;
-  int iVar6;
+  uint maskWordIndex;
+  uint byteCountOrOffset;
+  int rootOrRemaining;
   byte *destination;
   dword *encodedSourceDwords;
-  FrontendPlayerRuntimeRecord *pFVar7;
+  FrontendPlayerRuntimeRecord *playerCursor;
   dword *outgoingDwordCursor;
-  PackageLoadEntryEaxCf5 PVar8;
-  FatalErrorEaxCf5 FVar9;
-  PckCodecEaxCf5 PVar10;
-  ArenaAllocEaxCf5 AVar11;
+  PackageLoadEntryEaxCf5 loadedEntry;
+  FatalErrorEaxCf5 checkedResult;
+  PckCodecEaxCf5 encodeResult;
+  ArenaAllocEaxCf5 allocation;
   
-  iVar6 = g_FrontendRootNode;
+  rootOrRemaining = g_FrontendRootNode;
   stack = (UiPageStackControl *)(g_FrontendRootNode + 0x508);
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,
@@ -1421,7 +1421,7 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
              (word *)u_level_0050daac);
   WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(0,stack);
-  *(uint *)(iVar6 + 0x3b4) = *(uint *)(iVar6 + 0x3b4) & 0xffffdfff;
+  *(uint *)(rootOrRemaining + 0x3b4) = *(uint *)(rootOrRemaining + 0x3b4) & 0xffffdfff;
   FrontendState_DispatchCode(1);
   if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
      (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
@@ -1430,53 +1430,53 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
   g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
-  pFVar1 = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
-  *pFVar1 = *pFVar1 | 2;
+  roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
+  *roleFlags = *roleFlags | 2;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    PVar8 = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-    FVar9 = (*g_FatalErrorPrimaryDispatchCf)((dword)PVar8.bufferOrError,PVar8.carry);
+    loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
+    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
     encodedSourceDwords = (dword *)g_PackageScratchBuffer;
-    source = (FrontendLoadedLevelRuntimeImage370 *)FVar9.eax;
+    source = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.eax;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       sourceSizeBytes = (source->header).common.allocationSizeBytes;
       destination = g_PackageScratchBuffer + 4;
       g_FrontendLoadedLevelAsset = source;
       *(PckDecodedByteCount *)g_PackageScratchBuffer = sourceSizeBytes;
-      PVar10 = PckCodec_EncodeHuffmanRle(0x7ffffc,destination,sourceSizeBytes,(byte *)source);
-      FVar9 = (*g_FatalErrorPrimaryDispatchCf)(PVar10.eax,PVar10.carry);
-      uVar5 = FVar9.eax + 4;
-      AVar11 = (*g_MemoryApi.alloc)(uVar5);
-      FVar9 = (*g_FatalErrorPrimaryDispatchCf)(AVar11.eax,AVar11.carry);
-      outgoingDwordCursor = (dword *)FVar9.eax;
-      for (uVar4 = uVar5 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
+      encodeResult = PckCodec_EncodeHuffmanRle(0x7ffffc,destination,sourceSizeBytes,(byte *)source);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
+      byteCountOrOffset = checkedResult.eax + 4;
+      allocation = (*g_MemoryApi.alloc)(byteCountOrOffset);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.eax,allocation.carry);
+      outgoingDwordCursor = (dword *)checkedResult.eax;
+      for (maskWordIndex = byteCountOrOffset >> 2; maskWordIndex != 0; maskWordIndex = maskWordIndex - 1) {
         *outgoingDwordCursor = *encodedSourceDwords;
         encodedSourceDwords = encodedSourceDwords + 1;
         outgoingDwordCursor = outgoingDwordCursor + 1;
       }
-      UiTransferMailbox_SetOutgoingBuffer(uVar5,(dword *)FVar9.eax);
+      UiTransferMailbox_SetOutgoingBuffer(byteCountOrOffset,(dword *)checkedResult.eax);
       source = g_FrontendLoadedLevelAsset;
     }
   }
   else {
-    uVar5 = (*(int *)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4) -
+    byteCountOrOffset = (*(int *)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4) -
             (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
-    uVar4 = uVar5 >> 0xd;
-    if (uVar4 < 3) {
-      iVar6 = g_FrontendPlayerRuntimeBlockCount - 1;
-      pFVar7 = g_FrontendPlayerRuntimeBlocks;
+    maskWordIndex = byteCountOrOffset >> 0xd;
+    if (maskWordIndex < 3) {
+      rootOrRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
+      playerCursor = g_FrontendPlayerRuntimeBlocks;
       do {
-        if (g_LocalPlayerRuntimeId == pFVar7[1].playerRuntimeId) {
-          if ((*(uint *)(pFVar7[1].reserved78_7F + uVar4 * 4 + 0xc) &
-              1 << ((byte)(uVar5 >> 8) & 0x1f)) != 0) {
-            PVar8 = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-            source = PVar8.bufferOrError;
-            if (!PVar8.carry) goto FrontendScenarioSession_CommitLoadedLevelAsset;
+        if (g_LocalPlayerRuntimeId == playerCursor[1].playerRuntimeId) {
+          if ((*(uint *)(playerCursor[1].reserved78_7F + maskWordIndex * 4 + 0xc) &
+              1 << ((byte)(byteCountOrOffset >> 8) & 0x1f)) != 0) {
+            loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
+            source = loadedEntry.bufferOrError;
+            if (!loadedEntry.carry) goto FrontendScenarioSession_CommitLoadedLevelAsset;
           }
           break;
         }
-        iVar6 = iVar6 + -1;
-        pFVar7 = pFVar7 + 1;
-      } while (iVar6 != 0);
+        rootOrRemaining = rootOrRemaining + -1;
+        playerCursor = playerCursor + 1;
+      } while (rootOrRemaining != 0);
     }
     UiTransferMailbox_MarkUnavailable();
     g_FrontendScenarioTransferState = 2;
@@ -1484,19 +1484,19 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   }
 FrontendScenarioSession_CommitLoadedLevelAsset:
   g_FrontendLoadedLevelAsset = source;
-  uVar5 = (*(int *)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4) -
+  byteCountOrOffset = (*(int *)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4) -
           (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
-  uVar4 = uVar5 >> 0xd;
-  pFVar7 = g_FrontendPlayerRuntimeBlocks;
-  FVar2 = g_FrontendPlayerRuntimeBlockCount;
-  if (uVar4 < 3) {
-    while (pFVar3 = pFVar7, FVar2 = FVar2 - 1, FVar2 != 0) {
-      pFVar7 = pFVar3 + 1;
-      if ((*(uint *)(pFVar3[1].reserved78_7F + uVar4 * 4 + 0xc) & 1 << ((byte)(uVar5 >> 8) & 0x1f))
+  maskWordIndex = byteCountOrOffset >> 0xd;
+  playerCursor = g_FrontendPlayerRuntimeBlocks;
+  playersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  if (maskWordIndex < 3) {
+    while (playerRecord = playerCursor, playersRemaining = playersRemaining - 1, playersRemaining != 0) {
+      playerCursor = playerRecord + 1;
+      if ((*(uint *)(playerRecord[1].reserved78_7F + maskWordIndex * 4 + 0xc) & 1 << ((byte)(byteCountOrOffset >> 8) & 0x1f))
           != 0) {
-        pFVar1 = &pFVar3[1].factionAssignment.roleStateFlags;
-        *pFVar1 = *pFVar1 | 0x12;
-        pFVar3[1].runtimeState70 = 0x7fffffff;
+        roleFlags = &playerRecord[1].factionAssignment.roleStateFlags;
+        *roleFlags = *roleFlags | 0x12;
+        playerRecord[1].runtimeState70 = 0x7fffffff;
       }
     }
   }
@@ -1516,37 +1516,37 @@ FrontendScenarioSession_CommitLoadedLevelAsset:
 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordLocalizedText
-          (dword arg0,dword arg1,dword arg2,UiListRowIndex selectionIndex)
+          (dword playerRuntimeId,dword unusedArg1,dword unusedArg2,UiListRowIndex selectionIndex)
 
 {
   UiPointerListControl *control;
-  int iVar1;
+  int rowTableOrRecord;
   TextResourceId resourceId;
-  int iVar2;
-  TextResourceResolveEaxCf5 TVar3;
-  TextResourceResolveEaxCf5 TVar4;
+  int frontendRoot;
+  TextResourceResolveEaxCf5 primaryText;
+  TextResourceResolveEaxCf5 fieldText;
   
-  iVar2 = g_FrontendRootNode;
-  iVar1 = *(int *)(g_FrontendRootNode + 0x200c);
+  frontendRoot = g_FrontendRootNode;
+  rowTableOrRecord = *(int *)(g_FrontendRootNode + 0x200c);
   control = (UiPointerListControl *)(g_FrontendRootNode + 0x1fbc);
   *(undefined4 *)(g_FrontendRootNode + 0x20ec) = 0x215d;
-  if (iVar1 != 0) {
+  if (rowTableOrRecord != 0) {
     UiPointerList_SelectIndexVariantB(selectionIndex,control);
-    iVar1 = *(int *)(iVar1 + selectionIndex * 4);
-    if (*(int *)(iVar1 + 0x90) < 0) {
-      resourceId = *(TextResourceId *)(iVar1 + 0x70);
-      TVar3 = TextResource_Resolve(resourceId);
-      *TVar3.eax = 0x8000;
-      *(TextResourceId *)(iVar2 + 0x20ec) = resourceId;
+    rowTableOrRecord = *(int *)(rowTableOrRecord + selectionIndex * 4);
+    if (*(int *)(rowTableOrRecord + 0x90) < 0) {
+      resourceId = *(TextResourceId *)(rowTableOrRecord + 0x70);
+      primaryText = TextResource_Resolve(resourceId);
+      *primaryText.eax = 0x8000;
+      *(TextResourceId *)(frontendRoot + 0x20ec) = resourceId;
     }
     else {
-      TVar3 = TextResource_Resolve(0x215e);
-      TVar4 = TextResource_Resolve(*(TextResourceId *)(iVar1 + 0x70));
-      *TVar4.eax = 0x8000;
-      RichTextCommandStream_PatchPayloadBySelector(1,TVar4.eax,TVar3.eax);
-      TVar4 = TextResource_Resolve(*(TextResourceId *)(iVar1 + 0x90));
-      RichTextCommandStream_PatchPayloadBySelector(0,TVar4.eax,TVar3.eax);
-      *(undefined4 *)(iVar2 + 0x20ec) = 0x215e;
+      primaryText = TextResource_Resolve(0x215e);
+      fieldText = TextResource_Resolve(*(TextResourceId *)(rowTableOrRecord + 0x70));
+      *fieldText.eax = 0x8000;
+      RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,primaryText.eax);
+      fieldText = TextResource_Resolve(*(TextResourceId *)(rowTableOrRecord + 0x90));
+      RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,primaryText.eax);
+      *(undefined4 *)(frontendRoot + 0x20ec) = 0x215e;
     }
   }
   return;
@@ -1563,20 +1563,20 @@ ScenarioCatalog_RefreshSelectedRecordLocalizedText
 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordField50DisplayId
-          (dword arg0,dword arg1,dword arg2,UiListRowIndex selectionIndex)
+          (dword playerRuntimeId,dword unusedArg1,dword unusedArg2,UiListRowIndex selectionIndex)
 
 {
   UiPointerListControl *control;
-  int iVar1;
-  int iVar2;
+  int rowPointers;
+  int frontendRoot;
   
-  iVar2 = g_FrontendRootNode;
-  iVar1 = *(int *)(g_FrontendRootNode + 0x23b4);
+  frontendRoot = g_FrontendRootNode;
+  rowPointers = *(int *)(g_FrontendRootNode + 0x23b4);
   control = (UiPointerListControl *)(g_FrontendRootNode + 0x2364);
   *(undefined4 *)(g_FrontendRootNode + 0x249c) = 0x215d;
-  if (iVar1 != 0) {
+  if (rowPointers != 0) {
     UiPointerList_SelectIndexVariantB(selectionIndex,control);
-    *(int *)(iVar2 + 0x249c) = *(int *)(*(int *)(iVar1 + selectionIndex * 4) + 0x50) + 0x230000;
+    *(int *)(frontendRoot + 0x249c) = *(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x50) + 0x230000;
   }
   return;
 }
@@ -1603,24 +1603,24 @@ FrontendScenarioSelection_ActivateSelectedRecord
 
 {
   UiListRowIndex selectedRowIndex;
-  UiListRowIndexEaxCf5 UVar1;
-  UiSelectableNodeEaxEcxCf9 UVar2;
+  UiListRowIndexEaxCf5 selectedRow;
+  UiSelectableNodeEaxEcxCf9 selectedGroup;
   int scenarioPathPointerTableAddress;
   
-  UVar2 = UiSelectableGroup_NoneVisibleSelectedCf(3,
+  selectedGroup = UiSelectableGroup_NoneVisibleSelectedCf(3,
       THANDOR_UI_AT(selectionControl,0x60),
       THANDOR_UI_AT(selectionControl,0xc0),
       THANDOR_UI_AT(selectionControl,0x120));
-  if (UVar2.carry) {
+  if (selectedGroup.carry) {
     return;
   }
-  if (UVar2.controlIndexOrCount != 0) {
-    if (UVar2.controlIndexOrCount < 2) {
+  if (selectedGroup.controlIndexOrCount != 0) {
+    if (selectedGroup.controlIndexOrCount < 2) {
       Resource_Release(g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = (void *)0x0;
-      UVar1 = UiPointerList_GetSelectedIndexVariantBCf
+      selectedRow = UiPointerList_GetSelectedIndexVariantBCf
                         ((UiPointerListControl *)(selectionControl + 0x490));
-      selectedRowIndex = UVar1.rowIndex;
+      selectedRowIndex = selectedRow.rowIndex;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendScenarioSession_LoadOrRequestLevelAsset(g_LocalPlayerRuntimeId,0,0,selectedRowIndex)
@@ -1633,26 +1633,26 @@ FrontendScenarioSelection_ActivateSelectedRecord
     }
     Resource_Release(g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = (void *)0x0;
-    UVar1 = UiPointerList_GetSelectedIndexVariantBCf
+    selectedRow = UiPointerList_GetSelectedIndexVariantBCf
                       ((UiPointerListControl *)(selectionControl + 0x670));
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,UVar1.rowIndex)
+      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex)
       ;
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0xb70,0,0,UVar1.rowIndex);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(0xb70,0,0,selectedRow.rowIndex);
     }
     return;
   }
   scenarioPathPointerTableAddress = *(int *)(selectionControl + 0x318);
   Resource_Release(g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = (void *)0x0;
-  UVar1 = UiPointerList_GetSelectedIndexVariantBCf
+  selectedRow = UiPointerList_GetSelectedIndexVariantBCf
                     ((UiPointerListControl *)(selectionControl + 0x2c8));
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,
-             *(word **)(scenarioPathPointerTableAddress + UVar1.rowIndex * 4),
+             *(word **)(scenarioPathPointerTableAddress + selectedRow.rowIndex * 4),
              (word *)u_save_0050daa2);
   WidePath_SetExtensionCode(0x657673,&g_FrontendScenarioPathScratchUtf16);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1676,21 +1676,21 @@ FrontendScenarioSelection_ActivateSelectedRecord
 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordField70DisplayId
-          (dword arg0,dword arg1,dword arg2,UiListRowIndex selectionIndex)
+          (dword playerRuntimeId,dword unusedArg1,dword unusedArg2,UiListRowIndex selectionIndex)
 
 {
   UiPointerListControl *control;
-  int iVar1;
-  int iVar2;
+  int rowPointers;
+  int frontendRoot;
   
-  iVar2 = g_FrontendRootNode;
-  iVar1 = *(int *)(g_FrontendRootNode + 0x21d4);
+  frontendRoot = g_FrontendRootNode;
+  rowPointers = *(int *)(g_FrontendRootNode + 0x21d4);
   control = (UiPointerListControl *)(g_FrontendRootNode + 0x2184);
   *(undefined4 *)(g_FrontendRootNode + 0x22cc) = 0x215d;
-  if (iVar1 != 0) {
+  if (rowPointers != 0) {
     UiPointerList_SelectIndexVariantB(selectionIndex,control);
-    *(int *)(iVar2 + 0x22cc) =
-         *(int *)(*(int *)(iVar1 + selectionIndex * 4) + 0x70) * 0x10 + 0x230010;
+    *(int *)(frontendRoot + 0x22cc) =
+         *(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x70) * 0x10 + 0x230010;
   }
   return;
 }

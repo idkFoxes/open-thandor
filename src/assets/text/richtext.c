@@ -26,27 +26,27 @@ RichTextCommandStream_MeasureWrappedBlockRegs
           (dword packedStyle,word *commandStream,UiPixelExtent maximumWidth)
 
 {
-  uint uVar1;
-  int iVar2;
-  RichTextExtentRegs RVar3;
-  RichTextLineAdvanceEaxCf5 RVar4;
+  uint colorPaletteIndex;
+  int totalHeight;
+  RichTextExtentRegs blockExtent;
+  RichTextLineAdvanceEaxCf5 lineResult;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
-  uVar1 = packedStyle >> 0x10 & 7;
+  colorPaletteIndex = packedStyle >> 0x10 & 7;
   g_ActiveFontIndex = packedStyle >> 0x18 & 7;
-  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
-  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
-  iVar2 = 0;
+  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[colorPaletteIndex];
+  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
+  totalHeight = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
-    RVar4 = RichTextCommandStream_MeasureNextWrappedLineCf(maximumWidth);
-    if (RVar4.carry) break;
-    iVar2 = iVar2 + RVar4.lineAdvancePixels;
+    lineResult = RichTextCommandStream_MeasureNextWrappedLineCf(maximumWidth);
+    if (lineResult.carry) break;
+    totalHeight = totalHeight + lineResult.lineAdvancePixels;
   }
-  RVar3.heightPixels = iVar2 + RVar4.lineAdvancePixels;
-  RVar3.widthPixels = maximumWidth;
-  return RVar3;
+  blockExtent.heightPixels = totalHeight + lineResult.lineAdvancePixels;
+  blockExtent.widthPixels = maximumWidth;
+  return blockExtent;
 }
 
 
@@ -66,21 +66,21 @@ RichTextCommandStream_DrawWrappedBlockCf
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
 
 {
-  uint uVar1;
-  RichTextLineAdvanceEaxCf5 RVar2;
+  uint colorPaletteIndex;
+  RichTextLineAdvanceEaxCf5 lineResult;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
-  uVar1 = packedStyle >> 0x10 & 7;
+  colorPaletteIndex = packedStyle >> 0x10 & 7;
   g_ActiveFontIndex = packedStyle >> 0x18 & 7;
-  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
-  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
+  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[colorPaletteIndex];
+  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
-    RVar2 = RichTextCommandStream_DrawNextWrappedLineCf
+    lineResult = RichTextCommandStream_DrawNextWrappedLineCf
                       (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX);
-    if (RVar2.carry) break;
-    drawY = drawY + RVar2.lineAdvancePixels;
+    if (lineResult.carry) break;
+    drawY = drawY + lineResult.lineAdvancePixels;
   }
   return;
 }
@@ -101,42 +101,42 @@ bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,word *commandStream,
-          UiPixelCoordinate drawX,UiPixelCoordinate baselineY)
+          UiPixelCoordinate lineTopY,UiPixelCoordinate penX)
 
 {
-  int baselineY_00;
-  uint uVar1;
+  int lineBaselineY;
+  uint alignShiftOrPaletteIndex;
   GraphicsSubresourceIndex glyphSubresource;
-  int iVar2;
-  dword dVar3;
-  word *pwVar4;
-  RichTextExtentRegs RVar5;
-  GraphicsTextureSizeEaxEdxCf9 GVar6;
+  int glyphAdvance;
+  dword imageWidth;
+  word *commandCursor;
+  RichTextExtentRegs lineExtent;
+  GraphicsTextureSizeEaxEdxCf9 imageSize;
   word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
-  RVar5 = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
-  uVar1 = RVar5.widthPixels;
-  baselineY_00 = drawX + RVar5.heightPixels;
+  lineExtent = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
+  alignShiftOrPaletteIndex = lineExtent.widthPixels;
+  lineBaselineY = lineTopY + lineExtent.heightPixels;
   if ((packedStyle & 1) == 0) {
     if ((packedStyle & 2) == 0)
     goto RichTextCommandStream_DrawSingleLine_InitializeStyleAndBeginDrawing;
-    uVar1 = uVar1 >> 1;
+    alignShiftOrPaletteIndex = alignShiftOrPaletteIndex >> 1;
   }
-  baselineY = baselineY - uVar1;
+  penX = penX - alignShiftOrPaletteIndex;
 RichTextCommandStream_DrawSingleLine_InitializeStyleAndBeginDrawing:
-  uVar1 = packedStyle >> 0x10 & 7;
+  alignShiftOrPaletteIndex = packedStyle >> 0x10 & 7;
   g_ActiveFontIndex = packedStyle >> 0x18 & 7;
-  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[uVar1];
-  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[uVar1];
+  g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[alignShiftOrPaletteIndex];
+  g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[alignShiftOrPaletteIndex];
   nestedDepth = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
 switchD_0041d537_caseD_7:
   while( true ) {
-    pwVar4 = commandStream;
-    glyphSubresource = (GraphicsSubresourceIndex)(short)*pwVar4;
-    commandStream = pwVar4 + 1;
+    commandCursor = commandStream;
+    glyphSubresource = (GraphicsSubresourceIndex)(short)*commandCursor;
+    commandStream = commandCursor + 1;
     if (glyphSubresource != 0) break;
     if (nestedDepth == 0) {
       return false;
@@ -173,11 +173,11 @@ code_r0x0041d534:
     break;
   case 6:
     g_RichTextCurrentColorArgb =
-         ((((((((byte)pwVar4[2] & 0xf) << 0x18 | (uint)(byte)*commandStream << 0x1c) >> 4 |
-             (uint)(byte)pwVar4[4] << 0x1c) >> 4 | (uint)(byte)pwVar4[3] << 0x1c) >> 4 |
-           (uint)(byte)pwVar4[6] << 0x1c) >> 4 | (uint)(byte)pwVar4[5] << 0x1c) >> 4 |
-         (uint)(byte)pwVar4[8] << 0x1c) >> 4 | (uint)(byte)pwVar4[7] << 0x1c;
-    commandStream = pwVar4 + 9;
+         ((((((((byte)commandCursor[2] & 0xf) << 0x18 | (uint)(byte)*commandStream << 0x1c) >> 4 |
+             (uint)(byte)commandCursor[4] << 0x1c) >> 4 | (uint)(byte)commandCursor[3] << 0x1c) >> 4 |
+           (uint)(byte)commandCursor[6] << 0x1c) >> 4 | (uint)(byte)commandCursor[5] << 0x1c) >> 4 |
+         (uint)(byte)commandCursor[8] << 0x1c) >> 4 | (uint)(byte)commandCursor[7] << 0x1c;
+    commandStream = commandCursor + 9;
     break;
   case 8:
   case 9:
@@ -192,17 +192,17 @@ code_r0x0041d534:
   case 0x10:
     glyphSubresource = 0x20;
 RichTextCommandStream_DrawSingleLine_DrawGlyphAndAdvanceX:
-    iVar2 = FontGlyph_DrawBottomAligned
-                      (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,baselineY_00,baselineY
+    glyphAdvance = FontGlyph_DrawBottomAligned
+                      (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,lineBaselineY,penX
                       );
-    baselineY = baselineY + iVar2;
+    penX = penX + glyphAdvance;
     break;
   case 0x12:
     return false;
   case 0x14:
   case 0x15:
   case 0x16:
-    commandStream = pwVar4 + 3;
+    commandStream = commandCursor + 3;
     break;
   case 0x18:
     if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
@@ -215,15 +215,15 @@ RichTextCommandStream_DrawSingleLine_DrawGlyphAndAdvanceX:
     commandStream = *(word **)commandStream;
     break;
   case 0x1a:
-    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)
-                      (*(dword *)(pwVar4 + 3),*(GraphicsTextureSourceAsset **)commandStream);
-    dVar3 = GVar6.logicalWidthPixels;
+    imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                      (*(dword *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream);
+    imageWidth = imageSize.logicalWidthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,baselineY_00 - GVar6.logicalHeightPixels,
-               baselineY,*(dword *)(pwVar4 + 3),*(GraphicsTextureSourceAsset **)commandStream,
+              (clipTop,clipLeft,clipBottom,clipRight,lineBaselineY - imageSize.logicalHeightPixels,
+               penX,*(dword *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream,
                g_FramebufferAccess);
-    baselineY = baselineY + dVar3;
-    commandStream = pwVar4 + 5;
+    penX = penX + imageWidth;
+    commandStream = commandCursor + 5;
   }
   goto switchD_0041d537_caseD_7;
 }
@@ -241,33 +241,33 @@ RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,word *stream)
 
 {
-  ushort uVar1;
-  ushort *puVar2;
+  ushort commandCodeUnit;
+  ushort *commandCursor;
   
   while( true ) {
-    puVar2 = stream;
-    uVar1 = *puVar2;
-    if (uVar1 == 0) break;
-    stream = puVar2 + 1;
-    if ((short)uVar1 < 0) {
-      switch(uVar1 & 0x1f) {
+    commandCursor = stream;
+    commandCodeUnit = *commandCursor;
+    if (commandCodeUnit == 0) break;
+    stream = commandCursor + 1;
+    if ((short)commandCodeUnit < 0) {
+      switch(commandCodeUnit & 0x1f) {
       case 6:
-        stream = puVar2 + 9;
+        stream = commandCursor + 9;
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        stream = puVar2 + 3;
+        stream = commandCursor + 3;
         break;
       case 0x18:
       case 0x19:
-        stream = puVar2 + 5;
-        if (selector == *(int *)(puVar2 + 3)) {
-          *(void **)(puVar2 + 1) = replacementPayload;
+        stream = commandCursor + 5;
+        if (selector == *(int *)(commandCursor + 3)) {
+          *(void **)(commandCursor + 1) = replacementPayload;
         }
         break;
       case 0x1a:
-        stream = puVar2 + 5;
+        stream = commandCursor + 5;
       }
     }
   }
@@ -284,32 +284,32 @@ RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSourc
 
 {
   ushort *commandCursor;
-  word *pwVar1;
+  word *streamCursor;
   ushort commandCodeUnit;
   
-  pwVar1 = stream;
+  streamCursor = stream;
   while( true ) {
-    commandCursor = pwVar1;
+    commandCursor = streamCursor;
     commandCodeUnit = *commandCursor;
-    pwVar1 = commandCursor + 1;
+    streamCursor = commandCursor + 1;
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        pwVar1 = commandCursor + 9;
+        streamCursor = commandCursor + 9;
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        pwVar1 = commandCursor + 3;
+        streamCursor = commandCursor + 3;
         break;
       case 0x18:
       case 0x19:
-        pwVar1 = commandCursor + 5;
+        streamCursor = commandCursor + 5;
         break;
       case 0x1a:
-        *(GraphicsTextureSourceAsset **)pwVar1 = textureSource;
-        pwVar1 = commandCursor + 5;
+        *(GraphicsTextureSourceAsset **)streamCursor = textureSource;
+        streamCursor = commandCursor + 5;
       }
     }
   }
@@ -332,38 +332,38 @@ RichTextCommandStream_FindNthCommandPayloadPair
           ushort *commandStream)
 
 {
-  ushort uVar1;
-  int iVar2;
-  ushort *puVar3;
+  ushort commandCodeUnit;
+  int remainingCount;
+  ushort *commandCursor;
   
-  iVar2 = commandOrdinal + 1;
+  remainingCount = commandOrdinal + 1;
   do {
     do {
-      puVar3 = commandStream;
-      uVar1 = *puVar3;
-      if (uVar1 == 0) {
+      commandCursor = commandStream;
+      commandCodeUnit = *commandCursor;
+      if (commandCodeUnit == 0) {
         return true;
       }
-      commandStream = puVar3 + 1;
-    } while (-1 < (short)uVar1);
-    switch(uVar1 & 0x1f) {
+      commandStream = commandCursor + 1;
+    } while (-1 < (short)commandCodeUnit);
+    switch(commandCodeUnit & 0x1f) {
     case 6:
-      commandStream = puVar3 + 9;
+      commandStream = commandCursor + 9;
       break;
     case 0x14:
     case 0x15:
     case 0x16:
-      iVar2 = iVar2 + -1;
-      commandStream = puVar3 + 3;
-      if (iVar2 == 0) {
-        *(RichTextCommandPayload32 *)(puVar3 + 1) = payloadValue;
+      remainingCount = remainingCount + -1;
+      commandStream = commandCursor + 3;
+      if (remainingCount == 0) {
+        *(RichTextCommandPayload32 *)(commandCursor + 1) = payloadValue;
         return false;
       }
       break;
     case 0x18:
     case 0x19:
     case 0x1a:
-      commandStream = puVar3 + 5;
+      commandStream = commandCursor + 5;
     }
   } while( true );
 }
@@ -384,32 +384,32 @@ RichTextCommandStream_PatchNestedStreamPointerPayloads
 
 {
   ushort *commandCursor;
-  RichTextNestedStreamPointerValue32 *pRVar1;
+  RichTextNestedStreamPointerValue32 *streamCursor;
   ushort commandCodeUnit;
   
-  pRVar1 = (RichTextNestedStreamPointerValue32 *)commandStream;
+  streamCursor = (RichTextNestedStreamPointerValue32 *)commandStream;
   while( true ) {
-    commandCursor = (ushort *)pRVar1;
+    commandCursor = (ushort *)streamCursor;
     commandCodeUnit = *commandCursor;
-    pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 1);
+    streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 9);
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 9);
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 3);
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 3);
         break;
       case 0x18:
       case 0x19:
-        *pRVar1 = nestedStreamPointerValue;
-        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
+        *streamCursor = nestedStreamPointerValue;
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
         break;
       case 0x1a:
-        pRVar1 = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
       }
     }
   }
@@ -432,33 +432,33 @@ RichTextCommandStream_PatchOpcode1APayloadPair
 
 {
   ushort *commandCursor;
-  RichTextCommandPayload32 *pRVar1;
+  RichTextCommandPayload32 *streamCursor;
   ushort commandCodeUnit;
   
-  pRVar1 = (RichTextCommandPayload32 *)commandStream;
+  streamCursor = (RichTextCommandPayload32 *)commandStream;
   while( true ) {
-    commandCursor = (ushort *)pRVar1;
+    commandCursor = (ushort *)streamCursor;
     commandCodeUnit = *commandCursor;
-    pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 1);
+    streamCursor = (RichTextCommandPayload32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 9);
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 9);
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 3);
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 3);
         break;
       case 0x18:
       case 0x19:
-        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 5);
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 5);
         break;
       case 0x1a:
-        *pRVar1 = leadingPayloadValue;
+        *streamCursor = leadingPayloadValue;
         *(RichTextOpcode1APayloadValue32 *)(commandCursor + 3) = opcode1APayloadValue;
-        pRVar1 = (RichTextCommandPayload32 *)(commandCursor + 5);
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 5);
       }
     }
   }
@@ -480,30 +480,30 @@ RichTextCommandStream_PatchInlinePayloads
 
 {
   ushort *commandCursor;
-  RichTextInlinePayloadValue32 *pRVar1;
+  RichTextInlinePayloadValue32 *streamCursor;
   ushort commandCodeUnit;
   
-  pRVar1 = (RichTextInlinePayloadValue32 *)commandStream;
+  streamCursor = (RichTextInlinePayloadValue32 *)commandStream;
   while( true ) {
-    commandCursor = (ushort *)pRVar1;
+    commandCursor = (ushort *)streamCursor;
     commandCodeUnit = *commandCursor;
-    pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 1);
+    streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
     if ((short)commandCodeUnit < 0) {
       switch(commandCodeUnit & 0x1f) {
       case 6:
-        pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 9);
+        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 9);
         break;
       case 0x14:
       case 0x15:
       case 0x16:
-        *pRVar1 = inlinePayloadValue;
-        pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 3);
+        *streamCursor = inlinePayloadValue;
+        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 3);
         break;
       case 0x18:
       case 0x19:
       case 0x1a:
-        pRVar1 = (RichTextInlinePayloadValue32 *)(commandCursor + 5);
+        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 5);
       }
     }
   }
@@ -524,32 +524,32 @@ bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint flagBits,uint *commandStream)
 
 {
-  uint *puVar1;
-  int iVar2;
+  uint *streamCursor;
+  int remainingCount;
   uint *commandCursor;
   ushort commandCodeUnit;
   
-  iVar2 = commandOrdinal + 1;
-  puVar1 = commandStream;
+  remainingCount = commandOrdinal + 1;
+  streamCursor = commandStream;
   do {
     do {
-      commandCursor = puVar1;
+      commandCursor = streamCursor;
       commandCodeUnit = (ushort)*commandCursor;
       if (commandCodeUnit == 0) {
         return true;
       }
-      puVar1 = (uint *)((int)commandCursor + 2);
+      streamCursor = (uint *)((int)commandCursor + 2);
     } while (-1 < (short)commandCodeUnit);
     switch(commandCodeUnit & 0x1f) {
     case 6:
-      puVar1 = (uint *)((int)commandCursor + 0x12);
+      streamCursor = (uint *)((int)commandCursor + 0x12);
       break;
     case 0x14:
     case 0x15:
     case 0x16:
-      iVar2 = iVar2 + -1;
-      puVar1 = (uint *)((int)commandCursor + 6);
-      if (iVar2 == 0) {
+      remainingCount = remainingCount + -1;
+      streamCursor = (uint *)((int)commandCursor + 6);
+      if (remainingCount == 0) {
         *commandCursor = *commandCursor & 0xffff8014;
         *commandCursor = *commandCursor | flagBits;
         return false;
@@ -558,7 +558,7 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint flagBits,u
     case 0x18:
     case 0x19:
     case 0x1a:
-      puVar1 = (uint *)((int)commandCursor + 10);
+      streamCursor = (uint *)((int)commandCursor + 10);
     }
   } while( true );
 }
@@ -576,43 +576,43 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,ushort *commandStream)
 
 {
-  ushort uVar1;
-  int iVar2;
-  uint *puVar3;
-  StatusValueEaxCf5 SVar4;
-  StatusValueEaxCf5 SVar5;
+  ushort commandCodeUnit;
+  int remainingCount;
+  uint *commandCursor;
+  StatusValueEaxCf5 foundResult;
+  StatusValueEaxCf5 endResult;
   
-  iVar2 = commandOrdinal + 1;
+  remainingCount = commandOrdinal + 1;
   do {
     do {
-      puVar3 = (uint *)commandStream;
-      uVar1 = (ushort)*puVar3;
-      if (uVar1 == 0) {
-        SVar5.valueOrError = 0;
-        SVar5.carry = true;
-        return SVar5;
+      commandCursor = (uint *)commandStream;
+      commandCodeUnit = (ushort)*commandCursor;
+      if (commandCodeUnit == 0) {
+        endResult.valueOrError = 0;
+        endResult.carry = true;
+        return endResult;
       }
-      commandStream = (ushort *)((int)puVar3 + 2);
-    } while (-1 < (short)uVar1);
-    switch(uVar1 & 0x1f) {
+      commandStream = (ushort *)((int)commandCursor + 2);
+    } while (-1 < (short)commandCodeUnit);
+    switch(commandCodeUnit & 0x1f) {
     case 6:
-      commandStream = (ushort *)((int)puVar3 + 0x12);
+      commandStream = (ushort *)((int)commandCursor + 0x12);
       break;
     case 0x14:
     case 0x15:
     case 0x16:
-      iVar2 = iVar2 + -1;
-      commandStream = (ushort *)((int)puVar3 + 6);
-      if (iVar2 == 0) {
-        SVar4.valueOrError = *puVar3 & 3;
-        SVar4.carry = false;
-        return SVar4;
+      remainingCount = remainingCount + -1;
+      commandStream = (ushort *)((int)commandCursor + 6);
+      if (remainingCount == 0) {
+        foundResult.valueOrError = *commandCursor & 3;
+        foundResult.carry = false;
+        return foundResult;
       }
       break;
     case 0x18:
     case 0x19:
     case 0x1a:
-      commandStream = (ushort *)((int)puVar3 + 10);
+      commandStream = (ushort *)((int)commandCursor + 10);
     }
   } while( true );
 }
@@ -630,31 +630,31 @@ RichTextCommandStream_CopyToNarrowCf
           (TextOutputCapacityBytes capacityBytes,byte *destination,word *source)
 
 {
-  word *pwVar1;
+  word *readCursor;
   dword remainingCapacityBytes;
   ushort *commandCursor;
   word *streamCursor;
   bool newlineCapacityUnderflow;
-  StatusValueEaxCf5 SVar2;
-  StatusValueEaxCf5 SVar3;
+  StatusValueEaxCf5 successResult;
+  StatusValueEaxCf5 errorResult;
   word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   ushort commandOrCodeUnit;
   
   nestedDepth = 0;
   remainingCapacityBytes = capacityBytes;
-  pwVar1 = source;
+  readCursor = source;
   while( true ) {
     while( true ) {
-      commandCursor = pwVar1;
+      commandCursor = readCursor;
       commandOrCodeUnit = *commandCursor;
       streamCursor = commandCursor + 1;
       if (commandOrCodeUnit == 0) break;
       if ((short)commandOrCodeUnit < 0) {
-        pwVar1 = streamCursor;
+        readCursor = streamCursor;
         switch(commandOrCodeUnit & 0x1f) {
         case 6:
-          pwVar1 = commandCursor + 9;
+          readCursor = commandCursor + 9;
           break;
         case 0x10:
           remainingCapacityBytes = remainingCapacityBytes - 1;
@@ -662,7 +662,7 @@ RichTextCommandStream_CopyToNarrowCf
           goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
           *destination = 0x20;
           destination = destination + 1;
-          pwVar1 = streamCursor;
+          readCursor = streamCursor;
           break;
         case 0x12:
           newlineCapacityUnderflow = remainingCapacityBytes < 2;
@@ -672,52 +672,52 @@ RichTextCommandStream_CopyToNarrowCf
           destination[0] = 0xd;
           destination[1] = 10;
           destination = destination + 2;
-          pwVar1 = streamCursor;
+          readCursor = streamCursor;
           break;
         case 0x14:
         case 0x15:
         case 0x16:
-          pwVar1 = commandCursor + 3;
+          readCursor = commandCursor + 3;
           break;
         case 0x18:
           if (nestedDepth == RICHTEXT_NESTING_LIMIT)
           goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
           nestedReturnStack[nestedDepth++] = streamCursor;
-          pwVar1 = *(ushort **)streamCursor;
+          readCursor = *(ushort **)streamCursor;
           break;
         case 0x19:
-          pwVar1 = *(ushort **)streamCursor;
+          readCursor = *(ushort **)streamCursor;
           break;
         case 0x1a:
-          pwVar1 = commandCursor + 5;
+          readCursor = commandCursor + 5;
         }
       }
       else {
-        pwVar1 = streamCursor;
+        readCursor = streamCursor;
         if ((commandOrCodeUnit & 0xff00) == 0) {
           remainingCapacityBytes = remainingCapacityBytes - 1;
           if (remainingCapacityBytes == 0)
           goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
           *destination = (byte)commandOrCodeUnit;
           destination = destination + 1;
-          pwVar1 = streamCursor;
+          readCursor = streamCursor;
         }
       }
     }
     if (nestedDepth == 0) break;
-    pwVar1 = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
+    readCursor = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
-    SVar2.valueOrError = capacityBytes - (remainingCapacityBytes - 1);
-    SVar2.carry = false;
-    return SVar2;
+    successResult.valueOrError = capacityBytes - (remainingCapacityBytes - 1);
+    successResult.carry = false;
+    return successResult;
   }
 RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
   destination[-1] = 0;
-  SVar3.carry = true;
-  SVar3.valueOrError = 0x14;
-  return SVar3;
+  errorResult.carry = true;
+  errorResult.valueOrError = 0x14;
+  return errorResult;
 }
 
 
@@ -737,51 +737,51 @@ RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
      of the TXT2STR converter). The stack slots below were never recovered; the body is kept
      only for completeness. */
   byte thandor_stack_frame[0x100]; /* unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
-  byte bVar1;
-  ushort uVar2;
+  byte markupByte;
+  ushort codeUnit;
   wchar_t *memory;
-  uint uVar3;
-  uint uVar4;
-  int iVar5;
-  int *piVar6;
-  int iVar7;
-  int iVar8;
-  short sVar9;
-  undefined1 *puVar10;
-  undefined1 *puVar11;
-  byte *pbVar12;
-  byte *pbVar13;
-  int *piVar14;
-  wchar_t *pwVar15;
-  int *piVar16;
-  dword dVar17;
-  int *piVar18;
-  bool bVar19;
-  bool bVar20;
-  RichTextStringAssetEaxCf5 RVar21;
-  RichTextStringAssetEaxCf5 RVar22;
-  ArenaShrinkEaxCf5 AVar23;
-  RichTextStringAssetEaxCf5 RVar24;
-  ArenaLargestAllocationEaxEcxCf9 AVar25;
+  uint spanSizeOrDwordCount;
+  uint remainingCapacityBytes;
+  int groupKeyOrIndex;
+  int *offsetTableCursor;
+  int entryIndexOrOffset;
+  int entryEndOrIndex;
+  short codeUnitBias;
+  undefined1 *stackSlot;
+  undefined1 *callStackSlot;
+  byte *tokenStart;
+  byte *markupCursor;
+  int *copySource;
+  wchar_t *outputCursor;
+  int *groupHeader;
+  dword assetSizeOrTimestamp;
+  int *assetWriteCursor;
+  bool capacityUnderflow;
+  bool insideTagOrUnderflow;
+  RichTextStringAssetEaxCf5 errorMessageResult;
+  RichTextStringAssetEaxCf5 capacityErrorResult;
+  ArenaShrinkEaxCf5 shrinkResult;
+  RichTextStringAssetEaxCf5 stringAsset;
+  ArenaLargestAllocationEaxEcxCf9 largestBlock;
   WideNumberFormatFlags aWStackY_44 [2];
   dword dStackY_3c;
-  int iStack_24;
-  int iStack_20;
+  int assetGroupCount;
+  int tagCount;
   
-  AVar25 = (*g_MemoryApi.allocLargestFreeBlock)();
-  uVar4 = AVar25.blockSizeOrSentinel;
-  memory = (wchar_t *)AVar25.allocationOrError;
-  if (!AVar25.carry) {
-    sVar9 = 0;
-    iStack_20 = 0;
-    pbVar13 = markupBytes;
-    pwVar15 = memory;
-    bVar20 = false;
+  largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+  remainingCapacityBytes = largestBlock.blockSizeOrSentinel;
+  memory = (wchar_t *)largestBlock.allocationOrError;
+  if (!largestBlock.carry) {
+    codeUnitBias = 0;
+    tagCount = 0;
+    markupCursor = markupBytes;
+    outputCursor = memory;
+    insideTagOrUnderflow = false;
 RichTextMarkup_ParseAndBuildStringAsset:
-    pbVar12 = pbVar13;
-    uVar2 = (ushort)*pbVar12;
-    pbVar13 = pbVar12 + 1;
-    switch(*pbVar12) {
+    tokenStart = markupCursor;
+    codeUnit = (ushort)*tokenStart;
+    markupCursor = tokenStart + 1;
+    switch(*tokenStart) {
     case 0:
     case 1:
     case 2:
@@ -817,165 +817,165 @@ RichTextMarkup_ParseAndBuildStringAsset:
     case 10:
       goto RichTextMarkup_ParseAndBuildStringAsset;
     case 0xd:
-      if (bVar20) {
-        bVar19 = uVar4 < 2;
-        uVar4 = uVar4 - 2;
-        if (bVar19 || uVar4 == 0)
+      if (insideTagOrUnderflow) {
+        capacityUnderflow = remainingCapacityBytes < 2;
+        remainingCapacityBytes = remainingCapacityBytes - 2;
+        if (capacityUnderflow || remainingCapacityBytes == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *pwVar15 = L'耒';
-        pwVar15 = pwVar15 + 1;
+        *outputCursor = L'耒';
+        outputCursor = outputCursor + 1;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset;
     default:
 switchD_0041c155_caseD_23:
-      if (bVar20) {
-        bVar19 = uVar4 < 2;
-        uVar4 = uVar4 - 2;
-        if (bVar19 || uVar4 == 0)
+      if (insideTagOrUnderflow) {
+        capacityUnderflow = remainingCapacityBytes < 2;
+        remainingCapacityBytes = remainingCapacityBytes - 2;
+        if (capacityUnderflow || remainingCapacityBytes == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *pwVar15 = uVar2 + sVar9;
-        pwVar15 = pwVar15 + 1;
+        *outputCursor = codeUnit + codeUnitBias;
+        outputCursor = outputCursor + 1;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset;
     case 0x23:
-      bVar1 = *pbVar13;
-      uVar2 = (ushort)bVar1;
-      pbVar13 = pbVar12 + 2;
-      switch(bVar1) {
+      markupByte = *markupCursor;
+      codeUnit = (ushort)markupByte;
+      markupCursor = tokenStart + 2;
+      switch(markupByte) {
       default:
         goto switchD_0041c155_caseD_0;
       case 10:
       case 0xd:
-        while (bVar1 = *pbVar13, bVar1 < 0x20) {
-          pbVar13 = pbVar13 + 1;
-          if ((bVar1 != 10) && (bVar1 != 0xd)) goto switchD_0041c155_caseD_0;
+        while (markupByte = *markupCursor, markupByte < 0x20) {
+          markupCursor = markupCursor + 1;
+          if ((markupByte != 10) && (markupByte != 0xd)) goto switchD_0041c155_caseD_0;
         }
         break;
       case 0x21:
-        sVar9 = 0x7fc0;
+        codeUnitBias = 0x7fc0;
         break;
       case 0x23:
         goto switchD_0041c155_caseD_23;
       case 0x2d:
-        bVar19 = uVar4 < 2;
-        uVar4 = uVar4 - 2;
-        if (bVar19 || uVar4 == 0)
+        capacityUnderflow = remainingCapacityBytes < 2;
+        remainingCapacityBytes = remainingCapacityBytes - 2;
+        if (capacityUnderflow || remainingCapacityBytes == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *pwVar15 = L'耑';
-        pwVar15 = pwVar15 + 1;
+        *outputCursor = L'耑';
+        outputCursor = outputCursor + 1;
         break;
       case 0x2e:
-        if ((iStack_20 != 0) && (!bVar20)) {
-          iStack_20 = iStack_20 + 1;
+        if ((tagCount != 0) && (!insideTagOrUnderflow)) {
+          tagCount = tagCount + 1;
           dStackY_3c = 0x41c70a;
-          AVar23 = (*g_MemoryApi.shrinkInPlace)((int)pwVar15 - (int)memory,memory);
-          if (!AVar23.carry) {
-            AVar25 = (*g_MemoryApi.allocLargestFreeBlock)();
-            RVar24.assetOrError = (int *)AVar25.allocationOrError;
-            if (!AVar25.carry) {
-              uVar4 = AVar25.blockSizeOrSentinel - 0x200;
-              if (0x1ff < AVar25.blockSizeOrSentinel && uVar4 != 0) {
-                iStack_24 = 0;
-                piVar18 = RVar24.assetOrError;
-                for (iVar5 = 0x80; iVar7 = iStack_20, iVar5 != 0; iVar5 = iVar5 + -1) {
-                  *piVar18 = 0;
-                  piVar18 = piVar18 + 1;
+          shrinkResult = (*g_MemoryApi.shrinkInPlace)((int)outputCursor - (int)memory,memory);
+          if (!shrinkResult.carry) {
+            largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+            stringAsset.assetOrError = (int *)largestBlock.allocationOrError;
+            if (!largestBlock.carry) {
+              remainingCapacityBytes = largestBlock.blockSizeOrSentinel - 0x200;
+              if (0x1ff < largestBlock.blockSizeOrSentinel && remainingCapacityBytes != 0) {
+                assetGroupCount = 0;
+                assetWriteCursor = stringAsset.assetOrError;
+                for (groupKeyOrIndex = 0x80; entryIndexOrOffset = tagCount, groupKeyOrIndex != 0; groupKeyOrIndex = groupKeyOrIndex + -1) {
+                  *assetWriteCursor = 0;
+                  assetWriteCursor = assetWriteCursor + 1;
                 }
                 while( true ) {
-                  while (piVar16 = piVar18, iVar5 = *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar7 * 8),
-                        iVar5 == -1) {
-                    iVar7 = iVar7 + -1;
-                    piVar18 = piVar16;
-                    if (iVar7 == 0) {
+                  while (groupHeader = assetWriteCursor, groupKeyOrIndex = *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryIndexOrOffset * 8),
+                        groupKeyOrIndex == -1) {
+                    entryIndexOrOffset = entryIndexOrOffset + -1;
+                    assetWriteCursor = groupHeader;
+                    if (entryIndexOrOffset == 0) {
                       (*g_MemoryApi.free)(memory);
-                      dVar17 = (int)piVar16 - (int)RVar24.assetOrError;
-                      (*g_MemoryApi.shrinkInPlace)(dVar17,RVar24.assetOrError);
-                      iStack_20 = iStack_20 * 8;
-                      *(dword *)(&thandor_stack_frame[0x80 - 0x2c] + iStack_20) = dVar17;
-                      ((int *)RVar24.assetOrError)[0x2c] = iStack_24;
-                      ((int *)RVar24.assetOrError)[1] = dVar17;
-                      *(int *)RVar24.assetOrError = 0x727473;
-                      ((int *)RVar24.assetOrError)[2] = 1;
-                      ((int *)RVar24.assetOrError)[3] = 0;
-                      puVar10 = &thandor_stack_frame[0x80 - 0x30] + iStack_20;
-                      *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iStack_20) = 0x41c7b5;
-                      dVar17 = (*g_LocaleGetPackedCurrentTime)();
-                      ((int *)RVar24.assetOrError)[4] = dVar17;
-                      ((int *)RVar24.assetOrError)[6] = dVar17;
-                      ((int *)RVar24.assetOrError)[8] = dVar17;
-                      puVar11 = puVar10 + -4;
-                      *(undefined4 *)(puVar10 + -4) = 0x41c7cd;
-                      dVar17 = (*g_LocaleGetPackedCurrentDate)();
-                      ((int *)RVar24.assetOrError)[5] = dVar17;
-                      ((int *)RVar24.assetOrError)[7] = dVar17;
-                      ((int *)RVar24.assetOrError)[9] = dVar17;
-                      *(int **)(puVar11 + -4) = (int *)RVar24.assetOrError + 0xc;
-                      *(undefined4 *)(puVar11 + -8) = 0x41c7ec;
-                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(puVar11 + -4));
-                      *(int **)(puVar11 + -4) = (int *)RVar24.assetOrError + 0x1c;
-                      *(undefined4 *)(puVar11 + -8) = 0x41c7f9;
-                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(puVar11 + -4));
-                      RVar24.carry = false;
-                      return RVar24;
+                      assetSizeOrTimestamp = (int)groupHeader - (int)stringAsset.assetOrError;
+                      (*g_MemoryApi.shrinkInPlace)(assetSizeOrTimestamp,stringAsset.assetOrError);
+                      tagCount = tagCount * 8;
+                      *(dword *)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = assetSizeOrTimestamp;
+                      ((int *)stringAsset.assetOrError)[0x2c] = assetGroupCount;
+                      ((int *)stringAsset.assetOrError)[1] = assetSizeOrTimestamp;
+                      *(int *)stringAsset.assetOrError = 0x727473;
+                      ((int *)stringAsset.assetOrError)[2] = 1;
+                      ((int *)stringAsset.assetOrError)[3] = 0;
+                      stackSlot = &thandor_stack_frame[0x80 - 0x30] + tagCount;
+                      *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c7b5;
+                      assetSizeOrTimestamp = (*g_LocaleGetPackedCurrentTime)();
+                      ((int *)stringAsset.assetOrError)[4] = assetSizeOrTimestamp;
+                      ((int *)stringAsset.assetOrError)[6] = assetSizeOrTimestamp;
+                      ((int *)stringAsset.assetOrError)[8] = assetSizeOrTimestamp;
+                      callStackSlot = stackSlot + -4;
+                      *(undefined4 *)(stackSlot + -4) = 0x41c7cd;
+                      assetSizeOrTimestamp = (*g_LocaleGetPackedCurrentDate)();
+                      ((int *)stringAsset.assetOrError)[5] = assetSizeOrTimestamp;
+                      ((int *)stringAsset.assetOrError)[7] = assetSizeOrTimestamp;
+                      ((int *)stringAsset.assetOrError)[9] = assetSizeOrTimestamp;
+                      *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0xc;
+                      *(undefined4 *)(callStackSlot + -8) = 0x41c7ec;
+                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(callStackSlot + -4));
+                      *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0x1c;
+                      *(undefined4 *)(callStackSlot + -8) = 0x41c7f9;
+                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(callStackSlot + -4));
+                      stringAsset.carry = false;
+                      return stringAsset;
                     }
                   }
-                  bVar20 = uVar4 < 0x10;
-                  uVar4 = uVar4 - 0x10;
-                  if (bVar20 || uVar4 == 0) break;
-                  piVar16[2] = iVar5;
-                  *piVar16 = 0x10;
-                  piVar16[1] = 0;
+                  insideTagOrUnderflow = remainingCapacityBytes < 0x10;
+                  remainingCapacityBytes = remainingCapacityBytes - 0x10;
+                  if (insideTagOrUnderflow || remainingCapacityBytes == 0) break;
+                  groupHeader[2] = groupKeyOrIndex;
+                  *groupHeader = 0x10;
+                  groupHeader[1] = 0;
                   do {
-                    if (iVar5 == *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar7 * 8)) {
-                      iVar8 = *(int *)(&thandor_stack_frame[0x80 - 0x34] + iVar7 * 8);
-                      piVar16[1] = piVar16[1] + 1;
-                      uVar3 = (iVar8 - *(int *)(&thandor_stack_frame[0x80 - 0x2c] + iVar7 * 8)) + 4;
-                      *piVar16 = *piVar16 + uVar3;
-                      bVar20 = uVar4 < uVar3;
-                      uVar4 = uVar4 - uVar3;
-                      if (bVar20 || uVar4 == 0)
+                    if (groupKeyOrIndex == *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryIndexOrOffset * 8)) {
+                      entryEndOrIndex = *(int *)(&thandor_stack_frame[0x80 - 0x34] + entryIndexOrOffset * 8);
+                      groupHeader[1] = groupHeader[1] + 1;
+                      spanSizeOrDwordCount = (entryEndOrIndex - *(int *)(&thandor_stack_frame[0x80 - 0x2c] + entryIndexOrOffset * 8)) + 4;
+                      *groupHeader = *groupHeader + spanSizeOrDwordCount;
+                      insideTagOrUnderflow = remainingCapacityBytes < spanSizeOrDwordCount;
+                      remainingCapacityBytes = remainingCapacityBytes - spanSizeOrDwordCount;
+                      if (insideTagOrUnderflow || remainingCapacityBytes == 0)
                       goto 
                       RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError
                       ;
                     }
-                    iVar7 = iVar7 + -1;
-                  } while (iVar7 != 0);
-                  piVar6 = piVar16 + 4;
-                  iStack_24 = iStack_24 + 1;
-                  piVar18 = piVar6 + piVar16[1];
-                  iVar8 = iStack_20;
+                    entryIndexOrOffset = entryIndexOrOffset + -1;
+                  } while (entryIndexOrOffset != 0);
+                  offsetTableCursor = groupHeader + 4;
+                  assetGroupCount = assetGroupCount + 1;
+                  assetWriteCursor = offsetTableCursor + groupHeader[1];
+                  entryEndOrIndex = tagCount;
                   do {
-                    if (iVar5 == *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar8 * 8)) {
-                      *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iVar8 * 8) = 0xffffffff;
-                      iVar7 = (int)piVar18 - (int)piVar16;
-                      piVar14 = *(int **)(&thandor_stack_frame[0x80 - 0x2c] + iVar8 * 8);
-                      for (uVar3 = (uint)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + iVar8 * 8) -
-                                         (int)*(int **)(&thandor_stack_frame[0x80 - 0x2c] + iVar8 * 8)) >> 2;
-                          uVar3 != 0; uVar3 = uVar3 - 1) {
-                        *piVar18 = *piVar14;
-                        piVar14 = piVar14 + 1;
-                        piVar18 = piVar18 + 1;
+                    if (groupKeyOrIndex == *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8)) {
+                      *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8) = 0xffffffff;
+                      entryIndexOrOffset = (int)assetWriteCursor - (int)groupHeader;
+                      copySource = *(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8);
+                      for (spanSizeOrDwordCount = (uint)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + entryEndOrIndex * 8) -
+                                         (int)*(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8)) >> 2;
+                          spanSizeOrDwordCount != 0; spanSizeOrDwordCount = spanSizeOrDwordCount - 1) {
+                        *assetWriteCursor = *copySource;
+                        copySource = copySource + 1;
+                        assetWriteCursor = assetWriteCursor + 1;
                       }
-                      *piVar6 = iVar7;
-                      piVar6 = piVar6 + 1;
+                      *offsetTableCursor = entryIndexOrOffset;
+                      offsetTableCursor = offsetTableCursor + 1;
                     }
-                    iVar8 = iVar8 + -1;
-                    iVar7 = iStack_20;
-                  } while (iVar8 != 0);
+                    entryEndOrIndex = entryEndOrIndex + -1;
+                    entryIndexOrOffset = tagCount;
+                  } while (entryEndOrIndex != 0);
                 }
               }
 RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError:
-              (*g_MemoryApi.free)(RVar24.assetOrError);
+              (*g_MemoryApi.free)(stringAsset.assetOrError);
             }
           }
 RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
-          iStack_20 = iStack_20 * 8;
-          *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + iStack_20) = memory;
-          *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iStack_20) = 0x41c5e3;
-          (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + iStack_20));
-          RVar22.carry = true;
-          RVar22.assetOrError = (void *)0x14;
-          return RVar22;
+          tagCount = tagCount * 8;
+          *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = memory;
+          *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
+          (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
+          capacityErrorResult.carry = true;
+          capacityErrorResult.assetOrError = (void *)0x14;
+          return capacityErrorResult;
         }
         goto switchD_0041c155_caseD_0;
       case 0x30:
@@ -988,35 +988,35 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
       case 0x37:
       case 0x38:
       case 0x39:
-        if ((((*pbVar13 < 0x30) || (0x39 < *pbVar13)) || (pbVar12[3] < 0x30)) || (0x39 < pbVar12[3])
+        if ((((*markupCursor < 0x30) || (0x39 < *markupCursor)) || (tokenStart[3] < 0x30)) || (0x39 < tokenStart[3])
            ) goto switchD_0041c155_caseD_0;
-        pbVar13 = pbVar12 + 4;
+        markupCursor = tokenStart + 4;
         break;
       case 0x3c:
-        if (bVar20) goto switchD_0041c155_caseD_0;
-        iStack_20 = iStack_20 + 1;
-        bVar20 = true;
+        if (insideTagOrUnderflow) goto switchD_0041c155_caseD_0;
+        tagCount = tagCount + 1;
+        insideTagOrUnderflow = true;
         break;
       case 0x3e:
-        if (!bVar20) goto switchD_0041c155_caseD_0;
-        bVar20 = false;
-        if (((uint)pwVar15 & 2) == 0) {
-          bVar20 = uVar4 < 4;
-          uVar4 = uVar4 - 4;
-          if (bVar20 || uVar4 == 0)
+        if (!insideTagOrUnderflow) goto switchD_0041c155_caseD_0;
+        insideTagOrUnderflow = false;
+        if (((uint)outputCursor & 2) == 0) {
+          insideTagOrUnderflow = remainingCapacityBytes < 4;
+          remainingCapacityBytes = remainingCapacityBytes - 4;
+          if (insideTagOrUnderflow || remainingCapacityBytes == 0)
           goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-          pwVar15[0] = L'\0';
-          pwVar15[1] = L'\0';
-          pwVar15 = pwVar15 + 2;
-          bVar20 = false;
+          outputCursor[0] = L'\0';
+          outputCursor[1] = L'\0';
+          outputCursor = outputCursor + 2;
+          insideTagOrUnderflow = false;
         }
         else {
-          bVar19 = uVar4 < 2;
-          uVar4 = uVar4 - 2;
-          if (bVar19 || uVar4 == 0)
+          capacityUnderflow = remainingCapacityBytes < 2;
+          remainingCapacityBytes = remainingCapacityBytes - 2;
+          if (capacityUnderflow || remainingCapacityBytes == 0)
           goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-          *pwVar15 = L'\0';
-          pwVar15 = pwVar15 + 1;
+          *outputCursor = L'\0';
+          outputCursor = outputCursor + 1;
         }
         break;
       case 0x40:
@@ -1082,31 +1082,31 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
       case 0x7c:
       case 0x7d:
       case 0x7e:
-        sVar9 = uVar2 * 0x80 + -0x2000;
+        codeUnitBias = codeUnit * 0x80 + -0x2000;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset;
     }
   }
 LAB_0041c5c0:
-  RVar21.carry = true;
-  RVar21.assetOrError = memory;
-  return RVar21;
+  errorMessageResult.carry = true;
+  errorMessageResult.assetOrError = memory;
+  return errorMessageResult;
 switchD_0041c155_caseD_0:
-  iVar5 = iStack_20 * 8;
-  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5) = memory;
-  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + iVar5) = 0x41c5a2;
-  (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5));
-  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
-  *(int *)(&thandor_stack_frame[0x80 - 0x30] + iVar5) = (int)pbVar13 - (int)markupBytes;
-  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x34] + iVar5) = 1;
-  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x38] + iVar5) = 10;
-  (&dStackY_3c)[iStack_20 * 2] = 0;
-  aWStackY_44[iStack_20 * 2 + 1] = 0x40;
-  aWStackY_44[iStack_20 * 2] = 0x41c5bb;
+  groupKeyOrIndex = tagCount * 8;
+  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = memory;
+  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = 0x41c5a2;
+  (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
+  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
+  *(int *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = (int)markupCursor - (int)markupBytes;
+  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex) = 1;
+  *(undefined4 *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex) = 10;
+  (&dStackY_3c)[tagCount * 2] = 0;
+  aWStackY_44[tagCount * 2 + 1] = 0x40;
+  aWStackY_44[tagCount * 2] = 0x41c5bb;
   (*g_WideNumberFormatUtf16)
-            (aWStackY_44[iStack_20 * 2 + 1],(&dStackY_3c)[iStack_20 * 2],
-             *(dword *)(&thandor_stack_frame[0x80 - 0x38] + iVar5),*(dword *)(&thandor_stack_frame[0x80 - 0x34] + iVar5),
-             *(sdword *)(&thandor_stack_frame[0x80 - 0x30] + iVar5),*(word **)(&thandor_stack_frame[0x80 - 0x2c] + iVar5));
+            (aWStackY_44[tagCount * 2 + 1],(&dStackY_3c)[tagCount * 2],
+             *(dword *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex),*(dword *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex),
+             *(sdword *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex),*(word **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
   memory = u_error__TXT2STR__unknown_characte_0041afac;
   goto LAB_0041c5c0;
 }
@@ -1124,103 +1124,103 @@ RichTextCommandStream_CopyExpandedCf
           (TextOutputCapacityBytes capacityBytes,word *destination,word *source)
 
 {
-  ushort uVar1;
-  int iVar2;
-  ushort *puVar3;
-  ushort *puVar4;
-  bool bVar5;
-  RichTextCopyExpandedEaxCf5 RVar6;
-  RichTextCopyExpandedEaxCf5 RVar7;
+  ushort commandCodeUnit;
+  int wordsRemaining;
+  ushort *nextSource;
+  ushort *destinationCursor;
+  bool capacityUnderflow;
+  RichTextCopyExpandedEaxCf5 successResult;
+  RichTextCopyExpandedEaxCf5 errorResult;
   word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
   nestedDepth = 0;
-  puVar4 = destination;
+  destinationCursor = destination;
   while( true ) {
     while( true ) {
-      uVar1 = *source;
-      puVar3 = source + 1;
-      if (uVar1 == 0) break;
-      if ((short)uVar1 < 0) {
-        switch(uVar1 & 0x1f) {
+      commandCodeUnit = *source;
+      nextSource = source + 1;
+      if (commandCodeUnit == 0) break;
+      if ((short)commandCodeUnit < 0) {
+        switch(commandCodeUnit & 0x1f) {
         default:
-          bVar5 = capacityBytes < 2;
+          capacityUnderflow = capacityBytes < 2;
           capacityBytes = capacityBytes - 2;
-          if (bVar5 || capacityBytes == 0)
+          if (capacityUnderflow || capacityBytes == 0)
           goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
-          *puVar4 = uVar1 & 0x1f | 0x8000;
-          puVar4 = puVar4 + 1;
-          source = puVar3;
+          *destinationCursor = commandCodeUnit & 0x1f | 0x8000;
+          destinationCursor = destinationCursor + 1;
+          source = nextSource;
           break;
         case 6:
-          bVar5 = capacityBytes < 0x12;
+          capacityUnderflow = capacityBytes < 0x12;
           capacityBytes = capacityBytes - 0x12;
-          if (bVar5 || capacityBytes == 0)
+          if (capacityUnderflow || capacityBytes == 0)
           goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
-          for (iVar2 = 9; iVar2 != 0; iVar2 = iVar2 + -1) {
-            *puVar4 = *source;
+          for (wordsRemaining = 9; wordsRemaining != 0; wordsRemaining = wordsRemaining + -1) {
+            *destinationCursor = *source;
             source = source + 1;
-            puVar4 = puVar4 + 1;
+            destinationCursor = destinationCursor + 1;
           }
           break;
         case 0x14:
         case 0x15:
         case 0x16:
-          bVar5 = capacityBytes < 6;
+          capacityUnderflow = capacityBytes < 6;
           capacityBytes = capacityBytes - 6;
-          if (bVar5 || capacityBytes == 0)
+          if (capacityUnderflow || capacityBytes == 0)
           goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
-          for (iVar2 = 3; iVar2 != 0; iVar2 = iVar2 + -1) {
-            *puVar4 = *source;
+          for (wordsRemaining = 3; wordsRemaining != 0; wordsRemaining = wordsRemaining + -1) {
+            *destinationCursor = *source;
             source = source + 1;
-            puVar4 = puVar4 + 1;
+            destinationCursor = destinationCursor + 1;
           }
           break;
         case 0x18:
           if (nestedDepth == RICHTEXT_NESTING_LIMIT)
           goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
-          nestedReturnStack[nestedDepth++] = puVar3;
-          source = *(word **)puVar3;
+          nestedReturnStack[nestedDepth++] = nextSource;
+          source = *(word **)nextSource;
           break;
         case 0x19:
-          source = *(word **)puVar3;
+          source = *(word **)nextSource;
           break;
         case 0x1a:
-          bVar5 = capacityBytes < 10;
+          capacityUnderflow = capacityBytes < 10;
           capacityBytes = capacityBytes - 10;
-          if (bVar5 || capacityBytes == 0)
+          if (capacityUnderflow || capacityBytes == 0)
           goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
-          for (iVar2 = 5; iVar2 != 0; iVar2 = iVar2 + -1) {
-            *puVar4 = *source;
+          for (wordsRemaining = 5; wordsRemaining != 0; wordsRemaining = wordsRemaining + -1) {
+            *destinationCursor = *source;
             source = source + 1;
-            puVar4 = puVar4 + 1;
+            destinationCursor = destinationCursor + 1;
           }
         }
       }
       else {
-        bVar5 = capacityBytes < 2;
+        capacityUnderflow = capacityBytes < 2;
         capacityBytes = capacityBytes - 2;
-        if (bVar5 || capacityBytes == 0)
+        if (capacityUnderflow || capacityBytes == 0)
         goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
-        *puVar4 = uVar1;
-        puVar4 = puVar4 + 1;
-        source = puVar3;
+        *destinationCursor = commandCodeUnit;
+        destinationCursor = destinationCursor + 1;
+        source = nextSource;
       }
     }
     if (nestedDepth == 0) break;
     source = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (1 < (int)capacityBytes) {
-    *puVar4 = 0;
-    RVar6.eax = (int)puVar4 - (int)destination;
-    RVar6.carry = false;
-    return RVar6;
+    *destinationCursor = 0;
+    successResult.eax = (int)destinationCursor - (int)destination;
+    successResult.carry = false;
+    return successResult;
   }
 RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
-  puVar4[-1] = 0;
-  RVar7.carry = true;
-  RVar7.eax = 0x14;
-  return RVar7;
+  destinationCursor[-1] = 0;
+  errorResult.carry = true;
+  errorResult.eax = 0x14;
+  return errorResult;
 }
 
 
@@ -1330,38 +1330,38 @@ RichTextLineAdvanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
 
 {
-  byte *pbVar1;
+  byte *pendingWrapPoint;
   GraphicsSubresourceIndex glyphSubresource;
-  uint uVar2;
-  uint uVar3;
-  byte *pbVar4;
-  byte *pbVar5;
-  RichTextLineAdvanceEaxCf5 RVar6;
-  FontGlyphSizeEaxEdxCf9 FVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
-  byte *local_1c;
+  uint lineWidth;
+  uint maxLineHeight;
+  byte *commandCursor;
+  byte *readCursor;
+  RichTextLineAdvanceEaxCf5 lineResult;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
+  GraphicsTextureSizeEaxEdxCf9 imageSize;
+  byte *wrapPoint;
   
-  FVar7 = FontGlyph_GetLogicalSizeActiveRegs(0);
-  uVar2 = 0;
-  local_1c = (byte *)0x0;
-  uVar3 = FVar7.lineHeight;
-  pbVar5 = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
-  pbVar1 = local_1c;
+  glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
+  lineWidth = 0;
+  wrapPoint = (byte *)0x0;
+  maxLineHeight = glyphSize.lineHeight;
+  readCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
+  pendingWrapPoint = wrapPoint;
 switchD_0041d140_caseD_0:
   while( true ) {
-    local_1c = pbVar1;
-    pbVar4 = pbVar5;
-    glyphSubresource = (GraphicsSubresourceIndex)*(short *)pbVar4;
-    pbVar5 = pbVar4 + 2;
+    wrapPoint = pendingWrapPoint;
+    commandCursor = readCursor;
+    glyphSubresource = (GraphicsSubresourceIndex)*(short *)commandCursor;
+    readCursor = commandCursor + 2;
     if (glyphSubresource != 0x20) break;
-    FVar7 = FontGlyph_GetLogicalSizeActiveRegs(0x20);
-    if (maximumWidth < uVar2)
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    if (maximumWidth < lineWidth)
     goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight;
-    uVar2 = uVar2 + FVar7.width;
-    pbVar1 = pbVar5;
+    lineWidth = lineWidth + glyphSize.width;
+    pendingWrapPoint = readCursor;
   }
   if (glyphSubresource != 0) {
-    pbVar1 = local_1c;
+    pendingWrapPoint = wrapPoint;
     if ((int)glyphSubresource < 0) goto code_r0x0041d13d;
     goto RichTextCommandStream_MeasureNextWrappedLine_AccumulateGlyphExtent;
   }
@@ -1369,7 +1369,7 @@ switchD_0041d140_caseD_0:
 code_r0x0041d13d:
   switch(glyphSubresource & 0x1f) {
   case 6:
-    pbVar5 = pbVar4 + 0x12;
+    readCursor = commandCursor + 0x12;
     break;
   case 8:
   case 9:
@@ -1384,38 +1384,38 @@ code_r0x0041d13d:
   case 0x10:
     glyphSubresource = 0x20;
 RichTextCommandStream_MeasureNextWrappedLine_AccumulateGlyphExtent:
-    FVar7 = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
-    uVar2 = uVar2 + FVar7.width;
-    if (uVar3 < FVar7.lineHeight) {
-      uVar3 = FVar7.lineHeight;
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
+    lineWidth = lineWidth + glyphSize.width;
+    if (maxLineHeight < glyphSize.lineHeight) {
+      maxLineHeight = glyphSize.lineHeight;
     }
     break;
   case 0x11:
-    FVar7 = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
-    pbVar1 = pbVar5;
-    if (maximumWidth < FVar7.width + uVar2)
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
+    pendingWrapPoint = readCursor;
+    if (maximumWidth < glyphSize.width + lineWidth)
     goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight;
     break;
   case 0x12:
 switchD_0041d140_caseD_12:
-    if (uVar2 <= maximumWidth) {
-      local_1c = pbVar5;
+    if (lineWidth <= maximumWidth) {
+      wrapPoint = readCursor;
     }
 RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundaryAndReturnHeight:
-    if (local_1c == (byte *)0x0) {
-      local_1c = pbVar5;
+    if (wrapPoint == (byte *)0x0) {
+      wrapPoint = readCursor;
     }
-    g_RichTextRuntimeBufferUsedWords = (uint)((int)local_1c - (int)g_FontRuntimeBuffer) >> 1;
-    RVar6.carry = *(short *)(local_1c + -2) == 0;
-    RVar6.lineAdvancePixels = uVar3;
-    return RVar6;
+    g_RichTextRuntimeBufferUsedWords = (uint)((int)wrapPoint - (int)g_FontRuntimeBuffer) >> 1;
+    lineResult.carry = *(short *)(wrapPoint + -2) == 0;
+    lineResult.lineAdvancePixels = maxLineHeight;
+    return lineResult;
   case 0x1a:
-    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)
-                      (*(dword *)(pbVar4 + 6),*(GraphicsTextureSourceAsset **)pbVar5);
-    uVar2 = uVar2 + GVar8.logicalWidthPixels;
-    pbVar5 = pbVar4 + 10;
-    if (uVar3 < GVar8.logicalHeightPixels) {
-      uVar3 = GVar8.logicalHeightPixels;
+    imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                      (*(dword *)(commandCursor + 6),*(GraphicsTextureSourceAsset **)readCursor);
+    lineWidth = lineWidth + imageSize.logicalWidthPixels;
+    readCursor = commandCursor + 10;
+    if (maxLineHeight < imageSize.logicalHeightPixels) {
+      maxLineHeight = imageSize.logicalHeightPixels;
     }
   }
   goto switchD_0041d140_caseD_0;
@@ -1441,52 +1441,52 @@ RichTextCommandStream_DrawNextWrappedLineCf
 
 {
   int lineBottom;
-  byte *pbVar1;
-  GraphicsSubresourceIndex GVar2;
-  int iVar3;
-  dword dVar4;
-  uint uVar5;
+  byte *pendingWrapPoint;
+  GraphicsSubresourceIndex glyphSubresource;
+  int glyphAdvance;
+  dword fontIndexOrImageWidth;
+  uint lineWidth;
   uint lineTop;
-  byte *pbVar6;
-  byte *pbVar7;
-  byte *pbVar8;
-  RichTextLineAdvanceEaxCf5 RVar9;
-  RichTextLineAdvanceEaxCf5 RVar10;
-  FontGlyphSizeEaxEdxCf9 FVar11;
-  GraphicsTextureSizeEaxEdxCf9 GVar12;
-  byte *local_1c;
+  byte *measureCommand;
+  byte *scanCursor;
+  byte *drawCursor;
+  RichTextLineAdvanceEaxCf5 moreLinesResult;
+  RichTextLineAdvanceEaxCf5 endResult;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
+  GraphicsTextureSizeEaxEdxCf9 imageSize;
+  byte *wrapPoint;
   
-  FVar11 = FontGlyph_GetLogicalSizeActiveRegs(0);
-  uVar5 = 0;
-  pbVar8 = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
-  local_1c = (byte *)0x0;
-  lineTop = FVar11.lineHeight;
-  pbVar7 = pbVar8;
-  dVar4 = g_ActiveFontIndex;
-  pbVar1 = local_1c;
+  glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
+  lineWidth = 0;
+  drawCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
+  wrapPoint = (byte *)0x0;
+  lineTop = glyphSize.lineHeight;
+  scanCursor = drawCursor;
+  fontIndexOrImageWidth = g_ActiveFontIndex;
+  pendingWrapPoint = wrapPoint;
 switchD_0041da40_caseD_0:
   while( true ) {
-    local_1c = pbVar1;
-    pbVar6 = pbVar7;
-    GVar2 = (GraphicsSubresourceIndex)*(short *)pbVar6;
-    pbVar7 = pbVar6 + 2;
-    if (GVar2 != 0x20) break;
-    FVar11 = FontGlyph_GetLogicalSizeActiveRegs(0x20);
-    if (maximumWidth < uVar5)
+    wrapPoint = pendingWrapPoint;
+    measureCommand = scanCursor;
+    glyphSubresource = (GraphicsSubresourceIndex)*(short *)measureCommand;
+    scanCursor = measureCommand + 2;
+    if (glyphSubresource != 0x20) break;
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    if (maximumWidth < lineWidth)
     goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
-    uVar5 = uVar5 + FVar11.width;
-    pbVar1 = pbVar7;
+    lineWidth = lineWidth + glyphSize.width;
+    pendingWrapPoint = scanCursor;
   }
-  if (GVar2 != 0) {
-    pbVar1 = local_1c;
-    if ((int)GVar2 < 0) goto code_r0x0041da3d;
+  if (glyphSubresource != 0) {
+    pendingWrapPoint = wrapPoint;
+    if ((int)glyphSubresource < 0) goto code_r0x0041da3d;
     goto RichTextCommandStream_DrawNextWrappedLine_AccumulateGlyphExtent;
   }
   goto switchD_0041da40_caseD_12;
 code_r0x0041da3d:
-  switch(GVar2 & 0x1f) {
+  switch(glyphSubresource & 0x1f) {
   case 6:
-    pbVar7 = pbVar6 + 0x12;
+    scanCursor = measureCommand + 0x12;
     break;
   case 8:
   case 9:
@@ -1496,63 +1496,63 @@ code_r0x0041da3d:
   case 0xd:
   case 0xe:
   case 0xf:
-    g_ActiveFontIndex = GVar2 & 0xf;
+    g_ActiveFontIndex = glyphSubresource & 0xf;
     break;
   case 0x10:
-    GVar2 = 0x20;
+    glyphSubresource = 0x20;
 RichTextCommandStream_DrawNextWrappedLine_AccumulateGlyphExtent:
-    FVar11 = FontGlyph_GetLogicalSizeActiveRegs(GVar2);
-    uVar5 = uVar5 + FVar11.width;
-    if (lineTop < FVar11.lineHeight) {
-      lineTop = FVar11.lineHeight;
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
+    lineWidth = lineWidth + glyphSize.width;
+    if (lineTop < glyphSize.lineHeight) {
+      lineTop = glyphSize.lineHeight;
     }
     break;
   case 0x11:
-    FVar11 = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
-    pbVar1 = pbVar7;
-    if (maximumWidth < FVar11.width + uVar5)
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
+    pendingWrapPoint = scanCursor;
+    if (maximumWidth < glyphSize.width + lineWidth)
     goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
     break;
   case 0x12:
     goto switchD_0041da40_caseD_12;
   case 0x1a:
-    GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)
-                       (*(dword *)(pbVar6 + 6),*(GraphicsTextureSourceAsset **)pbVar7);
-    uVar5 = uVar5 + GVar12.logicalWidthPixels;
-    pbVar7 = pbVar6 + 10;
-    if (lineTop < GVar12.logicalHeightPixels) {
-      lineTop = GVar12.logicalHeightPixels;
+    imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                       (*(dword *)(measureCommand + 6),*(GraphicsTextureSourceAsset **)scanCursor);
+    lineWidth = lineWidth + imageSize.logicalWidthPixels;
+    scanCursor = measureCommand + 10;
+    if (lineTop < imageSize.logicalHeightPixels) {
+      lineTop = imageSize.logicalHeightPixels;
     }
   }
   goto switchD_0041da40_caseD_0;
 switchD_0041da40_caseD_12:
-  if (uVar5 <= maximumWidth) {
-    local_1c = pbVar7;
+  if (lineWidth <= maximumWidth) {
+    wrapPoint = scanCursor;
   }
 RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
-  g_ActiveFontIndex = dVar4;
-  if (local_1c == (byte *)0x0) {
-    local_1c = pbVar7;
+  g_ActiveFontIndex = fontIndexOrImageWidth;
+  if (wrapPoint == (byte *)0x0) {
+    wrapPoint = scanCursor;
   }
   lineBottom = drawY + lineTop;
 switchD_0041dbd0_caseD_7:
-  pbVar7 = pbVar8;
-  GVar2 = (GraphicsSubresourceIndex)*(short *)pbVar7;
-  pbVar8 = pbVar7 + 2;
-  if (GVar2 != 0x20) {
-    if (GVar2 == 0) {
-      g_RichTextRuntimeBufferUsedWords = (uint)((int)pbVar8 - (int)g_FontRuntimeBuffer) >> 1;
-      RVar10.carry = true;
-      RVar10.lineAdvancePixels = lineTop;
-      return RVar10;
+  scanCursor = drawCursor;
+  glyphSubresource = (GraphicsSubresourceIndex)*(short *)scanCursor;
+  drawCursor = scanCursor + 2;
+  if (glyphSubresource != 0x20) {
+    if (glyphSubresource == 0) {
+      g_RichTextRuntimeBufferUsedWords = (uint)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
+      endResult.carry = true;
+      endResult.lineAdvancePixels = lineTop;
+      return endResult;
     }
-    if (-1 < (int)GVar2) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
+    if (-1 < (int)glyphSubresource) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
     goto code_r0x0041dbcd;
   }
-  if (pbVar8 < local_1c) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
+  if (drawCursor < wrapPoint) goto RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX;
   goto switchD_0041dbd0_caseD_12;
 code_r0x0041dbcd:
-  switch(GVar2 & 0x1f) {
+  switch(glyphSubresource & 0x1f) {
   case 0:
     g_RichTextCurrentColorArgb = g_RichTextColorPalette0Argb;
     g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette0;
@@ -1579,11 +1579,11 @@ code_r0x0041dbcd:
     break;
   case 6:
     g_RichTextCurrentColorArgb =
-         (((((((pbVar7[4] & 0xf) << 0x18 | (uint)*pbVar8 << 0x1c) >> 4 | (uint)pbVar7[8] << 0x1c) >>
-             4 | (uint)pbVar7[6] << 0x1c) >> 4 | (uint)pbVar7[0xc] << 0x1c) >> 4 |
-          (uint)pbVar7[10] << 0x1c) >> 4 | (uint)pbVar7[0x10] << 0x1c) >> 4 |
-         (uint)pbVar7[0xe] << 0x1c;
-    pbVar8 = pbVar7 + 0x12;
+         (((((((scanCursor[4] & 0xf) << 0x18 | (uint)*drawCursor << 0x1c) >> 4 | (uint)scanCursor[8] << 0x1c) >>
+             4 | (uint)scanCursor[6] << 0x1c) >> 4 | (uint)scanCursor[0xc] << 0x1c) >> 4 |
+          (uint)scanCursor[10] << 0x1c) >> 4 | (uint)scanCursor[0x10] << 0x1c) >> 4 |
+         (uint)scanCursor[0xe] << 0x1c;
+    drawCursor = scanCursor + 0x12;
     break;
   case 8:
   case 9:
@@ -1593,17 +1593,17 @@ code_r0x0041dbcd:
   case 0xd:
   case 0xe:
   case 0xf:
-    g_ActiveFontIndex = GVar2 & 0xf;
+    g_ActiveFontIndex = glyphSubresource & 0xf;
     break;
   case 0x10:
-    GVar2 = 0x20;
+    glyphSubresource = 0x20;
 RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX:
-    iVar3 = FontGlyph_DrawVerticallyCentered
-                      (clipTop,clipLeft,clipBottom,clipRight,GVar2,lineTop,lineBottom,drawX);
-    drawX = drawX + iVar3;
+    glyphAdvance = FontGlyph_DrawVerticallyCentered
+                      (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,lineTop,lineBottom,drawX);
+    drawX = drawX + glyphAdvance;
     break;
   case 0x11:
-    if (local_1c <= pbVar8) {
+    if (wrapPoint <= drawCursor) {
       FontGlyph_DrawVerticallyCentered
                 (clipTop,clipLeft,clipBottom,clipRight,0x2d,lineTop,lineBottom,drawX);
       goto switchD_0041dbd0_caseD_12;
@@ -1611,19 +1611,19 @@ RichTextCommandStream_DrawNextWrappedLine_DrawGlyphAndAdvanceX:
     break;
   case 0x12:
 switchD_0041dbd0_caseD_12:
-    g_RichTextRuntimeBufferUsedWords = (uint)((int)pbVar8 - (int)g_FontRuntimeBuffer) >> 1;
-    RVar9.carry = false;
-    RVar9.lineAdvancePixels = lineTop;
-    return RVar9;
+    g_RichTextRuntimeBufferUsedWords = (uint)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
+    moreLinesResult.carry = false;
+    moreLinesResult.lineAdvancePixels = lineTop;
+    return moreLinesResult;
   case 0x1a:
-    GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)
-                       (*(dword *)(pbVar7 + 6),*(GraphicsTextureSourceAsset **)pbVar8);
-    dVar4 = GVar12.logicalWidthPixels;
+    imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                       (*(dword *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor);
+    fontIndexOrImageWidth = imageSize.logicalWidthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,lineBottom - GVar12.logicalHeightPixels,drawX,
-               *(dword *)(pbVar7 + 6),*(GraphicsTextureSourceAsset **)pbVar8,g_FramebufferAccess);
-    drawX = drawX + dVar4;
-    pbVar8 = pbVar7 + 10;
+              (clipTop,clipLeft,clipBottom,clipRight,lineBottom - imageSize.logicalHeightPixels,drawX,
+               *(dword *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
+    drawX = drawX + fontIndexOrImageWidth;
+    drawCursor = scanCursor + 10;
   }
   goto switchD_0041dbd0_caseD_7;
 }
@@ -1638,52 +1638,52 @@ void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
 
 {
-  ushort uVar1;
-  uint uVar2;
-  int iVar3;
+  ushort commandCodeUnit;
+  uint remainingWords;
+  int nestedDepth;
   ushort *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
-  ushort *puVar4;
-  ushort *puVar5;
+  ushort *commandCursor;
+  ushort *outputCursor;
   
-  uVar2 = 0x2000;
-  iVar3 = 0;
-  puVar5 = (ushort *)g_FontRuntimeBuffer;
+  remainingWords = 0x2000;
+  nestedDepth = 0;
+  outputCursor = (ushort *)g_FontRuntimeBuffer;
 switchD_0041d87b_caseD_7:
   while( true ) {
-    puVar4 = commandStream;
-    uVar1 = *puVar4;
-    commandStream = puVar4 + 1;
-    if (uVar1 != 0) break;
-    if (iVar3 == 0) {
-      *puVar5 = 0;
+    commandCursor = commandStream;
+    commandCodeUnit = *commandCursor;
+    commandStream = commandCursor + 1;
+    if (commandCodeUnit != 0) break;
+    if (nestedDepth == 0) {
+      *outputCursor = 0;
       g_RichTextRuntimeBufferUsedWords = 0;
       return;
     }
-    iVar3 = iVar3 + -1;
-    commandStream = (ushort *)((byte *)nestedReturnStack[iVar3] + 8);
+    nestedDepth = nestedDepth + -1;
+    commandStream = (ushort *)((byte *)nestedReturnStack[nestedDepth] + 8);
   }
-  if ((short)uVar1 < 0) goto switchD_0041d87b_switchD;
+  if ((short)commandCodeUnit < 0) goto switchD_0041d87b_switchD;
   goto switchD_0041d87b_caseD_0;
 switchD_0041d87b_switchD:
-  switch(uVar1 & 0x1f) {
+  switch(commandCodeUnit & 0x1f) {
   default:
 switchD_0041d87b_caseD_0:
-    if (uVar2 != 0) {
-      *puVar5 = uVar1;
-      uVar2 = uVar2 - 1;
-      puVar5 = puVar5 + 1;
+    if (remainingWords != 0) {
+      *outputCursor = commandCodeUnit;
+      remainingWords = remainingWords - 1;
+      outputCursor = outputCursor + 1;
     }
     break;
   case 6:
-    if (9 < uVar2) {
-      *puVar5 = uVar1;
-      uVar2 = uVar2 - 9;
-      *(undefined4 *)(puVar5 + 1) = *(undefined4 *)commandStream;
-      *(undefined4 *)(puVar5 + 3) = *(undefined4 *)(puVar4 + 3);
-      *(undefined4 *)(puVar5 + 5) = *(undefined4 *)(puVar4 + 5);
-      *(undefined4 *)(puVar5 + 7) = *(undefined4 *)(puVar4 + 7);
-      puVar5 = puVar5 + 9;
-      commandStream = puVar4 + 9;
+    if (9 < remainingWords) {
+      *outputCursor = commandCodeUnit;
+      remainingWords = remainingWords - 9;
+      *(undefined4 *)(outputCursor + 1) = *(undefined4 *)commandStream;
+      *(undefined4 *)(outputCursor + 3) = *(undefined4 *)(commandCursor + 3);
+      *(undefined4 *)(outputCursor + 5) = *(undefined4 *)(commandCursor + 5);
+      *(undefined4 *)(outputCursor + 7) = *(undefined4 *)(commandCursor + 7);
+      outputCursor = outputCursor + 9;
+      commandStream = commandCursor + 9;
     }
     break;
   case 7:
@@ -1699,22 +1699,22 @@ switchD_0041d87b_caseD_0:
   case 0x1f:
     break;
   case 0x18:
-    if (iVar3 == RICHTEXT_NESTING_LIMIT) {
+    if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
       break;
     }
-    nestedReturnStack[iVar3] = commandStream;
-    iVar3 = iVar3 + 1;
+    nestedReturnStack[nestedDepth] = commandStream;
+    nestedDepth = nestedDepth + 1;
   case 0x19:
     commandStream = *(ushort **)commandStream;
     break;
   case 0x1a:
-    if (5 < uVar2) {
-      *puVar5 = uVar1;
-      uVar2 = uVar2 - 5;
-      *(undefined4 *)(puVar5 + 1) = *(undefined4 *)commandStream;
-      *(undefined4 *)(puVar5 + 3) = *(undefined4 *)(puVar4 + 3);
-      puVar5 = puVar5 + 5;
-      commandStream = puVar4 + 5;
+    if (5 < remainingWords) {
+      *outputCursor = commandCodeUnit;
+      remainingWords = remainingWords - 5;
+      *(undefined4 *)(outputCursor + 1) = *(undefined4 *)commandStream;
+      *(undefined4 *)(outputCursor + 3) = *(undefined4 *)(commandCursor + 3);
+      outputCursor = outputCursor + 5;
+      commandStream = commandCursor + 5;
     }
   }
   goto switchD_0041d87b_caseD_7;
