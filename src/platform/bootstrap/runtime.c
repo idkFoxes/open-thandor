@@ -698,6 +698,30 @@ dword __cdecl Game_LoadCoreAssets(void)
     }
     ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[7].destination)(g_InstallRegistryKeyHandle);
   }
+  {
+    /* open-thandor: the full-length movies from the CD (Ende*.flm, Intro2.flm) live in the
+       flm folder of the game directory, so the CD is no longer needed. Movie_Open looks under
+       g_LooseMoviePathPrefix before the packages, which only hold still-image stand-ins for
+       these movies; point the prefix at the game directory when that folder exists. */
+    static const word flmLeaf[4] = {'f','l','m',0};
+    static word localFlmPath[0x100];
+    char narrow[0x100];
+    int k;
+    WidePath_CombineDirectoryAndLeaf
+              (localFlmPath,(word *)flmLeaf,(word *)&g_ExecutableDirectoryUtf16);
+    if (Thandor_DirectoryExistsW(localFlmPath)) {
+      word *directory = (word *)&g_ExecutableDirectoryUtf16;
+      for (k = 0; (k < 0xff) && (directory[k] != 0); k++) {
+        g_LooseMoviePathPrefix.codeUnits[k] = directory[k];
+      }
+      g_LooseMoviePathPrefix.codeUnits[k] = 0;
+    }
+    for (k = 0; (k < 0xff) && (g_LooseMoviePathPrefix.codeUnits[k] != 0); k++) {
+      narrow[k] = (char)g_LooseMoviePathPrefix.codeUnits[k];
+    }
+    narrow[k] = 0;
+    Thandor_Log("movie CD path: \"%s\"", narrow);
+  }
   g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
   do {
     do {

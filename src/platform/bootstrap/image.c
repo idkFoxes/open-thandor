@@ -591,3 +591,9 @@ void Thandor_SleepMs(unsigned milliseconds)
 {
     Sleep(milliseconds);
 }
+
+int Thandor_DirectoryExistsW(const unsigned short *path)
+{
+    DWORD attributes = GetFileAttributesW((const wchar_t *)path);
+    return (attributes != INVALID_FILE_ATTRIBUTES) && ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+}

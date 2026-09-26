@@ -46,6 +46,8 @@ int Thandor_IsReadable(const void *address, unsigned size);
 void Thandor_SetWindowTitle(void *window, const char *title);
 unsigned Thandor_TickCount(void);
 void Thandor_SleepMs(unsigned milliseconds);
+/* Returns nonzero when the UTF-16 path names an existing directory. */
+int Thandor_DirectoryExistsW(const unsigned short *path);
 
 /* Symbol name (+offset) of an address in this executable, for diagnostics. */
 const char *Thandor_SymbolName(const void *address);
