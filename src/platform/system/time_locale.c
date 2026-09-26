@@ -7,6 +7,7 @@
 
 #include <thandor/platform/system/time_locale.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: platform/system/time_locale. */
 
@@ -196,10 +197,13 @@ TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *cal
          the ID pairs with the callback slot (see TimerSystem_UnregisterPeriodic). */
       *(WinMmTimerId *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotSearchByteOffset) = winmmTimerId
       ;
+      Thandor_Log("timer register %s: %u Hz slot %u id %u", Thandor_SymbolName((void *)callback),
+                  frequencyHz, callbackSlotSearchByteOffset / 4, winmmTimerId);
       return;
     }
     callbackSlotSearchByteOffset = callbackSlotSearchByteOffset + 4;
   } while (callbackSlotSearchByteOffset < 0x80);
+  Thandor_Log("timer register %s: table full", Thandor_SymbolName((void *)callback));
   return;
 }
 
