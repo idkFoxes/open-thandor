@@ -70,10 +70,17 @@ def instruction_lengths(text, work):
                              capture_output=True, text=True).stdout
         open(cache, 'w').write(out)
     lengths = {}
+    previous = None
     for line in open(cache):
-        m = re.match(r'\s+([0-9a-f]+):\t((?:[0-9a-f]{2} )+)', line)
-        if m:
-            lengths[int(m.group(1), 16)] = len(m.group(2).split())
+        m = re.match(r'\s+([0-9a-f]+):\t((?:[0-9a-f]{2} )+)\s*(\S?)', line)
+        if not m:
+            continue
+        count = len(m.group(2).split())
+        if m.group(3) == '' and previous is not None:
+            lengths[previous] += count  # objdump wraps long instructions onto a second line
+        else:
+            previous = int(m.group(1), 16)
+            lengths[previous] = count
     return lengths
 
 
