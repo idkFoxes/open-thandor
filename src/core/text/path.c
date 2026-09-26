@@ -86,67 +86,50 @@ bool __thandor_cf_preserve_eax_ecx_edx
 WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path)
 
 {
-  int iVar1;
-  uint copyCount;
-  uint uVar2;
-  word *pwVar3;
-  word *componentStartCursor;
-  bool bVar4;
-  word currentCodeUnit;
-  
-  iVar1 = 0x100;
-  pwVar3 = path;
-  do {
-    if (iVar1 == 0) break;
-    iVar1 = iVar1 + -1;
-    currentCodeUnit = *pwVar3;
-    pwVar3 = pwVar3 + 1;
-  } while (currentCodeUnit != 0);
-  iVar1 = 0x100 - iVar1;
-  bVar4 = iVar1 == 0;
-  componentStartCursor = path;
-  componentStartCursor = path;
-code_r0x0040f351:
-  do {
-    if (iVar1 != 0) {
-      iVar1 = iVar1 + -1;
-      pwVar3 = componentStartCursor + 1;
-      bVar4 = *componentStartCursor == 0x5c;
-      componentStartCursor = pwVar3;
-      if (!bVar4) goto code_r0x0040f351;
+  /* Rewritten from the assembly (0x0040F320): the decompiler lost the start of the final component
+     (EDX), so nothing was ever split and every "directory" still ended in the file name. Leaf gets
+     everything after the last backslash (with the terminator); parent gets everything before it.
+     Without a backslash the leaf is the whole path and the parent is empty. */
+  int count;
+  int remaining;
+  int i;
+  word *leafStart;
+
+  count = 0;
+  while (count < 0x100) {
+    count = count + 1;
+    if (path[count - 1] == 0) {
+      break;
     }
-    if (!bVar4) {
-      pwVar3 = componentStartCursor;
-      for (copyCount = (uint)((int)componentStartCursor - (int)componentStartCursor) >> 1;
-          copyCount != 0; copyCount = copyCount - 1) {
-        *leafOut = *pwVar3;
-        pwVar3 = pwVar3 + 1;
-        leafOut = leafOut + 1;
-      }
-      if ((int)componentStartCursor - (int)path != 0) {
-        uVar2 = ((int)componentStartCursor - (int)path) - 2U >> 1;
-        for (; uVar2 != 0; uVar2 = uVar2 - 1) {
-          *parentOut = *path;
-          path = path + 1;
-          parentOut = parentOut + 1;
+  }
+  leafStart = path;
+  for (remaining = count, i = 0; remaining != 0; remaining--, i++) {
+    if (path[i] == 0x5c) {
+      leafStart = path + i + 1;
+      if (remaining == 1) {
+        /* Backslash in the last scanned unit: the whole 0x100-unit buffer becomes the parent. */
+        for (i = 0; i < 0x100; i++) {
+          parentOut[i] = path[i];
         }
+        leafOut[0] = 0;
+        leafOut[1] = 0;
+        return false;
       }
-      *parentOut = 0;
-      return false;
     }
-    bVar4 = false;
-    componentStartCursor = componentStartCursor;
-    if (iVar1 == 0) {
-      for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
-        *(undefined4 *)parentOut = *(undefined4 *)path;
-        path = path + 2;
-        parentOut = parentOut + 2;
-      }
-      leafOut[0] = 0;
-      leafOut[1] = 0;
-      return false;
+  }
+  for (i = 0; i < (int)((path + count) - leafStart); i++) {
+    leafOut[i] = leafStart[i];
+  }
+  if (leafStart != path) {
+    for (i = 0; i < (int)(leafStart - path) - 1; i++) {
+      parentOut[i] = path[i];
     }
-  } while( true );
+    parentOut[i] = 0;
+  }
+  else {
+    parentOut[0] = 0;
+  }
+  return false;
 }
 
 

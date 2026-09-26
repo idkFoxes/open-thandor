@@ -67,6 +67,32 @@ static void Thandor_SelfTestCodec(void)
     }
 }
 
+
+static void Thandor_SelfTestPathSplit(void)
+{
+    static const wchar_t *cases[4] = {L"C:\\Games\\ot-run\\thandor.exe", L"thandor.exe",
+                                       L"C:\\Games\\ot-run\\save\\Mission 1.sve", L"C:\\"};
+    int c;
+    for (c = 0; c < 4; c++) {
+        word path[0x100];
+        word leaf[0x100];
+        word parent[0x100];
+        char leafA[0x100];
+        char parentA[0x100];
+        int i;
+        memset(path, 0, sizeof path);
+        memset(leaf, 0xAB, sizeof leaf);
+        memset(parent, 0xAB, sizeof parent);
+        for (i = 0; cases[c][i] != 0; i++) path[i] = (word)cases[c][i];
+        WidePath_SplitParentAndLeaf(leaf, parent, path);
+        for (i = 0; i < 0xff && leaf[i] != 0; i++) leafA[i] = (char)leaf[i];
+        leafA[i] = 0;
+        for (i = 0; i < 0xff && parent[i] != 0; i++) parentA[i] = (char)parent[i];
+        parentA[i] = 0;
+        Thandor_Log("path selftest %d: parent=\"%s\" leaf=\"%s\"", c, parentA, leafA);
+    }
+}
+
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)
 {
     (void)instance;
@@ -85,6 +111,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         const char *value = getenv("OPEN_THANDOR_SELFTEST");
         if (value != NULL && strcmp(value, "codec") == 0) {
             Thandor_SelfTestCodec();
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "path") == 0) {
+            Thandor_SelfTestPathSplit();
             return 0;
         }
         if (value != NULL && strcmp(value, "crash") == 0) {
