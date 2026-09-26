@@ -7,6 +7,7 @@
 
 #include <thandor/platform/filesystem/win32.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: platform/filesystem/win32. */
 
@@ -136,26 +137,10 @@ dword __cdecl FileSystem_Init(void)
   Win32FileReadEaxCf5 WVar11;
   StatusValueEaxCf5 SVar12;
   
-  pbVar3 = (byte *)GetCommandLineA();
-  pbVar6 = g_Win32PathScratchA;
-  if (*pbVar3 == 0x22) {
-    do {
-      pbVar3 = pbVar3 + 1;
-      bVar1 = *pbVar3;
-      *pbVar6 = bVar1;
-      pbVar6 = pbVar6 + 1;
-    } while (bVar1 != 0x22);
-  }
-  else {
-    do {
-      bVar1 = *pbVar3;
-      *pbVar6 = bVar1;
-      pbVar3 = pbVar3 + 1;
-      pbVar6 = pbVar6 + 1;
-      if (bVar1 == 0) break;
-    } while (bVar1 != 0x20);
-  }
-  pbVar6[-1] = 0;
+  /* open-thandor: the original took the executable path from the first command-line token, which
+     is only a bare "thandor.exe" when started from a shell or batch file; the executable
+     directory then came out empty. Use the module path instead. */
+  Thandor_GetExecutablePathA((char *)g_Win32PathScratchA,sizeof g_Win32PathScratchA);
   Text_CopyNarrowToUtf16Cf(0x200,g_PackageLastErrorPath,g_Win32PathScratchA);
   WidePath_SplitParentAndLeaf
             ((word *)g_Win32PathScratchA,(word *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath)

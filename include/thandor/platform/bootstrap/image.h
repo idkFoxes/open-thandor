@@ -50,6 +50,8 @@ void Thandor_SleepMs(unsigned milliseconds);
 int Thandor_DirectoryExistsW(const unsigned short *path);
 /* Self-tests: an executable copy of original code bytes (position-independent functions only). */
 void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size);
+/* Full path of the running executable (ANSI), independent of how it was started. */
+void Thandor_GetExecutablePathA(char *out, unsigned capacity);
 
 /* Symbol name (+offset) of an address in this executable, for diagnostics. */
 const char *Thandor_SymbolName(const void *address);

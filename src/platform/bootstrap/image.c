@@ -713,3 +713,11 @@ void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size)
     HeapFree(GetProcessHeap(), 0, data);
     return copy;
 }
+
+void Thandor_GetExecutablePathA(char *out, unsigned capacity)
+{
+    DWORD length = GetModuleFileNameA(NULL, out, capacity);
+    if (length == 0 || length >= capacity) {
+        out[0] = 0;
+    }
+}
