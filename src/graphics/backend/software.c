@@ -2014,24 +2014,6 @@ SoftwareTextureSource_StretchDirectColorBilinear32
     fy = fy + stepY;
     sourceRow = sourceBase + (fy >> 8) * sourceWidth * 4;
   }
-  if ((g_ActiveMovie != (MovieRuntime *)0x0) && ((void *)sourceAsset == (void *)g_ActiveMovie)) {
-    static int logged;
-    if (logged < 40) {
-      dword *first = (dword *)*(byte **)((byte *)framebuffer + 0xc) + (destinationY * pitchPixels + destinationX);
-      dword sum = 0;
-      dword y;
-      dword x;
-      logged++;
-      for (y = 0; y < destinationHeight; y += 11) {
-        for (x = 0; x < destinationWidth; x += 13) {
-          sum = sum * 31 + first[y * pitchPixels + x];
-        }
-      }
-      Thandor_Log("  stretch wrote movie frame %u: %ux%u at %d,%d pitch=%u fb=%p sum=%08x", g_ActiveMovie->currentFrameIndex,
-                  destinationWidth, destinationHeight, destinationX, destinationY, pitchPixels,
-                  (void *)*(byte **)((byte *)framebuffer + 0xc), sum);
-    }
-  }
 }
 
 
