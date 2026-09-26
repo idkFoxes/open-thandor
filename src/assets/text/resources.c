@@ -23,36 +23,36 @@ TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path)
 {
   word *resolvedText;
   int aliasIndex;
-  bool bVar1;
-  TextResourceLoadEaxCf5 TVar2;
-  TextResourceResolveEaxCf5 TVar3;
+  bool failed;
+  TextResourceLoadEaxCf5 pageLoadResult;
+  TextResourceResolveEaxCf5 resolveResult;
   
-  TVar2 = TextResourcePage_Load(0x30,path);
-  bVar1 = TVar2.carry;
-  if (!bVar1) {
-    TVar3 = TextResource_Resolve(0x3000);
-    bVar1 = TVar3.carry;
-    resolvedText = TVar3.eax;
-    if (!bVar1) {
+  pageLoadResult = TextResourcePage_Load(0x30,path);
+  failed = pageLoadResult.carry;
+  if (!failed) {
+    resolveResult = TextResource_Resolve(0x3000);
+    failed = resolveResult.carry;
+    resolvedText = resolveResult.eax;
+    if (!failed) {
       TextResourceOverride_Register(aliasAddressBase + 0x2230,resolvedText);
-      TVar3 = TextResource_Resolve(0x3001);
-      bVar1 = TVar3.carry;
-      if (!bVar1) {
+      resolveResult = TextResource_Resolve(0x3001);
+      failed = resolveResult.carry;
+      if (!failed) {
         aliasIndex = 0xd;
-        TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230010,TVar3.eax);
+        TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230010,resolveResult.eax);
         do {
-          TVar3 = TextResource_Resolve(aliasIndex + 0x3002);
-          if (TVar3.carry) {
+          resolveResult = TextResource_Resolve(aliasIndex + 0x3002);
+          if (resolveResult.carry) {
             return true;
           }
-          TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230011 + aliasIndex,TVar3.eax);
+          TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230011 + aliasIndex,resolveResult.eax);
           aliasIndex = aliasIndex + -1;
         } while (-1 < aliasIndex);
-        bVar1 = false;
+        failed = false;
       }
     }
   }
-  return bVar1;
+  return failed;
 }
 
 
@@ -65,47 +65,47 @@ TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path)
 void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
 
 {
-  wchar_t wVar1;
-  int iVar2;
-  int iVar3;
-  GraphicsTextureSourceAsset **ppGVar4;
+  wchar_t pathChar;
+  int scanLimitOrSlotCount;
+  int remainingSources;
+  GraphicsTextureSourceAsset **textureSourceSlot;
   wchar_t *pathUtf16;
-  wchar_t *pwVar5;
-  TextResourceOverrideTable *pTVar6;
-  GraphicsTextureSourceLoadEaxCf5 GVar7;
-  FatalErrorEaxCf5 FVar8;
-  ArenaAllocEaxCf5 AVar9;
+  wchar_t *pathCursor;
+  TextResourceOverrideTable *overrideSlot;
+  GraphicsTextureSourceLoadEaxCf5 textureLoadResult;
+  FatalErrorEaxCf5 checkedResult;
+  ArenaAllocEaxCf5 allocResult;
   
   pathUtf16 = u_engine_font_gfx_0041b030;
-  ppGVar4 = g_FontTextureSources;
-  iVar3 = 2;
-  iVar2 = 0x21;
+  textureSourceSlot = g_FontTextureSources;
+  remainingSources = 2;
+  scanLimitOrSlotCount = 0x21;
   do {
-    GVar7 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)pathUtf16);
-    FVar8 = (*g_FatalErrorPrimaryDispatchCf)((dword)GVar7.eax,GVar7.carry);
-    *ppGVar4 = (GraphicsTextureSourceAsset *)FVar8.eax;
-    pwVar5 = pathUtf16;
+    textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)pathUtf16);
+    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)textureLoadResult.eax,textureLoadResult.carry);
+    *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.eax;
+    pathCursor = pathUtf16;
     do {
-      pathUtf16 = pwVar5;
-      if (iVar2 == 0) break;
-      iVar2 = iVar2 + -1;
-      pathUtf16 = pwVar5 + 1;
-      wVar1 = *pwVar5;
-      pwVar5 = pathUtf16;
-    } while (wVar1 != L'\0');
-    ppGVar4 = ppGVar4 + 1;
-    iVar3 = iVar3 + -1;
-    if (iVar3 == 0) {
-      AVar9 = (*g_MemoryApi.alloc)(0x4000);
-      FVar8 = (*g_FatalErrorPrimaryDispatchCf)(AVar9.eax,AVar9.carry);
-      g_FontRuntimeBuffer = (byte *)FVar8.eax;
-      AVar9 = (*g_MemoryApi.alloc)(0x8000);
-      FVar8 = (*g_FatalErrorPrimaryDispatchCf)(AVar9.eax,AVar9.carry);
-      g_TextResourceOverrides = (TextResourceOverrideTable *)FVar8.eax;
-      pTVar6 = g_TextResourceOverrides;
-      for (iVar2 = 0x2000; iVar2 != 0; iVar2 = iVar2 + -1) {
-        pTVar6->resourceIds[0] = 0xffffffff;
-        pTVar6 = (TextResourceOverrideTable *)(pTVar6->resourceIds + 1);
+      pathUtf16 = pathCursor;
+      if (scanLimitOrSlotCount == 0) break;
+      scanLimitOrSlotCount = scanLimitOrSlotCount + -1;
+      pathUtf16 = pathCursor + 1;
+      pathChar = *pathCursor;
+      pathCursor = pathUtf16;
+    } while (pathChar != L'\0');
+    textureSourceSlot = textureSourceSlot + 1;
+    remainingSources = remainingSources + -1;
+    if (remainingSources == 0) {
+      allocResult = (*g_MemoryApi.alloc)(0x4000);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+      g_FontRuntimeBuffer = (byte *)checkedResult.eax;
+      allocResult = (*g_MemoryApi.alloc)(0x8000);
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+      g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.eax;
+      overrideSlot = g_TextResourceOverrides;
+      for (scanLimitOrSlotCount = 0x2000; scanLimitOrSlotCount != 0; scanLimitOrSlotCount = scanLimitOrSlotCount + -1) {
+        overrideSlot->resourceIds[0] = 0xffffffff;
+        overrideSlot = (TextResourceOverrideTable *)(overrideSlot->resourceIds + 1);
       }
       return;
     }
@@ -155,23 +155,23 @@ FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
 
 {
-  dword dVar1;
-  GraphicsTextureSizeEaxEdxCf9 GVar2;
-  FontGlyphSizeEaxEdxCf9 FVar3;
+  dword glyphWidth;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
   dword fontIndex;
   
   fontIndex = g_ActiveFontIndex;
-  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)
+  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
                     (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
-  dVar1 = GVar2.logicalWidthPixels;
-  if (GVar2.carry) {
-    dVar1 = 0;
+  glyphWidth = textureSize.logicalWidthPixels;
+  if (textureSize.carry) {
+    glyphWidth = 0;
   }
-  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
-  FVar3.lineHeight = GVar2.logicalHeightPixels;
-  FVar3.width = dVar1;
-  FVar3.carry = false;
-  return FVar3;
+  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
+  glyphSize.lineHeight = textureSize.logicalHeightPixels;
+  glyphSize.width = glyphWidth;
+  glyphSize.carry = false;
+  return glyphSize;
 }
 
 
@@ -187,23 +187,23 @@ FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource)
 
 {
-  dword dVar1;
+  dword glyphWidth;
   uint fontIndex;
-  GraphicsTextureSizeEaxEdxCf9 GVar2;
-  FontGlyphSizeEaxEdxCf9 FVar3;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
   
   fontIndex = packedStyle >> 0x18 & 7;
-  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[fontIndex])
+  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[fontIndex])
   ;
-  dVar1 = GVar2.logicalWidthPixels;
-  if (GVar2.carry) {
-    dVar1 = 0;
+  glyphWidth = textureSize.logicalWidthPixels;
+  if (textureSize.carry) {
+    glyphWidth = 0;
   }
-  GVar2 = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
-  FVar3.lineHeight = GVar2.logicalHeightPixels;
-  FVar3.width = dVar1;
-  FVar3.carry = false;
-  return FVar3;
+  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
+  glyphSize.lineHeight = textureSize.logicalHeightPixels;
+  glyphSize.width = glyphWidth;
+  glyphSize.carry = false;
+  return glyphSize;
 }
 
 
@@ -221,30 +221,30 @@ dword FontGlyph_DrawBottomAligned
                UiPixelCoordinate baselineY,sdword drawX)
 
 {
-  int arg4;
-  GraphicsTextureSizeEaxEdxCf9 GVar1;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg1;
-  SoftwareFramebufferAccess *arg9;
+  int drawY;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  dword colorArgb;
+  GraphicsTextureSourceAsset *fontTexture;
+  SoftwareFramebufferAccess *framebuffer;
   
-  arg1 = g_FontTextureSources[g_ActiveFontIndex];
-  if (arg1 != (GraphicsTextureSourceAsset *)0x0) {
-    GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,arg1);
-    arg4 = baselineY - GVar1.logicalHeightPixels;
-    arg6 = g_RichTextCurrentColorArgb;
-    arg9 = g_FramebufferAccess;
+  fontTexture = g_FontTextureSources[g_ActiveFontIndex];
+  if (fontTexture != (GraphicsTextureSourceAsset *)0x0) {
+    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,fontTexture);
+    drawY = baselineY - textureSize.logicalHeightPixels;
+    colorArgb = g_RichTextCurrentColorArgb;
+    framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,arg4 + g_RichTextCurrentShadowOffset,
-                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,arg1,
+                (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
+                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,arg4,drawX,arg6,glyphSubresource,arg1,arg9);
+              (clipTop,clipLeft,clipBottom,clipRight,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
     /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
-    return GVar1.logicalWidthPixels;
+    return textureSize.logicalWidthPixels;
   }
-  return 0; /* EAX = arg1 = NULL */
+  return 0; /* EAX = fontTexture = NULL */
 }
 
 
@@ -262,30 +262,30 @@ dword FontGlyph_DrawVerticallyCentered
                UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX)
 
 {
-  int arg4;
-  GraphicsTextureSizeEaxEdxCf9 GVar1;
-  dword arg6;
-  GraphicsTextureSourceAsset *arg1;
-  SoftwareFramebufferAccess *arg9;
+  int drawY;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  dword colorArgb;
+  GraphicsTextureSourceAsset *fontTexture;
+  SoftwareFramebufferAccess *framebuffer;
   
-  arg1 = g_FontTextureSources[g_ActiveFontIndex];
-  if (arg1 != (GraphicsTextureSourceAsset *)0x0) {
-    GVar1 = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,arg1);
-    arg4 = (lineBottom - lineTop) + ((int)(lineTop - GVar1.logicalHeightPixels) >> 1);
-    arg6 = g_RichTextCurrentColorArgb;
-    arg9 = g_FramebufferAccess;
+  fontTexture = g_FontTextureSources[g_ActiveFontIndex];
+  if (fontTexture != (GraphicsTextureSourceAsset *)0x0) {
+    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,fontTexture);
+    drawY = (lineBottom - lineTop) + ((int)(lineTop - textureSize.logicalHeightPixels) >> 1);
+    colorArgb = g_RichTextCurrentColorArgb;
+    framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,arg4 + g_RichTextCurrentShadowOffset,
-                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,arg1,
+                (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
+                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,arg4,drawX,arg6,glyphSubresource,arg1,arg9);
+              (clipTop,clipLeft,clipBottom,clipRight,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
     /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
-    return GVar1.logicalWidthPixels;
+    return textureSize.logicalWidthPixels;
   }
-  return 0; /* EAX = arg1 = NULL */
+  return 0; /* EAX = fontTexture = NULL */
 }
 
 
@@ -301,114 +301,114 @@ TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
 
 {
-  ushort uVar1;
-  uint uVar2;
+  ushort codeUnit;
+  uint packedHighDigits;
   TextResourceAssetHeader *allocation;
-  TextResourceAssetHeader *pTVar3;
-  LocaleTelephoneCountryCode LVar4;
-  AssetRecordCount AVar5;
-  TextResourceStringCount TVar6;
-  word *pwVar7;
-  word *pwVar8;
-  int iVar9;
-  PackageLoadEntryEaxCf5 PVar10;
-  TextResourceLoadEaxCf5 TVar11;
-  TextResourceLoadEaxCf5 TVar12;
+  TextResourceAssetHeader *localeBlockOrError;
+  LocaleTelephoneCountryCode countryCode;
+  AssetRecordCount remainingBlocks;
+  TextResourceStringCount remainingStrings;
+  word *recordStart;
+  word *textCursor;
+  int stringIndex;
+  PackageLoadEntryEaxCf5 loadResult;
+  TextResourceLoadEaxCf5 failureResult;
+  TextResourceLoadEaxCf5 successResult;
   
-  PVar10 = Package_LoadEntry(path);
-  if (PVar10.carry) {
+  loadResult = Package_LoadEntry(path);
+  if (loadResult.carry) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
-                (dword)PVar10.bufferOrError);
+                (dword)loadResult.bufferOrError);
   }
-  allocation = PVar10.bufferOrError;
-  pTVar3 = allocation;
-  if (!PVar10.carry) {
-    pTVar3 = (TextResourceAssetHeader *)&k_LowAddressLiteral00000033;
+  allocation = loadResult.bufferOrError;
+  localeBlockOrError = allocation;
+  if (!loadResult.carry) {
+    localeBlockOrError = (TextResourceAssetHeader *)&k_LowAddressLiteral00000033;
     if ((allocation->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
-      AVar5 = (allocation->localeCountHeader).localeBlockCount;
-      LVar4 = g_LocaleCountryCodeOverride;
+      remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
+      countryCode = g_LocaleCountryCodeOverride;
       if (g_LocaleCountryCodeOverride == 0) {
-        LVar4 = (*g_LocaleGetDefaultTelephoneCountryCode)();
+        countryCode = (*g_LocaleGetDefaultTelephoneCountryCode)();
       }
-      pTVar3 = allocation + 1;
+      localeBlockOrError = allocation + 1;
       do {
-        if (LVar4 == (pTVar3->localeCountHeader).common.formatVersion)
+        if (countryCode == (localeBlockOrError->localeCountHeader).common.formatVersion)
         goto TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences;
-        pTVar3 = (TextResourceAssetHeader *)
-                 ((pTVar3->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((pTVar3->localeCountHeader).common.magic - 0x28));
-        AVar5 = AVar5 - 1;
-      } while (AVar5 != 0);
-      AVar5 = (allocation->localeCountHeader).localeBlockCount;
-      pTVar3 = allocation + 1;
+        localeBlockOrError = (TextResourceAssetHeader *)
+                 ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+                 ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
+        remainingBlocks = remainingBlocks - 1;
+      } while (remainingBlocks != 0);
+      remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
+      localeBlockOrError = allocation + 1;
       do {
-        if ((pTVar3->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN)
+        if ((localeBlockOrError->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN)
         goto TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences;
-        pTVar3 = (TextResourceAssetHeader *)
-                 ((pTVar3->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((pTVar3->localeCountHeader).common.magic - 0x28));
-        AVar5 = AVar5 - 1;
-      } while (AVar5 != 0);
-      pTVar3 = allocation + 1;
+        localeBlockOrError = (TextResourceAssetHeader *)
+                 ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+                 ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
+        remainingBlocks = remainingBlocks - 1;
+      } while (remainingBlocks != 0);
+      localeBlockOrError = allocation + 1;
 TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences:
       g_TextResourcePageBindings[pageIndex].selectedLocaleBlock =
-           (TextResourceLocaleBlockPrefix *)pTVar3;
+           (TextResourceLocaleBlockPrefix *)localeBlockOrError;
       g_TextResourcePageBindings[pageIndex].asset = allocation;
-      iVar9 = 0;
-      for (TVar6 = (pTVar3->localeCountHeader).common.allocationSizeBytes; TVar6 != 0;
-          TVar6 = TVar6 - 1) {
-        pwVar8 = (word *)((pTVar3->localeCountHeader).common.buildMetadata.
+      stringIndex = 0;
+      for (remainingStrings = (localeBlockOrError->localeCountHeader).common.allocationSizeBytes; remainingStrings != 0;
+          remainingStrings = remainingStrings - 1) {
+        textCursor = (word *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
                           assetRelativeAddressAnchor28 +
-                         *(int *)((pTVar3->localeCountHeader).common.buildMetadata.
-                                  assetRelativeAddressAnchor28 + iVar9 * 4 + -0x18) + -0x28);
+                         *(int *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
+                                  assetRelativeAddressAnchor28 + stringIndex * 4 + -0x18) + -0x28);
         while( true ) {
-          pwVar7 = pwVar8;
-          uVar1 = *pwVar7;
-          pwVar8 = pwVar7 + 1;
-          if (uVar1 == 0) break;
-          if ((short)uVar1 < 0) {
-            switch(uVar1 & 0x1f) {
+          recordStart = textCursor;
+          codeUnit = *recordStart;
+          textCursor = recordStart + 1;
+          if (codeUnit == 0) break;
+          if ((short)codeUnit < 0) {
+            switch(codeUnit & 0x1f) {
             case 6:
-              pwVar8 = pwVar7 + 9;
+              textCursor = recordStart + 9;
               break;
             case 0x14:
             case 0x15:
             case 0x16:
-              pwVar8 = pwVar7 + 3;
+              textCursor = recordStart + 3;
               break;
             case 0x18:
             case 0x19:
-              uVar2 = *(uint *)pwVar8;
-              *(uint *)(pwVar7 + 3) =
-                   (*(uint *)(pwVar7 + 3) >> 0x10 & 0xf) + (*(uint *)(pwVar7 + 3) & 0xf) * 10;
-              *(undefined **)pwVar8 = &g_MissingTextResourceFallbackStream;
-              *(uint *)(pwVar7 + 3) =
-                   *(int *)(pwVar7 + 3) + (uVar2 >> 0x10 & 0xf) * 100 + (uVar2 & 0xf) * 1000;
-              pwVar8 = pwVar7 + 5;
+              packedHighDigits = *(uint *)textCursor;
+              *(uint *)(recordStart + 3) =
+                   (*(uint *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint *)(recordStart + 3) & 0xf) * 10;
+              *(undefined **)textCursor = &g_MissingTextResourceFallbackStream;
+              *(uint *)(recordStart + 3) =
+                   *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
+              textCursor = recordStart + 5;
               break;
             case 0x1a:
-              *(uint *)(pwVar7 + 3) =
-                   (*(uint *)(pwVar7 + 3) >> 0x10 & 0xf) + (*(uint *)(pwVar7 + 3) & 0xf) * 10;
-              pwVar8[0] = 0;
-              pwVar8[1] = 0;
-              *(uint *)(pwVar7 + 3) =
-                   *(int *)(pwVar7 + 3) +
-                   (*(uint *)pwVar8 >> 0x10 & 0xf) * 100 + (*(uint *)pwVar8 & 0xf) * 1000;
-              pwVar8 = pwVar7 + 5;
+              *(uint *)(recordStart + 3) =
+                   (*(uint *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint *)(recordStart + 3) & 0xf) * 10;
+              textCursor[0] = 0;
+              textCursor[1] = 0;
+              *(uint *)(recordStart + 3) =
+                   *(int *)(recordStart + 3) +
+                   (*(uint *)textCursor >> 0x10 & 0xf) * 100 + (*(uint *)textCursor & 0xf) * 1000;
+              textCursor = recordStart + 5;
             }
           }
         }
-        iVar9 = iVar9 + 1;
+        stringIndex = stringIndex + 1;
       }
-      TVar12.carry = false;
-      TVar12.errorOrValue = (dword)pTVar3;
-      return TVar12;
+      successResult.carry = false;
+      successResult.errorOrValue = (dword)localeBlockOrError;
+      return successResult;
     }
     Resource_Release(allocation);
   }
-  TVar11.carry = true;
-  TVar11.errorOrValue = (dword)pTVar3;
-  return TVar11;
+  failureResult.carry = true;
+  failureResult.errorOrValue = (dword)localeBlockOrError;
+  return failureResult;
 }
 
 
@@ -458,62 +458,62 @@ TextResourceResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 TextResource_Resolve(TextResourceId resourceId)
 
 {
-  TextResourceLocaleBlockPrefix *pTVar1;
-  int iVar2;
-  TextResourceOverrideTable *pTVar3;
-  TextResourceOverrideTable *pTVar4;
-  bool bVar5;
-  TextResourceResolveEaxCf5 TVar6;
-  TextResourceResolveEaxCf5 TVar7;
-  TextResourceResolveEaxCf5 TVar8;
-  TextResourceResolveEaxCf5 TVar9;
-  TextResourceResolveEaxCf5 TVar10;
+  TextResourceLocaleBlockPrefix *localeBlock;
+  int remainingSlots;
+  TextResourceOverrideTable *scanCursor;
+  TextResourceOverrideTable *cursorAfterScan;
+  bool overrideFound;
+  TextResourceResolveEaxCf5 overrideResult;
+  TextResourceResolveEaxCf5 compactResult;
+  TextResourceResolveEaxCf5 extendedResult;
+  TextResourceResolveEaxCf5 emptyResult;
+  TextResourceResolveEaxCf5 missingResult;
   
   if (resourceId == 0xffffffff) {
-    TVar9.eax = (word *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
-    TVar9.carry = false;
-    return TVar9;
+    emptyResult.eax = (word *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
+    emptyResult.carry = false;
+    return emptyResult;
   }
-  iVar2 = 0x1000;
-  bVar5 = g_TextResourceOverrides == (TextResourceOverrideTable *)0x0;
-  pTVar3 = g_TextResourceOverrides;
-  if (!bVar5) {
+  remainingSlots = 0x1000;
+  overrideFound = g_TextResourceOverrides == (TextResourceOverrideTable *)0x0;
+  scanCursor = g_TextResourceOverrides;
+  if (!overrideFound) {
     do {
-      pTVar4 = pTVar3;
-      if (iVar2 == 0) break;
-      iVar2 = iVar2 + -1;
-      pTVar4 = (TextResourceOverrideTable *)(pTVar3->resourceIds + 1);
-      bVar5 = resourceId == pTVar3->resourceIds[0];
-      pTVar3 = pTVar4;
-    } while (!bVar5);
-    if (bVar5) {
-      TVar6.carry = false;
-      TVar6.eax = (word *)pTVar4->resourceIds[0xfff];
-      return TVar6;
+      cursorAfterScan = scanCursor;
+      if (remainingSlots == 0) break;
+      remainingSlots = remainingSlots + -1;
+      cursorAfterScan = (TextResourceOverrideTable *)(scanCursor->resourceIds + 1);
+      overrideFound = resourceId == scanCursor->resourceIds[0];
+      scanCursor = cursorAfterScan;
+    } while (!overrideFound);
+    if (overrideFound) {
+      overrideResult.carry = false;
+      overrideResult.eax = (word *)cursorAfterScan->resourceIds[0xfff];
+      return overrideResult;
     }
   }
   if ((resourceId & 0xff0000) == 0) {
-    pTVar1 = g_TextResourcePageBindings[resourceId >> 8].selectedLocaleBlock;
-    if ((pTVar1 != (TextResourceLocaleBlockPrefix *)0x0) &&
-       ((resourceId & 0xff) < pTVar1->stringCount)) {
-      TVar7.eax = (int)&pTVar1->blockSizeBytes + (&pTVar1[1].blockSizeBytes)[resourceId & 0xff];
-      TVar7.carry = false;
-      return TVar7;
+    localeBlock = g_TextResourcePageBindings[resourceId >> 8].selectedLocaleBlock;
+    if ((localeBlock != (TextResourceLocaleBlockPrefix *)0x0) &&
+       ((resourceId & 0xff) < localeBlock->stringCount)) {
+      compactResult.eax = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xff];
+      compactResult.carry = false;
+      return compactResult;
     }
   }
   else {
-    pTVar1 = g_TextResourcePageBindings[resourceId >> 0x10].selectedLocaleBlock;
-    if ((pTVar1 != (TextResourceLocaleBlockPrefix *)0x0) &&
-       ((resourceId & 0xffff) < pTVar1->stringCount)) {
-      TVar8.eax = (int)&pTVar1->blockSizeBytes + (&pTVar1[1].blockSizeBytes)[resourceId & 0xffff];
-      TVar8.carry = false;
-      return TVar8;
+    localeBlock = g_TextResourcePageBindings[resourceId >> 0x10].selectedLocaleBlock;
+    if ((localeBlock != (TextResourceLocaleBlockPrefix *)0x0) &&
+       ((resourceId & 0xffff) < localeBlock->stringCount)) {
+      extendedResult.eax = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xffff];
+      extendedResult.carry = false;
+      return extendedResult;
     }
   }
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
               g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 0x10].selectedLocaleBlock);
-  TVar10.carry = true;
-  TVar10.eax = (word *)&k_LowAddressLiteral00000033;
-  return TVar10;
+  missingResult.carry = true;
+  missingResult.eax = (word *)&k_LowAddressLiteral00000033;
+  return missingResult;
 }
 

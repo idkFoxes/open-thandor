@@ -32,11 +32,11 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
 
 {
   ArmyRuntimeSlot *armyRuntime;
-  InGameSimulationTick IVar1;
-  InGameRuntimeRootImageC3E4 *pIVar2;
-  FactionRelationState FVar3;
-  bool bVar4;
-  ModelRuntimeScaleRatioRegisterPairQ12 MVar5;
+  InGameSimulationTick currentTick;
+  InGameRuntimeRootImageC3E4 *inGameRoot;
+  FactionRelationState relationState;
+  bool capabilityBitClear;
+  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
   FactionNotificationCodeBase activeFactionCodeForFirst;
   FactionNotificationCodeBase activeFactionCodeForSecond;
   FactionRelationStateNibble stateFirstTowardSecond;
@@ -49,9 +49,9 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
   runtimeEntry = targetArmyRuntime->linkedEntityRuntime;
   if (armyRuntime != (ArmyRuntimeSlot *)0x0) {
     if (((shotRuntime->definitionOrSavedId).definition)->targetClassImpactDamageQ12[0] < 0) {
-      MVar5 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
+      scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
                         ((RuntimeModelFactionPrefix10 *)runtimeEntry);
-      if ((((int)MVar5 == (int)(MVar5 >> 0x20)) && ((armyRuntime->commandModeFlags & 1) != 0)) &&
+      if ((((int)scaleRatio == (int)(scaleRatio >> 0x20)) && ((armyRuntime->commandModeFlags & 1) != 0)) &&
          (runtimeEntry == (GameEntityRuntime *)armyRuntime->commandTargetArmyRuntime)) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(armyRuntime);
         armyRuntime->commandGeneration = 1;
@@ -69,17 +69,17 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
             8 + factionIndex] + 0x100;
       if (((factionIndex != 0) && (capabilityBitIndex != 0)) && (factionIndex != capabilityBitIndex)
          ) {
-        bVar4 = GameFactionRuntime_TestCapabilityBitClearCf(capabilityBitIndex,factionIndex);
-        pIVar2 = g_InGameRuntimeRoot;
-        IVar1 = g_GameFactionRuntimeImage.tail.simulationTick;
-        if (bVar4) {
+        capabilityBitClear = GameFactionRuntime_TestCapabilityBitClearCf(capabilityBitIndex,factionIndex);
+        inGameRoot = g_InGameRuntimeRoot;
+        currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
+        if (capabilityBitClear) {
           *(InGameSimulationTick *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + capabilityBitIndex * 4) =
                g_GameFactionRuntimeImage.tail.simulationTick;
           *(InGameSimulationTick *)(capabilityBitIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + factionIndex * 4) =
-               IVar1;
+               currentTick;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
-                    (targetArmyRuntime,&pIVar2->worldRuntime0A30);
-          ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&pIVar2->worldRuntime0A30);
+                    (targetArmyRuntime,&inGameRoot->worldRuntime0A30);
+          ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime0A30);
         }
         else if ((((armyRuntime->commandModeFlags & 1) == 0) ||
                  ((armyRuntime->commandTargetArmyRuntime != (ArmyRuntimeSlot *)0x0 &&
@@ -91,8 +91,8 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
           stateFirstTowardSecond = 0;
           activeFactionCodeForSecond = 0xb;
           activeFactionCodeForFirst = 0xb;
-          FVar3 = GameFactionRuntime_GetPackedStateNibble(capabilityBitIndex,factionIndex);
-          if (7 < FVar3) {
+          relationState = GameFactionRuntime_GetPackedStateNibble(capabilityBitIndex,factionIndex);
+          if (7 < relationState) {
             activeFactionCodeForFirst = 0xc;
             activeFactionCodeForSecond = 0xc;
           }
@@ -118,23 +118,23 @@ StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(word *mutableBasePath)
 {
   ShotRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
-  ArenaAllocEaxCf5 AVar1;
-  StatusValueEaxCf5 SVar2;
+  ArenaAllocEaxCf5 loadResult;
+  StatusValueEaxCf5 initResult;
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  AVar1 = THANDOR_BITCAST(GraphicsTextureSetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
-  if (!AVar1.carry) {
+  loadResult = THANDOR_BITCAST(GraphicsTextureSetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
+  if (!loadResult.carry) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_ShotTextureSet = (GraphicsTextureSet *)AVar1.eax;
+    g_ShotTextureSet = (GraphicsTextureSet *)loadResult.eax;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    AVar1 = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
-    if (!AVar1.carry) {
+    loadResult = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
+    if (!loadResult.carry) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_ShotPalette = (GraphicsPaletteAsset *)AVar1.eax;
-      AVar1 = (*g_MemoryApi.alloc)(0x40000);
-      runtimeSlotCursor = (ShotRuntimeSlot *)AVar1.eax;
-      if (!AVar1.carry) {
+      g_ShotPalette = (GraphicsPaletteAsset *)loadResult.eax;
+      loadResult = (*g_MemoryApi.alloc)(0x40000);
+      runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.eax;
+      if (!loadResult.carry) {
         g_ShotRuntimeRebaseBaseMinusOne =
              (byte *)((int)&runtimeSlotCursor[-1].ownerAndTrajectory.secondaryEffectCountdownTicks +
                      3);
@@ -144,14 +144,14 @@ StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(word *mutableBasePath)
           (runtimeSlotCursor->definitionOrSavedId).definition = (ShotDefinition *)0x0;
           runtimeSlotCursor = (ShotRuntimeSlot *)&runtimeSlotCursor->launchSpeedQ12;
         }
-        AVar1.eax = 0;
-        AVar1.carry = false;
+        loadResult.eax = 0;
+        loadResult.carry = false;
       }
     }
   }
-  SVar2.valueOrError = AVar1.eax;
-  SVar2.carry = AVar1.carry;
-  return SVar2;
+  initResult.valueOrError = loadResult.eax;
+  initResult.carry = loadResult.carry;
+  return initResult;
 }
 
 
@@ -205,30 +205,30 @@ ShotDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
 
 {
-  ShotDefinition *arg4;
+  ShotDefinition *registryDefinition;
   int registrySlotsRemaining;
   ShotDefinition **registryCursor;
-  ShotDefinitionLookupEaxCf5 SVar1;
-  ShotDefinitionLookupEaxCf5 SVar2;
+  ShotDefinitionLookupEaxCf5 failureResult;
+  ShotDefinitionLookupEaxCf5 successResult;
   ShotDefinition *candidateDefinition;
   
   registryCursor = g_ShotDefinitionRegistry;
   registrySlotsRemaining = 0x100;
-  while ((arg4 = *registryCursor, arg4 == (ShotDefinition *)0x0 ||
-         (arg4->definitionId != definitionId))) {
+  while ((registryDefinition = *registryCursor, registryDefinition == (ShotDefinition *)0x0 ||
+         (registryDefinition->definitionId != definitionId))) {
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)arg4,g_PackageLastErrorPath);
-      SVar1.carry = true;
-      SVar1.definitionOrError = (ShotDefinition *)0x44;
-      return SVar1;
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)registryDefinition,g_PackageLastErrorPath);
+      failureResult.carry = true;
+      failureResult.definitionOrError = (ShotDefinition *)0x44;
+      return failureResult;
     }
   }
-  SVar2.carry = false;
-  SVar2.definitionOrError = arg4;
-  return SVar2;
+  successResult.carry = false;
+  successResult.definitionOrError = registryDefinition;
+  return successResult;
 }
 
 
@@ -241,57 +241,57 @@ ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
 void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
 
 {
-  ShotSecondaryEffectCountdownTicks *pSVar1;
-  void *pvVar2;
-  int iVar3;
-  int iVar4;
-  ArmyRuntimeSlot *armySlot2;
-  ShotDefinition **ppSVar5;
-  ShotRuntimeSlot *pSVar6;
-  ArmyRuntimeSlot *armySlot1;
-  ShotDefinition *shotDefinition1;
+  ShotSecondaryEffectCountdownTicks *firstSlotCountdown;
+  void *rebasedRuntimeState;
+  int registrySlotsRemaining;
+  int shotSlotsRemaining;
+  ArmyRuntimeSlot *rebasedOwnerArmy;
+  ShotDefinition **registryCursor;
+  ShotRuntimeSlot *shotSlot;
+  ArmyRuntimeSlot *savedOwnerArmy;
+  ShotDefinition *registryDefinition;
   
-  pSVar6 = g_ShotRuntimeSlots;
-  iVar4 = 0x1000;
-  pSVar1 = &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
-  *pSVar1 = ~*pSVar1;
+  shotSlot = g_ShotRuntimeSlots;
+  shotSlotsRemaining = 0x1000;
+  firstSlotCountdown = &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
+  *firstSlotCountdown = ~*firstSlotCountdown;
   do {
-    pvVar2 = (pSVar6->runtimeStateOrSavedOffset).runtimeStatePointer;
-    armySlot1 = (pSVar6->ownerAndTrajectory).ownerArmyRuntime;
-    if ((pSVar6->modelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
-      if (pvVar2 != (void *)0x0) {
-        pvVar2 = (void *)((int)pvVar2 + g_ModelRuntimeRebaseDelta);
+    rebasedRuntimeState = (shotSlot->runtimeStateOrSavedOffset).runtimeStatePointer;
+    savedOwnerArmy = (shotSlot->ownerAndTrajectory).ownerArmyRuntime;
+    if ((shotSlot->modelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
+      if (rebasedRuntimeState != (void *)0x0) {
+        rebasedRuntimeState = (void *)((int)rebasedRuntimeState + g_ModelRuntimeRebaseDelta);
       }
-      armySlot2 = (ArmyRuntimeSlot *)0x0;
-      if (armySlot1 != (ArmyRuntimeSlot *)0x0) {
-        armySlot2 = (ArmyRuntimeSlot *)
-                    ((int)&armySlot1->modelRuntimeOrSavedOffset +
+      rebasedOwnerArmy = (ArmyRuntimeSlot *)0x0;
+      if (savedOwnerArmy != (ArmyRuntimeSlot *)0x0) {
+        rebasedOwnerArmy = (ArmyRuntimeSlot *)
+                    ((int)&savedOwnerArmy->modelRuntimeOrSavedOffset +
                     (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
-      (pSVar6->modelNodeOrSavedOffset).modelNode =
+      (shotSlot->modelNodeOrSavedOffset).modelNode =
            (ModelRuntimeNode *)
            (g_RuntimeObjectRebaseBaseMinusOne +
-           (int)(&((pSVar6->modelNodeOrSavedOffset).modelNode)->modelPayload + -1) + 0x30);
-      (pSVar6->runtimeStateOrSavedOffset).runtimeStatePointer = pvVar2;
-      (pSVar6->ownerAndTrajectory).ownerArmyRuntime = armySlot2;
-      ppSVar5 = g_ShotDefinitionRegistry;
-      iVar3 = 0x100;
+           (int)(&((shotSlot->modelNodeOrSavedOffset).modelNode)->modelPayload + -1) + 0x30);
+      (shotSlot->runtimeStateOrSavedOffset).runtimeStatePointer = rebasedRuntimeState;
+      (shotSlot->ownerAndTrajectory).ownerArmyRuntime = rebasedOwnerArmy;
+      registryCursor = g_ShotDefinitionRegistry;
+      registrySlotsRemaining = 0x100;
       do {
-        shotDefinition1 = *ppSVar5;
-        if ((shotDefinition1 != (ShotDefinition *)0x0) &&
-           ((pSVar6->definitionOrSavedId).definition ==
-            (ShotDefinition *)shotDefinition1->definitionId))
+        registryDefinition = *registryCursor;
+        if ((registryDefinition != (ShotDefinition *)0x0) &&
+           ((shotSlot->definitionOrSavedId).definition ==
+            (ShotDefinition *)registryDefinition->definitionId))
         goto ShotRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance;
-        ppSVar5 = ppSVar5 + 1;
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
-      (pSVar6->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+        registryCursor = registryCursor + 1;
+        registrySlotsRemaining = registrySlotsRemaining + -1;
+      } while (registrySlotsRemaining != 0);
+      (shotSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
 ShotRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance:
-      (pSVar6->definitionOrSavedId).definition = shotDefinition1;
+      (shotSlot->definitionOrSavedId).definition = registryDefinition;
     }
-    pSVar6 = pSVar6 + 1;
-    iVar4 = iVar4 + -1;
-    if (iVar4 == 0) {
+    shotSlot = shotSlot + 1;
+    shotSlotsRemaining = shotSlotsRemaining + -1;
+    if (shotSlotsRemaining == 0) {
       return;
     }
   } while( true );
@@ -319,57 +319,57 @@ ShotRuntimePool_CreateProjectileFromDefinition
           WorldRuntimeContext *worldRuntime)
 
 {
-  ModelResourceHitTestAndRenderView210 *pMVar1;
-  Q12 QVar2;
-  ShotAnimationFrameAccumulatorQ4 SVar3;
-  AngleTurn16Stored32 AVar4;
-  ShotSecondaryEffectCountdownTicks SVar5;
-  PackedArgb32 PVar6;
-  short sVar7;
-  short sVar8;
-  short sVar9;
-  short sVar10;
-  ushort uVar11;
-  ushort uVar12;
-  ShotRuntimeSlot *pSVar13;
-  GraphicsPaletteAsset *pGVar14;
+  ModelResourceHitTestAndRenderView210 *nestedModelResource;
+  Q12 modelBoundingRadiusQ12;
+  ShotAnimationFrameAccumulatorQ4 frameThresholdQ4;
+  AngleTurn16Stored32 elevationOffsetAngle;
+  ShotSecondaryEffectCountdownTicks secondaryEffectInterval;
+  PackedArgb32 definitionTintArgb;
+  short tintChannel0;
+  short tintChannel1;
+  short tintChannel2;
+  short tintChannel3;
+  ushort nodeAlphaPair;
+  ushort definitionAlphaPair;
+  ShotRuntimeSlot *slotsRemainingOrPool;
+  GraphicsPaletteAsset *shotPalette;
   ShotModelRuntimeNodeClassView100 *shotModelNode;
-  PackedArgb32 PVar15;
-  ShotRuntimeSlot *pSVar16;
+  PackedArgb32 nodeTintArgb;
+  ShotRuntimeSlot *slotsRemaining;
   Q12 runtimeLaunchSpeedQ12;
   Q12 worldXQ12;
-  dword dVar17;
+  dword directionZOrNeighborhoodMask;
   ShotRuntimeSlot *shotRuntimeCursor;
-  undefined1 uVar19;
-  undefined1 uVar20;
-  undefined8 uVar18;
-  undefined1 uVar21;
-  undefined1 uVar22;
-  ShotLaunchAnglesEaxEdx8 SVar23;
-  WorldObjectRecordEaxCf5 WVar24;
-  ModelLookupEntryEaxCf5 MVar25;
-  GraphicsShadingRuntimeRecordEaxCf5 GVar26;
-  FixedDirectionXyzRegs12 FVar27;
-  ModelLocalPointRegs12 MVar28;
-  TerrainOccupancyResolvedMasksRegs12 TVar29;
+  undefined1 nodeTintByte3Or1;
+  undefined1 nodeTintByte2;
+  undefined8 tintProduct;
+  undefined1 definitionTintByte3Or1;
+  undefined1 definitionTintByte2;
+  ShotLaunchAnglesEaxEdx8 launchAngles;
+  WorldObjectRecordEaxCf5 allocatedRecord;
+  ModelLookupEntryEaxCf5 lookupEntry;
+  GraphicsShadingRuntimeRecordEaxCf5 shadingAllocation;
+  FixedDirectionXyzRegs12 launchDirection;
+  ModelLocalPointRegs12 localPoint;
+  TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   char runtimeClassIndex;
   
-  pSVar16 = (ShotRuntimeSlot *)0x1000;
+  slotsRemaining = (ShotRuntimeSlot *)0x1000;
   shotRuntimeCursor = g_ShotRuntimeSlots;
-  pSVar13 = g_ShotRuntimeSlots;
+  slotsRemainingOrPool = g_ShotRuntimeSlots;
   while( true ) {
-    if (pSVar13 == (ShotRuntimeSlot *)0x0) {
+    if (slotsRemainingOrPool == (ShotRuntimeSlot *)0x0) {
       return;
     }
     if ((shotRuntimeCursor->modelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) break;
     shotRuntimeCursor = shotRuntimeCursor + 1;
-    pSVar16 = (ShotRuntimeSlot *)
-              ((int)&pSVar16[-1].ownerAndTrajectory.secondaryEffectCountdownTicks + 3);
-    pSVar13 = pSVar16;
+    slotsRemaining = (ShotRuntimeSlot *)
+              ((int)&slotsRemaining[-1].ownerAndTrajectory.secondaryEffectCountdownTicks + 3);
+    slotsRemainingOrPool = slotsRemaining;
   }
-  WVar24 = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
-  shotModelNode = (ShotModelRuntimeNodeClassView100 *)WVar24.recordOrError;
-  if (WVar24.carry) {
+  allocatedRecord = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
+  shotModelNode = (ShotModelRuntimeNodeClassView100 *)allocatedRecord.recordOrError;
+  if (allocatedRecord.carry) {
     return;
   }
   WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)shotModelNode);
@@ -387,109 +387,109 @@ ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->lifetimeTicksRemaining = shotDefinition->projectileLifetimeTicks;
   shotRuntimeCursor->launchSpeedQ12 = runtimeLaunchSpeedQ12;
   (shotRuntimeCursor->ownerAndTrajectory).ownerArmyRuntime = ownerArmyRuntime;
-  SVar23 = ShotDefinition_ComputeLaunchAnglesRegs
+  launchAngles = ShotDefinition_ComputeLaunchAnglesRegs
                      (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,launchWorldZQ12,
                       launchWorldYQ12,launchWorldXQ12,shotDefinition);
-  (shotModelNode->modelPayload).worldRotationAngle0 = SVar23.headingAngle;
-  (shotModelNode->modelPayload).worldRotationAngle1 = SVar23.elevationAngle;
-  (shotModelNode->modelPayload).worldRotationAngle2 = SVar23.headingAngle;
-  FVar27 = FixedMath_DirectionFromAnglesScaledRegs
-                     (SVar23.elevationAngle,SVar23.headingAngle,shotDefinition->launchSpeedQ12);
-  dVar17 = FVar27.edx;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent0Q12 = FVar27.eax;
+  (shotModelNode->modelPayload).worldRotationAngle0 = launchAngles.headingAngle;
+  (shotModelNode->modelPayload).worldRotationAngle1 = launchAngles.elevationAngle;
+  (shotModelNode->modelPayload).worldRotationAngle2 = launchAngles.headingAngle;
+  launchDirection = FixedMath_DirectionFromAnglesScaledRegs
+                     (launchAngles.elevationAngle,launchAngles.headingAngle,shotDefinition->launchSpeedQ12);
+  directionZOrNeighborhoodMask = launchDirection.edx;
+  (shotRuntimeCursor->ownerAndTrajectory).directionComponent0Q12 = launchDirection.eax;
   if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
-    dVar17 = dVar17 + (shotDefinition->ballisticDivisorQ12 >> 1);
+    directionZOrNeighborhoodMask = directionZOrNeighborhoodMask + (shotDefinition->ballisticDivisorQ12 >> 1);
   }
   shotModelNode->renderDepthBiasOrState = 0;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent1Q12 = FVar27.ecx;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent2Q12 = dVar17;
+  (shotRuntimeCursor->ownerAndTrajectory).directionComponent1Q12 = launchDirection.ecx;
+  (shotRuntimeCursor->ownerAndTrajectory).directionComponent2Q12 = directionZOrNeighborhoodMask;
   shotRuntimeCursor->projectileAgeTicks = 0;
-  pGVar14 = g_ShotPalette;
-  pMVar1 = shotDefinition->ownedNestedResource;
+  shotPalette = g_ShotPalette;
+  nestedModelResource = shotDefinition->ownedNestedResource;
   (shotModelNode->modelPayload).textureSet = g_ShotTextureSet;
-  QVar2 = pMVar1->boundingRadiusQ12;
-  (shotModelNode->modelPayload).paletteAsset = pGVar14;
-  shotModelNode->subtreeBoundingRadiusQ12 = QVar2;
-  (shotModelNode->modelPayload).modelResource = pMVar1;
-  SVar3 = shotDefinition->animationFrameAdvanceThresholdQ4;
-  AVar4 = shotDefinition->elevationOffsetAngle16;
+  modelBoundingRadiusQ12 = nestedModelResource->boundingRadiusQ12;
+  (shotModelNode->modelPayload).paletteAsset = shotPalette;
+  shotModelNode->subtreeBoundingRadiusQ12 = modelBoundingRadiusQ12;
+  (shotModelNode->modelPayload).modelResource = nestedModelResource;
+  frameThresholdQ4 = shotDefinition->animationFrameAdvanceThresholdQ4;
+  elevationOffsetAngle = shotDefinition->elevationOffsetAngle16;
   (shotRuntimeCursor->ownerAndTrajectory).animationFrameIndex = 0;
   shotRuntimeCursor->impactEffectEmissionFlags = 0;
-  shotRuntimeCursor->animationFrameAccumulatorQ4 = SVar3;
+  shotRuntimeCursor->animationFrameAccumulatorQ4 = frameThresholdQ4;
   (shotRuntimeCursor->runtimeStateOrSavedOffset).runtimeState = shotRuntimeState14;
-  shotRuntimeCursor->elevationOffsetAngle16 = AVar4;
+  shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;
   (shotModelNode->modelPayload).meshGroupMask = 0xffffffff;
-  SVar5 = shotDefinition->secondaryEffectIntervalTicks;
+  secondaryEffectInterval = shotDefinition->secondaryEffectIntervalTicks;
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | 1;
-  (shotRuntimeCursor->ownerAndTrajectory).secondaryEffectCountdownTicks = SVar5;
+  (shotRuntimeCursor->ownerAndTrajectory).secondaryEffectCountdownTicks = secondaryEffectInterval;
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
-  MVar25 = ModelLookupTable_ContainsPackedKeyCf(0,4,shotDefinition->ownedNestedResource);
-  if (MVar25.carry) {
+  lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,4,shotDefinition->ownedNestedResource);
+  if (lookupEntry.carry) {
     shotModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
   }
   else {
-    MVar28 = ModelNodeRuntime_TransformLocalPointRegs
-                       (MVar25.entry,(ModelRuntimeNode *)shotModelNode);
-    GVar26 = GraphicsShadingRuntime_AllocateRecordRegs
+    localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                       (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
+    shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                        (shotDefinition->shadingTransitionDurationTicks,
                         (shotDefinition->shadingColorArgb >> 0x18) << 8,
-                        shotDefinition->shadingColorArgb,MVar28.edx,MVar28.ecx,MVar28.eax);
-    shotModelNode->shadingRecord = GVar26.record;
+                        shotDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
+    shotModelNode->shadingRecord = shadingAllocation.record;
   }
   shotModelNode->parentNode = (ModelRuntimeNode *)0x0;
   shotModelNode->childCount = 0;
   runtimeClassIndex = (char)worldRuntime->activeFactionRuntimeIndex;
-  dVar17 = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+  directionZOrNeighborhoodMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                      (0x1000,(shotModelNode->worldTransform).translation.y,
                       (shotModelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-  TVar29 = TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,dVar17,runtimeClassIndex);
-  shotRuntimeCursor->terrainRuntimeClassState = TVar29.primaryOccupancyMask;
-  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | TVar29.runtimeFlags | 0x10;
-  PVar15 = UiNode_GetStateTintArgb((UiNodeBase *)shotModelNode);
-  PVar6 = shotDefinition->stateTintArgb;
-  uVar19 = (undefined1)(PVar15 >> 0x18);
-  uVar11 = CONCAT11(uVar19,uVar19);
-  uVar20 = (undefined1)(PVar15 >> 0x10);
-  uVar19 = (undefined1)(PVar15 >> 8);
-  uVar21 = (undefined1)(PVar6 >> 0x18);
-  uVar12 = CONCAT11(uVar21,uVar21);
-  uVar22 = (undefined1)(PVar6 >> 0x10);
-  uVar21 = (undefined1)(PVar6 >> 8);
-  uVar18 = pmulhw(CONCAT26(uVar11 >> 4,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(uVar11,uVar20),
-                                                      CONCAT14(uVar20,PVar15)) >> 0x20) >> 4,
-                                    CONCAT22(CONCAT11(uVar19,uVar19) >> 4,
-                                             CONCAT11((char)PVar15,(char)PVar15) >> 4))),
-                  CONCAT26(uVar12 >> 4,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(uVar12,uVar22),CONCAT14(uVar22,PVar6)
+  resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,directionZOrNeighborhoodMask,runtimeClassIndex);
+  shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
+  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | 0x10;
+  nodeTintArgb = UiNode_GetStateTintArgb((UiNodeBase *)shotModelNode);
+  definitionTintArgb = shotDefinition->stateTintArgb;
+  nodeTintByte3Or1 = (undefined1)(nodeTintArgb >> 0x18);
+  nodeAlphaPair = CONCAT11(nodeTintByte3Or1,nodeTintByte3Or1);
+  nodeTintByte2 = (undefined1)(nodeTintArgb >> 0x10);
+  nodeTintByte3Or1 = (undefined1)(nodeTintArgb >> 8);
+  definitionTintByte3Or1 = (undefined1)(definitionTintArgb >> 0x18);
+  definitionAlphaPair = CONCAT11(definitionTintByte3Or1,definitionTintByte3Or1);
+  definitionTintByte2 = (undefined1)(definitionTintArgb >> 0x10);
+  definitionTintByte3Or1 = (undefined1)(definitionTintArgb >> 8);
+  tintProduct = pmulhw(CONCAT26(nodeAlphaPair >> 4,
+                           CONCAT24((ushort)(CONCAT35(CONCAT21(nodeAlphaPair,nodeTintByte2),
+                                                      CONCAT14(nodeTintByte2,nodeTintArgb)) >> 0x20) >> 4,
+                                    CONCAT22(CONCAT11(nodeTintByte3Or1,nodeTintByte3Or1) >> 4,
+                                             CONCAT11((char)nodeTintArgb,(char)nodeTintArgb) >> 4))),
+                  CONCAT26(definitionAlphaPair >> 4,
+                           CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionTintByte2),CONCAT14(definitionTintByte2,definitionTintArgb)
                                                      ) >> 0x20) >> 4,
-                                    CONCAT22(CONCAT11(uVar21,uVar21) >> 4,
-                                             CONCAT11((char)PVar6,(char)PVar6) >> 4))));
-  sVar7 = (short)uVar18;
-  sVar8 = (short)((ulonglong)uVar18 >> 0x10);
-  sVar9 = (short)((ulonglong)uVar18 >> 0x20);
-  sVar10 = (short)((ulonglong)uVar18 >> 0x30);
+                                    CONCAT22(CONCAT11(definitionTintByte3Or1,definitionTintByte3Or1) >> 4,
+                                             CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
+  tintChannel0 = (short)tintProduct;
+  tintChannel1 = (short)((ulonglong)tintProduct >> 0x10);
+  tintChannel2 = (short)((ulonglong)tintProduct >> 0x20);
+  tintChannel3 = (short)((ulonglong)tintProduct >> 0x30);
   shotModelNode->tintArgb =
-       CONCAT13((0 < sVar10) * (sVar10 < 0x100) * (char)((ulonglong)uVar18 >> 0x30) -
-                (0xff < sVar10),
-                CONCAT12((0 < sVar9) * (sVar9 < 0x100) * (char)((ulonglong)uVar18 >> 0x20) -
-                         (0xff < sVar9),
-                         CONCAT11((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)uVar18 >> 0x10)
-                                  - (0xff < sVar8),
-                                  (0 < sVar7) * (sVar7 < 0x100) * (char)uVar18 - (0xff < sVar7))));
+       CONCAT13((0 < tintChannel3) * (tintChannel3 < 0x100) * (char)((ulonglong)tintProduct >> 0x30) -
+                (0xff < tintChannel3),
+                CONCAT12((0 < tintChannel2) * (tintChannel2 < 0x100) * (char)((ulonglong)tintProduct >> 0x20) -
+                         (0xff < tintChannel2),
+                         CONCAT11((0 < tintChannel1) * (tintChannel1 < 0x100) * (char)((ulonglong)tintProduct >> 0x10)
+                                  - (0xff < tintChannel1),
+                                  (0 < tintChannel0) * (tintChannel0 < 0x100) * (char)tintProduct - (0xff < tintChannel0))));
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
-  MVar25 = ModelLookupTable_ContainsPackedKeyCf(0,3,shotDefinition->ownedNestedResource);
-  if (!MVar25.carry) {
-    MVar28 = ModelNodeRuntime_TransformLocalPointRegs
-                       (MVar25.entry,(ModelRuntimeNode *)shotModelNode);
-    worldXQ12 = MVar28.ecx;
+  lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,3,shotDefinition->ownedNestedResource);
+  if (!lookupEntry.carry) {
+    localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                       (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
+    worldXQ12 = localPoint.ecx;
     EffectRuntimePool_CreateInstanceFromDefinitionCf
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (shotModelNode->modelPayload).worldRotationAngle2,
                (shotModelNode->modelPayload).worldRotationAngle1,
-               (shotModelNode->modelPayload).worldRotationAngle0,MVar28.edx,worldXQ12,MVar28.eax,
+               (shotModelNode->modelPayload).worldRotationAngle0,localPoint.edx,worldXQ12,localPoint.eax,
                shotDefinition->launchEffectDefinition,worldRuntime);
   }
   return;

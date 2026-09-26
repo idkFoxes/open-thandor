@@ -21,7 +21,7 @@ void __thandor_void_preserve_eax_ecx_edx
 PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
 
 {
-  EntityPathingPriorityPair *pEVar1;
+  EntityPathingPriorityPair *parentHeapPair;
   uint parentSearchIndex;
   EntityPathingPriorityPair *currentHeapPair;
   sdword parentPriority;
@@ -32,18 +32,18 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
   currentHeapPair = heapBase + heapSize + -1;
   if (1 < heapSize) {
     do {
-      pEVar1 = heapBase + (parentSearchIndex >> 1);
+      parentHeapPair = heapBase + (parentSearchIndex >> 1);
       childPriority = currentHeapPair->priority;
-      if (childPriority <= pEVar1->priority) {
+      if (childPriority <= parentHeapPair->priority) {
         return;
       }
-      currentHeapPair->priority = pEVar1->priority;
-      pEVar1->priority = childPriority;
+      currentHeapPair->priority = parentHeapPair->priority;
+      parentHeapPair->priority = childPriority;
       childEntity = currentHeapPair->entity;
-      currentHeapPair->entity = pEVar1->entity;
-      pEVar1->entity = childEntity;
+      currentHeapPair->entity = parentHeapPair->entity;
+      parentHeapPair->entity = childEntity;
       parentSearchIndex = (parentSearchIndex >> 1) - 1;
-      currentHeapPair = pEVar1;
+      currentHeapPair = parentHeapPair;
     } while (-1 < (int)parentSearchIndex);
   }
   return;
@@ -205,60 +205,60 @@ void __thandor_preserve_eax ArenaHeap_Shutdown(void)
 ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
 
 {
-  ArenaBlockHeader *pAVar1;
-  uint uVar2;
-  ArenaBlockHeader *pAVar3;
-  dword dVar4;
-  ArenaBlockHeader *pAVar5;
-  ArenaAllocEaxCf5 AVar6;
-  ArenaAllocEaxCf5 AVar7;
-  ArenaAllocEaxCf5 AVar8;
-  ArenaAllocEaxCf5 AVar9;
+  ArenaBlockHeader *followingBlock;
+  uint alignedBytes;
+  ArenaBlockHeader *splitBlock;
+  dword largestFreeOrOriginalSize;
+  ArenaBlockHeader *blockCursor;
+  ArenaAllocEaxCf5 outOfMemoryResult;
+  ArenaAllocEaxCf5 corruptHeapResult;
+  ArenaAllocEaxCf5 exactFitResult;
+  ArenaAllocEaxCf5 splitResult;
   
-  dVar4 = 1;
-  uVar2 = bytes + 0x1f & 0xffffffe0;
-  pAVar5 = g_Arena.firstBlock;
+  largestFreeOrOriginalSize = 1;
+  alignedBytes = bytes + 0x1f & 0xffffffe0;
+  blockCursor = g_Arena.firstBlock;
   do {
-    if (pAVar5->stateMagic != ARENA_BLOCK_ALLOCATED) {
-      if (pAVar5->stateMagic != ARENA_BLOCK_FREE) {
-        AVar7.carry = true;
-        AVar7.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
-        return AVar7;
+    if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
+      if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
+        corruptHeapResult.carry = true;
+        corruptHeapResult.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+        return corruptHeapResult;
       }
-      if (dVar4 < pAVar5->payloadSize) {
-        dVar4 = pAVar5->payloadSize;
+      if (largestFreeOrOriginalSize < blockCursor->payloadSize) {
+        largestFreeOrOriginalSize = blockCursor->payloadSize;
       }
-      if (uVar2 <= pAVar5->payloadSize) {
-        pAVar5->stateMagic = ARENA_BLOCK_ALLOCATED;
-        if (pAVar5->payloadSize <= uVar2 + 0x40) {
-          AVar8.carry = false;
-          AVar8.eax = (dword)(pAVar5 + 1);
-          return AVar8;
+      if (alignedBytes <= blockCursor->payloadSize) {
+        blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
+        if (blockCursor->payloadSize <= alignedBytes + 0x40) {
+          exactFitResult.carry = false;
+          exactFitResult.eax = (dword)(blockCursor + 1);
+          return exactFitResult;
         }
-        dVar4 = pAVar5->payloadSize;
-        pAVar5->payloadSize = uVar2;
-        pAVar1 = pAVar5->next;
-        pAVar3 = (ArenaBlockHeader *)
-                 (pAVar5[1].alignmentPadding10_1F + (pAVar5->payloadSize - 0x10));
-        pAVar3->payloadSize = dVar4 - (pAVar5->payloadSize + 0x20);
-        pAVar3->stateMagic = ARENA_BLOCK_FREE;
-        pAVar3->previous = pAVar5;
-        pAVar5->next = pAVar3;
-        pAVar3->next = pAVar1;
-        if (pAVar1 != (ArenaBlockHeader *)0xffffffff) {
-          pAVar1->previous = pAVar3;
+        largestFreeOrOriginalSize = blockCursor->payloadSize;
+        blockCursor->payloadSize = alignedBytes;
+        followingBlock = blockCursor->next;
+        splitBlock = (ArenaBlockHeader *)
+                 (blockCursor[1].alignmentPadding10_1F + (blockCursor->payloadSize - 0x10));
+        splitBlock->payloadSize = largestFreeOrOriginalSize - (blockCursor->payloadSize + 0x20);
+        splitBlock->stateMagic = ARENA_BLOCK_FREE;
+        splitBlock->previous = blockCursor;
+        blockCursor->next = splitBlock;
+        splitBlock->next = followingBlock;
+        if (followingBlock != (ArenaBlockHeader *)0xffffffff) {
+          followingBlock->previous = splitBlock;
         }
-        AVar9.carry = false;
-        AVar9.eax = (dword)(pAVar5 + 1);
-        return AVar9;
+        splitResult.carry = false;
+        splitResult.eax = (dword)(blockCursor + 1);
+        return splitResult;
       }
     }
-    pAVar5 = pAVar5->next;
-    if (pAVar5 == (ArenaBlockHeader *)0xffffffff) {
-      (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,dVar4,g_PackageLastErrorPath);
-      AVar6.carry = true;
-      AVar6.eax = 0x12;
-      return AVar6;
+    blockCursor = blockCursor->next;
+    if (blockCursor == (ArenaBlockHeader *)0xffffffff) {
+      (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
+      outOfMemoryResult.carry = true;
+      outOfMemoryResult.eax = 0x12;
+      return outOfMemoryResult;
     }
   } while( true );
 }
@@ -296,10 +296,10 @@ dword __cdecl ArenaHeap_QueryFreeBytes(void)
 ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
 
 {
-  int iVar1;
+  int mergedNextBlockAddress;
   int *freedBlockHeader;
-  ArenaFreeEaxCf5 AVar2;
-  ArenaFreeEaxCf5 AVar3;
+  ArenaFreeEaxCf5 successResult;
+  ArenaFreeEaxCf5 corruptBlockResult;
   int *adjacentFreeBlock;
   int nextBlockAddress;
   int *previousAdjacentBlockHeader;
@@ -307,9 +307,9 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
   if (memory != (void *)0x0) {
     freedBlockHeader = (int *)((int)memory + -0x20);
     if (*(int *)((int)memory + -0x1c) != 0x5a5a5a5a) {
-      AVar3.carry = true;
-      AVar3.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
-      return AVar3;
+      corruptBlockResult.carry = true;
+      corruptBlockResult.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+      return corruptBlockResult;
     }
     *(undefined4 *)((int)memory + -0x1c) = 0xa5a5a5a5;
     adjacentFreeBlock = *(int **)((int)memory + -0x18);
@@ -325,17 +325,17 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
     if ((previousAdjacentBlockHeader != (int *)0xffffffff) &&
        (previousAdjacentBlockHeader[1] == -0x5a5a5a5b)) {
       *previousAdjacentBlockHeader = *previousAdjacentBlockHeader + *freedBlockHeader + 0x20;
-      iVar1 = *(int *)((int)memory + -0x18);
-      previousAdjacentBlockHeader[2] = iVar1;
-      if (iVar1 != -1) {
-        *(int **)(iVar1 + 0xc) = previousAdjacentBlockHeader;
+      mergedNextBlockAddress = *(int *)((int)memory + -0x18);
+      previousAdjacentBlockHeader[2] = mergedNextBlockAddress;
+      if (mergedNextBlockAddress != -1) {
+        *(int **)(mergedNextBlockAddress + 0xc) = previousAdjacentBlockHeader;
       }
     }
   }
   /* The original returns with EAX unchanged on success; callers only test CF. */
-  AVar2.carry = false;
-  AVar2.eax = 0;
-  return AVar2;
+  successResult.carry = false;
+  successResult.eax = 0;
+  return successResult;
 }
 
 
@@ -351,19 +351,19 @@ ArenaHeap_AllocLargestFreeBlock(void)
   dword largestFreePayloadBytes;
   ArenaBlockHeader *blockCursor;
   ArenaBlockHeader *largestFreeBlock;
-  ArenaLargestAllocationEaxEcxCf9 AVar1;
-  ArenaLargestAllocationEaxEcxCf9 AVar2;
-  ArenaLargestAllocationEaxEcxCf9 AVar3;
+  ArenaLargestAllocationEaxEcxCf9 outOfMemoryResult;
+  ArenaLargestAllocationEaxEcxCf9 corruptHeapResult;
+  ArenaLargestAllocationEaxEcxCf9 successResult;
   
   largestFreePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
-        AVar2.blockSizeOrSentinel = 0xffffffff;
-        AVar2.allocationOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
-        AVar2.carry = true;
-        return AVar2;
+        corruptHeapResult.blockSizeOrSentinel = 0xffffffff;
+        corruptHeapResult.allocationOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+        corruptHeapResult.carry = true;
+        return corruptHeapResult;
       }
       if (largestFreePayloadBytes < blockCursor->payloadSize) {
         largestFreePayloadBytes = blockCursor->payloadSize;
@@ -374,16 +374,16 @@ ArenaHeap_AllocLargestFreeBlock(void)
   } while (blockCursor != (ArenaBlockHeader *)0xffffffff);
   if (largestFreePayloadBytes == 0) {
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
-    AVar1.carry = true;
-    AVar1.allocationOrError = 0x12;
-    AVar1.blockSizeOrSentinel = 0;
-    return AVar1;
+    outOfMemoryResult.carry = true;
+    outOfMemoryResult.allocationOrError = 0x12;
+    outOfMemoryResult.blockSizeOrSentinel = 0;
+    return outOfMemoryResult;
   }
   largestFreeBlock->stateMagic = ARENA_BLOCK_ALLOCATED;
-  AVar3.blockSizeOrSentinel = largestFreePayloadBytes;
-  AVar3.allocationOrError = (dword)(largestFreeBlock + 1);
-  AVar3.carry = false;
-  return AVar3;
+  successResult.blockSizeOrSentinel = largestFreePayloadBytes;
+  successResult.allocationOrError = (dword)(largestFreeBlock + 1);
+  successResult.carry = false;
+  return successResult;
 }
 
 
@@ -396,49 +396,49 @@ ArenaShrinkEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
-  uint uVar1;
-  int *piVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
-  int *piVar6;
-  int iVar7;
-  uint *puVar8;
-  ArenaShrinkEaxCf5 AVar9;
-  ArenaShrinkEaxCf5 AVar10;
+  uint originalPayloadSize;
+  int *followingBlock;
+  int followingPayloadSize;
+  int followingNextAddress;
+  uint alignedBytes;
+  int *thresholdOrSplitBlock;
+  int splitPayloadSize;
+  uint *blockHeader;
+  ArenaShrinkEaxCf5 successResult;
+  ArenaShrinkEaxCf5 failureResult;
   
-  puVar8 = (uint *)((int)memory + -0x20);
-  uVar5 = newSize + 0x1f & 0xffffffe0;
-  if ((*(int *)((int)memory + -0x1c) == 0x5a5a5a5a) && (uVar5 <= *puVar8)) {
-    piVar6 = (int *)(uVar5 + 0x40);
-    if (piVar6 < (int *)*puVar8) {
-      uVar1 = *puVar8;
-      *puVar8 = uVar5;
-      iVar7 = uVar1 - (uVar5 + 0x20);
-      piVar2 = *(int **)((int)memory + -0x18);
-      piVar6 = (int *)(uVar5 + 0x20 + (int)puVar8);
-      *(int **)((int)memory + -0x18) = piVar6;
-      piVar6[1] = -0x5a5a5a5b;
-      *piVar6 = iVar7;
-      piVar6[3] = (int)puVar8;
-      piVar6[2] = (int)piVar2;
-      if ((piVar2 != (int *)0xffffffff) && (piVar2[3] = (int)piVar6, piVar2[1] == -0x5a5a5a5b)) {
-        iVar3 = *piVar2;
-        iVar4 = piVar2[2];
-        piVar6[2] = iVar4;
-        *piVar6 = iVar7 + iVar3 + 0x20;
-        if (iVar4 != -1) {
-          *(int **)(iVar4 + 0xc) = piVar6;
+  blockHeader = (uint *)((int)memory + -0x20);
+  alignedBytes = newSize + 0x1f & 0xffffffe0;
+  if ((*(int *)((int)memory + -0x1c) == 0x5a5a5a5a) && (alignedBytes <= *blockHeader)) {
+    thresholdOrSplitBlock = (int *)(alignedBytes + 0x40);
+    if (thresholdOrSplitBlock < (int *)*blockHeader) {
+      originalPayloadSize = *blockHeader;
+      *blockHeader = alignedBytes;
+      splitPayloadSize = originalPayloadSize - (alignedBytes + 0x20);
+      followingBlock = *(int **)((int)memory + -0x18);
+      thresholdOrSplitBlock = (int *)(alignedBytes + 0x20 + (int)blockHeader);
+      *(int **)((int)memory + -0x18) = thresholdOrSplitBlock;
+      thresholdOrSplitBlock[1] = -0x5a5a5a5b;
+      *thresholdOrSplitBlock = splitPayloadSize;
+      thresholdOrSplitBlock[3] = (int)blockHeader;
+      thresholdOrSplitBlock[2] = (int)followingBlock;
+      if ((followingBlock != (int *)0xffffffff) && (followingBlock[3] = (int)thresholdOrSplitBlock, followingBlock[1] == -0x5a5a5a5b)) {
+        followingPayloadSize = *followingBlock;
+        followingNextAddress = followingBlock[2];
+        thresholdOrSplitBlock[2] = followingNextAddress;
+        *thresholdOrSplitBlock = splitPayloadSize + followingPayloadSize + 0x20;
+        if (followingNextAddress != -1) {
+          *(int **)(followingNextAddress + 0xc) = thresholdOrSplitBlock;
         }
       }
     }
-    AVar9.carry = false;
-    AVar9.scratchOrError = (dword)piVar6;
-    return AVar9;
+    successResult.carry = false;
+    successResult.scratchOrError = (dword)thresholdOrSplitBlock;
+    return successResult;
   }
-  AVar10.carry = true;
-  AVar10.scratchOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
-  return AVar10;
+  failureResult.carry = true;
+  failureResult.scratchOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+  return failureResult;
 }
 
 
@@ -453,21 +453,21 @@ ArenaLinearReserveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 
 {
-  byte *pbVar1;
+  byte *previousLinearCursor;
   byte *reservedLinearBase;
-  ArenaLinearReserveEaxCf5 AVar2;
-  ArenaLinearReserveEaxCf5 AVar3;
+  ArenaLinearReserveEaxCf5 successResult;
+  ArenaLinearReserveEaxCf5 failureResult;
   
-  pbVar1 = g_Arena.linearCursor;
+  previousLinearCursor = g_Arena.linearCursor;
   if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
     g_Arena.linearCursor = g_Arena.linearCursor + bytes;
-    AVar2.carry = false;
-    AVar2.baseOrError = (dword)pbVar1;
-    return AVar2;
+    successResult.carry = false;
+    successResult.baseOrError = (dword)previousLinearCursor;
+    return successResult;
   }
-  AVar3.carry = true;
-  AVar3.baseOrError = 0x14;
-  return AVar3;
+  failureResult.carry = true;
+  failureResult.baseOrError = 0x14;
+  return failureResult;
 }
 
 

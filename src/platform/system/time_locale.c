@@ -216,48 +216,48 @@ dword Locale_FormatDateFieldsUtf16
                 LocaleCalendarDayStack32 day,word *destination)
 
 {
-  dword dVar1;
-  dword dVar2;
-  word *pwVar3;
-  int iVar4;
+  dword appendByteLength;
+  dword separatorByteLength;
+  word *outputCursor;
+  int completedByteOffset;
   
   if (g_LocaleSystemState.longDateOrder == 0) {
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,pwVar3);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,pwVar3);
-    iVar4 = (int)pwVar3 + dVar1;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,destination);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
+    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,outputCursor);
+    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
+    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,outputCursor);
+    completedByteOffset = (int)outputCursor + appendByteLength;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,pwVar3);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,pwVar3);
-    iVar4 = (int)pwVar3 + dVar1;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,destination);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
+    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,outputCursor);
+    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
+    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,outputCursor);
+    completedByteOffset = (int)outputCursor + appendByteLength;
   }
   else {
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,pwVar3);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,pwVar3);
-    iVar4 = (int)pwVar3 + dVar1;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,destination);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
+    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,outputCursor);
+    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
+    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,outputCursor);
+    completedByteOffset = (int)outputCursor + appendByteLength;
   }
-  return iVar4 - (int)destination;
+  return completedByteOffset - (int)destination;
 }
 
 /* Address: 0x00586F10.
@@ -273,12 +273,12 @@ dword Locale_FormatCurrentDateUtf16(word *destination)
   dword separatorByteLength;
   dword branchAppendByteLength;
   dword branchSeparatorByteLength;
-  dword dVar1;
-  dword dVar2;
+  dword fieldByteLength;
+  dword dateSeparatorByteLength;
   word *outputCursor;
   word *branchOutputCursor;
   int completedByteOffset;
-  word *pwVar3;
+  word *fieldCursor;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.longDateOrder == 0) {
@@ -302,46 +302,46 @@ dword Locale_FormatCurrentDateUtf16(word *destination)
                     g_LocaleSystemState.dateSeparator);
     branchOutputCursor =
          (word *)((int)((int)outputCursor + branchAppendByteLength) + branchSeparatorByteLength);
-    dVar1 = (*g_WideNumberFormatUtf16)
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
                        branchOutputCursor);
-    completedByteOffset = (int)branchOutputCursor + dVar1;
+    completedByteOffset = (int)branchOutputCursor + fieldByteLength;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
-    dVar1 = (*g_WideNumberFormatUtf16)
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
                        destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
-    dVar1 = (*g_WideNumberFormatUtf16)
+    dateSeparatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)destination + fieldByteLength),g_LocaleSystemState.dateSeparator);
+    fieldCursor = (word *)((int)((int)destination + fieldByteLength) + dateSeparatorByteLength);
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month
-                       ,pwVar3);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = (*g_WideNumberFormatUtf16)
+                       ,fieldCursor);
+    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldByteLength = Utf16_CopyAndReturnByteLength(fieldCursor,g_LocaleSystemState.dateSeparator);
+    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
-                       pwVar3);
-    completedByteOffset = (int)pwVar3 + dVar1;
+                       fieldCursor);
+    completedByteOffset = (int)fieldCursor + fieldByteLength;
   }
   else {
-    dVar1 = (*g_WideNumberFormatUtf16)
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
                        destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + dVar1),g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
-    dVar1 = (*g_WideNumberFormatUtf16)
+    dateSeparatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)destination + fieldByteLength),g_LocaleSystemState.dateSeparator);
+    fieldCursor = (word *)((int)((int)destination + fieldByteLength) + dateSeparatorByteLength);
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month
-                       ,pwVar3);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = Utf16_CopyAndReturnByteLength(pwVar3,g_LocaleSystemState.dateSeparator);
-    pwVar3 = (word *)((int)pwVar3 + dVar1);
-    dVar1 = (*g_WideNumberFormatUtf16)
+                       ,fieldCursor);
+    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldByteLength = Utf16_CopyAndReturnByteLength(fieldCursor,g_LocaleSystemState.dateSeparator);
+    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldByteLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
-                       pwVar3);
-    completedByteOffset = (int)pwVar3 + dVar1;
+                       fieldCursor);
+    completedByteOffset = (int)fieldCursor + fieldByteLength;
   }
   return completedByteOffset - (int)destination;
 }
@@ -372,54 +372,54 @@ dword Locale_FormatTimeFieldsUtf16
                 (LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,word *destination)
 
 {
-  dword dVar1;
-  dword dVar2;
-  word *source;
-  word *pwVar3;
-  int iVar4;
+  dword appendByteLength;
+  dword separatorByteLength;
+  word *designatorText;
+  word *outputCursor;
+  int completedByteOffset;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
     /* The decompiler dropped the designator selection (ECX in the original); note the original
        picks the field exported as pmDesignator for hours below 12. */
-    source = g_LocaleSystemState.pmDesignator;
+    designatorText = g_LocaleSystemState.pmDesignator;
     if (0xb < hour) {
-      source = g_LocaleSystemState.amDesignator;
+      designatorText = g_LocaleSystemState.amDesignator;
       hour = hour - 0xc;
     }
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + dVar1),g_LocaleSystemState.timeSeparator);
-    pwVar3 = (word *)((int)((int)destination + dVar1) + dVar2);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,destination);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.timeSeparator);
+    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
     if (minute < 10) {
-      pwVar3[0] = 0x30;
-      pwVar3[1] = 0;
-      pwVar3 = pwVar3 + 1;
+      outputCursor[0] = 0x30;
+      outputCursor[1] = 0;
+      outputCursor = outputCursor + 1;
     }
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,pwVar3);
-    dVar2 = Utf16_CopyAndReturnByteLength((word *)((int)pwVar3 + dVar1),source);
-    iVar4 = (int)((int)pwVar3 + dVar1) + dVar2;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
+    separatorByteLength = Utf16_CopyAndReturnByteLength((word *)((int)outputCursor + appendByteLength),designatorText);
+    completedByteOffset = (int)((int)outputCursor + appendByteLength) + separatorByteLength;
   }
   else {
-    pwVar3 = destination;
+    outputCursor = destination;
     if (hour < 10) {
       destination[0] = 0x30;
       destination[1] = 0;
-      pwVar3 = destination + 1;
+      outputCursor = destination + 1;
     }
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,pwVar3);
-    dVar2 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)pwVar3 + dVar1),g_LocaleSystemState.timeSeparator);
-    pwVar3 = (word *)((int)((int)pwVar3 + dVar1) + dVar2);
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,outputCursor);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)outputCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
+    outputCursor = (word *)((int)((int)outputCursor + appendByteLength) + separatorByteLength);
     if (minute < 10) {
-      pwVar3[0] = 0x30;
-      pwVar3[1] = 0;
-      pwVar3 = pwVar3 + 1;
+      outputCursor[0] = 0x30;
+      outputCursor[1] = 0;
+      outputCursor = outputCursor + 1;
     }
-    dVar1 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,pwVar3);
-    iVar4 = (int)pwVar3 + dVar1;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
+    completedByteOffset = (int)outputCursor + appendByteLength;
   }
-  return iVar4 - (int)destination;
+  return completedByteOffset - (int)destination;
 }
 
 /* Address: 0x005871B0.
@@ -431,62 +431,62 @@ dword Locale_FormatTimeFieldsUtf16
 dword Locale_FormatCurrentTimeUtf16(word *destination)
 
 {
-  uint uVar1;
+  uint hourOrMinute;
   dword currentAppendByteLength;
-  dword dVar2;
-  dword dVar3;
-  word *source;
+  dword appendByteLength;
+  dword separatorByteLength;
+  word *designatorText;
   word *outputCursor;
   int completedByteOffset;
-  word *pwVar4;
+  word *timeCursor;
   Win32Hour16 localHour;
   Win32Minute16 localMinute;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
-    uVar1 = (uint)g_LocaleSystemState.localTime.hour;
+    hourOrMinute = (uint)g_LocaleSystemState.localTime.hour;
     /* See Locale_FormatTimeFieldsUtf16: the designator selection was lost in decompilation. */
-    source = g_LocaleSystemState.pmDesignator;
-    if (0xb < uVar1) {
-      source = g_LocaleSystemState.amDesignator;
-      uVar1 = uVar1 - 0xc;
+    designatorText = g_LocaleSystemState.pmDesignator;
+    if (0xb < hourOrMinute) {
+      designatorText = g_LocaleSystemState.amDesignator;
+      hourOrMinute = hourOrMinute - 0xc;
     }
     currentAppendByteLength =
-         (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,destination);
-    dVar2 = Utf16_CopyAndReturnByteLength
+         (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,destination);
+    appendByteLength = Utf16_CopyAndReturnByteLength
                       ((word *)((int)destination + currentAppendByteLength),
                        g_LocaleSystemState.timeSeparator);
-    outputCursor = (word *)((int)((int)destination + currentAppendByteLength) + dVar2);
-    uVar1 = (uint)g_LocaleSystemState.localTime.minute;
-    if (uVar1 < 10) {
+    outputCursor = (word *)((int)((int)destination + currentAppendByteLength) + appendByteLength);
+    hourOrMinute = (uint)g_LocaleSystemState.localTime.minute;
+    if (hourOrMinute < 10) {
       outputCursor[0] = 0x30;
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
-    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,outputCursor);
-    dVar3 = Utf16_CopyAndReturnByteLength((word *)((int)outputCursor + dVar2),source);
-    completedByteOffset = (int)((int)outputCursor + dVar2) + dVar3;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,outputCursor);
+    separatorByteLength = Utf16_CopyAndReturnByteLength((word *)((int)outputCursor + appendByteLength),designatorText);
+    completedByteOffset = (int)((int)outputCursor + appendByteLength) + separatorByteLength;
   }
   else {
-    uVar1 = (uint)g_LocaleSystemState.localTime.hour;
-    pwVar4 = destination;
-    if (uVar1 < 10) {
+    hourOrMinute = (uint)g_LocaleSystemState.localTime.hour;
+    timeCursor = destination;
+    if (hourOrMinute < 10) {
       destination[0] = 0x30;
       destination[1] = 0;
-      pwVar4 = destination + 1;
+      timeCursor = destination + 1;
     }
-    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,pwVar4);
-    dVar3 = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)pwVar4 + dVar2),g_LocaleSystemState.timeSeparator);
-    pwVar4 = (word *)((int)((int)pwVar4 + dVar2) + dVar3);
-    uVar1 = (uint)g_LocaleSystemState.localTime.minute;
-    if (uVar1 < 10) {
-      pwVar4[0] = 0x30;
-      pwVar4[1] = 0;
-      pwVar4 = pwVar4 + 1;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,timeCursor);
+    separatorByteLength = Utf16_CopyAndReturnByteLength
+                      ((word *)((int)timeCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
+    timeCursor = (word *)((int)((int)timeCursor + appendByteLength) + separatorByteLength);
+    hourOrMinute = (uint)g_LocaleSystemState.localTime.minute;
+    if (hourOrMinute < 10) {
+      timeCursor[0] = 0x30;
+      timeCursor[1] = 0;
+      timeCursor = timeCursor + 1;
     }
-    dVar2 = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,pwVar4);
-    completedByteOffset = (int)pwVar4 + dVar2;
+    appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,timeCursor);
+    completedByteOffset = (int)timeCursor + appendByteLength;
   }
   return completedByteOffset - (int)destination;
 }

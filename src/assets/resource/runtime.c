@@ -22,10 +22,10 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
 
 {
   byte *source;
-  dword dVar1;
+  dword packedTimeOrDate;
   int clearDwordsRemaining;
   byte *clearCursor;
-  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 mountResult;
   
   source = g_PackageScratchBuffer;
   clearCursor = g_PackageScratchBuffer;
@@ -53,14 +53,14 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
   source[0xd] = 0;
   source[0xe] = 1;
   source[0xf] = 0;
-  dVar1 = (*g_LocaleGetPackedCurrentTime)();
-  *(dword *)(source + 0x10) = dVar1;
-  *(dword *)(source + 0x18) = dVar1;
-  *(dword *)(source + 0x20) = dVar1;
-  dVar1 = (*g_LocaleGetPackedCurrentDate)();
-  *(dword *)(source + 0x14) = dVar1;
-  *(dword *)(source + 0x1c) = dVar1;
-  *(dword *)(source + 0x24) = dVar1;
+  packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
+  *(dword *)(source + 0x10) = packedTimeOrDate;
+  *(dword *)(source + 0x18) = packedTimeOrDate;
+  *(dword *)(source + 0x20) = packedTimeOrDate;
+  packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
+  *(dword *)(source + 0x14) = packedTimeOrDate;
+  *(dword *)(source + 0x1c) = packedTimeOrDate;
+  *(dword *)(source + 0x24) = packedTimeOrDate;
   (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(source + 0x30));
   (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(source + 0x70));
   source[0x100] = 0;
@@ -69,8 +69,8 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
   source[0xb2] = 0;
   source[0xb3] = 0;
   FileSystem_WriteBufferToPathCf(0x200,source,packagePath);
-  SVar2 = Package_Mount(packagePath);
-  return SVar2;
+  mountResult = Package_Mount(packagePath);
+  return mountResult;
 }
 
 
@@ -85,81 +85,81 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
 {
   PckEntryHeader *entry;
   byte *bytes;
-  byte *pbVar1;
+  byte *sizeOrFailureCode;
   byte *in_ECX = (byte *)0; /* ECX is only meaningful on success (byte count); callers test CF */
-  ArenaAllocEaxCf5 AVar2;
-  PackageDecodeEaxCf5 PVar3;
-  FileSystemOpenEaxCf5 FVar4;
-  FileSystemSizeEaxCf5 FVar5;
-  FileSystemReadEaxCf5 FVar6;
-  PackageFindEntryEaxEbxCf9 PVar7;
-  ResourceLoadEaxEcxCf9 RVar8;
-  ResourceLoadEaxEcxCf9 RVar9;
-  ResourceLoadEaxEcxCf9 RVar10;
+  ArenaAllocEaxCf5 allocResult;
+  PackageDecodeEaxCf5 decodeResult;
+  FileSystemOpenEaxCf5 openResult;
+  FileSystemSizeEaxCf5 sizeResult;
+  FileSystemReadEaxCf5 readResult;
+  PackageFindEntryEaxEbxCf9 findResult;
+  ResourceLoadEaxEcxCf9 fileOrPackageResult;
+  ResourceLoadEaxEcxCf9 fileLoadResult;
+  ResourceLoadEaxEcxCf9 failureResult;
   
-  PVar7 = Package_FindEntryAcrossMounts(path);
-  entry = (PckEntryHeader *)PVar7.eax;
-  if (PVar7.carry) {
+  findResult = Package_FindEntryAcrossMounts(path);
+  entry = (PckEntryHeader *)findResult.eax;
+  if (findResult.carry) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                (word *)&g_ExecutableDirectoryUtf16);
-    FVar4 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    RVar8.eax = (byte *)FVar4.eax;
-    if (FVar4.carry) {
-      FVar4 = (*g_FileSystemOpenCf)(0,path);
-      RVar8.eax = (byte *)FVar4.eax;
-      if (FVar4.carry) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
+    openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    fileOrPackageResult.eax = (byte *)openResult.eax;
+    if (openResult.carry) {
+      openResult = (*g_FileSystemOpenCf)(0,path);
+      fileOrPackageResult.eax = (byte *)openResult.eax;
+      if (openResult.carry) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
-    FVar5 = (*g_FileSystemGetSizeCf)(RVar8.eax);
-    bytes = (byte *)FVar5.eax;
-    pbVar1 = bytes;
-    if (!FVar5.carry) {
-      AVar2 = (*g_MemoryApi.alloc)((dword)bytes);
-      RVar9.eax = (void *)AVar2.eax;
+    sizeResult = (*g_FileSystemGetSizeCf)(fileOrPackageResult.eax);
+    bytes = (byte *)sizeResult.eax;
+    sizeOrFailureCode = bytes;
+    if (!sizeResult.carry) {
+      allocResult = (*g_MemoryApi.alloc)((dword)bytes);
+      fileLoadResult.eax = (void *)allocResult.eax;
       in_ECX = bytes;
-      if (AVar2.carry) {
+      if (allocResult.carry) {
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
-        pbVar1 = (byte *)0x5;
+        sizeOrFailureCode = (byte *)0x5;
       }
       else {
-        FVar6 = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,RVar9.eax,RVar8.eax);
-        pbVar1 = (byte *)FVar6.eax;
-        if (!FVar6.carry) {
-          (*g_FileSystemClose)(RVar8.eax);
-          RVar9.ecx = (dword)bytes;
-          RVar9.carry = false;
-          return RVar9;
+        readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,fileLoadResult.eax,fileOrPackageResult.eax);
+        sizeOrFailureCode = (byte *)readResult.eax;
+        if (!readResult.carry) {
+          (*g_FileSystemClose)(fileOrPackageResult.eax);
+          fileLoadResult.ecx = (dword)bytes;
+          fileLoadResult.carry = false;
+          return fileLoadResult;
         }
-        (*g_MemoryApi.free)(RVar9.eax);
+        (*g_MemoryApi.free)(fileLoadResult.eax);
       }
     }
-    (*g_FileSystemClose)(RVar8.eax);
-    RVar8.eax = pbVar1;
+    (*g_FileSystemClose)(fileOrPackageResult.eax);
+    fileOrPackageResult.eax = sizeOrFailureCode;
   }
   else {
-    RVar8.eax = (byte *)0x5;
+    fileOrPackageResult.eax = (byte *)0x5;
     if (entry->packedSize < 0x800001) {
-      AVar2 = (*g_MemoryApi.alloc)(entry->unpackedSize);
-      RVar8.eax = (byte *)AVar2.eax;
-      if (!AVar2.carry) {
-        PVar3 = Package_DecodeEntryInto(RVar8.eax,entry,PVar7.ebx);
-        if (!PVar3.carry) {
-          RVar8.ecx = entry->unpackedSize;
-          RVar8.carry = false;
-          return RVar8;
+      allocResult = (*g_MemoryApi.alloc)(entry->unpackedSize);
+      fileOrPackageResult.eax = (byte *)allocResult.eax;
+      if (!allocResult.carry) {
+        decodeResult = Package_DecodeEntryInto(fileOrPackageResult.eax,entry,findResult.ebx);
+        if (!decodeResult.carry) {
+          fileOrPackageResult.ecx = entry->unpackedSize;
+          fileOrPackageResult.carry = false;
+          return fileOrPackageResult;
         }
-        pbVar1 = (byte *)PVar3.eax;
-        (*g_MemoryApi.free)(RVar8.eax);
-        RVar8.eax = pbVar1;
+        sizeOrFailureCode = (byte *)decodeResult.eax;
+        (*g_MemoryApi.free)(fileOrPackageResult.eax);
+        fileOrPackageResult.eax = sizeOrFailureCode;
       }
     }
   }
 Resource_Load_ReturnOpenAllocationOrDecodeResult:
-  RVar10.ecx = (dword)in_ECX;
-  RVar10.eax = (dword)RVar8.eax;
-  RVar10.carry = true;
-  return RVar10;
+  failureResult.ecx = (dword)in_ECX;
+  failureResult.eax = (dword)fileOrPackageResult.eax;
+  failureResult.carry = true;
+  return failureResult;
 }
 
 
@@ -189,101 +189,101 @@ ResourceRegistration_SelectDomainPair
           (ResourceRegistrationRuntimeImageSerializedScalarViewDC *runtimeImage)
 
 {
-  dword dVar1;
-  dword dVar2;
-  int iVar3;
-  ResourceRegistrationRecord100 *pRVar4;
-  dword dVar5;
-  dword dVar6;
-  ResourceRegistrationRecordSerializedScalarView100 *pRVar7;
-  ResourceRegistrationRecordSerializedScalarView100 *pRVar8;
+  dword rebasedOffset;
+  dword secondaryOffsetOrNestedCount;
+  int clearCountOrArmyDefinition;
+  ResourceRegistrationRecord100 *tailRecord;
+  dword recordsRemainingOrCount;
+  dword nestedBaseOffset;
+  ResourceRegistrationRecordSerializedScalarView100 *nestedOffsetCursor;
+  ResourceRegistrationRecordSerializedScalarView100 *recordCursor;
   
-  pRVar8 = runtimeImage->records58;
-  dVar5 = runtimeImage->recordCountAC;
+  recordCursor = runtimeImage->records58;
+  recordsRemainingOrCount = runtimeImage->recordCountAC;
   do {
-    while ((pRVar8->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
-      for (iVar3 = 0x40; iVar3 != 0; iVar3 = iVar3 + -1) {
-        pRVar8->primarySavedIdOrOffset = 0;
-        pRVar8 = (ResourceRegistrationRecordSerializedScalarView100 *)
-                 &pRVar8->secondarySavedIdOrOffset;
+    while ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
+      for (clearCountOrArmyDefinition = 0x40; clearCountOrArmyDefinition != 0; clearCountOrArmyDefinition = clearCountOrArmyDefinition + -1) {
+        recordCursor->primarySavedIdOrOffset = 0;
+        recordCursor = (ResourceRegistrationRecordSerializedScalarView100 *)
+                 &recordCursor->secondarySavedIdOrOffset;
       }
-      dVar5 = dVar5 - 1;
-      if (dVar5 == 0) {
-        pRVar4 = runtimeImage->tailRecordD8;
-        pRVar8 = runtimeImage->records58;
-        if (pRVar4 != (ResourceRegistrationRecord100 *)0x0) {
-          pRVar4 = (ResourceRegistrationRecord100 *)
-                   ((int)pRVar4 - (int)g_RuntimeObjectRebaseBaseMinusOne);
+      recordsRemainingOrCount = recordsRemainingOrCount - 1;
+      if (recordsRemainingOrCount == 0) {
+        tailRecord = runtimeImage->tailRecordD8;
+        recordCursor = runtimeImage->records58;
+        if (tailRecord != (ResourceRegistrationRecord100 *)0x0) {
+          tailRecord = (ResourceRegistrationRecord100 *)
+                   ((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
         }
-        dVar5 = runtimeImage->recordCountAC;
-        pRVar8[dVar5 - 1].nestedSavedOffsets13[0xc] = (dword)pRVar4;
-        return CONCAT44(pRVar8,dVar5 * 0x100);
+        recordsRemainingOrCount = runtimeImage->recordCountAC;
+        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (dword)tailRecord;
+        return CONCAT44(recordCursor,recordsRemainingOrCount * 0x100);
       }
     }
-    dVar1 = pRVar8->primarySavedIdOrOffset;
-    dVar2 = pRVar8->secondarySavedIdOrOffset;
-    dVar6 = pRVar8->nestedBaseSavedOffset;
-    if (dVar1 != 0) {
-      dVar1 = dVar1 - (int)g_RuntimeObjectRebaseBaseMinusOne;
+    rebasedOffset = recordCursor->primarySavedIdOrOffset;
+    secondaryOffsetOrNestedCount = recordCursor->secondarySavedIdOrOffset;
+    nestedBaseOffset = recordCursor->nestedBaseSavedOffset;
+    if (rebasedOffset != 0) {
+      rebasedOffset = rebasedOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
     }
-    if (dVar2 != 0) {
-      dVar2 = dVar2 - (int)g_RuntimeObjectRebaseBaseMinusOne;
+    if (secondaryOffsetOrNestedCount != 0) {
+      secondaryOffsetOrNestedCount = secondaryOffsetOrNestedCount - (int)g_RuntimeObjectRebaseBaseMinusOne;
     }
-    if (dVar6 != 0) {
-      dVar6 = dVar6 - (int)g_RuntimeObjectRebaseBaseMinusOne;
+    if (nestedBaseOffset != 0) {
+      nestedBaseOffset = nestedBaseOffset - (int)g_RuntimeObjectRebaseBaseMinusOne;
     }
-    pRVar8->primarySavedIdOrOffset = dVar1;
-    pRVar8->secondarySavedIdOrOffset = dVar2;
-    pRVar8->nestedBaseSavedOffset = dVar6;
-    pRVar8->ownerRuntimeSavedOffset = 0;
-    dVar1 = pRVar8->auxiliarySavedIdOrOffset;
-    dVar2 = pRVar8->nestedCountC8;
-    if (dVar1 != 0) {
-      dVar1 = dVar1 - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1);
+    recordCursor->primarySavedIdOrOffset = rebasedOffset;
+    recordCursor->secondarySavedIdOrOffset = secondaryOffsetOrNestedCount;
+    recordCursor->nestedBaseSavedOffset = nestedBaseOffset;
+    recordCursor->ownerRuntimeSavedOffset = 0;
+    rebasedOffset = recordCursor->auxiliarySavedIdOrOffset;
+    secondaryOffsetOrNestedCount = recordCursor->nestedCountC8;
+    if (rebasedOffset != 0) {
+      rebasedOffset = rebasedOffset - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1);
     }
-    pRVar8->auxiliarySavedIdOrOffset = dVar1;
-    pRVar7 = pRVar8;
-    for (; dVar2 != 0; dVar2 = dVar2 - 1) {
-      if (pRVar7->nestedSavedOffsets13[0] != 0) {
-        pRVar7->nestedSavedOffsets13[0] =
-             pRVar7->nestedSavedOffsets13[0] - (int)g_RuntimeObjectRebaseBaseMinusOne;
+    recordCursor->auxiliarySavedIdOrOffset = rebasedOffset;
+    nestedOffsetCursor = recordCursor;
+    for (; secondaryOffsetOrNestedCount != 0; secondaryOffsetOrNestedCount = secondaryOffsetOrNestedCount - 1) {
+      if (nestedOffsetCursor->nestedSavedOffsets13[0] != 0) {
+        nestedOffsetCursor->nestedSavedOffsets13[0] =
+             nestedOffsetCursor->nestedSavedOffsets13[0] - (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      pRVar7 = (ResourceRegistrationRecordSerializedScalarView100 *)
-               &pRVar7->secondarySavedIdOrOffset;
+      nestedOffsetCursor = (ResourceRegistrationRecordSerializedScalarView100 *)
+               &nestedOffsetCursor->secondarySavedIdOrOffset;
     }
-    dVar1 = pRVar8->runtimePayloadSavedOffset;
+    rebasedOffset = recordCursor->runtimePayloadSavedOffset;
                     
-    switch(pRVar8->domainIndex) {
+    switch(recordCursor->domainIndex) {
     case RESOURCE_DOMAIN_ARMY_RUNTIME:
-      iVar3 = *(int *)(dVar1 + 8);
-      pRVar8->paletteAssetSavedIdOrOffset = 0;
-      dVar1 = dVar1 - g_ModelRuntimeRebaseDelta;
-      pRVar8->textureSetSavedIdOrOffset = *(dword *)(iVar3 + 0xc);
+      clearCountOrArmyDefinition = *(int *)(rebasedOffset + 8);
+      recordCursor->paletteAssetSavedIdOrOffset = 0;
+      rebasedOffset = rebasedOffset - g_ModelRuntimeRebaseDelta;
+      recordCursor->textureSetSavedIdOrOffset = *(dword *)(clearCountOrArmyDefinition + 0xc);
       break;
     case RESOURCE_DOMAIN_SHOT_RUNTIME:
-      dVar1 = dVar1 - (int)g_ShotRuntimeRebaseBaseMinusOne;
-      pRVar8->textureSetSavedIdOrOffset = 0;
-      pRVar8->paletteAssetSavedIdOrOffset = 0;
+      rebasedOffset = rebasedOffset - (int)g_ShotRuntimeRebaseBaseMinusOne;
+      recordCursor->textureSetSavedIdOrOffset = 0;
+      recordCursor->paletteAssetSavedIdOrOffset = 0;
       break;
     case RESOURCE_DOMAIN_EFFECT_RUNTIME:
-      dVar1 = dVar1 - (int)g_EffectRuntimeRebaseBaseMinusOne;
-      pRVar8->textureSetSavedIdOrOffset = 0;
-      pRVar8->paletteAssetSavedIdOrOffset = 0;
+      rebasedOffset = rebasedOffset - (int)g_EffectRuntimeRebaseBaseMinusOne;
+      recordCursor->textureSetSavedIdOrOffset = 0;
+      recordCursor->paletteAssetSavedIdOrOffset = 0;
     }
-    pRVar8->runtimePayloadSavedOffset = dVar1;
-    pRVar8->spriteAssetSavedIdOrOffset = *(dword *)(pRVar8->spriteAssetSavedIdOrOffset + 0xb8);
-    pRVar8 = pRVar8 + 1;
-    dVar5 = dVar5 - 1;
-  } while (dVar5 != 0);
-  pRVar4 = runtimeImage->tailRecordD8;
-  pRVar8 = runtimeImage->records58;
-  if (pRVar4 != (ResourceRegistrationRecord100 *)0x0) {
-    pRVar4 = (ResourceRegistrationRecord100 *)((int)pRVar4 - (int)g_RuntimeObjectRebaseBaseMinusOne)
+    recordCursor->runtimePayloadSavedOffset = rebasedOffset;
+    recordCursor->spriteAssetSavedIdOrOffset = *(dword *)(recordCursor->spriteAssetSavedIdOrOffset + 0xb8);
+    recordCursor = recordCursor + 1;
+    recordsRemainingOrCount = recordsRemainingOrCount - 1;
+  } while (recordsRemainingOrCount != 0);
+  tailRecord = runtimeImage->tailRecordD8;
+  recordCursor = runtimeImage->records58;
+  if (tailRecord != (ResourceRegistrationRecord100 *)0x0) {
+    tailRecord = (ResourceRegistrationRecord100 *)((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne)
     ;
   }
-  dVar5 = runtimeImage->recordCountAC;
-  pRVar8[dVar5 - 1].nestedSavedOffsets13[0xc] = (dword)pRVar4;
-  return CONCAT44(pRVar8,dVar5 * 0x100);
+  recordsRemainingOrCount = runtimeImage->recordCountAC;
+  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (dword)tailRecord;
+  return CONCAT44(recordCursor,recordsRemainingOrCount * 0x100);
 }
 
 /* Address: 0x00513020.
@@ -355,8 +355,8 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void)
 
 {
-  EffectRuntimeCompletionAction EVar1;
-  EffectDefinitionReferenceOrSavedId4 EVar2;
+  EffectRuntimeCompletionAction slotCompletionAction;
+  EffectDefinitionReferenceOrSavedId4 serializedDefinitionId;
   int clearDwordsRemaining;
   int runtimeSlotsRemaining;
   ModelRuntimeNode *ownerModelNode;
@@ -367,7 +367,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
   runtimeSlotCursor = g_EffectRuntimeSlots;
   do {
     while( true ) {
-      EVar1 = runtimeSlotCursor->completionAction;
+      slotCompletionAction = runtimeSlotCursor->completionAction;
       ownerModelNode =
            (runtimeSlotCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
       if ((runtimeSlotCursor->modelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) break;
@@ -383,10 +383,10 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
       }
     }
     if (ownerModelNode != (ModelRuntimeNode *)0x0) {
-      if (EVar1 == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
+      if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
         ownerModelNode = (ModelRuntimeNode *)((int)ownerModelNode - g_ModelRuntimeRebaseDelta);
       }
-      else if (EVar1 == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
+      else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
         ownerModelNode =
              (ModelRuntimeNode *)((int)ownerModelNode - (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
@@ -395,11 +395,11 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
          (ModelRuntimeNode *)
          ((int)(runtimeSlotCursor->modelNodeOrSavedOffset).modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
-    runtimeSlotCursor->completionAction = EVar1;
-    EVar2 = THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
+    runtimeSlotCursor->completionAction = slotCompletionAction;
+    serializedDefinitionId = THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
     (runtimeSlotCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode =
          ownerModelNode;
-    runtimeSlotCursor->definitionOrSavedId = EVar2;
+    runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
   } while (runtimeSlotsRemaining != 0);
@@ -419,8 +419,8 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void)
 
 {
-  ShotDefinitionReferenceOrSavedId4 SVar1;
-  void *pvVar2;
+  ShotDefinitionReferenceOrSavedId4 serializedDefinitionId;
+  void *runtimeStateRef;
   int clearDwordsRemaining;
   int runtimeSlotsRemaining;
   ArmyRuntimeSlot *ownerArmyRuntime;
@@ -432,7 +432,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
   runtimeSlotCursor = g_ShotRuntimeSlots;
   do {
     while( true ) {
-      pvVar2 = (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer;
+      runtimeStateRef = (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer;
       ownerArmyRuntime = (runtimeSlotCursor->ownerAndTrajectory).ownerArmyRuntime;
       if ((runtimeSlotCursor->modelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) break;
       for (clearDwordsRemaining = 0x10; shotRuntimeSlotsBase = g_ShotRuntimeSlots,
@@ -448,8 +448,8 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
         return CONCAT44(shotRuntimeSlotsBase,0x40000);
       }
     }
-    if (pvVar2 != (void *)0x0) {
-      pvVar2 = (void *)((int)pvVar2 - g_ModelRuntimeRebaseDelta);
+    if (runtimeStateRef != (void *)0x0) {
+      runtimeStateRef = (void *)((int)runtimeStateRef - g_ModelRuntimeRebaseDelta);
     }
     if (ownerArmyRuntime != (ArmyRuntimeSlot *)0x0) {
       ownerArmyRuntime =
@@ -459,10 +459,10 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
          (ModelRuntimeNode *)
          ((int)(runtimeSlotCursor->modelNodeOrSavedOffset).modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
-    (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer = pvVar2;
-    SVar1 = THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
+    (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer = runtimeStateRef;
+    serializedDefinitionId = THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
     (runtimeSlotCursor->ownerAndTrajectory).ownerArmyRuntime = ownerArmyRuntime;
-    runtimeSlotCursor->definitionOrSavedId = SVar1;
+    runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
   } while (runtimeSlotsRemaining != 0);
@@ -480,23 +480,23 @@ void __thandor_void_preserve_eax_ecx_edx
 ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
-  LevelPlayerSlotByteOffset32 LVar1;
-  InGameLevelConditionStorageView800 *pIVar2;
-  WorldVector1EaxEcxEdx12 WVar3;
-  WorldVector0EaxEcxEdx12 WVar4;
+  LevelPlayerSlotByteOffset32 playerSlotByteOffset;
+  InGameLevelConditionStorageView800 *levelConditionStorage;
+  WorldVector1EaxEcxEdx12 cameraOrientation;
+  WorldVector0EaxEcxEdx12 cameraPosition;
   
-  pIVar2 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  LVar1 = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
+  levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
           [runtimeImage->levelRuntimeRecordIndex50 - 1];
-  WVar3 = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
-  *(UQ12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraMagnitudeQ12 + LVar1) =
-       WVar3.magnitudeQ12;
-  *(AngleTurn32 *)((int)&(pIVar2->levelImage).playerSlots[0].packedHeadingLow16PitchHigh16 + LVar1)
-       = WVar3.headingAngle & 0xffff | WVar3.pitchAngle << 0x10;
-  WVar4 = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
-  *(Q12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraXQ12 + LVar1) = WVar4.xQ12;
-  *(Q12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraYQ12 + LVar1) = WVar4.yQ12;
-  *(Q12 *)((int)&(pIVar2->levelImage).playerSlots[0].startCameraZQ12 + LVar1) = WVar4.zQ12;
+  cameraOrientation = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
+  *(UQ12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraMagnitudeQ12 + playerSlotByteOffset) =
+       cameraOrientation.magnitudeQ12;
+  *(AngleTurn32 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].packedHeadingLow16PitchHigh16 + playerSlotByteOffset)
+       = cameraOrientation.headingAngle & 0xffff | cameraOrientation.pitchAngle << 0x10;
+  cameraPosition = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
+  *(Q12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraXQ12 + playerSlotByteOffset) = cameraPosition.xQ12;
+  *(Q12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraYQ12 + playerSlotByteOffset) = cameraPosition.yQ12;
+  *(Q12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraZQ12 + playerSlotByteOffset) = cameraPosition.zQ12;
   return;
 }
 

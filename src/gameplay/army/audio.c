@@ -23,47 +23,47 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
           ArmyGraphicsAssetAddress32 armyGraphicsAsset)
 
 {
-  int iVar1;
-  uint uVar2;
-  FrontendPlayerRuntimeBlockCount FVar3;
-  int iVar4;
-  FrontendPlayerRuntimeRecord *pFVar5;
-  byte *pbVar6;
-  uint *puVar7;
+  int textureOffset;
+  uint paletteColor;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  int remainingCount;
+  FrontendPlayerRuntimeRecord *playerRecord;
+  byte *payloadCursor;
+  uint *destinationCursor;
   
-  FVar3 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar5 = g_FrontendPlayerRuntimeBlocks;
-  while ((frontendPlayerRuntimeId != (pFVar5->factionAssignment).factionAssignmentIndex ||
-         ((pFVar5->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
-    pFVar5 = pFVar5 + 1;
-    FVar3 = FVar3 - 1;
-    if (FVar3 == 0) {
+  remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
+  while ((frontendPlayerRuntimeId != (playerRecord->factionAssignment).factionAssignmentIndex ||
+         ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
+    playerRecord = playerRecord + 1;
+    remainingBlocks = remainingBlocks - 1;
+    if (remainingBlocks == 0) {
       return;
     }
   }
-  pbVar6 = pFVar5->snapshotPayloadB0_13AF;
-  iVar1 = *(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe2c + armyGraphicsAsset);
-  iVar4 = 0x100;
-  puVar7 = (uint *)(*(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe28 + armyGraphicsAsset) * 0x800
+  payloadCursor = playerRecord->snapshotPayloadB0_13AF;
+  textureOffset = *(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe2c + armyGraphicsAsset);
+  remainingCount = 0x100;
+  destinationCursor = (uint *)(*(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe28 + armyGraphicsAsset) * 0x800
                     + 0x200 + armyGraphicsAsset);
   do {
-    uVar2 = *(uint *)pbVar6;
-    if ((uVar2 & 0xffffff) == 0) {
-      uVar2 = uVar2 & 0xffffff;
+    paletteColor = *(uint *)payloadCursor;
+    if ((paletteColor & 0xffffff) == 0) {
+      paletteColor = paletteColor & 0xffffff;
     }
     else {
-      uVar2 = uVar2 | 0xff000000;
+      paletteColor = paletteColor | 0xff000000;
     }
-    *puVar7 = uVar2;
-    pbVar6 = pbVar6 + 3;
-    puVar7 = puVar7 + 2;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  puVar7 = (uint *)(iVar1 + armyGraphicsAsset);
-  for (iVar4 = 0x400; iVar4 != 0; iVar4 = iVar4 + -1) {
-    *puVar7 = *(uint *)pbVar6;
-    pbVar6 = pbVar6 + 4;
-    puVar7 = puVar7 + 1;
+    *destinationCursor = paletteColor;
+    payloadCursor = payloadCursor + 3;
+    destinationCursor = destinationCursor + 2;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
+  destinationCursor = (uint *)(textureOffset + armyGraphicsAsset);
+  for (remainingCount = 0x400; remainingCount != 0; remainingCount = remainingCount + -1) {
+    *destinationCursor = *(uint *)payloadCursor;
+    payloadCursor = payloadCursor + 4;
+    destinationCursor = destinationCursor + 1;
   }
   return;
 }
@@ -82,50 +82,50 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  uint uVar1;
-  SpatialSoundSlot *pSVar2;
-  GraphicsFixedVec3 *pGVar3;
-  ModelRuntimeSlot *pMVar4;
-  bool bVar5;
+  uint soundSlotIndex;
+  SpatialSoundSlot *soundSlot;
+  GraphicsFixedVec3 *worldPosition;
+  ModelRuntimeSlot *modelSlot;
+  bool cellMasked;
   
-  pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
     if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
   else {
-    uVar1 = *(uint *)((pMVar4->classState).reservedD4_DB + 4);
-    if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
+    soundSlotIndex = *(uint *)((modelSlot->classState).reservedD4_DB + 4);
+    if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
        (worldRuntime->dwordArray != (dword *)0x0)) {
-      pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
-      if (pSVar2 != (SpatialSoundSlot *)0x0) {
-        pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-        bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+      soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+      if (soundSlot != (SpatialSoundSlot *)0x0) {
+        worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+        cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
-        if (!bVar5) {
+        if (!cellMasked) {
           SpatialSound_UpdateDesiredPositionedGains
-                    ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
-                     pGVar3,pSVar2);
+                    ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                     worldPosition,soundSlot);
         }
       }
     }
   }
-  uVar1 = (pMVar4->classState).classStateD0;
-  if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
+  soundSlotIndex = (modelSlot->classState).classStateD0;
+  if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
      (worldRuntime->dwordArray != (dword *)0x0)) {
-    pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
-    if (pSVar2 != (SpatialSoundSlot *)0x0) {
-      pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+    soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+    if (soundSlot != (SpatialSoundSlot *)0x0) {
+      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                          worldRuntime);
-      if (!bVar5) {
+      if (!cellMasked) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
-                   pGVar3,pSVar2);
+                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                   worldPosition,soundSlot);
       }
     }
   }
@@ -171,50 +171,50 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  uint uVar1;
-  SpatialSoundSlot *pSVar2;
-  GraphicsFixedVec3 *pGVar3;
-  ModelRuntimeSlot *pMVar4;
-  bool bVar5;
+  uint soundSlotIndex;
+  SpatialSoundSlot *soundSlot;
+  GraphicsFixedVec3 *worldPosition;
+  ModelRuntimeSlot *modelSlot;
+  bool cellMasked;
   
-  pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
     if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
   else {
-    uVar1 = *(uint *)((pMVar4->classState).reservedD4_DB + 4);
-    if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
+    soundSlotIndex = *(uint *)((modelSlot->classState).reservedD4_DB + 4);
+    if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
        (worldRuntime->dwordArray != (dword *)0x0)) {
-      pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
-      if (pSVar2 != (SpatialSoundSlot *)0x0) {
-        pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-        bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+      soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+      if (soundSlot != (SpatialSoundSlot *)0x0) {
+        worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+        cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
-        if (!bVar5) {
+        if (!cellMasked) {
           SpatialSound_UpdateDesiredPositionedGains
-                    ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
-                     pGVar3,pSVar2);
+                    ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                     worldPosition,soundSlot);
         }
       }
     }
   }
-  uVar1 = (pMVar4->classState).classStateD0;
-  if (((uVar1 != 0) && (uVar1 < worldRuntime->dwordArrayCount)) &&
+  soundSlotIndex = (modelSlot->classState).classStateD0;
+  if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
      (worldRuntime->dwordArray != (dword *)0x0)) {
-    pSVar2 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar1];
-    if (pSVar2 != (SpatialSoundSlot *)0x0) {
-      pGVar3 = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,pGVar3->x,
+    soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
+    if (soundSlot != (SpatialSoundSlot *)0x0) {
+      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                          worldRuntime);
-      if (!bVar5) {
+      if (!cellMasked) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
-                   pGVar3,pSVar2);
+                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                   worldPosition,soundSlot);
       }
     }
   }
@@ -235,26 +235,26 @@ ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *pMVar1;
-  uint uVar2;
+  ModelRuntimeSlot *modelSlot;
+  uint soundSlotIndex;
   SpatialSoundSlot *slot;
   GraphicsFixedVec3 *worldPosition;
-  bool bVar3;
+  bool cellMasked;
   
-  pMVar1 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->movementStateFlags != 0) ||
        ((armyRuntime->movementControl).turnVelocityAngle16 != 0)) &&
-      (uVar2 = *(uint *)((pMVar1->classState).reservedD4_DB + 4), uVar2 != 0)) &&
-     ((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)))) {
-    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2];
+      (soundSlotIndex = *(uint *)((modelSlot->classState).reservedD4_DB + 4), soundSlotIndex != 0)) &&
+     ((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)))) {
+    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      bVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
                         ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                          worldPosition->x,worldRuntime);
-      if (!bVar3) {
+      if (!cellMasked) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((pMVar1->classLinkState).classState7C,(pMVar1->classLinkState).classState78,
+                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
                    worldPosition,slot);
       }
     }
@@ -275,27 +275,27 @@ ArmyRuntimeAudio_UpdateConditionalProjectedSound
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *pMVar1;
-  uint uVar2;
+  ModelRuntimeSlot *modelSlot;
+  uint soundSlotIndex;
   SpatialSoundSlot *slot;
   GraphicsFixedVec3 *worldPosition;
-  bool bVar3;
+  bool cellMasked;
   
-  pMVar1 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
       ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
         ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-       (uVar2 = pMVar1->attachments140[3].childNodeIndex0C, uVar2 != 0)))) &&
-     (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2], slot != (SpatialSoundSlot *)0x0))
+       (soundSlotIndex = modelSlot->attachments140[3].childNodeIndex0C, soundSlotIndex != 0)))) &&
+     (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex], slot != (SpatialSoundSlot *)0x0))
      )) {
     worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-    bVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
                       ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                        worldPosition->x,worldRuntime);
-    if (!bVar3) {
+    if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((pMVar1->classLinkState).classState7C,(pMVar1->classLinkState).classState78,
+                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
                  worldPosition,slot);
     }
   }
@@ -315,46 +315,46 @@ ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  GraphicsFixedVec3 *pGVar1;
-  ModelRuntimeSlot *pMVar2;
-  uint uVar3;
-  SpatialSoundSlot *pSVar4;
-  bool bVar5;
-  ModelRuntimeNode *modelNode1;
+  GraphicsFixedVec3 *worldPosition;
+  ModelRuntimeSlot *modelSlot;
+  uint soundSlotIndex;
+  SpatialSoundSlot *soundSlot;
+  bool cellMasked;
+  ModelRuntimeNode *modelNode;
   
-  modelNode1 = armyRuntime->modelNodeRuntime;
-  pMVar2 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelNode = armyRuntime->modelNodeRuntime;
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
       ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
         ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-       (uVar3 = pMVar2->attachments140[3].childNodeIndex0C, uVar3 != 0)))) &&
-     (((uVar3 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (pSVar4 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar3],
-      pSVar4 != (SpatialSoundSlot *)0x0)))) {
-    pGVar1 = &(modelNode1->worldTransform).translation;
-    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,pGVar1->x,worldRuntime);
-    if (!bVar5) {
+       (soundSlotIndex = modelSlot->attachments140[3].childNodeIndex0C, soundSlotIndex != 0)))) &&
+     (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
+      soundSlot != (SpatialSoundSlot *)0x0)))) {
+    worldPosition = &(modelNode->worldTransform).translation;
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
+    if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((pMVar2->classLinkState).classState7C,(pMVar2->classLinkState).classState78,pGVar1,
-                 pSVar4);
+                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,worldPosition,
+                 soundSlot);
     }
   }
-  pMVar2 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((armyRuntime->articulatedContact).fallbackPosition0Q12 != 1) &&
-      (uVar3 = pMVar2[1].classLinkState.classState74,
+      (soundSlotIndex = modelSlot[1].classLinkState.classState74,
       (armyRuntime->articulatedContact).fallbackPosition0Q12 != 0)) &&
-     ((uVar3 != 0 &&
-      (((uVar3 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-       (pSVar4 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar3],
-       pSVar4 != (SpatialSoundSlot *)0x0)))))) {
-    pGVar1 = &(modelNode1->worldTransform).translation;
-    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((modelNode1->worldTransform).translation.y,pGVar1->x,worldRuntime);
-    if (!bVar5) {
+     ((soundSlotIndex != 0 &&
+      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
+       soundSlot != (SpatialSoundSlot *)0x0)))))) {
+    worldPosition = &(modelNode->worldTransform).translation;
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
+    if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((pMVar2->classLinkState).classState7C,(pMVar2->classLinkState).classState78,pGVar1,
-                 pSVar4);
+                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,worldPosition,
+                 soundSlot);
     }
   }
   return;
@@ -373,25 +373,25 @@ ArmyRuntimeAudio_UpdateAssetProjectedSound
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *pMVar1;
-  uint uVar2;
+  ModelRuntimeSlot *modelSlot;
+  uint soundSlotIndex;
   SpatialSoundSlot *slot;
   GraphicsFixedVec3 *worldPosition;
-  bool bVar3;
+  bool cellMasked;
   
-  pMVar1 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  uVar2 = pMVar1->attachments140[3].childNodeIndex0C;
-  if (((worldRuntime->dwordArray != (dword *)0x0) && (uVar2 != 0)) &&
-     (uVar2 < worldRuntime->dwordArrayCount)) {
-    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2];
+  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  soundSlotIndex = modelSlot->attachments140[3].childNodeIndex0C;
+  if (((worldRuntime->dwordArray != (dword *)0x0) && (soundSlotIndex != 0)) &&
+     (soundSlotIndex < worldRuntime->dwordArrayCount)) {
+    slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      bVar3 = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
                         ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                          worldPosition->x,worldRuntime);
-      if (!bVar3) {
+      if (!cellMasked) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((pMVar1->classLinkState).classState7C,(pMVar1->classLinkState).classState78,
+                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
                    worldPosition,slot);
       }
     }
@@ -413,47 +413,47 @@ ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeNode *pMVar1;
-  uint uVar2;
-  SpatialSoundSlot *pSVar3;
-  ModelRuntimeSlot *pMVar4;
-  bool bVar5;
+  ModelRuntimeNode *modelNode;
+  uint soundSlotIndex;
+  SpatialSoundSlot *soundSlot;
+  ModelRuntimeSlot *modelSlot;
+  bool cellMasked;
   
-  pMVar1 = armyRuntime->modelNodeRuntime;
+  modelNode = armyRuntime->modelNodeRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
       ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
         ((armyRuntime->articulatedContact).terrainContactMode ==
          ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE)) &&
-       (uVar2 = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
-                childNodeIndex0C, uVar2 != 0)))) &&
-     (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-      (pSVar3 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2],
-      pSVar3 != (SpatialSoundSlot *)0x0)))) {
-    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((pMVar1->worldTransform).translation.y,(pMVar1->worldTransform).translation.x
+       (soundSlotIndex = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
+                childNodeIndex0C, soundSlotIndex != 0)))) &&
+     (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
+      soundSlot != (SpatialSoundSlot *)0x0)))) {
+    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
-    if (!bVar5) {
+    if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
-                 &(pMVar1->worldTransform).translation,pSVar3);
+                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                 &(modelNode->worldTransform).translation,soundSlot);
     }
   }
   if ((((armyRuntime->articulatedContact).lateralOffsetQ12 != 6) &&
-      (uVar2 = *(uint *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x274),
+      (soundSlotIndex = *(uint *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x274),
       (armyRuntime->articulatedContact).lateralOffsetQ12 != 0)) &&
-     ((uVar2 != 0 &&
-      (((uVar2 < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
-       (pSVar3 = (SpatialSoundSlot *)worldRuntime->dwordArray[uVar2],
-       pSVar3 != (SpatialSoundSlot *)0x0)))))) {
-    pMVar4 = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-    bVar5 = TerrainGrid_TestProjectedCellMaskBits01Cf
-                      ((pMVar1->worldTransform).translation.y,(pMVar1->worldTransform).translation.x
+     ((soundSlotIndex != 0 &&
+      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)) &&
+       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
+       soundSlot != (SpatialSoundSlot *)0x0)))))) {
+    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+                      ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
-    if (!bVar5) {
+    if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((pMVar4->classLinkState).classState7C,(pMVar4->classLinkState).classState78,
-                 &(pMVar1->worldTransform).translation,pSVar3);
+                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                 &(modelNode->worldTransform).translation,soundSlot);
     }
   }
   return;

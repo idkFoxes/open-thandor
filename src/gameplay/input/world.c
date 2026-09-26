@@ -28,44 +28,44 @@ InGameTargetingContext_AdvanceOrResolveTarget
           (InGameTargetingRootTraversalView9E60 *targetingContext)
 
 {
-  WorldRuntimeFlags *pWVar1;
-  UiNodeBase *pUVar2;
-  InGameNotificationPayloadKind IVar3;
-  Q12 QVar4;
-  WorldOwnerListNode100 *pWVar5;
-  int iVar6;
+  WorldRuntimeFlags *runtimeFlagsField;
+  UiNodeBase *parentNode;
+  InGameNotificationPayloadKind payloadKind;
+  Q12 secondaryCoordinateQ12;
+  WorldOwnerListNode100 *ownerNode;
+  int payloadEntityAddress;
   CommandPayloadDword04 modelToken;
   CommandPayloadDword08 armyToken;
-  FieldGridNearestPointRegsCf13 FVar7;
+  FieldGridNearestPointRegsCf13 nearestTerrainPoint;
   
   if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
     InGameTargetingContext_CancelAndRestoreState(targetingContext);
   }
   else if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_ADVANCE_OR_RESOLVE) {
-    pUVar2 = (targetingContext->base).parent;
-    while (pUVar2 != (UiNodeBase *)0xffffffff) {
+    parentNode = (targetingContext->base).parent;
+    while (parentNode != (UiNodeBase *)0xffffffff) {
       targetingContext = (InGameTargetingRootTraversalView9E60 *)(targetingContext->base).parent;
-      pUVar2 = (targetingContext->base).parent;
+      parentNode = (targetingContext->base).parent;
     }
-    IVar3 = (targetingContext->activeNotificationPayload9E40).payloadKind14;
+    payloadKind = (targetingContext->activeNotificationPayload9E40).payloadKind14;
     if (((targetingContext->worldRuntime0A30).runtimeFlags & 0x10) == 0) {
       WorldRuntime_CaptureMotionStateToSnapshot(&targetingContext->worldRuntime0A30);
     }
                     // WARNING: Switch is manually overridden
-    switch(IVar3) {
+    switch(payloadKind) {
     case TECHNOLOGY_UNLOCK_POSITION:
-      for (pWVar5 = (targetingContext->worldRuntime0A30).ownerListHead;
-          pWVar5 != (WorldOwnerListNode100 *)0x0; pWVar5 = pWVar5->nextNode) {
-        if ((((pWVar5->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-             (pWVar5->worldXQ12 ==
+      for (ownerNode = (targetingContext->worldRuntime0A30).ownerListHead;
+          ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+        if ((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+             (ownerNode->worldXQ12 ==
               (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00)) &&
-            (iVar6 = *(int *)((int)pWVar5->runtimePayload + 8),
-            pWVar5->worldYQ12 ==
+            (payloadEntityAddress = *(int *)((int)ownerNode->runtimePayload + 8),
+            ownerNode->worldYQ12 ==
             (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04)) &&
-           ((targetingContext->worldRuntime0A30).activeFactionRuntimeIndex == *(int *)(iVar6 + 0xc))
+           ((targetingContext->worldRuntime0A30).activeFactionRuntimeIndex == *(int *)(payloadEntityAddress + 0xc))
            ) {
-          modelToken = iVar6 - (int)g_ArmyRuntimeRebaseBaseMinusOne;
-          armyToken = (int)pWVar5->runtimePayload - g_ModelRuntimeRebaseDelta;
+          modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+          armyToken = (int)ownerNode->runtimePayload - g_ModelRuntimeRebaseDelta;
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
             FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
@@ -80,12 +80,12 @@ InGameTargetingContext_AdvanceOrResolveTarget
       }
       break;
     case FACTION_IMPACT_ANCHOR:
-      QVar4 = (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04;
+      secondaryCoordinateQ12 = (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04;
       targetingContext->targetingPrimaryWorldCoordinateQ12_9E58 =
            (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00;
-      targetingContext->targetingSecondaryWorldCoordinateQ12_9E5C = QVar4;
+      targetingContext->targetingSecondaryWorldCoordinateQ12_9E5C = secondaryCoordinateQ12;
     case ARMY_CREATED:
-      FVar7 = FieldGrid_GetNearestTerrainPoint
+      nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint
                         ((targetingContext->activeNotificationPayload9E40).
                          secondaryWorldCoordinateQ12_04,
                          (targetingContext->activeNotificationPayload9E40).
@@ -94,12 +94,12 @@ InGameTargetingContext_AdvanceOrResolveTarget
       WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                 ((targetingContext->worldRuntime0A30).motion.pitchAngle,
                  (targetingContext->activeNotificationPayload9E40).primaryOrientationAngle08,
-                 (targetingContext->worldRuntime0A30).motion.targetDistanceQ12,FVar7.edx,
+                 (targetingContext->worldRuntime0A30).motion.targetDistanceQ12,nearestTerrainPoint.edx,
                  (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04,
                  (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00,
                  &targetingContext->worldRuntime0A30);
-      pWVar1 = &(targetingContext->worldRuntime0A30).runtimeFlags;
-      *pWVar1 = *pWVar1 & 0xffffffef;
+      runtimeFlagsField = &(targetingContext->worldRuntime0A30).runtimeFlags;
+      *runtimeFlagsField = *runtimeFlagsField & 0xffffffef;
       targetingContext->sessionNotificationInteractionState9B4C = 0x1b;
     }
   }
@@ -126,12 +126,12 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
                 ,WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
 
 {
-  dword dVar1;
+  dword cursorOrVariantMask;
   int ownerIndex;
-  uint uVar2;
+  uint modifierModeMask;
   GameEntityRuntime *entry;
-  bool bVar3;
-  ModelRuntimeScaleRatioRegisterPairQ12 MVar4;
+  bool testResult;
+  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
   
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = 0x7fffffff;
   (inGameRuntime->selection).selectedEntity = (GameEntityRuntime *)0x0;
@@ -156,48 +156,48 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
          (UiCommandRuntimeRecordPrefix *)
          g_SelectionPlayerRuntimeBlockPointers[(inGameRuntime->selection).activePlayerRuntimeId]->
          pendingSelectionEntityOffset8098;
-    dVar1 = 0x2e;
-    bVar3 = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+    cursorOrVariantMask = 0x2e;
+    testResult = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
                       (0,g_InGamePlacementHeading16,pointerValue1,pointerValue2,
                        g_UiHoverSelectionRecord->armyAssetId,
                        inGameRuntime->activeFactionRuntimeIndex,inGameRuntime);
-    if (!bVar3) {
-      dVar1 = 0x2d;
+    if (!testResult) {
+      cursorOrVariantMask = 0x2d;
     }
     InGameSelectionDetailPanel_Rebuild();
-    return dVar1;
+    return cursorOrVariantMask;
   }
-  bVar3 = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(ownerIndex);
-  if (!bVar3) {
+  testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(ownerIndex);
+  if (!testResult) {
     g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & 0xfffffffe;
     if ((((candidateNode != (WorldOwnerListNode100 *)0x0) &&
          (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
         ((int)(pointerValue3 - 0x1000) <= (int)pointerValue0)) &&
-       (bVar3 = GameFactionRuntime_TestCapabilityBitClearCf
+       (testResult = GameFactionRuntime_TestCapabilityBitClearCf
                           (*(dword *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
-                           ownerIndex), !bVar3)) {
+                           ownerIndex), !testResult)) {
       g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | 1;
       return 0x15;
     }
-    uVar2 = 0;
+    modifierModeMask = 0;
     if ((g_KeyboardStateMask & 0x3f) == 0) {
-      uVar2 = 7;
+      modifierModeMask = 7;
     }
     if ((g_KeyboardStateMask & 3) != 0) {
-      uVar2 = uVar2 | 1;
+      modifierModeMask = modifierModeMask | 1;
     }
     if ((g_KeyboardStateMask & 0x30) != 0) {
-      uVar2 = uVar2 | 2;
+      modifierModeMask = modifierModeMask | 2;
     }
     if ((g_KeyboardStateMask & 0xc) != 0) {
-      uVar2 = uVar2 | 4;
+      modifierModeMask = modifierModeMask | 4;
     }
-    dVar1 = SelectionInfo_CollectAttachmentEffectVariantMask();
+    cursorOrVariantMask = SelectionInfo_CollectAttachmentEffectVariantMask();
     g_InGameCommandPreviewWorldYQ12 = pointerValue2;
     g_InGameCommandPreviewWorldXQ12 = pointerValue1;
     g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = pointerValue0;
-    g_InGameCommandPreviewArmyAssetId = *(undefined4 *)((uVar2 & dVar1) * 4 + THANDOR_ADDR(g_InGamePointerModePreviewArmyIds,0));
-    return *(dword *)((uVar2 & dVar1) * 4 + THANDOR_ADDR(g_InGamePointerModeCommandIds,0));
+    g_InGameCommandPreviewArmyAssetId = *(undefined4 *)((modifierModeMask & cursorOrVariantMask) * 4 + THANDOR_ADDR(g_InGamePointerModePreviewArmyIds,0));
+    return *(dword *)((modifierModeMask & cursorOrVariantMask) * 4 + THANDOR_ADDR(g_InGamePointerModeCommandIds,0));
   }
   if ((inGameRuntime->runtimeFlags & 0x80) != 0) {
     return 0;
@@ -213,18 +213,18 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
   if (candidateNode != (WorldOwnerListNode100 *)0x0) {
     (inGameRuntime->selection).selectedEntity = entry;
   }
-  bVar3 = SelectionInfo_HasAnyEntryCf();
-  if (!bVar3) {
+  testResult = SelectionInfo_HasAnyEntryCf();
+  if (!testResult) {
 InGameWorldInput_ReturnCandidateOwnershipCursor:
-    dVar1 = 0;
+    cursorOrVariantMask = 0;
     if ((candidateNode != (WorldOwnerListNode100 *)0x0) &&
-       (dVar1 = 0x15, ownerIndex != (entry->common).ownership.ownerIndex)) {
-      dVar1 = 0x16;
+       (cursorOrVariantMask = 0x15, ownerIndex != (entry->common).ownership.ownerIndex)) {
+      cursorOrVariantMask = 0x16;
     }
-    return dVar1;
+    return cursorOrVariantMask;
   }
-  bVar3 = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex);
-  if (bVar3) {
+  testResult = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex);
+  if (testResult) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
       return 0;
     }
@@ -232,13 +232,13 @@ InGameWorldInput_ReturnCandidateOwnershipCursor:
   }
   if ((g_KeyboardStateMask & 0xc) == 0) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
-      bVar3 = SelectionInfo_TestAnyActiveOrSingleClass13Cf();
-      if (bVar3) {
+      testResult = SelectionInfo_TestAnyActiveOrSingleClass13Cf();
+      if (testResult) {
         return 0;
       }
-      bVar3 = SelectionInfo_TestPositionCommandAtWorldPointCf
+      testResult = SelectionInfo_TestPositionCommandAtWorldPointCf
                         (pointerValue1,pointerValue2,inGameRuntime);
-      if (bVar3) {
+      if (testResult) {
         return 0x18;
       }
       if (pointerValue0 == 0x7fffffff) {
@@ -256,33 +256,33 @@ InGameWorldInput_ReturnModifiedCandidateCursor:
       }
       return 0x16;
     }
-    bVar3 = SelectionInfo_TestAnyStateField100NonnegativeCf();
-    if (bVar3) {
-      bVar3 = GameFactionRuntime_TestCapabilityBitClearCf
+    testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+    if (testResult) {
+      testResult = GameFactionRuntime_TestCapabilityBitClearCf
                         ((entry->common).ownership.ownerIndex,ownerIndex);
-      if (bVar3) goto InGameWorldInput_ClassifySelectedStateCommand;
+      if (testResult) goto InGameWorldInput_ClassifySelectedStateCommand;
       goto InGameWorldInput_ReturnCandidateOwnerCursor;
     }
   }
   else {
     if ((g_KeyboardStateMask & 0x33) != 0) goto InGameWorldInput_ReturnModifiedCandidateCursor;
-    bVar3 = SelectionInfo_TestAnyStateField100NonnegativeCf();
-    if (bVar3) {
+    testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+    if (testResult) {
 InGameWorldInput_ClassifySelectedStateCommand:
-      bVar3 = SelectionInfo_TestAllStateField100NonpositiveCf();
-      if (bVar3) {
+      testResult = SelectionInfo_TestAllStateField100NonpositiveCf();
+      if (testResult) {
         return 0;
       }
       if (candidateNode == (WorldOwnerListNode100 *)0x0) {
         return 0x19;
       }
-      bVar3 = GameFactionRuntime_TestCapabilityBitClearCf
+      testResult = GameFactionRuntime_TestCapabilityBitClearCf
                         ((entry->common).ownership.ownerIndex,ownerIndex);
-      if (bVar3) {
+      if (testResult) {
         return 0x19;
       }
-      bVar3 = SelectionInfo_FindEntryCf(entry);
-      if (bVar3) {
+      testResult = SelectionInfo_FindEntryCf(entry);
+      if (testResult) {
         return 0x1a;
       }
       return 0;
@@ -291,15 +291,15 @@ InGameWorldInput_ClassifySelectedStateCommand:
   if (candidateNode == (WorldOwnerListNode100 *)0x0) {
     return 0;
   }
-  bVar3 = GameFactionRuntime_TestCapabilityBitClearCf
+  testResult = GameFactionRuntime_TestCapabilityBitClearCf
                     ((entry->common).ownership.ownerIndex,ownerIndex);
-  if (bVar3) {
+  if (testResult) {
     return 0x1a;
   }
-  MVar4 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix10 *)entry);
-  if ((int)MVar4 != (int)(MVar4 >> 0x20)) {
-    bVar3 = SelectionInfo_FindEntryCf(entry);
-    if (bVar3) {
+  scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix10 *)entry);
+  if ((int)scaleRatio != (int)(scaleRatio >> 0x20)) {
+    testResult = SelectionInfo_FindEntryCf(entry);
+    if (testResult) {
       return 0x19;
     }
     return 0;
@@ -332,9 +332,9 @@ InGameWorldInput_BeginPointerCaptureCf
 
 {
   FactionRuntimeIndex ownerIndex;
-  int iVar1;
+  int payloadEntityAddress;
   CommandPayloadDword04 modelToken;
-  bool bVar2;
+  bool testResult;
   
   if (((g_UiCommandRuntimeFlags & 0x101) == 0) &&
      (inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & 0xf7ffffff,
@@ -345,18 +345,18 @@ InGameWorldInput_BeginPointerCaptureCf
     ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
     if ((inGameRuntime->runtimeFlags & 0x10) == 0) {
       if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-        bVar2 = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(ownerIndex);
-        if (bVar2) {
+        testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(ownerIndex);
+        if (testResult) {
           g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | 2;
         }
         else {
           if ((((candidateNode != (WorldOwnerListNode100 *)0x0) &&
                (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
-              (iVar1 = *(int *)((int)candidateNode->runtimePayload + 8),
+              (payloadEntityAddress = *(int *)((int)candidateNode->runtimePayload + 8),
               (int)(pointerValue3 - 0x1000) <= (int)pointerValue0)) &&
-             (bVar2 = GameFactionRuntime_TestCapabilityBitClearCf
-                                (*(dword *)(iVar1 + 0xc),ownerIndex), !bVar2)) {
-            modelToken = iVar1 - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+             (testResult = GameFactionRuntime_TestCapabilityBitClearCf
+                                (*(dword *)(payloadEntityAddress + 0xc),ownerIndex), !testResult)) {
+            modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
               InGameCommandQueue_AppendLocalPlayerCommand(0x9a0,0,0,modelToken);
@@ -409,35 +409,35 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
           WorldRuntimeContext *inGameRuntime)
 
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
+  uint deltaXOrTripletCount;
+  int countOrOwnerOrDelta;
+  uint deltaY;
   InGameCommandPayloadTripletValue32 payloadValue;
-  undefined4 *puVar4;
+  undefined4 *clearCursor;
   WorldOwnerListNode100 *runtimeNode;
-  CommandPayloadDword04 *pCVar5;
-  bool bVar6;
+  CommandPayloadDword04 *tripletCursor;
+  bool testResult;
   GameEntityRuntime *entry;
   
   if (((((g_UiCommandRuntimeFlags & 0x101) == 0) &&
        (((inGameRuntime->interaction).interactionFlags48 & 8) == 0)) &&
       ((g_UiCommandRuntimeFlags & 0x100) == 0)) && ((inGameRuntime->runtimeFlags & 0x10) == 0)) {
     if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-      bVar6 = SelectionInfo_ValidateOwnerType16AndAnyActiveCf
+      testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf
                         (inGameRuntime->activeFactionRuntimeIndex);
-      if (bVar6) {
+      if (testResult) {
         if ((inGameRuntime->runtimeFlags & 0x80) == 0) {
-          uVar1 = *(int *)(inGameRuntime[1].interaction.reserved00_47 + 4) -
+          deltaXOrTripletCount = *(int *)(inGameRuntime[1].interaction.reserved00_47 + 4) -
                   *(int *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
-          if ((int)uVar1 < 0) {
-            uVar1 = -uVar1;
+          if ((int)deltaXOrTripletCount < 0) {
+            deltaXOrTripletCount = -deltaXOrTripletCount;
           }
-          uVar3 = *(int *)(inGameRuntime[1].interaction.reserved00_47 + 8) -
+          deltaY = *(int *)(inGameRuntime[1].interaction.reserved00_47 + 8) -
                   *(int *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
-          if ((int)uVar3 < 0) {
-            uVar3 = -uVar3;
+          if ((int)deltaY < 0) {
+            deltaY = -deltaY;
           }
-          if ((0x17 < uVar1) || (0x17 < uVar3)) {
+          if ((0x17 < deltaXOrTripletCount) || (0x17 < deltaY)) {
             inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | 0x80;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                 SESSION_NETWORK_ROLE_LOCAL) {
@@ -449,47 +449,47 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
           }
         }
         else {
-          puVar4 = (undefined4 *)&g_InGameSelectionInsertTripletDwords;
-          for (iVar2 = 0x1a; iVar2 != 0; iVar2 = iVar2 + -1) {
-            *puVar4 = 0;
-            puVar4 = puVar4 + 1;
+          clearCursor = (undefined4 *)&g_InGameSelectionInsertTripletDwords;
+          for (countOrOwnerOrDelta = 0x1a; countOrOwnerOrDelta != 0; countOrOwnerOrDelta = countOrOwnerOrDelta + -1) {
+            *clearCursor = 0;
+            clearCursor = clearCursor + 1;
           }
           runtimeNode = inGameRuntime->ownerListHead;
-          iVar2 = inGameRuntime->activeFactionRuntimeIndex;
+          countOrOwnerOrDelta = inGameRuntime->activeFactionRuntimeIndex;
           if (runtimeNode != (WorldOwnerListNode100 *)0x0) {
             do {
               if (((runtimeNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
                   ((runtimeNode->runtimeFlags & 2) != 0)) &&
                  ((entry = *(GameEntityRuntime **)((int)runtimeNode->runtimePayload + 8),
                   (runtimeNode->runtimeFlags & 0x20) != 0 &&
-                  (iVar2 == (entry->common).ownership.ownerIndex)))) {
+                  (countOrOwnerOrDelta == (entry->common).ownership.ownerIndex)))) {
                 payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
-                bVar6 = WorldRuntimeNode_IsPositionInsideBoundsCf
+                testResult = WorldRuntimeNode_IsPositionInsideBoundsCf
                                   (runtimeNode,
                                    (WorldRuntimeExtendedMapControlView170 *)inGameRuntime);
-                if (bVar6) {
-                  bVar6 = SelectionInfo_FindEntryCf(entry);
-                  uVar1 = g_InGameSelectionInsertTripletDwordCount;
-                  if (bVar6) {
-                    bVar6 = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fb90);
-                    if ((!bVar6) &&
+                if (testResult) {
+                  testResult = SelectionInfo_FindEntryCf(entry);
+                  deltaXOrTripletCount = g_InGameSelectionInsertTripletDwordCount;
+                  if (testResult) {
+                    testResult = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fb90);
+                    if ((!testResult) &&
                        (*(InGameCommandPayloadTripletValue32 *)
-                         (&g_InGameSelectionInsertTripletDwords + uVar1 * 4) = payloadValue,
-                       uVar1 < 0xb)) {
+                         (&g_InGameSelectionInsertTripletDwords + deltaXOrTripletCount * 4) = payloadValue,
+                       deltaXOrTripletCount < 0xb)) {
                       g_InGameSelectionInsertTripletDwordCount =
                            g_InGameSelectionInsertTripletDwordCount + 1;
                     }
                   }
                 }
                 else {
-                  bVar6 = SelectionInfo_FindEntryCf(entry);
-                  uVar1 = g_InGameSelectionRemoveTripletDwordCount;
-                  if (!bVar6) {
-                    bVar6 = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fc30);
-                    if ((!bVar6) &&
+                  testResult = SelectionInfo_FindEntryCf(entry);
+                  deltaXOrTripletCount = g_InGameSelectionRemoveTripletDwordCount;
+                  if (!testResult) {
+                    testResult = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fc30);
+                    if ((!testResult) &&
                        (*(InGameCommandPayloadTripletValue32 *)
-                         (&g_InGameSelectionRemoveTripletDwords + uVar1 * 4) = payloadValue,
-                       uVar1 < 0xb)) {
+                         (&g_InGameSelectionRemoveTripletDwords + deltaXOrTripletCount * 4) = payloadValue,
+                       deltaXOrTripletCount < 0xb)) {
                       g_InGameSelectionRemoveTripletDwordCount =
                            g_InGameSelectionRemoveTripletDwordCount + 1;
                     }
@@ -499,38 +499,38 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
               runtimeNode = runtimeNode->nextNode;
             } while (runtimeNode != (WorldOwnerListNode100 *)0x0);
             if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-              pCVar5 = (CommandPayloadDword04 *)&g_InGameSelectionRemoveTripletDwords;
+              tripletCursor = (CommandPayloadDword04 *)&g_InGameSelectionRemoveTripletDwords;
               do {
                 if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                     SESSION_NETWORK_ROLE_LOCAL) {
                   FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-                            (g_LocalPlayerRuntimeId,pCVar5[2],pCVar5[1],*pCVar5);
+                            (g_LocalPlayerRuntimeId,tripletCursor[2],tripletCursor[1],*tripletCursor);
                 }
                 else {
-                  InGameCommandQueue_AppendLocalPlayerCommand(0xb00,pCVar5[2],pCVar5[1],*pCVar5);
+                  InGameCommandQueue_AppendLocalPlayerCommand(0xb00,tripletCursor[2],tripletCursor[1],*tripletCursor);
                 }
-                uVar1 = g_InGameSelectionRemoveTripletDwordCount;
-                pCVar5 = pCVar5 + 3;
+                deltaXOrTripletCount = g_InGameSelectionRemoveTripletDwordCount;
+                tripletCursor = tripletCursor + 3;
                 g_InGameSelectionRemoveTripletDwordCount =
                      g_InGameSelectionRemoveTripletDwordCount - 3;
-              } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < (int)uVar1);
+              } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < (int)deltaXOrTripletCount);
             }
             if (g_InGameSelectionInsertTripletDwordCount != 0) {
-              pCVar5 = (CommandPayloadDword04 *)&g_InGameSelectionInsertTripletDwords;
+              tripletCursor = (CommandPayloadDword04 *)&g_InGameSelectionInsertTripletDwords;
               do {
                 if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                     SESSION_NETWORK_ROLE_LOCAL) {
                   FrontendPlayerSelection_InsertThreeEntriesAndRefresh
-                            (g_LocalPlayerRuntimeId,pCVar5[2],pCVar5[1],*pCVar5);
+                            (g_LocalPlayerRuntimeId,tripletCursor[2],tripletCursor[1],*tripletCursor);
                 }
                 else {
-                  InGameCommandQueue_AppendLocalPlayerCommand(0xa60,pCVar5[2],pCVar5[1],*pCVar5);
+                  InGameCommandQueue_AppendLocalPlayerCommand(0xa60,tripletCursor[2],tripletCursor[1],*tripletCursor);
                 }
-                uVar1 = g_InGameSelectionInsertTripletDwordCount;
-                pCVar5 = pCVar5 + 3;
+                deltaXOrTripletCount = g_InGameSelectionInsertTripletDwordCount;
+                tripletCursor = tripletCursor + 3;
                 g_InGameSelectionInsertTripletDwordCount =
                      g_InGameSelectionInsertTripletDwordCount - 3;
-              } while (g_InGameSelectionInsertTripletDwordCount != 0 && 2 < (int)uVar1);
+              } while (g_InGameSelectionInsertTripletDwordCount != 0 && 2 < (int)deltaXOrTripletCount);
             }
           }
         }
@@ -539,9 +539,9 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
         if ((g_CursorButtonState & 4) == 0) {
           /* The original adds the horizontal mouse delta since capture (computed before snapping the
              pointer back) - not the pointer function's return value. */
-          iVar2 = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
+          countOrOwnerOrDelta = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
           (*(code *)g_PointerSetPosition)(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
-          g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + iVar2 * 0x40;
+          g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 0x40;
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
         }
         else {
@@ -556,9 +556,9 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
       if ((g_CursorButtonState & 4) == 0) {
         /* The original adds the horizontal mouse delta since capture (computed before snapping the
            pointer back) - not the pointer function's return value. */
-        iVar2 = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
+        countOrOwnerOrDelta = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
         (*(code *)g_PointerSetPosition)(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
-        g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + iVar2 * 0x40;
+        g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 0x40;
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;
       }
       else {
@@ -594,16 +594,16 @@ InGameWorldInput_CommitPointerActionCf
           WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
 
 {
-  code *pcVar1;
-  dword dVar2;
+  code *modeHandler;
+  dword variantMaskOrSurfaceHeight;
   CommandPayloadDword04 payloadDword0C;
-  uint uVar3;
+  uint modifierModeMask;
   int ownerIndex;
   CommandPayloadDword08 payloadDword08;
   GameEntityRuntime *entry;
   CommandPayloadDword04 armyRuntimeIndex;
-  bool bVar4;
-  ModelRuntimeScaleRatioRegisterPairQ12 MVar5;
+  bool testResult;
+  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
   
   if (((((g_UiCommandRuntimeFlags & 0x101) != 0) ||
        (((inGameRuntime->interaction).interactionFlags48 & 8) != 0)) ||
@@ -623,34 +623,34 @@ InGameWorldInput_CommitPointerActionCf
     }
     goto InGameWorldInput_ReleasePointerCapture;
   }
-  bVar4 = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(inGameRuntime->activeFactionRuntimeIndex);
-  if (!bVar4) {
+  testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(inGameRuntime->activeFactionRuntimeIndex);
+  if (!testResult) {
     if (((pointerValue0 != 0x7fffffff) && ((g_UiCommandRuntimeFlags & 0x80) != 0)) &&
        ((g_InGamePointerInteractionStateFlags & 3) == 0)) {
       g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffff7f;
-      uVar3 = 0;
+      modifierModeMask = 0;
       if ((g_KeyboardStateMask & 0x3f) == 0) {
-        uVar3 = 7;
+        modifierModeMask = 7;
       }
       if ((g_KeyboardStateMask & 3) != 0) {
-        uVar3 = uVar3 | 1;
+        modifierModeMask = modifierModeMask | 1;
       }
       if ((g_KeyboardStateMask & 0x30) != 0) {
-        uVar3 = uVar3 | 2;
+        modifierModeMask = modifierModeMask | 2;
       }
       if ((g_KeyboardStateMask & 0xc) != 0) {
-        uVar3 = uVar3 | 4;
+        modifierModeMask = modifierModeMask | 4;
       }
-      dVar2 = SelectionInfo_CollectAttachmentEffectVariantMask();
-      if ((uVar3 & dVar2) != 0) {
-        pcVar1 = *(code **)((uVar3 & dVar2) * 4 + THANDOR_ADDR(g_InGamePointerModeHandlers,0)); /* TODO: absolute handler table in thandor.exe */
+      variantMaskOrSurfaceHeight = SelectionInfo_CollectAttachmentEffectVariantMask();
+      if ((modifierModeMask & variantMaskOrSurfaceHeight) != 0) {
+        modeHandler = *(code **)((modifierModeMask & variantMaskOrSurfaceHeight) * 4 + THANDOR_ADDR(g_InGamePointerModeHandlers,0)); /* TODO: absolute handler table in thandor.exe */
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          (*pcVar1)(g_LocalPlayerRuntimeId);
+          (*modeHandler)(g_LocalPlayerRuntimeId);
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand
-                    ((UiActionId)((unsigned char *)pcVar1 + -0x55f130) /* TODO: code-address command id, see THANDOR_CODE_AT */,g_InGameCommandPreviewHeading16,pointerValue1,
+                    ((UiActionId)((unsigned char *)modeHandler + -0x55f130) /* TODO: code-address command id, see THANDOR_CODE_AT */,g_InGameCommandPreviewHeading16,pointerValue1,
                      pointerValue2);
         }
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -677,8 +677,8 @@ InGameWorldInput_CommitPointerActionCf
       ((entry->common).ownership.ownerIndex == 0)))) {
     candidateNode = (WorldOwnerListNode100 *)0x0;
   }
-  bVar4 = SelectionInfo_HasAnyEntryCf();
-  if ((!bVar4) || (bVar4 = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex), bVar4)) {
+  testResult = SelectionInfo_HasAnyEntryCf();
+  if ((!testResult) || (testResult = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex), testResult)) {
     if (candidateNode != (WorldOwnerListNode100 *)0x0) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -694,8 +694,8 @@ InGameWorldInput_CommitPointerActionCf
   }
   if ((g_KeyboardStateMask & 0xc) == 0) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
-      bVar4 = SelectionInfo_TestAnyActiveOrSingleClass13Cf();
-      if ((!bVar4) && (pointerValue0 != 0x7fffffff)) {
+      testResult = SelectionInfo_TestAnyActiveOrSingleClass13Cf();
+      if ((!testResult) && (pointerValue0 != 0x7fffffff)) {
         if ((g_KeyboardStateMask & 0x33) == 0) {
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
@@ -718,19 +718,19 @@ InGameWorldInput_CommitPointerActionCf
       goto InGameWorldInput_ReleasePointerCapture;
     }
     if ((g_KeyboardStateMask & 0x33) == 0) {
-      bVar4 = SelectionInfo_TestAnyStateField100NonnegativeCf();
-      if (bVar4) {
-        bVar4 = GameFactionRuntime_TestCapabilityBitClearCf
+      testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+      if (testResult) {
+        testResult = GameFactionRuntime_TestCapabilityBitClearCf
                           ((entry->common).ownership.ownerIndex,ownerIndex);
-        if (bVar4) goto InGameWorldInput_SelectCandidateArmy;
+        if (testResult) goto InGameWorldInput_SelectCandidateArmy;
       }
       else {
 InGameWorldInput_TestCandidateCapability:
-        bVar4 = GameFactionRuntime_TestCapabilityBitClearCf
+        testResult = GameFactionRuntime_TestCapabilityBitClearCf
                           ((entry->common).ownership.ownerIndex,ownerIndex);
-        if (bVar4) goto InGameWorldInput_ReleasePointerCapture;
-        MVar5 = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix10 *)entry);
-        if ((int)MVar5 != (int)(MVar5 >> 0x20)) goto InGameWorldInput_SelectCandidateArmy;
+        if (testResult) goto InGameWorldInput_ReleasePointerCapture;
+        scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix10 *)entry);
+        if ((int)scaleRatio != (int)(scaleRatio >> 0x20)) goto InGameWorldInput_SelectCandidateArmy;
       }
       if (ownerIndex == (entry->common).ownership.ownerIndex) {
         armyRuntimeIndex = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
@@ -759,7 +759,7 @@ InGameWorldInput_TestCandidateCapability:
   else if ((g_KeyboardStateMask & 0x33) == 0) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
       if (pointerValue0 != 0x7fffffff) {
-        dVar2 = WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
+        variantMaskOrSurfaceHeight = WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                           (pointerValue1,pointerValue2,inGameRuntime);
         /* The original passes the same EDX/ECX point on (lost locals in the decompilation). */
         payloadDword08 = pointerValue1;
@@ -767,19 +767,19 @@ InGameWorldInput_TestCandidateCapability:
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           InGamePlayerSelection_ApplyTargetPositionCommand
-                    (g_LocalPlayerRuntimeId,dVar2,payloadDword08,payloadDword0C);
+                    (g_LocalPlayerRuntimeId,variantMaskOrSurfaceHeight,payloadDword08,payloadDword0C);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0xde0,dVar2,payloadDword08,payloadDword0C);
+          InGameCommandQueue_AppendLocalPlayerCommand(0xde0,variantMaskOrSurfaceHeight,payloadDword08,payloadDword0C);
         }
       }
       goto InGameWorldInput_ReleasePointerCapture;
     }
-    bVar4 = SelectionInfo_TestAnyStateField100NonnegativeCf();
-    if (!bVar4) goto InGameWorldInput_TestCandidateCapability;
-    bVar4 = GameFactionRuntime_TestCapabilityBitClearCf
+    testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+    if (!testResult) goto InGameWorldInput_TestCandidateCapability;
+    testResult = GameFactionRuntime_TestCapabilityBitClearCf
                       ((entry->common).ownership.ownerIndex,ownerIndex);
-    if ((!bVar4) && (bVar4 = SelectionInfo_FindEntryCf(entry), !bVar4))
+    if ((!testResult) && (testResult = SelectionInfo_FindEntryCf(entry), !testResult))
     goto InGameWorldInput_ReleasePointerCapture;
 InGameWorldInput_SelectCandidateArmy:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -795,8 +795,8 @@ InGameWorldInput_SelectCandidateArmy:
   }
   if (candidateNode != (WorldOwnerListNode100 *)0x0) {
     if (ownerIndex == (entry->common).ownership.ownerIndex) {
-      bVar4 = SelectionInfo_FindEntryCf(entry);
-      if (bVar4) {
+      testResult = SelectionInfo_FindEntryCf(entry);
+      if (testResult) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerSelection_InsertThreeEntriesAndRefresh
@@ -846,50 +846,50 @@ InGameCameraCommand_DispatchByCodeAndModifierFlagsCf
           (dword modifierFlags,dword commandCode,WorldRuntimeContext *worldRuntime)
 
 {
-  InGameCameraCommandKeyCode IVar1;
-  uint uVar2;
-  dword dVar3;
-  dword dVar4;
-  dword dVar5;
-  dword dVar6;
-  dword dVar7;
-  dword dVar8;
-  dword dVar9;
-  InGameCameraCommandDispatchTable *pIVar10;
-  InGameCameraCommandDispatchTable *pIVar11;
+  InGameCameraCommandKeyCode recordKeyCode;
+  uint requiredModifiers;
+  dword bookmark1PackedAngles;
+  dword bookmark2PackedAngles;
+  dword bookmark3PackedAngles;
+  dword bookmark4PackedAngles;
+  dword bookmark5PackedAngles;
+  dword bookmark6PackedAngles;
+  dword bookmark7PackedAngles;
+  InGameCameraCommandDispatchTable *currentRecord;
+  InGameCameraCommandDispatchTable *nextRecord;
   
-  dVar9 = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
-  dVar8 = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
-  dVar7 = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
-  dVar6 = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
-  dVar5 = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
-  dVar4 = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
-  dVar3 = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
-  pIVar11 = &g_InGameCameraCommandDispatchRecords16;
+  bookmark7PackedAngles = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
+  bookmark6PackedAngles = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
+  bookmark5PackedAngles = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
+  bookmark4PackedAngles = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
+  bookmark3PackedAngles = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
+  bookmark2PackedAngles = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
+  bookmark1PackedAngles = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
+  nextRecord = &g_InGameCameraCommandDispatchRecords16;
   do {
     while( true ) {
       do {
-        pIVar10 = pIVar11;
-        IVar1 = pIVar10->records[0].keyCode;
-        uVar2 = pIVar10->records[0].requiredModifierMask;
-        if (IVar1 == 0) {
+        currentRecord = nextRecord;
+        recordKeyCode = currentRecord->records[0].keyCode;
+        requiredModifiers = currentRecord->records[0].requiredModifierMask;
+        if (recordKeyCode == 0) {
           return;
         }
-        pIVar11 = (InGameCameraCommandDispatchTable *)(pIVar10->records + 1);
-      } while (IVar1 != commandCode);
-      if (uVar2 == 0) break;
-      if ((modifierFlags & uVar2) != 0) goto override_jmp_0056f276_switch;
+        nextRecord = (InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
+      } while (recordKeyCode != commandCode);
+      if (requiredModifiers == 0) break;
+      if ((modifierFlags & requiredModifiers) != 0) goto override_jmp_0056f276_switch;
     }
   } while ((modifierFlags & 0x3c) != 0);
 override_jmp_0056f276_switch:
                     // WARNING: Switch is manually overridden
-  switch(pIVar10->records[0].continuationEntryAddress) {
+  switch(currentRecord->records[0].continuationEntryAddress) {
   case 0x56f360:
     WorldRuntime_SetPosition60AndDistanceFromPosition80
               (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
                g_LevelCameraBookmark1PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar3 >> 0x10,dVar3 & 0xffff,g_LevelCameraBookmark1PositionMagnitudeQ12,
+              (2,(int)bookmark1PackedAngles >> 0x10,bookmark1PackedAngles & 0xffff,g_LevelCameraBookmark1PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -899,7 +899,7 @@ override_jmp_0056f276_switch:
               (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
                g_LevelCameraBookmark2PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar4 >> 0x10,dVar4 & 0xffff,g_LevelCameraBookmark2PositionMagnitudeQ12,
+              (2,(int)bookmark2PackedAngles >> 0x10,bookmark2PackedAngles & 0xffff,g_LevelCameraBookmark2PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -909,7 +909,7 @@ override_jmp_0056f276_switch:
               (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
                g_LevelCameraBookmark3PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar5 >> 0x10,dVar5 & 0xffff,g_LevelCameraBookmark3PositionMagnitudeQ12,
+              (2,(int)bookmark3PackedAngles >> 0x10,bookmark3PackedAngles & 0xffff,g_LevelCameraBookmark3PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -919,7 +919,7 @@ override_jmp_0056f276_switch:
               (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
                g_LevelCameraBookmark4PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar6 >> 0x10,dVar6 & 0xffff,g_LevelCameraBookmark4PositionMagnitudeQ12,
+              (2,(int)bookmark4PackedAngles >> 0x10,bookmark4PackedAngles & 0xffff,g_LevelCameraBookmark4PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -929,7 +929,7 @@ override_jmp_0056f276_switch:
               (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
                g_LevelCameraBookmark5PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar7 >> 0x10,dVar7 & 0xffff,g_LevelCameraBookmark5PositionMagnitudeQ12,
+              (2,(int)bookmark5PackedAngles >> 0x10,bookmark5PackedAngles & 0xffff,g_LevelCameraBookmark5PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -939,7 +939,7 @@ override_jmp_0056f276_switch:
               (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
                g_LevelCameraBookmark6PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar8 >> 0x10,dVar8 & 0xffff,g_LevelCameraBookmark6PositionMagnitudeQ12,
+              (2,(int)bookmark6PackedAngles >> 0x10,bookmark6PackedAngles & 0xffff,g_LevelCameraBookmark6PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -949,7 +949,7 @@ override_jmp_0056f276_switch:
               (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
                g_LevelCameraBookmark7PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)dVar9 >> 0x10,dVar9 & 0xffff,g_LevelCameraBookmark7PositionMagnitudeQ12,
+              (2,(int)bookmark7PackedAngles >> 0x10,bookmark7PackedAngles & 0xffff,g_LevelCameraBookmark7PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -1031,7 +1031,7 @@ void __thandor_preserve_eax
 InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E60 *targetingContext)
 
 {
-  WorldRuntimeFlags *pWVar1;
+  WorldRuntimeFlags *runtimeFlagsField;
   UiNodeBase *parentCursor;
   
   if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
@@ -1041,8 +1041,8 @@ InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E6
       targetingContext = (InGameTargetingRootTraversalView9E60 *)(targetingContext->base).parent;
       parentCursor = (targetingContext->base).parent;
     }
-    pWVar1 = &(targetingContext->worldRuntime0A30).runtimeFlags;
-    *pWVar1 = *pWVar1 & 0xffffffef;
+    runtimeFlagsField = &(targetingContext->worldRuntime0A30).runtimeFlags;
+    *runtimeFlagsField = *runtimeFlagsField & 0xffffffef;
     WorldRuntime_RestoreMotionStateFromSnapshot(&targetingContext->worldRuntime0A30);
   }
   return;

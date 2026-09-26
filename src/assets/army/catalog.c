@@ -23,19 +23,19 @@ ArmyRegistryIdEaxCf5_5719f0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571ab0 AVar2;
-  ArmyRegistryIdEaxCf5_5719f0 AVar3;
+  bool idAbsent;
+  ArmyRegistryIdEaxCf5_571ab0 searchResult;
+  ArmyRegistryIdEaxCf5_5719f0 normalizedResult;
   
-  bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-  AVar2.carry = bVar1;
-  AVar2.eax = recordId;
-  if (bVar1) {
-    AVar2 = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(recordId);
+  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+  searchResult.carry = idAbsent;
+  searchResult.eax = recordId;
+  if (idAbsent) {
+    searchResult = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(recordId);
   }
-  AVar3.eax = AVar2.eax;
-  AVar3.carry = AVar2.carry;
-  return AVar3;
+  normalizedResult.eax = searchResult.eax;
+  normalizedResult.carry = searchResult.carry;
+  return normalizedResult;
 }
 
 
@@ -51,26 +51,26 @@ ArmyRegistryIdEaxCf5_571a10 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId recordId_00;
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571a10 AVar2;
+  ArmyAssetId baseId;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571a10 stepResult;
   
   while( true ) {
-    recordId_00 = recordId;
-    AVar2.eax = recordId_00 + 1;
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(AVar2.eax);
-    if (!AVar2.carry) break;
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(AVar2.eax);
-    recordId = AVar2.eax;
-    if (bVar1) {
+    baseId = recordId;
+    stepResult.eax = baseId + 1;
+    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.eax);
+    if (!stepResult.carry) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.eax);
+    recordId = stepResult.eax;
+    if (broaderAbsent) {
       do {
-        recordId_00 = recordId_00 - 1;
-        bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_00);
-        recordId = recordId_00;
-      } while (!bVar1);
+        baseId = baseId - 1;
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(baseId);
+        recordId = baseId;
+      } while (!broaderAbsent);
     }
   }
-  return AVar2;
+  return stepResult;
 }
 
 
@@ -86,26 +86,26 @@ ArmyRegistryIdEaxCf5_571a60 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId recordId_00;
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571a60 AVar2;
+  ArmyAssetId baseId;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571a60 stepResult;
   
   while( true ) {
-    recordId_00 = recordId;
-    AVar2.eax = recordId_00 - 1;
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(AVar2.eax);
-    if (!AVar2.carry) break;
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(AVar2.eax);
-    recordId = AVar2.eax;
-    if (bVar1) {
+    baseId = recordId;
+    stepResult.eax = baseId - 1;
+    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.eax);
+    if (!stepResult.carry) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.eax);
+    recordId = stepResult.eax;
+    if (broaderAbsent) {
       do {
-        recordId_00 = recordId_00 + 1;
-        bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId_00);
-        recordId = recordId_00;
-      } while (!bVar1);
+        baseId = baseId + 1;
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(baseId);
+        recordId = baseId;
+      } while (!broaderAbsent);
     }
   }
-  return AVar2;
+  return stepResult;
 }
 
 
@@ -120,12 +120,12 @@ ArmyRegistryIdEaxCf5_571b00 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571b00 AVar2;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571b00 searchResult;
   
   do {
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
-    if (bVar1)
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
+    if (broaderAbsent)
     goto 
     ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap
     ;
@@ -134,15 +134,15 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
   recordId = 0x1000;
 ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap:
   while( true ) {
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-    if (!AVar2.carry) break;
+    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    if (!searchResult.carry) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
       recordId = 0x1000;
     }
   }
-  AVar2.eax = recordId;
-  return AVar2;
+  searchResult.eax = recordId;
+  return searchResult;
 }
 
 
@@ -158,19 +158,19 @@ ArmyRegistryIdEaxCf5_571c30 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571cf0 AVar2;
-  ArmyRegistryIdEaxCf5_571c30 AVar3;
+  bool idAbsent;
+  ArmyRegistryIdEaxCf5_571cf0 searchResult;
+  ArmyRegistryIdEaxCf5_571c30 normalizedResult;
   
-  bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-  AVar2.carry = bVar1;
-  AVar2.eax = recordId;
-  if (bVar1) {
-    AVar2 = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(recordId);
+  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+  searchResult.carry = idAbsent;
+  searchResult.eax = recordId;
+  if (idAbsent) {
+    searchResult = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(recordId);
   }
-  AVar3.eax = AVar2.eax;
-  AVar3.carry = AVar2.carry;
-  return AVar3;
+  normalizedResult.eax = searchResult.eax;
+  normalizedResult.carry = searchResult.carry;
+  return normalizedResult;
 }
 
 
@@ -186,26 +186,26 @@ ArmyRegistryIdEaxCf5_571c50 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId recordId_00;
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571c50 AVar2;
+  ArmyAssetId baseId;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571c50 stepResult;
   
   while( true ) {
-    recordId_00 = recordId;
-    AVar2.eax = recordId_00 + 1;
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(AVar2.eax);
-    if (!AVar2.carry) break;
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(AVar2.eax);
-    recordId = AVar2.eax;
-    if (bVar1) {
+    baseId = recordId;
+    stepResult.eax = baseId + 1;
+    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.eax);
+    if (!stepResult.carry) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.eax);
+    recordId = stepResult.eax;
+    if (broaderAbsent) {
       do {
-        recordId_00 = recordId_00 - 1;
-        bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_00);
-        recordId = recordId_00;
-      } while (!bVar1);
+        baseId = baseId - 1;
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(baseId);
+        recordId = baseId;
+      } while (!broaderAbsent);
     }
   }
-  return AVar2;
+  return stepResult;
 }
 
 
@@ -221,26 +221,26 @@ ArmyRegistryIdEaxCf5_571ca0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
-  ArmyAssetId recordId_00;
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571ca0 AVar2;
+  ArmyAssetId baseId;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571ca0 stepResult;
   
   while( true ) {
-    recordId_00 = recordId;
-    AVar2.eax = recordId_00 - 1;
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(AVar2.eax);
-    if (!AVar2.carry) break;
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(AVar2.eax);
-    recordId = AVar2.eax;
-    if (bVar1) {
+    baseId = recordId;
+    stepResult.eax = baseId - 1;
+    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.eax);
+    if (!stepResult.carry) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.eax);
+    recordId = stepResult.eax;
+    if (broaderAbsent) {
       do {
-        recordId_00 = recordId_00 + 1;
-        bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId_00);
-        recordId = recordId_00;
-      } while (!bVar1);
+        baseId = baseId + 1;
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(baseId);
+        recordId = baseId;
+      } while (!broaderAbsent);
     }
   }
-  return AVar2;
+  return stepResult;
 }
 
 
@@ -255,12 +255,12 @@ ArmyRegistryIdEaxCf5_571d40 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571d40 AVar2;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571d40 searchResult;
   
   do {
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
-    if (bVar1)
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
+    if (broaderAbsent)
     goto 
     ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap;
     recordId = recordId - 1;
@@ -268,15 +268,15 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
   recordId = 0x1000;
 ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap:
   while( true ) {
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-    if (!AVar2.carry) break;
+    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    if (!searchResult.carry) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
       recordId = 0x1000;
     }
   }
-  AVar2.eax = recordId;
-  return AVar2;
+  searchResult.eax = recordId;
+  return searchResult;
 }
 
 
@@ -292,37 +292,37 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyA
 
 {
   dword registrationStatusCode;
-  AssetRecordCount AVar1;
+  AssetRecordCount recordsRemaining;
   ArmyAssetHeader *record;
-  StatusValueEaxCf5 SVar2;
-  StatusValueEaxCf5 SVar3;
+  StatusValueEaxCf5 registrationStatus;
+  StatusValueEaxCf5 failureStatus;
   
   registrationStatusCode = 0x40;
   if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ARM) &&
      ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_ARM_00020008)) {
-    AVar1 = (asset->recordCountHeader).recordCount;
+    recordsRemaining = (asset->recordCountHeader).recordCount;
     record = asset + 1;
     while( true ) {
-      if (AVar1 == 0) {
-        SVar2.carry = false;
-        SVar2.valueOrError = registrationStatusCode;
-        return SVar2;
+      if (recordsRemaining == 0) {
+        registrationStatus.carry = false;
+        registrationStatus.valueOrError = registrationStatusCode;
+        return registrationStatus;
       }
-      SVar2 = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
-      registrationStatusCode = SVar2.valueOrError;
-      if (SVar2.carry) break;
+      registrationStatus = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
+      registrationStatusCode = registrationStatus.valueOrError;
+      if (registrationStatus.carry) break;
       record = (ArmyAssetHeader *)
                ((int)(record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                ((record->recordCountHeader).common.magic - 0x28));
-      AVar1 = AVar1 - 1;
+      recordsRemaining = recordsRemaining - 1;
     }
   }
   else {
     Package_SetLastErrorPath((word *)asset);
   }
-  SVar3.carry = true;
-  SVar3.valueOrError = registrationStatusCode;
-  return SVar3;
+  failureStatus.carry = true;
+  failureStatus.valueOrError = registrationStatusCode;
+  return failureStatus;
 }
 
 
@@ -336,15 +336,15 @@ bool __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryEaxCf5_51b6d0 AVar2;
+  bool missingOrDisabled;
+  ArmyRegistryEaxCf5_51b6d0 registryLookup;
   
-  AVar2 = ArmyAssetRegistry_FindByIdCf(recordId);
-  bVar1 = AVar2.carry;
-  if (!bVar1) {
-    bVar1 = (AVar2.eax[1].selectionDetailTemplateVariantIndex & 1) == 0;
+  registryLookup = ArmyAssetRegistry_FindByIdCf(recordId);
+  missingOrDisabled = registryLookup.carry;
+  if (!missingOrDisabled) {
+    missingOrDisabled = (registryLookup.eax[1].selectionDetailTemplateVariantIndex & 1) == 0;
   }
-  return bVar1;
+  return missingOrDisabled;
 }
 
 
@@ -364,19 +364,19 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
 
 {
   ArmyAssetRecordPrefix *definitionNode;
-  int iVar1;
-  bool bVar2;
-  ArmyRegistryEaxCf5_51b6d0 AVar3;
+  int linksRemaining;
+  bool technologyLocked;
+  ArmyRegistryEaxCf5_51b6d0 registryLookup;
   
-  iVar1 = 0x10;
+  linksRemaining = 0x10;
   do {
     if (armyAssetRecord[3].byteSize != 0) {
-      AVar3 = ArmyAssetRegistry_FindByIdCf(armyAssetRecord[3].byteSize);
-      definitionNode = AVar3.eax;
-      if ((!AVar3.carry) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-        bVar2 = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+      registryLookup = ArmyAssetRegistry_FindByIdCf(armyAssetRecord[3].byteSize);
+      definitionNode = registryLookup.eax;
+      if ((!registryLookup.carry) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+        technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
-        if ((!bVar2) &&
+        if ((!technologyLocked) &&
            ((definitionNode[1].rootNodeOffsetOrPointer != 0 &&
             ((definitionNode[1].selectionDetailTemplateVariantIndex & requiredDefinitionFlags) != 0)
             ))) {
@@ -386,8 +386,8 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
     }
     armyAssetRecord = (ArmyAssetRecordPrefix *)&armyAssetRecord->selectionDetailTemplateVariantIndex
     ;
-    iVar1 = iVar1 + -1;
-    if (iVar1 == 0) {
+    linksRemaining = linksRemaining + -1;
+    if (linksRemaining == 0) {
       return false;
     }
   } while( true );
@@ -404,26 +404,26 @@ void __thandor_void_preserve_eax_ecx
 ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyAssetRegistryId)
 
 {
-  dword dVar1;
-  int iVar2;
-  ArmyAssetRecordPrefix **ppAVar3;
-  ArmyAssetRecordPrefix *armyDefinition1;
+  dword resolvedTexture;
+  int registrySlotsRemaining;
+  ArmyAssetRecordPrefix **registryCursor;
+  ArmyAssetRecordPrefix *registeredRecord;
   
-  ppAVar3 = g_ArmyAssetRecordRegistry;
-  iVar2 = 0x300;
+  registryCursor = g_ArmyAssetRecordRegistry;
+  registrySlotsRemaining = 0x300;
   do {
-    armyDefinition1 = *ppAVar3;
-    if (armyDefinition1 != (ArmyAssetRecordPrefix *)0x0) {
-      (*g_MemoryApi.free)((void *)armyDefinition1[2].byteSize);
-      armyDefinition1[2].byteSize = 0;
+    registeredRecord = *registryCursor;
+    if (registeredRecord != (ArmyAssetRecordPrefix *)0x0) {
+      (*g_MemoryApi.free)((void *)registeredRecord[2].byteSize);
+      registeredRecord[2].byteSize = 0;
     }
-    ppAVar3 = ppAVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  dVar1 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
-  *(dword *)(selectedArmyAssetRegistryId + 0x9d24) = dVar1;
-  dVar1 = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-  *(dword *)(selectedArmyAssetRegistryId + 0x9ddc) = dVar1;
+    registryCursor = registryCursor + 1;
+    registrySlotsRemaining = registrySlotsRemaining + -1;
+  } while (registrySlotsRemaining != 0);
+  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
+  *(dword *)(selectedArmyAssetRegistryId + 0x9d24) = resolvedTexture;
+  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
+  *(dword *)(selectedArmyAssetRegistryId + 0x9ddc) = resolvedTexture;
   return;
 }
 
@@ -519,24 +519,24 @@ ArmyRegistryIdEaxCf5_571ab0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571ab0 AVar2;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571ab0 searchResult;
   
   while( true ) {
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
-    if (bVar1) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
+    if (broaderAbsent) break;
     recordId = recordId + 1;
   }
   while( true ) {
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-    if (!AVar2.carry) break;
+    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    if (!searchResult.carry) break;
     recordId = recordId + 1;
     if (0xfff < recordId) {
       recordId = 0;
     }
   }
-  AVar2.eax = recordId;
-  return AVar2;
+  searchResult.eax = recordId;
+  return searchResult;
 }
 
 
@@ -552,24 +552,24 @@ ArmyRegistryIdEaxCf5_571cf0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
 
 {
-  bool bVar1;
-  ArmyRegistryIdEaxCf5_571cf0 AVar2;
+  bool broaderAbsent;
+  ArmyRegistryIdEaxCf5_571cf0 searchResult;
   
   while( true ) {
-    bVar1 = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
-    if (bVar1) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
+    if (broaderAbsent) break;
     recordId = recordId + 1;
   }
   while( true ) {
-    AVar2.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-    if (!AVar2.carry) break;
+    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    if (!searchResult.carry) break;
     recordId = recordId + 1;
     if (0xfff < recordId) {
       recordId = 0;
     }
   }
-  AVar2.eax = recordId;
-  return AVar2;
+  searchResult.eax = recordId;
+  return searchResult;
 }
 
 
@@ -668,38 +668,38 @@ ArmyAssetRecord_RegisterAndRelocate
 dword ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(dword armyAssetRegistryId)
 
 {
-  ArmyAssetRecordPrefix *pAVar1;
-  int iVar2;
-  ArmyAssetRecordPrefix **ppAVar3;
-  ArmyPreviewTextureEaxCf5 AVar4;
+  ArmyAssetRecordPrefix *registeredRecord;
+  int registrySlotsRemaining;
+  ArmyAssetRecordPrefix **registryCursor;
+  ArmyPreviewTextureEaxCf5 renderResult;
   FactionRuntimeIndex factionIndex;
   
-  ppAVar3 = g_ArmyAssetRecordRegistry;
-  iVar2 = 0x300;
-  while ((pAVar1 = *ppAVar3, pAVar1 == (ArmyAssetRecordPrefix *)0x0 ||
-         (armyAssetRegistryId != pAVar1->registryId))) {
-    ppAVar3 = ppAVar3 + 1;
-    iVar2 = iVar2 + -1;
-    if (iVar2 == 0) {
+  registryCursor = g_ArmyAssetRecordRegistry;
+  registrySlotsRemaining = 0x300;
+  while ((registeredRecord = *registryCursor, registeredRecord == (ArmyAssetRecordPrefix *)0x0 ||
+         (armyAssetRegistryId != registeredRecord->registryId))) {
+    registryCursor = registryCursor + 1;
+    registrySlotsRemaining = registrySlotsRemaining + -1;
+    if (registrySlotsRemaining == 0) {
       return 0;
     }
   }
-  if (pAVar1[2].byteSize == 0) {
+  if (registeredRecord[2].byteSize == 0) {
     factionIndex = g_UiCommandModeGOwnerFactionIndex;
     if (399 < armyAssetRegistryId) {
       factionIndex = 0;
     }
-    AVar4 = ArmyRuntime_RenderPreviewTextureCf
+    renderResult = ArmyRuntime_RenderPreviewTextureCf
                       (*(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        *(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime0A30);
-    if (AVar4.carry) {
+    if (renderResult.carry) {
       return 0;
     }
-    pAVar1[2].byteSize = (AssetRecordByteCount)AVar4.previewTexture;
-    return (dword)AVar4.previewTexture;
+    registeredRecord[2].byteSize = (AssetRecordByteCount)renderResult.previewTexture;
+    return (dword)renderResult.previewTexture;
   }
-  return pAVar1[2].byteSize;
+  return registeredRecord[2].byteSize;
 }
 
 
@@ -714,30 +714,30 @@ ArmyRegistryEaxCf5_51b6d0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
 
 {
-  ArmyAssetRecordPrefix *pAVar1;
+  ArmyAssetRecordPrefix *matchedRecord;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyRegistryEaxCf5_51b6d0 AVar2;
-  ArmyRegistryEaxCf5_51b6d0 AVar3;
+  ArmyRegistryEaxCf5_51b6d0 failureResult;
+  ArmyRegistryEaxCf5_51b6d0 successResult;
   ArmyAssetRecordPrefix *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = 0x300;
-  while ((pAVar1 = *registryCursor, pAVar1 == (ArmyAssetRecordPrefix *)0x0 ||
-         (pAVar1->registryId != registryId))) {
+  while ((matchedRecord = *registryCursor, matchedRecord == (ArmyAssetRecordPrefix *)0x0 ||
+         (matchedRecord->registryId != registryId))) {
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
-      AVar2.carry = true;
-      AVar2.eax = (ArmyAssetRecordPrefix *)0x41;
-      return AVar2;
+      failureResult.carry = true;
+      failureResult.eax = (ArmyAssetRecordPrefix *)0x41;
+      return failureResult;
     }
   }
-  AVar3.carry = false;
-  AVar3.eax = pAVar1;
-  return AVar3;
+  successResult.carry = false;
+  successResult.eax = matchedRecord;
+  return successResult;
 }
 
 
