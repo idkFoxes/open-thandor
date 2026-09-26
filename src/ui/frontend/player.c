@@ -138,7 +138,7 @@ FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(playerIndex,0,0,modelToken);
     inGameRoot = g_InGameRuntimeRoot;
     if (playerIndex == g_LocalPlayerRuntimeId) {
-      UiPageStack_SetActiveIndex(2,&g_InGameRuntimeRoot->technologyPageStack0BD0);
+      UiPageStack_SetActiveIndex(2,&g_InGameRuntimeRoot->gameWindowPageStack0BD0);
       InGameTechnologyPanel_ResetAndSelectCurrentArea(&inGameRoot->rootUi0000);
     }
     FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80(playerIndex,0,0,armyToken);

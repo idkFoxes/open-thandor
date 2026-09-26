@@ -329,7 +329,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
       }
       if ((g_UiCommandRuntimeFlags & 1) != 0)
       goto EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn;
-      pageStackStatus = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->technologyPageStack0BD0);
+      pageStackStatus = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->gameWindowPageStack0BD0);
       if (pageStackStatus.valueOrError == 2) {
         InGameTechnologyPanel_Rebuild(&endGameResultsRuntime->rootUi0000);
       }

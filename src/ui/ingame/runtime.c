@@ -3561,7 +3561,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
   }
   isSelected = (bool)UiSelectableControl_IsSelectedCf((UiSelectableControl *)source);
   if (!isSelected) {
-    UiPageStack_SetActiveIndex(0,&uiRoot->technologyPageStack0BD0);
+    UiPageStack_SetActiveIndex(0,&uiRoot->gameWindowPageStack0BD0);
     interactionFlagsField = &(uiRoot->worldRuntime0A30).interaction.interactionFlags48;
     *interactionFlagsField = *interactionFlagsField & 0xfffffff7;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -3579,7 +3579,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
   interactionFlagsField = &(uiRoot->worldRuntime0A30).interaction.interactionFlags48;
   *interactionFlagsField = *interactionFlagsField | 8;
   UiKeyboardFocus_ReleaseNode((UiNodeBase *)&uiRoot->worldRuntime0A30);
-  UiPageStack_SetActiveIndex(8,&uiRoot->technologyPageStack0BD0);
+  UiPageStack_SetActiveIndex(8,&uiRoot->gameWindowPageStack0BD0);
   (uiRoot->textPanel0_1100).textResourceIdE4 =
        (uiRoot->worldRuntime0A30).activeFactionRuntimeIndex + 0x230017 +
        ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).header.
