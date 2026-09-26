@@ -49,6 +49,7 @@ or to other layout-compatible structs, which C only allows through a union.
 #define THANDOR_IMAGE(address) THANDOR_IMAGE_##address
 #endif
 #include <thandor/generated/globals.h>
+#include <thandor/generated/ui_templates.h>
 #ifndef THANDOR_MAPPED_IMAGE
 #include <thandor/generated/image_data.h>
 #endif
