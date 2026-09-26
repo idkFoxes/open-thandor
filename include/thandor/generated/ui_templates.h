@@ -626,7 +626,7 @@ typedef struct InGameUiImage {
     dword worldViewArea_fields[2];
     UiNodeBase worldView; /* +0A30 g_FrontendModelPointerContextVtable: The 3D world view control (worldRuntime0A30) that receives map pointer input and hosts the on-screen status texts. */
     dword worldView_fields[85];
-    UiNodeBase gameWindowPageStack; /* +0BD0 g_UiLayoutContainerControlVtable: Page stack of the in-game windows (types.h gameWindowPageStack0BD0): 0 none, 1 message, 2 technology, 3 game menu, 4 quit, 5 save, 6 graphics, 7 audio, 8 mission help. */
+    UiNodeBase gameWindowPageStack; /* +0BD0 g_UiLayoutContainerControlVtable: Page stack of the in-game windows (types.h technologyPageStack0BD0): 0 none, 1 message, 2 technology, 3 game menu, 4 quit, 5 save, 6 graphics, 7 audio, 8 mission help. */
     dword gameWindowPageStack_fields[10];
     UiNodeBase gameMenuWindow; /* +0C44 g_UiImagePanelControlVtable: Game menu / gameplay options window (page 3, action 0x1003) with save, quit, graphics, audio buttons and camera options. */
     dword gameMenuWindow_fields[4];

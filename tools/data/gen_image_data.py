@@ -328,6 +328,8 @@ def resolve_type(t):
 class Unrepresentable(Exception):
     pass
 
+numeric_ranges = []   # (address, size) of integer and text fields written by scalar_init
+
 def scalar_init(t, addr, typed_pointers):
     """Initializer for one scalar of type t at addr; pointers go through typed_pointers."""
     r = resolve_type(t)
@@ -358,6 +360,7 @@ def scalar_init(t, addr, typed_pointers):
         return literal + ('f' if size == 4 else '')
     else:
         raise Unrepresentable(t)
+    numeric_ranges.append((addr, size))
     value = int.from_bytes(bytes(byte_at(addr + i) for i in range(size)), 'little')
     if value == 0:
         return '0'
@@ -506,6 +509,7 @@ def typed_member(start, end, name, member):
         if width * count > end - start:
             return None
         typed_pointers = []
+        del numeric_ranges[:]
         items = [value_init(element, start + i * width, typed_pointers) for i in range(count)]
     except (Unrepresentable, RecursionError):
         return None
@@ -514,8 +518,11 @@ def typed_member(start, end, name, member):
     owner = containing_object(start)
     if not (owner is not None and NUMERIC.match(types.get(owner[2], 'struct').strip())):
         typed_locations = set(p[0] for p in typed_pointers)
+        numeric_bytes = set(a + i for a, size in numeric_ranges for i in range(size))
         for offset in range(0, width * count - 3, 4):
             value = dword_at(start + offset)
+            if all(start + offset + i in numeric_bytes for i in range(4)):
+                continue    # text or numbers that happen to look like an address
             if (value in funcs or value in anchors) and start + offset not in typed_locations:
                 return None
     decl = '    %s %s%s;' % (element, member, ''.join('[%d]' % d for d in dims))

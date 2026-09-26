@@ -24,7 +24,7 @@ typedef struct ImageData_00401000 {
     CommandLineFindOptionProc * at_g_CommandLineFindOption; /* 00402024 g_CommandLineFindOption */
     CommandLineWideArguments at_g_CommandLineWideArguments; /* 00402028 g_CommandLineWideArguments */
     WideNumberFormatUtf16Proc * at_g_WideNumberFormatUtf16; /* 00402628 g_WideNumberFormatUtf16 */
-    dword at_g_WideNumberFormatState[86]; /* 0040262C g_WideNumberFormatState */
+    WideNumberFormatState at_g_WideNumberFormatState; /* 0040262C g_WideNumberFormatState */
     SpinLockAcquireProc * at_g_SpinLockAcquire; /* 00402784 g_SpinLockAcquire */
     SpinLockTryAcquireFlagsProc * at_g_SpinLockTryAcquire; /* 00402788 g_SpinLockTryAcquire */
     SpinLockReleaseProc * at_g_SpinLockRelease; /* 0040278C g_SpinLockRelease */
@@ -5432,6 +5432,6 @@ extern ImageData_005873BC g_ImageData_005873BC;
 typedef struct ThandorImageBlock { dword start; dword end; const byte *data; } ThandorImageBlock;
 typedef struct ThandorImagePointer { dword location; dword originalValue; } ThandorImagePointer;
 extern const ThandorImageBlock g_ThandorImageBlocks[203];
-extern const ThandorImagePointer g_ThandorImagePointers[2393];
+extern const ThandorImagePointer g_ThandorImagePointers[2392];
 
 #endif
