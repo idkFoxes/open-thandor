@@ -24,13 +24,13 @@ GameFactionRuntime_AdvancePairwiseRelationState
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  bool bVar1;
+  bool isRecentTimedState;
   
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
          ((byte)(sourceFactionIndex << 2) & 0x1f) & 0xf) {
   case 2:
-    bVar1 = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
-    if (bVar1) {
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
+    if (isRecentTimedState) {
       return;
     }
   case 0:
@@ -43,8 +43,8 @@ GameFactionRuntime_AdvancePairwiseRelationState
               (2,2,4,4,sourceFactionIndex,targetFactionIndex);
     break;
   case 4:
-    bVar1 = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
-    if (bVar1) {
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
+    if (isRecentTimedState) {
       return;
     }
   case 5:
@@ -56,8 +56,8 @@ GameFactionRuntime_AdvancePairwiseRelationState
               (5,5,8,8,sourceFactionIndex,targetFactionIndex);
     break;
   case 8:
-    bVar1 = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
-    if (bVar1) {
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
+    if (isRecentTimedState) {
       return;
     }
   case 9:
@@ -126,95 +126,95 @@ GameFactionRuntime_ResetPairwiseRelationState
 void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
 
 {
-  WorldOwnerListNode100 *pWVar1;
-  dword dVar2;
-  uint uVar3;
-  dword dVar4;
-  int iVar5;
-  uint uVar6;
-  int iVar7;
-  int iVar8;
-  int iVar9;
+  WorldOwnerListNode100 *ownerNode;
+  dword unitFactionOrAssetId;
+  uint carryOverMaskBits;
+  dword distanceToAnchor;
+  int remainingOrWorldY;
+  uint skipMaskBits;
+  int copyCountOrAnchorY;
+  int scenarioRecord;
+  int groupFieldCursorOrOffsetY;
   /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
      all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
   int unaff_ESI = 0;
-  dword *pdVar10;
-  dword *pdVar11;
+  dword *sourceOrRecordCursor;
+  dword *secondaryTableCursor;
   
   if ((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
-     (pdVar10 = (dword *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+     (sourceOrRecordCursor = (dword *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                          unaff_ESI *
                          (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex),
      g_FrontendLoadedCampaignAsset != 0)) {
-    iVar5 = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
-    iVar8 = g_FrontendLoadedCampaignAsset;
+    remainingOrWorldY = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
+    scenarioRecord = g_FrontendLoadedCampaignAsset;
     do {
-      if (*(int *)(g_FrontendLoadedCampaignAsset + 0xc4) == *(int *)(iVar8 + 0x300)) {
-        iVar9 = iVar8 + 0x200;
-        uVar3 = *(uint *)(iVar8 + 0x304) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
-        uVar6 = *(uint *)(iVar8 + 0x308) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
-        iVar5 = 8;
-        pdVar11 = g_OldUnitSecondaryTable;
+      if (*(int *)(g_FrontendLoadedCampaignAsset + 0xc4) == *(int *)(scenarioRecord + 0x300)) {
+        groupFieldCursorOrOffsetY = scenarioRecord + 0x200;
+        carryOverMaskBits = *(uint *)(scenarioRecord + 0x304) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
+        skipMaskBits = *(uint *)(scenarioRecord + 0x308) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
+        remainingOrWorldY = 8;
+        secondaryTableCursor = g_OldUnitSecondaryTable;
         goto 
         OldUnitRuntime_RebuildScenarioReplayTables_ProcessNextReplayGroupMaskAndCopyOrClearBlock;
       }
-      iVar8 = iVar8 + 0x180;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      scenarioRecord = scenarioRecord + 0x180;
+      remainingOrWorldY = remainingOrWorldY + -1;
+    } while (remainingOrWorldY != 0);
   }
   OldUnitRuntime_ResetPendingTables();
   return;
 OldUnitRuntime_RebuildScenarioReplayTables_ProcessNextReplayGroupMaskAndCopyOrClearBlock:
-  if ((uVar6 & 1) == 0) {
-    iVar7 = 8;
-    if (((uVar3 & 1) == 0) ||
-       ((((*(int *)(iVar9 + 0x60) == 0 && (*(int *)(iVar9 + 0x80) == 0)) &&
-         (*(int *)(iVar9 + 0xc0) == 0)) &&
-        ((*(int *)(iVar9 + 0xe0) == 0 && (*(int *)(iVar9 + 0xa0) == 0)))))) {
-      for (iVar7 = 8; iVar7 != 0; iVar7 = iVar7 + -1) {
-        *pdVar11 = 0;
-        pdVar11 = pdVar11 + 1;
+  if ((skipMaskBits & 1) == 0) {
+    copyCountOrAnchorY = 8;
+    if (((carryOverMaskBits & 1) == 0) ||
+       ((((*(int *)(groupFieldCursorOrOffsetY + 0x60) == 0 && (*(int *)(groupFieldCursorOrOffsetY + 0x80) == 0)) &&
+         (*(int *)(groupFieldCursorOrOffsetY + 0xc0) == 0)) &&
+        ((*(int *)(groupFieldCursorOrOffsetY + 0xe0) == 0 && (*(int *)(groupFieldCursorOrOffsetY + 0xa0) == 0)))))) {
+      for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY = copyCountOrAnchorY + -1) {
+        *secondaryTableCursor = 0;
+        secondaryTableCursor = secondaryTableCursor + 1;
       }
       goto OldUnitRuntime_RebuildScenarioReplayTables_AdvanceSourceBlockAfterSkippedOrClearedGroup;
     }
     do {
-      *pdVar11 = *pdVar10;
-      pdVar10 = pdVar10 + 1;
-      pdVar11 = pdVar11 + 1;
-      iVar7 = iVar7 + -1;
-    } while (iVar7 != 0);
+      *secondaryTableCursor = *sourceOrRecordCursor;
+      sourceOrRecordCursor = sourceOrRecordCursor + 1;
+      secondaryTableCursor = secondaryTableCursor + 1;
+      copyCountOrAnchorY = copyCountOrAnchorY + -1;
+    } while (copyCountOrAnchorY != 0);
   }
   else {
 OldUnitRuntime_RebuildScenarioReplayTables_AdvanceSourceBlockAfterSkippedOrClearedGroup:
-    pdVar10 = pdVar10 + 8;
+    sourceOrRecordCursor = sourceOrRecordCursor + 8;
   }
-  pdVar10 = pdVar10 + 0x1c8;
-  iVar9 = iVar9 + 4;
-  iVar5 = iVar5 + -1;
-  if (iVar5 == 0) {
+  sourceOrRecordCursor = sourceOrRecordCursor + 0x1c8;
+  groupFieldCursorOrOffsetY = groupFieldCursorOrOffsetY + 4;
+  remainingOrWorldY = remainingOrWorldY + -1;
+  if (remainingOrWorldY == 0) {
     if (((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
-        (pWVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead, (uVar6 & 1) == 0)) &&
-       (g_OldUnitRecordCount = 0, pdVar10 = g_OldUnitPrimaryTable, (uVar3 & 1) != 0)) {
-      for (; pWVar1 != (WorldOwnerListNode100 *)0x0; pWVar1 = pWVar1->nextNode) {
-        if (((pWVar1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (dVar2 = *(dword *)(*(int *)((int)pWVar1->runtimePayload + 8) + 0xc),
-            0 < *(int *)(iVar8 + 0x2a0 + dVar2 * 4))) &&
-           (dVar4 = FixedMath_Length2(*(int *)(iVar8 + 0x280 + dVar2 * 4) - pWVar1->worldYQ12,
-                                      *(int *)(iVar8 + 0x260 + dVar2 * 4) - pWVar1->worldXQ12),
-           (int)dVar4 <= *(int *)(iVar8 + 0x2a0 + dVar2 * 4))) {
-          iVar5 = pWVar1->worldYQ12;
-          iVar9 = *(int *)(iVar8 + 0x2e0 + dVar2 * 4);
-          iVar7 = *(int *)(iVar8 + 0x280 + dVar2 * 4);
-          pdVar10[2] = (pWVar1->worldXQ12 + *(int *)(iVar8 + 0x2c0 + dVar2 * 4)) -
-                       *(int *)(iVar8 + 0x260 + dVar2 * 4);
-          pdVar10[3] = (iVar5 + iVar9) - iVar7;
-          pdVar10[1] = dVar2;
-          if (*(int *)((int)pWVar1->runtimePayload + 0xf0) == 0) {
-            dVar2 = *(dword *)(*(int *)((int)pWVar1->runtimePayload + 8) + 0xa0);
-            pdVar10[4] = pWVar1->modelLocalRotationAngle2;
-            *pdVar10 = dVar2;
+        (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead, (skipMaskBits & 1) == 0)) &&
+       (g_OldUnitRecordCount = 0, sourceOrRecordCursor = g_OldUnitPrimaryTable, (carryOverMaskBits & 1) != 0)) {
+      for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+        if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+            (unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc),
+            0 < *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) &&
+           (distanceToAnchor = FixedMath_Length2(*(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4) - ownerNode->worldYQ12,
+                                      *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4) - ownerNode->worldXQ12),
+           (int)distanceToAnchor <= *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) {
+          remainingOrWorldY = ownerNode->worldYQ12;
+          groupFieldCursorOrOffsetY = *(int *)(scenarioRecord + 0x2e0 + unitFactionOrAssetId * 4);
+          copyCountOrAnchorY = *(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4);
+          sourceOrRecordCursor[2] = (ownerNode->worldXQ12 + *(int *)(scenarioRecord + 0x2c0 + unitFactionOrAssetId * 4)) -
+                       *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4);
+          sourceOrRecordCursor[3] = (remainingOrWorldY + groupFieldCursorOrOffsetY) - copyCountOrAnchorY;
+          sourceOrRecordCursor[1] = unitFactionOrAssetId;
+          if (*(int *)((int)ownerNode->runtimePayload + 0xf0) == 0) {
+            unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xa0);
+            sourceOrRecordCursor[4] = ownerNode->modelLocalRotationAngle2;
+            *sourceOrRecordCursor = unitFactionOrAssetId;
             g_OldUnitRecordCount = g_OldUnitRecordCount + 1;
-            pdVar10 = pdVar10 + 8;
+            sourceOrRecordCursor = sourceOrRecordCursor + 8;
             if (0x1ff < g_OldUnitRecordCount) {
               return;
             }
@@ -238,56 +238,56 @@ OldUnitRuntime_RebuildScenarioReplayTables_AdvanceSourceBlockAfterSkippedOrClear
 void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
 
 {
-  ArmyRuntimeSlot *armySlot1;
-  int iVar1;
-  FactionArmyAssetCount FVar2;
-  int iVar3;
-  GameFactionRuntimeImage *pGVar4;
-  ArmyAssetRecordPrefix **pdVar6;
-  dword *pdVar7;
-  ArmyAssetRecordPrefix **pdVar5;
-  ArmyRuntimeSlot **ppAVar8;
-  ArmyRegistryEaxCf5_51b6d0 AVar9;
+  ArmyRuntimeSlot *rebasedSlot;
+  int factionsRemaining;
+  FactionArmyAssetCount assetsRemaining;
+  int groupSlotsRemaining;
+  GameFactionRuntimeImage *factionRecordCursor;
+  ArmyAssetRecordPrefix **unusedAssetCursorA;
+  dword *assetIdCursor;
+  ArmyAssetRecordPrefix **unusedAssetCursorB;
+  ArmyRuntimeSlot **groupSlotCursor;
+  ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
   
-  pGVar4 = &g_GameFactionRuntimeImage;
-  iVar1 = 8;
+  factionRecordCursor = &g_GameFactionRuntimeImage;
+  factionsRemaining = 8;
   do {
-    pdVar7 = pGVar4->records[0].secondaryArmyAssetPointersOrIds;
-    for (FVar2 = pGVar4->records[0].secondaryArmyAssetCount; FVar2 != 0; FVar2 = FVar2 - 1) {
-      AVar9 = ArmyAssetRegistry_FindByIdCf(*pdVar7);
-      if (AVar9.carry) {
-        pGVar4->records[0].secondaryArmyAssetCount = 0;
+    assetIdCursor = factionRecordCursor->records[0].secondaryArmyAssetPointersOrIds;
+    for (assetsRemaining = factionRecordCursor->records[0].secondaryArmyAssetCount; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
+      resolvedAsset = ArmyAssetRegistry_FindByIdCf(*assetIdCursor);
+      if (resolvedAsset.carry) {
+        factionRecordCursor->records[0].secondaryArmyAssetCount = 0;
         break;
       }
-      *pdVar7 = (dword)AVar9.eax;
-      pdVar7 = pdVar7 + 1;
+      *assetIdCursor = (dword)resolvedAsset.eax;
+      assetIdCursor = assetIdCursor + 1;
     }
-    pdVar7 = pGVar4->records[0].primaryArmyAssetPointersOrIds;
-    for (FVar2 = pGVar4->records[0].primaryArmyAssetCount; FVar2 != 0; FVar2 = FVar2 - 1) {
-      AVar9 = ArmyAssetRegistry_FindByIdCf(*pdVar7);
-      if (AVar9.carry) {
-        pGVar4->records[0].primaryArmyAssetCount = 0;
+    assetIdCursor = factionRecordCursor->records[0].primaryArmyAssetPointersOrIds;
+    for (assetsRemaining = factionRecordCursor->records[0].primaryArmyAssetCount; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
+      resolvedAsset = ArmyAssetRegistry_FindByIdCf(*assetIdCursor);
+      if (resolvedAsset.carry) {
+        factionRecordCursor->records[0].primaryArmyAssetCount = 0;
         break;
       }
-      *pdVar7 = (dword)AVar9.eax;
-      pdVar7 = pdVar7 + 1;
+      *assetIdCursor = (dword)resolvedAsset.eax;
+      assetIdCursor = assetIdCursor + 1;
     }
-    ppAVar8 = pGVar4->records[0].runtimeGroupMembers8x32;
-    iVar3 = 0x100;
+    groupSlotCursor = factionRecordCursor->records[0].runtimeGroupMembers8x32;
+    groupSlotsRemaining = 0x100;
     do {
-      armySlot1 = (ArmyRuntimeSlot *)0x0;
-      if (*ppAVar8 != (ArmyRuntimeSlot *)0x0) {
-        armySlot1 = (ArmyRuntimeSlot *)
-                    ((int)&(*ppAVar8)->modelRuntimeOrSavedOffset +
+      rebasedSlot = (ArmyRuntimeSlot *)0x0;
+      if (*groupSlotCursor != (ArmyRuntimeSlot *)0x0) {
+        rebasedSlot = (ArmyRuntimeSlot *)
+                    ((int)&(*groupSlotCursor)->modelRuntimeOrSavedOffset +
                     (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
-      *ppAVar8 = armySlot1;
-      ppAVar8 = ppAVar8 + 1;
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
-    pGVar4 = (GameFactionRuntimeImage *)(pGVar4->records + 1);
-    iVar1 = iVar1 + -1;
-    if (iVar1 == 0) {
+      *groupSlotCursor = rebasedSlot;
+      groupSlotCursor = groupSlotCursor + 1;
+      groupSlotsRemaining = groupSlotsRemaining + -1;
+    } while (groupSlotsRemaining != 0);
+    factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
+    factionsRemaining = factionsRemaining + -1;
+    if (factionsRemaining == 0) {
       return;
     }
   } while( true );
@@ -373,71 +373,71 @@ void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
 
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  TechnologyId technologyIndex;
-  uint factionIndex;
-  uint factionIndex_00;
-  TechnologyId technologyIndex_00;
-  int iVar5;
+  int otherRecordBase;
+  int carryBit;
+  uint bitMask;
+  uint maskWordIndex;
+  TechnologyId otherTechnologyIndex;
+  uint otherFactionIndex;
+  uint sourceFactionIndex;
+  TechnologyId sourceTechnologyIndex;
+  int sourceRecordBase;
   
-  factionIndex_00 = 1;
-  iVar5 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  sourceFactionIndex = 1;
+  sourceRecordBase = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
 GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_BeginNextSourceFactionScan:
-  factionIndex = factionIndex_00 + 1;
-  iVar1 = iVar5;
+  otherFactionIndex = sourceFactionIndex + 1;
+  otherRecordBase = sourceRecordBase;
 GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_EvaluateNextFactionPair:
-  switch(*(uint *)(iVar1 + 0x780) >> ((char)factionIndex_00 * '\x04' & 0x1fU) & 0xf) {
+  switch(*(uint *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * '\x04' & 0x1fU) & 0xf) {
   case 8:
   case 9:
   case 10:
-    uVar3 = 1;
-    uVar4 = 0;
-    technologyIndex_00 = 0;
+    bitMask = 1;
+    maskWordIndex = 0;
+    sourceTechnologyIndex = 0;
     do {
-      if (((*(uint *)(iVar5 + 0x6e0 + uVar4 * 4) & uVar3) != 0) &&
-         ((*(uint *)(iVar1 + 0xe20 + uVar4 * 4) & uVar3) == 0)) {
-        uVar4 = 0;
-        uVar3 = 1;
-        technologyIndex = 0;
+      if (((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) != 0) &&
+         ((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) == 0)) {
+        maskWordIndex = 0;
+        bitMask = 1;
+        otherTechnologyIndex = 0;
         goto 
         GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_ScanReciprocalTechnologyBitsAndUnlockMatch
         ;
       }
-      iVar2 = (int)uVar3 >> 0x1f;
-      uVar3 = uVar3 << 1 | -iVar2;
-      uVar4 = uVar4 + (-iVar2 != 0);
-      technologyIndex_00 = technologyIndex_00 + 1;
-    } while (uVar4 < 8);
+      carryBit = (int)bitMask >> 0x1f;
+      bitMask = bitMask << 1 | -carryBit;
+      maskWordIndex = maskWordIndex + (-carryBit != 0);
+      sourceTechnologyIndex = sourceTechnologyIndex + 1;
+    } while (maskWordIndex < 8);
   }
   goto switchD_00513d9f_caseD_0;
   while( true ) {
-    iVar2 = (int)uVar3 >> 0x1f;
-    uVar3 = uVar3 << 1 | -iVar2;
-    uVar4 = uVar4 + (-iVar2 != 0);
-    technologyIndex = technologyIndex + 1;
-    if (7 < uVar4) break;
+    carryBit = (int)bitMask >> 0x1f;
+    bitMask = bitMask << 1 | -carryBit;
+    maskWordIndex = maskWordIndex + (-carryBit != 0);
+    otherTechnologyIndex = otherTechnologyIndex + 1;
+    if (7 < maskWordIndex) break;
 
     GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_ScanReciprocalTechnologyBitsAndUnlockMatch
     :
-    if (((*(uint *)(iVar1 + 0xe20 + uVar4 * 4) & uVar3) != 0) &&
-       ((*(uint *)(iVar5 + 0x6e0 + uVar4 * 4) & uVar3) == 0)) {
-      Technology_UnlockForFaction(0,0,technologyIndex,factionIndex_00);
-      Technology_UnlockForFaction(0,0,technologyIndex_00,factionIndex);
+    if (((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) != 0) &&
+       ((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) == 0)) {
+      Technology_UnlockForFaction(0,0,otherTechnologyIndex,sourceFactionIndex);
+      Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
       break;
     }
   }
 switchD_00513d9f_caseD_0:
-  factionIndex = factionIndex + 1;
-  iVar1 = iVar1 + 0x740;
-  if (7 < factionIndex) goto code_r0x00513eb0;
+  otherFactionIndex = otherFactionIndex + 1;
+  otherRecordBase = otherRecordBase + 0x740;
+  if (7 < otherFactionIndex) goto code_r0x00513eb0;
   goto GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_EvaluateNextFactionPair;
 code_r0x00513eb0:
-  factionIndex_00 = factionIndex_00 + 1;
-  iVar5 = iVar5 + 0x740;
-  if (6 < factionIndex_00) {
+  sourceFactionIndex = sourceFactionIndex + 1;
+  sourceRecordBase = sourceRecordBase + 0x740;
+  if (6 < sourceFactionIndex) {
     InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
     return;
   }
@@ -457,77 +457,77 @@ GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
           (ArmyRuntimeSlot *targetArmyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  int *piVar1;
-  int iVar2;
-  int iVar3;
-  FactionAnchorCooldownTicks FVar4;
-  GraphicsWorldCoordinateQ12 GVar5;
-  int iVar6;
-  int iVar7;
+  int *ownerDefinitionRecord;
+  int ownerFactionIndex;
+  int linkedModelAddress;
+  FactionAnchorCooldownTicks previousCooldown;
+  GraphicsWorldCoordinateQ12 anchorX;
+  int distanceYOrLinkRecord;
+  int distanceX;
   
-  piVar1 = (targetArmyRuntime->linkedEntityRuntime->common).ownership.definitionOrClassRecord;
-  iVar2 = (targetArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
-  iVar3 = piVar1[1];
-  if (*(int *)(*piVar1 + 0x18) == 0) {
-    FVar4 = g_GameFactionRuntimeImage.records[iVar2].primaryAnchorCooldown;
-    iVar6 = g_GameFactionRuntimeImage.records[iVar2].primaryAnchorYQ12 - *(int *)(iVar3 + 0x94);
-    if (iVar6 < 0) {
-      iVar6 = -iVar6;
+  ownerDefinitionRecord = (targetArmyRuntime->linkedEntityRuntime->common).ownership.definitionOrClassRecord;
+  ownerFactionIndex = (targetArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
+  linkedModelAddress = ownerDefinitionRecord[1];
+  if (*(int *)(*ownerDefinitionRecord + 0x18) == 0) {
+    previousCooldown = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorCooldown;
+    distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 - *(int *)(linkedModelAddress + 0x94);
+    if (distanceYOrLinkRecord < 0) {
+      distanceYOrLinkRecord = -distanceYOrLinkRecord;
     }
-    iVar7 = g_GameFactionRuntimeImage.records[iVar2].primaryAnchorXQ12 - *(int *)(iVar3 + 0x98);
-    if (iVar7 < 0) {
-      iVar7 = -iVar7;
+    distanceX = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 - *(int *)(linkedModelAddress + 0x98);
+    if (distanceX < 0) {
+      distanceX = -distanceX;
     }
-    g_GameFactionRuntimeImage.records[iVar2].primaryAnchorCooldown = 0x96;
-    if (((int)FVar4 < 0x32) && ((0xc000 < iVar6 + iVar7 || (FVar4 == 0)))) {
-      GVar5 = *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x98);
-      iVar6 = piVar1[2];
-      g_GameFactionRuntimeImage.records[iVar2].primaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x94);
-      g_GameFactionRuntimeImage.records[iVar2].primaryAnchorXQ12 = GVar5;
-      if (worldRuntime->activeFactionRuntimeIndex == *(int *)(iVar6 + 0xc)) {
+    g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorCooldown = 0x96;
+    if (((int)previousCooldown < 0x32) && ((0xc000 < distanceYOrLinkRecord + distanceX || (previousCooldown == 0)))) {
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
+      distanceYOrLinkRecord = ownerDefinitionRecord[2];
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 =
+           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 = anchorX;
+      if (worldRuntime->activeFactionRuntimeIndex == *(int *)(distanceYOrLinkRecord + 0xc)) {
         InGameNotificationQueue_InsertPriorityRecord
                   (FACTION_IMPACT_ANCHOR,0,(worldRuntime->motion).pitchAngle,
-                   (worldRuntime->motion).headingAngle,*(Q12 *)(piVar1[1] + 0x98),
-                   *(Q12 *)(piVar1[1] + 0x94),8,300);
+                   (worldRuntime->motion).headingAngle,*(Q12 *)(ownerDefinitionRecord[1] + 0x98),
+                   *(Q12 *)(ownerDefinitionRecord[1] + 0x94),8,300);
       }
     }
     else {
-      GVar5 = *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x98);
-      g_GameFactionRuntimeImage.records[iVar2].primaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x94);
-      g_GameFactionRuntimeImage.records[iVar2].primaryAnchorXQ12 = GVar5;
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 =
+           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 = anchorX;
     }
   }
   else {
-    FVar4 = g_GameFactionRuntimeImage.records[iVar2].anchorCooldown0;
-    iVar6 = g_GameFactionRuntimeImage.records[iVar2].secondaryAnchorYQ12 - *(int *)(iVar3 + 0x94);
-    if (iVar6 < 0) {
-      iVar6 = -iVar6;
+    previousCooldown = g_GameFactionRuntimeImage.records[ownerFactionIndex].anchorCooldown0;
+    distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 - *(int *)(linkedModelAddress + 0x94);
+    if (distanceYOrLinkRecord < 0) {
+      distanceYOrLinkRecord = -distanceYOrLinkRecord;
     }
-    iVar7 = g_GameFactionRuntimeImage.records[iVar2].secondaryAnchorXQ12 - *(int *)(iVar3 + 0x98);
-    if (iVar7 < 0) {
-      iVar7 = -iVar7;
+    distanceX = g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 - *(int *)(linkedModelAddress + 0x98);
+    if (distanceX < 0) {
+      distanceX = -distanceX;
     }
-    g_GameFactionRuntimeImage.records[iVar2].anchorCooldown0 = 0x96;
-    if (((int)FVar4 < 0x32) && ((0xc000 < iVar6 + iVar7 || (FVar4 == 0)))) {
-      GVar5 = *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x98);
-      iVar6 = piVar1[2];
-      g_GameFactionRuntimeImage.records[iVar2].secondaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x94);
-      g_GameFactionRuntimeImage.records[iVar2].secondaryAnchorXQ12 = GVar5;
-      if (worldRuntime->activeFactionRuntimeIndex == *(int *)(iVar6 + 0xc)) {
+    g_GameFactionRuntimeImage.records[ownerFactionIndex].anchorCooldown0 = 0x96;
+    if (((int)previousCooldown < 0x32) && ((0xc000 < distanceYOrLinkRecord + distanceX || (previousCooldown == 0)))) {
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
+      distanceYOrLinkRecord = ownerDefinitionRecord[2];
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 =
+           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 = anchorX;
+      if (worldRuntime->activeFactionRuntimeIndex == *(int *)(distanceYOrLinkRecord + 0xc)) {
         InGameNotificationQueue_InsertPriorityRecord
                   (FACTION_IMPACT_ANCHOR,0,(worldRuntime->motion).pitchAngle,
-                   (worldRuntime->motion).headingAngle,*(Q12 *)(piVar1[1] + 0x98),
-                   *(Q12 *)(piVar1[1] + 0x94),7,0x12d);
+                   (worldRuntime->motion).headingAngle,*(Q12 *)(ownerDefinitionRecord[1] + 0x98),
+                   *(Q12 *)(ownerDefinitionRecord[1] + 0x94),7,0x12d);
       }
     }
     else {
-      GVar5 = *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x98);
-      g_GameFactionRuntimeImage.records[iVar2].secondaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(iVar3 + 0x94);
-      g_GameFactionRuntimeImage.records[iVar2].secondaryAnchorXQ12 = GVar5;
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 =
+           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+      g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 = anchorX;
     }
   }
   return;
@@ -547,58 +547,58 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  TerrainExploredPercent TVar1;
-  ResourceExtractionRateQ4PerTick RVar2;
-  int iVar3;
-  uint uVar4;
-  FactionTechnologyCount FVar5;
-  uint uVar6;
-  int iVar7;
-  byte *pbVar8;
-  uint uVar9;
-  ArmyRegistryEaxCf5_51b6d0 AVar10;
-  FieldGridAsset *fieldGrid1;
-  WorldOwnerListNode100 *worldNode1;
+  TerrainExploredPercent exploredPercent;
+  ResourceExtractionRateQ4PerTick xeniteRate;
+  int tallyOrComponent;
+  uint cellOrTechnologyCount;
+  FactionTechnologyCount technologyCountBeyondBaseline;
+  uint cellsLeftOrBitOrRate;
+  int tritiumComponentOrModelRecord;
+  byte *cellVisibilityCursor;
+  uint maskWordIndex;
+  ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
+  FieldGridAsset *terrainGrid;
+  WorldOwnerListNode100 *ownerNode;
   
-  fieldGrid1 = worldRuntime->fieldGrid;
-  uVar4 = fieldGrid1->gridWidth * fieldGrid1->gridHeight;
-  iVar3 = 0;
-  pbVar8 = fieldGrid1->cells[0].runtime60_6B + factionIndex + 0x10;
-  uVar6 = uVar4;
+  terrainGrid = worldRuntime->fieldGrid;
+  cellOrTechnologyCount = terrainGrid->gridWidth * terrainGrid->gridHeight;
+  tallyOrComponent = 0;
+  cellVisibilityCursor = terrainGrid->cells[0].runtime60_6B + factionIndex + 0x10;
+  cellsLeftOrBitOrRate = cellOrTechnologyCount;
   do {
-    if ((*pbVar8 & 0xf8) != 0) {
-      iVar3 = iVar3 + 1;
+    if ((*cellVisibilityCursor & 0xf8) != 0) {
+      tallyOrComponent = tallyOrComponent + 1;
     }
-    pbVar8 = pbVar8 + 0x80;
-    uVar6 = uVar6 - 1;
-  } while (uVar6 != 0);
+    cellVisibilityCursor = cellVisibilityCursor + 0x80;
+    cellsLeftOrBitOrRate = cellsLeftOrBitOrRate - 1;
+  } while (cellsLeftOrBitOrRate != 0);
   g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent =
-       (uint)(iVar3 * 100) / uVar4;
-  uVar6 = 1;
-  uVar4 = 0;
-  uVar9 = 0;
+       (uint)(tallyOrComponent * 100) / cellOrTechnologyCount;
+  cellsLeftOrBitOrRate = 1;
+  cellOrTechnologyCount = 0;
+  maskWordIndex = 0;
   do {
     do {
-      if ((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + uVar9 * 4) & uVar6) != 0) {
-        uVar4 = uVar4 + 1;
+      if ((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + maskWordIndex * 4) & cellsLeftOrBitOrRate) != 0) {
+        cellOrTechnologyCount = cellOrTechnologyCount + 1;
       }
-      uVar6 = uVar6 * 2;
-    } while (uVar6 != 0);
-    uVar9 = uVar9 + 1;
-    uVar6 = 1;
-  } while (uVar9 < 8);
-  FVar5 = uVar4 - 5;
-  if (uVar4 < 5) {
-    FVar5 = 0;
+      cellsLeftOrBitOrRate = cellsLeftOrBitOrRate * 2;
+    } while (cellsLeftOrBitOrRate != 0);
+    maskWordIndex = maskWordIndex + 1;
+    cellsLeftOrBitOrRate = 1;
+  } while (maskWordIndex < 8);
+  technologyCountBeyondBaseline = cellOrTechnologyCount - 5;
+  if (cellOrTechnologyCount < 5) {
+    technologyCountBeyondBaseline = 0;
   }
-  TVar1 = g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent;
-  iVar3 = (int)g_GameFactionRuntimeImage.records[factionIndex].xeniteExtractedTotalQ4 >> 4;
-  iVar7 = (int)g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractedTotalQ4 >> 4;
-  g_GameFactionRuntimeImage.records[factionIndex].unlockedTechnologyCountBeyondBaseline = FVar5;
-  g_GameFactionRuntimeImage.records[factionIndex].primaryResourceComponent = iVar3;
-  g_GameFactionRuntimeImage.records[factionIndex].secondaryResourceComponent = iVar7;
+  exploredPercent = g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent;
+  tallyOrComponent = (int)g_GameFactionRuntimeImage.records[factionIndex].xeniteExtractedTotalQ4 >> 4;
+  tritiumComponentOrModelRecord = (int)g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractedTotalQ4 >> 4;
+  g_GameFactionRuntimeImage.records[factionIndex].unlockedTechnologyCountBeyondBaseline = technologyCountBeyondBaseline;
+  g_GameFactionRuntimeImage.records[factionIndex].primaryResourceComponent = tallyOrComponent;
+  g_GameFactionRuntimeImage.records[factionIndex].secondaryResourceComponent = tritiumComponentOrModelRecord;
   g_GameFactionRuntimeImage.records[factionIndex].economyProgressScore =
-       (int)(iVar3 * 0x10 + iVar7 * 8 + FVar5 * 0xa000 + TVar1 * 0x1000) >> 0xc;
+       (int)(tallyOrComponent * 0x10 + tritiumComponentOrModelRecord * 8 + technologyCountBeyondBaseline * 0xa000 + exploredPercent * 0x1000) >> 0xc;
   g_GameFactionRuntimeImage.records[factionIndex].relationScore =
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterB * 0x28000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterD * -0x14000 +
@@ -606,25 +606,25 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterC * -0xa000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterE * 0x14000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterF * 0x28000 >> 0xc;
-  iVar3 = 0;
-  for (worldNode1 = worldRuntime->ownerListHead; worldNode1 != (WorldOwnerListNode100 *)0x0;
-      worldNode1 = worldNode1->nextNode) {
-    if ((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-       (iVar7 = *(int *)((int)worldNode1->runtimePayload + 8), factionIndex == *(int *)(iVar7 + 0xc)
+  tallyOrComponent = 0;
+  for (ownerNode = worldRuntime->ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+      ownerNode = ownerNode->nextNode) {
+    if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+       (tritiumComponentOrModelRecord = *(int *)((int)ownerNode->runtimePayload + 8), factionIndex == *(int *)(tritiumComponentOrModelRecord + 0xc)
        )) {
-      AVar10 = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(iVar7 + 0xa0));
-      if (!AVar10.carry) {
-        iVar3 = iVar3 + AVar10.eax[2].registryId;
+      resolvedAsset = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(tritiumComponentOrModelRecord + 0xa0));
+      if (!resolvedAsset.carry) {
+        tallyOrComponent = tallyOrComponent + resolvedAsset.eax[2].registryId;
       }
     }
   }
-  uVar6 = g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick;
-  RVar2 = g_GameFactionRuntimeImage.records[factionIndex].xeniteExtractionRateQ4PerTick;
-  TVar1 = g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent;
-  FVar5 = g_GameFactionRuntimeImage.records[factionIndex].unlockedTechnologyCountBeyondBaseline;
-  g_GameFactionRuntimeImage.records[factionIndex].activeArmyContribution = iVar3;
+  cellsLeftOrBitOrRate = g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick;
+  xeniteRate = g_GameFactionRuntimeImage.records[factionIndex].xeniteExtractionRateQ4PerTick;
+  exploredPercent = g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent;
+  technologyCountBeyondBaseline = g_GameFactionRuntimeImage.records[factionIndex].unlockedTechnologyCountBeyondBaseline;
+  g_GameFactionRuntimeImage.records[factionIndex].activeArmyContribution = tallyOrComponent;
   g_GameFactionRuntimeImage.records[factionIndex].combinedProgressScore =
-       ((uVar6 >> 1) + RVar2) * TVar1 * FVar5 >> 3;
+       ((cellsLeftOrBitOrRate >> 1) + xeniteRate) * exploredPercent * technologyCountBeyondBaseline >> 3;
   return;
 }
 
@@ -638,38 +638,38 @@ FactionRuntimeGroupIndexEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
-  int iVar1;
-  uint uVar2;
-  ArmyRuntimeSlot **ppAVar3;
-  ArmyRuntimeSlot **ppAVar4;
-  bool bVar5;
-  FactionRuntimeGroupIndexEaxCf5 FVar6;
-  FactionRuntimeGroupIndexEaxCf5 FVar7;
+  int slotsRemaining;
+  uint groupNumber;
+  ArmyRuntimeSlot **slotCursor;
+  ArmyRuntimeSlot **nextSlotCursor;
+  bool found;
+  FactionRuntimeGroupIndexEaxCf5 notFoundResult;
+  FactionRuntimeGroupIndexEaxCf5 foundResult;
   
-  uVar2 = 0;
-  ppAVar4 = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
+  groupNumber = 0;
+  nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
   do {
-    iVar1 = 0x20;
-    uVar2 = uVar2 + 1;
-    bVar5 = uVar2 == 0;
-    ppAVar3 = ppAVar4;
+    slotsRemaining = 0x20;
+    groupNumber = groupNumber + 1;
+    found = groupNumber == 0;
+    slotCursor = nextSlotCursor;
     do {
-      ppAVar4 = ppAVar3;
-      if (iVar1 == 0) break;
-      iVar1 = iVar1 + -1;
-      ppAVar4 = ppAVar3 + 1;
-      bVar5 = (ArmyRuntimeSlot *)runtimeEntry == *ppAVar3;
-      ppAVar3 = ppAVar4;
-    } while (!bVar5);
-    if (bVar5) {
-      FVar7.carry = false;
-      FVar7.runtimeGroupIndex = uVar2;
-      return FVar7;
+      nextSlotCursor = slotCursor;
+      if (slotsRemaining == 0) break;
+      slotsRemaining = slotsRemaining + -1;
+      nextSlotCursor = slotCursor + 1;
+      found = (ArmyRuntimeSlot *)runtimeEntry == *slotCursor;
+      slotCursor = nextSlotCursor;
+    } while (!found);
+    if (found) {
+      foundResult.carry = false;
+      foundResult.runtimeGroupIndex = groupNumber;
+      return foundResult;
     }
-    if (7 < uVar2) {
-      FVar6.carry = true;
-      FVar6.runtimeGroupIndex = (dword)runtimeEntry;
-      return FVar6;
+    if (7 < groupNumber) {
+      notFoundResult.carry = true;
+      notFoundResult.runtimeGroupIndex = (dword)runtimeEntry;
+      return notFoundResult;
     }
   } while( true );
 }
@@ -685,49 +685,49 @@ FactionRuntime_HasArmyAssetOrActiveStructureCf
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
-  ArmyAssetRecordPrefix *pAVar1;
-  WorldOwnerListNode100 *pWVar2;
-  int *piVar3;
-  FactionArmyAssetCount FVar4;
-  dword *pdVar5;
-  bool bVar6;
+  ArmyAssetRecordPrefix *activeAssetRecord;
+  WorldOwnerListNode100 *ownerNode;
+  int *modelPayload;
+  FactionArmyAssetCount assetsRemaining;
+  dword *assetIdCursor;
+  bool matched;
   
-  FVar4 = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
-  pdVar5 = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
-  bVar6 = FVar4 == 0;
-  if (!bVar6) {
+  assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+  assetIdCursor = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetPointersOrIds;
+  matched = assetsRemaining == 0;
+  if (!matched) {
     do {
-      if (FVar4 == 0) break;
-      FVar4 = FVar4 - 1;
-      bVar6 = armyAssetRecord == (ArmyAssetRecordPrefix *)*pdVar5;
-      pdVar5 = pdVar5 + 1;
-    } while (!bVar6);
-    if (bVar6) {
+      if (assetsRemaining == 0) break;
+      assetsRemaining = assetsRemaining - 1;
+      matched = armyAssetRecord == (ArmyAssetRecordPrefix *)*assetIdCursor;
+      assetIdCursor = assetIdCursor + 1;
+    } while (!matched);
+    if (matched) {
       return false;
     }
   }
-  pWVar2 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+  ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
   do {
-    if (pWVar2 == (WorldOwnerListNode100 *)0x0) {
+    if (ownerNode == (WorldOwnerListNode100 *)0x0) {
       return true;
     }
-    if ((pWVar2->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-       (piVar3 = pWVar2->runtimePayload, factionIndex == *(int *)(piVar3[2] + 0xc))) {
-      if (*(int *)(*piVar3 + 0x4c) == 0xb) {
-        if (piVar3[0x2e] == 1) {
-          pAVar1 = (ArmyAssetRecordPrefix *)piVar3[0x18];
+    if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+       (modelPayload = ownerNode->runtimePayload, factionIndex == *(int *)(modelPayload[2] + 0xc))) {
+      if (*(int *)(*modelPayload + 0x4c) == 0xb) {
+        if (modelPayload[0x2e] == 1) {
+          activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[0x18];
           goto joined_r0x0051b8c2;
         }
       }
-      else if ((*(int *)(*piVar3 + 0x4c) == 0xd) && (piVar3[0x2e] == 1)) {
-        pAVar1 = (ArmyAssetRecordPrefix *)piVar3[0x18];
+      else if ((*(int *)(*modelPayload + 0x4c) == 0xd) && (modelPayload[0x2e] == 1)) {
+        activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[0x18];
 joined_r0x0051b8c2:
-        if (armyAssetRecord == pAVar1) {
+        if (armyAssetRecord == activeAssetRecord) {
           return false;
         }
       }
     }
-    pWVar2 = pWVar2->nextNode;
+    ownerNode = ownerNode->nextNode;
   } while( true );
 }
 
@@ -740,22 +740,22 @@ void __thandor_void_preserve_eax_ecx
 GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime)
 
 {
-  GameEntityCommandFlags *pGVar1;
-  ModelRuntimeNode *pMVar2;
-  GraphicsWorldCoordinateQ12 GVar3;
-  GraphicsWorldCoordinateQ12 GVar4;
+  GameEntityCommandFlags *commandFlagsField;
+  ModelRuntimeNode *ownerModelNode;
+  GraphicsWorldCoordinateQ12 modelX;
+  GraphicsWorldCoordinateQ12 modelY;
   
-  pMVar2 = (entityRuntime->common).ownership.modelNode;
-  pGVar1 = &(entityRuntime->common).commandFlags;
-  *pGVar1 = *pGVar1 & 0xffffffc6;
-  GVar3 = (pMVar2->worldTransform).translation.x;
-  GVar4 = (pMVar2->worldTransform).translation.y;
-  (entityRuntime->common).pathCoordinate0Q12 = GVar3;
-  (entityRuntime->common).pathCoordinate1Q12 = GVar4;
-  (entityRuntime->common).trackedCoordinate0Q12 = GVar3;
-  (entityRuntime->common).trackedCoordinate1Q12 = GVar4;
-  (entityRuntime->common).damageState.trackedCoordinate0Q12 = GVar3;
-  (entityRuntime->common).damageState.trackedCoordinate1Q12 = GVar4;
+  ownerModelNode = (entityRuntime->common).ownership.modelNode;
+  commandFlagsField = &(entityRuntime->common).commandFlags;
+  *commandFlagsField = *commandFlagsField & 0xffffffc6;
+  modelX = (ownerModelNode->worldTransform).translation.x;
+  modelY = (ownerModelNode->worldTransform).translation.y;
+  (entityRuntime->common).pathCoordinate0Q12 = modelX;
+  (entityRuntime->common).pathCoordinate1Q12 = modelY;
+  (entityRuntime->common).trackedCoordinate0Q12 = modelX;
+  (entityRuntime->common).trackedCoordinate1Q12 = modelY;
+  (entityRuntime->common).damageState.trackedCoordinate0Q12 = modelX;
+  (entityRuntime->common).damageState.trackedCoordinate1Q12 = modelY;
   return;
 }
 
@@ -769,57 +769,57 @@ WorldPositionEaxEcxEdxCf13
 GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
 
 {
-  GameEntityRuntime *pGVar1;
+  GameEntityRuntime *commandTargetEntity;
   uint in_EAX;
-  Q12 QVar2;
+  Q12 resolvedX;
   int in_ECX;
-  Q12 QVar3;
+  Q12 resolvedY;
   int *in_EDX;
-  int iVar4;
-  ModelRuntimeNode *pMVar5;
-  WorldPositionEaxEcxEdxCf13 WVar6;
-  WorldPositionEaxEcxEdxCf13 WVar7;
+  int resolvedZ;
+  ModelRuntimeNode *targetModelNode;
+  WorldPositionEaxEcxEdxCf13 resolvedPosition;
+  WorldPositionEaxEcxEdxCf13 failedPosition;
   GameEntityRuntime *targetEntityRuntime;
   
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
-      QVar2 = (targetState->common).commandTarget.targetWorldXQ12;
-      QVar3 = (targetState->common).commandTarget.targetWorldYQ12;
-      iVar4 = (targetState->common).commandTarget.targetWorldZQ12;
+      resolvedX = (targetState->common).commandTarget.targetWorldXQ12;
+      resolvedY = (targetState->common).commandTarget.targetWorldYQ12;
+      resolvedZ = (targetState->common).commandTarget.targetWorldZQ12;
 LAB_0051c6a4:
-      WVar6.worldYQ12 = QVar3;
-      WVar6.worldXQ12 = QVar2;
-      WVar6.worldZQ12 = iVar4;
-      WVar6.carry = false;
-      return WVar6;
+      resolvedPosition.worldYQ12 = resolvedY;
+      resolvedPosition.worldXQ12 = resolvedX;
+      resolvedPosition.worldZQ12 = resolvedZ;
+      resolvedPosition.carry = false;
+      return resolvedPosition;
     }
   }
   else {
-    pGVar1 = (targetState->common).commandTarget.targetEntity;
+    commandTargetEntity = (targetState->common).commandTarget.targetEntity;
     in_EAX = 2;
     in_ECX = (targetState->common).ownership.ownerIndex * 2;
-    if (pGVar1 != (GameEntityRuntime *)0x0) {
+    if (commandTargetEntity != (GameEntityRuntime *)0x0) {
       in_EAX = 2 << ((byte)in_ECX & 0x1f);
-      in_EDX = (pGVar1->common).ownership.definitionOrClassRecord;
-      if ((*(uint *)((pGVar1->common).damageState.reserved0C_23 + 0x10) & in_EAX) != 0) {
-        pMVar5 = (pGVar1->common).ownership.modelNode;
+      in_EDX = (commandTargetEntity->common).ownership.definitionOrClassRecord;
+      if ((*(uint *)((commandTargetEntity->common).damageState.reserved0C_23 + 0x10) & in_EAX) != 0) {
+        targetModelNode = (commandTargetEntity->common).ownership.modelNode;
         if (*(int *)(*in_EDX + 0x4c) == 0x15) {
-          pMVar5 = pMVar5->childNodes[0];
+          targetModelNode = targetModelNode->childNodes[0];
         }
-        QVar2 = (pMVar5->worldTransform).translation.x;
-        QVar3 = (pMVar5->worldTransform).translation.y;
-        iVar4 = (pMVar5->worldTransform).translation.z + *(int *)(*in_EDX + 0x50);
+        resolvedX = (targetModelNode->worldTransform).translation.x;
+        resolvedY = (targetModelNode->worldTransform).translation.y;
+        resolvedZ = (targetModelNode->worldTransform).translation.z + *(int *)(*in_EDX + 0x50);
         goto LAB_0051c6a4;
       }
       (targetState->common).commandTarget.targetEntity = (GameEntityRuntime *)0x0;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
-  WVar7.worldYQ12 = in_ECX;
-  WVar7.worldXQ12 = in_EAX;
-  WVar7.carry = true;
-  WVar7.worldZQ12 = (Q12)in_EDX;
-  return WVar7;
+  failedPosition.worldYQ12 = in_ECX;
+  failedPosition.worldXQ12 = in_EAX;
+  failedPosition.carry = true;
+  failedPosition.worldZQ12 = (Q12)in_EDX;
+  return failedPosition;
 }
 
 
@@ -838,14 +838,14 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           ImpactDamageValue32 impactValue,GameEntityRuntime *targetEntityRuntime)
 
 {
-  int *piVar1;
-  GameEntityRuntimeFlags *pGVar2;
-  FactionRelationCounter *pFVar3;
+  int *integrityField;
+  GameEntityRuntimeFlags *runtimeFlagsField;
+  FactionRelationCounter *relationCounter;
   ArmyRuntimeSlot *armyRuntime;
-  void *pvVar4;
-  int iVar5;
-  int iVar6;
-  ModelRuntimeNode *modelNode1;
+  void *definitionRecord;
+  int maxIntegrityOrClassOrCount;
+  int integrityDeltaOrFaction;
+  ModelRuntimeNode *modelOrParentNode;
   
   if (impactValue < 0) {
     targetEntityRuntime = *(GameEntityRuntime **)(targetEntityRuntime->common).ownership.runtimeLink
@@ -856,65 +856,65 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state0A = 0;
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state0B = 0;
   if (0 < (targetEntityRuntime->common).damageState.remainingIntegrity) {
-    iVar5 = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord + 0x60);
-    piVar1 = &(targetEntityRuntime->common).damageState.remainingIntegrity;
-    iVar6 = *piVar1;
-    *piVar1 = *piVar1 - impactValue;
-    if (*piVar1 == 0 || SBORROW4(iVar6,impactValue) != *piVar1 < 0) {
-      modelNode1 = (targetEntityRuntime->common).ownership.modelNode;
-      iVar6 = (targetEntityRuntime->common).damageState.remainingIntegrity;
-      pGVar2 = &(targetEntityRuntime->common).runtimeFlags;
-      *pGVar2 = *pGVar2 | 8;
-      modelNode1 = modelNode1->parentNode;
+    maxIntegrityOrClassOrCount = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord + 0x60);
+    integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
+    integrityDeltaOrFaction = *integrityField;
+    *integrityField = *integrityField - impactValue;
+    if (*integrityField == 0 || SBORROW4(integrityDeltaOrFaction,impactValue) != *integrityField < 0) {
+      modelOrParentNode = (targetEntityRuntime->common).ownership.modelNode;
+      integrityDeltaOrFaction = (targetEntityRuntime->common).damageState.remainingIntegrity;
+      runtimeFlagsField = &(targetEntityRuntime->common).runtimeFlags;
+      *runtimeFlagsField = *runtimeFlagsField | 8;
+      modelOrParentNode = modelOrParentNode->parentNode;
       (targetEntityRuntime->common).damageState.counterOrTerminalReference.terminalEntity =
            targetEntityRuntime;
       (targetEntityRuntime->common).damageState.remainingIntegrity = 0;
-      if (modelNode1 == (ModelRuntimeNode *)0x0) {
-        pvVar4 = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
-        if ((*(int *)((int)pvVar4 + 0x4c) == 0) && (*(int *)((int)pvVar4 + 0x278) == 0)) {
+      if (modelOrParentNode == (ModelRuntimeNode *)0x0) {
+        definitionRecord = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
+        if ((*(int *)((int)definitionRecord + 0x4c) == 0) && (*(int *)((int)definitionRecord + 0x278) == 0)) {
           (((targetEntityRuntime->common).ownership.modelNode)->modelPayload).worldRotationAngle0 =
                impactAngle;
         }
         if (impactValue != 0) {
-          iVar6 = *(int *)((int)(targetEntityRuntime->common).ownership.runtimeLink + 0xc);
-          iVar5 = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord +
+          integrityDeltaOrFaction = *(int *)((int)(targetEntityRuntime->common).ownership.runtimeLink + 0xc);
+          maxIntegrityOrClassOrCount = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord +
                           0x4c);
-          pFVar3 = &g_GameFactionRuntimeImage.records[iVar6].relationCounterC;
-          *pFVar3 = *pFVar3 + 1;
-          pFVar3 = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
-          *pFVar3 = *pFVar3 + 1;
-          if (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[iVar5] ==
+          relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterC;
+          *relationCounter = *relationCounter + 1;
+          relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
+          *relationCounter = *relationCounter + 1;
+          if (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[maxIntegrityOrClassOrCount] ==
               ArmyRuntime_ClassCommandHandlerGroupACf) {
-            pFVar3 = &g_GameFactionRuntimeImage.records[iVar6].relationCounterD;
-            *pFVar3 = *pFVar3 + 1;
-            pFVar3 = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterF;
-            *pFVar3 = *pFVar3 + 1;
-            pFVar3 = &g_GameFactionRuntimeImage.records[iVar6].relationCounterC;
-            *pFVar3 = *pFVar3 + -1;
-            pFVar3 = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
-            *pFVar3 = *pFVar3 + -1;
+            relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterD;
+            *relationCounter = *relationCounter + 1;
+            relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterF;
+            *relationCounter = *relationCounter + 1;
+            relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterC;
+            *relationCounter = *relationCounter + -1;
+            relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
+            *relationCounter = *relationCounter + -1;
           }
         }
       }
       else {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(-iVar6,(modelNode1->runtimePayload).armyRuntime)
+        ArmyRuntime_ApplyDamageAndPropagateToParent(-integrityDeltaOrFaction,(modelOrParentNode->runtimePayload).armyRuntime)
         ;
       }
     }
     else {
-      piVar1 = &(targetEntityRuntime->common).damageState.remainingIntegrity;
-      iVar6 = iVar5 - *piVar1;
-      if (iVar6 == 0 || iVar5 < *piVar1) {
-        piVar1 = &(targetEntityRuntime->common).damageState.remainingIntegrity;
-        *piVar1 = *piVar1 + iVar6;
+      integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
+      integrityDeltaOrFaction = maxIntegrityOrClassOrCount - *integrityField;
+      if (integrityDeltaOrFaction == 0 || maxIntegrityOrClassOrCount < *integrityField) {
+        integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
+        *integrityField = *integrityField + integrityDeltaOrFaction;
         armyRuntime = (targetEntityRuntime->classPayload).impactOwnerLinks.primaryImpactArmyRuntime;
-        iVar5 = (targetEntityRuntime->common).ownership.ownerIndex;
-        for (; iVar5 != 0; iVar5 = iVar5 + -1) {
+        maxIntegrityOrClassOrCount = (targetEntityRuntime->common).ownership.ownerIndex;
+        for (; maxIntegrityOrClassOrCount != 0; maxIntegrityOrClassOrCount = maxIntegrityOrClassOrCount + -1) {
           if ((armyRuntime != (ArmyRuntimeSlot *)0x0) &&
              ((ModelRuntimeSlot *)armyRuntime->actionVector2Q12 !=
               (((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classLinkState).
               modelLinkOrState60.modelRuntime)) {
-            ArmyRuntime_ApplyDamageAndPropagateToParent(iVar6,armyRuntime);
+            ArmyRuntime_ApplyDamageAndPropagateToParent(integrityDeltaOrFaction,armyRuntime);
             return;
           }
           armyRuntime = (targetEntityRuntime->classPayload).impactOwnerLinks.
@@ -945,21 +945,21 @@ GameFactionRuntime_RegisterArmyAssetPointers
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
-  FactionArmyAssetCount *pFVar1;
-  FactionArmyAssetCount FVar2;
-  ArmyRegistryEaxCf5_51b6d0 AVar3;
+  FactionArmyAssetCount *secondaryCount;
+  FactionArmyAssetCount slotIndex;
+  ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
   
-  AVar3 = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  if (!AVar3.carry) {
-    FVar2 = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  if (!resolvedAsset.carry) {
+    slotIndex = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
     do {
-      if (0x3f < FVar2) {
+      if (0x3f < slotIndex) {
         return;
       }
-      *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + FVar2 * 4) = AVar3.eax;
-      pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
-      *pFVar1 = *pFVar1 + 1;
-      FVar2 = FVar2 + 1;
+      *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + slotIndex * 4) = resolvedAsset.eax;
+      secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+      *secondaryCount = *secondaryCount + 1;
+      slotIndex = slotIndex + 1;
       repetitionCount = repetitionCount - 1;
     } while (repetitionCount != 0);
   }
@@ -983,91 +983,91 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
-  FactionArmyAssetCount *pFVar1;
-  int *piVar2;
-  PckArmyAssetIdCatalog PVar3;
-  ArmyAssetRecordPrefix *armyDefinition1;
-  FactionArmyAssetCount FVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  WorldOwnerListNode100 *worldNode1;
-  ArmyRegistryEaxCf5_51b6d0 AVar8;
+  FactionArmyAssetCount *secondaryCount;
+  int *modelPayload;
+  PckArmyAssetIdCatalog refundAmount;
+  ArmyAssetRecordPrefix *armyDefinition;
+  FactionArmyAssetCount assetsRemaining;
+  int recordOffset;
+  int writeIndex;
+  int readIndexOrClassId;
+  WorldOwnerListNode100 *ownerNode;
+  ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
   
-  AVar8 = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  armyDefinition1 = AVar8.eax;
-  if (!AVar8.carry) {
-    iVar5 = factionIndex * 0x740;
-    iVar7 = 0;
-    iVar6 = 0;
-    for (FVar4 = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; FVar4 != 0
-        ; FVar4 = FVar4 - 1) {
-      while ((armyDefinition1 == *(ArmyAssetRecordPrefix **)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar7 * 4) &&
+  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  armyDefinition = resolvedAsset.eax;
+  if (!resolvedAsset.carry) {
+    recordOffset = factionIndex * 0x740;
+    readIndexOrClassId = 0;
+    writeIndex = 0;
+    for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; assetsRemaining != 0
+        ; assetsRemaining = assetsRemaining - 1) {
+      while ((armyDefinition == *(ArmyAssetRecordPrefix **)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4) &&
              (0 < (int)requestedCount))) {
-        iVar7 = iVar7 + 1;
-        pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
-        *pFVar1 = *pFVar1 - 1;
+        readIndexOrClassId = readIndexOrClassId + 1;
+        secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
+        *secondaryCount = *secondaryCount - 1;
         requestedCount = requestedCount - 1;
-        FVar4 = FVar4 - 1;
-        if (FVar4 == 0)
+        assetsRemaining = assetsRemaining - 1;
+        if (assetsRemaining == 0)
         goto 
         GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation;
       }
-      *(undefined4 *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar6 * 4) = *(undefined4 *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar7 * 4);
-      iVar7 = iVar7 + 1;
-      iVar6 = iVar6 + 1;
+      *(undefined4 *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + writeIndex * 4) = *(undefined4 *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4);
+      readIndexOrClassId = readIndexOrClassId + 1;
+      writeIndex = writeIndex + 1;
     }
 GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation:
     if (requestedCount != 0) {
-      worldNode1 = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      if (worldNode1 != (WorldOwnerListNode100 *)0x0) {
-        iVar7 = 0xb;
-        if (((armyDefinition1[1].selectionDetailTemplateVariantIndex & 0x10) == 0) &&
-           (iVar7 = 0x16, (armyDefinition1[1].selectionDetailTemplateVariantIndex & 8) == 0)) {
-          iVar7 = 0xd;
+      ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+      if (ownerNode != (WorldOwnerListNode100 *)0x0) {
+        readIndexOrClassId = 0xb;
+        if (((armyDefinition[1].selectionDetailTemplateVariantIndex & 0x10) == 0) &&
+           (readIndexOrClassId = 0x16, (armyDefinition[1].selectionDetailTemplateVariantIndex & 8) == 0)) {
+          readIndexOrClassId = 0xd;
         }
         do {
-          if (worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-            piVar2 = worldNode1->runtimePayload;
-            if ((factionIndex == *(int *)(piVar2[2] + 0xc)) && (iVar7 == *(int *)(*piVar2 + 0x4c)))
+          if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+            modelPayload = ownerNode->runtimePayload;
+            if ((factionIndex == *(int *)(modelPayload[2] + 0xc)) && (readIndexOrClassId == *(int *)(*modelPayload + 0x4c)))
             {
-              if (iVar7 == 0xd) {
-                if ((((*(uint *)(*piVar2 + 0xc4) &
-                      armyDefinition1[1].selectionDetailTemplateVariantIndex) != 0) &&
-                    (armyDefinition1->registryId == piVar2[0x18])) && (piVar2[0x2e] == 1)) {
-                  piVar2[0x3d] = piVar2[0x3d] - piVar2[0x1d];
-                  PVar3 = armyDefinition1[2].registryId;
-                  piVar2[0x1d] = 0;
-                  piVar2[0x2e] = 0;
-                  piVar2[0x3b] = piVar2[0x3b] & 0xfffffeff;
-                  piVar2[0x18] = 0;
+              if (readIndexOrClassId == 0xd) {
+                if ((((*(uint *)(*modelPayload + 0xc4) &
+                      armyDefinition[1].selectionDetailTemplateVariantIndex) != 0) &&
+                    (armyDefinition->registryId == modelPayload[0x18])) && (modelPayload[0x2e] == 1)) {
+                  modelPayload[0x3d] = modelPayload[0x3d] - modelPayload[0x1d];
+                  refundAmount = armyDefinition[2].registryId;
+                  modelPayload[0x1d] = 0;
+                  modelPayload[0x2e] = 0;
+                  modelPayload[0x3b] = modelPayload[0x3b] & 0xfffffeff;
+                  modelPayload[0x18] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
-                       g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + PVar3;
+                       g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
                   goto joined_r0x005603c3;
                 }
               }
-              else if (iVar7 == 0xb) {
-                if (armyDefinition1->registryId == piVar2[0x18]) {
-                  piVar2[0x3d] = piVar2[0x3d] - piVar2[0x1d];
-                  PVar3 = armyDefinition1[2].registryId;
-                  piVar2[0x1d] = 0;
-                  piVar2[0x2e] = 0;
-                  piVar2[0x3b] = piVar2[0x3b] & 0xfffffeff;
-                  piVar2[0x18] = 0;
+              else if (readIndexOrClassId == 0xb) {
+                if (armyDefinition->registryId == modelPayload[0x18]) {
+                  modelPayload[0x3d] = modelPayload[0x3d] - modelPayload[0x1d];
+                  refundAmount = armyDefinition[2].registryId;
+                  modelPayload[0x1d] = 0;
+                  modelPayload[0x2e] = 0;
+                  modelPayload[0x3b] = modelPayload[0x3b] & 0xfffffeff;
+                  modelPayload[0x18] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
-                       g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + PVar3;
+                       g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
                   goto joined_r0x005603c3;
                 }
               }
-              else if (armyDefinition1->registryId == piVar2[0x18]) {
-                piVar2[0x3d] = piVar2[0x3d] - piVar2[0x1d];
-                PVar3 = armyDefinition1[2].registryId;
-                piVar2[0x1d] = 0;
-                piVar2[0x2b] = 0;
-                piVar2[0x3b] = piVar2[0x3b] & 0xfffffeff;
-                piVar2[0x18] = 0;
+              else if (armyDefinition->registryId == modelPayload[0x18]) {
+                modelPayload[0x3d] = modelPayload[0x3d] - modelPayload[0x1d];
+                refundAmount = armyDefinition[2].registryId;
+                modelPayload[0x1d] = 0;
+                modelPayload[0x2b] = 0;
+                modelPayload[0x3b] = modelPayload[0x3b] & 0xfffffeff;
+                modelPayload[0x18] = 0;
                 g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
-                     g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + PVar3;
+                     g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
 joined_r0x005603c3:
                 requestedCount = requestedCount - 1;
                 if (requestedCount == 0) {
@@ -1076,8 +1076,8 @@ joined_r0x005603c3:
               }
             }
           }
-          worldNode1 = worldNode1->nextNode;
-        } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
+          ownerNode = ownerNode->nextNode;
+        } while (ownerNode != (WorldOwnerListNode100 *)0x0);
       }
     }
   }
@@ -1101,53 +1101,53 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
           FactionRuntimeIndex factionIndex)
 
 {
-  FactionArmyAssetCount *pFVar1;
-  SelectionPlayerRuntimeBlock *pSVar2;
-  InGameRuntimeRootImageC3E4 *node;
-  ArmyAssetRecordPrefix *armyDefinition1;
-  int iVar3;
-  FactionArmyAssetCount FVar4;
-  ArmyRegistryEaxCf5_51b6d0 AVar5;
+  FactionArmyAssetCount *primaryCount;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  ArmyAssetRecordPrefix *armyDefinition;
+  int byteOffsetOrActiveFaction;
+  FactionArmyAssetCount assetsRemaining;
+  ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
   
-  AVar5 = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  armyDefinition1 = AVar5.eax;
-  if (!AVar5.carry) {
-    pSVar2 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-    iVar3 = factionIndex * 0x740;
-    FVar4 = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-    pSVar2->pendingSelectionEntityOffset8098 = (dword)armyDefinition1;
-    for (; FVar4 != 0; FVar4 = FVar4 - 1) {
-      if (armyDefinition1 ==
+  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  armyDefinition = resolvedAsset.eax;
+  if (!resolvedAsset.carry) {
+    playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+    byteOffsetOrActiveFaction = factionIndex * 0x740;
+    assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
+    playerBlock->pendingSelectionEntityOffset8098 = (dword)armyDefinition;
+    for (; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
+      if (armyDefinition ==
           *(ArmyAssetRecordPrefix **)
-           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + iVar3)) {
+           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         do {
           *(undefined4 *)
-           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + iVar3) =
+           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
                *(undefined4 *)
-                ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + iVar3 + 4
+                ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
-          node = g_InGameRuntimeRoot;
-          iVar3 = iVar3 + 4;
-          FVar4 = FVar4 - 1;
-        } while (FVar4 != 0);
-        iVar3 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
-        pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-        *pFVar1 = *pFVar1 - 1;
-        if (factionIndex != iVar3) {
+          runtimeRoot = g_InGameRuntimeRoot;
+          byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
+          assetsRemaining = assetsRemaining - 1;
+        } while (assetsRemaining != 0);
+        byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+        primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
+        *primaryCount = *primaryCount - 1;
+        if (factionIndex != byteOffsetOrActiveFaction) {
           return;
         }
-        UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)node);
+        UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
         if (playerRuntimeId != g_LocalPlayerRuntimeId) {
           return;
         }
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x20;
-        g_InGamePendingPlacementArmyAsset = (sdword)armyDefinition1;
+        g_InGamePendingPlacementArmyAsset = (sdword)armyDefinition;
         g_InGamePlacementSurfaceHeightQ12OrSentinel = 0x7fffffff;
         return;
       }
-      iVar3 = iVar3 + 4;
+      byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
     }
-    pSVar2->pendingSelectionEntityOffset8098 = 0;
+    playerBlock->pendingSelectionEntityOffset8098 = 0;
   }
   return;
 }
@@ -1166,25 +1166,25 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
           ,FactionRuntimeIndex factionIndex)
 
 {
-  FactionArmyAssetCount *pFVar1;
-  dword dVar2;
-  uint uVar3;
-  InGameRuntimeRootImageC3E4 *node;
+  FactionArmyAssetCount *primaryCount;
+  dword pendingAsset;
+  uint assetCount;
+  InGameRuntimeRootImageC3E4 *runtimeRoot;
   
   LOCK();
-  dVar2 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingSelectionEntityOffset8098;
+  pendingAsset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingSelectionEntityOffset8098;
   g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingSelectionEntityOffset8098 = 0;
-  node = g_InGameRuntimeRoot;
+  runtimeRoot = g_InGameRuntimeRoot;
   UNLOCK();
-  if (dVar2 != 0) {
-    uVar3 = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-    if (uVar3 < 0x40) {
-      *(dword *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + uVar3 * 4) = dVar2;
-      pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-      *pFVar1 = *pFVar1 + 1;
+  if (pendingAsset != 0) {
+    assetCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
+    if (assetCount < 0x40) {
+      *(dword *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + assetCount * 4) = pendingAsset;
+      primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
+      *primaryCount = *primaryCount + 1;
     }
-    if (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex) {
-      UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)node);
+    if (factionIndex == (runtimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
+      UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
       if (playerRuntimeId == g_LocalPlayerRuntimeId) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffffdf;
         g_InGamePendingPlacementArmyAsset = 0;
@@ -1211,45 +1211,45 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           FactionRuntimeIndex factionIndex)
 
 {
-  FactionArmyAssetCount *pFVar1;
-  PckArmyAssetIdCatalog PVar2;
-  InGameRuntimeRootImageC3E4 *node;
-  int iVar3;
-  FactionArmyAssetCount FVar4;
-  ArmyRegistryEaxCf5_51b6d0 AVar5;
+  FactionArmyAssetCount *primaryCount;
+  PckArmyAssetIdCatalog storedValue;
+  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  int byteOffsetOrActiveFaction;
+  FactionArmyAssetCount assetsRemaining;
+  ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
   
-  AVar5 = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  if (!AVar5.carry) {
-    iVar3 = factionIndex * 0x740;
-    for (FVar4 = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount; FVar4 != 0;
-        FVar4 = FVar4 - 1) {
-      if (AVar5.eax ==
+  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  if (!resolvedAsset.carry) {
+    byteOffsetOrActiveFaction = factionIndex * 0x740;
+    for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount; assetsRemaining != 0;
+        assetsRemaining = assetsRemaining - 1) {
+      if (resolvedAsset.eax ==
           *(ArmyAssetRecordPrefix **)
-           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + iVar3)) {
+           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         do {
           *(undefined4 *)
-           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + iVar3) =
+           ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
                *(undefined4 *)
-                ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + iVar3 + 4
+                ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
-          node = g_InGameRuntimeRoot;
-          iVar3 = iVar3 + 4;
-          FVar4 = FVar4 - 1;
-        } while (FVar4 != 0);
-        PVar2 = AVar5.eax[2].registryId;
-        iVar3 = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
-        pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-        *pFVar1 = *pFVar1 - 1;
+          runtimeRoot = g_InGameRuntimeRoot;
+          byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
+          assetsRemaining = assetsRemaining - 1;
+        } while (assetsRemaining != 0);
+        storedValue = resolvedAsset.eax[2].registryId;
+        byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+        primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
+        *primaryCount = *primaryCount - 1;
         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
              g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 +
-             ((int)(PVar2 * 7) >> 3);
-        if (iVar3 != factionIndex) {
+             ((int)(storedValue * 7) >> 3);
+        if (byteOffsetOrActiveFaction != factionIndex) {
           return;
         }
-        UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)node);
+        UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
         return;
       }
-      iVar3 = iVar3 + 4;
+      byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
     }
   }
   return;
@@ -1271,18 +1271,18 @@ PlayerRuntime_ResolveAndStoreState8094
           PlayerStateLookupValue1 lookupValue1,RuntimeToken lookupToken)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
-  ArmyRuntimeCreateEaxCf5 AVar2;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  ArmyRuntimeCreateEaxCf5 createdRuntime;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  AVar2 = ArmyRuntime_CreateInstanceFromAssetCf
-                    (4,0,lookupValue0,lookupValue1,pSVar1->constructionLookupState8090,lookupToken,
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  createdRuntime = ArmyRuntime_CreateInstanceFromAssetCf
+                    (4,0,lookupValue0,lookupValue1,playerBlock->constructionLookupState8090,lookupToken,
                      &g_InGameRuntimeRoot->worldRuntime0A30);
-  if (!AVar2.carry) {
-    pSVar1->primarySelectionEntityOffset8094 = AVar2.eax - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+  if (!createdRuntime.carry) {
+    playerBlock->primarySelectionEntityOffset8094 = createdRuntime.eax - (int)g_ArmyRuntimeRebaseBaseMinusOne;
     return;
   }
-  pSVar1->primarySelectionEntityOffset8094 = 0;
+  playerBlock->primarySelectionEntityOffset8094 = 0;
   return;
 }
 
@@ -1352,43 +1352,43 @@ PlayerRuntime_ClearState8094
 void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecords(void)
 
 {
-  InGameRuntimeRootImageC3E4 *pIVar1;
-  dword *pdVar2;
-  int iVar3;
-  OldUnitRecordCount OVar4;
-  int iVar5;
+  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  dword *nextMaskCursor;
+  int factionsRemaining;
+  OldUnitRecordCount recordsRemaining;
+  int wordsRemaining;
   WorldRuntimeContext *worldRuntime;
-  dword *pdVar6;
-  dword *pPVar7;
-  dword *pdVar7;
+  dword *secondaryCursor;
+  dword *primaryRecordCursor;
+  dword *maskCursor;
   
-  iVar3 = 8;
-  iVar5 = 8;
-  pdVar6 = g_OldUnitSecondaryTable;
-  pdVar2 = g_GameFactionRuntimeImage.records[0].technologyMasks256Bits;
+  factionsRemaining = 8;
+  wordsRemaining = 8;
+  secondaryCursor = g_OldUnitSecondaryTable;
+  nextMaskCursor = g_GameFactionRuntimeImage.records[0].technologyMasks256Bits;
   do {
     do {
-      pdVar7 = pdVar2;
-      *pdVar7 = *pdVar7 | *pdVar6;
-      pIVar1 = g_InGameRuntimeRoot;
-      pdVar6 = pdVar6 + 1;
-      iVar5 = iVar5 + -1;
-      pdVar2 = pdVar7 + 1;
-    } while (iVar5 != 0);
-    iVar5 = 8;
-    iVar3 = iVar3 + -1;
-    pdVar2 = pdVar7 + 0x1c9;
-  } while (iVar3 != 0);
+      maskCursor = nextMaskCursor;
+      *maskCursor = *maskCursor | *secondaryCursor;
+      runtimeRoot = g_InGameRuntimeRoot;
+      secondaryCursor = secondaryCursor + 1;
+      wordsRemaining = wordsRemaining + -1;
+      nextMaskCursor = maskCursor + 1;
+    } while (wordsRemaining != 0);
+    wordsRemaining = 8;
+    factionsRemaining = factionsRemaining + -1;
+    nextMaskCursor = maskCursor + 0x1c9;
+  } while (factionsRemaining != 0);
   if ((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) && (g_OldUnitRecordCount != 0)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-    OVar4 = g_OldUnitRecordCount;
-    pPVar7 = g_OldUnitPrimaryTable;
+    recordsRemaining = g_OldUnitRecordCount;
+    primaryRecordCursor = g_OldUnitPrimaryTable;
     do {
       ArmyRuntime_CreateInstanceFromAssetCf
-                (6,pPVar7[4],pPVar7[3],pPVar7[2],pPVar7[1],*pPVar7,worldRuntime);
-      pPVar7 = pPVar7 + 8;
-      OVar4 = OVar4 - 1;
-    } while (OVar4 != 0);
+                (6,primaryRecordCursor[4],primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,worldRuntime);
+      primaryRecordCursor = primaryRecordCursor + 8;
+      recordsRemaining = recordsRemaining - 1;
+    } while (recordsRemaining != 0);
     WorldRuntime_ForEachNodeInOwnerListD8
               (worldRuntime,ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
                worldRuntime);
@@ -1396,8 +1396,8 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
               (worldRuntime,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                worldRuntime);
     FieldGrid_ClassifyCellFlagsToRuntimeByte
-              ((pIVar1->worldRuntime0A30).activeFactionRuntimeIndex,
-               (pIVar1->worldRuntime0A30).fieldGrid);
+              ((runtimeRoot->worldRuntime0A30).activeFactionRuntimeIndex,
+               (runtimeRoot->worldRuntime0A30).fieldGrid);
   }
   return;
 }
@@ -1475,239 +1475,239 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
           FactionRuntimeIndex secondFactionIndex)
 
 {
-  FactionCapabilityFlags *pFVar1;
-  TritiumAmountQ4 *pTVar2;
-  XeniteAmountQ4 *pXVar3;
-  EnergyAmountQ4 *pEVar4;
-  dword *pdVar5;
-  FactionRelationCounter *pFVar6;
-  FactionArmyAssetCount *pFVar7;
-  TritiumAmountQ4 TVar8;
-  XeniteAmountQ4 XVar9;
-  TritiumAmountQ4 TVar10;
-  EnergyAmountQ4 EVar11;
-  uint uVar12;
-  int iVar13;
-  int iVar14;
-  InGameSimulationTick IVar15;
-  FactionRuntimeIndex FVar16;
-  uint uVar17;
-  dword dVar18;
-  byte bVar19;
-  byte bVar20;
-  FactionArmyAssetCount FVar21;
-  uint uVar22;
-  FrontendPlayerRuntimeRecord *pFVar23;
-  int iVar24;
-  FrontendPlayerRuntimeBlockCount FVar25;
-  FieldGridCell *gridCell1;
+  FactionCapabilityFlags *capabilityFlagsField;
+  TritiumAmountQ4 *tritiumField;
+  XeniteAmountQ4 *xeniteField;
+  EnergyAmountQ4 *energyField;
+  dword *technologyMaskWord;
+  FactionRelationCounter *relationCounter;
+  FactionArmyAssetCount *armyAssetCount;
+  TritiumAmountQ4 tritiumAmount;
+  XeniteAmountQ4 xeniteLimit;
+  TritiumAmountQ4 tritiumLimit;
+  EnergyAmountQ4 energyCapacity;
+  uint trailingMaskWord;
+  int counterValueBOrE;
+  int counterValueF;
+  InGameSimulationTick currentTick;
+  FactionRuntimeIndex originalFirstFactionIndex;
+  uint bitOrPlayerCountOrSlot;
+  dword randomValue;
+  byte secondShift;
+  byte firstShift;
+  FactionArmyAssetCount assetsRemaining;
+  uint playerCountOrMaskWord;
+  FrontendPlayerRuntimeRecord *playerBlockCursor;
+  int recordOrCountOrIndex;
+  FrontendPlayerRuntimeBlockCount playerBlocksRemaining;
+  FieldGridCell *gridCell;
   dword primaryArmyAssetReferenceDword;
   dword secondaryArmyAssetReferenceDword;
   GraphicsTextureSet *survivingFactionTextureSet;
   GraphicsPaletteAsset *survivingFactionPaletteAsset;
-  FieldGridAsset *fieldGrid1;
-  InGameRuntimeRootImageC3E4 *gameRuntime1;
-  WorldOwnerListNode100 *worldNode1;
+  FieldGridAsset *terrainGrid;
+  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  WorldOwnerListNode100 *ownerNode;
   
-  FVar16 = firstFactionIndex;
+  originalFirstFactionIndex = firstFactionIndex;
   if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == secondFactionIndex) {
     InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForSecond + 500);
   }
   else if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == firstFactionIndex) {
     InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForFirst + 500);
   }
-  bVar19 = (byte)secondFactionIndex * '\x04';
-  bVar20 = (byte)firstFactionIndex * '\x04';
+  secondShift = (byte)secondFactionIndex * '\x04';
+  firstShift = (byte)firstFactionIndex * '\x04';
   g_GameFactionRuntimeImage.records[firstFactionIndex].packedRelationStates =
-       stateFirstTowardSecond << (bVar19 & 0x1f) |
-       ~(0xf << (bVar19 & 0x1f)) &
+       stateFirstTowardSecond << (secondShift & 0x1f) |
+       ~(0xf << (secondShift & 0x1f)) &
        g_GameFactionRuntimeImage.records[firstFactionIndex].packedRelationStates;
   g_GameFactionRuntimeImage.records[secondFactionIndex].packedRelationStates =
-       ~(0xf << (bVar20 & 0x1f)) &
+       ~(0xf << (firstShift & 0x1f)) &
        g_GameFactionRuntimeImage.records[secondFactionIndex].packedRelationStates |
-       stateSecondTowardFirst << (bVar20 & 0x1f);
-  uVar17 = 1 << ((byte)secondFactionIndex & 0x1f);
+       stateSecondTowardFirst << (firstShift & 0x1f);
+  bitOrPlayerCountOrSlot = 1 << ((byte)secondFactionIndex & 0x1f);
   if (stateSecondTowardFirst < 4) {
-    pFVar1 = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
-    *pFVar1 = *pFVar1 & ~uVar17;
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField & ~bitOrPlayerCountOrSlot;
   }
   else {
-    pFVar1 = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
-    *pFVar1 = *pFVar1 | uVar17;
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField | bitOrPlayerCountOrSlot;
   }
-  uVar17 = 1 << ((byte)firstFactionIndex & 0x1f);
+  bitOrPlayerCountOrSlot = 1 << ((byte)firstFactionIndex & 0x1f);
   if (stateSecondTowardFirst < 4) {
-    pFVar1 = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
-    *pFVar1 = *pFVar1 & ~uVar17;
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField & ~bitOrPlayerCountOrSlot;
   }
   else {
-    pFVar1 = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
-    *pFVar1 = *pFVar1 | uVar17;
+    capabilityFlagsField = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
+    *capabilityFlagsField = *capabilityFlagsField | bitOrPlayerCountOrSlot;
   }
-  IVar15 = g_GameFactionRuntimeImage.tail.simulationTick;
+  currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
   *(InGameSimulationTick *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + secondFactionIndex * 4) =
        g_GameFactionRuntimeImage.tail.simulationTick;
-  *(InGameSimulationTick *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + firstFactionIndex * 4) = IVar15;
+  *(InGameSimulationTick *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + firstFactionIndex * 4) = currentTick;
   if (stateSecondTowardFirst != 0xb)
   goto GameFactionRuntime_ApplyPairwiseRelationTransition_RebuildTargetEntriesAndReturn;
-  uVar17 = 0;
-  uVar22 = 0;
-  FVar25 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar23 = g_FrontendPlayerRuntimeBlocks;
+  bitOrPlayerCountOrSlot = 0;
+  playerCountOrMaskWord = 0;
+  playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+  playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (secondFactionIndex == (pFVar23->factionAssignment).factionAssignmentIndex) {
-      uVar17 = uVar17 + 1;
+    if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+      bitOrPlayerCountOrSlot = bitOrPlayerCountOrSlot + 1;
     }
-    if (firstFactionIndex == (pFVar23->factionAssignment).factionAssignmentIndex) {
-      uVar22 = uVar22 + 1;
+    if (firstFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+      playerCountOrMaskWord = playerCountOrMaskWord + 1;
     }
-    pFVar23 = pFVar23 + 1;
-    FVar25 = FVar25 - 1;
-  } while (FVar25 != 0);
-  if ((uVar17 & uVar22) == 0) {
-    if (uVar17 != 0)
+    playerBlockCursor = playerBlockCursor + 1;
+    playerBlocksRemaining = playerBlocksRemaining - 1;
+  } while (playerBlocksRemaining != 0);
+  if ((bitOrPlayerCountOrSlot & playerCountOrMaskWord) == 0) {
+    if (bitOrPlayerCountOrSlot != 0)
     goto GameFactionRuntime_ApplyPairwiseRelationTransition_CommitSelectedFactionMergeDirection;
-    if (uVar22 == 0)
+    if (playerCountOrMaskWord == 0)
     goto GameFactionRuntime_ApplyPairwiseRelationTransition_ResolveState11FactionMergeDirection;
   }
   else {
 GameFactionRuntime_ApplyPairwiseRelationTransition_ResolveState11FactionMergeDirection:
-    dVar18 = (*g_RandomGeneratorState.next)();
-    if ((dVar18 & 0x2000) == 0) {
+    randomValue = (*g_RandomGeneratorState.next)();
+    if ((randomValue & 0x2000) == 0) {
 GameFactionRuntime_ApplyPairwiseRelationTransition_CommitSelectedFactionMergeDirection:
       firstFactionIndex = secondFactionIndex;
-      secondFactionIndex = FVar16;
+      secondFactionIndex = originalFirstFactionIndex;
     }
   }
-  gameRuntime1 = g_InGameRuntimeRoot;
+  runtimeRoot = g_InGameRuntimeRoot;
   if (secondFactionIndex == (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
     (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex = firstFactionIndex;
   }
   survivingFactionTextureSet = g_ArmyGraphicsBindings[firstFactionIndex].textureSet;
   survivingFactionPaletteAsset = g_ArmyGraphicsBindings[firstFactionIndex].paletteAsset;
-  pFVar23 = g_FrontendPlayerRuntimeBlocks;
-  FVar25 = g_FrontendPlayerRuntimeBlockCount;
-  for (worldNode1 = (gameRuntime1->worldRuntime0A30).ownerListHead;
-      g_FrontendPlayerRuntimeBlocks = pFVar23, g_FrontendPlayerRuntimeBlockCount = FVar25,
-      worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
-    if ((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-       (iVar24 = *(int *)((int)worldNode1->runtimePayload + 8),
-       *(int *)(iVar24 + 0xc) == secondFactionIndex)) {
-      *(FactionRuntimeIndex *)(iVar24 + 0xc) = firstFactionIndex;
+  playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+  playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+  for (ownerNode = (runtimeRoot->worldRuntime0A30).ownerListHead;
+      g_FrontendPlayerRuntimeBlocks = playerBlockCursor, g_FrontendPlayerRuntimeBlockCount = playerBlocksRemaining,
+      ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+    if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+       (recordOrCountOrIndex = *(int *)((int)ownerNode->runtimePayload + 8),
+       *(int *)(recordOrCountOrIndex + 0xc) == secondFactionIndex)) {
+      *(FactionRuntimeIndex *)(recordOrCountOrIndex + 0xc) = firstFactionIndex;
       ModelRuntimeHierarchy_SetCommandTargetRecursive
                 (survivingFactionPaletteAsset,survivingFactionTextureSet,
-                 *(ModelRuntimeNode **)(iVar24 + 4));
+                 *(ModelRuntimeNode **)(recordOrCountOrIndex + 4));
     }
-    pFVar23 = g_FrontendPlayerRuntimeBlocks;
-    FVar25 = g_FrontendPlayerRuntimeBlockCount;
+    playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+    playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
   }
   do {
-    if (secondFactionIndex == (pFVar23->factionAssignment).factionAssignmentIndex) {
-      iVar24 = pFVar23->playerRuntimeId;
-      (pFVar23->factionAssignment).factionAssignmentIndex = firstFactionIndex;
-      g_SelectionPlayerRuntimeBlockPointers[iVar24]->primaryEntityOrFactionToken8080 =
+    if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+      recordOrCountOrIndex = playerBlockCursor->playerRuntimeId;
+      (playerBlockCursor->factionAssignment).factionAssignmentIndex = firstFactionIndex;
+      g_SelectionPlayerRuntimeBlockPointers[recordOrCountOrIndex]->primaryEntityOrFactionToken8080 =
            firstFactionIndex;
     }
-    pFVar23 = pFVar23 + 1;
-    FVar25 = FVar25 - 1;
-  } while (FVar25 != 0);
-  fieldGrid1 = (gameRuntime1->worldRuntime0A30).fieldGrid;
-  iVar24 = fieldGrid1->gridWidth * fieldGrid1->gridHeight;
-  gridCell1 = fieldGrid1->cells;
+    playerBlockCursor = playerBlockCursor + 1;
+    playerBlocksRemaining = playerBlocksRemaining - 1;
+  } while (playerBlocksRemaining != 0);
+  terrainGrid = (runtimeRoot->worldRuntime0A30).fieldGrid;
+  recordOrCountOrIndex = terrainGrid->gridWidth * terrainGrid->gridHeight;
+  gridCell = terrainGrid->cells;
   do {
-    gridCell1->runtime60_6B[firstFactionIndex + 0x10] =
-         gridCell1->runtime60_6B[firstFactionIndex + 0x10] |
-         gridCell1->runtime60_6B[secondFactionIndex + 0x10];
-    gridCell1 = gridCell1 + 1;
-    iVar24 = iVar24 + -1;
-  } while (iVar24 != 0);
+    gridCell->runtime60_6B[firstFactionIndex + 0x10] =
+         gridCell->runtime60_6B[firstFactionIndex + 0x10] |
+         gridCell->runtime60_6B[secondFactionIndex + 0x10];
+    gridCell = gridCell + 1;
+    recordOrCountOrIndex = recordOrCountOrIndex + -1;
+  } while (recordOrCountOrIndex != 0);
   g_GameFactionRuntimeImage.tail.factionLifecycleStates[secondFactionIndex] = 0;
-  TVar8 = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumCurrentQ4;
-  XVar9 = g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteStorageLimitQ4;
-  TVar10 = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumStorageLimitQ4;
+  tritiumAmount = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumCurrentQ4;
+  xeniteLimit = g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteStorageLimitQ4;
+  tritiumLimit = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumStorageLimitQ4;
   g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteCurrentQ4 =
        g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteCurrentQ4 +
        g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteCurrentQ4;
-  pTVar2 = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumCurrentQ4;
-  *pTVar2 = *pTVar2 + TVar8;
-  pXVar3 = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteStorageLimitQ4;
-  *pXVar3 = *pXVar3 + XVar9;
-  pTVar2 = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumStorageLimitQ4;
-  *pTVar2 = *pTVar2 + TVar10;
-  EVar11 = g_GameFactionRuntimeImage.records[secondFactionIndex].energyGenerationCapacityQ4;
-  pEVar4 = &g_GameFactionRuntimeImage.records[firstFactionIndex].baselineEnergySupplyQ4;
-  *pEVar4 = *pEVar4 + g_GameFactionRuntimeImage.records[secondFactionIndex].baselineEnergySupplyQ4;
-  pEVar4 = &g_GameFactionRuntimeImage.records[firstFactionIndex].energyGenerationCapacityQ4;
-  *pEVar4 = *pEVar4 + EVar11;
-  uVar17 = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[1];
-  uVar22 = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[2];
-  uVar12 = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[3];
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits;
-  *pdVar5 = *pdVar5 | g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
+  tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumCurrentQ4;
+  *tritiumField = *tritiumField + tritiumAmount;
+  xeniteField = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteStorageLimitQ4;
+  *xeniteField = *xeniteField + xeniteLimit;
+  tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumStorageLimitQ4;
+  *tritiumField = *tritiumField + tritiumLimit;
+  energyCapacity = g_GameFactionRuntimeImage.records[secondFactionIndex].energyGenerationCapacityQ4;
+  energyField = &g_GameFactionRuntimeImage.records[firstFactionIndex].baselineEnergySupplyQ4;
+  *energyField = *energyField + g_GameFactionRuntimeImage.records[secondFactionIndex].baselineEnergySupplyQ4;
+  energyField = &g_GameFactionRuntimeImage.records[firstFactionIndex].energyGenerationCapacityQ4;
+  *energyField = *energyField + energyCapacity;
+  bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[1];
+  playerCountOrMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[2];
+  trailingMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[3];
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits;
+  *technologyMaskWord = *technologyMaskWord | g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
                       [0];
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 1;
-  *pdVar5 = *pdVar5 | uVar17;
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 2;
-  *pdVar5 = *pdVar5 | uVar22;
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 3;
-  *pdVar5 = *pdVar5 | uVar12;
-  uVar17 = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[5];
-  uVar22 = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[6];
-  uVar12 = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[7];
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 4;
-  *pdVar5 = *pdVar5 | g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 1;
+  *technologyMaskWord = *technologyMaskWord | bitOrPlayerCountOrSlot;
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 2;
+  *technologyMaskWord = *technologyMaskWord | playerCountOrMaskWord;
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 3;
+  *technologyMaskWord = *technologyMaskWord | trailingMaskWord;
+  bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[5];
+  playerCountOrMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[6];
+  trailingMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[7];
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 4;
+  *technologyMaskWord = *technologyMaskWord | g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
                       [4];
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 5;
-  *pdVar5 = *pdVar5 | uVar17;
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 6;
-  *pdVar5 = *pdVar5 | uVar22;
-  pdVar5 = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 7;
-  *pdVar5 = *pdVar5 | uVar12;
-  TVar8 = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumExtractedTotalQ4;
-  iVar24 = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterA;
-  iVar13 = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterB;
-  pXVar3 = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteExtractedTotalQ4;
-  *pXVar3 = *pXVar3 + g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteExtractedTotalQ4;
-  pTVar2 = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumExtractedTotalQ4;
-  *pTVar2 = *pTVar2 + TVar8;
-  pFVar6 = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterA;
-  *pFVar6 = *pFVar6 + iVar24;
-  pFVar6 = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterB;
-  *pFVar6 = *pFVar6 + iVar13;
-  iVar24 = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterD;
-  iVar13 = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterE;
-  iVar14 = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterF;
-  pFVar6 = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterC;
-  *pFVar6 = *pFVar6 + g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterC;
-  pFVar6 = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterD;
-  *pFVar6 = *pFVar6 + iVar24;
-  pFVar6 = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterE;
-  *pFVar6 = *pFVar6 + iVar13;
-  pFVar6 = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterF;
-  *pFVar6 = *pFVar6 + iVar14;
-  FVar21 = g_GameFactionRuntimeImage.records[secondFactionIndex].primaryArmyAssetCount;
-  iVar24 = 0;
-  for (uVar17 = g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
-      (FVar21 != 0 && (uVar17 < 0x40)); uVar17 = uVar17 + 1) {
-    primaryArmyAssetReferenceDword = *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + iVar24 * 4);
-    pFVar7 = &g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
-    *pFVar7 = *pFVar7 + 1;
-    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + uVar17 * 4) = primaryArmyAssetReferenceDword;
-    iVar24 = iVar24 + 1;
-    FVar21 = FVar21 - 1;
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 5;
+  *technologyMaskWord = *technologyMaskWord | bitOrPlayerCountOrSlot;
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 6;
+  *technologyMaskWord = *technologyMaskWord | playerCountOrMaskWord;
+  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 7;
+  *technologyMaskWord = *technologyMaskWord | trailingMaskWord;
+  tritiumAmount = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumExtractedTotalQ4;
+  recordOrCountOrIndex = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterA;
+  counterValueBOrE = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterB;
+  xeniteField = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteExtractedTotalQ4;
+  *xeniteField = *xeniteField + g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteExtractedTotalQ4;
+  tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumExtractedTotalQ4;
+  *tritiumField = *tritiumField + tritiumAmount;
+  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterA;
+  *relationCounter = *relationCounter + recordOrCountOrIndex;
+  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterB;
+  *relationCounter = *relationCounter + counterValueBOrE;
+  recordOrCountOrIndex = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterD;
+  counterValueBOrE = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterE;
+  counterValueF = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterF;
+  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterC;
+  *relationCounter = *relationCounter + g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterC;
+  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterD;
+  *relationCounter = *relationCounter + recordOrCountOrIndex;
+  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterE;
+  *relationCounter = *relationCounter + counterValueBOrE;
+  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterF;
+  *relationCounter = *relationCounter + counterValueF;
+  assetsRemaining = g_GameFactionRuntimeImage.records[secondFactionIndex].primaryArmyAssetCount;
+  recordOrCountOrIndex = 0;
+  for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
+      (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < 0x40)); bitOrPlayerCountOrSlot = bitOrPlayerCountOrSlot + 1) {
+    primaryArmyAssetReferenceDword = *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + recordOrCountOrIndex * 4);
+    armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
+    *armyAssetCount = *armyAssetCount + 1;
+    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + bitOrPlayerCountOrSlot * 4) = primaryArmyAssetReferenceDword;
+    recordOrCountOrIndex = recordOrCountOrIndex + 1;
+    assetsRemaining = assetsRemaining - 1;
   }
-  FVar21 = g_GameFactionRuntimeImage.records[secondFactionIndex].secondaryArmyAssetCount;
-  iVar24 = 0;
-  for (uVar17 = g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
-      (FVar21 != 0 && (uVar17 < 0x40)); uVar17 = uVar17 + 1) {
+  assetsRemaining = g_GameFactionRuntimeImage.records[secondFactionIndex].secondaryArmyAssetCount;
+  recordOrCountOrIndex = 0;
+  for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
+      (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < 0x40)); bitOrPlayerCountOrSlot = bitOrPlayerCountOrSlot + 1) {
     secondaryArmyAssetReferenceDword =
-         *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar24 * 4);
-    pFVar7 = &g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
-    *pFVar7 = *pFVar7 + 1;
-    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + uVar17 * 4) = secondaryArmyAssetReferenceDword
+         *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + recordOrCountOrIndex * 4);
+    armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
+    *armyAssetCount = *armyAssetCount + 1;
+    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + bitOrPlayerCountOrSlot * 4) = secondaryArmyAssetReferenceDword
     ;
-    iVar24 = iVar24 + 1;
-    FVar21 = FVar21 - 1;
+    recordOrCountOrIndex = recordOrCountOrIndex + 1;
+    assetsRemaining = assetsRemaining - 1;
   }
   UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   UiCatalogGroup42_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);

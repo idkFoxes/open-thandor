@@ -23,186 +23,186 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *frontendRootPage)
 
 {
-  UiNodeFlags *pUVar1;
-  dword dVar2;
-  UiNodeVtable *pUVar3;
-  int iVar4;
-  FrontendLoadedLevelRuntimeImage370 *pFVar5;
-  dword dVar6;
-  uint uVar7;
-  uint uVar8;
-  byte *pbVar9;
-  dword dVar10;
-  FrontendPlayerRuntimeRecord *pFVar11;
-  TextResourceResolveEaxCf5 TVar12;
-  TextResourceResolveEaxCf5 TVar13;
-  FrontendPlayerRuntimeBlockCount FVar14;
+  UiNodeFlags *compactLayoutFlags;
+  dword rowControlOffset;
+  UiNodeVtable *rootVtable;
+  int localPlayerRuntimeId;
+  FrontendLoadedLevelRuntimeImage370 *loadedLevel;
+  dword activeCountOffsetOrLocalRow;
+  uint rowOrAssignmentIndex;
+  uint rowCursor;
+  byte *rowTextIdBytes;
+  dword assignableCountOrOffset;
+  FrontendPlayerRuntimeRecord *playerRecord;
+  TextResourceResolveEaxCf5 titleText;
+  TextResourceResolveEaxCf5 templateText;
+  FrontendPlayerRuntimeBlockCount remainingPlayerRecords;
   
   UiPageStack_SetActiveIndex(0xb,&frontendRootPage->primaryPageStack);
   if ((int)g_FramebufferWidth < 0x281) {
-    pUVar1 = &(frontendRootPage->compactLayoutControl).nodeFlags;
-    *pUVar1 = *pUVar1 | 0x2000;
+    compactLayoutFlags = &(frontendRootPage->compactLayoutControl).nodeFlags;
+    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
-  pFVar5 = g_FrontendLoadedLevelAsset;
-  dVar6 = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
-  dVar10 = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
-  uVar7 = 0;
+  loadedLevel = g_FrontendLoadedLevelAsset;
+  activeCountOffsetOrLocalRow = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
+  assignableCountOrOffset = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
+  rowOrAssignmentIndex = 0;
   do {
-    dVar2 = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[uVar7 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar2) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar2) & 0xfffffbff;
-    pbVar9 = frontendRootPage->taskRowControls04C + dVar2 + 8;
-    pbVar9[0] = 0x9a;
-    pbVar9[1] = 0x21;
-    pbVar9[2] = 0;
-    pbVar9[3] = 0;
-    dVar2 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[uVar7 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar2) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar2) & 0xfffffbff;
-    dVar2 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[uVar7 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar2) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar2) & 0xfffffbfd;
-    dVar2 = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[uVar7 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar2) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar2) & 0xffffffbf;
-    dVar2 = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[uVar7 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar2 - 4)) & 0xfffffff7;
-    uVar8 = uVar7 + 1;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar2) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar2) & 0xffffffbf;
-    g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar7 + 1] =
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
+    rowTextIdBytes = frontendRootPage->taskRowControls04C + rowControlOffset + 8;
+    rowTextIdBytes[0] = 0x9a;
+    rowTextIdBytes[1] = 0x21;
+    rowTextIdBytes[2] = 0;
+    rowTextIdBytes[3] = 0;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbfd;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    rowCursor = rowOrAssignmentIndex + 1;
+    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowOrAssignmentIndex + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    dVar6 = dVar6 - 1;
-    dVar10 = dVar10 - 1;
-    uVar7 = uVar8;
-  } while (dVar10 != 0);
-  for (; dVar6 != 0; dVar6 = dVar6 - 1) {
-    dVar10 = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar10) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar10) & 0xfffffbff;
-    pbVar9 = frontendRootPage->taskRowControls04C + dVar10 + 8;
-    pbVar9[0] = 0x9a;
-    pbVar9[1] = 0x21;
-    pbVar9[2] = 0;
-    pbVar9[3] = 0;
-    dVar10 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar10) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar10) & 0xfffffbff;
-    dVar10 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar10) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar10) & 0xfffffffd;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar10) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar10) | 0x400;
-    dVar10 = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar10) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar10) & 0xffffffbf;
-    dVar10 = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar10 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar10) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar10) & 0xffffffbf;
-    g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar8 + 1] =
+    activeCountOffsetOrLocalRow = activeCountOffsetOrLocalRow - 1;
+    assignableCountOrOffset = assignableCountOrOffset - 1;
+    rowOrAssignmentIndex = rowCursor;
+  } while (assignableCountOrOffset != 0);
+  for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow = activeCountOffsetOrLocalRow - 1) {
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) & 0xfffffff7;
+    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
+    rowTextIdBytes = frontendRootPage->taskRowControls04C + assignableCountOrOffset + 8;
+    rowTextIdBytes[0] = 0x9a;
+    rowTextIdBytes[1] = 0x21;
+    rowTextIdBytes[2] = 0;
+    rowTextIdBytes[3] = 0;
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffffd;
+    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) | 0x400;
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    uVar8 = uVar8 + 1;
+    rowCursor = rowCursor + 1;
   }
-  for (; uVar8 < 7; uVar8 = uVar8 + 1) {
-    dVar6 = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) | 0x400;
-    pbVar9 = frontendRootPage->taskRowControls04C + dVar6 + 8;
-    pbVar9[0] = 0x99;
-    pbVar9[1] = 0x21;
-    pbVar9[2] = 0;
-    pbVar9[3] = 0;
-    dVar6 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) | 0x400;
-    dVar6 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) & 0xfffffffd;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) | 0x400;
-    dVar6 = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) | 0x40;
-    dVar6 = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[uVar8 + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (dVar6 - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) | 0x40;
-    g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar8 + 1] = 0;
+  for (; rowCursor < 7; rowCursor = rowCursor + 1) {
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+    rowTextIdBytes = frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8;
+    rowTextIdBytes[0] = 0x99;
+    rowTextIdBytes[1] = 0x21;
+    rowTextIdBytes[2] = 0;
+    rowTextIdBytes[3] = 0;
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
+    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] = 0;
   }
   do {
-    dVar6 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[uVar8];
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6 + 8) =
-         *(int *)((int)&pFVar5->playerSlots[0].aiClassOrMode +
-                 g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[uVar8 - 1]) + 0x2173 + uVar8;
-    *(uint *)(frontendRootPage->taskRowControls04C + dVar6) =
-         *(uint *)(frontendRootPage->taskRowControls04C + dVar6) & 0xfffffffd;
-    iVar4 = g_LocalPlayerRuntimeId;
-    uVar8 = uVar8 - 1;
-  } while (uVar8 != 0);
-  uVar7 = 1;
-  dVar6 = 0;
-  pFVar11 = g_FrontendPlayerRuntimeBlocks;
-  FVar14 = g_FrontendPlayerRuntimeBlockCount;
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8) =
+         *(int *)((int)&loadedLevel->playerSlots[0].aiClassOrMode +
+                 g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]) + 0x2173 + rowCursor;
+    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
+    localPlayerRuntimeId = g_LocalPlayerRuntimeId;
+    rowCursor = rowCursor - 1;
+  } while (rowCursor != 0);
+  rowOrAssignmentIndex = 1;
+  activeCountOffsetOrLocalRow = 0;
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
+  remainingPlayerRecords = g_FrontendPlayerRuntimeBlockCount;
   do {
-    dVar10 = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[uVar7];
-    (pFVar11->factionAssignment).factionAssignmentIndex = uVar7;
-    pbVar9 = frontendRootPage->taskRowControls04C + (dVar10 - 0x4c);
-    (pFVar11->factionAssignment).readyOrWaitState = 0;
-    (pFVar11->factionAssignment).consensusValue = 0;
-    pbVar9[0x54] = 0x98;
-    pbVar9[0x55] = 0x21;
-    pbVar9[0x56] = 0;
-    pbVar9[0x57] = 0;
-    if (iVar4 == pFVar11->playerRuntimeId) {
-      dVar6 = uVar7 - 1;
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex];
+    (playerRecord->factionAssignment).factionAssignmentIndex = rowOrAssignmentIndex;
+    rowTextIdBytes = frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 0x4c);
+    (playerRecord->factionAssignment).readyOrWaitState = 0;
+    (playerRecord->factionAssignment).consensusValue = 0;
+    rowTextIdBytes[0x54] = 0x98;
+    rowTextIdBytes[0x55] = 0x21;
+    rowTextIdBytes[0x56] = 0;
+    rowTextIdBytes[0x57] = 0;
+    if (localPlayerRuntimeId == playerRecord->playerRuntimeId) {
+      activeCountOffsetOrLocalRow = rowOrAssignmentIndex - 1;
     }
-    uVar7 = uVar7 + 1;
-    pFVar11 = pFVar11 + 1;
-    if ((pFVar5->runtimeTail2E0).assignableFactionCount < uVar7) {
-      uVar7 = uVar7 - (pFVar5->runtimeTail2E0).assignableFactionCount;
+    rowOrAssignmentIndex = rowOrAssignmentIndex + 1;
+    playerRecord = playerRecord + 1;
+    if ((loadedLevel->runtimeTail2E0).assignableFactionCount < rowOrAssignmentIndex) {
+      rowOrAssignmentIndex = rowOrAssignmentIndex - (loadedLevel->runtimeTail2E0).assignableFactionCount;
     }
-    FVar14 = FVar14 - 1;
-  } while (FVar14 != 0);
+    remainingPlayerRecords = remainingPlayerRecords - 1;
+  } while (remainingPlayerRecords != 0);
   *(uint *)(frontendRootPage->taskRowControls04C +
-           g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[dVar6 + 1]) =
+           g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) =
        *(uint *)(frontendRootPage->taskRowControls04C +
-                g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[dVar6 + 1]) | 2;
+                g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) | 2;
   *(uint *)(frontendRootPage->taskRowControls04C +
-           (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[dVar6 + 1] - 4)) =
+           (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) =
        *(uint *)(frontendRootPage->taskRowControls04C +
-                (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[dVar6 + 1] - 4)) &
+                (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) &
        0xfffffff7;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls
-            ((dword)pbVar9,dVar6,(UiRootNode *)frontendRootPage);
-  pUVar3 = (frontendRootPage->rootNode).vtable;
+            ((dword)rowTextIdBytes,activeCountOffsetOrLocalRow,(UiRootNode *)frontendRootPage);
+  rootVtable = (frontendRootPage->rootNode).vtable;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     frontendRootPage->taskPageControlState55C[0x1cc] = 0x60;
@@ -242,12 +242,12 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
            frontendRootPage->taskPageControlState55C[0x177] & 0xfffffbff;
     }
   }
-  pFVar5 = g_FrontendLoadedLevelAsset;
-  (*pUVar3->layout)(&frontendRootPage->rootNode);
-  TVar12 = TextResource_Resolve((pFVar5->header).titleTextResourceIndex + 0x2230);
-  *TVar12.eax = 0x8000;
-  TVar13 = TextResource_Resolve(0x218c);
-  RichTextCommandStream_PatchPayloadBySelector(0,TVar12.eax,TVar13.eax);
+  loadedLevel = g_FrontendLoadedLevelAsset;
+  (*rootVtable->layout)(&frontendRootPage->rootNode);
+  titleText = TextResource_Resolve((loadedLevel->header).titleTextResourceIndex + 0x2230);
+  *titleText.eax = 0x8000;
+  templateText = TextResource_Resolve(0x218c);
+  RichTextCommandStream_PatchPayloadBySelector(0,titleText.eax,templateText.eax);
   return;
 }
 
@@ -311,33 +311,33 @@ FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *displaySettings
 void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void *control)
 
 {
-  dword arg3;
-  dword arg2;
-  dword arg0;
-  undefined4 value;
-  undefined4 value_00;
-  undefined4 value_01;
-  undefined4 value_02;
-  int iVar1;
-  GraphicsTextureSourceAsset **ppGVar2;
-  DisplayModeEaxCf5 DVar3;
-  DisplayModeEaxCf5 DVar4;
+  dword previousWidth;
+  dword previousHeight;
+  dword previousAdapterIndex;
+  undefined4 selectedAdapterIndex;
+  undefined4 selectedWidth;
+  undefined4 selectedHeight;
+  undefined4 selectedBitsPerPixel;
+  int colorBitsCounterOrParentLink;
+  GraphicsTextureSourceAsset **fontTextureSource;
+  DisplayModeEaxCf5 selectedModeResult;
+  DisplayModeEaxCf5 restoredModeResult;
   
-  value_02 = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
+  selectedBitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              bitsPerPixel;
-  value_01 = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
+  selectedHeight = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              height;
-  value_00 = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
+  selectedWidth = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              width;
-  value = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
+  selectedAdapterIndex = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
           adapterIndex;
-  arg0 = g_ActiveGraphicsAdapterIndex;
-  arg2 = g_FramebufferHeight;
-  arg3 = g_FramebufferWidth;
+  previousAdapterIndex = g_ActiveGraphicsAdapterIndex;
+  previousHeight = g_FramebufferHeight;
+  previousWidth = g_FramebufferWidth;
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
-  iVar1 = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
+  colorBitsCounterOrParentLink = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
           g_SoftwarePixelFormatConfig.blueBitCount;
-  DVar3 = (*g_GraphicsDisplayModeHook)
+  selectedModeResult = (*g_GraphicsDisplayModeHook)
                     (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -346,11 +346,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width);
-  if (DVar3.carry) {
-    DVar4 = (*g_GraphicsDisplayModeHook)(arg0,iVar1 + 0xfU & 0xfffffff0,arg2,arg3);
-    (*g_FatalErrorPrimaryDispatchCf)(DVar4.eax,DVar4.carry);
+  if (selectedModeResult.carry) {
+    restoredModeResult = (*g_GraphicsDisplayModeHook)(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
+    (*g_FatalErrorPrimaryDispatchCf)(restoredModeResult.eax,restoredModeResult.carry);
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-    (*g_FatalErrorRuntimeDispatchCf)(DVar3.eax,true);
+    (*g_FatalErrorRuntimeDispatchCf)(selectedModeResult.eax,true);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     adapterIndex = PersistentSettings_ReadDword(1,0);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
@@ -362,10 +362,10 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
     FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
     return;
   }
-  PersistentSettings_WriteDword(value,0);
-  PersistentSettings_WriteDword(value_00,4);
-  PersistentSettings_WriteDword(value_01,8);
-  PersistentSettings_WriteDword(value_02,0xc);
+  PersistentSettings_WriteDword(selectedAdapterIndex,0);
+  PersistentSettings_WriteDword(selectedWidth,4);
+  PersistentSettings_WriteDword(selectedHeight,8);
+  PersistentSettings_WriteDword(selectedBitsPerPixel,0xc);
   UiRootStack_Relayout();
   (*g_GraphicsTextureSourceConvertPaletteEntries)
             ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
@@ -373,19 +373,19 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
             ((GraphicsPaletteTextureSourceAsset *)g_UiWindowTextureSource);
   (*g_GraphicsTextureSourceConvertPaletteEntries)
             ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
-  ppGVar2 = g_FontTextureSources;
-  iVar1 = 2;
+  fontTextureSource = g_FontTextureSources;
+  colorBitsCounterOrParentLink = 2;
   do {
-    (*g_GraphicsTextureSourceConvertPaletteEntries)((GraphicsPaletteTextureSourceAsset *)*ppGVar2);
-    ppGVar2 = ppGVar2 + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    (*g_GraphicsTextureSourceConvertPaletteEntries)((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
+    fontTextureSource = fontTextureSource + 1;
+    colorBitsCounterOrParentLink = colorBitsCounterOrParentLink + -1;
+  } while (colorBitsCounterOrParentLink != 0);
   g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
-  iVar1 = *(int *)((int)control + 8);
-  while (iVar1 != -1) {
+  colorBitsCounterOrParentLink = *(int *)((int)control + 8);
+  while (colorBitsCounterOrParentLink != -1) {
     control = *(void **)((int)control + 8);
-    iVar1 = *(int *)((int)control + 8);
+    colorBitsCounterOrParentLink = *(int *)((int)control + 8);
   }
   if ((int)g_FramebufferWidth < 0x281) {
     *(uint *)((int)control + 0x3b4) = *(uint *)((int)control + 0x3b4) | 0x2000;
@@ -411,17 +411,17 @@ void __thandor_void_preserve_eax_ecx
 FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
 
 {
-  UiNodeBase *pUVar1;
+  UiNodeBase *parentCursor;
   UiTextEditControl *firstNode;
-  int iVar2;
+  int remainingDwords;
   dword *sourceDwordCursor;
-  dword *pdVar3;
+  dword *playerNameDwordCursor;
   
-  pUVar1 = (control->base).parent;
+  parentCursor = (control->base).parent;
   firstNode = control;
-  while (pUVar1 != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != (UiNodeBase *)0xffffffff) {
     firstNode = (UiTextEditControl *)(firstNode->base).parent;
-    pUVar1 = (firstNode->base).parent;
+    parentCursor = (firstNode->base).parent;
   }
   UiTextControl_UpdateNonEmptyValidity(control);
   if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
@@ -434,11 +434,11 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
               ((FrontendNetworkSettingsControlView250 *)&firstNode[0x96].activationSound);
     PersistentSettings_WriteDwords(0x28,(dword *)control->textPrefix6C,0x60);
     sourceDwordCursor = (dword *)control->textPrefix6C;
-    pdVar3 = &g_FrontendLocalPlayerNameUtf16;
-    for (iVar2 = 10; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *pdVar3 = *sourceDwordCursor;
+    playerNameDwordCursor = &g_FrontendLocalPlayerNameUtf16;
+    for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      *playerNameDwordCursor = *sourceDwordCursor;
       sourceDwordCursor = sourceDwordCursor + 1;
-      pdVar3 = pdVar3 + 1;
+      playerNameDwordCursor = playerNameDwordCursor + 1;
     }
   }
   return;
@@ -481,17 +481,17 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
-  dword dVar1;
+  dword optionFlags;
   PersistentSettingsDwordValue value;
-  bool bVar2;
+  bool isSelected;
   
-  dVar1 = PersistentSettings_ReadDword(0,0x40);
-  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar2) {
-    value = dVar1 | 4;
+  optionFlags = PersistentSettings_ReadDword(0,0x40);
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    value = optionFlags | 4;
   }
   else {
-    value = dVar1 & 0xfffffffb;
+    value = optionFlags & 0xfffffffb;
   }
   PersistentSettings_WriteDword(value,0x40);
   return;
@@ -524,17 +524,17 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
-  dword dVar1;
+  dword optionFlags;
   PersistentSettingsDwordValue value;
-  bool bVar2;
+  bool isSelected;
   
-  dVar1 = PersistentSettings_ReadDword(0,0x40);
-  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar2) {
-    value = dVar1 | 1;
+  optionFlags = PersistentSettings_ReadDword(0,0x40);
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    value = optionFlags | 1;
   }
   else {
-    value = dVar1 & 0xfffffffe;
+    value = optionFlags & 0xfffffffe;
   }
   PersistentSettings_WriteDword(value,0x40);
   return;
@@ -552,17 +552,17 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
-  dword dVar1;
+  dword optionFlags;
   PersistentSettingsDwordValue value;
-  bool bVar2;
+  bool isSelected;
   
-  dVar1 = PersistentSettings_ReadDword(0,0x40);
-  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar2) {
-    value = dVar1 | 2;
+  optionFlags = PersistentSettings_ReadDword(0,0x40);
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    value = optionFlags | 2;
   }
   else {
-    value = dVar1 & 0xfffffffd;
+    value = optionFlags & 0xfffffffd;
   }
   PersistentSettings_WriteDword(value,0x40);
   return;
@@ -582,18 +582,18 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
-  dword dVar1;
+  dword optionFlags;
   PersistentSettingsDwordValue value;
-  bool bVar2;
+  bool isSelected;
   
-  dVar1 = PersistentSettings_ReadDword(0,0x5c);
-  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar2) {
-    value = dVar1 | 1;
+  optionFlags = PersistentSettings_ReadDword(0,0x5c);
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    value = optionFlags | 1;
     UiNodeList_SuppressActionId(0x203f,(control->base).parent);
   }
   else {
-    value = dVar1 & 0xfffffffe;
+    value = optionFlags & 0xfffffffe;
     UiNodeList_UnsuppressActionId(0x203f,(control->base).parent);
   }
   PersistentSettings_WriteDword(value,0x5c);
@@ -614,18 +614,18 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
-  dword dVar1;
+  dword optionFlags;
   PersistentSettingsDwordValue value;
-  bool bVar2;
+  bool isSelected;
   
-  dVar1 = PersistentSettings_ReadDword(0,0x5c);
-  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar2) {
-    value = dVar1 | 2;
+  optionFlags = PersistentSettings_ReadDword(0,0x5c);
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    value = optionFlags | 2;
     UiNodeList_SuppressActionId(0x203e,(control->base).parent);
   }
   else {
-    value = dVar1 & 0xfffffffd;
+    value = optionFlags & 0xfffffffd;
     UiNodeList_UnsuppressActionId(0x203e,(control->base).parent);
   }
   PersistentSettings_WriteDword(value,0x5c);
@@ -644,17 +644,17 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
-  dword dVar1;
+  dword optionFlags;
   PersistentSettingsDwordValue value;
-  bool bVar2;
+  bool isSelected;
   
-  dVar1 = PersistentSettings_ReadDword(0,0x5c);
-  bVar2 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar2) {
-    value = dVar1 | 4;
+  optionFlags = PersistentSettings_ReadDword(0,0x5c);
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    value = optionFlags | 4;
   }
   else {
-    value = dVar1 & 0xfffffffb;
+    value = optionFlags & 0xfffffffb;
   }
   PersistentSettings_WriteDword(value,0x5c);
   return;
@@ -673,32 +673,32 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
-  sdword *psVar1;
-  dword dVar2;
+  sdword *compactLayoutFlags;
+  dword persistedValue;
   
   UiPageStack_SetActiveIndex(5,(UiPageStackControl *)&frontendRoot[0xe].base.rightAnchorQ31);
   if ((int)g_FramebufferWidth < 0x281) {
-    psVar1 = &frontendRoot[10].base.layoutHeight;
-    *psVar1 = *psVar1 | 0x2000;
+    compactLayoutFlags = &frontendRoot[10].base.layoutHeight;
+    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
-  dVar2 = PersistentSettings_ReadDword(0,0x40);
+  persistedValue = PersistentSettings_ReadDword(0,0x40);
   UiSelectableControl_SetSelected
-            (dVar2 & 1,(UiSelectableControl *)&frontendRoot[0x7b].base.bottomAnchorQ31);
+            (persistedValue & 1,(UiSelectableControl *)&frontendRoot[0x7b].base.bottomAnchorQ31);
   UiSelectableControl_SetSelected
-            (dVar2 & 2,(UiSelectableControl *)&frontendRoot[0x7c].base.layoutHeight);
-  UiSelectableControl_SetSelected(dVar2 & 4,(UiSelectableControl *)&frontendRoot[0x75].base.bottom);
-  dVar2 = PersistentSettings_ReadDword(0,0x5c);
-  if ((dVar2 & 1) != 0) {
+            (persistedValue & 2,(UiSelectableControl *)&frontendRoot[0x7c].base.layoutHeight);
+  UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)&frontendRoot[0x75].base.bottom);
+  persistedValue = PersistentSettings_ReadDword(0,0x5c);
+  if ((persistedValue & 1) != 0) {
     UiNodeList_SuppressActionId(0x203f,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
-            (dVar2 & 1,(UiSelectableControl *)&frontendRoot[0x7e].base.nodeFlags);
-  if ((dVar2 & 2) != 0) {
+            (persistedValue & 1,(UiSelectableControl *)&frontendRoot[0x7e].base.nodeFlags);
+  if ((persistedValue & 2) != 0) {
     UiNodeList_SuppressActionId(0x203e,&frontendRoot->base);
   }
-  UiSelectableControl_SetSelected(dVar2 & 2,(UiSelectableControl *)&frontendRoot[0x7f].callbacks);
-  dVar2 = PersistentSettings_ReadDword(0x20,0x48);
-  frontendRoot[0x7a].base.leftAnchorQ31 = dVar2;
+  UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)&frontendRoot[0x7f].callbacks);
+  persistedValue = PersistentSettings_ReadDword(0x20,0x48);
+  frontendRoot[0x7a].base.leftAnchorQ31 = persistedValue;
   return;
 }
 
@@ -716,74 +716,74 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
 
 {
   FrontendGraphicsRuntimeSettingsPageState167C *firstNode;
-  dword dVar1;
-  dword dVar2;
-  int iVar3;
-  UiNodeBase *pUVar4;
+  dword persistedValue;
+  dword shadingDepthQuarter;
+  int shadingDepth;
+  UiNodeBase *parentCursorOrSelectedRow;
   
   UiPageStack_SetActiveIndex(7,(UiPageStackControl *)(source[-2].reserved4C_1067 + 0xa20));
   if ((int)g_FramebufferWidth < 0x281) {
     *(uint *)(source[-2].reserved4C_1067 + 0x8cc) =
          *(uint *)(source[-2].reserved4C_1067 + 0x8cc) | 0x2000;
   }
-  dVar1 = PersistentSettings_ReadDword(1,0x1c);
-  UiSelectableControl_SetSelected(dVar1,&source->shadingEnabledControl);
-  pUVar4 = (source->base).parent;
+  persistedValue = PersistentSettings_ReadDword(1,0x1c);
+  UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
+  parentCursorOrSelectedRow = (source->base).parent;
   firstNode = source;
-  while (pUVar4 != (UiNodeBase *)0xffffffff) {
+  while (parentCursorOrSelectedRow != (UiNodeBase *)0xffffffff) {
     firstNode = (FrontendGraphicsRuntimeSettingsPageState167C *)(firstNode->base).parent;
-    pUVar4 = (firstNode->base).parent;
+    parentCursorOrSelectedRow = (firstNode->base).parent;
   }
-  if (dVar1 == 0) {
+  if (persistedValue == 0) {
     UiNodeList_SuppressActionId(0x2015,&firstNode->base);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2015,&firstNode->base);
   }
-  dVar1 = PersistentSettings_ReadDword(0x20,0x10);
-  dVar2 = PersistentSettings_ReadDword(0x10,0x18);
-  iVar3 = dVar2 * 4;
-  if (dVar1 == 0x20) {
-    pUVar4 = (UiNodeBase *)&source->shadingResolutionRows;
-    if (iVar3 == 0x40) {
-      pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 1);
+  persistedValue = PersistentSettings_ReadDword(0x20,0x10);
+  shadingDepthQuarter = PersistentSettings_ReadDword(0x10,0x18);
+  shadingDepth = shadingDepthQuarter * 4;
+  if (persistedValue == 0x20) {
+    parentCursorOrSelectedRow = (UiNodeBase *)&source->shadingResolutionRows;
+    if (shadingDepth == 0x40) {
+      parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 1);
     }
-    else if (iVar3 == 0x80) {
-      pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 2);
+    else if (shadingDepth == 0x80) {
+      parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 2);
     }
   }
-  else if (dVar1 == 0x40) {
-    pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 3);
-    if (iVar3 == 0x80) {
-      pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 4);
+  else if (persistedValue == 0x40) {
+    parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 3);
+    if (shadingDepth == 0x80) {
+      parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 4);
     }
   }
   else {
-    pUVar4 = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
+    parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
   }
-  UiSelectableGroup_SelectExclusive(6,pUVar4,
+  UiSelectableGroup_SelectExclusive(6,parentCursorOrSelectedRow,
       THANDOR_UI_AT(source,0x1324),
       THANDOR_UI_AT(source,0x12bc),
       THANDOR_UI_AT(source,0x1254),
       THANDOR_UI_AT(source,0x11ec),
       THANDOR_UI_AT(source,0x1184),
       THANDOR_UI_AT(source,0x111c));
-  dVar1 = PersistentSettings_ReadDword(1,0x30);
-  if (dVar1 == 0) {
-    pUVar4 = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
+  persistedValue = PersistentSettings_ReadDword(1,0x30);
+  if (persistedValue == 0) {
+    parentCursorOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
   }
-  else if (dVar1 == 1) {
-    pUVar4 = (UiNodeBase *)((source->textureResolutionRows).rows + 1);
+  else if (persistedValue == 1) {
+    parentCursorOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 1);
   }
   else {
-    pUVar4 = (UiNodeBase *)&source->textureResolutionRows;
+    parentCursorOrSelectedRow = (UiNodeBase *)&source->textureResolutionRows;
   }
-  UiSelectableGroup_SelectExclusive(3,pUVar4,
+  UiSelectableGroup_SelectExclusive(3,parentCursorOrSelectedRow,
       THANDOR_UI_AT(source,0x161c),
       THANDOR_UI_AT(source,0x15bc),
       THANDOR_UI_AT(source,0x155c));
-  dVar1 = PersistentSettings_ReadDword(0x10000,0x34);
-  source->polygonResolutionLodThresholdQ8 = dVar1;
+  persistedValue = PersistentSettings_ReadDword(0x10000,0x34);
+  source->polygonResolutionLodThresholdQ8 = persistedValue;
   return;
 }
 
@@ -800,32 +800,32 @@ FrontendAudioSettings_OpenAndSynchronize
           (FrontendPersistentSettingsPageSourceNodePtr settingsSourceNode)
 
 {
-  UiNodeFlags *pUVar1;
-  UiNodeBase *pUVar2;
-  dword dVar3;
-  dword dVar4;
+  UiNodeFlags *compactLayoutFlags;
+  UiNodeBase *parentCursor;
+  dword audioFlags;
+  dword gainValue;
   
   UiPageStack_SetActiveIndex(8,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->settingsPageStack);
   if ((int)g_FramebufferWidth < 0x281) {
-    pUVar1 = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->pageRoot.nodeFlags;
-    *pUVar1 = *pUVar1 | 0x2000;
+    compactLayoutFlags = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->pageRoot.nodeFlags;
+    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
-  dVar3 = PersistentSettings_ReadDword(3,0x20);
-  UiSelectableControl_SetSelected(dVar3 & 1,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(dVar3 & 2,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected(dVar3 & 4,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->reverseStereoControl);
-  dVar4 = PersistentSettings_ReadDword(0x8000,0x24);
-  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsGainControl).currentValue = dVar4;
-  dVar4 = PersistentSettings_ReadDword(0x8000,0x28);
-  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->movieDefaultAudioGainControl).currentValue = dVar4;
-  dVar4 = PersistentSettings_ReadDword(0x8000,0x2c);
-  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicGainControl).currentValue = dVar4;
-  pUVar2 = settingsSourceNode->parent;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  audioFlags = PersistentSettings_ReadDword(3,0x20);
+  UiSelectableControl_SetSelected(audioFlags & 1,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(audioFlags & 2,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(audioFlags & 4,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->reverseStereoControl);
+  gainValue = PersistentSettings_ReadDword(0x8000,0x24);
+  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsGainControl).currentValue = gainValue;
+  gainValue = PersistentSettings_ReadDword(0x8000,0x28);
+  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->movieDefaultAudioGainControl).currentValue = gainValue;
+  gainValue = PersistentSettings_ReadDword(0x8000,0x2c);
+  (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicGainControl).currentValue = gainValue;
+  parentCursor = settingsSourceNode->parent;
+  while (parentCursor != (UiNodeBase *)0xffffffff) {
     settingsSourceNode = settingsSourceNode->parent;
-    pUVar2 = settingsSourceNode->parent;
+    parentCursor = settingsSourceNode->parent;
   }
-  if ((dVar3 & 1) == 0) {
+  if ((audioFlags & 1) == 0) {
     UiNodeList_SuppressActionId(0x201b,settingsSourceNode);
     UiNodeList_SuppressActionId(0x201c,settingsSourceNode);
     UiNodeList_SuppressActionId(0x204e,settingsSourceNode);
@@ -835,13 +835,13 @@ FrontendAudioSettings_OpenAndSynchronize
     UiNodeList_UnsuppressActionId(0x201c,settingsSourceNode);
     UiNodeList_UnsuppressActionId(0x204e,settingsSourceNode);
   }
-  if ((dVar3 & 2) == 0) {
+  if ((audioFlags & 2) == 0) {
     UiNodeList_SuppressActionId(0x201d,settingsSourceNode);
   }
   else {
     UiNodeList_UnsuppressActionId(0x201d,settingsSourceNode);
   }
-  if ((dVar3 & 3) == 0) {
+  if ((audioFlags & 3) == 0) {
     UiNodeList_SuppressActionId(0x201a,settingsSourceNode);
   }
   else {
@@ -864,22 +864,22 @@ void __thandor_void_preserve_eax_ecx
 FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
-  byte bVar1;
+  byte isSelected;
   UiNodeBase *parentCursor;
   
-  bVar1 = UiSelectableControl_IsSelectedCf(control);
+  isSelected = UiSelectableControl_IsSelectedCf(control);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
     parentCursor = (control->base).parent;
   }
-  if ((bVar1 & 1) == 0) {
+  if ((isSelected & 1) == 0) {
     UiNodeList_SuppressActionId(0x2015,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2015,&control->base);
   }
-  PersistentSettings_WriteDword(bVar1 & 1,0x1c);
+  PersistentSettings_WriteDword(isSelected & 1,0x1c);
   return;
 }
 
@@ -896,34 +896,34 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
-  UiNodeVtable *value;
-  UiNodeBase *pUVar1;
-  uint value_00;
+  UiNodeVtable *shadingGridSize;
+  UiNodeBase *shadingGroupRoot;
+  uint shadingDepthQuarter;
   UiNodeBase *selectedControl;
   
-  value = control[1].base.vtable;
-  value_00 = (uint)control[1].base.left >> 2;
-  PersistentSettings_WriteDword((int)value * 2,0x14);
-  PersistentSettings_WriteDword((PersistentSettingsDwordValue)value,0x10);
-  PersistentSettings_WriteDword(value_00,0x18);
-  pUVar1 = (control->base).parent;
-  if (value == (UiNodeVtable *)0x20) {
-    selectedControl = (UiNodeBase *)&pUVar1[1].parent;
-    if (value_00 == 0x10) {
-      selectedControl = (UiNodeBase *)&pUVar1[2].topOffset;
+  shadingGridSize = control[1].base.vtable;
+  shadingDepthQuarter = (uint)control[1].base.left >> 2;
+  PersistentSettings_WriteDword((int)shadingGridSize * 2,0x14);
+  PersistentSettings_WriteDword((PersistentSettingsDwordValue)shadingGridSize,0x10);
+  PersistentSettings_WriteDword(shadingDepthQuarter,0x18);
+  shadingGroupRoot = (control->base).parent;
+  if (shadingGridSize == (UiNodeVtable *)0x20) {
+    selectedControl = (UiNodeBase *)&shadingGroupRoot[1].parent;
+    if (shadingDepthQuarter == 0x10) {
+      selectedControl = (UiNodeBase *)&shadingGroupRoot[2].topOffset;
     }
-    else if (value_00 == 0x20) {
-      selectedControl = (UiNodeBase *)&pUVar1[3].layoutWidth;
+    else if (shadingDepthQuarter == 0x20) {
+      selectedControl = (UiNodeBase *)&shadingGroupRoot[3].layoutWidth;
     }
   }
-  else if (value == (UiNodeVtable *)0x40) {
-    selectedControl = (UiNodeBase *)&pUVar1[5].left;
-    if (value_00 == 0x20) {
-      selectedControl = (UiNodeBase *)&pUVar1[6].bottomOffset;
+  else if (shadingGridSize == (UiNodeVtable *)0x40) {
+    selectedControl = (UiNodeBase *)&shadingGroupRoot[5].left;
+    if (shadingDepthQuarter == 0x20) {
+      selectedControl = (UiNodeBase *)&shadingGroupRoot[6].bottomOffset;
     }
   }
   else {
-    selectedControl = (UiNodeBase *)&pUVar1[7].nodeFlags;
+    selectedControl = (UiNodeBase *)&shadingGroupRoot[7].nodeFlags;
   }
   UiSelectableGroup_SelectExclusive(6,selectedControl,
       THANDOR_UI_AT((control->base).parent,0x25c),
@@ -1008,22 +1008,22 @@ void __thandor_void_preserve_eax_ecx
 FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
-  UiNodeBase *pUVar1;
-  dword dVar2;
-  AudioMixerGainQ15 AVar3;
-  MovieAudioGainQ15 MVar4;
-  MovieAudioGainQ15 MVar5;
-  bool bVar6;
+  UiNodeBase *parentCursor;
+  dword audioFlags;
+  AudioMixerGainQ15 effectsGain;
+  MovieAudioGainQ15 movieDefaultGain;
+  MovieAudioGainQ15 movieAlternateGain;
+  bool isSelected;
   
-  bVar6 = (bool)UiSelectableControl_IsSelectedCf(control);
-  dVar2 = PersistentSettings_ReadDword(3,0x20);
-  PersistentSettings_WriteDword((uint)bVar6 | dVar2 & 0xfffffffe,0x20);
-  pUVar1 = (control->base).parent;
-  while (pUVar1 != (UiNodeBase *)0xffffffff) {
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  audioFlags = PersistentSettings_ReadDword(3,0x20);
+  PersistentSettings_WriteDword((uint)isSelected | audioFlags & 0xfffffffe,0x20);
+  parentCursor = (control->base).parent;
+  while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
-    pUVar1 = (control->base).parent;
+    parentCursor = (control->base).parent;
   }
-  if (bVar6) {
+  if (isSelected) {
     UiNodeList_UnsuppressActionId(0x201b,&control->base);
     UiNodeList_UnsuppressActionId(0x201c,&control->base);
     UiNodeList_UnsuppressActionId(0x204e,&control->base);
@@ -1033,34 +1033,34 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
     UiNodeList_SuppressActionId(0x201c,&control->base);
     UiNodeList_SuppressActionId(0x204e,&control->base);
   }
-  if ((dVar2 & 2) == 0) {
+  if ((audioFlags & 2) == 0) {
     UiNodeList_SuppressActionId(0x201d,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(0x201d,&control->base);
   }
-  if (bVar6 == 0 && (dVar2 & 2) == 0) {
+  if (isSelected == 0 && (audioFlags & 2) == 0) {
     UiNodeList_SuppressActionId(0x201a,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(0x201a,&control->base);
   }
-  AVar3 = 0;
-  if (bVar6) {
-    AVar3 = PersistentSettings_ReadDword(0x8000,0x24);
+  effectsGain = 0;
+  if (isSelected) {
+    effectsGain = PersistentSettings_ReadDword(0x8000,0x24);
   }
-  MVar4 = 0;
-  g_UiSoundGainQ15 = AVar3;
-  g_SoundEffectsGainQ15 = AVar3;
-  if (bVar6) {
-    MVar4 = PersistentSettings_ReadDword(0x8000,0x28);
+  movieDefaultGain = 0;
+  g_UiSoundGainQ15 = effectsGain;
+  g_SoundEffectsGainQ15 = effectsGain;
+  if (isSelected) {
+    movieDefaultGain = PersistentSettings_ReadDword(0x8000,0x28);
   }
-  MVar5 = 0;
-  g_MovieDefaultAudioGainQ15 = MVar4;
-  if (bVar6) {
-    MVar5 = PersistentSettings_ReadDword(0x8000,0x4c);
+  movieAlternateGain = 0;
+  g_MovieDefaultAudioGainQ15 = movieDefaultGain;
+  if (isSelected) {
+    movieAlternateGain = PersistentSettings_ReadDword(0x8000,0x4c);
   }
-  g_MovieAlternateAudioGainQ15 = MVar5;
+  g_MovieAlternateAudioGainQ15 = movieAlternateGain;
   return;
 }
 
@@ -1079,47 +1079,47 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
-  UiNodeBase *pUVar1;
-  IDirectSoundBuffer *pIVar2;
-  SoundSampleAsset *arg0;
-  DirectSoundVoiceSet *arg2;
-  dword dVar3;
-  uint uVar4;
-  uint value;
-  bool bVar5;
-  SoundCreateSampleVoiceSetEaxCf5 SVar6;
-  SoundPlayVoiceEaxCf5 SVar7;
-  ResourceLoadEaxEcxCf9 RVar8;
+  UiNodeBase *parentCursor;
+  IDirectSoundBuffer *activeMusicBuffer;
+  SoundSampleAsset *musicSample;
+  DirectSoundVoiceSet *musicVoiceSet;
+  dword gainOrAudioFlags;
+  uint musicEnabledBit;
+  uint newAudioFlags;
+  bool isSelected;
+  SoundCreateSampleVoiceSetEaxCf5 createVoiceResult;
+  SoundPlayVoiceEaxCf5 playResult;
+  ResourceLoadEaxEcxCf9 loadResult;
   
-  uVar4 = 0;
-  bVar5 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar5) {
-    uVar4 = 2;
+  musicEnabledBit = 0;
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    musicEnabledBit = 2;
     (*g_GraphicsCursorSetFrame)(6);
-    RVar8 = Resource_Load((word *)u_sound_music00_sam_00545c4e);
-    arg0 = (SoundSampleAsset *)RVar8.eax;
-    pIVar2 = g_FrontendMusicActiveBuffer;
-    if (!RVar8.carry) {
-      SVar6 = (*g_SoundCreateSampleVoiceSet)(arg0);
-      arg2 = SVar6.eax;
-      if (SVar6.carry) {
-        Resource_Release(arg0);
-        pIVar2 = g_FrontendMusicActiveBuffer;
+    loadResult = Resource_Load((word *)u_sound_music00_sam_00545c4e);
+    musicSample = (SoundSampleAsset *)loadResult.eax;
+    activeMusicBuffer = g_FrontendMusicActiveBuffer;
+    if (!loadResult.carry) {
+      createVoiceResult = (*g_SoundCreateSampleVoiceSet)(musicSample);
+      musicVoiceSet = createVoiceResult.eax;
+      if (createVoiceResult.carry) {
+        Resource_Release(musicSample);
+        activeMusicBuffer = g_FrontendMusicActiveBuffer;
       }
       else {
-        g_FrontendMusicVoiceSet = arg2;
-        Resource_Release(arg0);
-        dVar3 = PersistentSettings_ReadDword(0x8000,0x2c);
-        SVar7 = (*g_SoundPlayLooping)(dVar3,dVar3,arg2);
-        pIVar2 = SVar7.eax;
-        if (SVar7.carry) {
-          (*g_SoundReleaseSampleVoiceSet)(arg2);
+        g_FrontendMusicVoiceSet = musicVoiceSet;
+        Resource_Release(musicSample);
+        gainOrAudioFlags = PersistentSettings_ReadDword(0x8000,0x2c);
+        playResult = (*g_SoundPlayLooping)(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
+        activeMusicBuffer = playResult.eax;
+        if (playResult.carry) {
+          (*g_SoundReleaseSampleVoiceSet)(musicVoiceSet);
           g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
-          pIVar2 = g_FrontendMusicActiveBuffer;
+          activeMusicBuffer = g_FrontendMusicActiveBuffer;
         }
       }
     }
-    g_FrontendMusicActiveBuffer = pIVar2;
+    g_FrontendMusicActiveBuffer = activeMusicBuffer;
     (*g_GraphicsCursorSetFrame)(0);
   }
   else {
@@ -1128,15 +1128,15 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     g_FrontendMusicActiveBuffer = (IDirectSoundBuffer *)0x0;
     g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
   }
-  dVar3 = PersistentSettings_ReadDword(3,0x20);
-  value = uVar4 | dVar3 & 0xfffffffd;
-  PersistentSettings_WriteDword(value,0x20);
-  pUVar1 = (control->base).parent;
-  while (pUVar1 != (UiNodeBase *)0xffffffff) {
+  gainOrAudioFlags = PersistentSettings_ReadDword(3,0x20);
+  newAudioFlags = musicEnabledBit | gainOrAudioFlags & 0xfffffffd;
+  PersistentSettings_WriteDword(newAudioFlags,0x20);
+  parentCursor = (control->base).parent;
+  while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
-    pUVar1 = (control->base).parent;
+    parentCursor = (control->base).parent;
   }
-  if ((value & 1) == 0) {
+  if ((newAudioFlags & 1) == 0) {
     UiNodeList_SuppressActionId(0x201b,&control->base);
     UiNodeList_SuppressActionId(0x201c,&control->base);
     UiNodeList_SuppressActionId(0x204e,&control->base);
@@ -1146,13 +1146,13 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     UiNodeList_UnsuppressActionId(0x201c,&control->base);
     UiNodeList_UnsuppressActionId(0x204e,&control->base);
   }
-  if ((uVar4 & 2) == 0) {
+  if ((musicEnabledBit & 2) == 0) {
     UiNodeList_SuppressActionId(0x201d,&control->base);
   }
   else {
     UiNodeList_UnsuppressActionId(0x201d,&control->base);
   }
-  if ((value & 3) == 0) {
+  if ((newAudioFlags & 3) == 0) {
     UiNodeList_SuppressActionId(0x201a,&control->base);
   }
   else {
@@ -1174,20 +1174,20 @@ FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
   dword currentAudioFlags;
-  uint uVar1;
-  sdword sVar2;
-  bool bVar3;
+  uint reverseStereoBit;
+  sdword reverseStereoMask;
+  bool isSelected;
   
-  uVar1 = 0;
-  sVar2 = 0;
-  bVar3 = (bool)UiSelectableControl_IsSelectedCf(control);
-  if (bVar3) {
-    uVar1 = 4;
-    sVar2 = -1;
+  reverseStereoBit = 0;
+  reverseStereoMask = 0;
+  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  if (isSelected) {
+    reverseStereoBit = 4;
+    reverseStereoMask = -1;
   }
   currentAudioFlags = PersistentSettings_ReadDword(3,0x20);
-  g_ReverseStereoMask = sVar2;
-  PersistentSettings_WriteDword(uVar1 | currentAudioFlags & 0xfffffffb,0x20);
+  g_ReverseStereoMask = reverseStereoMask;
+  PersistentSettings_WriteDword(reverseStereoBit | currentAudioFlags & 0xfffffffb,0x20);
   return;
 }
 
@@ -1335,16 +1335,16 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
           (FrontendNetworkSettingsControlView250 *networkSettings)
 
 {
-  UiNodeBase **ppUVar1;
-  UiNodeBase *pUVar2;
+  UiNodeBase **dirtyFlagsSlot;
+  UiNodeBase *parentCursor;
   FrontendNetworkSettingsControlView250 *firstNode;
   
-  pUVar2 = (networkSettings->commonState).commonPrefix.parent;
+  parentCursor = (networkSettings->commonState).commonPrefix.parent;
   firstNode = networkSettings;
-  while (pUVar2 != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != (UiNodeBase *)0xffffffff) {
     firstNode = (FrontendNetworkSettingsControlView250 *)
                 (firstNode->commonState).commonPrefix.parent;
-    pUVar2 = (firstNode->commonState).commonPrefix.parent;
+    parentCursor = (firstNode->commonState).commonPrefix.parent;
   }
   if ((((networkSettings->textEditView).textEdit.base.left == 0) ||
       (*(int *)(*(int *)(networkSettings->textEditView).textEdit.base.bottom + 0x14) == 0)) ||
@@ -1354,8 +1354,8 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
   else {
     UiNodeList_UnsuppressActionId(0x2002,(UiNodeBase *)&firstNode->commonState);
     if (((uint)(networkSettings->textEditView).textEdit.base.parent & 4) != 0) {
-      ppUVar1 = &(networkSettings->textEditView).textEdit.base.parent;
-      *ppUVar1 = (UiNodeBase *)((uint)*ppUVar1 & 0xfffffffb);
+      dirtyFlagsSlot = &(networkSettings->textEditView).textEdit.base.parent;
+      *dirtyFlagsSlot = (UiNodeBase *)((uint)*dirtyFlagsSlot & 0xfffffffb);
       FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
                 ((FrontendNetworkSettingsControlView250 *)((int)firstNode + 0x4980));
     }
@@ -1374,273 +1374,273 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls
           (dword generationCursor,dword selectionIndex,UiRootNode *taskAssignmentRoot)
 
 {
-  sdword *psVar1;
-  uint *puVar2;
-  word wVar3;
-  dword dVar4;
-  uint uVar5;
-  SessionNetworkRoleFlags SVar6;
-  FrontendLoadedLevelRuntimeImage370 *pFVar7;
-  FrontendFactionAssignmentIndex FVar8;
-  SessionNetworkRoleFlags SVar9;
-  int iVar10;
-  FrontendPlayerRuntimeBlockCount FVar11;
-  FrontendPlayerNameUtf16_28 *pFVar12;
-  FrontendPlayerNameUtf16_28 *pFVar13;
-  FrontendPlayerRuntimeRecord *pFVar14;
-  FrontendPlayerRuntimeRecord *pFVar15;
-  FrontendTaskAssignmentGeneratedFactionTextRow50 *pFVar16;
-  word *pwVar17;
-  word *pwVar18;
-  uint local_24;
-  uint local_20;
+  sdword *rosterLayoutFlags;
+  uint *controlFlags;
+  word scannedChar;
+  dword controlOffset;
+  uint factionIndexOrSetMask;
+  SessionNetworkRoleFlags networkedOrRemainingCount;
+  FrontendLoadedLevelRuntimeImage370 *loadedLevelOrClearMask;
+  FrontendFactionAssignmentIndex localFactionIndex;
+  SessionNetworkRoleFlags remainingSearchCount;
+  int rowIndexOrCount;
+  FrontendPlayerRuntimeBlockCount remainingPlayers;
+  FrontendPlayerNameUtf16_28 *playerName;
+  FrontendPlayerNameUtf16_28 *nameCharCursor;
+  FrontendPlayerRuntimeRecord *playerRecord;
+  FrontendPlayerRuntimeRecord *otherPlayerRecord;
+  FrontendTaskAssignmentGeneratedFactionTextRow50 *textRowCursor;
+  word *rosterTextCursor;
+  word *rosterScanCursor;
+  uint controlClearMask;
+  uint controlSetMask;
   
-  local_20 = 0;
-  local_24 = 0xfffffff7;
-  FVar8 = (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex;
-  pFVar14 = g_FrontendPlayerRuntimeBlocks;
-  SVar9 = g_FrontendPlayerRuntimeBlockCount;
-  SVar6 = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
-  while (SVar6 != SESSION_NETWORK_ROLE_LOCAL) {
-    if (g_LocalPlayerRuntimeId == pFVar14->playerRuntimeId) {
-      FVar8 = (pFVar14->factionAssignment).factionAssignmentIndex;
-      if ((pFVar14->factionAssignment).consensusValue != 0) {
-        local_20 = 8;
-        local_24 = 0xffffffff;
+  controlSetMask = 0;
+  controlClearMask = 0xfffffff7;
+  localFactionIndex = (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex;
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
+  remainingSearchCount = g_FrontendPlayerRuntimeBlockCount;
+  networkedOrRemainingCount = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
+  while (networkedOrRemainingCount != SESSION_NETWORK_ROLE_LOCAL) {
+    if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
+      localFactionIndex = (playerRecord->factionAssignment).factionAssignmentIndex;
+      if ((playerRecord->factionAssignment).consensusValue != 0) {
+        controlSetMask = 8;
+        controlClearMask = 0xffffffff;
       }
       break;
     }
-    pFVar14 = pFVar14 + 1;
-    SVar9 = SVar9 - SESSION_NETWORK_ROLE_CLIENT;
-    SVar6 = SVar9;
+    playerRecord = playerRecord + 1;
+    remainingSearchCount = remainingSearchCount - SESSION_NETWORK_ROLE_CLIENT;
+    networkedOrRemainingCount = remainingSearchCount;
   }
-  iVar10 = 7;
+  rowIndexOrCount = 7;
   taskAssignmentRoot[0x52].base.nextSibling =
        (UiNodeBase *)
-       (FVar8 + 0x230010 + (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
+       (localFactionIndex + 0x230010 + (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
   do {
     if ((*(uint *)((int)&taskAssignmentRoot->rootFlags +
-                  g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[iVar10]) & 2) != 0)
+                  g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount]) & 2) != 0)
     goto FrontendTaskAssignment_ApplyEligibleFactionControlState;
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[iVar10] ==
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL)
-         && (dVar4 = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[iVar10],
-            (*(uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4) & 8) != 0)) {
-        if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + dVar4) & 0x40) != 0)
+         && (controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount],
+            (*(uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset) & 8) != 0)) {
+        if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x40) != 0)
         goto FrontendTaskAssignment_DisableUnavailableFactionControl;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
                SESSION_NETWORK_ROLE_LOCAL) {
-        dVar4 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[iVar10];
-        puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-        *puVar2 = *puVar2 | 8;
-        puVar2 = (uint *)((int)&taskAssignmentRoot->rootFlags + dVar4);
-        *puVar2 = *puVar2 & 0xfffffbff;
+        controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
+        controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+        *controlFlags = *controlFlags | 8;
+        controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+        *controlFlags = *controlFlags & 0xfffffbff;
         goto FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop;
       }
 FrontendTaskAssignment_ApplyEligibleFactionControlState:
-      dVar4 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[iVar10];
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-      *puVar2 = *puVar2 | local_20;
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-      *puVar2 = *puVar2 & local_24;
-      puVar2 = (uint *)((int)&taskAssignmentRoot->rootFlags + dVar4);
-      *puVar2 = *puVar2 & 0xfffffbff;
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      *controlFlags = *controlFlags | controlSetMask;
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      *controlFlags = *controlFlags & controlClearMask;
+      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      *controlFlags = *controlFlags & 0xfffffbff;
     }
     else {
 FrontendTaskAssignment_DisableUnavailableFactionControl:
-      dVar4 = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[iVar10];
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-      *puVar2 = *puVar2 | 8;
-      puVar2 = (uint *)((int)&taskAssignmentRoot->rootFlags + dVar4);
-      *puVar2 = *puVar2 | 0x400;
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      *controlFlags = *controlFlags | 8;
+      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      *controlFlags = *controlFlags | 0x400;
     }
 FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
-    puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
-                     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[iVar10]);
-    *puVar2 = *puVar2 | 8;
-    iVar10 = iVar10 + -1;
-  } while (iVar10 != 0);
-  iVar10 = 7;
+    controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+                     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount]);
+    *controlFlags = *controlFlags | 8;
+    rowIndexOrCount = rowIndexOrCount + -1;
+  } while (rowIndexOrCount != 0);
+  rowIndexOrCount = 7;
   do {
-    dVar4 = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[iVar10];
-    *(undefined4 *)((int)&taskAssignmentRoot->previousRoot + dVar4) = 0x2199;
-    if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[iVar10] ==
+    controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
+    *(undefined4 *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x2199;
+    if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-       (*(undefined4 *)((int)&taskAssignmentRoot->previousRoot + dVar4) = 0x219a,
+       (*(undefined4 *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x219a,
        (*(uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
-                 g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[iVar10]) & 8) ==
+                 g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) & 8) ==
        0)) {
-      dVar4 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[iVar10];
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-      *puVar2 = *puVar2 | local_20;
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-      *puVar2 = *puVar2 & local_24;
-      puVar2 = (uint *)((int)&taskAssignmentRoot->rootFlags + dVar4);
-      *puVar2 = *puVar2 & 0xfffffbff;
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      *controlFlags = *controlFlags | controlSetMask;
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      *controlFlags = *controlFlags & controlClearMask;
+      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      *controlFlags = *controlFlags & 0xfffffbff;
     }
     else {
-      dVar4 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[iVar10];
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-      *puVar2 = *puVar2 | 8;
-      puVar2 = (uint *)((int)&taskAssignmentRoot->rootFlags + dVar4);
-      *puVar2 = *puVar2 | 0x400;
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      *controlFlags = *controlFlags | 8;
+      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      *controlFlags = *controlFlags | 0x400;
     }
-    pFVar7 = g_FrontendLoadedLevelAsset;
-    iVar10 = iVar10 + -1;
-    FVar11 = g_FrontendPlayerRuntimeBlockCount;
-    pFVar14 = g_FrontendPlayerRuntimeBlocks;
-  } while (iVar10 != 0);
+    loadedLevelOrClearMask = g_FrontendLoadedLevelAsset;
+    rowIndexOrCount = rowIndexOrCount + -1;
+    remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+    playerRecord = g_FrontendPlayerRuntimeBlocks;
+  } while (rowIndexOrCount != 0);
   do {
-    uVar5 = (pFVar14->factionAssignment).factionAssignmentIndex;
+    factionIndexOrSetMask = (playerRecord->factionAssignment).factionAssignmentIndex;
     *(undefined4 *)
      ((int)&taskAssignmentRoot->previousRoot +
-     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[uVar5]) = 0x2198;
-    FVar11 = FVar11 - 1;
-    pFVar14 = pFVar14 + 1;
-  } while (FVar11 != 0);
-  iVar10 = 7;
+     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask]) = 0x2198;
+    remainingPlayers = remainingPlayers - 1;
+    playerRecord = playerRecord + 1;
+  } while (remainingPlayers != 0);
+  rowIndexOrCount = 7;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     do {
       if ((*(uint *)((int)&taskAssignmentRoot->rootFlags +
-                    g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[iVar10]) &
+                    g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) &
           0x40) == 0) {
-        dVar4 = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[iVar10];
-        puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-        *puVar2 = *puVar2 | uVar5;
-        puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-        *puVar2 = *puVar2 & (uint)pFVar7;
+        controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
+        controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+        *controlFlags = *controlFlags | factionIndexOrSetMask;
+        controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+        *controlFlags = *controlFlags & (uint)loadedLevelOrClearMask;
       }
-      iVar10 = iVar10 + -1;
-      FVar11 = g_FrontendPlayerRuntimeBlockCount;
-      pFVar14 = g_FrontendPlayerRuntimeBlocks;
-    } while (iVar10 != 0);
+      rowIndexOrCount = rowIndexOrCount + -1;
+      remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+      playerRecord = g_FrontendPlayerRuntimeBlocks;
+    } while (rowIndexOrCount != 0);
     do {
-      puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
                        g_FrontendTaskAssignmentControlOffsets.playerControls.offsets
-                       [(pFVar14->factionAssignment).factionAssignmentIndex]);
-      *puVar2 = *puVar2 | 8;
-      FVar11 = FVar11 - 1;
-      pFVar14 = pFVar14 + 1;
-    } while (FVar11 != 0);
+                       [(playerRecord->factionAssignment).factionAssignmentIndex]);
+      *controlFlags = *controlFlags | 8;
+      remainingPlayers = remainingPlayers - 1;
+      playerRecord = playerRecord + 1;
+    } while (remainingPlayers != 0);
   }
-  pFVar16 = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows + 1;
-  for (iVar10 = 0x8c; iVar10 != 0; iVar10 = iVar10 + -1) {
-    pFVar16->textUtf16[0] = 0;
-    pFVar16->textUtf16[1] = 0;
-    pFVar16 = (FrontendTaskAssignmentGeneratedFactionTextRow50 *)(pFVar16->textUtf16 + 2);
+  textRowCursor = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows + 1;
+  for (rowIndexOrCount = 0x8c; rowIndexOrCount != 0; rowIndexOrCount = rowIndexOrCount + -1) {
+    textRowCursor->textUtf16[0] = 0;
+    textRowCursor->textUtf16[1] = 0;
+    textRowCursor = (FrontendTaskAssignmentGeneratedFactionTextRow50 *)(textRowCursor->textUtf16 + 2);
   }
-  psVar1 = &taskAssignmentRoot[0x4f].base.layoutHeight;
-  *psVar1 = *psVar1 | 8;
-  pFVar14 = g_FrontendPlayerRuntimeBlocks;
+  rosterLayoutFlags = &taskAssignmentRoot[0x4f].base.layoutHeight;
+  *rosterLayoutFlags = *rosterLayoutFlags | 8;
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  psVar1 = &taskAssignmentRoot[0x4f].base.layoutHeight;
-  *psVar1 = *psVar1 & 0xfffffff7;
-  FVar11 = g_FrontendPlayerRuntimeBlockCount;
-  pFVar12 = &pFVar14->playerName;
+  rosterLayoutFlags = &taskAssignmentRoot[0x4f].base.layoutHeight;
+  *rosterLayoutFlags = *rosterLayoutFlags & 0xfffffff7;
+  remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+  playerName = &playerRecord->playerName;
   do {
-    pwVar17 = (word *)((int)&g_FrontendUiDisplayModeAndTaskAssignmentScratch +
+    rosterTextCursor = (word *)((int)&g_FrontendUiDisplayModeAndTaskAssignmentScratch +
                       *(FrontendFactionAssignmentIndex *)
-                       ((int)((UiTransferEndpointDescriptor *)(pFVar12 + 1) + 1) + 8) * 0x50);
-    iVar10 = 0x28;
-    if (*(int *)pwVar17 == 0) {
+                       ((int)((UiTransferEndpointDescriptor *)(playerName + 1) + 1) + 8) * 0x50);
+    rowIndexOrCount = 0x28;
+    if (*(int *)rosterTextCursor == 0) {
 FrontendTaskAssignment_AppendPlayerNameToFactionRosterText:
-      if (0x15 < iVar10) {
-        iVar10 = 0x14;
+      if (0x15 < rowIndexOrCount) {
+        rowIndexOrCount = 0x14;
       }
       if (*(FrontendConsensusValue *)
-           ((int)((UiTransferEndpointDescriptor *)(pFVar12 + 1) + 1) + 0xc) == 0) {
-        *pwVar17 = 0x8001;
-        pFVar13 = pFVar12;
-        for (; iVar10 != 0; iVar10 = iVar10 + -1) {
-          pwVar17[1] = pFVar13->textUtf16[0];
-          pFVar13 = (FrontendPlayerNameUtf16_28 *)(pFVar13->textUtf16 + 1);
-          pwVar17 = pwVar17 + 1;
+           ((int)((UiTransferEndpointDescriptor *)(playerName + 1) + 1) + 0xc) == 0) {
+        *rosterTextCursor = 0x8001;
+        nameCharCursor = playerName;
+        for (; rowIndexOrCount != 0; rowIndexOrCount = rowIndexOrCount + -1) {
+          rosterTextCursor[1] = nameCharCursor->textUtf16[0];
+          nameCharCursor = (FrontendPlayerNameUtf16_28 *)(nameCharCursor->textUtf16 + 1);
+          rosterTextCursor = rosterTextCursor + 1;
         }
-        pwVar17[0] = 0x8000;
-        pwVar17[1] = 0;
+        rosterTextCursor[0] = 0x8000;
+        rosterTextCursor[1] = 0;
       }
       else {
-        *pwVar17 = 0x8000;
-        pFVar13 = pFVar12;
-        for (; iVar10 != 0; iVar10 = iVar10 + -1) {
-          pwVar17[1] = pFVar13->textUtf16[0];
-          pFVar13 = (FrontendPlayerNameUtf16_28 *)(pFVar13->textUtf16 + 1);
-          pwVar17 = pwVar17 + 1;
+        *rosterTextCursor = 0x8000;
+        nameCharCursor = playerName;
+        for (; rowIndexOrCount != 0; rowIndexOrCount = rowIndexOrCount + -1) {
+          rosterTextCursor[1] = nameCharCursor->textUtf16[0];
+          nameCharCursor = (FrontendPlayerNameUtf16_28 *)(nameCharCursor->textUtf16 + 1);
+          rosterTextCursor = rosterTextCursor + 1;
         }
-        *pwVar17 = 0;
+        *rosterTextCursor = 0;
       }
     }
     else {
       do {
-        pwVar18 = pwVar17;
-        if (iVar10 == 0) break;
-        iVar10 = iVar10 + -1;
-        pwVar18 = pwVar17 + 1;
-        wVar3 = *pwVar17;
-        pwVar17 = pwVar18;
-      } while (wVar3 != 0);
-      pwVar17 = pwVar18 + 1;
-      iVar10 = iVar10 + -1;
-      if (iVar10 != 0) {
-        pwVar18[-0xffffffff00000001] = 0x2c;
-        pwVar18[0] = 0x20;
+        rosterScanCursor = rosterTextCursor;
+        if (rowIndexOrCount == 0) break;
+        rowIndexOrCount = rowIndexOrCount + -1;
+        rosterScanCursor = rosterTextCursor + 1;
+        scannedChar = *rosterTextCursor;
+        rosterTextCursor = rosterScanCursor;
+      } while (scannedChar != 0);
+      rosterTextCursor = rosterScanCursor + 1;
+      rowIndexOrCount = rowIndexOrCount + -1;
+      if (rowIndexOrCount != 0) {
+        rosterScanCursor[-0xffffffff00000001] = 0x2c;
+        rosterScanCursor[0] = 0x20;
         goto FrontendTaskAssignment_AppendPlayerNameToFactionRosterText;
       }
     }
-    FVar11 = FVar11 - 1;
-    pFVar12 = pFVar12 + 0x7e;
-    if (FVar11 == 0) {
-      iVar10 = 7;
+    remainingPlayers = remainingPlayers - 1;
+    playerName = playerName + 0x7e;
+    if (remainingPlayers == 0) {
+      rowIndexOrCount = 7;
       if (((uint)taskAssignmentRoot[0x23].callbacks & 2) == 0) {
         do {
-          dVar4 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[iVar10];
-          if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + dVar4) & 0x400) == 0) {
-            puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-            *puVar2 = *puVar2 & 0xfffffff7;
+          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+          if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
+            controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+            *controlFlags = *controlFlags & 0xfffffff7;
           }
-          iVar10 = iVar10 + -1;
-          FVar11 = g_FrontendPlayerRuntimeBlockCount;
-          pFVar14 = g_FrontendPlayerRuntimeBlocks;
-        } while (iVar10 != 0);
+          rowIndexOrCount = rowIndexOrCount + -1;
+          remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+          playerRecord = g_FrontendPlayerRuntimeBlocks;
+        } while (rowIndexOrCount != 0);
       }
       else {
         do {
-          dVar4 = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[iVar10];
-          if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + dVar4) & 0x400) == 0) {
-            puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + dVar4);
-            *puVar2 = *puVar2 | 8;
+          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+          if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
+            controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+            *controlFlags = *controlFlags | 8;
           }
-          iVar10 = iVar10 + -1;
-          FVar11 = g_FrontendPlayerRuntimeBlockCount;
-          pFVar14 = g_FrontendPlayerRuntimeBlocks;
-        } while (iVar10 != 0);
+          rowIndexOrCount = rowIndexOrCount + -1;
+          remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+          playerRecord = g_FrontendPlayerRuntimeBlocks;
+        } while (rowIndexOrCount != 0);
       }
       do {
-        if (g_LocalPlayerRuntimeId == pFVar14->playerRuntimeId) {
-          iVar10 = (pFVar14->factionAssignment).factionAssignmentIndex;
-          pFVar15 = g_FrontendPlayerRuntimeBlocks;
-          while ((iVar10 != (pFVar15->factionAssignment).factionAssignmentIndex ||
-                 ((int)(pFVar14->factionAssignment).readyOrWaitState <=
-                  (int)(pFVar15->factionAssignment).readyOrWaitState))) {
-            pFVar15 = pFVar15 + 1;
-            FVar11 = FVar11 - 1;
-            if (FVar11 == 0) {
+        if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
+          rowIndexOrCount = (playerRecord->factionAssignment).factionAssignmentIndex;
+          otherPlayerRecord = g_FrontendPlayerRuntimeBlocks;
+          while ((rowIndexOrCount != (otherPlayerRecord->factionAssignment).factionAssignmentIndex ||
+                 ((int)(playerRecord->factionAssignment).readyOrWaitState <=
+                  (int)(otherPlayerRecord->factionAssignment).readyOrWaitState))) {
+            otherPlayerRecord = otherPlayerRecord + 1;
+            remainingPlayers = remainingPlayers - 1;
+            if (remainingPlayers == 0) {
               return;
             }
           }
-          puVar2 = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
-                           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[iVar10]);
-          *puVar2 = *puVar2 | 8;
+          controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+                           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount]);
+          *controlFlags = *controlFlags | 8;
           return;
         }
-        FVar11 = FVar11 - 1;
-        pFVar14 = pFVar14 + 1;
-      } while (FVar11 != 0);
+        remainingPlayers = remainingPlayers - 1;
+        playerRecord = playerRecord + 1;
+      } while (remainingPlayers != 0);
       return;
     }
   } while( true );
@@ -1660,22 +1660,22 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
           (FrontendNetworkSettingsControlView250 *networkSettings)
 
 {
-  int iVar1;
+  int remainingDwords;
   dword *selectedPlayerRecordDwordCursor;
   dword *selectedEndpointDwordCursor;
-  bool bVar2;
+  bool sendCarry;
   
   g_FrontendSessionToken = *(undefined4 *)(**(int **)(networkSettings->raw + 0x248) + 4);
   selectedPlayerRecordDwordCursor = (dword *)(**(int **)(networkSettings->raw + 0x248) + 0xa0);
   selectedEndpointDwordCursor = (dword *)&g_FrontendSelectedNetworkEndpoint;
-  for (iVar1 = 4; iVar1 != 0; iVar1 = iVar1 + -1) {
+  for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
     *selectedEndpointDwordCursor = *selectedPlayerRecordDwordCursor;
     selectedPlayerRecordDwordCursor = selectedPlayerRecordDwordCursor + 1;
     selectedEndpointDwordCursor = selectedEndpointDwordCursor + 1;
   }
   g_FrontendSelectedPlayerToken = 0xffffffff;
-  bVar2 = UiTransfer_SendPlayerDescriptorPacket20002Cf();
-  return bVar2;
+  sendCarry = UiTransfer_SendPlayerDescriptorPacket20002Cf();
+  return sendCarry;
 }
 
 
@@ -1693,29 +1693,29 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
 
 {
   undefined4 adapterIndex;
-  undefined4 width_00;
-  undefined4 height_00;
+  undefined4 pendingWidth;
+  undefined4 pendingHeight;
   undefined4 bitsPerPixel;
-  dword dVar1;
+  dword persistedValue;
   FrontendDisplayDimensionPixels width;
   FrontendDisplayDimensionPixels height;
-  bool bVar2;
-  UiNodeBase *pUVar3;
+  bool modeCheckCarry;
+  UiNodeBase *parentCursorOrSelectedRow;
   
   bitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                  persistentSelection.bitsPerPixel;
-  height_00 = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection
+  pendingHeight = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection
               .height;
-  width_00 = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
+  pendingWidth = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              width;
   adapterIndex = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                  persistentSelection.adapterIndex;
-  pUVar3 = displaySettingsRoot->parent;
-  while (pUVar3 != (UiNodeBase *)0xffffffff) {
+  parentCursorOrSelectedRow = displaySettingsRoot->parent;
+  while (parentCursorOrSelectedRow != (UiNodeBase *)0xffffffff) {
     displaySettingsRoot = displaySettingsRoot->parent;
-    pUVar3 = displaySettingsRoot->parent;
+    parentCursorOrSelectedRow = displaySettingsRoot->parent;
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (displaySettingsRoot[0xb4].topAnchorQ31,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.height,
@@ -1723,144 +1723,144 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
                      persistentSelection.width,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex);
-  pUVar3 = displaySettingsRoot;
-  if (bVar2) {
+  parentCursorOrSelectedRow = displaySettingsRoot;
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x201e,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x201e,displaySettingsRoot);
   }
   if (bitsPerPixel == displaySettingsRoot[0xb4].topAnchorQ31) {
-    pUVar3 = (UiNodeBase *)&displaySettingsRoot[0xb3].leftOffset;
+    parentCursorOrSelectedRow = (UiNodeBase *)&displaySettingsRoot[0xb3].leftOffset;
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
-                    ((FrontendColorDepthBits)displaySettingsRoot[0xb6].firstChild,height_00,width_00
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+                    ((FrontendColorDepthBits)displaySettingsRoot[0xb6].firstChild,pendingHeight,pendingWidth
                      ,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x201f,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x201f,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
-                    (displaySettingsRoot[0xb7].leftOffset,height_00,width_00,adapterIndex);
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+                    (displaySettingsRoot[0xb7].leftOffset,pendingHeight,pendingWidth,adapterIndex);
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2020,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2020,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
-                    (displaySettingsRoot[0xb8].bottomAnchorQ31,height_00,width_00,adapterIndex);
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+                    (displaySettingsRoot[0xb8].bottomAnchorQ31,pendingHeight,pendingWidth,adapterIndex);
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2021,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2021,displaySettingsRoot);
   }
-  UiSelectableGroup_SelectExclusive(4,pUVar3,
+  UiSelectableGroup_SelectExclusive(4,parentCursorOrSelectedRow,
       THANDOR_UI_AT(displaySettingsRoot,0x367c),
       THANDOR_UI_AT(displaySettingsRoot,0x3614),
       THANDOR_UI_AT(displaySettingsRoot,0x35ac),
       THANDOR_UI_AT(displaySettingsRoot,0x3544));
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xa5].nodeFlags,
                      displaySettingsRoot[0xa5].layoutHeight,adapterIndex);
-  pUVar3 = displaySettingsRoot;
-  if (bVar2) {
+  parentCursorOrSelectedRow = displaySettingsRoot;
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2022,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2022,displaySettingsRoot);
   }
-  if ((width_00 == displaySettingsRoot[0xa5].layoutHeight) &&
-     (height_00 == displaySettingsRoot[0xa5].nodeFlags)) {
-    pUVar3 = (UiNodeBase *)&displaySettingsRoot[0xa4].leftAnchorQ31;
+  if ((pendingWidth == displaySettingsRoot[0xa5].layoutHeight) &&
+     (pendingHeight == displaySettingsRoot[0xa5].nodeFlags)) {
+    parentCursorOrSelectedRow = (UiNodeBase *)&displaySettingsRoot[0xa4].leftAnchorQ31;
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xa7].right,displaySettingsRoot[0xa7].top,
                      adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2023,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2023,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xa8].topAnchorQ31,
                      displaySettingsRoot[0xa8].leftAnchorQ31,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2024,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2024,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,
                      (FrontendDisplayDimensionPixels)displaySettingsRoot[0xaa].firstChild,
                      (FrontendDisplayDimensionPixels)displaySettingsRoot[0xaa].nextSibling,
                      adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2025,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2025,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xab].leftOffset,
                      displaySettingsRoot[0xab].bottom,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2026,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2026,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xac].bottomAnchorQ31,
                      displaySettingsRoot[0xac].rightAnchorQ31,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2027,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2027,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,(FrontendDisplayDimensionPixels)displaySettingsRoot[0xae].vtable,
                      (FrontendDisplayDimensionPixels)displaySettingsRoot[0xae].parent,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2028,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2028,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xaf].rightOffset,
                      displaySettingsRoot[0xaf].topOffset,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2029,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2029,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xb0].layoutHeight,
                      displaySettingsRoot[0xb0].layoutWidth,adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202a,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202a,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,displaySettingsRoot[0xb2].top,displaySettingsRoot[0xb2].left,
                      adapterIndex);
-  if (bVar2) {
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202b,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202b,displaySettingsRoot);
   }
-  UiSelectableGroup_SelectExclusive(10,pUVar3,
+  UiSelectableGroup_SelectExclusive(10,parentCursorOrSelectedRow,
       THANDOR_UI_AT(displaySettingsRoot,0x3488),
       THANDOR_UI_AT(displaySettingsRoot,0x3420),
       THANDOR_UI_AT(displaySettingsRoot,0x33b8),
@@ -1871,56 +1871,56 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *displaySett
       THANDOR_UI_AT(displaySettingsRoot,0x31b0),
       THANDOR_UI_AT(displaySettingsRoot,0x3148),
       THANDOR_UI_AT(displaySettingsRoot,0x30e0));
-  bVar2 = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,height_00,width_00,0);
-  pUVar3 = displaySettingsRoot;
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,0);
+  parentCursorOrSelectedRow = displaySettingsRoot;
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202c,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202c,displaySettingsRoot);
   }
   if (adapterIndex == 0) {
-    pUVar3 = (UiNodeBase *)&displaySettingsRoot[0x9c].topAnchorQ31;
+    parentCursorOrSelectedRow = (UiNodeBase *)&displaySettingsRoot[0x9c].topAnchorQ31;
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,height_00,width_00,1);
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,1);
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202d,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202d,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,height_00,width_00,2);
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,2);
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202e,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202e,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,height_00,width_00,3);
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,3);
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202f,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202f,displaySettingsRoot);
   }
-  bVar2 = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,height_00,width_00,4);
-  if (bVar2) {
+  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,4);
+  if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2030,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x2030,displaySettingsRoot);
   }
-  UiSelectableGroup_SelectExclusive(5,pUVar3,
+  UiSelectableGroup_SelectExclusive(5,parentCursorOrSelectedRow,
       THANDOR_UI_AT(displaySettingsRoot,0x3024),
       THANDOR_UI_AT(displaySettingsRoot,0x2fbc),
       THANDOR_UI_AT(displaySettingsRoot,0x2f54),
       THANDOR_UI_AT(displaySettingsRoot,0x2eec),
       THANDOR_UI_AT(displaySettingsRoot,0x2e84));
-  dVar1 = PersistentSettings_ReadDword(1,0);
-  if ((((dVar1 == adapterIndex) &&
-       (dVar1 = PersistentSettings_ReadDword(0x280,4), dVar1 == width_00)) &&
-      (dVar1 = PersistentSettings_ReadDword(0x1e0,8), dVar1 == height_00)) &&
-     (dVar1 = PersistentSettings_ReadDword(0x10,0xc), dVar1 == bitsPerPixel)) {
+  persistedValue = PersistentSettings_ReadDword(1,0);
+  if ((((persistedValue == adapterIndex) &&
+       (persistedValue = PersistentSettings_ReadDword(0x280,4), persistedValue == pendingWidth)) &&
+      (persistedValue = PersistentSettings_ReadDword(0x1e0,8), persistedValue == pendingHeight)) &&
+     (persistedValue = PersistentSettings_ReadDword(0x10,0xc), persistedValue == bitsPerPixel)) {
     UiNodeList_SuppressActionId(0x2031,displaySettingsRoot);
     return;
   }

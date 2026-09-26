@@ -27,204 +27,204 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
           WorldRuntimeContext *worldRuntime)
 
 {
-  GraphicsFixedVec3 *pGVar1;
-  ModelRuntimeClassId MVar2;
-  longlong lVar3;
-  longlong lVar4;
-  WorldPositionXYEaxEdx8 WVar5;
-  WorldPositionXYEaxEdx8 WVar6;
-  byte bVar7;
-  int iVar8;
-  dword dVar9;
+  GraphicsFixedVec3 *entityTranslation;
+  ModelRuntimeClassId runtimeClassId;
+  longlong wideProductXOrY;
+  longlong wideProductY;
+  WorldPositionXYEaxEdx8 targetWorldPosition;
+  WorldPositionXYEaxEdx8 fallbackWorldPosition;
+  byte gridClassShift;
+  int startColumnOrScratch;
+  dword columnLimitOrWidth;
   GridPathUnreachableReferenceColumn32 referenceColumn;
   FieldGridRegionMask callerBlockingMask;
-  uint uVar10;
-  int iVar11;
+  uint scaledRowTerm;
+  int cellCoordOrStrideBytes;
   int gridY;
-  int iVar12;
-  dword dVar13;
+  int rawTargetRow;
+  dword rowLimit;
   GridPathUnreachableReferenceRow32 referenceRow;
-  GridScratchCell *scratchCell1;
-  bool bVar14;
-  WorldPositionXYEaxEdx8 WVar15;
-  GridPathNearestCellEaxEbxCf9 GVar16;
-  GridPathMarkedRegionCellRegisterResult GVar17;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 EVar18;
-  GridPathBacktrackEaxEbxEcxCf13 GVar19;
+  GridScratchCell *routeScratchCell;
+  bool segmentClear;
+  WorldPositionXYEaxEdx8 primaryWorldPosition;
+  GridPathNearestCellEaxEbxCf9 nearestCell;
+  GridPathMarkedRegionCellRegisterResult reachableRegionCell;
+  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  GridPathBacktrackEaxEbxEcxCf13 backtrackResult;
   ModelDefinitionRuntimeSemanticView280 *modelDefinition;
   ArmyRuntimeSlot *armyRuntime;
-  GameEntityRuntime *entityRuntime1;
-  ModelRuntimeNode *modelNode1;
+  GameEntityRuntime *overlappedEntity;
+  ModelRuntimeNode *entityModelNode;
   
-  WVar6.worldYQ12 = targetWorldYQ12;
-  WVar6.worldXQ12 = targetWorldXQ12;
-  modelNode1 = (routeEntityRuntime->common).ownership.modelNode;
-  lVar3 = (longlong)(modelNode1->worldTransform).translation.x * 0x1c6e9c;
-  lVar4 = (longlong)(modelNode1->worldTransform).translation.y * -0x20c8cc;
-  uVar10 = (int)((ulonglong)lVar4 >> 0x20) << 0xb | (uint)lVar4 >> 0x15;
-  iVar8 = (int)((((int)((ulonglong)lVar3 >> 0x20) << 0xc | (uint)lVar3 >> 0x14) - uVar10) + 0x800)
+  fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
+  fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
+  entityModelNode = (routeEntityRuntime->common).ownership.modelNode;
+  wideProductXOrY = (longlong)(entityModelNode->worldTransform).translation.x * 0x1c6e9c;
+  wideProductY = (longlong)(entityModelNode->worldTransform).translation.y * -0x20c8cc;
+  scaledRowTerm = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
+  startColumnOrScratch = (int)((((int)((ulonglong)wideProductXOrY >> 0x20) << 0xc | (uint)wideProductXOrY >> 0x14) - scaledRowTerm) + 0x800)
           >> 10;
-  iVar11 = (int)(uVar10 * 2 + 0x800) >> 10;
-  if (iVar8 < 1) {
-    iVar8 = 1;
+  cellCoordOrStrideBytes = (int)(scaledRowTerm * 2 + 0x800) >> 10;
+  if (startColumnOrScratch < 1) {
+    startColumnOrScratch = 1;
   }
-  if (iVar11 < 1) {
-    iVar11 = 1;
+  if (cellCoordOrStrideBytes < 1) {
+    cellCoordOrStrideBytes = 1;
   }
-  dVar9 = iVar8 + 2U;
-  if ((int)g_GridScratchWidth < (int)(iVar8 + 2U)) {
-    dVar9 = g_GridScratchWidth;
+  columnLimitOrWidth = startColumnOrScratch + 2U;
+  if ((int)g_GridScratchWidth < (int)(startColumnOrScratch + 2U)) {
+    columnLimitOrWidth = g_GridScratchWidth;
   }
-  dVar13 = iVar11 + 2U;
-  if ((int)g_GridScratchHeight < (int)(iVar11 + 2U)) {
-    dVar13 = g_GridScratchHeight;
+  rowLimit = cellCoordOrStrideBytes + 2U;
+  if ((int)g_GridScratchHeight < (int)(cellCoordOrStrideBytes + 2U)) {
+    rowLimit = g_GridScratchHeight;
   }
-  iVar8 = dVar9 - 2;
-  gridY = dVar13 - 2;
-  uVar10 = (int)((ulonglong)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  startColumnOrScratch = columnLimitOrWidth - 2;
+  gridY = rowLimit - 2;
+  scaledRowTerm = (int)((ulonglong)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
            (uint)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x15;
-  iVar11 = (int)((((int)((ulonglong)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                  (uint)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - uVar10) + 0x800) >>
+  cellCoordOrStrideBytes = (int)((((int)((ulonglong)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                  (uint)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
            10;
-  iVar12 = (int)(uVar10 * 2 + 0x800) >> 10;
-  if (iVar11 < 1) {
-    iVar11 = 1;
+  rawTargetRow = (int)(scaledRowTerm * 2 + 0x800) >> 10;
+  if (cellCoordOrStrideBytes < 1) {
+    cellCoordOrStrideBytes = 1;
   }
-  if (iVar12 < 1) {
-    iVar12 = 1;
+  if (rawTargetRow < 1) {
+    rawTargetRow = 1;
   }
-  dVar9 = iVar11 + 2U;
-  if ((int)g_GridScratchWidth < (int)(iVar11 + 2U)) {
-    dVar9 = g_GridScratchWidth;
+  columnLimitOrWidth = cellCoordOrStrideBytes + 2U;
+  if ((int)g_GridScratchWidth < (int)(cellCoordOrStrideBytes + 2U)) {
+    columnLimitOrWidth = g_GridScratchWidth;
   }
-  dVar13 = iVar12 + 2U;
-  if ((int)g_GridScratchHeight < (int)(iVar12 + 2U)) {
-    dVar13 = g_GridScratchHeight;
+  rowLimit = rawTargetRow + 2U;
+  if ((int)g_GridScratchHeight < (int)(rawTargetRow + 2U)) {
+    rowLimit = g_GridScratchHeight;
   }
-  referenceColumn = dVar9 - 2;
-  referenceRow = dVar13 - 2;
+  referenceColumn = columnLimitOrWidth - 2;
+  referenceRow = rowLimit - 2;
   modelDefinition = (routeEntityRuntime->common).ownership.definitionOrClassRecord;
-  entityRuntime1 =
+  overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  MVar2 = modelDefinition->runtimeClassId4C;
-  if (entityRuntime1 != (GameEntityRuntime *)0x0) {
+  runtimeClassId = modelDefinition->runtimeClassId4C;
+  if (overlappedEntity != (GameEntityRuntime *)0x0) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
-      [*(int *)((int)(entityRuntime1->common).ownership.definitionOrClassRecord + 0x4c)])
-              (entityRuntime1);
+      [*(int *)((int)(overlappedEntity->common).ownership.definitionOrClassRecord + 0x4c)])
+              (overlappedEntity);
   }
   armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[MVar2])
+  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId])
             (routeEntityRuntime);
   g_GridPathEntityClassMask = 1 << ((byte)armyRuntime->factionIndex & 0x1f);
-  bVar7 = (byte)modelDefinition->gridClassification260;
-  g_GridPathHighCostMask = 0x10000 << (bVar7 & 0x1f);
+  gridClassShift = (byte)modelDefinition->gridClassification260;
+  g_GridPathHighCostMask = 0x10000 << (gridClassShift & 0x1f);
   g_GridPathBlockingMask =
-       0x100 << (bVar7 & 0x1f) | 0x1000000 << ((byte)modelDefinition->gridClassification264 & 0x1f);
-  GVar16 = GridPathCost_FindNearestUnblockedCell(gridY,iVar8);
-  dVar9 = g_GridScratchWidth;
-  if (GVar16.carry) {
-    if ((GVar16.selectedColumn == iVar8) && (GVar16.selectedRow == gridY)) {
-      pGVar1 = &(((routeEntityRuntime->common).ownership.modelNode)->worldTransform).translation;
-      WVar6.worldXQ12 = pGVar1->x;
-      WVar6.worldYQ12 = pGVar1->y;
-      WVar15.worldXQ12 = pGVar1->x;
-      WVar15.worldYQ12 = pGVar1->y;
+       0x100 << (gridClassShift & 0x1f) | 0x1000000 << ((byte)modelDefinition->gridClassification264 & 0x1f);
+  nearestCell = GridPathCost_FindNearestUnblockedCell(gridY,startColumnOrScratch);
+  columnLimitOrWidth = g_GridScratchWidth;
+  if (nearestCell.carry) {
+    if ((nearestCell.selectedColumn == startColumnOrScratch) && (nearestCell.selectedRow == gridY)) {
+      entityTranslation = &(((routeEntityRuntime->common).ownership.modelNode)->worldTransform).translation;
+      fallbackWorldPosition.worldXQ12 = entityTranslation->x;
+      fallbackWorldPosition.worldYQ12 = entityTranslation->y;
+      primaryWorldPosition.worldXQ12 = entityTranslation->x;
+      primaryWorldPosition.worldYQ12 = entityTranslation->y;
     }
     else {
-      iVar8 = GVar16.selectedRow * 0x400 + -0x600;
-      lVar3 = (longlong)(iVar8 + (GVar16.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-      lVar4 = (longlong)iVar8 * -1999;
-      WVar15 = EntityPathing_RebuildOverlappingGroupRoutes
-                         ((int)((ulonglong)lVar4 >> 0x20) << 0x14 | (uint)lVar4 >> 0xc,
-                          (int)((ulonglong)lVar3 >> 0x20) << 0x13 | (uint)lVar3 >> 0xd,
+      startColumnOrScratch = nearestCell.selectedRow * 0x400 + -0x600;
+      wideProductXOrY = (longlong)(startColumnOrScratch + (nearestCell.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+      wideProductY = (longlong)startColumnOrScratch * -1999;
+      primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
+                         ((int)((ulonglong)wideProductY >> 0x20) << 0x14 | (uint)wideProductY >> 0xc,
+                          (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd,
                           routeEntityRuntime,worldRuntime);
     }
   }
   else {
-    iVar11 = g_GridScratchWidth * 8;
-    scratchCell1 = g_GridScratchPrimary + gridY * g_GridScratchWidth + iVar8;
-    bVar14 = GridPathLine_TestHexSegmentClearCf
-                       (g_GridPathHighCostMask,gridY,iVar8,scratchCell1,
+    cellCoordOrStrideBytes = g_GridScratchWidth * 8;
+    routeScratchCell = g_GridScratchPrimary + gridY * g_GridScratchWidth + startColumnOrScratch;
+    segmentClear = GridPathLine_TestHexSegmentClearCf
+                       (g_GridPathHighCostMask,gridY,startColumnOrScratch,routeScratchCell,
                         g_GridScratchPrimary + referenceRow * g_GridScratchWidth + referenceColumn);
-    if (bVar14) {
+    if (segmentClear) {
       GridScratch_ResetTraversalFlagsAndCosts();
-      GridPathCost_PropagateWeightedHexNeighbors(6,scratchCell1,referenceRow,referenceColumn);
-      scratchCell1 = scratchCell1 + -dVar9;
-      if ((((0x7ffffffe < scratchCell1[dVar9].pathCost) && (0x7ffffffe < scratchCell1->pathCost)) &&
-          (0x7ffffffe < scratchCell1[1].pathCost)) &&
-         (((0x7ffffffe < scratchCell1[dVar9 - 1].pathCost &&
-           (0x7ffffffe < scratchCell1[dVar9 + 1].pathCost)) &&
-          ((0x7ffffffe < scratchCell1[dVar9 * 2 + -1].pathCost &&
-           (0x7ffffffe < scratchCell1[dVar9 * 2].pathCost)))))) {
-        GVar17 = GridPathRegion_MarkUnreachableFromCell(referenceRow,referenceColumn,gridY,iVar8);
-        iVar11 = GVar17.selectedRow * 0x400 + -0x600;
-        lVar3 = (longlong)(iVar11 + (GVar17.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-        targetWorldXQ12 = (int)((ulonglong)lVar3 >> 0x20) << 0x13 | (uint)lVar3 >> 0xd;
-        lVar3 = (longlong)iVar11 * -1999;
-        targetWorldYQ12 = (int)((ulonglong)lVar3 >> 0x20) << 0x14 | (uint)lVar3 >> 0xc;
+      GridPathCost_PropagateWeightedHexNeighbors(6,routeScratchCell,referenceRow,referenceColumn);
+      routeScratchCell = routeScratchCell + -columnLimitOrWidth;
+      if ((((0x7ffffffe < routeScratchCell[columnLimitOrWidth].pathCost) && (0x7ffffffe < routeScratchCell->pathCost)) &&
+          (0x7ffffffe < routeScratchCell[1].pathCost)) &&
+         (((0x7ffffffe < routeScratchCell[columnLimitOrWidth - 1].pathCost &&
+           (0x7ffffffe < routeScratchCell[columnLimitOrWidth + 1].pathCost)) &&
+          ((0x7ffffffe < routeScratchCell[columnLimitOrWidth * 2 + -1].pathCost &&
+           (0x7ffffffe < routeScratchCell[columnLimitOrWidth * 2].pathCost)))))) {
+        reachableRegionCell = GridPathRegion_MarkUnreachableFromCell(referenceRow,referenceColumn,gridY,startColumnOrScratch);
+        cellCoordOrStrideBytes = reachableRegionCell.selectedRow * 0x400 + -0x600;
+        wideProductXOrY = (longlong)(cellCoordOrStrideBytes + (reachableRegionCell.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+        targetWorldXQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd;
+        wideProductXOrY = (longlong)cellCoordOrStrideBytes * -1999;
+        targetWorldYQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x14 | (uint)wideProductXOrY >> 0xc;
         GridScratch_ResetTraversalFlagsAndCosts();
         GridPathCost_PropagateWeightedHexNeighbors
-                  (6,scratchCell1,GVar17.selectedRow,GVar17.selectedColumn);
-        iVar11 = g_GridScratchWidth * 8;
-        scratchCell1 = g_GridScratchPrimary +
-                       ((gridY * g_GridScratchWidth + iVar8) - g_GridScratchWidth);
+                  (6,routeScratchCell,reachableRegionCell.selectedRow,reachableRegionCell.selectedColumn);
+        cellCoordOrStrideBytes = g_GridScratchWidth * 8;
+        routeScratchCell = g_GridScratchPrimary +
+                       ((gridY * g_GridScratchWidth + startColumnOrScratch) - g_GridScratchWidth);
       }
-      WVar6.worldYQ12 = targetWorldYQ12;
-      WVar6.worldXQ12 = targetWorldXQ12;
-      WVar5.worldYQ12 = targetWorldYQ12;
-      WVar5.worldXQ12 = targetWorldXQ12;
+      fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
+      fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
+      targetWorldPosition.worldYQ12 = targetWorldYQ12;
+      targetWorldPosition.worldXQ12 = targetWorldXQ12;
       callerBlockingMask = g_GridPathHighCostMask;
       if ((*(uint *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0x18) & 2) != 0) {
         callerBlockingMask = 0;
       }
-      GVar19 = GridPathCost_BacktrackBestHexRoute
-                         (callerBlockingMask,gridY,iVar8,
-                          (GridScratchCell *)((int)&scratchCell1->stateMask + iVar11));
-      if (!GVar19.carry) {
-        if (GVar19.routeStateMask == 0) {
-          iVar8 = GVar19.selectedRow * 0x400 + -0x600;
-          lVar3 = (longlong)(iVar8 + (GVar19.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-          lVar4 = (longlong)iVar8 * -1999;
-          WVar15 = EntityPathing_RebuildOverlappingGroupRoutes
-                             ((int)((ulonglong)lVar4 >> 0x20) << 0x14 | (uint)lVar4 >> 0xc,
-                              (int)((ulonglong)lVar3 >> 0x20) << 0x13 | (uint)lVar3 >> 0xd,
+      backtrackResult = GridPathCost_BacktrackBestHexRoute
+                         (callerBlockingMask,gridY,startColumnOrScratch,
+                          (GridScratchCell *)((int)&routeScratchCell->stateMask + cellCoordOrStrideBytes));
+      if (!backtrackResult.carry) {
+        if (backtrackResult.routeStateMask == 0) {
+          startColumnOrScratch = backtrackResult.selectedRow * 0x400 + -0x600;
+          wideProductXOrY = (longlong)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+          wideProductY = (longlong)startColumnOrScratch * -1999;
+          primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
+                             ((int)((ulonglong)wideProductY >> 0x20) << 0x14 | (uint)wideProductY >> 0xc,
+                              (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd,
                               routeEntityRuntime,worldRuntime);
-          WVar6 = WVar5;
+          fallbackWorldPosition = targetWorldPosition;
         }
         else {
-          iVar8 = GVar19.selectedRow * 0x400 + -0x600;
-          lVar3 = (longlong)(iVar8 + (GVar19.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-          lVar4 = (longlong)iVar8 * -1999;
-          WVar15 = EntityPathing_RebuildOverlappingGroupRoutes
-                             ((int)((ulonglong)lVar4 >> 0x20) << 0x14 | (uint)lVar4 >> 0xc,
-                              (int)((ulonglong)lVar3 >> 0x20) << 0x13 | (uint)lVar3 >> 0xd,
+          startColumnOrScratch = backtrackResult.selectedRow * 0x400 + -0x600;
+          wideProductXOrY = (longlong)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+          wideProductY = (longlong)startColumnOrScratch * -1999;
+          primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
+                             ((int)((ulonglong)wideProductY >> 0x20) << 0x14 | (uint)wideProductY >> 0xc,
+                              (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd,
                               routeEntityRuntime,worldRuntime);
         }
         goto EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn;
       }
     }
-    WVar15 = EntityPathing_RebuildOverlappingGroupRoutes
+    primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
                        (targetWorldYQ12,targetWorldXQ12,routeEntityRuntime,worldRuntime);
-    WVar6 = WVar15;
+    fallbackWorldPosition = primaryWorldPosition;
   }
 EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
-  targetWorldYQ12 = WVar6.worldYQ12;
-  targetWorldXQ12 = WVar6.worldXQ12;
-  entityRuntime1 =
+  targetWorldYQ12 = fallbackWorldPosition.worldYQ12;
+  targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
+  overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  iVar8 = *(int *)((int)(routeEntityRuntime->common).ownership.definitionOrClassRecord + 0x4c);
-  if (entityRuntime1 != (GameEntityRuntime *)0x0) {
+  startColumnOrScratch = *(int *)((int)(routeEntityRuntime->common).ownership.definitionOrClassRecord + 0x4c);
+  if (overlappedEntity != (GameEntityRuntime *)0x0) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-      [*(int *)((int)(entityRuntime1->common).ownership.definitionOrClassRecord + 0x4c)])
-              (entityRuntime1);
+      [*(int *)((int)(overlappedEntity->common).ownership.definitionOrClassRecord + 0x4c)])
+              (overlappedEntity);
   }
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[iVar8])(routeEntityRuntime);
-  EVar18.fallbackWorldXQ12 = targetWorldXQ12;
-  EVar18.primaryWorldXQ12 = WVar15.worldXQ12;
-  EVar18.primaryWorldYQ12 = WVar15.worldYQ12;
-  EVar18.fallbackWorldYQ12 = targetWorldYQ12;
-  EVar18.carry = false;
-  return EVar18;
+  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[startColumnOrScratch])(routeEntityRuntime);
+  resolvedDestination.fallbackWorldXQ12 = targetWorldXQ12;
+  resolvedDestination.primaryWorldXQ12 = primaryWorldPosition.worldXQ12;
+  resolvedDestination.primaryWorldYQ12 = primaryWorldPosition.worldYQ12;
+  resolvedDestination.fallbackWorldYQ12 = targetWorldYQ12;
+  resolvedDestination.carry = false;
+  return resolvedDestination;
 }
 
 
@@ -244,109 +244,109 @@ GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  dword dVar1;
-  uint uVar2;
-  int iVar3;
-  int iVar4;
-  GridScratchCell *scratchCell1;
+  dword scratchWidth;
+  uint cellsRemainingOrRowTerm;
+  int columnOrCellsRemaining;
+  int cellRow;
+  GridScratchCell *scratchCursor;
   dword rowStrideBytes;
-  bool bVar5;
+  bool moreBlocksRemain;
   
-  uVar2 = g_GridScratchWidth * g_GridScratchHeight;
-  scratchCell1 = g_GridScratchPrimary;
+  cellsRemainingOrRowTerm = g_GridScratchWidth * g_GridScratchHeight;
+  scratchCursor = g_GridScratchPrimary;
   do {
-    scratchCell1->stateMask = scratchCell1->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1->pathCost = 0;
-    scratchCell1[1].stateMask = scratchCell1[1].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[1].pathCost = 0;
-    scratchCell1[2].stateMask = scratchCell1[2].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[2].pathCost = 0;
-    scratchCell1[3].stateMask = scratchCell1[3].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[3].pathCost = 0;
-    scratchCell1[4].stateMask = scratchCell1[4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[4].pathCost = 0;
-    scratchCell1[5].stateMask = scratchCell1[5].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[5].pathCost = 0;
-    scratchCell1[6].stateMask = scratchCell1[6].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[6].pathCost = 0;
-    scratchCell1[7].stateMask = scratchCell1[7].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[7].pathCost = 0;
-    scratchCell1[8].stateMask = scratchCell1[8].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[8].pathCost = 0;
-    scratchCell1[9].stateMask = scratchCell1[9].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[9].pathCost = 0;
-    scratchCell1[10].stateMask = scratchCell1[10].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[10].pathCost = 0;
-    scratchCell1[0xb].stateMask = scratchCell1[0xb].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xb].pathCost = 0;
-    scratchCell1[0xc].stateMask = scratchCell1[0xc].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xc].pathCost = 0;
-    scratchCell1[0xd].stateMask = scratchCell1[0xd].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xd].pathCost = 0;
-    scratchCell1[0xe].stateMask = scratchCell1[0xe].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xe].pathCost = 0;
-    scratchCell1[0xf].stateMask = scratchCell1[0xf].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xf].pathCost = 0;
-    scratchCell1 = scratchCell1 + 0x10;
-    bVar5 = 0xf < uVar2;
-    uVar2 = uVar2 - 0x10;
-  } while (bVar5 && uVar2 != 0);
+    scratchCursor->stateMask = scratchCursor->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor->pathCost = 0;
+    scratchCursor[1].stateMask = scratchCursor[1].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[1].pathCost = 0;
+    scratchCursor[2].stateMask = scratchCursor[2].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[2].pathCost = 0;
+    scratchCursor[3].stateMask = scratchCursor[3].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[3].pathCost = 0;
+    scratchCursor[4].stateMask = scratchCursor[4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[4].pathCost = 0;
+    scratchCursor[5].stateMask = scratchCursor[5].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[5].pathCost = 0;
+    scratchCursor[6].stateMask = scratchCursor[6].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[6].pathCost = 0;
+    scratchCursor[7].stateMask = scratchCursor[7].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[7].pathCost = 0;
+    scratchCursor[8].stateMask = scratchCursor[8].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[8].pathCost = 0;
+    scratchCursor[9].stateMask = scratchCursor[9].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[9].pathCost = 0;
+    scratchCursor[10].stateMask = scratchCursor[10].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[10].pathCost = 0;
+    scratchCursor[0xb].stateMask = scratchCursor[0xb].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[0xb].pathCost = 0;
+    scratchCursor[0xc].stateMask = scratchCursor[0xc].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[0xc].pathCost = 0;
+    scratchCursor[0xd].stateMask = scratchCursor[0xd].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[0xd].pathCost = 0;
+    scratchCursor[0xe].stateMask = scratchCursor[0xe].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[0xe].pathCost = 0;
+    scratchCursor[0xf].stateMask = scratchCursor[0xf].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    scratchCursor[0xf].pathCost = 0;
+    scratchCursor = scratchCursor + 0x10;
+    moreBlocksRemain = 0xf < cellsRemainingOrRowTerm;
+    cellsRemainingOrRowTerm = cellsRemainingOrRowTerm - 0x10;
+  } while (moreBlocksRemain && cellsRemainingOrRowTerm != 0);
   GridFootprint_ClearTraversalFlagsAroundWorldPoint(radiusMetric * 3,worldYQ12,worldXQ12);
-  dVar1 = g_GridScratchWidth;
-  uVar2 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  scratchWidth = g_GridScratchWidth;
+  cellsRemainingOrRowTerm = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar3 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar2) + 0x800) >> 10;
-  if ((((iVar3 < 0) || (iVar4 = (int)(uVar2 * 2 + 0x800) >> 10, iVar4 < 0)) ||
-      ((int)g_GridScratchWidth <= iVar3)) || ((int)g_GridScratchHeight <= iVar4)) {
+  columnOrCellsRemaining = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - cellsRemainingOrRowTerm) + 0x800) >> 10;
+  if ((((columnOrCellsRemaining < 0) || (cellRow = (int)(cellsRemainingOrRowTerm * 2 + 0x800) >> 10, cellRow < 0)) ||
+      ((int)g_GridScratchWidth <= columnOrCellsRemaining)) || ((int)g_GridScratchHeight <= cellRow)) {
     return true;
   }
   rowStrideBytes = g_GridScratchWidth * 8;
   GridReachability_MarkOpenRegionRecursive
-            (rowStrideBytes,g_GridScratchPrimary + iVar4 * g_GridScratchWidth + iVar3);
+            (rowStrideBytes,g_GridScratchPrimary + cellRow * g_GridScratchWidth + columnOrCellsRemaining);
   GridFootprint_ClearTraversalFlagsAroundWorldPoint(radiusMetric,worldYQ12,worldXQ12);
-  scratchCell1 = g_GridScratchPrimary + dVar1 * 3;
-  iVar3 = (g_GridScratchHeight - 8) * g_GridScratchWidth;
-  while (((((scratchCell1[dVar1].stateMask & 0x80000000) != 0 || (scratchCell1[dVar1].pathCost == 0)
-           ) || ((scratchCell1[dVar1].stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) == 0)) ||
-         (((scratchCell1->pathCost != 0 && (scratchCell1[1].pathCost != 0)) &&
-          ((scratchCell1[dVar1 - 1].pathCost != 0 &&
-           (((scratchCell1[dVar1 + 1].pathCost != 0 && (scratchCell1[dVar1 * 2 + -1].pathCost != 0))
-            && (scratchCell1[dVar1 * 2].pathCost != 0))))))))) {
-    scratchCell1 = scratchCell1 + 1;
-    iVar3 = iVar3 + -1;
-    if (iVar3 == 0) {
+  scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
+  columnOrCellsRemaining = (g_GridScratchHeight - 8) * g_GridScratchWidth;
+  while (((((scratchCursor[scratchWidth].stateMask & 0x80000000) != 0 || (scratchCursor[scratchWidth].pathCost == 0)
+           ) || ((scratchCursor[scratchWidth].stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) == 0)) ||
+         (((scratchCursor->pathCost != 0 && (scratchCursor[1].pathCost != 0)) &&
+          ((scratchCursor[scratchWidth - 1].pathCost != 0 &&
+           (((scratchCursor[scratchWidth + 1].pathCost != 0 && (scratchCursor[scratchWidth * 2 + -1].pathCost != 0))
+            && (scratchCursor[scratchWidth * 2].pathCost != 0))))))))) {
+    scratchCursor = scratchCursor + 1;
+    columnOrCellsRemaining = columnOrCellsRemaining + -1;
+    if (columnOrCellsRemaining == 0) {
       return false;
     }
   }
-  GridReachability_ClearCostedRegionRecursive(rowStrideBytes,scratchCell1 + dVar1);
-  scratchCell1 = g_GridScratchPrimary + dVar1 * 3;
-  iVar3 = (g_GridScratchHeight - 8) * g_GridScratchWidth;
+  GridReachability_ClearCostedRegionRecursive(rowStrideBytes,scratchCursor + scratchWidth);
+  scratchCursor = g_GridScratchPrimary + scratchWidth * 3;
+  columnOrCellsRemaining = (g_GridScratchHeight - 8) * g_GridScratchWidth;
   do {
-    if ((((scratchCell1[dVar1].stateMask & 0x80000000) == 0) && (scratchCell1[dVar1].pathCost != 0))
-       && ((scratchCell1[dVar1].stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0)) {
-      if (scratchCell1->pathCost == 0) {
+    if ((((scratchCursor[scratchWidth].stateMask & 0x80000000) == 0) && (scratchCursor[scratchWidth].pathCost != 0))
+       && ((scratchCursor[scratchWidth].stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0)) {
+      if (scratchCursor->pathCost == 0) {
         return true;
       }
-      if (scratchCell1[1].pathCost == 0) {
+      if (scratchCursor[1].pathCost == 0) {
         return true;
       }
-      if (scratchCell1[dVar1 - 1].pathCost == 0) {
+      if (scratchCursor[scratchWidth - 1].pathCost == 0) {
         return true;
       }
-      if (scratchCell1[dVar1 + 1].pathCost == 0) {
+      if (scratchCursor[scratchWidth + 1].pathCost == 0) {
         return true;
       }
-      if (scratchCell1[dVar1 * 2 + -1].pathCost == 0) {
+      if (scratchCursor[scratchWidth * 2 + -1].pathCost == 0) {
         return true;
       }
-      if (scratchCell1[dVar1 * 2].pathCost == 0) {
+      if (scratchCursor[scratchWidth * 2].pathCost == 0) {
         return true;
       }
     }
-    scratchCell1 = scratchCell1 + 1;
-    iVar3 = iVar3 + -1;
-    if (iVar3 == 0) {
+    scratchCursor = scratchCursor + 1;
+    columnOrCellsRemaining = columnOrCellsRemaining + -1;
+    if (columnOrCellsRemaining == 0) {
       return false;
     }
   } while( true );
@@ -368,266 +368,266 @@ void __thandor_void_preserve_eax_ecx_edx
 GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime)
 
 {
-  FieldGridDimension FVar1;
-  FieldCellPackedFlagsAndMaterial FVar2;
-  longlong lVar3;
-  longlong lVar4;
-  dword dVar5;
-  dword dVar6;
-  int iVar7;
-  GridScratchStateMask GVar8;
-  FieldGridDimension FVar9;
-  int iVar10;
-  uint uVar11;
-  int iVar12;
-  FieldGridCell *pFVar13;
-  GridScratchCell *scratchCell2;
-  GridScratchCell *scratchCell1;
-  WorldOwnerListNode100 *worldNode1;
-  FieldGridDimension local_20;
-  FieldGridAsset *fieldGrid1;
+  FieldGridDimension fieldGridWidth;
+  FieldCellPackedFlagsAndMaterial cellFlags;
+  longlong wideProductX;
+  longlong wideProductY;
+  dword scratchWidth;
+  dword scratchStride;
+  int countOrWaterDeltaOrColumn;
+  GridScratchStateMask cellClassMask;
+  FieldGridDimension columnsRemaining;
+  int angleOrCountOrRow;
+  uint scaledRowTerm;
+  int triangle0Angle;
+  FieldGridCell *fieldCell;
+  GridScratchCell *promoteCursor;
+  GridScratchCell *scratchCursor;
+  WorldOwnerListNode100 *ownerNode;
+  FieldGridDimension rowsRemaining;
+  FieldGridAsset *fieldGridAsset;
   
-  fieldGrid1 = worldRuntime->fieldGrid;
-  FVar1 = fieldGrid1->gridWidth;
-  local_20 = fieldGrid1->gridHeight;
-  iVar7 = FVar1 * local_20;
-  scratchCell1 = g_GridScratchPrimary;
+  fieldGridAsset = worldRuntime->fieldGrid;
+  fieldGridWidth = fieldGridAsset->gridWidth;
+  rowsRemaining = fieldGridAsset->gridHeight;
+  countOrWaterDeltaOrColumn = fieldGridWidth * rowsRemaining;
+  scratchCursor = g_GridScratchPrimary;
   do {
-    scratchCell1->stateMask = scratchCell1->stateMask & 0xffff01;
-    scratchCell1[1].stateMask = scratchCell1[1].stateMask & 0xffff01;
-    scratchCell1[2].stateMask = scratchCell1[2].stateMask & 0xffff01;
-    scratchCell1[3].stateMask = scratchCell1[3].stateMask & 0xffff01;
-    scratchCell1[4].stateMask = scratchCell1[4].stateMask & 0xffff01;
-    scratchCell1[5].stateMask = scratchCell1[5].stateMask & 0xffff01;
-    scratchCell1[6].stateMask = scratchCell1[6].stateMask & 0xffff01;
-    scratchCell1[7].stateMask = scratchCell1[7].stateMask & 0xffff01;
-    scratchCell1[8].stateMask = scratchCell1[8].stateMask & 0xffff01;
-    scratchCell1[9].stateMask = scratchCell1[9].stateMask & 0xffff01;
-    scratchCell1[10].stateMask = scratchCell1[10].stateMask & 0xffff01;
-    scratchCell1[0xb].stateMask = scratchCell1[0xb].stateMask & 0xffff01;
-    scratchCell1[0xc].stateMask = scratchCell1[0xc].stateMask & 0xffff01;
-    scratchCell1[0xd].stateMask = scratchCell1[0xd].stateMask & 0xffff01;
-    scratchCell1[0xe].stateMask = scratchCell1[0xe].stateMask & 0xffff01;
-    scratchCell1[0xf].stateMask = scratchCell1[0xf].stateMask & 0xffff01;
-    dVar5 = g_GridScratchWidth;
-    scratchCell1 = scratchCell1 + 0x10;
-    iVar7 = iVar7 + -1;
-  } while (iVar7 != 0);
-  pFVar13 = fieldGrid1->cells;
-  FVar9 = FVar1;
-  scratchCell1 = g_GridScratchPrimary;
+    scratchCursor->stateMask = scratchCursor->stateMask & 0xffff01;
+    scratchCursor[1].stateMask = scratchCursor[1].stateMask & 0xffff01;
+    scratchCursor[2].stateMask = scratchCursor[2].stateMask & 0xffff01;
+    scratchCursor[3].stateMask = scratchCursor[3].stateMask & 0xffff01;
+    scratchCursor[4].stateMask = scratchCursor[4].stateMask & 0xffff01;
+    scratchCursor[5].stateMask = scratchCursor[5].stateMask & 0xffff01;
+    scratchCursor[6].stateMask = scratchCursor[6].stateMask & 0xffff01;
+    scratchCursor[7].stateMask = scratchCursor[7].stateMask & 0xffff01;
+    scratchCursor[8].stateMask = scratchCursor[8].stateMask & 0xffff01;
+    scratchCursor[9].stateMask = scratchCursor[9].stateMask & 0xffff01;
+    scratchCursor[10].stateMask = scratchCursor[10].stateMask & 0xffff01;
+    scratchCursor[0xb].stateMask = scratchCursor[0xb].stateMask & 0xffff01;
+    scratchCursor[0xc].stateMask = scratchCursor[0xc].stateMask & 0xffff01;
+    scratchCursor[0xd].stateMask = scratchCursor[0xd].stateMask & 0xffff01;
+    scratchCursor[0xe].stateMask = scratchCursor[0xe].stateMask & 0xffff01;
+    scratchCursor[0xf].stateMask = scratchCursor[0xf].stateMask & 0xffff01;
+    scratchWidth = g_GridScratchWidth;
+    scratchCursor = scratchCursor + 0x10;
+    countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+  } while (countOrWaterDeltaOrColumn != 0);
+  fieldCell = fieldGridAsset->cells;
+  columnsRemaining = fieldGridWidth;
+  scratchCursor = g_GridScratchPrimary;
   do {
     do {
-      GVar8 = ((uint)((pFVar13->occupancyMask & 0xf900) != 0) +
-              ((uint)((pFVar13->occupancyMask & 0xf90000) != 0) +
-              ((uint)((pFVar13->occupancyMask & 0xf9000000) != 0) +
-              ((uint)((pFVar13->occupancyMask & 0xf900000000) != 0) +
-              ((uint)((pFVar13->occupancyMask & 0xf90000000000) != 0) +
-              ((uint)((pFVar13->occupancyMask & 0xf9000000000000) != 0) +
-              (uint)((pFVar13->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2) * 2) *
+      cellClassMask = ((uint)((fieldCell->occupancyMask & 0xf900) != 0) +
+              ((uint)((fieldCell->occupancyMask & 0xf90000) != 0) +
+              ((uint)((fieldCell->occupancyMask & 0xf9000000) != 0) +
+              ((uint)((fieldCell->occupancyMask & 0xf900000000) != 0) +
+              ((uint)((fieldCell->occupancyMask & 0xf90000000000) != 0) +
+              ((uint)((fieldCell->occupancyMask & 0xf9000000000000) != 0) +
+              (uint)((fieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2) * 2) *
               2) * 2;
-      iVar7 = pFVar13->waterSurfaceDelta;
-      iVar12 = (int)pFVar13->triangle0NormalAngles >> 0x10;
-      iVar10 = (int)pFVar13->triangle1NormalAngles >> 0x10;
-      if (iVar7 <= g_GridTerrainClassBit24MaxWaterSurfaceDelta) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
+      countOrWaterDeltaOrColumn = fieldCell->waterSurfaceDelta;
+      triangle0Angle = (int)fieldCell->triangle0NormalAngles >> 0x10;
+      angleOrCountOrRow = (int)fieldCell->triangle1NormalAngles >> 0x10;
+      if (countOrWaterDeltaOrColumn <= g_GridTerrainClassBit24MaxWaterSurfaceDelta) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
       }
-      if (iVar10 <= g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
+      if (angleOrCountOrRow <= g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
       }
-      if (iVar7 < 0) {
-        iVar10 = iVar12;
+      if (countOrWaterDeltaOrColumn < 0) {
+        angleOrCountOrRow = triangle0Angle;
       }
-      if (iVar10 <= g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT25;
+      if (angleOrCountOrRow <= g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT25;
       }
-      if (iVar10 <= g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT26;
+      if (angleOrCountOrRow <= g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT26;
       }
-      if (iVar10 <= g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT27;
+      if (angleOrCountOrRow <= g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT27;
       }
-      if (g_GridTerrainClassBit28MinWaterSurfaceDelta <= iVar7) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT28;
+      if (g_GridTerrainClassBit28MinWaterSurfaceDelta <= countOrWaterDeltaOrColumn) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT28;
       }
-      if (g_GridTerrainClassBit29MinWaterSurfaceDelta <= iVar7) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT29;
+      if (g_GridTerrainClassBit29MinWaterSurfaceDelta <= countOrWaterDeltaOrColumn) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT29;
       }
-      if (g_GridTerrainClassBit30MinWaterSurfaceDelta <= iVar7) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
+      if (g_GridTerrainClassBit30MinWaterSurfaceDelta <= countOrWaterDeltaOrColumn) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
       }
-      if (iVar12 <= g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT28;
+      if (triangle0Angle <= g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT28;
       }
-      if (iVar12 <= g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT29;
+      if (triangle0Angle <= g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT29;
       }
-      if (iVar12 <= g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16) {
-        GVar8 = GVar8 | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
+      if (triangle0Angle <= g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
       }
-      FVar2 = pFVar13->flagsAndMaterial;
-      if ((FVar2 & 0x88006000) != 0) {
-        GVar8 = GVar8 | 0x80000000;
+      cellFlags = fieldCell->flagsAndMaterial;
+      if ((cellFlags & 0x88006000) != 0) {
+        cellClassMask = cellClassMask | 0x80000000;
       }
-      if ((FVar2 & FIELD_CELL_FIRST_ROW_BOUNDARY) == 0) {
-        scratchCell1[dVar5 * -2 + 2].stateMask = scratchCell1[dVar5 * -2 + 2].stateMask | GVar8;
-        scratchCell1[dVar5 * -2 + 3].stateMask = scratchCell1[dVar5 * -2 + 3].stateMask | GVar8;
-        scratchCell1[1 - dVar5].stateMask = scratchCell1[1 - dVar5].stateMask | GVar8;
-        scratchCell1[2 - dVar5].stateMask = scratchCell1[2 - dVar5].stateMask | GVar8;
-        scratchCell1[3 - dVar5].stateMask = scratchCell1[3 - dVar5].stateMask | GVar8;
-        if ((FVar2 & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
-          scratchCell1[dVar5 * -2 + 4].stateMask = scratchCell1[dVar5 * -2 + 4].stateMask | GVar8;
-          scratchCell1[4 - dVar5].stateMask = scratchCell1[4 - dVar5].stateMask | GVar8;
-          scratchCell1[5 - dVar5].stateMask = scratchCell1[5 - dVar5].stateMask | GVar8;
+      if ((cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY) == 0) {
+        scratchCursor[scratchWidth * -2 + 2].stateMask = scratchCursor[scratchWidth * -2 + 2].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * -2 + 3].stateMask = scratchCursor[scratchWidth * -2 + 3].stateMask | cellClassMask;
+        scratchCursor[1 - scratchWidth].stateMask = scratchCursor[1 - scratchWidth].stateMask | cellClassMask;
+        scratchCursor[2 - scratchWidth].stateMask = scratchCursor[2 - scratchWidth].stateMask | cellClassMask;
+        scratchCursor[3 - scratchWidth].stateMask = scratchCursor[3 - scratchWidth].stateMask | cellClassMask;
+        if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
+          scratchCursor[scratchWidth * -2 + 4].stateMask = scratchCursor[scratchWidth * -2 + 4].stateMask | cellClassMask;
+          scratchCursor[4 - scratchWidth].stateMask = scratchCursor[4 - scratchWidth].stateMask | cellClassMask;
+          scratchCursor[5 - scratchWidth].stateMask = scratchCursor[5 - scratchWidth].stateMask | cellClassMask;
         }
       }
-      if ((FVar2 & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
-        scratchCell1[4].stateMask = scratchCell1[4].stateMask | GVar8;
-        scratchCell1[5].stateMask = scratchCell1[5].stateMask | GVar8;
-        scratchCell1[dVar5 + 4].stateMask = scratchCell1[dVar5 + 4].stateMask | GVar8;
-        scratchCell1[dVar5 + 5].stateMask = scratchCell1[dVar5 + 5].stateMask | GVar8;
-        scratchCell1[dVar5 * 2 + 4].stateMask = scratchCell1[dVar5 * 2 + 4].stateMask | GVar8;
+      if ((cellFlags & FIELD_CELL_LAST_COLUMN_BOUNDARY) == 0) {
+        scratchCursor[4].stateMask = scratchCursor[4].stateMask | cellClassMask;
+        scratchCursor[5].stateMask = scratchCursor[5].stateMask | cellClassMask;
+        scratchCursor[scratchWidth + 4].stateMask = scratchCursor[scratchWidth + 4].stateMask | cellClassMask;
+        scratchCursor[scratchWidth + 5].stateMask = scratchCursor[scratchWidth + 5].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2 + 4].stateMask = scratchCursor[scratchWidth * 2 + 4].stateMask | cellClassMask;
       }
-      scratchCell1->stateMask = scratchCell1->stateMask | GVar8;
-      scratchCell1[1].stateMask = scratchCell1[1].stateMask | GVar8;
-      scratchCell1[2].stateMask = scratchCell1[2].stateMask | GVar8;
-      scratchCell1[3].stateMask = scratchCell1[3].stateMask | GVar8;
-      scratchCell1 = scratchCell1 + dVar5;
-      if ((FVar2 & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
-        scratchCell1[-1].stateMask = scratchCell1[-1].stateMask | GVar8;
-        scratchCell1[dVar5 - 1].stateMask = scratchCell1[dVar5 - 1].stateMask | GVar8;
-        scratchCell1[dVar5 - 2].stateMask = scratchCell1[dVar5 - 2].stateMask | GVar8;
-        scratchCell1[dVar5 * 2 + -1].stateMask = scratchCell1[dVar5 * 2 + -1].stateMask | GVar8;
-        scratchCell1[dVar5 * 2 + -2].stateMask = scratchCell1[dVar5 * 2 + -2].stateMask | GVar8;
+      scratchCursor->stateMask = scratchCursor->stateMask | cellClassMask;
+      scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
+      scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
+      scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
+      scratchCursor = scratchCursor + scratchWidth;
+      if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
+        scratchCursor[-1].stateMask = scratchCursor[-1].stateMask | cellClassMask;
+        scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
+        scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2 + -1].stateMask = scratchCursor[scratchWidth * 2 + -1].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2 + -2].stateMask = scratchCursor[scratchWidth * 2 + -2].stateMask | cellClassMask;
       }
-      scratchCell1->stateMask = scratchCell1->stateMask | GVar8;
-      scratchCell1[1].stateMask = scratchCell1[1].stateMask | GVar8;
-      scratchCell1[2].stateMask = scratchCell1[2].stateMask | GVar8;
-      scratchCell1[3].stateMask = scratchCell1[3].stateMask | GVar8;
-      scratchCell1[dVar5].stateMask = scratchCell1[dVar5].stateMask | GVar8;
-      scratchCell1[dVar5 + 1].stateMask = scratchCell1[dVar5 + 1].stateMask | GVar8;
-      scratchCell1[dVar5 + 2].stateMask = scratchCell1[dVar5 + 2].stateMask | GVar8;
-      scratchCell1[dVar5 + 3].stateMask = scratchCell1[dVar5 + 3].stateMask | GVar8;
-      scratchCell1 = scratchCell1 + dVar5 * 2;
-      scratchCell1->stateMask = scratchCell1->stateMask | GVar8;
-      scratchCell1[1].stateMask = scratchCell1[1].stateMask | GVar8;
-      scratchCell1[2].stateMask = scratchCell1[2].stateMask | GVar8;
-      scratchCell1[3].stateMask = scratchCell1[3].stateMask | GVar8;
-      if ((FVar2 & 0x80000000) == 0) {
-        scratchCell1[dVar5].stateMask = scratchCell1[dVar5].stateMask | GVar8;
-        scratchCell1[dVar5 + 1].stateMask = scratchCell1[dVar5 + 1].stateMask | GVar8;
-        scratchCell1[dVar5 + 2].stateMask = scratchCell1[dVar5 + 2].stateMask | GVar8;
-        scratchCell1[dVar5 * 2].stateMask = scratchCell1[dVar5 * 2].stateMask | GVar8;
-        scratchCell1[dVar5 * 2 + 1].stateMask = scratchCell1[dVar5 * 2 + 1].stateMask | GVar8;
-        if ((FVar2 & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
-          scratchCell1[dVar5 - 1].stateMask = scratchCell1[dVar5 - 1].stateMask | GVar8;
-          scratchCell1[dVar5 - 2].stateMask = scratchCell1[dVar5 - 2].stateMask | GVar8;
-          scratchCell1[dVar5 * 2 + -1].stateMask = scratchCell1[dVar5 * 2 + -1].stateMask | GVar8;
+      scratchCursor->stateMask = scratchCursor->stateMask | cellClassMask;
+      scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
+      scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
+      scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
+      scratchCursor[scratchWidth].stateMask = scratchCursor[scratchWidth].stateMask | cellClassMask;
+      scratchCursor[scratchWidth + 1].stateMask = scratchCursor[scratchWidth + 1].stateMask | cellClassMask;
+      scratchCursor[scratchWidth + 2].stateMask = scratchCursor[scratchWidth + 2].stateMask | cellClassMask;
+      scratchCursor[scratchWidth + 3].stateMask = scratchCursor[scratchWidth + 3].stateMask | cellClassMask;
+      scratchCursor = scratchCursor + scratchWidth * 2;
+      scratchCursor->stateMask = scratchCursor->stateMask | cellClassMask;
+      scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
+      scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
+      scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
+      if ((cellFlags & 0x80000000) == 0) {
+        scratchCursor[scratchWidth].stateMask = scratchCursor[scratchWidth].stateMask | cellClassMask;
+        scratchCursor[scratchWidth + 1].stateMask = scratchCursor[scratchWidth + 1].stateMask | cellClassMask;
+        scratchCursor[scratchWidth + 2].stateMask = scratchCursor[scratchWidth + 2].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2].stateMask = scratchCursor[scratchWidth * 2].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2 + 1].stateMask = scratchCursor[scratchWidth * 2 + 1].stateMask | cellClassMask;
+        if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
+          scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
+          scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
+          scratchCursor[scratchWidth * 2 + -1].stateMask = scratchCursor[scratchWidth * 2 + -1].stateMask | cellClassMask;
         }
       }
-      dVar6 = g_GridScratchWidth;
-      scratchCell1 = scratchCell1 + dVar5 * -3 + 4;
-      pFVar13 = pFVar13 + 1;
-      FVar9 = FVar9 - 1;
-    } while (FVar9 != 0);
-    scratchCell1 = scratchCell1 + dVar5 * 3;
-    local_20 = local_20 - 1;
-    FVar9 = FVar1;
-  } while (local_20 != 0);
-  iVar10 = g_GridScratchHeight * g_GridScratchWidth;
-  scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * -4;
-  iVar7 = iVar10;
+      scratchStride = g_GridScratchWidth;
+      scratchCursor = scratchCursor + scratchWidth * -3 + 4;
+      fieldCell = fieldCell + 1;
+      columnsRemaining = columnsRemaining - 1;
+    } while (columnsRemaining != 0);
+    scratchCursor = scratchCursor + scratchWidth * 3;
+    rowsRemaining = rowsRemaining - 1;
+    columnsRemaining = fieldGridWidth;
+  } while (rowsRemaining != 0);
+  angleOrCountOrRow = g_GridScratchHeight * g_GridScratchWidth;
+  scratchCursor = g_GridScratchPrimary + g_GridScratchWidth * -4;
+  countOrWaterDeltaOrColumn = angleOrCountOrRow;
   do {
-    scratchCell1[dVar6 * 4].stateMask =
-         scratchCell1[dVar6 * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    if (((scratchCell1[dVar6 * 4].stateMask & 0x80000000) == 0) &&
-       (((scratchCell1[dVar6 * 4].stateMask | scratchCell1->stateMask | scratchCell1[4].stateMask |
-          scratchCell1[dVar6 * 4 + -4].stateMask | scratchCell1[dVar6 * 4 + 4].stateMask |
-          scratchCell1[dVar6 * 8 + -4].stateMask | scratchCell1[dVar6 * 8].stateMask) &
+    scratchCursor[scratchStride * 4].stateMask =
+         scratchCursor[scratchStride * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    if (((scratchCursor[scratchStride * 4].stateMask & 0x80000000) == 0) &&
+       (((scratchCursor[scratchStride * 4].stateMask | scratchCursor->stateMask | scratchCursor[4].stateMask |
+          scratchCursor[scratchStride * 4 + -4].stateMask | scratchCursor[scratchStride * 4 + 4].stateMask |
+          scratchCursor[scratchStride * 8 + -4].stateMask | scratchCursor[scratchStride * 8].stateMask) &
         GRID_SCRATCH_TERRAIN_CLASS_BIT24) != 0)) {
-      scratchCell1[dVar6 * 4].stateMask =
-           scratchCell1[dVar6 * 4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+      scratchCursor[scratchStride * 4].stateMask =
+           scratchCursor[scratchStride * 4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     }
-    scratchCell1 = scratchCell1 + 1;
-    iVar7 = iVar7 + -1;
-    scratchCell2 = g_GridScratchPrimary;
-  } while (iVar7 != 0);
+    scratchCursor = scratchCursor + 1;
+    countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+    promoteCursor = g_GridScratchPrimary;
+  } while (countOrWaterDeltaOrColumn != 0);
   do {
-    if ((scratchCell2->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) {
-      scratchCell2->stateMask = scratchCell2->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
-      scratchCell2->stateMask = scratchCell2->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    if ((promoteCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) {
+      promoteCursor->stateMask = promoteCursor->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
+      promoteCursor->stateMask = promoteCursor->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     }
-    iVar10 = iVar10 + -1;
-    scratchCell2 = scratchCell2 + 1;
-  } while (iVar10 != 0);
-  worldNode1 = worldRuntime->ownerListHead;
-  if (worldNode1 != (WorldOwnerListNode100 *)0x0) {
+    angleOrCountOrRow = angleOrCountOrRow + -1;
+    promoteCursor = promoteCursor + 1;
+  } while (angleOrCountOrRow != 0);
+  ownerNode = worldRuntime->ownerListHead;
+  if (ownerNode != (WorldOwnerListNode100 *)0x0) {
     do {
-      if (((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-          (*(int *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) != 0)) &&
-         (*(int *)(*(int *)worldNode1->runtimePayload + 0x278) != 1)) {
-        lVar3 = (longlong)worldNode1->worldXQ12 * 0x1c6e9c;
-        lVar4 = (longlong)worldNode1->worldYQ12 * -0x20c8cc;
-        uVar11 = (int)((ulonglong)lVar4 >> 0x20) << 0xb | (uint)lVar4 >> 0x15;
-        iVar7 = (int)((((int)((ulonglong)lVar3 >> 0x20) << 0xc | (uint)lVar3 >> 0x14) - uVar11) +
+      if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+          (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
+         (*(int *)(*(int *)ownerNode->runtimePayload + 0x278) != 1)) {
+        wideProductX = (longlong)ownerNode->worldXQ12 * 0x1c6e9c;
+        wideProductY = (longlong)ownerNode->worldYQ12 * -0x20c8cc;
+        scaledRowTerm = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
+        countOrWaterDeltaOrColumn = (int)((((int)((ulonglong)wideProductX >> 0x20) << 0xc | (uint)wideProductX >> 0x14) - scaledRowTerm) +
                      0x800) >> 10;
-        if (((-1 < iVar7) && (iVar10 = (int)(uVar11 * 2 + 0x800) >> 10, -1 < iVar10)) &&
-           ((iVar7 < (int)g_GridScratchWidth && (iVar10 < (int)g_GridScratchHeight)))) {
+        if (((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < angleOrCountOrRow)) &&
+           ((countOrWaterDeltaOrColumn < (int)g_GridScratchWidth && (angleOrCountOrRow < (int)g_GridScratchHeight)))) {
           GridScratch_FloodFillConnectedCellsRegs
                     (0xf0000001,g_GridScratchWidth << 3,
-                     g_GridScratchPrimary + iVar10 * g_GridScratchWidth + iVar7);
+                     g_GridScratchPrimary + angleOrCountOrRow * g_GridScratchWidth + countOrWaterDeltaOrColumn);
         }
       }
-      worldNode1 = worldNode1->nextNode;
-    } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
-    iVar7 = g_GridScratchWidth * g_GridScratchHeight;
-    scratchCell1 = g_GridScratchPrimary;
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+    countOrWaterDeltaOrColumn = g_GridScratchWidth * g_GridScratchHeight;
+    scratchCursor = g_GridScratchPrimary;
     do {
-      if ((scratchCell1->stateMask &
+      if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
            GRID_SCRATCH_TERRAIN_CLASS_BIT28|GRID_SCRATCH_TRAVERSAL_VISITED)) == 0) {
-        scratchCell1->stateMask =
-             scratchCell1->stateMask |
+        scratchCursor->stateMask =
+             scratchCursor->stateMask |
              (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
              GRID_SCRATCH_TERRAIN_CLASS_BIT28);
       }
-      scratchCell1->stateMask = scratchCell1->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-      scratchCell1 = scratchCell1 + 1;
-      iVar7 = iVar7 + -1;
-    } while (iVar7 != 0);
-    worldNode1 = worldRuntime->ownerListHead;
+      scratchCursor->stateMask = scratchCursor->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+      scratchCursor = scratchCursor + 1;
+      countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+    } while (countOrWaterDeltaOrColumn != 0);
+    ownerNode = worldRuntime->ownerListHead;
     do {
-      if (((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-          (*(int *)(*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) != 0)) &&
-         (*(int *)(*(int *)worldNode1->runtimePayload + 0x278) != 1)) {
-        lVar3 = (longlong)worldNode1->worldXQ12 * 0x1c6e9c;
-        lVar4 = (longlong)worldNode1->worldYQ12 * -0x20c8cc;
-        uVar11 = (int)((ulonglong)lVar4 >> 0x20) << 0xb | (uint)lVar4 >> 0x15;
-        iVar7 = (int)((((int)((ulonglong)lVar3 >> 0x20) << 0xc | (uint)lVar3 >> 0x14) - uVar11) +
+      if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+          (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
+         (*(int *)(*(int *)ownerNode->runtimePayload + 0x278) != 1)) {
+        wideProductX = (longlong)ownerNode->worldXQ12 * 0x1c6e9c;
+        wideProductY = (longlong)ownerNode->worldYQ12 * -0x20c8cc;
+        scaledRowTerm = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
+        countOrWaterDeltaOrColumn = (int)((((int)((ulonglong)wideProductX >> 0x20) << 0xc | (uint)wideProductX >> 0x14) - scaledRowTerm) +
                      0x800) >> 10;
-        if ((((-1 < iVar7) && (iVar10 = (int)(uVar11 * 2 + 0x800) >> 10, -1 < iVar10)) &&
-            (iVar7 < (int)g_GridScratchWidth)) && (iVar10 < (int)g_GridScratchHeight)) {
+        if ((((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < angleOrCountOrRow)) &&
+            (countOrWaterDeltaOrColumn < (int)g_GridScratchWidth)) && (angleOrCountOrRow < (int)g_GridScratchHeight)) {
           GridScratch_FloodFillConnectedCellsRegs
                     (0x8e000001,g_GridScratchWidth << 3,
-                     g_GridScratchPrimary + iVar10 * g_GridScratchWidth + iVar7);
+                     g_GridScratchPrimary + angleOrCountOrRow * g_GridScratchWidth + countOrWaterDeltaOrColumn);
         }
       }
-      worldNode1 = worldNode1->nextNode;
-    } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
-    iVar7 = g_GridScratchWidth * g_GridScratchHeight;
-    scratchCell1 = g_GridScratchPrimary;
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+    countOrWaterDeltaOrColumn = g_GridScratchWidth * g_GridScratchHeight;
+    scratchCursor = g_GridScratchPrimary;
     do {
-      if ((scratchCell1->stateMask &
+      if ((scratchCursor->stateMask &
           (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
            GRID_SCRATCH_TERRAIN_CLASS_BIT25|GRID_SCRATCH_TRAVERSAL_VISITED)) == 0) {
-        scratchCell1->stateMask =
-             scratchCell1->stateMask |
+        scratchCursor->stateMask =
+             scratchCursor->stateMask |
              (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
              GRID_SCRATCH_TERRAIN_CLASS_BIT25);
       }
-      scratchCell1 = scratchCell1 + 1;
-      iVar7 = iVar7 + -1;
-    } while (iVar7 != 0);
+      scratchCursor = scratchCursor + 1;
+      countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+    } while (countOrWaterDeltaOrColumn != 0);
   }
   return;
 }
@@ -643,18 +643,18 @@ GridScratch_TestRuntimePairReachabilityFromWorldPointCf
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair)
 
 {
-  bool bVar1;
-  ModelDefinitionRuntimeSemanticView280 *dVar1;
+  bool unreachable;
+  ModelDefinitionRuntimeSemanticView280 *targetModelDefinition;
   
-  dVar1 = (ModelDefinitionRuntimeSemanticView280 *)
+  targetModelDefinition = (ModelDefinitionRuntimeSemanticView280 *)
           (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  bVar1 = GridScratch_TestWorldPointReachabilityCf
-                    (0x100 << ((byte)dVar1->gridClassification260 & 0x1f) |
-                     0x1000000 << ((byte)dVar1->gridClassification264 & 0x1f),
+  unreachable = GridScratch_TestWorldPointReachabilityCf
+                    (0x100 << ((byte)targetModelDefinition->gridClassification260 & 0x1f) |
+                     0x1000000 << ((byte)targetModelDefinition->gridClassification264 & 0x1f),
                      sourceWorldPoint->worldYQ12,sourceWorldPoint->worldXQ12,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.y,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.x);
-  return bVar1;
+  return unreachable;
 }
 
 
@@ -670,54 +670,54 @@ GridScratchAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
 
 {
-  GridScratchCell *memory;
-  GridScratchCell **memory_00;
+  GridScratchCell *previousSecondaryScratchBuffer;
+  GridScratchCell **previousCostQueueBuffer;
   dword *newScratchBuffer;
   dword *newSecondaryScratchBuffer;
   void *newAuxiliaryBuffer;
   dword bytes;
   bool allocationSizeOverflow;
-  ArenaAllocEaxCf5 AVar1;
-  ArenaFreeEaxCf5 AVar2;
-  GridScratchAllocEaxCf5 GVar3;
+  ArenaAllocEaxCf5 allocResult;
+  ArenaFreeEaxCf5 freeResult;
+  GridScratchAllocEaxCf5 failureResult;
   longlong scratchAllocationByteCountProduct;
   GridScratchCell *previousScratchBuffer;
   
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
   g_GridScratchHeight = fieldGrid->gridHeight * 4;
   bytes = fieldGrid->gridWidth * 0x20 * g_GridScratchHeight;
-  AVar1 = (*g_MemoryApi.alloc)(bytes);
+  allocResult = (*g_MemoryApi.alloc)(bytes);
   previousScratchBuffer = g_GridScratchPrimary;
-  newScratchBuffer = (dword *)AVar1.eax;
-  if (!AVar1.carry) {
+  newScratchBuffer = (dword *)allocResult.eax;
+  if (!allocResult.carry) {
     LOCK();
     UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
     (*g_MemoryApi.free)(previousScratchBuffer);
-    AVar1 = (*g_MemoryApi.alloc)(bytes);
-    memory = g_GridScratchSecondary;
-    newSecondaryScratchBuffer = (dword *)AVar1.eax;
+    allocResult = (*g_MemoryApi.alloc)(bytes);
+    previousSecondaryScratchBuffer = g_GridScratchSecondary;
+    newSecondaryScratchBuffer = (dword *)allocResult.eax;
     newScratchBuffer = newSecondaryScratchBuffer;
-    if (!AVar1.carry) {
+    if (!allocResult.carry) {
       LOCK();
       UNLOCK();
       g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
-      (*g_MemoryApi.free)(memory);
-      AVar1 = (*g_MemoryApi.alloc)(0x180000);
-      memory_00 = g_GridPathCostQueueBegin;
-      newAuxiliaryBuffer = (void *)AVar1.eax;
+      (*g_MemoryApi.free)(previousSecondaryScratchBuffer);
+      allocResult = (*g_MemoryApi.alloc)(0x180000);
+      previousCostQueueBuffer = g_GridPathCostQueueBegin;
+      newAuxiliaryBuffer = (void *)allocResult.eax;
       newScratchBuffer = newAuxiliaryBuffer;
-      if (!AVar1.carry) {
+      if (!allocResult.carry) {
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + 0x180000);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
-        AVar2 = (*g_MemoryApi.free)(memory_00);
-        return THANDOR_BITCAST(qword, GridScratchAllocEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, AVar2) & 0xFFFFFFFFFFull) & 0xffffffff));
+        freeResult = (*g_MemoryApi.free)(previousCostQueueBuffer);
+        return THANDOR_BITCAST(qword, GridScratchAllocEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
-  GVar3.carry = true;
-  GVar3.eax = (dword)newScratchBuffer;
-  return GVar3;
+  failureResult.carry = true;
+  failureResult.eax = (dword)newScratchBuffer;
+  return failureResult;
 }
 
 
@@ -749,7 +749,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 
 {
-  uint *puVar1;
+  uint *lowerScratchCursor;
   FieldGridDimension columnsRemaining;
   FieldGridCell *currentFieldCell;
   dword *scratchCellCursor;
@@ -831,23 +831,23 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
              propagatedScratchCursor[scratchWidth * 2 + 4] | propagatedOccupancyGroupMask;
         propagatedScratchCursor[scratchWidth * 2 + 6] =
              propagatedScratchCursor[scratchWidth * 2 + 6] | propagatedOccupancyGroupMask;
-        puVar1 = propagatedScratchCursor + scratchWidth * 4;
-        *puVar1 = *puVar1 | propagatedOccupancyGroupMask;
-        puVar1[2] = puVar1[2] | propagatedOccupancyGroupMask;
-        puVar1[4] = puVar1[4] | propagatedOccupancyGroupMask;
-        puVar1[6] = puVar1[6] | propagatedOccupancyGroupMask;
-        puVar1[scratchWidth * 2] = puVar1[scratchWidth * 2] | propagatedOccupancyGroupMask;
-        puVar1[scratchWidth * 2 + 2] = puVar1[scratchWidth * 2 + 2] | propagatedOccupancyGroupMask;
-        puVar1[scratchWidth * 2 + 4] = puVar1[scratchWidth * 2 + 4] | propagatedOccupancyGroupMask;
-        puVar1[scratchWidth * 4] = puVar1[scratchWidth * 4] | propagatedOccupancyGroupMask;
-        puVar1[scratchWidth * 4 + 2] = puVar1[scratchWidth * 4 + 2] | propagatedOccupancyGroupMask;
-        puVar1[scratchWidth * 2 + -2] = puVar1[scratchWidth * 2 + -2] | propagatedOccupancyGroupMask
+        lowerScratchCursor = propagatedScratchCursor + scratchWidth * 4;
+        *lowerScratchCursor = *lowerScratchCursor | propagatedOccupancyGroupMask;
+        lowerScratchCursor[2] = lowerScratchCursor[2] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[4] = lowerScratchCursor[4] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[6] = lowerScratchCursor[6] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[scratchWidth * 2] = lowerScratchCursor[scratchWidth * 2] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[scratchWidth * 2 + 2] = lowerScratchCursor[scratchWidth * 2 + 2] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[scratchWidth * 2 + 4] = lowerScratchCursor[scratchWidth * 2 + 4] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[scratchWidth * 4] = lowerScratchCursor[scratchWidth * 4] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[scratchWidth * 4 + 2] = lowerScratchCursor[scratchWidth * 4 + 2] | propagatedOccupancyGroupMask;
+        lowerScratchCursor[scratchWidth * 2 + -2] = lowerScratchCursor[scratchWidth * 2 + -2] | propagatedOccupancyGroupMask
         ;
-        puVar1[scratchWidth * 2 + -4] = puVar1[scratchWidth * 2 + -4] | propagatedOccupancyGroupMask
+        lowerScratchCursor[scratchWidth * 2 + -4] = lowerScratchCursor[scratchWidth * 2 + -4] | propagatedOccupancyGroupMask
         ;
-        puVar1[scratchWidth * 4 + -2] = puVar1[scratchWidth * 4 + -2] | propagatedOccupancyGroupMask
+        lowerScratchCursor[scratchWidth * 4 + -2] = lowerScratchCursor[scratchWidth * 4 + -2] | propagatedOccupancyGroupMask
         ;
-        nextScratchCellCursor = puVar1 + scratchWidth * -6 + 8;
+        nextScratchCellCursor = lowerScratchCursor + scratchWidth * -6 + 8;
       }
       scratchCellCursor = nextScratchCellCursor;
       columnsRemaining = columnsRemaining - 1;
@@ -873,20 +873,20 @@ GridScratch_TestProjectedCellMaskBandsCf
           (Q12 worldYQ12,Q12 worldXQ12,byte lowBandIndex,byte highBandIndex)
 
 {
-  GridScratchStateMask GVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
+  GridScratchStateMask cellStateMask;
+  int cellColumn;
+  uint scaledRowTerm;
+  int cellRow;
   
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  scaledRowTerm = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar2 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10;
-  if ((((-1 < iVar2) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 10, -1 < iVar4)) &&
-      (iVar2 < (int)g_GridScratchWidth)) && (iVar4 < (int)g_GridScratchHeight)) {
-    GVar1 = g_GridScratchPrimary[iVar4 * g_GridScratchWidth + iVar2].stateMask;
-    if (((-1 < (int)GVar1) && ((0x100 << (lowBandIndex & 0x1f) & GVar1) == 0)) &&
-       ((0x1000000 << (highBandIndex & 0x1f) & GVar1) == 0)) {
+  cellColumn = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10;
+  if ((((-1 < cellColumn) && (cellRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < cellRow)) &&
+      (cellColumn < (int)g_GridScratchWidth)) && (cellRow < (int)g_GridScratchHeight)) {
+    cellStateMask = g_GridScratchPrimary[cellRow * g_GridScratchWidth + cellColumn].stateMask;
+    if (((-1 < (int)cellStateMask) && ((0x100 << (lowBandIndex & 0x1f) & cellStateMask) == 0)) &&
+       ((0x1000000 << (highBandIndex & 0x1f) & cellStateMask) == 0)) {
       return false;
     }
   }
@@ -912,158 +912,158 @@ EntityPathing_RebuildOverlappingGroupRoutes
           WorldRuntimeContext *worldRuntime)
 
 {
-  sdword sVar1;
-  int iVar2;
-  GameEntityRuntime *pGVar3;
-  void *pvVar4;
-  void *pvVar5;
-  sdword sVar6;
+  sdword swappedPriority;
+  int entityWorldY;
+  GameEntityRuntime *candidateEntity;
+  void *candidateRecord;
+  void *candidateDefinition;
+  sdword rootPriority;
   EntityPathingPriorityPair *heapBase;
   DepthBinMask32 secondMaskHigh;
   DepthBinMask32 secondMaskLow;
-  int iVar7;
+  int searchRadius;
   DepthIntervalRadius32 intervalRadius;
-  int iVar8;
-  dword dVar9;
-  dword dVar10;
+  int entityWorldXOrScratch;
+  dword pairsRemaining;
+  dword routesRemaining;
   uint heapSize;
-  WorldOwnerListNode100 *worldNode1;
-  int iVar11;
-  EntityPathingPriorityPair *priorityPair1;
-  EntityPathingPriorityPair *priorityPair2;
-  bool bVar12;
-  WorldPositionXYEaxEdx8 WVar13;
-  WorldPositionXYEaxEdx8 WVar14;
-  ModelRuntimeNode *modelNode1;
+  WorldOwnerListNode100 *ownerNode;
+  int deltaY;
+  EntityPathingPriorityPair *influencePair;
+  EntityPathingPriorityPair *pairCursor;
+  bool masksOverlap;
+  WorldPositionXYEaxEdx8 routeTarget;
+  WorldPositionXYEaxEdx8 resolvedTarget;
+  ModelRuntimeNode *entityModelNode;
   
-  WVar13.worldYQ12 = targetWorldY;
-  WVar13.worldXQ12 = targetWorldX;
+  routeTarget.worldYQ12 = targetWorldY;
+  routeTarget.worldXQ12 = targetWorldX;
   GridScratch_CopyPrimaryToSecondary();
   GridScratch_SwapPrimarySecondary();
-  modelNode1 = (routeEntityRuntime->common).ownership.modelNode;
-  worldNode1 = worldRuntime->ownerListHead;
-  iVar8 = (modelNode1->worldTransform).translation.x;
-  iVar2 = (modelNode1->worldTransform).translation.y;
-  iVar7 = iVar8 - targetWorldX;
-  if (iVar7 < 0) {
-    iVar7 = -iVar7;
+  entityModelNode = (routeEntityRuntime->common).ownership.modelNode;
+  ownerNode = worldRuntime->ownerListHead;
+  entityWorldXOrScratch = (entityModelNode->worldTransform).translation.x;
+  entityWorldY = (entityModelNode->worldTransform).translation.y;
+  searchRadius = entityWorldXOrScratch - targetWorldX;
+  if (searchRadius < 0) {
+    searchRadius = -searchRadius;
   }
-  iVar11 = iVar2 - targetWorldY;
-  if (iVar11 < 0) {
-    iVar11 = -iVar11;
+  deltaY = entityWorldY - targetWorldY;
+  if (deltaY < 0) {
+    deltaY = -deltaY;
   }
-  if (iVar7 < iVar11) {
-    iVar7 = iVar11;
+  if (searchRadius < deltaY) {
+    searchRadius = deltaY;
   }
-  iVar7 = iVar7 + *(int *)((int)(routeEntityRuntime->common).ownership.definitionOrClassRecord +
+  searchRadius = searchRadius + *(int *)((int)(routeEntityRuntime->common).ownership.definitionOrClassRecord +
                           0xdc);
-  secondMaskHigh = DepthInterval_BuildBinMask(iVar7,(int)(iVar8 + targetWorldX) >> 1);
-  secondMaskLow = DepthInterval_BuildBinMask(iVar7,(int)(iVar2 + targetWorldY) >> 1);
-  iVar8 = 0x20;
+  secondMaskHigh = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldXOrScratch + targetWorldX) >> 1);
+  secondMaskLow = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldY + targetWorldY) >> 1);
+  entityWorldXOrScratch = 0x20;
   g_EntityPathingPriorityPairCount = 0;
-  priorityPair2 = g_EntityPathingPriorityPairs;
+  pairCursor = g_EntityPathingPriorityPairs;
   do {
-    if (worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      pGVar3 = worldNode1->runtimePayload;
-      pvVar4 = (pGVar3->common).ownership.definitionOrClassRecord;
-      bVar12 = DepthBinMasks_OverlapCf
-                         (worldNode1->modelDepthBinMaskFar,worldNode1->modelDepthBinMaskNear,
+    if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      candidateEntity = ownerNode->runtimePayload;
+      candidateRecord = (candidateEntity->common).ownership.definitionOrClassRecord;
+      masksOverlap = DepthBinMasks_OverlapCf
+                         (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
                           secondMaskLow,secondMaskHigh);
-      if ((bVar12) && (*(int *)((int)pvVar4 + 0x18) != 0)) {
-        priorityPair2->entity = pGVar3;
-        priorityPair2->priority = 0;
+      if ((masksOverlap) && (*(int *)((int)candidateRecord + 0x18) != 0)) {
+        pairCursor->entity = candidateEntity;
+        pairCursor->priority = 0;
         g_EntityPathingPriorityPairCount = g_EntityPathingPriorityPairCount + 1;
-        priorityPair2 = priorityPair2 + 1;
-        iVar8 = iVar8 + -1;
-        if (iVar8 == 0) break;
+        pairCursor = pairCursor + 1;
+        entityWorldXOrScratch = entityWorldXOrScratch + -1;
+        if (entityWorldXOrScratch == 0) break;
       }
     }
-    worldNode1 = worldNode1->nextNode;
-  } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
+    ownerNode = ownerNode->nextNode;
+  } while (ownerNode != (WorldOwnerListNode100 *)0x0);
   if (1 < g_EntityPathingPriorityPairCount) {
-    iVar8 = *(int *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0xc);
-    dVar9 = g_EntityPathingPriorityPairCount;
-    priorityPair2 = g_EntityPathingPriorityPairs;
+    entityWorldXOrScratch = *(int *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0xc);
+    pairsRemaining = g_EntityPathingPriorityPairCount;
+    pairCursor = g_EntityPathingPriorityPairs;
     do {
-      pvVar4 = (priorityPair2->entity->common).ownership.runtimeLink;
-      pvVar5 = (priorityPair2->entity->common).ownership.definitionOrClassRecord;
-      if ((((*(uint *)((int)pvVar4 + 0x18) & 2) == 0) &&
-          (priorityPair2->priority = priorityPair2->priority + 1,
-          iVar8 == *(int *)((int)pvVar4 + 0xc))) &&
-         (priorityPair2->priority = priorityPair2->priority + 1,
-         (*(uint *)((int)pvVar4 + 0x18) & 1) == 0)) {
-        priorityPair2->priority = priorityPair2->priority + *(int *)((int)pvVar5 + 0xc);
+      candidateRecord = (pairCursor->entity->common).ownership.runtimeLink;
+      candidateDefinition = (pairCursor->entity->common).ownership.definitionOrClassRecord;
+      if ((((*(uint *)((int)candidateRecord + 0x18) & 2) == 0) &&
+          (pairCursor->priority = pairCursor->priority + 1,
+          entityWorldXOrScratch == *(int *)((int)candidateRecord + 0xc))) &&
+         (pairCursor->priority = pairCursor->priority + 1,
+         (*(uint *)((int)candidateRecord + 0x18) & 1) == 0)) {
+        pairCursor->priority = pairCursor->priority + *(int *)((int)candidateDefinition + 0xc);
       }
       heapBase = g_EntityPathingPriorityPairs;
-      priorityPair2 = priorityPair2 + 1;
-      dVar9 = dVar9 - 1;
-    } while (dVar9 != 0);
+      pairCursor = pairCursor + 1;
+      pairsRemaining = pairsRemaining - 1;
+    } while (pairsRemaining != 0);
     heapSize = 0;
-    dVar9 = g_EntityPathingPriorityPairCount;
-    priorityPair2 = g_EntityPathingPriorityPairs;
+    pairsRemaining = g_EntityPathingPriorityPairCount;
+    pairCursor = g_EntityPathingPriorityPairs;
     do {
       heapSize = heapSize + 1;
       PriorityPairHeap_SiftUp(heapSize,heapBase);
-      priorityPair2 = priorityPair2 + 1;
-      dVar9 = dVar9 - 1;
-    } while (dVar9 != 0);
+      pairCursor = pairCursor + 1;
+      pairsRemaining = pairsRemaining - 1;
+    } while (pairsRemaining != 0);
     do {
-      sVar6 = heapBase->priority;
+      rootPriority = heapBase->priority;
       LOCK();
-      pGVar3 = priorityPair2[-1].entity;
-      priorityPair2[-1].entity = heapBase->entity;
+      candidateEntity = pairCursor[-1].entity;
+      pairCursor[-1].entity = heapBase->entity;
       UNLOCK();
       LOCK();
-      sVar1 = priorityPair2[-1].priority;
-      priorityPair2[-1].priority = sVar6;
+      swappedPriority = pairCursor[-1].priority;
+      pairCursor[-1].priority = rootPriority;
       UNLOCK();
-      heapBase->entity = pGVar3;
-      heapBase->priority = sVar1;
+      heapBase->entity = candidateEntity;
+      heapBase->priority = swappedPriority;
       heapSize = heapSize - 1;
       PriorityPairHeap_SiftDown(heapSize,heapBase);
-      priorityPair2 = priorityPair2 + -1;
-      dVar9 = g_EntityPathingPriorityPairCount;
-      priorityPair1 = g_EntityPathingPriorityPairs;
+      pairCursor = pairCursor + -1;
+      pairsRemaining = g_EntityPathingPriorityPairCount;
+      influencePair = g_EntityPathingPriorityPairs;
     } while (1 < heapSize);
     do {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [*(int *)((int)(priorityPair1->entity->common).ownership.definitionOrClassRecord + 0x4c)])
-                (priorityPair1->entity);
-      dVar9 = dVar9 - 1;
-      dVar10 = g_EntityPathingPriorityPairCount;
-      priorityPair2 = g_EntityPathingPriorityPairs;
-      priorityPair1 = priorityPair1 + 1;
-    } while (dVar9 != 0);
+        [*(int *)((int)(influencePair->entity->common).ownership.definitionOrClassRecord + 0x4c)])
+                (influencePair->entity);
+      pairsRemaining = pairsRemaining - 1;
+      routesRemaining = g_EntityPathingPriorityPairCount;
+      pairCursor = g_EntityPathingPriorityPairs;
+      influencePair = influencePair + 1;
+    } while (pairsRemaining != 0);
     do {
-      targetWorldY = WVar13.worldYQ12;
-      targetWorldX = WVar13.worldXQ12;
-      pGVar3 = priorityPair2->entity;
-      if (priorityPair2->priority == 1) {
-        modelNode1 = (pGVar3->common).ownership.modelNode;
+      targetWorldY = routeTarget.worldYQ12;
+      targetWorldX = routeTarget.worldXQ12;
+      candidateEntity = pairCursor->entity;
+      if (pairCursor->priority == 1) {
+        entityModelNode = (candidateEntity->common).ownership.modelNode;
         GridInfluence_SetLowDistanceBandsAroundWorldPoint
-                  (((ModelDefinitionRuntimeSemanticView280 *)(pGVar3->common).ownership.definitionOrClassRecord)->
-                   placementRadiusOrClearanceDC,(modelNode1->worldTransform).translation.y,
-                   (modelNode1->worldTransform).translation.x);
+                  (((ModelDefinitionRuntimeSemanticView280 *)(candidateEntity->common).ownership.definitionOrClassRecord)->
+                   placementRadiusOrClearanceDC,(entityModelNode->worldTransform).translation.y,
+                   (entityModelNode->worldTransform).translation.x);
       }
-      else if (pGVar3 == routeEntityRuntime) {
-        WVar13 = EntityPathing_UpdateRouteSegment
+      else if (candidateEntity == routeEntityRuntime) {
+        routeTarget = EntityPathing_UpdateRouteSegment
                            (targetWorldY,targetWorldX,routeEntityRuntime,
-                            (EntityPathingRouteEntityRuntimeView10 *)pGVar3);
+                            (EntityPathingRouteEntityRuntimeView10 *)candidateEntity);
       }
       else {
         EntityPathing_UpdateRouteSegment
-                  (0,0,routeEntityRuntime,(EntityPathingRouteEntityRuntimeView10 *)pGVar3);
+                  (0,0,routeEntityRuntime,(EntityPathingRouteEntityRuntimeView10 *)candidateEntity);
       }
-      dVar10 = dVar10 - 1;
-      priorityPair2 = priorityPair2 + 1;
-    } while (dVar10 != 0);
+      routesRemaining = routesRemaining - 1;
+      pairCursor = pairCursor + 1;
+    } while (routesRemaining != 0);
   }
-  targetWorldY = WVar13.worldYQ12;
-  targetWorldX = WVar13.worldXQ12;
+  targetWorldY = routeTarget.worldYQ12;
+  targetWorldX = routeTarget.worldXQ12;
   GridScratch_SwapPrimarySecondary();
-  WVar14.worldYQ12 = targetWorldY;
-  WVar14.worldXQ12 = targetWorldX;
-  return WVar14;
+  resolvedTarget.worldYQ12 = targetWorldY;
+  resolvedTarget.worldXQ12 = targetWorldX;
+  return resolvedTarget;
 }
 
 
@@ -1082,86 +1082,86 @@ GridFootprint_ClearTraversalFlagsAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong lVar1;
-  int iVar2;
+  longlong wideProduct;
+  int radiusColumnOrWalkerY;
   uint currentY;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
+  uint rowTermOrWalkerY;
+  int rowOrWalkerY;
+  uint cellCenterCoord;
   uint currentX;
-  int iVar6;
-  GridScratchCell *scratchCell2;
-  GridScratchCell *scratchCell1;
-  GridScratchCell *pGVar7;
+  int walkerResult;
+  GridScratchCell *centerCellCursor;
+  GridScratchCell *oppositeWalkCursor;
+  GridScratchCell *walkCursor;
   
-  iVar2 = radiusWorldUnits + g_GridInfluenceRadiusOffset6 + 499;
-  g_GridInfluenceSquaredThreshold6 = iVar2 * iVar2;
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  radiusColumnOrWalkerY = radiusWorldUnits + g_GridInfluenceRadiusOffset6 + 499;
+  g_GridInfluenceSquaredThreshold6 = radiusColumnOrWalkerY * radiusColumnOrWalkerY;
+  rowTermOrWalkerY = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar2 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10;
-  if ((((-1 < iVar2) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 10, -1 < iVar4)) &&
-      (iVar2 < (int)g_GridScratchWidth)) && (iVar4 < (int)g_GridScratchHeight)) {
-    scratchCell2 = g_GridScratchPrimary + g_GridScratchWidth * iVar4 + iVar2;
-    iVar4 = iVar4 * 0x400 + -0x600;
-    lVar1 = (longlong)(iVar4 + (iVar2 * 0x400 + -0x600) * 2) * 0x901;
-    uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x13 | (uint)lVar1 >> 0xd;
-    lVar1 = (longlong)iVar4 * -1999;
-    currentX = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    uVar3 = uVar5;
-    pGVar7 = scratchCell2;
-    if ((scratchCell2->stateMask & 0x80000000) == 0) {
-      while ((iVar2 = GridFootprint_ClearTraversalFlagsDiagonalPositive
-                                (worldYQ12,worldXQ12,currentX,uVar3,&pGVar7->stateMask),
-             currentY = uVar5, scratchCell1 = scratchCell2, iVar2 != 0 &&
-             (iVar2 = GridFootprint_ClearTraversalFlagsDiagonalNegative
-                                (worldYQ12,worldXQ12,currentX,uVar3,&pGVar7->stateMask), iVar2 != 0)
+  radiusColumnOrWalkerY = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - rowTermOrWalkerY) + 0x800) >> 10;
+  if ((((-1 < radiusColumnOrWalkerY) && (rowOrWalkerY = (int)(rowTermOrWalkerY * 2 + 0x800) >> 10, -1 < rowOrWalkerY)) &&
+      (radiusColumnOrWalkerY < (int)g_GridScratchWidth)) && (rowOrWalkerY < (int)g_GridScratchHeight)) {
+    centerCellCursor = g_GridScratchPrimary + g_GridScratchWidth * rowOrWalkerY + radiusColumnOrWalkerY;
+    rowOrWalkerY = rowOrWalkerY * 0x400 + -0x600;
+    wideProduct = (longlong)(rowOrWalkerY + (radiusColumnOrWalkerY * 0x400 + -0x600) * 2) * 0x901;
+    cellCenterCoord = (int)((ulonglong)wideProduct >> 0x20) << 0x13 | (uint)wideProduct >> 0xd;
+    wideProduct = (longlong)rowOrWalkerY * -1999;
+    currentX = (int)((ulonglong)wideProduct >> 0x20) << 0x14 | (uint)wideProduct >> 0xc;
+    rowTermOrWalkerY = cellCenterCoord;
+    walkCursor = centerCellCursor;
+    if ((centerCellCursor->stateMask & 0x80000000) == 0) {
+      while ((radiusColumnOrWalkerY = GridFootprint_ClearTraversalFlagsDiagonalPositive
+                                (worldYQ12,worldXQ12,currentX,rowTermOrWalkerY,&walkCursor->stateMask),
+             currentY = cellCenterCoord, oppositeWalkCursor = centerCellCursor, radiusColumnOrWalkerY != 0 &&
+             (radiusColumnOrWalkerY = GridFootprint_ClearTraversalFlagsDiagonalNegative
+                                (worldYQ12,worldXQ12,currentX,rowTermOrWalkerY,&walkCursor->stateMask), radiusColumnOrWalkerY != 0)
              )) {
-        pGVar7 = pGVar7 + -1;
-        uVar3 = uVar3 - 0x240;
+        walkCursor = walkCursor + -1;
+        rowTermOrWalkerY = rowTermOrWalkerY - 0x240;
       }
-      while ((iVar2 = GridFootprint_ClearTraversalFlagsDiagonalPositive
-                                (worldYQ12,worldXQ12,currentX,currentY,&scratchCell1->stateMask),
-             iVar2 != 0 &&
-             (iVar2 = GridFootprint_ClearTraversalFlagsDiagonalNegative
-                                (worldYQ12,worldXQ12,currentX,currentY,&scratchCell1->stateMask),
-             iVar2 != 0))) {
-        scratchCell1 = scratchCell1 + 1;
+      while ((radiusColumnOrWalkerY = GridFootprint_ClearTraversalFlagsDiagonalPositive
+                                (worldYQ12,worldXQ12,currentX,currentY,&oppositeWalkCursor->stateMask),
+             radiusColumnOrWalkerY != 0 &&
+             (radiusColumnOrWalkerY = GridFootprint_ClearTraversalFlagsDiagonalNegative
+                                (worldYQ12,worldXQ12,currentX,currentY,&oppositeWalkCursor->stateMask),
+             radiusColumnOrWalkerY != 0))) {
+        oppositeWalkCursor = oppositeWalkCursor + 1;
         currentY = currentY + 0x240;
       }
-      iVar4 = uVar5 - 0x120;
-      pGVar7 = scratchCell2 + -g_GridScratchWidth;
-      iVar2 = uVar5 + 0x120;
-      scratchCell1 = pGVar7;
-      while (iVar6 = GridFootprint_ClearTraversalFlagsDiagonalPositive
-                               (worldYQ12,worldXQ12,currentX + 499,iVar4,&scratchCell1->stateMask),
-            iVar6 != 0) {
-        scratchCell1 = scratchCell1 + -1;
-        iVar4 = iVar4 + -0x240;
+      rowOrWalkerY = cellCenterCoord - 0x120;
+      walkCursor = centerCellCursor + -g_GridScratchWidth;
+      radiusColumnOrWalkerY = cellCenterCoord + 0x120;
+      oppositeWalkCursor = walkCursor;
+      while (walkerResult = GridFootprint_ClearTraversalFlagsDiagonalPositive
+                               (worldYQ12,worldXQ12,currentX + 499,rowOrWalkerY,&oppositeWalkCursor->stateMask),
+            walkerResult != 0) {
+        oppositeWalkCursor = oppositeWalkCursor + -1;
+        rowOrWalkerY = rowOrWalkerY + -0x240;
       }
       while( true ) {
-        pGVar7 = pGVar7 + 1;
-        iVar4 = GridFootprint_ClearTraversalFlagsDiagonalPositive
-                          (worldYQ12,worldXQ12,currentX + 499,iVar2,&pGVar7->stateMask);
-        if (iVar4 == 0) break;
-        iVar2 = iVar2 + 0x240;
+        walkCursor = walkCursor + 1;
+        rowOrWalkerY = GridFootprint_ClearTraversalFlagsDiagonalPositive
+                          (worldYQ12,worldXQ12,currentX + 499,radiusColumnOrWalkerY,&walkCursor->stateMask);
+        if (rowOrWalkerY == 0) break;
+        radiusColumnOrWalkerY = radiusColumnOrWalkerY + 0x240;
       }
-      iVar4 = uVar5 + 0x120;
-      scratchCell2 = scratchCell2 + g_GridScratchWidth;
-      iVar2 = uVar5 - 0x120;
-      pGVar7 = scratchCell2;
-      while (iVar6 = GridFootprint_ClearTraversalFlagsDiagonalNegative
-                               (worldYQ12,worldXQ12,currentX - 500,iVar4,&pGVar7->stateMask),
-            iVar6 != 0) {
-        pGVar7 = pGVar7 + 1;
-        iVar4 = iVar4 + 0x240;
+      rowOrWalkerY = cellCenterCoord + 0x120;
+      centerCellCursor = centerCellCursor + g_GridScratchWidth;
+      radiusColumnOrWalkerY = cellCenterCoord - 0x120;
+      walkCursor = centerCellCursor;
+      while (walkerResult = GridFootprint_ClearTraversalFlagsDiagonalNegative
+                               (worldYQ12,worldXQ12,currentX - 500,rowOrWalkerY,&walkCursor->stateMask),
+            walkerResult != 0) {
+        walkCursor = walkCursor + 1;
+        rowOrWalkerY = rowOrWalkerY + 0x240;
       }
       while( true ) {
-        scratchCell2 = scratchCell2 + -1;
-        iVar4 = GridFootprint_ClearTraversalFlagsDiagonalNegative
-                          (worldYQ12,worldXQ12,currentX - 500,iVar2,&scratchCell2->stateMask);
-        if (iVar4 == 0) break;
-        iVar2 = iVar2 + -0x240;
+        centerCellCursor = centerCellCursor + -1;
+        rowOrWalkerY = GridFootprint_ClearTraversalFlagsDiagonalNegative
+                          (worldYQ12,worldXQ12,currentX - 500,radiusColumnOrWalkerY,&centerCellCursor->stateMask);
+        if (rowOrWalkerY == 0) break;
+        radiusColumnOrWalkerY = radiusColumnOrWalkerY + -0x240;
       }
       return;
     }
@@ -1185,131 +1185,131 @@ EntityPathing_UpdateRouteSegment
           EntityPathingRouteEntityRuntimeView10 *routeEntityRuntime)
 
 {
-  ArmyMovementRuntime *pAVar1;
-  longlong lVar2;
-  longlong lVar3;
+  ArmyMovementRuntime *entityMovement;
+  longlong wideProductXOrY;
+  longlong wideProductY;
   UQ12 segmentWorldXQ12;
-  byte bVar4;
-  int iVar5;
-  int iVar6;
-  dword dVar7;
-  uint uVar8;
-  int iVar9;
-  int iVar10;
-  dword dVar11;
-  UQ12 UVar12;
-  bool bVar13;
-  WorldPositionXYEaxEdx8 WVar14;
-  GridPathNearestCellEaxEbxCf9 GVar15;
-  GraphicsWorldCoordinateQ12 GVar16;
+  byte gridClassShift;
+  int startColumnOrDeltaX;
+  int targetColumn;
+  dword columnLimitOrRadius;
+  uint rowTermOrSubdivisions;
+  int startRowOrDeltaY;
+  int targetRow;
+  dword rowLimit;
+  UQ12 entityWorldYOrMidpoint;
+  bool segmentClear;
+  WorldPositionXYEaxEdx8 resolvedTarget;
+  GridPathNearestCellEaxEbxCf9 nearestCell;
+  GraphicsWorldCoordinateQ12 entityWorldX;
   UQ12 segmentWorldYQ12;
-  ModelRuntimeNode *modelNode1;
+  ModelRuntimeNode *entityModelNode;
   
-  modelNode1 = routeEntityRuntime->modelNode;
+  entityModelNode = routeEntityRuntime->modelNode;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
     [routeEntityRuntime->modelDefinition->runtimeClassId4C])
             ((GameEntityRuntime *)routeEntityRuntime);
-  lVar2 = (longlong)(modelNode1->worldTransform).translation.x * 0x1c6e9c;
-  lVar3 = (longlong)(modelNode1->worldTransform).translation.y * -0x20c8cc;
-  uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
-  iVar5 = (int)((((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8) + 0x800) >>
+  wideProductXOrY = (longlong)(entityModelNode->worldTransform).translation.x * 0x1c6e9c;
+  wideProductY = (longlong)(entityModelNode->worldTransform).translation.y * -0x20c8cc;
+  rowTermOrSubdivisions = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
+  startColumnOrDeltaX = (int)((((int)((ulonglong)wideProductXOrY >> 0x20) << 0xc | (uint)wideProductXOrY >> 0x14) - rowTermOrSubdivisions) + 0x800) >>
           10;
-  iVar9 = (int)(uVar8 * 2 + 0x800) >> 10;
-  if (iVar5 < 1) {
-    iVar5 = 1;
+  startRowOrDeltaY = (int)(rowTermOrSubdivisions * 2 + 0x800) >> 10;
+  if (startColumnOrDeltaX < 1) {
+    startColumnOrDeltaX = 1;
   }
-  if (iVar9 < 1) {
-    iVar9 = 1;
+  if (startRowOrDeltaY < 1) {
+    startRowOrDeltaY = 1;
   }
-  dVar7 = iVar5 + 2U;
-  if ((int)g_GridScratchWidth < (int)(iVar5 + 2U)) {
-    dVar7 = g_GridScratchWidth;
+  columnLimitOrRadius = startColumnOrDeltaX + 2U;
+  if ((int)g_GridScratchWidth < (int)(startColumnOrDeltaX + 2U)) {
+    columnLimitOrRadius = g_GridScratchWidth;
   }
-  dVar11 = iVar9 + 2U;
-  if ((int)g_GridScratchHeight < (int)(iVar9 + 2U)) {
-    dVar11 = g_GridScratchHeight;
+  rowLimit = startRowOrDeltaY + 2U;
+  if ((int)g_GridScratchHeight < (int)(startRowOrDeltaY + 2U)) {
+    rowLimit = g_GridScratchHeight;
   }
-  iVar5 = dVar7 - 2;
-  iVar9 = dVar11 - 2;
-  pAVar1 = routeEntityRuntime->movementRuntime;
+  startColumnOrDeltaX = columnLimitOrRadius - 2;
+  startRowOrDeltaY = rowLimit - 2;
+  entityMovement = routeEntityRuntime->movementRuntime;
   if ((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) {
-    targetWorldXQ12 = pAVar1->movementWorldXQ12;
-    targetWorldYQ12 = pAVar1->movementWorldYQ12;
+    targetWorldXQ12 = entityMovement->movementWorldXQ12;
+    targetWorldYQ12 = entityMovement->movementWorldYQ12;
   }
-  uVar8 = (int)((ulonglong)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  rowTermOrSubdivisions = (int)((ulonglong)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x15;
-  iVar6 = (int)((((int)((ulonglong)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - uVar8) + 0x800) >> 10;
-  iVar10 = (int)(uVar8 * 2 + 0x800) >> 10;
-  if (iVar6 < 1) {
-    iVar6 = 1;
+  targetColumn = (int)((((int)((ulonglong)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - rowTermOrSubdivisions) + 0x800) >> 10;
+  targetRow = (int)(rowTermOrSubdivisions * 2 + 0x800) >> 10;
+  if (targetColumn < 1) {
+    targetColumn = 1;
   }
-  if (iVar10 < 1) {
-    iVar10 = 1;
+  if (targetRow < 1) {
+    targetRow = 1;
   }
-  dVar7 = iVar6 + 2U;
-  if ((int)g_GridScratchWidth < (int)(iVar6 + 2U)) {
-    dVar7 = g_GridScratchWidth;
+  columnLimitOrRadius = targetColumn + 2U;
+  if ((int)g_GridScratchWidth < (int)(targetColumn + 2U)) {
+    columnLimitOrRadius = g_GridScratchWidth;
   }
-  dVar11 = iVar10 + 2U;
-  if ((int)g_GridScratchHeight < (int)(iVar10 + 2U)) {
-    dVar11 = g_GridScratchHeight;
+  rowLimit = targetRow + 2U;
+  if ((int)g_GridScratchHeight < (int)(targetRow + 2U)) {
+    rowLimit = g_GridScratchHeight;
   }
-  g_GridPathEntityClassMask = 1 << ((byte)pAVar1->factionIndex & 0x1f);
-  bVar4 = (byte)routeEntityRuntime->modelDefinition->gridClassification260;
-  g_GridPathHighCostMask = 0x10000 << (bVar4 & 0x1f);
+  g_GridPathEntityClassMask = 1 << ((byte)entityMovement->factionIndex & 0x1f);
+  gridClassShift = (byte)routeEntityRuntime->modelDefinition->gridClassification260;
+  g_GridPathHighCostMask = 0x10000 << (gridClassShift & 0x1f);
   g_GridPathBlockingMask =
-       0x100 << (bVar4 & 0x1f) |
+       0x100 << (gridClassShift & 0x1f) |
        0x1000000 << ((byte)routeEntityRuntime->modelDefinition->gridClassification264 & 0x1f);
-  GVar15 = GridPathCost_FindNearestUnblockedCell(iVar9,iVar5);
-  iVar6 = GVar15.selectedColumn;
-  iVar10 = GVar15.selectedRow;
-  if ((GVar15.carry) ||
-     (bVar13 = GridPathLine_TestHexSegmentClearCf
-                         (0,iVar9,iVar5,g_GridScratchPrimary + iVar9 * g_GridScratchWidth + iVar5,
-                          g_GridScratchPrimary + (dVar11 - 2) * g_GridScratchWidth + (dVar7 - 2)),
-     iVar6 = dVar7 - 2, iVar10 = dVar11 - 2, bVar13)) {
-    iVar5 = iVar10 * 0x400 + -0x600;
-    lVar2 = (longlong)(iVar5 + (iVar6 * 0x400 + -0x600) * 2) * 0x901;
-    targetWorldXQ12 = (int)((ulonglong)lVar2 >> 0x20) << 0x13 | (uint)lVar2 >> 0xd;
-    lVar2 = (longlong)iVar5 * -1999;
-    targetWorldYQ12 = (int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc;
+  nearestCell = GridPathCost_FindNearestUnblockedCell(startRowOrDeltaY,startColumnOrDeltaX);
+  targetColumn = nearestCell.selectedColumn;
+  targetRow = nearestCell.selectedRow;
+  if ((nearestCell.carry) ||
+     (segmentClear = GridPathLine_TestHexSegmentClearCf
+                         (0,startRowOrDeltaY,startColumnOrDeltaX,g_GridScratchPrimary + startRowOrDeltaY * g_GridScratchWidth + startColumnOrDeltaX,
+                          g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimitOrRadius - 2)),
+     targetColumn = columnLimitOrRadius - 2, targetRow = rowLimit - 2, segmentClear)) {
+    startColumnOrDeltaX = targetRow * 0x400 + -0x600;
+    wideProductXOrY = (longlong)(startColumnOrDeltaX + (targetColumn * 0x400 + -0x600) * 2) * 0x901;
+    targetWorldXQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd;
+    wideProductXOrY = (longlong)startColumnOrDeltaX * -1999;
+    targetWorldYQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x14 | (uint)wideProductXOrY >> 0xc;
   }
-  dVar7 = routeEntityRuntime->modelDefinition->placementRadiusOrClearanceDC;
-  GVar16 = (routeEntityRuntime->modelNode->worldTransform).translation.x;
-  UVar12 = (routeEntityRuntime->modelNode->worldTransform).translation.y;
-  uVar8 = 1;
+  columnLimitOrRadius = routeEntityRuntime->modelDefinition->placementRadiusOrClearanceDC;
+  entityWorldX = (routeEntityRuntime->modelNode->worldTransform).translation.x;
+  entityWorldYOrMidpoint = (routeEntityRuntime->modelNode->worldTransform).translation.y;
+  rowTermOrSubdivisions = 1;
   segmentWorldYQ12 = targetWorldYQ12;
   segmentWorldXQ12 = targetWorldXQ12;
   do {
     while( true ) {
-      iVar5 = segmentWorldXQ12 - GVar16;
-      if (iVar5 < 0) {
-        iVar5 = -iVar5;
+      startColumnOrDeltaX = segmentWorldXQ12 - entityWorldX;
+      if (startColumnOrDeltaX < 0) {
+        startColumnOrDeltaX = -startColumnOrDeltaX;
       }
-      iVar9 = segmentWorldYQ12 - UVar12;
-      if (iVar9 < 0) {
-        iVar9 = -iVar9;
+      startRowOrDeltaY = segmentWorldYQ12 - entityWorldYOrMidpoint;
+      if (startRowOrDeltaY < 0) {
+        startRowOrDeltaY = -startRowOrDeltaY;
       }
-      if ((0x3f < uVar8) || ((iVar5 < 0x241 && (iVar9 < 0x241)))) break;
-      segmentWorldXQ12 = (int)(segmentWorldXQ12 + GVar16) >> 1;
-      UVar12 = (int)(segmentWorldYQ12 + UVar12) >> 1;
-      uVar8 = uVar8 + 1;
-      segmentWorldYQ12 = UVar12;
+      if ((0x3f < rowTermOrSubdivisions) || ((startColumnOrDeltaX < 0x241 && (startRowOrDeltaY < 0x241)))) break;
+      segmentWorldXQ12 = (int)(segmentWorldXQ12 + entityWorldX) >> 1;
+      entityWorldYOrMidpoint = (int)(segmentWorldYQ12 + entityWorldYOrMidpoint) >> 1;
+      rowTermOrSubdivisions = rowTermOrSubdivisions + 1;
+      segmentWorldYQ12 = entityWorldYOrMidpoint;
     }
-    GVar16 = 0x536c13;
-    GridInfluence_SetLowDistanceBandsAroundWorldPoint(dVar7,segmentWorldYQ12,segmentWorldXQ12);
-    uVar8 = uVar8 - 1;
-  } while (uVar8 != 0);
-  pAVar1 = routeEntityRuntime->movementRuntime;
+    entityWorldX = 0x536c13;
+    GridInfluence_SetLowDistanceBandsAroundWorldPoint(columnLimitOrRadius,segmentWorldYQ12,segmentWorldXQ12);
+    rowTermOrSubdivisions = rowTermOrSubdivisions - 1;
+  } while (rowTermOrSubdivisions != 0);
+  entityMovement = routeEntityRuntime->movementRuntime;
   if (((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) &&
-     ((targetWorldXQ12 != pAVar1->movementWorldXQ12 ||
-      (targetWorldYQ12 != pAVar1->movementWorldYQ12)))) {
-    ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,pAVar1);
+     ((targetWorldXQ12 != entityMovement->movementWorldXQ12 ||
+      (targetWorldYQ12 != entityMovement->movementWorldYQ12)))) {
+    ArmyRuntime_SetPendingMoveTarget(targetWorldYQ12,targetWorldXQ12,entityMovement);
   }
-  WVar14.worldYQ12 = targetWorldYQ12;
-  WVar14.worldXQ12 = targetWorldXQ12;
-  return WVar14;
+  resolvedTarget.worldYQ12 = targetWorldYQ12;
+  resolvedTarget.worldXQ12 = targetWorldXQ12;
+  return resolvedTarget;
 }
 
 
@@ -1326,54 +1326,54 @@ GridScratch_TestWorldPointReachabilityCf
 
 {
   GridScratchCell *targetCell;
-  dword dVar1;
-  int iVar2;
-  uint uVar3;
+  dword scratchWidth;
+  int cellsRemaining;
+  uint scaledRowTerm;
   GridScratchCell *currentCell;
-  GridScratchCell *scratchCell1;
-  bool bVar4;
+  GridScratchCell *clearCursor;
+  bool unreachable;
   
-  dVar1 = g_GridScratchWidth;
-  uVar3 = (int)((ulonglong)((longlong)sourceWorldXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  scratchWidth = g_GridScratchWidth;
+  scaledRowTerm = (int)((ulonglong)((longlong)sourceWorldXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)sourceWorldXQ12 * -0x20c8cc) >> 0x15;
   targetCell = g_GridScratchPrimary +
-               ((int)(uVar3 * 2 + 0x800) >> 10) * g_GridScratchWidth +
+               ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
                ((int)((((int)((ulonglong)((longlong)sourceWorldYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                       (uint)((longlong)sourceWorldYQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 10
+                       (uint)((longlong)sourceWorldYQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10
                );
-  uVar3 = (int)((ulonglong)((longlong)targetWorldXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  scaledRowTerm = (int)((ulonglong)((longlong)targetWorldXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)targetWorldXQ12 * -0x20c8cc) >> 0x15;
   currentCell = g_GridScratchPrimary +
-                ((int)(uVar3 * 2 + 0x800) >> 10) * g_GridScratchWidth +
+                ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
                 ((int)((((int)((ulonglong)((longlong)targetWorldYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                        (uint)((longlong)targetWorldYQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >>
+                        (uint)((longlong)targetWorldYQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
                 10);
-  iVar2 = g_GridScratchHeight * g_GridScratchWidth;
-  scratchCell1 = g_GridScratchPrimary;
+  cellsRemaining = g_GridScratchHeight * g_GridScratchWidth;
+  clearCursor = g_GridScratchPrimary;
   do {
-    scratchCell1->stateMask = scratchCell1->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[1].stateMask = scratchCell1[1].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[2].stateMask = scratchCell1[2].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[3].stateMask = scratchCell1[3].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[4].stateMask = scratchCell1[4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[5].stateMask = scratchCell1[5].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[6].stateMask = scratchCell1[6].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[7].stateMask = scratchCell1[7].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[8].stateMask = scratchCell1[8].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[9].stateMask = scratchCell1[9].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[10].stateMask = scratchCell1[10].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xb].stateMask = scratchCell1[0xb].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xc].stateMask = scratchCell1[0xc].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xd].stateMask = scratchCell1[0xd].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xe].stateMask = scratchCell1[0xe].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1[0xf].stateMask = scratchCell1[0xf].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    scratchCell1 = scratchCell1 + 0x10;
-    iVar2 = iVar2 + -0x10;
-  } while (iVar2 != 0);
-  bVar4 = GridScratch_TestConnectedReachabilityRecursiveCfRegs
-                    (traversalMask | 0x80000001,dVar1 << 3,&currentCell->stateMask,
+    clearCursor->stateMask = clearCursor->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[1].stateMask = clearCursor[1].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[2].stateMask = clearCursor[2].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[3].stateMask = clearCursor[3].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[4].stateMask = clearCursor[4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[5].stateMask = clearCursor[5].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[6].stateMask = clearCursor[6].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[7].stateMask = clearCursor[7].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[8].stateMask = clearCursor[8].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[9].stateMask = clearCursor[9].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[10].stateMask = clearCursor[10].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[0xb].stateMask = clearCursor[0xb].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[0xc].stateMask = clearCursor[0xc].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[0xd].stateMask = clearCursor[0xd].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[0xe].stateMask = clearCursor[0xe].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[0xf].stateMask = clearCursor[0xf].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor = clearCursor + 0x10;
+    cellsRemaining = cellsRemaining + -0x10;
+  } while (cellsRemaining != 0);
+  unreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+                    (traversalMask | 0x80000001,scratchWidth << 3,&currentCell->stateMask,
                      &targetCell->stateMask);
-  return bVar4;
+  return unreachable;
 }
 
 
@@ -1392,71 +1392,71 @@ GridPathCost_BacktrackBestHexRoute
           FieldGridCellCoordinate targetColumn,GridScratchCell *startCell)
 
 {
-  dword dVar1;
-  GridScratchCell *scanCell2;
-  uint bestNeighborCost1;
-  uint uVar2;
-  GridScratchCell *scanCell1;
-  GridScratchCell *endCell;
-  bool bVar3;
-  GridPathBacktrackEaxEbxEcxCf13 GVar4;
-  GridPathBacktrackEaxEbxEcxCf13 GVar5;
+  dword scratchWidth;
+  GridScratchCell *currentCell;
+  uint selectedCellIndex;
+  uint bestNeighborCost;
+  GridScratchCell *rowAboveCell;
+  GridScratchCell *bestNeighborCell;
+  bool segmentClear;
+  GridPathBacktrackEaxEbxEcxCf13 selectedCell;
+  GridPathBacktrackEaxEbxEcxCf13 terminalResult;
   
-  dVar1 = g_GridScratchWidth;
-  GVar5.selectedRow = g_GridScratchWidth * 8;
-  endCell = startCell;
+  scratchWidth = g_GridScratchWidth;
+  terminalResult.selectedRow = g_GridScratchWidth * 8;
+  bestNeighborCell = startCell;
   do {
-    scanCell2 = endCell;
-    scanCell1 = scanCell2 + -dVar1;
-    if ((scanCell2->stateMask & g_GridPathHighCostMask) != 0) {
+    currentCell = bestNeighborCell;
+    rowAboveCell = currentCell + -scratchWidth;
+    if ((currentCell->stateMask & g_GridPathHighCostMask) != 0) {
       callerBlockingMask = 0;
     }
-    uVar2 = scanCell2->pathCost;
-    endCell = (GridScratchCell *)0x0;
-    if (scanCell1->pathCost < uVar2) {
-      uVar2 = scanCell1->pathCost;
-      endCell = scanCell1;
+    bestNeighborCost = currentCell->pathCost;
+    bestNeighborCell = (GridScratchCell *)0x0;
+    if (rowAboveCell->pathCost < bestNeighborCost) {
+      bestNeighborCost = rowAboveCell->pathCost;
+      bestNeighborCell = rowAboveCell;
     }
-    if (scanCell1[1].pathCost < uVar2) {
-      uVar2 = scanCell1[1].pathCost;
-      endCell = scanCell1 + 1;
+    if (rowAboveCell[1].pathCost < bestNeighborCost) {
+      bestNeighborCost = rowAboveCell[1].pathCost;
+      bestNeighborCell = rowAboveCell + 1;
     }
-    if (scanCell1[dVar1 - 1].pathCost < uVar2) {
-      uVar2 = scanCell1[dVar1 - 1].pathCost;
-      endCell = scanCell1 + (dVar1 - 1);
+    if (rowAboveCell[scratchWidth - 1].pathCost < bestNeighborCost) {
+      bestNeighborCost = rowAboveCell[scratchWidth - 1].pathCost;
+      bestNeighborCell = rowAboveCell + (scratchWidth - 1);
     }
-    if (scanCell1[dVar1 + 1].pathCost < uVar2) {
-      uVar2 = scanCell1[dVar1 + 1].pathCost;
-      endCell = scanCell1 + dVar1 + 1;
+    if (rowAboveCell[scratchWidth + 1].pathCost < bestNeighborCost) {
+      bestNeighborCost = rowAboveCell[scratchWidth + 1].pathCost;
+      bestNeighborCell = rowAboveCell + scratchWidth + 1;
     }
-    if (scanCell1[dVar1 * 2 + -1].pathCost < uVar2) {
-      uVar2 = scanCell1[dVar1 * 2 + -1].pathCost;
-      endCell = scanCell1 + dVar1 * 2 + -1;
+    if (rowAboveCell[scratchWidth * 2 + -1].pathCost < bestNeighborCost) {
+      bestNeighborCost = rowAboveCell[scratchWidth * 2 + -1].pathCost;
+      bestNeighborCell = rowAboveCell + scratchWidth * 2 + -1;
     }
-    if (scanCell1[dVar1 * 2].pathCost < uVar2) {
-      endCell = scanCell1 + dVar1 * 2;
+    if (rowAboveCell[scratchWidth * 2].pathCost < bestNeighborCost) {
+      bestNeighborCell = rowAboveCell + scratchWidth * 2;
     }
-    if (endCell == (GridScratchCell *)0x0)
+    if (bestNeighborCell == (GridScratchCell *)0x0)
     goto GridPathCost_BacktrackBestHexRoute_ReturnTerminalCellOrColumn;
-    bVar3 = GridPathLine_TestHexSegmentClearCf
-                      (callerBlockingMask,targetRow,targetColumn,startCell,endCell);
-  } while (!bVar3);
-  if (scanCell2 == startCell) {
-    scanCell2 = endCell;
+    segmentClear = GridPathLine_TestHexSegmentClearCf
+                      (callerBlockingMask,targetRow,targetColumn,startCell,bestNeighborCell);
+  } while (!segmentClear);
+  if (currentCell == startCell) {
+    currentCell = bestNeighborCell;
   }
 GridPathCost_BacktrackBestHexRoute_ReturnTerminalCellOrColumn:
-  if (scanCell2->pathCost != 0) {
-    bestNeighborCost1 = (uint)((int)scanCell2 - (int)g_GridScratchPrimary) >> 3;
-    GVar4.selectedRow = bestNeighborCost1 / g_GridScratchWidth;
-    GVar4.selectedColumn = bestNeighborCost1 % g_GridScratchWidth;
-    GVar4.routeStateMask = callerBlockingMask;
-    GVar4.carry = false;
-    return GVar4;
+  if (currentCell->pathCost != 0) {
+    selectedCellIndex = (uint)((int)currentCell - (int)g_GridScratchPrimary) >> 3;
+    selectedCell.selectedRow = selectedCellIndex / g_GridScratchWidth;
+    selectedCell.selectedColumn = selectedCellIndex % g_GridScratchWidth;
+    selectedCell.routeStateMask = callerBlockingMask;
+    selectedCell.carry = false;
+    return selectedCell;
   }
-  GVar5.selectedColumn = (FieldGridCellCoordinate)scanCell2;
-  GVar5.carry = true;
-  GVar5.routeStateMask = callerBlockingMask;
-  return GVar5;
+  terminalResult.selectedColumn = (FieldGridCellCoordinate)currentCell;
+  terminalResult.carry = true;
+  terminalResult.routeStateMask = callerBlockingMask;
+  return terminalResult;
 }
 
 
@@ -1476,21 +1476,21 @@ GridPathRegion_MarkUnreachableFromCell
           FieldGridCellCoordinate column)
 
 {
-  ulonglong uVar1;
+  ulonglong markedCellIndex;
   int rowBaseIndex;
-  GridPathMarkedRegionCellRegisterResult GVar2;
-  GridPathUnreachableRecursiveEdiEdx8 GVar3;
+  GridPathMarkedRegionCellRegisterResult markedCell;
+  GridPathUnreachableRecursiveEdiEdx8 recursionResult;
   
   g_GridPathUnreachableRegionReferenceColumn = referenceColumn;
   g_GridPathUnreachableRegionReferenceRow = referenceRow;
   rowBaseIndex = row * g_GridScratchWidth;
-  GVar3 = GridPathRegion_MarkUnreachableRecursive
+  recursionResult = GridPathRegion_MarkUnreachableRecursive
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,0x7fffffff
                      ,(rowBaseIndex + column) * 8);
-  uVar1 = THANDOR_BITCAST(GridPathUnreachableRecursiveEdiEdx8, ulonglong, GVar3) >> 3 & 0x1fffffff;
-  GVar2.selectedRow = (FieldGridCellCoordinate)(uVar1 / g_GridScratchWidth);
-  GVar2.selectedColumn = (FieldGridCellCoordinate)(uVar1 % (ulonglong)g_GridScratchWidth);
-  return GVar2;
+  markedCellIndex = THANDOR_BITCAST(GridPathUnreachableRecursiveEdiEdx8, ulonglong, recursionResult) >> 3 & 0x1fffffff;
+  markedCell.selectedRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
+  markedCell.selectedColumn = (FieldGridCellCoordinate)(markedCellIndex % (ulonglong)g_GridScratchWidth);
+  return markedCell;
 }
 
 
@@ -1545,32 +1545,32 @@ GridScratch_FloodFillConnectedCellsRegs
           (GridScratchStateMask traversalMask,dword rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *pGVar1;
-  GridScratchCell *currentCell_00;
+  GridScratchCell *spanLeftOrPrevRowCursor;
+  GridScratchCell *nextRowCursor;
   
   if ((currentCell->stateMask & 0x80000001) == 0) {
     currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    pGVar1 = currentCell;
-    while (pGVar1 = pGVar1 + -1, (pGVar1->stateMask & traversalMask) == 0) {
-      pGVar1->stateMask = pGVar1->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    spanLeftOrPrevRowCursor = currentCell;
+    while (spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor + -1, (spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
+      spanLeftOrPrevRowCursor->stateMask = spanLeftOrPrevRowCursor->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     }
     while (currentCell = currentCell + 1, (currentCell->stateMask & traversalMask) == 0) {
       currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     }
-    currentCell_00 = (GridScratchCell *)((int)&pGVar1->stateMask + rowStrideBytes);
-    pGVar1 = (GridScratchCell *)((int)pGVar1 + (8 - rowStrideBytes));
+    nextRowCursor = (GridScratchCell *)((int)&spanLeftOrPrevRowCursor->stateMask + rowStrideBytes);
+    spanLeftOrPrevRowCursor = (GridScratchCell *)((int)spanLeftOrPrevRowCursor + (8 - rowStrideBytes));
     do {
-      if ((pGVar1->stateMask & traversalMask) == 0) {
-        GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,pGVar1);
+      if ((spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
+        GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,spanLeftOrPrevRowCursor);
       }
-      pGVar1 = pGVar1 + 1;
-    } while (pGVar1 <= (GridScratchCell *)((int)currentCell - rowStrideBytes));
+      spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor + 1;
+    } while (spanLeftOrPrevRowCursor <= (GridScratchCell *)((int)currentCell - rowStrideBytes));
     do {
-      if ((currentCell_00->stateMask & traversalMask) == 0) {
-        GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,currentCell_00);
+      if ((nextRowCursor->stateMask & traversalMask) == 0) {
+        GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,nextRowCursor);
       }
-      currentCell_00 = currentCell_00 + 1;
-    } while (currentCell_00 <
+      nextRowCursor = nextRowCursor + 1;
+    } while (nextRowCursor <
              (GridScratchCell *)
              ((int)&((GridScratchCell *)((int)currentCell - rowStrideBytes))->stateMask +
              rowStrideBytes * 2));
@@ -1588,25 +1588,25 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
           (dword traversalMask,dword rowStrideBytes,dword *currentCell,dword *targetCell)
 
 {
-  dword *pdVar1;
-  uint *puVar2;
-  uint *puVar3;
-  dword *pdVar4;
-  bool bVar5;
+  dword *secondRowCursor;
+  uint *spanLeftBoundary;
+  uint *spanLeftCell;
+  dword *firstRowCursor;
+  bool subRegionUnreachable;
   
   *currentCell = *currentCell | 1;
-  puVar3 = currentCell;
+  spanLeftCell = currentCell;
   if (targetCell == currentCell) {
     return false;
   }
   while( true ) {
-    puVar2 = puVar3 + -2;
-    if (targetCell == puVar2) {
+    spanLeftBoundary = spanLeftCell + -2;
+    if (targetCell == spanLeftBoundary) {
       return false;
     }
-    if ((*puVar2 & traversalMask) != 0) break;
-    *puVar2 = *puVar2 | 1;
-    puVar3 = puVar2;
+    if ((*spanLeftBoundary & traversalMask) != 0) break;
+    *spanLeftBoundary = *spanLeftBoundary | 1;
+    spanLeftCell = spanLeftBoundary;
   }
   while( true ) {
     currentCell = currentCell + 2;
@@ -1616,19 +1616,19 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
     if ((*currentCell & traversalMask) != 0) break;
     *currentCell = *currentCell | 1;
   }
-  if (targetCell <= puVar2) {
-    pdVar1 = (dword *)(rowStrideBytes + (int)puVar2);
-    pdVar4 = (dword *)((int)puVar2 + (8 - rowStrideBytes));
-    while (((*pdVar4 & traversalMask) != 0 ||
-           (bVar5 = GridScratch_TestConnectedReachabilityRecursiveCfRegs
-                              (traversalMask,rowStrideBytes,pdVar4,targetCell), bVar5))) {
-      pdVar4 = pdVar4 + 2;
-      if ((dword *)((int)currentCell - rowStrideBytes) < pdVar4) {
-        while (((*pdVar1 & traversalMask) != 0 ||
-               (bVar5 = GridScratch_TestConnectedReachabilityRecursiveCfRegs
-                                  (traversalMask,rowStrideBytes,pdVar1,targetCell), bVar5))) {
-          pdVar1 = pdVar1 + 2;
-          if ((dword *)((int)((int)currentCell - rowStrideBytes) + rowStrideBytes * 2) <= pdVar1) {
+  if (targetCell <= spanLeftBoundary) {
+    secondRowCursor = (dword *)(rowStrideBytes + (int)spanLeftBoundary);
+    firstRowCursor = (dword *)((int)spanLeftBoundary + (8 - rowStrideBytes));
+    while (((*firstRowCursor & traversalMask) != 0 ||
+           (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+                              (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
+      firstRowCursor = firstRowCursor + 2;
+      if ((dword *)((int)currentCell - rowStrideBytes) < firstRowCursor) {
+        while (((*secondRowCursor & traversalMask) != 0 ||
+               (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+                                  (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
+          secondRowCursor = secondRowCursor + 2;
+          if ((dword *)((int)((int)currentCell - rowStrideBytes) + rowStrideBytes * 2) <= secondRowCursor) {
             return true;
           }
         }
@@ -1637,18 +1637,18 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
     }
     return false;
   }
-  pdVar1 = (dword *)((int)puVar3 - rowStrideBytes);
-  pdVar4 = (dword *)((int)puVar2 + rowStrideBytes);
-  while (((*pdVar4 & traversalMask) != 0 ||
-         (bVar5 = GridScratch_TestConnectedReachabilityRecursiveCfRegs
-                            (traversalMask,rowStrideBytes,pdVar4,targetCell), bVar5))) {
-    pdVar4 = pdVar4 + 2;
-    if ((dword *)((int)currentCell + rowStrideBytes) <= pdVar4) {
-      while (((*pdVar1 & traversalMask) != 0 ||
-             (bVar5 = GridScratch_TestConnectedReachabilityRecursiveCfRegs
-                                (traversalMask,rowStrideBytes,pdVar1,targetCell), bVar5))) {
-        pdVar1 = pdVar1 + 2;
-        if ((dword *)((int)((int)currentCell + rowStrideBytes) + rowStrideBytes * -2) < pdVar1) {
+  secondRowCursor = (dword *)((int)spanLeftCell - rowStrideBytes);
+  firstRowCursor = (dword *)((int)spanLeftBoundary + rowStrideBytes);
+  while (((*firstRowCursor & traversalMask) != 0 ||
+         (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+                            (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
+    firstRowCursor = firstRowCursor + 2;
+    if ((dword *)((int)currentCell + rowStrideBytes) <= firstRowCursor) {
+      while (((*secondRowCursor & traversalMask) != 0 ||
+             (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+                                (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
+        secondRowCursor = secondRowCursor + 2;
+        if ((dword *)((int)((int)currentCell + rowStrideBytes) + rowStrideBytes * -2) < secondRowCursor) {
           return true;
         }
       }
@@ -1672,39 +1672,39 @@ GridPathCost_PropagateWeightedHexNeighbors
           FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn)
 
 {
-  GridPathCost GVar1;
-  GridScratchStateMask GVar2;
-  dword dVar3;
-  uint uVar4;
-  GridScratchCell **queueCursor1;
-  GridScratchCell *scratchCell1;
-  GridScratchCell *scratchCell2;
-  GridScratchCell **queueCursor2;
+  GridPathCost currentCost;
+  GridScratchStateMask neighborState;
+  dword scratchWidth;
+  uint neighborCost;
+  GridScratchCell **queueReadCursor;
+  GridScratchCell *neighborCell;
+  GridScratchCell *secondaryNeighborCell;
+  GridScratchCell **queueWriteCursor;
   
-  dVar3 = g_GridScratchWidth;
-  queueCursor1 = g_GridPathCostQueueBegin;
-  queueCursor2 = g_GridPathCostQueueBegin + 1;
-  scratchCell1 = g_GridScratchPrimary + startRow * g_GridScratchWidth + startColumn;
-  *g_GridPathCostQueueBegin = scratchCell1;
-  g_GridPathCostQueuePassBoundary = queueCursor1;
-  scratchCell1->pathCost = 0;
+  scratchWidth = g_GridScratchWidth;
+  queueReadCursor = g_GridPathCostQueueBegin;
+  queueWriteCursor = g_GridPathCostQueueBegin + 1;
+  neighborCell = g_GridScratchPrimary + startRow * g_GridScratchWidth + startColumn;
+  *g_GridPathCostQueueBegin = neighborCell;
+  g_GridPathCostQueuePassBoundary = queueReadCursor;
+  neighborCell->pathCost = 0;
   g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + 0x10000;
 GridPathCost_ProcessNextQueuedCell:
   do {
     do {
       while( true ) {
-        if (queueCursor1 == queueCursor2) {
+        if (queueReadCursor == queueWriteCursor) {
           return;
         }
-        if (queueCursor1 < g_GridPathCostQueuePassBoundary) break;
+        if (queueReadCursor < g_GridPathCostQueuePassBoundary) break;
         g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + 0x10000;
         if (originCell->pathCost < 0x7fffffff) {
           return;
         }
-        if (originCell[-dVar3].pathCost < 0x7fffffff) {
+        if (originCell[-scratchWidth].pathCost < 0x7fffffff) {
           return;
         }
-        if (originCell[1 - dVar3].pathCost < 0x7fffffff) {
+        if (originCell[1 - scratchWidth].pathCost < 0x7fffffff) {
           return;
         }
         if (originCell[-1].pathCost < 0x7fffffff) {
@@ -1713,10 +1713,10 @@ GridPathCost_ProcessNextQueuedCell:
         if (originCell[1].pathCost < 0x7fffffff) {
           return;
         }
-        if (originCell[dVar3 - 1].pathCost < 0x7fffffff) {
+        if (originCell[scratchWidth - 1].pathCost < 0x7fffffff) {
           return;
         }
-        if (originCell[dVar3].pathCost < 0x7fffffff) {
+        if (originCell[scratchWidth].pathCost < 0x7fffffff) {
           return;
         }
         remainingPasses = remainingPasses + -1;
@@ -1724,114 +1724,114 @@ GridPathCost_ProcessNextQueuedCell:
           return;
         }
       }
-      scratchCell1 = *queueCursor1;
-      queueCursor1 = queueCursor1 + 1;
-    } while ((scratchCell1->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0);
-    GVar1 = scratchCell1->pathCost;
-    scratchCell1 = scratchCell1 + -dVar3;
-    GVar2 = scratchCell1->stateMask;
-    uVar4 = GVar1 + 4;
-    if (-1 < (int)GVar2) {
-      if ((g_GridPathEntityClassMask & GVar2) != 0) {
-        uVar4 = GVar1 + 3;
-        if ((g_GridPathBlockingMask & GVar2) != 0) goto GridPathCost_SkipBlockedNorthNeighbor;
-        if ((g_GridPathHighCostMask & GVar2) != 0) {
-          uVar4 = GVar1 + 0xc;
+      neighborCell = *queueReadCursor;
+      queueReadCursor = queueReadCursor + 1;
+    } while ((neighborCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0);
+    currentCost = neighborCell->pathCost;
+    neighborCell = neighborCell + -scratchWidth;
+    neighborState = neighborCell->stateMask;
+    neighborCost = currentCost + 4;
+    if (-1 < (int)neighborState) {
+      if ((g_GridPathEntityClassMask & neighborState) != 0) {
+        neighborCost = currentCost + 3;
+        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedNorthNeighbor;
+        if ((g_GridPathHighCostMask & neighborState) != 0) {
+          neighborCost = currentCost + 0xc;
         }
       }
-      if ((queueCursor2 < g_GridPathCostQueueEnd) && (uVar4 < scratchCell1->pathCost)) {
-        *queueCursor2 = scratchCell1;
-        scratchCell1->pathCost = uVar4;
-        queueCursor2 = queueCursor2 + 1;
+      if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell->pathCost)) {
+        *queueWriteCursor = neighborCell;
+        neighborCell->pathCost = neighborCost;
+        queueWriteCursor = queueWriteCursor + 1;
       }
     }
 GridPathCost_SkipBlockedNorthNeighbor:
-    scratchCell2 = scratchCell1 + 1;
-    GVar2 = scratchCell2->stateMask;
-    uVar4 = GVar1 + 4;
-    if (-1 < (int)GVar2) {
-      if ((g_GridPathEntityClassMask & GVar2) != 0) {
-        uVar4 = GVar1 + 3;
-        if ((g_GridPathBlockingMask & GVar2) != 0) goto GridPathCost_SkipBlockedEastNeighbor;
-        if ((g_GridPathHighCostMask & GVar2) != 0) {
-          uVar4 = GVar1 + 0xc;
+    secondaryNeighborCell = neighborCell + 1;
+    neighborState = secondaryNeighborCell->stateMask;
+    neighborCost = currentCost + 4;
+    if (-1 < (int)neighborState) {
+      if ((g_GridPathEntityClassMask & neighborState) != 0) {
+        neighborCost = currentCost + 3;
+        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedEastNeighbor;
+        if ((g_GridPathHighCostMask & neighborState) != 0) {
+          neighborCost = currentCost + 0xc;
         }
       }
-      if ((queueCursor2 < g_GridPathCostQueueEnd) && (uVar4 < scratchCell1[1].pathCost)) {
-        *queueCursor2 = scratchCell2;
-        scratchCell1[1].pathCost = uVar4;
-        queueCursor2 = queueCursor2 + 1;
+      if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell[1].pathCost)) {
+        *queueWriteCursor = secondaryNeighborCell;
+        neighborCell[1].pathCost = neighborCost;
+        queueWriteCursor = queueWriteCursor + 1;
       }
     }
 GridPathCost_SkipBlockedEastNeighbor:
-    scratchCell2 = scratchCell2 + dVar3;
-    GVar2 = scratchCell2->stateMask;
-    uVar4 = GVar1 + 4;
-    if (-1 < (int)GVar2) {
-      if ((g_GridPathEntityClassMask & GVar2) != 0) {
-        uVar4 = GVar1 + 3;
-        if ((g_GridPathBlockingMask & GVar2) != 0) goto GridPathCost_SkipBlockedSouthEastNeighbor;
-        if ((g_GridPathHighCostMask & GVar2) != 0) {
-          uVar4 = GVar1 + 0xc;
+    secondaryNeighborCell = secondaryNeighborCell + scratchWidth;
+    neighborState = secondaryNeighborCell->stateMask;
+    neighborCost = currentCost + 4;
+    if (-1 < (int)neighborState) {
+      if ((g_GridPathEntityClassMask & neighborState) != 0) {
+        neighborCost = currentCost + 3;
+        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedSouthEastNeighbor;
+        if ((g_GridPathHighCostMask & neighborState) != 0) {
+          neighborCost = currentCost + 0xc;
         }
       }
-      if ((queueCursor2 < g_GridPathCostQueueEnd) && (uVar4 < scratchCell2->pathCost)) {
-        *queueCursor2 = scratchCell2;
-        scratchCell2->pathCost = uVar4;
-        queueCursor2 = queueCursor2 + 1;
+      if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < secondaryNeighborCell->pathCost)) {
+        *queueWriteCursor = secondaryNeighborCell;
+        secondaryNeighborCell->pathCost = neighborCost;
+        queueWriteCursor = queueWriteCursor + 1;
       }
     }
 GridPathCost_SkipBlockedSouthEastNeighbor:
-    scratchCell1 = scratchCell2 + -2;
-    GVar2 = scratchCell1->stateMask;
-    uVar4 = GVar1 + 4;
-    if (-1 < (int)GVar2) {
-      if ((g_GridPathEntityClassMask & GVar2) != 0) {
-        uVar4 = GVar1 + 3;
-        if ((g_GridPathBlockingMask & GVar2) != 0) goto GridPathCost_SkipBlockedSouthWestNeighbor;
-        if ((g_GridPathHighCostMask & GVar2) != 0) {
-          uVar4 = GVar1 + 0xc;
+    neighborCell = secondaryNeighborCell + -2;
+    neighborState = neighborCell->stateMask;
+    neighborCost = currentCost + 4;
+    if (-1 < (int)neighborState) {
+      if ((g_GridPathEntityClassMask & neighborState) != 0) {
+        neighborCost = currentCost + 3;
+        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedSouthWestNeighbor;
+        if ((g_GridPathHighCostMask & neighborState) != 0) {
+          neighborCost = currentCost + 0xc;
         }
       }
-      if ((queueCursor2 < g_GridPathCostQueueEnd) && (uVar4 < scratchCell2[-2].pathCost)) {
-        *queueCursor2 = scratchCell1;
-        scratchCell2[-2].pathCost = uVar4;
-        queueCursor2 = queueCursor2 + 1;
+      if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < secondaryNeighborCell[-2].pathCost)) {
+        *queueWriteCursor = neighborCell;
+        secondaryNeighborCell[-2].pathCost = neighborCost;
+        queueWriteCursor = queueWriteCursor + 1;
       }
     }
 GridPathCost_SkipBlockedSouthWestNeighbor:
-    scratchCell1 = scratchCell1 + dVar3;
-    GVar2 = scratchCell1->stateMask;
-    uVar4 = GVar1 + 4;
-    if (-1 < (int)GVar2) {
-      if ((g_GridPathEntityClassMask & GVar2) != 0) {
-        uVar4 = GVar1 + 3;
-        if ((g_GridPathBlockingMask & GVar2) != 0) goto GridPathCost_SkipBlockedWestNeighbor;
-        if ((g_GridPathHighCostMask & GVar2) != 0) {
-          uVar4 = GVar1 + 0xc;
+    neighborCell = neighborCell + scratchWidth;
+    neighborState = neighborCell->stateMask;
+    neighborCost = currentCost + 4;
+    if (-1 < (int)neighborState) {
+      if ((g_GridPathEntityClassMask & neighborState) != 0) {
+        neighborCost = currentCost + 3;
+        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedWestNeighbor;
+        if ((g_GridPathHighCostMask & neighborState) != 0) {
+          neighborCost = currentCost + 0xc;
         }
       }
-      if ((queueCursor2 < g_GridPathCostQueueEnd) && (uVar4 < scratchCell1->pathCost)) {
-        *queueCursor2 = scratchCell1;
-        scratchCell1->pathCost = uVar4;
-        queueCursor2 = queueCursor2 + 1;
+      if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell->pathCost)) {
+        *queueWriteCursor = neighborCell;
+        neighborCell->pathCost = neighborCost;
+        queueWriteCursor = queueWriteCursor + 1;
       }
     }
 GridPathCost_SkipBlockedWestNeighbor:
-    GVar2 = scratchCell1[1].stateMask;
-    uVar4 = GVar1 + 4;
-  } while ((int)GVar2 < 0);
-  if ((g_GridPathEntityClassMask & GVar2) != 0) {
-    uVar4 = GVar1 + 3;
-    if ((g_GridPathBlockingMask & GVar2) != 0) goto GridPathCost_ProcessNextQueuedCell;
-    if ((g_GridPathHighCostMask & GVar2) != 0) {
-      uVar4 = GVar1 + 0xc;
+    neighborState = neighborCell[1].stateMask;
+    neighborCost = currentCost + 4;
+  } while ((int)neighborState < 0);
+  if ((g_GridPathEntityClassMask & neighborState) != 0) {
+    neighborCost = currentCost + 3;
+    if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_ProcessNextQueuedCell;
+    if ((g_GridPathHighCostMask & neighborState) != 0) {
+      neighborCost = currentCost + 0xc;
     }
   }
-  if ((queueCursor2 < g_GridPathCostQueueEnd) && (uVar4 < scratchCell1[1].pathCost)) {
-    *queueCursor2 = scratchCell1 + 1;
-    scratchCell1[1].pathCost = uVar4;
-    queueCursor2 = queueCursor2 + 1;
+  if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell[1].pathCost)) {
+    *queueWriteCursor = neighborCell + 1;
+    neighborCell[1].pathCost = neighborCost;
+    queueWriteCursor = queueWriteCursor + 1;
   }
   goto GridPathCost_ProcessNextQueuedCell;
 }
@@ -1904,111 +1904,111 @@ GridPathRegion_MarkUnreachableRecursive
           dword bestCellByteOffset)
 
 {
-  GridScratchStateMask GVar1;
-  uint uVar2;
-  GridPathCost GVar3;
-  GridScratchCell *pGVar4;
-  int iVar5;
-  uint uVar6;
-  int iVar7;
-  GridPathCost GVar8;
-  GridScratchCell *pGVar9;
-  GridScratchCell *pGVar10;
-  GridPathUnreachableRecursiveEdiEdx8 GVar11;
-  GridPathCost local_14;
+  GridScratchStateMask cellState;
+  uint spanByteOffset;
+  GridPathCost referenceDistance;
+  GridScratchCell *probeOrRightEndCell;
+  int spanLength;
+  uint spanColumn;
+  int columnDelta;
+  GridPathCost columnDistance;
+  GridScratchCell *leftEndCell;
+  GridScratchCell *probeOrRowCursor;
+  GridPathUnreachableRecursiveEdiEdx8 bestResult;
+  GridPathCost updatedBestCost;
   
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-  pGVar10 = currentCell + 1;
-  pGVar4 = currentCell + -1;
+  probeOrRowCursor = currentCell + 1;
+  probeOrRightEndCell = currentCell + -1;
   do {
-    pGVar9 = pGVar4;
-    GVar1 = pGVar9->stateMask;
-    if ((pGVar9->pathCost < 0x7fffffff) || ((int)GVar1 < 0))
+    leftEndCell = probeOrRightEndCell;
+    cellState = leftEndCell->stateMask;
+    if ((leftEndCell->pathCost < 0x7fffffff) || ((int)cellState < 0))
     goto GridPathRegion_MarkUnreachableRecursive_ScanRightBoundary;
-    pGVar9->stateMask = pGVar9->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    pGVar4 = pGVar9 + -1;
-  } while (((g_GridPathEntityClassMask & GVar1) == 0) || ((g_GridPathBlockingMask & GVar1) == 0));
-  pGVar9->stateMask = pGVar9->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    leftEndCell->stateMask = leftEndCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    probeOrRightEndCell = leftEndCell + -1;
+  } while (((g_GridPathEntityClassMask & cellState) == 0) || ((g_GridPathBlockingMask & cellState) == 0));
+  leftEndCell->stateMask = leftEndCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
 GridPathRegion_MarkUnreachableRecursive_ScanRightBoundary:
   do {
-    pGVar4 = pGVar10;
-    GVar1 = pGVar4->stateMask;
-    if ((pGVar4->pathCost < 0x7fffffff) || ((int)GVar1 < 0))
+    probeOrRightEndCell = probeOrRowCursor;
+    cellState = probeOrRightEndCell->stateMask;
+    if ((probeOrRightEndCell->pathCost < 0x7fffffff) || ((int)cellState < 0))
     goto GridPathRegion_MarkUnreachableRecursive_RecurseAcrossAdjacentRows;
-    pGVar4->stateMask = pGVar4->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-    pGVar10 = pGVar4 + 1;
-  } while (((g_GridPathEntityClassMask & GVar1) == 0) || ((g_GridPathBlockingMask & GVar1) == 0));
-  pGVar4->stateMask = pGVar4->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    probeOrRightEndCell->stateMask = probeOrRightEndCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+    probeOrRowCursor = probeOrRightEndCell + 1;
+  } while (((g_GridPathEntityClassMask & cellState) == 0) || ((g_GridPathBlockingMask & cellState) == 0));
+  probeOrRightEndCell->stateMask = probeOrRightEndCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
 GridPathRegion_MarkUnreachableRecursive_RecurseAcrossAdjacentRows:
-  uVar2 = (int)pGVar9 + (8 - (int)g_GridScratchPrimary);
-  iVar5 = ((uint)((int)pGVar4 - (int)pGVar9) >> 3) - 2;
-  uVar6 = (uVar2 >> 3) % g_GridScratchWidth;
-  GVar3 = (uVar2 >> 3) / g_GridScratchWidth - g_GridPathUnreachableRegionReferenceRow;
-  if ((int)GVar3 < 0) {
-    GVar3 = -GVar3;
-    GVar8 = uVar6 - g_GridPathUnreachableRegionReferenceColumn;
-    if ((int)GVar8 < 0) {
-      iVar7 = GVar8 + iVar5;
-      if (iVar7 < 0) {
-        GVar3 = GVar3 - iVar7;
-        uVar2 = uVar2 + iVar5 * 8;
+  spanByteOffset = (int)leftEndCell + (8 - (int)g_GridScratchPrimary);
+  spanLength = ((uint)((int)probeOrRightEndCell - (int)leftEndCell) >> 3) - 2;
+  spanColumn = (spanByteOffset >> 3) % g_GridScratchWidth;
+  referenceDistance = (spanByteOffset >> 3) / g_GridScratchWidth - g_GridPathUnreachableRegionReferenceRow;
+  if ((int)referenceDistance < 0) {
+    referenceDistance = -referenceDistance;
+    columnDistance = spanColumn - g_GridPathUnreachableRegionReferenceColumn;
+    if ((int)columnDistance < 0) {
+      columnDelta = columnDistance + spanLength;
+      if (columnDelta < 0) {
+        referenceDistance = referenceDistance - columnDelta;
+        spanByteOffset = spanByteOffset + spanLength * 8;
       }
       else {
-        uVar2 = uVar2 + (iVar7 - iVar5) * -8;
+        spanByteOffset = spanByteOffset + (columnDelta - spanLength) * -8;
       }
     }
-    else if ((int)GVar3 < (int)GVar8) {
-      GVar3 = GVar8;
+    else if ((int)referenceDistance < (int)columnDistance) {
+      referenceDistance = columnDistance;
     }
   }
   else {
-    iVar7 = uVar6 - g_GridPathUnreachableRegionReferenceColumn;
-    if (iVar7 < 0) {
-      iVar7 = iVar7 + iVar5;
-      if (iVar7 < 0) {
-        uVar2 = uVar2 + iVar5 * 8;
-        if ((int)GVar3 < -iVar7) {
-          GVar3 = -iVar7;
+    columnDelta = spanColumn - g_GridPathUnreachableRegionReferenceColumn;
+    if (columnDelta < 0) {
+      columnDelta = columnDelta + spanLength;
+      if (columnDelta < 0) {
+        spanByteOffset = spanByteOffset + spanLength * 8;
+        if ((int)referenceDistance < -columnDelta) {
+          referenceDistance = -columnDelta;
         }
       }
       else {
-        uVar2 = uVar2 + (iVar7 - iVar5) * -8;
+        spanByteOffset = spanByteOffset + (columnDelta - spanLength) * -8;
       }
     }
     else {
-      GVar3 = GVar3 + iVar7;
+      referenceDistance = referenceDistance + columnDelta;
     }
   }
-  local_14 = bestCost;
-  if ((int)GVar3 < (int)bestCost) {
-    local_14 = GVar3;
-    bestCellByteOffset = uVar2;
+  updatedBestCost = bestCost;
+  if ((int)referenceDistance < (int)bestCost) {
+    updatedBestCost = referenceDistance;
+    bestCellByteOffset = spanByteOffset;
   }
-  GVar11.bestCost = local_14;
-  GVar11.bestCellByteOffset = bestCellByteOffset;
-  pGVar10 = (GridScratchCell *)((int)pGVar9 + (8 - rowStrideBytes));
+  bestResult.bestCost = updatedBestCost;
+  bestResult.bestCellByteOffset = bestCellByteOffset;
+  probeOrRowCursor = (GridScratchCell *)((int)leftEndCell + (8 - rowStrideBytes));
   do {
-    GVar1 = pGVar10->stateMask;
-    if (((0x7ffffffe < pGVar10->pathCost) && ((GVar1 & 0x80000001) == 0)) &&
-       (((g_GridPathEntityClassMask & GVar1) == 0 || ((g_GridPathBlockingMask & GVar1) == 0)))) {
-      GVar11 = GridPathRegion_MarkUnreachableRecursive
-                         (rowStrideBytes,pGVar10,GVar11.bestCost,GVar11.bestCellByteOffset);
+    cellState = probeOrRowCursor->stateMask;
+    if (((0x7ffffffe < probeOrRowCursor->pathCost) && ((cellState & 0x80000001) == 0)) &&
+       (((g_GridPathEntityClassMask & cellState) == 0 || ((g_GridPathBlockingMask & cellState) == 0)))) {
+      bestResult = GridPathRegion_MarkUnreachableRecursive
+                         (rowStrideBytes,probeOrRowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
     }
-    pGVar10 = pGVar10 + 1;
-  } while (pGVar10 <= (GridScratchCell *)((int)pGVar4 - rowStrideBytes));
-  pGVar10 = (GridScratchCell *)((int)&pGVar9->stateMask + rowStrideBytes);
+    probeOrRowCursor = probeOrRowCursor + 1;
+  } while (probeOrRowCursor <= (GridScratchCell *)((int)probeOrRightEndCell - rowStrideBytes));
+  probeOrRowCursor = (GridScratchCell *)((int)&leftEndCell->stateMask + rowStrideBytes);
   do {
-    GVar1 = pGVar10->stateMask;
-    if (((0x7ffffffe < pGVar10->pathCost) && ((GVar1 & 0x80000001) == 0)) &&
-       (((g_GridPathEntityClassMask & GVar1) == 0 || ((g_GridPathBlockingMask & GVar1) == 0)))) {
-      GVar11 = GridPathRegion_MarkUnreachableRecursive
-                         (rowStrideBytes,pGVar10,GVar11.bestCost,GVar11.bestCellByteOffset);
+    cellState = probeOrRowCursor->stateMask;
+    if (((0x7ffffffe < probeOrRowCursor->pathCost) && ((cellState & 0x80000001) == 0)) &&
+       (((g_GridPathEntityClassMask & cellState) == 0 || ((g_GridPathBlockingMask & cellState) == 0)))) {
+      bestResult = GridPathRegion_MarkUnreachableRecursive
+                         (rowStrideBytes,probeOrRowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
     }
-    pGVar10 = pGVar10 + 1;
-  } while (pGVar10 < (GridScratchCell *)
-                     ((int)&((GridScratchCell *)((int)pGVar4 - rowStrideBytes))->stateMask +
+    probeOrRowCursor = probeOrRowCursor + 1;
+  } while (probeOrRowCursor < (GridScratchCell *)
+                     ((int)&((GridScratchCell *)((int)probeOrRightEndCell - rowStrideBytes))->stateMask +
                      rowStrideBytes * 2));
-  return GVar11;
+  return bestResult;
 }
 
 
@@ -2027,26 +2027,26 @@ GridFootprint_ClearTraversalFlagsDiagonalNegative
           FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint *scratchRecord)
 
 {
-  int iVar1;
+  int nextCount;
   int squaredXDistanceMetric;
-  int iVar2;
+  int visitedCount;
   
   squaredXDistanceMetric = (currentX - centerX) * (currentX - centerX);
-  iVar1 = 0;
+  nextCount = 0;
   do {
-    iVar2 = iVar1;
+    visitedCount = nextCount;
     if (g_GridInfluenceSquaredThreshold6 <
         (uint)(squaredXDistanceMetric + (currentY - centerY) * (currentY - centerY))) {
-      return iVar2;
+      return visitedCount;
     }
     *scratchRecord = *scratchRecord & 0x7ffffffe;
     scratchRecord[1] = scratchRecord[1] + 1;
     currentX = currentX + -999;
     squaredXDistanceMetric = (currentX - centerX) * (currentX - centerX);
     scratchRecord = scratchRecord + g_GridScratchWidth * 4 + -2;
-    iVar1 = iVar2 + 1;
+    nextCount = visitedCount + 1;
   } while ((*scratchRecord & 0x80000000) == 0);
-  return iVar2;
+  return visitedCount;
 }
 
 
@@ -2065,26 +2065,26 @@ GridFootprint_ClearTraversalFlagsDiagonalPositive
           FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint *scratchRecord)
 
 {
-  int iVar1;
+  int nextCount;
   int squaredXDistanceMetric;
-  int iVar2;
+  int visitedCount;
   
   squaredXDistanceMetric = (currentX - centerX) * (currentX - centerX);
-  iVar1 = 0;
+  nextCount = 0;
   do {
-    iVar2 = iVar1;
+    visitedCount = nextCount;
     if (g_GridInfluenceSquaredThreshold6 <
         (uint)(squaredXDistanceMetric + (currentY - centerY) * (currentY - centerY))) {
-      return iVar2;
+      return visitedCount;
     }
     currentX = currentX + 999;
     *scratchRecord = *scratchRecord & 0x7ffffffe;
     scratchRecord[1] = scratchRecord[1] + 1;
     squaredXDistanceMetric = (currentX - centerX) * (currentX - centerX);
     scratchRecord = scratchRecord + g_GridScratchWidth * -4 + 2;
-    iVar1 = iVar2 + 1;
+    nextCount = visitedCount + 1;
   } while ((*scratchRecord & 0x80000000) == 0);
-  return iVar2;
+  return visitedCount;
 }
 
 
@@ -2097,35 +2097,35 @@ void __thandor_void_preserve_eax_ecx_edx
 GridReachability_MarkOpenRegionRecursive(dword rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *scanCell2;
-  GridScratchCell *scanCell3;
-  GridScratchCell *pGVar1;
-  GridScratchCell *scanCell1;
-  GridScratchCell *currentCell_00;
+  GridScratchCell *unusedScanCell;
+  GridScratchCell *prevRowEnd;
+  GridScratchCell *spanLeftCell;
+  GridScratchCell *prevRowCursor;
+  GridScratchCell *nextRowCursor;
   
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
-  pGVar1 = currentCell;
-  while (pGVar1 = pGVar1 + -1, (pGVar1->stateMask & 0xf0007f01) == 0) {
-    pGVar1->stateMask = pGVar1->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
+  spanLeftCell = currentCell;
+  while (spanLeftCell = spanLeftCell + -1, (spanLeftCell->stateMask & 0xf0007f01) == 0) {
+    spanLeftCell->stateMask = spanLeftCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
   while (currentCell = currentCell + 1, (currentCell->stateMask & 0xf0007f01) == 0) {
     currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  currentCell_00 = (GridScratchCell *)((int)&pGVar1->stateMask + rowStrideBytes);
-  scanCell3 = (GridScratchCell *)((int)currentCell - rowStrideBytes);
-  scanCell1 = (GridScratchCell *)((int)pGVar1 + (8 - rowStrideBytes));
+  nextRowCursor = (GridScratchCell *)((int)&spanLeftCell->stateMask + rowStrideBytes);
+  prevRowEnd = (GridScratchCell *)((int)currentCell - rowStrideBytes);
+  prevRowCursor = (GridScratchCell *)((int)spanLeftCell + (8 - rowStrideBytes));
   do {
-    if ((scanCell1->stateMask & 0xf0007f01) == 0) {
-      GridReachability_MarkOpenRegionRecursive(rowStrideBytes,scanCell1);
+    if ((prevRowCursor->stateMask & 0xf0007f01) == 0) {
+      GridReachability_MarkOpenRegionRecursive(rowStrideBytes,prevRowCursor);
     }
-    scanCell1 = scanCell1 + 1;
-  } while (scanCell1 <= scanCell3);
+    prevRowCursor = prevRowCursor + 1;
+  } while (prevRowCursor <= prevRowEnd);
   do {
-    if ((currentCell_00->stateMask & 0xf0007f01) == 0) {
-      GridReachability_MarkOpenRegionRecursive(rowStrideBytes,currentCell_00);
+    if ((nextRowCursor->stateMask & 0xf0007f01) == 0) {
+      GridReachability_MarkOpenRegionRecursive(rowStrideBytes,nextRowCursor);
     }
-    currentCell_00 = currentCell_00 + 1;
-  } while (currentCell_00 < (GridScratchCell *)((int)&scanCell3->stateMask + rowStrideBytes * 2));
+    nextRowCursor = nextRowCursor + 1;
+  } while (nextRowCursor < (GridScratchCell *)((int)&prevRowEnd->stateMask + rowStrideBytes * 2));
   return;
 }
 
@@ -2139,41 +2139,41 @@ void __thandor_void_preserve_eax_ecx_edx
 GridReachability_ClearCostedRegionRecursive(dword rowStrideBytes,GridScratchCell *currentCell)
 
 {
-  GridScratchCell *scanCell2;
-  GridScratchCell *pGVar1;
-  GridScratchCell *scanCell3;
-  GridScratchCell *pGVar2;
-  GridScratchCell *scanCell1;
-  GridScratchCell *currentCell_00;
+  GridScratchCell *unusedScanCell;
+  GridScratchCell *spanRightCell;
+  GridScratchCell *prevRowEnd;
+  GridScratchCell *spanLeftCell;
+  GridScratchCell *prevRowCursor;
+  GridScratchCell *nextRowCursor;
   
   currentCell->stateMask = currentCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-  pGVar1 = currentCell + 1;
-  while ((pGVar2 = currentCell + -1, (pGVar2->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 &&
+  spanRightCell = currentCell + 1;
+  while ((spanLeftCell = currentCell + -1, (spanLeftCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 &&
          (currentCell[-1].pathCost != 0))) {
-    pGVar2->stateMask = pGVar2->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    currentCell = pGVar2;
+    spanLeftCell->stateMask = spanLeftCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    currentCell = spanLeftCell;
   }
-  for (; ((pGVar1->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && (pGVar1->pathCost != 0));
-      pGVar1 = pGVar1 + 1) {
-    pGVar1->stateMask = pGVar1->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+  for (; ((spanRightCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0 && (spanRightCell->pathCost != 0));
+      spanRightCell = spanRightCell + 1) {
+    spanRightCell->stateMask = spanRightCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  currentCell_00 = (GridScratchCell *)((int)&pGVar2->stateMask + rowStrideBytes);
-  scanCell3 = (GridScratchCell *)((int)pGVar1 - rowStrideBytes);
-  scanCell1 = (GridScratchCell *)((int)pGVar2 + (8 - rowStrideBytes));
+  nextRowCursor = (GridScratchCell *)((int)&spanLeftCell->stateMask + rowStrideBytes);
+  prevRowEnd = (GridScratchCell *)((int)spanRightCell - rowStrideBytes);
+  prevRowCursor = (GridScratchCell *)((int)spanLeftCell + (8 - rowStrideBytes));
   do {
-    if (((scanCell1->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) && (scanCell1->pathCost != 0)
+    if (((prevRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) && (prevRowCursor->pathCost != 0)
        ) {
-      GridReachability_ClearCostedRegionRecursive(rowStrideBytes,scanCell1);
+      GridReachability_ClearCostedRegionRecursive(rowStrideBytes,prevRowCursor);
     }
-    scanCell1 = scanCell1 + 1;
-  } while (scanCell1 <= scanCell3);
+    prevRowCursor = prevRowCursor + 1;
+  } while (prevRowCursor <= prevRowEnd);
   do {
-    if (((currentCell_00->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) &&
-       (currentCell_00->pathCost != 0)) {
-      GridReachability_ClearCostedRegionRecursive(rowStrideBytes,currentCell_00);
+    if (((nextRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) &&
+       (nextRowCursor->pathCost != 0)) {
+      GridReachability_ClearCostedRegionRecursive(rowStrideBytes,nextRowCursor);
     }
-    currentCell_00 = currentCell_00 + 1;
-  } while (currentCell_00 < (GridScratchCell *)((int)&scanCell3->stateMask + rowStrideBytes * 2));
+    nextRowCursor = nextRowCursor + 1;
+  } while (nextRowCursor < (GridScratchCell *)((int)&prevRowEnd->stateMask + rowStrideBytes * 2));
   return;
 }
 
@@ -2190,120 +2190,120 @@ GridPathNearestCellEaxEbxCf9 __thandor_eax_cf_preserve_ecx_edx
 GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  dword dVar4;
-  int iVar5;
-  int iVar6;
-  GridScratchStateMask GVar7;
-  dword dVar8;
-  int bestHexDistance1;
+  int cellIndexOrMinColumn;
+  int scanColumn;
+  int hexDistance;
+  dword maxColumn;
+  int scanWidth;
+  int columnsRemaining;
+  GridScratchStateMask blockedMask;
+  dword maxRow;
+  int bestHexDistance;
   undefined4 unaff_EBX;
-  int searchRow1;
-  int iVar9;
-  GridScratchCell *scratchCell1;
-  GridPathNearestCellEaxEbxCf9 GVar10;
-  GridPathNearestCellEaxEbxCf9 GVar11;
-  GridPathNearestCellEaxEbxCf9 GVar12;
-  GridScratchCell *local_30;
-  int local_28;
-  int local_1c;
-  int local_18;
+  int searchRow;
+  int rowDelta;
+  GridScratchCell *scanCell;
+  GridPathNearestCellEaxEbxCf9 openCellResult;
+  GridPathNearestCellEaxEbxCf9 nearestResult;
+  GridPathNearestCellEaxEbxCf9 fallbackResult;
+  GridScratchCell *rowStartCell;
+  int rowsRemaining;
+  int bestRow;
+  int bestColumn;
   
-  iVar1 = gridY * g_GridScratchWidth + gridX;
-  GVar10.selectedColumn = iVar1 * 8;
-  GVar7 = g_GridPathBlockingMask | 0x80000000;
-  if (((((g_GridScratchPrimary[iVar1].stateMask & GVar7) == 0) ||
-       (scratchCell1 = g_GridScratchPrimary + iVar1 + -g_GridScratchWidth,
-       (scratchCell1->stateMask & GVar7) == 0)) || ((scratchCell1[1].stateMask & GVar7) == 0)) ||
-     ((((scratchCell1[g_GridScratchWidth - 1].stateMask & GVar7) == 0 ||
-       ((scratchCell1[g_GridScratchWidth + 1].stateMask & GVar7) == 0)) ||
-      (((scratchCell1[g_GridScratchWidth * 2 + -1].stateMask & GVar7) == 0 ||
-       ((scratchCell1[g_GridScratchWidth * 2].stateMask & GVar7) == 0)))))) {
-    GVar10.selectedRow = unaff_EBX;
-    GVar10.carry = false;
-    return GVar10;
+  cellIndexOrMinColumn = gridY * g_GridScratchWidth + gridX;
+  openCellResult.selectedColumn = cellIndexOrMinColumn * 8;
+  blockedMask = g_GridPathBlockingMask | 0x80000000;
+  if (((((g_GridScratchPrimary[cellIndexOrMinColumn].stateMask & blockedMask) == 0) ||
+       (scanCell = g_GridScratchPrimary + cellIndexOrMinColumn + -g_GridScratchWidth,
+       (scanCell->stateMask & blockedMask) == 0)) || ((scanCell[1].stateMask & blockedMask) == 0)) ||
+     ((((scanCell[g_GridScratchWidth - 1].stateMask & blockedMask) == 0 ||
+       ((scanCell[g_GridScratchWidth + 1].stateMask & blockedMask) == 0)) ||
+      (((scanCell[g_GridScratchWidth * 2 + -1].stateMask & blockedMask) == 0 ||
+       ((scanCell[g_GridScratchWidth * 2].stateMask & blockedMask) == 0)))))) {
+    openCellResult.selectedRow = unaff_EBX;
+    openCellResult.carry = false;
+    return openCellResult;
   }
-  iVar1 = gridX + -0x10;
-  if (iVar1 < 0) {
-    iVar1 = 0;
+  cellIndexOrMinColumn = gridX + -0x10;
+  if (cellIndexOrMinColumn < 0) {
+    cellIndexOrMinColumn = 0;
   }
-  searchRow1 = gridY + -0x10;
-  if (searchRow1 < 0) {
-    searchRow1 = 0;
+  searchRow = gridY + -0x10;
+  if (searchRow < 0) {
+    searchRow = 0;
   }
-  dVar4 = gridX + 0x10U;
+  maxColumn = gridX + 0x10U;
   if ((int)g_GridScratchWidth < (int)(gridX + 0x10U)) {
-    dVar4 = g_GridScratchWidth;
+    maxColumn = g_GridScratchWidth;
   }
-  dVar8 = gridY + 0x10U;
+  maxRow = gridY + 0x10U;
   if ((int)g_GridScratchHeight < (int)(gridY + 0x10U)) {
-    dVar8 = g_GridScratchHeight;
+    maxRow = g_GridScratchHeight;
   }
-  iVar5 = dVar4 - iVar1;
-  if (iVar5 != 0 && iVar1 <= (int)dVar4) {
-    local_28 = dVar8 - searchRow1;
-    if (local_28 != 0 && searchRow1 <= (int)dVar8) {
-      scratchCell1 = g_GridScratchPrimary + searchRow1 * g_GridScratchWidth + iVar1;
-      bestHexDistance1 = 0x7fffffff;
-      iVar2 = iVar1;
-      iVar6 = iVar5;
-      local_30 = scratchCell1;
+  scanWidth = maxColumn - cellIndexOrMinColumn;
+  if (scanWidth != 0 && cellIndexOrMinColumn <= (int)maxColumn) {
+    rowsRemaining = maxRow - searchRow;
+    if (rowsRemaining != 0 && searchRow <= (int)maxRow) {
+      scanCell = g_GridScratchPrimary + searchRow * g_GridScratchWidth + cellIndexOrMinColumn;
+      bestHexDistance = 0x7fffffff;
+      scanColumn = cellIndexOrMinColumn;
+      columnsRemaining = scanWidth;
+      rowStartCell = scanCell;
       do {
         do {
-          if ((scratchCell1->stateMask & (g_GridPathBlockingMask | 0x80000000)) == 0) {
-            iVar3 = iVar2 - gridX;
-            if (iVar3 < 0) {
-              iVar3 = -iVar3;
-              iVar9 = searchRow1 - gridY;
-              if (iVar9 < 0) {
-                iVar3 = iVar3 - iVar9;
+          if ((scanCell->stateMask & (g_GridPathBlockingMask | 0x80000000)) == 0) {
+            hexDistance = scanColumn - gridX;
+            if (hexDistance < 0) {
+              hexDistance = -hexDistance;
+              rowDelta = searchRow - gridY;
+              if (rowDelta < 0) {
+                hexDistance = hexDistance - rowDelta;
               }
-              else if (iVar3 < iVar9) {
-                iVar3 = iVar9;
+              else if (hexDistance < rowDelta) {
+                hexDistance = rowDelta;
               }
             }
             else {
-              iVar9 = searchRow1 - gridY;
-              if (iVar9 < 0) {
-                if (iVar3 < -iVar9) {
-                  iVar3 = -iVar9;
+              rowDelta = searchRow - gridY;
+              if (rowDelta < 0) {
+                if (hexDistance < -rowDelta) {
+                  hexDistance = -rowDelta;
                 }
               }
               else {
-                iVar3 = iVar3 + iVar9;
+                hexDistance = hexDistance + rowDelta;
               }
             }
-            if (iVar3 < bestHexDistance1) {
-              bestHexDistance1 = iVar3;
-              local_1c = searchRow1;
-              local_18 = iVar2;
+            if (hexDistance < bestHexDistance) {
+              bestHexDistance = hexDistance;
+              bestRow = searchRow;
+              bestColumn = scanColumn;
             }
           }
-          scratchCell1 = scratchCell1 + 1;
-          iVar6 = iVar6 + -1;
-          iVar2 = iVar2 + 1;
-        } while (iVar6 != 0);
-        scratchCell1 = local_30 + g_GridScratchWidth;
-        searchRow1 = searchRow1 + 1;
-        local_28 = local_28 + -1;
-        iVar2 = iVar1;
-        iVar6 = iVar5;
-        local_30 = scratchCell1;
-      } while (local_28 != 0);
-      if (bestHexDistance1 < 0x7fffffff) {
-        GVar11.selectedRow = local_1c;
-        GVar11.selectedColumn = local_18;
-        GVar11.carry = true;
-        return GVar11;
+          scanCell = scanCell + 1;
+          columnsRemaining = columnsRemaining + -1;
+          scanColumn = scanColumn + 1;
+        } while (columnsRemaining != 0);
+        scanCell = rowStartCell + g_GridScratchWidth;
+        searchRow = searchRow + 1;
+        rowsRemaining = rowsRemaining + -1;
+        scanColumn = cellIndexOrMinColumn;
+        columnsRemaining = scanWidth;
+        rowStartCell = scanCell;
+      } while (rowsRemaining != 0);
+      if (bestHexDistance < 0x7fffffff) {
+        nearestResult.selectedRow = bestRow;
+        nearestResult.selectedColumn = bestColumn;
+        nearestResult.carry = true;
+        return nearestResult;
       }
     }
   }
-  GVar12.selectedRow = gridY;
-  GVar12.selectedColumn = gridX;
-  GVar12.carry = true;
-  return GVar12;
+  fallbackResult.selectedRow = gridY;
+  fallbackResult.selectedColumn = gridX;
+  fallbackResult.carry = true;
+  return fallbackResult;
 }
 
 
@@ -2321,99 +2321,99 @@ GridPathLine_TestHexSegmentClearCf
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell)
 
 {
-  GridScratchStateMask GVar1;
-  uint uVar2;
-  int rowDelta1;
-  int iVar3;
-  int columnDelta1;
-  int iVar4;
-  int iVar5;
-  GridScratchCell *scanCell2;
-  GridScratchCell *scanCell1;
-  GridScratchCell *scanCell3;
+  GridScratchStateMask cellState;
+  uint endCellIndex;
+  int rowDelta;
+  int thresholdOrColumnsLeft;
+  int columnDelta;
+  int slopeError;
+  int rowError;
+  GridScratchCell *lineCursor;
+  GridScratchCell *columnScanCell;
+  GridScratchCell *columnEndCell;
   
-  uVar2 = (uint)((int)endCell - (int)g_GridScratchPrimary) >> 3;
-  rowDelta1 = uVar2 / g_GridScratchWidth - startRow;
-  columnDelta1 = uVar2 % g_GridScratchWidth - startColumn;
-  scanCell2 = startCell;
-  if (columnDelta1 < 0) {
-    rowDelta1 = -rowDelta1;
-    columnDelta1 = -columnDelta1;
-    scanCell2 = endCell;
+  endCellIndex = (uint)((int)endCell - (int)g_GridScratchPrimary) >> 3;
+  rowDelta = endCellIndex / g_GridScratchWidth - startRow;
+  columnDelta = endCellIndex % g_GridScratchWidth - startColumn;
+  lineCursor = startCell;
+  if (columnDelta < 0) {
+    rowDelta = -rowDelta;
+    columnDelta = -columnDelta;
+    lineCursor = endCell;
     endCell = startCell;
   }
-  if (rowDelta1 < 0) {
-    iVar4 = 0;
-    iVar3 = -rowDelta1 - columnDelta1;
+  if (rowDelta < 0) {
+    slopeError = 0;
+    thresholdOrColumnsLeft = -rowDelta - columnDelta;
 GridPathLine_TestHexSegmentClear_ScanNegativeSlopeCell:
     do {
-      GVar1 = scanCell2->stateMask;
-      if ((scanCell2 != startCell) &&
-         (((((int)GVar1 < 0 || ((g_GridPathEntityClassMask & GVar1) == 0)) ||
-           ((g_GridPathBlockingMask & GVar1) != 0)) || ((callerBlockingMask & GVar1) != 0)))) {
+      cellState = lineCursor->stateMask;
+      if ((lineCursor != startCell) &&
+         (((((int)cellState < 0 || ((g_GridPathEntityClassMask & cellState) == 0)) ||
+           ((g_GridPathBlockingMask & cellState) != 0)) || ((callerBlockingMask & cellState) != 0)))) {
         return true;
       }
-      if (scanCell2 == endCell) {
+      if (lineCursor == endCell) {
         return false;
       }
-      if (iVar4 == iVar3 || iVar4 < iVar3) {
-        if (iVar4 != iVar3) {
-          iVar4 = iVar4 + columnDelta1 * 2;
-          scanCell2 = scanCell2 + -g_GridScratchWidth;
+      if (slopeError == thresholdOrColumnsLeft || slopeError < thresholdOrColumnsLeft) {
+        if (slopeError != thresholdOrColumnsLeft) {
+          slopeError = slopeError + columnDelta * 2;
+          lineCursor = lineCursor + -g_GridScratchWidth;
           goto GridPathLine_TestHexSegmentClear_ScanNegativeSlopeCell;
         }
-        iVar4 = iVar4 + columnDelta1 * 2;
-        scanCell2 = scanCell2 + -g_GridScratchWidth;
+        slopeError = slopeError + columnDelta * 2;
+        lineCursor = lineCursor + -g_GridScratchWidth;
       }
-      iVar4 = iVar4 + rowDelta1 * 2;
-      scanCell2 = scanCell2 + 1;
+      slopeError = slopeError + rowDelta * 2;
+      lineCursor = lineCursor + 1;
     } while( true );
   }
-  iVar5 = 0;
-  iVar4 = 0;
-  iVar3 = columnDelta1;
-  scanCell3 = scanCell2;
+  rowError = 0;
+  slopeError = 0;
+  thresholdOrColumnsLeft = columnDelta;
+  columnEndCell = lineCursor;
 GridPathLine_TestHexSegmentClear_AdvancePositiveSlopeColumns:
-  if (iVar5 < rowDelta1) goto code_r0x00534514;
+  if (rowError < rowDelta) goto code_r0x00534514;
   goto GridPathLine_TestHexSegmentClear_ScanPositiveSlopeColumn;
 code_r0x00534514:
-  scanCell2 = scanCell2 + g_GridScratchWidth;
-  iVar5 = iVar5 + columnDelta1;
-  if (scanCell2 == endCell) {
+  lineCursor = lineCursor + g_GridScratchWidth;
+  rowError = rowError + columnDelta;
+  if (lineCursor == endCell) {
 GridPathLine_TestHexSegmentClear_ScanPositiveSlopeColumn:
     do {
-      iVar5 = iVar5 - rowDelta1;
-      scanCell1 = scanCell2;
+      rowError = rowError - rowDelta;
+      columnScanCell = lineCursor;
       while( true ) {
-        GVar1 = scanCell1->stateMask;
-        if (scanCell1 != startCell) {
-          if ((int)GVar1 < 0) {
+        cellState = columnScanCell->stateMask;
+        if (columnScanCell != startCell) {
+          if ((int)cellState < 0) {
             return true;
           }
-          if ((g_GridPathEntityClassMask & GVar1) == 0) {
+          if ((g_GridPathEntityClassMask & cellState) == 0) {
             return true;
           }
-          if ((g_GridPathBlockingMask & GVar1) != 0) {
+          if ((g_GridPathBlockingMask & cellState) != 0) {
             return true;
           }
-          if ((callerBlockingMask & GVar1) != 0) {
+          if ((callerBlockingMask & cellState) != 0) {
             return true;
           }
         }
-        if (scanCell1 == scanCell3) break;
-        scanCell1 = scanCell1 + -g_GridScratchWidth;
+        if (columnScanCell == columnEndCell) break;
+        columnScanCell = columnScanCell + -g_GridScratchWidth;
       }
-      iVar3 = iVar3 + -1;
-      if (iVar3 < 0) {
+      thresholdOrColumnsLeft = thresholdOrColumnsLeft + -1;
+      if (thresholdOrColumnsLeft < 0) {
         return false;
       }
-      scanCell2 = scanCell2 + 1;
-      scanCell3 = scanCell3 + 1;
-      for (; iVar4 <= -columnDelta1; iVar4 = iVar4 + columnDelta1) {
-        scanCell3 = scanCell3 + g_GridScratchWidth;
+      lineCursor = lineCursor + 1;
+      columnEndCell = columnEndCell + 1;
+      for (; slopeError <= -columnDelta; slopeError = slopeError + columnDelta) {
+        columnEndCell = columnEndCell + g_GridScratchWidth;
       }
-      iVar4 = iVar4 - rowDelta1;
-    } while (iVar3 == 0);
+      slopeError = slopeError - rowDelta;
+    } while (thresholdOrColumnsLeft == 0);
   }
   goto GridPathLine_TestHexSegmentClear_AdvancePositiveSlopeColumns;
 }
