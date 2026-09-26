@@ -4148,20 +4148,14 @@ CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
 UiPointerList_CompareExpandedTextFlags(word *rightText,word *leftText)
 
 {
-  bool copyCarry;
-  undefined1 in_ZF;
-  RichTextCopyExpandedEaxCf5 copyResult;
   CompareFlagsCfZf2 compareFlags;
   
   RichTextCommandStream_CopyExpandedCf(0x400,(word *)&g_UiPointerListExpandedLeftTextUtf16,leftText)
   ;
-  copyResult = RichTextCommandStream_CopyExpandedCf
-                    (0x400,(word *)&g_UiPointerListExpandedRightTextUtf16,rightText);
-  copyCarry = copyResult.carry;
-  (*(code *)g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
-            (&g_UiPointerListExpandedRightTextUtf16,&g_UiPointerListExpandedLeftTextUtf16);
-  compareFlags.carry = copyCarry;
-  compareFlags.zero = (bool)in_ZF;
+  RichTextCommandStream_CopyExpandedCf(0x400,(word *)&g_UiPointerListExpandedRightTextUtf16,rightText);
+  /* CF and ZF are the comparator's: nothing after the call changes the flags (0x004BB5A5). */
+  compareFlags = (*(CompareFlagsCfZf2 (*)(word *,word *))g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
+            ((word *)&g_UiPointerListExpandedRightTextUtf16,(word *)&g_UiPointerListExpandedLeftTextUtf16);
   return compareFlags;
 }
 
