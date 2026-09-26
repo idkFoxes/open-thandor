@@ -1452,60 +1452,111 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime)
 
 {
-  bool bVar1;
-  UiCommandDispatchRecord *dispatchRecordCursor;
-  uint recordModifierFlags;
-  UiCommandDispatchRecord *currentDispatchRecord;
-  
-  dispatchRecordCursor = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
+  /* Rewritten from the assembly (0x00548030-0x0054813A and the continuations 0x00548140 /
+     0x00548190-0x005483BA, which Ghidra does not assign to any function). The decompiled version
+     jumped into the original machine code. EBX is g_FrontendRootNode. CF set = not handled. */
+  UiCommandDispatchRecord *record = g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30;
+  byte *root = (byte *)g_FrontendRootNode;
+  dword target = 0;
 
-  FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-  :
-  while( true ) {
-    do {
-      currentDispatchRecord = dispatchRecordCursor;
-      recordModifierFlags = currentDispatchRecord->modifierClassFlags;
-      if (currentDispatchRecord->commandCode == 0) {
-        return true;
+  (void)frontendRuntime;
+  for (;; record++) {
+    uint flags = record->modifierClassFlags;
+    if (record->commandCode == 0) {
+      return true;
+    }
+    if (record->commandCode != commandCode) {
+      continue;
+    }
+    if (flags == 0) {
+      if ((modifierFlags & 0x3f) != 0) continue;
+    }
+    else {
+      if ((flags & 3) != 0) {
+        if ((modifierFlags & 3) == 0) continue;
       }
-      dispatchRecordCursor = currentDispatchRecord + 1;
-    } while (currentDispatchRecord->commandCode != commandCode);
-    if (recordModifierFlags != 0) break;
-    bVar1 = false;
-    if ((modifierFlags & 0x3f) == 0) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return bVar1;
+      else if ((modifierFlags & 3) != 0) {
+        continue;
+      }
+      if ((flags & 0x30) == 0) {
+        if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+      }
+      else if ((flags & 0xc) == 0) {
+        if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+      }
+      else {
+        if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+      }
     }
+    target = (dword)record->continuationEntryAddress;
+    break;
   }
-  if ((recordModifierFlags & 3) == 0) {
-    if ((modifierFlags & 3) != 0)
-    goto 
-    FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-    ;
-  }
-  else if ((modifierFlags & 3) == 0)
-  goto 
-  FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-  ;
-  if ((recordModifierFlags & 0x30) == 0) {
-    if (((modifierFlags & 0xc) != 0) && (bVar1 = false, (modifierFlags & 0x30) == 0)) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return bVar1;
+  switch (target) {
+  case 0x548140:
+    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)(root + 0x508)).valueOrError == 0xb) {
+      if ((g_SessionNetworkRoleFlags & 3) != 0) {
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(0x3b0,0,0,1);
+      }
+      else {
+        FrontendPlayerRuntime_XorStateMaskByPlayerId(g_LocalPlayerRuntimeId,0,0,1);
+      }
     }
-  }
-  else if ((recordModifierFlags & 0xc) == 0) {
-    if (((modifierFlags & 0xc) == 0) && (bVar1 = false, (modifierFlags & 0x30) != 0)) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return bVar1;
+    break;
+  case 0x548190: {
+    FrontendPlayerRuntimeRecord *player;
+    TextResourceResolveEaxCf5 text;
+    if ((g_SessionNetworkRoleFlags & 3) == 0) {
+      if ((g_FrontendLoadedCampaignAsset == 0) && (g_FrontendScenarioInitializationCount == 0)) {
+        UiActionQueue_Enqueue(0,root);
+        break;
+      }
+      Resource_Release((void *)(uintptr_t)g_FrontendLoadedCampaignAsset);
+      g_FrontendLoadedCampaignAsset = 0;
+      g_FrontendScenarioInitializationCount = 0;
+      g_FrontendNetworkState = 0;
+      (*g_NetworkBackendSlot3)();
+      (*g_NetworkBackendSlot1)();
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root + 0x508));
+      *(dword *)(root + 0x3b4) = *(dword *)(root + 0x3b4) & 0xffffdfff;
+      g_FrontendPendingPageAction = 0;
+      g_FrontendRomTransitionContextValue = 0;
+      FrontendRomTransition_ActivateRecordByIdCf(1,(WorldRuntimeContext *)(root + 0x368));
+      break;
     }
+    /* Leaving a network session: host (bit 0, 0x00548320) or client (bit 1, 0x00548250). */
+    {
+      int wasHost = (g_SessionNetworkRoleFlags & 1) != 0;
+      g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & 0xfffffffc;
+      g_FrontendNetworkState = 0;
+      g_FrontendScenarioInitializationCount = 0;
+      (*g_NetworkBackendSlot3)();
+      (*g_NetworkBackendSlot1)();
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root + 0x508));
+      *(dword *)(root + 0x3b4) = *(dword *)(root + 0x3b4) & 0xffffdfff;
+      g_FrontendPendingPageAction = 0;
+      g_FrontendRomTransitionContextValue = 0;
+      player = (FrontendPlayerRuntimeRecord *)g_FrontendPlayerRuntimeBlocks;
+      FrontendRomTransition_ActivateRecordByIdCf(1,(WorldRuntimeContext *)(root + 0x368));
+      text = TextResource_Resolve(wasHost ? 0xff02 : 0xff04);
+      RichTextCommandStream_PatchPayloadBySelector(0,(byte *)player + 0x18,text.eax);
+      FrontendRecentTextHistory_InsertAndRebuild5(text.eax);
+      if (!wasHost) {
+        g_FrontendPlayerRuntimeBlockCount = 1;
+        g_LocalPlayerRuntimeId = 0;
+        *(dword *)((byte *)player + 0x18) = 0;
+        *(dword *)((byte *)player + 0x14) = 0;
+        *(dword *)((byte *)player + 0x60) = 0;
+        *(dword *)((byte *)player + 0x64) = 0;
+        *(dword *)((byte *)player + 0x68) = 0;
+      }
+    }
+    break;
   }
-  else if (((modifierFlags & 0xc) != 0) && (bVar1 = false, (modifierFlags & 0x30) != 0)) {
-    (*(code *)currentDispatchRecord->continuationEntryAddress)();
-    return bVar1;
+  default:
+    Thandor_Log("Frontend dispatch: unhandled continuation %08x",target);
+    break;
   }
-  goto 
-  FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-  ;
+  return false;
 }
 
 

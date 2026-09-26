@@ -7,6 +7,7 @@
 
 #include <thandor/ui/ingame/runtime.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: ui/ingame/runtime. */
 
@@ -2967,64 +2968,191 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
           WorldRuntimeContext *inGameRuntime)
 
 {
-  UiCommandDispatchRecord *currentDispatchRecord;
-  UiCommandDispatchRecord *dispatchRecordCursor;
-  uint recordModifierFlags;
-  
-  dispatchRecordCursor = g_InGameCommandDispatchRecords_00_Code00030073_Modifier33;
+  /* Rewritten from the assembly (0x005678C0-0x00568204). The decompiled version jumped to the
+     continuation labels inside the original machine code. EBX is the in-game runtime root. */
+  byte *rt = (byte *)inGameRuntime;
+  UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords_00_Code00030073_Modifier33;
+  dword target = 0;
+  bool localSession = (g_SessionNetworkRoleFlags & 3) == 0;
+  bool commandsBlocked = (g_UiCommandRuntimeFlags & 0x101) != 0;
 
-  InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-  :
-  while( true ) {
-    do {
-      currentDispatchRecord = dispatchRecordCursor;
-      recordModifierFlags = currentDispatchRecord->modifierClassFlags;
-      if (currentDispatchRecord->commandCode == 0) {
-        return;
+#define RT_DWORD(offset) (*(dword *)(rt + (offset)))
+  for (;; record++) {
+    uint flags = record->modifierClassFlags;
+    if (record->commandCode == 0) {
+      return;
+    }
+    if (record->commandCode != commandCode) {
+      continue;
+    }
+    if (flags == 0) {
+      if ((modifierFlags & 0x3f) != 0) continue;
+    }
+    else {
+      if ((flags & 3) != 0) {
+        if ((modifierFlags & 3) == 0) continue;
       }
-      dispatchRecordCursor = currentDispatchRecord + 1;
-    } while (currentDispatchRecord->commandCode != commandCode);
-    if (recordModifierFlags != 0) break;
-    if ((modifierFlags & 0x3f) == 0) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return;
+      else if ((modifierFlags & 3) != 0) {
+        continue;
+      }
+      if ((flags & 0x3c) == 0) {
+        if ((modifierFlags & 0x3c) != 0) continue;
+      }
+      else if ((flags & 0x30) == 0) {
+        if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+      }
+      else if ((flags & 0xc) == 0) {
+        if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+      }
+      else {
+        if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+      }
     }
+    target = (dword)record->continuationEntryAddress;
+    break;
   }
-  if ((recordModifierFlags & 3) == 0) {
-    if ((modifierFlags & 3) != 0)
-    goto 
-    InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-    ;
-  }
-  else if ((modifierFlags & 3) == 0)
-  goto 
-  InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-  ;
-  if ((recordModifierFlags & 0x3c) == 0) {
-    if ((modifierFlags & 0x3c) == 0) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return;
+  switch (target) {
+  case 0x567cc0: /* number key: select group */
+  case 0x567d10: /* with shift-class modifier: mode 2 */
+  case 0x567d60: /* mode 1 */
+  case 0x567db0: { /* mode 3 */
+    dword mode = (target == 0x567cc0) ? 0 : (target == 0x567d10) ? 2 : (target == 0x567d60) ? 1 : 3;
+    dword group = commandCode - 0x30031;
+    if (commandsBlocked) {
+      break;
     }
-  }
-  else if ((recordModifierFlags & 0x30) == 0) {
-    if (((modifierFlags & 0xc) != 0) && ((modifierFlags & 0x30) == 0)) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return;
+    if (localSession) {
+      FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
+                (g_LocalPlayerRuntimeId,RT_DWORD(0x50),mode,group);
     }
-  }
-  else if ((recordModifierFlags & 0xc) == 0) {
-    if (((modifierFlags & 0xc) == 0) && ((modifierFlags & 0x30) != 0)) {
-      (*(code *)currentDispatchRecord->continuationEntryAddress)();
-      return;
+    else {
+      InGameCommandQueue_AppendLocalPlayerCommand(0xbe0,RT_DWORD(0x50),mode,group);
     }
+    break;
   }
-  else if (((modifierFlags & 0xc) != 0) && ((modifierFlags & 0x30) != 0)) {
-    (*(code *)currentDispatchRecord->continuationEntryAddress)();
-    return;
+  case 0x567e00:
+    InGameTargetingContext_AdvanceOrResolveTarget((InGameTargetingRootTraversalView9E60 *)(rt + 0x90cc));
+    break;
+  case 0x567e20:
+    InGameTargetingContext_CancelAndRestoreState((InGameTargetingRootTraversalView9E60 *)(rt + 0x90cc));
+    break;
+  case 0x567e40: { /* camera to the last event position */
+    FieldGridNearestPointRegsCf13 point;
+    if ((RT_DWORD(0x9428) == 0) || (RT_DWORD(0x942c) == 0)) {
+      break;
+    }
+    point = FieldGrid_GetNearestTerrainPoint(RT_DWORD(0x942c),RT_DWORD(0x9428),
+                                             *(FieldGridAsset **)(rt + 0x54));
+    WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+              (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x8c),point.edx,RT_DWORD(0x942c),
+               RT_DWORD(0x9428),inGameRuntime);
+    break;
   }
-  goto 
-  InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf_ScanNextDispatchRecordForCodeAndModifierMatch
-  ;
+  case 0x567ea0: { /* camera to the selection */
+    WorldPositionEaxEcxEdxCf13 center = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
+    if (center.carry) {
+      break;
+    }
+    WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+              (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x7c),center.worldZQ12,center.worldYQ12,
+               center.worldXQ12,inGameRuntime);
+    break;
+  }
+  case 0x567ed0: { /* camera to the faction's headquarters (class 0x0B) */
+    byte *node = *(byte **)(rt + 0xd8);
+    dword faction = RT_DWORD(0x50);
+    for (; node != (byte *)0; node = *(byte **)(node + 4)) {
+      byte *payload;
+      if (*(dword *)(node + 0xa4) != 0) {
+        continue;
+      }
+      payload = *(byte **)(node + 0x48);
+      if ((faction == *(dword *)(*(byte **)(payload + 8) + 0xc)) &&
+          (*(dword *)(*(byte **)payload + 0x4c) == 0xb)) {
+        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+                  (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x7c),*(dword *)(node + 0x9c),
+                   *(dword *)(node + 0x98),*(dword *)(node + 0x94),inGameRuntime);
+        break;
+      }
+    }
+    break;
+  }
+  case 0x567f60:
+  case 0x567fc0:
+  case 0x568020:
+  case 0x568130: {
+    static const dword queued[4] = {0xe10,0xe30,0xe50,0xe70};
+    int which = (target == 0x567f60) ? 0 : (target == 0x567fc0) ? 1 : (target == 0x568020) ? 2 : 3;
+    if (commandsBlocked || SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(RT_DWORD(0x50))) {
+      break;
+    }
+    if (!localSession) {
+      InGameCommandQueue_AppendLocalPlayerCommand(queued[which],0,0,0);
+    }
+    else if (which == 0) {
+      PlayerSelection_ResetMovementPruneAndRecenterEntries(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    else if (which == 1) {
+      PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    else if (which == 2) {
+      PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    else {
+      PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    break;
+  }
+  case 0x568080: { /* selection page toggle */
+    byte *button = rt + 0x969c;
+    if (commandsBlocked || ((RT_DWORD(0x96e4) & 8) != 0)) {
+      break;
+    }
+    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)(rt + 0x957c)).valueOrError != 1) {
+      break;
+    }
+    if (((*(dword *)(button + 0x4c) & 0x200) != 0) && (*(dword *)(button + 0x70) != 0)) {
+      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,*(DirectSoundVoiceSet **)(button + 0x70));
+    }
+    InGameSelectionPage_ToggleAndRefreshPage2((UiNodeBase *)rt);
+    break;
+  }
+  case 0x5680f0:
+    if (commandsBlocked) {
+      break;
+    }
+    if (localSession) {
+      InGameSelection_RebuildOwnedClass16Selection(g_LocalPlayerRuntimeId,0,0,0);
+    }
+    else {
+      InGameCommandQueue_AppendLocalPlayerCommand(0x8f0,0,0,0);
+    }
+    break;
+  case 0x568190:
+    RT_DWORD(0x4c) = RT_DWORD(0x4c) ^ 0x40000;
+    break;
+  case 0x5681a0:
+    RT_DWORD(0x1ab0) = RT_DWORD(0x1ab0) ^ 8;
+    break;
+  case 0x5681b0: /* developer toggle: occupancy overlay */
+    if (!localSession || ((g_UiCommandRuntimeFlags & 0x40000) == 0)) {
+      break;
+    }
+    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 8;
+    if ((g_UiCommandRuntimeFlags & 8) == 0) {
+      FieldGrid_ClearOccupancyMaskByteBit0AllCells(RT_DWORD(0x50),*(FieldGridAsset **)(rt + 0x54));
+    }
+    else {
+      FieldGrid_SetOccupancyMaskByteBit0AllCells(RT_DWORD(0x50),*(FieldGridAsset **)(rt + 0x54));
+    }
+    FieldGrid_ClassifyCellFlagsToRuntimeByte(RT_DWORD(0x50),*(FieldGridAsset **)(rt + 0x54));
+    break;
+  default:
+    Thandor_Log("InGameUi dispatch: unhandled continuation %08x",target);
+    break;
+  }
+#undef RT_DWORD
+  return;
 }
 
 

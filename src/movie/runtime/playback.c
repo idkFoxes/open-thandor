@@ -7,6 +7,7 @@
 
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: movie/runtime/playback. */
 
@@ -572,43 +573,87 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime)
 
 {
-  uint uVar1;
-  UiCommandDispatchRecord *pUVar2;
-  UiCommandDispatchRecord *pUVar3;
-  
-  pUVar3 = g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30;
-  do {
-    while( true ) {
-      while( true ) {
-        while( true ) {
-          do {
-            pUVar2 = pUVar3;
-            uVar1 = pUVar2->modifierClassFlags;
-            if (pUVar2->commandCode == 0) {
-              return;
-            }
-            pUVar3 = pUVar2 + 1;
-          } while (pUVar2->commandCode != commandCode);
-          if (uVar1 != 0) break;
-          if ((modifierFlags & 0x3c) == 0) {
-            (*(code *)pUVar2->continuationEntryAddress)();
-            return;
-          }
-        }
-        if ((uVar1 & 0x30) != 0) break;
-        if (((modifierFlags & 0xc) != 0) && ((modifierFlags & 0x30) == 0)) {
-          (*(code *)pUVar2->continuationEntryAddress)();
-          return;
-        }
-      }
-      if ((uVar1 & 0xc) != 0) break;
-      if (((modifierFlags & 0xc) == 0) && ((modifierFlags & 0x30) != 0)) {
-        (*(code *)pUVar2->continuationEntryAddress)();
-        return;
+  /* Rewritten from the assembly (0x00565810-0x00565A29). The decompiled version jumped to the
+     continuation labels inside the original machine code. EBX is the end-movie runtime. */
+  UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30;
+  dword target = 0;
+
+  for (;; record++) {
+    uint flags = record->modifierClassFlags;
+    if (record->commandCode == 0) {
+      return;
+    }
+    if (record->commandCode != commandCode) {
+      continue;
+    }
+    if (flags == 0) {
+      if ((modifierFlags & 0x3c) != 0) continue;
+    }
+    else if ((flags & 0x30) == 0) {
+      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+    }
+    else if ((flags & 0xc) == 0) {
+      if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+    }
+    else {
+      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+    }
+    target = (dword)record->continuationEntryAddress;
+    break;
+  }
+  switch (target) {
+  case 0x5658f0: { /* screenshot */
+    GraphicsFramebufferCaptureEaxCf5 capture =
+         (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+    PcxEncodeEaxEcxCf9 pcx;
+    word *digitHigh = (word *)(uintptr_t)0x572e48;
+    word *digitLow = (word *)(uintptr_t)0x572e4a;
+    if (capture.carry) {
+      break;
+    }
+    pcx = (*g_PcxFunctionExport3)(g_PcxFunctionModule,capture.eax);
+    if (pcx.carry) {
+      (*g_MemoryApi.free)(capture.eax);
+      break;
+    }
+    FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
+                                   (word *)(uintptr_t)0x572e3c);
+    (*g_MemoryApi.free)(pcx.encodedBytesOrError);
+    (*g_MemoryApi.free)(capture.eax);
+    *digitLow = *digitLow + 1;
+    if (*digitLow > 0x39) {
+      *digitHigh = *digitHigh + 1;
+      *digitLow = *digitLow - 10;
+      if (*digitHigh > 0x39) {
+        *digitHigh = *digitHigh - 10;
       }
     }
-  } while (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0));
-  (*(code *)pUVar2->continuationEntryAddress)();
+    break;
+  }
+  case 0x565990: /* skip the end movie */
+    if (((*(dword *)((byte *)endMovieRuntime + 0x6ec) & 8) != 0) ||
+        ((g_UiCommandRuntimeFlags & 0x800) != 0)) {
+      break;
+    }
+    if ((g_SessionNetworkRoleFlags & 1) != 0) {
+      if ((g_SessionNetworkRoleFlags & 3) != 0) {
+        InGameCommandQueue_AppendLocalPlayerCommand(0x470,0,0,0);
+      }
+      else {
+        FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(g_LocalPlayerRuntimeId);
+      }
+    }
+    else if ((g_SessionNetworkRoleFlags & 3) != 0) {
+      InGameCommandQueue_AppendLocalPlayerCommand(0x310,0,0x1000,0);
+    }
+    else {
+      UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,0x1000,0);
+    }
+    break;
+  default:
+    Thandor_Log("EndMovie dispatch: unhandled continuation %08x",target);
+    break;
+  }
   return;
 }
 
