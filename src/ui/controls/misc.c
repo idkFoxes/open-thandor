@@ -24,15 +24,15 @@ UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiAnchorFractionQ31 colorBiasQ16;
   UiAnchorFractionQ31 colorScaleQ16;
   
-  colorBiasQ16 = root[0x1f].base.rightOffset;
-  colorScaleQ16 = root[0x1d].base.right;
-  if ((colorBiasQ16 != root[3].base.rightAnchorQ31) || (colorScaleQ16 != root[3].base.bottomAnchorQ31)) {
-    root[3].base.rightAnchorQ31 = colorBiasQ16;
-    root[3].base.bottomAnchorQ31 = colorScaleQ16;
+  colorBiasQ16 = THANDOR_UI_FIELD(root,0xA78 + 0x58,sdword);
+  colorScaleQ16 = THANDOR_UI_FIELD(root,0x9B8 + 0x58,sdword);
+  if ((colorBiasQ16 != THANDOR_UI_FIELD(root,0xD4 + 0x6C,dword)) || (colorScaleQ16 != THANDOR_UI_FIELD(root,0xD4 + 0x70,dword))) {
+    THANDOR_UI_FIELD(root,0xD4 + 0x6C,dword) = colorBiasQ16;
+    THANDOR_UI_FIELD(root,0xD4 + 0x70,dword) = colorScaleQ16;
     (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
-              (root[3].base.topAnchorQ31,(UiNodeBase *)root[3].base.leftAnchorQ31,
-               root[3].base.bottomOffset,root[3].base.rightOffset,&root->base);
+              (THANDOR_UI_FIELD(root,0xD4 + 0x68,dword),(UiNodeBase *)THANDOR_UI_FIELD(root,0xD4 + 0x64,dword),
+               THANDOR_UI_FIELD(root,0xD4 + 0x60,sdword),THANDOR_UI_FIELD(root,0xD4 + 0x5C,sdword),&root->base);
     UiRuntime_FormatSignedValues140And144(root);
   }
   return;
@@ -131,10 +131,10 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   dword modeWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  modeWidth = root[4].base.top;
-  modeHeight = root[4].base.right;
-  bitsPerPixel = root[4].base.bottom;
-  adapterIndex = root[4].base.leftOffset;
+  modeWidth = THANDOR_UI_FIELD(root,0x110 + 0x64,sdword);
+  modeHeight = THANDOR_UI_FIELD(root,0x110 + 0x68,sdword);
+  bitsPerPixel = THANDOR_UI_FIELD(root,0x110 + 0x6C,sdword);
+  adapterIndex = THANDOR_UI_FIELD(root,0x110 + 0x70,sdword);
   UiRootStack_PopCf(root);
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
@@ -291,12 +291,12 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   dword pendingHeightOrCurrentWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  pendingWidthOrCurrentHeight = root[3].base.rightOffset;
-  pendingHeightOrCurrentWidth = root[3].base.bottomOffset;
-  pendingBitsPerPixel = root[3].base.leftAnchorQ31;
+  pendingWidthOrCurrentHeight = THANDOR_UI_AT(root,0x110)->leftOffset;
+  pendingHeightOrCurrentWidth = THANDOR_UI_AT(root,0x110)->topOffset;
+  pendingBitsPerPixel = THANDOR_UI_FIELD(root,0x110 + 0x28,dword);
   currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
-  pendingAdapterIndex = root[3].base.topAnchorQ31;
+  pendingAdapterIndex = THANDOR_UI_FIELD(root,0x110 + 0x2C,dword);
   UiRootStack_PopCf(root);
   if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
@@ -361,19 +361,19 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   sdword *countdownTicksField;
   UiNodeVtable **countdownNumberField;
   
-  countdownTicksField = &root[4].base.left;
+  countdownTicksField = &THANDOR_UI_FIELD(root,0x110 + 0x60,sdword);
   *countdownTicksField = *countdownTicksField + -1;
   if (*countdownTicksField == 0) {
-    root[4].base.left = 0x14;
-    countdownNumberField = &root[4].base.vtable;
+    THANDOR_UI_FIELD(root,0x110 + 0x60,sdword) = 0x14;
+    countdownNumberField = &THANDOR_UI_FIELD(root,0x110 + 0x5C,struct UiNodeVtable *);
     *countdownNumberField = (UiNodeVtable *)((int)&(*countdownNumberField)[-1].pointerWheel + 3);
     if (*countdownNumberField == (UiNodeVtable *)0x0) {
       UiActionQueue_Enqueue(0x20d,root);
     }
     else {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)root[4].base.vtable,
-                 (word *)&root[4].base.topOffset);
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)THANDOR_UI_FIELD(root,0x110 + 0x5C,struct UiNodeVtable *),
+                 (word *)&THANDOR_UI_FIELD(root,0x110 + 0x74,sdword));
     }
   }
   return;

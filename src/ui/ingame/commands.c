@@ -1124,10 +1124,10 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
       THANDOR_UI_AT(Thandor_UiRoot(source),0x764),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x7c4));
   selectedIndexValue = (UiNodeVtable *)selectionResult.controlIndexOrCount;
-  root[0xd].base.left = (sdword)selectedIndexValue;
-  root[0xe].base.rightAnchorQ31 = (UiAnchorFractionQ31)selectedIndexValue;
-  root[0x10].base.vtable = selectedIndexValue;
-  root[0xb].base.vtable = selectedIndexValue;
+  THANDOR_UI_FIELD(root,0x484 + 0x4,sdword) = (sdword)selectedIndexValue;
+  THANDOR_UI_FIELD(root,0x500 + 0x8,dword) = (UiAnchorFractionQ31)selectedIndexValue;
+  THANDOR_UI_FIELD(root,0x584 + 0x8,struct UiNodeVtable *) = selectedIndexValue;
+  THANDOR_UI_FIELD(root,0x3AC + 0x28,struct UiNodeVtable *) = selectedIndexValue;
   return;
 }
 

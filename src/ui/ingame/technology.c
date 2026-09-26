@@ -72,23 +72,23 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   int remainingCount;
   uint areaIndex;
   
-  flagSlot = &inGameRoot[0x1e].base.rightOffset;
+  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0xA30 + 0x48,sdword);
   *flagSlot = *flagSlot | 8;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)&inGameRoot[0x1d].base.rightAnchorQ31);
+  UiKeyboardFocus_ReleaseNode((UiNodeBase *)THANDOR_UI_AT(inGameRoot,0xA30));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   entityDefinition = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-  flagSlot = &inGameRoot[0x3e].base.layoutWidth;
+  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0x1544 + 0x4C,sdword);
   *flagSlot = *flagSlot & 0xfffffffd;
-  inGameRoot[0x3f].callbacks = (UiRootCallbacks *)((uint)inGameRoot[0x3f].callbacks & 0xfffffffd);
-  parentFlagSlot = &inGameRoot[0x41].base.parent;
+  THANDOR_UI_FIELD(inGameRoot,0x15AC + 0x4C,struct UiRootCallbacks *) = (UiRootCallbacks *)((uint)THANDOR_UI_FIELD(inGameRoot,0x15AC + 0x4C,struct UiRootCallbacks *) & 0xfffffffd);
+  parentFlagSlot = &THANDOR_UI_FIELD(inGameRoot,0x1614 + 0x4C,struct UiNodeBase *);
   *parentFlagSlot = (UiNodeBase *)((uint)*parentFlagSlot & 0xfffffffd);
-  flagSlot = &inGameRoot[0x42].base.right;
+  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0x167C + 0x4C,sdword);
   *flagSlot = *flagSlot & 0xfffffffd;
-  flagSlot = &inGameRoot[0x43].base.rightOffset;
+  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0x16E4 + 0x4C,sdword);
   *flagSlot = *flagSlot & 0xfffffffd;
-  anchorFlagSlot = &inGameRoot[0x44].base.rightAnchorQ31;
+  anchorFlagSlot = &THANDOR_UI_FIELD(inGameRoot,0x174C + 0x4C,dword);
   *anchorFlagSlot = *anchorFlagSlot & 0xfffffffd;
-  nodeFlagsSlot = &inGameRoot[0x45].base.nodeFlags;
+  nodeFlagsSlot = &THANDOR_UI_FIELD(inGameRoot,0x17B4 + 0x4C,enum UiNodeFlags);
   *nodeFlagsSlot = *nodeFlagsSlot & ~UI_NODE_PREFERRED_FOCUS_TARGET;
   if ((entityDefinition[0x3b] & 0xc0U) != 0) {
     technologyCursor = *entityDefinition;

@@ -675,29 +675,29 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
   sdword *compactLayoutFlags;
   dword persistedValue;
   
-  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)&frontendRoot[0xe].base.rightAnchorQ31);
+  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)THANDOR_UI_AT(frontendRoot,0x508));
   if ((int)g_FramebufferWidth < 0x281) {
-    compactLayoutFlags = &frontendRoot[10].base.layoutHeight;
+    compactLayoutFlags = &THANDOR_UI_FIELD(frontendRoot,0x368 + 0x4C,sdword);
     *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
   persistedValue = PersistentSettings_ReadDword(0,0x40);
   UiSelectableControl_SetSelected
-            (persistedValue & 1,(UiSelectableControl *)&frontendRoot[0x7b].base.bottomAnchorQ31);
+            (persistedValue & 1,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2A84));
   UiSelectableControl_SetSelected
-            (persistedValue & 2,(UiSelectableControl *)&frontendRoot[0x7c].base.layoutHeight);
-  UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)&frontendRoot[0x75].base.bottom);
+            (persistedValue & 2,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2AE4));
+  UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2854));
   persistedValue = PersistentSettings_ReadDword(0,0x5c);
   if ((persistedValue & 1) != 0) {
     UiNodeList_SuppressActionId(0x203f,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
-            (persistedValue & 1,(UiSelectableControl *)&frontendRoot[0x7e].base.nodeFlags);
+            (persistedValue & 1,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2B98));
   if ((persistedValue & 2) != 0) {
     UiNodeList_SuppressActionId(0x203e,&frontendRoot->base);
   }
-  UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)&frontendRoot[0x7f].callbacks);
+  UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2BF8));
   persistedValue = PersistentSettings_ReadDword(0x20,0x48);
-  frontendRoot[0x7a].base.leftAnchorQ31 = persistedValue;
+  THANDOR_UI_FIELD(frontendRoot,0x29C8 + 0x58,dword) = persistedValue;
   return;
 }
 
@@ -1413,7 +1413,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     networkedOrRemainingCount = remainingSearchCount;
   }
   rowIndexOrCount = 7;
-  taskAssignmentRoot[0x52].base.nextSibling =
+  THANDOR_UI_FIELD(taskAssignmentRoot,0x1BDC + 0x54,struct UiNodeBase *) =
        (UiNodeBase *)
        (localFactionIndex + 0x230010 + (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
   do {
@@ -1529,14 +1529,14 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
     textRowCursor->textUtf16[1] = 0;
     textRowCursor = (FrontendTaskAssignmentGeneratedFactionTextRow50 *)(textRowCursor->textUtf16 + 2);
   }
-  rosterLayoutFlags = &taskAssignmentRoot[0x4f].base.layoutHeight;
+  rosterLayoutFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,0x1B24 + 0x48,sdword);
   *rosterLayoutFlags = *rosterLayoutFlags | 8;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  rosterLayoutFlags = &taskAssignmentRoot[0x4f].base.layoutHeight;
+  rosterLayoutFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,0x1B24 + 0x48,sdword);
   *rosterLayoutFlags = *rosterLayoutFlags & 0xfffffff7;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerName = &playerRecord->playerName;
@@ -1594,7 +1594,7 @@ FrontendTaskAssignment_AppendPlayerNameToFactionRosterText:
     playerName = playerName + 0x7e;
     if (remainingPlayers == 0) {
       rowIndexOrCount = 7;
-      if (((uint)taskAssignmentRoot[0x23].callbacks & 2) == 0) {
+      if (((uint)THANDOR_UI_FIELD(taskAssignmentRoot,0xC0C + 0x4C,struct UiRootCallbacks *) & 2) == 0) {
         do {
           controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
           if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
