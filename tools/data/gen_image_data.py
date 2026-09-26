@@ -413,7 +413,13 @@ def value_init(t, addr, typed_pointers, depth=0):
                     parts.append('.%s = %s' % (field['name'], item))
         if any(byte_at(addr + x) for x in range(layout['size']) if not covered[x]):
             raise Unrepresentable(struct_name + ' padding')
-        return '{%s}' % ', '.join(parts) if parts else '{0}'
+        if not parts:
+            return '{0}'
+        text = ', '.join(parts)
+        if depth == 0 and len(text) > 100 and '\n' not in text:
+            # one field per line for long top-level structs (vtables, callback tables)
+            return '{\n        %s}' % ',\n        '.join(parts)
+        return '{%s}' % text
     if r.startswith('union '):
         if any(byte_at(addr + x) for x in range(type_size(t))):
             raise Unrepresentable(t)
@@ -429,9 +435,21 @@ def nested_init(items, dims, depth):
     indent = '\n' + '    ' * (depth + 1)
     return '{' + indent + (',' + indent).join(rows) + '}'
 
+# label-only UI vtables (no declaration in the headers): typed as UiNodeVtable when every method slot
+# holds a function or 0; methods a subclass adds follow as a dword rest
+label_types = {}
+if 'UiNodeVtable' in type_layouts:
+    slots = type_layouts['UiNodeVtable']['size'] // 4
+    for start, size, name in objects:
+        if name in macros or 'vtable' not in name.lower() or size < slots * 4:
+            continue
+        values = [dword_at(start + 4 * i) for i in range(slots)]
+        if all(v == 0 or v in funcs for v in values) and any(values):
+            label_types[name] = ('UiNodeVtable *', start)
+
 def typed_member(start, end, name, member):
     """(declarations, initializers, pointers) for an object with a known type, or None."""
-    macro = macros.get(name)
+    macro = macros.get(name) or label_types.get(name)
     if macro is None or macro[1] != start:
         return None
     t = macro[0].strip()
@@ -678,7 +696,10 @@ src = [HEADER % 'src/generated/image_data.c',
        '#include <thandor/thandor.h>\n#include <thandor/generated/image_data.h>\n\n'
        '#pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */\n']
 for k, (a, b) in enumerate(blocks):
-    src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(init_lines[k])))
+    # a multi-line initializer gets its object comment as a heading instead of at its end
+    lines = [re.sub(r'^    (\{\n.*), (/\* [0-9A-F]{8} [^\n]* \*/)$', r'    \2\n    \1,', line, flags=re.S)
+             for line in init_lines[k]]
+    src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(lines)))
 src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))
 for k, (a, b) in enumerate(blocks):
     src.append('    {0x%08X, 0x%08X, (const byte *)&%s},\n' % (a, b, block_name(k)))

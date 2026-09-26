@@ -556,7 +556,7 @@ typedef struct ImageData_0041DE7C {
     SoftwareBgraWordLanes at_g_SoftwareBilinearInverseFactors[256]; /* 00420F20 g_SoftwareBilinearInverseFactors */
     SoftwareRgbWordLanes at_g_SoftwareBlendAlphaFactors[256]; /* 00421720 g_SoftwareBlendAlphaFactors */
     SoftwareRgbWordLanes at_g_SoftwareBlendInverseAlphaFactors[256]; /* 00421F20 g_SoftwareBlendInverseAlphaFactors */
-    dword at_g_UiGraphicsAdapterTextButtonVtable[18]; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
+    UiNodeVtable at_g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
     undefined at_g_GraphicsAdapterFormatScratch0Utf16; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
     dword at_g_GraphicsAdapterFormatScratch0Utf16_rest[7]; /* beyond the declared type */
     byte at_g_GraphicsAdapterFormatScratch0Utf16_rest_tail[3];
@@ -931,48 +931,54 @@ extern ImageData_004B15C8 g_ImageData_004B15C8;
 /* original 0x004B1D74-0x004B1DD0 */
 typedef struct ImageData_004B1D74 {
     byte at_gap_004B1D74[12]; /* 004B1D74 gap */
-    dword at_g_UiNodeVtable_004B1D80[20]; /* 004B1D80 g_UiNodeVtable_004B1D80 */
+    UiNodeVtable at_g_UiNodeVtable_004B1D80; /* 004B1D80 g_UiNodeVtable_004B1D80 */
+    dword at_g_UiNodeVtable_004B1D80_rest[2]; /* beyond the declared type */
 } ImageData_004B1D74;
 extern ImageData_004B1D74 g_ImageData_004B1D74;
 
 /* original 0x004B2734-0x004B2790 */
 typedef struct ImageData_004B2734 {
     byte at_gap_004B2734[12]; /* 004B2734 gap */
-    dword at_g_UiWindowControlVtable[20]; /* 004B2740 g_UiWindowControlVtable */
+    UiNodeVtable at_g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
+    dword at_g_UiWindowControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B2734;
 extern ImageData_004B2734 g_ImageData_004B2734;
 
 /* original 0x004B2CD8-0x004B2D30 */
 typedef struct ImageData_004B2CD8 {
     byte at_gap_004B2CD8[8]; /* 004B2CD8 gap */
-    dword at_g_UiNodeVtable_004B2CE0[20]; /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
+    UiNodeVtable at_g_UiNodeVtable_004B2CE0; /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
+    dword at_g_UiNodeVtable_004B2CE0_rest[2]; /* beyond the declared type */
 } ImageData_004B2CD8;
 extern ImageData_004B2CD8 g_ImageData_004B2CD8;
 
 /* original 0x004B33D0-0x004B3420 */
 typedef struct ImageData_004B33D0 {
-    dword at_g_UiTitledWindowControlVtable[20]; /* 004B33D0 g_UiTitledWindowControlVtable */
+    UiNodeVtable at_g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
+    dword at_g_UiTitledWindowControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B33D0;
 extern ImageData_004B33D0 g_ImageData_004B33D0;
 
 /* original 0x004B3760-0x004B37C0 */
 typedef struct ImageData_004B3760 {
     byte at_gap_004B3760[16]; /* 004B3760 gap */
-    dword at_g_UiImagePanelControlVtable[20]; /* 004B3770 g_UiImagePanelControlVtable */
+    UiNodeVtable at_g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
+    dword at_g_UiImagePanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B3760;
 extern ImageData_004B3760 g_ImageData_004B3760;
 
 /* original 0x004B3A48-0x004B3AA0 */
 typedef struct ImageData_004B3A48 {
     byte at_gap_004B3A48[8]; /* 004B3A48 gap */
-    dword at_g_UiFillPanelControlVtable[20]; /* 004B3A50 g_UiFillPanelControlVtable */
+    UiNodeVtable at_g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
+    dword at_g_UiFillPanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B3A48;
 extern ImageData_004B3A48 g_ImageData_004B3A48;
 
 /* original 0x004B3C1C-0x004B3C80 */
 typedef struct ImageData_004B3C1C {
     byte at_gap_004B3C1C[4]; /* 004B3C1C gap */
-    dword at_g_UiHorizontalGaugeControlVtable[18]; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
+    UiNodeVtable at_g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
     word at_g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
     dword at_g_UiWindowPercentTextUtf16_rest[3]; /* beyond the declared type */
     byte at_g_UiWindowPercentTextUtf16_rest_tail[2];
@@ -982,49 +988,56 @@ extern ImageData_004B3C1C g_ImageData_004B3C1C;
 /* original 0x004B3EEC-0x004B3F40 */
 typedef struct ImageData_004B3EEC {
     byte at_gap_004B3EEC[4]; /* 004B3EEC gap */
-    dword at_g_UiRangeSliderControlVtable[20]; /* 004B3EF0 g_UiRangeSliderControlVtable */
+    UiNodeVtable at_g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
+    dword at_g_UiRangeSliderControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B3EEC;
 extern ImageData_004B3EEC g_ImageData_004B3EEC;
 
 /* original 0x004B4648-0x004B46A0 */
 typedef struct ImageData_004B4648 {
     byte at_gap_004B4648[8]; /* 004B4648 gap */
-    dword at_g_UiLayoutContainerControlVtable[20]; /* 004B4650 g_UiLayoutContainerControlVtable */
+    UiNodeVtable at_g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
+    dword at_g_UiLayoutContainerControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B4648;
 extern ImageData_004B4648 g_ImageData_004B4648;
 
 /* original 0x004B494C-0x004B49A0 */
 typedef struct ImageData_004B494C {
     byte at_gap_004B494C[4]; /* 004B494C gap */
-    dword at_g_UiPanelControlVtable[20]; /* 004B4950 g_UiPanelControlVtable */
+    UiNodeVtable at_g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
+    dword at_g_UiPanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B494C;
 extern ImageData_004B494C g_ImageData_004B494C;
 
 /* original 0x004B4CB8-0x004B4D10 */
 typedef struct ImageData_004B4CB8 {
     byte at_gap_004B4CB8[8]; /* 004B4CB8 gap */
-    dword at_g_UiResizableWindowControlVtable[20]; /* 004B4CC0 g_UiResizableWindowControlVtable */
+    UiNodeVtable at_g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
+    dword at_g_UiResizableWindowControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B4CB8;
 extern ImageData_004B4CB8 g_ImageData_004B4CB8;
 
 /* original 0x004B5890-0x004B58F0 */
 typedef struct ImageData_004B5890 {
     byte at_gap_004B5890[16]; /* 004B5890 gap */
-    dword at_g_UiNumericTextEditControlVtable[20]; /* 004B58A0 g_UiNumericTextEditControlVtable */
+    UiNodeVtable at_g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
+    dword at_g_UiNumericTextEditControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B5890;
 extern ImageData_004B5890 g_ImageData_004B5890;
 
 /* original 0x004B67F4-0x004B6850 */
 typedef struct ImageData_004B67F4 {
     byte at_gap_004B67F4[12]; /* 004B67F4 gap */
-    dword at_g_UiPathTextEditControlVtable[20]; /* 004B6800 g_UiPathTextEditControlVtable */
+    UiNodeVtable at_g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
+    dword at_g_UiPathTextEditControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B67F4;
 extern ImageData_004B67F4 g_ImageData_004B67F4;
 
 /* original 0x004B7048-0x004B70A0 */
 typedef struct ImageData_004B7048 {
     byte at_gap_004B7048[8]; /* 004B7048 gap */
-    dword at_g_UiRequiredTextEditControlVtable[20]; /* 004B7050 g_UiRequiredTextEditControlVtable */
+    UiNodeVtable at_g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
+    dword at_g_UiRequiredTextEditControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B7048;
 extern ImageData_004B7048 g_ImageData_004B7048;
 
@@ -1038,7 +1051,8 @@ extern ImageData_004B7914 g_ImageData_004B7914;
 
 /* original 0x004B9530-0x004B9580 */
 typedef struct ImageData_004B9530 {
-    dword at_g_UiFocusProxyControlVtable[20]; /* 004B9530 g_UiFocusProxyControlVtable */
+    UiNodeVtable at_g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
+    dword at_g_UiFocusProxyControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B9530;
 extern ImageData_004B9530 g_ImageData_004B9530;
 
@@ -1074,21 +1088,24 @@ extern ImageData_004BB988 g_ImageData_004BB988;
 /* original 0x004BC404-0x004BC460 */
 typedef struct ImageData_004BC404 {
     byte at_gap_004BC404[12]; /* 004BC404 gap */
-    dword at_g_UiListOffsetControlVtable[20]; /* 004BC410 g_UiListOffsetControlVtable */
+    UiNodeVtable at_g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
+    dword at_g_UiListOffsetControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004BC404;
 extern ImageData_004BC404 g_ImageData_004BC404;
 
 /* original 0x004BC564-0x004BC5C0 */
 typedef struct ImageData_004BC564 {
     byte at_gap_004BC564[12]; /* 004BC564 gap */
-    dword at_g_UiNodeVtable_004BC570[20]; /* 004BC570 g_UiNodeVtable_004BC570 */
+    UiNodeVtable at_g_UiNodeVtable_004BC570; /* 004BC570 g_UiNodeVtable_004BC570 */
+    dword at_g_UiNodeVtable_004BC570_rest[2]; /* beyond the declared type */
 } ImageData_004BC564;
 extern ImageData_004BC564 g_ImageData_004BC564;
 
 /* original 0x004BCC20-0x004BCC80 */
 typedef struct ImageData_004BCC20 {
     byte at_gap_004BCC20[16]; /* 004BCC20 gap */
-    dword at_g_UiNineSlicePanelControlVtable[20]; /* 004BCC30 g_UiNineSlicePanelControlVtable */
+    UiNodeVtable at_g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
+    dword at_g_UiNineSlicePanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004BCC20;
 extern ImageData_004BCC20 g_ImageData_004BCC20;
 
@@ -1567,21 +1584,23 @@ extern ImageData_0051494C g_ImageData_0051494C;
 /* original 0x00514FB4-0x00515010 */
 typedef struct ImageData_00514FB4 {
     byte at_gap_00514FB4[12]; /* 00514FB4 gap */
-    dword at_g_UiImageActionControlVtable[20]; /* 00514FC0 g_UiImageActionControlVtable */
+    UiNodeVtable at_g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
+    dword at_g_UiImageActionControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_00514FB4;
 extern ImageData_00514FB4 g_ImageData_00514FB4;
 
 /* original 0x0051528C-0x005152E0 */
 typedef struct ImageData_0051528C {
     byte at_gap_0051528C[4]; /* 0051528C gap */
-    dword at_g_UiConditionalActionControlVtable[20]; /* 00515290 g_UiConditionalActionControlVtable */
+    UiNodeVtable at_g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
+    dword at_g_UiConditionalActionControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_0051528C;
 extern ImageData_0051528C g_ImageData_0051528C;
 
 /* original 0x0051560C-0x005156A0 */
 typedef struct ImageData_0051560C {
     byte at_gap_0051560C[4]; /* 0051560C gap */
-    dword at_g_UiNumericPairTextButtonVtable[18]; /* 00515610 g_UiNumericPairTextButtonVtable */
+    UiNodeVtable at_g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
     undefined at_g_UiNumericPairFirstValueScratchUtf16; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
     dword at_g_UiNumericPairFirstValueScratchUtf16_rest[7]; /* beyond the declared type */
     byte at_g_UiNumericPairFirstValueScratchUtf16_rest_tail[3];
@@ -1594,29 +1613,34 @@ extern ImageData_0051560C g_ImageData_0051560C;
 /* original 0x00515720-0x00515780 */
 typedef struct ImageData_00515720 {
     byte at_gap_00515720[16]; /* 00515720 gap */
-    dword at_g_UiPayloadPairTextButtonVtable[20]; /* 00515730 g_UiPayloadPairTextButtonVtable */
+    UiNodeVtable at_g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
+    dword at_g_UiPayloadPairTextButtonVtable_rest[2]; /* beyond the declared type */
 } ImageData_00515720;
 extern ImageData_00515720 g_ImageData_00515720;
 
 /* original 0x005157D0-0x00515830 */
 typedef struct ImageData_005157D0 {
     byte at_gap_005157D0[16]; /* 005157D0 gap */
-    dword at_g_UiFormattedContainerVtable[20]; /* 005157E0 g_UiFormattedContainerVtable */
+    UiNodeVtable at_g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
+    dword at_g_UiFormattedContainerVtable_rest[2]; /* beyond the declared type */
 } ImageData_005157D0;
 extern ImageData_005157D0 g_ImageData_005157D0;
 
 /* original 0x00515C60-0x00515CC0 */
 typedef struct ImageData_00515C60 {
     byte at_gap_00515C60[16]; /* 00515C60 gap */
-    dword at_g_UiSelectionGeometryControlVtable[20]; /* 00515C70 g_UiSelectionGeometryControlVtable */
+    UiNodeVtable at_g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
+    dword at_g_UiSelectionGeometryControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_00515C60;
 extern ImageData_00515C60 g_ImageData_00515C60;
 
 /* original 0x005162BC-0x00516360 */
 typedef struct ImageData_005162BC {
     byte at_gap_005162BC[4]; /* 005162BC gap */
-    dword at_g_UiNodeVtable_005162C0[20]; /* 005162C0 g_UiNodeVtable_005162C0 */
-    dword at_g_UiNodeVtable_00516310[20]; /* 00516310 g_UiNodeVtable_00516310 */
+    UiNodeVtable at_g_UiNodeVtable_005162C0; /* 005162C0 g_UiNodeVtable_005162C0 */
+    dword at_g_UiNodeVtable_005162C0_rest[2]; /* beyond the declared type */
+    UiNodeVtable at_g_UiNodeVtable_00516310; /* 00516310 g_UiNodeVtable_00516310 */
+    dword at_g_UiNodeVtable_00516310_rest[2]; /* beyond the declared type */
 } ImageData_005162BC;
 extern ImageData_005162BC g_ImageData_005162BC;
 
@@ -1624,14 +1648,16 @@ extern ImageData_005162BC g_ImageData_005162BC;
 typedef struct ImageData_0051650C {
     byte at_gap_0051650C[4]; /* 0051650C gap */
     word at_g_UiCatalogEntryRichTextScratchUtf16[16]; /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
-    dword at_g_UiNodeVtable_00516530[20]; /* 00516530 g_UiNodeVtable_00516530 */
+    UiNodeVtable at_g_UiNodeVtable_00516530; /* 00516530 g_UiNodeVtable_00516530 */
+    dword at_g_UiNodeVtable_00516530_rest[2]; /* beyond the declared type */
 } ImageData_0051650C;
 extern ImageData_0051650C g_ImageData_0051650C;
 
 /* original 0x00516CBC-0x00516D10 */
 typedef struct ImageData_00516CBC {
     byte at_gap_00516CBC[4]; /* 00516CBC gap */
-    dword at_g_UiArmyMetricsPanelVtable[20]; /* 00516CC0 g_UiArmyMetricsPanelVtable */
+    UiNodeVtable at_g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
+    dword at_g_UiArmyMetricsPanelVtable_rest[2]; /* beyond the declared type */
 } ImageData_00516CBC;
 extern ImageData_00516CBC g_ImageData_00516CBC;
 
@@ -1644,7 +1670,7 @@ typedef struct ImageData_00516E90 {
     undefined at_g_EndGameElapsedTimeScratchUtf16; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
     dword at_g_EndGameElapsedTimeScratchUtf16_rest[31]; /* beyond the declared type */
     byte at_g_EndGameElapsedTimeScratchUtf16_rest_tail[3];
-    dword at_g_UiNodeVtable_00516F60[18]; /* 00516F60 g_UiNodeVtable_00516F60 */
+    UiNodeVtable at_g_UiNodeVtable_00516F60; /* 00516F60 g_UiNodeVtable_00516F60 */
     int at_g_FrontendResultsColumnAdvance00Pixels; /* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
     int at_g_FrontendResultsColumnAdvance01Pixels; /* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
     int at_g_FrontendResultsColumnAdvanceColourPixels; /* 00516FB0 g_FrontendResultsColumnAdvanceColourPixels */
@@ -1680,21 +1706,24 @@ extern ImageData_00517068 g_ImageData_00517068;
 /* original 0x00517DD4-0x00517E30 */
 typedef struct ImageData_00517DD4 {
     byte at_gap_00517DD4[12]; /* 00517DD4 gap */
-    dword at_g_UiNodeVtable_00517DE0[20]; /* 00517DE0 g_UiNodeVtable_00517DE0 */
+    UiNodeVtable at_g_UiNodeVtable_00517DE0; /* 00517DE0 g_UiNodeVtable_00517DE0 */
+    dword at_g_UiNodeVtable_00517DE0_rest[2]; /* beyond the declared type */
 } ImageData_00517DD4;
 extern ImageData_00517DD4 g_ImageData_00517DD4;
 
 /* original 0x00517F00-0x00517F60 */
 typedef struct ImageData_00517F00 {
     byte at_gap_00517F00[16]; /* 00517F00 gap */
-    dword at_g_UiCommandVisibilityWrappedTextVtable[20]; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
+    UiNodeVtable at_g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
+    dword at_g_UiCommandVisibilityWrappedTextVtable_rest[2]; /* beyond the declared type */
 } ImageData_00517F00;
 extern ImageData_00517F00 g_ImageData_00517F00;
 
 /* original 0x00517FBC-0x00518010 */
 typedef struct ImageData_00517FBC {
     byte at_gap_00517FBC[4]; /* 00517FBC gap */
-    dword at_g_UiCommandVisibilitySingleLineTextVtable[20]; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
+    UiNodeVtable at_g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
+    dword at_g_UiCommandVisibilitySingleLineTextVtable_rest[2]; /* beyond the declared type */
 } ImageData_00517FBC;
 extern ImageData_00517FBC g_ImageData_00517FBC;
 
@@ -1709,7 +1738,8 @@ typedef struct ImageData_00518074 {
     dword at_DAT_00518c7c[1]; /* 00518C7C DAT_00518c7c */
     undefined8 at_g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
     dword at_g_SoftwareBlendUnityWordLanesQ14_rest[2]; /* beyond the declared type */
-    dword at_g_UiSoftwareTexturePreviewControlVtable[20]; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
+    UiNodeVtable at_g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
+    dword at_g_UiSoftwareTexturePreviewControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_00518074;
 extern ImageData_00518074 g_ImageData_00518074;
 

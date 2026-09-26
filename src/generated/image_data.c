@@ -22,6 +22,7 @@ ImageData_00401000 g_ImageData_00401000 = {
     0, /* 00402024 g_CommandLineFindOption */
     {0}, /* 00402028 g_CommandLineWideArguments */
     (void *)WideNumber_FormatUtf16, /* 00402628 g_WideNumberFormatUtf16 */
+    /* 0040262C g_WideNumberFormatState */
     {
         0x00000001, 0x00000001, 0x00000001, 0x00000001, 0x00000002, 0x00000000, 0x0000002C, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x0000002E, 0x00000000,
@@ -34,7 +35,7 @@ ImageData_00401000 g_ImageData_00401000 = {
         0x00300030, 0x00300030, 0x00300030, 0x00300030, 0x00300030, 0x00300030, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00310030, 0x00330032,
         0x00350034, 0x00370036, 0x00390038, 0x00420041, (dword)((byte *)&g_FixedSinQ28 + 0xB9A3),
-        0x00460045}, /* 0040262C g_WideNumberFormatState */
+        0x00460045},
     (void *)SpinLock_Acquire, /* 00402784 g_SpinLockAcquire */
     (void *)SpinLock_TryAcquireFlags, /* 00402788 g_SpinLockTryAcquire */
     (void *)SpinLock_Release, /* 0040278C g_SpinLockRelease */
@@ -50,8 +51,9 @@ ImageData_00401000 g_ImageData_00401000 = {
         (dword)Locale_MapTelephoneCountryCodeToRegionTagPacked},
     0, /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
     0, /* 004027B8 g_CPUDetectFeatures */
+    /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
     {
-        (dword)Utf16String_CompareAsciiCaseInsensitiveFlags}, /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
+        (dword)Utf16String_CompareAsciiCaseInsensitiveFlags},
     0, /* 004027C0 g_LocaleCountryCodeOverride */
     0, /* 004027C4 g_CpuFeatureFlags */
     {
@@ -365,6 +367,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         0x00000000, 0x0B000000, 0x0D000000, 0x04000000, 0x08000000, 0x0F000000, 0x05000000, 0x03000000,
         0x0A000000, 0x06000000, 0x02000000, 0x0E000000, 0x09000000, 0x0C000000, 0x07000000},
     {0},
+    /* 00405160 g_UiTransferCipherSubstitution */
     {
         {
             {0x2, 0x3, 0xB, 0xD, 0x8, 0x6, 0x9, 0xF, 0xC, 0xE, 0x1, 0x5, 0x7, 0, 0xA, 0x4},
@@ -501,7 +504,7 @@ ImageData_00403158 g_ImageData_00403158 = {
             {0x4, 0xB, 0x8, 0xC, 0x6, 0x1, 0xD, 0, 0x7, 0xF, 0xA, 0xE, 0x2, 0x9, 0x5, 0x3},
             {0x6, 0xD, 0x4, 0x7, 0x5, 0x8, 0xF, 0xC, 0xB, 0x9, 0x2, 0x3, 0, 0x1, 0xE, 0xA},
             {0x3, 0xB, 0xA, 0, 0x1, 0x6, 0x4, 0x5, 0x7, 0xC, 0xF, 0xE, 0xD, 0x8, 0x9, 0x2},
-            {0x1, 0, 0xB, 0x8, 0x4, 0x7, 0xA, 0xF, 0x5, 0xD, 0x9, 0x2, 0xE, 0x3, 0xC, 0x6}}}, /* 00405160 g_UiTransferCipherSubstitution */
+            {0x1, 0, 0xB, 0x8, 0x4, 0x7, 0xA, 0xF, 0x5, 0xD, 0x9, 0x2, 0xE, 0x3, 0xC, 0x6}}},
 };
 
 ImageData_00407510 g_ImageData_00407510 = {
@@ -525,11 +528,15 @@ ImageData_00407510 g_ImageData_00407510 = {
     {0x90, 0x90},
     0, /* 00407E20 g_FatalErrorUiRootTemplate */
     0, /* 00407E24 g_FatalErrorDialogDismissed */
-    {.method08 = (void *)ErrorRuntime_CallbackAlwaysFailCf, .pointerMissPolicy = (void *)ErrorRuntime_CallbackReturnCode8}, /* 00407E28 g_UiRootCallbacks_00407E28 */
+    /* 00407E28 g_UiRootCallbacks_00407E28 */
+    {
+        .method08 = (void *)ErrorRuntime_CallbackAlwaysFailCf,
+        .pointerMissPolicy = (void *)ErrorRuntime_CallbackReturnCode8},
     0xFFFFFFFF, /* 00407E3C g_FatalErrorUiRootTemplateImage */
+    /* 00407E40 DAT_00407e40 */
     {
         0x00000058, 0xFFFFFFFF, (dword)&g_UiPanelControlVtable,
-        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* 00407E40 DAT_00407e40 */
+        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
     0xFFFFFF60, /* 00407E5C g_FatalErrorRichTextLeft */
     {0},
     0xA0, /* 00407E64 g_FatalErrorRichTextRight */
@@ -667,7 +674,11 @@ ImageData_004169DC g_ImageData_004169DC = {
     {0}, /* 004171F0 g_KeyboardSpecialKeyDown */
     (void *)Keyboard_FlushEvents, /* 00417210 g_KeyboardFlushEvents */
     (void *)Keyboard_ReadNextEventRegs, /* 00417214 g_KeyboardReadEvent */
-    {.compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags, .toUpper = (void *)Keyboard_ToUpperAscii, .toLower = (void *)Keyboard_ToLowerAscii}, /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
+    /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
+    {
+        .compareCaseInsensitiveFlags = (void *)Keyboard_CompareAsciiCaseInsensitiveFlags,
+        .toUpper = (void *)Keyboard_ToUpperAscii,
+        .toLower = (void *)Keyboard_ToLowerAscii},
     {
         0x90909090, 0x90909090, 0x90909090},
 };
@@ -746,119 +757,139 @@ ImageData_0041A740 g_ImageData_0041A740 = {
     L"error: TXT2STR: unknown character at:                        ", /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
     {0}, /* 0041B028 g_FontTextureSources */
     L"engine\\font.gfx", /* 0041B030 u_engine_font_gfx_0041b030 */
+    /* 0041B050 str_0041B050 */
     {
         0x006E0065, 0x00690067, 0x0065006E, 0x0066005C, 0x006E006F, 0x006B0074, 0x0067002E, 0x00780066,
-        0x90900000, 0x90909090, 0x90909090, 0x90909090}, /* 0041B050 str_0041B050 */
+        0x90900000, 0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_0041B128 g_ImageData_0041B128 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B128 gap */
+    /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130 */
     {
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B1C0, 0x0041B110,
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110,
-        0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110}, /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130 */
+        0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110},
+    /* 0041B180 g_SoundDispatchTable_0041B180 */
     {
-        0x0041B1B0, 0x0041B1B0, 0x0041B1B0, 0x0041B110}, /* 0041B180 g_SoundDispatchTable_0041B180 */
+        0x0041B1B0, 0x0041B1B0, 0x0041B1B0, 0x0041B110},
+    /* 0041B190 g_SoundDispatchTable_0041B190 */
     {
-        0x0041B1E0, 0x0041B1E0, 0x0041B1D0, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110}, /* 0041B190 g_SoundDispatchTable_0041B190 */
+        0x0041B1E0, 0x0041B1E0, 0x0041B1D0, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110},
 };
 
 ImageData_0041B228 g_ImageData_0041B228 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B228 gap */
+    /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230 */
     {
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B2D0, 0x0041B210,
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210,
-        0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210}, /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230 */
+        0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210},
+    /* 0041B280 g_SoundDispatchTable_0041B280 */
     {
-        0x0041B2B0, 0x0041B2B0, 0x0041B2B0, 0x0041B210}, /* 0041B280 g_SoundDispatchTable_0041B280 */
+        0x0041B2B0, 0x0041B2B0, 0x0041B2B0, 0x0041B210},
+    /* 0041B290 g_SoundDispatchTable_0041B290 */
     {
-        0x0041B2C0, 0x0041B2C0, 0x0041B2E0, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210}, /* 0041B290 g_SoundDispatchTable_0041B290 */
+        0x0041B2C0, 0x0041B2C0, 0x0041B2E0, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210},
 };
 
 ImageData_0041B338 g_ImageData_0041B338 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B338 gap */
+    /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340 */
     {
         0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B3E0, 0x0041B320,
         0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320,
         0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B3F0, 0x0041B3F0, 0x0041B3F0, 0x0041B320,
         0x0041B3D0, 0x0041B3D0, 0x0041B3D0, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320, 0x0041B320,
-        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090}, /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340 */
+        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
 ImageData_0041B448 g_ImageData_0041B448 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B448 gap */
+    /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450 */
     {
         0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B4E0, 0x0041B430,
         0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430,
         0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B4D0, 0x0041B4D0, 0x0041B4D0, 0x0041B430,
-        0x0041B500, 0x0041B500, 0x0041B4F0, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430}, /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450 */
+        0x0041B500, 0x0041B500, 0x0041B4F0, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430, 0x0041B430},
 };
 
 ImageData_0041B548 g_ImageData_0041B548 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B548 gap */
+    /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550 */
     {
         0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B5F0, 0x0041B530,
         0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530,
         0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B5D0, 0x0041B5D0, 0x0041B5D0, 0x0041B530,
-        0x0041B5E0, 0x0041B5E0, 0x0041B600, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530}, /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550 */
+        0x0041B5E0, 0x0041B5E0, 0x0041B600, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530, 0x0041B530},
 };
 
 ImageData_0041B648 g_ImageData_0041B648 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B648 gap */
+    /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650 */
     {
         0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B6F0, 0x0041B630,
         0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630,
         0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B700, 0x0041B700, 0x0041B700, 0x0041B630,
         0x0041B6E0, 0x0041B6E0, 0x0041B6E0, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630, 0x0041B630,
-        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090}, /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650 */
+        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
 ImageData_0041B758 g_ImageData_0041B758 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B758 gap */
+    /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760 */
     {
         0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B800, 0x0041B740,
         0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740,
         0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B810, 0x0041B810, 0x0041B810, 0x0041B740,
         0x0041B7F0, 0x0041B7F0, 0x0041B7F0, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740, 0x0041B740,
-        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090}, /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760 */
+        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
 ImageData_0041B868 g_ImageData_0041B868 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B868 gap */
+    /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870 */
     {
         0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B910, 0x0041B850,
         0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850,
         0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B920, 0x0041B920, 0x0041B920, 0x0041B850,
         0x0041B900, 0x0041B900, 0x0041B900, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850, 0x0041B850,
-        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090}, /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870 */
+        0xE904C683, 0xFFFFFF58, 0x90909090, 0x90909090},
 };
 
 ImageData_0041B9C8 g_ImageData_0041B9C8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041B9C8 gap */
+    /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0 */
     {
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041BA50, 0x0041B970,
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970,
-        0x0041BA90, 0x0041B970, 0x0041BA7A, 0x0041B970}, /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0 */
+        0x0041BA90, 0x0041B970, 0x0041BA7A, 0x0041B970},
+    /* 0041BA20 g_SoundDispatchTable_0041BA20 */
     {
-        0x0041BA58, 0x0041BA58, 0x0041BA58, 0x0041B970}, /* 0041BA20 g_SoundDispatchTable_0041BA20 */
+        0x0041BA58, 0x0041BA58, 0x0041BA58, 0x0041B970},
+    /* 0041BA30 g_SoundDispatchTable_0041BA30 */
     {
-        0x0041BA68, 0x0041BA73, 0x0041BA60, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970}, /* 0041BA30 g_SoundDispatchTable_0041BA30 */
+        0x0041BA68, 0x0041BA73, 0x0041BA60, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970},
 };
 
 ImageData_0041BB78 g_ImageData_0041BB78 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041BB78 gap */
+    /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80 */
     {
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BC00, 0x0041BB20,
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20,
-        0x0041BC40, 0x0041BB20, 0x0041BC2A, 0x0041BB20}, /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80 */
+        0x0041BC40, 0x0041BB20, 0x0041BC2A, 0x0041BB20},
+    /* 0041BBD0 g_SoundDispatchTable_0041BBD0 */
     {
-        0x0041BC08, 0x0041BC08, 0x0041BC08, 0x0041BB20}, /* 0041BBD0 g_SoundDispatchTable_0041BBD0 */
+        0x0041BC08, 0x0041BC08, 0x0041BC08, 0x0041BB20},
+    /* 0041BBE0 g_SoundDispatchTable_0041BBE0 */
     {
-        0x0041BC18, 0x0041BC23, 0x0041BC10, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20}, /* 0041BBE0 g_SoundDispatchTable_0041BBE0 */
+        0x0041BC18, 0x0041BC23, 0x0041BC10, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20},
 };
 
 ImageData_0041BCEC g_ImageData_0041BCEC = {
     {0x90, 0x90, 0x90, 0x90}, /* 0041BCEC gap */
+    /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0 */
     {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041BCE0, 0x0041BCE0, 0x0041C593, 0x0041C593, 0x0041C0F0, 0x0041C593, 0x0041C593,
@@ -891,21 +922,24 @@ ImageData_0041BCEC g_ImageData_0041BCEC = {
         0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120,
         0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120,
         0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120,
-        0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120}, /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0 */
+        0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120, 0x0041C120},
 };
 
 ImageData_0041C15C g_ImageData_0041C15C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0041C15C gap */
+    /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160 */
     {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C580, 0x0041C593, 0x0041C593, 0x0041C580, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C600, 0x0041C593, 0x0041C120, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
-        0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C560, 0x0041C6E0, 0x0041C593}, /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160 */
+        0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C560, 0x0041C6E0, 0x0041C593},
+    /* 0041C220 g_SoundDispatchTable_0041C220 */
     {
         0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620,
-        0x0041C620, 0x0041C620, 0x0041C593, 0x0041C593, 0x0041C670, 0x0041C593, 0x0041C690, 0x0041C593}, /* 0041C220 g_SoundDispatchTable_0041C220 */
+        0x0041C620, 0x0041C620, 0x0041C593, 0x0041C593, 0x0041C670, 0x0041C593, 0x0041C690, 0x0041C593},
+    /* 0041C260 g_SoundDispatchTable_0041C260 */
     {
         0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610,
         0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610,
@@ -930,16 +964,17 @@ ImageData_0041C15C g_ImageData_0041C15C = {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
-        0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593}, /* 0041C260 g_SoundDispatchTable_0041C260 */
+        0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593},
 };
 
 ImageData_0041C94C g_ImageData_0041C94C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041C94C gap */
+    /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950 */
     {
         0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9E9, 0x0041C9D0,
         0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0,
         0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041CA05, 0x0041CA05, 0x0041CA05, 0x0041C9D0,
-        0x0041CA3D, 0x0041CA48, 0x0041CA21, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0}, /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950 */
+        0x0041CA3D, 0x0041CA48, 0x0041CA21, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0, 0x0041C9D0},
 };
 
 ImageData_0041CAFC g_ImageData_0041CAFC = {
@@ -948,27 +983,34 @@ ImageData_0041CAFC g_ImageData_0041CAFC = {
 
 ImageData_0041CB68 g_ImageData_0041CB68 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041CB68 gap */
+    /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70 */
     {
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CC00, 0x0041CB50,
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50,
-        0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50}, /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70 */
+        0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50},
+    /* 0041CBC0 g_SoundDispatchTable_0041CBC0 */
     {
-        0x0041CBF0, 0x0041CBF0, 0x0041CBF0, 0x0041CB50}, /* 0041CBC0 g_SoundDispatchTable_0041CBC0 */
+        0x0041CBF0, 0x0041CBF0, 0x0041CBF0, 0x0041CB50},
+    /* 0041CBD0 g_SoundDispatchTable_0041CBD0 */
     {
-        0x0041CC50, 0x0041CC50, 0x0041CC10, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50}, /* 0041CBD0 g_SoundDispatchTable_0041CBD0 */
+        0x0041CC50, 0x0041CC50, 0x0041CC10, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50},
 };
 
 ImageData_0041CF7C g_ImageData_0041CF7C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041CF7C gap */
+    /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80 */
     {
-        0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041D010, 0x0041CF60}, /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80 */
+        0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041D010, 0x0041CF60},
+    /* 0041CFA0 g_SoundDispatchTable_0041CFA0 */
     {
         0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050,
-        0x0041D020, 0x0041CF60, 0x0041D0A0, 0x0041CF60}, /* 0041CFA0 g_SoundDispatchTable_0041CFA0 */
+        0x0041D020, 0x0041CF60, 0x0041D0A0, 0x0041CF60},
+    /* 0041CFD0 g_SoundDispatchTable_0041CFD0 */
     {
-        0x0041D000, 0x0041D000, 0x0041D000, 0x0041CF60}, /* 0041CFD0 g_SoundDispatchTable_0041CFD0 */
+        0x0041D000, 0x0041D000, 0x0041D000, 0x0041CF60},
+    /* 0041CFE0 g_SoundDispatchTable_0041CFE0 */
     {
-        0x0041D090, 0x0041D080, 0x0041D060, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60}, /* 0041CFE0 g_SoundDispatchTable_0041CFE0 */
+        0x0041D090, 0x0041D080, 0x0041D060, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60},
 };
 
 ImageData_0041D07C g_ImageData_0041D07C = {
@@ -977,25 +1019,31 @@ ImageData_0041D07C g_ImageData_0041D07C = {
 
 ImageData_0041D144 g_ImageData_0041D144 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D144 gap */
+    /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150 */
     {
-        0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D1D0, 0x0041D120}, /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150 */
+        0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D1D0, 0x0041D120},
+    /* 0041D170 g_SoundDispatchTable_0041D170 */
     {
         0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210,
         0x0041D1E0, 0x0041D240, 0x0041D280, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120,
-        0x0041D120, 0x0041D120, 0x0041D220, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120}, /* 0041D170 g_SoundDispatchTable_0041D170 */
+        0x0041D120, 0x0041D120, 0x0041D220, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120},
 };
 
 ImageData_0041D53C g_ImageData_0041D53C = {
     {0x00, 0x00, 0x90, 0x90}, /* 0041D53C gap */
+    /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540 */
     {
-        0x0041D5D0, 0x0041D5F0, 0x0041D610, 0x0041D630, 0x0041D650, 0x0041D670, 0x0041D690, 0x0041D520}, /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540 */
+        0x0041D5D0, 0x0041D5F0, 0x0041D610, 0x0041D630, 0x0041D650, 0x0041D670, 0x0041D690, 0x0041D520},
+    /* 0041D560 g_SoundDispatchTable_0041D560 */
     {
         0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0,
-        0x0041D6F0, 0x0041D520, 0x0041D780, 0x0041D520}, /* 0041D560 g_SoundDispatchTable_0041D560 */
+        0x0041D6F0, 0x0041D520, 0x0041D780, 0x0041D520},
+    /* 0041D590 g_SoundDispatchTable_0041D590 */
     {
-        0x0041D5C0, 0x0041D5C0, 0x0041D5C0, 0x0041D520}, /* 0041D590 g_SoundDispatchTable_0041D590 */
+        0x0041D5C0, 0x0041D5C0, 0x0041D5C0, 0x0041D520},
+    /* 0041D5A0 g_SoundDispatchTable_0041D5A0 */
     {
-        0x0041D770, 0x0041D760, 0x0041D720, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520}, /* 0041D5A0 g_SoundDispatchTable_0041D5A0 */
+        0x0041D770, 0x0041D760, 0x0041D720, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520},
 };
 
 ImageData_0041D75C g_ImageData_0041D75C = {
@@ -1004,30 +1052,34 @@ ImageData_0041D75C g_ImageData_0041D75C = {
 
 ImageData_0041D880 g_ImageData_0041D880 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041D880 gap */
+    /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890 */
     {
-        0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D910, 0x0041D860}, /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890 */
+        0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D910, 0x0041D860},
+    /* 0041D8B0 g_SoundDispatchTable_0041D8B0 */
     {
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950,
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860,
-        0x0041D9A0, 0x0041D9B0, 0x0041D970, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860}, /* 0041D8B0 g_SoundDispatchTable_0041D8B0 */
+        0x0041D9A0, 0x0041D9B0, 0x0041D970, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860},
 };
 
 ImageData_0041DA44 g_ImageData_0041DA44 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DA44 gap */
+    /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50 */
     {
         0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DAD0, 0x0041DA20,
         0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10, 0x0041DB10,
         0x0041DAE0, 0x0041DB40, 0x0041DB80, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20,
-        0x0041DA20, 0x0041DA20, 0x0041DB20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20}, /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50 */
+        0x0041DA20, 0x0041DA20, 0x0041DB20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20, 0x0041DA20},
 };
 
 ImageData_0041DBD4 g_ImageData_0041DBD4 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0041DBD4 gap */
+    /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0 */
     {
         0x0041DC60, 0x0041DC80, 0x0041DCA0, 0x0041DCC0, 0x0041DCE0, 0x0041DD00, 0x0041DD20, 0x0041DBB0,
         0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70, 0x0041DD70,
         0x0041DD80, 0x0041DE10, 0x0041DE40, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0,
-        0x0041DBB0, 0x0041DBB0, 0x0041DDC0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0}, /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0 */
+        0x0041DBB0, 0x0041DBB0, 0x0041DDC0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0, 0x0041DBB0},
 };
 
 ImageData_0041DDFC g_ImageData_0041DDFC = {
@@ -1067,11 +1119,13 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         0x86068606, 0x96100006, 0x96069606, 0xA6100006, 0xA606A606, 0xB6100006, 0xB606B606, 0xC6100006,
         0xC606C606, 0xD6100006, 0xD606D606, 0xE6100006, 0xE606E606, 0xF6100006, 0xF606F606},
     {0x06, 0x00, 0x10},
+    /* 0041E200 DAT_0041e200 */
     {
         0x07070707, 0x10000707, 0x07170717, 0x10000717, 0x07270727, 0x10000727, 0x07370737, 0x10000737,
         0x07470747, 0x10000747, 0x07570757, 0x10000757, 0x07670767, 0x10000767, 0x07770777, 0x10000777,
         0x07870787, 0x10000787, 0x07970797, 0x10000797, 0x07A707A7, 0x100007A7, 0x07B707B7, 0x100007B7,
-        0x07C707C7, 0x100007C7, 0x07D707D7, 0x100007D7, 0x07E707E7, 0x100007E7, 0x07F707F7, 0x100007F7}, /* 0041E200 DAT_0041e200 */
+        0x07C707C7, 0x100007C7, 0x07D707D7, 0x100007D7, 0x07E707E7, 0x100007E7, 0x07F707F7, 0x100007F7},
+    /* 0041E280 DAT_0041e280 */
     {
         0x08080808, 0x10000808, 0x08180818, 0x10000818, 0x08280828, 0x10000828, 0x08380838, 0x10000838,
         0x08480848, 0x10000848, 0x08580858, 0x10000858, 0x08680868, 0x10000868, 0x08780878, 0x10000878,
@@ -1088,12 +1142,14 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         0x0B0B0B0B, 0x10000B0B, 0x0B1B0B1B, 0x10000B1B, 0x0B2B0B2B, 0x10000B2B, 0x0B3B0B3B, 0x10000B3B,
         0x0B4B0B4B, 0x10000B4B, 0x0B5B0B5B, 0x10000B5B, 0x0B6B0B6B, 0x10000B6B, 0x0B7B0B7B, 0x10000B7B,
         0x0B8B0B8B, 0x10000B8B, 0x0B9B0B9B, 0x10000B9B, 0x0BAB0BAB, 0x10000BAB, 0x0BBB0BBB, 0x10000BBB,
-        0x0BCB0BCB, 0x10000BCB, 0x0BDB0BDB, 0x10000BDB, 0x0BEB0BEB, 0x10000BEB}, /* 0041E280 DAT_0041e280 */
+        0x0BCB0BCB, 0x10000BCB, 0x0BDB0BDB, 0x10000BDB, 0x0BEB0BEB, 0x10000BEB},
+    /* 0041E478 DAT_0041e478 */
     {
         0x0BFB0BFB, 0x10000BFB, 0x0C0C0C0C, 0x10000C0C, 0x0C1C0C1C, 0x10000C1C, 0x0C2C0C2C, 0x10000C2C,
         0x0C3C0C3C, 0x10000C3C, 0x0C4C0C4C, 0x10000C4C, 0x0C5C0C5C, 0x10000C5C, 0x0C6C0C6C, 0x10000C6C,
         0x0C7C0C7C, 0x10000C7C, 0x0C8C0C8C, 0x10000C8C, 0x0C9C0C9C, 0x10000C9C, 0x0CAC0CAC, 0x10000CAC,
-        0x0CBC0CBC, 0x10000CBC, 0x0CCC0CCC, 0x10000CCC, 0x0CDC0CDC, 0x10000CDC, 0x0CEC0CEC, 0x10000CEC}, /* 0041E478 DAT_0041e478 */
+        0x0CBC0CBC, 0x10000CBC, 0x0CCC0CCC, 0x10000CCC, 0x0CDC0CDC, 0x10000CDC, 0x0CEC0CEC, 0x10000CEC},
+    /* 0041E4F8 DAT_0041e4f8 */
     {
         0x0CFC0CFC, 0x10000CFC, 0x0D0D0D0D, 0x10000D0D, 0x0D1D0D1D, 0x10000D1D, 0x0D2D0D2D, 0x10000D2D,
         0x0D3D0D3D, 0x10000D3D, 0x0D4D0D4D, 0x10000D4D, 0x0D5D0D5D, 0x10000D5D, 0x0D6D0D6D, 0x10000D6D,
@@ -1171,7 +1227,7 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000,
         0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000,
         0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000, 0x10001000,
-        0x10001000, 0x10001000}, /* 0041E4F8 DAT_0041e4f8 */
+        0x10001000, 0x10001000},
     {{0}, {.alpha = 0x10}, {.alpha = 0x20}, {.alpha = 0x30}, {.alpha = 0x40}, {.alpha = 0x50}, {.alpha = 0x60}, {.alpha = 0x70}, {.alpha = 0x80}, {.alpha = 0x90}, {.alpha = 0xA0}, {.alpha = 0xB0}, {.alpha = 0xC0}, {.alpha = 0xD0}, {.alpha = 0xE0}, {.alpha = 0xF0}, {.alpha = 0x101}, {.alpha = 0x111}, {.alpha = 0x121}, {.alpha = 0x131}, {.alpha = 0x141}, {.alpha = 0x151}, {.alpha = 0x161}, {.alpha = 0x171}, {.alpha = 0x181}, {.alpha = 0x191}, {.alpha = 0x1A1}, {.alpha = 0x1B1}, {.alpha = 0x1C1}, {.alpha = 0x1D1}, {.alpha = 0x1E1}, {.alpha = 0x1F1}, {.alpha = 0x202}, {.alpha = 0x212}, {.alpha = 0x222}, {.alpha = 0x232}, {.alpha = 0x242}, {.alpha = 0x252}, {.alpha = 0x262}, {.alpha = 0x272}, {.alpha = 0x282}, {.alpha = 0x292}, {.alpha = 0x2A2}, {.alpha = 0x2B2}, {.alpha = 0x2C2}, {.alpha = 0x2D2}, {.alpha = 0x2E2}, {.alpha = 0x2F2}, {.alpha = 0x303}, {.alpha = 0x313}, {.alpha = 0x323}, {.alpha = 0x333}, {.alpha = 0x343}, {.alpha = 0x353}, {.alpha = 0x363}, {.alpha = 0x373}, {.alpha = 0x383}, {.alpha = 0x393}, {.alpha = 0x3A3}, {.alpha = 0x3B3}, {.alpha = 0x3C3}, {.alpha = 0x3D3}, {.alpha = 0x3E3}, {.alpha = 0x3F3}, {.alpha = 0x404}, {.alpha = 0x414}, {.alpha = 0x424}, {.alpha = 0x434}, {.alpha = 0x444}, {.alpha = 0x454}, {.alpha = 0x464}, {.alpha = 0x474}, {.alpha = 0x484}, {.alpha = 0x494}, {.alpha = 0x4A4}, {.alpha = 0x4B4}, {.alpha = 0x4C4}, {.alpha = 0x4D4}, {.alpha = 0x4E4}, {.alpha = 0x4F4}, {.alpha = 0x505}, {.alpha = 0x515}, {.alpha = 0x525}, {.alpha = 0x535}, {.alpha = 0x545}, {.alpha = 0x555}, {.alpha = 0x565}, {.alpha = 0x575}, {.alpha = 0x585}, {.alpha = 0x595}, {.alpha = 0x5A5}, {.alpha = 0x5B5}, {.alpha = 0x5C5}, {.alpha = 0x5D5}, {.alpha = 0x5E5}, {.alpha = 0x5F5}, {.alpha = 0x606}, {.alpha = 0x616}, {.alpha = 0x626}, {.alpha = 0x636}, {.alpha = 0x646}, {.alpha = 0x656}, {.alpha = 0x666}, {.alpha = 0x676}, {.alpha = 0x686}, {.alpha = 0x696}, {.alpha = 0x6A6}, {.alpha = 0x6B6}, {.alpha = 0x6C6}, {.alpha = 0x6D6}, {.alpha = 0x6E6}, {.alpha = 0x6F6}, {.alpha = 0x707}, {.alpha = 0x717}, {.alpha = 0x727}, {.alpha = 0x737}, {.alpha = 0x747}, {.alpha = 0x757}, {.alpha = 0x767}, {.alpha = 0x777}, {.alpha = 0x787}, {.alpha = 0x797}, {.alpha = 0x7A7}, {.alpha = 0x7B7}, {.alpha = 0x7C7}, {.alpha = 0x7D7}, {.alpha = 0x7E7}, {.alpha = 0x7F7}, {.alpha = 0x808}, {.alpha = 0x818}, {.alpha = 0x828}, {.alpha = 0x838}, {.alpha = 0x848}, {.alpha = 0x858}, {.alpha = 0x868}, {.alpha = 0x878}, {.alpha = 0x888}, {.alpha = 0x898}, {.alpha = 0x8A8}, {.alpha = 0x8B8}, {.alpha = 0x8C8}, {.alpha = 0x8D8}, {.alpha = 0x8E8}, {.alpha = 0x8F8}, {.alpha = 0x909}, {.alpha = 0x919}, {.alpha = 0x929}, {.alpha = 0x939}, {.alpha = 0x949}, {.alpha = 0x959}, {.alpha = 0x969}, {.alpha = 0x979}, {.alpha = 0x989}, {.alpha = 0x999}, {.alpha = 0x9A9}, {.alpha = 0x9B9}, {.alpha = 0x9C9}, {.alpha = 0x9D9}, {.alpha = 0x9E9}, {.alpha = 0x9F9}, {.alpha = 0xA0A}, {.alpha = 0xA1A}, {.alpha = 0xA2A}, {.alpha = 0xA3A}, {.alpha = 0xA4A}, {.alpha = 0xA5A}, {.alpha = 0xA6A}, {.alpha = 0xA7A}, {.alpha = 0xA8A}, {.alpha = 0xA9A}, {.alpha = 0xAAA}, {.alpha = 0xABA}, {.alpha = 0xACA}, {.alpha = 0xADA}, {.alpha = 0xAEA}, {.alpha = 0xAFA}, {.alpha = 0xB0B}, {.alpha = 0xB1B}, {.alpha = 0xB2B}, {.alpha = 0xB3B}, {.alpha = 0xB4B}, {.alpha = 0xB5B}, {.alpha = 0xB6B}, {.alpha = 0xB7B}, {.alpha = 0xB8B}, {.alpha = 0xB9B}, {.alpha = 0xBAB}, {.alpha = 0xBBB}, {.alpha = 0xBCB}, {.alpha = 0xBDB}, {.alpha = 0xBEB}, {.alpha = 0xBFB}, {.alpha = 0xC0C}, {.alpha = 0xC1C}, {.alpha = 0xC2C}, {.alpha = 0xC3C}, {.alpha = 0xC4C}, {.alpha = 0xC5C}, {.alpha = 0xC6C}, {.alpha = 0xC7C}, {.alpha = 0xC8C}, {.alpha = 0xC9C}, {.alpha = 0xCAC}, {.alpha = 0xCBC}, {.alpha = 0xCCC}, {.alpha = 0xCDC}, {.alpha = 0xCEC}, {.alpha = 0xCFC}, {.alpha = 0xD0D}, {.alpha = 0xD1D}, {.alpha = 0xD2D}, {.alpha = 0xD3D}, {.alpha = 0xD4D}, {.alpha = 0xD5D}, {.alpha = 0xD6D}, {.alpha = 0xD7D}, {.alpha = 0xD8D}, {.alpha = 0xD9D}, {.alpha = 0xDAD}, {.alpha = 0xDBD}, {.alpha = 0xDCD}, {.alpha = 0xDDD}, {.alpha = 0xDED}, {.alpha = 0xDFD}, {.alpha = 0xE0E}, {.alpha = 0xE1E}, {.alpha = 0xE2E}, {.alpha = 0xE3E}, {.alpha = 0xE4E}, {.alpha = 0xE5E}, {.alpha = 0xE6E}, {.alpha = 0xE7E}, {.alpha = 0xE8E}, {.alpha = 0xE9E}, {.alpha = 0xEAE}, {.alpha = 0xEBE}, {.alpha = 0xECE}, {.alpha = 0xEDE}, {.alpha = 0xEEE}, {.alpha = 0xEFE}, {.alpha = 0xF0F}, {.alpha = 0xF1F}, {.alpha = 0xF2F}, {.alpha = 0xF3F}, {.alpha = 0xF4F}, {.alpha = 0xF5F}, {.alpha = 0xF6F}, {.alpha = 0xF7F}, {.alpha = 0xF8F}, {.alpha = 0xF9F}, {.alpha = 0xFAF}, {.alpha = 0xFBF}, {.alpha = 0xFCF}, {.alpha = 0xFDF}, {.alpha = 0xFEF}, {.alpha = 0xFFF}}, /* 0041EE80 g_ShadingIntensityScaleMmx */
     0x1ull, /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
     0xFFFFFFFFull, /* 0041F688 g_SoftwareBilinearPackedByteClampMask */
@@ -1196,25 +1252,26 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
     {{.blue = 0x4040, .green = 0x4040, .red = 0x4040, .alpha = 0x4040}, {.blue = 0x3FFF, .green = 0x3FFF, .red = 0x3FFF, .alpha = 0x3FFF}, {.blue = 0x3FBF, .green = 0x3FBF, .red = 0x3FBF, .alpha = 0x3FBF}, {.blue = 0x3F7F, .green = 0x3F7F, .red = 0x3F7F, .alpha = 0x3F7F}, {.blue = 0x3F3F, .green = 0x3F3F, .red = 0x3F3F, .alpha = 0x3F3F}, {.blue = 0x3EFE, .green = 0x3EFE, .red = 0x3EFE, .alpha = 0x3EFE}, {.blue = 0x3EBE, .green = 0x3EBE, .red = 0x3EBE, .alpha = 0x3EBE}, {.blue = 0x3E7E, .green = 0x3E7E, .red = 0x3E7E, .alpha = 0x3E7E}, {.blue = 0x3E3E, .green = 0x3E3E, .red = 0x3E3E, .alpha = 0x3E3E}, {.blue = 0x3DFD, .green = 0x3DFD, .red = 0x3DFD, .alpha = 0x3DFD}, {.blue = 0x3DBD, .green = 0x3DBD, .red = 0x3DBD, .alpha = 0x3DBD}, {.blue = 0x3D7D, .green = 0x3D7D, .red = 0x3D7D, .alpha = 0x3D7D}, {.blue = 0x3D3D, .green = 0x3D3D, .red = 0x3D3D, .alpha = 0x3D3D}, {.blue = 0x3CFC, .green = 0x3CFC, .red = 0x3CFC, .alpha = 0x3CFC}, {.blue = 0x3CBC, .green = 0x3CBC, .red = 0x3CBC, .alpha = 0x3CBC}, {.blue = 0x3C7C, .green = 0x3C7C, .red = 0x3C7C, .alpha = 0x3C7C}, {.blue = 0x3C3C, .green = 0x3C3C, .red = 0x3C3C, .alpha = 0x3C3C}, {.blue = 0x3BFB, .green = 0x3BFB, .red = 0x3BFB, .alpha = 0x3BFB}, {.blue = 0x3BBB, .green = 0x3BBB, .red = 0x3BBB, .alpha = 0x3BBB}, {.blue = 0x3B7B, .green = 0x3B7B, .red = 0x3B7B, .alpha = 0x3B7B}, {.blue = 0x3B3B, .green = 0x3B3B, .red = 0x3B3B, .alpha = 0x3B3B}, {.blue = 0x3AFA, .green = 0x3AFA, .red = 0x3AFA, .alpha = 0x3AFA}, {.blue = 0x3ABA, .green = 0x3ABA, .red = 0x3ABA, .alpha = 0x3ABA}, {.blue = 0x3A7A, .green = 0x3A7A, .red = 0x3A7A, .alpha = 0x3A7A}, {.blue = 0x3A3A, .green = 0x3A3A, .red = 0x3A3A, .alpha = 0x3A3A}, {.blue = 0x39F9, .green = 0x39F9, .red = 0x39F9, .alpha = 0x39F9}, {.blue = 0x39B9, .green = 0x39B9, .red = 0x39B9, .alpha = 0x39B9}, {.blue = 0x3979, .green = 0x3979, .red = 0x3979, .alpha = 0x3979}, {.blue = 0x3939, .green = 0x3939, .red = 0x3939, .alpha = 0x3939}, {.blue = 0x38F8, .green = 0x38F8, .red = 0x38F8, .alpha = 0x38F8}, {.blue = 0x38B8, .green = 0x38B8, .red = 0x38B8, .alpha = 0x38B8}, {.blue = 0x3878, .green = 0x3878, .red = 0x3878, .alpha = 0x3878}, {.blue = 0x3838, .green = 0x3838, .red = 0x3838, .alpha = 0x3838}, {.blue = 0x37F7, .green = 0x37F7, .red = 0x37F7, .alpha = 0x37F7}, {.blue = 0x37B7, .green = 0x37B7, .red = 0x37B7, .alpha = 0x37B7}, {.blue = 0x3777, .green = 0x3777, .red = 0x3777, .alpha = 0x3777}, {.blue = 0x3737, .green = 0x3737, .red = 0x3737, .alpha = 0x3737}, {.blue = 0x36F6, .green = 0x36F6, .red = 0x36F6, .alpha = 0x36F6}, {.blue = 0x36B6, .green = 0x36B6, .red = 0x36B6, .alpha = 0x36B6}, {.blue = 0x3676, .green = 0x3676, .red = 0x3676, .alpha = 0x3676}, {.blue = 0x3636, .green = 0x3636, .red = 0x3636, .alpha = 0x3636}, {.blue = 0x35F5, .green = 0x35F5, .red = 0x35F5, .alpha = 0x35F5}, {.blue = 0x35B5, .green = 0x35B5, .red = 0x35B5, .alpha = 0x35B5}, {.blue = 0x3575, .green = 0x3575, .red = 0x3575, .alpha = 0x3575}, {.blue = 0x3535, .green = 0x3535, .red = 0x3535, .alpha = 0x3535}, {.blue = 0x34F4, .green = 0x34F4, .red = 0x34F4, .alpha = 0x34F4}, {.blue = 0x34B4, .green = 0x34B4, .red = 0x34B4, .alpha = 0x34B4}, {.blue = 0x3474, .green = 0x3474, .red = 0x3474, .alpha = 0x3474}, {.blue = 0x3434, .green = 0x3434, .red = 0x3434, .alpha = 0x3434}, {.blue = 0x33F3, .green = 0x33F3, .red = 0x33F3, .alpha = 0x33F3}, {.blue = 0x33B3, .green = 0x33B3, .red = 0x33B3, .alpha = 0x33B3}, {.blue = 0x3373, .green = 0x3373, .red = 0x3373, .alpha = 0x3373}, {.blue = 0x3333, .green = 0x3333, .red = 0x3333, .alpha = 0x3333}, {.blue = 0x32F2, .green = 0x32F2, .red = 0x32F2, .alpha = 0x32F2}, {.blue = 0x32B2, .green = 0x32B2, .red = 0x32B2, .alpha = 0x32B2}, {.blue = 0x3272, .green = 0x3272, .red = 0x3272, .alpha = 0x3272}, {.blue = 0x3232, .green = 0x3232, .red = 0x3232, .alpha = 0x3232}, {.blue = 0x31F1, .green = 0x31F1, .red = 0x31F1, .alpha = 0x31F1}, {.blue = 0x31B1, .green = 0x31B1, .red = 0x31B1, .alpha = 0x31B1}, {.blue = 0x3171, .green = 0x3171, .red = 0x3171, .alpha = 0x3171}, {.blue = 0x3131, .green = 0x3131, .red = 0x3131, .alpha = 0x3131}, {.blue = 0x30F0, .green = 0x30F0, .red = 0x30F0, .alpha = 0x30F0}, {.blue = 0x30B0, .green = 0x30B0, .red = 0x30B0, .alpha = 0x30B0}, {.blue = 0x3070, .green = 0x3070, .red = 0x3070, .alpha = 0x3070}, {.blue = 0x3030, .green = 0x3030, .red = 0x3030, .alpha = 0x3030}, {.blue = 0x2FEF, .green = 0x2FEF, .red = 0x2FEF, .alpha = 0x2FEF}, {.blue = 0x2FAF, .green = 0x2FAF, .red = 0x2FAF, .alpha = 0x2FAF}, {.blue = 0x2F6F, .green = 0x2F6F, .red = 0x2F6F, .alpha = 0x2F6F}, {.blue = 0x2F2F, .green = 0x2F2F, .red = 0x2F2F, .alpha = 0x2F2F}, {.blue = 0x2EEE, .green = 0x2EEE, .red = 0x2EEE, .alpha = 0x2EEE}, {.blue = 0x2EAE, .green = 0x2EAE, .red = 0x2EAE, .alpha = 0x2EAE}, {.blue = 0x2E6E, .green = 0x2E6E, .red = 0x2E6E, .alpha = 0x2E6E}, {.blue = 0x2E2E, .green = 0x2E2E, .red = 0x2E2E, .alpha = 0x2E2E}, {.blue = 0x2DED, .green = 0x2DED, .red = 0x2DED, .alpha = 0x2DED}, {.blue = 0x2DAD, .green = 0x2DAD, .red = 0x2DAD, .alpha = 0x2DAD}, {.blue = 0x2D6D, .green = 0x2D6D, .red = 0x2D6D, .alpha = 0x2D6D}, {.blue = 0x2D2D, .green = 0x2D2D, .red = 0x2D2D, .alpha = 0x2D2D}, {.blue = 0x2CEC, .green = 0x2CEC, .red = 0x2CEC, .alpha = 0x2CEC}, {.blue = 0x2CAC, .green = 0x2CAC, .red = 0x2CAC, .alpha = 0x2CAC}, {.blue = 0x2C6C, .green = 0x2C6C, .red = 0x2C6C, .alpha = 0x2C6C}, {.blue = 0x2C2C, .green = 0x2C2C, .red = 0x2C2C, .alpha = 0x2C2C}, {.blue = 0x2BEB, .green = 0x2BEB, .red = 0x2BEB, .alpha = 0x2BEB}, {.blue = 0x2BAB, .green = 0x2BAB, .red = 0x2BAB, .alpha = 0x2BAB}, {.blue = 0x2B6B, .green = 0x2B6B, .red = 0x2B6B, .alpha = 0x2B6B}, {.blue = 0x2B2B, .green = 0x2B2B, .red = 0x2B2B, .alpha = 0x2B2B}, {.blue = 0x2AEA, .green = 0x2AEA, .red = 0x2AEA, .alpha = 0x2AEA}, {.blue = 0x2AAA, .green = 0x2AAA, .red = 0x2AAA, .alpha = 0x2AAA}, {.blue = 0x2A6A, .green = 0x2A6A, .red = 0x2A6A, .alpha = 0x2A6A}, {.blue = 0x2A2A, .green = 0x2A2A, .red = 0x2A2A, .alpha = 0x2A2A}, {.blue = 0x29E9, .green = 0x29E9, .red = 0x29E9, .alpha = 0x29E9}, {.blue = 0x29A9, .green = 0x29A9, .red = 0x29A9, .alpha = 0x29A9}, {.blue = 0x2969, .green = 0x2969, .red = 0x2969, .alpha = 0x2969}, {.blue = 0x2929, .green = 0x2929, .red = 0x2929, .alpha = 0x2929}, {.blue = 0x28E8, .green = 0x28E8, .red = 0x28E8, .alpha = 0x28E8}, {.blue = 0x28A8, .green = 0x28A8, .red = 0x28A8, .alpha = 0x28A8}, {.blue = 0x2868, .green = 0x2868, .red = 0x2868, .alpha = 0x2868}, {.blue = 0x2828, .green = 0x2828, .red = 0x2828, .alpha = 0x2828}, {.blue = 0x27E7, .green = 0x27E7, .red = 0x27E7, .alpha = 0x27E7}, {.blue = 0x27A7, .green = 0x27A7, .red = 0x27A7, .alpha = 0x27A7}, {.blue = 0x2767, .green = 0x2767, .red = 0x2767, .alpha = 0x2767}, {.blue = 0x2727, .green = 0x2727, .red = 0x2727, .alpha = 0x2727}, {.blue = 0x26E6, .green = 0x26E6, .red = 0x26E6, .alpha = 0x26E6}, {.blue = 0x26A6, .green = 0x26A6, .red = 0x26A6, .alpha = 0x26A6}, {.blue = 0x2666, .green = 0x2666, .red = 0x2666, .alpha = 0x2666}, {.blue = 0x2626, .green = 0x2626, .red = 0x2626, .alpha = 0x2626}, {.blue = 0x25E5, .green = 0x25E5, .red = 0x25E5, .alpha = 0x25E5}, {.blue = 0x25A5, .green = 0x25A5, .red = 0x25A5, .alpha = 0x25A5}, {.blue = 0x2565, .green = 0x2565, .red = 0x2565, .alpha = 0x2565}, {.blue = 0x2525, .green = 0x2525, .red = 0x2525, .alpha = 0x2525}, {.blue = 0x24E4, .green = 0x24E4, .red = 0x24E4, .alpha = 0x24E4}, {.blue = 0x24A4, .green = 0x24A4, .red = 0x24A4, .alpha = 0x24A4}, {.blue = 0x2464, .green = 0x2464, .red = 0x2464, .alpha = 0x2464}, {.blue = 0x2424, .green = 0x2424, .red = 0x2424, .alpha = 0x2424}, {.blue = 0x23E3, .green = 0x23E3, .red = 0x23E3, .alpha = 0x23E3}, {.blue = 0x23A3, .green = 0x23A3, .red = 0x23A3, .alpha = 0x23A3}, {.blue = 0x2363, .green = 0x2363, .red = 0x2363, .alpha = 0x2363}, {.blue = 0x2323, .green = 0x2323, .red = 0x2323, .alpha = 0x2323}, {.blue = 0x22E2, .green = 0x22E2, .red = 0x22E2, .alpha = 0x22E2}, {.blue = 0x22A2, .green = 0x22A2, .red = 0x22A2, .alpha = 0x22A2}, {.blue = 0x2262, .green = 0x2262, .red = 0x2262, .alpha = 0x2262}, {.blue = 0x2222, .green = 0x2222, .red = 0x2222, .alpha = 0x2222}, {.blue = 0x21E1, .green = 0x21E1, .red = 0x21E1, .alpha = 0x21E1}, {.blue = 0x21A1, .green = 0x21A1, .red = 0x21A1, .alpha = 0x21A1}, {.blue = 0x2161, .green = 0x2161, .red = 0x2161, .alpha = 0x2161}, {.blue = 0x2121, .green = 0x2121, .red = 0x2121, .alpha = 0x2121}, {.blue = 0x20E0, .green = 0x20E0, .red = 0x20E0, .alpha = 0x20E0}, {.blue = 0x20A0, .green = 0x20A0, .red = 0x20A0, .alpha = 0x20A0}, {.blue = 0x2060, .green = 0x2060, .red = 0x2060, .alpha = 0x2060}, {.blue = 0x2020, .green = 0x2020, .red = 0x2020, .alpha = 0x2020}, {.blue = 0x1FDF, .green = 0x1FDF, .red = 0x1FDF, .alpha = 0x1FDF}, {.blue = 0x1F9F, .green = 0x1F9F, .red = 0x1F9F, .alpha = 0x1F9F}, {.blue = 0x1F5F, .green = 0x1F5F, .red = 0x1F5F, .alpha = 0x1F5F}, {.blue = 0x1F1F, .green = 0x1F1F, .red = 0x1F1F, .alpha = 0x1F1F}, {.blue = 0x1EDE, .green = 0x1EDE, .red = 0x1EDE, .alpha = 0x1EDE}, {.blue = 0x1E9E, .green = 0x1E9E, .red = 0x1E9E, .alpha = 0x1E9E}, {.blue = 0x1E5E, .green = 0x1E5E, .red = 0x1E5E, .alpha = 0x1E5E}, {.blue = 0x1E1E, .green = 0x1E1E, .red = 0x1E1E, .alpha = 0x1E1E}, {.blue = 0x1DDD, .green = 0x1DDD, .red = 0x1DDD, .alpha = 0x1DDD}, {.blue = 0x1D9D, .green = 0x1D9D, .red = 0x1D9D, .alpha = 0x1D9D}, {.blue = 0x1D5D, .green = 0x1D5D, .red = 0x1D5D, .alpha = 0x1D5D}, {.blue = 0x1D1D, .green = 0x1D1D, .red = 0x1D1D, .alpha = 0x1D1D}, {.blue = 0x1CDC, .green = 0x1CDC, .red = 0x1CDC, .alpha = 0x1CDC}, {.blue = 0x1C9C, .green = 0x1C9C, .red = 0x1C9C, .alpha = 0x1C9C}, {.blue = 0x1C5C, .green = 0x1C5C, .red = 0x1C5C, .alpha = 0x1C5C}, {.blue = 0x1C1C, .green = 0x1C1C, .red = 0x1C1C, .alpha = 0x1C1C}, {.blue = 0x1BDB, .green = 0x1BDB, .red = 0x1BDB, .alpha = 0x1BDB}, {.blue = 0x1B9B, .green = 0x1B9B, .red = 0x1B9B, .alpha = 0x1B9B}, {.blue = 0x1B5B, .green = 0x1B5B, .red = 0x1B5B, .alpha = 0x1B5B}, {.blue = 0x1B1B, .green = 0x1B1B, .red = 0x1B1B, .alpha = 0x1B1B}, {.blue = 0x1ADA, .green = 0x1ADA, .red = 0x1ADA, .alpha = 0x1ADA}, {.blue = 0x1A9A, .green = 0x1A9A, .red = 0x1A9A, .alpha = 0x1A9A}, {.blue = 0x1A5A, .green = 0x1A5A, .red = 0x1A5A, .alpha = 0x1A5A}, {.blue = 0x1A1A, .green = 0x1A1A, .red = 0x1A1A, .alpha = 0x1A1A}, {.blue = 0x19D9, .green = 0x19D9, .red = 0x19D9, .alpha = 0x19D9}, {.blue = 0x1999, .green = 0x1999, .red = 0x1999, .alpha = 0x1999}, {.blue = 0x1959, .green = 0x1959, .red = 0x1959, .alpha = 0x1959}, {.blue = 0x1919, .green = 0x1919, .red = 0x1919, .alpha = 0x1919}, {.blue = 0x18D8, .green = 0x18D8, .red = 0x18D8, .alpha = 0x18D8}, {.blue = 0x1898, .green = 0x1898, .red = 0x1898, .alpha = 0x1898}, {.blue = 0x1858, .green = 0x1858, .red = 0x1858, .alpha = 0x1858}, {.blue = 0x1818, .green = 0x1818, .red = 0x1818, .alpha = 0x1818}, {.blue = 0x17D7, .green = 0x17D7, .red = 0x17D7, .alpha = 0x17D7}, {.blue = 0x1797, .green = 0x1797, .red = 0x1797, .alpha = 0x1797}, {.blue = 0x1757, .green = 0x1757, .red = 0x1757, .alpha = 0x1757}, {.blue = 0x1717, .green = 0x1717, .red = 0x1717, .alpha = 0x1717}, {.blue = 0x16D6, .green = 0x16D6, .red = 0x16D6, .alpha = 0x16D6}, {.blue = 0x1696, .green = 0x1696, .red = 0x1696, .alpha = 0x1696}, {.blue = 0x1656, .green = 0x1656, .red = 0x1656, .alpha = 0x1656}, {.blue = 0x1616, .green = 0x1616, .red = 0x1616, .alpha = 0x1616}, {.blue = 0x15D5, .green = 0x15D5, .red = 0x15D5, .alpha = 0x15D5}, {.blue = 0x1595, .green = 0x1595, .red = 0x1595, .alpha = 0x1595}, {.blue = 0x1555, .green = 0x1555, .red = 0x1555, .alpha = 0x1555}, {.blue = 0x1515, .green = 0x1515, .red = 0x1515, .alpha = 0x1515}, {.blue = 0x14D4, .green = 0x14D4, .red = 0x14D4, .alpha = 0x14D4}, {.blue = 0x1494, .green = 0x1494, .red = 0x1494, .alpha = 0x1494}, {.blue = 0x1454, .green = 0x1454, .red = 0x1454, .alpha = 0x1454}, {.blue = 0x1414, .green = 0x1414, .red = 0x1414, .alpha = 0x1414}, {.blue = 0x13D3, .green = 0x13D3, .red = 0x13D3, .alpha = 0x13D3}, {.blue = 0x1393, .green = 0x1393, .red = 0x1393, .alpha = 0x1393}, {.blue = 0x1353, .green = 0x1353, .red = 0x1353, .alpha = 0x1353}, {.blue = 0x1313, .green = 0x1313, .red = 0x1313, .alpha = 0x1313}, {.blue = 0x12D2, .green = 0x12D2, .red = 0x12D2, .alpha = 0x12D2}, {.blue = 0x1292, .green = 0x1292, .red = 0x1292, .alpha = 0x1292}, {.blue = 0x1252, .green = 0x1252, .red = 0x1252, .alpha = 0x1252}, {.blue = 0x1212, .green = 0x1212, .red = 0x1212, .alpha = 0x1212}, {.blue = 0x11D1, .green = 0x11D1, .red = 0x11D1, .alpha = 0x11D1}, {.blue = 0x1191, .green = 0x1191, .red = 0x1191, .alpha = 0x1191}, {.blue = 0x1151, .green = 0x1151, .red = 0x1151, .alpha = 0x1151}, {.blue = 0x1111, .green = 0x1111, .red = 0x1111, .alpha = 0x1111}, {.blue = 0x10D0, .green = 0x10D0, .red = 0x10D0, .alpha = 0x10D0}, {.blue = 0x1090, .green = 0x1090, .red = 0x1090, .alpha = 0x1090}, {.blue = 0x1050, .green = 0x1050, .red = 0x1050, .alpha = 0x1050}, {.blue = 0x1010, .green = 0x1010, .red = 0x1010, .alpha = 0x1010}, {.blue = 0xFCF, .green = 0xFCF, .red = 0xFCF, .alpha = 0xFCF}, {.blue = 0xF8F, .green = 0xF8F, .red = 0xF8F, .alpha = 0xF8F}, {.blue = 0xF4F, .green = 0xF4F, .red = 0xF4F, .alpha = 0xF4F}, {.blue = 0xF0F, .green = 0xF0F, .red = 0xF0F, .alpha = 0xF0F}, {.blue = 0xECE, .green = 0xECE, .red = 0xECE, .alpha = 0xECE}, {.blue = 0xE8E, .green = 0xE8E, .red = 0xE8E, .alpha = 0xE8E}, {.blue = 0xE4E, .green = 0xE4E, .red = 0xE4E, .alpha = 0xE4E}, {.blue = 0xE0E, .green = 0xE0E, .red = 0xE0E, .alpha = 0xE0E}, {.blue = 0xDCD, .green = 0xDCD, .red = 0xDCD, .alpha = 0xDCD}, {.blue = 0xD8D, .green = 0xD8D, .red = 0xD8D, .alpha = 0xD8D}, {.blue = 0xD4D, .green = 0xD4D, .red = 0xD4D, .alpha = 0xD4D}, {.blue = 0xD0D, .green = 0xD0D, .red = 0xD0D, .alpha = 0xD0D}, {.blue = 0xCCC, .green = 0xCCC, .red = 0xCCC, .alpha = 0xCCC}, {.blue = 0xC8C, .green = 0xC8C, .red = 0xC8C, .alpha = 0xC8C}, {.blue = 0xC4C, .green = 0xC4C, .red = 0xC4C, .alpha = 0xC4C}, {.blue = 0xC0C, .green = 0xC0C, .red = 0xC0C, .alpha = 0xC0C}, {.blue = 0xBCB, .green = 0xBCB, .red = 0xBCB, .alpha = 0xBCB}, {.blue = 0xB8B, .green = 0xB8B, .red = 0xB8B, .alpha = 0xB8B}, {.blue = 0xB4B, .green = 0xB4B, .red = 0xB4B, .alpha = 0xB4B}, {.blue = 0xB0B, .green = 0xB0B, .red = 0xB0B, .alpha = 0xB0B}, {.blue = 0xACA, .green = 0xACA, .red = 0xACA, .alpha = 0xACA}, {.blue = 0xA8A, .green = 0xA8A, .red = 0xA8A, .alpha = 0xA8A}, {.blue = 0xA4A, .green = 0xA4A, .red = 0xA4A, .alpha = 0xA4A}, {.blue = 0xA0A, .green = 0xA0A, .red = 0xA0A, .alpha = 0xA0A}, {.blue = 0x9C9, .green = 0x9C9, .red = 0x9C9, .alpha = 0x9C9}, {.blue = 0x989, .green = 0x989, .red = 0x989, .alpha = 0x989}, {.blue = 0x949, .green = 0x949, .red = 0x949, .alpha = 0x949}, {.blue = 0x909, .green = 0x909, .red = 0x909, .alpha = 0x909}, {.blue = 0x8C8, .green = 0x8C8, .red = 0x8C8, .alpha = 0x8C8}, {.blue = 0x888, .green = 0x888, .red = 0x888, .alpha = 0x888}, {.blue = 0x848, .green = 0x848, .red = 0x848, .alpha = 0x848}, {.blue = 0x808, .green = 0x808, .red = 0x808, .alpha = 0x808}, {.blue = 0x7C7, .green = 0x7C7, .red = 0x7C7, .alpha = 0x7C7}, {.blue = 0x787, .green = 0x787, .red = 0x787, .alpha = 0x787}, {.blue = 0x747, .green = 0x747, .red = 0x747, .alpha = 0x747}, {.blue = 0x707, .green = 0x707, .red = 0x707, .alpha = 0x707}, {.blue = 0x6C6, .green = 0x6C6, .red = 0x6C6, .alpha = 0x6C6}, {.blue = 0x686, .green = 0x686, .red = 0x686, .alpha = 0x686}, {.blue = 0x646, .green = 0x646, .red = 0x646, .alpha = 0x646}, {.blue = 0x606, .green = 0x606, .red = 0x606, .alpha = 0x606}, {.blue = 0x5C5, .green = 0x5C5, .red = 0x5C5, .alpha = 0x5C5}, {.blue = 0x585, .green = 0x585, .red = 0x585, .alpha = 0x585}, {.blue = 0x545, .green = 0x545, .red = 0x545, .alpha = 0x545}, {.blue = 0x505, .green = 0x505, .red = 0x505, .alpha = 0x505}, {.blue = 0x4C4, .green = 0x4C4, .red = 0x4C4, .alpha = 0x4C4}, {.blue = 0x484, .green = 0x484, .red = 0x484, .alpha = 0x484}, {.blue = 0x444, .green = 0x444, .red = 0x444, .alpha = 0x444}, {.blue = 0x404, .green = 0x404, .red = 0x404, .alpha = 0x404}, {.blue = 0x3C3, .green = 0x3C3, .red = 0x3C3, .alpha = 0x3C3}, {.blue = 0x383, .green = 0x383, .red = 0x383, .alpha = 0x383}, {.blue = 0x343, .green = 0x343, .red = 0x343, .alpha = 0x343}, {.blue = 0x303, .green = 0x303, .red = 0x303, .alpha = 0x303}, {.blue = 0x2C2, .green = 0x2C2, .red = 0x2C2, .alpha = 0x2C2}, {.blue = 0x282, .green = 0x282, .red = 0x282, .alpha = 0x282}, {.blue = 0x242, .green = 0x242, .red = 0x242, .alpha = 0x242}, {.blue = 0x202, .green = 0x202, .red = 0x202, .alpha = 0x202}, {.blue = 0x1C1, .green = 0x1C1, .red = 0x1C1, .alpha = 0x1C1}, {.blue = 0x181, .green = 0x181, .red = 0x181, .alpha = 0x181}, {.blue = 0x141, .green = 0x141, .red = 0x141, .alpha = 0x141}, {.blue = 0x101, .green = 0x101, .red = 0x101, .alpha = 0x101}, {.blue = 0xC0, .green = 0xC0, .red = 0xC0, .alpha = 0xC0}, {.blue = 0x80, .green = 0x80, .red = 0x80, .alpha = 0x80}, {.blue = 0x40, .green = 0x40, .red = 0x40, .alpha = 0x40}}, /* 00420F20 g_SoftwareBilinearInverseFactors */
     {{0}, {.blue = 0x40, .green = 0x40, .red = 0x40}, {.blue = 0x80, .green = 0x80, .red = 0x80}, {.blue = 0xC0, .green = 0xC0, .red = 0xC0}, {.blue = 0x101, .green = 0x101, .red = 0x101}, {.blue = 0x141, .green = 0x141, .red = 0x141}, {.blue = 0x181, .green = 0x181, .red = 0x181}, {.blue = 0x1C1, .green = 0x1C1, .red = 0x1C1}, {.blue = 0x202, .green = 0x202, .red = 0x202}, {.blue = 0x242, .green = 0x242, .red = 0x242}, {.blue = 0x282, .green = 0x282, .red = 0x282}, {.blue = 0x2C2, .green = 0x2C2, .red = 0x2C2}, {.blue = 0x303, .green = 0x303, .red = 0x303}, {.blue = 0x343, .green = 0x343, .red = 0x343}, {.blue = 0x383, .green = 0x383, .red = 0x383}, {.blue = 0x3C3, .green = 0x3C3, .red = 0x3C3}, {.blue = 0x404, .green = 0x404, .red = 0x404}, {.blue = 0x444, .green = 0x444, .red = 0x444}, {.blue = 0x484, .green = 0x484, .red = 0x484}, {.blue = 0x4C4, .green = 0x4C4, .red = 0x4C4}, {.blue = 0x505, .green = 0x505, .red = 0x505}, {.blue = 0x545, .green = 0x545, .red = 0x545}, {.blue = 0x585, .green = 0x585, .red = 0x585}, {.blue = 0x5C5, .green = 0x5C5, .red = 0x5C5}, {.blue = 0x606, .green = 0x606, .red = 0x606}, {.blue = 0x646, .green = 0x646, .red = 0x646}, {.blue = 0x686, .green = 0x686, .red = 0x686}, {.blue = 0x6C6, .green = 0x6C6, .red = 0x6C6}, {.blue = 0x707, .green = 0x707, .red = 0x707}, {.blue = 0x747, .green = 0x747, .red = 0x747}, {.blue = 0x787, .green = 0x787, .red = 0x787}, {.blue = 0x7C7, .green = 0x7C7, .red = 0x7C7}, {.blue = 0x808, .green = 0x808, .red = 0x808}, {.blue = 0x848, .green = 0x848, .red = 0x848}, {.blue = 0x888, .green = 0x888, .red = 0x888}, {.blue = 0x8C8, .green = 0x8C8, .red = 0x8C8}, {.blue = 0x909, .green = 0x909, .red = 0x909}, {.blue = 0x949, .green = 0x949, .red = 0x949}, {.blue = 0x989, .green = 0x989, .red = 0x989}, {.blue = 0x9C9, .green = 0x9C9, .red = 0x9C9}, {.blue = 0xA0A, .green = 0xA0A, .red = 0xA0A}, {.blue = 0xA4A, .green = 0xA4A, .red = 0xA4A}, {.blue = 0xA8A, .green = 0xA8A, .red = 0xA8A}, {.blue = 0xACA, .green = 0xACA, .red = 0xACA}, {.blue = 0xB0B, .green = 0xB0B, .red = 0xB0B}, {.blue = 0xB4B, .green = 0xB4B, .red = 0xB4B}, {.blue = 0xB8B, .green = 0xB8B, .red = 0xB8B}, {.blue = 0xBCB, .green = 0xBCB, .red = 0xBCB}, {.blue = 0xC0C, .green = 0xC0C, .red = 0xC0C}, {.blue = 0xC4C, .green = 0xC4C, .red = 0xC4C}, {.blue = 0xC8C, .green = 0xC8C, .red = 0xC8C}, {.blue = 0xCCC, .green = 0xCCC, .red = 0xCCC}, {.blue = 0xD0D, .green = 0xD0D, .red = 0xD0D}, {.blue = 0xD4D, .green = 0xD4D, .red = 0xD4D}, {.blue = 0xD8D, .green = 0xD8D, .red = 0xD8D}, {.blue = 0xDCD, .green = 0xDCD, .red = 0xDCD}, {.blue = 0xE0E, .green = 0xE0E, .red = 0xE0E}, {.blue = 0xE4E, .green = 0xE4E, .red = 0xE4E}, {.blue = 0xE8E, .green = 0xE8E, .red = 0xE8E}, {.blue = 0xECE, .green = 0xECE, .red = 0xECE}, {.blue = 0xF0F, .green = 0xF0F, .red = 0xF0F}, {.blue = 0xF4F, .green = 0xF4F, .red = 0xF4F}, {.blue = 0xF8F, .green = 0xF8F, .red = 0xF8F}, {.blue = 0xFCF, .green = 0xFCF, .red = 0xFCF}, {.blue = 0x1010, .green = 0x1010, .red = 0x1010}, {.blue = 0x1050, .green = 0x1050, .red = 0x1050}, {.blue = 0x1090, .green = 0x1090, .red = 0x1090}, {.blue = 0x10D0, .green = 0x10D0, .red = 0x10D0}, {.blue = 0x1111, .green = 0x1111, .red = 0x1111}, {.blue = 0x1151, .green = 0x1151, .red = 0x1151}, {.blue = 0x1191, .green = 0x1191, .red = 0x1191}, {.blue = 0x11D1, .green = 0x11D1, .red = 0x11D1}, {.blue = 0x1212, .green = 0x1212, .red = 0x1212}, {.blue = 0x1252, .green = 0x1252, .red = 0x1252}, {.blue = 0x1292, .green = 0x1292, .red = 0x1292}, {.blue = 0x12D2, .green = 0x12D2, .red = 0x12D2}, {.blue = 0x1313, .green = 0x1313, .red = 0x1313}, {.blue = 0x1353, .green = 0x1353, .red = 0x1353}, {.blue = 0x1393, .green = 0x1393, .red = 0x1393}, {.blue = 0x13D3, .green = 0x13D3, .red = 0x13D3}, {.blue = 0x1414, .green = 0x1414, .red = 0x1414}, {.blue = 0x1454, .green = 0x1454, .red = 0x1454}, {.blue = 0x1494, .green = 0x1494, .red = 0x1494}, {.blue = 0x14D4, .green = 0x14D4, .red = 0x14D4}, {.blue = 0x1515, .green = 0x1515, .red = 0x1515}, {.blue = 0x1555, .green = 0x1555, .red = 0x1555}, {.blue = 0x1595, .green = 0x1595, .red = 0x1595}, {.blue = 0x15D5, .green = 0x15D5, .red = 0x15D5}, {.blue = 0x1616, .green = 0x1616, .red = 0x1616}, {.blue = 0x1656, .green = 0x1656, .red = 0x1656}, {.blue = 0x1696, .green = 0x1696, .red = 0x1696}, {.blue = 0x16D6, .green = 0x16D6, .red = 0x16D6}, {.blue = 0x1717, .green = 0x1717, .red = 0x1717}, {.blue = 0x1757, .green = 0x1757, .red = 0x1757}, {.blue = 0x1797, .green = 0x1797, .red = 0x1797}, {.blue = 0x17D7, .green = 0x17D7, .red = 0x17D7}, {.blue = 0x1818, .green = 0x1818, .red = 0x1818}, {.blue = 0x1858, .green = 0x1858, .red = 0x1858}, {.blue = 0x1898, .green = 0x1898, .red = 0x1898}, {.blue = 0x18D8, .green = 0x18D8, .red = 0x18D8}, {.blue = 0x1919, .green = 0x1919, .red = 0x1919}, {.blue = 0x1959, .green = 0x1959, .red = 0x1959}, {.blue = 0x1999, .green = 0x1999, .red = 0x1999}, {.blue = 0x19D9, .green = 0x19D9, .red = 0x19D9}, {.blue = 0x1A1A, .green = 0x1A1A, .red = 0x1A1A}, {.blue = 0x1A5A, .green = 0x1A5A, .red = 0x1A5A}, {.blue = 0x1A9A, .green = 0x1A9A, .red = 0x1A9A}, {.blue = 0x1ADA, .green = 0x1ADA, .red = 0x1ADA}, {.blue = 0x1B1B, .green = 0x1B1B, .red = 0x1B1B}, {.blue = 0x1B5B, .green = 0x1B5B, .red = 0x1B5B}, {.blue = 0x1B9B, .green = 0x1B9B, .red = 0x1B9B}, {.blue = 0x1BDB, .green = 0x1BDB, .red = 0x1BDB}, {.blue = 0x1C1C, .green = 0x1C1C, .red = 0x1C1C}, {.blue = 0x1C5C, .green = 0x1C5C, .red = 0x1C5C}, {.blue = 0x1C9C, .green = 0x1C9C, .red = 0x1C9C}, {.blue = 0x1CDC, .green = 0x1CDC, .red = 0x1CDC}, {.blue = 0x1D1D, .green = 0x1D1D, .red = 0x1D1D}, {.blue = 0x1D5D, .green = 0x1D5D, .red = 0x1D5D}, {.blue = 0x1D9D, .green = 0x1D9D, .red = 0x1D9D}, {.blue = 0x1DDD, .green = 0x1DDD, .red = 0x1DDD}, {.blue = 0x1E1E, .green = 0x1E1E, .red = 0x1E1E}, {.blue = 0x1E5E, .green = 0x1E5E, .red = 0x1E5E}, {.blue = 0x1E9E, .green = 0x1E9E, .red = 0x1E9E}, {.blue = 0x1EDE, .green = 0x1EDE, .red = 0x1EDE}, {.blue = 0x1F1F, .green = 0x1F1F, .red = 0x1F1F}, {.blue = 0x1F5F, .green = 0x1F5F, .red = 0x1F5F}, {.blue = 0x1F9F, .green = 0x1F9F, .red = 0x1F9F}, {.blue = 0x1FDF, .green = 0x1FDF, .red = 0x1FDF}, {.blue = 0x2020, .green = 0x2020, .red = 0x2020}, {.blue = 0x2060, .green = 0x2060, .red = 0x2060}, {.blue = 0x20A0, .green = 0x20A0, .red = 0x20A0}, {.blue = 0x20E0, .green = 0x20E0, .red = 0x20E0}, {.blue = 0x2121, .green = 0x2121, .red = 0x2121}, {.blue = 0x2161, .green = 0x2161, .red = 0x2161}, {.blue = 0x21A1, .green = 0x21A1, .red = 0x21A1}, {.blue = 0x21E1, .green = 0x21E1, .red = 0x21E1}, {.blue = 0x2222, .green = 0x2222, .red = 0x2222}, {.blue = 0x2262, .green = 0x2262, .red = 0x2262}, {.blue = 0x22A2, .green = 0x22A2, .red = 0x22A2}, {.blue = 0x22E2, .green = 0x22E2, .red = 0x22E2}, {.blue = 0x2323, .green = 0x2323, .red = 0x2323}, {.blue = 0x2363, .green = 0x2363, .red = 0x2363}, {.blue = 0x23A3, .green = 0x23A3, .red = 0x23A3}, {.blue = 0x23E3, .green = 0x23E3, .red = 0x23E3}, {.blue = 0x2424, .green = 0x2424, .red = 0x2424}, {.blue = 0x2464, .green = 0x2464, .red = 0x2464}, {.blue = 0x24A4, .green = 0x24A4, .red = 0x24A4}, {.blue = 0x24E4, .green = 0x24E4, .red = 0x24E4}, {.blue = 0x2525, .green = 0x2525, .red = 0x2525}, {.blue = 0x2565, .green = 0x2565, .red = 0x2565}, {.blue = 0x25A5, .green = 0x25A5, .red = 0x25A5}, {.blue = 0x25E5, .green = 0x25E5, .red = 0x25E5}, {.blue = 0x2626, .green = 0x2626, .red = 0x2626}, {.blue = 0x2666, .green = 0x2666, .red = 0x2666}, {.blue = 0x26A6, .green = 0x26A6, .red = 0x26A6}, {.blue = 0x26E6, .green = 0x26E6, .red = 0x26E6}, {.blue = 0x2727, .green = 0x2727, .red = 0x2727}, {.blue = 0x2767, .green = 0x2767, .red = 0x2767}, {.blue = 0x27A7, .green = 0x27A7, .red = 0x27A7}, {.blue = 0x27E7, .green = 0x27E7, .red = 0x27E7}, {.blue = 0x2828, .green = 0x2828, .red = 0x2828}, {.blue = 0x2868, .green = 0x2868, .red = 0x2868}, {.blue = 0x28A8, .green = 0x28A8, .red = 0x28A8}, {.blue = 0x28E8, .green = 0x28E8, .red = 0x28E8}, {.blue = 0x2929, .green = 0x2929, .red = 0x2929}, {.blue = 0x2969, .green = 0x2969, .red = 0x2969}, {.blue = 0x29A9, .green = 0x29A9, .red = 0x29A9}, {.blue = 0x29E9, .green = 0x29E9, .red = 0x29E9}, {.blue = 0x2A2A, .green = 0x2A2A, .red = 0x2A2A}, {.blue = 0x2A6A, .green = 0x2A6A, .red = 0x2A6A}, {.blue = 0x2AAA, .green = 0x2AAA, .red = 0x2AAA}, {.blue = 0x2AEA, .green = 0x2AEA, .red = 0x2AEA}, {.blue = 0x2B2B, .green = 0x2B2B, .red = 0x2B2B}, {.blue = 0x2B6B, .green = 0x2B6B, .red = 0x2B6B}, {.blue = 0x2BAB, .green = 0x2BAB, .red = 0x2BAB}, {.blue = 0x2BEB, .green = 0x2BEB, .red = 0x2BEB}, {.blue = 0x2C2C, .green = 0x2C2C, .red = 0x2C2C}, {.blue = 0x2C6C, .green = 0x2C6C, .red = 0x2C6C}, {.blue = 0x2CAC, .green = 0x2CAC, .red = 0x2CAC}, {.blue = 0x2CEC, .green = 0x2CEC, .red = 0x2CEC}, {.blue = 0x2D2D, .green = 0x2D2D, .red = 0x2D2D}, {.blue = 0x2D6D, .green = 0x2D6D, .red = 0x2D6D}, {.blue = 0x2DAD, .green = 0x2DAD, .red = 0x2DAD}, {.blue = 0x2DED, .green = 0x2DED, .red = 0x2DED}, {.blue = 0x2E2E, .green = 0x2E2E, .red = 0x2E2E}, {.blue = 0x2E6E, .green = 0x2E6E, .red = 0x2E6E}, {.blue = 0x2EAE, .green = 0x2EAE, .red = 0x2EAE}, {.blue = 0x2EEE, .green = 0x2EEE, .red = 0x2EEE}, {.blue = 0x2F2F, .green = 0x2F2F, .red = 0x2F2F}, {.blue = 0x2F6F, .green = 0x2F6F, .red = 0x2F6F}, {.blue = 0x2FAF, .green = 0x2FAF, .red = 0x2FAF}, {.blue = 0x2FEF, .green = 0x2FEF, .red = 0x2FEF}, {.blue = 0x3030, .green = 0x3030, .red = 0x3030}, {.blue = 0x3070, .green = 0x3070, .red = 0x3070}, {.blue = 0x30B0, .green = 0x30B0, .red = 0x30B0}, {.blue = 0x30F0, .green = 0x30F0, .red = 0x30F0}, {.blue = 0x3131, .green = 0x3131, .red = 0x3131}, {.blue = 0x3171, .green = 0x3171, .red = 0x3171}, {.blue = 0x31B1, .green = 0x31B1, .red = 0x31B1}, {.blue = 0x31F1, .green = 0x31F1, .red = 0x31F1}, {.blue = 0x3232, .green = 0x3232, .red = 0x3232}, {.blue = 0x3272, .green = 0x3272, .red = 0x3272}, {.blue = 0x32B2, .green = 0x32B2, .red = 0x32B2}, {.blue = 0x32F2, .green = 0x32F2, .red = 0x32F2}, {.blue = 0x3333, .green = 0x3333, .red = 0x3333}, {.blue = 0x3373, .green = 0x3373, .red = 0x3373}, {.blue = 0x33B3, .green = 0x33B3, .red = 0x33B3}, {.blue = 0x33F3, .green = 0x33F3, .red = 0x33F3}, {.blue = 0x3434, .green = 0x3434, .red = 0x3434}, {.blue = 0x3474, .green = 0x3474, .red = 0x3474}, {.blue = 0x34B4, .green = 0x34B4, .red = 0x34B4}, {.blue = 0x34F4, .green = 0x34F4, .red = 0x34F4}, {.blue = 0x3535, .green = 0x3535, .red = 0x3535}, {.blue = 0x3575, .green = 0x3575, .red = 0x3575}, {.blue = 0x35B5, .green = 0x35B5, .red = 0x35B5}, {.blue = 0x35F5, .green = 0x35F5, .red = 0x35F5}, {.blue = 0x3636, .green = 0x3636, .red = 0x3636}, {.blue = 0x3676, .green = 0x3676, .red = 0x3676}, {.blue = 0x36B6, .green = 0x36B6, .red = 0x36B6}, {.blue = 0x36F6, .green = 0x36F6, .red = 0x36F6}, {.blue = 0x3737, .green = 0x3737, .red = 0x3737}, {.blue = 0x3777, .green = 0x3777, .red = 0x3777}, {.blue = 0x37B7, .green = 0x37B7, .red = 0x37B7}, {.blue = 0x37F7, .green = 0x37F7, .red = 0x37F7}, {.blue = 0x3838, .green = 0x3838, .red = 0x3838}, {.blue = 0x3878, .green = 0x3878, .red = 0x3878}, {.blue = 0x38B8, .green = 0x38B8, .red = 0x38B8}, {.blue = 0x38F8, .green = 0x38F8, .red = 0x38F8}, {.blue = 0x3939, .green = 0x3939, .red = 0x3939}, {.blue = 0x3979, .green = 0x3979, .red = 0x3979}, {.blue = 0x39B9, .green = 0x39B9, .red = 0x39B9}, {.blue = 0x39F9, .green = 0x39F9, .red = 0x39F9}, {.blue = 0x3A3A, .green = 0x3A3A, .red = 0x3A3A}, {.blue = 0x3A7A, .green = 0x3A7A, .red = 0x3A7A}, {.blue = 0x3ABA, .green = 0x3ABA, .red = 0x3ABA}, {.blue = 0x3AFA, .green = 0x3AFA, .red = 0x3AFA}, {.blue = 0x3B3B, .green = 0x3B3B, .red = 0x3B3B}, {.blue = 0x3B7B, .green = 0x3B7B, .red = 0x3B7B}, {.blue = 0x3BBB, .green = 0x3BBB, .red = 0x3BBB}, {.blue = 0x3BFB, .green = 0x3BFB, .red = 0x3BFB}, {.blue = 0x3C3C, .green = 0x3C3C, .red = 0x3C3C}, {.blue = 0x3C7C, .green = 0x3C7C, .red = 0x3C7C}, {.blue = 0x3CBC, .green = 0x3CBC, .red = 0x3CBC}, {.blue = 0x3CFC, .green = 0x3CFC, .red = 0x3CFC}, {.blue = 0x3D3D, .green = 0x3D3D, .red = 0x3D3D}, {.blue = 0x3D7D, .green = 0x3D7D, .red = 0x3D7D}, {.blue = 0x3DBD, .green = 0x3DBD, .red = 0x3DBD}, {.blue = 0x3DFD, .green = 0x3DFD, .red = 0x3DFD}, {.blue = 0x3E3E, .green = 0x3E3E, .red = 0x3E3E}, {.blue = 0x3E7E, .green = 0x3E7E, .red = 0x3E7E}, {.blue = 0x3EBE, .green = 0x3EBE, .red = 0x3EBE}, {.blue = 0x3EFE, .green = 0x3EFE, .red = 0x3EFE}, {.blue = 0x3F3F, .green = 0x3F3F, .red = 0x3F3F}, {.blue = 0x3F7F, .green = 0x3F7F, .red = 0x3F7F}, {.blue = 0x3FBF, .green = 0x3FBF, .red = 0x3FBF}, {.blue = 0x3FFF, .green = 0x3FFF, .red = 0x3FFF}}, /* 00421720 g_SoftwareBlendAlphaFactors */
     {{.blue = 0x4040, .green = 0x4040, .red = 0x4040}, {.blue = 0x3FFF, .green = 0x3FFF, .red = 0x3FFF}, {.blue = 0x3FBF, .green = 0x3FBF, .red = 0x3FBF}, {.blue = 0x3F7F, .green = 0x3F7F, .red = 0x3F7F}, {.blue = 0x3F3F, .green = 0x3F3F, .red = 0x3F3F}, {.blue = 0x3EFE, .green = 0x3EFE, .red = 0x3EFE}, {.blue = 0x3EBE, .green = 0x3EBE, .red = 0x3EBE}, {.blue = 0x3E7E, .green = 0x3E7E, .red = 0x3E7E}, {.blue = 0x3E3E, .green = 0x3E3E, .red = 0x3E3E}, {.blue = 0x3DFD, .green = 0x3DFD, .red = 0x3DFD}, {.blue = 0x3DBD, .green = 0x3DBD, .red = 0x3DBD}, {.blue = 0x3D7D, .green = 0x3D7D, .red = 0x3D7D}, {.blue = 0x3D3D, .green = 0x3D3D, .red = 0x3D3D}, {.blue = 0x3CFC, .green = 0x3CFC, .red = 0x3CFC}, {.blue = 0x3CBC, .green = 0x3CBC, .red = 0x3CBC}, {.blue = 0x3C7C, .green = 0x3C7C, .red = 0x3C7C}, {.blue = 0x3C3C, .green = 0x3C3C, .red = 0x3C3C}, {.blue = 0x3BFB, .green = 0x3BFB, .red = 0x3BFB}, {.blue = 0x3BBB, .green = 0x3BBB, .red = 0x3BBB}, {.blue = 0x3B7B, .green = 0x3B7B, .red = 0x3B7B}, {.blue = 0x3B3B, .green = 0x3B3B, .red = 0x3B3B}, {.blue = 0x3AFA, .green = 0x3AFA, .red = 0x3AFA}, {.blue = 0x3ABA, .green = 0x3ABA, .red = 0x3ABA}, {.blue = 0x3A7A, .green = 0x3A7A, .red = 0x3A7A}, {.blue = 0x3A3A, .green = 0x3A3A, .red = 0x3A3A}, {.blue = 0x39F9, .green = 0x39F9, .red = 0x39F9}, {.blue = 0x39B9, .green = 0x39B9, .red = 0x39B9}, {.blue = 0x3979, .green = 0x3979, .red = 0x3979}, {.blue = 0x3939, .green = 0x3939, .red = 0x3939}, {.blue = 0x38F8, .green = 0x38F8, .red = 0x38F8}, {.blue = 0x38B8, .green = 0x38B8, .red = 0x38B8}, {.blue = 0x3878, .green = 0x3878, .red = 0x3878}, {.blue = 0x3838, .green = 0x3838, .red = 0x3838}, {.blue = 0x37F7, .green = 0x37F7, .red = 0x37F7}, {.blue = 0x37B7, .green = 0x37B7, .red = 0x37B7}, {.blue = 0x3777, .green = 0x3777, .red = 0x3777}, {.blue = 0x3737, .green = 0x3737, .red = 0x3737}, {.blue = 0x36F6, .green = 0x36F6, .red = 0x36F6}, {.blue = 0x36B6, .green = 0x36B6, .red = 0x36B6}, {.blue = 0x3676, .green = 0x3676, .red = 0x3676}, {.blue = 0x3636, .green = 0x3636, .red = 0x3636}, {.blue = 0x35F5, .green = 0x35F5, .red = 0x35F5}, {.blue = 0x35B5, .green = 0x35B5, .red = 0x35B5}, {.blue = 0x3575, .green = 0x3575, .red = 0x3575}, {.blue = 0x3535, .green = 0x3535, .red = 0x3535}, {.blue = 0x34F4, .green = 0x34F4, .red = 0x34F4}, {.blue = 0x34B4, .green = 0x34B4, .red = 0x34B4}, {.blue = 0x3474, .green = 0x3474, .red = 0x3474}, {.blue = 0x3434, .green = 0x3434, .red = 0x3434}, {.blue = 0x33F3, .green = 0x33F3, .red = 0x33F3}, {.blue = 0x33B3, .green = 0x33B3, .red = 0x33B3}, {.blue = 0x3373, .green = 0x3373, .red = 0x3373}, {.blue = 0x3333, .green = 0x3333, .red = 0x3333}, {.blue = 0x32F2, .green = 0x32F2, .red = 0x32F2}, {.blue = 0x32B2, .green = 0x32B2, .red = 0x32B2}, {.blue = 0x3272, .green = 0x3272, .red = 0x3272}, {.blue = 0x3232, .green = 0x3232, .red = 0x3232}, {.blue = 0x31F1, .green = 0x31F1, .red = 0x31F1}, {.blue = 0x31B1, .green = 0x31B1, .red = 0x31B1}, {.blue = 0x3171, .green = 0x3171, .red = 0x3171}, {.blue = 0x3131, .green = 0x3131, .red = 0x3131}, {.blue = 0x30F0, .green = 0x30F0, .red = 0x30F0}, {.blue = 0x30B0, .green = 0x30B0, .red = 0x30B0}, {.blue = 0x3070, .green = 0x3070, .red = 0x3070}, {.blue = 0x3030, .green = 0x3030, .red = 0x3030}, {.blue = 0x2FEF, .green = 0x2FEF, .red = 0x2FEF}, {.blue = 0x2FAF, .green = 0x2FAF, .red = 0x2FAF}, {.blue = 0x2F6F, .green = 0x2F6F, .red = 0x2F6F}, {.blue = 0x2F2F, .green = 0x2F2F, .red = 0x2F2F}, {.blue = 0x2EEE, .green = 0x2EEE, .red = 0x2EEE}, {.blue = 0x2EAE, .green = 0x2EAE, .red = 0x2EAE}, {.blue = 0x2E6E, .green = 0x2E6E, .red = 0x2E6E}, {.blue = 0x2E2E, .green = 0x2E2E, .red = 0x2E2E}, {.blue = 0x2DED, .green = 0x2DED, .red = 0x2DED}, {.blue = 0x2DAD, .green = 0x2DAD, .red = 0x2DAD}, {.blue = 0x2D6D, .green = 0x2D6D, .red = 0x2D6D}, {.blue = 0x2D2D, .green = 0x2D2D, .red = 0x2D2D}, {.blue = 0x2CEC, .green = 0x2CEC, .red = 0x2CEC}, {.blue = 0x2CAC, .green = 0x2CAC, .red = 0x2CAC}, {.blue = 0x2C6C, .green = 0x2C6C, .red = 0x2C6C}, {.blue = 0x2C2C, .green = 0x2C2C, .red = 0x2C2C}, {.blue = 0x2BEB, .green = 0x2BEB, .red = 0x2BEB}, {.blue = 0x2BAB, .green = 0x2BAB, .red = 0x2BAB}, {.blue = 0x2B6B, .green = 0x2B6B, .red = 0x2B6B}, {.blue = 0x2B2B, .green = 0x2B2B, .red = 0x2B2B}, {.blue = 0x2AEA, .green = 0x2AEA, .red = 0x2AEA}, {.blue = 0x2AAA, .green = 0x2AAA, .red = 0x2AAA}, {.blue = 0x2A6A, .green = 0x2A6A, .red = 0x2A6A}, {.blue = 0x2A2A, .green = 0x2A2A, .red = 0x2A2A}, {.blue = 0x29E9, .green = 0x29E9, .red = 0x29E9}, {.blue = 0x29A9, .green = 0x29A9, .red = 0x29A9}, {.blue = 0x2969, .green = 0x2969, .red = 0x2969}, {.blue = 0x2929, .green = 0x2929, .red = 0x2929}, {.blue = 0x28E8, .green = 0x28E8, .red = 0x28E8}, {.blue = 0x28A8, .green = 0x28A8, .red = 0x28A8}, {.blue = 0x2868, .green = 0x2868, .red = 0x2868}, {.blue = 0x2828, .green = 0x2828, .red = 0x2828}, {.blue = 0x27E7, .green = 0x27E7, .red = 0x27E7}, {.blue = 0x27A7, .green = 0x27A7, .red = 0x27A7}, {.blue = 0x2767, .green = 0x2767, .red = 0x2767}, {.blue = 0x2727, .green = 0x2727, .red = 0x2727}, {.blue = 0x26E6, .green = 0x26E6, .red = 0x26E6}, {.blue = 0x26A6, .green = 0x26A6, .red = 0x26A6}, {.blue = 0x2666, .green = 0x2666, .red = 0x2666}, {.blue = 0x2626, .green = 0x2626, .red = 0x2626}, {.blue = 0x25E5, .green = 0x25E5, .red = 0x25E5}, {.blue = 0x25A5, .green = 0x25A5, .red = 0x25A5}, {.blue = 0x2565, .green = 0x2565, .red = 0x2565}, {.blue = 0x2525, .green = 0x2525, .red = 0x2525}, {.blue = 0x24E4, .green = 0x24E4, .red = 0x24E4}, {.blue = 0x24A4, .green = 0x24A4, .red = 0x24A4}, {.blue = 0x2464, .green = 0x2464, .red = 0x2464}, {.blue = 0x2424, .green = 0x2424, .red = 0x2424}, {.blue = 0x23E3, .green = 0x23E3, .red = 0x23E3}, {.blue = 0x23A3, .green = 0x23A3, .red = 0x23A3}, {.blue = 0x2363, .green = 0x2363, .red = 0x2363}, {.blue = 0x2323, .green = 0x2323, .red = 0x2323}, {.blue = 0x22E2, .green = 0x22E2, .red = 0x22E2}, {.blue = 0x22A2, .green = 0x22A2, .red = 0x22A2}, {.blue = 0x2262, .green = 0x2262, .red = 0x2262}, {.blue = 0x2222, .green = 0x2222, .red = 0x2222}, {.blue = 0x21E1, .green = 0x21E1, .red = 0x21E1}, {.blue = 0x21A1, .green = 0x21A1, .red = 0x21A1}, {.blue = 0x2161, .green = 0x2161, .red = 0x2161}, {.blue = 0x2121, .green = 0x2121, .red = 0x2121}, {.blue = 0x20E0, .green = 0x20E0, .red = 0x20E0}, {.blue = 0x20A0, .green = 0x20A0, .red = 0x20A0}, {.blue = 0x2060, .green = 0x2060, .red = 0x2060}, {.blue = 0x2020, .green = 0x2020, .red = 0x2020}, {.blue = 0x1FDF, .green = 0x1FDF, .red = 0x1FDF}, {.blue = 0x1F9F, .green = 0x1F9F, .red = 0x1F9F}, {.blue = 0x1F5F, .green = 0x1F5F, .red = 0x1F5F}, {.blue = 0x1F1F, .green = 0x1F1F, .red = 0x1F1F}, {.blue = 0x1EDE, .green = 0x1EDE, .red = 0x1EDE}, {.blue = 0x1E9E, .green = 0x1E9E, .red = 0x1E9E}, {.blue = 0x1E5E, .green = 0x1E5E, .red = 0x1E5E}, {.blue = 0x1E1E, .green = 0x1E1E, .red = 0x1E1E}, {.blue = 0x1DDD, .green = 0x1DDD, .red = 0x1DDD}, {.blue = 0x1D9D, .green = 0x1D9D, .red = 0x1D9D}, {.blue = 0x1D5D, .green = 0x1D5D, .red = 0x1D5D}, {.blue = 0x1D1D, .green = 0x1D1D, .red = 0x1D1D}, {.blue = 0x1CDC, .green = 0x1CDC, .red = 0x1CDC}, {.blue = 0x1C9C, .green = 0x1C9C, .red = 0x1C9C}, {.blue = 0x1C5C, .green = 0x1C5C, .red = 0x1C5C}, {.blue = 0x1C1C, .green = 0x1C1C, .red = 0x1C1C}, {.blue = 0x1BDB, .green = 0x1BDB, .red = 0x1BDB}, {.blue = 0x1B9B, .green = 0x1B9B, .red = 0x1B9B}, {.blue = 0x1B5B, .green = 0x1B5B, .red = 0x1B5B}, {.blue = 0x1B1B, .green = 0x1B1B, .red = 0x1B1B}, {.blue = 0x1ADA, .green = 0x1ADA, .red = 0x1ADA}, {.blue = 0x1A9A, .green = 0x1A9A, .red = 0x1A9A}, {.blue = 0x1A5A, .green = 0x1A5A, .red = 0x1A5A}, {.blue = 0x1A1A, .green = 0x1A1A, .red = 0x1A1A}, {.blue = 0x19D9, .green = 0x19D9, .red = 0x19D9}, {.blue = 0x1999, .green = 0x1999, .red = 0x1999}, {.blue = 0x1959, .green = 0x1959, .red = 0x1959}, {.blue = 0x1919, .green = 0x1919, .red = 0x1919}, {.blue = 0x18D8, .green = 0x18D8, .red = 0x18D8}, {.blue = 0x1898, .green = 0x1898, .red = 0x1898}, {.blue = 0x1858, .green = 0x1858, .red = 0x1858}, {.blue = 0x1818, .green = 0x1818, .red = 0x1818}, {.blue = 0x17D7, .green = 0x17D7, .red = 0x17D7}, {.blue = 0x1797, .green = 0x1797, .red = 0x1797}, {.blue = 0x1757, .green = 0x1757, .red = 0x1757}, {.blue = 0x1717, .green = 0x1717, .red = 0x1717}, {.blue = 0x16D6, .green = 0x16D6, .red = 0x16D6}, {.blue = 0x1696, .green = 0x1696, .red = 0x1696}, {.blue = 0x1656, .green = 0x1656, .red = 0x1656}, {.blue = 0x1616, .green = 0x1616, .red = 0x1616}, {.blue = 0x15D5, .green = 0x15D5, .red = 0x15D5}, {.blue = 0x1595, .green = 0x1595, .red = 0x1595}, {.blue = 0x1555, .green = 0x1555, .red = 0x1555}, {.blue = 0x1515, .green = 0x1515, .red = 0x1515}, {.blue = 0x14D4, .green = 0x14D4, .red = 0x14D4}, {.blue = 0x1494, .green = 0x1494, .red = 0x1494}, {.blue = 0x1454, .green = 0x1454, .red = 0x1454}, {.blue = 0x1414, .green = 0x1414, .red = 0x1414}, {.blue = 0x13D3, .green = 0x13D3, .red = 0x13D3}, {.blue = 0x1393, .green = 0x1393, .red = 0x1393}, {.blue = 0x1353, .green = 0x1353, .red = 0x1353}, {.blue = 0x1313, .green = 0x1313, .red = 0x1313}, {.blue = 0x12D2, .green = 0x12D2, .red = 0x12D2}, {.blue = 0x1292, .green = 0x1292, .red = 0x1292}, {.blue = 0x1252, .green = 0x1252, .red = 0x1252}, {.blue = 0x1212, .green = 0x1212, .red = 0x1212}, {.blue = 0x11D1, .green = 0x11D1, .red = 0x11D1}, {.blue = 0x1191, .green = 0x1191, .red = 0x1191}, {.blue = 0x1151, .green = 0x1151, .red = 0x1151}, {.blue = 0x1111, .green = 0x1111, .red = 0x1111}, {.blue = 0x10D0, .green = 0x10D0, .red = 0x10D0}, {.blue = 0x1090, .green = 0x1090, .red = 0x1090}, {.blue = 0x1050, .green = 0x1050, .red = 0x1050}, {.blue = 0x1010, .green = 0x1010, .red = 0x1010}, {.blue = 0xFCF, .green = 0xFCF, .red = 0xFCF}, {.blue = 0xF8F, .green = 0xF8F, .red = 0xF8F}, {.blue = 0xF4F, .green = 0xF4F, .red = 0xF4F}, {.blue = 0xF0F, .green = 0xF0F, .red = 0xF0F}, {.blue = 0xECE, .green = 0xECE, .red = 0xECE}, {.blue = 0xE8E, .green = 0xE8E, .red = 0xE8E}, {.blue = 0xE4E, .green = 0xE4E, .red = 0xE4E}, {.blue = 0xE0E, .green = 0xE0E, .red = 0xE0E}, {.blue = 0xDCD, .green = 0xDCD, .red = 0xDCD}, {.blue = 0xD8D, .green = 0xD8D, .red = 0xD8D}, {.blue = 0xD4D, .green = 0xD4D, .red = 0xD4D}, {.blue = 0xD0D, .green = 0xD0D, .red = 0xD0D}, {.blue = 0xCCC, .green = 0xCCC, .red = 0xCCC}, {.blue = 0xC8C, .green = 0xC8C, .red = 0xC8C}, {.blue = 0xC4C, .green = 0xC4C, .red = 0xC4C}, {.blue = 0xC0C, .green = 0xC0C, .red = 0xC0C}, {.blue = 0xBCB, .green = 0xBCB, .red = 0xBCB}, {.blue = 0xB8B, .green = 0xB8B, .red = 0xB8B}, {.blue = 0xB4B, .green = 0xB4B, .red = 0xB4B}, {.blue = 0xB0B, .green = 0xB0B, .red = 0xB0B}, {.blue = 0xACA, .green = 0xACA, .red = 0xACA}, {.blue = 0xA8A, .green = 0xA8A, .red = 0xA8A}, {.blue = 0xA4A, .green = 0xA4A, .red = 0xA4A}, {.blue = 0xA0A, .green = 0xA0A, .red = 0xA0A}, {.blue = 0x9C9, .green = 0x9C9, .red = 0x9C9}, {.blue = 0x989, .green = 0x989, .red = 0x989}, {.blue = 0x949, .green = 0x949, .red = 0x949}, {.blue = 0x909, .green = 0x909, .red = 0x909}, {.blue = 0x8C8, .green = 0x8C8, .red = 0x8C8}, {.blue = 0x888, .green = 0x888, .red = 0x888}, {.blue = 0x848, .green = 0x848, .red = 0x848}, {.blue = 0x808, .green = 0x808, .red = 0x808}, {.blue = 0x7C7, .green = 0x7C7, .red = 0x7C7}, {.blue = 0x787, .green = 0x787, .red = 0x787}, {.blue = 0x747, .green = 0x747, .red = 0x747}, {.blue = 0x707, .green = 0x707, .red = 0x707}, {.blue = 0x6C6, .green = 0x6C6, .red = 0x6C6}, {.blue = 0x686, .green = 0x686, .red = 0x686}, {.blue = 0x646, .green = 0x646, .red = 0x646}, {.blue = 0x606, .green = 0x606, .red = 0x606}, {.blue = 0x5C5, .green = 0x5C5, .red = 0x5C5}, {.blue = 0x585, .green = 0x585, .red = 0x585}, {.blue = 0x545, .green = 0x545, .red = 0x545}, {.blue = 0x505, .green = 0x505, .red = 0x505}, {.blue = 0x4C4, .green = 0x4C4, .red = 0x4C4}, {.blue = 0x484, .green = 0x484, .red = 0x484}, {.blue = 0x444, .green = 0x444, .red = 0x444}, {.blue = 0x404, .green = 0x404, .red = 0x404}, {.blue = 0x3C3, .green = 0x3C3, .red = 0x3C3}, {.blue = 0x383, .green = 0x383, .red = 0x383}, {.blue = 0x343, .green = 0x343, .red = 0x343}, {.blue = 0x303, .green = 0x303, .red = 0x303}, {.blue = 0x2C2, .green = 0x2C2, .red = 0x2C2}, {.blue = 0x282, .green = 0x282, .red = 0x282}, {.blue = 0x242, .green = 0x242, .red = 0x242}, {.blue = 0x202, .green = 0x202, .red = 0x202}, {.blue = 0x1C1, .green = 0x1C1, .red = 0x1C1}, {.blue = 0x181, .green = 0x181, .red = 0x181}, {.blue = 0x141, .green = 0x141, .red = 0x141}, {.blue = 0x101, .green = 0x101, .red = 0x101}, {.blue = 0xC0, .green = 0xC0, .red = 0xC0}, {.blue = 0x80, .green = 0x80, .red = 0x80}, {.blue = 0x40, .green = 0x40, .red = 0x40}}, /* 00421F20 g_SoftwareBlendInverseAlphaFactors */
+    /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
     {
-        (dword)UiTextButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiGraphicsAdapterTextButton_DrawFormattedAdapterText,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiTextButtonControl_NonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiTextButtonControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent}, /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiGraphicsAdapterTextButton_DrawFormattedAdapterText,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     0, /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
     {0},
     {0},
@@ -1227,7 +1284,13 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
 
 ImageData_00422978 g_ImageData_00422978 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00422978 gap */
-    {.closeCf = (void *)UiRootCallbacks_FreeCf, .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection, .method08 = (void *)UiRootCallbacks_NoOpMethod08, .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8}, /* 004229A0 g_UiDisplaySettingsRootCallbacks */
+    /* 004229A0 g_UiDisplaySettingsRootCallbacks */
+    {
+        .closeCf = (void *)UiRootCallbacks_FreeCf,
+        .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection,
+        .method08 = (void *)UiRootCallbacks_NoOpMethod08,
+        .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
+    /* 004229B4 g_UiDisplaySettingsRootTemplate */
     {
         { /* +0000 g_UiResizableWindowControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x78), .parent = UI_TEMPLATE_NO_LINK,
@@ -1435,7 +1498,8 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000011},
-    }, /* 004229B4 g_UiDisplaySettingsRootTemplate */
+    },
+    /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
     {
         (dword)UiDisplayModeAction_ApplyPendingMode,
         (dword)UiDisplayModeAction_UpdateAdapterSelection,
@@ -1456,7 +1520,7 @@ ImageData_00422978 g_ImageData_00422978 = {
         (dword)UiDisplayModeAction_UpdateColorDepthSelection,
         (dword)UiDisplayModeAction_UpdateColorDepthSelection,
         (dword)UiDisplayModeAction_UpdateColorDepthSelection,
-        (dword)UiDisplayModeAction_UpdateColorDepthSelection}, /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
+        (dword)UiDisplayModeAction_UpdateColorDepthSelection},
     0, /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
     0, /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
     0, /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
@@ -1470,8 +1534,14 @@ ImageData_00422978 g_ImageData_00422978 = {
 };
 
 ImageData_00424324 g_ImageData_00424324 = {
-    {.closeCf = (void *)UiRootCallbacks_FreeCf, .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose, .method08 = (void *)UiRootCallbacks_NoOpMethod08, .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8}, /* 00424324 g_UiFourValueDialogRootCallbacks */
+    /* 00424324 g_UiFourValueDialogRootCallbacks */
+    {
+        .closeCf = (void *)UiRootCallbacks_FreeCf,
+        .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
+        .method08 = (void *)UiRootCallbacks_NoOpMethod08,
+        .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
     0xFFFFFFFF, /* 00424338 g_UiFourValueDialogTemplateImage */
+    /* 0042433C DAT_0042433c */
     {
         0x00000058, 0xFFFFFFFF, (dword)&g_UiPanelControlVtable,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFF80, 0xFFFFFFD0, 0x00000080, 0x00000030,
@@ -1487,7 +1557,7 @@ ImageData_00424324 g_ImageData_00424324 = {
         0x00000000, 0x00000000, 0x80000000, 0x80000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000004,
         0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x90909090}, /* 0042433C DAT_0042433c */
+        0x00000000, 0x90909090},
 };
 
 ImageData_00424684 g_ImageData_00424684 = {
@@ -1562,6 +1632,7 @@ ImageData_00486D8C g_ImageData_00486D8C = {
     0, /* 004A6D98 g_ActiveMovie */
     0x8000, /* 004A6D9C g_MovieDefaultAudioGainQ15 */
     0x8000, /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
+    /* 004A6DA4 g_LooseMoviePathPrefix */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -1579,7 +1650,7 @@ ImageData_00486D8C g_ImageData_00486D8C = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x90909090, 0x90909090, 0x90909090}, /* 004A6DA4 g_LooseMoviePathPrefix */
+        0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_004A8E60 g_ImageData_004A8E60 = {
@@ -1603,8 +1674,9 @@ ImageData_004A8E60 g_ImageData_004A8E60 = {
     (void *)SoftwarePixelFormat_BaseDisplayModeHook, /* 004A8ED0 g_GraphicsDisplayModeHook */
     (void *)GraphicsBackend_RefreshActiveAdapterNoOp, /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapterCf */
     (void *)SoftwareFramebuffer_Create, /* 004A8ED8 g_SoftwareFramebufferCreate */
+    /* 004A8EDC g_SoftwareFramebufferDestroy */
     {
-        (dword)SoftwareFramebuffer_Destroy}, /* 004A8EDC g_SoftwareFramebufferDestroy */
+        (dword)SoftwareFramebuffer_Destroy},
     0, /* 004A8EE0 g_GraphicsFramebufferPresent */
     0, /* 004A8EE4 g_GraphicsFramebufferCaptureRegion */
     (void *)SoftwarePixelFormat_BuildChannelPackTables, /* 004A8EE8 g_SoftwareBuildPixelPackTables */
@@ -1621,24 +1693,37 @@ ImageData_004A8E60 g_ImageData_004A8E60 = {
     0, /* 004A8F14 g_GraphicsTextureSourceBlitSourceAlphaPaletteBank */
     0, /* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
     0, /* 004A8F1C g_GraphicsTextureSourceBlitSaturatedAddRgb */
+    /* 004A8F20 g_GraphicsTextureSourceBlitTiledSaturatedAddRgb */
     {
-        (dword)GraphicsTextureSource_BlitTiledSaturatedAddRgb}, /* 004A8F20 g_GraphicsTextureSourceBlitTiledSaturatedAddRgb */
+        (dword)GraphicsTextureSource_BlitTiledSaturatedAddRgb},
     0, /* 004A8F24 g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd */
+    /* 004A8F28 g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd */
     {
-        (dword)GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd}, /* 004A8F28 g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd */
+        (dword)GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd},
+    /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf */
     {
-        (dword)GraphicsTextureSource_DecomposeSubresourceRegionsCf}, /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf */
+        (dword)GraphicsTextureSource_DecomposeSubresourceRegionsCf},
     0, /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
+    /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin */
     {
-        (dword)SoftwareFramebuffer_CopyRegionToOrigin}, /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin */
+        (dword)SoftwareFramebuffer_CopyRegionToOrigin},
+    /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion */
     {
-        (dword)SoftwareFramebuffer_CopyOriginToRegion}, /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion */
+        (dword)SoftwareFramebuffer_CopyOriginToRegion},
     (void *)GraphicsTextureSource_LoadPackageAsset, /* 004A8F3C g_GraphicsTextureSourceLoadPackageAsset */
-    {.releasePackage = (void *)GraphicsTextureSource_ReleasePackageAsset, .clone = (void *)GraphicsTextureSource_CloneAsset, .releaseClone = (void *)GraphicsTextureSource_ReleaseClonedAsset}, /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
+    /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
+    {
+        .releasePackage = (void *)GraphicsTextureSource_ReleasePackageAsset,
+        .clone = (void *)GraphicsTextureSource_CloneAsset,
+        .releaseClone = (void *)GraphicsTextureSource_ReleaseClonedAsset},
     (void *)GraphicsTextureSource_ConvertPaletteEntries, /* 004A8F4C g_GraphicsTextureSourceConvertPaletteEntries */
     (void *)GraphicsTextureSource_ResolveAllocationBase, /* 004A8F50 g_GraphicsTextureSourceResolveAllocationBase */
     (void *)GraphicsPaletteAsset_LoadPackage, /* 004A8F54 g_GraphicsPaletteAssetLoadPackage */
-    {.releasePackage = (void *)GraphicsPaletteAsset_ReleasePackage, .clone = (void *)GraphicsPaletteAsset_Clone, .releaseClone = (void *)GraphicsPaletteAsset_ReleaseClone}, /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
+    /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
+    {
+        .releasePackage = (void *)GraphicsPaletteAsset_ReleasePackage,
+        .clone = (void *)GraphicsPaletteAsset_Clone,
+        .releaseClone = (void *)GraphicsPaletteAsset_ReleaseClone},
     (void *)GraphicsPaletteAsset_Validate, /* 004A8F64 g_GraphicsPaletteAssetValidate */
     (void *)GraphicsPaletteAsset_ResolveAllocationBase, /* 004A8F68 g_GraphicsPaletteAssetResolveAllocationBase */
     {
@@ -1748,13 +1833,15 @@ ImageData_004B0A20 g_ImageData_004B0A20 = {
     0x8, /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
     0x4, /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     0, /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
+    /* 004B0EB0 g_UiRootStackActionHandlerPage */
     {
-        (dword)UiRootStack_PopCf}, /* 004B0EB0 g_UiRootStackActionHandlerPage */
+        (dword)UiRootStack_PopCf},
     {0x70, 0x7F},
     {0x40}, /* 004B0EB6 u__engine_winclass_gfx_004b0eb6 */
+    /* 004B0EB8 u_engine\winclass.gfx_004b0eb6+2 */
     {
         0x006E0065, 0x00690067, 0x0065006E, 0x0077005C, 0x006E0069, 0x006C0063, 0x00730061, 0x002E0073,
-        0x00660067, 0x00000078}, /* 004B0EB8 u_engine\winclass.gfx_004b0eb6+2 */
+        0x00660067, 0x00000078},
     L"texte\\winclass.str", /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
     L"engine\\win.gfx", /* 004B0F06 u_engine_win_gfx_004b0f06 */
     0xFF, /* 004B0F24 g_UiPointerCaptureButton */
@@ -1770,175 +1857,207 @@ ImageData_004B1500 g_ImageData_004B1500 = {
 
 ImageData_004B15C8 g_ImageData_004B15C8 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B15C8 gap */
-    {.relocate = (void *)UiSpriteButtonControl_Relocate, .method04 = (void *)UiNode_DefaultMethod04_NoOp, .drawClipped = (void *)UiSpriteButtonControl_DrawClipped, .layout = (void *)UiContainer_LayoutChildren, .nonRightPress = (void *)UiSpriteButtonControl_NonRightPress, .nonRightRelease = (void *)UiSpriteButtonControl_NonRightRelease, .rightPress = (void *)UiNode_ForwardRightPressToParent, .rightRelease = (void *)UiNode_DefaultRightRelease, .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag, .rightDrag = (void *)UiNode_DefaultRightDrag, .pointerMove = (void *)UiNode_DefaultPointerMove, .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque, .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf, .applyFlags = (void *)UiNode_ApplyFlagsRecursive, .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId, .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId, .tick = (void *)UiNode_DefaultTick, .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent}, /* 004B15D0 g_UiSpriteButtonControlVtable */
+    /* 004B15D0 g_UiSpriteButtonControlVtable */
+    {
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiSpriteButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiSpriteButtonControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     {
         0x90909090, 0x90909090},
 };
 
 ImageData_004B1D74 g_ImageData_004B1D74 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B1D74 gap */
+    /* 004B1D80 g_UiNodeVtable_004B1D80 */
     {
-        (dword)UiFramedTextButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiFramedTextButtonControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiFramedTextButtonControl_NonRightPress,
-        (dword)UiFramedTextButtonControl_NonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiFramedTextButtonControl_NonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiFramedTextButtonControl_HitTestRect,
-        (dword)UiSelectableControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B1D80 g_UiNodeVtable_004B1D80 */
+        .relocate = (void *)UiFramedTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiFramedTextButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiFramedTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiFramedTextButtonControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiFramedTextButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiFramedTextButtonControl_HitTestRect,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B2734 g_ImageData_004B2734 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B2734 gap */
+    /* 004B2740 g_UiWindowControlVtable */
     {
-        (dword)UiWindowControl_RelocateWithFrameInset,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiWindowControl_DrawFramedTextAndChrome,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiFramedTextButtonControl_NonRightPress,
-        (dword)UiFramedTextButtonControl_NonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiFramedTextButtonControl_NonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiFramedTextButtonControl_HitTestRect,
-        (dword)UiSelectableControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B2740 g_UiWindowControlVtable */
+        .relocate = (void *)UiWindowControl_RelocateWithFrameInset,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiWindowControl_DrawFramedTextAndChrome,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiFramedTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiFramedTextButtonControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiFramedTextButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiFramedTextButtonControl_HitTestRect,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B2CD8 g_ImageData_004B2CD8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B2CD8 gap */
+    /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
     {
-        (dword)UiTextButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiTextButtonControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiTextButtonControl_NonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiTextButtonControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B33D0 g_ImageData_004B33D0 = {
+    /* 004B33D0 g_UiTitledWindowControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiTitledWindowControl_DrawFrameTitleAndChildren,
-        (dword)UiTitledWindowControl_LayoutFrameTitleAndChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B33D0 g_UiTitledWindowControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTitledWindowControl_DrawFrameTitleAndChildren,
+        .layout = (void *)UiTitledWindowControl_LayoutFrameTitleAndChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B3760 g_ImageData_004B3760 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B3760 gap */
+    /* 004B3770 g_UiImagePanelControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiImagePanelControl_DrawAlignedTextureAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiImagePanelControl_HitTestAlignedTextureAndChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B3770 g_UiImagePanelControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiImagePanelControl_DrawAlignedTextureAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiImagePanelControl_HitTestAlignedTextureAndChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B3A48 g_ImageData_004B3A48 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B3A48 gap */
+    /* 004B3A50 g_UiFillPanelControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiFillPanelControl_DrawColorOrTiledTextureAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildrenOrNoneA,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B3A50 g_UiFillPanelControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiFillPanelControl_DrawColorOrTiledTextureAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildrenOrNoneA,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B3C1C g_ImageData_004B3C1C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004B3C1C gap */
+    /* 004B3C20 g_UiHorizontalGaugeControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiHorizontalGaugeControl_DrawFrameFillAndLabel,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiContainer_PointerMoveReturnCode6,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent}, /* 004B3C20 g_UiHorizontalGaugeControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiHorizontalGaugeControl_DrawFrameFillAndLabel,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiContainer_PointerMoveReturnCode6,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     {0}, /* 004B3C68 g_UiWindowPercentTextUtf16 */
     {
         0x90909090, 0x90909090, 0x90909090},
@@ -1947,212 +2066,285 @@ ImageData_004B3C1C g_ImageData_004B3C1C = {
 
 ImageData_004B3EEC g_ImageData_004B3EEC = {
     {0x00, 0x00, 0x90, 0x90}, /* 004B3EEC gap */
+    /* 004B3EF0 g_UiRangeSliderControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiRangeSliderControl_DrawTrackAndThumb,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiRangeSliderControl_BeginThumbDrag,
-        (dword)UiRangeSliderControl_EndThumbDrag,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiRangeSliderControl_UpdateValueFromPointer,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiRangeSliderControl_HandleKeyboardCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiRangeSliderControl_SuppressIfActionId,
-        (dword)UiRangeSliderControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiRangeSliderControl_HandlePointerWheel,
-        0x90909090, 0x90909090}, /* 004B3EF0 g_UiRangeSliderControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiRangeSliderControl_DrawTrackAndThumb,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiRangeSliderControl_BeginThumbDrag,
+        .nonRightRelease = (void *)UiRangeSliderControl_EndThumbDrag,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiRangeSliderControl_UpdateValueFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiRangeSliderControl_HandleKeyboardCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiRangeSliderControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiRangeSliderControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiRangeSliderControl_HandlePointerWheel},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B4648 g_ImageData_004B4648 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B4648 gap */
+    /* 004B4650 g_UiLayoutContainerControlVtable */
     {
-        (dword)UiLayoutContainerControl_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiContainer_DrawIntersectingChildren,
-        (dword)UiLayoutContainerControl_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildrenOrNoneB,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiLayoutContainerControl_ApplyFlagsRecursive,
-        (dword)UiLayoutContainerControl_SuppressActionIdRecursive,
-        (dword)UiLayoutContainerControl_UnsuppressActionIdRecursive,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B4650 g_UiLayoutContainerControlVtable */
+        .relocate = (void *)UiLayoutContainerControl_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiContainer_DrawIntersectingChildren,
+        .layout = (void *)UiLayoutContainerControl_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildrenOrNoneB,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiLayoutContainerControl_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiLayoutContainerControl_SuppressActionIdRecursive,
+        .unsuppressActionId = (void *)UiLayoutContainerControl_UnsuppressActionIdRecursive,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B494C g_ImageData_004B494C = {
     {0x90, 0x90, 0x90, 0x90}, /* 004B494C gap */
+    /* 004B4950 g_UiPanelControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B4950 g_UiPanelControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B4CB8 g_ImageData_004B4CB8 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B4CB8 gap */
+    /* 004B4CC0 g_UiResizableWindowControlVtable */
     {
-        (dword)UiResizableWindowControl_RelocateAndRefreshInteractionState,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiResizableWindowControl_DrawFrameTitleAndChildren,
-        (dword)UiContainer_LayoutWithOptionalWindowHeaderOffset,
-        (dword)UiResizableWindowControl_BeginMoveResizeOrWindowAction,
-        (dword)UiResizableWindowControl_EndMoveResizeAndHandleWindowActions,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiResizableWindowControl_UpdateMoveOrResize,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiResizableWindowControl_QueryResizeCursorCode,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiResizableWindowControl_HandleWindowHotkeysCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B4CC0 g_UiResizableWindowControlVtable */
+        .relocate = (void *)UiResizableWindowControl_RelocateAndRefreshInteractionState,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiResizableWindowControl_DrawFrameTitleAndChildren,
+        .layout = (void *)UiContainer_LayoutWithOptionalWindowHeaderOffset,
+        .nonRightPress = (void *)UiResizableWindowControl_BeginMoveResizeOrWindowAction,
+        .nonRightRelease = (void *)UiResizableWindowControl_EndMoveResizeAndHandleWindowActions,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiResizableWindowControl_UpdateMoveOrResize,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiResizableWindowControl_QueryResizeCursorCode,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiResizableWindowControl_HandleWindowHotkeysCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B5890 g_ImageData_004B5890 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B5890 gap */
+    /* 004B58A0 g_UiNumericTextEditControlVtable */
     {
-        (dword)UiNumericTextEditControl_RelocateAndRebuildText,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiTextEditControl_DrawTextSelectionAndCaret,
-        (dword)UiTextEditControl_RecomputeLayoutAndClampScroll,
-        (dword)UiTextEditControl_BeginSelectionAtPointer,
-        (dword)UiTextEditControl_EndSelection,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiTextEditControl_UpdateSelectionFromPointer,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNumericTextEditControl_HandleKeyboardAndCommitCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiTextEditControl_SuppressIfActionId,
-        (dword)UiTextEditControl_UnsuppressIfActionId,
-        (dword)UiTextEditControl_TickCaretBlink,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B58A0 g_UiNumericTextEditControlVtable */
+        .relocate = (void *)UiNumericTextEditControl_RelocateAndRebuildText,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextEditControl_DrawTextSelectionAndCaret,
+        .layout = (void *)UiTextEditControl_RecomputeLayoutAndClampScroll,
+        .nonRightPress = (void *)UiTextEditControl_BeginSelectionAtPointer,
+        .nonRightRelease = (void *)UiTextEditControl_EndSelection,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiTextEditControl_UpdateSelectionFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNumericTextEditControl_HandleKeyboardAndCommitCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextEditControl_TickCaretBlink,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B67F4 g_ImageData_004B67F4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B67F4 gap */
+    /* 004B6800 g_UiPathTextEditControlVtable */
     {
-        (dword)UiPathTextEditControl_RelocateAndValidateDos83,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiTextEditControl_DrawTextSelectionAndCaret,
-        (dword)UiTextEditControl_RecomputeLayoutAndClampScroll,
-        (dword)UiTextEditControl_BeginSelectionAtPointer,
-        (dword)UiTextEditControl_EndSelection,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiTextEditControl_UpdateSelectionFromPointer,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiPathTextEditControl_HandleKeyboardAndValidateCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiTextEditControl_SuppressIfActionId,
-        (dword)UiTextEditControl_UnsuppressIfActionId,
-        (dword)UiTextEditControl_TickCaretBlink,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B6800 g_UiPathTextEditControlVtable */
+        .relocate = (void *)UiPathTextEditControl_RelocateAndValidateDos83,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextEditControl_DrawTextSelectionAndCaret,
+        .layout = (void *)UiTextEditControl_RecomputeLayoutAndClampScroll,
+        .nonRightPress = (void *)UiTextEditControl_BeginSelectionAtPointer,
+        .nonRightRelease = (void *)UiTextEditControl_EndSelection,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiTextEditControl_UpdateSelectionFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiPathTextEditControl_HandleKeyboardAndValidateCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextEditControl_TickCaretBlink,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B7048 g_ImageData_004B7048 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B7048 gap */
+    /* 004B7050 g_UiRequiredTextEditControlVtable */
     {
-        (dword)UiRequiredTextEditControl_RelocateAndValidateNonEmpty,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiTextEditControl_DrawTextSelectionAndCaret,
-        (dword)UiTextEditControl_RecomputeLayoutAndClampScroll,
-        (dword)UiTextEditControl_BeginSelectionAtPointer,
-        (dword)UiTextEditControl_EndSelection,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiTextEditControl_UpdateSelectionFromPointer,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiRequiredTextEditControl_HandleKeyboardAndValidateCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiTextEditControl_SuppressIfActionId,
-        (dword)UiTextEditControl_UnsuppressIfActionId,
-        (dword)UiTextEditControl_TickCaretBlink,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004B7050 g_UiRequiredTextEditControlVtable */
+        .relocate = (void *)UiRequiredTextEditControl_RelocateAndValidateNonEmpty,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextEditControl_DrawTextSelectionAndCaret,
+        .layout = (void *)UiTextEditControl_RecomputeLayoutAndClampScroll,
+        .nonRightPress = (void *)UiTextEditControl_BeginSelectionAtPointer,
+        .nonRightRelease = (void *)UiTextEditControl_EndSelection,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiTextEditControl_UpdateSelectionFromPointer,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiRequiredTextEditControl_HandleKeyboardAndValidateCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextEditControl_TickCaretBlink,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B7914 g_ImageData_004B7914 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B7914 gap */
-    {.relocate = (void *)UiScrollableControl_RelocateChildren, .method04 = (void *)UiNode_DefaultMethod04_NoOp, .drawClipped = (void *)UiScrollableControl_DrawFrameContentAndScrollbars, .layout = (void *)UiScrollableControl_RebuildViewportAndScrollbars, .nonRightPress = (void *)UiScrollableControl_BeginPrimaryScrollInteraction, .nonRightRelease = (void *)UiScrollableControl_EndPrimaryScrollInteraction, .rightPress = (void *)UiScrollableControl_BeginSecondaryScrollInteraction, .rightRelease = (void *)UiScrollableControl_EndSecondaryScrollInteraction, .nonRightDrag = (void *)UiScrollableControl_UpdatePrimaryScrollDrag, .rightDrag = (void *)UiScrollableControl_UpdateSecondaryScrollDrag, .pointerMove = (void *)UiScrollableControl_QueryPointerRegion, .hitTest = (void *)UiScrollableControl_HitTestContentAndScrollbars, .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf, .applyFlags = (void *)UiNode_ApplyFlagsRecursive, .suppressActionId = (void *)UiContainer_SuppressActionId, .unsuppressActionId = (void *)UiContainer_UnsuppressActionId, .tick = (void *)UiScrollableControl_TickAutoScroll, .pointerWheel = (void *)UiScrollableControl_HandlePointerWheel}, /* 004B7920 g_UiScrollableControlVtable */
+    /* 004B7920 g_UiScrollableControlVtable */
+    {
+        .relocate = (void *)UiScrollableControl_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiScrollableControl_DrawFrameContentAndScrollbars,
+        .layout = (void *)UiScrollableControl_RebuildViewportAndScrollbars,
+        .nonRightPress = (void *)UiScrollableControl_BeginPrimaryScrollInteraction,
+        .nonRightRelease = (void *)UiScrollableControl_EndPrimaryScrollInteraction,
+        .rightPress = (void *)UiScrollableControl_BeginSecondaryScrollInteraction,
+        .rightRelease = (void *)UiScrollableControl_EndSecondaryScrollInteraction,
+        .nonRightDrag = (void *)UiScrollableControl_UpdatePrimaryScrollDrag,
+        .rightDrag = (void *)UiScrollableControl_UpdateSecondaryScrollDrag,
+        .pointerMove = (void *)UiScrollableControl_QueryPointerRegion,
+        .hitTest = (void *)UiScrollableControl_HitTestContentAndScrollbars,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiScrollableControl_TickAutoScroll,
+        .pointerWheel = (void *)UiScrollableControl_HandlePointerWheel},
     {
         0x90909090, 0x90909090},
 };
 
 ImageData_004B9530 g_ImageData_004B9530 = {
+    /* 004B9530 g_UiFocusProxyControlVtable */
     {
-        (dword)UiFocusProxyControl_RelocateChild,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiSingleLineTextControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiFocusProxyControl_ForwardNonRightPressToChild,
-        (dword)UiFocusProxyControl_ForwardNonRightReleaseToChild,
-        (dword)UiFocusProxyControl_ForwardRightPressToChild,
-        (dword)UiFocusProxyControl_ForwardRightReleaseToChild,
-        (dword)UiFocusProxyControl_ForwardNonRightDragToChild,
-        (dword)UiFocusProxyControl_ForwardRightDragToChild,
-        (dword)UiFocusProxyControl_ForwardPointerMoveToChild,
-        (dword)UiFocusProxyControl_HitTestChildProxy,
-        (dword)UiFocusProxyControl_ForwardKeyboardEventToChildCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiFocusProxyControl_ForwardTickToChild,
-        (dword)UiFocusProxyControl_ForwardPointerWheelToChildOrParent,
-        0x90909090, 0x90909090}, /* 004B9530 g_UiFocusProxyControlVtable */
+        .relocate = (void *)UiFocusProxyControl_RelocateChild,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSingleLineTextControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiFocusProxyControl_ForwardNonRightPressToChild,
+        .nonRightRelease = (void *)UiFocusProxyControl_ForwardNonRightReleaseToChild,
+        .rightPress = (void *)UiFocusProxyControl_ForwardRightPressToChild,
+        .rightRelease = (void *)UiFocusProxyControl_ForwardRightReleaseToChild,
+        .nonRightDrag = (void *)UiFocusProxyControl_ForwardNonRightDragToChild,
+        .rightDrag = (void *)UiFocusProxyControl_ForwardRightDragToChild,
+        .pointerMove = (void *)UiFocusProxyControl_ForwardPointerMoveToChild,
+        .hitTest = (void *)UiFocusProxyControl_HitTestChildProxy,
+        .keyboardEventCf = (void *)UiFocusProxyControl_ForwardKeyboardEventToChildCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiFocusProxyControl_ForwardTickToChild,
+        .pointerWheel = (void *)UiFocusProxyControl_ForwardPointerWheelToChildOrParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004B9E38 g_ImageData_004B9E38 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004B9E38 gap */
-    {.relocate = (void *)UiContainer_RelocateChildren, .method04 = (void *)UiNode_DefaultMethod04_NoOp, .drawClipped = (void *)UiTextListControl_DrawRowsAndSelection, .layout = (void *)UiContainer_LayoutChildren, .nonRightPress = (void *)UiTextListControl_SelectRowFromPointer, .nonRightRelease = (void *)UiNode_DefaultNonRightRelease, .rightPress = (void *)UiNode_ForwardRightPressToParent, .rightRelease = (void *)UiNode_DefaultRightRelease, .nonRightDrag = (void *)UiNode_DefaultNonRightDrag, .rightDrag = (void *)UiNode_DefaultRightDrag, .pointerMove = (void *)UiNode_DefaultPointerMove, .hitTest = (void *)UiContainer_HitTestChildren, .keyboardEventCf = (void *)UiTextListControl_HandleKeyboardNavigationAndSearchCf, .applyFlags = (void *)UiNode_ApplyFlagsRecursive, .suppressActionId = (void *)UiTextListControl_SuppressIfActionId, .unsuppressActionId = (void *)UiTextListControl_UnsuppressIfActionId, .tick = (void *)UiTextListControl_TickActivationPulse, .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent}, /* 004B9E40 g_UiTextListControlVtable */
+    /* 004B9E40 g_UiTextListControlVtable */
+    {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTextListControl_DrawRowsAndSelection,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextListControl_SelectRowFromPointer,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiTextListControl_HandleKeyboardNavigationAndSearchCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiTextListControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiTextListControl_UnsuppressIfActionId,
+        .tick = (void *)UiTextListControl_TickActivationPulse,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     {
         0x90909090, 0x90909090},
 };
 
 ImageData_004BA58C g_ImageData_004BA58C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004BA58C gap */
-    {.relocate = (void *)UiContainer_RelocateChildren, .method04 = (void *)UiNode_DefaultMethod04_NoOp, .drawClipped = (void *)UiListControl_DrawRowsAndSelection, .layout = (void *)UiContainer_LayoutChildren, .nonRightPress = (void *)UiListControl_SelectRowFromPointer, .nonRightRelease = (void *)UiNode_DefaultNonRightRelease, .rightPress = (void *)UiNode_ForwardRightPressToParent, .rightRelease = (void *)UiNode_DefaultRightRelease, .nonRightDrag = (void *)UiNode_DefaultNonRightDrag, .rightDrag = (void *)UiNode_DefaultRightDrag, .pointerMove = (void *)UiNode_DefaultPointerMove, .hitTest = (void *)UiContainer_HitTestChildren, .keyboardEventCf = (void *)UiListControl_HandleKeyboardNavigationCf, .applyFlags = (void *)UiNode_ApplyFlagsRecursive, .suppressActionId = (void *)UiListControl_SuppressIfActionId, .unsuppressActionId = (void *)UiListControl_UnsuppressIfActionId, .tick = (void *)UiListControl_TickActivationPulse, .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent}, /* 004BA590 g_UiListControlVtable */
+    /* 004BA590 g_UiListControlVtable */
+    {
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiListControl_DrawRowsAndSelection,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiListControl_SelectRowFromPointer,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiListControl_HandleKeyboardNavigationCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiListControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiListControl_UnsuppressIfActionId,
+        .tick = (void *)UiListControl_TickActivationPulse,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     0, /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16 */
     {0},
     {0},
@@ -2196,81 +2388,106 @@ ImageData_004BA58C g_ImageData_004BA58C = {
 
 ImageData_004BB988 g_ImageData_004BB988 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BB988 gap */
-    {.relocate = (void *)UiTimedListControl_RelocateChildren, .method04 = (void *)UiNode_DefaultMethod04_NoOp, .drawClipped = (void *)UiTimedListControl_DrawRowsAndSelection, .layout = (void *)UiContainer_LayoutChildren, .nonRightPress = (void *)UiTimedListControl_SelectRowFromPointer, .nonRightRelease = (void *)UiNode_DefaultNonRightRelease, .rightPress = (void *)UiNode_ForwardRightPressToParent, .rightRelease = (void *)UiNode_DefaultRightRelease, .nonRightDrag = (void *)UiNode_DefaultNonRightDrag, .rightDrag = (void *)UiNode_DefaultRightDrag, .pointerMove = (void *)UiNode_DefaultPointerMove, .hitTest = (void *)UiContainer_HitTestChildren, .keyboardEventCf = (void *)UiTimedListControl_HandleKeyboardNavigationCf, .applyFlags = (void *)UiNode_ApplyFlagsRecursive, .suppressActionId = (void *)UiContainer_SuppressActionId, .unsuppressActionId = (void *)UiContainer_UnsuppressActionId, .tick = (void *)UiTimedListControl_TickActionDelay, .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent}, /* 004BB990 g_UiTimedListControlVtable */
+    /* 004BB990 g_UiTimedListControlVtable */
+    {
+        .relocate = (void *)UiTimedListControl_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiTimedListControl_DrawRowsAndSelection,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTimedListControl_SelectRowFromPointer,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiTimedListControl_HandleKeyboardNavigationCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiTimedListControl_TickActionDelay,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     {
         0x90909090, 0x90909090},
 };
 
 ImageData_004BC404 g_ImageData_004BC404 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BC404 gap */
+    /* 004BC410 g_UiListOffsetControlVtable */
     {
-        (dword)UiListOffsetControl_RelocateAndApplyDeferredOffset,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiWrappedTextControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004BC410 g_UiListOffsetControlVtable */
+        .relocate = (void *)UiListOffsetControl_RelocateAndApplyDeferredOffset,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiWrappedTextControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004BC564 g_ImageData_004BC564 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BC564 gap */
+    /* 004BC570 g_UiNodeVtable_004BC570 */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiImageControl_DrawClipped,
-        (dword)UiImageControl_LayoutChildrenToParent,
-        (dword)UiImageControl_NonRightPress,
-        (dword)UiImageControl_NonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiImageControl_NonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiImageControl_PointerMove,
-        (dword)UiImageControl_HitTestOpaque,
-        (dword)UiSelectableControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiImageControl_TickHover,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004BC570 g_UiNodeVtable_004BC570 */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiImageControl_DrawClipped,
+        .layout = (void *)UiImageControl_LayoutChildrenToParent,
+        .nonRightPress = (void *)UiImageControl_NonRightPress,
+        .nonRightRelease = (void *)UiImageControl_NonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiImageControl_NonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiImageControl_PointerMove,
+        .hitTest = (void *)UiImageControl_HitTestOpaque,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiImageControl_TickHover,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004BCC20 g_ImageData_004BCC20 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BCC20 gap */
+    /* 004BCC30 g_UiNineSlicePanelControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiNineSlicePanelControl_DrawTextureFrameAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 004BCC30 g_UiNineSlicePanelControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiNineSlicePanelControl_DrawTextureFrameAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_004BCF14 g_ImageData_004BCF14 = {
@@ -2317,13 +2534,14 @@ ImageData_004BD440 g_ImageData_004BD440 = {
 
 ImageData_004BD880 g_ImageData_004BD880 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BD880 gap */
+    /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
     {
         (dword)ArmyPlacementContact_ApplyTerrainHeight,
         (dword)ArmyPlacementContact_ApplyWaterSurfaceHeight,
         (dword)ArmyPlacementContact_ApplyTerrainHeightAndNormal,
         (dword)ArmyPlacementContact_InitializeArticulatedSuspension,
         (dword)ArmyPlacementContact_ApplyTopSurfaceHeight,
-        0x90909090, 0x90909090, 0x90909090}, /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
+        0x90909090, 0x90909090, 0x90909090},
     0, /* 004BD8B0 g_ModelCullViewRelativeX */
     0, /* 004BD8B4 g_ModelCullViewRelativeY */
     0, /* 004BD8B8 g_ModelCullViewRelativeZ */
@@ -2496,13 +2714,14 @@ ImageData_004D11B8 g_ImageData_004D11B8 = {
 
 ImageData_004FEA24 g_ImageData_004FEA24 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004FEA24 gap */
+    /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
     {
         (dword)FieldGrid_InterpolateTerrainHeight,
         (dword)FieldGrid_InterpolateWaterSurfaceHeight,
         (dword)FieldGrid_InterpolateTerrainHeight,
         (dword)FieldGrid_InterpolateTerrainHeight,
         (dword)FieldGrid_InterpolateTopSurfaceHeight,
-        0x90909090, 0x90909090, 0x90909090}, /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
+        0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_004FFC78 g_ImageData_004FFC78 = {
@@ -2652,6 +2871,7 @@ ImageData_0050BADC g_ImageData_0050BADC = {
 
 ImageData_0050BB34 g_ImageData_0050BB34 = {
     {0}, /* 0050BB34 gap */
+    /* 0050BB37 g_FrontendModelPointerContextVtable */
     {
         (dword)FrontendModelPointerContext_Relocate,
         (dword)UiNode_DefaultMethod04_NoOp,
@@ -2662,7 +2882,7 @@ ImageData_0050BB34 g_ImageData_0050BB34 = {
         (dword)FrontendModelPointerContext_RightPress,
         (dword)FrontendModelPointerContext_RightRelease,
         (dword)FrontendModelPointerContext_NonRightDrag,
-        (dword)FrontendModelPointerContext_DispatchWorldCameraPointerInput}, /* 0050BB37 g_FrontendModelPointerContextVtable */
+        (dword)FrontendModelPointerContext_DispatchWorldCameraPointerInput},
     (void *)FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction, /* 0050BB5F g_FrontendModelPointerContextUpdateCallback */
     {
         (dword)UiContainer_HitTestChildren,
@@ -2716,17 +2936,20 @@ ImageData_0050D928 g_ImageData_0050D928 = {
     0, /* 0050D9C0 g_ScenarioCatalog */
     0, /* 0050D9C4 g_ScenarioCatalogUsedBytes */
     L"save\\*.sve", /* 0050D9C8 u_save___sve_0050d9c8 */
+    /* 0050D9DE str_0050D9DE */
     {
         0x0065006C, 0x00650076, 0x005C006C, 0x002E002A, 0x0065006C, 0x00000076, 0x0065006C, 0x00650076,
-        0x005C006C, 0x002E002A, 0x00670063, 0x0000006E}, /* 0050D9DE str_0050D9DE */
+        0x005C006C, 0x002E002A, 0x00670063, 0x0000006E},
     L"level\\level.dat", /* 0050DA0E u_level_level_dat_0050da0e */
+    /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
     {
         0x0065006C, 0x00650076, 0x005C006C, 0x0065006C, 0x00650076, 0x0030006C, 0x002E0030, 0x00610064,
-        0x00000074}, /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
+        0x00000074},
     L"level\\campagne.dat", /* 0050DA52 u_level_campagne_dat_0050da52 */
+    /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
     {
         0x0065006C, 0x00650076, 0x005C006C, 0x00610063, 0x0070006D, 0x00670061, 0x0065006E, 0x00300030,
-        0x0064002E, 0x00740061}, /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
+        0x0064002E, 0x00740061},
     {0},
     L"save", /* 0050DAA2 u_save_0050daa2 */
     L"level", /* 0050DAAC u_level_0050daac */
@@ -2760,9 +2983,10 @@ ImageData_0050D928 g_ImageData_0050D928 = {
 
 ImageData_0050E164 g_ImageData_0050E164 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0050E164 gap */
+    /* 0050E170 switchdataD_0050e170 */
     {
         0x0050E610, 0x0050E3F0, 0x0050E450, 0x0050E530, 0x0050E390, 0x0050E260, 0x0050E290, 0x0050E2C0,
-        0x0050E590, 0x0050E320, 0x0050E1B0, 0x0050E2F0, 0x0050E4C0, 0x0050E1E0, 0x90909090, 0x90909090}, /* 0050E170 switchdataD_0050e170 */
+        0x0050E590, 0x0050E320, 0x0050E1B0, 0x0050E2F0, 0x0050E4C0, 0x0050E1E0, 0x90909090, 0x90909090},
 };
 
 ImageData_0050E21C g_ImageData_0050E21C = {
@@ -2771,14 +2995,16 @@ ImageData_0050E21C g_ImageData_0050E21C = {
 
 ImageData_0050E95C g_ImageData_0050E95C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050E95C gap */
+    /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3 */
     {
-        0x0050E970, 0x0050E9A0, 0x0050E9C0, 0x90909090}, /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3 */
+        0x0050E970, 0x0050E9A0, 0x0050E9C0, 0x90909090},
 };
 
 ImageData_0050EB5C g_ImageData_0050EB5C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050EB5C gap */
+    /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60 */
     {
-        0x0050EB70, 0x0050EBA0, 0x0050EBC0, 0x90909090}, /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60 */
+        0x0050EB70, 0x0050EBA0, 0x0050EBC0, 0x90909090},
 };
 
 ImageData_0050F044 g_ImageData_0050F044 = {
@@ -2825,9 +3051,10 @@ ImageData_0050F328 g_ImageData_0050F328 = {
 
 ImageData_00513DA4 g_ImageData_00513DA4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00513DA4 gap */
+    /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 */
     {
         0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0,
-        0x00513DF0, 0x00513DF0, 0x00513DF0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0}, /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0 */
+        0x00513DF0, 0x00513DF0, 0x00513DF0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0, 0x00513EA0},
 };
 
 ImageData_0051494C g_ImageData_0051494C = {
@@ -2842,80 +3069,86 @@ ImageData_0051494C g_ImageData_0051494C = {
     0, /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
     {0},
     {0},
+    /* 00514E04 g_UiSevenSlotCommandPayloadText */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090}, /* 00514E04 g_UiSevenSlotCommandPayloadText */
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_00514FB4 g_ImageData_00514FB4 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00514FB4 gap */
+    /* 00514FC0 g_UiImageActionControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiImageActionControl_DrawImageAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiImageActionControl_EnqueuePrimaryAction,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiImageActionControl_EnqueueSecondaryAction,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiImageActionControl_QueryPointerCode,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiImageActionControl_HandleKeyboardActivationCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00514FC0 g_UiImageActionControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiImageActionControl_DrawImageAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiImageActionControl_EnqueuePrimaryAction,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiImageActionControl_EnqueueSecondaryAction,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiImageActionControl_QueryPointerCode,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiImageActionControl_HandleKeyboardActivationCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_0051528C g_ImageData_0051528C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0051528C gap */
+    /* 00515290 g_UiConditionalActionControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiConditionalActionControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiConditionalActionControl_EnqueuePrimaryActionIfEnabled,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiConditionalActionControl_QueryPointerCode,
-        (dword)UiConditionalActionControl_HitTestWhenEnabled,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00515290 g_UiConditionalActionControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiConditionalActionControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiConditionalActionControl_EnqueuePrimaryActionIfEnabled,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiConditionalActionControl_QueryPointerCode,
+        .hitTest = (void *)UiConditionalActionControl_HitTestWhenEnabled,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_0051560C g_ImageData_0051560C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0051560C gap */
+    /* 00515610 g_UiNumericPairTextButtonVtable */
     {
-        (dword)UiTextButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiNumericPairTextButton_DrawFormattedValues,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiTextButtonControl_NonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiTextButtonControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent}, /* 00515610 g_UiNumericPairTextButtonVtable */
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiNumericPairTextButton_DrawFormattedValues,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     0, /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
     {0},
     {0},
@@ -2928,167 +3161,181 @@ ImageData_0051560C g_ImageData_0051560C = {
 
 ImageData_00515720 g_ImageData_00515720 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00515720 gap */
+    /* 00515730 g_UiPayloadPairTextButtonVtable */
     {
-        (dword)UiTextButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiPayloadPairTextButton_DrawFormattedPayloads,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiTextButtonControl_NonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiTextButtonControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00515730 g_UiPayloadPairTextButtonVtable */
+        .relocate = (void *)UiTextButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiPayloadPairTextButton_DrawFormattedPayloads,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiTextButtonControl_NonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_005157D0 g_ImageData_005157D0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005157D0 gap */
+    /* 005157E0 g_UiFormattedContainerVtable */
     {
-        (dword)UiFormattedContainer_RelocateWithPatchedTextPayloads,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiFormattedContainer_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 005157E0 g_UiFormattedContainerVtable */
+        .relocate = (void *)UiFormattedContainer_RelocateWithPatchedTextPayloads,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiFormattedContainer_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_00515C60 g_ImageData_00515C60 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00515C60 gap */
+    /* 00515C70 g_UiSelectionGeometryControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiSelectionGeometryControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiSelectionGeometryControl_ConvertPointerAndEnqueueAction,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00515C70 g_UiSelectionGeometryControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSelectionGeometryControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiSelectionGeometryControl_ConvertPointerAndEnqueueAction,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_005162BC g_ImageData_005162BC = {
     {0x90, 0x90, 0x90, 0x90}, /* 005162BC gap */
+    /* 005162C0 g_UiNodeVtable_005162C0 */
     {
-        (dword)UiSpriteButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiSpriteButtonControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiCommandSpriteButtonControl_BeginPress,
-        (dword)UiCommandSpriteButtonControl_NonRightRelease,
-        (dword)UiCommandSpriteButtonControl_BeginPress,
-        (dword)UiCommandSpriteButtonControl_RightRelease,
-        (dword)UiSpriteButtonControl_NonRightDrag,
-        (dword)UiSpriteButtonControl_NonRightDrag,
-        (dword)UiCommandSpriteVariantA_PointerMove,
-        (dword)UiSpriteButtonControl_HitTestOpaque,
-        (dword)UiSelectableControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 005162C0 g_UiNodeVtable_005162C0 */
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .nonRightRelease = (void *)UiCommandSpriteButtonControl_NonRightRelease,
+        .rightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .pointerMove = (void *)UiCommandSpriteVariantA_PointerMove,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     {
-        (dword)UiSpriteButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiSpriteButtonControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiCommandSpriteButtonControl_BeginPress,
-        (dword)UiCommandSpriteButtonControl_NonRightRelease,
-        (dword)UiCommandSpriteButtonControl_BeginPress,
-        (dword)UiCommandSpriteButtonControl_RightRelease,
-        (dword)UiSpriteButtonControl_NonRightDrag,
-        (dword)UiSpriteButtonControl_NonRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiSpriteButtonControl_HitTestOpaque,
-        (dword)UiSelectableControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00516310 g_UiNodeVtable_00516310 */
+        0x90909090, 0x90909090},
+    /* 00516310 g_UiNodeVtable_00516310 */
+    {
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSpriteButtonControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .nonRightRelease = (void *)UiCommandSpriteButtonControl_NonRightRelease,
+        .rightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_0051650C g_ImageData_0051650C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0051650C gap */
     {0}, /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
+    /* 00516530 g_UiNodeVtable_00516530 */
     {
-        (dword)UiSpriteButtonControl_Relocate,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiCatalogEntryControl_DrawClipped,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiCommandSpriteButtonControl_BeginPress,
-        (dword)UiCatalogEntryControl_NonRightRelease,
-        (dword)UiCommandSpriteButtonControl_BeginPress,
-        (dword)UiCommandSpriteButtonControl_RightRelease,
-        (dword)UiSpriteButtonControl_NonRightDrag,
-        (dword)UiSpriteButtonControl_NonRightDrag,
-        (dword)UiCatalogEntryControl_PointerMove,
-        (dword)UiSpriteButtonControl_HitTestOpaque,
-        (dword)UiSelectableControl_KeyboardEventCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiSelectableControl_SuppressIfActionId,
-        (dword)UiSelectableControl_UnsuppressIfActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00516530 g_UiNodeVtable_00516530 */
+        .relocate = (void *)UiSpriteButtonControl_Relocate,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiCatalogEntryControl_DrawClipped,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .nonRightRelease = (void *)UiCatalogEntryControl_NonRightRelease,
+        .rightPress = (void *)UiCommandSpriteButtonControl_BeginPress,
+        .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
+        .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
+        .pointerMove = (void *)UiCatalogEntryControl_PointerMove,
+        .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
+        .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_00516CBC g_ImageData_00516CBC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00516CBC gap */
+    /* 00516CC0 g_UiArmyMetricsPanelVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiArmyMetricsPanel_DrawTextureMetricsAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiImagePanelControl_HitTestAlignedTextureAndChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00516CC0 g_UiArmyMetricsPanelVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiArmyMetricsPanel_DrawTextureMetricsAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiImagePanelControl_HitTestAlignedTextureAndChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_00516E90 g_ImageData_00516E90 = {
@@ -3099,25 +3346,26 @@ ImageData_00516E90 g_ImageData_00516E90 = {
     0, /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
     {0},
     {0},
+    /* 00516F60 g_UiNodeVtable_00516F60 */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)FrontendResultsTable_DrawColumnSequenceByType,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent}, /* 00516F60 g_UiNodeVtable_00516F60 */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)FrontendResultsTable_DrawColumnSequenceByType,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
     0, /* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
     0, /* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
     0x1A, /* 00516FB0 g_FrontendResultsColumnAdvanceColourPixels */
@@ -3145,82 +3393,89 @@ ImageData_00516E90 g_ImageData_00516E90 = {
 
 ImageData_00517068 g_ImageData_00517068 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517068 gap */
+    /* 00517070 g_UiNodeVtable_00517070 */
     {
         0x005170C0, 0x005170D0, 0x005170E0, 0x00517100, 0x00517120, 0x00517140, 0x00517160, 0x00517180,
         0x005171A0, 0x005171D0, 0x00517200, 0x00517230, 0x00517260, 0x00517290, 0x005172C0, 0x005172F0,
-        0x00517320, 0x00517350, 0x90909090, 0x90909090}, /* 00517070 g_UiNodeVtable_00517070 */
+        0x00517320, 0x00517350, 0x90909090, 0x90909090},
 };
 
 ImageData_00517DD4 g_ImageData_00517DD4 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517DD4 gap */
+    /* 00517DE0 g_UiNodeVtable_00517DE0 */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00517DE0 g_UiNodeVtable_00517DE0 */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_00517F00 g_ImageData_00517F00 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517F00 gap */
+    /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
     {
-        (dword)UiListOffsetControl_RelocateAndApplyDeferredOffset,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiCommandVisibilityWrappedText_DrawWhenAllowed,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)FrontendResultsTable_HitTestAlwaysNone,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
+        .relocate = (void *)UiListOffsetControl_RelocateAndApplyDeferredOffset,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiCommandVisibilityWrappedText_DrawWhenAllowed,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)FrontendResultsTable_HitTestAlwaysNone,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_00517FBC g_ImageData_00517FBC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00517FBC gap */
+    /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
     {
-        (dword)UiFocusProxyControl_RelocateChild,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiCommandVisibilitySingleLineText_DrawWhenAllowed,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiNode_DefaultNonRightPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiNode_ForwardRightPressToParent,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)FrontendResultsTable_HitTestAlwaysNone,
-        (dword)UiNode_DefaultKeyboardEventMoveFocusNextCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
+        .relocate = (void *)UiFocusProxyControl_RelocateChild,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiCommandVisibilitySingleLineText_DrawWhenAllowed,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiNode_DefaultNonRightPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiNode_ForwardRightPressToParent,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)FrontendResultsTable_HitTestAlwaysNone,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_00518074 g_ImageData_00518074 = {
@@ -3298,26 +3553,28 @@ ImageData_00518074 g_ImageData_00518074 = {
     0x4000400040004000ull, /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
     {
         0x90909090, 0x90909090},
+    /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
     {
-        (dword)UiContainer_RelocateChildren,
-        (dword)UiNode_DefaultMethod04_NoOp,
-        (dword)UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren,
-        (dword)UiContainer_LayoutChildren,
-        (dword)UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress,
-        (dword)UiNode_DefaultNonRightRelease,
-        (dword)UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress,
-        (dword)UiNode_DefaultRightRelease,
-        (dword)UiNode_DefaultNonRightDrag,
-        (dword)UiNode_DefaultRightDrag,
-        (dword)UiNode_DefaultPointerMove,
-        (dword)UiContainer_HitTestChildren,
-        (dword)UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf,
-        (dword)UiNode_ApplyFlagsRecursive,
-        (dword)UiContainer_SuppressActionId,
-        (dword)UiContainer_UnsuppressActionId,
-        (dword)UiNode_DefaultTick,
-        (dword)UiNode_ForwardPointerWheelToParent,
-        0x90909090, 0x90909090}, /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
+        .relocate = (void *)UiContainer_RelocateChildren,
+        .method04 = (void *)UiNode_DefaultMethod04_NoOp,
+        .drawClipped = (void *)UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren,
+        .layout = (void *)UiContainer_LayoutChildren,
+        .nonRightPress = (void *)UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress,
+        .nonRightRelease = (void *)UiNode_DefaultNonRightRelease,
+        .rightPress = (void *)UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress,
+        .rightRelease = (void *)UiNode_DefaultRightRelease,
+        .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
+        .rightDrag = (void *)UiNode_DefaultRightDrag,
+        .pointerMove = (void *)UiNode_DefaultPointerMove,
+        .hitTest = (void *)UiContainer_HitTestChildren,
+        .keyboardEventCf = (void *)UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf,
+        .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
+        .suppressActionId = (void *)UiContainer_SuppressActionId,
+        .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
+        .tick = (void *)UiNode_DefaultTick,
+        .pointerWheel = (void *)UiNode_ForwardPointerWheelToParent},
+    {
+        0x90909090, 0x90909090},
 };
 
 ImageData_005191F0 g_ImageData_005191F0 = {
@@ -3326,9 +3583,10 @@ ImageData_005191F0 g_ImageData_005191F0 = {
 
 ImageData_0051936C g_ImageData_0051936C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0051936C gap */
+    /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 */
     {
         0x005193B0, 0x00519460, 0x00519450, 0x005194A0, 0x00519490, 0x005193D0, 0x00519450, 0x005193F0,
-        0x005194A0, 0x00519410, 0x00519430, 0x00519480, 0x00519410, 0x90909090, 0x90909090}, /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374 */
+        0x005194A0, 0x00519410, 0x00519430, 0x00519480, 0x00519410, 0x90909090, 0x90909090},
 };
 
 ImageData_0051972C g_ImageData_0051972C = {
@@ -3493,13 +3751,15 @@ ImageData_0051DBB4 g_ImageData_0051DBB4 = {
 
 ImageData_0051EAA0 g_ImageData_0051EAA0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051EAA0 gap */
+    /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5 */
     {
-        0x0051EAD0, 0x0051ED00, 0x0051EE60, 0x0051EED0, 0x0051EB20, 0x90909090, 0x90909090, 0x90909090}, /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5 */
+        0x0051EAD0, 0x0051ED00, 0x0051EE60, 0x0051EED0, 0x0051EB20, 0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_0051EEE4 g_ImageData_0051EEE4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051EEE4 gap */
     {0}, /* 0051EEF0 g_ModelDefinitionRegistry */
+    /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
     {
         (dword)TerrainHeightBand_TestAroundWorldPoint,
         (dword)TerrainAuxHeightThreshold_TestAroundWorldPoint,
@@ -3510,7 +3770,7 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
         (dword)FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf,
         (dword)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf,
         (dword)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf,
-        (dword)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf}, /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
+        (dword)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf},
     0, /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000003, 0x00000004, 0x00000005,
@@ -3523,13 +3783,30 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
         0x00000000, 0x80000000, 0x00000001, 0x00000001, 0x80000000, 0x00000000, 0x80000004, 0x00000003,
         0x00000003, 0x00000010, 0x00000018, 0x00000010, 0x00000001, 0xC0000010, 0x40000000},
     {0},
-    {.modelClass01Priority = 0x2, .modelClass02Priority = 0x2, .modelClass03Priority = 0x2, .modelClass05Priority = 0x2, .modelClass06Priority = 0x2, .modelClass07Priority = 0x2, .modelClass08Priority = 0x2, .modelClass09Priority = 0x2, .modelClass11Priority = 0x1, .modelClass13Priority = 0x1, .modelClass17Priority = 0x2, .modelClass18Priority = 0x2, .modelClass19Priority = 0x2, .modelClass22Priority = 0x1, .modelClass23Priority = 0x1}, /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
+    /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
+    {
+        .modelClass01Priority = 0x2,
+        .modelClass02Priority = 0x2,
+        .modelClass03Priority = 0x2,
+        .modelClass05Priority = 0x2,
+        .modelClass06Priority = 0x2,
+        .modelClass07Priority = 0x2,
+        .modelClass08Priority = 0x2,
+        .modelClass09Priority = 0x2,
+        .modelClass11Priority = 0x1,
+        .modelClass13Priority = 0x1,
+        .modelClass17Priority = 0x2,
+        .modelClass18Priority = 0x2,
+        .modelClass19Priority = 0x2,
+        .modelClass22Priority = 0x1,
+        .modelClass23Priority = 0x1},
     0x88, /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass */
     {
         0xC0000000, 0xC0000000, 0xC0000000, 0x90000000, 0x88000000, 0x88000000, 0x88000000, 0x88000000,
         0x88000000, 0x88000000, 0x90000000, 0x88000000, 0x90000000, 0x90000000, 0x90000000, 0x90000000,
         0xC0000000, 0xA0000000, 0xC0000000, 0x90000000, 0xC0000000, 0x90000000, 0x90000000},
     {0},
+    /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
     {
         (dword)ArmyRuntime_UpdateTimedShotAndEffectEmitters,
         (dword)ArmyRuntimeClass_UpdateGroundMovementVariantA,
@@ -3794,7 +4071,7 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
         (dword)GridInfluence_RemoveLowDistanceBands,
         (dword)GridInfluence_RemoveNoOp,
         (dword)GridInfluence_RemoveLowDistanceBands,
-        (dword)GridInfluence_RemoveHighDistanceBands}, /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
+        (dword)GridInfluence_RemoveHighDistanceBands},
     0, /* 005200B8 g_ModelRuntimeSlots */
     0, /* 005200BC g_ModelRuntimeRebaseDelta */
 };
@@ -3822,32 +4099,37 @@ ImageData_00520EA0 g_ImageData_00520EA0 = {
 
 ImageData_00524110 g_ImageData_00524110 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00524110 gap */
+    /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120 */
     {
-        0x00524130, 0x00524280, 0x90909090, 0x90909090}, /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120 */
+        0x00524130, 0x00524280, 0x90909090, 0x90909090},
 };
 
 ImageData_005247C0 g_ImageData_005247C0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005247C0 gap */
+    /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 */
     {
-        0x00524B80, 0x005248C0, 0x005247F0, 0x00524AA0, 0x00524870, 0x90909090, 0x90909090, 0x90909090}, /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0 */
+        0x00524B80, 0x005248C0, 0x005247F0, 0x00524AA0, 0x00524870, 0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_00525A8C g_ImageData_00525A8C = {
     {0x00, 0x00, 0x90, 0x90}, /* 00525A8C gap */
+    /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 */
     {
-        0x00526270, 0x00525AB0, 0x00526150, 0x00525B90, 0x00525C80, 0x00525D90, 0x00526080, 0x90909090}, /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90 */
+        0x00526270, 0x00525AB0, 0x00526150, 0x00525B90, 0x00525C80, 0x00525D90, 0x00526080, 0x90909090},
 };
 
 ImageData_005266B0 g_ImageData_005266B0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005266B0 gap */
+    /* 005266C0 g_ArmyTerrainContactDispatchTable2 */
     {
-        0x005266D0, 0x00526830, 0x90909090, 0x90909090}, /* 005266C0 g_ArmyTerrainContactDispatchTable2 */
+        0x005266D0, 0x00526830, 0x90909090, 0x90909090},
 };
 
 ImageData_00526988 g_ImageData_00526988 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00526988 gap */
+    /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 */
     {
-        0x005269C0, 0x00526C00, 0x00526CA0, 0x00526DE0, 0x00526CF0, 0x00526DB0, 0x005269B0, 0x90909090}, /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990 */
+        0x005269C0, 0x00526C00, 0x00526CA0, 0x00526DE0, 0x00526CF0, 0x00526DB0, 0x005269B0, 0x90909090},
 };
 
 ImageData_00527AA4 g_ImageData_00527AA4 = {
@@ -4129,9 +4411,10 @@ ImageData_0053B9CC g_ImageData_0053B9CC = {
 
 ImageData_0053C154 g_ImageData_0053C154 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053C154 gap */
+    /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 */
     {
         0x0053C310, 0x0053C270, 0x0053C290, 0x0053C2D0, 0x0053C260, 0x0053C310, 0x0053C310, 0x0053C310,
-        0x0053C2F0, 0x0053C250, 0x0053C1A0, 0x0053C240, 0x0053C2B0, 0x0053C1C0, 0x90909090, 0x90909090}, /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160 */
+        0x0053C2F0, 0x0053C250, 0x0053C1A0, 0x0053C240, 0x0053C2B0, 0x0053C1C0, 0x90909090, 0x90909090},
 };
 
 ImageData_0053C1FC g_ImageData_0053C1FC = {
@@ -4142,9 +4425,31 @@ ImageData_0053C5DC g_ImageData_0053C5DC = {
     {0x90, 0x90, 0x90, 0x90}, /* 0053C5DC gap */
     0, /* 0053C5E0 g_AiKnowledgeData */
     L"engine\\ki.dat", /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
-    {.pressureCategoryWeights = {0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, .definitionValue0CWeight = 0x200, .armyRecord74Weight = 0x80, .armyRecord70Weight = 0x200, .nonzeroDefinition18Bonus = 0x1000, .baseScore = 0xFFFFF000}, /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
-    {.pressureCategoryWeights = {0, 0x200, 0x200, 0x200, 0x200, 0x280, 0x200}, .definitionValue60Weight = 0x200, .definitionValue0CWeight = 0xFFFFFFC0, .armyRecord74Weight = 0x200, .armyRecord78Weight = 0x100, .nonzeroDefinition18Bonus = 0xFFFFFF00}, /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
-    {.pressureCategoryWeights = {0, 0x180, 0x180, 0x180, 0x180, 0x1C0, 0x180, 0x200}, .definitionValue60Weight = 0x180, .definitionValue0CWeight = 0xC0, .armyRecord74Weight = 0x100, .armyRecord78Weight = 0x200, .nonzeroDefinition18Bonus = 0x1000, .baseScore = 0xFFFFF000}, /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
+    /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
+    {
+        .pressureCategoryWeights = {0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+        .definitionValue0CWeight = 0x200,
+        .armyRecord74Weight = 0x80,
+        .armyRecord70Weight = 0x200,
+        .nonzeroDefinition18Bonus = 0x1000,
+        .baseScore = 0xFFFFF000},
+    /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
+    {
+        .pressureCategoryWeights = {0, 0x200, 0x200, 0x200, 0x200, 0x280, 0x200},
+        .definitionValue60Weight = 0x200,
+        .definitionValue0CWeight = 0xFFFFFFC0,
+        .armyRecord74Weight = 0x200,
+        .armyRecord78Weight = 0x100,
+        .nonzeroDefinition18Bonus = 0xFFFFFF00},
+    /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
+    {
+        .pressureCategoryWeights = {0, 0x180, 0x180, 0x180, 0x180, 0x1C0, 0x180, 0x200},
+        .definitionValue60Weight = 0x180,
+        .definitionValue0CWeight = 0xC0,
+        .armyRecord74Weight = 0x100,
+        .armyRecord78Weight = 0x200,
+        .nonzeroDefinition18Bonus = 0x1000,
+        .baseScore = 0xFFFFF000},
     {
         0x90909090, 0x90909090, 0x90909090},
 };
@@ -4173,9 +4478,13 @@ ImageData_0053D358 g_ImageData_0053D358 = {
 
 ImageData_0053DA68 g_ImageData_0053DA68 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053DA68 gap */
-    {.frameUpdate = (void *)FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState, .keyboardFallbackCf = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf}, /* 0053DA70 g_UiRootCallbacks_0053DA70 */
+    /* 0053DA70 g_UiRootCallbacks_0053DA70 */
+    {
+        .frameUpdate = (void *)FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState,
+        .keyboardFallbackCf = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf},
     0, /* 0053DA84 g_FrontendSessionListRows */
     0, /* 0053DA88 g_FrontendSessionDiscoveryRecords */
+    /* 0053DA8C g_FrontendRootInitializationTemplate */
     {
         { /* +0000 g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x58), .parent = UI_TEMPLATE_NO_LINK,
@@ -6192,11 +6501,19 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000008, 0x00000000, 0x00002117},
-    }, /* 0053DA8C g_FrontendRootInitializationTemplate */
+    },
     0, /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
     {0}, /* 005433E4 DAT_005433e4 */
-    {.assignmentControls = {.offsets = {0, 0xCC0, 0xD1C, 0xD78, 0xDD4, 0xE30, 0xE8C}}, .playerControls = {.offsets = {0xEE8, 0x11E4, 0x1244, 0x12A4, 0x1304, 0x1364, 0x13C4}}, .factionControls = {.offsets = {0x1424, 0xF44, 0xFA4, 0x1004, 0x1064, 0x10C4, 0x1124}}, .selectionRows = {.offsets = {0x1184, 0x1484, 0x14E4, 0x1544, 0x15A4, 0x1604, 0x1664}}, .statusRows = {.offsets = {0x16C4, 0x1724, 0x1780, 0x17DC, 0x1838, 0x1894, 0x18F0}}, .primaryAndPadding = {.offsets = {0x194C}}}, /* 0054345C g_FrontendTaskAssignmentControlOffsets */
+    /* 0054345C g_FrontendTaskAssignmentControlOffsets */
+    {
+        .assignmentControls = {.offsets = {0, 0xCC0, 0xD1C, 0xD78, 0xDD4, 0xE30, 0xE8C}},
+        .playerControls = {.offsets = {0xEE8, 0x11E4, 0x1244, 0x12A4, 0x1304, 0x1364, 0x13C4}},
+        .factionControls = {.offsets = {0x1424, 0xF44, 0xFA4, 0x1004, 0x1064, 0x10C4, 0x1124}},
+        .selectionRows = {.offsets = {0x1184, 0x1484, 0x14E4, 0x1544, 0x15A4, 0x1604, 0x1664}},
+        .statusRows = {.offsets = {0x16C4, 0x1724, 0x1780, 0x17DC, 0x1838, 0x1894, 0x18F0}},
+        .primaryAndPadding = {.offsets = {0x194C}}},
     {0},
+    /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -6218,7 +6535,7 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x90909090}, /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
+        0x90909090},
 };
 
 ImageData_00543E34 g_ImageData_00543E34 = {
@@ -6279,6 +6596,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
     0, /* 0054592C g_FrontendMusicVoiceSet */
     0, /* 00545930 g_FrontendMusicActiveBuffer */
     0, /* 00545934 g_FrontendPendingPageActionDepth */
+    /* 00545938 g_FrontendUiActionHandlersPage20 */
     {
         (dword)FrontendSessionAction_ResetNetworkAndReturnToMainPage,
         (dword)FrontendNetworkSetupPage_InitializeFromCommandLine,
@@ -6367,7 +6685,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
         (dword)FrontendScenarioPage_OpenCampaignRecordsAndRefresh,
         (dword)ScenarioCatalog_RebuildSaveRecordListPage,
         (dword)ScenarioCatalog_RebuildLevelRecordListPage,
-        (dword)ScenarioCatalog_RebuildCampaignRecordListPage}, /* 00545938 g_FrontendUiActionHandlersPage20 */
+        (dword)ScenarioCatalog_RebuildCampaignRecordListPage},
     {(void *)ScenarioCatalog_RefreshSelectedRecordLocalizedText, (void *)ScenarioCatalog_RefreshSelectedRecordField70DisplayId, (void *)ScenarioCatalog_RefreshSelectedRecordField50DisplayId}, /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
     L"engine\\zentrale.rom", /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
     L"gfx\\texturen\\zentrale.gfx", /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
@@ -6405,14 +6723,16 @@ ImageData_00546BB4 g_ImageData_00546BB4 = {
 };
 
 ImageData_00547660 g_ImageData_00547660 = {
+    /* 00547660 PTR_ARRAY_00547660 */
     {
-        0x00547680, 0x005476B0, 0x00547700, 0x00547750, 0x005477A0, 0x005477F0, 0x90909090, 0x90909090}, /* 00547660 PTR_ARRAY_00547660 */
+        0x00547680, 0x005476B0, 0x00547700, 0x00547750, 0x005477A0, 0x005477F0, 0x90909090, 0x90909090},
 };
 
 ImageData_00547D88 g_ImageData_00547D88 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00547D88 gap */
+    /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 */
     {
-        0x00547DF5, 0x00547DB0, 0x00547DC0, 0x00547DD0, 0x00547DE0, 0x00547DF0, 0x90909090, 0x90909090}, /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90 */
+        0x00547DF5, 0x00547DB0, 0x00547DC0, 0x00547DD0, 0x00547DE0, 0x00547DF0, 0x90909090, 0x90909090},
 };
 
 ImageData_00547DD8 g_ImageData_00547DD8 = {
@@ -6422,8 +6742,9 @@ ImageData_00547DD8 g_ImageData_00547DD8 = {
 ImageData_005480FC g_ImageData_005480FC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005480FC gap */
     {{.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190}, {.commandCode = 0x20004, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x548190}, {.commandCode = 0x20001, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x548140}}, /* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 */
+    /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
     {
-        0x00000000, 0x90909090, 0x90909090}, /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
+        0x00000000, 0x90909090, 0x90909090},
 };
 
 ImageData_0054D780 g_ImageData_0054D780 = {
@@ -6474,7 +6795,10 @@ ImageData_0054D780 g_ImageData_0054D780 = {
 
 ImageData_0054FBB0 g_ImageData_0054FBB0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0054FBB0 gap */
-    {.frameUpdate = (void *)EndGameResultsUiRuntime_UpdateAndHandleInputCf, .keyboardFallbackCf = (void *)EndGameResultsUiRuntime_DispatchCommandByFlagsCf}, /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
+    /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
+    {
+        .frameUpdate = (void *)EndGameResultsUiRuntime_UpdateAndHandleInputCf,
+        .keyboardFallbackCf = (void *)EndGameResultsUiRuntime_DispatchCommandByFlagsCf},
     0, /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
     0, /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
     {0}, /* 0054FBDC g_InGamePlayerStatusTextSlots */
@@ -6501,6 +6825,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
     0, /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
     {0},
     {0}, /* 00550590 g_InGameCountdownTextUtf16 */
+    /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
     {
         { /* +0000 g_UiPanelControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_LINK(0x17C), .parent = UI_TEMPLATE_NO_LINK,
@@ -10347,7 +10672,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
             0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
-    }, /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
+    },
 };
 
 ImageData_0055EFB0 g_ImageData_0055EFB0 = {
@@ -10368,21 +10693,26 @@ ImageData_0055EFB0 g_ImageData_0055EFB0 = {
 
 ImageData_0055F7B4 g_ImageData_0055F7B4 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F7B4 gap */
+    /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0 */
     {
-        0x0055F820, 0x0055F820}, /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0 */
+        0x0055F820, 0x0055F820},
+    /* 0055F7C8 g_CodePointerTable_0055F7C8 */
     {
         0x0055F800, 0x0055F840, 0x0055F860, 0x0055F880, 0x0055F8A0, 0x0055F903, 0x0055F8C0, 0x0055F8D0,
-        0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903}, /* 0055F7C8 g_CodePointerTable_0055F7C8 */
+        0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903},
 };
 
 ImageData_0055F934 g_ImageData_0055F934 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0055F934 gap */
+    /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940 */
     {
-        0x0055FA13}, /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940 */
+        0x0055FA13},
+    /* 0055F944 g_CodePointerTable_0055F944 */
     {
-        0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13}, /* 0055F944 g_CodePointerTable_0055F944 */
+        0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13},
+    /* 0055F960 g_CodePointerTable_0055F960 */
     {
-        0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13}, /* 0055F960 g_CodePointerTable_0055F960 */
+        0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13},
 };
 
 ImageData_00562498 g_ImageData_00562498 = {
@@ -10391,6 +10721,7 @@ ImageData_00562498 g_ImageData_00562498 = {
     {
         0x90909090},
     {0x90, 0x90},
+    /* 005624A0 g_InGameUiActionHandlersPage10 */
     {
         (dword)InGameMapAction_RecenterViewFromGridCoordinates,
         (dword)InGameCommandSprite_DispatchVariantAControl24,
@@ -10431,15 +10762,18 @@ ImageData_00562498 g_ImageData_00562498 = {
         (dword)InGameUiAction1024_Handler,
         (dword)InGameCommandState_SetRuntimeFlag1000,
         (dword)InGameCommandState_SelectAndPropagateBinaryMode,
-        (dword)InGameCommandState_CloseSettingsAndDispatchOperation150}, /* 005624A0 g_InGameUiActionHandlersPage10 */
+        (dword)InGameCommandState_CloseSettingsAndDispatchOperation150},
+    /* 00562540 g_InGameUiCommandModeActionHandlers30 */
     {
         (dword)InGameCommandModeG_Select0,
         (dword)InGameCommandModeG_Select1,
-        (dword)InGameCommandModeG_Select2}, /* 00562540 g_InGameUiCommandModeActionHandlers30 */
+        (dword)InGameCommandModeG_Select2},
+    /* 00562550 g_UiActionPage11Group1Handlers */
     {
         (dword)InGameCommandModeG_Select5,
         (dword)InGameCommandModeG_Select3,
-        (dword)InGameCommandModeG_Select4}, /* 00562550 g_UiActionPage11Group1Handlers */
+        (dword)InGameCommandModeG_Select4},
+    /* 00562560 g_UiActionPage11InitializedHandlers */
     {
         (dword)InGameCommandModeC_Select0,
         (dword)InGameCommandModeC_Select1,
@@ -10462,7 +10796,8 @@ ImageData_00562498 g_ImageData_00562498 = {
         (dword)InGameCommandRange_DispatchState0,
         (dword)InGameCommandRange_DispatchState1,
         (dword)InGameCommandModeF_Select0,
-        (dword)InGameCommandModeF_Select1}, /* 00562560 g_UiActionPage11InitializedHandlers */
+        (dword)InGameCommandModeF_Select1},
+    /* 005625B8 g_InGameUiActionHandlersPage12 */
     {
         (dword)InGameCommandPanel_OpenPage4AndRefreshAvailability,
         (dword)InGameSettingsPage_CloseViaSharedToggle,
@@ -10491,7 +10826,7 @@ ImageData_00562498 g_ImageData_00562498 = {
         (dword)InGameSettingsPage_OpenViaSharedToggle,
         (dword)InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog,
         (dword)InGameAudioSettings_SetMovieAlternateGain,
-        (dword)InGameGameplaySettings_SetHidePanel}, /* 005625B8 g_InGameUiActionHandlersPage12 */
+        (dword)InGameGameplaySettings_SetHidePanel},
     {0xB210, 0xB290, 0xB310, 0xB390, 0xB410, 0xB490, 0xB510, 0xB590}, /* 00562628 g_UiAction100AControlOffsets */
     0, /* 00562648 g_UiCatalogGroup48ColumnCount */
     0, /* 0056264C g_UiCatalogGroup42ColumnCount */
@@ -10499,72 +10834,84 @@ ImageData_00562498 g_ImageData_00562498 = {
     {(void *)&g_ImageData_00562498.at_DAT_005626a8, (void *)&g_ImageData_00562498.at_DAT_005626a8, (void *)&g_ImageData_00562498.at_DAT_005626a8, (void *)&g_ImageData_00562498.at_DAT_005626a8, (void *)&g_ImageData_00562498.at_DAT_005626a8, (void *)&g_ImageData_00562498.at_DAT_00562768, (void *)&g_ImageData_00562498.at_DAT_00562828, (void *)&g_ImageData_00562498.at_DAT_005628e8, (void *)&g_ImageData_00562498.at_DAT_005629a8}, /* 00562654 g_UiCatalogGroup48OffsetTables */
     {(void *)&g_ImageData_00562498.at_DAT_00562a68, (void *)&g_ImageData_00562498.at_DAT_00562a68, (void *)&g_ImageData_00562498.at_DAT_00562a68, (void *)&g_ImageData_00562498.at_DAT_00562a68, (void *)&g_ImageData_00562498.at_DAT_00562a68, (void *)&g_ImageData_00562498.at_DAT_00562b10, (void *)&g_ImageData_00562498.at_DAT_00562bb8}, /* 00562678 g_UiCatalogGroup42OffsetTables */
     {(void *)&g_ImageData_00562498.at_DAT_00562c60, (void *)&g_ImageData_00562498.at_DAT_00562c60, (void *)&g_ImageData_00562498.at_DAT_00562c60, (void *)&g_ImageData_00562498.at_DAT_00562c60, (void *)&g_ImageData_00562498.at_DAT_00562c60}, /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
+    /* 005626A8 DAT_005626a8 */
     {
         0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x0000607C, 0x000060FC, 0x0000617C, 0x000061FC,
         0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC, 0x0000647C, 0x000064FC, 0x0000657C, 0x000065FC,
         0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC, 0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC,
         0x00006A7C, 0x00006AFC, 0x00006B7C, 0x00006BFC, 0x00006C7C, 0x00006CFC, 0x00006D7C, 0x00006DFC,
         0x00006E7C, 0x00006EFC, 0x00006F7C, 0x00006FFC, 0x0000707C, 0x000070FC, 0x0000717C, 0x000071FC,
-        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC}, /* 005626A8 DAT_005626a8 */
+        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
+    /* 00562768 DAT_00562768 */
     {
         0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x0000607C, 0x000060FC, 0x0000617C,
         0x000061FC, 0x00006AFC, 0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC, 0x00006B7C, 0x0000647C,
         0x000064FC, 0x0000657C, 0x000065FC, 0x00006BFC, 0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC,
         0x00006C7C, 0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC, 0x00006D7C, 0x00006DFC,
         0x00006E7C, 0x00006EFC, 0x00006F7C, 0x00006FFC, 0x0000707C, 0x000070FC, 0x0000717C, 0x000071FC,
-        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC}, /* 00562768 DAT_00562768 */
+        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
+    /* 00562828 DAT_00562828 */
     {
         0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x00006D7C, 0x0000607C, 0x000060FC,
         0x0000617C, 0x000061FC, 0x00006AFC, 0x00006DFC, 0x0000627C, 0x000062FC, 0x0000637C, 0x000063FC,
         0x00006B7C, 0x00006E7C, 0x0000647C, 0x000064FC, 0x0000657C, 0x000065FC, 0x00006BFC, 0x00006EFC,
         0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC, 0x00006C7C, 0x00006F7C, 0x0000687C, 0x000068FC,
         0x0000697C, 0x000069FC, 0x00006CFC, 0x00006FFC, 0x0000707C, 0x000070FC, 0x0000717C, 0x000071FC,
-        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC}, /* 00562828 DAT_00562828 */
+        0x0000727C, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
+    /* 005628E8 DAT_005628e8 */
     {
         0x00005E7C, 0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x00006D7C, 0x0000707C, 0x0000607C,
         0x000060FC, 0x0000617C, 0x000061FC, 0x00006AFC, 0x00006DFC, 0x000070FC, 0x0000627C, 0x000062FC,
         0x0000637C, 0x000063FC, 0x00006B7C, 0x00006E7C, 0x0000717C, 0x0000647C, 0x000064FC, 0x0000657C,
         0x000065FC, 0x00006BFC, 0x00006EFC, 0x000071FC, 0x0000667C, 0x000066FC, 0x0000677C, 0x000067FC,
         0x00006C7C, 0x00006F7C, 0x0000727C, 0x0000687C, 0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC,
-        0x00006FFC, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC}, /* 005628E8 DAT_005628e8 */
+        0x00006FFC, 0x000072FC, 0x0000737C, 0x000073FC, 0x0000747C, 0x000074FC, 0x0000757C, 0x000075FC},
+    /* 005629A8 DAT_005629a8 */
     {
-        0x00005E7C}, /* 005629A8 DAT_005629a8 */
+        0x00005E7C},
+    /* 005629AC DAT_005629ac */
     {
         0x00005EFC, 0x00005F7C, 0x00005FFC, 0x00006A7C, 0x00006D7C, 0x0000707C, 0x0000737C, 0x0000607C,
         0x000060FC, 0x0000617C, 0x000061FC, 0x00006AFC, 0x00006DFC, 0x000070FC, 0x000073FC, 0x0000627C,
         0x000062FC, 0x0000637C, 0x000063FC, 0x00006B7C, 0x00006E7C, 0x0000717C, 0x0000747C, 0x0000647C,
         0x000064FC, 0x0000657C, 0x000065FC, 0x00006BFC, 0x00006EFC, 0x000071FC, 0x000074FC, 0x0000667C,
         0x000066FC, 0x0000677C, 0x000067FC, 0x00006C7C, 0x00006F7C, 0x0000727C, 0x0000757C, 0x0000687C,
-        0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC, 0x00006FFC, 0x000072FC, 0x000075FC}, /* 005629AC DAT_005629ac */
+        0x000068FC, 0x0000697C, 0x000069FC, 0x00006CFC, 0x00006FFC, 0x000072FC, 0x000075FC},
+    /* 00562A68 DAT_00562a68 */
     {
         0x00007748, 0x000077C8, 0x00007848, 0x000078C8, 0x00007948, 0x000079C8, 0x00007A48, 0x00007AC8,
         0x00007B48, 0x00007BC8, 0x00007C48, 0x00007CC8, 0x00007D48, 0x00007DC8, 0x00007E48, 0x00007EC8,
         0x00007F48, 0x00007FC8, 0x00008048, 0x000080C8, 0x00008148, 0x000081C8, 0x00008248, 0x000082C8,
         0x00008348, 0x000083C8, 0x00008448, 0x000084C8, 0x00008548, 0x000085C8, 0x00008648, 0x000086C8,
         0x00008748, 0x000087C8, 0x00008848, 0x000088C8, 0x00008948, 0x000089C8, 0x00008A48, 0x00008AC8,
-        0x00008B48, 0x00008BC8}, /* 00562A68 DAT_00562a68 */
+        0x00008B48, 0x00008BC8},
+    /* 00562B10 DAT_00562b10 */
     {
         0x00007748, 0x000077C8, 0x00007848, 0x000078C8, 0x00008548, 0x00007948, 0x000079C8, 0x00007A48,
         0x00007AC8, 0x000085C8, 0x00007B48, 0x00007BC8, 0x00007C48, 0x00007CC8, 0x00008648, 0x00007D48,
         0x00007DC8, 0x00007E48, 0x00007EC8, 0x000086C8, 0x00007F48, 0x00007FC8, 0x00008048, 0x000080C8,
         0x00008748, 0x00008148, 0x000081C8, 0x00008248, 0x000082C8, 0x000087C8, 0x00008348, 0x000083C8,
         0x00008448, 0x000084C8, 0x00008848, 0x000088C8, 0x00008948, 0x000089C8, 0x00008A48, 0x00008AC8,
-        0x00008B48, 0x00008BC8}, /* 00562B10 DAT_00562b10 */
+        0x00008B48, 0x00008BC8},
+    /* 00562BB8 DAT_00562bb8 */
     {
-        0x00007748}, /* 00562BB8 DAT_00562bb8 */
+        0x00007748},
+    /* 00562BBC DAT_00562bbc */
     {
         0x000077C8, 0x00007848, 0x000078C8, 0x00008548, 0x000088C8, 0x00007948, 0x000079C8, 0x00007A48,
         0x00007AC8, 0x000085C8, 0x00008948, 0x00007B48, 0x00007BC8, 0x00007C48, 0x00007CC8, 0x00008648,
         0x000089C8, 0x00007D48, 0x00007DC8, 0x00007E48, 0x00007EC8, 0x000086C8, 0x00008A48, 0x00007F48,
         0x00007FC8, 0x00008048, 0x000080C8, 0x00008748, 0x00008AC8, 0x00008148, 0x000081C8, 0x00008248,
         0x000082C8, 0x000087C8, 0x00008B48, 0x00008348, 0x000083C8, 0x00008448, 0x000084C8, 0x00008848,
-        0x00008BC8}, /* 00562BBC DAT_00562bbc */
+        0x00008BC8},
+    /* 00562C60 DAT_00562c60 */
     {
-        0x00008D14}, /* 00562C60 DAT_00562c60 */
+        0x00008D14},
+    /* 00562C64 DAT_00562c64 */
     {
         0x00008D90, 0x00008E0C, 0x00008E88, 0x00008F04, 0x00008F80, 0x00008FFC, 0x00009078, 0x000090F4,
         0x00009170, 0x000091EC, 0x00009268, 0x000092E4, 0x00009360, 0x000093DC, 0x00009458, 0x000094D4,
-        0x00009550, 0x000095CC, 0x00009648, 0x000096C4, 0x00009740, 0x000097BC, 0x00009838}, /* 00562C64 DAT_00562c64 */
+        0x00009550, 0x000095CC, 0x00009648, 0x000096C4, 0x00009740, 0x000097BC, 0x00009838},
     {0x503C, 0x5098, 0x50F4, 0x5150, 0x51AC, 0x5208, 0x5264}, /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
     {0x52C0, 0x531C, 0x5378, 0x53D4, 0x5430, 0x548C, 0x54E8}, /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
     {0x57C8, 0x5824, 0x5880, 0x58DC, 0x5938, 0x5994, 0x59F0}, /* 00562CF8 g_UiAction1012IconImageOffsets */
@@ -10574,13 +10921,20 @@ ImageData_00562498 g_ImageData_00562498 = {
     {0x1544, 0x15AC, 0x1614, 0x167C, 0x16E4, 0x174C, 0x17B4}, /* 00562D68 g_TechnologyPanelRowFlagOffsets */
     {0x1814, 0x1870, 0x18CC, 0x1928, 0x1984, 0x19E0, 0x1A3C}, /* 00562D84 g_TechnologyPanelRowValueOffsets */
     0xA1F8, /* 00562DA0 g_InGameSelectionDetailControlOffsetTable32 */
+    /* 00562DA4 DAT_00562da4 */
     {
-        0x0000A258}, /* 00562DA4 DAT_00562da4 */
+        0x0000A258},
+    /* 00562DA8 DAT_00562da8 */
     {
         0x0000A2B8, 0x0000A318, 0x0000A378, 0x0000A3D8, 0x0000A438, 0x0000A498, 0x0000A4F8, 0x0000A558,
-        0x0000A5B8, 0x0000A618}, /* 00562DA8 DAT_00562da8 */
+        0x0000A5B8, 0x0000A618},
     {0x20E4, 0x2144, 0x21A4, 0x2204, 0x2264, 0x22C4, 0x2324}, /* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
-    {.primaryUpdate = {.army = (void *)ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers, .shot = (void *)ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects, .effect = (void *)EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions}, .terrainStateRefresh = {.army = (void *)ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint, .shot = (void *)ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint, .effect = (void *)EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint}, .occupancyRebuild = {.army = (void *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback, .shot = (void *)ShotRuntimeMaintenance_OccupancyRebuildNoOp, .effect = (void *)EffectRuntimeMaintenance_OccupancyRebuildNoOp}, .audioRefresh = {.army = (void *)ArmyRuntimeMaintenance_DispatchClassMethodDRecursive, .shot = (void *)ShotRuntimeMaintenance_UpdateHierarchyProjectedSound, .effect = (void *)EffectRuntimeMaintenance_AudioRefreshNoOp}}, /* 00562DEC g_RuntimeMaintenanceCallbackPhases */
+    /* 00562DEC g_RuntimeMaintenanceCallbackPhases */
+    {
+        .primaryUpdate = {.army = (void *)ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers, .shot = (void *)ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects, .effect = (void *)EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions},
+        .terrainStateRefresh = {.army = (void *)ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint, .shot = (void *)ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint, .effect = (void *)EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint},
+        .occupancyRebuild = {.army = (void *)ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback, .shot = (void *)ShotRuntimeMaintenance_OccupancyRebuildNoOp, .effect = (void *)EffectRuntimeMaintenance_OccupancyRebuildNoOp},
+        .audioRefresh = {.army = (void *)ArmyRuntimeMaintenance_DispatchClassMethodDRecursive, .shot = (void *)ShotRuntimeMaintenance_UpdateHierarchyProjectedSound, .effect = (void *)EffectRuntimeMaintenance_AudioRefreshNoOp}},
     {0xA9, 0xA9, 0xA9, 0xA9, 0xAA, 0xAA, 0xAA, 0xA9, 0xAB, 0xAB, 0xAB}, /* 00562E1C g_UiAction1012SubresourceByState */
     {0},
     0, /* 00562EC8 g_InGameOwnedEntityTransientEffectMarkerCount */
@@ -10593,9 +10947,10 @@ ImageData_00562498 g_ImageData_00562498 = {
     L"texte\\help.str", /* 00563170 u_texte_help_str_00563170 */
     L"gfx\\panel\\window.gfx", /* 0056318E u_gfx_panel_window_gfx_0056318e */
     L"texte\\tastatur.str", /* 005631B8 u_texte_tastatur_str_005631b8 */
+    /* 005631DE g_DeveloperChatPhraseUtf16 */
     {
         0x0068004F, 0x00670020, 0x006F0072, 0x00730073, 0x00720065, 0x00540020, 0x006F0068, 0x0061006D,
-        0x002C0073, 0x00650020, 0x006C0072}, /* 005631DE g_DeveloperChatPhraseUtf16 */
+        0x002C0073, 0x00650020, 0x006C0072},
     {0xF6},
     L"se mich!", /* 0056320C str_0056320C */
     {0x48}, /* 0056321E u_Hmmm__na_gut________0056321e */
@@ -10642,8 +10997,9 @@ ImageData_00562498 g_ImageData_00562498 = {
     0, /* 005632F4 g_InGamePanelTextureSubresource34Height */
     0, /* 005632F8 g_InGamePanelTextureSubresource32Height */
     0, /* 005632FC g_UiHoverSelectionRecord */
+    /* 00563300 g_InGameSelectedTechnologyId */
     {
-        0x00000000, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090}, /* 00563300 g_InGameSelectedTechnologyId */
+        0x00000000, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
     0, /* 00563320 g_MoviePlaybackBaseFrameGroup */
     0, /* 00563324 g_MoviePlaybackScheduleCounter */
     0, /* 00563328 g_MoviePlaybackScheduleSpan */
@@ -10709,8 +11065,9 @@ ImageData_00562498 g_ImageData_00562498 = {
 ImageData_005658BC g_ImageData_005658BC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005658BC gap */
     {{.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990}, {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0}}, /* 005658C0 g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30 */
+    /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
     {
-        0x00000000, 0x90909090}, /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
+        0x00000000, 0x90909090},
 };
 
 ImageData_00565E2C g_ImageData_00565E2C = {
@@ -10719,22 +11076,25 @@ ImageData_00565E2C g_ImageData_00565E2C = {
 
 ImageData_00566034 g_ImageData_00566034 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00566034 gap */
+    /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 */
     {
-        0x00566060, 0x00566080, 0x00566090, 0x005660A0, 0x005660F0, 0x00566100, 0x00566110, 0x00566120}, /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040 */
+        0x00566060, 0x00566080, 0x00566090, 0x005660A0, 0x005660F0, 0x00566100, 0x00566110, 0x00566120},
 };
 
 ImageData_0056710C g_ImageData_0056710C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0056710C gap */
     {{.commandCode = 0x30071, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567870}, {.commandCode = 0x10001, .continuationEntryAddress = 0x567270}, {.commandCode = 0x30063, .continuationEntryAddress = 0x5674B0}, {.commandCode = 0x10000, .continuationEntryAddress = 0x567410}, {.commandCode = 0x20001, .continuationEntryAddress = 0x567460}, {.commandCode = 0x20002, .continuationEntryAddress = 0x5673A0}, {.commandCode = 0x20004, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567340}, {.commandCode = 0x30070, .continuationEntryAddress = 0x5675E0}, {.commandCode = 0x30067, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567660}, {.commandCode = 0x30067, .continuationEntryAddress = 0x567620}, {.commandCode = 0x10002, .continuationEntryAddress = 0x5676A0}, {.commandCode = 0x30070, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x5677E0}, {.commandCode = 0x30078, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x567200}, {.commandCode = 0x30065, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x567230}, {.commandCode = 0x3007A, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5671E0}}, /* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 */
+    /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
     {
-        0x00000000, 0x90909090, 0x90909090}, /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
+        0x00000000, 0x90909090, 0x90909090},
 };
 
 ImageData_005679AC g_ImageData_005679AC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005679AC gap */
     {{.commandCode = 0x30073, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567F60}, {.commandCode = 0x30073, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567FC0}, {.commandCode = 0x30073, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568020}, {.commandCode = 0x30073, .continuationEntryAddress = 0x567F60}, {.commandCode = 0x30062, .continuationEntryAddress = 0x567ED0}, {.commandCode = 0x30061, .continuationEntryAddress = 0x5680F0}, {.commandCode = 0x30031, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30032, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30033, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30034, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30035, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30036, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30037, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30038, .modifierClassFlags = 0x33, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30031, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30032, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30033, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30034, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30035, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30036, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30037, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30038, .modifierClassFlags = 0xF, .continuationEntryAddress = 0x567DB0}, {.commandCode = 0x30031, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30032, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30033, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30034, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30035, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30036, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30037, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30038, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30031, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30032, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30033, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30034, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30035, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30036, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30037, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30038, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x567D60}, {.commandCode = 0x30031, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30032, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30033, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30034, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30035, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30036, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30037, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30038, .modifierClassFlags = 0x3, .continuationEntryAddress = 0x567D10}, {.commandCode = 0x30031, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30032, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30033, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30034, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30035, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30036, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30037, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x30038, .continuationEntryAddress = 0x567CC0}, {.commandCode = 0x20, .continuationEntryAddress = 0x567E00}, {.commandCode = 0x20, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x567E40}, {.commandCode = 0x10003, .continuationEntryAddress = 0x567E20}, {.commandCode = 0x30066, .continuationEntryAddress = 0x568080}, {.commandCode = 0x3006F, .continuationEntryAddress = 0x5681A0}, {.commandCode = 0x30076, .modifierClassFlags = 0x3C, .continuationEntryAddress = 0x5681B0}, {.commandCode = 0x30063, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568190}, {.commandCode = 0x10015, .continuationEntryAddress = 0x567EA0}, {.commandCode = 0x30064, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x568130}}, /* 005679B0 g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 */
+    /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
     {
-        0x00000000, 0x90909090, 0x90909090}, /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
+        0x00000000, 0x90909090, 0x90909090},
 };
 
 ImageData_0056A604 g_ImageData_0056A604 = {
@@ -10746,9 +11106,10 @@ ImageData_0056A604 g_ImageData_0056A604 = {
 
 ImageData_0056D33C g_ImageData_0056D33C = {
     {0x00, 0x90, 0x90, 0x90}, /* 0056D33C gap */
+    /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 */
     {
         0x0056D4A0, 0x0056D3A0, 0x0056D3F0, 0x0056D380, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0,
-        0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0}, /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340 */
+        0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0, 0x0056D4A0},
 };
 
 ImageData_0056D71C g_ImageData_0056D71C = {
@@ -10768,8 +11129,9 @@ ImageData_0056D71C g_ImageData_0056D71C = {
     0, /* 0056D750 g_UiCommandModeGArmyAssetId */
     0, /* 0056D754 g_UiCommandDragReferenceX */
     0, /* 0056D758 g_UiCommandDragReferenceY */
+    /* 0056D75C g_UiCommandMode4ArmyAssetId */
     {
-        0x000001F4}, /* 0056D75C g_UiCommandMode4ArmyAssetId */
+        0x000001F4},
     0, /* 0056D760 g_UiCommandCallerMaskHighBit */
     {0x1, 0x2, 0x3, 0x4, 0x5, 0x7}, /* 0056D764 g_UiCommandModeGPrimaryPageIndices */
     {0x1, 0x2, 0x3, 0x4, 0x5, 0x7}, /* 0056D77C g_UiCommandModeGSecondaryPageIndices */
@@ -10795,6 +11157,7 @@ ImageData_0056D71C g_ImageData_0056D71C = {
 
 ImageData_0056E408 g_ImageData_0056E408 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056E408 gap */
+    /* 0056E410 g_InGameKeyboardDispatchRecords */
     {
         0x00030071, 0x00000030, 0x0056F1C0, 0x00030069, 0x0000000C, 0x0056E670, 0x00020002, 0x00000000,
         0x0056E6A0, 0x00030070, 0x0000000C, 0x0056F160, 0x00030069, 0x00000030, 0x0056E5E0, 0x00030065,
@@ -10809,42 +11172,50 @@ ImageData_0056E408 g_ImageData_0056E408 = {
         0x0056EFB0, 0x00030076, 0x00000000, 0x0056F090, 0x00030065, 0x00000000, 0x0056F100, 0x00030062,
         0x00000000, 0x0056F120, 0x00030063, 0x00000000, 0x0056EF70, 0x00030064, 0x00000000, 0x0056EF90,
         0x00030077, 0x00000000, 0x0056EF10, 0x00030071, 0x00000000, 0x0056EF30, 0x00030079, 0x00000000,
-        0x0056EF50, 0x00030072, 0x00000000, 0x0056F140, 0x00000000, 0x90909090, 0x90909090, 0x90909090}, /* 0056E410 g_InGameKeyboardDispatchRecords */
+        0x0056EF50, 0x00030072, 0x00000000, 0x0056F140, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_0056F278 g_ImageData_0056F278 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056F278 gap */
-    {.records = {{.keyCode = 0x30031, .continuationEntryAddress = 0x56F360}, {.keyCode = 0x30032, .continuationEntryAddress = 0x56F3B0}, {.keyCode = 0x30033, .continuationEntryAddress = 0x56F400}, {.keyCode = 0x30034, .continuationEntryAddress = 0x56F450}, {.keyCode = 0x30035, .continuationEntryAddress = 0x56F4A0}, {.keyCode = 0x30036, .continuationEntryAddress = 0x56F4F0}, {.keyCode = 0x30037, .continuationEntryAddress = 0x56F540}, {.keyCode = 0x30073, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F7D0}, {.keyCode = 0x30031, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F590}, {.keyCode = 0x30032, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F5E0}, {.keyCode = 0x30033, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F630}, {.keyCode = 0x30034, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F680}, {.keyCode = 0x30035, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F6D0}, {.keyCode = 0x30036, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F720}, {.keyCode = 0x30037, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F770}, {.keyCode = 0x30063, .requiredModifierMask = 0xC, .continuationEntryAddress = 0x56F7E0}}, .alignmentPadding = {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}}, /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
+    /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
+    {
+        .records = {{.keyCode = 0x30031, .continuationEntryAddress = 0x56F360}, {.keyCode = 0x30032, .continuationEntryAddress = 0x56F3B0}, {.keyCode = 0x30033, .continuationEntryAddress = 0x56F400}, {.keyCode = 0x30034, .continuationEntryAddress = 0x56F450}, {.keyCode = 0x30035, .continuationEntryAddress = 0x56F4A0}, {.keyCode = 0x30036, .continuationEntryAddress = 0x56F4F0}, {.keyCode = 0x30037, .continuationEntryAddress = 0x56F540}, {.keyCode = 0x30073, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F7D0}, {.keyCode = 0x30031, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F590}, {.keyCode = 0x30032, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F5E0}, {.keyCode = 0x30033, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F630}, {.keyCode = 0x30034, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F680}, {.keyCode = 0x30035, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F6D0}, {.keyCode = 0x30036, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F720}, {.keyCode = 0x30037, .requiredModifierMask = 0x30, .continuationEntryAddress = 0x56F770}, {.keyCode = 0x30063, .requiredModifierMask = 0xC, .continuationEntryAddress = 0x56F7E0}},
+        .alignmentPadding = {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 };
 
 ImageData_0056F81C g_ImageData_0056F81C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0056F81C gap */
+    /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable */
     {
-        0x0056F840, 0x0056F8A0, 0x0056F8F0, 0x0056F930, 0x0056FA20, 0x0056FA50, 0x90909090, 0x90909090}, /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable */
+        0x0056F840, 0x0056F8A0, 0x0056F8F0, 0x0056F930, 0x0056FA20, 0x0056FA50, 0x90909090, 0x90909090},
 };
 
 ImageData_0056FA98 g_ImageData_0056FA98 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056FA98 gap */
+    /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable */
     {
-        0x0056FAC0, 0x0056FD50, 0x0056FED0, 0x00570100, 0x005701B0, 0x00570310, 0x90909090, 0x90909090}, /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable */
+        0x0056FAC0, 0x0056FD50, 0x0056FED0, 0x00570100, 0x005701B0, 0x00570310, 0x90909090, 0x90909090},
 };
 
 ImageData_00570408 g_ImageData_00570408 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570408 gap */
+    /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable */
     {
-        0x00570430, 0x00570770, 0x00570840, 0x00570A10, 0x00570B20, 0x00570CC0, 0x90909090, 0x90909090}, /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable */
+        0x00570430, 0x00570770, 0x00570840, 0x00570A10, 0x00570B20, 0x00570CC0, 0x90909090, 0x90909090},
 };
 
 ImageData_00570D90 g_ImageData_00570D90 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570D90 gap */
+    /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable */
     {
-        0x00570DC0, 0x00570E40, 0x00570F10, 0x00570EA0, 0x00570EF0, 0x00570F10, 0x90909090, 0x90909090}, /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable */
+        0x00570DC0, 0x00570E40, 0x00570F10, 0x00570EA0, 0x00570EF0, 0x00570F10, 0x90909090, 0x90909090},
 };
 
 ImageData_00570F48 g_ImageData_00570F48 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570F48 gap */
+    /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable */
     {
-        0x00570F70, 0x00570FB0, 0x00571010, 0x00570FE0, 0x00570FE0, 0x00571010, 0x90909090, 0x90909090}, /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable */
+        0x00570F70, 0x00570FB0, 0x00571010, 0x00570FE0, 0x00570FE0, 0x00571010, 0x90909090, 0x90909090},
 };
 
 ImageData_00571AE4 g_ImageData_00571AE4 = {
@@ -10907,10 +11278,12 @@ ImageData_00572AB0 g_ImageData_00572AB0 = {
     L"sound.pck", /* 00572E9A u_sound_pck_00572e9a */
     L"filme.pck", /* 00572EAE u_filme_pck_00572eae */
     L"level.pck", /* 00572EC2 u_level_pck_00572ec2 */
+    /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
     {
-        0x00610070, 0x00630074, 0x00300068, 0x002E0030, 0x00630070, 0x0000006B}, /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
+        0x00610070, 0x00630074, 0x00300068, 0x002E0030, 0x00630070, 0x0000006B},
+    /* 00572EEE g_LevelArchivePathTemplateUtf16 */
     {
-        0x0065006C, 0x00650076, 0x0030006C, 0x002E0030, 0x00630070, 0x0000006B}, /* 00572EEE g_LevelArchivePathTemplateUtf16 */
+        0x0065006C, 0x00650076, 0x0030006C, 0x002E0030, 0x00630070, 0x0000006B},
     L"sound\\button0.sam", /* 00572F06 u_sound_button0_sam_00572f06 */
     L"sound\\button1.sam", /* 00572F2A u_sound_button1_sam_00572f2a */
     L"sound\\button2.sam", /* 00572F4E u_sound_button2_sam_00572f4e */
@@ -10930,7 +11303,21 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00573EE8 gap */
     {0}, /* 00573EF0 g_DynamicModules */
     0, /* 00573F70 g_DynamicModuleCount */
-    {{.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_10, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_14, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_15, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_16, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_11, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_12, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}, {.destination = (void *)&g_ImageData_00573EE8.at_dynapi_13, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}}, /* 00573F74 g_BootstrapApiBindings */
+    {{.destination = (void *)&dynapi_9, .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_10,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_KERNEL32}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_14,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_15,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_16,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_WINMM}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_11,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_12,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}, {
+        .destination = (void *)&g_ImageData_00573EE8.at_dynapi_13,
+        .moduleName = (void *)&g_ImageData_00573EE8.at_sz_ADVAPI32}}, /* 00573F74 g_BootstrapApiBindings */
     {0},
     0, /* 00573FBC pDirectDrawCreate */
     0, /* 00573FC0 pDirectDrawEnumerateA */
@@ -10941,48 +11328,58 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00573FD4 pDirectSoundCaptureEnumerateA */
     0, /* 00573FD8 g_GrAADrawTriangle */
     {0},
+    /* 00573FDC PTR_dynapi_24_00573fdc */
     {
-        (dword)&g_ImageData_00573EE8.at_dynapi_24}, /* 00573FDC PTR_dynapi_24_00573fdc */
+        (dword)&g_ImageData_00573EE8.at_dynapi_24},
     0, /* 00573FE0 g_GrAlphaBlendFunction */
+    /* 00573FE4 PTR_dynapi_25_00573fe4 */
     {
-        (dword)&g_ImageData_00573EE8.at_dynapi_25}, /* 00573FE4 PTR_dynapi_25_00573fe4 */
+        (dword)&g_ImageData_00573EE8.at_dynapi_25},
     0, /* 00573FE8 g_GrAlphaCombine */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_26},
+    /* 00573FF0 g_GrAlphaControlsITRGBLighting */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_27}, /* 00573FF0 g_GrAlphaControlsITRGBLighting */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_27},
+    /* 00573FF8 g_GrAlphaTestFunction */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_28}, /* 00573FF8 g_GrAlphaTestFunction */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_28},
+    /* 00574000 g_GrAlphaTestReferenceValue */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_29}, /* 00574000 g_GrAlphaTestReferenceValue */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_29},
     0, /* 00574008 g_GrBufferClear */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_30},
     0, /* 00574010 g_GrBufferSwap */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_31},
+    /* 00574018 g_GrChromakeyMode */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_32}, /* 00574018 g_GrChromakeyMode */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_32},
+    /* 00574020 g_GrChromakeyValue */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_33}, /* 00574020 g_GrChromakeyValue */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_33},
     0, /* 00574028 g_GrClipWindow */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_36},
     0, /* 00574030 g_GrColorCombine */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_37},
+    /* 00574038 g_GrColorMask */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_38}, /* 00574038 g_GrColorMask */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_38},
+    /* 00574040 g_GrConstantColorValue */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_39}, /* 00574040 g_GrConstantColorValue */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_39},
     0, /* 00574048 g_GrCoordinateSpace */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_40},
     0, /* 00574050 g_GrCullMode */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_41},
+    /* 00574058 g_GrDepthBiasLevel */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_42}, /* 00574058 g_GrDepthBiasLevel */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_42},
     0, /* 00574060 g_GrDepthBufferFunction */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_43},
@@ -10992,66 +11389,87 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00574070 g_GrDepthMask */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_45},
+    /* 00574078 g_GrDepthRange */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_46}, /* 00574078 g_GrDepthRange */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_46},
+    /* 00574080 g_GrDisable */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_47}, /* 00574080 g_GrDisable */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_47},
+    /* 00574088 g_GrDisableAllEffects */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_48}, /* 00574088 g_GrDisableAllEffects */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_48},
+    /* 00574090 g_GrDitherMode */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_49}, /* 00574090 g_GrDitherMode */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_49},
+    /* 00574098 g_GrDrawLine */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_50}, /* 00574098 g_GrDrawLine */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_50},
+    /* 005740A0 g_GrDrawPoint */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_51}, /* 005740A0 g_GrDrawPoint */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_51},
     0, /* 005740A8 g_GrDrawTriangle */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_52},
+    /* 005740B0 g_GrDrawVertexArray */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_53}, /* 005740B0 g_GrDrawVertexArray */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_53},
+    /* 005740B8 g_GrDrawVertexArrayContiguous */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_54}, /* 005740B8 g_GrDrawVertexArrayContiguous */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_54},
+    /* 005740C0 g_GrEnable */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_55}, /* 005740C0 g_GrEnable */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_55},
+    /* 005740C8 g_GrErrorSetCallback */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_56}, /* 005740C8 g_GrErrorSetCallback */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_56},
     0, /* 005740D0 g_GrFinish */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_57},
+    /* 005740D8 g_GrFlush */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_58}, /* 005740D8 g_GrFlush */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_58},
+    /* 005740E0 g_GrFogColorValue */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_59}, /* 005740E0 g_GrFogColorValue */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_59},
+    /* 005740E8 g_GrFogMode */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_60}, /* 005740E8 g_GrFogMode */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_60},
+    /* 005740F0 g_GrFogTable */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_61}, /* 005740F0 g_GrFogTable */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_61},
     0, /* 005740F8 g_GrGet */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_62},
+    /* 00574100 g_GrGetProcAddress */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_63}, /* 00574100 g_GrGetProcAddress */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_63},
     0, /* 00574108 g_GrGetString */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_64},
+    /* 00574110 g_GrGlideGetState */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_65}, /* 00574110 g_GrGlideGetState */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_65},
+    /* 00574118 g_GrGlideGetVertexLayout */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_66}, /* 00574118 g_GrGlideGetVertexLayout */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_66},
     0, /* 00574120 g_GrGlideInit */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_67},
+    /* 00574128 g_GrGlideSetState */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_68}, /* 00574128 g_GrGlideSetState */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_68},
+    /* 00574130 g_GrGlideSetVertexLayout */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_69}, /* 00574130 g_GrGlideSetVertexLayout */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_69},
     0, /* 00574138 g_GrGlideShutdown */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_70},
+    /* 00574140 g_GrLfbConstantAlpha */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_71}, /* 00574140 g_GrLfbConstantAlpha */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_71},
+    /* 00574148 g_GrLfbConstantDepth */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_72}, /* 00574148 g_GrLfbConstantDepth */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_72},
     0, /* 00574150 g_GrLfbLock */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_73},
@@ -11061,21 +11479,27 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00574160 g_GrLfbUnlock */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_75},
+    /* 00574168 g_GrLfbWriteRegion */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_76}, /* 00574168 g_GrLfbWriteRegion */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_76},
+    /* 00574170 g_GrLoadGammaTable */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_77}, /* 00574170 g_GrLoadGammaTable */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_77},
     0, /* 00574178 g_GrQueryResolutions */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_78},
+    /* 00574180 g_GrRenderBuffer */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_79}, /* 00574180 g_GrRenderBuffer */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_79},
+    /* 00574188 g_GrReset */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_80}, /* 00574188 g_GrReset */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_80},
+    /* 00574190 g_GrSelectContext */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_81}, /* 00574190 g_GrSelectContext */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_81},
+    /* 00574198 g_GrSstOrigin */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_82}, /* 00574198 g_GrSstOrigin */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_82},
     0, /* 005741A0 g_GrSstSelect */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_83},
@@ -11085,32 +11509,39 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 005741B0 g_GrSstWinOpen */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_85},
+    /* 005741B8 g_GrTexCalcMemRequired */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_86}, /* 005741B8 g_GrTexCalcMemRequired */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_86},
     0, /* 005741C0 g_GrTexClampMode */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_89},
     0, /* 005741C8 g_GrTexCombine */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_90},
+    /* 005741D0 g_GrTexDetailControl */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_91}, /* 005741D0 g_GrTexDetailControl */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_91},
     0, /* 005741D8 g_GrTexDownloadMipMap */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_92},
+    /* 005741E0 g_GrTexDownloadMipMapLevel */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_93}, /* 005741E0 g_GrTexDownloadMipMapLevel */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_93},
+    /* 005741E8 g_GrTexDownloadMipMapLevelPartial */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_94}, /* 005741E8 g_GrTexDownloadMipMapLevelPartial */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_94},
+    /* 005741F0 g_GrTexDownloadTable */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_95}, /* 005741F0 g_GrTexDownloadTable */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_95},
+    /* 005741F8 g_GrTexDownloadTablePartial */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_96}, /* 005741F8 g_GrTexDownloadTablePartial */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_96},
     0, /* 00574200 g_GrTexFilterMode */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_97},
+    /* 00574208 g_GrTexLodBiasValue */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_98}, /* 00574208 g_GrTexLodBiasValue */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_98},
     0, /* 00574210 g_GrTexMaxAddress */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_99},
@@ -11120,35 +11551,45 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00574220 g_GrTexMipMapMode */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_101},
+    /* 00574228 g_GrTexMultibase */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_102}, /* 00574228 g_GrTexMultibase */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_102},
+    /* 00574230 g_GrTexMultibaseAddress */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_103}, /* 00574230 g_GrTexMultibaseAddress */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_103},
+    /* 00574238 g_GrTexNCCTable */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_104}, /* 00574238 g_GrTexNCCTable */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_104},
     0, /* 00574240 g_GrTexSource */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_105},
+    /* 00574248 g_GrTexTextureMemRequired */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_106}, /* 00574248 g_GrTexTextureMemRequired */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_106},
     0, /* 00574250 g_GrVertexLayout */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_107},
     0, /* 00574258 g_GrViewport */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_108},
+    /* 00574260 g_Gu3dfGetInfo */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_109}, /* 00574260 g_Gu3dfGetInfo */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_109},
+    /* 00574268 g_Gu3dfLoad */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_110}, /* 00574268 g_Gu3dfLoad */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_110},
+    /* 00574270 g_GuFogGenerateExp */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_111}, /* 00574270 g_GuFogGenerateExp */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_111},
+    /* 00574278 g_GuFogGenerateExp2 */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_112}, /* 00574278 g_GuFogGenerateExp2 */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_112},
+    /* 00574280 g_GuFogGenerateLinear */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_113}, /* 00574280 g_GuFogGenerateLinear */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_113},
+    /* 00574288 g_GuFogTableIndexToW */
     {
-        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_114}, /* 00574288 g_GuFogTableIndexToW */
+        0x00000000, (dword)&g_ImageData_00573EE8.at_dynapi_114},
     0, /* 00574290 g_GuGammaCorrectionRGB */
     {
         (dword)&g_ImageData_00573EE8.at_dynapi_115},
@@ -11250,8 +11691,9 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00574478 g_Ws2_32_WSAAddressToStringA */
     {0},
     0, /* 005744A0 g_Ws2_32_WSAStringToAddressA */
+    /* 005744A4 sz_KERNEL32 */
     {
-        0x4E52454B, 0x32334C45}, /* 005744A4 sz_KERNEL32 */
+        0x4E52454B, 0x32334C45},
     {0x00, 0x90},
     "WINMM", /* 005744AE sz_WINMM */
     "DDRAW", /* 005744B4 dynapi_2 */
@@ -11260,22 +11702,26 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "DSOUND", /* 005744C2 dynapi_4 */
     {0x90},
     "GLIDE3X", /* 005744CA dynapi_5 */
+    /* 005744D2 sz_ADVAPI32 */
     {
-        0x41564441, 0x32334950}, /* 005744D2 sz_ADVAPI32 */
+        0x41564441, 0x32334950},
     {0x00, 0x90},
     "WSOCK32", /* 005744DC s_Wsock32ModuleName */
+    /* 005744E4 sz_WS2_32 */
     {
-        0x5F325357, 0x90003233}, /* 005744E4 sz_WS2_32 */
+        0x5F325357, 0x90003233},
     "LoadLibraryA", /* 005744EC dynapi_9 */
     {0x90},
     "FreeLibrary", /* 005744FA dynapi_10 */
     "RegOpenKeyExA", /* 00574506 dynapi_11 */
+    /* 00574514 dynapi_12 */
     {
-        0x51676552, 0x79726575, 0x756C6156, 0x41784565}, /* 00574514 dynapi_12 */
+        0x51676552, 0x79726575, 0x756C6156, 0x41784565},
     {0x00, 0x90},
     "RegCloseKey", /* 00574526 dynapi_13 */
+    /* 00574532 dynapi_14 */
     {
-        0x656D6974, 0x45746553, 0x746E6576}, /* 00574532 dynapi_14 */
+        0x656D6974, 0x45746553, 0x746E6576},
     {0x00, 0x90},
     "timeKillEvent", /* 00574540 dynapi_15 */
     "mciSendCommandA", /* 0057454E dynapi_16 */
@@ -11291,171 +11737,222 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x90},
     "DirectSoundCaptureEnumerateA", /* 005745DC dynapi_23 */
     {0x90},
+    /* 005745FA dynapi_24 */
     {
-        0x4172675F, 0x61724441, 0x69725477, 0x6C676E61, 0x34324065}, /* 005745FA dynapi_24 */
+        0x4172675F, 0x61724441, 0x69725477, 0x6C676E61, 0x34324065},
     {0x00, 0x90},
+    /* 00574610 dynapi_25 */
     {
-        0x4172675F, 0x6168706C, 0x6E656C42, 0x6E754664, 0x6F697463, 0x3631406E}, /* 00574610 dynapi_25 */
+        0x4172675F, 0x6168706C, 0x6E656C42, 0x6E754664, 0x6F697463, 0x3631406E},
     {0x00, 0x90},
+    /* 0057462A dynapi_26 */
     {
-        0x4172675F, 0x6168706C, 0x626D6F43, 0x40656E69, 0x90003032}, /* 0057462A dynapi_26 */
+        0x4172675F, 0x6168706C, 0x626D6F43, 0x40656E69, 0x90003032},
     "_grAlphaControlsITRGBLighting@4", /* 0057463E dynapi_27 */
+    /* 0057465E dynapi_28 */
     {
-        0x4172675F, 0x6168706C, 0x74736554, 0x636E7546, 0x6E6F6974, 0x90003440}, /* 0057465E dynapi_28 */
+        0x4172675F, 0x6168706C, 0x74736554, 0x636E7546, 0x6E6F6974, 0x90003440},
+    /* 00574676 dynapi_29 */
     {
-        0x4172675F, 0x6168706C, 0x74736554, 0x65666552, 0x636E6572, 0x6C615665, 0x34406575}, /* 00574676 dynapi_29 */
+        0x4172675F, 0x6168706C, 0x74736554, 0x65666552, 0x636E6572, 0x6C615665, 0x34406575},
     {0x00, 0x90},
     "_grBufferClear@12", /* 00574694 dynapi_30 */
     "_grBufferSwap@4", /* 005746A6 dynapi_31 */
+    /* 005746B6 dynapi_32 */
     {
-        0x4372675F, 0x6D6F7268, 0x79656B61, 0x65646F4D, 0x90003440}, /* 005746B6 dynapi_32 */
+        0x4372675F, 0x6D6F7268, 0x79656B61, 0x65646F4D, 0x90003440},
     "_grChromakeyValue@4", /* 005746CA dynapi_33 */
+    /* 005746DE dynapi_34 */
     {
-        0x68437267, 0x616D6F72, 0x676E6152, 0x74784565}, /* 005746DE dynapi_34 */
+        0x68437267, 0x616D6F72, 0x676E6152, 0x74784565},
     {0x00, 0x90},
+    /* 005746F0 dynapi_35 */
     {
-        0x68437267, 0x616D6F72, 0x676E6152, 0x646F4D65, 0x74784565}, /* 005746F0 dynapi_35 */
+        0x68437267, 0x616D6F72, 0x676E6152, 0x646F4D65, 0x74784565},
     {0x00, 0x90},
+    /* 00574706 dynapi_36 */
     {
-        0x4372675F, 0x5770696C, 0x6F646E69, 0x36314077}, /* 00574706 dynapi_36 */
+        0x4372675F, 0x5770696C, 0x6F646E69, 0x36314077},
     {0x00, 0x90},
+    /* 00574718 dynapi_37 */
     {
-        0x4372675F, 0x726F6C6F, 0x626D6F43, 0x40656E69, 0x90003032}, /* 00574718 dynapi_37 */
+        0x4372675F, 0x726F6C6F, 0x626D6F43, 0x40656E69, 0x90003032},
+    /* 0057472C dynapi_38 */
     {
-        0x4372675F, 0x726F6C6F, 0x6B73614D, 0x90003840}, /* 0057472C dynapi_38 */
+        0x4372675F, 0x726F6C6F, 0x6B73614D, 0x90003840},
     "_grConstantColorValue@4", /* 0057473C dynapi_39 */
+    /* 00574754 dynapi_40 */
     {
-        0x4372675F, 0x64726F6F, 0x74616E69, 0x61705365, 0x34406563}, /* 00574754 dynapi_40 */
+        0x4372675F, 0x64726F6F, 0x74616E69, 0x61705365, 0x34406563},
     {0x00, 0x90},
     "_grCullMode@4", /* 0057476A dynapi_41 */
     "_grDepthBiasLevel@4", /* 00574778 dynapi_42 */
+    /* 0057478C dynapi_43 */
     {
-        0x4472675F, 0x68747065, 0x66667542, 0x75467265, 0x6974636E, 0x34406E6F}, /* 0057478C dynapi_43 */
+        0x4472675F, 0x68747065, 0x66667542, 0x75467265, 0x6974636E, 0x34406E6F},
     {0x00, 0x90},
+    /* 005747A6 dynapi_44 */
     {
-        0x4472675F, 0x68747065, 0x66667542, 0x6F4D7265, 0x34406564}, /* 005747A6 dynapi_44 */
+        0x4472675F, 0x68747065, 0x66667542, 0x6F4D7265, 0x34406564},
     {0x00, 0x90},
+    /* 005747BC dynapi_45 */
     {
-        0x4472675F, 0x68747065, 0x6B73614D, 0x90003440}, /* 005747BC dynapi_45 */
+        0x4472675F, 0x68747065, 0x6B73614D, 0x90003440},
     "_grDepthRange@8", /* 005747CC dynapi_46 */
+    /* 005747DC dynapi_47 */
     {
-        0x4472675F, 0x62617369, 0x3440656C}, /* 005747DC dynapi_47 */
+        0x4472675F, 0x62617369, 0x3440656C},
     {0x00, 0x90},
+    /* 005747EA dynapi_48 */
     {
-        0x4472675F, 0x62617369, 0x6C41656C, 0x6666456C, 0x73746365, 0x90003040}, /* 005747EA dynapi_48 */
+        0x4472675F, 0x62617369, 0x6C41656C, 0x6666456C, 0x73746365, 0x90003040},
     "_grDitherMode@4", /* 00574802 dynapi_49 */
     "_grDrawLine@8", /* 00574812 dynapi_50 */
+    /* 00574820 dynapi_51 */
     {
-        0x4472675F, 0x50776172, 0x746E696F, 0x90003440}, /* 00574820 dynapi_51 */
+        0x4472675F, 0x50776172, 0x746E696F, 0x90003440},
+    /* 00574830 dynapi_52 */
     {
-        0x4472675F, 0x54776172, 0x6E616972, 0x40656C67, 0x90003231}, /* 00574830 dynapi_52 */
+        0x4472675F, 0x54776172, 0x6E616972, 0x40656C67, 0x90003231},
     "_grDrawVertexArray@12", /* 00574844 dynapi_53 */
     "_grDrawVertexArrayContiguous@16", /* 0057485A dynapi_54 */
     "_grEnable@4", /* 0057487A dynapi_55 */
     "_grErrorSetCallback@4", /* 00574886 dynapi_56 */
     "_grFinish@0", /* 0057489C dynapi_57 */
+    /* 005748A8 dynapi_58 */
     {
-        0x4672675F, 0x6873756C, 0x90003040}, /* 005748A8 dynapi_58 */
+        0x4672675F, 0x6873756C, 0x90003040},
+    /* 005748B4 dynapi_59 */
     {
-        0x4672675F, 0x6F43676F, 0x56726F6C, 0x65756C61, 0x90003440}, /* 005748B4 dynapi_59 */
+        0x4672675F, 0x6F43676F, 0x56726F6C, 0x65756C61, 0x90003440},
+    /* 005748C8 dynapi_60 */
     {
-        0x4672675F, 0x6F4D676F, 0x34406564}, /* 005748C8 dynapi_60 */
+        0x4672675F, 0x6F4D676F, 0x34406564},
     {0x00, 0x90},
     "_grFogTable@4", /* 005748D6 dynapi_61 */
     "_grGet@12", /* 005748E4 dynapi_62 */
     "_grGetProcAddress@4", /* 005748EE dynapi_63 */
+    /* 00574902 dynapi_64 */
     {
-        0x4772675F, 0x74537465, 0x676E6972, 0x90003440}, /* 00574902 dynapi_64 */
+        0x4772675F, 0x74537465, 0x676E6972, 0x90003440},
+    /* 00574912 dynapi_65 */
     {
-        0x4772675F, 0x6564696C, 0x53746547, 0x65746174, 0x90003440}, /* 00574912 dynapi_65 */
+        0x4772675F, 0x6564696C, 0x53746547, 0x65746174, 0x90003440},
     "_grGlideGetVertexLayout@4", /* 00574926 dynapi_66 */
+    /* 00574940 dynapi_67 */
     {
-        0x4772675F, 0x6564696C, 0x74696E49, 0x90003040}, /* 00574940 dynapi_67 */
+        0x4772675F, 0x6564696C, 0x74696E49, 0x90003040},
+    /* 00574950 dynapi_68 */
     {
-        0x4772675F, 0x6564696C, 0x53746553, 0x65746174, 0x90003440}, /* 00574950 dynapi_68 */
+        0x4772675F, 0x6564696C, 0x53746553, 0x65746174, 0x90003440},
     "_grGlideSetVertexLayout@4", /* 00574964 dynapi_69 */
+    /* 0057497E dynapi_70 */
     {
-        0x4772675F, 0x6564696C, 0x74756853, 0x6E776F64, 0x90003040}, /* 0057497E dynapi_70 */
+        0x4772675F, 0x6564696C, 0x74756853, 0x6E776F64, 0x90003040},
     "_grLfbConstantAlpha@4", /* 00574992 dynapi_71 */
     "_grLfbConstantDepth@4", /* 005749A8 dynapi_72 */
     "_grLfbLock@24", /* 005749BE dynapi_73 */
     "_grLfbReadRegion@28", /* 005749CC dynapi_74 */
+    /* 005749E0 dynapi_75 */
     {
-        0x4C72675F, 0x6E556266, 0x6B636F6C, 0x90003840}, /* 005749E0 dynapi_75 */
+        0x4C72675F, 0x6E556266, 0x6B636F6C, 0x90003840},
+    /* 005749F0 dynapi_76 */
     {
-        0x4C72675F, 0x72576266, 0x52657469, 0x6F696765, 0x3633406E}, /* 005749F0 dynapi_76 */
+        0x4C72675F, 0x72576266, 0x52657469, 0x6F696765, 0x3633406E},
     {0x00, 0x90},
+    /* 00574A06 dynapi_77 */
     {
-        0x4C72675F, 0x4764616F, 0x616D6D61, 0x6C626154, 0x36314065}, /* 00574A06 dynapi_77 */
+        0x4C72675F, 0x4764616F, 0x616D6D61, 0x6C626154, 0x36314065},
     {0x00, 0x90},
     "_grQueryResolutions@8", /* 00574A1C dynapi_78 */
     "_grRenderBuffer@4", /* 00574A32 dynapi_79 */
+    /* 00574A44 dynapi_80 */
     {
-        0x5272675F, 0x74657365, 0x90003440}, /* 00574A44 dynapi_80 */
+        0x5272675F, 0x74657365, 0x90003440},
+    /* 00574A50 dynapi_81 */
     {
-        0x5372675F, 0x63656C65, 0x6E6F4374, 0x74786574, 0x90003440}, /* 00574A50 dynapi_81 */
+        0x5372675F, 0x63656C65, 0x6E6F4374, 0x74786574, 0x90003440},
+    /* 00574A64 dynapi_82 */
     {
-        0x5372675F, 0x724F7473, 0x6E696769, 0x90003440}, /* 00574A64 dynapi_82 */
+        0x5372675F, 0x724F7473, 0x6E696769, 0x90003440},
+    /* 00574A74 dynapi_83 */
     {
-        0x5372675F, 0x65537473, 0x7463656C, 0x90003440}, /* 00574A74 dynapi_83 */
+        0x5372675F, 0x65537473, 0x7463656C, 0x90003440},
+    /* 00574A84 dynapi_84 */
     {
-        0x5372675F, 0x69577473, 0x6F6C436E, 0x34406573}, /* 00574A84 dynapi_84 */
+        0x5372675F, 0x69577473, 0x6F6C436E, 0x34406573},
     {0x00, 0x90},
+    /* 00574A96 dynapi_85 */
     {
-        0x5372675F, 0x69577473, 0x65704F6E, 0x3832406E}, /* 00574A96 dynapi_85 */
+        0x5372675F, 0x69577473, 0x65704F6E, 0x3832406E},
     {0x00, 0x90},
+    /* 00574AA8 dynapi_86 */
     {
-        0x5472675F, 0x61437865, 0x654D636C, 0x7165526D, 0x65726975, 0x36314064}, /* 00574AA8 dynapi_86 */
+        0x5472675F, 0x61437865, 0x654D636C, 0x7165526D, 0x65726975, 0x36314064},
     {0x00, 0x90},
     "_grTexChromaModeExt@8", /* 00574AC2 dynapi_87 */
     "_grTexChromaRangeExt@16", /* 00574AD8 dynapi_88 */
+    /* 00574AF0 dynapi_89 */
     {
-        0x5472675F, 0x6C437865, 0x4D706D61, 0x4065646F, 0x90003231}, /* 00574AF0 dynapi_89 */
+        0x5472675F, 0x6C437865, 0x4D706D61, 0x4065646F, 0x90003231},
+    /* 00574B04 dynapi_90 */
     {
-        0x5472675F, 0x6F437865, 0x6E69626D, 0x38324065}, /* 00574B04 dynapi_90 */
+        0x5472675F, 0x6F437865, 0x6E69626D, 0x38324065},
     {0x00, 0x90},
+    /* 00574B16 dynapi_91 */
     {
-        0x5472675F, 0x65447865, 0x6C696174, 0x746E6F43, 0x406C6F72, 0x90003631}, /* 00574B16 dynapi_91 */
+        0x5472675F, 0x65447865, 0x6C696174, 0x746E6F43, 0x406C6F72, 0x90003631},
     "_grTexDownloadMipMap@16", /* 00574B2E dynapi_92 */
+    /* 00574B46 dynapi_93 */
     {
-        0x5472675F, 0x6F447865, 0x6F6C6E77, 0x694D6461, 0x70614D70, 0x6576654C, 0x3233406C}, /* 00574B46 dynapi_93 */
+        0x5472675F, 0x6F447865, 0x6F6C6E77, 0x694D6461, 0x70614D70, 0x6576654C, 0x3233406C},
     {0x00, 0x90},
     "_grTexDownloadMipMapLevelPartial@40", /* 00574B64 dynapi_94 */
     "_grTexDownloadTable@8", /* 00574B88 dynapi_95 */
     "_grTexDownloadTablePartial@16", /* 00574B9E dynapi_96 */
     "_grTexFilterMode@12", /* 00574BBC dynapi_97 */
+    /* 00574BD0 dynapi_98 */
     {
-        0x5472675F, 0x6F4C7865, 0x61694264, 0x6C615673, 0x38406575}, /* 00574BD0 dynapi_98 */
+        0x5472675F, 0x6F4C7865, 0x61694264, 0x6C615673, 0x38406575},
     {0x00, 0x90},
+    /* 00574BE6 dynapi_99 */
     {
-        0x5472675F, 0x614D7865, 0x64644178, 0x73736572, 0x90003440}, /* 00574BE6 dynapi_99 */
+        0x5472675F, 0x614D7865, 0x64644178, 0x73736572, 0x90003440},
+    /* 00574BFA dynapi_100 */
     {
-        0x5472675F, 0x694D7865, 0x6464416E, 0x73736572, 0x90003440}, /* 00574BFA dynapi_100 */
+        0x5472675F, 0x694D7865, 0x6464416E, 0x73736572, 0x90003440},
     "_grTexMipMapMode@12", /* 00574C0E dynapi_101 */
     "_grTexMultibase@8", /* 00574C22 dynapi_102 */
     "_grTexMultibaseAddress@20", /* 00574C34 dynapi_103 */
+    /* 00574C4E dynapi_104 */
     {
-        0x5472675F, 0x434E7865, 0x62615443, 0x3440656C}, /* 00574C4E dynapi_104 */
+        0x5472675F, 0x434E7865, 0x62615443, 0x3440656C},
     {0x00, 0x90},
     "_grTexSource@16", /* 00574C60 dynapi_105 */
+    /* 00574C70 dynapi_106 */
     {
-        0x5472675F, 0x65547865, 0x72757478, 0x6D654D65, 0x75716552, 0x64657269, 0x90003840}, /* 00574C70 dynapi_106 */
+        0x5472675F, 0x65547865, 0x72757478, 0x6D654D65, 0x75716552, 0x64657269, 0x90003840},
+    /* 00574C8C dynapi_107 */
     {
-        0x5672675F, 0x65747265, 0x79614C78, 0x4074756F, 0x90003231}, /* 00574C8C dynapi_107 */
+        0x5672675F, 0x65747265, 0x79614C78, 0x4074756F, 0x90003231},
+    /* 00574CA0 dynapi_108 */
     {
-        0x5672675F, 0x70776569, 0x4074726F, 0x90003631}, /* 00574CA0 dynapi_108 */
+        0x5672675F, 0x70776569, 0x4074726F, 0x90003631},
     "_gu3dfGetInfo@8", /* 00574CB0 dynapi_109 */
+    /* 00574CC0 dynapi_110 */
     {
-        0x3375675F, 0x6F4C6664, 0x38406461}, /* 00574CC0 dynapi_110 */
+        0x3375675F, 0x6F4C6664, 0x38406461},
     {0x00, 0x90},
     "_guFogGenerateExp@8", /* 00574CCE dynapi_111 */
+    /* 00574CE2 dynapi_112 */
     {
-        0x4675675F, 0x6547676F, 0x6172656E, 0x78456574, 0x38403270}, /* 00574CE2 dynapi_112 */
+        0x4675675F, 0x6547676F, 0x6172656E, 0x78456574, 0x38403270},
     {0x00, 0x90},
     "_guFogGenerateLinear@12", /* 00574CF8 dynapi_113 */
     "_guFogTableIndexToW@4", /* 00574D10 dynapi_114 */
+    /* 00574D26 dynapi_115 */
     {
-        0x4775675F, 0x616D6D61, 0x72726F43, 0x69746365, 0x47526E6F, 0x32314042}, /* 00574D26 dynapi_115 */
+        0x4775675F, 0x616D6D61, 0x72726F43, 0x69746365, 0x47526E6F, 0x32314042},
     {0x00, 0x90},
     "accept", /* 00574D40 s_Wsock32Export_accept */
     {0x90},
@@ -11523,82 +12020,106 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "WSAStartup", /* 00574F84 s_Wsock32Export_WSAStartup */
     {0x90},
     "WSAUnhookBlockingHook", /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
+    /* 00574FA6 dynapi_162 */
     {
-        0x65636361, 0x90007470}, /* 00574FA6 dynapi_162 */
+        0x65636361, 0x90007470},
+    /* 00574FAE dynapi_163 */
     {
-        0x646E6962}, /* 00574FAE dynapi_163 */
+        0x646E6962},
     {0x00, 0x90},
     "closesocket", /* 00574FB4 dynapi_164 */
     "connect", /* 00574FC0 dynapi_165 */
     "getpeername", /* 00574FC8 dynapi_166 */
     "getsockname", /* 00574FD4 dynapi_167 */
+    /* 00574FE0 dynapi_168 */
     {
-        0x73746567, 0x6F6B636F, 0x90007470}, /* 00574FE0 dynapi_168 */
+        0x73746567, 0x6F6B636F, 0x90007470},
     "htonl", /* 00574FEC dynapi_169 */
     "htons", /* 00574FF2 dynapi_170 */
     "ioctlsocket", /* 00574FF8 dynapi_171 */
+    /* 00575004 dynapi_172 */
     {
-        0x7473696C, 0x90006E65}, /* 00575004 dynapi_172 */
+        0x7473696C, 0x90006E65},
     "ntohl", /* 0057500C dynapi_173 */
     "ntohs", /* 00575012 dynapi_174 */
+    /* 00575018 dynapi_175 */
     {
-        0x76636572}, /* 00575018 dynapi_175 */
+        0x76636572},
     {0x00, 0x90},
+    /* 0057501E dynapi_176 */
     {
-        0x76636572, 0x6D6F7266}, /* 0057501E dynapi_176 */
+        0x76636572, 0x6D6F7266},
     {0x00, 0x90},
+    /* 00575028 dynapi_177 */
     {
-        0x656C6573, 0x90007463}, /* 00575028 dynapi_177 */
+        0x656C6573, 0x90007463},
+    /* 00575030 dynapi_178 */
     {
-        0x646E6573}, /* 00575030 dynapi_178 */
+        0x646E6573},
     {0x00, 0x90},
+    /* 00575036 dynapi_179 */
     {
-        0x646E6573, 0x90006F74}, /* 00575036 dynapi_179 */
+        0x646E6573, 0x90006F74},
+    /* 0057503E dynapi_180 */
     {
-        0x73746573, 0x6F6B636F, 0x90007470}, /* 0057503E dynapi_180 */
+        0x73746573, 0x6F6B636F, 0x90007470},
+    /* 0057504A dynapi_181 */
     {
-        0x74756873, 0x6E776F64}, /* 0057504A dynapi_181 */
+        0x74756873, 0x6E776F64},
     {0x00, 0x90},
+    /* 00575054 dynapi_182 */
     {
-        0x6B636F73, 0x90007465}, /* 00575054 dynapi_182 */
+        0x6B636F73, 0x90007465},
     "WSAAccept", /* 0057505C dynapi_183 */
+    /* 00575066 dynapi_184 */
     {
-        0x41415357, 0x636E7973, 0x656C6553, 0x90007463}, /* 00575066 dynapi_184 */
+        0x41415357, 0x636E7973, 0x656C6553, 0x90007463},
     "WSACancelBlockingCall", /* 00575076 dynapi_185 */
+    /* 0057508C dynapi_186 */
     {
-        0x43415357, 0x6E61656C, 0x90007075}, /* 0057508C dynapi_186 */
+        0x43415357, 0x6E61656C, 0x90007075},
     "WSACloseEvent", /* 00575098 dynapi_187 */
+    /* 005750A6 dynapi_188 */
     {
-        0x43415357, 0x656E6E6F, 0x90007463}, /* 005750A6 dynapi_188 */
+        0x43415357, 0x656E6E6F, 0x90007463},
+    /* 005750B2 dynapi_189 */
     {
-        0x43415357, 0x74616572, 0x65764565, 0x9000746E}, /* 005750B2 dynapi_189 */
+        0x43415357, 0x74616572, 0x65764565, 0x9000746E},
     "WSADuplicateSocketA", /* 005750C2 dynapi_190 */
+    /* 005750D6 dynapi_191 */
     {
-        0x45415357, 0x4E6D756E, 0x6F777465, 0x76456B72, 0x73746E65}, /* 005750D6 dynapi_191 */
+        0x45415357, 0x4E6D756E, 0x6F777465, 0x76456B72, 0x73746E65},
     {0x00, 0x90},
     "WSAEnumProtocolsA", /* 005750EC dynapi_192 */
+    /* 005750FE dynapi_193 */
     {
-        0x45415357, 0x746E6576, 0x656C6553, 0x90007463}, /* 005750FE dynapi_193 */
+        0x45415357, 0x746E6576, 0x656C6553, 0x90007463},
     "WSAGetLastError", /* 0057510E dynapi_194 */
+    /* 0057511E dynapi_195 */
     {
-        0x47415357, 0x764F7465, 0x616C7265, 0x64657070, 0x75736552, 0x9000746C}, /* 0057511E dynapi_195 */
+        0x47415357, 0x764F7465, 0x616C7265, 0x64657070, 0x75736552, 0x9000746C},
     "WSAGetQOSByName", /* 00575136 dynapi_196 */
+    /* 00575146 dynapi_197 */
     {
-        0x48415357, 0x6C6E6F74}, /* 00575146 dynapi_197 */
+        0x48415357, 0x6C6E6F74},
     {0x00, 0x90},
+    /* 00575150 dynapi_198 */
     {
-        0x48415357, 0x736E6F74}, /* 00575150 dynapi_198 */
+        0x48415357, 0x736E6F74},
     {0x00, 0x90},
+    /* 0057515A dynapi_199 */
     {
-        0x49415357, 0x6C74636F}, /* 0057515A dynapi_199 */
+        0x49415357, 0x6C74636F},
     {0x00, 0x90},
     "WSAIsBlocking", /* 00575164 dynapi_200 */
     "WSAJoinLeaf", /* 00575172 dynapi_201 */
+    /* 0057517E dynapi_202 */
     {
-        0x4E415357, 0x6C686F74}, /* 0057517E dynapi_202 */
+        0x4E415357, 0x6C686F74},
     {0x00, 0x90},
+    /* 00575188 dynapi_203 */
     {
-        0x4E415357, 0x73686F74}, /* 00575188 dynapi_203 */
+        0x4E415357, 0x73686F74},
     {0x00, 0x90},
     "WSARecv", /* 00575192 dynapi_204 */
     "WSARecvDisconnect", /* 0057519A dynapi_205 */
@@ -11607,57 +12128,70 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "WSASend", /* 005751C6 dynapi_208 */
     "WSASendDisconnect", /* 005751CE dynapi_209 */
     "WSASendTo", /* 005751E0 dynapi_210 */
+    /* 005751EA dynapi_211 */
     {
-        0x53415357, 0x6C427465, 0x696B636F, 0x6F48676E, 0x90006B6F}, /* 005751EA dynapi_211 */
+        0x53415357, 0x6C427465, 0x696B636F, 0x6F48676E, 0x90006B6F},
     "WSASetEvent", /* 005751FE dynapi_212 */
     "WSASetLastError", /* 0057520A dynapi_213 */
+    /* 0057521A dynapi_214 */
     {
-        0x53415357, 0x656B636F, 0x90004174}, /* 0057521A dynapi_214 */
+        0x53415357, 0x656B636F, 0x90004174},
+    /* 00575226 dynapi_215 */
     {
-        0x53415357, 0x74726174, 0x90007075}, /* 00575226 dynapi_215 */
+        0x53415357, 0x74726174, 0x90007075},
     "WSAUnhookBlockingHook", /* 00575232 dynapi_216 */
+    /* 00575248 dynapi_217 */
     {
-        0x57415357, 0x46746961, 0x754D726F, 0x7069746C, 0x7645656C, 0x73746E65}, /* 00575248 dynapi_217 */
+        0x57415357, 0x46746961, 0x754D726F, 0x7069746C, 0x7645656C, 0x73746E65},
     {0x00, 0x90},
     "inet_addr", /* 00575262 dynapi_218 */
     "inet_ntoa", /* 0057526C dynapi_219 */
     "gethostbyaddr", /* 00575276 dynapi_220 */
     "gethostbyname", /* 00575284 dynapi_221 */
     "gethostname", /* 00575292 dynapi_222 */
+    /* 0057529E dynapi_223 */
     {
-        0x70746567, 0x6F746F72, 0x616E7962, 0x9000656D}, /* 0057529E dynapi_223 */
+        0x70746567, 0x6F746F72, 0x616E7962, 0x9000656D},
+    /* 005752AE dynapi_224 */
     {
-        0x70746567, 0x6F746F72, 0x756E7962, 0x7265626D}, /* 005752AE dynapi_224 */
+        0x70746567, 0x6F746F72, 0x756E7962, 0x7265626D},
     {0x00, 0x90},
     "getservbyname", /* 005752C0 dynapi_225 */
     "getservbyport", /* 005752CE dynapi_226 */
     "WSAAsyncGetHostByAddr", /* 005752DC dynapi_227 */
     "WSAAsyncGetHostByName", /* 005752F2 dynapi_228 */
+    /* 00575308 dynapi_229 */
     {
-        0x41415357, 0x636E7973, 0x50746547, 0x6F746F72, 0x614E7942, 0x9000656D}, /* 00575308 dynapi_229 */
+        0x41415357, 0x636E7973, 0x50746547, 0x6F746F72, 0x614E7942, 0x9000656D},
+    /* 00575320 dynapi_230 */
     {
-        0x41415357, 0x636E7973, 0x50746547, 0x6F746F72, 0x754E7942, 0x7265626D}, /* 00575320 dynapi_230 */
+        0x41415357, 0x636E7973, 0x50746547, 0x6F746F72, 0x754E7942, 0x7265626D},
     {0x00, 0x90},
     "WSAAsyncGetServByName", /* 0057533A dynapi_231 */
     "WSAAsyncGetServByPort", /* 00575350 dynapi_232 */
     "WSACancelAsyncRequest", /* 00575366 dynapi_233 */
     "WSAAddressToStringA", /* 0057537C dynapi_234 */
+    /* 00575390 dynapi_235 */
     {
-        0x45415357, 0x4E6D756E, 0x53656D61, 0x65636170, 0x766F7250, 0x72656469, 0x90004173}, /* 00575390 dynapi_235 */
+        0x45415357, 0x4E6D756E, 0x53656D61, 0x65636170, 0x766F7250, 0x72656469, 0x90004173},
     "WSAGetServiceClassInfoA", /* 005753AC dynapi_236 */
+    /* 005753C4 dynapi_237 */
     {
-        0x47415357, 0x65537465, 0x63697672, 0x616C4365, 0x614E7373, 0x7942656D, 0x73616C43, 0x41644973}, /* 005753C4 dynapi_237 */
+        0x47415357, 0x65537465, 0x63697672, 0x616C4365, 0x614E7373, 0x7942656D, 0x73616C43, 0x41644973},
     {0x00, 0x90},
     "WSAInstallServiceClassA", /* 005753E6 dynapi_238 */
+    /* 005753FE dynapi_239 */
     {
-        0x4C415357, 0x756B6F6F, 0x72655370, 0x65636976, 0x69676542, 0x9000416E}, /* 005753FE dynapi_239 */
+        0x4C415357, 0x756B6F6F, 0x72655370, 0x65636976, 0x69676542, 0x9000416E},
     "WSALookupServiceEnd", /* 00575416 dynapi_240 */
     "WSALookupServiceNextA", /* 0057542A dynapi_241 */
     "WSARemoveServiceClass", /* 00575440 dynapi_242 */
+    /* 00575456 dynapi_243 */
     {
-        0x53415357, 0x65537465, 0x63697672, 0x90004165}, /* 00575456 dynapi_243 */
+        0x53415357, 0x65537465, 0x63697672, 0x90004165},
+    /* 00575466 dynapi_244 */
     {
-        0x53415357, 0x6E697274, 0x416F5467, 0x65726464, 0x00417373, 0x90909090}, /* 00575466 dynapi_244 */
+        0x53415357, 0x6E697274, 0x416F5467, 0x65726464, 0x00417373, 0x90909090},
     {0x90, 0x90},
     {0}, /* 00575480 g_FatalErrorNarrowBuffer */
     {
@@ -11704,20 +12238,31 @@ ImageData_00576B04 g_ImageData_00576B04 = {
     0, /* 00576B10 g_DirectInput */
     0, /* 00576B14 g_MouseDevice */
     {.Data1 = 0x6F1D2B60, .Data2 = 0xD5A0, .Data3 = 0x11CF, .Data4 = "\277\307DEST"}, /* 00576B18 GUID_SysMouse_Local */
+    /* 00576B28 GUID_XAxis_Local */
     {
-        0xA36D02E0, 0x11CFC9F3, 0x4544C7BF, 0x00005453}, /* 00576B28 GUID_XAxis_Local */
+        0xA36D02E0, 0x11CFC9F3, 0x4544C7BF, 0x00005453},
+    /* 00576B38 GUID_YAxis_Local */
     {
-        0xA36D02E1, 0x11CFC9F3, 0x4544C7BF, 0x00005453}, /* 00576B38 GUID_YAxis_Local */
+        0xA36D02E1, 0x11CFC9F3, 0x4544C7BF, 0x00005453},
+    /* 00576B48 GUID_ZAxis_Local */
     {
-        0xA36D02E2, 0x11CFC9F3, 0x4544C7BF, 0x00005453}, /* 00576B48 GUID_ZAxis_Local */
-    {.dwSize = 0x18, .dwObjSize = 0x10, .dwFlags = 0x2, .dwDataSize = 0x10, .dwNumObjs = 0x7, .rgodf = (void *)&g_ImageData_00576B04.at_MouseObjectFormats}, /* 00576B58 MouseDataFormat */
+        0xA36D02E2, 0x11CFC9F3, 0x4544C7BF, 0x00005453},
+    /* 00576B58 MouseDataFormat */
+    {
+        .dwSize = 0x18,
+        .dwObjSize = 0x10,
+        .dwFlags = 0x2,
+        .dwDataSize = 0x10,
+        .dwNumObjs = 0x7,
+        .rgodf = (void *)&g_ImageData_00576B04.at_MouseObjectFormats},
+    /* 00576B70 MouseObjectFormats */
     {
         (dword)&g_ImageData_00576B04.at_GUID_XAxis_Local,
         0x00000000, 0x00FFFF03, 0x00000000, (dword)&g_ImageData_00576B04.at_GUID_YAxis_Local,
         0x00000004, 0x00FFFF03, 0x00000000, (dword)&g_ImageData_00576B04.at_GUID_ZAxis_Local,
         0x00000008, 0x80FFFF03, 0x00000000, 0x00000000, 0x0000000C, 0x00FFFF0C, 0x00000000, 0x00000000,
         0x0000000D, 0x00FFFF0C, 0x00000000, 0x00000000, 0x0000000E, 0x80FFFF0C, 0x00000000, 0x00000000,
-        0x0000000F, 0x80FFFF0C}, /* 00576B70 MouseObjectFormats */
+        0x0000000F, 0x80FFFF0C},
     {.diph = {.dwSize = 0x14, .dwHeaderSize = 0x10}, .dwData = 0x100}, /* 00576BE0 MouseBufferProperty */
     0, /* 00576BF4 g_MouseDeviceDataCount */
     0, /* 00576BF8 g_MousePollBusy */
@@ -11735,10 +12280,30 @@ ImageData_00576B04 g_ImageData_00576B04 = {
 
 ImageData_00577BFC g_ImageData_00577BFC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00577BFC gap */
-    {.Data1 = 0xB3A6F3E0, .Data2 = 0x2B43, .Data3 = 0x11CF, .Data4 = {0xA2, 0xDE, 0, 0xAA, 0, 0xB9, 0x33, 0x56}}, /* 00577C00 IID_IDirectDraw2_Local */
-    {.Data1 = 0xDA044E00, .Data2 = 0x69B2, .Data3 = 0x11D0, .Data4 = {0xA1, 0xD5, 0, 0xAA, 0, 0xB8, 0xDF, 0xBB}}, /* 00577C10 IID_IDirectDrawSurface3_Local */
-    {.Data1 = 0x6AAE1EC1, .Data2 = 0x662A, .Data3 = 0x11D0, .Data4 = {0x88, 0x9D, 0, 0xAA, 0, 0xBB, 0xB7, 0x6A}}, /* 00577C20 IID_IDirect3D2_Local */
-    {.Data1 = 0x93281502, .Data2 = 0x8CF8, .Data3 = 0x11D0, .Data4 = {0x89, 0xAB, 0, 0xA0, 0xC9, 0x5, 0x41, 0x29}}, /* 00577C30 IID_IDirect3DTexture2_Local */
+    /* 00577C00 IID_IDirectDraw2_Local */
+    {
+        .Data1 = 0xB3A6F3E0,
+        .Data2 = 0x2B43,
+        .Data3 = 0x11CF,
+        .Data4 = {0xA2, 0xDE, 0, 0xAA, 0, 0xB9, 0x33, 0x56}},
+    /* 00577C10 IID_IDirectDrawSurface3_Local */
+    {
+        .Data1 = 0xDA044E00,
+        .Data2 = 0x69B2,
+        .Data3 = 0x11D0,
+        .Data4 = {0xA1, 0xD5, 0, 0xAA, 0, 0xB8, 0xDF, 0xBB}},
+    /* 00577C20 IID_IDirect3D2_Local */
+    {
+        .Data1 = 0x6AAE1EC1,
+        .Data2 = 0x662A,
+        .Data3 = 0x11D0,
+        .Data4 = {0x88, 0x9D, 0, 0xAA, 0, 0xBB, 0xB7, 0x6A}},
+    /* 00577C30 IID_IDirect3DTexture2_Local */
+    {
+        .Data1 = 0x93281502,
+        .Data2 = 0x8CF8,
+        .Data3 = 0x11D0,
+        .Data4 = {0x89, 0xAB, 0, 0xA0, 0xC9, 0x5, 0x41, 0x29}},
     0, /* 00577C40 g_DirectDraw */
     0, /* 00577C44 g_DirectDraw2 */
     0, /* 00577C48 g_PrimarySurfaceBase */
@@ -11753,11 +12318,12 @@ ImageData_00577BFC g_ImageData_00577BFC = {
     {
         0x90909090},
     {0}, /* 00577C70 g_CurrentClearRect */
+    /* 00577C80 g_SurfaceDesc */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x90909090}, /* 00577C80 g_SurfaceDesc */
+        0x00000000, 0x00000000, 0x00000000, 0x90909090},
     0, /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
     {0},
     0, /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
@@ -11767,7 +12333,14 @@ ImageData_00577BFC g_ImageData_00577BFC = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x90909090},
-    {.dvClipX = 0.0f, .dvClipY = 0.0f, .dvClipWidth = 0.0f, .dvClipHeight = 0.0f, .dvMinZ = 0.0f, .dvMaxZ = 0.0f}, /* 00577D60 g_Direct3DViewportState */
+    /* 00577D60 g_Direct3DViewportState */
+    {
+        .dvClipX = 0.0f,
+        .dvClipY = 0.0f,
+        .dvClipWidth = 0.0f,
+        .dvClipHeight = 0.0f,
+        .dvMinZ = 0.0f,
+        .dvMaxZ = 0.0f},
     {
         0x90909090},
     {0}, /* 00577D90 g_Direct3DOpaqueTextureFormat */
@@ -11788,6 +12361,7 @@ ImageData_00577BFC g_ImageData_00577BFC = {
     0, /* 00577E48 g_CursorAlternateDrawY */
     0xFFFFFFFF, /* 00577E4C g_GraphicsBackendAccessState */
     {{.sourceBlend = 0x2, .destinationBlend = 0x1, .zWriteEnable = 0x1}, {.sourceBlend = 0x5, .destinationBlend = 0x6, .alphaBlendEnable = 0x1, .zWriteEnable = 0x1}, {.sourceBlend = 0x5, .destinationBlend = 0x6, .alphaBlendEnable = 0x1}, {.sourceBlend = 0x5, .destinationBlend = 0x6, .alphaBlendEnable = 0x1, .zWriteEnable = 0x1}, {.sourceBlend = 0x2, .destinationBlend = 0x2, .alphaBlendEnable = 0x1}}, /* 00577E50 g_PrimitiveRenderStatePresets */
+    /* 00577EA0 g_GraphicsDispatchTable */
     {
         (dword)GraphicsTexture_UploadColor_1x,
         (dword)GraphicsTexture_UploadColor_2x,
@@ -11835,7 +12409,7 @@ ImageData_00577BFC g_ImageData_00577BFC = {
         (dword)Direct3D_PrimitiveHandler_TexturedPreset4,
         0x00000000, (dword)Direct3D_PrimitiveHandler_TexturedPreset2,
         0x00000000, (dword)Direct3D_PrimitiveHandler_TexturedPreset2,
-        0x00000000, 0x90909090, 0x90909090}, /* 00577EA0 g_GraphicsDispatchTable */
+        0x00000000, 0x90909090, 0x90909090},
     {{.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f}, {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f}, {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f}, {.sx = 0.0f, .sy = 0.0f, .sz = 0.0f, .rhw = 0.0f, .tu = 0.0f, .tv = 0.0f}}, /* 00577FC0 g_ImmediateTLVertices */
     {0}, /* 00578040 g_LastViewportRect */
     0, /* 00578050 g_ImmediateVertexCount */
@@ -11873,10 +12447,11 @@ ImageData_0057ECC8 g_ImageData_0057ECC8 = {
     {0},
     0, /* 0057ED3C g_GlideSecondaryLfbStrideBytes */
     {0},
+    /* 0057ED48 g_GlideTextureRefreshHandlers */
     {
         (dword)&g_GlideVertex0ScreenX,
         (dword)&g_GlideVertex1ScreenX,
-        (dword)&g_GlideVertex2ScreenX}, /* 0057ED48 g_GlideTextureRefreshHandlers */
+        (dword)&g_GlideVertex2ScreenX},
     0, /* 0057ED54 g_GlideVertex0ScreenX */
     0, /* 0057ED58 g_GlideVertex0ScreenY */
     0, /* 0057ED5C g_GlideVertex0ReciprocalDepth */
@@ -11954,8 +12529,9 @@ ImageData_00583D28 g_ImageData_00583D28 = {
     0, /* 00583F16 g_NetworkBackendActiveSocketType */
     0, /* 00583F1A g_NetworkBackendActiveProtocol */
     0, /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
+    /* 00583F22 g_NetworkBackendBindAddress */
     {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090}, /* 00583F22 g_NetworkBackendBindAddress */
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
     {0x90, 0x90},
     0, /* 00583F40 g_NetworkEndpointTextScratchA */
     {0},
@@ -11981,9 +12557,13 @@ ImageData_005856A0 g_ImageData_005856A0 = {
         (dword)MainWindowProc},
     {0}, /* 005856E8 g_MainWindowClassInstanceHandle */
     {0}, /* 005856EC g_MainWindowClassIconHandle */
+    /* 005856F0 g_MainWindowClassCursorHandle */
     {
-        0x00000000, 0x00000000, 0x00000000, (dword)&sz_MainWindowClass}, /* 005856F0 g_MainWindowClassCursorHandle */
-    {.linearCursor = (void *)&g_ImageData_005873BC.at_DAT_00587400, .linearLimit = (void *)&g_ImageData_005873BC.at_DAT_0058b400}, /* 00585708 g_Arena */
+        0x00000000, 0x00000000, 0x00000000, (dword)&sz_MainWindowClass},
+    /* 00585708 g_Arena */
+    {
+        .linearCursor = (void *)&g_ImageData_005873BC.at_DAT_00587400,
+        .linearLimit = (void *)&g_ImageData_005873BC.at_DAT_0058b400},
     {0}, /* 0058571C g_TimerSystemState */
     {0}, /* 0058581C g_CommandLine */
     " thandor  (TG)", /* 00585D1C sz_MainWindowTitle */
