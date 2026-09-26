@@ -306,19 +306,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
   undefined1 mm1PackedValue0ByteLane2;
-  unkbyte10 in_ST1;
-  unkbyte10 extraout_ST1;
-  unkbyte10 extraout_ST1_00;
-  unkbyte10 extraout_ST1_01;
-  unkbyte10 extraout_ST1_02;
   undefined8 mm2PackedValue0;
   undefined1 mm2PackedValue0ByteLane1;
   undefined1 mm2PackedValue0ByteLane2;
-  unkbyte10 in_ST2;
   undefined8 mm3PackedValue0;
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
-  unkbyte10 in_ST3;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -326,7 +319,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[0].zWriteEnable);
-    in_ST1 = extraout_ST1;
   }
   if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
@@ -335,7 +327,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
-      in_ST1 = extraout_ST1_00;
     }
     else {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
@@ -345,11 +336,9 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
       if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      in_ST1 = extraout_ST1_01;
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
-        in_ST1 = extraout_ST1_02;
       }
     }
   }
@@ -363,17 +352,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
@@ -567,21 +556,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
   undefined1 mm1PackedValue0ByteLane2;
-  unkbyte10 in_ST1;
-  unkbyte10 extraout_ST1;
-  unkbyte10 extraout_ST1_00;
-  unkbyte10 extraout_ST1_01;
-  unkbyte10 extraout_ST1_02;
-  unkbyte10 extraout_ST1_03;
-  unkbyte10 extraout_ST1_04;
   undefined8 mm2PackedValue0;
   undefined1 mm2PackedValue0ByteLane1;
   undefined1 mm2PackedValue0ByteLane2;
-  unkbyte10 in_ST2;
   undefined8 mm3PackedValue0;
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
-  unkbyte10 in_ST3;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -589,7 +569,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[2].zWriteEnable);
-    in_ST1 = extraout_ST1;
   }
   if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
@@ -598,7 +577,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
-      in_ST1 = extraout_ST1_00;
     }
     else {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
@@ -608,11 +586,9 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
       if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      in_ST1 = extraout_ST1_01;
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
-        in_ST1 = extraout_ST1_02;
       }
     }
   }
@@ -621,7 +597,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[2].sourceBlend);
-    in_ST1 = extraout_ST1_03;
   }
   if (g_PrimitiveRenderStatePresets[2].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
@@ -630,7 +605,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[2].destinationBlend);
-    in_ST1 = extraout_ST1_04;
   }
   packetModulationColor = packet->modulationColor;
   vertex0Diffuse = packet->vertices[0].diffuseColor;
@@ -642,17 +616,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
@@ -847,21 +821,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
   undefined1 mm1PackedValue0ByteLane2;
-  unkbyte10 in_ST1;
-  unkbyte10 extraout_ST1;
-  unkbyte10 extraout_ST1_00;
-  unkbyte10 extraout_ST1_01;
-  unkbyte10 extraout_ST1_02;
-  unkbyte10 extraout_ST1_03;
-  unkbyte10 extraout_ST1_04;
   undefined8 mm2PackedValue0;
   undefined1 mm2PackedValue0ByteLane1;
   undefined1 mm2PackedValue0ByteLane2;
-  unkbyte10 in_ST2;
   undefined8 mm3PackedValue0;
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
-  unkbyte10 in_ST3;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -869,7 +834,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[3].zWriteEnable);
-    in_ST1 = extraout_ST1;
   }
   if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
@@ -878,7 +842,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
-      in_ST1 = extraout_ST1_00;
     }
     else {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
@@ -888,11 +851,9 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
       if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      in_ST1 = extraout_ST1_01;
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
-        in_ST1 = extraout_ST1_02;
       }
     }
   }
@@ -901,7 +862,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[3].sourceBlend);
-    in_ST1 = extraout_ST1_03;
   }
   if (g_PrimitiveRenderStatePresets[3].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
@@ -910,7 +870,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[3].destinationBlend);
-    in_ST1 = extraout_ST1_04;
   }
   packetModulationColor = packet->modulationColor;
   vertex0Diffuse = packet->vertices[0].diffuseColor;
@@ -922,17 +881,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
@@ -1126,21 +1085,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
   undefined1 mm1PackedValue0ByteLane2;
-  unkbyte10 in_ST1;
-  unkbyte10 extraout_ST1;
-  unkbyte10 extraout_ST1_00;
-  unkbyte10 extraout_ST1_01;
-  unkbyte10 extraout_ST1_02;
-  unkbyte10 extraout_ST1_03;
-  unkbyte10 extraout_ST1_04;
   undefined8 mm2PackedValue0;
   undefined1 mm2PackedValue0ByteLane1;
   undefined1 mm2PackedValue0ByteLane2;
-  unkbyte10 in_ST2;
   undefined8 mm3PackedValue0;
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
-  unkbyte10 in_ST3;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -1148,7 +1098,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[4].zWriteEnable);
-    in_ST1 = extraout_ST1;
   }
   if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
@@ -1157,7 +1106,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
-      in_ST1 = extraout_ST1_00;
     }
     else {
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
@@ -1167,11 +1115,9 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
       if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      in_ST1 = extraout_ST1_01;
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
-        in_ST1 = extraout_ST1_02;
       }
     }
   }
@@ -1180,7 +1126,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[4].sourceBlend);
-    in_ST1 = extraout_ST1_03;
   }
   if (g_PrimitiveRenderStatePresets[4].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
@@ -1189,7 +1134,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[4].destinationBlend);
-    in_ST1 = extraout_ST1_04;
   }
   packetModulationColor = packet->modulationColor;
   vertex0Diffuse = packet->vertices[0].diffuseColor;
@@ -1201,17 +1145,17 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
   mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
   mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
   mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
   mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
   mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
   mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
   mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
