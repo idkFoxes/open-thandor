@@ -2592,8 +2592,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               projectedBlocks[0xdd] = pointPair1;
               projectedBlocks[0xde] = pointPair2;
               projectedBlocks[0xdf] = pointPair3;
-              GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode);
-              if (halfDirectionZOrCoordinate != 0) {
+              /* The original tests EBX as left by the traversal (0x004D09CD); the decompile tested a
+                 stale local instead. */
+              if (GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode) != 0) {
                 GraphicsShadingGeneratedTexture_FilterGridScratchMmx();
               }
               GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(modelNode);
@@ -3218,34 +3219,42 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *mo
    Local calls: GraphicsShadingGeneratedTexture_TransformPointXYQuantized,
    GraphicsShadingGeneratedTexture_RasterizeTriangleMask.
 */
-void __thandor_void_preserve_eax_ecx_edx
+/* Returns EBX: 0 when nothing was rasterized, 1 when triangles were, otherwise the last transformed
+   record address (the original leaves EBX there when the batch has vertices but no triangles). */
+dword
 GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshGroup)
 
 {
   int vertexCount;
   int triangleCount;
   GraphicsFixedVec3 *recordCursor;
+  dword result;
   
+  result = 0;
   vertexCount = *(int *)(meshGroup + 8);
   triangleCount = *(int *)(meshGroup + 0xc);
   if (((*(uint *)(meshGroup + 0x10) & 1) != 0) &&
      (recordCursor = (GraphicsFixedVec3 *)(meshGroup + 0x20), vertexCount != 0)) {
     do {
+      result = (dword)&recordCursor[2].z;
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
                 ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
       recordCursor = (GraphicsFixedVec3 *)&recordCursor[5].y;
       vertexCount = vertexCount + -1;
     } while (vertexCount != 0);
-    for (; triangleCount != 0; triangleCount = triangleCount + -1) {
-      GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                ((GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0x18) + 0x20),
-                 (GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0xc) + 0x20),
-                 (GraphicsFixedVec2 *)(recordCursor->x + 0x20));
-      recordCursor = (GraphicsFixedVec3 *)((int)recordCursor + 0x40);
+    if (triangleCount != 0) {
+      for (; triangleCount != 0; triangleCount = triangleCount + -1) {
+        GraphicsShadingGeneratedTexture_RasterizeTriangleMask
+                  ((GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0x18) + 0x20),
+                   (GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0xc) + 0x20),
+                   (GraphicsFixedVec2 *)(recordCursor->x + 0x20));
+        recordCursor = (GraphicsFixedVec3 *)((int)recordCursor + 0x40);
+      }
+      result = 1;
     }
   }
-  return;
+  return result;
 }
 
 
@@ -3255,10 +3264,15 @@ GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddre
    Local calls: GraphicsShadingGeneratedTexture_ComposeTransform,
    GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set.
 */
-void __thandor_void_preserve_eax_ecx_edx
+/* Returns EBX, which the caller tests before filtering the generated texture: the last mesh group's
+   result plus the mesh-group table offset (EAX at 0x004CDB36), plus the children's results. Nonzero
+   whenever the hierarchy has a mesh group. */
+dword
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *modelNode)
 
 {
+  dword result;
+  int meshGroupTableOffset;
   GraphicsFixedVec3 *nodeTranslation;
   GraphicsWorldCoordinateQ12 *translationComponent;
   ModelResourceHitTestAndRenderView210 *resourceView;
@@ -3288,24 +3302,27 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *mode
   *translationComponent = *translationComponent + originY;
   translationComponent = &(modelNode->worldTransform).translation.z;
   *translationComponent = *translationComponent + originZ;
+  result = 0;
   resourceView = (modelNode->modelPayload).modelResource;
   offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  meshGroupTableOffset = offsetCountOrChildIndex;
   if (offsetCountOrChildIndex != 0) {
     meshGroup = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
     for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex = offsetCountOrChildIndex + -1) {
-      GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set
-                ((ModelMeshGroupAddress32)meshGroup);
+      result = GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set
+                         ((ModelMeshGroupAddress32)meshGroup) + meshGroupTableOffset;
       meshGroup = meshGroup + *(int *)meshGroup;
     }
   }
   offsetCountOrChildIndex = 0;
   for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
     if (modelNode->childNodes[offsetCountOrChildIndex] != (ModelRuntimeNode *)0x0) {
-      GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode->childNodes[offsetCountOrChildIndex]);
+      result = result +
+               GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode->childNodes[offsetCountOrChildIndex]);
     }
     offsetCountOrChildIndex = offsetCountOrChildIndex + 1;
   }
-  return;
+  return result;
 }
 
 
