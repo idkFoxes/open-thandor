@@ -21,15 +21,15 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
 
 {
-  UiAnchorFractionQ31 arg1;
-  UiAnchorFractionQ31 arg0;
+  UiAnchorFractionQ31 colorBiasQ16;
+  UiAnchorFractionQ31 colorScaleQ16;
   
-  arg1 = root[0x1f].base.rightOffset;
-  arg0 = root[0x1d].base.right;
-  if ((arg1 != root[3].base.rightAnchorQ31) || (arg0 != root[3].base.bottomAnchorQ31)) {
-    root[3].base.rightAnchorQ31 = arg1;
-    root[3].base.bottomAnchorQ31 = arg0;
-    (*g_SoftwareBuildPixelPackTables)(arg0,arg1);
+  colorBiasQ16 = root[0x1f].base.rightOffset;
+  colorScaleQ16 = root[0x1d].base.right;
+  if ((colorBiasQ16 != root[3].base.rightAnchorQ31) || (colorScaleQ16 != root[3].base.bottomAnchorQ31)) {
+    root[3].base.rightAnchorQ31 = colorBiasQ16;
+    root[3].base.bottomAnchorQ31 = colorScaleQ16;
+    (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (root[3].base.topAnchorQ31,(UiNodeBase *)root[3].base.leftAnchorQ31,
                root[3].base.bottomOffset,root[3].base.rightOffset,&root->base);
@@ -122,41 +122,41 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode)
 
 {
-  longlong lVar1;
-  UiRootNode *pUVar2;
-  DisplayModeEaxCf5 DVar3;
-  dword arg0;
-  dword arg1;
-  dword arg2;
-  dword arg3;
+  longlong scaledAnchor;
+  UiRootNode *root;
+  DisplayModeEaxCf5 modeResult;
+  dword adapterIndex;
+  dword bitsPerPixel;
+  dword modeHeight;
+  dword modeWidth;
   
-  pUVar2 = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  arg3 = pUVar2[4].base.top;
-  arg2 = pUVar2[4].base.right;
-  arg1 = pUVar2[4].base.bottom;
-  arg0 = pUVar2[4].base.leftOffset;
-  UiRootStack_PopCf(pUVar2);
+  root = (UiRootNode *)UiNode_GetRoot(sourceNode);
+  modeWidth = root[4].base.top;
+  modeHeight = root[4].base.right;
+  bitsPerPixel = root[4].base.bottom;
+  adapterIndex = root[4].base.leftOffset;
+  UiRootStack_PopCf(root);
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
-  DVar3 = (*g_GraphicsDisplayModeHook)(arg0,arg1,arg2,arg3);
-  (*g_FatalErrorPrimaryDispatchCf)(DVar3.eax,DVar3.carry);
-  pUVar2 = g_UiRootNode;
+  modeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
+  (*g_FatalErrorPrimaryDispatchCf)(modeResult.eax,modeResult.carry);
+  root = g_UiRootNode;
   do {
-    lVar1 = (ulonglong)g_FramebufferWidth * (ulonglong)(pUVar2->base).rightAnchorQ31;
-    (pUVar2->base).right =
-         ((int)((ulonglong)lVar1 >> 0x20) << 1 | (uint)lVar1 >> 0x1f) + (pUVar2->base).rightOffset;
-    lVar1 = (ulonglong)g_FramebufferHeight * (ulonglong)(pUVar2->base).bottomAnchorQ31;
-    (pUVar2->base).bottom =
-         ((int)((ulonglong)lVar1 >> 0x20) << 1 | (uint)lVar1 >> 0x1f) + (pUVar2->base).bottomOffset;
-    lVar1 = (ulonglong)g_FramebufferWidth * (ulonglong)(pUVar2->base).leftAnchorQ31;
-    (pUVar2->base).left =
-         ((int)((ulonglong)lVar1 >> 0x20) << 1 | (uint)lVar1 >> 0x1f) + (pUVar2->base).leftOffset;
-    lVar1 = (ulonglong)g_FramebufferHeight * (ulonglong)(pUVar2->base).topAnchorQ31;
-    (pUVar2->base).top =
-         ((int)((ulonglong)lVar1 >> 0x20) << 1 | (uint)lVar1 >> 0x1f) + (pUVar2->base).topOffset;
-    (*((pUVar2->base).vtable)->layout)(&pUVar2->base);
-    pUVar2 = pUVar2->previousRoot;
-  } while (pUVar2 != (UiRootNode *)0xffffffff);
+    scaledAnchor = (ulonglong)g_FramebufferWidth * (ulonglong)(root->base).rightAnchorQ31;
+    (root->base).right =
+         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).rightOffset;
+    scaledAnchor = (ulonglong)g_FramebufferHeight * (ulonglong)(root->base).bottomAnchorQ31;
+    (root->base).bottom =
+         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).bottomOffset;
+    scaledAnchor = (ulonglong)g_FramebufferWidth * (ulonglong)(root->base).leftAnchorQ31;
+    (root->base).left =
+         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).leftOffset;
+    scaledAnchor = (ulonglong)g_FramebufferHeight * (ulonglong)(root->base).topAnchorQ31;
+    (root->base).top =
+         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).topOffset;
+    (*((root->base).vtable)->layout)(&root->base);
+    root = root->previousRoot;
+  } while (root != (UiRootNode *)0xffffffff);
   g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
   UiDisplaySettings_OpenAndPopulateModeSelectionCf();
   return;
@@ -176,42 +176,42 @@ UiImageControl_NonRightDrag
           UiImageControl *control)
 
 {
-  UiNodeVtable *pUVar1;
-  UiImageControl *control_00;
+  UiNodeVtable *hitVtable;
+  UiImageControl *hitControl;
   UiNodeBase *newActiveChild;
-  UiNodeBase *control_02;
+  UiNodeBase *previousActiveChild;
   UiSelectableStateFlags *stateFlagsField;
   
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
     return;
   }
-  control_00 = (UiImageControl *)UiImageControl_HitTestOpaque(pointerY,pointerX,control);
-  if ((control_00 == control) ||
+  hitControl = (UiImageControl *)UiImageControl_HitTestOpaque(pointerY,pointerX,control);
+  if ((hitControl == control) ||
      (stateFlagsField = &(control->selectable).stateFlags,
-     *stateFlagsField = *stateFlagsField & 0xfffffdff, control_00 == (UiImageControl *)0xffffffff))
+     *stateFlagsField = *stateFlagsField & 0xfffffdff, hitControl == (UiImageControl *)0xffffffff))
   {
-    control_02 = control->activeChild;
+    previousActiveChild = control->activeChild;
   }
   else {
-    if (control_00 == (UiImageControl *)control->activeChild) {
-      (*((control_00->selectable).base.vtable)->nonRightDrag)
-                (wheelDelta,pointerY,pointerX,(UiNodeBase *)control_00);
+    if (hitControl == (UiImageControl *)control->activeChild) {
+      (*((hitControl->selectable).base.vtable)->nonRightDrag)
+                (wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
       goto UiImageControl_InvalidateAfterNonRightDrag;
     }
-    pUVar1 = (control_00->selectable).base.vtable;
+    hitVtable = (hitControl->selectable).base.vtable;
     /* The handlers preserve EAX/EDX: the original keeps passing the hit child and its vtable, and
        stores that child as the new activeChild (the decompiler lost both). */
-    (*pUVar1->nonRightPress)(0,0x70000000,0x70000000,(UiNodeBase *)control_00);
-    (*pUVar1->nonRightDrag)(wheelDelta,pointerY,pointerX,(UiNodeBase *)control_00);
-    newActiveChild = (UiNodeBase *)control_00;
+    (*hitVtable->nonRightPress)(0,0x70000000,0x70000000,(UiNodeBase *)hitControl);
+    (*hitVtable->nonRightDrag)(wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
+    newActiveChild = (UiNodeBase *)hitControl;
     LOCK();
-    control_02 = control->activeChild;
+    previousActiveChild = control->activeChild;
     control->activeChild = newActiveChild;
     UNLOCK();
   }
-  if (control_02 != (UiNodeBase *)0x0) {
-    (*control_02->vtable->nonRightDrag)(0,0x70000000,0x70000000,control_02);
-    (*control_02->vtable->nonRightRelease)(0,0x70000000,0x70000000,control_02);
+  if (previousActiveChild != (UiNodeBase *)0x0) {
+    (*previousActiveChild->vtable->nonRightDrag)(0,0x70000000,0x70000000,previousActiveChild);
+    (*previousActiveChild->vtable->nonRightRelease)(0,0x70000000,0x70000000,previousActiveChild);
   }
 UiImageControl_InvalidateAfterNonRightDrag:
   UiRootStack_InvalidateAll();
@@ -228,9 +228,9 @@ UiImageControl_InvalidateAfterNonRightDrag:
 void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  UiNodeVtable *pUVar2;
-  UiImageControl *control_00;
+  UiSelectableStateFlags *clearStateFlagsField;
+  UiNodeVtable *hitChildVtable;
+  UiImageControl *hitControl;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *hoveredControlVtable;
   UiSelectableStateFlags *hoverStateFlagsField;
@@ -238,28 +238,28 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & 0x100) == 0) {
       if ((g_CursorButtonState & 4) != 0) {
-        control_00 = (UiImageControl *)
+        hitControl = (UiImageControl *)
                      UiImageControl_HitTestOpaque(g_CursorOverrideY,g_CursorOverrideX,control);
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField | 0x100;
-        if ((control_00 != control) && (control_00 != (UiImageControl *)0xffffffff)) {
-          pUVar2 = (control_00->selectable).base.vtable;
+        if ((hitControl != control) && (hitControl != (UiImageControl *)0xffffffff)) {
+          hitChildVtable = (hitControl->selectable).base.vtable;
           hoverStateFlagsField = &(control->selectable).stateFlags;
           *hoverStateFlagsField = *hoverStateFlagsField & 0xfffff7ff;
-          (*pUVar2->nonRightRelease)
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00
+          (*hitChildVtable->nonRightRelease)
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl
                     );
           /* EAX (the hovered child) and ECX (its vtable) survive the handler calls. */
-          (*pUVar2->nonRightPress)
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00);
-          (*pUVar2->nonRightDrag)
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)control_00);
+          (*hitChildVtable->nonRightPress)
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
+          (*hitChildVtable->nonRightDrag)
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
         }
       }
     }
     else if ((g_CursorButtonState & 4) == 0) {
-      pUVar1 = &(control->selectable).stateFlags;
-      *pUVar1 = *pUVar1 & 0xfffffeff;
+      clearStateFlagsField = &(control->selectable).stateFlags;
+      *clearStateFlagsField = *clearStateFlagsField & 0xfffffeff;
     }
   }
   return;
@@ -278,44 +278,44 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
 
 {
-  dword arg1;
-  dword arg0;
+  dword pendingBitsPerPixel;
+  dword pendingAdapterIndex;
   UiRootNode *root;
-  dword arg3;
-  dword arg2;
-  dword arg1_00;
-  DisplayModeEaxCf5 DVar1;
-  DisplayModeEaxCf5 DVar2;
-  uint arg0_00;
-  dword dVar3;
-  dword dVar4;
+  dword pendingModeWidth;
+  dword pendingModeHeight;
+  dword currentBitsPerPixel;
+  DisplayModeEaxCf5 pendingModeResult;
+  DisplayModeEaxCf5 restoreModeResult;
+  uint currentAdapterIndex;
+  dword pendingWidthOrCurrentHeight;
+  dword pendingHeightOrCurrentWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  dVar3 = root[3].base.rightOffset;
-  dVar4 = root[3].base.bottomOffset;
-  arg1 = root[3].base.leftAnchorQ31;
-  arg1_00 = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
+  pendingWidthOrCurrentHeight = root[3].base.rightOffset;
+  pendingHeightOrCurrentWidth = root[3].base.bottomOffset;
+  pendingBitsPerPixel = root[3].base.leftAnchorQ31;
+  currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
-  arg0 = root[3].base.topAnchorQ31;
+  pendingAdapterIndex = root[3].base.topAnchorQ31;
   UiRootStack_PopCf(root);
-  if ((((dVar3 != g_FramebufferWidth) || (dVar4 != g_FramebufferHeight)) || (arg1 != arg1_00)) ||
-     (arg0 != g_ActiveGraphicsAdapterIndex)) {
+  if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
+     (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
     g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
     UiFrame_ProcessAndPresentWithLockTransition();
-    arg0_00 = g_ActiveGraphicsAdapterIndex;
-    dVar3 = g_FramebufferHeight;
-    dVar4 = g_FramebufferWidth;
-    DVar1 = (*g_GraphicsDisplayModeHook)(arg0,arg1,arg2,arg3);
-    if (DVar1.carry) {
-      DVar2 = (*g_GraphicsDisplayModeHook)(arg0_00,arg1_00,dVar3,dVar4);
-      (*g_FatalErrorPrimaryDispatchCf)(DVar2.eax,DVar2.carry);
+    currentAdapterIndex = g_ActiveGraphicsAdapterIndex;
+    pendingWidthOrCurrentHeight = g_FramebufferHeight;
+    pendingHeightOrCurrentWidth = g_FramebufferWidth;
+    pendingModeResult = (*g_GraphicsDisplayModeHook)(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,pendingModeWidth);
+    if (pendingModeResult.carry) {
+      restoreModeResult = (*g_GraphicsDisplayModeHook)(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
+      (*g_FatalErrorPrimaryDispatchCf)(restoreModeResult.eax,restoreModeResult.carry);
       g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-      (*g_FatalErrorRuntimeDispatchCf)(DVar1.eax,true);
+      (*g_FatalErrorRuntimeDispatchCf)(pendingModeResult.eax,true);
       return;
     }
     UiRootStack_Relayout();
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-    UiRuntime_OpenFourValueDialogCf(arg0_00,arg1_00,dVar3,dVar4);
+    UiRuntime_OpenFourValueDialogCf(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
   }
   return;
 }
@@ -331,15 +331,15 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
 
 {
-  sdword arg1;
-  sdword arg0;
-  UiNodeBase *pUVar1;
+  sdword colorBiasQ16;
+  sdword colorScaleQ16;
+  UiNodeBase *displaySettingsRoot;
   
-  pUVar1 = UiNode_GetRoot(sourceNode);
-  arg1 = pUVar1[4].rightOffset;
-  arg0 = pUVar1[4].bottomOffset;
+  displaySettingsRoot = UiNode_GetRoot(sourceNode);
+  colorBiasQ16 = displaySettingsRoot[4].rightOffset;
+  colorScaleQ16 = displaySettingsRoot[4].bottomOffset;
   UiRootStack_PopCf((UiRootNode *)sourceNode);
-  (*g_SoftwareBuildPixelPackTables)(arg0,arg1);
+  (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
   return;
 }
 
@@ -388,93 +388,93 @@ UiRangeSliderControl_DrawTrackAndThumb
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  UiNodeBase *pUVar1;
-  ulonglong uVar2;
-  uint uVar3;
-  UiNodeBase *pUVar4;
-  dword arg6;
-  int iVar5;
-  uint uVar6;
-  bool bVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
+  UiNodeBase *rangeMax;
+  ulonglong scaledOffset;
+  uint rangeOrValueOffset;
+  UiNodeBase *clampedValue;
+  dword subresourceBase;
+  int edgeLength;
+  uint valueOffsetOrRange;
+  bool accessFailed;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
   
-  bVar7 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar7) {
-    arg6 = 0xac;
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
+    subresourceBase = 0xac;
     if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-      arg6 = 0xb0;
+      subresourceBase = 0xb0;
     }
     if (((uint)control[1].nextSibling & 1) != 0) {
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,arg6 + 8,
+                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,subresourceBase + 8,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6 + 8,g_UiWindowTextureSource);
-      iVar5 = control->layoutHeight - GVar8.logicalHeightPixels;
+      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 8,g_UiWindowTextureSource);
+      edgeLength = control->layoutHeight - textureSize.logicalHeightPixels;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,arg6 + 9,iVar5,GVar8.logicalHeightPixels,0,
+                (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 9,edgeLength,textureSize.logicalHeightPixels,0,
                  control);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar5 + control->top,control->left,arg6 + 10,
+                (clipTop,clipLeft,clipBottom,clipRight,edgeLength + control->top,control->left,subresourceBase + 10,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6 + 0xb,g_UiWindowTextureSource);
-      pUVar1 = control[1].parent;
-      pUVar4 = (UiNodeBase *)control[1].vtable;
-      if ((int)pUVar1 < (int)control[1].vtable) {
-        pUVar4 = pUVar1;
+      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 0xb,g_UiWindowTextureSource);
+      rangeMax = control[1].parent;
+      clampedValue = (UiNodeBase *)control[1].vtable;
+      if ((int)rangeMax < (int)control[1].vtable) {
+        clampedValue = rangeMax;
       }
-      uVar3 = (int)pUVar1 - (int)control[1].firstChild;
-      if (uVar3 == 0) {
-        uVar3 = 1;
+      rangeOrValueOffset = (int)rangeMax - (int)control[1].firstChild;
+      if (rangeOrValueOffset == 0) {
+        rangeOrValueOffset = 1;
       }
-      uVar6 = (int)pUVar4 - (int)control[1].firstChild;
-      if ((int)uVar6 < 0) {
-        uVar6 = 0;
+      valueOffsetOrRange = (int)clampedValue - (int)control[1].firstChild;
+      if ((int)valueOffsetOrRange < 0) {
+        valueOffsetOrRange = 0;
       }
       if (((uint)control[1].nextSibling & 8) == 0) {
-        uVar6 = uVar3 - uVar6;
+        valueOffsetOrRange = rangeOrValueOffset - valueOffsetOrRange;
       }
-      uVar2 = (ulonglong)uVar6 * (ulonglong)(control->layoutHeight - GVar8.logicalHeightPixels);
+      scaledOffset = (ulonglong)valueOffsetOrRange * (ulonglong)(control->layoutHeight - textureSize.logicalHeightPixels);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,
-                 (int)(uVar2 / uVar3) + (uint)(uVar3 < (uint)((int)(uVar2 % (ulonglong)uVar3) * 2))
-                 + control->top,control->left,arg6 + 0xb,g_UiWindowTextureSource,g_FramebufferAccess
+                 (int)(scaledOffset / rangeOrValueOffset) + (uint)(rangeOrValueOffset < (uint)((int)(scaledOffset % (ulonglong)rangeOrValueOffset) * 2))
+                 + control->top,control->left,subresourceBase + 0xb,g_UiWindowTextureSource,g_FramebufferAccess
                 );
       (*g_GraphicsFramebufferEndAccess)();
       return;
     }
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,arg6,
+              (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,subresourceBase,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6,g_UiWindowTextureSource);
-    iVar5 = control->layoutWidth - GVar8.logicalWidthPixels;
+    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase,g_UiWindowTextureSource);
+    edgeLength = control->layoutWidth - textureSize.logicalWidthPixels;
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,arg6 + 1,iVar5,0,GVar8.logicalWidthPixels,
+              (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 1,edgeLength,0,textureSize.logicalWidthPixels,
                control);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar5 + control->left,arg6 + 2,
+              (clipTop,clipLeft,clipBottom,clipRight,control->top,edgeLength + control->left,subresourceBase + 2,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6 + 3,g_UiWindowTextureSource);
-    pUVar1 = control[1].parent;
-    pUVar4 = (UiNodeBase *)control[1].vtable;
-    if ((int)pUVar1 < (int)control[1].vtable) {
-      pUVar4 = pUVar1;
+    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 3,g_UiWindowTextureSource);
+    rangeMax = control[1].parent;
+    clampedValue = (UiNodeBase *)control[1].vtable;
+    if ((int)rangeMax < (int)control[1].vtable) {
+      clampedValue = rangeMax;
     }
-    uVar3 = (int)pUVar4 - (int)control[1].firstChild;
-    if ((int)uVar3 < 0) {
-      uVar3 = 0;
+    rangeOrValueOffset = (int)clampedValue - (int)control[1].firstChild;
+    if ((int)rangeOrValueOffset < 0) {
+      rangeOrValueOffset = 0;
     }
-    uVar6 = (int)pUVar1 - (int)control[1].firstChild;
-    if (uVar6 == 0) {
-      uVar6 = 1;
+    valueOffsetOrRange = (int)rangeMax - (int)control[1].firstChild;
+    if (valueOffsetOrRange == 0) {
+      valueOffsetOrRange = 1;
     }
     if (((uint)control[1].nextSibling & 8) != 0) {
-      uVar3 = uVar6 - uVar3;
+      rangeOrValueOffset = valueOffsetOrRange - rangeOrValueOffset;
     }
-    uVar2 = (ulonglong)uVar3 * (ulonglong)(control->layoutWidth - GVar8.logicalWidthPixels);
+    scaledOffset = (ulonglong)rangeOrValueOffset * (ulonglong)(control->layoutWidth - textureSize.logicalWidthPixels);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,control->top,
-               (int)(uVar2 / uVar6) + (uint)(uVar6 < (uint)((int)(uVar2 % (ulonglong)uVar6) * 2)) +
-               control->left,arg6 + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+               (int)(scaledOffset / valueOffsetOrRange) + (uint)(valueOffsetOrRange < (uint)((int)(scaledOffset % (ulonglong)valueOffsetOrRange) * 2)) +
+               control->left,subresourceBase + 3,g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
@@ -491,24 +491,24 @@ UiRangeSliderControl_BeginThumbDrag
           UiNodeBase *control)
 
 {
-  int iVar1;
-  int iVar2;
-  GraphicsTextureSizeEaxEdxCf9 GVar3;
+  int localX;
+  int localY;
+  GraphicsTextureSizeEaxEdxCf9 thumbSize;
   
   if (((((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-       (iVar1 = pointerX - control->left, control->left <= pointerX)) &&
-      (iVar2 = pointerY - control->top, control->top <= pointerY)) &&
-     ((iVar1 < control->layoutWidth && (iVar2 < control->layoutHeight)))) {
+       (localX = pointerX - control->left, control->left <= pointerX)) &&
+      (localY = pointerY - control->top, control->top <= pointerY)) &&
+     ((localX < control->layoutWidth && (localY < control->layoutHeight)))) {
     if (((uint)control[1].nextSibling & 1) == 0) {
-      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
-      if ((int)GVar3.logicalHeightPixels <= iVar2) {
+      thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
+      if ((int)thumbSize.logicalHeightPixels <= localY) {
         return;
       }
       control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 2);
     }
     else {
-      GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
-      if ((int)GVar3.logicalWidthPixels <= iVar1) {
+      thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
+      if ((int)thumbSize.logicalWidthPixels <= localX) {
         return;
       }
       control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 2);
@@ -588,8 +588,8 @@ UiImageControl_DrawClipped
           UiPixelCoordinate clipRight,UiImageControl *control)
 
 {
-  bool bVar1;
-  GraphicsSubresourceIndex arg6;
+  bool accessFailed;
+  GraphicsSubresourceIndex subresource;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
@@ -598,17 +598,17 @@ UiImageControl_DrawClipped
     }
     if ((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) ||
        (((control->selectable).stateFlags & 0x40) == 0)) {
-      bVar1 = (*g_GraphicsFramebufferBeginAccess)();
-      if (!bVar1) {
+      accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+      if (!accessFailed) {
         if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-          arg6 = control->normalSubresource;
+          subresource = control->normalSubresource;
         }
         else {
-          arg6 = control->alternateSubresource;
+          subresource = control->alternateSubresource;
         }
         (*g_GraphicsTextureSourceBlitSourceAlpha)
                   (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
-                   (control->selectable).base.left,arg6,control->textureSource,g_FramebufferAccess);
+                   (control->selectable).base.left,subresource,control->textureSource,g_FramebufferAccess);
         (*g_GraphicsFramebufferEndAccess)();
       }
     }
@@ -629,9 +629,9 @@ UiImageControl_NonRightPress
           UiImageControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
+  UiSelectableStateFlags *pressStateFlagsField;
   bool opaquePixelHit;
-  bool bVar2;
+  bool opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
@@ -646,18 +646,18 @@ UiImageControl_NonRightPress
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
     }
     else {
-      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
     }
-    if (bVar2) {
+    if (opaqueHit) {
       control->activeChild = (UiNodeBase *)0x0;
       g_UiImageControlHoverTarget = (UiImageControl *)0x0;
       stateFlagsField = &(control->selectable).stateFlags;
@@ -667,8 +667,8 @@ UiImageControl_NonRightPress
   }
   control->activeChild = (UiNodeBase *)0x0;
   g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-  pUVar1 = &(control->selectable).stateFlags;
-  *pUVar1 = *pUVar1 | 0xa03;
+  pressStateFlagsField = &(control->selectable).stateFlags;
+  *pressStateFlagsField = *pressStateFlagsField | 0xa03;
 UiImageControl_InvalidateAfterNonRightPress:
   UiNode_InvalidateRoot((UiNodeBase *)control);
   return;
@@ -687,19 +687,19 @@ UiImageControl_NonRightRelease
           UiImageControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  UiNodeBase *control_00;
+  UiSelectableStateFlags *hoverStateFlagsField;
+  UiNodeBase *previousActiveChild;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *activeChildVtable;
   
-  control_00 = control->activeChild;
+  previousActiveChild = control->activeChild;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0)
   goto UiImageControl_InvalidateAfterNonRightRelease;
   if (((control->selectable).stateFlags & 0x200) == 0) {
-    if (control_00 != (UiNodeBase *)0x0) {
-      activeChildVtable = control_00->vtable;
+    if (previousActiveChild != (UiNodeBase *)0x0) {
+      activeChildVtable = previousActiveChild->vtable;
       control->activeChild = (UiNodeBase *)0x0;
-      (*activeChildVtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control_00);
+      (*activeChildVtable->nonRightRelease)(wheelDelta,pointerY,pointerX,previousActiveChild);
       if ((((control->selectable).stateFlags & 0x400) == 0) ||
          (((control->selectable).stateFlags & 0x800) != 0))
       goto UiImageControl_PreserveHoverAfterNonRightRelease;
@@ -716,11 +716,11 @@ UiImageControl_NonRightRelease
   }
   else {
 UiImageControl_PreserveHoverAfterNonRightRelease:
-    pUVar1 = &(control->selectable).stateFlags;
-    *pUVar1 = *pUVar1 | 0x400;
+    hoverStateFlagsField = &(control->selectable).stateFlags;
+    *hoverStateFlagsField = *hoverStateFlagsField | 0x400;
     g_UiImageControlHoverTarget = control;
-    pUVar1 = &(control->selectable).stateFlags;
-    *pUVar1 = *pUVar1 & 0xfffffdff;
+    hoverStateFlagsField = &(control->selectable).stateFlags;
+    *hoverStateFlagsField = *hoverStateFlagsField & 0xfffffdff;
   }
 UiImageControl_InvalidateAfterNonRightRelease:
   UiNode_InvalidateRoot((UiNodeBase *)control);
@@ -758,34 +758,34 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
-  UiTransferPayloadByteCount UVar1;
-  UiNodeBase *pUVar2;
-  UiNodeVtable *pUVar3;
-  int iVar4;
-  FrontendPlayerRuntimeRecord *pFVar5;
+  UiTransferPayloadByteCount receivedTotal;
+  UiNodeBase *minimumProgress;
+  UiNodeVtable *receivedDone;
+  int remainingPlayers;
+  FrontendPlayerRuntimeRecord *playerRecord;
   
-  pFVar5 = g_FrontendPlayerRuntimeBlocks;
-  UVar1 = g_UiTransferMailbox.receivedByteCount;
-  pUVar2 = (UiNodeBase *)g_UiTransferMailbox.outgoingByteCount;
+  playerRecord = g_FrontendPlayerRuntimeBlocks;
+  receivedTotal = g_UiTransferMailbox.receivedByteCount;
+  minimumProgress = (UiNodeBase *)g_UiTransferMailbox.outgoingByteCount;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_UiTransferMailbox.outgoingByteCount == 0) {
       return;
     }
-    iVar4 = g_FrontendPlayerRuntimeBlockCount - 1;
-    if (iVar4 == 0) {
+    remainingPlayers = g_FrontendPlayerRuntimeBlockCount - 1;
+    if (remainingPlayers == 0) {
       return;
     }
     control[1].firstChild = (UiNodeBase *)0x0;
-    control[1].parent = pUVar2;
+    control[1].parent = minimumProgress;
     do {
-      if ((int)pFVar5[1].runtimeState70 < (int)pUVar2) {
-        pUVar2 = (UiNodeBase *)pFVar5[1].runtimeState70;
+      if ((int)playerRecord[1].runtimeState70 < (int)minimumProgress) {
+        minimumProgress = (UiNodeBase *)playerRecord[1].runtimeState70;
       }
-      iVar4 = iVar4 + -1;
-      pFVar5 = pFVar5 + 1;
-    } while (iVar4 != 0);
-    control[1].vtable = (UiNodeVtable *)pUVar2;
-    if (control[1].parent <= pUVar2) {
+      remainingPlayers = remainingPlayers + -1;
+      playerRecord = playerRecord + 1;
+    } while (remainingPlayers != 0);
+    control[1].vtable = (UiNodeVtable *)minimumProgress;
+    if (control[1].parent <= minimumProgress) {
       return;
     }
   }
@@ -794,12 +794,12 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
        (g_UiTransferMailbox.receivedRemainingBytes == 0)) {
       return;
     }
-    pUVar3 = (UiNodeVtable *)
+    receivedDone = (UiNodeVtable *)
              (g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes);
     control[1].firstChild = (UiNodeBase *)0x0;
-    control[1].parent = (UiNodeBase *)UVar1;
-    control[1].vtable = pUVar3;
-    if (UVar1 <= pUVar3) {
+    control[1].parent = (UiNodeBase *)receivedTotal;
+    control[1].vtable = receivedDone;
+    if (receivedTotal <= receivedDone) {
       return;
     }
   }
@@ -818,57 +818,57 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
 void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelectionCf(void)
 
 {
-  DisplayModeScratchWord DVar1;
-  DisplayModeScratchWord DVar2;
-  dword dVar3;
-  dword dVar4;
-  UiRootFlags UVar5;
-  sdword sVar6;
-  sdword sVar7;
+  DisplayModeScratchWord adapterOption1Or4;
+  DisplayModeScratchWord adapterOption2;
+  dword framebufferWidth;
+  dword framebufferHeight;
+  UiRootFlags activeAdapterIndex;
+  sdword colorScaleQ16;
+  sdword colorBiasQ16;
   UiRootNode *root;
-  uint uVar8;
-  uint uVar9;
-  int iVar10;
-  UiNodeFlags UVar11;
-  GraphicsDisplayModeCount GVar12;
-  UiRootNode *pUVar13;
-  UiNodeVtable *pUVar14;
-  undefined4 *puVar15;
-  GraphicsDisplayMode *pGVar16;
-  ArenaAllocEaxCf5 AVar17;
+  uint insertValueA;
+  uint insertValueB;
+  int copyCountOrRgBits;
+  UiNodeFlags colorDepthBits;
+  GraphicsDisplayModeCount remainingModes;
+  UiRootNode *copyCursorOrLowWord;
+  UiNodeVtable *lowWordValue;
+  undefined4 *templateCursor;
+  GraphicsDisplayMode *displayMode;
+  ArenaAllocEaxCf5 allocResult;
   
   if (1 < g_GraphicsDisplayModeCount) {
-    AVar17 = (*g_MemoryApi.alloc)(0xbd4);
-    root = (UiRootNode *)AVar17.eax;
-    if (AVar17.carry) {
+    allocResult = (*g_MemoryApi.alloc)(0xbd4);
+    root = (UiRootNode *)allocResult.eax;
+    if (allocResult.carry) {
       return;
     }
-    puVar15 = (undefined4 *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
-    pUVar13 = root;
-    for (iVar10 = 0x2f5; UVar5 = g_ActiveGraphicsAdapterIndex, dVar4 = g_FramebufferHeight,
-        dVar3 = g_FramebufferWidth, iVar10 != 0; iVar10 = iVar10 + -1) {
-      (pUVar13->base).nextSibling = (UiNodeBase *)*puVar15;
-      puVar15 = puVar15 + 1;
-      pUVar13 = (UiRootNode *)&(pUVar13->base).firstChild;
+    templateCursor = (undefined4 *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
+    copyCursorOrLowWord = root;
+    for (copyCountOrRgBits = 0x2f5; activeAdapterIndex = g_ActiveGraphicsAdapterIndex, framebufferHeight = g_FramebufferHeight,
+        framebufferWidth = g_FramebufferWidth, copyCountOrRgBits != 0; copyCountOrRgBits = copyCountOrRgBits + -1) {
+      (copyCursorOrLowWord->base).nextSibling = (UiNodeBase *)*templateCursor;
+      templateCursor = templateCursor + 1;
+      copyCursorOrLowWord = (UiRootNode *)&(copyCursorOrLowWord->base).firstChild;
     }
-    UVar11 = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
+    colorDepthBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
              g_SoftwarePixelFormatConfig.blueBitCount;
     root[3].base.rightOffset = g_FramebufferWidth;
-    root[3].base.bottomOffset = dVar4;
-    root[3].base.leftAnchorQ31 = UVar11;
-    root[3].base.topAnchorQ31 = UVar5;
-    root[3].base.layoutWidth = dVar3;
-    root[3].base.layoutHeight = dVar4;
-    root[3].base.nodeFlags = UVar11;
-    root[3].rootFlags = UVar5;
-    sVar7 = g_SoftwareColorBiasQ16;
-    sVar6 = g_SoftwareColorScaleQ16;
+    root[3].base.bottomOffset = framebufferHeight;
+    root[3].base.leftAnchorQ31 = colorDepthBits;
+    root[3].base.topAnchorQ31 = activeAdapterIndex;
+    root[3].base.layoutWidth = framebufferWidth;
+    root[3].base.layoutHeight = framebufferHeight;
+    root[3].base.nodeFlags = colorDepthBits;
+    root[3].rootFlags = activeAdapterIndex;
+    colorBiasQ16 = g_SoftwareColorBiasQ16;
+    colorScaleQ16 = g_SoftwareColorScaleQ16;
     root[3].base.rightAnchorQ31 = g_SoftwareColorBiasQ16;
-    root[3].base.bottomAnchorQ31 = sVar6;
-    root[3].callbacks = (UiRootCallbacks *)sVar7;
-    root[3].previousRoot = (UiRootNode *)sVar6;
-    root[0x1f].base.rightOffset = sVar7;
-    root[0x1d].base.right = sVar6;
+    root[3].base.bottomAnchorQ31 = colorScaleQ16;
+    root[3].callbacks = (UiRootCallbacks *)colorBiasQ16;
+    root[3].previousRoot = (UiRootNode *)colorScaleQ16;
+    root[0x1f].base.rightOffset = colorBiasQ16;
+    root[0x1d].base.right = colorScaleQ16;
     root[0x21].base.topAnchorQ31 = (UiAnchorFractionQ31)&root[0x22].base.firstChild;
     root[0x20].base.leftAnchorQ31 = (UiAnchorFractionQ31)&root[0x21].base.bottomAnchorQ31;
     UiRuntime_FormatSignedValues140And144(root);
@@ -878,44 +878,44 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch3 = 0xffffffff;
-    GVar12 = g_GraphicsDisplayModeCount;
-    pGVar16 = g_GraphicsDisplayModes;
+    remainingModes = g_GraphicsDisplayModeCount;
+    displayMode = g_GraphicsDisplayModes;
     do {
-      uVar8 = pGVar16->bitsPerPixel;
-      if ((((uVar8 != g_UiDisplayModeDistinctValueScratch0) &&
-           (uVar8 != g_UiDisplayModeDistinctValueScratch1)) &&
-          (uVar8 != g_UiDisplayModeDistinctValueScratch2)) &&
-         (uVar8 != g_UiDisplayModeDistinctValueScratch3)) {
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch0) {
+      insertValueA = displayMode->bitsPerPixel;
+      if ((((insertValueA != g_UiDisplayModeDistinctValueScratch0) &&
+           (insertValueA != g_UiDisplayModeDistinctValueScratch1)) &&
+          (insertValueA != g_UiDisplayModeDistinctValueScratch2)) &&
+         (insertValueA != g_UiDisplayModeDistinctValueScratch3)) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch0) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch0;
-          g_UiDisplayModeDistinctValueScratch0 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch0;
+          g_UiDisplayModeDistinctValueScratch0 = insertValueA;
         }
-        uVar8 = uVar9;
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch1) {
+        insertValueA = insertValueB;
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch1) {
           LOCK();
           UNLOCK();
-          uVar8 = g_UiDisplayModeDistinctValueScratch1;
-          g_UiDisplayModeDistinctValueScratch1 = uVar9;
+          insertValueA = g_UiDisplayModeDistinctValueScratch1;
+          g_UiDisplayModeDistinctValueScratch1 = insertValueB;
         }
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch2) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch2) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch2;
-          g_UiDisplayModeDistinctValueScratch2 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch2;
+          g_UiDisplayModeDistinctValueScratch2 = insertValueA;
         }
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch3) {
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch3) {
           LOCK();
           UNLOCK();
-          g_UiDisplayModeDistinctValueScratch3 = uVar9;
+          g_UiDisplayModeDistinctValueScratch3 = insertValueB;
         }
       }
-      pGVar16 = pGVar16 + 1;
-      GVar12 = GVar12 - 1;
-    } while (GVar12 != 0);
+      displayMode = displayMode + 1;
+      remainingModes = remainingModes - 1;
+    } while (remainingModes != 0);
     root[7].base.left = g_UiDisplayModeDistinctValueScratch0;
     root[8].base.leftOffset = g_UiDisplayModeDistinctValueScratch1;
     root[9].base.leftAnchorQ31 = g_UiDisplayModeDistinctValueScratch2;
@@ -928,76 +928,76 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     g_UiDisplayModeDistinctValueScratch5 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch6 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch7 = 0xffffffff;
-    GVar12 = g_GraphicsDisplayModeCount;
-    pGVar16 = g_GraphicsDisplayModes;
+    remainingModes = g_GraphicsDisplayModeCount;
+    displayMode = g_GraphicsDisplayModes;
     do {
-      uVar8 = pGVar16->width * 0x10000 + pGVar16->height;
-      if ((((uVar8 != g_UiDisplayModeDistinctValueScratch0) &&
-           (uVar8 != g_UiDisplayModeDistinctValueScratch1)) &&
-          ((uVar8 != g_UiDisplayModeDistinctValueScratch2 &&
-           ((uVar8 != g_UiDisplayModeDistinctValueScratch3 &&
-            (uVar8 != g_UiDisplayModeDistinctValueScratch4)))))) &&
-         ((uVar8 != g_UiDisplayModeDistinctValueScratch5 &&
-          ((uVar8 != g_UiDisplayModeDistinctValueScratch6 &&
-           (uVar8 != g_UiDisplayModeDistinctValueScratch7)))))) {
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch0) {
+      insertValueA = displayMode->width * 0x10000 + displayMode->height;
+      if ((((insertValueA != g_UiDisplayModeDistinctValueScratch0) &&
+           (insertValueA != g_UiDisplayModeDistinctValueScratch1)) &&
+          ((insertValueA != g_UiDisplayModeDistinctValueScratch2 &&
+           ((insertValueA != g_UiDisplayModeDistinctValueScratch3 &&
+            (insertValueA != g_UiDisplayModeDistinctValueScratch4)))))) &&
+         ((insertValueA != g_UiDisplayModeDistinctValueScratch5 &&
+          ((insertValueA != g_UiDisplayModeDistinctValueScratch6 &&
+           (insertValueA != g_UiDisplayModeDistinctValueScratch7)))))) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch0) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch0;
-          g_UiDisplayModeDistinctValueScratch0 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch0;
+          g_UiDisplayModeDistinctValueScratch0 = insertValueA;
         }
-        uVar8 = uVar9;
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch1) {
+        insertValueA = insertValueB;
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch1) {
           LOCK();
           UNLOCK();
-          uVar8 = g_UiDisplayModeDistinctValueScratch1;
-          g_UiDisplayModeDistinctValueScratch1 = uVar9;
+          insertValueA = g_UiDisplayModeDistinctValueScratch1;
+          g_UiDisplayModeDistinctValueScratch1 = insertValueB;
         }
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch2) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch2) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch2;
-          g_UiDisplayModeDistinctValueScratch2 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch2;
+          g_UiDisplayModeDistinctValueScratch2 = insertValueA;
         }
-        uVar8 = uVar9;
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch3) {
+        insertValueA = insertValueB;
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch3) {
           LOCK();
           UNLOCK();
-          uVar8 = g_UiDisplayModeDistinctValueScratch3;
-          g_UiDisplayModeDistinctValueScratch3 = uVar9;
+          insertValueA = g_UiDisplayModeDistinctValueScratch3;
+          g_UiDisplayModeDistinctValueScratch3 = insertValueB;
         }
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch4) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch4) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch4;
-          g_UiDisplayModeDistinctValueScratch4 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch4;
+          g_UiDisplayModeDistinctValueScratch4 = insertValueA;
         }
-        uVar8 = uVar9;
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch5) {
+        insertValueA = insertValueB;
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch5) {
           LOCK();
           UNLOCK();
-          uVar8 = g_UiDisplayModeDistinctValueScratch5;
-          g_UiDisplayModeDistinctValueScratch5 = uVar9;
+          insertValueA = g_UiDisplayModeDistinctValueScratch5;
+          g_UiDisplayModeDistinctValueScratch5 = insertValueB;
         }
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch6) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch6) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch6;
-          g_UiDisplayModeDistinctValueScratch6 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch6;
+          g_UiDisplayModeDistinctValueScratch6 = insertValueA;
         }
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch7) {
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch7) {
           LOCK();
           UNLOCK();
-          g_UiDisplayModeDistinctValueScratch7 = uVar9;
+          g_UiDisplayModeDistinctValueScratch7 = insertValueB;
         }
       }
-      pGVar16 = pGVar16 + 1;
-      GVar12 = GVar12 - 1;
-    } while (GVar12 != 0);
+      displayMode = displayMode + 1;
+      remainingModes = remainingModes - 1;
+    } while (remainingModes != 0);
     root[0xb].callbacks = (UiRootCallbacks *)(g_UiDisplayModeDistinctValueScratch0 >> 0x10);
     root[0xb].rootFlags = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
     root[0xd].base.parent = (UiNodeBase *)(g_UiDisplayModeDistinctValueScratch1 >> 0x10);
@@ -1008,78 +1008,78 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     root[0xf].base.topOffset = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
     root[0x10].base.rightAnchorQ31 = g_UiDisplayModeDistinctValueScratch4 >> 0x10;
     root[0x10].base.topAnchorQ31 = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
-    uVar8 = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
+    insertValueA = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
     root[0x11].base.nodeFlags = g_UiDisplayModeDistinctValueScratch5 >> 0x10;
-    root[0x11].base.layoutHeight = uVar8;
-    pUVar13 = (UiRootNode *)(g_UiDisplayModeDistinctValueScratch6 & 0xffff);
+    root[0x11].base.layoutHeight = insertValueA;
+    copyCursorOrLowWord = (UiRootNode *)(g_UiDisplayModeDistinctValueScratch6 & 0xffff);
     root[0x13].base.nextSibling = (UiNodeBase *)(g_UiDisplayModeDistinctValueScratch6 >> 0x10);
-    root[0x12].previousRoot = pUVar13;
-    pUVar14 = (UiNodeVtable *)(g_UiDisplayModeDistinctValueScratch7 & 0xffff);
+    root[0x12].previousRoot = copyCursorOrLowWord;
+    lowWordValue = (UiNodeVtable *)(g_UiDisplayModeDistinctValueScratch7 & 0xffff);
     root[0x14].base.left = g_UiDisplayModeDistinctValueScratch7 >> 0x10;
-    root[0x14].base.vtable = pUVar14;
+    root[0x14].base.vtable = lowWordValue;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch3 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch4 = 0xffffffff;
-    GVar12 = g_GraphicsDisplayModeCount;
-    pGVar16 = g_GraphicsDisplayModes;
+    remainingModes = g_GraphicsDisplayModeCount;
+    displayMode = g_GraphicsDisplayModes;
     do {
-      uVar8 = pGVar16->adapterIndex;
-      if ((((uVar8 != g_UiDisplayModeDistinctValueScratch0) &&
-           (uVar8 != g_UiDisplayModeDistinctValueScratch1)) &&
-          (uVar8 != g_UiDisplayModeDistinctValueScratch2)) &&
-         ((uVar8 != g_UiDisplayModeDistinctValueScratch3 &&
-          (uVar8 != g_UiDisplayModeDistinctValueScratch4)))) {
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch0) {
+      insertValueA = displayMode->adapterIndex;
+      if ((((insertValueA != g_UiDisplayModeDistinctValueScratch0) &&
+           (insertValueA != g_UiDisplayModeDistinctValueScratch1)) &&
+          (insertValueA != g_UiDisplayModeDistinctValueScratch2)) &&
+         ((insertValueA != g_UiDisplayModeDistinctValueScratch3 &&
+          (insertValueA != g_UiDisplayModeDistinctValueScratch4)))) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch0) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch0;
-          g_UiDisplayModeDistinctValueScratch0 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch0;
+          g_UiDisplayModeDistinctValueScratch0 = insertValueA;
         }
-        uVar8 = uVar9;
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch1) {
+        insertValueA = insertValueB;
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch1) {
           LOCK();
           UNLOCK();
-          uVar8 = g_UiDisplayModeDistinctValueScratch1;
-          g_UiDisplayModeDistinctValueScratch1 = uVar9;
+          insertValueA = g_UiDisplayModeDistinctValueScratch1;
+          g_UiDisplayModeDistinctValueScratch1 = insertValueB;
         }
-        uVar9 = uVar8;
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch2) {
+        insertValueB = insertValueA;
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch2) {
           LOCK();
           UNLOCK();
-          uVar9 = g_UiDisplayModeDistinctValueScratch2;
-          g_UiDisplayModeDistinctValueScratch2 = uVar8;
+          insertValueB = g_UiDisplayModeDistinctValueScratch2;
+          g_UiDisplayModeDistinctValueScratch2 = insertValueA;
         }
-        uVar8 = uVar9;
-        if (uVar9 < g_UiDisplayModeDistinctValueScratch3) {
+        insertValueA = insertValueB;
+        if (insertValueB < g_UiDisplayModeDistinctValueScratch3) {
           LOCK();
           UNLOCK();
-          uVar8 = g_UiDisplayModeDistinctValueScratch3;
-          g_UiDisplayModeDistinctValueScratch3 = uVar9;
+          insertValueA = g_UiDisplayModeDistinctValueScratch3;
+          g_UiDisplayModeDistinctValueScratch3 = insertValueB;
         }
-        if (uVar8 < g_UiDisplayModeDistinctValueScratch4) {
+        if (insertValueA < g_UiDisplayModeDistinctValueScratch4) {
           LOCK();
           UNLOCK();
-          g_UiDisplayModeDistinctValueScratch4 = uVar8;
+          g_UiDisplayModeDistinctValueScratch4 = insertValueA;
         }
       }
-      DVar2 = g_UiDisplayModeDistinctValueScratch2;
-      DVar1 = g_UiDisplayModeDistinctValueScratch1;
-      pGVar16 = pGVar16 + 1;
-      GVar12 = GVar12 - 1;
-    } while (GVar12 != 0);
+      adapterOption2 = g_UiDisplayModeDistinctValueScratch2;
+      adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch1;
+      displayMode = displayMode + 1;
+      remainingModes = remainingModes - 1;
+    } while (remainingModes != 0);
     root[0x15].base.leftOffset = g_UiDisplayModeDistinctValueScratch0;
-    root[0x16].base.leftAnchorQ31 = DVar1;
-    root[0x17].base.layoutWidth = DVar2;
-    DVar1 = g_UiDisplayModeDistinctValueScratch4;
-    iVar10 = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
+    root[0x16].base.leftAnchorQ31 = adapterOption1Or4;
+    root[0x17].base.layoutWidth = adapterOption2;
+    adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch4;
+    copyCountOrRgBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
     root[0x18].callbacks = (UiRootCallbacks *)g_UiDisplayModeDistinctValueScratch3;
-    root[0x1a].base.parent = (UiNodeBase *)DVar1;
+    root[0x1a].base.parent = (UiNodeBase *)adapterOption1Or4;
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (g_ActiveGraphicsAdapterIndex,
-               (UiNodeBase *)(iVar10 + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight
+               (UiNodeBase *)(copyCountOrRgBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight
                ,g_FramebufferWidth,(UiNodeBase *)root);
     UiRootStack_InvalidateAll();
   }
@@ -1100,26 +1100,26 @@ UiImageControl_HitTestOpaque
 {
   UiImageControl *hitNode;
   bool opaquePixelHit;
-  bool bVar1;
+  bool opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
   
   hitNode = (UiImageControl *)0xffffffff;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      bVar1 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
-      if (bVar1) {
+      if (opaqueHit) {
         return (UiNodeBase *)control;
       }
     }
     else {
-      bVar1 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
-      if (bVar1) {
+      if (opaqueHit) {
         return (UiNodeBase *)control;
       }
     }

@@ -26,32 +26,32 @@ TerrainRegionCollection_CollectConnectedCellsRecursive
 
 {
   FieldGridCell *rowCellCursor;
-  FieldGridCell *cell_00;
-  FieldGridCell *cell_01;
-  FieldGridCell *pFVar1;
+  FieldGridCell *spanStartCell;
+  FieldGridCell *aboveRowCell;
+  FieldGridCell *cursorOrSpanEndCell;
   
-  pFVar1 = cell;
+  cursorOrSpanEndCell = cell;
   do {
-    cell_00 = pFVar1;
-    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,cell_00);
-    if ((cell_00[-1].flagsAndMaterial & requiredOccupancyMask) == 0) break;
-    pFVar1 = cell_00 + -1;
-  } while ((cell_00[-1].flagsAndMaterial & 0x88016000) == 0);
-  while ((pFVar1 = cell + 1, (cell[1].flagsAndMaterial & requiredOccupancyMask) != 0 &&
+    spanStartCell = cursorOrSpanEndCell;
+    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,spanStartCell);
+    if ((spanStartCell[-1].flagsAndMaterial & requiredOccupancyMask) == 0) break;
+    cursorOrSpanEndCell = spanStartCell + -1;
+  } while ((spanStartCell[-1].flagsAndMaterial & 0x88016000) == 0);
+  while ((cursorOrSpanEndCell = cell + 1, (cell[1].flagsAndMaterial & requiredOccupancyMask) != 0 &&
          ((cell[1].flagsAndMaterial & 0x88016000) == 0))) {
-    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,pFVar1);
-    cell = pFVar1;
+    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,cursorOrSpanEndCell);
+    cell = cursorOrSpanEndCell;
   }
-  cell_01 = (FieldGridCell *)((int)cell_00 - rowStrideBytes);
+  aboveRowCell = (FieldGridCell *)((int)spanStartCell - rowStrideBytes);
   do {
-    if (((cell_01->flagsAndMaterial & 0x88016000) == 0) &&
-       ((cell_01->flagsAndMaterial & requiredOccupancyMask) != 0)) {
+    if (((aboveRowCell->flagsAndMaterial & 0x88016000) == 0) &&
+       ((aboveRowCell->flagsAndMaterial & requiredOccupancyMask) != 0)) {
       TerrainRegionCollection_CollectConnectedCellsRecursive
-                (requiredOccupancyMask,rowStrideBytes,cell_01);
+                (requiredOccupancyMask,rowStrideBytes,aboveRowCell);
     }
-    cell_01 = cell_01 + 1;
-  } while (cell_01 <= (FieldGridCell *)((int)pFVar1 - rowStrideBytes));
-  rowCellCursor = (FieldGridCell *)(cell_00[-1].runtime0C_3F + rowStrideBytes + -0xc);
+    aboveRowCell = aboveRowCell + 1;
+  } while (aboveRowCell <= (FieldGridCell *)((int)cursorOrSpanEndCell - rowStrideBytes));
+  rowCellCursor = (FieldGridCell *)(spanStartCell[-1].runtime0C_3F + rowStrideBytes + -0xc);
   do {
     if (((rowCellCursor->flagsAndMaterial & 0x88016000) == 0) &&
        ((rowCellCursor->flagsAndMaterial & requiredOccupancyMask) != 0)) {
@@ -59,7 +59,7 @@ TerrainRegionCollection_CollectConnectedCellsRecursive
                 (requiredOccupancyMask,rowStrideBytes,rowCellCursor);
     }
     rowCellCursor = rowCellCursor + 1;
-  } while (rowCellCursor < (FieldGridCell *)(pFVar1->runtime0C_3F + rowStrideBytes + -0xc));
+  } while (rowCellCursor < (FieldGridCell *)(cursorOrSpanEndCell->runtime0C_3F + rowStrideBytes + -0xc));
   return;
 }
 
@@ -80,33 +80,33 @@ TerrainMaterialEdit_SeedMatchingRegionReplacement
           Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
-  FieldGridAsset *pFVar2;
-  TerrainMaterialIndex FVar3;
-  int iVar3;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  FieldGridAsset *fieldGridAsset;
+  TerrainMaterialIndex referenceMaterial;
+  int countOrGridX;
   int gridY;
-  dword *pdVar4;
+  dword *editPlaneCursor;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  pFVar2 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  pdVar4 = pSVar1->terrainMaterialEditPlane808C;
-  for (iVar3 = pFVar2->gridWidth * pFVar2->gridHeight; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pdVar4 = 0;
-    pdVar4 = pdVar4 + 1;
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+  for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX = countOrGridX + -1) {
+    *editPlaneCursor = 0;
+    editPlaneCursor = editPlaneCursor + 1;
   }
-  iVar3 = worldXQ12 >> 0xc;
-  if ((((-1 < iVar3) && (gridY = worldYQ12 >> 0xc, -1 < gridY)) && (iVar3 < (int)pFVar2->gridWidth))
-     && (gridY < (int)pFVar2->gridHeight)) {
-    FVar3 = pFVar2->cells[gridY * pFVar2->gridWidth + iVar3].flagsAndMaterial &
+  countOrGridX = worldXQ12 >> 0xc;
+  if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 0xc, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
+     && (gridY < (int)fieldGridAsset->gridHeight)) {
+    referenceMaterial = fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + countOrGridX].flagsAndMaterial &
             FIELD_CELL_MATERIAL_ID_MASK;
-    pdVar4 = pSVar1->terrainMaterialEditPlane808C;
-    if (FVar3 != replacementMaterialByte) {
-      pFVar2->runtimeStateFlags = pFVar2->runtimeStateFlags | 1;
+    editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+    if (referenceMaterial != replacementMaterialByte) {
+      fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | 1;
       g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
-      g_TerrainMaterialEditFieldGrid = pFVar2;
-      g_TerrainMaterialEditDeltaBuffer = pdVar4;
-      g_TerrainMaterialEditReferenceMaterialByte = FVar3;
-      TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY,iVar3);
+      g_TerrainMaterialEditFieldGrid = fieldGridAsset;
+      g_TerrainMaterialEditDeltaBuffer = editPlaneCursor;
+      g_TerrainMaterialEditReferenceMaterialByte = referenceMaterial;
+      TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY,countOrGridX);
     }
   }
   return;
@@ -129,30 +129,30 @@ TerrainMaterialEdit_SeedNonTargetRegionReplacement
           Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
-  FieldGridAsset *pFVar2;
-  int iVar3;
+  SelectionPlayerRuntimeBlock *playerBlock;
+  FieldGridAsset *fieldGridAsset;
+  int countOrGridX;
   int gridY;
-  dword *pdVar4;
+  dword *editPlaneCursor;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  pFVar2 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  pdVar4 = pSVar1->terrainMaterialEditPlane808C;
-  for (iVar3 = pFVar2->gridWidth * pFVar2->gridHeight; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pdVar4 = 0;
-    pdVar4 = pdVar4 + 1;
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+  for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX = countOrGridX + -1) {
+    *editPlaneCursor = 0;
+    editPlaneCursor = editPlaneCursor + 1;
   }
-  iVar3 = worldXQ12 >> 0xc;
-  if ((((-1 < iVar3) && (gridY = worldYQ12 >> 0xc, -1 < gridY)) && (iVar3 < (int)pFVar2->gridWidth))
-     && (gridY < (int)pFVar2->gridHeight)) {
-    pdVar4 = pSVar1->terrainMaterialEditPlane808C;
-    if ((pFVar2->cells[gridY * pFVar2->gridWidth + iVar3].flagsAndMaterial &
+  countOrGridX = worldXQ12 >> 0xc;
+  if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 0xc, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
+     && (gridY < (int)fieldGridAsset->gridHeight)) {
+    editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+    if ((fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + countOrGridX].flagsAndMaterial &
         FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
-      pFVar2->runtimeStateFlags = pFVar2->runtimeStateFlags | 1;
+      fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | 1;
       g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
-      g_TerrainMaterialEditFieldGrid = pFVar2;
-      g_TerrainMaterialEditDeltaBuffer = pdVar4;
-      TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY,iVar3);
+      g_TerrainMaterialEditFieldGrid = fieldGridAsset;
+      g_TerrainMaterialEditDeltaBuffer = editPlaneCursor;
+      TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY,countOrGridX);
     }
   }
   return;
@@ -171,65 +171,65 @@ TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
           (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
-  FieldGridAsset *pFVar1;
-  FieldGridDimension FVar2;
-  int iVar3;
-  int iVar4;
+  FieldGridAsset *fieldGridAsset;
+  FieldGridDimension widthCells;
+  int heightDelta;
+  int remainingCount;
   int rowStrideBytes;
   FieldGridCell *cell;
-  FieldGridCell *pFVar5;
-  int *piVar6;
+  FieldGridCell *fieldCell;
+  int *heightDeltaCursor;
   
-  pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar6 = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainHeightScratchPlane8088;
-  FVar2 = pFVar1->gridWidth;
-  iVar4 = FVar2 * pFVar1->gridHeight;
-  pFVar1->runtimeStateFlags = pFVar1->runtimeStateFlags | 1;
-  rowStrideBytes = FVar2 * 0x80;
-  pFVar5 = pFVar1->cells;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainHeightScratchPlane8088;
+  widthCells = fieldGridAsset->gridWidth;
+  remainingCount = widthCells * fieldGridAsset->gridHeight;
+  fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | 1;
+  rowStrideBytes = widthCells * 0x80;
+  fieldCell = fieldGridAsset->cells;
   do {
-    iVar3 = *piVar6;
-    if (iVar3 != 0) {
-      pFVar5->terrainHeight = pFVar5->terrainHeight - iVar3;
-      pFVar5->waterSurfaceDelta = pFVar5->waterSurfaceDelta + iVar3;
-      *piVar6 = -*piVar6;
-      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-        if (((pFVar5[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + -1);
+    heightDelta = *heightDeltaCursor;
+    if (heightDelta != 0) {
+      fieldCell->terrainHeight = fieldCell->terrainHeight - heightDelta;
+      fieldCell->waterSurfaceDelta = fieldCell->waterSurfaceDelta + heightDelta;
+      *heightDeltaCursor = -*heightDeltaCursor;
+      if ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
+        FieldGridCell_ComputeDirectionalLightColor(fieldCell);
+        if (((fieldCell[-1].flagsAndMaterial & 0x88006000) == 0) && (heightDeltaCursor[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + -1);
+          FieldGridCell_ComputeDirectionalLightColor(fieldCell + -1);
         }
-        if (((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) && (piVar6[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
+        if (((fieldCell[1].flagsAndMaterial & 0x88006000) == 0) && (heightDeltaCursor[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
-        pFVar5 = pFVar5 + -FVar2;
-        if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+        fieldCell = fieldCell + -widthCells;
+        if ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
+          FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         }
-        if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
+        if ((fieldCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
-        pFVar5 = pFVar5 + FVar2 * 2 + -1;
-        if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+        fieldCell = fieldCell + widthCells * 2 + -1;
+        if ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
+          FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         }
-        cell = pFVar5 + 1;
-        if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
+        cell = fieldCell + 1;
+        if ((fieldCell[1].flagsAndMaterial & 0x88006000) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
         }
-        pFVar5 = cell + -FVar2;
+        fieldCell = cell + -widthCells;
       }
     }
-    pFVar5 = pFVar5 + 1;
-    piVar6 = piVar6 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    fieldCell = fieldCell + 1;
+    heightDeltaCursor = heightDeltaCursor + 1;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   return;
 }
 
@@ -246,22 +246,22 @@ TerrainEditBuffer_CopyCellMaterialBytes
           dword reservedZero2)
 
 {
-  FieldGridAsset *pFVar1;
-  int iVar2;
-  FieldGridCell *pFVar3;
-  TerrainMaterialIndex *pFVar4;
+  FieldGridAsset *fieldGridAsset;
+  int remainingCount;
+  FieldGridCell *fieldCell;
+  TerrainMaterialIndex *materialCursor;
   
-  pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  pFVar4 = (TerrainMaterialIndex *)
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  materialCursor = (TerrainMaterialIndex *)
            g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
-  iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
-  pFVar3 = pFVar1->cells;
+  remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
+  fieldCell = fieldGridAsset->cells;
   do {
-    *pFVar4 = pFVar3->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
-    pFVar3 = pFVar3 + 1;
-    pFVar4 = pFVar4 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    *materialCursor = fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    fieldCell = fieldCell + 1;
+    materialCursor = materialCursor + 1;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   return;
 }
 
@@ -277,21 +277,21 @@ TerrainEditBuffer_SubtractCurrentCellMaterialBytes
           dword reservedZero2)
 
 {
-  FieldGridAsset *pFVar1;
-  int iVar2;
-  FieldGridCell *pFVar3;
-  dword *pdVar4;
+  FieldGridAsset *fieldGridAsset;
+  int remainingCount;
+  FieldGridCell *fieldCell;
+  dword *materialDeltaCursor;
   
-  pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  pdVar4 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
-  iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
-  pFVar3 = pFVar1->cells;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
+  remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
+  fieldCell = fieldGridAsset->cells;
   do {
-    *pdVar4 = *pdVar4 - (pFVar3->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK);
-    pFVar3 = pFVar3 + 1;
-    pdVar4 = pdVar4 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    *materialDeltaCursor = *materialDeltaCursor - (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK);
+    fieldCell = fieldCell + 1;
+    materialDeltaCursor = materialDeltaCursor + 1;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   return;
 }
 
@@ -306,23 +306,23 @@ TerrainEditBuffer_CommitFlagsAndMaterialDeltas
           (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
 
 {
-  FieldGridAsset *pFVar1;
-  int iVar2;
-  FieldGridCell *pFVar3;
-  dword *pdVar4;
+  FieldGridAsset *fieldGridAsset;
+  int remainingCount;
+  FieldGridCell *fieldCell;
+  dword *materialDeltaCursor;
   
-  pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  pdVar4 = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainMaterialEditPlane808C;
-  iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
-  *(uint *)(pFVar1[-1].sourcePath + 0x1a) = *(uint *)(pFVar1[-1].sourcePath + 0x1a) | 1;
-  pFVar3 = pFVar1->cells;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainMaterialEditPlane808C;
+  remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
+  *(uint *)(fieldGridAsset[-1].sourcePath + 0x1a) = *(uint *)(fieldGridAsset[-1].sourcePath + 0x1a) | 1;
+  fieldCell = fieldGridAsset->cells;
   do {
-    pFVar3->flagsAndMaterial = pFVar3->flagsAndMaterial + *pdVar4;
-    *pdVar4 = -*pdVar4;
-    pFVar3 = pFVar3 + 1;
-    pdVar4 = pdVar4 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial + *materialDeltaCursor;
+    *materialDeltaCursor = -*materialDeltaCursor;
+    fieldCell = fieldCell + 1;
+    materialDeltaCursor = materialDeltaCursor + 1;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   return;
 }
 
@@ -339,21 +339,21 @@ TerrainEditBuffer_ConvertHeightsToDeltas
           dword reservedZero2)
 
 {
-  FieldGridAsset *pFVar1;
-  int iVar2;
-  FieldGridCell *pFVar3;
-  int *piVar4;
+  FieldGridAsset *fieldGridAsset;
+  int remainingCount;
+  FieldGridCell *fieldCell;
+  int *heightCursor;
   
-  pFVar1 = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar4 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
-  iVar2 = pFVar1->gridWidth * pFVar1->gridHeight;
-  pFVar3 = pFVar1->cells;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  heightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
+  fieldCell = fieldGridAsset->cells;
   do {
-    *piVar4 = pFVar3->terrainHeight - *piVar4;
-    pFVar3 = pFVar3 + 1;
-    piVar4 = piVar4 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    *heightCursor = fieldCell->terrainHeight - *heightCursor;
+    fieldCell = fieldCell + 1;
+    heightCursor = heightCursor + 1;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   return;
 }
 
@@ -372,26 +372,26 @@ TerrainRegionCollection_RecordConnectedCell
           (FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell)
 
 {
-  ArmyRuntimeSavedOffset AVar1;
-  uint uVar2;
-  TerrainRegionCollectionCount TVar3;
-  int iVar4;
+  ArmyRuntimeSavedOffset savedArmyOffset;
+  uint originalOccupancyMask;
+  TerrainRegionCollectionCount storedCount;
+  int entriesBase;
   
-  TVar3 = g_TerrainRegionCollectionStoredCount;
+  storedCount = g_TerrainRegionCollectionStoredCount;
   g_TerrainRegionCollectionVisitedCount = g_TerrainRegionCollectionVisitedCount + 1;
-  uVar2 = cell->resourceExtractionDescriptor7C;
+  originalOccupancyMask = cell->resourceExtractionDescriptor7C;
   cell->flagsAndMaterial = cell->flagsAndMaterial | FIELD_CELL_CONNECTED_REGION_VISITED;
-  if ((requiredOccupancyMask & uVar2) != 0) {
+  if ((requiredOccupancyMask & originalOccupancyMask) != 0) {
     cell->resourceExtractionDescriptor7C = 0;
     LOCK();
-    AVar1 = cell->armyRuntimeSavedOffset6C;
+    savedArmyOffset = cell->armyRuntimeSavedOffset6C;
     cell->armyRuntimeSavedOffset6C = 0;
-    iVar4 = g_TerrainRegionCollectionEntries;
+    entriesBase = g_TerrainRegionCollectionEntries;
     UNLOCK();
-    if (TVar3 < 0x800) {
+    if (storedCount < 0x800) {
       g_TerrainRegionCollectionStoredCount = g_TerrainRegionCollectionStoredCount + 1;
-      *(uint *)(g_TerrainRegionCollectionEntries + TVar3 * 8) = uVar2;
-      *(ArmyRuntimeSavedOffset *)(iVar4 + 4 + TVar3 * 8) = AVar1;
+      *(uint *)(g_TerrainRegionCollectionEntries + storedCount * 8) = originalOccupancyMask;
+      *(ArmyRuntimeSavedOffset *)(entriesBase + 4 + storedCount * 8) = savedArmyOffset;
     }
   }
   return;
@@ -410,62 +410,62 @@ TerrainMaterialEdit_PropagateMatchingRegionReplacement
           (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int *piVar7;
-  int *piVar8;
-  int iVar9;
+  uint referenceMaterial;
+  int cellIndexOrColumn;
+  uint cellMaterial;
+  int columnOrMaterialDelta;
+  int widthOrColumn;
+  int leftCellAddress;
+  int *leftDeltaCursor;
+  int *rightDeltaCursor;
+  int spanStartColumn;
   
-  uVar1 = g_TerrainMaterialEditReferenceMaterialByte;
+  referenceMaterial = g_TerrainMaterialEditReferenceMaterialByte;
   if ((((-1 < gridY) && (-1 < gridX)) &&
-      (iVar5 = *(int *)(g_TerrainMaterialEditFieldGrid + 0xb8),
-      gridY < *(int *)(g_TerrainMaterialEditFieldGrid + 0xbc))) && (gridX < iVar5)) {
-    iVar2 = gridY * iVar5 + gridX;
-    piVar8 = (int *)(g_TerrainMaterialEditDeltaBuffer + iVar2 * 4);
-    iVar2 = iVar2 * 0x80 + 0x200 + g_TerrainMaterialEditFieldGrid;
-    uVar3 = *(uint *)(iVar2 + 0x50) & 0xff;
-    iVar4 = gridX;
-    iVar6 = iVar2;
-    piVar7 = piVar8;
-    if (g_TerrainMaterialEditReferenceMaterialByte == uVar3) {
+      (widthOrColumn = *(int *)(g_TerrainMaterialEditFieldGrid + 0xb8),
+      gridY < *(int *)(g_TerrainMaterialEditFieldGrid + 0xbc))) && (gridX < widthOrColumn)) {
+    cellIndexOrColumn = gridY * widthOrColumn + gridX;
+    rightDeltaCursor = (int *)(g_TerrainMaterialEditDeltaBuffer + cellIndexOrColumn * 4);
+    cellIndexOrColumn = cellIndexOrColumn * 0x80 + 0x200 + g_TerrainMaterialEditFieldGrid;
+    cellMaterial = *(uint *)(cellIndexOrColumn + 0x50) & 0xff;
+    columnOrMaterialDelta = gridX;
+    leftCellAddress = cellIndexOrColumn;
+    leftDeltaCursor = rightDeltaCursor;
+    if (g_TerrainMaterialEditReferenceMaterialByte == cellMaterial) {
       do {
-        iVar9 = iVar4;
-        iVar4 = uVar3 - g_TerrainMaterialEditReplacementMaterialByte;
-        *(int *)(iVar6 + 0x50) = *(int *)(iVar6 + 0x50) - iVar4;
-        *piVar7 = *piVar7 + iVar4;
-        if (iVar9 < 1) break;
-        uVar3 = *(uint *)(iVar6 + -0x30) & 0xff;
-        iVar4 = iVar9 + -1;
-        iVar6 = iVar6 + -0x80;
-        piVar7 = piVar7 + -1;
-      } while (uVar1 == uVar3);
+        spanStartColumn = columnOrMaterialDelta;
+        columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
+        *(int *)(leftCellAddress + 0x50) = *(int *)(leftCellAddress + 0x50) - columnOrMaterialDelta;
+        *leftDeltaCursor = *leftDeltaCursor + columnOrMaterialDelta;
+        if (spanStartColumn < 1) break;
+        cellMaterial = *(uint *)(leftCellAddress + -0x30) & 0xff;
+        columnOrMaterialDelta = spanStartColumn + -1;
+        leftCellAddress = leftCellAddress + -0x80;
+        leftDeltaCursor = leftDeltaCursor + -1;
+      } while (referenceMaterial == cellMaterial);
       LOCK();
       UNLOCK();
       while( true ) {
         gridX = gridX + 1;
-        piVar8 = piVar8 + 1;
-        if ((iVar5 <= gridX) || (uVar3 = *(uint *)(iVar2 + 0xd0) & 0xff, uVar1 != uVar3)) break;
-        iVar4 = uVar3 - g_TerrainMaterialEditReplacementMaterialByte;
-        *(int *)(iVar2 + 0xd0) = *(int *)(iVar2 + 0xd0) - iVar4;
-        *piVar8 = *piVar8 + iVar4;
-        iVar2 = iVar2 + 0x80;
+        rightDeltaCursor = rightDeltaCursor + 1;
+        if ((widthOrColumn <= gridX) || (cellMaterial = *(uint *)(cellIndexOrColumn + 0xd0) & 0xff, referenceMaterial != cellMaterial)) break;
+        columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
+        *(int *)(cellIndexOrColumn + 0xd0) = *(int *)(cellIndexOrColumn + 0xd0) - columnOrMaterialDelta;
+        *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
+        cellIndexOrColumn = cellIndexOrColumn + 0x80;
       }
-      iVar5 = iVar9;
+      widthOrColumn = spanStartColumn;
       do {
-        iVar2 = iVar5 + 1;
-        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + -1,iVar5);
-        iVar5 = iVar2;
-      } while (iVar2 <= gridX);
-      iVar5 = iVar9 + -1;
+        cellIndexOrColumn = widthOrColumn + 1;
+        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + -1,widthOrColumn);
+        widthOrColumn = cellIndexOrColumn;
+      } while (cellIndexOrColumn <= gridX);
+      widthOrColumn = spanStartColumn + -1;
       do {
-        iVar2 = iVar5 + 1;
-        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + 1,iVar5);
-        iVar5 = iVar2;
-      } while (iVar2 < gridX);
+        cellIndexOrColumn = widthOrColumn + 1;
+        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + 1,widthOrColumn);
+        widthOrColumn = cellIndexOrColumn;
+      } while (cellIndexOrColumn < gridX);
     }
   }
   return;
@@ -484,61 +484,61 @@ TerrainMaterialEdit_PropagateNonTargetRegionReplacement
           (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int *piVar7;
-  int *piVar8;
-  int iVar9;
+  uint referenceMaterial;
+  int cellIndexOrColumn;
+  uint cellMaterial;
+  int columnOrMaterialDelta;
+  int widthOrColumn;
+  int leftCellAddress;
+  int *leftDeltaCursor;
+  int *rightDeltaCursor;
+  int spanStartColumn;
   
-  uVar1 = g_TerrainMaterialEditReferenceMaterialByte;
+  referenceMaterial = g_TerrainMaterialEditReferenceMaterialByte;
   if ((((-1 < gridY) && (-1 < gridX)) &&
-      (iVar5 = *(int *)(g_TerrainMaterialEditFieldGrid + 0xb8),
-      gridY < *(int *)(g_TerrainMaterialEditFieldGrid + 0xbc))) && (gridX < iVar5)) {
-    iVar2 = gridY * iVar5 + gridX;
-    piVar8 = (int *)(g_TerrainMaterialEditDeltaBuffer + iVar2 * 4);
-    iVar2 = iVar2 * 0x80 + 0x200 + g_TerrainMaterialEditFieldGrid;
-    uVar3 = *(uint *)(iVar2 + 0x50) & 0xff;
-    iVar4 = gridX;
-    iVar6 = iVar2;
-    piVar7 = piVar8;
-    if (g_TerrainMaterialEditReferenceMaterialByte != uVar3) {
+      (widthOrColumn = *(int *)(g_TerrainMaterialEditFieldGrid + 0xb8),
+      gridY < *(int *)(g_TerrainMaterialEditFieldGrid + 0xbc))) && (gridX < widthOrColumn)) {
+    cellIndexOrColumn = gridY * widthOrColumn + gridX;
+    rightDeltaCursor = (int *)(g_TerrainMaterialEditDeltaBuffer + cellIndexOrColumn * 4);
+    cellIndexOrColumn = cellIndexOrColumn * 0x80 + 0x200 + g_TerrainMaterialEditFieldGrid;
+    cellMaterial = *(uint *)(cellIndexOrColumn + 0x50) & 0xff;
+    columnOrMaterialDelta = gridX;
+    leftCellAddress = cellIndexOrColumn;
+    leftDeltaCursor = rightDeltaCursor;
+    if (g_TerrainMaterialEditReferenceMaterialByte != cellMaterial) {
       do {
-        iVar9 = iVar4;
-        *(int *)(iVar6 + 0x50) = *(int *)(iVar6 + 0x50) - (uVar3 - uVar1);
-        *piVar7 = *piVar7 + (uVar3 - uVar1);
-        if (iVar9 < 1) break;
-        uVar3 = *(uint *)(iVar6 + -0x30) & 0xff;
-        iVar4 = iVar9 + -1;
-        iVar6 = iVar6 + -0x80;
-        piVar7 = piVar7 + -1;
-      } while (uVar1 != uVar3);
+        spanStartColumn = columnOrMaterialDelta;
+        *(int *)(leftCellAddress + 0x50) = *(int *)(leftCellAddress + 0x50) - (cellMaterial - referenceMaterial);
+        *leftDeltaCursor = *leftDeltaCursor + (cellMaterial - referenceMaterial);
+        if (spanStartColumn < 1) break;
+        cellMaterial = *(uint *)(leftCellAddress + -0x30) & 0xff;
+        columnOrMaterialDelta = spanStartColumn + -1;
+        leftCellAddress = leftCellAddress + -0x80;
+        leftDeltaCursor = leftDeltaCursor + -1;
+      } while (referenceMaterial != cellMaterial);
       LOCK();
       UNLOCK();
       while( true ) {
         gridX = gridX + 1;
-        piVar8 = piVar8 + 1;
-        if ((iVar5 <= gridX) || (uVar3 = *(uint *)(iVar2 + 0xd0) & 0xff, uVar1 == uVar3)) break;
-        iVar4 = uVar3 - uVar1;
-        *(int *)(iVar2 + 0xd0) = *(int *)(iVar2 + 0xd0) - iVar4;
-        *piVar8 = *piVar8 + iVar4;
-        iVar2 = iVar2 + 0x80;
+        rightDeltaCursor = rightDeltaCursor + 1;
+        if ((widthOrColumn <= gridX) || (cellMaterial = *(uint *)(cellIndexOrColumn + 0xd0) & 0xff, referenceMaterial == cellMaterial)) break;
+        columnOrMaterialDelta = cellMaterial - referenceMaterial;
+        *(int *)(cellIndexOrColumn + 0xd0) = *(int *)(cellIndexOrColumn + 0xd0) - columnOrMaterialDelta;
+        *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
+        cellIndexOrColumn = cellIndexOrColumn + 0x80;
       }
-      iVar5 = iVar9;
+      widthOrColumn = spanStartColumn;
       do {
-        iVar2 = iVar5 + 1;
-        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + -1,iVar5);
-        iVar5 = iVar2;
-      } while (iVar2 <= gridX);
-      iVar5 = iVar9 + -1;
+        cellIndexOrColumn = widthOrColumn + 1;
+        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + -1,widthOrColumn);
+        widthOrColumn = cellIndexOrColumn;
+      } while (cellIndexOrColumn <= gridX);
+      widthOrColumn = spanStartColumn + -1;
       do {
-        iVar2 = iVar5 + 1;
-        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + 1,iVar5);
-        iVar5 = iVar2;
-      } while (iVar2 < gridX);
+        cellIndexOrColumn = widthOrColumn + 1;
+        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + 1,widthOrColumn);
+        widthOrColumn = cellIndexOrColumn;
+      } while (cellIndexOrColumn < gridX);
     }
   }
   return;

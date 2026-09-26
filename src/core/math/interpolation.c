@@ -31,66 +31,66 @@ WorldMotionSpline_EvaluateAndApplyAtTime
   sdword positionY;
   sdword positionZ;
   UQ12 magnitude;
-  uint uVar1;
+  uint yawAngle;
   AngleTurn32 pitchAngle;
-  int iVar2;
-  WorldMotionSplineKeyframe *pWVar3;
-  WorldRuntimeContext *pWVar4;
+  int keyframeIndex;
+  WorldMotionSplineKeyframe *currentKeyframe;
+  WorldRuntimeContext *runtimeCopy;
   
-  /* Every channel evaluates the same segment (iVar2 - 1); Ghidra showed the re-pushed register
+  /* Every channel evaluates the same segment (keyframeIndex - 1); Ghidra showed the re-pushed register
      as uninitialized segmentIndex_NN locals. */
-  iVar2 = 0;
+  keyframeIndex = 0;
   do {
-    pWVar3 = keyframes;
-    if ((uint)timeQ12 < (uint)pWVar3->timeQ12) {
-      pWVar4 = worldRuntime;
+    currentKeyframe = keyframes;
+    if ((uint)timeQ12 < (uint)currentKeyframe->timeQ12) {
+      runtimeCopy = worldRuntime;
       positionX = CubicSpline_EvaluateValueQ12
-                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[0]);
+                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
       positionY = CubicSpline_EvaluateValueQ12
-                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[1]);
+                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
       positionZ = CubicSpline_EvaluateValueQ12
-                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[2]);
-      WorldRuntime_SetPosition60AndDistanceFromPosition80(positionZ,positionY,positionX,pWVar4);
-      pWVar4 = worldRuntime;
+                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
+      WorldRuntime_SetPosition60AndDistanceFromPosition80(positionZ,positionY,positionX,runtimeCopy);
+      runtimeCopy = worldRuntime;
       magnitude = CubicSpline_EvaluateValueQ12
-                            (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[3]);
-      uVar1 = CubicSpline_EvaluateValueQ12
-                        (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[4]);
-      uVar1 = uVar1 & 0xffff;
+                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
+      yawAngle = CubicSpline_EvaluateValueQ12
+                        (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
+      yawAngle = yawAngle & 0xffff;
       pitchAngle = CubicSpline_EvaluateValueQ12
-                             (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[5]);
+                             (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetMotionParameters6CThrough78Clamped
-                ((worldRuntime->motion).motionValue78,pitchAngle,uVar1,magnitude,pWVar4);
+                ((worldRuntime->motion).motionValue78,pitchAngle,yawAngle,magnitude,runtimeCopy);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[0]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
       g_WorldMotionSplineCachedDerivatives[1] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[1]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
       g_WorldMotionSplineCachedDerivatives[2] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[2]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
       g_WorldMotionSplineCachedDerivatives[3] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[3]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
       g_WorldMotionSplineCachedDerivatives[4] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[4]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
       g_WorldMotionSplineCachedDerivatives[5] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[5]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
       return true;
     }
-    iVar2 = iVar2 + 1;
+    keyframeIndex = keyframeIndex + 1;
     keyframeCount = keyframeCount + -1;
-    keyframes = pWVar3 + 1;
+    keyframes = currentKeyframe + 1;
   } while (keyframeCount != 0);
-  uVar1 = pWVar3->channel4Q12;
+  yawAngle = currentKeyframe->channel4Q12;
   WorldRuntime_SetPosition60AndDistanceFromPosition80
-            (pWVar3->channel2Q12,pWVar3->channel1Q12,pWVar3->channel0Q12,worldRuntime);
+            (currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
   WorldRuntime_SetMotionParameters6CThrough78Clamped
-            ((worldRuntime->motion).motionValue78,pWVar3->channel5Q12,uVar1 & 0xffff,
-             pWVar3->channel3Q12,worldRuntime);
+            ((worldRuntime->motion).motionValue78,currentKeyframe->channel5Q12,yawAngle & 0xffff,
+             currentKeyframe->channel3Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
   return false;
 }
@@ -113,57 +113,57 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
   sdword originY;
   sdword originZ;
   UQ12 distance;
-  uint uVar1;
+  uint yawAngle;
   AngleTurn32 pitchAngle;
-  int iVar2; /* EDX: the segment index is passed (minus one) to every evaluation */
-  WorldMotionSplineKeyframe *pWVar3;
+  int keyframeIndex; /* EDX: the segment index is passed (minus one) to every evaluation */
+  WorldMotionSplineKeyframe *currentKeyframe;
   
-  iVar2 = 0;
+  keyframeIndex = 0;
   do {
-    pWVar3 = keyframes;
-    if ((uint)timeQ12 < (uint)pWVar3->timeQ12) {
+    currentKeyframe = keyframes;
+    if ((uint)timeQ12 < (uint)currentKeyframe->timeQ12) {
       originX = CubicSpline_EvaluateValueQ12
-                          (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[0]);
+                          (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
       originY = CubicSpline_EvaluateValueQ12
-                          (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[1]);
+                          (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
       originZ = CubicSpline_EvaluateValueQ12
-                          (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[2]);
+                          (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
       distance = CubicSpline_EvaluateValueQ12
-                           (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[3]);
-      uVar1 = CubicSpline_EvaluateValueQ12
-                        (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[4]);
-      uVar1 = uVar1 & 0xffff;
+                           (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
+      yawAngle = CubicSpline_EvaluateValueQ12
+                        (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
+      yawAngle = yawAngle & 0xffff;
       pitchAngle = CubicSpline_EvaluateValueQ12
-                             (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[5]);
+                             (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                (pitchAngle,uVar1,distance,originZ,originY,originX,worldRuntime);
+                (pitchAngle,yawAngle,distance,originZ,originY,originX,worldRuntime);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[0]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
       g_WorldMotionSplineCachedDerivatives[1] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[1]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
       g_WorldMotionSplineCachedDerivatives[2] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[2]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
       g_WorldMotionSplineCachedDerivatives[3] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[3]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
       g_WorldMotionSplineCachedDerivatives[4] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[4]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
       g_WorldMotionSplineCachedDerivatives[5] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,iVar2 + -1,g_WorldMotionSplineCoefficientTables[5]);
+                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
       return 1;
     }
-    iVar2 = iVar2 + 1;
+    keyframeIndex = keyframeIndex + 1;
     keyframeCount = keyframeCount + -1;
-    keyframes = pWVar3 + 1;
+    keyframes = currentKeyframe + 1;
   } while (keyframeCount != 0);
   WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-            (pWVar3->channel5Q12,pWVar3->channel4Q12 & 0xffff,pWVar3->channel3Q12,
-             pWVar3->channel2Q12,pWVar3->channel1Q12,pWVar3->channel0Q12,worldRuntime);
+            (currentKeyframe->channel5Q12,currentKeyframe->channel4Q12 & 0xffff,currentKeyframe->channel3Q12,
+             currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
   return 0;
 }
@@ -182,31 +182,31 @@ WorldMotionSpline_BuildSixChannelCurves
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes)
 
 {
-  WorldMotionSplineKeyframe *pWVar1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
+  WorldMotionSplineKeyframe *keyframeCursor;
+  uint unwrappedAngle;
+  int remainingCount;
+  uint previousAngle;
+  int unwrapDelta;
   
   if (1 < keyframeCount) {
-    uVar2 = keyframes->channel4Q12;
-    iVar3 = keyframeCount + -1;
-    uVar4 = uVar2;
-    pWVar1 = keyframes;
+    unwrappedAngle = keyframes->channel4Q12;
+    remainingCount = keyframeCount + -1;
+    previousAngle = unwrappedAngle;
+    keyframeCursor = keyframes;
     do {
-      iVar5 = (pWVar1[1].channel4Q12 & 0xffffU) - (uVar4 & 0xffff);
-      if (0x8000 < iVar5) {
-        iVar5 = iVar5 + -0x10000;
+      unwrapDelta = (keyframeCursor[1].channel4Q12 & 0xffffU) - (previousAngle & 0xffff);
+      if (0x8000 < unwrapDelta) {
+        unwrapDelta = unwrapDelta + -0x10000;
       }
-      if (iVar5 < -0x8000) {
-        iVar5 = iVar5 + 0x10000;
+      if (unwrapDelta < -0x8000) {
+        unwrapDelta = unwrapDelta + 0x10000;
       }
-      uVar2 = uVar2 + iVar5;
-      uVar4 = (uVar4 & 0xffff) + iVar5;
-      pWVar1[1].channel4Q12 = uVar2;
-      iVar3 = iVar3 + -1;
-      pWVar1 = pWVar1 + 1;
-    } while (iVar3 != 0);
+      unwrappedAngle = unwrappedAngle + unwrapDelta;
+      previousAngle = (previousAngle & 0xffff) + unwrapDelta;
+      keyframeCursor[1].channel4Q12 = unwrappedAngle;
+      remainingCount = remainingCount + -1;
+      keyframeCursor = keyframeCursor + 1;
+    } while (remainingCount != 0);
   }
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[0],
@@ -271,35 +271,35 @@ InterpolationState_SetNegatedTargetAndRescaleProgress
           GraphicsShadingRuntimeRecord *interpolationState)
 
 {
-  PackedRgb24 PVar1;
-  int iVar2;
+  PackedRgb24 negatedDurationOrZero;
+  int durationOrElapsed;
   
   if (interpolationState == (GraphicsShadingRuntimeRecord *)0x0) {
     return;
   }
-  PVar1 = -transitionDurationTicks;
-  if (((int)PVar1 < 0) && (-1 < interpolationState->radiusTransitionDurationTicks)) {
+  negatedDurationOrZero = -transitionDurationTicks;
+  if (((int)negatedDurationOrZero < 0) && (-1 < interpolationState->radiusTransitionDurationTicks)) {
     if (interpolationState->radiusTransitionDurationTicks == 0) {
-      interpolationState->radiusTransitionDurationTicks = PVar1;
-      interpolationState->radiusTransitionElapsedTicks = PVar1;
+      interpolationState->radiusTransitionDurationTicks = negatedDurationOrZero;
+      interpolationState->radiusTransitionElapsedTicks = negatedDurationOrZero;
       return;
     }
     LOCK();
-    iVar2 = interpolationState->radiusTransitionDurationTicks;
-    interpolationState->radiusTransitionDurationTicks = PVar1;
+    durationOrElapsed = interpolationState->radiusTransitionDurationTicks;
+    interpolationState->radiusTransitionDurationTicks = negatedDurationOrZero;
     UNLOCK();
-    iVar2 = (int)(((longlong)(int)PVar1 * (longlong)interpolationState->radiusTransitionElapsedTicks
-                  ) / (longlong)iVar2);
-    interpolationState->radiusTransitionElapsedTicks = iVar2;
-    PVar1 = 0;
-    if (iVar2 != 0) {
+    durationOrElapsed = (int)(((longlong)(int)negatedDurationOrZero * (longlong)interpolationState->radiusTransitionElapsedTicks
+                  ) / (longlong)durationOrElapsed);
+    interpolationState->radiusTransitionElapsedTicks = durationOrElapsed;
+    negatedDurationOrZero = 0;
+    if (durationOrElapsed != 0) {
       return;
     }
   }
-  *(PackedRgb24 *)((int)&interpolationState->squaredRadiusQ24 + 4) = PVar1;
-  *(PackedRgb24 *)&interpolationState->squaredRadiusQ24 = PVar1;
-  interpolationState->packedColorRgbActive = PVar1;
-  interpolationState->targetRadiusQ12 = PVar1;
+  *(PackedRgb24 *)((int)&interpolationState->squaredRadiusQ24 + 4) = negatedDurationOrZero;
+  *(PackedRgb24 *)&interpolationState->squaredRadiusQ24 = negatedDurationOrZero;
+  interpolationState->packedColorRgbActive = negatedDurationOrZero;
+  interpolationState->targetRadiusQ12 = negatedDurationOrZero;
   return;
 }
 
@@ -313,38 +313,38 @@ void __thandor_void_preserve_eax_ecx_edx
 InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  GraphicsShadingRuntimeRecord *pGVar4;
+  int durationTicks;
+  int currentRadius;
+  int remainingCount;
+  GraphicsShadingRuntimeRecord *stateRecord;
   
-  pGVar4 = g_GraphicsShadingRuntimeRecords;
-  iVar3 = 0x100;
+  stateRecord = g_GraphicsShadingRuntimeRecords;
+  remainingCount = 0x100;
   do {
-    iVar1 = pGVar4->radiusTransitionDurationTicks;
-    if ((pGVar4->packedColorRgbActive != 0) && (iVar1 != 0)) {
-      iVar2 = (int)(((longlong)pGVar4->targetRadiusQ12 *
-                    (longlong)pGVar4->radiusTransitionElapsedTicks) / (longlong)iVar1);
-      pGVar4->radiusTransitionElapsedTicks = pGVar4->radiusTransitionElapsedTicks + elapsedTicks;
-      pGVar4->squaredRadiusQ24 = (longlong)iVar2 * (longlong)iVar2;
-      if (iVar1 < 0) {
-        if ((uint)pGVar4->radiusTransitionElapsedTicks < 0x80000000) {
-          *(undefined4 *)((int)&pGVar4->squaredRadiusQ24 + 4) = 0;
-          *(undefined4 *)&pGVar4->squaredRadiusQ24 = 0;
-          pGVar4->targetRadiusQ12 = 0;
-          pGVar4->packedColorRgbActive = 0;
+    durationTicks = stateRecord->radiusTransitionDurationTicks;
+    if ((stateRecord->packedColorRgbActive != 0) && (durationTicks != 0)) {
+      currentRadius = (int)(((longlong)stateRecord->targetRadiusQ12 *
+                    (longlong)stateRecord->radiusTransitionElapsedTicks) / (longlong)durationTicks);
+      stateRecord->radiusTransitionElapsedTicks = stateRecord->radiusTransitionElapsedTicks + elapsedTicks;
+      stateRecord->squaredRadiusQ24 = (longlong)currentRadius * (longlong)currentRadius;
+      if (durationTicks < 0) {
+        if ((uint)stateRecord->radiusTransitionElapsedTicks < 0x80000000) {
+          *(undefined4 *)((int)&stateRecord->squaredRadiusQ24 + 4) = 0;
+          *(undefined4 *)&stateRecord->squaredRadiusQ24 = 0;
+          stateRecord->targetRadiusQ12 = 0;
+          stateRecord->packedColorRgbActive = 0;
 InterpolationStateTable_Advance256ByTicks_ClearTransitionTimingAfterCompletionOrDeactivation:
-          pGVar4->radiusTransitionElapsedTicks = 0;
-          pGVar4->radiusTransitionDurationTicks = 0;
+          stateRecord->radiusTransitionElapsedTicks = 0;
+          stateRecord->radiusTransitionDurationTicks = 0;
         }
       }
-      else if (iVar1 < pGVar4->radiusTransitionElapsedTicks)
+      else if (durationTicks < stateRecord->radiusTransitionElapsedTicks)
       goto 
       InterpolationStateTable_Advance256ByTicks_ClearTransitionTimingAfterCompletionOrDeactivation;
     }
-    pGVar4 = pGVar4 + 1;
-    iVar3 = iVar3 + -1;
-    if (iVar3 == 0) {
+    stateRecord = stateRecord + 1;
+    remainingCount = remainingCount + -1;
+    if (remainingCount == 0) {
       return;
     }
   } while( true );
@@ -365,37 +365,37 @@ CubicSpline_SolveCoefficientSystem
 {
   float pivot;
   CubicSplineMatrixIndex rowIndex;
-  CubicSplineMatrixIndex CVar1;
-  uint uVar2;
-  uint uVar3;
+  CubicSplineMatrixIndex columnOrRowIndex;
+  uint followingIndex;
+  uint nextRowIndex;
   
   rowIndex = 0;
-  CVar1 = 0;
+  columnOrRowIndex = 0;
   do {
     do {
-      uVar2 = CVar1 + 1;
-      CubicSpline_ForwardEliminateColumn(1.0,rowIndex - 1,CVar1,rowIndex,matrix32x32);
-      CVar1 = uVar2;
-    } while (uVar2 < equationCount);
+      followingIndex = columnOrRowIndex + 1;
+      CubicSpline_ForwardEliminateColumn(1.0,rowIndex - 1,columnOrRowIndex,rowIndex,matrix32x32);
+      columnOrRowIndex = followingIndex;
+    } while (followingIndex < equationCount);
     CubicSpline_BackSubstituteRow(1.0,rowIndex - 1,0,rowIndex,rhsVector,matrix32x32);
     if (rowIndex + 1 < equationCount) {
       pivot = matrix32x32[rowIndex * 0x21];
-      uVar2 = rowIndex + 1;
+      followingIndex = rowIndex + 1;
       do {
-        uVar3 = uVar2 + 1;
-        CubicSpline_ForwardEliminateColumn(pivot,rowIndex - 1,rowIndex,uVar2,matrix32x32);
-        uVar2 = uVar3;
-      } while (uVar3 < equationCount);
+        nextRowIndex = followingIndex + 1;
+        CubicSpline_ForwardEliminateColumn(pivot,rowIndex - 1,rowIndex,followingIndex,matrix32x32);
+        followingIndex = nextRowIndex;
+      } while (nextRowIndex < equationCount);
     }
     rowIndex = rowIndex + 1;
-    CVar1 = rowIndex;
+    columnOrRowIndex = rowIndex;
   } while (rowIndex < equationCount);
-  CVar1 = equationCount - 1;
+  columnOrRowIndex = equationCount - 1;
   do {
     CubicSpline_BackSubstituteRow
-              (matrix32x32[CVar1 * 0x21],equationCount - 1,CVar1 + 1,CVar1,rhsVector,matrix32x32);
-    CVar1 = CVar1 - 1;
-  } while (-1 < (int)CVar1);
+              (matrix32x32[columnOrRowIndex * 0x21],equationCount - 1,columnOrRowIndex + 1,columnOrRowIndex,rhsVector,matrix32x32);
+    columnOrRowIndex = columnOrRowIndex - 1;
+  } while (-1 < (int)columnOrRowIndex);
   return;
 }
 
@@ -413,102 +413,102 @@ CubicSpline_BuildNaturalCoefficientSystem
           WorldMotionSplineChannelByteOffset channelByteOffset,WorldMotionSplineKeyframe *keyframes)
 
 {
-  float fVar1;
-  int iVar2;
-  int *piVar3;
-  int *piVar4;
-  WorldMotionSplineKeyframe *pWVar5;
-  float *pfVar6;
+  float knotTimeOrTerm;
+  int remainingCount;
+  int *endValueCursor;
+  int *startValueCursor;
+  WorldMotionSplineKeyframe *keyframeCursor;
+  float *floatCursor;
   
-  piVar3 = (int *)((int)&keyframes->channel0Q12 + channelByteOffset);
+  endValueCursor = (int *)((int)&keyframes->channel0Q12 + channelByteOffset);
   *outEquationCount = keyframeCount * 4 - 4;
-  pfVar6 = matrix32x32;
-  for (iVar2 = 0x400; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *pfVar6 = 0.0;
-    pfVar6 = pfVar6 + 1;
+  floatCursor = matrix32x32;
+  for (remainingCount = 0x400; remainingCount != 0; remainingCount = remainingCount + -1) {
+    *floatCursor = 0.0;
+    floatCursor = floatCursor + 1;
   }
-  iVar2 = keyframeCount + -1;
-  pWVar5 = keyframes;
-  pfVar6 = matrix32x32;
+  remainingCount = keyframeCount + -1;
+  keyframeCursor = keyframes;
+  floatCursor = matrix32x32;
   do {
-    fVar1 = (float)pWVar5->timeQ12 / g_Q12FloatScale4096;
-    *pfVar6 = 1.0;
-    pfVar6[1] = fVar1;
-    pfVar6[2] = fVar1 * fVar1;
-    pfVar6[3] = fVar1 * fVar1 * fVar1;
-    pWVar5 = pWVar5 + 1;
-    pfVar6 = pfVar6 + 0x84;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  iVar2 = keyframeCount + -1;
-  pfVar6 = matrix32x32;
-  pWVar5 = keyframes;
+    knotTimeOrTerm = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
+    *floatCursor = 1.0;
+    floatCursor[1] = knotTimeOrTerm;
+    floatCursor[2] = knotTimeOrTerm * knotTimeOrTerm;
+    floatCursor[3] = knotTimeOrTerm * knotTimeOrTerm * knotTimeOrTerm;
+    keyframeCursor = keyframeCursor + 1;
+    floatCursor = floatCursor + 0x84;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
+  remainingCount = keyframeCount + -1;
+  floatCursor = matrix32x32;
+  keyframeCursor = keyframes;
   do {
-    fVar1 = (float)pWVar5[1].timeQ12 / g_Q12FloatScale4096;
-    pfVar6[0x60] = 1.0;
-    pfVar6[0x61] = fVar1;
-    pfVar6[0x62] = fVar1 * fVar1;
-    pfVar6[99] = fVar1 * fVar1 * fVar1;
-    pfVar6 = pfVar6 + 0x84;
-    iVar2 = iVar2 + -1;
-    pWVar5 = pWVar5 + 1;
-  } while (iVar2 != 0);
-  pfVar6 = matrix32x32;
-  pWVar5 = keyframes;
-  for (iVar2 = keyframeCount + -2; iVar2 != 0; iVar2 = iVar2 + -1) {
-    fVar1 = (float)pWVar5[1].timeQ12 / g_Q12FloatScale4096;
-    pfVar6[0x41] = 1.0;
-    pfVar6[0x45] = -1.0;
-    pfVar6[0x42] = fVar1 + fVar1;
-    pfVar6[0x46] = -(fVar1 + fVar1);
-    fVar1 = fVar1 * fVar1;
-    fVar1 = fVar1 + fVar1 + fVar1;
-    pfVar6[0x43] = fVar1;
-    pfVar6[0x47] = -fVar1;
-    pfVar6 = pfVar6 + 0x84;
-    pWVar5 = pWVar5 + 1;
+    knotTimeOrTerm = (float)keyframeCursor[1].timeQ12 / g_Q12FloatScale4096;
+    floatCursor[0x60] = 1.0;
+    floatCursor[0x61] = knotTimeOrTerm;
+    floatCursor[0x62] = knotTimeOrTerm * knotTimeOrTerm;
+    floatCursor[99] = knotTimeOrTerm * knotTimeOrTerm * knotTimeOrTerm;
+    floatCursor = floatCursor + 0x84;
+    remainingCount = remainingCount + -1;
+    keyframeCursor = keyframeCursor + 1;
+  } while (remainingCount != 0);
+  floatCursor = matrix32x32;
+  keyframeCursor = keyframes;
+  for (remainingCount = keyframeCount + -2; remainingCount != 0; remainingCount = remainingCount + -1) {
+    knotTimeOrTerm = (float)keyframeCursor[1].timeQ12 / g_Q12FloatScale4096;
+    floatCursor[0x41] = 1.0;
+    floatCursor[0x45] = -1.0;
+    floatCursor[0x42] = knotTimeOrTerm + knotTimeOrTerm;
+    floatCursor[0x46] = -(knotTimeOrTerm + knotTimeOrTerm);
+    knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
+    knotTimeOrTerm = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+    floatCursor[0x43] = knotTimeOrTerm;
+    floatCursor[0x47] = -knotTimeOrTerm;
+    floatCursor = floatCursor + 0x84;
+    keyframeCursor = keyframeCursor + 1;
   }
-  pfVar6 = matrix32x32;
-  pWVar5 = keyframes;
-  for (iVar2 = keyframeCount + -2; pWVar5 = pWVar5 + 1, iVar2 != 0; iVar2 = iVar2 + -1) {
-    fVar1 = (float)pWVar5->timeQ12 / g_Q12FloatScale4096;
-    pfVar6[0xa6] = 2.0;
-    pfVar6[0xa2] = -2.0;
-    fVar1 = fVar1 + fVar1 + fVar1;
-    fVar1 = fVar1 + fVar1;
-    pfVar6[0xa7] = fVar1;
-    pfVar6[0xa3] = -fVar1;
-    pfVar6 = pfVar6 + 0x84;
+  floatCursor = matrix32x32;
+  keyframeCursor = keyframes;
+  for (remainingCount = keyframeCount + -2; keyframeCursor = keyframeCursor + 1, remainingCount != 0; remainingCount = remainingCount + -1) {
+    knotTimeOrTerm = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
+    floatCursor[0xa6] = 2.0;
+    floatCursor[0xa2] = -2.0;
+    knotTimeOrTerm = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+    knotTimeOrTerm = knotTimeOrTerm + knotTimeOrTerm;
+    floatCursor[0xa7] = knotTimeOrTerm;
+    floatCursor[0xa3] = -knotTimeOrTerm;
+    floatCursor = floatCursor + 0x84;
   }
-  fVar1 = (float)pWVar5->timeQ12 / g_Q12FloatScale4096;
-  pfVar6[0x41] = 1.0;
-  pfVar6[0x42] = fVar1 + fVar1;
-  fVar1 = fVar1 * fVar1;
-  pfVar6[0x43] = fVar1 + fVar1 + fVar1;
-  fVar1 = (float)keyframes->timeQ12 / g_Q12FloatScale4096;
+  knotTimeOrTerm = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
+  floatCursor[0x41] = 1.0;
+  floatCursor[0x42] = knotTimeOrTerm + knotTimeOrTerm;
+  knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
+  floatCursor[0x43] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+  knotTimeOrTerm = (float)keyframes->timeQ12 / g_Q12FloatScale4096;
   matrix32x32[0x21] = 1.0;
-  matrix32x32[0x22] = fVar1 + fVar1;
-  fVar1 = fVar1 * fVar1;
-  matrix32x32[0x23] = fVar1 + fVar1 + fVar1;
-  iVar2 = keyframeCount + -1;
-  piVar4 = piVar3;
-  pfVar6 = outCoefficients;
+  matrix32x32[0x22] = knotTimeOrTerm + knotTimeOrTerm;
+  knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
+  matrix32x32[0x23] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+  remainingCount = keyframeCount + -1;
+  startValueCursor = endValueCursor;
+  floatCursor = outCoefficients;
   do {
-    *pfVar6 = (float)*piVar4 / g_Q12FloatScale4096;
-    pfVar6[1] = 0.0;
-    pfVar6[2] = 0.0;
-    piVar4 = piVar4 + 8;
-    pfVar6 = pfVar6 + 4;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  iVar2 = keyframeCount + -1;
-  pfVar6 = outCoefficients;
+    *floatCursor = (float)*startValueCursor / g_Q12FloatScale4096;
+    floatCursor[1] = 0.0;
+    floatCursor[2] = 0.0;
+    startValueCursor = startValueCursor + 8;
+    floatCursor = floatCursor + 4;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
+  remainingCount = keyframeCount + -1;
+  floatCursor = outCoefficients;
   do {
-    piVar3 = piVar3 + 8;
-    pfVar6[3] = (float)*piVar3 / g_Q12FloatScale4096;
-    pfVar6 = pfVar6 + 4;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    endValueCursor = endValueCursor + 8;
+    floatCursor[3] = (float)*endValueCursor / g_Q12FloatScale4096;
+    floatCursor = floatCursor + 4;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   outCoefficients[1] = endpointDerivative;
   return;
 }
@@ -526,26 +526,26 @@ CubicSpline_ForwardEliminateColumn
           CubicSplineMatrixIndex rowIndex,float *matrix32x32)
 
 {
-  float *pfVar1;
-  float fVar2;
-  int iVar3;
-  float *pfVar4;
-  float *pfVar5;
+  float *targetElement;
+  float reducedValue;
+  int priorIndex;
+  float *columnCursor;
+  float *rowCursor;
   
-  pfVar5 = matrix32x32 + rowIndex * 0x20;
-  iVar3 = 0;
-  pfVar1 = pfVar5 + columnIndex;
-  pfVar4 = matrix32x32 + columnIndex;
-  fVar2 = *pfVar1;
+  rowCursor = matrix32x32 + rowIndex * 0x20;
+  priorIndex = 0;
+  targetElement = rowCursor + columnIndex;
+  columnCursor = matrix32x32 + columnIndex;
+  reducedValue = *targetElement;
   if (lastPriorIndex < 0x80000000) {
     do {
-      fVar2 = fVar2 - *pfVar5 * *pfVar4;
-      iVar3 = iVar3 + 1;
-      pfVar5 = pfVar5 + 1;
-      pfVar4 = pfVar4 + 0x20;
-    } while (iVar3 <= (int)lastPriorIndex);
+      reducedValue = reducedValue - *rowCursor * *columnCursor;
+      priorIndex = priorIndex + 1;
+      rowCursor = rowCursor + 1;
+      columnCursor = columnCursor + 0x20;
+    } while (priorIndex <= (int)lastPriorIndex);
   }
-  *pfVar1 = fVar2 / pivot;
+  *targetElement = reducedValue / pivot;
   return;
 }
 
@@ -635,12 +635,12 @@ float CubicSpline_EvaluateDerivativeQ12
                 float *coefficients)
 
 {
-  float fVar1;
-  float fVar2;
+  float scaledCubicTerm;
+  float partialSum;
   
-  fVar1 = ((float)timeQ12 / g_Q12FloatScale4096) * coefficients[segmentIndex * 4 + 3];
-  fVar2 = fVar1 + coefficients[segmentIndex * 4 + 2];
-  return (fVar2 + fVar2 + fVar1) * ((float)timeQ12 / g_Q12FloatScale4096) +
+  scaledCubicTerm = ((float)timeQ12 / g_Q12FloatScale4096) * coefficients[segmentIndex * 4 + 3];
+  partialSum = scaledCubicTerm + coefficients[segmentIndex * 4 + 2];
+  return (partialSum + partialSum + scaledCubicTerm) * ((float)timeQ12 / g_Q12FloatScale4096) +
          coefficients[segmentIndex * 4 + 1];
 }
 

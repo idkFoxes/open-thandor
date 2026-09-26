@@ -28,27 +28,27 @@ FrontendRomActionTable_ExecuteRecord
 
 {
   RomAssetRecordPrefix *record;
-  dword dVar1;
-  RomRecordByteSize RVar2;
-  RomRecordId RVar3;
-  int iVar4;
-  RomAssetRecordPrefix *pRVar5;
-  int iVar6;
+  dword copiedDword;
+  RomRecordByteSize copiedByteSize;
+  RomRecordId copiedRecordId;
+  int frontendRootNode;
+  RomAssetRecordPrefix *targetRecord;
+  int transitionSlotIndex;
   void *source;
-  bool bVar7;
-  RomRecordLookupEaxCf5 RVar8;
-  RomRecordId RVar9;
+  bool visibilityLookupFailed;
+  RomRecordLookupEaxCf5 targetLookup;
+  RomRecordId actionOrCopiedValue;
   RomRecordId recordId;
   
-  iVar4 = g_FrontendRootNode;
+  frontendRootNode = g_FrontendRootNode;
   if (recordIndex < *(uint *)(g_FrontendActiveRomRecordTable + 0x3c)) {
     record = (RomAssetRecordPrefix *)(recordIndex * 0x200 + 0x200 + g_FrontendActiveRomRecordTable);
     source = (void *)(g_FrontendRootNode + 0x368);
     recordId = record[3].rootNodeOffsetOrPointer;
-    RVar9 = record[2].recordId;
-    if ((((((RVar9 != 3) && (RVar9 != 4)) && (RVar9 != 9)) && (-1 < (int)RVar9)) ||
+    actionOrCopiedValue = record[2].recordId;
+    if ((((((actionOrCopiedValue != 3) && (actionOrCopiedValue != 4)) && (actionOrCopiedValue != 9)) && (-1 < (int)actionOrCopiedValue)) ||
         ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-         SESSION_NETWORK_ROLE_LOCAL)) && ((RVar9 != 2 || (g_NetworkBackendInstanceCount != 0)))) {
+         SESSION_NETWORK_ROLE_LOCAL)) && ((actionOrCopiedValue != 2 || (g_NetworkBackendInstanceCount != 0)))) {
       if ((record[3].recordId != 0) &&
          ((suppressActivationSound == 0 &&
           ((DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId] !=
@@ -59,44 +59,44 @@ FrontendRomActionTable_ExecuteRecord
                   );
       }
       if (recordId == 0) {
-        if ((int)RVar9 < 0) {
+        if ((int)actionOrCopiedValue < 0) {
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
             UiActionQueue_Enqueue(0,source);
           }
         }
-        else if (RVar9 != 0) {
-          g_FrontendPendingPageAction = RVar9;
+        else if (actionOrCopiedValue != 0) {
+          g_FrontendPendingPageAction = actionOrCopiedValue;
         }
       }
       else if ((recordId != 0) && (1 < (int)record[3].byteSize)) {
-        iVar6 = record[3].byteSize - 1;
-        RVar9 = *(RomRecordId *)(iVar4 + 0x3cc);
-        record[5].rootNodeOffsetOrPointer = *(dword *)(iVar4 + 0x3c8);
-        record[5].recordId = RVar9;
-        dVar1 = *(dword *)(iVar4 + 0x3d4);
-        record[6].byteSize = *(RomRecordByteSize *)(iVar4 + 0x3d0);
-        record[6].rootNodeOffsetOrPointer = dVar1;
-        RVar2 = *(RomRecordByteSize *)(iVar4 + 0x3dc);
-        record[6].recordId = *(RomRecordId *)(iVar4 + 0x3d8);
-        record[7].byteSize = RVar2;
+        transitionSlotIndex = record[3].byteSize - 1;
+        actionOrCopiedValue = *(RomRecordId *)(frontendRootNode + 0x3cc);
+        record[5].rootNodeOffsetOrPointer = *(dword *)(frontendRootNode + 0x3c8);
+        record[5].recordId = actionOrCopiedValue;
+        copiedDword = *(dword *)(frontendRootNode + 0x3d4);
+        record[6].byteSize = *(RomRecordByteSize *)(frontendRootNode + 0x3d0);
+        record[6].rootNodeOffsetOrPointer = copiedDword;
+        copiedByteSize = *(RomRecordByteSize *)(frontendRootNode + 0x3dc);
+        record[6].recordId = *(RomRecordId *)(frontendRootNode + 0x3d8);
+        record[7].byteSize = copiedByteSize;
         record[7].rootNodeOffsetOrPointer = 0;
-        RVar8 = RomRegistry_FindRecordByIdCf(recordId);
-        pRVar5 = RVar8.recordOrError;
-        if (!RVar8.carry) {
-          RVar9 = record[2].recordId;
-          RVar2 = pRVar5[3].byteSize;
-          *(RomRecordId *)((int)record + iVar6 * 0x20 + 0x40) = pRVar5[2].recordId;
-          *(RomRecordByteSize *)((int)record + iVar6 * 0x20 + 0x44) = RVar2;
-          RVar3 = pRVar5[3].recordId;
-          *(dword *)((int)record + iVar6 * 0x20 + 0x48) = pRVar5[3].rootNodeOffsetOrPointer;
-          *(RomRecordId *)((int)record + iVar6 * 0x20 + 0x4c) = RVar3;
-          dVar1 = pRVar5[4].rootNodeOffsetOrPointer;
-          *(RomRecordByteSize *)((int)record + iVar6 * 0x20 + 0x50) = pRVar5[4].byteSize;
-          *(dword *)((int)record + iVar6 * 0x20 + 0x54) = dVar1;
+        targetLookup = RomRegistry_FindRecordByIdCf(recordId);
+        targetRecord = targetLookup.recordOrError;
+        if (!targetLookup.carry) {
+          actionOrCopiedValue = record[2].recordId;
+          copiedByteSize = targetRecord[3].byteSize;
+          *(RomRecordId *)((int)record + transitionSlotIndex * 0x20 + 0x40) = targetRecord[2].recordId;
+          *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x44) = copiedByteSize;
+          copiedRecordId = targetRecord[3].recordId;
+          *(dword *)((int)record + transitionSlotIndex * 0x20 + 0x48) = targetRecord[3].rootNodeOffsetOrPointer;
+          *(RomRecordId *)((int)record + transitionSlotIndex * 0x20 + 0x4c) = copiedRecordId;
+          copiedDword = targetRecord[4].rootNodeOffsetOrPointer;
+          *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x50) = targetRecord[4].byteSize;
+          *(dword *)((int)record + transitionSlotIndex * 0x20 + 0x54) = copiedDword;
           FrontendRomTransition_InitializeFromRecord(recordId,record);
-          bVar7 = RomRuntime_UpdateRecordVisibilityAndDescriptorsCf(RVar9,recordId);
-          if (bVar7) {
+          visibilityLookupFailed = RomRuntime_UpdateRecordVisibilityAndDescriptorsCf(actionOrCopiedValue,recordId);
+          if (visibilityLookupFailed) {
             g_FrontendRomTransitionPendingCount = 0;
           }
         }
@@ -119,37 +119,37 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomA
 
 {
   dword registrationStatusCode;
-  AssetRecordCount AVar1;
+  AssetRecordCount recordsRemaining;
   RomAssetHeader *record;
-  StatusValueEaxCf5 SVar2;
-  StatusValueEaxCf5 SVar3;
+  StatusValueEaxCf5 registerResult;
+  StatusValueEaxCf5 failureResult;
   
   registrationStatusCode = ROM_ASSET_REGISTRATION_FAILURE_SENTINEL_0x3B;
   if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ROM) &&
      ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_ROM_00010005)) {
-    AVar1 = (asset->recordCountHeader).recordCount;
+    recordsRemaining = (asset->recordCountHeader).recordCount;
     record = asset + 1;
     while( true ) {
-      if (AVar1 == 0) {
-        SVar2.carry = false;
-        SVar2.valueOrError = registrationStatusCode;
-        return SVar2;
+      if (recordsRemaining == 0) {
+        registerResult.carry = false;
+        registerResult.valueOrError = registrationStatusCode;
+        return registerResult;
       }
-      SVar2 = RomAssetRecord_RegisterAndRelocate((RomAssetRecordPrefix *)record,asset);
-      registrationStatusCode = SVar2.valueOrError;
-      if (SVar2.carry) break;
+      registerResult = RomAssetRecord_RegisterAndRelocate((RomAssetRecordPrefix *)record,asset);
+      registrationStatusCode = registerResult.valueOrError;
+      if (registerResult.carry) break;
       record = (RomAssetHeader *)
                ((record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                ((record->recordCountHeader).common.magic - 0x28));
-      AVar1 = AVar1 - 1;
+      recordsRemaining = recordsRemaining - 1;
     }
   }
   else {
     Package_SetLastErrorPath((word *)u_engine_zentrale_rom_00545aa4);
   }
-  SVar3.carry = true;
-  SVar3.valueOrError = registrationStatusCode;
-  return SVar3;
+  failureResult.carry = true;
+  failureResult.valueOrError = registrationStatusCode;
+  return failureResult;
 }
 
 
@@ -164,31 +164,31 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomA
 bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 
 {
-  RomAssetRecordPrefix *pRVar1;
+  RomAssetRecordPrefix *slotRecord;
   ModelRuntimeNode *modelNodeRuntime;
-  int iVar2;
-  RomRegistrySlot *pRVar3;
-  ModelNodeCreateEaxCf5 MVar4;
+  int slotsRemaining;
+  RomRegistrySlot *slotCursor;
+  ModelNodeCreateEaxCf5 buildResult;
   
-  iVar2 = 0x100;
-  pRVar3 = g_RomRegistrySlots;
+  slotsRemaining = 0x100;
+  slotCursor = g_RomRegistrySlots;
   do {
-    pRVar1 = pRVar3->record;
-    if (pRVar1 != (RomAssetRecordPrefix *)0x0) {
-      MVar4 = RomRuntime_BuildNodeTreeRecursive
-                        (pRVar1[5].rootNodeOffsetOrPointer,
-                         (RomSerializedNodeHeader34 *)pRVar1->rootNodeOffsetOrPointer,worldRuntime);
-      modelNodeRuntime = MVar4.modelNode;
-      if (MVar4.carry) {
+    slotRecord = slotCursor->record;
+    if (slotRecord != (RomAssetRecordPrefix *)0x0) {
+      buildResult = RomRuntime_BuildNodeTreeRecursive
+                        (slotRecord[5].rootNodeOffsetOrPointer,
+                         (RomSerializedNodeHeader34 *)slotRecord->rootNodeOffsetOrPointer,worldRuntime);
+      modelNodeRuntime = buildResult.modelNode;
+      if (buildResult.carry) {
         return true;
       }
-      pRVar3->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
+      slotCursor->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
       WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)modelNodeRuntime);
       ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     }
-    pRVar3 = pRVar3 + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    slotCursor = slotCursor + 1;
+    slotsRemaining = slotsRemaining + -1;
+  } while (slotsRemaining != 0);
   return false;
 }
 
@@ -205,20 +205,20 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
 {
   RomRecordId recordId;
   WorldRuntimeContext *worldRuntime;
-  bool bVar1;
-  StatusValueEaxCf5 SVar2;
+  bool splineStillRunning;
+  StatusValueEaxCf5 activateResult;
   
   (*g_SpinLockAcquire)(&g_FrontendStateTickSpinLock);
   recordId = g_FrontendRomTransitionPendingCount;
   worldRuntime = (WorldRuntimeContext *)(g_FrontendRootNode + 0x368);
   if (g_FrontendRomTransitionPendingCount != 0) {
-    bVar1 = WorldMotionSpline_EvaluateAndApplyAtTime
+    splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,
                        g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
                        worldRuntime);
-    if ((!bVar1) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)recordId)) {
-      SVar2 = FrontendRomTransition_ActivateRecordByIdCf(recordId,worldRuntime);
-      (*g_FatalErrorPrimaryDispatchCf)(SVar2.valueOrError,SVar2.carry);
+    if ((!splineStillRunning) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)recordId)) {
+      activateResult = FrontendRomTransition_ActivateRecordByIdCf(recordId,worldRuntime);
+      (*g_FatalErrorPrimaryDispatchCf)(activateResult.valueOrError,activateResult.carry);
     }
   }
   (*g_SpinLockRelease)(&g_FrontendStateTickSpinLock);
@@ -235,38 +235,38 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
 void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  RomRegistrySlot *pRVar4;
-  dword dVar5;
+  int nodeChildCount;
+  int slotsRemaining;
+  int releaseDepth;
+  RomRegistrySlot *slotCursor;
+  dword nodeAddress;
   
-  iVar2 = 0x100;
-  pRVar4 = g_RomRegistrySlots;
+  slotsRemaining = 0x100;
+  slotCursor = g_RomRegistrySlots;
   while( true ) {
-    if ((pRVar4->record != (RomAssetRecordPrefix *)0x0) &&
-       (dVar5 = pRVar4->record->rootNodeOffsetOrPointer, dVar5 != 0)) break;
+    if ((slotCursor->record != (RomAssetRecordPrefix *)0x0) &&
+       (nodeAddress = slotCursor->record->rootNodeOffsetOrPointer, nodeAddress != 0)) break;
 FrontendRomRegistry_ClearAndReleaseNestedResources_ClearCurrentSlotAndAdvance:
-    pRVar4->record = (RomAssetRecordPrefix *)0x0;
-    pRVar4->runtimeRootNode = (WorldRuntimeNode *)0x0;
-    pRVar4 = pRVar4 + 1;
-    iVar2 = iVar2 + -1;
-    if (iVar2 == 0) {
+    slotCursor->record = (RomAssetRecordPrefix *)0x0;
+    slotCursor->runtimeRootNode = (WorldRuntimeNode *)0x0;
+    slotCursor = slotCursor + 1;
+    slotsRemaining = slotsRemaining + -1;
+    if (slotsRemaining == 0) {
       return;
     }
   }
-  iVar3 = 0;
+  releaseDepth = 0;
   do {
-    iVar1 = *(int *)(dVar5 + 0x10);
-    Resource_Release(*(void **)(dVar5 + 0x2c));
-    iVar3 = iVar3 + 1;
+    nodeChildCount = *(int *)(nodeAddress + 0x10);
+    Resource_Release(*(void **)(nodeAddress + 0x2c));
+    releaseDepth = releaseDepth + 1;
     while( true ) {
-      if (iVar1 != 0) break;
-      iVar3 = iVar3 + -1;
-      if (iVar3 == 0)
+      if (nodeChildCount != 0) break;
+      releaseDepth = releaseDepth + -1;
+      if (releaseDepth == 0)
       goto FrontendRomRegistry_ClearAndReleaseNestedResources_ClearCurrentSlotAndAdvance;
     }
-    dVar5 = *(dword *)(dVar5 + 0x14);
+    nodeAddress = *(dword *)(nodeAddress + 0x14);
   } while( true );
 }
 
@@ -406,77 +406,77 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
 {
-  uint *puVar1;
-  WorldRuntimeNodeFlags *pWVar2;
-  RomAssetRecordPrefix *pRVar3;
-  WorldRuntimeNode *pWVar4;
-  uint uVar5;
+  uint *slotNodeFlags;
+  WorldRuntimeNodeFlags *nodeFlags;
+  RomAssetRecordPrefix *recordCursor;
+  WorldRuntimeNode *rootNode;
+  uint transitionContextValue;
   RomRecordTableIndex entryIndex;
-  RomRecordByteSize RVar6;
-  RomRecordId RVar7;
-  int iVar8;
-  RomRegistrySlot *pRVar9;
-  RomRecordLookupEaxCf5 RVar10;
-  StatusValueEaxCf5 SVar11;
-  StatusValueEaxCf5 SVar12;
+  RomRecordByteSize companionsRemaining;
+  RomRecordId descriptorsRemaining;
+  int slotsRemaining;
+  RomRegistrySlot *slotCursor;
+  RomRecordLookupEaxCf5 recordLookup;
+  StatusValueEaxCf5 statusResult;
+  StatusValueEaxCf5 activeRecordResult;
   
   GraphicsShadingRuntime_ClearRecordTable();
-  RVar10 = RomRegistry_FindRecordByIdCf(recordId);
-  SVar12.valueOrError = RVar10.recordOrError;
-  if (!RVar10.carry) {
-    pRVar3 = SVar12.valueOrError;
-    g_FrontendActiveRomRecordTable = SVar12.valueOrError;
-    pRVar9 = g_RomRegistrySlots;
-    for (RVar6 = ((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[5].byteSize; g_RomRegistrySlots = pRVar9, RVar6 != 0;
-        RVar6 = RVar6 - 1) {
-      SVar11 = RomRegistry_FindSlotValueByRecordIdCf(pRVar3[0x2d].byteSize);
-      if (!SVar11.carry) {
-        puVar1 = (uint *)(SVar11.valueOrError + 0x4c);
-        *puVar1 = *puVar1 | 0x20;
+  recordLookup = RomRegistry_FindRecordByIdCf(recordId);
+  activeRecordResult.valueOrError = recordLookup.recordOrError;
+  if (!recordLookup.carry) {
+    recordCursor = activeRecordResult.valueOrError;
+    g_FrontendActiveRomRecordTable = activeRecordResult.valueOrError;
+    slotCursor = g_RomRegistrySlots;
+    for (companionsRemaining = ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[5].byteSize; g_RomRegistrySlots = slotCursor, companionsRemaining != 0;
+        companionsRemaining = companionsRemaining - 1) {
+      statusResult = RomRegistry_FindSlotValueByRecordIdCf(recordCursor[0x2d].byteSize);
+      if (!statusResult.carry) {
+        slotNodeFlags = (uint *)(statusResult.valueOrError + 0x4c);
+        *slotNodeFlags = *slotNodeFlags | 0x20;
       }
-      pRVar3 = (RomAssetRecordPrefix *)&pRVar3[0x2a].recordId;
-      pRVar9 = g_RomRegistrySlots;
+      recordCursor = (RomAssetRecordPrefix *)&recordCursor[0x2a].recordId;
+      slotCursor = g_RomRegistrySlots;
     }
-    iVar8 = 0x100;
+    slotsRemaining = 0x100;
     do {
-      pRVar3 = pRVar9->record;
-      pWVar4 = pRVar9->runtimeRootNode;
-      if ((pRVar3 != (RomAssetRecordPrefix *)0x0) &&
-         ((pWVar2 = &pWVar4->runtimeFlags, *pWVar2 = *pWVar2 | 0x40, SVar12.valueOrError == pRVar3
-          || (((&((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[1].rootNodeOffsetOrPointer)[pRVar3->recordId >> 5] &
-              1 << ((byte)pRVar3->recordId & 0x1f)) != 0)))) {
-        pWVar2 = &pWVar4->runtimeFlags;
-        *pWVar2 = *pWVar2 & 0xffffffbf;
+      recordCursor = slotCursor->record;
+      rootNode = slotCursor->runtimeRootNode;
+      if ((recordCursor != (RomAssetRecordPrefix *)0x0) &&
+         ((nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | 0x40, activeRecordResult.valueOrError == recordCursor
+          || (((&((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[1].rootNodeOffsetOrPointer)[recordCursor->recordId >> 5] &
+              1 << ((byte)recordCursor->recordId & 0x1f)) != 0)))) {
+        nodeFlags = &rootNode->runtimeFlags;
+        *nodeFlags = *nodeFlags & 0xffffffbf;
         entryIndex = 0;
-        for (RVar7 = pRVar3[4].recordId; RVar7 != 0; RVar7 = RVar7 - 1) {
-          RomRuntime_ApplyIndexedDescriptor(entryIndex,pRVar3);
+        for (descriptorsRemaining = recordCursor[4].recordId; descriptorsRemaining != 0; descriptorsRemaining = descriptorsRemaining - 1) {
+          RomRuntime_ApplyIndexedDescriptor(entryIndex,recordCursor);
           entryIndex = entryIndex + 1;
         }
       }
-      uVar5 = g_FrontendRomTransitionContextValue;
-      pRVar9 = pRVar9 + 1;
-      iVar8 = iVar8 + -1;
-    } while (iVar8 != 0);
+      transitionContextValue = g_FrontendRomTransitionContextValue;
+      slotCursor = slotCursor + 1;
+      slotsRemaining = slotsRemaining + -1;
+    } while (slotsRemaining != 0);
     WorldRuntime_SetPosition60AndDistanceFromPosition80
-              (((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[3].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[3].byteSize,
-               ((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[2].recordId,worldRuntime);
+              (((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[3].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[3].byteSize,
+               ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[2].recordId,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[4].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[4].byteSize,
-               ((RomAssetRecordPrefix *)(uintptr_t)SVar12.valueOrError)[3].recordId,worldRuntime);
-    if (uVar5 != 0) {
-      if ((int)uVar5 < 0) {
+              (2,((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[4].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[4].byteSize,
+               ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[3].recordId,worldRuntime);
+    if (transitionContextValue != 0) {
+      if ((int)transitionContextValue < 0) {
         UiActionQueue_Enqueue(0,worldRuntime);
       }
       else {
-        g_FrontendPendingPageAction = uVar5;
+        g_FrontendPendingPageAction = transitionContextValue;
       }
     }
-    SVar11.carry = false;
-    SVar11.valueOrError = uVar5;
-    return SVar11;
+    statusResult.carry = false;
+    statusResult.valueOrError = transitionContextValue;
+    return statusResult;
   }
-  SVar12.carry = true;
-  return SVar12;
+  activeRecordResult.carry = true;
+  return activeRecordResult;
 }
 
 
@@ -495,53 +495,53 @@ RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
           (RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
 {
-  WorldRuntimeNodeFlags *pWVar1;
+  WorldRuntimeNodeFlags *nodeFlags;
   RomAssetRecordPrefix *record;
-  WorldRuntimeNode *pWVar2;
+  WorldRuntimeNode *rootNode;
   RomRecordTableIndex entryIndex;
-  int iVar3;
-  uint uVar4;
-  RomRecordId RVar5;
-  RomRegistrySlot *pRVar6;
-  RomRecordLookupEaxCf5 RVar7;
+  int slotsRemaining;
+  uint maskWordIndex;
+  RomRecordId descriptorsRemaining;
+  RomRegistrySlot *slotCursor;
+  RomRecordLookupEaxCf5 recordLookup;
   
-  iVar3 = 0x100;
+  slotsRemaining = 0x100;
   g_FrontendRomTransitionContextValue = frontendValue;
-  pRVar6 = g_RomRegistrySlots;
+  slotCursor = g_RomRegistrySlots;
   do {
-    if (pRVar6->runtimeRootNode != (WorldRuntimeNode *)0x0) {
-      pWVar1 = &pRVar6->runtimeRootNode->runtimeFlags;
-      *pWVar1 = *pWVar1 & 0xffffffdf;
+    if (slotCursor->runtimeRootNode != (WorldRuntimeNode *)0x0) {
+      nodeFlags = &slotCursor->runtimeRootNode->runtimeFlags;
+      *nodeFlags = *nodeFlags & 0xffffffdf;
     }
-    pRVar6 = pRVar6 + 1;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  RVar7 = RomRegistry_FindRecordByIdCf(recordId);
-  if (!RVar7.carry) {
+    slotCursor = slotCursor + 1;
+    slotsRemaining = slotsRemaining + -1;
+  } while (slotsRemaining != 0);
+  recordLookup = RomRegistry_FindRecordByIdCf(recordId);
+  if (!recordLookup.carry) {
     GraphicsShadingRuntime_ClearRecordTable();
-    iVar3 = 0x100;
-    pRVar6 = g_RomRegistrySlots;
+    slotsRemaining = 0x100;
+    slotCursor = g_RomRegistrySlots;
     do {
-      record = pRVar6->record;
-      pWVar2 = pRVar6->runtimeRootNode;
+      record = slotCursor->record;
+      rootNode = slotCursor->runtimeRootNode;
       if ((record != (RomAssetRecordPrefix *)0x0) &&
-         (((pWVar1 = &pWVar2->runtimeFlags, *pWVar1 = *pWVar1 | 0x40, record == RVar7.recordOrError
+         (((nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | 0x40, record == recordLookup.recordOrError
            || (record == g_FrontendActiveRomRecordTable)) ||
-          (uVar4 = record->recordId >> 5,
+          (maskWordIndex = record->recordId >> 5,
           (1 << ((byte)record->recordId & 0x1f) &
-          ((&RVar7.recordOrError[1].rootNodeOffsetOrPointer)[uVar4] |
-          (&((RomAssetRecordPrefix *)(uintptr_t)g_FrontendActiveRomRecordTable)[1].rootNodeOffsetOrPointer)[uVar4])) != 0)))) {
-        pWVar1 = &pWVar2->runtimeFlags;
-        *pWVar1 = *pWVar1 & 0xffffffbf;
+          ((&recordLookup.recordOrError[1].rootNodeOffsetOrPointer)[maskWordIndex] |
+          (&((RomAssetRecordPrefix *)(uintptr_t)g_FrontendActiveRomRecordTable)[1].rootNodeOffsetOrPointer)[maskWordIndex])) != 0)))) {
+        nodeFlags = &rootNode->runtimeFlags;
+        *nodeFlags = *nodeFlags & 0xffffffbf;
         entryIndex = 0;
-        for (RVar5 = record[4].recordId; RVar5 != 0; RVar5 = RVar5 - 1) {
+        for (descriptorsRemaining = record[4].recordId; descriptorsRemaining != 0; descriptorsRemaining = descriptorsRemaining - 1) {
           RomRuntime_ApplyIndexedDescriptor(entryIndex,record);
           entryIndex = entryIndex + 1;
         }
       }
-      pRVar6 = pRVar6 + 1;
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
+      slotCursor = slotCursor + 1;
+      slotsRemaining = slotsRemaining + -1;
+    } while (slotsRemaining != 0);
     return false;
   }
   return true;
@@ -563,36 +563,36 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
 
 {
-  int *piVar1;
-  dword dVar2;
+  int *unusedCounter;
+  dword rootNodeOffset;
   RomAssetHeader *asset;
-  SpriteAssetHeader *pSVar3;
-  int iVar4;
-  RomRegistrySlot *pRVar5;
-  byte *pbVar6;
-  bool bVar7;
-  StatusValueEaxCf5 SVar8;
-  PackageLoadEntryEaxCf5 PVar9;
-  SpriteRegisterRelocateEaxCf5 SVar10;
-  StatusValueEaxCf5 SVar11;
+  SpriteAssetHeader *existingSprite;
+  int slotsRemaining;
+  RomRegistrySlot *slotCursor;
+  byte *rootSerializedNode;
+  bool unusedFlag;
+  StatusValueEaxCf5 failureResult;
+  PackageLoadEntryEaxCf5 loadResult;
+  SpriteRegisterRelocateEaxCf5 registerResult;
+  StatusValueEaxCf5 successResult;
   
-  iVar4 = 0x100;
-  pRVar5 = g_RomRegistrySlots;
+  slotsRemaining = 0x100;
+  slotCursor = g_RomRegistrySlots;
   do {
-    if (pRVar5->record == (RomAssetRecordPrefix *)0x0) {
-      dVar2 = record->rootNodeOffsetOrPointer;
-      pRVar5->record = record;
-      if (dVar2 == 0) {
+    if (slotCursor->record == (RomAssetRecordPrefix *)0x0) {
+      rootNodeOffset = record->rootNodeOffsetOrPointer;
+      slotCursor->record = record;
+      if (rootNodeOffset == 0) {
 RomAssetRecord_ReturnWithoutRootNode:
-        SVar11.carry = false;
-        SVar11.valueOrError = (dword)assetBase;
-        return SVar11;
+        successResult.carry = false;
+        successResult.valueOrError = (dword)assetBase;
+        return successResult;
       }
       record->rootNodeOffsetOrPointer =
            (dword)((assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
                   + (record->rootNodeOffsetOrPointer - 0x28));
-      pbVar6 = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-               (dVar2 - 0x28);
+      rootSerializedNode = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+               (rootNodeOffset - 0x28);
       /* Rewritten from the assembly (0x005463A1-0x00546436): depth-first walk over the serialized
          sprite-node tree. The original keeps {node, nextChild, remaining} frames on the machine stack
          (EBX = depth), which Ghidra could only show as unaff_ESI/unaff_EBP. Child offsets are
@@ -600,29 +600,29 @@ RomAssetRecord_ReturnWithoutRootNode:
       {
         struct { byte *node; dword nextChild; dword remaining; } frames[64];
         int depth = 0;
-        byte *node = pbVar6;
+        byte *node = rootSerializedNode;
         for (;;) {
           WidePath_SetExtensionCode(0x727073,(word *)(node + 0x34)); /* ".spr"; never sets CF */
-          PVar9 = Package_LoadEntry((word *)(node + 0x34));
-          if (PVar9.carry) {
-            SVar8.carry = true;
-            SVar8.valueOrError = (dword)PVar9.bufferOrError;
-            return SVar8;
+          loadResult = Package_LoadEntry((word *)(node + 0x34));
+          if (loadResult.carry) {
+            failureResult.carry = true;
+            failureResult.valueOrError = (dword)loadResult.bufferOrError;
+            return failureResult;
           }
-          asset = PVar9.bufferOrError;
-          pSVar3 = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((byte *)asset + 0xb8));
-          if (pSVar3 != (SpriteAssetHeader *)0x0) {
-            *(SpriteAssetHeader **)(node + 0x2c) = pSVar3;
+          asset = loadResult.bufferOrError;
+          existingSprite = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((byte *)asset + 0xb8));
+          if (existingSprite != (SpriteAssetHeader *)0x0) {
+            *(SpriteAssetHeader **)(node + 0x2c) = existingSprite;
             Resource_Release(asset);
           }
           else {
             *(int *)(node + 0x30) = *(int *)(node + 0x30) + 1;
             *(RomAssetHeader **)(node + 0x2c) = asset;
-            SVar10 = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
-            if (SVar10.carry) {
-              SVar8.carry = true;
-              SVar8.valueOrError = (dword)SVar10.assetOrError;
-              return SVar8;
+            registerResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
+            if (registerResult.carry) {
+              failureResult.carry = true;
+              failureResult.valueOrError = (dword)registerResult.assetOrError;
+              return failureResult;
             }
           }
           frames[depth].node = node;
@@ -643,15 +643,15 @@ RomAssetRecord_ReturnWithoutRootNode:
         }
       }
     }
-    pRVar5 = pRVar5 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    slotCursor = slotCursor + 1;
+    slotsRemaining = slotsRemaining + -1;
+  } while (slotsRemaining != 0);
   Package_SetLastErrorPath((word *)u_engine_zentrale_rom_00545aa4);
   asset = (RomAssetHeader *)&k_LowAddressLiteral0000003B;
 RomAssetRecord_ReturnRegistrationResult:
-  SVar8.carry = true;
-  SVar8.valueOrError = (dword)asset;
-  return SVar8;
+  failureResult.carry = true;
+  failureResult.valueOrError = (dword)asset;
+  return failureResult;
 }
 
 
@@ -671,98 +671,98 @@ RomRuntime_BuildNodeTreeRecursive
           WorldRuntimeContext *worldObjectArray)
 
 {
-  AngleTurn32 AVar1;
-  AngleTurn32 AVar2;
-  AngleTurn32 AVar3;
-  ModelResourceHitTestAndRenderView210 *pMVar4;
-  Q12 QVar5;
-  uint uVar6;
-  uint uVar7;
-  GraphicsTextureSet *pGVar8;
-  ModelRuntimeNode *pMVar9;
-  ModelRuntimeNode *pMVar10;
-  ModelPackedLookupTableEntryCount MVar11;
-  dword dVar12;
-  uint uVar13;
-  byte *pbVar14;
-  WorldObjectRecordEaxCf5 WVar15;
-  ModelNodeCreateEaxCf5 MVar16;
+  AngleTurn32 rotationAngle0;
+  AngleTurn32 rotationAngle1;
+  AngleTurn32 rotationAngle2;
+  ModelResourceHitTestAndRenderView210 *spriteModelResource;
+  Q12 boundingRadius;
+  uint translationY;
+  uint translationZ;
+  GraphicsTextureSet *centralTextureSet;
+  ModelRuntimeNode *newNode;
+  ModelRuntimeNode *resultOrChildNode;
+  ModelPackedLookupTableEntryCount lookupEntriesRemaining;
+  dword childSlotsRemaining;
+  uint childIndex;
+  byte *lookupEntry;
+  WorldObjectRecordEaxCf5 allocResult;
+  ModelNodeCreateEaxCf5 createResult;
   
-  WVar15 = WorldObjectArray_AllocateFreeRecordCf(worldObjectArray);
-  pMVar9 = (ModelRuntimeNode *)WVar15.recordOrError;
-  pMVar10 = pMVar9;
-  if (WVar15.carry) {
+  allocResult = WorldObjectArray_AllocateFreeRecordCf(worldObjectArray);
+  newNode = (ModelRuntimeNode *)allocResult.recordOrError;
+  resultOrChildNode = newNode;
+  if (allocResult.carry) {
 RomRuntime_BuildNodeTreeRecursive_ReturnAllocationOrRecursiveChildFailureWithCarrySet:
-    MVar16.carry = true;
-    MVar16.modelNode = pMVar10;
-    return MVar16;
+    createResult.carry = true;
+    createResult.modelNode = resultOrChildNode;
+    return createResult;
   }
-  (pMVar9->modelPayload).localTranslationXQ12 = 0;
-  (pMVar9->modelPayload).localTranslationYQ12 = 0;
-  (pMVar9->modelPayload).localTranslationZQ12 = 0;
-  (pMVar9->worldTransform).translation.x = 0;
-  (pMVar9->worldTransform).translation.y = 0;
-  (pMVar9->worldTransform).translation.z = 0;
-  AVar1 = romNodeRecord->localRotationAngle0;
-  AVar2 = romNodeRecord->localRotationAngle1;
-  AVar3 = romNodeRecord->localRotationAngle2;
-  (pMVar9->modelPayload).localRotationAngle0 = AVar1;
-  (pMVar9->modelPayload).localRotationAngle1 = AVar2;
-  (pMVar9->modelPayload).localRotationAngle2 = AVar3;
-  (pMVar9->modelPayload).worldRotationAngle0 = AVar1;
-  (pMVar9->modelPayload).worldRotationAngle1 = AVar2;
-  (pMVar9->modelPayload).worldRotationAngle2 = AVar3;
-  (pMVar9->modelPayload).meshGroupMask = 0xffffffff;
-  pMVar9->runtimeFlags = pMVar9->runtimeFlags | 1;
-  *(byte *)&pMVar9->textureSubresourceBaseIndex = 0;
-  *(byte *)((int)&pMVar9->textureSubresourceBaseIndex + 1) = 0;
-  *(byte *)((int)&pMVar9->textureSubresourceBaseIndex + 2) = 0;
-  *(byte *)((int)&pMVar9->textureSubresourceBaseIndex + 3) = 0;
-  pMVar9->tintArgb = stateTintArgb;
-  pGVar8 = g_FrontendCentralTextureSet;
-  pMVar4 = (romNodeRecord->spriteAssetReference).modelResource;
-  (pMVar9->modelPayload).paletteAsset = g_FrontendCentralPaletteAsset;
-  QVar5 = pMVar4->boundingRadiusQ12;
-  (pMVar9->modelPayload).textureSet = pGVar8;
-  pMVar9->subtreeBoundingRadiusQ12 = QVar5;
-  (pMVar9->modelPayload).modelResource = pMVar4;
-  pMVar9->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
-  pMVar9->modelRuntimeLinkOrSavedOffset = (void *)0x0;
-  pMVar9->runtimeStateA0 = (dword)&pMVar4->firstMeshGroupRelativeOffset;
-  dVar12 = romNodeRecord->childCount;
-  pMVar4 = (romNodeRecord->spriteAssetReference).modelResource;
-  uVar13 = 0;
-  pMVar9->childCount = dVar12;
-  pMVar9->parentNode = (ModelRuntimeNode *)0x0;
+  (newNode->modelPayload).localTranslationXQ12 = 0;
+  (newNode->modelPayload).localTranslationYQ12 = 0;
+  (newNode->modelPayload).localTranslationZQ12 = 0;
+  (newNode->worldTransform).translation.x = 0;
+  (newNode->worldTransform).translation.y = 0;
+  (newNode->worldTransform).translation.z = 0;
+  rotationAngle0 = romNodeRecord->localRotationAngle0;
+  rotationAngle1 = romNodeRecord->localRotationAngle1;
+  rotationAngle2 = romNodeRecord->localRotationAngle2;
+  (newNode->modelPayload).localRotationAngle0 = rotationAngle0;
+  (newNode->modelPayload).localRotationAngle1 = rotationAngle1;
+  (newNode->modelPayload).localRotationAngle2 = rotationAngle2;
+  (newNode->modelPayload).worldRotationAngle0 = rotationAngle0;
+  (newNode->modelPayload).worldRotationAngle1 = rotationAngle1;
+  (newNode->modelPayload).worldRotationAngle2 = rotationAngle2;
+  (newNode->modelPayload).meshGroupMask = 0xffffffff;
+  newNode->runtimeFlags = newNode->runtimeFlags | 1;
+  *(byte *)&newNode->textureSubresourceBaseIndex = 0;
+  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
+  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
+  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
+  newNode->tintArgb = stateTintArgb;
+  centralTextureSet = g_FrontendCentralTextureSet;
+  spriteModelResource = (romNodeRecord->spriteAssetReference).modelResource;
+  (newNode->modelPayload).paletteAsset = g_FrontendCentralPaletteAsset;
+  boundingRadius = spriteModelResource->boundingRadiusQ12;
+  (newNode->modelPayload).textureSet = centralTextureSet;
+  newNode->subtreeBoundingRadiusQ12 = boundingRadius;
+  (newNode->modelPayload).modelResource = spriteModelResource;
+  newNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
+  newNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
+  newNode->runtimeStateA0 = (dword)&spriteModelResource->firstMeshGroupRelativeOffset;
+  childSlotsRemaining = romNodeRecord->childCount;
+  spriteModelResource = (romNodeRecord->spriteAssetReference).modelResource;
+  childIndex = 0;
+  newNode->childCount = childSlotsRemaining;
+  newNode->parentNode = (ModelRuntimeNode *)0x0;
   do {
-    if (dVar12 == 0) {
-      return THANDOR_BITCAST(qword, ModelNodeCreateEaxCf5, ((THANDOR_BITCAST(WorldObjectRecordEaxCf5, qword, WVar15) & 0xFFFFFFFFFFull) & 0xffffffff));
+    if (childSlotsRemaining == 0) {
+      return THANDOR_BITCAST(qword, ModelNodeCreateEaxCf5, ((THANDOR_BITCAST(WorldObjectRecordEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
-    pbVar14 = pMVar4->reserved00_AF + pMVar4->packedLookupTableRelativeOffset;
-    for (MVar11 = pMVar4->packedLookupTableEntryCount; MVar11 != 0; MVar11 = MVar11 - 1) {
-      if (((*(uint *)pbVar14 & 0xf) == 0) && (uVar13 == *(uint *)pbVar14 >> 4)) {
-        MVar16 = RomRuntime_BuildNodeTreeRecursive
-                           (stateTintArgb,romNodeRecord->childReferences[uVar13].node,
+    lookupEntry = spriteModelResource->reserved00_AF + spriteModelResource->packedLookupTableRelativeOffset;
+    for (lookupEntriesRemaining = spriteModelResource->packedLookupTableEntryCount; lookupEntriesRemaining != 0; lookupEntriesRemaining = lookupEntriesRemaining - 1) {
+      if (((*(uint *)lookupEntry & 0xf) == 0) && (childIndex == *(uint *)lookupEntry >> 4)) {
+        createResult = RomRuntime_BuildNodeTreeRecursive
+                           (stateTintArgb,romNodeRecord->childReferences[childIndex].node,
                             worldObjectArray);
-        pMVar10 = MVar16.modelNode;
-        if (MVar16.carry)
+        resultOrChildNode = createResult.modelNode;
+        if (createResult.carry)
         goto RomRuntime_BuildNodeTreeRecursive_ReturnAllocationOrRecursiveChildFailureWithCarrySet;
-        pMVar9->childNodes[uVar13] = pMVar10;
-        pMVar10->parentNode = pMVar9;
-        uVar6 = *(uint *)(pbVar14 + 8);
-        uVar7 = *(uint *)(pbVar14 + 0xc);
-        (pMVar10->modelPayload).localTranslationXQ12 = *(uint *)(pbVar14 + 4);
-        (pMVar10->modelPayload).localTranslationYQ12 = uVar6;
-        (pMVar10->modelPayload).localTranslationZQ12 = uVar7;
+        newNode->childNodes[childIndex] = resultOrChildNode;
+        resultOrChildNode->parentNode = newNode;
+        translationY = *(uint *)(lookupEntry + 8);
+        translationZ = *(uint *)(lookupEntry + 0xc);
+        (resultOrChildNode->modelPayload).localTranslationXQ12 = *(uint *)(lookupEntry + 4);
+        (resultOrChildNode->modelPayload).localTranslationYQ12 = translationY;
+        (resultOrChildNode->modelPayload).localTranslationZQ12 = translationZ;
         goto RomRuntime_BuildNodeTreeRecursive_AdvanceChildSlotAfterResolvedOrMissingDescriptor;
       }
-      pbVar14 = pbVar14 + 0x10;
+      lookupEntry = lookupEntry + 0x10;
     }
-    pMVar9->childCount = pMVar9->childCount - 1;
-    uVar13 = uVar13 - 1;
+    newNode->childCount = newNode->childCount - 1;
+    childIndex = childIndex - 1;
 RomRuntime_BuildNodeTreeRecursive_AdvanceChildSlotAfterResolvedOrMissingDescriptor:
-    uVar13 = uVar13 + 1;
-    dVar12 = dVar12 - 1;
+    childIndex = childIndex + 1;
+    childSlotsRemaining = childSlotsRemaining - 1;
   } while( true );
 }
 
@@ -805,8 +805,8 @@ RomRegistry_FindSlotValueByRecordIdCf(RomRecordId recordId)
 {
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  StatusValueEaxCf5 SVar1;
-  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 foundResult;
+  StatusValueEaxCf5 missResult;
   
   slotsRemaining = 0x100;
   slotCursor = g_RomRegistrySlots;
@@ -815,14 +815,14 @@ RomRegistry_FindSlotValueByRecordIdCf(RomRecordId recordId)
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
     if (slotsRemaining == 0) {
-      SVar2.carry = true;
-      SVar2.valueOrError = 0x3c;
-      return SVar2;
+      missResult.carry = true;
+      missResult.valueOrError = 0x3c;
+      return missResult;
     }
   }
-  SVar1.carry = false;
-  SVar1.valueOrError = (dword)slotCursor->runtimeRootNode;
-  return SVar1;
+  foundResult.carry = false;
+  foundResult.valueOrError = (dword)slotCursor->runtimeRootNode;
+  return foundResult;
 }
 
 
@@ -875,27 +875,27 @@ RomRecordLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RomRegistry_FindRecordByIdCf(RomRecordId recordId)
 
 {
-  RomAssetRecordPrefix *pRVar1;
+  RomAssetRecordPrefix *slotRecord;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  RomRecordLookupEaxCf5 RVar2;
-  RomRecordLookupEaxCf5 RVar3;
+  RomRecordLookupEaxCf5 foundResult;
+  RomRecordLookupEaxCf5 missResult;
   RomAssetRecordPrefix *candidateRecord;
   
   slotsRemaining = 0x100;
   slotCursor = g_RomRegistrySlots;
-  while ((pRVar1 = slotCursor->record, pRVar1 == (RomAssetRecordPrefix *)0x0 ||
-         (recordId != pRVar1->recordId))) {
+  while ((slotRecord = slotCursor->record, slotRecord == (RomAssetRecordPrefix *)0x0 ||
+         (recordId != slotRecord->recordId))) {
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
     if (slotsRemaining == 0) {
-      RVar3.carry = true;
-      RVar3.recordOrError = (RomAssetRecordPrefix *)0x3c;
-      return RVar3;
+      missResult.carry = true;
+      missResult.recordOrError = (RomAssetRecordPrefix *)0x3c;
+      return missResult;
     }
   }
-  RVar2.carry = false;
-  RVar2.recordOrError = pRVar1;
-  return RVar2;
+  foundResult.carry = false;
+  foundResult.recordOrError = slotRecord;
+  return foundResult;
 }
 

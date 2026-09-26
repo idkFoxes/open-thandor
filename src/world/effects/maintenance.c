@@ -24,21 +24,21 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
           (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode)
 
 {
-  PackedArgb32 PVar1;
-  PackedArgb32 PVar2;
-  short sVar3;
-  short sVar4;
-  short sVar5;
-  short sVar6;
-  ushort uVar7;
-  ushort uVar8;
+  PackedArgb32 effectTintArgb;
+  PackedArgb32 definitionTintArgb;
+  short modulatedBlue;
+  short modulatedGreen;
+  short modulatedRed;
+  short modulatedAlpha;
+  ushort effectAlphaPair;
+  ushort definitionAlphaPair;
   dword primaryOccupancyMask;
   undefined1 mm0PackedValue0ByteLane1;
   undefined1 mm0PackedValue0ByteLane2;
   undefined8 mm0PackedValue0;
-  undefined1 uVar9;
-  undefined1 uVar10;
-  TerrainOccupancyResolvedMasksRegs12 TVar11;
+  undefined1 definitionAlphaOrGreenByte;
+  undefined1 definitionRedByte;
+  TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   EffectRuntimeSlot *effectRuntime;
   
   primaryOccupancyMask =
@@ -47,49 +47,49 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
                   (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
   modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffff3;
   effectRuntime = modelNode->effectRuntime;
-  TVar11 = TerrainOccupancyMask_ResolveRuntimeClassFlags
+  resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (modelNode->runtimeFlags,0,primaryOccupancyMask,
                       (char)worldRuntime->activeFactionRuntimeIndex);
-  modelNode->runtimeFlags = modelNode->runtimeFlags | TVar11.runtimeFlags;
-  effectRuntime->terrainRuntimeClassState = TVar11.primaryOccupancyMask;
+  modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
+  effectRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
   UiModelControl_RefreshStateTint((ModelRuntimeNode *)modelNode);
   if ((modelNode->tintArgb & 0xff000000) != 0) {
-    PVar1 = effectRuntime->stateTintArgb;
-    PVar2 = ((effectRuntime->definitionOrSavedId).definition)->stateTintArgb;
-    mm0PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-    uVar7 = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
-    mm0PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
-    mm0PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-    uVar9 = (undefined1)(PVar2 >> 0x18);
-    uVar8 = CONCAT11(uVar9,uVar9);
-    uVar10 = (undefined1)(PVar2 >> 0x10);
-    uVar9 = (undefined1)(PVar2 >> 8);
+    effectTintArgb = effectRuntime->stateTintArgb;
+    definitionTintArgb = ((effectRuntime->definitionOrSavedId).definition)->stateTintArgb;
+    mm0PackedValue0ByteLane1 = (undefined1)(effectTintArgb >> 0x18);
+    effectAlphaPair = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
+    mm0PackedValue0ByteLane2 = (undefined1)(effectTintArgb >> 0x10);
+    mm0PackedValue0ByteLane1 = (undefined1)(effectTintArgb >> 8);
+    definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 0x18);
+    definitionAlphaPair = CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte);
+    definitionRedByte = (undefined1)(definitionTintArgb >> 0x10);
+    definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 8);
     mm0PackedValue0 =
-         pmulhw(CONCAT26(uVar7 >> 4,
-                         CONCAT24((ushort)(CONCAT35(CONCAT21(uVar7,mm0PackedValue0ByteLane2),
-                                                    CONCAT14(mm0PackedValue0ByteLane2,PVar1)) >>
+         pmulhw(CONCAT26(effectAlphaPair >> 4,
+                         CONCAT24((ushort)(CONCAT35(CONCAT21(effectAlphaPair,mm0PackedValue0ByteLane2),
+                                                    CONCAT14(mm0PackedValue0ByteLane2,effectTintArgb)) >>
                                           0x20) >> 4,
                                   CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                     mm0PackedValue0ByteLane1) >> 4,
-                                           CONCAT11((char)PVar1,(char)PVar1) >> 4))),
-                CONCAT26(uVar8 >> 4,
-                         CONCAT24((ushort)(CONCAT35(CONCAT21(uVar8,uVar10),CONCAT14(uVar10,PVar2))
+                                           CONCAT11((char)effectTintArgb,(char)effectTintArgb) >> 4))),
+                CONCAT26(definitionAlphaPair >> 4,
+                         CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionRedByte),CONCAT14(definitionRedByte,definitionTintArgb))
                                           >> 0x20) >> 4,
-                                  CONCAT22(CONCAT11(uVar9,uVar9) >> 4,
-                                           CONCAT11((char)PVar2,(char)PVar2) >> 4))));
-    sVar3 = (short)mm0PackedValue0;
-    sVar4 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-    sVar5 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-    sVar6 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+                                  CONCAT22(CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte) >> 4,
+                                           CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
+    modulatedBlue = (short)mm0PackedValue0;
+    modulatedGreen = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+    modulatedRed = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+    modulatedAlpha = (short)((ulonglong)mm0PackedValue0 >> 0x30);
     modelNode->tintArgb =
-         CONCAT13((0 < sVar6) * (sVar6 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                  (0xff < sVar6),
-                  CONCAT12((0 < sVar5) * (sVar5 < 0x100) *
-                           (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < sVar5),
-                           CONCAT11((0 < sVar4) * (sVar4 < 0x100) *
-                                    (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar4),
-                                    (0 < sVar3) * (sVar3 < 0x100) * (char)mm0PackedValue0 -
-                                    (0xff < sVar3))));
+         CONCAT13((0 < modulatedAlpha) * (modulatedAlpha < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                  (0xff < modulatedAlpha),
+                  CONCAT12((0 < modulatedRed) * (modulatedRed < 0x100) *
+                           (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < modulatedRed),
+                           CONCAT11((0 < modulatedGreen) * (modulatedGreen < 0x100) *
+                                    (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < modulatedGreen),
+                                    (0 < modulatedBlue) * (modulatedBlue < 0x100) * (char)mm0PackedValue0 -
+                                    (0xff < modulatedBlue))));
   }
   return;
 }
@@ -142,264 +142,264 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode)
 
 {
-  EffectAnimationFrameCount *pEVar1;
-  EffectShadingCountdownTicks *pEVar2;
-  EffectPeriodicIntervalTicks *pEVar3;
-  DefinitionReferencePresentFlag *pDVar4;
-  dword *pdVar5;
-  AngleTurn32 *pAVar6;
-  GraphicsFixedVec3 *pGVar7;
-  GraphicsWorldCoordinateQ12 *pGVar8;
-  EffectRuntimeSlot *pEVar9;
-  EffectAlphaFadeTicks EVar10;
-  EffectAlphaFadeTicks EVar11;
-  PackedArgb32 PVar12;
-  PackedArgb32 PVar13;
-  EffectRuntimeCompletionAction EVar14;
-  int *piVar15;
+  EffectAnimationFrameCount *framesRemainingPtr;
+  EffectShadingCountdownTicks *shadingCountdownPtr;
+  EffectPeriodicIntervalTicks *periodicCountdownPtr;
+  DefinitionReferencePresentFlag *linkedCountdownPtr;
+  dword *completionCountdownPtr;
+  AngleTurn32 *rotationAngle1Ptr;
+  GraphicsFixedVec3 *translationPtr;
+  GraphicsWorldCoordinateQ12 *translationAxisPtr;
+  EffectRuntimeSlot *effectSlot;
+  EffectAlphaFadeTicks fadeDurationTicks;
+  EffectAlphaFadeTicks fadeOutDivisorTicks;
+  PackedArgb32 effectOrDefinitionTintArgb;
+  PackedArgb32 definitionTintArgb;
+  EffectRuntimeCompletionAction pendingCompletionAction;
+  int *ownerClassRecord;
   dword keyIndex;
-  AngleTurn32 AVar16;
-  short sVar17;
-  short sVar18;
-  short sVar19;
-  short sVar20;
-  ushort uVar21;
-  ushort uVar22;
-  uint uVar23;
-  sdword sVar24;
-  uint uVar25;
+  AngleTurn32 previousRotationAngle1;
+  short modulatedBlue;
+  short modulatedGreen;
+  short modulatedRed;
+  short modulatedAlpha;
+  ushort effectAlphaPair;
+  ushort definitionAlphaPair;
+  uint frameAgeOrTintValue;
+  sdword normalDotMotion;
+  uint fadeOutStartTicks;
   Q12 worldXQ12;
-  int iVar26;
+  int frameAdvancedOrScratch;
   Q12 worldZQ12;
   GameEntityRuntime *spawnArmyCompletionEntity;
   EffectCompletionLinkedHandlerOwnerColumns104 *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
-  undefined1 uVar28;
-  undefined1 uVar29;
-  undefined8 uVar27;
-  undefined1 uVar30;
-  undefined1 uVar31;
-  ModelLookupEntryEaxCf5 MVar32;
-  GraphicsShadingRuntimeRecordEaxCf5 GVar33;
-  ArmyRuntimeCreateEaxCf5 AVar34;
-  FieldGridHeightNormalEaxEdxCf9 FVar35;
-  ModelLocalPointRegs12 MVar36;
-  FixedDirectionXyzRegs12 FVar37;
+  undefined1 effectAlphaOrGreenByte;
+  undefined1 effectRedByte;
+  undefined8 modulatedLanes;
+  undefined1 definitionAlphaOrGreenByte;
+  undefined1 definitionRedByte;
+  ModelLookupEntryEaxCf5 lookupResult;
+  GraphicsShadingRuntimeRecordEaxCf5 shadingAllocation;
+  ArmyRuntimeCreateEaxCf5 armyCreateResult;
+  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  ModelLocalPointRegs12 localPoint;
+  FixedDirectionXyzRegs12 scaledDirection;
   GraphicsFixedVec3 terrainNormalDirection;
   GraphicsFixedVec3 motionDirection;
+  EffectDefinition *periodicDefinition;
+  WorldRuntimeContext *spawnWorldRuntime;
+  InGameSimulationStepBatchTicks remainingStepTicks;
   EffectDefinition *effectDefinition;
-  WorldRuntimeContext *worldRuntime_00;
-  InGameSimulationStepBatchTicks IStack_20;
-  EffectDefinition *effectDefinition1;
-  ModelRuntimeNode *modelNode1;
-  GraphicsShadingRuntimeRecord *shadingRecord1;
+  ModelRuntimeNode *ownerModelNode;
+  GraphicsShadingRuntimeRecord *activeShadingRecord;
   
-  IStack_20 = g_InGameSimulationStepTicks;
+  remainingStepTicks = g_InGameSimulationStepTicks;
   do {
-    pEVar9 = modelNode->effectRuntime;
-    effectDefinition1 = (pEVar9->definitionOrSavedId).definition;
-    uVar23 = (pEVar9->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 + 0x10;
-    iVar26 = 0;
-    (pEVar9->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 = uVar23;
-    if (effectDefinition1->frameAdvanceThresholdQ4 <= uVar23) {
-      (pEVar9->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 =
-           uVar23 - effectDefinition1->frameAdvanceThresholdQ4;
-      iVar26 = 1;
-      pEVar1 = &pEVar9->animationFramesRemaining;
-      *pEVar1 = *pEVar1 - 1;
-      if (*pEVar1 == 0) {
+    effectSlot = modelNode->effectRuntime;
+    effectDefinition = (effectSlot->definitionOrSavedId).definition;
+    frameAgeOrTintValue = (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 + 0x10;
+    frameAdvancedOrScratch = 0;
+    (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 = frameAgeOrTintValue;
+    if (effectDefinition->frameAdvanceThresholdQ4 <= frameAgeOrTintValue) {
+      (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 =
+           frameAgeOrTintValue - effectDefinition->frameAdvanceThresholdQ4;
+      frameAdvancedOrScratch = 1;
+      framesRemainingPtr = &effectSlot->animationFramesRemaining;
+      *framesRemainingPtr = *framesRemainingPtr - 1;
+      if (*framesRemainingPtr == 0) {
         InterpolationState_SetNegatedTargetAndRescaleProgress
-                  (effectDefinition1->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
+                  (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
         WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
-        (pEVar9->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+        (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
         return;
       }
     }
-    if (iVar26 != 0) {
+    if (frameAdvancedOrScratch != 0) {
       modelNode->textureSubresourceBaseIndex = modelNode->textureSubresourceBaseIndex + 1;
-      pEVar2 = &pEVar9->shadingStartCountdownTicksRemaining;
-      *pEVar2 = *pEVar2 - 1;
-      if ((*pEVar2 == 0) && (modelNode->shadingRecord == (GraphicsShadingRuntimeRecord *)0x0)) {
-        MVar32 = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition1->ownedNestedResource);
-        if (!MVar32.carry) {
-          MVar36 = ModelNodeRuntime_TransformLocalPointRegs
-                             (MVar32.entry,(ModelRuntimeNode *)modelNode);
-          GVar33 = GraphicsShadingRuntime_AllocateRecordRegs
-                             (effectDefinition1->shadingTransitionDurationTicks,
-                              (effectDefinition1->shadingColorArgb >> 0x18) << 8,
-                              effectDefinition1->shadingColorArgb,MVar36.edx,MVar36.ecx,MVar36.eax);
-          modelNode->shadingRecord = GVar33.record;
+      shadingCountdownPtr = &effectSlot->shadingStartCountdownTicksRemaining;
+      *shadingCountdownPtr = *shadingCountdownPtr - 1;
+      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord == (GraphicsShadingRuntimeRecord *)0x0)) {
+        lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
+        if (!lookupResult.carry) {
+          localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                             (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+          shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
+                             (effectDefinition->shadingTransitionDurationTicks,
+                              (effectDefinition->shadingColorArgb >> 0x18) << 8,
+                              effectDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
+          modelNode->shadingRecord = shadingAllocation.record;
         }
       }
-      pEVar2 = &pEVar9->shadingStopCountdownTicksRemaining;
-      *pEVar2 = *pEVar2 - 1;
-      if ((*pEVar2 == 0) && (modelNode->shadingRecord != (GraphicsShadingRuntimeRecord *)0x0)) {
+      shadingCountdownPtr = &effectSlot->shadingStopCountdownTicksRemaining;
+      *shadingCountdownPtr = *shadingCountdownPtr - 1;
+      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord != (GraphicsShadingRuntimeRecord *)0x0)) {
         InterpolationState_SetNegatedTargetAndRescaleProgress
-                  (effectDefinition1->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
+                  (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
         modelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
       }
     }
-    if ((effectDefinition1->transitionPrefix).transitionKind !=
+    if ((effectDefinition->transitionPrefix).transitionKind !=
         EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT) {
-      uVar23 = pEVar9->effectAgeTicks;
-      uVar25 = (effectDefinition1->animationFrameCount * effectDefinition1->frameAdvanceThresholdQ4
-               >> 4) - effectDefinition1->alphaFadeOutTicks;
-      if (uVar23 < effectDefinition1->alphaFadeInTicks) {
-        EVar10 = effectDefinition1->alphaFadeInTicks;
-        pEVar9->stateTintArgb = pEVar9->stateTintArgb & 0xffffff;
-        pEVar9->stateTintArgb =
-             pEVar9->stateTintArgb |
-             (int)(((longlong)(int)uVar23 * 0xff) / (longlong)(int)EVar10) << 0x18;
+      frameAgeOrTintValue = effectSlot->effectAgeTicks;
+      fadeOutStartTicks = (effectDefinition->animationFrameCount * effectDefinition->frameAdvanceThresholdQ4
+               >> 4) - effectDefinition->alphaFadeOutTicks;
+      if (frameAgeOrTintValue < effectDefinition->alphaFadeInTicks) {
+        fadeDurationTicks = effectDefinition->alphaFadeInTicks;
+        effectSlot->stateTintArgb = effectSlot->stateTintArgb & 0xffffff;
+        effectSlot->stateTintArgb =
+             effectSlot->stateTintArgb |
+             (int)(((longlong)(int)frameAgeOrTintValue * 0xff) / (longlong)(int)fadeDurationTicks) << 0x18;
       }
-      else if ((uVar25 < uVar23) && (0 < (int)effectDefinition1->alphaFadeOutTicks)) {
-        EVar10 = effectDefinition1->alphaFadeOutTicks;
-        EVar11 = effectDefinition1->alphaFadeOutTicks;
-        pEVar9->stateTintArgb = pEVar9->stateTintArgb & 0xffffff;
-        pEVar9->stateTintArgb =
-             pEVar9->stateTintArgb |
-             (int)(((longlong)(int)((uVar23 - uVar25) - EVar10) * -0xff) / (longlong)(int)EVar11) <<
+      else if ((fadeOutStartTicks < frameAgeOrTintValue) && (0 < (int)effectDefinition->alphaFadeOutTicks)) {
+        fadeDurationTicks = effectDefinition->alphaFadeOutTicks;
+        fadeOutDivisorTicks = effectDefinition->alphaFadeOutTicks;
+        effectSlot->stateTintArgb = effectSlot->stateTintArgb & 0xffffff;
+        effectSlot->stateTintArgb =
+             effectSlot->stateTintArgb |
+             (int)(((longlong)(int)((frameAgeOrTintValue - fadeOutStartTicks) - fadeDurationTicks) * -0xff) / (longlong)(int)fadeOutDivisorTicks) <<
              0x18;
       }
       else {
-        pEVar9->stateTintArgb = pEVar9->stateTintArgb | 0xff000000;
+        effectSlot->stateTintArgb = effectSlot->stateTintArgb | 0xff000000;
       }
       if ((modelNode->runtimeFlags & 4) == 0) {
         modelNode->tintArgb = 0xffffff;
       }
       else {
-        PVar12 = pEVar9->stateTintArgb;
-        PVar13 = effectDefinition1->stateTintArgb;
-        uVar28 = (undefined1)(PVar12 >> 0x18);
-        uVar21 = CONCAT11(uVar28,uVar28);
-        uVar29 = (undefined1)(PVar12 >> 0x10);
-        uVar28 = (undefined1)(PVar12 >> 8);
-        uVar30 = (undefined1)(PVar13 >> 0x18);
-        uVar22 = CONCAT11(uVar30,uVar30);
-        uVar31 = (undefined1)(PVar13 >> 0x10);
-        uVar30 = (undefined1)(PVar13 >> 8);
-        uVar27 = pmulhw(CONCAT26(uVar21 >> 4,
-                                 CONCAT24((ushort)(CONCAT35(CONCAT21(uVar21,uVar29),
-                                                            CONCAT14(uVar29,PVar12)) >> 0x20) >> 4,
-                                          CONCAT22(CONCAT11(uVar28,uVar28) >> 4,
-                                                   CONCAT11((char)PVar12,(char)PVar12) >> 4))),
-                        CONCAT26(uVar22 >> 4,
-                                 CONCAT24((ushort)(CONCAT35(CONCAT21(uVar22,uVar31),
-                                                            CONCAT14(uVar31,PVar13)) >> 0x20) >> 4,
-                                          CONCAT22(CONCAT11(uVar30,uVar30) >> 4,
-                                                   CONCAT11((char)PVar13,(char)PVar13) >> 4))));
-        sVar17 = (short)uVar27;
-        sVar18 = (short)((ulonglong)uVar27 >> 0x10);
-        sVar19 = (short)((ulonglong)uVar27 >> 0x20);
-        sVar20 = (short)((ulonglong)uVar27 >> 0x30);
+        effectOrDefinitionTintArgb = effectSlot->stateTintArgb;
+        definitionTintArgb = effectDefinition->stateTintArgb;
+        effectAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 0x18);
+        effectAlphaPair = CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte);
+        effectRedByte = (undefined1)(effectOrDefinitionTintArgb >> 0x10);
+        effectAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 8);
+        definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 0x18);
+        definitionAlphaPair = CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte);
+        definitionRedByte = (undefined1)(definitionTintArgb >> 0x10);
+        definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 8);
+        modulatedLanes = pmulhw(CONCAT26(effectAlphaPair >> 4,
+                                 CONCAT24((ushort)(CONCAT35(CONCAT21(effectAlphaPair,effectRedByte),
+                                                            CONCAT14(effectRedByte,effectOrDefinitionTintArgb)) >> 0x20) >> 4,
+                                          CONCAT22(CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte) >> 4,
+                                                   CONCAT11((char)effectOrDefinitionTintArgb,(char)effectOrDefinitionTintArgb) >> 4))),
+                        CONCAT26(definitionAlphaPair >> 4,
+                                 CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionRedByte),
+                                                            CONCAT14(definitionRedByte,definitionTintArgb)) >> 0x20) >> 4,
+                                          CONCAT22(CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte) >> 4,
+                                                   CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
+        modulatedBlue = (short)modulatedLanes;
+        modulatedGreen = (short)((ulonglong)modulatedLanes >> 0x10);
+        modulatedRed = (short)((ulonglong)modulatedLanes >> 0x20);
+        modulatedAlpha = (short)((ulonglong)modulatedLanes >> 0x30);
         modelNode->tintArgb =
-             CONCAT13((0 < sVar20) * (sVar20 < 0x100) * (char)((ulonglong)uVar27 >> 0x30) -
-                      (0xff < sVar20),
-                      CONCAT12((0 < sVar19) * (sVar19 < 0x100) * (char)((ulonglong)uVar27 >> 0x20) -
-                               (0xff < sVar19),
-                               CONCAT11((0 < sVar18) * (sVar18 < 0x100) *
-                                        (char)((ulonglong)uVar27 >> 0x10) - (0xff < sVar18),
-                                        (0 < sVar17) * (sVar17 < 0x100) * (char)uVar27 -
-                                        (0xff < sVar17))));
+             CONCAT13((0 < modulatedAlpha) * (modulatedAlpha < 0x100) * (char)((ulonglong)modulatedLanes >> 0x30) -
+                      (0xff < modulatedAlpha),
+                      CONCAT12((0 < modulatedRed) * (modulatedRed < 0x100) * (char)((ulonglong)modulatedLanes >> 0x20) -
+                               (0xff < modulatedRed),
+                               CONCAT11((0 < modulatedGreen) * (modulatedGreen < 0x100) *
+                                        (char)((ulonglong)modulatedLanes >> 0x10) - (0xff < modulatedGreen),
+                                        (0 < modulatedBlue) * (modulatedBlue < 0x100) * (char)modulatedLanes -
+                                        (0xff < modulatedBlue))));
       }
     }
     if ((modelNode->runtimeFlags & 0x800) != 0) {
       modelNode->modelScaleQ12 =
            (int)(((longlong)
-                  (effectDefinition1->modelScaleEndQ12 - effectDefinition1->modelScaleStartQ12) *
-                 (longlong)(int)pEVar9->effectAgeTicks) /
+                  (effectDefinition->modelScaleEndQ12 - effectDefinition->modelScaleStartQ12) *
+                 (longlong)(int)effectSlot->effectAgeTicks) /
                 (longlong)
-                (int)(effectDefinition1->animationFrameCount *
-                      effectDefinition1->frameAdvanceThresholdQ4 >> 4)) +
-           effectDefinition1->modelScaleStartQ12;
+                (int)(effectDefinition->animationFrameCount *
+                      effectDefinition->frameAdvanceThresholdQ4 >> 4)) +
+           effectDefinition->modelScaleStartQ12;
     }
-    pEVar9->effectAgeTicks = pEVar9->effectAgeTicks + 1;
-    pEVar3 = &pEVar9->periodicEffectCountdownTicks;
-    *pEVar3 = *pEVar3 - 1;
-    if (*pEVar3 == 0) {
-      pEVar9->periodicEffectCountdownTicks = effectDefinition1->periodicEffectIntervalTicks;
-      MVar32 = ModelLookupTable_ContainsPackedKeyCf(1,3,effectDefinition1->ownedNestedResource);
-      if (!MVar32.carry) {
-        effectDefinition = effectDefinition1->periodicEffectDefinition;
-        worldRuntime_00 = worldRuntime;
-        MVar36 = ModelNodeRuntime_TransformLocalPointRegs
-                           (MVar32.entry,(ModelRuntimeNode *)modelNode);
-        worldZQ12 = MVar36.edx;
-        worldXQ12 = MVar36.ecx;
+    effectSlot->effectAgeTicks = effectSlot->effectAgeTicks + 1;
+    periodicCountdownPtr = &effectSlot->periodicEffectCountdownTicks;
+    *periodicCountdownPtr = *periodicCountdownPtr - 1;
+    if (*periodicCountdownPtr == 0) {
+      effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
+      lookupResult = ModelLookupTable_ContainsPackedKeyCf(1,3,effectDefinition->ownedNestedResource);
+      if (!lookupResult.carry) {
+        periodicDefinition = effectDefinition->periodicEffectDefinition;
+        spawnWorldRuntime = worldRuntime;
+        localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                           (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+        worldZQ12 = localPoint.edx;
+        worldXQ12 = localPoint.ecx;
         EffectRuntimePool_CreateInstanceFromDefinitionCf
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                   worldZQ12,worldXQ12,MVar36.eax,effectDefinition,worldRuntime_00);
+                   worldZQ12,worldXQ12,localPoint.eax,periodicDefinition,spawnWorldRuntime);
       }
     }
                     // WARNING: Switch is manually overridden
-    switch((effectDefinition1->transitionPrefix).transitionKind) {
+    switch((effectDefinition->transitionPrefix).transitionKind) {
     case EFFECT_TRANSITION_SPAWN_LINKED_EFFECT_AFTER_COUNTDOWN:
-      if (iVar26 != 0) {
-        pDVar4 = &pEVar9->linkedEffectPresent;
-        *pDVar4 = *pDVar4 - 1;
-        if (*pDVar4 == 0) {
-          MVar32 = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition1->ownedNestedResource);
-          if (!MVar32.carry) {
-            MVar36 = ModelNodeRuntime_TransformLocalPointRegs
-                               (MVar32.entry,(ModelRuntimeNode *)modelNode);
+      if (frameAdvancedOrScratch != 0) {
+        linkedCountdownPtr = &effectSlot->linkedEffectPresent;
+        *linkedCountdownPtr = *linkedCountdownPtr - 1;
+        if (*linkedCountdownPtr == 0) {
+          lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition->ownedNestedResource);
+          if (!lookupResult.carry) {
+            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                               (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
-                       (modelNode->modelPayload).worldRotationAngle0,MVar36.edx,MVar36.ecx,
-                       MVar36.eax,effectDefinition1->linkedEffectDefinition,worldRuntime);
+                       (modelNode->modelPayload).worldRotationAngle0,localPoint.edx,localPoint.ecx,
+                       localPoint.eax,effectDefinition->linkedEffectDefinition,worldRuntime);
           }
         }
       }
       break;
     case EFFECT_TRANSITION_ADVANCE_PERIODIC_EMISSION_AND_COMPLETION_ACTION:
-      if (iVar26 != 0) {
-        pDVar4 = &pEVar9->linkedShotPresent;
-        *pDVar4 = *pDVar4 - 1;
-        if (*pDVar4 == 0) {
-          keyIndex = (pEVar9->lifecycleOwnerAndDefinition).runtimeState14;
-          pEVar9->linkedShotPresent = effectDefinition1->linkedShotPresent;
-          (pEVar9->lifecycleOwnerAndDefinition).runtimeState14 =
-               (pEVar9->lifecycleOwnerAndDefinition).runtimeState14 + 1;
-          MVar32 = ModelLookupTable_ContainsPackedKeyCf
-                             (keyIndex,2,effectDefinition1->ownedNestedResource);
-          if (!MVar32.carry) {
-            MVar36 = ModelNodeRuntime_TransformLocalPointRegs
-                               (MVar32.entry,(ModelRuntimeNode *)modelNode);
+      if (frameAdvancedOrScratch != 0) {
+        linkedCountdownPtr = &effectSlot->linkedShotPresent;
+        *linkedCountdownPtr = *linkedCountdownPtr - 1;
+        if (*linkedCountdownPtr == 0) {
+          keyIndex = (effectSlot->lifecycleOwnerAndDefinition).runtimeState14;
+          effectSlot->linkedShotPresent = effectDefinition->linkedShotPresent;
+          (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 =
+               (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 + 1;
+          lookupResult = ModelLookupTable_ContainsPackedKeyCf
+                             (keyIndex,2,effectDefinition->ownedNestedResource);
+          if (!lookupResult.carry) {
+            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                               (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
                       (0,(ArmyRuntimeSlot *)0x0,
-                       (MVar36.edx - (modelNode->worldTransform).translation.z) * 2 +
+                       (localPoint.edx - (modelNode->worldTransform).translation.z) * 2 +
                        (modelNode->worldTransform).translation.z,
-                       (MVar36.ecx - (modelNode->worldTransform).translation.y) * 2 +
+                       (localPoint.ecx - (modelNode->worldTransform).translation.y) * 2 +
                        (modelNode->worldTransform).translation.y,
-                       (MVar36.eax - (modelNode->worldTransform).translation.x) * 2 +
-                       (modelNode->worldTransform).translation.x,MVar36.edx,MVar36.ecx,MVar36.eax,
-                       effectDefinition1->linkedShotDefinition,worldRuntime);
+                       (localPoint.eax - (modelNode->worldTransform).translation.x) * 2 +
+                       (modelNode->worldTransform).translation.x,localPoint.edx,localPoint.ecx,localPoint.eax,
+                       effectDefinition->linkedShotDefinition,worldRuntime);
           }
         }
-        pDVar4 = &pEVar9->linkedEffectPresent;
-        *pDVar4 = *pDVar4 - 1;
-        if (*pDVar4 == 0) {
-          MVar32 = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition1->ownedNestedResource);
-          if (!MVar32.carry) {
-            MVar36 = ModelNodeRuntime_TransformLocalPointRegs
-                               (MVar32.entry,(ModelRuntimeNode *)modelNode);
+        linkedCountdownPtr = &effectSlot->linkedEffectPresent;
+        *linkedCountdownPtr = *linkedCountdownPtr - 1;
+        if (*linkedCountdownPtr == 0) {
+          lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition->ownedNestedResource);
+          if (!lookupResult.carry) {
+            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                               (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
-                       (modelNode->modelPayload).worldRotationAngle0,MVar36.edx,MVar36.ecx,
-                       MVar36.eax,effectDefinition1->linkedEffectDefinition,worldRuntime);
+                       (modelNode->modelPayload).worldRotationAngle0,localPoint.edx,localPoint.ecx,
+                       localPoint.eax,effectDefinition->linkedEffectDefinition,worldRuntime);
           }
         }
-        pdVar5 = &(pEVar9->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
-        *pdVar5 = *pdVar5 - 1;
-        if (*pdVar5 == 0) {
-          EVar14 = pEVar9->completionAction;
+        completionCountdownPtr = &(effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
+        *completionCountdownPtr = *completionCountdownPtr - 1;
+        if (*completionCountdownPtr == 0) {
+          pendingCompletionAction = effectSlot->completionAction;
           completionOwnerCarrier =
-               (pEVar9->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
-          if (EVar14 == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
+               (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
+          if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
 EffectModelRuntimeMaintenance_TransitionType1DestroyModel:
             if (completionOwnerCarrier != (void *)0x0) {
               ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,completionOwnerCarrier);
@@ -407,24 +407,24 @@ EffectModelRuntimeMaintenance_TransitionType1DestroyModel:
           }
           else {
             spawnArmyCompletionEntity = completionOwnerCarrier;
-            if (EVar14 == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
+            if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
 EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
               if (spawnArmyCompletionEntity != (GameEntityRuntime *)0x0) {
-                piVar15 = (spawnArmyCompletionEntity->common).ownership.definitionOrClassRecord;
-                modelNode1 = (spawnArmyCompletionEntity->common).ownership.modelNode;
-                iVar26 = *piVar15;
-                if (*(int *)(iVar26 + 0x4c) == 0x12) {
-                  AVar34 = ArmyRuntime_CreateInstanceFromAssetCf
-                                     (6,(modelNode1->modelPayload).worldRotationAngle2,
-                                      (modelNode1->worldTransform).translation.y,
-                                      (modelNode1->worldTransform).translation.x,
+                ownerClassRecord = (spawnArmyCompletionEntity->common).ownership.definitionOrClassRecord;
+                ownerModelNode = (spawnArmyCompletionEntity->common).ownership.modelNode;
+                frameAdvancedOrScratch = *ownerClassRecord;
+                if (*(int *)(frameAdvancedOrScratch + 0x4c) == 0x12) {
+                  armyCreateResult = ArmyRuntime_CreateInstanceFromAssetCf
+                                     (6,(ownerModelNode->modelPayload).worldRotationAngle2,
+                                      (ownerModelNode->worldTransform).translation.y,
+                                      (ownerModelNode->worldTransform).translation.x,
                                       (spawnArmyCompletionEntity->common).ownership.ownerIndex,
-                                      *(PckArmyAssetIdCatalog *)(iVar26 + 0xc0),worldRuntime);
-                  if (!AVar34.carry) {
-                    (*(int **)AVar34.eax)[0xf] =
-                         (int)(((longlong)piVar15[0xf] *
-                               (longlong)*(int *)(**(int **)AVar34.eax + 0x60)) /
-                              (longlong)*(int *)(iVar26 + 0x60));
+                                      *(PckArmyAssetIdCatalog *)(frameAdvancedOrScratch + 0xc0),worldRuntime);
+                  if (!armyCreateResult.carry) {
+                    (*(int **)armyCreateResult.eax)[0xf] =
+                         (int)(((longlong)ownerClassRecord[0xf] *
+                               (longlong)*(int *)(**(int **)armyCreateResult.eax + 0x60)) /
+                              (longlong)*(int *)(frameAdvancedOrScratch + 0x60));
                     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,spawnArmyCompletionEntity);
                   }
                 }
@@ -432,7 +432,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
             }
             else {
               linkedHandlerCompletionOwner = completionOwnerCarrier;
-              if (EVar14 == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER)
+              if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER)
               goto EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler;
             }
           }
@@ -440,115 +440,115 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
       }
       break;
     case EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION:
-      FVar37 = FixedMath_DirectionFromAnglesScaledRegs
+      scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
                          ((modelNode->modelPayload).worldRotationAngle1,
                           (modelNode->modelPayload).worldRotationAngle0,
-                          effectDefinition1->movementSpeedQ12);
-      AVar16 = (modelNode->modelPayload).worldRotationAngle1;
-      shadingRecord1 = modelNode->shadingRecord;
-      pGVar7 = &(modelNode->worldTransform).translation;
-      pGVar7->x = pGVar7->x + FVar37.eax;
-      pGVar8 = &(modelNode->worldTransform).translation.y;
-      *pGVar8 = *pGVar8 + FVar37.ecx;
-      pGVar8 = &(modelNode->worldTransform).translation.z;
-      *pGVar8 = *pGVar8 + FVar37.edx;
+                          effectDefinition->movementSpeedQ12);
+      previousRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
+      activeShadingRecord = modelNode->shadingRecord;
+      translationPtr = &(modelNode->worldTransform).translation;
+      translationPtr->x = translationPtr->x + scaledDirection.eax;
+      translationAxisPtr = &(modelNode->worldTransform).translation.y;
+      *translationAxisPtr = *translationAxisPtr + scaledDirection.ecx;
+      translationAxisPtr = &(modelNode->worldTransform).translation.z;
+      *translationAxisPtr = *translationAxisPtr + scaledDirection.edx;
       ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
-      (modelNode->modelPayload).worldRotationAngle1 = (int)(AVar16 * 0x3f + 0x4000) >> 6;
-      if (shadingRecord1 != (GraphicsShadingRuntimeRecord *)0x0) {
-        shadingRecord1->worldXQ12 = shadingRecord1->worldXQ12 + FVar37.eax;
-        shadingRecord1->worldYQ12 = shadingRecord1->worldYQ12 + FVar37.ecx;
-        shadingRecord1->worldZQ12 = shadingRecord1->worldZQ12 + FVar37.edx;
+      (modelNode->modelPayload).worldRotationAngle1 = (int)(previousRotationAngle1 * 0x3f + 0x4000) >> 6;
+      if (activeShadingRecord != (GraphicsShadingRuntimeRecord *)0x0) {
+        activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.eax;
+        activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.ecx;
+        activeShadingRecord->worldZQ12 = activeShadingRecord->worldZQ12 + scaledDirection.edx;
       }
       break;
     case EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT:
-      FVar35 = FieldGrid_InterpolateTerrainHeightAndNormal
+      terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                          ((modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-      if (!FVar35.carry) {
+      if (!terrainSample.carry) {
         /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
            them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. */
-        FVar37 = FixedMath_DirectionFromAnglesScaledRegs
-                  ((int)FVar35.packedNormalAngles >> 0x10,FVar35.packedNormalAngles & 0xffff,
+        scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
+                  ((int)terrainSample.packedNormalAngles >> 0x10,terrainSample.packedNormalAngles & 0xffff,
                    0x10000000);
-        terrainNormalDirection.x = FVar37.eax;
-        terrainNormalDirection.y = FVar37.ecx;
-        terrainNormalDirection.z = FVar37.edx;
-        FVar37 = FixedMath_DirectionFromAnglesScaledRegs
+        terrainNormalDirection.x = scaledDirection.eax;
+        terrainNormalDirection.y = scaledDirection.ecx;
+        terrainNormalDirection.z = scaledDirection.edx;
+        scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
                   ((modelNode->modelPayload).worldRotationAngle1 -
-                   pEVar9->effectAgeTicks * pEVar9->effectAgeTicks * effectDefinition1->unknown58,
+                   effectSlot->effectAgeTicks * effectSlot->effectAgeTicks * effectDefinition->unknown58,
                    (modelNode->modelPayload).worldRotationAngle0,0x10000000);
-        motionDirection.x = FVar37.eax;
-        motionDirection.y = FVar37.ecx;
-        motionDirection.z = FVar37.edx;
-        sVar24 = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
-        if (sVar24 < 0) {
-          if (pEVar9->stateTintArgb < 0x1000000) {
+        motionDirection.x = scaledDirection.eax;
+        motionDirection.y = scaledDirection.ecx;
+        motionDirection.z = scaledDirection.edx;
+        normalDotMotion = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
+        if (normalDotMotion < 0) {
+          if (effectSlot->stateTintArgb < 0x1000000) {
             InterpolationState_SetNegatedTargetAndRescaleProgress
-                      (effectDefinition1->shadingReleaseTransitionDurationTicks,
+                      (effectDefinition->shadingReleaseTransitionDurationTicks,
                        modelNode->shadingRecord);
             WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
-            (pEVar9->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+            (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
             return;
           }
-          uVar23 = pEVar9->stateTintArgb >> 0x18;
-          iVar26 = uVar23 - effectDefinition1->unknown5C;
-          if (uVar23 < effectDefinition1->unknown5C) {
-            iVar26 = 0;
+          frameAgeOrTintValue = effectSlot->stateTintArgb >> 0x18;
+          frameAdvancedOrScratch = frameAgeOrTintValue - effectDefinition->unknown5C;
+          if (frameAgeOrTintValue < effectDefinition->unknown5C) {
+            frameAdvancedOrScratch = 0;
           }
-          uVar23 = pEVar9->stateTintArgb & 0xffffff | iVar26 << 0x18;
+          frameAgeOrTintValue = effectSlot->stateTintArgb & 0xffffff | frameAdvancedOrScratch << 0x18;
         }
         else {
-          uVar23 = 0xffffffff;
-          pAVar6 = &(modelNode->modelPayload).worldRotationAngle1;
-          *pAVar6 = *pAVar6 - pEVar9->effectAgeTicks * pEVar9->effectAgeTicks *
-                              effectDefinition1->unknown58;
+          frameAgeOrTintValue = 0xffffffff;
+          rotationAngle1Ptr = &(modelNode->modelPayload).worldRotationAngle1;
+          *rotationAngle1Ptr = *rotationAngle1Ptr - effectSlot->effectAgeTicks * effectSlot->effectAgeTicks *
+                              effectDefinition->unknown58;
         }
-        pEVar9->stateTintArgb = uVar23;
+        effectSlot->stateTintArgb = frameAgeOrTintValue;
         if ((modelNode->runtimeFlags & 4) != 0) {
-          PVar12 = effectDefinition1->stateTintArgb;
-          uVar28 = (undefined1)(uVar23 >> 0x18);
-          uVar21 = CONCAT11(uVar28,uVar28);
-          uVar29 = (undefined1)(uVar23 >> 0x10);
-          uVar28 = (undefined1)(uVar23 >> 8);
-          uVar30 = (undefined1)(PVar12 >> 0x18);
-          uVar22 = CONCAT11(uVar30,uVar30);
-          uVar31 = (undefined1)(PVar12 >> 0x10);
-          uVar30 = (undefined1)(PVar12 >> 8);
-          uVar27 = pmulhw(CONCAT26(uVar21 >> 4,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(uVar21,uVar29),
-                                                              CONCAT14(uVar29,uVar23)) >> 0x20) >> 4
-                                            ,CONCAT22(CONCAT11(uVar28,uVar28) >> 4,
-                                                      CONCAT11((char)uVar23,(char)uVar23) >> 4))),
-                          CONCAT26(uVar22 >> 4,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(uVar22,uVar31),
-                                                              CONCAT14(uVar31,PVar12)) >> 0x20) >> 4
-                                            ,CONCAT22(CONCAT11(uVar30,uVar30) >> 4,
-                                                      CONCAT11((char)PVar12,(char)PVar12) >> 4))));
-          sVar17 = (short)uVar27;
-          sVar18 = (short)((ulonglong)uVar27 >> 0x10);
-          sVar19 = (short)((ulonglong)uVar27 >> 0x20);
-          sVar20 = (short)((ulonglong)uVar27 >> 0x30);
+          effectOrDefinitionTintArgb = effectDefinition->stateTintArgb;
+          effectAlphaOrGreenByte = (undefined1)(frameAgeOrTintValue >> 0x18);
+          effectAlphaPair = CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte);
+          effectRedByte = (undefined1)(frameAgeOrTintValue >> 0x10);
+          effectAlphaOrGreenByte = (undefined1)(frameAgeOrTintValue >> 8);
+          definitionAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 0x18);
+          definitionAlphaPair = CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte);
+          definitionRedByte = (undefined1)(effectOrDefinitionTintArgb >> 0x10);
+          definitionAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 8);
+          modulatedLanes = pmulhw(CONCAT26(effectAlphaPair >> 4,
+                                   CONCAT24((ushort)(CONCAT35(CONCAT21(effectAlphaPair,effectRedByte),
+                                                              CONCAT14(effectRedByte,frameAgeOrTintValue)) >> 0x20) >> 4
+                                            ,CONCAT22(CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte) >> 4,
+                                                      CONCAT11((char)frameAgeOrTintValue,(char)frameAgeOrTintValue) >> 4))),
+                          CONCAT26(definitionAlphaPair >> 4,
+                                   CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionRedByte),
+                                                              CONCAT14(definitionRedByte,effectOrDefinitionTintArgb)) >> 0x20) >> 4
+                                            ,CONCAT22(CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte) >> 4,
+                                                      CONCAT11((char)effectOrDefinitionTintArgb,(char)effectOrDefinitionTintArgb) >> 4))));
+          modulatedBlue = (short)modulatedLanes;
+          modulatedGreen = (short)((ulonglong)modulatedLanes >> 0x10);
+          modulatedRed = (short)((ulonglong)modulatedLanes >> 0x20);
+          modulatedAlpha = (short)((ulonglong)modulatedLanes >> 0x30);
           modelNode->tintArgb =
-               CONCAT13((0 < sVar20) * (sVar20 < 0x100) * (char)((ulonglong)uVar27 >> 0x30) -
-                        (0xff < sVar20),
-                        CONCAT12((0 < sVar19) * (sVar19 < 0x100) * (char)((ulonglong)uVar27 >> 0x20)
-                                 - (0xff < sVar19),
-                                 CONCAT11((0 < sVar18) * (sVar18 < 0x100) *
-                                          (char)((ulonglong)uVar27 >> 0x10) - (0xff < sVar18),
-                                          (0 < sVar17) * (sVar17 < 0x100) * (char)uVar27 -
-                                          (0xff < sVar17))));
+               CONCAT13((0 < modulatedAlpha) * (modulatedAlpha < 0x100) * (char)((ulonglong)modulatedLanes >> 0x30) -
+                        (0xff < modulatedAlpha),
+                        CONCAT12((0 < modulatedRed) * (modulatedRed < 0x100) * (char)((ulonglong)modulatedLanes >> 0x20)
+                                 - (0xff < modulatedRed),
+                                 CONCAT11((0 < modulatedGreen) * (modulatedGreen < 0x100) *
+                                          (char)((ulonglong)modulatedLanes >> 0x10) - (0xff < modulatedGreen),
+                                          (0 < modulatedBlue) * (modulatedBlue < 0x100) * (char)modulatedLanes -
+                                          (0xff < modulatedBlue))));
         }
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
-        pdVar5 = &(pEVar9->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
-        *pdVar5 = *pdVar5 - 1;
-        if (*pdVar5 == 0) {
-          EVar14 = pEVar9->completionAction;
+        completionCountdownPtr = &(effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
+        *completionCountdownPtr = *completionCountdownPtr - 1;
+        if (*completionCountdownPtr == 0) {
+          pendingCompletionAction = effectSlot->completionAction;
           completionOwnerCarrier =
-               (pEVar9->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
-          if (EVar14 == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY)
+               (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
+          if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY)
           goto EffectModelRuntimeMaintenance_TransitionType1DestroyModel;
           linkedHandlerCompletionOwner = completionOwnerCarrier;
-          if (EVar14 == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
+          if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
 EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler:
             if ((linkedHandlerCompletionOwner != (EffectCompletionLinkedHandlerOwnerColumns104 *)0x0
                 ) && (0 < (int)linkedHandlerCompletionOwner->auxiliaryValue80)) {
@@ -562,14 +562,14 @@ EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler:
           }
           else {
             spawnArmyCompletionEntity = completionOwnerCarrier;
-            if (EVar14 == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL)
+            if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL)
             goto EffectModelRuntimeMaintenance_TransitionType3SpawnArmy;
           }
         }
       }
     }
-    IStack_20 = IStack_20 - 1;
-    if (IStack_20 == 0) {
+    remainingStepTicks = remainingStepTicks - 1;
+    if (remainingStepTicks == 0) {
       return;
     }
   } while( true );
