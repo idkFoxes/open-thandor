@@ -447,7 +447,8 @@ def typed_member(start, end, name, member):
     return decl, init, typed_pointers, start + width * count
 
 # objects the program computes at startup instead (see WinMain): storage only, no initializer
-COMPUTED = {'g_FixedSinQ28': 'FixedMath_BuildSinCosTables', 'g_FixedCosQ28': 'FixedMath_BuildSinCosTables',
+COMPUTED = {'g_FixedSinBeforeZeroQ28': 'FixedMath_BuildSinCosTables',
+            'g_FixedSinQ28': 'FixedMath_BuildSinCosTables', 'g_FixedCosQ28': 'FixedMath_BuildSinCosTables',
             'g_MovieChromaLumaToArgb': 'Movie_BuildChromaLumaTable'}
 
 layout_lines = []   # struct member declarations per block

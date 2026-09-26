@@ -17,6 +17,10 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
    (table n maps round-key nibble n and data nibble to a 4-bit output, stored as dwords). */
 #define g_UiTransferCipherSubstitution (*(dword (*)[8][16][16])THANDOR_IMAGE(0x00405160))
 
+/* ---- core/math/fixed: the quarter turn of the sine table before angle 0 (sin of -16384..-1 in
+   Q28), directly followed by g_FixedSinQ28 and g_FixedCosQ28; signed angle lookups reach it. */
+#define g_FixedSinBeforeZeroQ28 (*(sdword (*)[16384])THANDOR_IMAGE(0x004246a0))
+
 /* ---- core/error: fatal error texts; their addresses double as the error codes. */
 #define g_ErrorTextIoInitializationFailed (*(word (*)[34])THANDOR_IMAGE(0x00407d40))
 #define g_ErrorTextHeapAllocationFailed (*(word (*)[71])THANDOR_IMAGE(0x00407d84))

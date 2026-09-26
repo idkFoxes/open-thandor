@@ -1416,10 +1416,11 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt
 }
 
 
-/* Not in the original: the original executable carries these tables precomputed (0x004346A0,
-   81920 dwords). g_FixedSinQ28 holds the first quarter turn and g_FixedCosQ28 directly follows
-   it, so together they are one sine over 1.25 turns: g_FixedCosQ28[i] = sin(i + quarter turn),
-   and sine lookups up to a full turn run on into the cosine table.
+/* Not in the original: the original executable carries these tables precomputed (0x004246A0,
+   98304 dwords). They are one sine over 1.5 turns, from a quarter turn before angle 0:
+   g_FixedSinBeforeZeroQ28 (angles -16384..-1), g_FixedSinQ28 (0..16383) and g_FixedCosQ28
+   (cos(i) = sin(i + quarter turn)); lookups with signed or full-turn angles run on from one
+   table into the next.
    Entry i is sin(i * 2pi / 65536) in Q28, rounded half up, computed with pi = 3.141592654; this
    reproduces every entry of the original. Called once at startup. */
 static sdword FixedMath_SineTableEntry(int index)
@@ -1432,6 +1433,7 @@ void FixedMath_BuildSinCosTables(void)
   int index;
 
   for (index = 0; index < 16384; index++) {
+    g_FixedSinBeforeZeroQ28[index] = FixedMath_SineTableEntry(index - 16384);
     g_FixedSinQ28[index] = FixedMath_SineTableEntry(index);
   }
   for (index = 0; index < 65536; index++) {

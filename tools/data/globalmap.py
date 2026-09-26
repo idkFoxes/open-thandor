@@ -1,6 +1,7 @@
 """Writes globalmap.txt (name, address, sizeof) for every address-defined object in
 generated/globals.h and data/recovered.h. The sizes come from the compiler: a generated program
-prints sizeof of each object (sizeof does not evaluate the address). Needs cl.exe in PATH
+prints sizeof of each object (sizeof does not evaluate the address). It is compiled in the
+mapped-image mode, so a newly named object needs no generated storage yet. Needs cl.exe in PATH
 (run from a vcvars32 prompt); without it, only globalmap.c is written."""
 import os
 import shutil
@@ -20,7 +21,7 @@ cl = shutil.which('cl')
 if cl is None:
     raise SystemExit('%s written; cl.exe not found (run from a vcvars32 prompt to compile it)' % source)
 exe = os.path.join(args.work, 'globalmap.exe')
-subprocess.run([cl, '/nologo', '/w', '/I' + os.path.join(common.REPO, 'include'), source, '/Fe' + exe,
+subprocess.run([cl, '/nologo', '/w', '/DTHANDOR_MAPPED_IMAGE', '/I' + os.path.join(common.REPO, 'include'), source, '/Fe' + exe,
                 '/Fo' + os.path.join(args.work, 'globalmap.obj')], check=True, stdout=subprocess.DEVNULL)
 out = subprocess.run([exe], capture_output=True, text=True, check=True).stdout
 open(os.path.join(args.work, 'globalmap.txt'), 'w').write(out)

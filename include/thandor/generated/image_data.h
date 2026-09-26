@@ -589,9 +589,8 @@ extern ImageData_00424324 g_ImageData_00424324;
 
 /* original 0x00424684-0x004846A0 */
 typedef struct ImageData_00424684 {
-    byte at_gap_00424684[57218]; /* 00424684 gap */
-    dword at_RuntimeX86ShiftAndPortOutputInstructionIsland[2086]; /* 00432606 RuntimeX86ShiftAndPortOutputInstructionIsland */
-    byte at_RuntimeX86ShiftAndPortOutputInstructionIsland_tail[2];
+    byte at_gap_00424684[28]; /* 00424684 gap */
+    dword at_g_FixedSinBeforeZeroQ28[16384]; /* 004246A0 g_FixedSinBeforeZeroQ28 */
     dword at_g_FixedSinQ28[16384]; /* 004346A0 g_FixedSinQ28 */
     dword at_g_FixedCosQ28[65536]; /* 004446A0 g_FixedCosQ28 */
 } ImageData_00424684;
@@ -3865,6 +3864,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004235f4 ((uintptr_t)&g_ImageData_00422978.at_g_UiDisplayModeDistinctValueScratch7)
 #define THANDOR_IMAGE_0x00424324 ((uintptr_t)&g_ImageData_00424324.at_g_UiFourValueDialogRootCallbacks)
 #define THANDOR_IMAGE_0x00424338 ((uintptr_t)&g_ImageData_00424324.at_g_UiFourValueDialogTemplateImage)
+#define THANDOR_IMAGE_0x004246a0 ((uintptr_t)&g_ImageData_00424684.at_g_FixedSinBeforeZeroQ28)
 #define THANDOR_IMAGE_0x004346a0 ((uintptr_t)&g_ImageData_00424684.at_g_FixedSinQ28)
 #define THANDOR_IMAGE_0x004446a0 ((uintptr_t)&g_ImageData_00424684.at_g_FixedCosQ28)
 #define THANDOR_IMAGE_0x00485814 ((uintptr_t)&g_ImageData_00485808.at_g_TextureDownsampleShift)
