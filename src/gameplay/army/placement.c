@@ -34,46 +34,46 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestOffsetClearanceCf
               ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  int worldXQ12_00;
-  int iVar1;
-  bool bVar2;
-  FixedLengthAngleEaxEdx8 FVar3;
-  FixedSinCosEdxEax8 FVar4;
-  ArmyPlacementCandidateEaxCf5 AVar5;
-  ModelLookupEntryEaxCf5 MVar6;
-  TerrainPlacementTestEaxCf5 TVar7;
+  int offsetWorldXQ12;
+  int eaxOrOffsetYQ12;
+  bool blocked;
+  FixedLengthAngleEaxEdx8 offsetLengthAngle;
+  FixedSinCosEdxEax8 rotatedOffset;
+  ArmyPlacementCandidateEaxCf5 clearanceResult;
+  ModelLookupEntryEaxCf5 anchorLookup;
+  TerrainPlacementTestEaxCf5 terrainTest;
   
   ArmyPlacementCandidateEaxCf5 result;
 
   /* The table dispatch reads EAX and CF; the decompiled int return lost CF. */
-  AVar5 = ArmyPlacementCollision_TestCandidateAndClearanceCf
+  clearanceResult = ArmyPlacementCollision_TestCandidateAndClearanceCf
                     (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldXQ12,worldYQ12,modelDefinition,dispatchArg7,worldRuntime);
-  iVar1 = AVar5.eax;
-  if (!AVar5.carry) {
-    MVar6 = ModelLookupTable_ContainsPackedKeyCf
+  eaxOrOffsetYQ12 = clearanceResult.eax;
+  if (!clearanceResult.carry) {
+    anchorLookup = ModelLookupTable_ContainsPackedKeyCf
                       (1,5,*(ModelResourceHitTestAndRenderView210 **)
                             (modelDefinition->serializedNodeOffsetOrPointer64 + 0x30));
-    FVar3 = FixedMath_Vector2AngleAndLengthRegs
-                      (((MVar6.entry)->localPosition).y,((MVar6.entry)->localPosition).x);
-    FVar4 = FixedMath_SinCosScaled(FVar3.angle + dispatchArg2 & 0xffff,FVar3.length);
-    iVar1 = (int)FVar4;
-    worldXQ12_00 = worldXQ12 + (int)(FVar4 >> 0x20);
-    bVar2 = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
-                      (dispatchArg0,0xc00,worldXQ12_00,worldYQ12 + iVar1,worldRuntime);
-    if (!bVar2) {
-      TVar7.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
+    offsetLengthAngle = FixedMath_Vector2AngleAndLengthRegs
+                      (((anchorLookup.entry)->localPosition).y,((anchorLookup.entry)->localPosition).x);
+    rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + dispatchArg2 & 0xffff,offsetLengthAngle.length);
+    eaxOrOffsetYQ12 = (int)rotatedOffset;
+    offsetWorldXQ12 = worldXQ12 + (int)(rotatedOffset >> 0x20);
+    blocked = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
+                      (dispatchArg0,0xc00,offsetWorldXQ12,worldYQ12 + eaxOrOffsetYQ12,worldRuntime);
+    if (!blocked) {
+      terrainTest.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
                 [modelDefinition->placementContactKindIndex278])
-                        (0xc00,dispatchArg3,worldXQ12_00,worldYQ12 + iVar1,worldRuntime->fieldGrid);
-      if (!TVar7.carry) {
-        result.eax = AVar5.eax;
+                        (0xc00,dispatchArg3,offsetWorldXQ12,worldYQ12 + eaxOrOffsetYQ12,worldRuntime->fieldGrid);
+      if (!terrainTest.carry) {
+        result.eax = clearanceResult.eax;
         result.carry = false;
         return result;
       }
     }
     g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
   }
-  result.eax = iVar1;
+  result.eax = eaxOrOffsetYQ12;
   result.carry = true;
   return result;
 }
@@ -96,42 +96,42 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
 
 {
   ModelRuntimeNode *modelNodeRuntime;
-  ModelDefinitionRuntimeSemanticView280 *pMVar1;
+  ModelDefinitionRuntimeSemanticView280 *placementDefinition;
   dword worldYQ12;
   Q12 worldXQ12;
   int referenceHeightQ12;
-  bool bVar2;
-  ModelLookupEntryEaxCf5 MVar3;
-  ModelLocalPointRegs12 MVar4;
+  bool blocked;
+  ModelLookupEntryEaxCf5 anchorLookup;
+  ModelLocalPointRegs12 anchorWorldPoint;
   
   modelNodeRuntime = modelRuntime->rootModelNode;
-  bVar2 = ArmyPlacementCollision_TestCurrentRuntimeCf(worldRuntime,modelRuntime);
-  if (!bVar2) {
-    pMVar1 = modelRuntime->modelDefinition;
-    MVar3 = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
+  blocked = ArmyPlacementCollision_TestCurrentRuntimeCf(worldRuntime,modelRuntime);
+  if (!blocked) {
+    placementDefinition = modelRuntime->modelDefinition;
+    anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
     ;
-    if (!MVar3.carry) {
-      MVar4 = ModelNodeRuntime_TransformLocalPointRegs(MVar3.entry,modelNodeRuntime);
-      worldXQ12 = MVar4.ecx;
-      worldYQ12 = MVar4.eax;
+    if (!anchorLookup.carry) {
+      anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
+      worldXQ12 = anchorWorldPoint.ecx;
+      worldYQ12 = anchorWorldPoint.eax;
       referenceHeightQ12 =
-           (MVar4.edx - pMVar1->placementHeightOffsetQ12) -
+           (anchorWorldPoint.edx - placementDefinition->placementHeightOffsetQ12) -
            ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
-      bVar2 = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
+      blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
                         ((WorldOwnerListNode100 *)modelNodeRuntime,worldXQ12,worldYQ12,
                          (IMAGE_DOS_HEADER *)0xc00,worldRuntime);
-      if (!bVar2) {
+      if (!blocked) {
         if (modelRuntime->modelDefinition->placementContactKindIndex278 == 1) {
-          bVar2 = TerrainAuxHeightThreshold_TestAroundWorldPoint
+          blocked = TerrainAuxHeightThreshold_TestAroundWorldPoint
                             (0xc00,referenceHeightQ12,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-          if (!bVar2) {
+          if (!blocked) {
             return false;
           }
         }
         else {
-          bVar2 = TerrainHeightBand_TestAroundWorldPoint
+          blocked = TerrainHeightBand_TestAroundWorldPoint
                             (0xc00,referenceHeightQ12,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-          if (!bVar2) {
+          if (!blocked) {
             return false;
           }
         }
@@ -214,41 +214,41 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
               ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
+  int clearanceEax;
+  int cellColumn;
+  int eaxOrCellColumn;
   ArmyPlacementCandidateEaxCf5 result;
-  uint uVar4;
-  int iVar5;
-  ArmyPlacementCandidateEaxCf5 AVar6;
-  FieldGridAsset *fieldGrid1;
+  uint projectedRowTerm;
+  int cellRow;
+  ArmyPlacementCandidateEaxCf5 clearanceResult;
+  FieldGridAsset *activeFieldGrid;
   
-  AVar6 = ArmyPlacementCollision_TestCandidateAndClearanceCf
+  clearanceResult = ArmyPlacementCollision_TestCandidateAndClearanceCf
                     (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldYQ12,worldXQ12,(ModelDefinitionRuntimeSemanticView280 *)modelDefinition,
                      dispatchArg7,worldRuntime);
-  iVar1 = AVar6.eax;
-  iVar3 = iVar1;
-  if (!AVar6.carry) {
-    fieldGrid1 = worldRuntime->fieldGrid;
-    uVar4 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  clearanceEax = clearanceResult.eax;
+  eaxOrCellColumn = clearanceEax;
+  if (!clearanceResult.carry) {
+    activeFieldGrid = worldRuntime->fieldGrid;
+    projectedRowTerm = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
             (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-    iVar2 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                   (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar4) + 0x800) >> 0xc;
-    iVar3 = iVar2;
-    if ((((-1 < iVar2) && (iVar5 = (int)(uVar4 * 2 + 0x800) >> 0xc, -1 < iVar5)) &&
-        (iVar2 < (int)fieldGrid1->gridWidth)) && (iVar5 < (int)fieldGrid1->gridHeight)) {
-      iVar3 = iVar1;
-      if ((fieldGrid1->cells[fieldGrid1->gridWidth * iVar5 + iVar2].flagsAndMaterial &
+    cellColumn = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                   (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - projectedRowTerm) + 0x800) >> 0xc;
+    eaxOrCellColumn = cellColumn;
+    if ((((-1 < cellColumn) && (cellRow = (int)(projectedRowTerm * 2 + 0x800) >> 0xc, -1 < cellRow)) &&
+        (cellColumn < (int)activeFieldGrid->gridWidth)) && (cellRow < (int)activeFieldGrid->gridHeight)) {
+      eaxOrCellColumn = clearanceEax;
+      if ((activeFieldGrid->cells[activeFieldGrid->gridWidth * cellRow + cellColumn].flagsAndMaterial &
           0x800 << ((byte)modelDefinition[0x10].byteSize & 0x1f)) != 0) {
-        result.eax = iVar1;
+        result.eax = clearanceEax;
         result.carry = false;
         return result;
       }
     }
     g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
   }
-  result.eax = iVar3;
+  result.eax = eaxOrCellColumn;
   result.carry = true;
   return result;
 }
@@ -268,27 +268,27 @@ ArmyPlacement_TestGridOccupancyMask
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View200 *modelRuntime)
 
 {
-  int iVar1;
-  int iVar2;
-  bool bVar3;
-  FieldGridCoordinatesEaxEdx8 FVar4;
-  FieldGridAsset *fieldGrid1;
-  ModelRuntimeNode *modelNode1;
+  int cellColumn;
+  int cellRow;
+  bool blocked;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridAsset *activeFieldGrid;
+  ModelRuntimeNode *rootNode;
   
-  modelNode1 = modelRuntime->rootModelNode;
-  bVar3 = ArmyPlacementCollision_TestCurrentRuntimeCf
+  rootNode = modelRuntime->rootModelNode;
+  blocked = ArmyPlacementCollision_TestCurrentRuntimeCf
                     (worldRuntime,(ModelRuntimePlacementValidationView200 *)modelRuntime);
-  if (!bVar3) {
-    FVar4 = FieldGrid_WorldToGridQ12
-                      ((modelNode1->worldTransform).translation.y,
-                       (modelNode1->worldTransform).translation.x);
-    iVar1 = (FVar4.columnQ12 >> 0xb) + 1 >> 1;
-    iVar2 = (FVar4.rowQ12 >> 0xb) + 1 >> 1;
-    fieldGrid1 = worldRuntime->fieldGrid;
-    if ((0 < iVar1) && (0 < iVar2)) {
-      if ((iVar1 + 1 < (int)fieldGrid1->gridWidth) &&
-         ((iVar2 + 1 < (int)fieldGrid1->gridHeight &&
-          ((fieldGrid1->cells[iVar2 * fieldGrid1->gridWidth + iVar1].flagsAndMaterial &
+  if (!blocked) {
+    gridCoordinates = FieldGrid_WorldToGridQ12
+                      ((rootNode->worldTransform).translation.y,
+                       (rootNode->worldTransform).translation.x);
+    cellColumn = (gridCoordinates.columnQ12 >> 0xb) + 1 >> 1;
+    cellRow = (gridCoordinates.rowQ12 >> 0xb) + 1 >> 1;
+    activeFieldGrid = worldRuntime->fieldGrid;
+    if ((0 < cellColumn) && (0 < cellRow)) {
+      if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
+         ((cellRow + 1 < (int)activeFieldGrid->gridHeight &&
+          ((activeFieldGrid->cells[cellRow * activeFieldGrid->gridWidth + cellColumn].flagsAndMaterial &
            0x800 << ((byte)modelRuntime->modelDefinition->resourceFieldSupportSelectorC0 & 0x1f)) !=
            0)))) {
         return false;
@@ -316,30 +316,30 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
-  bool bVar1;
-  ArmyCollisionFindEaxCf5 AVar2;
+  bool blocked;
+  ArmyCollisionFindEaxCf5 blockingRuntime;
   ModelRuntimeNode *modelNode;
   
   modelNode = modelRuntime->rootModelNode;
-  bVar1 = GridScratch_TestProjectedCellMaskBandsCf
+  blocked = GridScratch_TestProjectedCellMaskBandsCf
                     ((modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
                      (byte)modelRuntime->modelDefinition->gridClassification260,
                      (byte)modelRuntime->modelDefinition->gridClassification264);
-  if (!bVar1) {
-    AVar2 = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+  if (!blocked) {
+    blockingRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                       ((modelNode->worldTransform).translation.y,
                        (modelNode->worldTransform).translation.x,
                        (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
-    bVar1 = AVar2.carry;
-    if ((!bVar1) && (bVar1 = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
-      bVar1 = FieldGrid_TestWorldPointBlockedCf
+    blocked = blockingRuntime.carry;
+    if ((!blocked) && (blocked = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
+      blocked = FieldGrid_TestWorldPointBlockedCf
                         (modelRuntime->ownerArmyRuntime->factionIndex,
                          (modelNode->worldTransform).translation.y,
                          (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
     }
   }
-  return bVar1;
+  return blocked;
 }
 
 
@@ -360,16 +360,16 @@ ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  bool bVar1;
+  bool blocked;
   
-  bVar1 = GridScratch_TestProjectedCellMaskBandsCf
+  blocked = GridScratch_TestProjectedCellMaskBandsCf
                     (worldXQ12,worldYQ12,(byte)modelDefinition->gridClassification260,
                      (byte)modelDefinition->gridClassification264);
-  if (!bVar1) {
-    bVar1 = ArmyCollision_TestPointAgainstRuntimeListCf
+  if (!blocked) {
+    blocked = ArmyCollision_TestPointAgainstRuntimeListCf
                       (worldXQ12,worldYQ12,(byte *)modelDefinition,worldRuntime);
-    if ((!bVar1) && (bVar1 = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
-      bVar1 = FieldGrid_TestWorldPointBlockedCf
+    if ((!blocked) && (blocked = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
+      blocked = FieldGrid_TestWorldPointBlockedCf
                         (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     }
   }
@@ -377,7 +377,7 @@ ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
     ArmyPlacementCandidateEaxCf5 result;
 
     result.eax = 0;
-    result.carry = bVar1;
+    result.carry = blocked;
     return result;
   }
 }
@@ -395,12 +395,12 @@ ArmyPlacementContact_ApplyTerrainHeight
 
 {
   Q12 surfaceHeightQ12;
-  FieldGridHeightEaxCf5 FVar1;
+  FieldGridHeightEaxCf5 surfaceHeight;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar1 = FieldGrid_InterpolateTerrainHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-    surfaceHeightQ12 = FVar1.heightQ12;
-    if (!FVar1.carry) {
+    surfaceHeight = FieldGrid_InterpolateTerrainHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    surfaceHeightQ12 = surfaceHeight.heightQ12;
+    if (!surfaceHeight.carry) {
       (modelNode->worldTransform).translation.z =
            surfaceHeightQ12 + heightOffsetQ12 +
            ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
@@ -426,12 +426,12 @@ ArmyPlacementContact_ApplyWaterSurfaceHeight
 
 {
   Q12 surfaceHeightQ12;
-  FieldGridHeightEaxCf5 FVar1;
+  FieldGridHeightEaxCf5 surfaceHeight;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar1 = FieldGrid_InterpolateWaterSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-    surfaceHeightQ12 = FVar1.heightQ12;
-    if (!FVar1.carry) {
+    surfaceHeight = FieldGrid_InterpolateWaterSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    surfaceHeightQ12 = surfaceHeight.heightQ12;
+    if (!surfaceHeight.carry) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldYQ12;
       (modelNode->worldTransform).translation.y = worldXQ12;
@@ -454,17 +454,17 @@ ArmyPlacementContact_ApplyTerrainHeightAndNormal
           WorldRuntimeContext *worldRuntime)
 
 {
-  int iVar1;
-  FieldGridHeightNormalEaxEdxCf9 FVar2;
+  int resourceHeightOffsetQ12;
+  FieldGridHeightNormalEaxEdxCf9 surfaceHeightNormal;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar2 = FieldGrid_InterpolateTerrainHeightAndNormal(worldXQ12,worldYQ12,worldRuntime->fieldGrid)
+    surfaceHeightNormal = FieldGrid_InterpolateTerrainHeightAndNormal(worldXQ12,worldYQ12,worldRuntime->fieldGrid)
     ;
-    if (!FVar2.carry) {
-      iVar1 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
-      (modelNode->modelPayload).worldRotationAngle0 = FVar2.packedNormalAngles & 0xffff;
-      (modelNode->modelPayload).worldRotationAngle1 = (int)FVar2.packedNormalAngles >> 0x10;
-      (modelNode->worldTransform).translation.z = FVar2.heightQ12 + iVar1 + heightOffsetQ12;
+    if (!surfaceHeightNormal.carry) {
+      resourceHeightOffsetQ12 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
+      (modelNode->modelPayload).worldRotationAngle0 = surfaceHeightNormal.packedNormalAngles & 0xffff;
+      (modelNode->modelPayload).worldRotationAngle1 = (int)surfaceHeightNormal.packedNormalAngles >> 0x10;
+      (modelNode->worldTransform).translation.z = surfaceHeightNormal.heightQ12 + resourceHeightOffsetQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldYQ12;
       (modelNode->worldTransform).translation.y = worldXQ12;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
@@ -486,12 +486,12 @@ ArmyPlacementContact_ApplyTopSurfaceHeight
 
 {
   Q12 surfaceHeightQ12;
-  FieldGridHeightEaxCf5 FVar1;
+  FieldGridHeightEaxCf5 surfaceHeight;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
-    FVar1 = FieldGrid_InterpolateTopSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-    surfaceHeightQ12 = FVar1.heightQ12;
-    if (!FVar1.carry) {
+    surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    surfaceHeightQ12 = surfaceHeight.heightQ12;
+    if (!surfaceHeight.carry) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldYQ12;
       (modelNode->worldTransform).translation.y = worldXQ12;
@@ -536,43 +536,43 @@ ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  byte *pbVar1;
-  dword dVar2;
-  InGameRuntimeRootImageC3E4 *pIVar3;
-  int iVar4;
-  int iVar5;
-  FieldGridCoordinatesEaxEdx8 FVar6;
-  FieldGridAsset *fieldGrid1;
+  byte *capacityCounter;
+  dword capacityContribution;
+  InGameRuntimeRootImageC3E4 *inGameRoot;
+  int factionValueOrCellIndex;
+  int counterOffsetOrCellRow;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridAsset *activeFieldGrid;
   
-  dVar2 = modelDefinition[0x10].flags;
-  iVar4 = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex * 0x740;
-  iVar5 = iVar4 + 4;
+  capacityContribution = modelDefinition[0x10].flags;
+  factionValueOrCellIndex = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex * 0x740;
+  counterOffsetOrCellRow = factionValueOrCellIndex + 4;
   if (modelDefinition[0x10].byteSize != 0) {
-    iVar5 = iVar4 + 0x14;
+    counterOffsetOrCellRow = factionValueOrCellIndex + 0x14;
   }
-  iVar4 = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar5 + -0x78);
-  if ((((int)modelRuntime->definitionValue60_3C < 2) && (iVar4 != 0)) &&
+  factionValueOrCellIndex = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + counterOffsetOrCellRow + -0x78);
+  if ((((int)modelRuntime->definitionValue60_3C < 2) && (factionValueOrCellIndex != 0)) &&
      (((modelRuntime->classState).classStateEC & 0x20) == 0)) {
-    *(int *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
-         *(int *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
-         (int)(((longlong)(int)dVar2 * (longlong)*(int *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)iVar4);
+    *(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
+         *(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
+         (int)(((longlong)(int)capacityContribution * (longlong)*(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)factionValueOrCellIndex);
   }
-  pbVar1 = g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar5 + -0x78;
-  *(dword *)pbVar1 = *(int *)pbVar1 - dVar2;
-  pIVar3 = g_InGameRuntimeRoot;
-  FVar6 = FieldGrid_WorldToGridQ12
+  capacityCounter = g_GameFactionRuntimeImage.records[0].reserved78_87 + counterOffsetOrCellRow + -0x78;
+  *(dword *)capacityCounter = *(int *)capacityCounter - capacityContribution;
+  inGameRoot = g_InGameRuntimeRoot;
+  gridCoordinates = FieldGrid_WorldToGridQ12
                     ((((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
                      translation.y,
                      (((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
                      translation.x);
-  iVar4 = (FVar6.columnQ12 >> 0xb) + 1 >> 1;
-  iVar5 = (FVar6.rowQ12 >> 0xb) + 1 >> 1;
-  fieldGrid1 = (pIVar3->worldRuntime0A30).fieldGrid;
-  if (((0 < iVar4) && (0 < iVar5)) && (fieldGrid1 != (FieldGridAsset *)0x0)) {
-    if ((iVar4 + 1 < (int)fieldGrid1->gridWidth) && (iVar5 + 1 < (int)fieldGrid1->gridHeight)) {
-      iVar4 = iVar5 * fieldGrid1->gridWidth + iVar4;
-      fieldGrid1->cells[iVar4].armyRuntimeSavedOffset6C = 0;
-      fieldGrid1->cells[iVar4].resourceExtractionDescriptor7C = 0;
+  factionValueOrCellIndex = (gridCoordinates.columnQ12 >> 0xb) + 1 >> 1;
+  counterOffsetOrCellRow = (gridCoordinates.rowQ12 >> 0xb) + 1 >> 1;
+  activeFieldGrid = (inGameRoot->worldRuntime0A30).fieldGrid;
+  if (((0 < factionValueOrCellIndex) && (0 < counterOffsetOrCellRow)) && (activeFieldGrid != (FieldGridAsset *)0x0)) {
+    if ((factionValueOrCellIndex + 1 < (int)activeFieldGrid->gridWidth) && (counterOffsetOrCellRow + 1 < (int)activeFieldGrid->gridHeight)) {
+      factionValueOrCellIndex = counterOffsetOrCellRow * activeFieldGrid->gridWidth + factionValueOrCellIndex;
+      activeFieldGrid->cells[factionValueOrCellIndex].armyRuntimeSavedOffset6C = 0;
+      activeFieldGrid->cells[factionValueOrCellIndex].resourceExtractionDescriptor7C = 0;
     }
   }
   return;
@@ -590,26 +590,26 @@ ArmyPlacement_ReleaseFactionCapacity
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  byte *pbVar1;
-  dword dVar2;
-  int iVar3;
-  int iVar4;
+  byte *capacityCounter;
+  dword capacityContribution;
+  int factionOffsetOrCapacityTotal;
+  int counterOffset;
   
-  dVar2 = modelDefinition[0x10].flags;
-  iVar3 = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex * 0x740;
-  iVar4 = iVar3 + 4;
+  capacityContribution = modelDefinition[0x10].flags;
+  factionOffsetOrCapacityTotal = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex * 0x740;
+  counterOffset = factionOffsetOrCapacityTotal + 4;
   if (modelDefinition[0x10].byteSize != 0) {
-    iVar4 = iVar3 + 0x14;
+    counterOffset = factionOffsetOrCapacityTotal + 0x14;
   }
-  iVar3 = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar4 + -0x78);
-  if ((((int)modelRuntime->definitionValue60_3C < 2) && (iVar3 != 0)) &&
+  factionOffsetOrCapacityTotal = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + counterOffset + -0x78);
+  if ((((int)modelRuntime->definitionValue60_3C < 2) && (factionOffsetOrCapacityTotal != 0)) &&
      (((modelRuntime->classState).classStateEC & 0x20) == 0)) {
-    *(int *)(iVar4 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
-         *(int *)(iVar4 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
-         (int)(((longlong)(int)dVar2 * (longlong)*(int *)(iVar4 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)iVar3);
+    *(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
+         *(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
+         (int)(((longlong)(int)capacityContribution * (longlong)*(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)factionOffsetOrCapacityTotal);
   }
-  pbVar1 = g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar4 + -0x78;
-  *(dword *)pbVar1 = *(int *)pbVar1 - dVar2;
+  capacityCounter = g_GameFactionRuntimeImage.records[0].reserved78_87 + counterOffset + -0x78;
+  *(dword *)capacityCounter = *(int *)capacityCounter - capacityContribution;
   return;
 }
 
@@ -625,41 +625,41 @@ ArmyPlacement_ReleaseClassStateReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  dword *pdVar1;
-  sdword *psVar2;
-  ModelRuntimeArmyLinkOrState4 *pMVar3;
-  int iVar4;
-  ModelRuntimeSlot *modelSlot1;
-  uint uVar5;
-  ModelRuntimeSlot *modelSlot2;
+  dword *classCounter;
+  sdword *reservationBits;
+  ModelRuntimeArmyLinkOrState4 *armyLinkState;
+  int remainingCount;
+  ModelRuntimeSlot *slotCursor;
+  uint reservationBit;
+  ModelRuntimeSlot *linkedModelSlot;
   
-  modelSlot2 = (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime;
-  if (modelSlot2 != (ModelRuntimeSlot *)0x0) {
-    iVar4 = 0xd;
-    uVar5 = 1;
-    modelSlot1 = modelSlot2;
+  linkedModelSlot = (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime;
+  if (linkedModelSlot != (ModelRuntimeSlot *)0x0) {
+    remainingCount = 0xd;
+    reservationBit = 1;
+    slotCursor = linkedModelSlot;
     do {
       if ((((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->armyAssetId ==
-           (modelSlot1->classLinkState).classState78) &&
-         (((modelSlot2->classState).classStateB4 & uVar5) != 0)) {
-        pdVar1 = &(modelSlot2->classLinkState).classState70;
-        *pdVar1 = *pdVar1 + 1;
-        psVar2 = &(modelSlot2->classState).classStateB4;
-        *psVar2 = *psVar2 & (uVar5 ^ 0xffffffff);
+           (slotCursor->classLinkState).classState78) &&
+         (((linkedModelSlot->classState).classStateB4 & reservationBit) != 0)) {
+        classCounter = &(linkedModelSlot->classLinkState).classState70;
+        *classCounter = *classCounter + 1;
+        reservationBits = &(linkedModelSlot->classState).classStateB4;
+        *reservationBits = *reservationBits & (reservationBit ^ 0xffffffff);
         if (((modelRuntime->classState).classStateEC & 0x20) != 0) {
           return;
         }
-        (modelSlot1->classLinkState).classState78 = 0;
-        pMVar3 = &(modelSlot2->classLinkState).armyLinkOrState6C;
-        pMVar3->armyRuntime = (ArmyRuntimeSlot *)(pMVar3->classState - 1);
-        pdVar1 = &(modelSlot2->classLinkState).classState70;
-        *pdVar1 = *pdVar1 - 1;
+        (slotCursor->classLinkState).classState78 = 0;
+        armyLinkState = &(linkedModelSlot->classLinkState).armyLinkOrState6C;
+        armyLinkState->armyRuntime = (ArmyRuntimeSlot *)(armyLinkState->classState - 1);
+        classCounter = &(linkedModelSlot->classLinkState).classState70;
+        *classCounter = *classCounter - 1;
         return;
       }
-      modelSlot1 = (ModelRuntimeSlot *)&modelSlot1->rootModelNodeOrSavedOffset;
-      uVar5 = uVar5 * 2;
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      slotCursor = (ModelRuntimeSlot *)&slotCursor->rootModelNodeOrSavedOffset;
+      reservationBit = reservationBit * 2;
+      remainingCount = remainingCount + -1;
+    } while (remainingCount != 0);
   }
   return;
 }
@@ -702,29 +702,29 @@ ArmyCollision_TestPointAgainstRuntimeListCf
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
   Q12 queryRadiusQ12;
-  WorldOwnerListNode100 *worldNode1;
-  bool bVar1;
+  WorldOwnerListNode100 *ownerNode;
+  bool hit;
   
   intervalRadius = *(int *)(modelDefinition + 0xdc);
-  worldNode1 = worldRuntime->ownerListHead;
-  if ((intervalRadius != 0) && (worldNode1 != (WorldOwnerListNode100 *)0x0)) {
+  ownerNode = worldRuntime->ownerListHead;
+  if ((intervalRadius != 0) && (ownerNode != (WorldOwnerListNode100 *)0x0)) {
     firstMaskHigh = DepthInterval_BuildBinMask(intervalRadius,worldYQ12);
     firstMaskLow = DepthInterval_BuildBinMask(intervalRadius,worldXQ12);
     do {
-      if (worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        bVar1 = DepthBinMasks_OverlapCf
-                          (firstMaskLow,firstMaskHigh,worldNode1->modelDepthBinMaskFar,
-                           worldNode1->modelDepthBinMaskNear);
-        if (bVar1) {
-          bVar1 = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                            (intervalRadius,worldXQ12,worldYQ12,worldNode1->runtimePayload);
-          if (bVar1) {
+      if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+        hit = DepthBinMasks_OverlapCf
+                          (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
+                           ownerNode->modelDepthBinMaskNear);
+        if (hit) {
+          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                            (intervalRadius,worldXQ12,worldYQ12,ownerNode->runtimePayload);
+          if (hit) {
             return true;
           }
         }
       }
-      worldNode1 = worldNode1->nextNode;
-    } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != (WorldOwnerListNode100 *)0x0);
   }
   return false;
 }
@@ -746,43 +746,43 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
           WorldRuntimeContext *worldRuntime)
 
 {
-  ModelRuntimeNode *pMVar1;
-  dword queryRadiusQ12_00;
+  ModelRuntimeNode *currentModelNode;
+  dword clearanceRadiusQ12;
   ArmyRuntimeSlot *armyRuntime;
   Q12 queryRadiusQ12;
-  bool bVar2;
-  ArmyCollisionFindEaxCf5 AVar3;
-  ArmyCollisionFindEaxCf5 AVar4;
+  bool hit;
+  ArmyCollisionFindEaxCf5 notFound;
+  ArmyCollisionFindEaxCf5 found;
   ModelRuntimeNode *candidateModelNode;
   
-  pMVar1 = currentRuntime->modelNodeRuntime;
-  queryRadiusQ12_00 = currentRuntime->modelDefinition->placementRadiusOrClearanceDC;
+  currentModelNode = currentRuntime->modelNodeRuntime;
+  clearanceRadiusQ12 = currentRuntime->modelDefinition->placementRadiusOrClearanceDC;
   candidateModelNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-  if (queryRadiusQ12_00 != 0) {
+  if (clearanceRadiusQ12 != 0) {
     for (; candidateModelNode != (ModelRuntimeNode *)0x0;
         candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
       if (((((candidateModelNode->ownerClassId == MODEL_RUNTIME_CLASS_00) &&
-            (bVar2 = DepthBinMasks_OverlapCf
+            (hit = DepthBinMasks_OverlapCf
                                (currentRuntime->modelNodeRuntime->depthBinMaskFar,
                                 currentRuntime->modelNodeRuntime->depthBinMaskNear,
                                 candidateModelNode->depthBinMaskFar,
-                                candidateModelNode->depthBinMaskNear), bVar2)) &&
+                                candidateModelNode->depthBinMaskNear), hit)) &&
            (armyRuntime = (candidateModelNode->runtimePayload).armyRuntime,
-           pMVar1 != candidateModelNode)) &&
+           currentModelNode != candidateModelNode)) &&
           ((currentRuntime == (RuntimeCollisionQueryViewF4 *)0x0 ||
            ((armyRuntime != currentRuntime->linkedRuntimeF0 &&
             ((ArmyRuntimeSlot *)currentRuntime != armyRuntime->linkedArmyRuntime)))))) &&
-         (bVar2 = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                            (queryRadiusQ12_00,worldXQ12,worldYQ12,armyRuntime), bVar2)) {
-        AVar4.carry = true;
-        AVar4.eax = (dword)armyRuntime;
-        return AVar4;
+         (hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                            (clearanceRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit)) {
+        found.carry = true;
+        found.eax = (dword)armyRuntime;
+        return found;
       }
     }
   }
-  AVar3.eax = 0;
-  AVar3.carry = false;
-  return AVar3;
+  notFound.eax = 0;
+  notFound.carry = false;
+  return notFound;
 }
 
 
@@ -804,31 +804,31 @@ ArmyPlacement_DispatchAssetAtFieldPoint
           UiRootNode *inGameRoot)
 
 {
-  dword dVar1;
+  dword assetClassIndex;
   ArmyAssetRecordPrefix *modelDefinition;
-  ArmyRegistryEaxCf5_51b6d0 AVar2;
-  FieldGridHeightEaxCf5 FVar3;
-  ArmyPlacementDispatchEaxCf5 AVar4;
+  ArmyRegistryEaxCf5_51b6d0 lookupResult;
+  FieldGridHeightEaxCf5 terrainHeight;
+  ArmyPlacementDispatchEaxCf5 dispatchResult;
   
-  AVar2 = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  if (!AVar2.carry) {
-    AVar2 = THANDOR_BITCAST(ModelDefinitionLookupEaxCf5, ArmyRegistryEaxCf5_51b6d0, ModelDefinitionRegistry_FindByIdWithErrorCf
-                      (*(PckModelDefinitionIdCatalog *)((AVar2.eax)->rootNodeOffsetOrPointer + 0x20)
+  lookupResult = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  if (!lookupResult.carry) {
+    lookupResult = THANDOR_BITCAST(ModelDefinitionLookupEaxCf5, ArmyRegistryEaxCf5_51b6d0, ModelDefinitionRegistry_FindByIdWithErrorCf
+                      (*(PckModelDefinitionIdCatalog *)((lookupResult.eax)->rootNodeOffsetOrPointer + 0x20)
                       ));
-    modelDefinition = AVar2.eax;
-    if (!AVar2.carry) {
-      dVar1 = modelDefinition[4].rootNodeOffsetOrPointer;
-      FVar3 = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
+    modelDefinition = lookupResult.eax;
+    if (!lookupResult.carry) {
+      assetClassIndex = modelDefinition[4].rootNodeOffsetOrPointer;
+      terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
-      AVar2 = THANDOR_BITCAST(ArmyPlacementDispatchEaxCf5, ArmyRegistryEaxCf5_51b6d0, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[dVar1]
-              )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,FVar3.heightQ12,
+      lookupResult = THANDOR_BITCAST(ArmyPlacementDispatchEaxCf5, ArmyRegistryEaxCf5_51b6d0, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
+              )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,terrainHeight.heightQ12,
                 worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
                 (WorldRuntimeContext *)inGameRoot));
     }
   }
-  AVar4.eax = (dword)AVar2.eax;
-  AVar4.carry = AVar2.carry;
-  return AVar4;
+  dispatchResult.eax = (dword)lookupResult.eax;
+  dispatchResult.carry = lookupResult.carry;
+  return dispatchResult;
 }
 
 
@@ -851,42 +851,42 @@ ArmyPlacementCollision_TestPointAgainstRuntimeListCf
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  int iVar1;
+  int modelClassId;
   DepthBinMask32 firstMaskHigh;
   DepthBinMask32 firstMaskLow;
-  Q12 queryRadiusQ12_00;
-  WorldOwnerListNode100 *worldNode1;
-  bool bVar2;
+  Q12 unusedRadiusQ12;
+  WorldOwnerListNode100 *ownerNode;
+  bool hit;
   
-  worldNode1 = worldRuntime->ownerListHead;
-  if ((queryRadiusQ12 != 0) && (worldNode1 != (WorldOwnerListNode100 *)0x0)) {
+  ownerNode = worldRuntime->ownerListHead;
+  if ((queryRadiusQ12 != 0) && (ownerNode != (WorldOwnerListNode100 *)0x0)) {
     firstMaskHigh = DepthInterval_BuildBinMask(queryRadiusQ12,worldYQ12);
     firstMaskLow = DepthInterval_BuildBinMask(queryRadiusQ12,worldXQ12);
     do {
-      if (worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        iVar1 = *(int *)(*(int *)worldNode1->runtimePayload + 0x4c);
-        bVar2 = DepthBinMasks_OverlapCf
-                          (firstMaskLow,firstMaskHigh,worldNode1->modelDepthBinMaskFar,
-                           worldNode1->modelDepthBinMaskNear);
-        if (((bVar2) &&
+      if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+        modelClassId = *(int *)(*(int *)ownerNode->runtimePayload + 0x4c);
+        hit = DepthBinMasks_OverlapCf
+                          (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
+                           ownerNode->modelDepthBinMaskNear);
+        if (((hit) &&
             ((((placementFilterFlags & 4) == 0 ||
-              (*(int *)(&g_ArmyRuntimeDepthBinClassByModelClass + iVar1 * 4) == 0x90)) &&
-             (iVar1 != 0)))) && (iVar1 != 0xc)) {
-          bVar2 = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                            (queryRadiusQ12,worldXQ12,worldYQ12,worldNode1->runtimePayload);
-          if (bVar2) {
+              (*(int *)(&g_ArmyRuntimeDepthBinClassByModelClass + modelClassId * 4) == 0x90)) &&
+             (modelClassId != 0)))) && (modelClassId != 0xc)) {
+          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                            (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);
+          if (hit) {
             return true;
           }
-          if ((iVar1 == 0xd) &&
-             (bVar2 = ArmyPlacementCandidate_TestModelAnchorDistanceCf
-                                (queryRadiusQ12,worldXQ12,worldYQ12,worldNode1->runtimePayload),
-             bVar2)) {
+          if ((modelClassId == 0xd) &&
+             (hit = ArmyPlacementCandidate_TestModelAnchorDistanceCf
+                                (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload),
+             hit)) {
             return true;
           }
         }
       }
-      worldNode1 = worldNode1->nextNode;
-    } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != (WorldOwnerListNode100 *)0x0);
   }
   return false;
 }
@@ -911,44 +911,44 @@ ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
 
 {
   ArmyRuntimeSlot *armyRuntime;
-  dword dVar1;
-  WorldOwnerListNode100 *worldNode2;
+  dword modelClassId;
+  WorldOwnerListNode100 *candidateNode;
   char *queryRadiusQ12;
-  bool bVar2;
-  WorldOwnerListNode100 *worldNode1;
+  bool hit;
+  WorldOwnerListNode100 *ownerNode;
   
   if (candidateRuntimeOrRadiusQ12 < (IMAGE_DOS_HEADER *)0x400000) {
     queryRadiusQ12 = candidateRuntimeOrRadiusQ12->e_magic + 1;
-    worldNode2 = (WorldOwnerListNode100 *)0x0;
+    candidateNode = (WorldOwnerListNode100 *)0x0;
   }
   else {
-    worldNode2 = *(WorldOwnerListNode100 **)&candidateRuntimeOrRadiusQ12->e_cp;
+    candidateNode = *(WorldOwnerListNode100 **)&candidateRuntimeOrRadiusQ12->e_cp;
     queryRadiusQ12 = *(char **)(*(int *)candidateRuntimeOrRadiusQ12 + 0xdc);
   }
-  worldNode1 = worldRuntime->ownerListHead;
+  ownerNode = worldRuntime->ownerListHead;
   if (queryRadiusQ12 != (char *)0x0) {
-    for (; worldNode1 != (WorldOwnerListNode100 *)0x0; worldNode1 = worldNode1->nextNode) {
-      if (((((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+    for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+      if (((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             ((((candidateRuntimeOrRadiusQ12 < &IMAGE_DOS_HEADER_00400000 ||
-               (bVar2 = DepthBinMasks_OverlapCf
+               (hit = DepthBinMasks_OverlapCf
                                   (*(DepthBinMask32 *)
                                     (*(int *)&candidateRuntimeOrRadiusQ12->e_cp + 0xb8),
                                    *(DepthBinMask32 *)
                                     (*(int *)&candidateRuntimeOrRadiusQ12->e_cp + 0xb4),
-                                   worldNode1->modelDepthBinMaskFar,
-                                   worldNode1->modelDepthBinMaskNear), bVar2)) &&
-              (armyRuntime = worldNode1->runtimePayload, worldNode2 != worldNode1)) &&
-             (worldNode1 != excludedWorldObject)))) &&
+                                   ownerNode->modelDepthBinMaskFar,
+                                   ownerNode->modelDepthBinMaskNear), hit)) &&
+              (armyRuntime = ownerNode->runtimePayload, candidateNode != ownerNode)) &&
+             (ownerNode != excludedWorldObject)))) &&
            ((candidateRuntimeOrRadiusQ12 < &IMAGE_DOS_HEADER_00400000 ||
             ((armyRuntime != *(ArmyRuntimeSlot **)(candidateRuntimeOrRadiusQ12[1].e_program + 0x30)
              && ((ArmyRuntimeSlot *)candidateRuntimeOrRadiusQ12 != armyRuntime->linkedArmyRuntime)))
-            ))) && ((dVar1 = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                             definitionValue9C_4C, dVar1 != 0 && (dVar1 != 0xc)))) &&
-         ((bVar2 = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                             ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,armyRuntime), bVar2 ||
-          ((dVar1 == 0xd &&
-           (bVar2 = ArmyPlacementCandidate_TestModelAnchorDistanceCf
-                              ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,armyRuntime), bVar2)))))) {
+            ))) && ((modelClassId = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+                             definitionValue9C_4C, modelClassId != 0 && (modelClassId != 0xc)))) &&
+         ((hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                             ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit ||
+          ((modelClassId == 0xd &&
+           (hit = ArmyPlacementCandidate_TestModelAnchorDistanceCf
+                              ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit)))))) {
         return true;
       }
     }
@@ -971,73 +971,73 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
-  ModelDefinitionRuntimeSemanticView280 *pMVar1;
-  dword dVar2;
-  ArmyRuntimeSlot *pAVar3;
-  dword dVar4;
-  longlong lVar5;
-  longlong lVar6;
-  int iVar7;
-  int iVar8;
-  ModelRuntimeNode *modelNode1;
-  bool bVar9;
-  code *pcVar10;
-  ModelRuntimeNode *modelNode2;
+  ModelDefinitionRuntimeSemanticView280 *placementDefinition;
+  dword ownClearanceQ12;
+  ArmyRuntimeSlot *ownerArmy;
+  dword neighborClearanceQ12;
+  longlong deltaYSquared;
+  longlong remainingSquared;
+  int heightCopyOrDeltaX;
+  int heightRadiusOrDeltaY;
+  ModelRuntimeNode *ownerNode;
+  bool blocked;
+  code *terrainTest;
+  ModelRuntimeNode *rootNode;
   
-  modelNode2 = modelRuntime->rootModelNode;
-  pMVar1 = modelRuntime->modelDefinition;
-  dVar2 = pMVar1->placementFlags1A8;
-  iVar8 = ((modelNode2->worldTransform).translation.z - pMVar1->placementHeightOffsetQ12) -
-          ((modelNode2->modelPayload).modelResource)->placementHeightOffsetQ12;
-  pcVar10 = TerrainHeightBand_TestAroundWorldPoint;
-  if (pMVar1->placementContactKindIndex278 == 1) {
-    pcVar10 = TerrainAuxHeightThreshold_TestAroundWorldPoint;
+  rootNode = modelRuntime->rootModelNode;
+  placementDefinition = modelRuntime->modelDefinition;
+  ownClearanceQ12 = placementDefinition->placementFlags1A8;
+  heightRadiusOrDeltaY = ((rootNode->worldTransform).translation.z - placementDefinition->placementHeightOffsetQ12) -
+          ((rootNode->modelPayload).modelResource)->placementHeightOffsetQ12;
+  terrainTest = TerrainHeightBand_TestAroundWorldPoint;
+  if (placementDefinition->placementContactKindIndex278 == 1) {
+    terrainTest = TerrainAuxHeightThreshold_TestAroundWorldPoint;
   }
-  iVar7 = iVar8;
-  bVar9 = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
-                    ((WorldOwnerListNode100 *)modelNode2,(modelNode2->worldTransform).translation.y,
-                     (modelNode2->worldTransform).translation.x,(IMAGE_DOS_HEADER *)modelRuntime,
+  heightCopyOrDeltaX = heightRadiusOrDeltaY;
+  blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
+                    ((WorldOwnerListNode100 *)rootNode,(rootNode->worldTransform).translation.y,
+                     (rootNode->worldTransform).translation.x,(IMAGE_DOS_HEADER *)modelRuntime,
                      worldRuntime);
-  if ((!bVar9) &&
-     ((*pcVar10)(pMVar1->placementRadiusOrClearanceDC,iVar8,
-                 (modelNode2->worldTransform).translation.y,
-                 (modelNode2->worldTransform).translation.x,worldRuntime->fieldGrid,pcVar10,iVar7),
-     !bVar9)) {
-    modelNode2 = modelRuntime->rootModelNode;
-    pAVar3 = modelRuntime->ownerArmyRuntime;
+  if ((!blocked) &&
+     ((*terrainTest)(placementDefinition->placementRadiusOrClearanceDC,heightRadiusOrDeltaY,
+                 (rootNode->worldTransform).translation.y,
+                 (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid,terrainTest,heightCopyOrDeltaX),
+     !blocked)) {
+    rootNode = modelRuntime->rootModelNode;
+    ownerArmy = modelRuntime->ownerArmyRuntime;
     if ((g_UiCommandRuntimeFlags & 4) != 0) {
       return false;
     }
-    bVar9 = FieldGrid_TestWorldPointBlockedCf
-                      (pAVar3->factionIndex,(modelNode2->worldTransform).translation.y,
-                       (modelNode2->worldTransform).translation.x,worldRuntime->fieldGrid);
-    if (!bVar9) {
-      modelNode1 = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-      if (modelNode1 == (ModelRuntimeNode *)0x0) {
+    blocked = FieldGrid_TestWorldPointBlockedCf
+                      (ownerArmy->factionIndex,(rootNode->worldTransform).translation.y,
+                       (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+    if (!blocked) {
+      ownerNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+      if (ownerNode == (ModelRuntimeNode *)0x0) {
         return false;
       }
       do {
-        if ((((modelNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (modelNode1 != modelNode2))
-            && (dVar4 = ((((modelNode1->runtimePayload).armyRuntime)->modelRuntimeOrSavedOffset).
+        if ((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (ownerNode != rootNode))
+            && (neighborClearanceQ12 = ((((ownerNode->runtimePayload).armyRuntime)->modelRuntimeOrSavedOffset).
                         modelRuntime)->attachments140[2].reserved1C,
-               pAVar3->factionIndex ==
-               (((modelNode1->runtimePayload).armyRuntime)->linkedEntityRuntime->common).ownership.
-               ownerIndex)) && (dVar4 != 0)) {
-          iVar8 = dVar4 + dVar2;
-          iVar7 = (modelNode2->worldTransform).translation.x -
-                  (modelNode1->worldTransform).translation.x;
-          lVar6 = (longlong)iVar8 * (longlong)iVar8 - (longlong)iVar7 * (longlong)iVar7;
-          if ((-1 < lVar6) &&
-             (iVar8 = (modelNode2->worldTransform).translation.y -
-                      (modelNode1->worldTransform).translation.y,
-             lVar5 = (longlong)iVar8 * (longlong)iVar8,
-             -1 < (int)(((int)((ulonglong)lVar6 >> 0x20) - (int)((ulonglong)lVar5 >> 0x20)) -
-                       (uint)((uint)lVar6 < (uint)lVar5)))) {
+               ownerArmy->factionIndex ==
+               (((ownerNode->runtimePayload).armyRuntime)->linkedEntityRuntime->common).ownership.
+               ownerIndex)) && (neighborClearanceQ12 != 0)) {
+          heightRadiusOrDeltaY = neighborClearanceQ12 + ownClearanceQ12;
+          heightCopyOrDeltaX = (rootNode->worldTransform).translation.x -
+                  (ownerNode->worldTransform).translation.x;
+          remainingSquared = (longlong)heightRadiusOrDeltaY * (longlong)heightRadiusOrDeltaY - (longlong)heightCopyOrDeltaX * (longlong)heightCopyOrDeltaX;
+          if ((-1 < remainingSquared) &&
+             (heightRadiusOrDeltaY = (rootNode->worldTransform).translation.y -
+                      (ownerNode->worldTransform).translation.y,
+             deltaYSquared = (longlong)heightRadiusOrDeltaY * (longlong)heightRadiusOrDeltaY,
+             -1 < (int)(((int)((ulonglong)remainingSquared >> 0x20) - (int)((ulonglong)deltaYSquared >> 0x20)) -
+                       (uint)((uint)remainingSquared < (uint)deltaYSquared)))) {
             return false;
           }
         }
-        modelNode1 = (ModelRuntimeNode *)(modelNode1->common).nextNode;
-      } while (modelNode1 != (ModelRuntimeNode *)0x0);
+        ownerNode = (ModelRuntimeNode *)(ownerNode->common).nextNode;
+      } while (ownerNode != (ModelRuntimeNode *)0x0);
     }
   }
   return true;
@@ -1067,103 +1067,103 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
           ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  ArmyPlacementContactKindIndex32 AVar1;
-  longlong lVar2;
-  longlong lVar3;
-  longlong lVar4;
-  longlong lVar5;
-  int iVar6;
-  dword dVar7;
-  WorldOwnerListNode100 *worldNode1;
-  bool bVar8;
-  TerrainPlacementTestEaxCf5 TVar9;
-  ArmyPlacementCandidateEaxCf5 AVar10;
-  ArmyPlacementCandidateEaxCf5 AVar11;
-  int local_18;
-  UInt64Half32 local_c;
-  UInt64Half32 local_8;
+  ArmyPlacementContactKindIndex32 contactKindIndex;
+  longlong radiusSquaredOrDelta;
+  longlong remainingSquared;
+  longlong deltaYSquared;
+  longlong nearestDistanceSquared;
+  int recordOrDistanceTerm;
+  dword nearestDistanceQ12;
+  WorldOwnerListNode100 *ownerNode;
+  bool blocked;
+  TerrainPlacementTestEaxCf5 terrainTest;
+  ArmyPlacementCandidateEaxCf5 accepted;
+  ArmyPlacementCandidateEaxCf5 rejected;
+  int nearestClearanceQ12;
+  UInt64Half32 nearestDistanceLow;
+  UInt64Half32 nearestDistanceHigh;
   /* Was a leading pseudo-parameter for the incoming EAX, which shifted every argument of the
      nine-argument table dispatch. */
   int eaxContinuity = 0;
   
-  lVar5 = 0x7fffffffffffffff;
-  AVar1 = modelDefinition->placementContactKindIndex278;
-  bVar8 = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
+  nearestDistanceSquared = 0x7fffffffffffffff;
+  contactKindIndex = modelDefinition->placementContactKindIndex278;
+  blocked = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
                     (dispatchArg0,modelDefinition->placementRadiusOrClearanceDC,worldXQ12,worldYQ12,
                      worldRuntime);
-  if (!bVar8) {
-    TVar9.eax = 0;
-    TVar9.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[AVar1])
+  if (!blocked) {
+    terrainTest.eax = 0;
+    terrainTest.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[contactKindIndex])
                       (modelDefinition->placementRadiusOrClearanceDC,dispatchArg3,worldXQ12,
                        worldYQ12,worldRuntime->fieldGrid);
-    eaxContinuity = TVar9.eax;
-    if (!TVar9.carry) {
+    eaxContinuity = terrainTest.eax;
+    if (!terrainTest.carry) {
       if ((g_UiCommandRuntimeFlags & 4) == 0) {
-        worldNode1 = worldRuntime->ownerListHead;
-        bVar8 = FieldGrid_TestWorldPointBlockedCf
+        ownerNode = worldRuntime->ownerListHead;
+        blocked = FieldGrid_TestWorldPointBlockedCf
                           (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-        if (bVar8) goto LAB_00527ab0;
-        if (worldNode1 != (WorldOwnerListNode100 *)0x0) {
+        if (blocked) goto LAB_00527ab0;
+        if (ownerNode != (WorldOwnerListNode100 *)0x0) {
           do {
-            if (worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-              iVar6 = *(int *)worldNode1->runtimePayload;
-              eaxContinuity = *(uint *)(iVar6 + 0x19c);
+            if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+              recordOrDistanceTerm = *(int *)ownerNode->runtimePayload;
+              eaxContinuity = *(uint *)(recordOrDistanceTerm + 0x19c);
               if (((eaxContinuity != 0) &&
                   (*(ArmyPlacementDispatchArg7 *)
-                    (*(int *)((int)worldNode1->runtimePayload + 8) + 0xc) == dispatchArg7)) &&
+                    (*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) == dispatchArg7)) &&
                  ((eaxContinuity = eaxContinuity + placementClearancePaddingQ12,
-                  *(int *)(iVar6 + 0x4c) != 0x12 ||
+                  *(int *)(recordOrDistanceTerm + 0x4c) != 0x12 ||
                   (((dispatchArg0 & 1) == 0 &&
-                   ((*(uint *)((int)worldNode1->runtimePayload + 0xec) & 0x18) == 0)))))) {
-                iVar6 = eaxContinuity + modelDefinition->placementFlags1A8;
-                lVar2 = (longlong)iVar6 * (longlong)iVar6;
-                iVar6 = worldNode1->worldXQ12 - worldYQ12;
-                lVar3 = (longlong)iVar6 * (longlong)iVar6;
-                eaxContinuity = (int)lVar3;
-                lVar3 = lVar2 - lVar3;
-                if (-1 < lVar3) {
-                  iVar6 = worldNode1->worldYQ12 - worldXQ12;
-                  lVar4 = (longlong)iVar6 * (longlong)iVar6;
-                  eaxContinuity = (int)lVar4;
-                  lVar3 = lVar3 - lVar4;
-                  if (-1 < lVar3) {
+                   ((*(uint *)((int)ownerNode->runtimePayload + 0xec) & 0x18) == 0)))))) {
+                recordOrDistanceTerm = eaxContinuity + modelDefinition->placementFlags1A8;
+                radiusSquaredOrDelta = (longlong)recordOrDistanceTerm * (longlong)recordOrDistanceTerm;
+                recordOrDistanceTerm = ownerNode->worldXQ12 - worldYQ12;
+                remainingSquared = (longlong)recordOrDistanceTerm * (longlong)recordOrDistanceTerm;
+                eaxContinuity = (int)remainingSquared;
+                remainingSquared = radiusSquaredOrDelta - remainingSquared;
+                if (-1 < remainingSquared) {
+                  recordOrDistanceTerm = ownerNode->worldYQ12 - worldXQ12;
+                  deltaYSquared = (longlong)recordOrDistanceTerm * (longlong)recordOrDistanceTerm;
+                  eaxContinuity = (int)deltaYSquared;
+                  remainingSquared = remainingSquared - deltaYSquared;
+                  if (-1 < remainingSquared) {
                     if ((dispatchArg0 & 2) == 0) goto LAB_00527aa0;
-                    lVar2 = (lVar2 - lVar3) - lVar5;
-                    eaxContinuity = (int)lVar2;
-                    if (lVar2 < 0) {
-                      local_18 = *(int *)(*(int *)worldNode1->runtimePayload + 0x19c);
-                      lVar5 = lVar2 + lVar5;
+                    radiusSquaredOrDelta = (radiusSquaredOrDelta - remainingSquared) - nearestDistanceSquared;
+                    eaxContinuity = (int)radiusSquaredOrDelta;
+                    if (radiusSquaredOrDelta < 0) {
+                      nearestClearanceQ12 = *(int *)(*(int *)ownerNode->runtimePayload + 0x19c);
+                      nearestDistanceSquared = radiusSquaredOrDelta + nearestDistanceSquared;
                     }
                   }
                 }
               }
             }
-            local_8 = (UInt64Half32)((ulonglong)lVar5 >> 0x20);
-            local_c = (UInt64Half32)lVar5;
-            worldNode1 = worldNode1->nextNode;
-          } while (worldNode1 != (WorldOwnerListNode100 *)0x0);
-          if (((dispatchArg0 & 2) == 0) || (0x7ffffffeffffffff < lVar5)) goto LAB_00527ab0;
-          dVar7 = FixedMath_UInt64Sqrt(local_8,local_c);
-          iVar6 = dVar7 - local_18;
-          if (iVar6 < 0) {
-            iVar6 = 0;
+            nearestDistanceHigh = (UInt64Half32)((ulonglong)nearestDistanceSquared >> 0x20);
+            nearestDistanceLow = (UInt64Half32)nearestDistanceSquared;
+            ownerNode = ownerNode->nextNode;
+          } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+          if (((dispatchArg0 & 2) == 0) || (0x7ffffffeffffffff < nearestDistanceSquared)) goto LAB_00527ab0;
+          nearestDistanceQ12 = FixedMath_UInt64Sqrt(nearestDistanceHigh,nearestDistanceLow);
+          recordOrDistanceTerm = nearestDistanceQ12 - nearestClearanceQ12;
+          if (recordOrDistanceTerm < 0) {
+            recordOrDistanceTerm = 0;
           }
-          eaxContinuity = iVar6 - modelDefinition->placementFlags1A8;
+          eaxContinuity = recordOrDistanceTerm - modelDefinition->placementFlags1A8;
           if (eaxContinuity < 0) {
             eaxContinuity = 0;
           }
         }
       }
 LAB_00527aa0:
-      AVar10.carry = false;
-      AVar10.eax = eaxContinuity;
-      return AVar10;
+      accepted.carry = false;
+      accepted.eax = eaxContinuity;
+      return accepted;
     }
   }
 LAB_00527ab0:
-  AVar11.carry = true;
-  AVar11.eax = eaxContinuity;
-  return AVar11;
+  rejected.carry = true;
+  rejected.eax = eaxContinuity;
+  return rejected;
 }
 
 
@@ -1179,16 +1179,16 @@ ArmyPlacementCandidate_TestModelAnchorDistanceCf
 
 {
   ModelRuntimeNode *modelNodeRuntime;
-  dword dVar1;
-  ModelLookupEntryEaxCf5 MVar2;
-  ModelLocalPointRegs12 MVar3;
+  dword anchorDistanceQ12;
+  ModelLookupEntryEaxCf5 anchorLookup;
+  ModelLocalPointRegs12 anchorWorldPoint;
   
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
-  MVar2 = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource);
-  if (!MVar2.carry) {
-    MVar3 = ModelNodeRuntime_TransformLocalPointRegs(MVar2.entry,modelNodeRuntime);
-    dVar1 = FixedMath_Length2(MVar3.ecx - targetWorldXQ12,MVar3.eax - targetWorldYQ12);
-    if ((int)dVar1 <= queryRadiusQ12 + 0xc00) {
+  anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource);
+  if (!anchorLookup.carry) {
+    anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
+    anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.ecx - targetWorldXQ12,anchorWorldPoint.eax - targetWorldYQ12);
+    if ((int)anchorDistanceQ12 <= queryRadiusQ12 + 0xc00) {
       g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
       return true;
     }
@@ -1207,20 +1207,20 @@ ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ArmyRuntimeSlot *armyRuntime)
 
 {
-  longlong lVar1;
-  longlong lVar2;
-  int iVar3;
-  int iVar4;
+  longlong radiusSquared;
+  longlong distanceSquared;
+  int deltaXOrRadiusQ12;
+  int deltaYQ12;
   
   if ((((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC != 0) &&
       (queryRadiusQ12 != 0)) &&
-     (iVar3 = (armyRuntime->modelNodeRuntime->worldTransform).translation.x - worldYQ12,
-     iVar4 = (armyRuntime->modelNodeRuntime->worldTransform).translation.y - worldXQ12,
-     lVar2 = (longlong)iVar4 * (longlong)iVar4 + (longlong)iVar3 * (longlong)iVar3,
-     iVar3 = (((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC +
-             queryRadiusQ12, lVar1 = (longlong)iVar3 * (longlong)iVar3,
-     -1 < (int)(((int)((ulonglong)lVar1 >> 0x20) - (int)((ulonglong)lVar2 >> 0x20)) -
-               (uint)((uint)lVar1 < (uint)lVar2)))) {
+     (deltaXOrRadiusQ12 = (armyRuntime->modelNodeRuntime->worldTransform).translation.x - worldYQ12,
+     deltaYQ12 = (armyRuntime->modelNodeRuntime->worldTransform).translation.y - worldXQ12,
+     distanceSquared = (longlong)deltaYQ12 * (longlong)deltaYQ12 + (longlong)deltaXOrRadiusQ12 * (longlong)deltaXOrRadiusQ12,
+     deltaXOrRadiusQ12 = (((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC +
+             queryRadiusQ12, radiusSquared = (longlong)deltaXOrRadiusQ12 * (longlong)deltaXOrRadiusQ12,
+     -1 < (int)(((int)((ulonglong)radiusSquared >> 0x20) - (int)((ulonglong)distanceSquared >> 0x20)) -
+               (uint)((uint)radiusSquared < (uint)distanceSquared)))) {
     return true;
   }
   return false;

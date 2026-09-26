@@ -23,26 +23,26 @@ GraphicsPrimitiveQueue_RadixSortForRendering
           (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
 
 {
-  int *piVar1;
-  GraphicsPrimitivePacket *pGVar2;
-  uint *puVar3;
-  uint uVar4;
-  GraphicsPrimitiveQueueNode *pGVar5;
+  int *bucketWordPtr;
+  GraphicsPrimitivePacket *packetOrLinkNode;
+  uint *bucketWriteCursor;
+  uint bucketIndexOrOffset;
+  GraphicsPrimitiveQueueNode *nodeCursor;
   GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor1;
   GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor2;
-  GraphicsPrimitivePacket *pGVar6;
+  GraphicsPrimitivePacket *previousLinkNode;
   GraphicsPrimitivePacket *primitivePacketCursor3;
   GraphicsPrimitivePacket *primitivePacketCursor2;
-  uint uVar7;
-  int iVar8;
-  dword dVar9;
-  dword dVar10;
-  GraphicsPrimitiveQueueNode *pGVar11;
+  uint nodeSortKey;
+  int bucketLoopOrVertexBase;
+  dword remainingOrBucketCount;
+  dword remainingNodeCount;
+  GraphicsPrimitiveQueueNode *readNode;
   GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor3;
-  dword *pdVar12;
+  dword *bucketWordCursor;
   dword *sortWordCursor2;
   GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor4;
-  GraphicsPrimitivePacket *pGVar13;
+  GraphicsPrimitivePacket *nextLinkNode;
   GraphicsPrimitivePacket *primitivePacketCursor4;
   undefined8 mm0PackedValue0;
   undefined8 mm1PackedValue0;
@@ -50,216 +50,216 @@ GraphicsPrimitiveQueue_RadixSortForRendering
   GraphicsPrimitivePacket *primitivePacketCursor1;
   uint *sortWordCursor1;
   
-  dVar10 = queue->count;
+  remainingNodeCount = queue->count;
   primitiveQueueNodeCursor4 = queue->radixScratchPool;
   primitiveQueueNodeCursor2 = queue->primaryNodes;
-  if (dVar10 != 0) {
-    dVar9 = dVar10;
-    pGVar5 = primitiveQueueNodeCursor2;
-    if (dVar10 != 1) {
+  if (remainingNodeCount != 0) {
+    remainingOrBucketCount = remainingNodeCount;
+    nodeCursor = primitiveQueueNodeCursor2;
+    if (remainingNodeCount != 1) {
       do {
-        primitivePacketCursor1 = pGVar5->packet;
+        primitivePacketCursor1 = nodeCursor->packet;
         if ((primitivePacketCursor1->renderFlags & 0x7000) == 0) {
-          uVar7 = ((uint)primitivePacketCursor1->textureEntry | 0xb0000000) -
+          nodeSortKey = ((uint)primitivePacketCursor1->textureEntry | 0xb0000000) -
                   (primitivePacketCursor1->renderFlags & 0x30000000);
         }
         else {
-          uVar7 = primitivePacketCursor1->vertices[0].depth +
+          nodeSortKey = primitivePacketCursor1->vertices[0].depth +
                   primitivePacketCursor1->vertices[1].depth +
                   primitivePacketCursor1->vertices[2].depth & 0x7fffffff;
         }
-        pGVar5->sortKey = uVar7;
-        pGVar5 = pGVar5 + 1;
-        dVar9 = dVar9 - 1;
-      } while (dVar9 != 0);
-      pdVar12 = g_PrimitiveRadixBucketWords;
-      for (iVar8 = 0x100; dVar9 = dVar10, pGVar5 = primitiveQueueNodeCursor2, iVar8 != 0;
-          iVar8 = iVar8 + -1) {
-        *pdVar12 = 0;
-        pdVar12 = pdVar12 + 1;
+        nodeCursor->sortKey = nodeSortKey;
+        nodeCursor = nodeCursor + 1;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+      } while (remainingOrBucketCount != 0);
+      bucketWordCursor = g_PrimitiveRadixBucketWords;
+      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor2, bucketLoopOrVertexBase != 0;
+          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+        *bucketWordCursor = 0;
+        bucketWordCursor = bucketWordCursor + 1;
       }
       do {
-        g_PrimitiveRadixBucketWords[pGVar5->sortKey & 0xff] =
-             g_PrimitiveRadixBucketWords[pGVar5->sortKey & 0xff] + 1;
-        dVar9 = dVar9 - 1;
-        pGVar5 = pGVar5 + 1;
-      } while (dVar9 != 0);
-      iVar8 = 0x100;
-      pdVar12 = g_PrimitiveRadixBucketWords + 0xff;
-      pGVar5 = primitiveQueueNodeCursor4;
+        g_PrimitiveRadixBucketWords[nodeCursor->sortKey & 0xff] =
+             g_PrimitiveRadixBucketWords[nodeCursor->sortKey & 0xff] + 1;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+        nodeCursor = nodeCursor + 1;
+      } while (remainingOrBucketCount != 0);
+      bucketLoopOrVertexBase = 0x100;
+      bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
+      nodeCursor = primitiveQueueNodeCursor4;
       do {
-        dVar9 = *pdVar12;
-        *pdVar12 = (dword)pGVar5;
-        pdVar12 = pdVar12 + -1;
-        pGVar5 = pGVar5 + dVar9;
-        iVar8 = iVar8 + -1;
-        dVar9 = dVar10;
-        pGVar11 = primitiveQueueNodeCursor2;
-      } while (iVar8 != 0);
+        remainingOrBucketCount = *bucketWordCursor;
+        *bucketWordCursor = (dword)nodeCursor;
+        bucketWordCursor = bucketWordCursor + -1;
+        nodeCursor = nodeCursor + remainingOrBucketCount;
+        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        remainingOrBucketCount = remainingNodeCount;
+        readNode = primitiveQueueNodeCursor2;
+      } while (bucketLoopOrVertexBase != 0);
       do {
-        uVar7 = pGVar11->sortKey;
-        pGVar2 = pGVar11->packet;
-        uVar4 = uVar7 & 0xff;
-        puVar3 = (uint *)g_PrimitiveRadixBucketWords[uVar4];
-        g_PrimitiveRadixBucketWords[uVar4] = g_PrimitiveRadixBucketWords[uVar4] + 0x10;
-        *puVar3 = uVar7;
-        puVar3[1] = (uint)pGVar2;
-        dVar9 = dVar9 - 1;
-        pGVar11 = pGVar11 + 1;
-      } while (dVar9 != 0);
-      pdVar12 = g_PrimitiveRadixBucketWords;
-      for (iVar8 = 0x100; dVar9 = dVar10, pGVar5 = primitiveQueueNodeCursor4, iVar8 != 0;
-          iVar8 = iVar8 + -1) {
-        *pdVar12 = 0;
-        pdVar12 = pdVar12 + 1;
+        nodeSortKey = readNode->sortKey;
+        packetOrLinkNode = readNode->packet;
+        bucketIndexOrOffset = nodeSortKey & 0xff;
+        bucketWriteCursor = (uint *)g_PrimitiveRadixBucketWords[bucketIndexOrOffset];
+        g_PrimitiveRadixBucketWords[bucketIndexOrOffset] = g_PrimitiveRadixBucketWords[bucketIndexOrOffset] + 0x10;
+        *bucketWriteCursor = nodeSortKey;
+        bucketWriteCursor[1] = (uint)packetOrLinkNode;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+        readNode = readNode + 1;
+      } while (remainingOrBucketCount != 0);
+      bucketWordCursor = g_PrimitiveRadixBucketWords;
+      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor4, bucketLoopOrVertexBase != 0;
+          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+        *bucketWordCursor = 0;
+        bucketWordCursor = bucketWordCursor + 1;
       }
       do {
-        piVar1 = (int *)((int)g_PrimitiveRadixBucketWords + ((pGVar5->sortKey & 0xff00) >> 6));
-        *piVar1 = *piVar1 + 1;
-        dVar9 = dVar9 - 1;
-        pGVar5 = pGVar5 + 1;
-      } while (dVar9 != 0);
-      iVar8 = 0x100;
-      pdVar12 = g_PrimitiveRadixBucketWords + 0xff;
-      pGVar5 = primitiveQueueNodeCursor2;
+        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff00) >> 6));
+        *bucketWordPtr = *bucketWordPtr + 1;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+        nodeCursor = nodeCursor + 1;
+      } while (remainingOrBucketCount != 0);
+      bucketLoopOrVertexBase = 0x100;
+      bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
+      nodeCursor = primitiveQueueNodeCursor2;
       do {
-        dVar9 = *pdVar12;
-        *pdVar12 = (dword)pGVar5;
-        pdVar12 = pdVar12 + -1;
-        pGVar5 = pGVar5 + dVar9;
-        iVar8 = iVar8 + -1;
-        dVar9 = dVar10;
-        pGVar11 = primitiveQueueNodeCursor4;
-      } while (iVar8 != 0);
+        remainingOrBucketCount = *bucketWordCursor;
+        *bucketWordCursor = (dword)nodeCursor;
+        bucketWordCursor = bucketWordCursor + -1;
+        nodeCursor = nodeCursor + remainingOrBucketCount;
+        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        remainingOrBucketCount = remainingNodeCount;
+        readNode = primitiveQueueNodeCursor4;
+      } while (bucketLoopOrVertexBase != 0);
       do {
-        uVar7 = pGVar11->sortKey;
-        pGVar2 = pGVar11->packet;
-        uVar4 = (uVar7 & 0xff00) >> 6;
-        sortWordCursor1 = *(uint **)((int)g_PrimitiveRadixBucketWords + uVar4);
-        piVar1 = (int *)((int)g_PrimitiveRadixBucketWords + uVar4);
-        *piVar1 = *piVar1 + 0x10;
-        *sortWordCursor1 = uVar7;
-        sortWordCursor1[1] = (uint)pGVar2;
-        dVar9 = dVar9 - 1;
-        pGVar11 = pGVar11 + 1;
-      } while (dVar9 != 0);
-      pdVar12 = g_PrimitiveRadixBucketWords;
-      for (iVar8 = 0x100; dVar9 = dVar10, pGVar5 = primitiveQueueNodeCursor2, iVar8 != 0;
-          iVar8 = iVar8 + -1) {
-        *pdVar12 = 0;
-        pdVar12 = pdVar12 + 1;
+        nodeSortKey = readNode->sortKey;
+        packetOrLinkNode = readNode->packet;
+        bucketIndexOrOffset = (nodeSortKey & 0xff00) >> 6;
+        sortWordCursor1 = *(uint **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        *bucketWordPtr = *bucketWordPtr + 0x10;
+        *sortWordCursor1 = nodeSortKey;
+        sortWordCursor1[1] = (uint)packetOrLinkNode;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+        readNode = readNode + 1;
+      } while (remainingOrBucketCount != 0);
+      bucketWordCursor = g_PrimitiveRadixBucketWords;
+      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor2, bucketLoopOrVertexBase != 0;
+          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+        *bucketWordCursor = 0;
+        bucketWordCursor = bucketWordCursor + 1;
       }
       do {
-        piVar1 = (int *)((int)g_PrimitiveRadixBucketWords + ((pGVar5->sortKey & 0xff0000) >> 0xe));
-        *piVar1 = *piVar1 + 1;
-        dVar9 = dVar9 - 1;
-        pGVar5 = pGVar5 + 1;
-      } while (dVar9 != 0);
-      iVar8 = 0x100;
-      pdVar12 = g_PrimitiveRadixBucketWords + 0xff;
+        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff0000) >> 0xe));
+        *bucketWordPtr = *bucketWordPtr + 1;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+        nodeCursor = nodeCursor + 1;
+      } while (remainingOrBucketCount != 0);
+      bucketLoopOrVertexBase = 0x100;
+      bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
       primitiveQueueNodeCursor1 = primitiveQueueNodeCursor4;
       do {
-        dVar9 = *pdVar12;
-        *pdVar12 = (dword)primitiveQueueNodeCursor1;
-        pdVar12 = pdVar12 + -1;
-        primitiveQueueNodeCursor1 = primitiveQueueNodeCursor1 + dVar9;
-        iVar8 = iVar8 + -1;
-        dVar9 = dVar10;
+        remainingOrBucketCount = *bucketWordCursor;
+        *bucketWordCursor = (dword)primitiveQueueNodeCursor1;
+        bucketWordCursor = bucketWordCursor + -1;
+        primitiveQueueNodeCursor1 = primitiveQueueNodeCursor1 + remainingOrBucketCount;
+        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        remainingOrBucketCount = remainingNodeCount;
         primitiveQueueNodeCursor3 = primitiveQueueNodeCursor2;
-      } while (iVar8 != 0);
+      } while (bucketLoopOrVertexBase != 0);
       do {
-        uVar7 = primitiveQueueNodeCursor3->sortKey;
-        pGVar2 = primitiveQueueNodeCursor3->packet;
+        nodeSortKey = primitiveQueueNodeCursor3->sortKey;
+        packetOrLinkNode = primitiveQueueNodeCursor3->packet;
         primitiveQueueNodeCursor3 = primitiveQueueNodeCursor3 + 1;
-        uVar4 = (uVar7 & 0xff0000) >> 0xe;
-        puVar3 = *(uint **)((int)g_PrimitiveRadixBucketWords + uVar4);
-        piVar1 = (int *)((int)g_PrimitiveRadixBucketWords + uVar4);
-        *piVar1 = *piVar1 + 0x10;
-        *puVar3 = uVar7;
-        puVar3[1] = (uint)pGVar2;
-        dVar9 = dVar9 - 1;
-      } while (dVar9 != 0);
-      pdVar12 = g_PrimitiveRadixBucketWords;
-      for (iVar8 = 0x100; dVar9 = dVar10, pGVar5 = primitiveQueueNodeCursor4, iVar8 != 0;
-          iVar8 = iVar8 + -1) {
-        *pdVar12 = 0;
-        pdVar12 = pdVar12 + 1;
+        bucketIndexOrOffset = (nodeSortKey & 0xff0000) >> 0xe;
+        bucketWriteCursor = *(uint **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        *bucketWordPtr = *bucketWordPtr + 0x10;
+        *bucketWriteCursor = nodeSortKey;
+        bucketWriteCursor[1] = (uint)packetOrLinkNode;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+      } while (remainingOrBucketCount != 0);
+      bucketWordCursor = g_PrimitiveRadixBucketWords;
+      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor4, bucketLoopOrVertexBase != 0;
+          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+        *bucketWordCursor = 0;
+        bucketWordCursor = bucketWordCursor + 1;
       }
       do {
-        piVar1 = (int *)((int)g_PrimitiveRadixBucketWords + ((pGVar5->sortKey & 0xff000000) >> 0x16)
+        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff000000) >> 0x16)
                         );
-        *piVar1 = *piVar1 + 1;
-        dVar9 = dVar9 - 1;
-        pGVar5 = pGVar5 + 1;
-      } while (dVar9 != 0);
-      iVar8 = 0x100;
+        *bucketWordPtr = *bucketWordPtr + 1;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+        nodeCursor = nodeCursor + 1;
+      } while (remainingOrBucketCount != 0);
+      bucketLoopOrVertexBase = 0x100;
       sortWordCursor2 = g_PrimitiveRadixBucketWords + 0xff;
       do {
-        dVar9 = *sortWordCursor2;
+        remainingOrBucketCount = *sortWordCursor2;
         *sortWordCursor2 = (dword)primitiveQueueNodeCursor2;
         sortWordCursor2 = sortWordCursor2 + -1;
-        primitiveQueueNodeCursor2 = primitiveQueueNodeCursor2 + dVar9;
-        iVar8 = iVar8 + -1;
-        dVar9 = dVar10;
-      } while (iVar8 != 0);
+        primitiveQueueNodeCursor2 = primitiveQueueNodeCursor2 + remainingOrBucketCount;
+        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        remainingOrBucketCount = remainingNodeCount;
+      } while (bucketLoopOrVertexBase != 0);
       do {
-        uVar7 = primitiveQueueNodeCursor4->sortKey;
-        pGVar2 = primitiveQueueNodeCursor4->packet;
+        nodeSortKey = primitiveQueueNodeCursor4->sortKey;
+        packetOrLinkNode = primitiveQueueNodeCursor4->packet;
         primitiveQueueNodeCursor4 = primitiveQueueNodeCursor4 + 1;
-        uVar4 = (uVar7 & 0xff000000) >> 0x16;
-        puVar3 = *(uint **)((int)g_PrimitiveRadixBucketWords + uVar4);
-        piVar1 = (int *)((int)g_PrimitiveRadixBucketWords + uVar4);
-        *piVar1 = *piVar1 + 0x10;
-        *puVar3 = uVar7;
-        puVar3[1] = (uint)pGVar2;
-        dVar9 = dVar9 - 1;
-      } while (dVar9 != 0);
+        bucketIndexOrOffset = (nodeSortKey & 0xff000000) >> 0x16;
+        bucketWriteCursor = *(uint **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        *bucketWordPtr = *bucketWordPtr + 0x10;
+        *bucketWriteCursor = nodeSortKey;
+        bucketWriteCursor[1] = (uint)packetOrLinkNode;
+        remainingOrBucketCount = remainingOrBucketCount - 1;
+      } while (remainingOrBucketCount != 0);
     }
-    pGVar2 = (GraphicsPrimitivePacket *)queue->primaryNodes;
-    queue->traversalCursor = (GraphicsPrimitiveQueueNode *)pGVar2;
+    packetOrLinkNode = (GraphicsPrimitivePacket *)queue->primaryNodes;
+    queue->traversalCursor = (GraphicsPrimitiveQueueNode *)packetOrLinkNode;
     primitivePacketCursor3 = (GraphicsPrimitivePacket *)0xffffffff;
-    pGVar6 = (GraphicsPrimitivePacket *)0xffffffff;
+    previousLinkNode = (GraphicsPrimitivePacket *)0xffffffff;
     primitivePacketCursor4 = (GraphicsPrimitivePacket *)(queue + 1);
-    pGVar13 = (GraphicsPrimitivePacket *)(queue + 1);
+    nextLinkNode = (GraphicsPrimitivePacket *)(queue + 1);
     if (halveVertexRgb == GRAPHICS_STATE_DISABLED) {
       do {
-        primitivePacketCursor2 = pGVar2;
+        primitivePacketCursor2 = packetOrLinkNode;
         primitivePacketCursor2->vertices[0].backendCoord1 =
-             (GraphicsPrimitiveBackendCoordinate)pGVar6;
+             (GraphicsPrimitiveBackendCoordinate)previousLinkNode;
         primitivePacketCursor2->vertices[0].backendCoord0 =
-             (GraphicsPrimitiveBackendCoordinate)pGVar13;
-        dVar10 = dVar10 - 1;
-        pGVar6 = primitivePacketCursor2;
-        pGVar2 = pGVar13;
-        pGVar13 = (GraphicsPrimitivePacket *)&pGVar13->vertices[0].depth;
-      } while (dVar10 != 0);
+             (GraphicsPrimitiveBackendCoordinate)nextLinkNode;
+        remainingNodeCount = remainingNodeCount - 1;
+        previousLinkNode = primitivePacketCursor2;
+        packetOrLinkNode = nextLinkNode;
+        nextLinkNode = (GraphicsPrimitivePacket *)&nextLinkNode->vertices[0].depth;
+      } while (remainingNodeCount != 0);
     }
     else {
       do {
-        primitivePacketCursor2 = pGVar2;
+        primitivePacketCursor2 = packetOrLinkNode;
         primitivePacketCursor2->vertices[0].backendCoord1 =
              (GraphicsPrimitiveBackendCoordinate)primitivePacketCursor3;
         primitivePacketCursor2->vertices[0].backendCoord0 =
              (GraphicsPrimitiveBackendCoordinate)primitivePacketCursor4;
-        iVar8 = primitivePacketCursor2->vertices[0].screenY;
+        bucketLoopOrVertexBase = primitivePacketCursor2->vertices[0].screenY;
         mm0PackedValue0 =
-             paddusb((*(uint *)(iVar8 + 0x1c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint *)(iVar8 + 0x1c) & g_VertexColorAlphaPreserveMaskMMX);
+             paddusb((*(uint *)(bucketLoopOrVertexBase + 0x1c) & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     *(uint *)(bucketLoopOrVertexBase + 0x1c) & g_VertexColorAlphaPreserveMaskMMX);
         mm1PackedValue0 =
-             paddusb((*(uint *)(iVar8 + 0x3c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint *)(iVar8 + 0x3c) & g_VertexColorAlphaPreserveMaskMMX);
+             paddusb((*(uint *)(bucketLoopOrVertexBase + 0x3c) & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     *(uint *)(bucketLoopOrVertexBase + 0x3c) & g_VertexColorAlphaPreserveMaskMMX);
         mm2PackedValue0 =
-             paddusb((*(uint *)(iVar8 + 0x5c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint *)(iVar8 + 0x5c) & g_VertexColorAlphaPreserveMaskMMX);
-        *(int *)(iVar8 + 0x1c) = (int)mm0PackedValue0;
-        *(int *)(iVar8 + 0x3c) = (int)mm1PackedValue0;
-        *(int *)(iVar8 + 0x5c) = (int)mm2PackedValue0;
-        dVar10 = dVar10 - 1;
+             paddusb((*(uint *)(bucketLoopOrVertexBase + 0x5c) & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     *(uint *)(bucketLoopOrVertexBase + 0x5c) & g_VertexColorAlphaPreserveMaskMMX);
+        *(int *)(bucketLoopOrVertexBase + 0x1c) = (int)mm0PackedValue0;
+        *(int *)(bucketLoopOrVertexBase + 0x3c) = (int)mm1PackedValue0;
+        *(int *)(bucketLoopOrVertexBase + 0x5c) = (int)mm2PackedValue0;
+        remainingNodeCount = remainingNodeCount - 1;
         primitivePacketCursor3 = primitivePacketCursor2;
-        pGVar2 = primitivePacketCursor4;
+        packetOrLinkNode = primitivePacketCursor4;
         primitivePacketCursor4 =
              (GraphicsPrimitivePacket *)&primitivePacketCursor4->vertices[0].depth;
-      } while (dVar10 != 0);
+      } while (remainingNodeCount != 0);
     }
     primitivePacketCursor2->vertices[0].backendCoord0 = -1;
   }
@@ -277,12 +277,12 @@ void GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity pa
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
   bool allocationSizeOverflow;
-  ArenaAllocEaxCf5 AVar1;
+  ArenaAllocEaxCf5 allocResult;
   
   g_PrimitiveQueuePoolCapacity = packetCapacity;
-  AVar1 = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
-  allocatedQueueStorage = (GraphicsPrimitiveQueue *)AVar1.eax;
-  if (!AVar1.carry) {
+  allocResult = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
+  allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.eax;
+  if (!allocResult.carry) {
     g_PrimitiveQueueStorage = allocatedQueueStorage;
   }
   return;
@@ -298,21 +298,21 @@ GraphicsPrimitiveQueueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_ResetGlobal(void)
 
 {
-  GraphicsPrimitiveQueue *pGVar1;
-  GraphicsPrimitiveQueueEaxCf5 GVar2;
+  GraphicsPrimitiveQueue *globalQueue;
+  GraphicsPrimitiveQueueEaxCf5 resetResult;
   GraphicsPrimitiveQueue *queueStorage;
   dword poolCapacity;
   
   poolCapacity = g_PrimitiveQueuePoolCapacity;
-  pGVar1 = g_PrimitiveQueueStorage;
+  globalQueue = g_PrimitiveQueueStorage;
   g_PrimitiveQueueStorage->capacity = g_PrimitiveQueuePoolCapacity;
-  pGVar1->count = 0;
-  pGVar1->radixScratchPool = pGVar1->primaryNodes + poolCapacity;
-  pGVar1->packetPool =
-       (GraphicsPrimitivePacket *)(pGVar1->primaryNodes + poolCapacity + poolCapacity);
-  GVar2.carry = false;
-  GVar2.queue = pGVar1;
-  return GVar2;
+  globalQueue->count = 0;
+  globalQueue->radixScratchPool = globalQueue->primaryNodes + poolCapacity;
+  globalQueue->packetPool =
+       (GraphicsPrimitivePacket *)(globalQueue->primaryNodes + poolCapacity + poolCapacity);
+  resetResult.carry = false;
+  resetResult.queue = globalQueue;
+  return resetResult;
 }
 
 
@@ -349,20 +349,20 @@ GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
   GraphicsPrimitivePacket *in_EAX;
-  GraphicsPrimitivePacketEaxCf5 GVar1;
-  GraphicsPrimitivePacketEaxCf5 GVar2;
+  GraphicsPrimitivePacketEaxCf5 successResult;
+  GraphicsPrimitivePacketEaxCf5 failureResult;
   GraphicsPrimitivePacket *currentTraversalPacket;
   
   if (queue->count != 0) {
     currentTraversalPacket = queue->traversalCursor->packet;
     queue->traversalCursor = queue->traversalCursor->next;
-    GVar1.carry = false;
-    GVar1.packet = currentTraversalPacket;
-    return GVar1;
+    successResult.carry = false;
+    successResult.packet = currentTraversalPacket;
+    return successResult;
   }
-  GVar2.carry = true;
-  GVar2.packet = in_EAX;
-  return GVar2;
+  failureResult.carry = true;
+  failureResult.packet = in_EAX;
+  return failureResult;
 }
 
 
@@ -375,8 +375,8 @@ GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitivePacketEaxCf5 GVar1;
-  GraphicsPrimitivePacketEaxCf5 GVar2;
+  GraphicsPrimitivePacketEaxCf5 successResult;
+  GraphicsPrimitivePacketEaxCf5 failureResult;
   GraphicsPrimitiveQueueNode *currentTraversalNode;
   GraphicsPrimitivePacket *currentTraversalPacket;
   
@@ -384,13 +384,13 @@ GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
   if (currentTraversalNode != (GraphicsPrimitiveQueueNode *)0xffffffff) {
     currentTraversalPacket = currentTraversalNode->packet;
     queue->traversalCursor = currentTraversalNode->next;
-    GVar1.carry = false;
-    GVar1.packet = currentTraversalPacket;
-    return GVar1;
+    successResult.carry = false;
+    successResult.packet = currentTraversalPacket;
+    return successResult;
   }
-  GVar2.carry = true;
-  GVar2.packet = (GraphicsPrimitivePacket *)0xffffffff;
-  return GVar2;
+  failureResult.carry = true;
+  failureResult.packet = (GraphicsPrimitivePacket *)0xffffffff;
+  return failureResult;
 }
 
 
@@ -407,10 +407,10 @@ GraphicsPrimitiveQueue_AppendTriangle
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitiveScreenCoordinate GVar1;
-  GraphicsPrimitiveBackendCoordinate GVar2;
-  GraphicsPrimitiveTextureCoordinateFixed GVar3;
-  GraphicsPrimitiveTextureCoordinateFixed GVar4;
+  GraphicsPrimitiveScreenCoordinate vertexScreenY;
+  GraphicsPrimitiveBackendCoordinate vertexBackendCoord1;
+  GraphicsPrimitiveTextureCoordinateFixed vertex1TextureV;
+  GraphicsPrimitiveTextureCoordinateFixed vertex2TextureV;
   GraphicsPrimitivePacket *destinationPacket;
   dword destinationPacketIndex;
   GraphicsPrimitiveScreenCoordinate copiedScreenY;
@@ -428,21 +428,21 @@ GraphicsPrimitiveQueue_AppendTriangle
     copiedScreenY = vertex0->screenY;
     destinationPacket->vertices[0].screenX = vertex0->screenX;
     destinationPacket->vertices[0].screenY = copiedScreenY;
-    GVar1 = vertex1->screenY;
+    vertexScreenY = vertex1->screenY;
     destinationPacket->vertices[1].screenX = vertex1->screenX;
-    destinationPacket->vertices[1].screenY = GVar1;
-    GVar1 = vertex2->screenY;
+    destinationPacket->vertices[1].screenY = vertexScreenY;
+    vertexScreenY = vertex2->screenY;
     destinationPacket->vertices[2].screenX = vertex2->screenX;
-    destinationPacket->vertices[2].screenY = GVar1;
+    destinationPacket->vertices[2].screenY = vertexScreenY;
     copiedBackendCoordinate1 = vertex0->backendCoord1;
     destinationPacket->vertices[0].backendCoord0 = vertex0->backendCoord0;
     destinationPacket->vertices[0].backendCoord1 = copiedBackendCoordinate1;
-    GVar2 = vertex1->backendCoord1;
+    vertexBackendCoord1 = vertex1->backendCoord1;
     destinationPacket->vertices[1].backendCoord0 = vertex1->backendCoord0;
-    destinationPacket->vertices[1].backendCoord1 = GVar2;
-    GVar2 = vertex2->backendCoord1;
+    destinationPacket->vertices[1].backendCoord1 = vertexBackendCoord1;
+    vertexBackendCoord1 = vertex2->backendCoord1;
     destinationPacket->vertices[2].backendCoord0 = vertex2->backendCoord0;
-    destinationPacket->vertices[2].backendCoord1 = GVar2;
+    destinationPacket->vertices[2].backendCoord1 = vertexBackendCoord1;
     vertex1Depth = vertex1->depth;
     vertex2Depth = vertex2->depth;
     destinationPacket->vertices[0].depth = vertex0->depth;
@@ -453,11 +453,11 @@ GraphicsPrimitiveQueue_AppendTriangle
     destinationPacket->vertices[0].textureU = triangle->textureU0;
     destinationPacket->vertices[1].textureU = vertex1TextureCoordinate;
     destinationPacket->vertices[2].textureU = vertex2TextureCoordinate;
-    GVar3 = triangle->textureV1;
-    GVar4 = triangle->textureV2;
+    vertex1TextureV = triangle->textureV1;
+    vertex2TextureV = triangle->textureV2;
     destinationPacket->vertices[0].textureV = triangle->textureV0;
-    destinationPacket->vertices[1].textureV = GVar3;
-    destinationPacket->vertices[2].textureV = GVar4;
+    destinationPacket->vertices[1].textureV = vertex1TextureV;
+    destinationPacket->vertices[2].textureV = vertex2TextureV;
     destinationPacket->renderFlags = renderFlags;
     return false;
   }
@@ -532,7 +532,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
+  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinateSlot;
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinateCursor;
   dword queuedPacketCount;
   GraphicsPrimitivePacket *packetPool;
@@ -544,14 +544,14 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
   *textureCoordinateCursor = *textureCoordinateCursor + deltaU;
   textureCoordinateField = &packetPool[queuedPacketCount - 1].vertices[1].textureU;
   *textureCoordinateField = *textureCoordinateField + deltaU;
-  pGVar1 = &packetPool[queuedPacketCount - 1].vertices[2].textureU;
-  *pGVar1 = *pGVar1 + deltaU;
-  pGVar1 = &packetPool[queuedPacketCount - 1].vertices[0].textureV;
-  *pGVar1 = *pGVar1 + deltaV;
-  pGVar1 = &packetPool[queuedPacketCount - 1].vertices[1].textureV;
-  *pGVar1 = *pGVar1 + deltaV;
-  pGVar1 = &packetPool[queuedPacketCount - 1].vertices[2].textureV;
-  *pGVar1 = *pGVar1 + deltaV;
+  textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[2].textureU;
+  *textureCoordinateSlot = *textureCoordinateSlot + deltaU;
+  textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[0].textureV;
+  *textureCoordinateSlot = *textureCoordinateSlot + deltaV;
+  textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[1].textureV;
+  *textureCoordinateSlot = *textureCoordinateSlot + deltaV;
+  textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[2].textureV;
+  *textureCoordinateSlot = *textureCoordinateSlot + deltaV;
   return;
 }
 
@@ -570,93 +570,93 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
           FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  GraphicsPrimitiveQueue *pGVar1;
-  dword dVar2;
-  GraphicsPrimitiveScreenCoordinate GVar3;
-  GraphicsPrimitiveBackendCoordinate GVar4;
-  GraphicsPrimitiveDepthFixed GVar5;
-  dword dVar6;
-  uint uVar7;
-  GraphicsTextureSet *pGVar8;
+  GraphicsPrimitiveQueue *primitiveQueue;
+  dword packetIndexOrCoordinate;
+  GraphicsPrimitiveScreenCoordinate sourceScreenX;
+  GraphicsPrimitiveBackendCoordinate sourceBackendCoord1;
+  GraphicsPrimitiveDepthFixed sourceDepth;
+  dword textureCoordinate;
+  uint textureEntryIndex;
+  GraphicsTextureSet *terrainTextureSet;
   GraphicsPrimitivePacket *in_EAX;
-  PackedArgb32 PVar9;
-  GraphicsPrimitivePacket *pGVar10;
-  GraphicsPrimitivePacketEaxCf5 GVar11;
-  GraphicsPrimitivePacketEaxCf5 GVar12;
+  PackedArgb32 paletteModulationColor;
+  GraphicsPrimitivePacket *newPacket;
+  GraphicsPrimitivePacketEaxCf5 successResult;
+  GraphicsPrimitivePacketEaxCf5 failureResult;
   
-  pGVar1 = renderContext->activePrimitiveQueue;
-  dVar2 = pGVar1->count;
-  if (dVar2 + 1 < pGVar1->capacity) {
-    pGVar1->count = dVar2 + 1;
-    pGVar10 = pGVar1->packetPool + dVar2;
-    pGVar1->primaryNodes[dVar2].packet = pGVar10;
-    GVar3 = vertex0Projected->screenX;
+  primitiveQueue = renderContext->activePrimitiveQueue;
+  packetIndexOrCoordinate = primitiveQueue->count;
+  if (packetIndexOrCoordinate + 1 < primitiveQueue->capacity) {
+    primitiveQueue->count = packetIndexOrCoordinate + 1;
+    newPacket = primitiveQueue->packetPool + packetIndexOrCoordinate;
+    primitiveQueue->primaryNodes[packetIndexOrCoordinate].packet = newPacket;
+    sourceScreenX = vertex0Projected->screenX;
     if ((int)vertex0Projected[1].texturedPacketAttributes[2] < 0) {
       vertex0DiffuseColor = vertex0DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    pGVar10->vertices[0].screenX = vertex0Projected->vertexColorArgb;
-    pGVar10->vertices[0].screenY = GVar3;
-    pGVar10->vertices[0].diffuseColor = vertex0DiffuseColor;
-    GVar4 = *(GraphicsPrimitiveBackendCoordinate *)vertex0Projected[1].reserved00_0B;
-    GVar5 = *(GraphicsPrimitiveDepthFixed *)(vertex0Projected[1].reserved00_0B + 4);
-    pGVar10->vertices[0].backendCoord0 = vertex0Projected->screenY;
-    pGVar10->vertices[0].backendCoord1 = GVar4;
-    pGVar10->vertices[0].depth = GVar5;
-    GVar3 = vertex1Projected->screenX;
+    newPacket->vertices[0].screenX = vertex0Projected->vertexColorArgb;
+    newPacket->vertices[0].screenY = sourceScreenX;
+    newPacket->vertices[0].diffuseColor = vertex0DiffuseColor;
+    sourceBackendCoord1 = *(GraphicsPrimitiveBackendCoordinate *)vertex0Projected[1].reserved00_0B;
+    sourceDepth = *(GraphicsPrimitiveDepthFixed *)(vertex0Projected[1].reserved00_0B + 4);
+    newPacket->vertices[0].backendCoord0 = vertex0Projected->screenY;
+    newPacket->vertices[0].backendCoord1 = sourceBackendCoord1;
+    newPacket->vertices[0].depth = sourceDepth;
+    sourceScreenX = vertex1Projected->screenX;
     if ((int)vertex1Projected[1].texturedPacketAttributes[2] < 0) {
       vertex1DiffuseColor = vertex1DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    pGVar10->vertices[1].screenX = vertex1Projected->vertexColorArgb;
-    pGVar10->vertices[1].screenY = GVar3;
-    pGVar10->vertices[1].diffuseColor = vertex1DiffuseColor;
-    GVar4 = *(GraphicsPrimitiveBackendCoordinate *)vertex1Projected[1].reserved00_0B;
-    GVar5 = *(GraphicsPrimitiveDepthFixed *)(vertex1Projected[1].reserved00_0B + 4);
-    pGVar10->vertices[1].backendCoord0 = vertex1Projected->screenY;
-    pGVar10->vertices[1].backendCoord1 = GVar4;
-    pGVar10->vertices[1].depth = GVar5;
-    GVar3 = vertex2Projected->screenX;
+    newPacket->vertices[1].screenX = vertex1Projected->vertexColorArgb;
+    newPacket->vertices[1].screenY = sourceScreenX;
+    newPacket->vertices[1].diffuseColor = vertex1DiffuseColor;
+    sourceBackendCoord1 = *(GraphicsPrimitiveBackendCoordinate *)vertex1Projected[1].reserved00_0B;
+    sourceDepth = *(GraphicsPrimitiveDepthFixed *)(vertex1Projected[1].reserved00_0B + 4);
+    newPacket->vertices[1].backendCoord0 = vertex1Projected->screenY;
+    newPacket->vertices[1].backendCoord1 = sourceBackendCoord1;
+    newPacket->vertices[1].depth = sourceDepth;
+    sourceScreenX = vertex2Projected->screenX;
     if ((int)vertex2Projected[1].texturedPacketAttributes[2] < 0) {
       vertex2DiffuseColor = vertex2DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    pGVar10->vertices[2].screenX = vertex2Projected->vertexColorArgb;
-    pGVar10->vertices[2].screenY = GVar3;
-    pGVar10->vertices[2].diffuseColor = vertex2DiffuseColor;
-    GVar4 = *(GraphicsPrimitiveBackendCoordinate *)vertex2Projected[1].reserved00_0B;
-    GVar5 = *(GraphicsPrimitiveDepthFixed *)(vertex2Projected[1].reserved00_0B + 4);
-    pGVar10->vertices[2].backendCoord0 = vertex2Projected->screenY;
-    pGVar10->vertices[2].backendCoord1 = GVar4;
-    pGVar10->vertices[2].depth = GVar5;
-    dVar2 = textureAndMaterialIndices[2];
-    dVar6 = textureAndMaterialIndices[4];
-    pGVar10->vertices[0].textureU = *textureAndMaterialIndices;
-    pGVar10->vertices[1].textureU = dVar2;
-    pGVar10->vertices[2].textureU = dVar6;
-    dVar2 = textureAndMaterialIndices[3];
-    dVar6 = textureAndMaterialIndices[5];
-    pGVar10->vertices[0].textureV = textureAndMaterialIndices[1];
-    pGVar10->vertices[1].textureV = dVar2;
-    pGVar10->vertices[2].textureV = dVar6;
-    PVar9 = 0;
+    newPacket->vertices[2].screenX = vertex2Projected->vertexColorArgb;
+    newPacket->vertices[2].screenY = sourceScreenX;
+    newPacket->vertices[2].diffuseColor = vertex2DiffuseColor;
+    sourceBackendCoord1 = *(GraphicsPrimitiveBackendCoordinate *)vertex2Projected[1].reserved00_0B;
+    sourceDepth = *(GraphicsPrimitiveDepthFixed *)(vertex2Projected[1].reserved00_0B + 4);
+    newPacket->vertices[2].backendCoord0 = vertex2Projected->screenY;
+    newPacket->vertices[2].backendCoord1 = sourceBackendCoord1;
+    newPacket->vertices[2].depth = sourceDepth;
+    packetIndexOrCoordinate = textureAndMaterialIndices[2];
+    textureCoordinate = textureAndMaterialIndices[4];
+    newPacket->vertices[0].textureU = *textureAndMaterialIndices;
+    newPacket->vertices[1].textureU = packetIndexOrCoordinate;
+    newPacket->vertices[2].textureU = textureCoordinate;
+    packetIndexOrCoordinate = textureAndMaterialIndices[3];
+    textureCoordinate = textureAndMaterialIndices[5];
+    newPacket->vertices[0].textureV = textureAndMaterialIndices[1];
+    newPacket->vertices[1].textureV = packetIndexOrCoordinate;
+    newPacket->vertices[2].textureV = textureCoordinate;
+    paletteModulationColor = 0;
     if (g_TerrainPrimaryPalette != (GraphicsPaletteAsset *)0x0) {
-      PVar9 = g_TerrainPrimaryPalette->paletteEntries[textureAndMaterialIndices[7]].
+      paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[textureAndMaterialIndices[7]].
               alternateModulationColorArgb;
     }
-    pGVar10->renderFlags = 0x6000;
-    pGVar10->modulationColor = PVar9;
-    pGVar8 = g_TerrainPrimaryTextureSet;
-    uVar7 = textureAndMaterialIndices[6];
-    pGVar10->textureEntry = (GraphicsTextureSetEntry *)0x0;
-    if ((pGVar8 != (GraphicsTextureSet *)0x0) && (uVar7 < pGVar8->subresourceCount)) {
-      pGVar10->renderFlags = pGVar10->renderFlags | 0x10000;
-      pGVar10->textureEntry = pGVar8->entries + uVar7;
+    newPacket->renderFlags = 0x6000;
+    newPacket->modulationColor = paletteModulationColor;
+    terrainTextureSet = g_TerrainPrimaryTextureSet;
+    textureEntryIndex = textureAndMaterialIndices[6];
+    newPacket->textureEntry = (GraphicsTextureSetEntry *)0x0;
+    if ((terrainTextureSet != (GraphicsTextureSet *)0x0) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
+      newPacket->renderFlags = newPacket->renderFlags | 0x10000;
+      newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
     }
-    GVar11.carry = false;
-    GVar11.packet = pGVar10;
-    return GVar11;
+    successResult.carry = false;
+    successResult.packet = newPacket;
+    return successResult;
   }
-  GVar12.carry = true;
-  GVar12.packet = in_EAX;
-  return GVar12;
+  failureResult.carry = true;
+  failureResult.packet = in_EAX;
+  return failureResult;
 }
 
 
@@ -680,75 +680,75 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  GraphicsPrimitiveQueue *pGVar1;
-  dword dVar2;
-  dword dVar3;
-  GraphicsTextureSet *pGVar4;
+  GraphicsPrimitiveQueue *primitiveQueue;
+  dword packetIndexOrAttribute;
+  dword packetAttribute;
+  GraphicsTextureSet *materialTextureSet;
   GraphicsPrimitivePacket *in_EAX;
-  PackedArgb32 PVar5;
+  PackedArgb32 paletteModulationColor;
   dword *vertexFieldWriteCursor;
-  GraphicsPrimitivePacketEaxCf5 GVar6;
-  GraphicsPrimitivePacketEaxCf5 GVar7;
+  GraphicsPrimitivePacketEaxCf5 successResult;
+  GraphicsPrimitivePacketEaxCf5 failureResult;
   
-  pGVar1 = renderContext->activePrimitiveQueue;
-  dVar2 = pGVar1->count;
-  if (dVar2 + 1 < pGVar1->capacity) {
-    pGVar1->count = dVar2 + 1;
-    vertexFieldWriteCursor = (dword *)(pGVar1->packetPool + dVar2);
-    pGVar1->primaryNodes[dVar2].packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
-    dVar2 = vertex0Projected->texturedPacketAttributes[1];
+  primitiveQueue = renderContext->activePrimitiveQueue;
+  packetIndexOrAttribute = primitiveQueue->count;
+  if (packetIndexOrAttribute + 1 < primitiveQueue->capacity) {
+    primitiveQueue->count = packetIndexOrAttribute + 1;
+    vertexFieldWriteCursor = (dword *)(primitiveQueue->packetPool + packetIndexOrAttribute);
+    primitiveQueue->primaryNodes[packetIndexOrAttribute].packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
+    packetIndexOrAttribute = vertex0Projected->texturedPacketAttributes[1];
     *vertexFieldWriteCursor = vertex0Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[1] = dVar2;
+    vertexFieldWriteCursor[1] = packetIndexOrAttribute;
     vertexFieldWriteCursor[7] = vertex0DiffuseColor;
-    dVar2 = vertex0Projected->texturedPacketAttributes[3];
-    dVar3 = vertex0Projected->texturedPacketAttributes[4];
+    packetIndexOrAttribute = vertex0Projected->texturedPacketAttributes[3];
+    packetAttribute = vertex0Projected->texturedPacketAttributes[4];
     vertexFieldWriteCursor[2] = vertex0Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[3] = dVar2;
-    vertexFieldWriteCursor[4] = dVar3;
-    dVar2 = vertex1Projected->texturedPacketAttributes[1];
+    vertexFieldWriteCursor[3] = packetIndexOrAttribute;
+    vertexFieldWriteCursor[4] = packetAttribute;
+    packetIndexOrAttribute = vertex1Projected->texturedPacketAttributes[1];
     vertexFieldWriteCursor[8] = vertex1Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[9] = dVar2;
+    vertexFieldWriteCursor[9] = packetIndexOrAttribute;
     vertexFieldWriteCursor[0xf] = vertex1DiffuseColor;
-    dVar2 = vertex1Projected->texturedPacketAttributes[3];
-    dVar3 = vertex1Projected->texturedPacketAttributes[4];
+    packetIndexOrAttribute = vertex1Projected->texturedPacketAttributes[3];
+    packetAttribute = vertex1Projected->texturedPacketAttributes[4];
     vertexFieldWriteCursor[10] = vertex1Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[0xb] = dVar2;
-    vertexFieldWriteCursor[0xc] = dVar3;
-    dVar2 = vertex2Projected->texturedPacketAttributes[1];
+    vertexFieldWriteCursor[0xb] = packetIndexOrAttribute;
+    vertexFieldWriteCursor[0xc] = packetAttribute;
+    packetIndexOrAttribute = vertex2Projected->texturedPacketAttributes[1];
     vertexFieldWriteCursor[0x10] = vertex2Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[0x11] = dVar2;
+    vertexFieldWriteCursor[0x11] = packetIndexOrAttribute;
     vertexFieldWriteCursor[0x17] = vertex2DiffuseColor;
-    dVar2 = vertex2Projected->texturedPacketAttributes[3];
-    dVar3 = vertex2Projected->texturedPacketAttributes[4];
+    packetIndexOrAttribute = vertex2Projected->texturedPacketAttributes[3];
+    packetAttribute = vertex2Projected->texturedPacketAttributes[4];
     vertexFieldWriteCursor[0x12] = vertex2Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[0x13] = dVar2;
-    vertexFieldWriteCursor[0x14] = dVar3;
-    dVar2 = textureAndMaterialIndices[2];
-    dVar3 = textureAndMaterialIndices[4];
+    vertexFieldWriteCursor[0x13] = packetIndexOrAttribute;
+    vertexFieldWriteCursor[0x14] = packetAttribute;
+    packetIndexOrAttribute = textureAndMaterialIndices[2];
+    packetAttribute = textureAndMaterialIndices[4];
     vertexFieldWriteCursor[5] = *textureAndMaterialIndices;
-    vertexFieldWriteCursor[0xd] = dVar2;
-    vertexFieldWriteCursor[0x15] = dVar3;
-    dVar2 = textureAndMaterialIndices[3];
-    dVar3 = textureAndMaterialIndices[5];
+    vertexFieldWriteCursor[0xd] = packetIndexOrAttribute;
+    vertexFieldWriteCursor[0x15] = packetAttribute;
+    packetIndexOrAttribute = textureAndMaterialIndices[3];
+    packetAttribute = textureAndMaterialIndices[5];
     vertexFieldWriteCursor[6] = textureAndMaterialIndices[1];
-    vertexFieldWriteCursor[0xe] = dVar2;
-    vertexFieldWriteCursor[0x16] = dVar3;
-    PVar5 = 0;
+    vertexFieldWriteCursor[0xe] = packetIndexOrAttribute;
+    vertexFieldWriteCursor[0x16] = packetAttribute;
+    paletteModulationColor = 0;
     if (g_TerrainSecondaryPalette != (GraphicsPaletteAsset *)0x0) {
-      PVar5 = g_TerrainSecondaryPalette->paletteEntries[textureAndMaterialIndices[7]].
+      paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[textureAndMaterialIndices[7]].
               alternateModulationColorArgb;
     }
-    vertexFieldWriteCursor[0x18] = PVar5;
-    pGVar4 = g_TerrainMaterialTextureSets[textureAndMaterialIndices[6]];
+    vertexFieldWriteCursor[0x18] = paletteModulationColor;
+    materialTextureSet = g_TerrainMaterialTextureSets[textureAndMaterialIndices[6]];
     vertexFieldWriteCursor[0x1a] = g_UiCommandModeGColorVariantFlags;
-    vertexFieldWriteCursor[0x19] = (dword)pGVar4->entries;
-    GVar6.carry = false;
-    GVar6.packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
-    return GVar6;
+    vertexFieldWriteCursor[0x19] = (dword)materialTextureSet->entries;
+    successResult.carry = false;
+    successResult.packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
+    return successResult;
   }
-  GVar7.carry = true;
-  GVar7.packet = in_EAX;
-  return GVar7;
+  failureResult.carry = true;
+  failureResult.packet = in_EAX;
+  return failureResult;
 }
 
 

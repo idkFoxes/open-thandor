@@ -25,49 +25,49 @@
 void __cdecl ProcessEntry(void)
 
 {
-  ATOM AVar1;
-  HANDLE pvVar2;
-  HWND pHVar3;
+  ATOM windowClassAtom;
+  HANDLE processOrThreadHandle;
+  HWND windowHandle;
   undefined2 extraout_var;
   int nHeight;
   int nWidth;
-  dword errorOrValue;
-  dword dVar4;
-  dword errorOrValue_00;
-  dword arg0;
-  bool bVar5;
+  dword timerInitResult;
+  dword initResultOrBitDepth;
+  dword soundInitError;
+  dword adapterIndex;
+  bool carryOrSoundFailed;
   undefined1 carryIn;
-  StatusValueEaxCf5 SVar6;
-  FatalErrorEaxCf5 FVar7;
-  DisplayModeEaxCf5 DVar8;
-  CommandLineFindOptionEbxCf5 CVar9;
+  StatusValueEaxCf5 statusResult;
+  FatalErrorEaxCf5 fatalResult;
+  DisplayModeEaxCf5 displayModeResult;
+  CommandLineFindOptionEbxCf5 soundOption;
   HMENU hMenu;
   HINSTANCE hInstance;
-  dword arg2;
+  dword displayHeight;
   LPVOID lpParam;
-  dword arg3;
+  dword displayWidth;
   
   g_hInstance = GetModuleHandleA((LPCSTR)0x0);
-  pvVar2 = GetCurrentProcess();
-  SetPriorityClass(pvVar2,0x100);
-  pvVar2 = GetCurrentThread();
-  SetThreadPriority(pvVar2,0);
+  processOrThreadHandle = GetCurrentProcess();
+  SetPriorityClass(processOrThreadHandle,0x100);
+  processOrThreadHandle = GetCurrentThread();
+  SetThreadPriority(processOrThreadHandle,0);
   CommandLine_Parse();
-  pHVar3 = FindWindowA(sz_MainWindowClass,(LPCSTR)0x0);
-  if (pHVar3 == (HWND)0x0) {
+  windowHandle = FindWindowA(sz_MainWindowClass,(LPCSTR)0x0);
+  if (windowHandle == (HWND)0x0) {
     g_MainWindowClassInstanceHandle = g_hInstance;
     g_MainWindowClassIconHandle = LoadIconA(g_hInstance,(LPCSTR)0x1);
     g_MainWindowClassCursorHandle = LoadCursorA((HINSTANCE)0x0,&k_LowAddressLiteral00007F00);
-    AVar1 = RegisterClassA((WNDCLASSA *)&g_MainMessage.pointY);
-    if (AVar1 != 0) { /* Ghidra: CONCAT22(extraout_var,AVar1); only the 16-bit ATOM in AX is set */
+    windowClassAtom = RegisterClassA((WNDCLASSA *)&g_MainMessage.pointY);
+    if (windowClassAtom != 0) { /* Ghidra: CONCAT22(extraout_var,AVar1); only the 16-bit ATOM in AX is set */
       lpParam = (LPVOID)0x0;
       hMenu = (HMENU)0x0;
-      pHVar3 = (HWND)0x0;
+      windowHandle = (HWND)0x0;
       hInstance = g_hInstance;
       nHeight = GetSystemMetrics(1);
       nWidth = GetSystemMetrics(0);
       g_MainWindow = CreateWindowExA(8,sz_MainWindowClass,sz_MainWindowTitle,0x80080000,0,0,nWidth,
-                                     nHeight,pHVar3,hMenu,hInstance,lpParam);
+                                     nHeight,windowHandle,hMenu,hInstance,lpParam);
       if (g_MainWindow != (HWND)0x0) {
         ShowWindow(g_MainWindow,1);
         UpdateWindow(g_MainWindow);
@@ -78,41 +78,41 @@ void __cdecl ProcessEntry(void)
         if (g_CpuFeatureFlags == 0) {
           (*g_FatalErrorPrimaryDispatchCf)(0x51,true);
         }
-        SVar6 = DynAPI_Bootstrap();
-        FVar7 = (*g_FatalErrorPrimaryDispatchCf)(SVar6.valueOrError,SVar6.carry);
-        bVar5 = FVar7.carry;
+        statusResult = DynAPI_Bootstrap();
+        fatalResult = (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
+        carryOrSoundFailed = fatalResult.carry;
         TimerSystem_Init();
-        FVar7 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,bVar5);
-        bVar5 = FVar7.carry;
-        dVar4 = Graphics_Init();
-        (*g_FatalErrorPrimaryDispatchCf)(dVar4,bVar5);
-        SVar6 = DirectInputMouse_Init();
-        (*g_FatalErrorPrimaryDispatchCf)(SVar6.valueOrError,SVar6.carry);
-        bVar5 = DirectSound_Init();
-        Thandor_Log("DirectSound_Init: %s", bVar5 ? "failed (continuing without sound)" : "ok");
+        fatalResult = (*g_FatalErrorPrimaryDispatchCf)(timerInitResult,carryOrSoundFailed);
+        carryOrSoundFailed = fatalResult.carry;
+        initResultOrBitDepth = Graphics_Init();
+        (*g_FatalErrorPrimaryDispatchCf)(initResultOrBitDepth,carryOrSoundFailed);
+        statusResult = DirectInputMouse_Init();
+        (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
+        carryOrSoundFailed = DirectSound_Init();
+        Thandor_Log("DirectSound_Init: %s", carryOrSoundFailed ? "failed (continuing without sound)" : "ok");
         carryIn = 0;
-        if (bVar5) {
-          CVar9 = CommandLine_FindOption(6,s_SOUND_00582f28);
-          carryIn = CVar9.carry;
+        if (carryOrSoundFailed) {
+          soundOption = CommandLine_FindOption(6,s_SOUND_00582f28);
+          carryIn = soundOption.carry;
           if (!(bool)carryIn) {
-            FVar7 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue_00,true);
-            carryIn = FVar7.carry;
+            fatalResult = (*g_FatalErrorPrimaryDispatchCf)(soundInitError,true);
+            carryIn = fatalResult.carry;
           }
         }
-        dVar4 = Network_Init();
+        initResultOrBitDepth = Network_Init();
         /* Network_Init returns 0 with CF clear (xor eax,eax) on success and an error code with CF
            set otherwise; Ghidra dropped its CF and passed the stale carry of the sound block. */
-        (*g_FatalErrorPrimaryDispatchCf)(dVar4,dVar4 != 0);
+        (*g_FatalErrorPrimaryDispatchCf)(initResultOrBitDepth,initResultOrBitDepth != 0);
         PersistentSettings_Load();
-        arg3 = 0x280;
-        arg2 = 0x1e0;
-        dVar4 = PersistentSettings_ReadDword(0x10,0xc);
-        arg0 = PersistentSettings_ReadDword(0,0);
-        if (g_GraphicsAdapterCount <= arg0) {
-          arg0 = 0;
+        displayWidth = 0x280;
+        displayHeight = 0x1e0;
+        initResultOrBitDepth = PersistentSettings_ReadDword(0x10,0xc);
+        adapterIndex = PersistentSettings_ReadDword(0,0);
+        if (g_GraphicsAdapterCount <= adapterIndex) {
+          adapterIndex = 0;
         }
-        DVar8 = (*g_GraphicsDisplayModeHook)(arg0,dVar4,arg2,arg3);
-        (*g_FatalErrorPrimaryDispatchCf)(DVar8.eax,DVar8.carry);
+        displayModeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,initResultOrBitDepth,displayHeight,displayWidth);
+        (*g_FatalErrorPrimaryDispatchCf)(displayModeResult.eax,displayModeResult.carry);
         UiRuntime_Initialize();
         Game_Run();
         Runtime_Shutdown();
@@ -137,76 +137,76 @@ void __cdecl ProcessEntry(void)
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
 
 {
-  FactionCapabilityFlags *pFVar1;
+  FactionCapabilityFlags *capabilityFlagsSlot;
   void *memory;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  GameFactionRuntimeImage *pGVar5;
-  dword *pdVar6;
-  undefined4 *puVar7;
-  ArenaAllocEaxCf5 AVar8;
-  StatusValueEaxCf5 SVar9;
+  int remainingCount;
+  uint relationStatePattern;
+  uint factionBit;
+  GameFactionRuntimeImage *factionRecordCursor;
+  dword *dwordCursor;
+  undefined4 *statTableCursor;
+  ArenaAllocEaxCf5 allocResult;
+  StatusValueEaxCf5 status;
   
-  iVar2 = 0x40;
-  pdVar6 = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *pdVar6 = 0;
-    pdVar6 = pdVar6 + 1;
+  remainingCount = 0x40;
+  dwordCursor = g_GameDataAuxState.pairPressureMatrix8x8;
+  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+    *dwordCursor = 0;
+    dwordCursor = dwordCursor + 1;
   }
-  pGVar5 = &g_GameFactionRuntimeImage;
-  for (iVar2 = 0xe80; iVar2 != 0; iVar2 = iVar2 + -1) {
-    pGVar5->records[0].xeniteCurrentQ4 = 0;
-    pGVar5 = (GameFactionRuntimeImage *)&pGVar5->records[0].xeniteStorageLimitQ4;
+  factionRecordCursor = &g_GameFactionRuntimeImage;
+  for (remainingCount = 0xe80; remainingCount != 0; remainingCount = remainingCount + -1) {
+    factionRecordCursor->records[0].xeniteCurrentQ4 = 0;
+    factionRecordCursor = (GameFactionRuntimeImage *)&factionRecordCursor->records[0].xeniteStorageLimitQ4;
   }
-  pGVar5 = &g_GameFactionRuntimeImage;
-  iVar2 = 8;
-  uVar4 = 1;
-  uVar3 = 0x1111111f;
+  factionRecordCursor = &g_GameFactionRuntimeImage;
+  remainingCount = 8;
+  factionBit = 1;
+  relationStatePattern = 0x1111111f;
   do {
-    pFVar1 = &pGVar5->records[0].capabilityFlags;
-    *pFVar1 = *pFVar1 | uVar4;
-    pdVar6 = pGVar5->records[0].technologyMasks256Bits;
-    *pdVar6 = *pdVar6 | 1;
-    pFVar1 = &pGVar5->records[0].capabilityFlags;
-    *pFVar1 = *pFVar1 | 1;
-    pGVar5->records[0].packedRelationStates = uVar3;
-    pGVar5->records[0].relationCapabilityState = 0;
-    pGVar5->records[0].primaryAnchorYQ12 = -0xc000;
-    pGVar5->records[0].primaryAnchorXQ12 = 0;
-    pGVar5->records[0].secondaryAnchorYQ12 = -0xc000;
-    pGVar5->records[0].secondaryAnchorXQ12 = 0;
-    pGVar5->records[0].relationTransitionTick = 0x11;
-    pGVar5->records[0].energyGenerationCapacityQ4 = 0x280;
-    pGVar5->records[0].baselineEnergySupplyQ4 = 0x280;
-    pGVar5->records[0].xeniteStorageLimitQ4 = 4000;
-    pGVar5->records[0].tritiumStorageLimitQ4 = 4000;
-    pGVar5->records[0].terrainContributionScaleQ8 = 0x100;
-    uVar4 = uVar4 * 2;
-    uVar3 = uVar3 << 4 | uVar3 >> 0x1c;
-    pGVar5 = (GameFactionRuntimeImage *)(pGVar5->records + 1);
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
-  AVar8 = (*g_MemoryApi.alloc)(0x38000);
+    capabilityFlagsSlot = &factionRecordCursor->records[0].capabilityFlags;
+    *capabilityFlagsSlot = *capabilityFlagsSlot | factionBit;
+    dwordCursor = factionRecordCursor->records[0].technologyMasks256Bits;
+    *dwordCursor = *dwordCursor | 1;
+    capabilityFlagsSlot = &factionRecordCursor->records[0].capabilityFlags;
+    *capabilityFlagsSlot = *capabilityFlagsSlot | 1;
+    factionRecordCursor->records[0].packedRelationStates = relationStatePattern;
+    factionRecordCursor->records[0].relationCapabilityState = 0;
+    factionRecordCursor->records[0].primaryAnchorYQ12 = -0xc000;
+    factionRecordCursor->records[0].primaryAnchorXQ12 = 0;
+    factionRecordCursor->records[0].secondaryAnchorYQ12 = -0xc000;
+    factionRecordCursor->records[0].secondaryAnchorXQ12 = 0;
+    factionRecordCursor->records[0].relationTransitionTick = 0x11;
+    factionRecordCursor->records[0].energyGenerationCapacityQ4 = 0x280;
+    factionRecordCursor->records[0].baselineEnergySupplyQ4 = 0x280;
+    factionRecordCursor->records[0].xeniteStorageLimitQ4 = 4000;
+    factionRecordCursor->records[0].tritiumStorageLimitQ4 = 4000;
+    factionRecordCursor->records[0].terrainContributionScaleQ8 = 0x100;
+    factionBit = factionBit * 2;
+    relationStatePattern = relationStatePattern << 4 | relationStatePattern >> 0x1c;
+    factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
+  allocResult = (*g_MemoryApi.alloc)(0x38000);
   memory = g_GameStatTableImage;
-  if (!AVar8.carry) {
+  if (!allocResult.carry) {
     LOCK();
     UNLOCK();
-    g_GameStatTableImage = (undefined4 *)AVar8.eax;
+    g_GameStatTableImage = (undefined4 *)allocResult.eax;
     (*g_MemoryApi.free)(memory);
-    puVar7 = (undefined4 *)AVar8.eax;
-    for (iVar2 = 0xe000; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *puVar7 = 0;
-      puVar7 = puVar7 + 1;
+    statTableCursor = (undefined4 *)allocResult.eax;
+    for (remainingCount = 0xe000; remainingCount != 0; remainingCount = remainingCount + -1) {
+      *statTableCursor = 0;
+      statTableCursor = statTableCursor + 1;
     }
-    puVar7[-1] = 0xffffffff;
+    statTableCursor[-1] = 0xffffffff;
     g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
-    AVar8.eax = 0;
-    AVar8.carry = false;
+    allocResult.eax = 0;
+    allocResult.carry = false;
   }
-  SVar9.valueOrError = AVar8.eax;
-  SVar9.carry = AVar8.carry;
-  return SVar9;
+  status.valueOrError = allocResult.eax;
+  status.carry = allocResult.carry;
+  return status;
 }
 
 
@@ -223,59 +223,59 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
 
 {
   void *memory;
-  dword *pdVar1;
-  int iVar2;
-  dword *pdVar3;
-  dword *pdVar4;
-  StatusValueEaxCf5 SVar5;
-  PackageLoadEntryEaxCf5 PVar6;
+  dword *oldUnitBufferOrCursor;
+  int remainingCount;
+  dword *sourceCursor;
+  dword *destinationCursor;
+  StatusValueEaxCf5 loadStatus;
+  PackageLoadEntryEaxCf5 packageEntry;
   
-  iVar2 = 0x40;
-  pdVar1 = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *pdVar1 = 0;
-    pdVar1 = pdVar1 + 1;
+  remainingCount = 0x40;
+  oldUnitBufferOrCursor = g_GameDataAuxState.pairPressureMatrix8x8;
+  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+    *oldUnitBufferOrCursor = 0;
+    oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
   }
-  SVar5 = Package_LoadEntryIntoBuffer
+  loadStatus = Package_LoadEntryIntoBuffer
                     (0x3a20,(byte *)&g_GameFactionRuntimeImage,(word *)u_daten_hex_0050e054);
-  if (!SVar5.carry) {
-    PVar6 = Package_LoadEntry((word *)u_stat_hex_0050e082);
+  if (!loadStatus.carry) {
+    packageEntry = Package_LoadEntry((word *)u_stat_hex_0050e082);
     memory = g_GameStatTableImage;
-    if (!PVar6.carry) {
+    if (!packageEntry.carry) {
       LOCK();
       UNLOCK();
-      g_GameStatTableImage = PVar6.bufferOrError;
+      g_GameStatTableImage = packageEntry.bufferOrError;
       (*g_MemoryApi.free)(memory);
-      PVar6 = Package_LoadEntry((word *)u_oldunit_hex_0050e094);
-      pdVar1 = PVar6.bufferOrError;
-      if (PVar6.carry) {
-        pdVar1 = g_OldUnitPrimaryTable;
-        for (iVar2 = 0x1000; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *pdVar1 = 0;
-          pdVar1 = pdVar1 + 1;
+      packageEntry = Package_LoadEntry((word *)u_oldunit_hex_0050e094);
+      oldUnitBufferOrCursor = packageEntry.bufferOrError;
+      if (packageEntry.carry) {
+        oldUnitBufferOrCursor = g_OldUnitPrimaryTable;
+        for (remainingCount = 0x1000; remainingCount != 0; remainingCount = remainingCount + -1) {
+          *oldUnitBufferOrCursor = 0;
+          oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
         }
-        pdVar1 = g_OldUnitSecondaryTable;
-        for (iVar2 = 0x40; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *pdVar1 = 0;
-          pdVar1 = pdVar1 + 1;
+        oldUnitBufferOrCursor = g_OldUnitSecondaryTable;
+        for (remainingCount = 0x40; remainingCount != 0; remainingCount = remainingCount + -1) {
+          *oldUnitBufferOrCursor = 0;
+          oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
         }
         g_OldUnitRecordCount = 0;
       }
       else {
-        g_OldUnitRecordCount = *pdVar1;
-        pdVar4 = g_OldUnitPrimaryTable;
-        pdVar3 = pdVar1;
-        for (iVar2 = 0x1000; pdVar3 = pdVar3 + 1, iVar2 != 0; iVar2 = iVar2 + -1) {
-          *pdVar4 = *pdVar3;
-          pdVar4 = pdVar4 + 1;
+        g_OldUnitRecordCount = *oldUnitBufferOrCursor;
+        destinationCursor = g_OldUnitPrimaryTable;
+        sourceCursor = oldUnitBufferOrCursor;
+        for (remainingCount = 0x1000; sourceCursor = sourceCursor + 1, remainingCount != 0; remainingCount = remainingCount + -1) {
+          *destinationCursor = *sourceCursor;
+          destinationCursor = destinationCursor + 1;
         }
-        pdVar4 = g_OldUnitSecondaryTable;
-        for (iVar2 = 0x40; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *pdVar4 = *pdVar3;
-          pdVar3 = pdVar3 + 1;
-          pdVar4 = pdVar4 + 1;
+        destinationCursor = g_OldUnitSecondaryTable;
+        for (remainingCount = 0x40; remainingCount != 0; remainingCount = remainingCount + -1) {
+          *destinationCursor = *sourceCursor;
+          sourceCursor = sourceCursor + 1;
+          destinationCursor = destinationCursor + 1;
         }
-        Resource_Release(pdVar1);
+        Resource_Release(oldUnitBufferOrCursor);
       }
       return false;
     }
@@ -297,16 +297,16 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   FARPROC resolvedProcedure;
   dword modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
-  DynApiResolveEaxCf5 DVar1;
-  DynApiResolveEaxCf5 DVar2;
+  DynApiResolveEaxCf5 successResult;
+  DynApiResolveEaxCf5 failureResult;
   
   Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != (FARPROC)0x0) {
     *destination = resolvedProcedure;
-    DVar1.carry = false;
-    DVar1.procedureOrError = resolvedProcedure;
-    return DVar1;
+    successResult.carry = false;
+    successResult.procedureOrError = resolvedProcedure;
+    return successResult;
   }
   moduleEntryCursor = g_DynamicModules;
   g_FatalErrorDetail1Utf16[0] = 0;
@@ -314,9 +314,9 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   do {
     if (modulesRemaining == 0) {
 LAB_00573c3e:
-      DVar2.carry = true;
-      DVar2.procedureOrError = (void *)0x10;
-      return DVar2;
+      failureResult.carry = true;
+      failureResult.procedureOrError = (void *)0x10;
+      return failureResult;
     }
     if (module == moduleEntryCursor->module) {
       Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)moduleEntryCursor->name);
@@ -338,8 +338,8 @@ DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 
 {
   HINSTANCE loadedModule;
-  DynDllLoadEaxCf5 DVar1;
-  DynDllLoadEaxCf5 DVar2;
+  DynDllLoadEaxCf5 successResult;
+  DynDllLoadEaxCf5 failureResult;
   dword moduleSlotIndex;
   
   Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
@@ -351,14 +351,14 @@ DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
       g_DynamicModules[moduleSlotIndex].name = moduleName;
       g_DynamicModuleCount = g_DynamicModuleCount + 1;
-      DVar1.carry = false;
-      DVar1.moduleOrError = loadedModule;
-      return DVar1;
+      successResult.carry = false;
+      successResult.moduleOrError = loadedModule;
+      return successResult;
     }
   }
-  DVar2.carry = true;
-  DVar2.moduleOrError = (HINSTANCE)0x11;
-  return DVar2;
+  failureResult.carry = true;
+  failureResult.moduleOrError = (HINSTANCE)0x11;
+  return failureResult;
 }
 
 
@@ -370,26 +370,26 @@ DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 dword DynDLL_Unload(char *moduleName)
 
 {
-  dword dVar1;
+  dword modulesRemainingOrResult;
   DynamicModuleEntry *moduleEntryCursor;
   
   moduleEntryCursor = g_DynamicModules;
-  dVar1 = g_DynamicModuleCount;
+  modulesRemainingOrResult = g_DynamicModuleCount;
   do {
-    if (dVar1 == 0) {
+    if (modulesRemainingOrResult == 0) {
 DynDLL_ReportModuleNotLoaded:
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
       return 0xf;
     }
     if (moduleName == moduleEntryCursor->name) {
-      dVar1 = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
-      if (dVar1 != 0) {
-        return dVar1;
+      modulesRemainingOrResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
+      if (modulesRemainingOrResult != 0) {
+        return modulesRemainingOrResult;
       }
       goto DynDLL_ReportModuleNotLoaded;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
-    dVar1 = dVar1 - 1;
+    modulesRemainingOrResult = modulesRemainingOrResult - 1;
   } while( true );
 }
 
@@ -402,34 +402,34 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 BootstrapApi_ResolveBindingByDestination(void **destination)
 
 {
-  void *pvVar1;
-  dword dVar2;
-  DynamicApiBinding *pDVar3;
-  StatusValueEaxCf5 SVar4;
-  StatusValueEaxCf5 SVar5;
+  void *resolvedProcedure;
+  dword remainingCount;
+  DynamicApiBinding *bindingCursor;
+  StatusValueEaxCf5 failureResult;
+  StatusValueEaxCf5 successResult;
   
-  pDVar3 = g_BootstrapApiBindings;
-  dVar2 = g_DynamicModuleCount;
+  bindingCursor = g_BootstrapApiBindings;
+  remainingCount = g_DynamicModuleCount;
   do {
-    if (dVar2 == 0) {
+    if (remainingCount == 0) {
 LAB_00573d6a:
-      SVar4.carry = true;
-      SVar4.valueOrError = 0xf;
-      return SVar4;
+      failureResult.carry = true;
+      failureResult.valueOrError = 0xf;
+      return failureResult;
     }
-    if (destination == pDVar3->destination) {
+    if (destination == bindingCursor->destination) {
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)destination);
-      pvVar1 = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(destination,pDVar3); /* TODO: 2 args to slot 0 (LoadLibraryA); Ghidra register confusion, function is unreferenced */
-      if (pvVar1 != (void *)0x0) {
-        *destination = pvVar1;
-        SVar5.valueOrError = 0xf;
-        SVar5.carry = false;
-        return SVar5;
+      resolvedProcedure = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(destination,bindingCursor); /* TODO: 2 args to slot 0 (LoadLibraryA); Ghidra register confusion, function is unreferenced */
+      if (resolvedProcedure != (void *)0x0) {
+        *destination = resolvedProcedure;
+        successResult.valueOrError = 0xf;
+        successResult.carry = false;
+        return successResult;
       }
       goto LAB_00573d6a;
     }
-    pDVar3 = pDVar3 + 1;
-    dVar2 = dVar2 - 1;
+    bindingCursor = bindingCursor + 1;
+    remainingCount = remainingCount - 1;
   } while( true );
 }
 
@@ -470,9 +470,9 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
 
 {
-  ushort uVar1;
-  HANDLE pvVar2;
-  LRESULT LVar3;
+  ushort keyState;
+  HANDLE currentProcess;
+  LRESULT defaultResult;
   
   if ((message == 2) || (message == 0x10)) {
     g_WindowDestroyDepth = g_WindowDestroyDepth + 1;
@@ -480,8 +480,8 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
   else if (message == 0x1c) {
     g_AppActive = wParam;
     if (wParam == 0) {
-      pvVar2 = GetCurrentProcess();
-      SetPriorityClass(pvVar2,0x20);
+      currentProcess = GetCurrentProcess();
+      SetPriorityClass(currentProcess,0x20);
       if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
         (*g_MouseDevice->lpVtbl->Unacquire)(g_MouseDevice);
       }
@@ -490,8 +490,8 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
       }
     }
     else {
-      pvVar2 = GetCurrentProcess();
-      SetPriorityClass(pvVar2,0x100);
+      currentProcess = GetCurrentProcess();
+      SetPriorityClass(currentProcess,0x100);
       if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
         (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
       }
@@ -505,16 +505,16 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
       }
       if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
         g_KeyboardStateMask = 0;
-        uVar1 = GetKeyState(0x90);
-        if ((uVar1 & 1) != 0) {
+        keyState = GetKeyState(0x90);
+        if ((keyState & 1) != 0) {
           g_KeyboardStateMask = g_KeyboardStateMask | 0x10000;
         }
-        uVar1 = GetKeyState(0x91);
-        if ((uVar1 & 1) != 0) {
+        keyState = GetKeyState(0x91);
+        if ((keyState & 1) != 0) {
           g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
         }
-        uVar1 = GetKeyState(0x14);
-        if ((uVar1 & 1) != 0) {
+        keyState = GetKeyState(0x14);
+        if ((keyState & 1) != 0) {
           g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
         }
         (*g_KeyboardFlushEvents)();
@@ -532,8 +532,8 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
   }
   else {
     if ((message != 0x102) && (message != 0x106)) {
-      LVar3 = DefWindowProcA(hwnd,message,wParam,lParam);
-      return LVar3;
+      defaultResult = DefWindowProcA(hwnd,message,wParam,lParam);
+      return defaultResult;
     }
     Keyboard_OnChar(wParam);
   }
@@ -569,44 +569,44 @@ dword __cdecl CPU_DetectFeatures(void)
 void __cdecl Game_Run(void)
 
 {
-  dword errorOrValue;
-  dword dVar1;
-  dword arg2;
-  dword arg1;
-  dword arg0;
-  bool bVar2;
-  GraphicsCursorFrameEaxCf5 GVar3;
-  FatalErrorEaxCf5 FVar4;
-  DisplayModeEaxCf5 DVar5;
-  FrontendMainLoopEaxCf5 FVar6;
+  dword renderingInitResult;
+  dword loadResultOrWidth;
+  dword displayHeight;
+  dword bitDepth;
+  dword adapterIndex;
+  bool dispatchCarry;
+  GraphicsCursorFrameEaxCf5 cursorFrameResult;
+  FatalErrorEaxCf5 fatalResult;
+  DisplayModeEaxCf5 displayModeResult;
+  FrontendMainLoopEaxCf5 mainLoopResult;
   
-  GVar3 = (*g_GraphicsCursorSetFrame)(0);
-  FVar4 = (*g_FatalErrorPrimaryDispatchCf)(GVar3.eax,GVar3.carry);
-  bVar2 = FVar4.carry;
+  cursorFrameResult = (*g_GraphicsCursorSetFrame)(0);
+  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(cursorFrameResult.eax,cursorFrameResult.carry);
+  dispatchCarry = fatalResult.carry;
   GameRuntime_InitializeSpatialAudioAndRenderingCf();
-  FVar4 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,bVar2);
-  bVar2 = FVar4.carry;
-  dVar1 = Game_LoadCoreAssets();
-  Thandor_Log("Game_LoadCoreAssets -> 0x%08X", dVar1);
-  FVar4 = (*g_FatalErrorPrimaryDispatchCf)(dVar1,bVar2);
-  bVar2 = FVar4.carry;
+  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(renderingInitResult,dispatchCarry);
+  dispatchCarry = fatalResult.carry;
+  loadResultOrWidth = Game_LoadCoreAssets();
+  Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
+  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(loadResultOrWidth,dispatchCarry);
+  dispatchCarry = fatalResult.carry;
   Game_PlayIntroMovies();
-  (*g_FatalErrorPrimaryDispatchCf)(FVar4.eax,bVar2);
+  (*g_FatalErrorPrimaryDispatchCf)(fatalResult.eax,dispatchCarry);
   PersistentSettings_Load();
-  dVar1 = PersistentSettings_ReadDword(0x280,4);
-  arg2 = PersistentSettings_ReadDword(0x1e0,8);
-  arg1 = PersistentSettings_ReadDword(0x10,0xc);
-  if (((dVar1 != 0x280) || (arg2 != 0x1e0)) || (arg1 != 0x10)) {
-    arg0 = PersistentSettings_ReadDword(0,0);
-    if (g_GraphicsAdapterCount <= arg0) {
-      arg0 = 0;
+  loadResultOrWidth = PersistentSettings_ReadDword(0x280,4);
+  displayHeight = PersistentSettings_ReadDword(0x1e0,8);
+  bitDepth = PersistentSettings_ReadDword(0x10,0xc);
+  if (((loadResultOrWidth != 0x280) || (displayHeight != 0x1e0)) || (bitDepth != 0x10)) {
+    adapterIndex = PersistentSettings_ReadDword(0,0);
+    if (g_GraphicsAdapterCount <= adapterIndex) {
+      adapterIndex = 0;
     }
-    DVar5 = (*g_GraphicsDisplayModeHook)(arg0,arg1,arg2,dVar1);
-    (*g_FatalErrorPrimaryDispatchCf)(DVar5.eax,DVar5.carry);
+    displayModeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,bitDepth,displayHeight,loadResultOrWidth);
+    (*g_FatalErrorPrimaryDispatchCf)(displayModeResult.eax,displayModeResult.carry);
     PersistentSettings_WriteDword(g_ActiveGraphicsAdapterIndex,0);
   }
-  FVar6 = Frontend_MainLoop(1);
-  (*g_FatalErrorPrimaryDispatchCf)(FVar6.errorOrValue,FVar6.carry);
+  mainLoopResult = Frontend_MainLoop(1);
+  (*g_FatalErrorPrimaryDispatchCf)(mainLoopResult.errorOrValue,mainLoopResult.carry);
   (*g_NetworkBackendSlot3)();
   (*g_NetworkBackendSlot1)();
   return;
@@ -627,16 +627,16 @@ void __cdecl Game_Run(void)
 void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
 
 {
-  bool bVar1;
+  bool initFailed;
   
-  bVar1 = SpatialSoundPool_Init();
-  if (!bVar1) {
-    bVar1 = TerrainByteClampLookup_Initialize();
-    if (!bVar1) {
-      bVar1 = GraphicsIntensityClampTable_InitializeCf();
-      if (!bVar1) {
-        bVar1 = SoftwareRenderer_InstallDisplayModeHook();
-        if (!bVar1) {
+  initFailed = SpatialSoundPool_Init();
+  if (!initFailed) {
+    initFailed = TerrainByteClampLookup_Initialize();
+    if (!initFailed) {
+      initFailed = GraphicsIntensityClampTable_InitializeCf();
+      if (!initFailed) {
+        initFailed = SoftwareRenderer_InstallDisplayModeHook();
+        if (!initFailed) {
           GraphicsPrimitiveQueue_AllocateGlobalPool(0xa000);
         }
       }
@@ -656,40 +656,40 @@ void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
 dword __cdecl Game_LoadCoreAssets(void)
 
 {
-  wchar_t wVar1;
-  int iVar2;
-  SoundSampleAsset *arg0;
+  wchar_t screenshotTensDigit;
+  int statusOrCount;
+  SoundSampleAsset *loadedResource;
   FncModuleHeader *module;
-  word *pwVar3;
-  dword dVar4;
-  AudioMixerGainQ15 AVar5;
-  MovieAudioGainQ15 MVar6;
-  MovieAudioGainQ15 MVar7;
-  float *pfVar8;
-  FrontendPlayerRuntimeRecord *pFVar9;
-  byte *pbVar10;
+  word *textBuffer;
+  dword settingsOrBufferBase;
+  AudioMixerGainQ15 uiSoundGain;
+  MovieAudioGainQ15 movieGain;
+  MovieAudioGainQ15 alternateMovieGain;
+  float *splineBuffer;
+  FrontendPlayerRuntimeRecord *playerRecordCursor;
+  byte *scratchCursor;
   TextResourceId resourceId;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
-  StatusValueEaxCf5 SVar11;
-  SoundCreateSampleVoiceSetEaxCf5 SVar12;
-  FileSystemOpenEaxCf5 FVar13;
-  TextResourceResolveEaxCf5 TVar14;
-  TextResourceLoadEaxCf5 TVar15;
-  PackageLoadEntryEaxCf5 PVar16;
-  FncModuleLoadEaxCf5 FVar17;
-  GraphicsTextureSourceLoadEaxCf5 GVar18;
-  ArenaAllocEaxCf5 AVar19;
-  ResourceLoadEaxEcxCf9 RVar20;
+  StatusValueEaxCf5 status;
+  SoundCreateSampleVoiceSetEaxCf5 voiceSetResult;
+  FileSystemOpenEaxCf5 openResult;
+  TextResourceResolveEaxCf5 textResolveResult;
+  TextResourceLoadEaxCf5 textPageLoadResult;
+  PackageLoadEntryEaxCf5 pcxModuleEntry;
+  FncModuleLoadEaxCf5 moduleLoadResult;
+  GraphicsTextureSourceLoadEaxCf5 panelTextureResult;
+  ArenaAllocEaxCf5 allocResult;
+  ResourceLoadEaxEcxCf9 resourceLoadResult;
   
   if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
-     (iVar2 = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[5].destination)
+     (statusOrCount = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[5].destination)
                         (0x80000002,s_Software_Planet4_Thandor_00572e20,0,0x20019,
-                         &g_InstallRegistryKeyHandle), iVar2 == 0)) {
-    iVar2 = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[6].destination)
+                         &g_InstallRegistryKeyHandle), statusOrCount == 0)) {
+    statusOrCount = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[6].destination)
                       (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
                        &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
                        &g_InstallRegistryValueDataCapacityBytes);
-    if ((iVar2 == 0) && (g_InstallRegistryValueType == 1)) {
+    if ((statusOrCount == 0) && (g_InstallRegistryValueType == 1)) {
       Text_CopyNarrowToUtf16Cf
                 (0x200,(word *)&g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
       WidePath_CombineDirectoryAndLeaf
@@ -742,147 +742,147 @@ dword __cdecl Game_LoadCoreAssets(void)
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
   } while (0x2f < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  SVar11 = Package_Mount((word *)u_daten_pck_00572e56);
-  if (!SVar11.carry) {
-    g_DataPackageHandle = SVar11.valueOrError;
+  status = Package_Mount((word *)u_daten_pck_00572e56);
+  if (!status.carry) {
+    g_DataPackageHandle = status.valueOrError;
   }
-  SVar11 = Package_Mount((word *)u_modelle_pck_00572e6a);
-  if (!SVar11.carry) {
-    g_ModelPackageHandle = SVar11.valueOrError;
+  status = Package_Mount((word *)u_modelle_pck_00572e6a);
+  if (!status.carry) {
+    g_ModelPackageHandle = status.valueOrError;
   }
-  SVar11 = Package_Mount((word *)u_graphik_pck_00572e82);
-  if (!SVar11.carry) {
-    g_GraphicsPackageHandle = SVar11.valueOrError;
+  status = Package_Mount((word *)u_graphik_pck_00572e82);
+  if (!status.carry) {
+    g_GraphicsPackageHandle = status.valueOrError;
   }
-  SVar11 = Package_Mount((word *)u_sound_pck_00572e9a);
-  if (!SVar11.carry) {
-    g_SoundPackageHandle = SVar11.valueOrError;
+  status = Package_Mount((word *)u_sound_pck_00572e9a);
+  if (!status.carry) {
+    g_SoundPackageHandle = status.valueOrError;
   }
-  SVar11 = Package_Mount((word *)u_filme_pck_00572eae);
-  if (!SVar11.carry) {
-    g_MoviePackageHandle = SVar11.valueOrError;
+  status = Package_Mount((word *)u_filme_pck_00572eae);
+  if (!status.carry) {
+    g_MoviePackageHandle = status.valueOrError;
   }
-  SVar11 = Package_Mount((word *)u_level_pck_00572ec2);
-  if (!SVar11.carry) {
-    g_LevelPackageHandle = SVar11.valueOrError;
+  status = Package_Mount((word *)u_level_pck_00572ec2);
+  if (!status.carry) {
+    g_LevelPackageHandle = status.valueOrError;
   }
-  RVar20 = Resource_Load((word *)u_sound_button0_sam_00572f06);
-  arg0 = (SoundSampleAsset *)RVar20.eax;
-  if (RVar20.carry) {
-    return (dword)arg0;
+  resourceLoadResult = Resource_Load((word *)u_sound_button0_sam_00572f06);
+  loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+  if (resourceLoadResult.carry) {
+    return (dword)loadedResource;
   }
-  SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-  module = (FncModuleHeader *)SVar12.eax;
-  if (!SVar12.carry) {
-    Resource_Release(arg0);
+  voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+  module = (FncModuleHeader *)voiceSetResult.eax;
+  if (!voiceSetResult.carry) {
+    Resource_Release(loadedResource);
     g_UiButtonSoundVoiceSets7[0] = (DirectSoundVoiceSet *)module;
-    RVar20 = Resource_Load((word *)u_sound_button1_sam_00572f2a);
-    arg0 = (SoundSampleAsset *)RVar20.eax;
-    if (RVar20.carry) {
-      return (dword)arg0;
+    resourceLoadResult = Resource_Load((word *)u_sound_button1_sam_00572f2a);
+    loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+    if (resourceLoadResult.carry) {
+      return (dword)loadedResource;
     }
-    SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-    module = (FncModuleHeader *)SVar12.eax;
-    if (!SVar12.carry) {
-      Resource_Release(arg0);
+    voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+    module = (FncModuleHeader *)voiceSetResult.eax;
+    if (!voiceSetResult.carry) {
+      Resource_Release(loadedResource);
       g_UiButtonSoundVoiceSets7[1] = (DirectSoundVoiceSet *)module;
-      RVar20 = Resource_Load((word *)u_sound_button2_sam_00572f4e);
-      arg0 = (SoundSampleAsset *)RVar20.eax;
-      if (RVar20.carry) {
-        return (dword)arg0;
+      resourceLoadResult = Resource_Load((word *)u_sound_button2_sam_00572f4e);
+      loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+      if (resourceLoadResult.carry) {
+        return (dword)loadedResource;
       }
-      SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-      module = (FncModuleHeader *)SVar12.eax;
-      if (!SVar12.carry) {
-        Resource_Release(arg0);
+      voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+      module = (FncModuleHeader *)voiceSetResult.eax;
+      if (!voiceSetResult.carry) {
+        Resource_Release(loadedResource);
         g_UiButtonSoundVoiceSets7[2] = (DirectSoundVoiceSet *)module;
-        RVar20 = Resource_Load((word *)u_sound_button3_sam_00572f72);
-        arg0 = (SoundSampleAsset *)RVar20.eax;
-        if (RVar20.carry) {
-          return (dword)arg0;
+        resourceLoadResult = Resource_Load((word *)u_sound_button3_sam_00572f72);
+        loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+        if (resourceLoadResult.carry) {
+          return (dword)loadedResource;
         }
-        SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-        module = (FncModuleHeader *)SVar12.eax;
-        if (!SVar12.carry) {
-          Resource_Release(arg0);
+        voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+        module = (FncModuleHeader *)voiceSetResult.eax;
+        if (!voiceSetResult.carry) {
+          Resource_Release(loadedResource);
           g_UiButtonSoundVoiceSets7[3] = (DirectSoundVoiceSet *)module;
-          RVar20 = Resource_Load((word *)u_sound_button4_sam_00572f96);
-          arg0 = (SoundSampleAsset *)RVar20.eax;
-          if (RVar20.carry) {
-            return (dword)arg0;
+          resourceLoadResult = Resource_Load((word *)u_sound_button4_sam_00572f96);
+          loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+          if (resourceLoadResult.carry) {
+            return (dword)loadedResource;
           }
-          SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-          module = (FncModuleHeader *)SVar12.eax;
-          if (!SVar12.carry) {
-            Resource_Release(arg0);
+          voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+          module = (FncModuleHeader *)voiceSetResult.eax;
+          if (!voiceSetResult.carry) {
+            Resource_Release(loadedResource);
             g_UiButtonSoundVoiceSets7[4] = (DirectSoundVoiceSet *)module;
-            RVar20 = Resource_Load((word *)u_sound_button5_sam_00572fba);
-            arg0 = (SoundSampleAsset *)RVar20.eax;
-            if (RVar20.carry) {
-              return (dword)arg0;
+            resourceLoadResult = Resource_Load((word *)u_sound_button5_sam_00572fba);
+            loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+            if (resourceLoadResult.carry) {
+              return (dword)loadedResource;
             }
-            SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-            module = (FncModuleHeader *)SVar12.eax;
-            if (!SVar12.carry) {
-              Resource_Release(arg0);
+            voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+            module = (FncModuleHeader *)voiceSetResult.eax;
+            if (!voiceSetResult.carry) {
+              Resource_Release(loadedResource);
               g_UiButtonSoundVoiceSets7[5] = (DirectSoundVoiceSet *)module;
-              RVar20 = Resource_Load((word *)u_sound_button6_sam_00572fde);
-              arg0 = (SoundSampleAsset *)RVar20.eax;
-              if (RVar20.carry) {
-                return (dword)arg0;
+              resourceLoadResult = Resource_Load((word *)u_sound_button6_sam_00572fde);
+              loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
+              if (resourceLoadResult.carry) {
+                return (dword)loadedResource;
               }
-              SVar12 = (*g_SoundCreateSampleVoiceSet)(arg0);
-              module = (FncModuleHeader *)SVar12.eax;
-              if (!SVar12.carry) {
-                Resource_Release(arg0);
+              voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
+              module = (FncModuleHeader *)voiceSetResult.eax;
+              if (!voiceSetResult.carry) {
+                Resource_Release(loadedResource);
                 g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
                 do {
                   do {
-                    FVar13 = (*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1));
-                    if (FVar13.carry)
+                    openResult = (*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1));
+                    if (openResult.carry)
                     goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
-                    (*g_FileSystemClose)((void *)FVar13.eax);
-                    wVar1 = u_Dscreen00_pcx_00572e3a[7];
+                    (*g_FileSystemClose)((void *)openResult.eax);
+                    screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
                   } while ((ushort)u_Dscreen00_pcx_00572e3a[8] < 0x3a);
                   u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + L'\x01';
                   u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\xfff6';
                 } while ((ushort)u_Dscreen00_pcx_00572e3a[7] < 0x3a);
-                u_Dscreen00_pcx_00572e3a[7] = wVar1 + L'\xfff7';
+                u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit + L'\xfff7';
 Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 resourceId = 0x112;
                 do {
-                  TVar14 = TextResource_Resolve(resourceId);
-                  pwVar3 = TVar14.eax;
+                  textResolveResult = TextResource_Resolve(resourceId);
+                  textBuffer = textResolveResult.eax;
                   resourceId = resourceId + 1;
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0,g_FrontendDebugOverlayTextSlot00Utf16,pwVar3);
+                            (0,g_FrontendDebugOverlayTextSlot00Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (1,g_FrontendDebugOverlayTextSlot01Utf16,pwVar3);
+                            (1,g_FrontendDebugOverlayTextSlot01Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (2,g_FrontendDebugOverlayTextSlot02Utf16,pwVar3);
+                            (2,g_FrontendDebugOverlayTextSlot02Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (3,g_FrontendDebugOverlayTextSlot03Utf16,pwVar3);
+                            (3,g_FrontendDebugOverlayTextSlot03Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (4,g_FrontendDebugOverlayTextSlot04Utf16,pwVar3);
+                            (4,g_FrontendDebugOverlayTextSlot04Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (5,g_FrontendDebugOverlayTextSlot05Utf16,pwVar3);
+                            (5,g_FrontendDebugOverlayTextSlot05Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (6,g_FrontendDebugOverlayTextSlot06Utf16,pwVar3);
+                            (6,g_FrontendDebugOverlayTextSlot06Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (7,g_FrontendDebugOverlayTextSlot07Utf16,pwVar3);
+                            (7,g_FrontendDebugOverlayTextSlot07Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (8,g_FrontendDebugOverlayTextSlot08Utf16,pwVar3);
+                            (8,g_FrontendDebugOverlayTextSlot08Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (9,g_FrontendDebugOverlayTextSlot09Utf16,pwVar3);
+                            (9,g_FrontendDebugOverlayTextSlot09Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (10,g_FrontendDebugOverlayTextSlot10Utf16,pwVar3);
+                            (10,g_FrontendDebugOverlayTextSlot10Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xb,g_FrontendDebugOverlayTextSlot11Utf16,pwVar3);
+                            (0xb,g_FrontendDebugOverlayTextSlot11Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xc,g_FrontendDebugOverlayTextSlot12Utf16,pwVar3);
+                            (0xc,g_FrontendDebugOverlayTextSlot12Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xd,g_FrontendDebugOverlayTextSlot13Utf16,pwVar3);
+                            (0xd,g_FrontendDebugOverlayTextSlot13Utf16,textBuffer);
                 } while (resourceId < 0x118);
                 UiActionHandlers_SetPageCf
                           (0x10,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
@@ -892,230 +892,230 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                           (0x12,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPageCf
                           (0x20,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
-                TVar15 = TextResourcePage_Load(0xff,(word *)u_texte_neterror_str_0050f104);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0xff,(word *)u_texte_neterror_str_0050f104);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x18,(word *)u_texte_help_str_00563170);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x18,(word *)u_texte_help_str_00563170);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x20,(word *)u_texte_hilfe_str_00545b34);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x20,(word *)u_texte_hilfe_str_00545b34);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x21,(word *)u_texte_menue_str_00545ba0);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x21,(word *)u_texte_menue_str_00545ba0);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x30,(word *)u_texte_techno_str_0050dec4);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x30,(word *)u_texte_techno_str_0050dec4);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x22,(word *)u_texte_level_str_00545bc0);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x22,(word *)u_texte_level_str_00545bc0);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x23,(word *)u_texte_inhalt_str_00545be0);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x23,(word *)u_texte_inhalt_str_00545be0);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar15 = TextResourcePage_Load(0x24,(word *)u_texte_tastatur_str_005631b8);
-                if (TVar15.carry) {
-                  return TVar15.errorOrValue;
+                textPageLoadResult = TextResourcePage_Load(0x24,(word *)u_texte_tastatur_str_005631b8);
+                if (textPageLoadResult.carry) {
+                  return textPageLoadResult.errorOrValue;
                 }
-                TVar14 = TextResource_Resolve(0x2402);
-                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,TVar14.eax);
-                dVar4 = PersistentSettings_ReadDword(3,0x20);
-                AVar5 = 0;
-                if ((dVar4 & 1) != 0) {
-                  AVar5 = PersistentSettings_ReadDword(0x8000,0x24);
+                textResolveResult = TextResource_Resolve(0x2402);
+                RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,textResolveResult.eax);
+                settingsOrBufferBase = PersistentSettings_ReadDword(3,0x20);
+                uiSoundGain = 0;
+                if ((settingsOrBufferBase & 1) != 0) {
+                  uiSoundGain = PersistentSettings_ReadDword(0x8000,0x24);
                 }
-                MVar6 = 0;
-                g_UiSoundGainQ15 = AVar5;
-                g_SoundEffectsGainQ15 = AVar5;
-                if ((dVar4 & 1) != 0) {
-                  MVar6 = PersistentSettings_ReadDword(0x8000,0x28);
+                movieGain = 0;
+                g_UiSoundGainQ15 = uiSoundGain;
+                g_SoundEffectsGainQ15 = uiSoundGain;
+                if ((settingsOrBufferBase & 1) != 0) {
+                  movieGain = PersistentSettings_ReadDword(0x8000,0x28);
                 }
-                MVar7 = 0;
-                g_MovieDefaultAudioGainQ15 = MVar6;
-                if ((dVar4 & 1) != 0) {
-                  MVar7 = PersistentSettings_ReadDword(0x8000,0x4c);
+                alternateMovieGain = 0;
+                g_MovieDefaultAudioGainQ15 = movieGain;
+                if ((settingsOrBufferBase & 1) != 0) {
+                  alternateMovieGain = PersistentSettings_ReadDword(0x8000,0x4c);
                 }
                 g_ReverseStereoMask = 0;
-                if ((dVar4 & 4) != 0) {
+                if ((settingsOrBufferBase & 4) != 0) {
                   g_ReverseStereoMask = 0xffffffff;
                 }
-                g_MovieAlternateAudioGainQ15 = MVar7;
+                g_MovieAlternateAudioGainQ15 = alternateMovieGain;
                 g_ModelLodDepthThresholdQ8 = PersistentSettings_ReadDword(g_ReverseStereoMask,0x34);
-                SVar11 = AiRuntime_InitWorkspace();
-                if (SVar11.carry) {
-                  return SVar11.valueOrError;
+                status = AiRuntime_InitWorkspace();
+                if (status.carry) {
+                  return status.valueOrError;
                 }
-                PVar16 = Package_LoadEntry((word *)u_engine_pcx_fnc_00573028);
-                if (PVar16.carry) {
-                  return (dword)PVar16.bufferOrError;
+                pcxModuleEntry = Package_LoadEntry((word *)u_engine_pcx_fnc_00573028);
+                if (pcxModuleEntry.carry) {
+                  return (dword)pcxModuleEntry.bufferOrError;
                 }
-                FVar17 = FncModule_LoadAndRelocateCf(PVar16.bufferOrError);
-                module = (FncModuleHeader *)FVar17.moduleBase;
-                arg0 = (SoundSampleAsset *)PVar16.bufferOrError;
-                if (!FVar17.carry) {
+                moduleLoadResult = FncModule_LoadAndRelocateCf(pcxModuleEntry.bufferOrError);
+                module = (FncModuleHeader *)moduleLoadResult.moduleBase;
+                loadedResource = (SoundSampleAsset *)pcxModuleEntry.bufferOrError;
+                if (!moduleLoadResult.carry) {
                   g_PcxFunctionModule = module;
-                  SVar11 = FncModule_GetExportByIndexCf(3,module);
-                  module = (FncModuleHeader *)SVar11.valueOrError;
-                  if (!SVar11.carry) {
+                  status = FncModule_GetExportByIndexCf(3,module);
+                  module = (FncModuleHeader *)status.valueOrError;
+                  if (!status.carry) {
                     g_PcxFunctionExport3 = (PcxEncodeProc *)module;
-                    SVar11 = FncModule_GetExportByIndexCf(2,g_PcxFunctionModule);
-                    module = (FncModuleHeader *)SVar11.valueOrError;
-                    if (!SVar11.carry) {
+                    status = FncModule_GetExportByIndexCf(2,g_PcxFunctionModule);
+                    module = (FncModuleHeader *)status.valueOrError;
+                    if (!status.carry) {
                       g_PcxFunctionExport2 = (PcxDecodeProc *)module;
                       /* EDX still holds the engine\pcx.fnc package buffer. */
-                      Resource_Release((SoundSampleAsset *)PVar16.bufferOrError);
-                      GVar18 = (*g_GraphicsTextureSourceLoadPackageAsset)
+                      Resource_Release((SoundSampleAsset *)pcxModuleEntry.bufferOrError);
+                      panelTextureResult = (*g_GraphicsTextureSourceLoadPackageAsset)
                                          ((word *)u_gfx_panel_stat_gfx_00573002);
-                      if (GVar18.carry) {
-                        return (dword)GVar18.eax;
+                      if (panelTextureResult.carry) {
+                        return (dword)panelTextureResult.eax;
                       }
-                      g_InGameStatusPanelTextureSource = GVar18.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x800);
-                      if (AVar19.carry) {
-                        return (dword)(RecentTextHistorySlot *)AVar19.eax;
+                      g_InGameStatusPanelTextureSource = panelTextureResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x800);
+                      if (allocResult.carry) {
+                        return (dword)(RecentTextHistorySlot *)allocResult.eax;
                       }
-                      g_RecentTextSlotStorage = (RecentTextHistorySlot *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x100);
-                      if (AVar19.carry) {
-                        return (dword)(dword *)AVar19.eax;
+                      g_RecentTextSlotStorage = (RecentTextHistorySlot *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x100);
+                      if (allocResult.carry) {
+                        return (dword)(dword *)allocResult.eax;
                       }
-                      g_OldUnitSecondaryTable = (dword *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x4000);
-                      if (AVar19.carry) {
-                        return (dword)(dword *)AVar19.eax;
+                      g_OldUnitSecondaryTable = (dword *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x4000);
+                      if (allocResult.carry) {
+                        return (dword)(dword *)allocResult.eax;
                       }
-                      g_OldUnitPrimaryTable = (dword *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x400);
-                      dVar4 = AVar19.eax;
-                      if (AVar19.carry) {
-                        return dVar4;
+                      g_OldUnitPrimaryTable = (dword *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x400);
+                      settingsOrBufferBase = allocResult.eax;
+                      if (allocResult.carry) {
+                        return settingsOrBufferBase;
                       }
-                      g_FrontendPlayerListRow1 = dVar4 + 0x80;
-                      g_FrontendPlayerListRow2 = dVar4 + 0x100;
-                      g_FrontendPlayerListRow3 = dVar4 + 0x180;
-                      g_FrontendPlayerListRow4 = dVar4 + 0x200;
-                      g_FrontendPlayerListRow5 = dVar4 + 0x280;
-                      g_FrontendPlayerListRow6 = dVar4 + 0x300;
-                      g_FrontendPlayerListRow7 = dVar4 + 0x380;
-                      g_FrontendPlayerListRows = dVar4;
-                      AVar19 = (*g_MemoryApi.alloc)(0x800);
-                      if (AVar19.carry) {
-                        return (dword)(RomRegistrySlot *)AVar19.eax;
+                      g_FrontendPlayerListRow1 = settingsOrBufferBase + 0x80;
+                      g_FrontendPlayerListRow2 = settingsOrBufferBase + 0x100;
+                      g_FrontendPlayerListRow3 = settingsOrBufferBase + 0x180;
+                      g_FrontendPlayerListRow4 = settingsOrBufferBase + 0x200;
+                      g_FrontendPlayerListRow5 = settingsOrBufferBase + 0x280;
+                      g_FrontendPlayerListRow6 = settingsOrBufferBase + 0x300;
+                      g_FrontendPlayerListRow7 = settingsOrBufferBase + 0x380;
+                      g_FrontendPlayerListRows = settingsOrBufferBase;
+                      allocResult = (*g_MemoryApi.alloc)(0x800);
+                      if (allocResult.carry) {
+                        return (dword)(RomRegistrySlot *)allocResult.eax;
                       }
-                      g_RomRegistrySlots = (RomRegistrySlot *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x80);
-                      if (AVar19.carry) {
-                        return (dword)(FrontendSessionDiscoveryRecordB0 **)AVar19.eax;
+                      g_RomRegistrySlots = (RomRegistrySlot *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x80);
+                      if (allocResult.carry) {
+                        return (dword)(FrontendSessionDiscoveryRecordB0 **)allocResult.eax;
                       }
-                      g_FrontendSessionListRows = (FrontendSessionDiscoveryRecordB0 **)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x1600);
-                      if (AVar19.carry) {
-                        return (dword)(FrontendSessionDiscoveryRecordB0 *)AVar19.eax;
+                      g_FrontendSessionListRows = (FrontendSessionDiscoveryRecordB0 **)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x1600);
+                      if (allocResult.carry) {
+                        return (dword)(FrontendSessionDiscoveryRecordB0 *)allocResult.eax;
                       }
                       g_FrontendSessionDiscoveryRecords =
-                           (FrontendSessionDiscoveryRecordB0 *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x2000);
-                      pwVar3 = (word *)AVar19.eax;
-                      if (AVar19.carry) {
-                        return (dword)pwVar3;
+                           (FrontendSessionDiscoveryRecordB0 *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x2000);
+                      textBuffer = (word *)allocResult.eax;
+                      if (allocResult.carry) {
+                        return (dword)textBuffer;
                       }
-                      g_InGameFactionStatusTextScratchUtf16 = pwVar3;
-                      g_InGameFactionStatusTextScratchUtf16Mirror = pwVar3;
-                      AVar19 = (*g_MemoryApi.alloc)(0x160);
-                      if (AVar19.carry) {
-                        return (dword)(word *)AVar19.eax;
+                      g_InGameFactionStatusTextScratchUtf16 = textBuffer;
+                      g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
+                      allocResult = (*g_MemoryApi.alloc)(0x160);
+                      if (allocResult.carry) {
+                        return (dword)(word *)allocResult.eax;
                       }
-                      g_InGamePlayerListTextScratchUtf16 = (word *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x6000);
-                      pfVar8 = (float *)AVar19.eax;
-                      if (AVar19.carry) {
-                        return (dword)pfVar8;
+                      g_InGamePlayerListTextScratchUtf16 = (word *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x6000);
+                      splineBuffer = (float *)allocResult.eax;
+                      if (allocResult.carry) {
+                        return (dword)splineBuffer;
                       }
-                      g_WorldMotionSplineMatrixWorkspaces[1] = pfVar8 + 0x400;
-                      g_WorldMotionSplineMatrixWorkspaces[2] = pfVar8 + 0x800;
-                      g_WorldMotionSplineMatrixWorkspaces[3] = pfVar8 + 0xc00;
-                      g_WorldMotionSplineMatrixWorkspaces[4] = pfVar8 + 0x1000;
-                      g_WorldMotionSplineMatrixWorkspaces[5] = pfVar8 + 0x1400;
-                      g_WorldMotionSplineMatrixWorkspaces[0] = pfVar8;
-                      AVar19 = (*g_MemoryApi.alloc)(0x300);
-                      pfVar8 = (float *)AVar19.eax;
-                      if (AVar19.carry) {
-                        return (dword)pfVar8;
+                      g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 0x400;
+                      g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 0x800;
+                      g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 0xc00;
+                      g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 0x1000;
+                      g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 0x1400;
+                      g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
+                      allocResult = (*g_MemoryApi.alloc)(0x300);
+                      splineBuffer = (float *)allocResult.eax;
+                      if (allocResult.carry) {
+                        return (dword)splineBuffer;
                       }
-                      g_WorldMotionSplineCoefficientTables[1] = pfVar8 + 0x20;
-                      g_WorldMotionSplineCoefficientTables[2] = pfVar8 + 0x40;
-                      g_WorldMotionSplineCoefficientTables[3] = pfVar8 + 0x60;
-                      g_WorldMotionSplineCoefficientTables[4] = pfVar8 + 0x80;
-                      g_WorldMotionSplineCoefficientTables[5] = pfVar8 + 0xa0;
-                      g_WorldMotionSplineCoefficientTables[0] = pfVar8;
-                      AVar19 = (*g_MemoryApi.alloc)(0x408c0);
-                      if (AVar19.carry) {
-                        return (dword)(SelectionPlayerRuntimeBlock *)AVar19.eax;
+                      g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 0x20;
+                      g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 0x40;
+                      g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 0x60;
+                      g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 0x80;
+                      g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 0xa0;
+                      g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
+                      allocResult = (*g_MemoryApi.alloc)(0x408c0);
+                      if (allocResult.carry) {
+                        return (dword)(SelectionPlayerRuntimeBlock *)allocResult.eax;
                       }
-                      g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x1300);
-                      if (AVar19.carry) {
-                        return AVar19.eax;
+                      g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x1300);
+                      if (allocResult.carry) {
+                        return allocResult.eax;
                       }
-                      g_FrontendLocalPlayerPcxPreview = AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x4000);
-                      if (AVar19.carry) {
-                        return AVar19.eax;
+                      g_FrontendLocalPlayerPcxPreview = allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x4000);
+                      if (allocResult.carry) {
+                        return allocResult.eax;
                       }
-                      g_TerrainRegionCollectionEntries = AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(800);
-                      if (AVar19.carry) {
-                        return AVar19.eax;
+                      g_TerrainRegionCollectionEntries = allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(800);
+                      if (allocResult.carry) {
+                        return allocResult.eax;
                       }
-                      g_FrontendPlayerMessageBuffers = AVar19.eax;
-                      AVar19 = (*g_MemoryApi.alloc)(0x9d80);
-                      pFVar9 = (FrontendPlayerRuntimeRecord *)AVar19.eax;
-                      if (AVar19.carry) {
-                        return (dword)pFVar9;
+                      g_FrontendPlayerMessageBuffers = allocResult.eax;
+                      allocResult = (*g_MemoryApi.alloc)(0x9d80);
+                      playerRecordCursor = (FrontendPlayerRuntimeRecord *)allocResult.eax;
+                      if (allocResult.carry) {
+                        return (dword)playerRecordCursor;
                       }
                       playerRuntimePointerTableWriteCursor =
                            (FrontendPlayerRuntimeRecord **)&g_FrontendPlayerRuntimeRecordPointers32;
                       g_FrontendPlayerRuntimeBlockCount = 1;
                       g_LocalPlayerRuntimeId = 0;
-                      g_FrontendPlayerRuntimeBlocks = pFVar9;
-                      (pFVar9->playerName).textUtf16[0] = 0;
-                      (pFVar9->playerName).textUtf16[1] = 0;
-                      pFVar9->playerRuntimeId = 0;
-                      (pFVar9->factionAssignment).roleStateFlags = 0;
-                      pFVar9->snapshotTransferFlags = 0;
-                      iVar2 = 0x20;
+                      g_FrontendPlayerRuntimeBlocks = playerRecordCursor;
+                      (playerRecordCursor->playerName).textUtf16[0] = 0;
+                      (playerRecordCursor->playerName).textUtf16[1] = 0;
+                      playerRecordCursor->playerRuntimeId = 0;
+                      (playerRecordCursor->factionAssignment).roleStateFlags = 0;
+                      playerRecordCursor->snapshotTransferFlags = 0;
+                      statusOrCount = 0x20;
                       do {
-                        *playerRuntimePointerTableWriteCursor = pFVar9;
+                        *playerRuntimePointerTableWriteCursor = playerRecordCursor;
                         playerRuntimePointerTableWriteCursor =
                              playerRuntimePointerTableWriteCursor + 1;
-                        pFVar9 = pFVar9 + 1;
-                        iVar2 = iVar2 + -1;
-                      } while (iVar2 != 0);
-                      AVar19 = (*g_MemoryApi.alloc)(0xe00);
-                      pbVar10 = (byte *)AVar19.eax;
-                      if (AVar19.carry) {
-                        return (dword)pbVar10;
+                        playerRecordCursor = playerRecordCursor + 1;
+                        statusOrCount = statusOrCount + -1;
+                      } while (statusOrCount != 0);
+                      allocResult = (*g_MemoryApi.alloc)(0xe00);
+                      scratchCursor = (byte *)allocResult.eax;
+                      if (allocResult.carry) {
+                        return (dword)scratchCursor;
                       }
-                      g_CoreAssetScratchSlice1 = pbVar10 + 0x200;
-                      g_CoreAssetScratchSlice2 = pbVar10 + 0x400;
-                      g_CoreAssetScratchSlice3 = pbVar10 + 0x600;
-                      g_CoreAssetScratchSlice4 = pbVar10 + 0x800;
-                      g_CoreAssetScratchSlice5 = pbVar10 + 0xa00;
-                      g_CoreAssetScratchSlice6 = pbVar10 + 0xc00;
-                      g_CoreAssetScratchSlice0 = pbVar10;
-                      for (iVar2 = 0x380; iVar2 != 0; iVar2 = iVar2 + -1) {
-                        pbVar10[0] = 0;
-                        pbVar10[1] = 0;
-                        pbVar10[2] = 0;
-                        pbVar10[3] = 0;
-                        pbVar10 = pbVar10 + 4;
+                      g_CoreAssetScratchSlice1 = scratchCursor + 0x200;
+                      g_CoreAssetScratchSlice2 = scratchCursor + 0x400;
+                      g_CoreAssetScratchSlice3 = scratchCursor + 0x600;
+                      g_CoreAssetScratchSlice4 = scratchCursor + 0x800;
+                      g_CoreAssetScratchSlice5 = scratchCursor + 0xa00;
+                      g_CoreAssetScratchSlice6 = scratchCursor + 0xc00;
+                      g_CoreAssetScratchSlice0 = scratchCursor;
+                      for (statusOrCount = 0x380; statusOrCount != 0; statusOrCount = statusOrCount + -1) {
+                        scratchCursor[0] = 0;
+                        scratchCursor[1] = 0;
+                        scratchCursor[2] = 0;
+                        scratchCursor[3] = 0;
+                        scratchCursor = scratchCursor + 4;
                       }
                       return 0;
                     }
@@ -1128,7 +1128,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
       }
     }
   }
-  Resource_Release(arg0);
+  Resource_Release(loadedResource);
   return (dword)module;
 }
 
@@ -1367,18 +1367,18 @@ static void DebugMovie_Run(const char *which)
 void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 
 {
-  dword dVar1;
-  dword arg0;
-  uint uVar2;
-  int iVar3;
-  bool bVar4;
-  MovieFrameDimensionsEdxEax8 MVar5;
-  MovieOpenEaxCf5 MVar6;
-  MovieAdvanceFrameEaxCf5 MVar7;
-  MovieAdvanceFrameEaxCf5 MVar8;
-  KeyboardEventEaxEdxCf9 KVar9;
-  CommandLineFindOptionEbxCf5 CVar10;
-  GraphicsCursorInputEventRegsCf21 GVar11;
+  dword frameHeightSnapshot;
+  dword playbackRateHz;
+  uint quarterFrameHeight;
+  int frameAdvanceBudget;
+  bool accessFailed;
+  MovieFrameDimensionsEdxEax8 frameDimensions;
+  MovieOpenEaxCf5 openResult;
+  MovieAdvanceFrameEaxCf5 firstFrameResult;
+  MovieAdvanceFrameEaxCf5 advanceResult;
+  KeyboardEventEaxEdxCf9 keyEvent;
+  CommandLineFindOptionEbxCf5 noIntroOption;
+  GraphicsCursorInputEventRegsCf21 cursorEvent;
   
     {
     const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
@@ -1386,64 +1386,64 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
       DebugMovie_Run(debugMovie);
     }
   }
-  bVar4 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar4) {
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
     (*g_GraphicsFramebufferFillRectArgb)
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-  bVar4 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar4) {
+  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  if (!accessFailed) {
     (*g_GraphicsFramebufferFillRectArgb)
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-  CVar10 = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
-  if (CVar10.carry) {
+  noIntroOption = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
+  if (noIntroOption.carry) {
     while( true ) {
-      MVar6 = Movie_Open(1,(word *)u_flm_intro0_flm_00573046);
-      if (MVar6.carry) break;
-      MVar7 = Movie_AdvanceFrame();
-      if (MVar7.carry) {
+      openResult = Movie_Open(1,(word *)u_flm_intro0_flm_00573046);
+      if (openResult.carry) break;
+      firstFrameResult = Movie_AdvanceFrame();
+      if (firstFrameResult.carry) {
         Movie_Close();
         return;
       }
       g_IntroMoviePendingTicks = 0;
       UiFrame_FlushInputAndResetPendingTicks();
-      arg0 = MVar6.playbackRateHzEcx; /* PUSH ECX: rate left by Movie_Open (AdvanceFrame preserves ECX) */
-      (*g_TimerRegisterPeriodic)(arg0,IntroMovie_TimerTick);
+      playbackRateHz = openResult.playbackRateHzEcx; /* PUSH ECX: rate left by Movie_Open (AdvanceFrame preserves ECX) */
+      (*g_TimerRegisterPeriodic)(playbackRateHz,IntroMovie_TimerTick);
       while( true ) {
         (*g_Win32PumpMessages)();
-        KVar9 = (*g_KeyboardReadEvent)();
-        if (!KVar9.carry) break;
-        GVar11 = (*g_GraphicsCursorConsumeEvent)();
-        if ((!GVar11.carry) && (3 < GVar11.eventCode)) goto GameIntroMovies_StopCurrentPlayback;
+        keyEvent = (*g_KeyboardReadEvent)();
+        if (!keyEvent.carry) break;
+        cursorEvent = (*g_GraphicsCursorConsumeEvent)();
+        if ((!cursorEvent.carry) && (3 < cursorEvent.eventCode)) goto GameIntroMovies_StopCurrentPlayback;
         if (g_IntroMoviePendingTicks != 0) {
-          iVar3 = 3;
+          frameAdvanceBudget = 3;
           do {
-            MVar8 = Movie_AdvanceFrame();
-            dVar1 = g_FramebufferHeight;
-            if (MVar8.carry) goto GameIntroMovies_StopCurrentPlayback;
+            advanceResult = Movie_AdvanceFrame();
+            frameHeightSnapshot = g_FramebufferHeight;
+            if (advanceResult.carry) goto GameIntroMovies_StopCurrentPlayback;
             g_IntroMoviePendingTicks = g_IntroMoviePendingTicks - 1;
-          } while ((g_IntroMoviePendingTicks != 0) && (iVar3 = iVar3 + -1, iVar3 != 0));
-          uVar2 = g_FramebufferHeight >> 2;
-          bVar4 = (*g_GraphicsFramebufferBeginAccess)();
-          if (bVar4) goto GameIntroMovies_StopCurrentPlayback;
-          MVar5 = Movie_GetFrameDimensions();
+          } while ((g_IntroMoviePendingTicks != 0) && (frameAdvanceBudget = frameAdvanceBudget + -1, frameAdvanceBudget != 0));
+          quarterFrameHeight = g_FramebufferHeight >> 2;
+          accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+          if (accessFailed) goto GameIntroMovies_StopCurrentPlayback;
+          frameDimensions = Movie_GetFrameDimensions();
           (*g_GraphicsTextureSourceBlitSourceAlpha)
                     (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                     ((int)((dVar1 - uVar2) - (int)(MVar5 >> 0x20)) >> 1) + (dVar1 >> 3),
-                     (int)(g_FramebufferWidth - (int)MVar5) >> 1,0,
-                     (GraphicsTextureSourceAsset *)MVar7.eax,g_FramebufferAccess);
+                     ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)(frameDimensions >> 0x20)) >> 1) + (frameHeightSnapshot >> 3),
+                     (int)(g_FramebufferWidth - (int)frameDimensions) >> 1,0,
+                     (GraphicsTextureSourceAsset *)firstFrameResult.eax,g_FramebufferAccess);
           (*g_GraphicsFramebufferEndAccess)();
           (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
         }
       }
-      if (KVar9.eventCode == 0x10000) {
+      if (keyEvent.eventCode == 0x10000) {
         u_flm_intro0_flm_00573046[9] = L'8';
       }
 GameIntroMovies_StopCurrentPlayback:
@@ -1468,10 +1468,10 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
   void **in_EAX;
   HINSTANCE hModule;
   DynamicApiBinding *bindingCursor;
-  StatusValueEaxCf5 SVar1;
-  StatusValueEaxCf5 SVar2;
-  StatusValueEaxCf5 SVar3;
-  StatusValueEaxCf5 SVar4;
+  StatusValueEaxCf5 successResult;
+  StatusValueEaxCf5 loadFailedResult;
+  StatusValueEaxCf5 moduleUnavailableResult;
+  StatusValueEaxCf5 procedureMissingResult;
   void **lpProcName;
   char *moduleName;
   dword moduleSlotIndex;
@@ -1479,27 +1479,27 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
   bindingCursor = g_BootstrapApiBindings;
   do {
     if (bindingCursor->destination == (void **)0x0) {
-      SVar1.carry = false;
-      SVar1.valueOrError = (dword)in_EAX;
-      return SVar1;
+      successResult.carry = false;
+      successResult.valueOrError = (dword)in_EAX;
+      return successResult;
     }
     lpProcName = bindingCursor->destination;
     hModule = GetModuleHandleA(bindingCursor->moduleName);
     if (hModule == (HMODULE)0x0) {
       if (bindingCursor->destination == (void **)dynapi_9) {
         Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);
-        SVar3.carry = true;
-        SVar3.valueOrError = 0xf;
-        return SVar3;
+        moduleUnavailableResult.carry = true;
+        moduleUnavailableResult.valueOrError = 0xf;
+        return moduleUnavailableResult;
       }
       hModule = (HINSTANCE)
                 ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (hModule == (HINSTANCE)0x0) {
         Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);
-        SVar2.carry = true;
-        SVar2.valueOrError = 0x11;
-        return SVar2;
+        loadFailedResult.carry = true;
+        loadFailedResult.valueOrError = 0x11;
+        return loadFailedResult;
       }
       g_DynamicModuleCount = g_DynamicModuleCount + 1;
       moduleName = bindingCursor->moduleName;
@@ -1511,9 +1511,9 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
     if (in_EAX == (void **)0x0) {
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->destination);
       Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)bindingCursor->moduleName);
-      SVar4.carry = true;
-      SVar4.valueOrError = 0x10;
-      return SVar4;
+      procedureMissingResult.carry = true;
+      procedureMissingResult.valueOrError = 0x10;
+      return procedureMissingResult;
     }
     bindingCursor->destination = in_EAX;
     bindingCursor = bindingCursor + 1;
@@ -1535,46 +1535,46 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
   dword compareBytesRemaining;
   int optionBufferCapacityRemaining;
   byte *in_EBX;
-  char *pcVar1;
+  char *compareOrScanCursor;
   char *optionBufferCursor;
   char *storedOptionCompareCursor;
   bool comparedBytesEqual;
-  CommandLineFindOptionEbxCf5 CVar2;
-  CommandLineFindOptionEbxCf5 CVar3;
+  CommandLineFindOptionEbxCf5 foundResult;
+  CommandLineFindOptionEbxCf5 notFoundResult;
   char currentOptionBufferByte;
   
   optionBufferCursor = g_CommandLine.optionBuffer;
   do {
     if (*optionBufferCursor == '\0') {
-      CVar3.carry = true;
-      CVar3.ebx = in_EBX;
-      return CVar3;
+      notFoundResult.carry = true;
+      notFoundResult.ebx = in_EBX;
+      return notFoundResult;
     }
     comparedBytesEqual = false;
     compareBytesRemaining = length;
-    pcVar1 = option;
+    compareOrScanCursor = option;
     storedOptionCompareCursor = optionBufferCursor;
     do {
       if (compareBytesRemaining == 0) break;
       compareBytesRemaining = compareBytesRemaining - 1;
-      comparedBytesEqual = *pcVar1 == *storedOptionCompareCursor;
-      pcVar1 = pcVar1 + 1;
+      comparedBytesEqual = *compareOrScanCursor == *storedOptionCompareCursor;
+      compareOrScanCursor = compareOrScanCursor + 1;
       storedOptionCompareCursor = storedOptionCompareCursor + 1;
     } while (comparedBytesEqual);
     if (comparedBytesEqual) {
-      CVar2.carry = false;
-      CVar2.ebx = (byte *)optionBufferCursor;
-      return CVar2;
+      foundResult.carry = false;
+      foundResult.ebx = (byte *)optionBufferCursor;
+      return foundResult;
     }
     optionBufferCapacityRemaining = (int)sz_MainWindowTitle - (int)optionBufferCursor;
-    pcVar1 = optionBufferCursor;
+    compareOrScanCursor = optionBufferCursor;
     do {
-      optionBufferCursor = pcVar1;
+      optionBufferCursor = compareOrScanCursor;
       if (optionBufferCapacityRemaining == 0) break;
       optionBufferCapacityRemaining = optionBufferCapacityRemaining + -1;
-      optionBufferCursor = pcVar1 + 1;
-      currentOptionBufferByte = *pcVar1;
-      pcVar1 = optionBufferCursor;
+      optionBufferCursor = compareOrScanCursor + 1;
+      currentOptionBufferByte = *compareOrScanCursor;
+      compareOrScanCursor = optionBufferCursor;
     } while (currentOptionBufferByte != '\0');
   } while( true );
 }
@@ -1591,77 +1591,77 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
 
 {
-  byte *pbVar1;
-  CommandLineArgumentMirrorState500 *pCVar2;
-  byte bVar3;
-  byte *pbVar4;
-  char *pcVar5;
-  char *pcVar6;
-  CommandLineArgumentMirrorState500 *pCVar7;
-  char *pcVar8;
+  byte *commandLineNext;
+  CommandLineArgumentMirrorState500 *pathWriteNext;
+  byte currentChar;
+  byte *commandLineCursor;
+  char *textWriteCursor;
+  char *optionWriteNext;
+  CommandLineArgumentMirrorState500 *pathWriteCursor;
+  char *argumentWriteCursor;
   
   g_CommandLineFindOption = CommandLine_FindOption;
-  pbVar4 = (byte *)GetCommandLineA();
-  pCVar2 = &g_CommandLine;
-  if (*pbVar4 == 0x22) {
-    pbVar4 = pbVar4 + 1;
+  commandLineCursor = (byte *)GetCommandLineA();
+  pathWriteNext = &g_CommandLine;
+  if (*commandLineCursor == 0x22) {
+    commandLineCursor = commandLineCursor + 1;
     do {
-      pCVar7 = pCVar2;
-      bVar3 = *pbVar4;
-      pCVar7->executablePath[0] = bVar3;
-      pbVar4 = pbVar4 + 1;
-      if (bVar3 == 0) {
+      pathWriteCursor = pathWriteNext;
+      currentChar = *commandLineCursor;
+      pathWriteCursor->executablePath[0] = currentChar;
+      commandLineCursor = commandLineCursor + 1;
+      if (currentChar == 0) {
         g_CommandLine.executablePath[0] = '\0';
         goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
       }
-      pCVar2 = (CommandLineArgumentMirrorState500 *)(pCVar7->executablePath + 1);
-    } while (bVar3 != 0x22);
-    pCVar7->executablePath[0] = '\0';
-    pcVar6 = g_CommandLine.optionBuffer;
+      pathWriteNext = (CommandLineArgumentMirrorState500 *)(pathWriteCursor->executablePath + 1);
+    } while (currentChar != 0x22);
+    pathWriteCursor->executablePath[0] = '\0';
+    optionWriteNext = g_CommandLine.optionBuffer;
   }
   else {
     do {
-      pCVar7 = pCVar2;
-      bVar3 = *pbVar4;
-      pCVar7->executablePath[0] = bVar3;
-      pbVar4 = pbVar4 + 1;
-      if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-      pCVar2 = (CommandLineArgumentMirrorState500 *)(pCVar7->executablePath + 1);
-    } while (bVar3 != 0x20);
-    pCVar7->executablePath[0] = '\0';
-    pcVar6 = g_CommandLine.optionBuffer;
+      pathWriteCursor = pathWriteNext;
+      currentChar = *commandLineCursor;
+      pathWriteCursor->executablePath[0] = currentChar;
+      commandLineCursor = commandLineCursor + 1;
+      if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+      pathWriteNext = (CommandLineArgumentMirrorState500 *)(pathWriteCursor->executablePath + 1);
+    } while (currentChar != 0x20);
+    pathWriteCursor->executablePath[0] = '\0';
+    optionWriteNext = g_CommandLine.optionBuffer;
   }
 CommandLine_Parse_ContinueScanningNextOptionOrArgument:
   do {
     do {
       while( true ) {
-        bVar3 = *pbVar4;
-        pbVar4 = pbVar4 + 1;
-        if ((bVar3 != 0x2f) && (bVar3 != 0x2d)) break;
+        currentChar = *commandLineCursor;
+        commandLineCursor = commandLineCursor + 1;
+        if ((currentChar != 0x2f) && (currentChar != 0x2d)) break;
         do {
           while( true ) {
-            pcVar5 = pcVar6;
-            bVar3 = *pbVar4;
-            if ((0x60 < bVar3) && (bVar3 < 0x7b)) {
-              bVar3 = bVar3 - 0x20;
+            textWriteCursor = optionWriteNext;
+            currentChar = *commandLineCursor;
+            if ((0x60 < currentChar) && (currentChar < 0x7b)) {
+              currentChar = currentChar - 0x20;
             }
-            *pcVar5 = bVar3;
-            pbVar4 = pbVar4 + 1;
-            pcVar6 = pcVar5 + 1;
-            if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-            if (bVar3 != 0x22) break;
+            *textWriteCursor = currentChar;
+            commandLineCursor = commandLineCursor + 1;
+            optionWriteNext = textWriteCursor + 1;
+            if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+            if (currentChar != 0x22) break;
             do {
-              bVar3 = *pbVar4;
-              *pcVar6 = bVar3;
-              pbVar4 = pbVar4 + 1;
-              pcVar6 = pcVar6 + 1;
-              if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-            } while (bVar3 != 0x22);
+              currentChar = *commandLineCursor;
+              *optionWriteNext = currentChar;
+              commandLineCursor = commandLineCursor + 1;
+              optionWriteNext = optionWriteNext + 1;
+              if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+            } while (currentChar != 0x22);
           }
-        } while (bVar3 != 0x20);
-        *pcVar5 = 0;
+        } while (currentChar != 0x20);
+        *textWriteCursor = 0;
       }
-      if (bVar3 == 0) {
+      if (currentChar == 0) {
 CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
         Text_CopyNarrowToUtf16Cf
                   (0x200,g_CommandLineWideArguments.argument1,(byte *)g_CommandLine.argument1);
@@ -1671,76 +1671,76 @@ CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
                   (0x200,g_CommandLineWideArguments.argument3,(byte *)g_CommandLine.argument3);
         return;
       }
-    } while (bVar3 == 0x20);
-    if (bVar3 == 0x22) {
-      pbVar1 = pbVar4;
+    } while (currentChar == 0x20);
+    if (currentChar == 0x22) {
+      commandLineNext = commandLineCursor;
       if (g_CommandLine.argument1[0] == '\0') {
-        pcVar5 = g_CommandLine.argument1;
+        textWriteCursor = g_CommandLine.argument1;
 CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot:
         do {
-          pcVar8 = pcVar5;
-          pbVar4 = pbVar1;
-          bVar3 = *pbVar4;
-          if ((0x60 < bVar3) && (bVar3 < 0x7b)) {
-            bVar3 = bVar3 - 0x20;
+          argumentWriteCursor = textWriteCursor;
+          commandLineCursor = commandLineNext;
+          currentChar = *commandLineCursor;
+          if ((0x60 < currentChar) && (currentChar < 0x7b)) {
+            currentChar = currentChar - 0x20;
           }
-          *pcVar8 = bVar3;
-          if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-          pbVar1 = pbVar4 + 1;
-          pcVar5 = pcVar8 + 1;
-        } while (bVar3 != 0x22);
-        *pcVar8 = 0;
+          *argumentWriteCursor = currentChar;
+          if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          commandLineNext = commandLineCursor + 1;
+          textWriteCursor = argumentWriteCursor + 1;
+        } while (currentChar != 0x22);
+        *argumentWriteCursor = 0;
       }
       else {
-        pcVar5 = g_CommandLine.argument2;
+        textWriteCursor = g_CommandLine.argument2;
         if ((g_CommandLine.argument2[0] == '\0') ||
-           (pcVar5 = g_CommandLine.argument3, g_CommandLine.argument3[0] == '\0'))
+           (textWriteCursor = g_CommandLine.argument3, g_CommandLine.argument3[0] == '\0'))
         goto CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot;
         do {
-          bVar3 = *pbVar4;
-          pbVar4 = pbVar4 + 1;
-          if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-        } while (bVar3 != 0x22);
+          currentChar = *commandLineCursor;
+          commandLineCursor = commandLineCursor + 1;
+          if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        } while (currentChar != 0x22);
       }
       goto CommandLine_Parse_ContinueScanningNextOptionOrArgument;
     }
-    if ((0x60 < bVar3) && (bVar3 < 0x7b)) {
-      bVar3 = bVar3 - 0x20;
+    if ((0x60 < currentChar) && (currentChar < 0x7b)) {
+      currentChar = currentChar - 0x20;
     }
-    pbVar1 = pbVar4;
+    commandLineNext = commandLineCursor;
     if (g_CommandLine.argument1[0] == '\0') {
-      pcVar5 = g_CommandLine.argument1 + 1;
-      g_CommandLine.argument1[0] = bVar3;
+      textWriteCursor = g_CommandLine.argument1 + 1;
+      g_CommandLine.argument1[0] = currentChar;
     }
     else if (g_CommandLine.argument2[0] == '\0') {
-      pcVar5 = g_CommandLine.argument2 + 1;
-      g_CommandLine.argument2[0] = bVar3;
+      textWriteCursor = g_CommandLine.argument2 + 1;
+      g_CommandLine.argument2[0] = currentChar;
     }
     else {
       if (g_CommandLine.argument3[0] != '\0') {
         do {
-          bVar3 = *pbVar4;
-          pbVar4 = pbVar4 + 1;
-          if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-        } while (bVar3 != 0x20);
+          currentChar = *commandLineCursor;
+          commandLineCursor = commandLineCursor + 1;
+          if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        } while (currentChar != 0x20);
         goto CommandLine_Parse_ContinueScanningNextOptionOrArgument;
       }
-      pcVar5 = g_CommandLine.argument3 + 1;
-      g_CommandLine.argument3[0] = bVar3;
+      textWriteCursor = g_CommandLine.argument3 + 1;
+      g_CommandLine.argument3[0] = currentChar;
     }
     do {
-      pcVar8 = pcVar5;
-      pbVar4 = pbVar1;
-      bVar3 = *pbVar4;
-      if ((0x60 < bVar3) && (bVar3 < 0x7b)) {
-        bVar3 = bVar3 - 0x20;
+      argumentWriteCursor = textWriteCursor;
+      commandLineCursor = commandLineNext;
+      currentChar = *commandLineCursor;
+      if ((0x60 < currentChar) && (currentChar < 0x7b)) {
+        currentChar = currentChar - 0x20;
       }
-      *pcVar8 = bVar3;
-      if (bVar3 == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-      pbVar1 = pbVar4 + 1;
-      pcVar5 = pcVar8 + 1;
-    } while (bVar3 != 0x20);
-    *pcVar8 = 0;
+      *argumentWriteCursor = currentChar;
+      if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+      commandLineNext = commandLineCursor + 1;
+      textWriteCursor = argumentWriteCursor + 1;
+    } while (currentChar != 0x20);
+    *argumentWriteCursor = 0;
   } while( true );
 }
 

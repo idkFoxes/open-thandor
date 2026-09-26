@@ -37,174 +37,174 @@ FrontendResultsTable_DrawColumnSequenceByType
 
 {
   UiPixelCoordinate drawY;
-  SoftwareFramebufferAccess *pSVar1;
-  void *pvVar2;
-  word *pwVar3;
-  uint uVar4;
-  dword dVar5;
-  int iVar6;
-  uint uVar7;
-  int iVar8;
-  dword *pdVar9;
-  bool bVar10;
-  TextResourceResolveEaxCf5 TVar11;
+  SoftwareFramebufferAccess *framebufferAccess;
+  void *statTableImage;
+  word *colourResource;
+  uint pixelColumn;
+  dword remainingColumns;
+  int drawXOrCount;
+  uint historySampleCount;
+  int factionRecordAddress;
+  dword *columnTypeOrColorCursor;
+  bool accessFailed;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if ((control->modeFlags & 1) == 0) {
     drawY = (control->base).left;
-    iVar6 = (control->base).top;
-    dVar5 = control->columnTypeCount;
-    pdVar9 = &control->columnTypes0;
-    bVar10 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar10) {
+    drawXOrCount = (control->base).top;
+    remainingColumns = control->columnTypeCount;
+    columnTypeOrColorCursor = &control->columnTypes0;
+    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    if (!accessFailed) {
       do {
                     // WARNING: Switch is manually overridden
-        switch(*pdVar9) {
+        switch(*columnTypeOrColorCursor) {
         case 0:
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvance00Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvance00Pixels;
           break;
         case 1:
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvance01Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvance01Pixels;
           break;
         case 2:
           FrontendResultsTable_DrawColourColumn
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceColourPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceColourPixels;
           break;
         case 3:
           FrontendResultsTable_DrawEconomyColumn
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceEconomyPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceEconomyPixels;
           break;
         case 4:
           FrontendResultsTable_DrawMilitaryColumn
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceMilitaryPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceMilitaryPixels;
           break;
         case 5:
           FrontendResultsTable_DrawPointsColumn
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvancePointsPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvancePointsPixels;
           break;
         case 6:
           FrontendResultsTable_DrawPlayerColumn
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvancePlayerPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvancePlayerPixels;
           break;
         case 7:
           FrontendResultsTable_DrawFactionColumn
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionPixels;
           break;
         case 8:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c1,0x21b6,0x98,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c1,0x21b6,0x98,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionField98Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionField98Pixels;
           break;
         case 9:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21b7,0x9c,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21b7,0x9c,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionField9CPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionField9CPixels;
           break;
         case 10:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c3,0x21b8,0xa0,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c3,0x21b8,0xa0,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldA0Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldA0Pixels;
           break;
         case 0xb:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c3,0x21b9,0xa4,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c3,0x21b9,0xa4,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldA4Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldA4Pixels;
           break;
         case 0xc:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21ba,0xa8,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21ba,0xa8,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldA8Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldA8Pixels;
           break;
         case 0xd:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21bb,0xac,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21bb,0xac,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldACPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldACPixels;
           break;
         case 0xe:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21bc,0xb0,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21bc,0xb0,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldB0Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldB0Pixels;
           break;
         case 0xf:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21bd,0xb4,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21bd,0xb4,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldB4Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldB4Pixels;
           break;
         case 0x10:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21be,0xb8,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21be,0xb8,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldB8Pixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldB8Pixels;
           break;
         case 0x11:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
-                    (0x21c2,0x21bf,0xbc,clipTop,clipLeft,clipBottom,clipRight,iVar6,drawY,
+                    (0x21c2,0x21bf,0xbc,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
                      (FrontendResultsRowMetrics *)control);
-          iVar6 = iVar6 + g_FrontendResultsColumnAdvanceFactionFieldBCPixels;
+          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldBCPixels;
         }
-        pdVar9 = pdVar9 + 1;
-        dVar5 = dVar5 - 1;
-      } while (dVar5 != 0);
+        columnTypeOrColorCursor = columnTypeOrColorCursor + 1;
+        remainingColumns = remainingColumns - 1;
+      } while (remainingColumns != 0);
       (*g_GraphicsFramebufferEndAccess)();
     }
   }
   else {
-    iVar6 = 7;
-    pdVar9 = g_FrontendResultsFactionPackedPixelColors;
-    iVar8 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+    drawXOrCount = 7;
+    columnTypeOrColorCursor = g_FrontendResultsFactionPackedPixelColors;
+    factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     do {
-      TVar11 = TextResource_Resolve(*(int *)(iVar8 + 0x38) + 0x2173);
-      pwVar3 = TVar11.eax;
-      *pdVar9 = (((byte)pwVar3[8] & 0xf) << 0x18 | (uint)(byte)pwVar3[7] << 0x1c) +
+      resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + 0x2173);
+      colourResource = resolvedText.eax;
+      *columnTypeOrColorCursor = (((byte)colourResource[8] & 0xf) << 0x18 | (uint)(byte)colourResource[7] << 0x1c) +
                 *(int *)((int)g_SoftwarePixelPackTables->red +
-                        ((((byte)pwVar3[6] & 0xf) << 0x18 | (uint)(byte)pwVar3[5] << 0x1c) >> 0x16))
+                        ((((byte)colourResource[6] & 0xf) << 0x18 | (uint)(byte)colourResource[5] << 0x1c) >> 0x16))
                 + *(int *)((int)g_SoftwarePixelPackTables->green +
-                          ((((byte)pwVar3[4] & 0xf) << 0x18 | (uint)(byte)pwVar3[3] << 0x1c) >> 0x16
+                          ((((byte)colourResource[4] & 0xf) << 0x18 | (uint)(byte)colourResource[3] << 0x1c) >> 0x16
                           )) +
                 g_SoftwarePixelPackTables->blue
-                [(((byte)pwVar3[2] & 0xf) << 0x18 | (uint)(byte)pwVar3[1] << 0x1c) >> 0x18];
-      pvVar2 = g_GameStatTableImage;
-      pSVar1 = g_FramebufferAccess;
-      iVar8 = iVar8 + 0x740;
-      pdVar9 = pdVar9 + 1;
-      iVar6 = iVar6 + -1;
-    } while (iVar6 != 0);
-    iVar6 = (control->base).layoutWidth;
-    uVar7 = g_GameFactionRuntimeImage.tail.simulationTick >> 7;
-    bVar10 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar10) {
-      g_FrontendResultsFramebufferBytesPerPixel = pSVar1->bytesPerPixel;
+                [(((byte)colourResource[2] & 0xf) << 0x18 | (uint)(byte)colourResource[1] << 0x1c) >> 0x18];
+      statTableImage = g_GameStatTableImage;
+      framebufferAccess = g_FramebufferAccess;
+      factionRecordAddress = factionRecordAddress + 0x740;
+      columnTypeOrColorCursor = columnTypeOrColorCursor + 1;
+      drawXOrCount = drawXOrCount + -1;
+    } while (drawXOrCount != 0);
+    drawXOrCount = (control->base).layoutWidth;
+    historySampleCount = g_GameFactionRuntimeImage.tail.simulationTick >> 7;
+    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    if (!accessFailed) {
+      g_FrontendResultsFramebufferBytesPerPixel = framebufferAccess->bytesPerPixel;
       g_FrontendResultsFramebufferScanlineStrideBytes =
-           pSVar1->width * g_FrontendResultsFramebufferBytesPerPixel;
-      uVar4 = 0;
+           framebufferAccess->width * g_FrontendResultsFramebufferBytesPerPixel;
+      pixelColumn = 0;
       do {
         (*control->factionWeightRaster)
-                  ((control->base).bottom,(control->base).top,uVar4 + (control->base).left,
+                  ((control->base).bottom,(control->base).top,pixelColumn + (control->base).left,
                    (FrontendResultsFactionWeightPair8 *)
-                   ((int)(((ulonglong)uVar4 * (ulonglong)uVar7) /
-                         (ulonglong)(uint)(control->base).layoutWidth) * 0x38 + (int)pvVar2));
-        uVar4 = uVar4 + 1;
-        iVar6 = iVar6 + -1;
-      } while (iVar6 != 0);
+                   ((int)(((ulonglong)pixelColumn * (ulonglong)historySampleCount) /
+                         (ulonglong)(uint)(control->base).layoutWidth) * 0x38 + (int)statTableImage));
+        pixelColumn = pixelColumn + 1;
+        drawXOrCount = drawXOrCount + -1;
+      } while (drawXOrCount != 0);
       (*g_GraphicsFramebufferEndAccess)();
     }
   }
@@ -236,60 +236,60 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
           FrontendResultsFactionWeightPair8 *factionWeights)
 
 {
-  dword dVar1;
-  SoftwareFramebufferAccess *pSVar2;
-  uint uVar3;
-  uint uVar4;
-  byte *pbVar5;
-  int iVar6;
-  int iStack_24;
-  uint uStack_20;
+  dword packedColor;
+  SoftwareFramebufferAccess *framebufferAccess;
+  uint weightTotal;
+  uint factionIndex;
+  byte *pixelCursor;
+  int drawnHeight;
+  int segmentHeight;
+  uint cumulativeWeight;
   
-  pSVar2 = g_FramebufferAccess;
-  uVar3 = (*factionWeights).lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
+  framebufferAccess = g_FramebufferAccess;
+  weightTotal = (*factionWeights).lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
           factionWeights[3].lane0 + factionWeights[4].lane0 + factionWeights[5].lane0 +
           factionWeights[6].lane0 +
           (*factionWeights).lane1 + factionWeights[1].lane1 + factionWeights[2].lane1 +
           factionWeights[3].lane1 + factionWeights[4].lane1 + factionWeights[5].lane1 +
           factionWeights[6].lane1;
-  if (uVar3 == 0) {
-    uVar4 = 1;
+  if (weightTotal == 0) {
+    factionIndex = 1;
     do {
-      if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar4] != 0) {
-        factionWeights[uVar4 - 1].lane0 = factionWeights[uVar4 - 1].lane0 + 1;
-        uVar3 = uVar3 + 1;
+      if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+        factionWeights[factionIndex - 1].lane0 = factionWeights[factionIndex - 1].lane0 + 1;
+        weightTotal = weightTotal + 1;
       }
-      uVar4 = uVar4 + 1;
-    } while (uVar4 < 8);
+      factionIndex = factionIndex + 1;
+    } while (factionIndex < 8);
   }
-  pbVar5 = pSVar2->pixels +
-           (spanStartY * pSVar2->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
-  uVar4 = 0;
-  uStack_20 = 0;
-  iVar6 = 0;
+  pixelCursor = framebufferAccess->pixels +
+           (spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
+  factionIndex = 0;
+  cumulativeWeight = 0;
+  drawnHeight = 0;
   do {
-    uStack_20 = uStack_20 + factionWeights->lane0 + factionWeights->lane1;
-    iStack_24 = (int)(((ulonglong)uStack_20 * (ulonglong)(uint)(spanEndY - spanStartY)) /
-                     (ulonglong)uVar3) - iVar6;
-    if (iStack_24 != 0) {
-      iVar6 = iVar6 + iStack_24;
-      dVar1 = g_FrontendResultsFactionPackedPixelColors[uVar4];
+    cumulativeWeight = cumulativeWeight + factionWeights->lane0 + factionWeights->lane1;
+    segmentHeight = (int)(((ulonglong)cumulativeWeight * (ulonglong)(uint)(spanEndY - spanStartY)) /
+                     (ulonglong)weightTotal) - drawnHeight;
+    if (segmentHeight != 0) {
+      drawnHeight = drawnHeight + segmentHeight;
+      packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
       if (g_FrontendResultsFramebufferBytesPerPixel != 2) {
-        *(short *)pbVar5 = (short)dVar1;
-        pbVar5 = pbVar5 + g_FrontendResultsFramebufferScanlineStrideBytes;
-        iStack_24 = iStack_24 + -1;
-        if (iStack_24 == 0) goto LAB_005175d0;
+        *(short *)pixelCursor = (short)packedColor;
+        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
+        segmentHeight = segmentHeight + -1;
+        if (segmentHeight == 0) goto LAB_005175d0;
       }
       do {
-        *(short *)pbVar5 = (short)dVar1;
-        pbVar5 = pbVar5 + g_FrontendResultsFramebufferScanlineStrideBytes;
-        iStack_24 = iStack_24 + -1;
-      } while (iStack_24 != 0);
+        *(short *)pixelCursor = (short)packedColor;
+        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
+        segmentHeight = segmentHeight + -1;
+      } while (segmentHeight != 0);
     }
 LAB_005175d0:
-    uVar4 = uVar4 + 1;
+    factionIndex = factionIndex + 1;
     factionWeights = factionWeights + 1;
-    if (6 < uVar4) {
+    if (6 < factionIndex) {
       return;
     }
   } while( true );
@@ -305,57 +305,57 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
           FrontendResultsFactionWeightPair8 *factionWeights)
 
 {
-  dword dVar1;
-  SoftwareFramebufferAccess *pSVar2;
-  uint uVar3;
-  byte *pbVar4;
-  int iVar5;
-  uint uVar6;
-  int iStack_24;
-  uint uStack_20;
+  dword packedColor;
+  SoftwareFramebufferAccess *framebufferAccess;
+  uint factionIndex;
+  byte *pixelCursor;
+  int drawnHeight;
+  uint weightTotal;
+  int segmentHeight;
+  uint cumulativeWeight;
   
-  pSVar2 = g_FramebufferAccess;
-  uVar6 = (*factionWeights).lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
+  framebufferAccess = g_FramebufferAccess;
+  weightTotal = (*factionWeights).lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
           factionWeights[3].lane0 + factionWeights[4].lane0 + factionWeights[5].lane0 +
           factionWeights[6].lane0;
-  if (uVar6 == 0) {
-    uVar3 = 1;
+  if (weightTotal == 0) {
+    factionIndex = 1;
     do {
-      if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] != 0) {
-        factionWeights[uVar3 - 1].lane0 = factionWeights[uVar3 - 1].lane0 + 1;
-        uVar6 = uVar6 + 1;
+      if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+        factionWeights[factionIndex - 1].lane0 = factionWeights[factionIndex - 1].lane0 + 1;
+        weightTotal = weightTotal + 1;
       }
-      uVar3 = uVar3 + 1;
-    } while (uVar3 < 8);
+      factionIndex = factionIndex + 1;
+    } while (factionIndex < 8);
   }
-  pbVar4 = pSVar2->pixels +
-           (spanStartY * pSVar2->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
-  uVar3 = 0;
-  uStack_20 = 0;
-  iVar5 = 0;
+  pixelCursor = framebufferAccess->pixels +
+           (spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
+  factionIndex = 0;
+  cumulativeWeight = 0;
+  drawnHeight = 0;
   do {
-    uStack_20 = uStack_20 + factionWeights->lane0;
-    iStack_24 = (int)(((ulonglong)uStack_20 * (ulonglong)(uint)(spanEndY - spanStartY)) /
-                     (ulonglong)uVar6) - iVar5;
-    if (iStack_24 != 0) {
-      iVar5 = iVar5 + iStack_24;
-      dVar1 = g_FrontendResultsFactionPackedPixelColors[uVar3];
+    cumulativeWeight = cumulativeWeight + factionWeights->lane0;
+    segmentHeight = (int)(((ulonglong)cumulativeWeight * (ulonglong)(uint)(spanEndY - spanStartY)) /
+                     (ulonglong)weightTotal) - drawnHeight;
+    if (segmentHeight != 0) {
+      drawnHeight = drawnHeight + segmentHeight;
+      packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
       if (g_FrontendResultsFramebufferBytesPerPixel != 2) {
-        *(short *)pbVar4 = (short)dVar1;
-        pbVar4 = pbVar4 + g_FrontendResultsFramebufferScanlineStrideBytes;
-        iStack_24 = iStack_24 + -1;
-        if (iStack_24 == 0) goto LAB_005176d0;
+        *(short *)pixelCursor = (short)packedColor;
+        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
+        segmentHeight = segmentHeight + -1;
+        if (segmentHeight == 0) goto LAB_005176d0;
       }
       do {
-        *(short *)pbVar4 = (short)dVar1;
-        pbVar4 = pbVar4 + g_FrontendResultsFramebufferScanlineStrideBytes;
-        iStack_24 = iStack_24 + -1;
-      } while (iStack_24 != 0);
+        *(short *)pixelCursor = (short)packedColor;
+        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
+        segmentHeight = segmentHeight + -1;
+      } while (segmentHeight != 0);
     }
 LAB_005176d0:
-    uVar3 = uVar3 + 1;
+    factionIndex = factionIndex + 1;
     factionWeights = factionWeights + 1;
-    if (6 < uVar3) {
+    if (6 < factionIndex) {
       return;
     }
   } while( true );
@@ -371,57 +371,57 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
           FrontendResultsFactionWeightPair8 *factionWeights)
 
 {
-  dword dVar1;
-  SoftwareFramebufferAccess *pSVar2;
-  uint uVar3;
-  byte *pbVar4;
-  int iVar5;
-  uint uVar6;
-  int iStack_24;
-  uint uStack_20;
+  dword packedColor;
+  SoftwareFramebufferAccess *framebufferAccess;
+  uint factionIndex;
+  byte *pixelCursor;
+  int drawnHeight;
+  uint weightTotal;
+  int segmentHeight;
+  uint cumulativeWeight;
   
-  pSVar2 = g_FramebufferAccess;
-  uVar6 = (*factionWeights).lane1 + factionWeights[1].lane1 + factionWeights[2].lane1 +
+  framebufferAccess = g_FramebufferAccess;
+  weightTotal = (*factionWeights).lane1 + factionWeights[1].lane1 + factionWeights[2].lane1 +
           factionWeights[3].lane1 + factionWeights[4].lane1 + factionWeights[5].lane1 +
           factionWeights[6].lane1;
-  if (uVar6 == 0) {
-    uVar3 = 1;
+  if (weightTotal == 0) {
+    factionIndex = 1;
     do {
-      if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar3] != 0) {
-        factionWeights[uVar3 - 1].lane1 = factionWeights[uVar3 - 1].lane1 + 1;
-        uVar6 = uVar6 + 1;
+      if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+        factionWeights[factionIndex - 1].lane1 = factionWeights[factionIndex - 1].lane1 + 1;
+        weightTotal = weightTotal + 1;
       }
-      uVar3 = uVar3 + 1;
-    } while (uVar3 < 8);
+      factionIndex = factionIndex + 1;
+    } while (factionIndex < 8);
   }
-  pbVar4 = pSVar2->pixels +
-           (spanStartY * pSVar2->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
-  uVar3 = 0;
-  uStack_20 = 0;
-  iVar5 = 0;
+  pixelCursor = framebufferAccess->pixels +
+           (spanStartY * framebufferAccess->width + drawX) * g_FrontendResultsFramebufferBytesPerPixel;
+  factionIndex = 0;
+  cumulativeWeight = 0;
+  drawnHeight = 0;
   do {
-    uStack_20 = uStack_20 + factionWeights->lane1;
-    iStack_24 = (int)(((ulonglong)uStack_20 * (ulonglong)(uint)(spanEndY - spanStartY)) /
-                     (ulonglong)uVar6) - iVar5;
-    if (iStack_24 != 0) {
-      iVar5 = iVar5 + iStack_24;
-      dVar1 = g_FrontendResultsFactionPackedPixelColors[uVar3];
+    cumulativeWeight = cumulativeWeight + factionWeights->lane1;
+    segmentHeight = (int)(((ulonglong)cumulativeWeight * (ulonglong)(uint)(spanEndY - spanStartY)) /
+                     (ulonglong)weightTotal) - drawnHeight;
+    if (segmentHeight != 0) {
+      drawnHeight = drawnHeight + segmentHeight;
+      packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
       if (g_FrontendResultsFramebufferBytesPerPixel != 2) {
-        *(short *)pbVar4 = (short)dVar1;
-        pbVar4 = pbVar4 + g_FrontendResultsFramebufferScanlineStrideBytes;
-        iStack_24 = iStack_24 + -1;
-        if (iStack_24 == 0) goto LAB_005177d0;
+        *(short *)pixelCursor = (short)packedColor;
+        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
+        segmentHeight = segmentHeight + -1;
+        if (segmentHeight == 0) goto LAB_005177d0;
       }
       do {
-        *(short *)pbVar4 = (short)dVar1;
-        pbVar4 = pbVar4 + g_FrontendResultsFramebufferScanlineStrideBytes;
-        iStack_24 = iStack_24 + -1;
-      } while (iStack_24 != 0);
+        *(short *)pixelCursor = (short)packedColor;
+        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
+        segmentHeight = segmentHeight + -1;
+      } while (segmentHeight != 0);
     }
 LAB_005177d0:
-    uVar3 = uVar3 + 1;
+    factionIndex = factionIndex + 1;
     factionWeights = factionWeights + 1;
-    if (6 < uVar3) {
+    if (6 < factionIndex) {
       return;
     }
   } while( true );
@@ -444,31 +444,31 @@ FrontendResultsTable_DrawColourColumn
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
+  int offsetOrRowY;
+  uint factionIndex;
+  int factionRecordAddress;
   int baselineY;
-  TextResourceResolveEaxCf5 TVar4;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  TVar4 = TextResource_Resolve(0x21b2);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + iVar1;
+  resolvedText = TextResource_Resolve(0x21b2);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
-  uVar2 = 1;
-  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
-  iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,drawX + 6,baselineY);
+  factionIndex = 1;
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
-      TVar4 = TextResource_Resolve(*(int *)(iVar3 + 0x38) + 0x2173);
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+      resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + 0x2173);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,2,TVar4.eax,drawX + 6,iVar1);
-      iVar1 = iVar1 + rowMetrics->rowAdvancePixels;
+                (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.eax,drawX + 6,offsetOrRowY);
+      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    uVar2 = uVar2 + 1;
-    iVar3 = iVar3 + 0x740;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+    factionRecordAddress = factionRecordAddress + 0x740;
+  } while (factionIndex < 8);
   return;
 }
 
@@ -490,28 +490,28 @@ FrontendResultsTable_DrawFactionColumn
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
+  int offsetOrRowY;
+  uint factionIndex;
   int baselineY;
-  TextResourceResolveEaxCf5 TVar3;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  TVar3 = TextResource_Resolve(0x21b5);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + iVar1;
+  resolvedText = TextResource_Resolve(0x21b5);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar3.eax,drawX + 6,baselineY);
-  uVar2 = 1;
-  iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,drawX + 6,baselineY);
+  factionIndex = 1;
+  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
-      TVar3 = TextResource_Resolve(uVar2 + 0x2190);
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+      resolvedText = TextResource_Resolve(factionIndex + 0x2190);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,2,TVar3.eax,drawX + 6,iVar1);
-      iVar1 = iVar1 + rowMetrics->rowAdvancePixels;
+                (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.eax,drawX + 6,offsetOrRowY);
+      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    uVar2 = uVar2 + 1;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+  } while (factionIndex < 8);
   return;
 }
 
@@ -536,35 +536,35 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
           UiPixelCoordinate drawX,UiPixelCoordinate drawY,FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
-  byte *pbVar3;
+  int offsetOrRowY;
+  uint factionIndex;
+  byte *factionFieldCursor;
   int baselineY;
-  TextResourceResolveEaxCf5 TVar4;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  TVar4 = TextResource_Resolve(headerResourceId);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + iVar1;
+  resolvedText = TextResource_Resolve(headerResourceId);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
-  uVar2 = 1;
-  iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,drawX + 6,baselineY);
+  factionIndex = 1;
+  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
-  pbVar3 = g_GameFactionRuntimeImage.records[1].reserved78_87 + (factionFieldOffset - 0x78);
+  factionFieldCursor = g_GameFactionRuntimeImage.records[1].reserved78_87 + (factionFieldOffset - 0x78);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,*(sdword *)pbVar3,
+                (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,*(sdword *)factionFieldCursor,
                  (word *)&g_FrontendResultsValueTextUtf16);
-      TVar4 = TextResource_Resolve(valueFormatResourceId);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,TVar4.eax);
+      resolvedText = TextResource_Resolve(valueFormatResourceId);
+      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,2,TVar4.eax,drawX + 6,iVar1);
-      iVar1 = iVar1 + rowMetrics->rowAdvancePixels;
+                (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.eax,drawX + 6,offsetOrRowY);
+      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    uVar2 = uVar2 + 1;
-    pbVar3 = pbVar3 + 0x740;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+    factionFieldCursor = factionFieldCursor + 0x740;
+  } while (factionIndex < 8);
   return;
 }
 
@@ -586,36 +586,36 @@ FrontendResultsTable_DrawPointsColumn
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
+  int offsetOrRowY;
+  uint factionIndex;
+  int factionRecordAddress;
   int baselineY;
-  TextResourceResolveEaxCf5 TVar4;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  TVar4 = TextResource_Resolve(0x21b3);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + iVar1;
+  resolvedText = TextResource_Resolve(0x21b3);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
-  uVar2 = 1;
-  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
-  iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,drawX + 6,baselineY);
+  factionIndex = 1;
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(int *)(iVar3 + 0x90) + *(int *)(iVar3 + 0x94),
+                 *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),
                  (word *)&g_FrontendResultsValueTextUtf16);
-      TVar4 = TextResource_Resolve(0x21c4);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,TVar4.eax);
+      resolvedText = TextResource_Resolve(0x21c4);
+      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,2,TVar4.eax,drawX + 6,iVar1);
-      iVar1 = iVar1 + rowMetrics->rowAdvancePixels;
+                (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.eax,drawX + 6,offsetOrRowY);
+      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    uVar2 = uVar2 + 1;
-    iVar3 = iVar3 + 0x740;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+    factionRecordAddress = factionRecordAddress + 0x740;
+  } while (factionIndex < 8);
   return;
 }
 
@@ -637,35 +637,35 @@ FrontendResultsTable_DrawEconomyColumn
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
+  int offsetOrRowY;
+  uint factionIndex;
+  int factionRecordAddress;
   int baselineY;
-  TextResourceResolveEaxCf5 TVar4;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  TVar4 = TextResource_Resolve(0x21b0);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + iVar1;
+  resolvedText = TextResource_Resolve(0x21b0);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
-  uVar2 = 1;
-  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
-  iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,drawX + 6,baselineY);
+  factionIndex = 1;
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(sdword *)(iVar3 + 0x90),(word *)&g_FrontendResultsValueTextUtf16);
-      TVar4 = TextResource_Resolve(0x21c4);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,TVar4.eax);
+                 *(sdword *)(factionRecordAddress + 0x90),(word *)&g_FrontendResultsValueTextUtf16);
+      resolvedText = TextResource_Resolve(0x21c4);
+      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,2,TVar4.eax,drawX + 6,iVar1);
-      iVar1 = iVar1 + rowMetrics->rowAdvancePixels;
+                (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.eax,drawX + 6,offsetOrRowY);
+      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    uVar2 = uVar2 + 1;
-    iVar3 = iVar3 + 0x740;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+    factionRecordAddress = factionRecordAddress + 0x740;
+  } while (factionIndex < 8);
   return;
 }
 
@@ -687,35 +687,35 @@ FrontendResultsTable_DrawMilitaryColumn
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
+  int offsetOrRowY;
+  uint factionIndex;
+  int factionRecordAddress;
   int baselineY;
-  TextResourceResolveEaxCf5 TVar4;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  TVar4 = TextResource_Resolve(0x21b1);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + iVar1;
+  resolvedText = TextResource_Resolve(0x21b1);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
-  uVar2 = 1;
-  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
-  iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,drawX + 6,baselineY);
+  factionIndex = 1;
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(sdword *)(iVar3 + 0x94),(word *)&g_FrontendResultsValueTextUtf16);
-      TVar4 = TextResource_Resolve(0x21c4);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,TVar4.eax);
+                 *(sdword *)(factionRecordAddress + 0x94),(word *)&g_FrontendResultsValueTextUtf16);
+      resolvedText = TextResource_Resolve(0x21c4);
+      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,2,TVar4.eax,drawX + 6,iVar1);
-      iVar1 = iVar1 + rowMetrics->rowAdvancePixels;
+                (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.eax,drawX + 6,offsetOrRowY);
+      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    uVar2 = uVar2 + 1;
-    iVar3 = iVar3 + 0x740;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+    factionRecordAddress = factionRecordAddress + 0x740;
+  } while (factionIndex < 8);
   return;
 }
 
@@ -737,63 +737,63 @@ FrontendResultsTable_DrawPlayerColumn
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int iVar1;
-  uint uVar2;
+  int offsetOrRowY;
+  uint factionIndex;
   FrontendPlayerNameUtf16_28 *commandStream;
-  FrontendPlayerRuntimeBlockCount FVar3;
-  int drawX_00;
-  int iVar4;
-  TextResourceResolveEaxCf5 TVar5;
-  UiPixelCoordinate clipLeft_00;
-  UiPixelCoordinate clipRight_00;
-  uint uVar6;
-  int local_24;
-  int local_20;
+  FrontendPlayerRuntimeBlockCount remainingBlocks;
+  int nameDrawX;
+  int coordinateOrAdvance;
+  TextResourceResolveEaxCf5 resolvedText;
+  UiPixelCoordinate nameClipLeft;
+  UiPixelCoordinate nameClipRight;
+  uint namesDrawn;
+  int rowBottomY;
+  int rowTopY;
   
-  TVar5 = TextResource_Resolve(0x21b4);
-  iVar1 = rowMetrics->headerBaselineOffsetPixels + -4;
-  iVar4 = drawY + iVar1;
-  drawX_00 = drawX + 6;
+  resolvedText = TextResource_Resolve(0x21b4);
+  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
+  coordinateOrAdvance = drawY + offsetOrRowY;
+  nameDrawX = drawX + 6;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,1,TVar5.eax,drawX_00,iVar4);
-  local_20 = (iVar4 - iVar1) + rowMetrics->headerBaselineOffsetPixels;
-  uVar2 = 1;
-  local_24 = rowMetrics->rowAdvancePixels + local_20;
-  iVar1 = local_20 + (rowMetrics->rowAdvancePixels >> 1);
+            (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.eax,nameDrawX,coordinateOrAdvance);
+  rowTopY = (coordinateOrAdvance - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels;
+  factionIndex = 1;
+  rowBottomY = rowMetrics->rowAdvancePixels + rowTopY;
+  offsetOrRowY = rowTopY + (rowMetrics->rowAdvancePixels >> 1);
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar2] != 0) {
-      uVar6 = 0;
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
+      namesDrawn = 0;
       commandStream = &g_FrontendPlayerRuntimeBlocks->playerName;
-      FVar3 = g_FrontendPlayerRuntimeBlockCount;
-      iVar4 = drawX_00;
+      remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
+      coordinateOrAdvance = nameDrawX;
       do {
-        if ((uVar2 == *(FrontendFactionAssignmentIndex *)
+        if ((factionIndex == *(FrontendFactionAssignmentIndex *)
                        ((int)((UiTransferEndpointDescriptor *)(commandStream + 1) + 1) + 8)) &&
-           (uVar6 < 3)) {
-          uVar6 = uVar6 + 1;
-          clipRight_00 = clipRight;
-          if (clipRight < local_20) {
-            clipRight_00 = local_20;
+           (namesDrawn < 3)) {
+          namesDrawn = namesDrawn + 1;
+          nameClipRight = clipRight;
+          if (clipRight < rowTopY) {
+            nameClipRight = rowTopY;
           }
-          clipLeft_00 = clipLeft;
-          if (local_24 < clipLeft) {
-            clipLeft_00 = local_24;
+          nameClipLeft = clipLeft;
+          if (rowBottomY < clipLeft) {
+            nameClipLeft = rowBottomY;
           }
           RichTextCommandStream_DrawSingleLine
-                    (clipTop,clipLeft_00,clipBottom,clipRight_00,2,commandStream->textUtf16,iVar4,
-                     iVar1);
-          iVar4 = iVar4 + 0x1a;
+                    (clipTop,nameClipLeft,clipBottom,nameClipRight,2,commandStream->textUtf16,coordinateOrAdvance,
+                     offsetOrRowY);
+          coordinateOrAdvance = coordinateOrAdvance + 0x1a;
         }
         commandStream = commandStream + 0x7e;
-        FVar3 = FVar3 - 1;
-      } while (FVar3 != 0);
-      iVar4 = rowMetrics->rowAdvancePixels;
-      iVar1 = iVar1 + iVar4;
-      local_20 = local_20 + iVar4;
-      local_24 = local_24 + iVar4;
+        remainingBlocks = remainingBlocks - 1;
+      } while (remainingBlocks != 0);
+      coordinateOrAdvance = rowMetrics->rowAdvancePixels;
+      offsetOrRowY = offsetOrRowY + coordinateOrAdvance;
+      rowTopY = rowTopY + coordinateOrAdvance;
+      rowBottomY = rowBottomY + coordinateOrAdvance;
     }
-    uVar2 = uVar2 + 1;
-  } while (uVar2 < 8);
+    factionIndex = factionIndex + 1;
+  } while (factionIndex < 8);
   return;
 }
 
