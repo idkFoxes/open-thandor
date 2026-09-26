@@ -1775,10 +1775,22 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   do {
     iVar3 = iVar3 + -1;
   } while (-1 < iVar3);
+  /* The original pushes all twelve command controls (offsets 11..0) as the variadic list. */
   UiSelectableGroup_SelectExclusive
             (0xc,(UiNodeBase *)
-                 ((int)&root->nextSibling + g_UiMappedCommandControlOffsets[absoluteIndex - dVar5]))
-  ;
+                 ((int)&root->nextSibling + g_UiMappedCommandControlOffsets[absoluteIndex - dVar5]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[0]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[1]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[2]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[3]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[4]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[5]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[6]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[7]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[8]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[9]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[10]),
+      THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[11]));
   return;
 }
 
