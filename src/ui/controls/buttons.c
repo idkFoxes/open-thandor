@@ -423,13 +423,11 @@ UiImageActionControl_DrawImageAndChildren
   {
     /* Diagnostics: end-movie display (texture source = g_ActiveMovie). */
     static int logged;
-    if ((g_ActiveMovie != (MovieRuntime *)0x0) && ((g_UiCommandRuntimeFlags & 0x800) != 0) &&
-        (logged < 60)) {
+    if ((g_ActiveMovie != (MovieRuntime *)0x0) && (control[1].parent == (UiNodeBase *)g_ActiveMovie) &&
+        (logged < 40)) {
       logged++;
-      Thandor_Log("image draw during end movie %d: texture=%p %s node=%p mode=%s sub=%u clip=%d,%d,%d,%d rect=%d,%d,%d,%d frame=%u pixel=%08x suppressed=%d",
-                  logged, (void *)control[1].parent,
-                  (control[1].parent == (UiNodeBase *)g_ActiveMovie) ? "(movie)" : "(other)",
-                  (void *)control, ((uint)control[1].nextSibling & 1) ? "stretch" : "blit",
+      Thandor_Log("movie image draw %d: node=%p mode=%s sub=%u clip=%d,%d,%d,%d rect=%d,%d,%d,%d frame=%u pixel=%08x suppressed=%d",
+                  logged, (void *)control, ((uint)control[1].nextSibling & 1) ? "stretch" : "blit",
                   (dword)control[1].vtable, clipTop, clipLeft, clipBottom, clipRight, control->top,
                   control->left, control->bottom, control->right, g_ActiveMovie->currentFrameIndex,
                   *(dword *)((byte *)g_ActiveMovie + 0x220 + 4 * (160 * 320 + 160)),

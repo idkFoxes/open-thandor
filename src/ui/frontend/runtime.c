@@ -2630,13 +2630,15 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
         g_EndMoviePendingTicks = 0;
         {
           /* Diagnostics: which UI element displays the end movie. */
+          UiNodeBase *movieNode = (UiNodeBase *)((byte *)pIVar4 + 0x1d0);
           UiNodeBase *child;
           int depth = 0;
-          Thandor_Log("end movie root=%p stack=%p pageCount=%u pages=%p,%p,%p,%p active=%p",
-                      (void *)pIVar4, (void *)stack, stack->pageCount,
-                      (void *)(&stack->pages)[0], (void *)(&stack->pages)[1],
-                      (void *)(&stack->pages)[2], (void *)(&stack->pages)[3],
-                      (void *)stack->base.firstChild);
+          Thandor_Log("end movie node 0x1d0: vtable=%p draw=%s flags=%08x rect=%d,%d,%d,%d f5c=%08x f60=%08x movie=%p",
+                      (void *)movieNode->vtable,
+                      Thandor_SymbolName((void *)movieNode->vtable->drawClipped), movieNode->nodeFlags,
+                      movieNode->left, movieNode->top, movieNode->right, movieNode->bottom,
+                      *(dword *)((byte *)movieNode + 0x5c), *(dword *)((byte *)movieNode + 0x60),
+                      (void *)pIVar4->activeEndMovieRuntime022C);
           for (child = stack->base.firstChild; child != (UiNodeBase *)0xffffffff && depth < 8;
                child = child->nextSibling, depth++) {
             Thandor_Log("end movie stack page %d: node=%p draw=%s flags=%08x rect=%d,%d,%d,%d", depth,
