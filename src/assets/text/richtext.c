@@ -733,7 +733,10 @@ RichTextStringAssetEaxCf5 __thandor_eax_cf_preserve_edx
 RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
 
 {
-  byte thandor_stack_frame[0x100]; /* TODO: unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
+  /* Unreachable: nothing in the original image calls 0x0041BCB0 or stores its address (a leftover
+     of the TXT2STR converter). The stack slots below were never recovered; the body is kept
+     only for completeness. */
+  byte thandor_stack_frame[0x100]; /* unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
   byte bVar1;
   ushort uVar2;
   wchar_t *memory;

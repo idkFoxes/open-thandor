@@ -621,7 +621,10 @@ ScenarioCatalog_RequestRomTransitionStopCallback(dword arg0,dword arg1,dword arg
 void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceivedAsset(void)
 
 {
-  byte thandor_stack_frame[0x100]; /* TODO: unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
+  /* The three command payload dwords double as a 96-bit mask of levels that are new in the
+     received catalog: the original ORs bit n into [ESP + EBX*4] (EBX 3..1), and those slots are
+     the 0xE00 command's arguments. Index 1 is the first argument after the command code. */
+  dword changedLevelMask[4];
   dword dVar1;
   ScenarioCatalogRecordCount recordCount;
   ScenarioCatalogByteOffset SVar2;
@@ -638,9 +641,6 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
   FatalErrorEaxCf5 FVar13;
   UiTransferMailboxReceivedEaxEcxCf9 UVar14;
   ScenarioCatalogHeader *memory;
-  CommandPayloadDword0C payloadDword0C;
-  CommandPayloadDword08 payloadDword08;
-  CommandPayloadDword04 payloadDword04;
   
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&
      (g_FrontendScenarioTransferState != 0)) {
@@ -651,9 +651,9 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         dVar1 = *pdVar4;
         AVar12 = (*g_MemoryApi.alloc)(dVar1);
         FVar13 = (*g_FatalErrorPrimaryDispatchCf)(AVar12.eax,AVar12.carry);
-        payloadDword04 = 0;
-        payloadDword08 = 0;
-        payloadDword0C = 0;
+        changedLevelMask[1] = 0;
+        changedLevelMask[2] = 0;
+        changedLevelMask[3] = 0;
         memory = g_ScenarioCatalog;
         g_ScenarioCatalog = (ScenarioCatalogHeader *)FVar13.eax;
         g_ScenarioCatalogUsedBytes = dVar1;
@@ -675,8 +675,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
               bVar11 = DwordBlock64Array_ContainsExactRecordCf
                                  (recordCount,(dword *)((int)pSVar3 + SVar2),pdVar4);
               if (!bVar11) {
-                *(uint *)(&thandor_stack_frame[0x80 - 0x28] + iVar8 * 4) =
-                     *(uint *)(&thandor_stack_frame[0x80 - 0x28] + iVar8 * 4) | uVar7;
+                changedLevelMask[iVar8] = changedLevelMask[iVar8] | uVar7;
               }
               pdVar4 = pdVar4 + 0x40;
               uVar7 = uVar7 * 2;
@@ -691,7 +690,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         (*g_MemoryApi.free)(memory);
         FrontendCommandQueue_EnqueueLocalPlayerCommand
-                  (0xe00,payloadDword0C,payloadDword08,payloadDword04);
+                  (0xe00,changedLevelMask[1],changedLevelMask[2],changedLevelMask[3]);
       }
     }
     else if (g_FrontendScenarioTransferState < 3) {
