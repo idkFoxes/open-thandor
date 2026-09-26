@@ -39,7 +39,7 @@ typedef struct ImageData_00401000 {
     dword at_g_LocaleGetDefaultTelephoneCountryCode_rest[1]; /* beyond the declared type */
     LocaleCopyDefaultComputerLabelUtf16Proc * at_g_LocaleCopyDefaultComputerLabelUtf16; /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
     CpuDetectFeaturesProc * at_g_CPUDetectFeatures; /* 004027B8 g_CPUDetectFeatures */
-    dword at_g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf[1]; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
+    pointer at_g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
     dword at_g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
     dword at_g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
     dword at_g_CpuFeatureFlags_rest[2]; /* beyond the declared type */
@@ -121,16 +121,16 @@ extern ImageData_00407510 g_ImageData_00407510;
 /* original 0x004080B4-0x0040A4C0 */
 typedef struct ImageData_004080B4 {
     byte at_gap_004080B4[12]; /* 004080B4 gap */
-    dword at_g_PckHuffmanSymbolWorkspace256[256]; /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
-    dword at_g_PckHuffmanLeafNodeWorkspace256[1024]; /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
-    dword at_g_PckHuffmanInternalNodeWorkspace256[1024]; /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
+    PckHuffmanSymbolState at_g_PckHuffmanSymbolWorkspace256[256]; /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
+    PckHuffmanNode at_g_PckHuffmanLeafNodeWorkspace256[256]; /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
+    PckHuffmanNode at_g_PckHuffmanInternalNodeWorkspace256[256]; /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
 } ImageData_004080B4;
 extern ImageData_004080B4 g_ImageData_004080B4;
 
 /* original 0x0040ABBC-0x0040E2B0 */
 typedef struct ImageData_0040ABBC {
     byte at_gap_0040ABBC[4]; /* 0040ABBC gap */
-    dword at_g_InitialWorkingDirectory[128]; /* 0040ABC0 g_InitialWorkingDirectory */
+    WidePathBuffer256 at_g_InitialWorkingDirectory; /* 0040ABC0 g_InitialWorkingDirectory */
     undefined at_g_FileSystemCombinedPathScratchUtf16; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
     dword at_g_FileSystemCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
     byte at_g_FileSystemCombinedPathScratchUtf16_rest_tail[3];
@@ -177,11 +177,11 @@ extern ImageData_0040ABBC g_ImageData_0040ABBC;
 typedef struct ImageData_0040F524 {
     byte at_gap_0040F524[12]; /* 0040F524 gap */
     byte at_g_UiTimedListDriveLetters[32]; /* 0040F530 g_UiTimedListDriveLetters */
-    dword at_g_UiTimedListRecordPathScratch[128]; /* 0040F550 g_UiTimedListRecordPathScratch */
-    dword at_g_UiTimedListCombinedPathScratch[128]; /* 0040F750 g_UiTimedListCombinedPathScratch */
-    dword at_g_UiTimedListSecondaryPathScratch[128]; /* 0040F950 g_UiTimedListSecondaryPathScratch */
-    dword at_g_UiTimedListHierarchyPathScratch[128]; /* 0040FB50 g_UiTimedListHierarchyPathScratch */
-    dword at_g_UiTimedListHierarchyParentPathScratch[128]; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
+    WidePathBuffer256 at_g_UiTimedListRecordPathScratch; /* 0040F550 g_UiTimedListRecordPathScratch */
+    WidePathBuffer256 at_g_UiTimedListCombinedPathScratch; /* 0040F750 g_UiTimedListCombinedPathScratch */
+    WidePathBuffer256 at_g_UiTimedListSecondaryPathScratch; /* 0040F950 g_UiTimedListSecondaryPathScratch */
+    WidePathBuffer256 at_g_UiTimedListHierarchyPathScratch; /* 0040FB50 g_UiTimedListHierarchyPathScratch */
+    WidePathBuffer256 at_g_UiTimedListHierarchyParentPathScratch; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
     word at_g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
     word at_u________0040ff58[7]; /* 0040FF58 u________0040ff58 */
     byte at_u________0040ff58_padding[10];
@@ -644,7 +644,8 @@ typedef struct ImageData_00486D8C {
     MovieRuntime * at_g_ActiveMovie; /* 004A6D98 g_ActiveMovie */
     MovieAudioGainQ15 at_g_MovieDefaultAudioGainQ15; /* 004A6D9C g_MovieDefaultAudioGainQ15 */
     MovieAudioGainQ15 at_g_MovieAlternateAudioGainQ15; /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
-    dword at_g_LooseMoviePathPrefix[131]; /* 004A6DA4 g_LooseMoviePathPrefix */
+    WidePathBuffer256 at_g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
+    dword at_g_LooseMoviePathPrefix_rest[3]; /* beyond the declared type */
 } ImageData_00486D8C;
 extern ImageData_00486D8C g_ImageData_00486D8C;
 
@@ -728,7 +729,7 @@ typedef struct ImageData_004AE95C {
     dword at_g_UiTransferSenderContext; /* 004AE980 g_UiTransferSenderContext */
     RuntimeSpinLockValue * at_g_UiRuntimeFrameLock; /* 004AE984 g_UiRuntimeFrameLock */
     UiRuntimePostUnlockCallbackProc * at_g_UiRuntimePostUnlockCallback; /* 004AE988 g_UiRuntimePostUnlockCallback */
-    dword at_g_UiRuntimeRecordRingLock[1]; /* 004AE98C g_UiRuntimeRecordRingLock */
+    RuntimeSpinLockValue at_g_UiRuntimeRecordRingLock; /* 004AE98C g_UiRuntimeRecordRingLock */
     UiTransferMailboxState at_g_UiTransferMailbox; /* 004AE990 g_UiTransferMailbox */
     undefined at_g_UiTransferRoundKeys16; /* 004AE9A8 g_UiTransferRoundKeys16 */
     dword at_g_UiTransferRoundKeys16_rest[11]; /* beyond the declared type */
@@ -815,8 +816,8 @@ typedef struct ImageData_004B0A20 {
     undefined4 at_g_UiTextEditCaretBlinkPhaseStep; /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
     undefined4 at_g_UiHorizontalGaugeLabelTopInset; /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     undefined4 at_g_UiHorizontalGaugeLabelTextStyle; /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
-    dword at_g_UiRootStackActionHandlerPage[1]; /* 004B0EB0 g_UiRootStackActionHandlerPage */
-    byte at_g_UiRootStackActionHandlerPage_tail[2];
+    pointer at_g_UiRootStackActionHandlerPage; /* 004B0EB0 g_UiRootStackActionHandlerPage */
+    byte at_g_UiRootStackActionHandlerPage_rest_tail[2];
     word at_u__engine_winclass_gfx_004b0eb6[1]; /* 004B0EB6 u__engine_winclass_gfx_004b0eb6 */
     dword at_u_engine_winclass_gfx_004b0eb6_2[10]; /* 004B0EB8 u_engine\winclass.gfx_004b0eb6+2 */
     word at_u_texte_winclass_str_004b0ee0[19]; /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
@@ -1142,7 +1143,7 @@ typedef struct ImageData_004CCDE8 {
     sdword at_g_GraphicsShadingGridStepQ20Current; /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
     GraphicsTextureSourceAsset * at_g_GraphicsShadingGeneratedAsset; /* 004CCE2C g_GraphicsShadingGeneratedAsset */
     void * at_g_GraphicsShadingGridScratch; /* 004CCE30 g_GraphicsShadingGridScratch */
-    dword at_g_GraphicsShadingGridScratchInterior[1]; /* 004CCE34 g_GraphicsShadingGridScratchInterior */
+    pointer at_g_GraphicsShadingGridScratchInterior; /* 004CCE34 g_GraphicsShadingGridScratchInterior */
     GraphicsTextureSet * at_g_GraphicsShadingTextureSet; /* 004CCE38 g_GraphicsShadingTextureSet */
     dword at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount; /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
     sdword at_g_GraphicsShadingPositiveGridOriginQ12; /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
@@ -1235,7 +1236,7 @@ typedef struct ImageData_00505F98 {
     byte at_g_TerrainHeightDeltaScaleByStepQ12_rest_tail[3];
     undefined4 at_g_TerrainScanRowStrideBytes; /* 005063A0 g_TerrainScanRowStrideBytes */
     undefined4 at_g_TerrainScanStepLimit; /* 005063A4 g_TerrainScanStepLimit */
-    dword at_g_TerrainScanSharedSelectorValue[1]; /* 005063A8 g_TerrainScanSharedSelectorValue */
+    TerrainScanSelectorUnion at_g_TerrainScanSharedSelectorValue; /* 005063A8 g_TerrainScanSharedSelectorValue */
     undefined4 at_g_TerrainScanReferenceHeight; /* 005063AC g_TerrainScanReferenceHeight */
 } ImageData_00505F98;
 extern ImageData_00505F98 g_ImageData_00505F98;
@@ -1366,10 +1367,9 @@ typedef struct ImageData_0050D928 {
     word at_u_save___sve_0050d9c8[11]; /* 0050D9C8 u_save___sve_0050d9c8 */
     dword at_str_0050D9DE[12]; /* 0050D9DE str_0050D9DE */
     word at_u_level_level_dat_0050da0e[16]; /* 0050DA0E u_level_level_dat_0050da0e */
-    dword at_g_ScenarioLevelDataPathTemplateUtf16[9]; /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
+    ScenarioLevelDataPathTemplate24 at_g_ScenarioLevelDataPathTemplateUtf16; /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
     word at_u_level_campagne_dat_0050da52[19]; /* 0050DA52 u_level_campagne_dat_0050da52 */
-    dword at_g_ScenarioCampaignDataPathTemplateUtf16[10]; /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
-    byte at_g_ScenarioCampaignDataPathTemplateUtf16_tail[2];
+    ScenarioCampaignDataPathTemplate2A at_g_ScenarioCampaignDataPathTemplateUtf16; /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
     word at_u_save_0050daa2[5]; /* 0050DAA2 u_save_0050daa2 */
     word at_u_level_0050daac[6]; /* 0050DAAC u_level_0050daac */
     word at_u_level_0050dab8[6]; /* 0050DAB8 u_level_0050dab8 */
@@ -1444,7 +1444,7 @@ typedef struct ImageData_0050F044 {
     dword at_g_LocalPlayerRuntimeId_rest[4]; /* beyond the declared type */
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeBlocks; /* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
     FrontendPlayerRuntimeBlockCount at_g_FrontendPlayerRuntimeBlockCount; /* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
-    dword at_g_SessionNetworkRoleFlags[1]; /* 0050F0C8 g_SessionNetworkRoleFlags */
+    SessionNetworkRoleFlags at_g_SessionNetworkRoleFlags; /* 0050F0C8 g_SessionNetworkRoleFlags */
     undefined4 at_g_FrontendSelectedPlayerToken; /* 0050F0CC g_FrontendSelectedPlayerToken */
     RecentTextSerialCounter at_g_RecentTextSerialCounter; /* 0050F0D0 g_RecentTextSerialCounter */
     undefined4 at_g_SessionNetworkTickInterval; /* 0050F0D4 g_SessionNetworkTickInterval */
@@ -1487,7 +1487,8 @@ typedef struct ImageData_0051494C {
     undefined at_g_FrontendPlayerMessageScratchUtf16; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
     dword at_g_FrontendPlayerMessageScratchUtf16_rest[23]; /* beyond the declared type */
     byte at_g_FrontendPlayerMessageScratchUtf16_rest_tail[3];
-    dword at_g_UiSevenSlotCommandPayloadText[15]; /* 00514E04 g_UiSevenSlotCommandPayloadText */
+    UiCommandPayloadTextBatch48 at_g_UiSevenSlotCommandPayloadText; /* 00514E04 g_UiSevenSlotCommandPayloadText */
+    dword at_g_UiSevenSlotCommandPayloadText_rest[3]; /* beyond the declared type */
 } ImageData_0051494C;
 extern ImageData_0051494C g_ImageData_0051494C;
 
@@ -2137,7 +2138,8 @@ typedef struct ImageData_0053DA68 {
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[31]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
     FrontendTaskAssignmentControlOffsetTablesA8 at_g_FrontendTaskAssignmentControlOffsets; /* 0054345C g_FrontendTaskAssignmentControlOffsets */
     dword at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
-    dword at_g_FrontendUiDisplayModeAndTaskAssignmentScratch[161]; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
+    FrontendUiSemanticScratch280 at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
+    dword at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
 } ImageData_0053DA68;
 extern ImageData_0053DA68 g_ImageData_0053DA68;
 
@@ -2476,7 +2478,8 @@ typedef struct ImageData_00562498 {
     sdword at_g_InGamePanelTextureSubresource34Height; /* 005632F4 g_InGamePanelTextureSubresource34Height */
     sdword at_g_InGamePanelTextureSubresource32Height; /* 005632F8 g_InGamePanelTextureSubresource32Height */
     UiCommandRuntimeRecordPrefix * at_g_UiHoverSelectionRecord; /* 005632FC g_UiHoverSelectionRecord */
-    dword at_g_InGameSelectedTechnologyId[8]; /* 00563300 g_InGameSelectedTechnologyId */
+    PckTechnologyIdCatalog at_g_InGameSelectedTechnologyId; /* 00563300 g_InGameSelectedTechnologyId */
+    dword at_g_InGameSelectedTechnologyId_rest[7]; /* beyond the declared type */
     undefined4 at_g_MoviePlaybackBaseFrameGroup; /* 00563320 g_MoviePlaybackBaseFrameGroup */
     undefined4 at_g_MoviePlaybackScheduleCounter; /* 00563324 g_MoviePlaybackScheduleCounter */
     undefined4 at_g_MoviePlaybackScheduleSpan; /* 00563328 g_MoviePlaybackScheduleSpan */
@@ -2609,7 +2612,7 @@ typedef struct ImageData_0056D71C {
     undefined4 at_g_UiCommandModeGArmyAssetId; /* 0056D750 g_UiCommandModeGArmyAssetId */
     sdword at_g_UiCommandDragReferenceX; /* 0056D754 g_UiCommandDragReferenceX */
     sdword at_g_UiCommandDragReferenceY; /* 0056D758 g_UiCommandDragReferenceY */
-    dword at_g_UiCommandMode4ArmyAssetId[1]; /* 0056D75C g_UiCommandMode4ArmyAssetId */
+    PckArmyAssetIdCatalog at_g_UiCommandMode4ArmyAssetId; /* 0056D75C g_UiCommandMode4ArmyAssetId */
     undefined4 at_g_UiCommandCallerMaskHighBit; /* 0056D760 g_UiCommandCallerMaskHighBit */
     dword at_g_UiCommandModeGPrimaryPageIndices[6]; /* 0056D764 g_UiCommandModeGPrimaryPageIndices */
     dword at_g_UiCommandModeGSecondaryPageIndices[6]; /* 0056D77C g_UiCommandModeGSecondaryPageIndices */
@@ -2753,8 +2756,8 @@ typedef struct ImageData_00572AB0 {
     word at_u_sound_pck_00572e9a[10]; /* 00572E9A u_sound_pck_00572e9a */
     word at_u_filme_pck_00572eae[10]; /* 00572EAE u_filme_pck_00572eae */
     word at_u_level_pck_00572ec2[10]; /* 00572EC2 u_level_pck_00572ec2 */
-    dword at_g_PatchArchivePathTemplateUtf16[6]; /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
-    dword at_g_LevelArchivePathTemplateUtf16[6]; /* 00572EEE g_LevelArchivePathTemplateUtf16 */
+    PatchArchivePathTemplate18 at_g_PatchArchivePathTemplateUtf16; /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
+    LevelArchivePathTemplate18 at_g_LevelArchivePathTemplateUtf16; /* 00572EEE g_LevelArchivePathTemplateUtf16 */
     word at_u_sound_button0_sam_00572f06[18]; /* 00572F06 u_sound_button0_sam_00572f06 */
     word at_u_sound_button1_sam_00572f2a[18]; /* 00572F2A u_sound_button1_sam_00572f2a */
     word at_u_sound_button2_sam_00572f4e[18]; /* 00572F4E u_sound_button2_sam_00572f4e */
@@ -2773,7 +2776,7 @@ extern ImageData_00572AB0 g_ImageData_00572AB0;
 /* original 0x00573EE8-0x00575890 */
 typedef struct ImageData_00573EE8 {
     byte at_gap_00573EE8[8]; /* 00573EE8 gap */
-    dword at_g_DynamicModules[32]; /* 00573EF0 g_DynamicModules */
+    DynamicModuleEntry at_g_DynamicModules[16]; /* 00573EF0 g_DynamicModules */
     dword at_g_DynamicModuleCount; /* 00573F70 g_DynamicModuleCount */
     DynamicApiBinding at_g_BootstrapApiBindings[8]; /* 00573F74 g_BootstrapApiBindings */
     dword at_g_BootstrapApiBindings_rest[2]; /* beyond the declared type */
@@ -3400,7 +3403,7 @@ typedef struct ImageData_0057594C {
     undefined at_g_Win32FindDataFileNameThirdCharA; /* 00575982 g_Win32FindDataFileNameThirdCharA */
     dword at_g_Win32FindDataFileNameThirdCharA_rest[68]; /* beyond the declared type */
     byte at_g_Win32FindDataFileNameThirdCharA_rest_tail[1];
-    dword at_g_FileSystemInitComputerNameCapacityOrConfigCursor[1]; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
+    pointer at_g_FileSystemInitComputerNameCapacityOrConfigCursor; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
     dword at_g_FileSystemConfigRemainingBytes; /* 00575A98 g_FileSystemConfigRemainingBytes */
     byte at_g_Win32PathScratchA[256]; /* 00575A9C g_Win32PathScratchA */
     byte at_g_Win32PathScratchB[256]; /* 00575B9C g_Win32PathScratchB */
@@ -3434,7 +3437,7 @@ typedef struct ImageData_00576B04 {
     UiPixelCoordinate at_g_MouseX; /* 00576C0C g_MouseX */
     UiPixelCoordinate at_g_MouseY; /* 00576C10 g_MouseY */
     UiPointerWheelDelta at_g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
-    dword at_g_MouseButtonMask[1]; /* 00576C18 g_MouseButtonMask */
+    GraphicsCursorButtonState at_g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
     dword at_g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
     SoftwareDisplayModeHookProc * at_g_DirectInputMousePreviousDisplayModeHookCf; /* 00576C20 g_DirectInputMousePreviousDisplayModeHookCf */
     UiFrameRefreshCountdownFrames at_g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
@@ -3462,7 +3465,8 @@ typedef struct ImageData_00577BFC {
     IDirect3DViewport2 * at_g_Direct3DViewport2; /* 00577C68 g_Direct3DViewport2 */
     dword at_g_Direct3DViewport2_rest[1]; /* beyond the declared type */
     D3DRECT_DX6 at_g_CurrentClearRect; /* 00577C70 g_CurrentClearRect */
-    dword at_g_SurfaceDesc[28]; /* 00577C80 g_SurfaceDesc */
+    DDSURFACEDESC_DX6 at_g_SurfaceDesc; /* 00577C80 g_SurfaceDesc */
+    dword at_g_SurfaceDesc_rest[1]; /* beyond the declared type */
     dword at_g_GraphicsCursorSurfaceDescScratch; /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
     dword at_g_GraphicsCursorSurfaceDescScratch_rest[3]; /* beyond the declared type */
     sdword at_g_GraphicsCursorSurfacePitchBytes; /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
@@ -3604,8 +3608,9 @@ typedef struct ImageData_00583D28 {
     dword at_g_NetworkBackendActiveSocketType; /* 00583F16 g_NetworkBackendActiveSocketType */
     dword at_g_NetworkBackendActiveProtocol; /* 00583F1A g_NetworkBackendActiveProtocol */
     dword at_g_NetworkBackendPortNetworkOrderCarrier; /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
-    dword at_g_NetworkBackendBindAddress[7]; /* 00583F22 g_NetworkBackendBindAddress */
-    byte at_g_NetworkBackendBindAddress_tail[2];
+    NetworkBackendSocketAddress16 at_g_NetworkBackendBindAddress; /* 00583F22 g_NetworkBackendBindAddress */
+    dword at_g_NetworkBackendBindAddress_rest[3]; /* beyond the declared type */
+    byte at_g_NetworkBackendBindAddress_rest_tail[2];
     undefined at_g_NetworkEndpointTextScratchA; /* 00583F40 g_NetworkEndpointTextScratchA */
     dword at_g_NetworkEndpointTextScratchA_rest[63]; /* beyond the declared type */
     byte at_g_NetworkEndpointTextScratchA_rest_tail[3];
@@ -3624,15 +3629,16 @@ extern ImageData_00584E44 g_ImageData_00584E44;
 /* original 0x005856A0-0x00585D40 */
 typedef struct ImageData_005856A0 {
     byte at_gap_005856A0[16]; /* 005856A0 gap */
-    dword at_g_hInstance[1]; /* 005856B0 g_hInstance */
-    dword at_g_MainWindow[1]; /* 005856B4 g_MainWindow */
+    HINSTANCE at_g_hInstance; /* 005856B0 g_hInstance */
+    HWND at_g_MainWindow; /* 005856B4 g_MainWindow */
     dword at_g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
     dword at_g_AppActive; /* 005856BC g_AppActive */
     Win32Message32 at_g_MainMessage; /* 005856C0 g_MainMessage */
     dword at_g_MainMessage_rest[3]; /* beyond the declared type */
-    dword at_g_MainWindowClassInstanceHandle[1]; /* 005856E8 g_MainWindowClassInstanceHandle */
-    dword at_g_MainWindowClassIconHandle[1]; /* 005856EC g_MainWindowClassIconHandle */
-    dword at_g_MainWindowClassCursorHandle[6]; /* 005856F0 g_MainWindowClassCursorHandle */
+    HINSTANCE at_g_MainWindowClassInstanceHandle; /* 005856E8 g_MainWindowClassInstanceHandle */
+    HICON at_g_MainWindowClassIconHandle; /* 005856EC g_MainWindowClassIconHandle */
+    HCURSOR at_g_MainWindowClassCursorHandle; /* 005856F0 g_MainWindowClassCursorHandle */
+    dword at_g_MainWindowClassCursorHandle_rest[5]; /* beyond the declared type */
     ArenaState at_g_Arena; /* 00585708 g_Arena */
     TimerSystemState at_g_TimerSystemState; /* 0058571C g_TimerSystemState */
     CommandLineArgumentMirrorState500 at_g_CommandLine; /* 0058581C g_CommandLine */

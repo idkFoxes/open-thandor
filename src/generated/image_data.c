@@ -52,9 +52,7 @@ ImageData_00401000 g_ImageData_00401000 = {
         (dword)Locale_MapTelephoneCountryCodeToRegionTagPacked},
     0, /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
     0, /* 004027B8 g_CPUDetectFeatures */
-    /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
-    {
-        (dword)Utf16String_CompareAsciiCaseInsensitiveFlags},
+    (void *)Utf16String_CompareAsciiCaseInsensitiveFlags, /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
     0, /* 004027C0 g_LocaleCountryCodeOverride */
     0, /* 004027C4 g_CpuFeatureFlags */
     {
@@ -1510,24 +1508,8 @@ ImageData_00486D8C g_ImageData_00486D8C = {
     0, /* 004A6D98 g_ActiveMovie */
     0x8000, /* 004A6D9C g_MovieDefaultAudioGainQ15 */
     0x8000, /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
-    /* 004A6DA4 g_LooseMoviePathPrefix */
+    {0}, /* 004A6DA4 g_LooseMoviePathPrefix */
     {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x90909090, 0x90909090, 0x90909090},
 };
 
@@ -1627,7 +1609,7 @@ ImageData_004AE95C g_ImageData_004AE95C = {
     0, /* 004AE980 g_UiTransferSenderContext */
     0, /* 004AE984 g_UiRuntimeFrameLock */
     0, /* 004AE988 g_UiRuntimePostUnlockCallback */
-    {0}, /* 004AE98C g_UiRuntimeRecordRingLock */
+    0, /* 004AE98C g_UiRuntimeRecordRingLock */
     {0}, /* 004AE990 g_UiTransferMailbox */
     0x67, /* 004AE9A8 g_UiTransferRoundKeys16 */
     {
@@ -1711,9 +1693,7 @@ ImageData_004B0A20 g_ImageData_004B0A20 = {
     0x8, /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
     0x4, /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     0, /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
-    /* 004B0EB0 g_UiRootStackActionHandlerPage */
-    {
-        (dword)UiRootStack_PopCf},
+    (void *)UiRootStack_PopCf, /* 004B0EB0 g_UiRootStackActionHandlerPage */
     {0x70, 0x7F},
     {0x40}, /* 004B0EB6 u__engine_winclass_gfx_004b0eb6 */
     /* 004B0EB8 u_engine\winclass.gfx_004b0eb6+2 */
@@ -2557,7 +2537,7 @@ ImageData_004CCDE8 g_ImageData_004CCDE8 = {
     0, /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
     0, /* 004CCE2C g_GraphicsShadingGeneratedAsset */
     0, /* 004CCE30 g_GraphicsShadingGridScratch */
-    {0}, /* 004CCE34 g_GraphicsShadingGridScratchInterior */
+    0, /* 004CCE34 g_GraphicsShadingGridScratchInterior */
     0, /* 004CCE38 g_GraphicsShadingTextureSet */
     0, /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
     0, /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
@@ -3017,14 +2997,15 @@ ImageData_0050D928 g_ImageData_0050D928 = {
     L"level\\level.dat", /* 0050DA0E u_level_level_dat_0050da0e */
     /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
     {
-        0x0065006C, 0x00650076, 0x005C006C, 0x0065006C, 0x00650076, 0x0030006C, 0x002E0030, 0x00610064,
-        0x00000074},
+        .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x6C, 0x65, 0x76, 0x65, 0x6C},
+        .decimalDigits = {.codeUnits = {0x30, 0x30}},
+        .suffixCodeUnits = L".dat"},
     L"level\\campagne.dat", /* 0050DA52 u_level_campagne_dat_0050da52 */
     /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
     {
-        0x0065006C, 0x00650076, 0x005C006C, 0x00610063, 0x0070006D, 0x00670061, 0x0065006E, 0x00300030,
-        0x0064002E, 0x00740061},
-    {0},
+        .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x63, 0x61, 0x6D, 0x70, 0x61, 0x67, 0x6E, 0x65},
+        .decimalDigits = {.codeUnits = {0x30, 0x30}},
+        .suffixCodeUnits = L".dat"},
     L"save", /* 0050DAA2 u_save_0050daa2 */
     L"level", /* 0050DAAC u_level_0050daac */
     L"level", /* 0050DAB8 u_level_0050dab8 */
@@ -3098,7 +3079,7 @@ ImageData_0050F044 g_ImageData_0050F044 = {
         0x90909090, 0x90909090, 0x90909090, 0x90909090},
     0, /* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
     0, /* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
-    {0}, /* 0050F0C8 g_SessionNetworkRoleFlags */
+    0, /* 0050F0C8 g_SessionNetworkRoleFlags */
     0x1, /* 0050F0CC g_FrontendSelectedPlayerToken */
     0x1, /* 0050F0D0 g_RecentTextSerialCounter */
     0x2, /* 0050F0D4 g_SessionNetworkTickInterval */
@@ -3138,10 +3119,9 @@ ImageData_0051494C g_ImageData_0051494C = {
     0, /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
     {0},
     {0},
-    /* 00514E04 g_UiSevenSlotCommandPayloadText */
+    {0}, /* 00514E04 g_UiSevenSlotCommandPayloadText */
     {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
+        0x90909090, 0x90909090, 0x90909090},
 };
 
 ImageData_00514FB4 g_ImageData_00514FB4 = {
@@ -6603,28 +6583,8 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
         .statusRows = {.offsets = {0x16C4, 0x1724, 0x1780, 0x17DC, 0x1838, 0x1894, 0x18F0}},
         .primaryAndPadding = {.offsets = {0x194C}}},
     {0},
-    /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
+    {0}, /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x90909090},
 };
 
@@ -11106,9 +11066,9 @@ ImageData_00562498 g_ImageData_00562498 = {
     0, /* 005632F4 g_InGamePanelTextureSubresource34Height */
     0, /* 005632F8 g_InGamePanelTextureSubresource32Height */
     0, /* 005632FC g_UiHoverSelectionRecord */
-    /* 00563300 g_InGameSelectedTechnologyId */
+    0, /* 00563300 g_InGameSelectedTechnologyId */
     {
-        0x00000000, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
+        0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
     0, /* 00563320 g_MoviePlaybackBaseFrameGroup */
     0, /* 00563324 g_MoviePlaybackScheduleCounter */
     0, /* 00563328 g_MoviePlaybackScheduleSpan */
@@ -11247,9 +11207,7 @@ ImageData_0056D71C g_ImageData_0056D71C = {
     0, /* 0056D750 g_UiCommandModeGArmyAssetId */
     0, /* 0056D754 g_UiCommandDragReferenceX */
     0, /* 0056D758 g_UiCommandDragReferenceY */
-    /* 0056D75C g_UiCommandMode4ArmyAssetId */
-    {
-        0x000001F4},
+    0x1F4, /* 0056D75C g_UiCommandMode4ArmyAssetId */
     0, /* 0056D760 g_UiCommandCallerMaskHighBit */
     {0x1, 0x2, 0x3, 0x4, 0x5, 0x7}, /* 0056D764 g_UiCommandModeGPrimaryPageIndices */
     {0x1, 0x2, 0x3, 0x4, 0x5, 0x7}, /* 0056D77C g_UiCommandModeGSecondaryPageIndices */
@@ -11405,10 +11363,14 @@ ImageData_00572AB0 g_ImageData_00572AB0 = {
     L"level.pck", /* 00572EC2 u_level_pck_00572ec2 */
     /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
     {
-        0x00610070, 0x00630074, 0x00300068, 0x002E0030, 0x00630070, 0x0000006B},
+        .prefixCodeUnits = {0x70, 0x61, 0x74, 0x63, 0x68},
+        .decimalDigits = {.codeUnits = {0x30, 0x30}},
+        .suffixCodeUnits = L".pck"},
     /* 00572EEE g_LevelArchivePathTemplateUtf16 */
     {
-        0x0065006C, 0x00650076, 0x0030006C, 0x002E0030, 0x00630070, 0x0000006B},
+        .prefixCodeUnits = {0x6C, 0x65, 0x76, 0x65, 0x6C},
+        .decimalDigits = {.codeUnits = {0x30, 0x30}},
+        .suffixCodeUnits = L".pck"},
     L"sound\\button0.sam", /* 00572F06 u_sound_button0_sam_00572f06 */
     L"sound\\button1.sam", /* 00572F2A u_sound_button1_sam_00572f2a */
     L"sound\\button2.sam", /* 00572F4E u_sound_button2_sam_00572f4e */
@@ -12216,7 +12178,7 @@ ImageData_0057594C g_ImageData_0057594C = {
     0, /* 00575982 g_Win32FindDataFileNameThirdCharA */
     {0},
     {0},
-    {0}, /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
+    0, /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
     0, /* 00575A98 g_FileSystemConfigRemainingBytes */
     {0}, /* 00575A9C g_Win32PathScratchA */
     {0}, /* 00575B9C g_Win32PathScratchB */
@@ -12267,7 +12229,7 @@ ImageData_00576B04 g_ImageData_00576B04 = {
     0, /* 00576C0C g_MouseX */
     0, /* 00576C10 g_MouseY */
     0, /* 00576C14 g_MouseWheelDelta */
-    {0}, /* 00576C18 g_MouseButtonMask */
+    0, /* 00576C18 g_MouseButtonMask */
     0, /* 00576C1C g_MouseEventsProcessed */
     0, /* 00576C20 g_DirectInputMousePreviousDisplayModeHookCf */
     0x10, /* 00576C24 g_DirectInputMouseRefreshCountdown */
@@ -12315,12 +12277,9 @@ ImageData_00577BFC g_ImageData_00577BFC = {
     {
         0x90909090},
     {0}, /* 00577C70 g_CurrentClearRect */
-    /* 00577C80 g_SurfaceDesc */
+    {0}, /* 00577C80 g_SurfaceDesc */
     {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x90909090},
+        0x90909090},
     0, /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
     {0},
     0, /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
@@ -12554,9 +12513,9 @@ ImageData_00583D28 g_ImageData_00583D28 = {
     0, /* 00583F16 g_NetworkBackendActiveSocketType */
     0, /* 00583F1A g_NetworkBackendActiveProtocol */
     0, /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
-    /* 00583F22 g_NetworkBackendBindAddress */
+    {0}, /* 00583F22 g_NetworkBackendBindAddress */
     {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
+        0x90909090, 0x90909090, 0x90909090},
     {0x90, 0x90},
     0, /* 00583F40 g_NetworkEndpointTextScratchA */
     {0},
@@ -12573,18 +12532,18 @@ ImageData_00584E44 g_ImageData_00584E44 = {
 
 ImageData_005856A0 g_ImageData_005856A0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005856A0 gap */
-    {0}, /* 005856B0 g_hInstance */
-    {0}, /* 005856B4 g_MainWindow */
+    0, /* 005856B0 g_hInstance */
+    0, /* 005856B4 g_MainWindow */
     0, /* 005856B8 g_WindowDestroyDepth */
     0x1, /* 005856BC g_AppActive */
     {.pointY = 0x3}, /* 005856C0 g_MainMessage */
     {
         (dword)MainWindowProc},
-    {0}, /* 005856E8 g_MainWindowClassInstanceHandle */
-    {0}, /* 005856EC g_MainWindowClassIconHandle */
-    /* 005856F0 g_MainWindowClassCursorHandle */
+    0, /* 005856E8 g_MainWindowClassInstanceHandle */
+    0, /* 005856EC g_MainWindowClassIconHandle */
+    0, /* 005856F0 g_MainWindowClassCursorHandle */
     {
-        0x00000000, 0x00000000, 0x00000000, (dword)&sz_MainWindowClass},
+        0x00000000, 0x00000000, (dword)&sz_MainWindowClass},
     {.linearCursor = (void *)&g_Arena_3, .linearLimit = (void *)&g_Arena_4}, /* 00585708 g_Arena */
     {0}, /* 0058571C g_TimerSystemState */
     {0}, /* 0058581C g_CommandLine */

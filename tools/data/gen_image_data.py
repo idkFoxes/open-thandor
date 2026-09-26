@@ -326,10 +326,11 @@ def byte_list(start, end):
 layout_path = os.path.join(args.work, 'typelayout.json')
 type_layouts = json.load(open(layout_path)) if os.path.exists(layout_path) else {}
 typedef_text = {}
-for m in re.finditer(r'^typedef\s+(.+?)\s+(\w+)\s*;',
-                     open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'types.h'),
-                          encoding='utf-8').read(), re.M):
-    typedef_text[m.group(2)] = m.group(1).strip()
+_types_text = open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'types.h'), encoding='utf-8').read()
+for m in re.finditer(r'^typedef\s+(.+?)\s*(\**)\s*\b(\w+)\s*;', _types_text, re.M):
+    typedef_text[m.group(3)] = (m.group(1) + ' ' + m.group(2)).strip()
+for m in re.finditer(r'^typedef enum (\w*)\s*\{.*?^\}\s*(\w+);', _types_text, re.M | re.S):
+    typedef_text[m.group(2)] = 'enum ' + (m.group(1) or m.group(2))
 INT_SIZES = {'byte': 1, 'char': 1, 'uchar': 1, 'undefined': 1, 'undefined1': 1, 'bool': 1,
              'unsigned char': 1, 'word': 2, 'short': 2, 'ushort': 2, 'undefined2': 2, 'unsigned short': 2,
              'dword': 4, 'int': 4, 'uint': 4, 'sdword': 4, 'undefined4': 4, 'long': 4, 'ulong': 4,
@@ -395,7 +396,8 @@ def type_size(t):
         return INT_SIZES[r]
     if r in ('float', 'double'):
         return 4 if r == 'float' else 8
-    if r.startswith('struct ') and r.split()[1] in type_layouts:
+    if (r.startswith('struct ') or r.startswith('union ')) and r.split()[1] in type_layouts \
+            and type_layouts[r.split()[1]]['size']:
         return type_layouts[r.split()[1]]['size']
     if r in type_layouts:
         return type_layouts[r]['size']
@@ -431,7 +433,7 @@ def value_init(t, addr, typed_pointers, depth=0):
         parts = []
         for field in layout['fields']:
             kind = field['kind']
-            if 'offset' not in field or kind in ('union', 'array-of-union', 'bitfield', 'unparsed', 'opaque'):
+            if 'offset' not in field or kind in ('array-of-union', 'bitfield', 'unparsed', 'opaque'):
                 if any(byte_at(addr + x) for x in range(field.get('offset', 0),
                                                          field.get('offset', 0) + field.get('size', 0))) \
                         or 'offset' not in field:
@@ -477,9 +479,17 @@ def value_init(t, addr, typed_pointers, depth=0):
             return '{\n        %s}' % ',\n        '.join(parts)
         return '{%s}' % text
     if r.startswith('union '):
-        if any(byte_at(addr + x) for x in range(type_size(t))):
-            raise Unrepresentable(t)
-        return '{0}'
+        size = type_size(t)
+        if not any(byte_at(addr + x) for x in range(size)):
+            return '{0}'
+        # a union is initialized through its first member, if that covers all of it
+        layout = type_layouts.get(r.split()[1])
+        first = layout['fields'][0] if layout and layout['fields'] else None
+        if first and first.get('offset') == 0 and first.get('size') == size and \
+                first['kind'] not in ('union', 'array-of-union', 'bitfield', 'unparsed', 'opaque'):
+            type_layouts['__union_view'] = {'size': size, 'fields': [first]}
+            return value_init('__union_view', addr, typed_pointers, depth)
+        raise Unrepresentable(t)
     return scalar_init(t, addr, typed_pointers)
 
 def nested_init(items, dims, depth):

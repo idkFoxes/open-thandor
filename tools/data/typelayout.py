@@ -18,8 +18,10 @@ args = common.parse_arguments(__doc__)
 text = open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'types.h'), encoding='utf-8').read()
 
 typedefs = {}
-for m in re.finditer(r'^typedef\s+(.+?)\s+(\w+)\s*;', text, re.M):
-    typedefs[m.group(2)] = m.group(1).strip()
+for m in re.finditer(r'^typedef\s+(.+?)\s*(\**)\s*\b(\w+)\s*;', text, re.M):
+    typedefs[m.group(3)] = (m.group(1) + ' ' + m.group(2)).strip()
+for m in re.finditer(r'^typedef enum (\w*)\s*\{.*?^\}\s*(\w+);', text, re.M | re.S):
+    typedefs[m.group(2)] = 'enum ' + (m.group(1) or m.group(2))
 
 def resolve(type_text):
     """Follows typedefs to the underlying type text."""
@@ -46,9 +48,12 @@ def classify(type_text):
     return 'int'
 
 structs = {}
+unions = set()
 structs_seen = set(m.group(1) for m in re.finditer(r'^struct (\w+) \{', text, re.M))
-for m in re.finditer(r'^struct (\w+) \{\n(.*?)^\};', text, re.M | re.S):
-    name, body = m.group(1), m.group(2)
+for m in re.finditer(r'^(struct|union) (\w+) \{\n(.*?)^\};', text, re.M | re.S):
+    keyword, name, body = m.group(1), m.group(2), m.group(3)
+    if keyword == 'union':
+        unions.add(name)
     fields = []
     for line in body.split('\n'):
         line = re.sub(r'/\*.*?\*/', '', line.split('//')[0]).strip()
@@ -89,13 +94,14 @@ for m in re.finditer(r'^struct (\w+) \{\n(.*?)^\};', text, re.M | re.S):
 source = os.path.join(args.work, 'typelayout.c')
 with open(source, 'w') as f:
     f.write('#include <stdio.h>\n#include <stddef.h>\n#include <thandor/thandor.h>\n\n'
-            '#define FIELD(s, m) printf("F %s %s %u %u\\n", #s, #m, (unsigned)offsetof(struct s, m), '
-            '(unsigned)sizeof(((struct s *)0)->m))\n\nint main(void)\n{\n')
+            '#define FIELD(k, s, m) printf("F %s %s %u %u\\n", #s, #m, (unsigned)offsetof(k s, m), '
+            '(unsigned)sizeof(((k s *)0)->m))\n\nint main(void)\n{\n')
     for name, fields in structs.items():
-        f.write('    printf("S %s %%u\\n", (unsigned)sizeof(struct %s));\n' % (name, name))
+        keyword = 'union' if name in unions else 'struct'
+        f.write('    printf("S %s %%u\\n", (unsigned)sizeof(%s %s));\n' % (name, keyword, name))
         for field in fields:
             if field['name'] and field['kind'] not in ('bitfield', 'unparsed'):
-                f.write('    FIELD(%s, %s);\n' % (name, field['name']))
+                f.write('    FIELD(%s, %s, %s);\n' % (keyword, name, field['name']))
     f.write('    return 0;\n}\n')
 cl = shutil.which('cl')
 if cl is None:
@@ -125,6 +131,8 @@ for name, fields in structs.items():
             unsupported += 1
         out.append(field)
     result[name] = {'size': sizes.get(name), 'fields': out}
+    if name in unions:
+        result[name]['union'] = True
 json.dump(result, open(os.path.join(args.work, 'typelayout.json'), 'w'), indent=1)
 kinds = {}
 for fields in structs.values():
