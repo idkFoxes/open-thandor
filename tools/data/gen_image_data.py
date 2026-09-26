@@ -435,7 +435,12 @@ def value_init(t, addr, typed_pointers, depth=0):
                 while items and items[-1] in ('0', '{0}'):
                     items.pop()
                 if items:
-                    parts.append('.%s = {%s}' % (field['name'], ', '.join(items)))
+                    text = ', '.join(items)
+                    if len(text) > 100 and any('(void *)' in item for item in items):
+                        # tables of function pointers: one entry per line, with its index
+                        text = '\n' + ',\n'.join('            /* %2d */ %s' % (i, item)
+                                                 for i, item in enumerate(items)) + '\n        '
+                    parts.append('.%s = {%s}' % (field['name'], text))
             else:
                 item = value_init(element, addr + field['offset'], typed_pointers, depth + 1)
                 if item not in ('0', '{0}'):
@@ -445,7 +450,7 @@ def value_init(t, addr, typed_pointers, depth=0):
         if not parts:
             return '{0}'
         text = ', '.join(parts)
-        if depth == 0 and len(text) > 100 and '\n' not in text:
+        if depth == 0 and len(text) > 100:
             # one field per line for long top-level structs (vtables, callback tables)
             return '{\n        %s}' % ',\n        '.join(parts)
         return '{%s}' % text
@@ -733,7 +738,7 @@ src = [HEADER % 'src/generated/image_data.c',
        '#pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */\n']
 for k, (a, b) in enumerate(blocks):
     # a multi-line initializer gets its object comment as a heading instead of at its end
-    lines = [re.sub(r'^    (\{\n.*), (/\* [0-9A-F]{8} [^\n]* \*/)$', r'    \2\n    \1,', line, flags=re.S)
+    lines = [re.sub(r'^    (\{[^\n]*\n.*), (/\* [0-9A-F]{8} [^\n]* \*/)$', r'    \2\n    \1,', line, flags=re.S)
              for line in init_lines[k]]
     src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(lines)))
 src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))

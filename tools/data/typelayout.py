@@ -58,6 +58,15 @@ for m in re.finditer(r'^struct (\w+) \{\n(.*?)^\};', text, re.M | re.S):
         if fp:
             fields.append({'name': fp.group(2), 'type': line[:-1], 'kind': 'pointer', 'count': 1})
             continue
+        # array of function pointers: ret (*name[N])(args)
+        fpa = re.match(r'(.+?)\(\s*(?:__\w+\s+)?\*\s*(\w+)\s*((?:\[\s*\w+\s*\])+)\s*\)\s*\((.*)\)\s*;$', line)
+        if fpa:
+            count = 1
+            for d in re.findall(r'\[\s*(\w+)\s*\]', fpa.group(3)):
+                count *= int(d, 0)
+            fields.append({'name': fpa.group(2), 'type': 'void *', 'kind': 'array-of-pointer',
+                           'count': count, 'dims': fpa.group(3)})
+            continue
         bf = re.match(r'(.+?)\s+(\w+)\s*:\s*\d+\s*;$', line)
         if bf:
             fields.append({'name': bf.group(2), 'type': bf.group(1), 'kind': 'bitfield', 'count': 1})

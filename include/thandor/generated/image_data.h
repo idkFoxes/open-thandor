@@ -626,7 +626,7 @@ typedef struct ImageData_00422978 {
     byte at_gap_00422978[40]; /* 00422978 gap */
     UiRootCallbacks at_g_UiDisplaySettingsRootCallbacks; /* 004229A0 g_UiDisplaySettingsRootCallbacks */
     UiTemplate_004229B4 at_g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
-    dword at_g_UiDisplayModeSelectionActionHandlers20[20]; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
+    UiDisplayModeSelectionActionHandlerTable20 at_g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch0; /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch1; /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch2; /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
@@ -1161,7 +1161,8 @@ extern ImageData_004BD440 g_ImageData_004BD440;
 /* original 0x004BD880-0x004BD8D0 */
 typedef struct ImageData_004BD880 {
     byte at_gap_004BD880[16]; /* 004BD880 gap */
-    dword at_g_ArmyPlacementContactKindDispatchTable[8]; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
+    ArmyPlacementContactCallbackTable5 at_g_ArmyPlacementContactKindDispatchTable; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
+    dword at_g_ArmyPlacementContactKindDispatchTable_rest[3]; /* beyond the declared type */
     undefined4 at_g_ModelCullViewRelativeX; /* 004BD8B0 g_ModelCullViewRelativeX */
     undefined4 at_g_ModelCullViewRelativeY; /* 004BD8B4 g_ModelCullViewRelativeY */
     undefined4 at_g_ModelCullViewRelativeZ; /* 004BD8B8 g_ModelCullViewRelativeZ */
@@ -1275,7 +1276,8 @@ extern ImageData_004D11B8 g_ImageData_004D11B8;
 /* original 0x004FEA24-0x004FEA50 */
 typedef struct ImageData_004FEA24 {
     byte at_gap_004FEA24[12]; /* 004FEA24 gap */
-    dword at_g_FieldGridInterpolationCallbacks5[8]; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
+    FieldGridInterpolationCallbackTable5 at_g_FieldGridInterpolationCallbacks5; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
+    dword at_g_FieldGridInterpolationCallbacks5_rest[3]; /* beyond the declared type */
 } ImageData_004FEA24;
 extern ImageData_004FEA24 g_ImageData_004FEA24;
 
@@ -1797,7 +1799,7 @@ extern ImageData_0051EAA0 g_ImageData_0051EAA0;
 typedef struct ImageData_0051EEE4 {
     byte at_gap_0051EEE4[12]; /* 0051EEE4 gap */
     ModelDefinitionRecordPrefix * at_g_ModelDefinitionRegistry[768]; /* 0051EEF0 g_ModelDefinitionRegistry */
-    dword at_g_TerrainClassPlacementAndOverlayCallbacks10[10]; /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
+    TerrainClassPlacementAndOverlayCallbackTable10 at_g_TerrainClassPlacementAndOverlayCallbacks10; /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
     undefined at_g_FactionEnergyAllocationPriorityByModelClass; /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass */
     dword at_g_FactionEnergyAllocationPriorityByModelClass_rest[23]; /* beyond the declared type */
     byte at_g_FactionEnergyAllocationPriorityByModelClass_rest_tail[3];
@@ -1808,7 +1810,7 @@ typedef struct ImageData_0051EEE4 {
     undefined at_g_ArmyRuntimeDepthBinClassByModelClass; /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass */
     dword at_g_ArmyRuntimeDepthBinClassByModelClass_rest[23]; /* beyond the declared type */
     byte at_g_ArmyRuntimeDepthBinClassByModelClass_rest_tail[3];
-    dword at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes[264]; /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
+    ArmyRuntimeOrderHandlerMatrix11x24 at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes; /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
     ModelRuntimeSlot * at_g_ModelRuntimeSlots; /* 005200B8 g_ModelRuntimeSlots */
     int at_g_ModelRuntimeRebaseDelta; /* 005200BC g_ModelRuntimeRebaseDelta */
 } ImageData_0051EEE4;
@@ -2746,7 +2748,7 @@ typedef struct ImageData_005456F0 {
     undefined4 at_g_FrontendMusicVoiceSet; /* 0054592C g_FrontendMusicVoiceSet */
     undefined4 at_g_FrontendMusicActiveBuffer; /* 00545930 g_FrontendMusicActiveBuffer */
     dword at_g_FrontendPendingPageActionDepth; /* 00545934 g_FrontendPendingPageActionDepth */
-    dword at_g_FrontendUiActionHandlersPage20[88]; /* 00545938 g_FrontendUiActionHandlersPage20 */
+    FrontendUiActionHandlerPage20Prefix86 at_g_FrontendUiActionHandlersPage20; /* 00545938 g_FrontendUiActionHandlersPage20 */
     ScenarioCatalogRefreshSelectedRecordCallback * at_g_FrontendScenarioMapOptionHandlerTable[3]; /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
     word at_u_engine_zentrale_rom_00545aa4[20]; /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
     word at_u_gfx_texturen_zentrale_gfx_00545acc[26]; /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
@@ -3840,11 +3842,12 @@ typedef struct ImageData_00562498 {
     undefined at_InGameCommandHandlerCodeRegionEnd; /* 00562499 InGameCommandHandlerCodeRegionEnd */
     dword at_InGameCommandHandlerCodeRegionEnd_rest[1]; /* beyond the declared type */
     byte at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
-    dword at_g_InGameUiActionHandlersPage10[40]; /* 005624A0 g_InGameUiActionHandlersPage10 */
-    dword at_g_InGameUiCommandModeActionHandlers30[4]; /* 00562540 g_InGameUiCommandModeActionHandlers30 */
+    InGameUiActionHandlerPage10Prefix40 at_g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
+    InGameUiCommandModeActionHandlerPage11Prefix3 at_g_InGameUiCommandModeActionHandlers30; /* 00562540 g_InGameUiCommandModeActionHandlers30 */
+    dword at_g_InGameUiCommandModeActionHandlers30_rest[1]; /* beyond the declared type */
     dword at_g_UiActionPage11Group1Handlers[4]; /* 00562550 g_UiActionPage11Group1Handlers */
     dword at_g_UiActionPage11InitializedHandlers[22]; /* 00562560 g_UiActionPage11InitializedHandlers */
-    dword at_g_InGameUiActionHandlersPage12[28]; /* 005625B8 g_InGameUiActionHandlersPage12 */
+    InGameUiActionHandlerPage12Prefix28 at_g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
     sdword at_g_UiAction100AControlOffsets[8]; /* 00562628 g_UiAction100AControlOffsets */
     dword at_g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
     dword at_g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
@@ -4892,7 +4895,8 @@ typedef struct ImageData_00577BFC {
     sdword at_g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
     sdword at_g_GraphicsBackendAccessState; /* 00577E4C g_GraphicsBackendAccessState */
     GraphicsPrimitiveRenderStatePreset at_g_PrimitiveRenderStatePresets[5]; /* 00577E50 g_PrimitiveRenderStatePresets */
-    dword at_g_GraphicsDispatchTable[72]; /* 00577EA0 g_GraphicsDispatchTable */
+    GraphicsDispatchTable at_g_GraphicsDispatchTable; /* 00577EA0 g_GraphicsDispatchTable */
+    dword at_g_GraphicsDispatchTable_rest[2]; /* beyond the declared type */
     D3DTLVERTEX_DX6 at_g_ImmediateTLVertices[4]; /* 00577FC0 g_ImmediateTLVertices */
     D3DRECT_DX6 at_g_LastViewportRect; /* 00578040 g_LastViewportRect */
     dword at_g_ImmediateVertexCount; /* 00578050 g_ImmediateVertexCount */
@@ -5037,7 +5041,7 @@ typedef struct ImageData_005856A0 {
     dword at_g_MainWindowClassIconHandle[1]; /* 005856EC g_MainWindowClassIconHandle */
     dword at_g_MainWindowClassCursorHandle[6]; /* 005856F0 g_MainWindowClassCursorHandle */
     ArenaState at_g_Arena; /* 00585708 g_Arena */
-    dword at_g_TimerSystemState[64]; /* 0058571C g_TimerSystemState */
+    TimerSystemState at_g_TimerSystemState; /* 0058571C g_TimerSystemState */
     CommandLineArgumentMirrorState500 at_g_CommandLine; /* 0058581C g_CommandLine */
     char at_sz_MainWindowTitle[15]; /* 00585D1C sz_MainWindowTitle */
     char at_sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
