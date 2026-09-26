@@ -129,6 +129,95 @@ static void Thandor_SelfTestStretch(void)
     }
 }
 
+/* OPEN_THANDOR_SELFTEST=stretchcmp compares the C bilinear stretches against the original machine
+   code (0x004AA170 16-bit, 0x004AA3F0 32-bit) on random sources, sizes and 555/565 constants. */
+typedef void (__stdcall *OriginalStretchProc)(dword, dword, dword, dword, dword, void *, void *);
+
+static void Thandor_SelfTestStretchCompare(void)
+{
+    static const unsigned long long quantize[2][2] = {
+        /* {quantize mask 0x41F6E8, PMADDWD weights 0x41F6E0}: 565 and 555 layouts */
+        {0x0000f800fc00f800ull, 0x0000080000200100ull},
+        {0x0000f800f800f800ull, 0x0000040000200080ull},
+    };
+    unsigned long long *maskSlot = (unsigned long long *)(uintptr_t)0x41f6e8;
+    unsigned long long *weightSlot = (unsigned long long *)(uintptr_t)0x41f6e0;
+    unsigned long long savedMask = *maskSlot;
+    unsigned long long savedWeights = *weightSlot;
+    unsigned seed = 4711;
+    int run;
+    int failures = 0;
+    for (run = 0; run < 24; run++) {
+        int bytesPerPixel = (run & 1) ? 4 : 2;
+        int layout = (run >> 1) & 1;
+        dword srcW = 16 + (run * 37) % 300;
+        dword srcH = 9 + (run * 53) % 200;
+        dword dstW = 2 * (8 + (run * 71) % 400);
+        dword dstH = 4 + (run * 29) % 300;
+        dword pitch = dstW + 8;
+        dword assetBytes = 0x220 + (srcW * (srcH + 1) + 2) * 4;
+        byte *asset = (byte *)calloc(1, assetBytes);
+        byte *mine = (byte *)calloc(pitch * (dstH + 1), bytesPerPixel);
+        byte *theirs = (byte *)calloc(pitch * (dstH + 1), bytesPerPixel);
+        dword fbMine[4];
+        dword fbTheirs[4];
+        dword *entry;
+        dword *pixels;
+        dword i;
+        size_t total = (size_t)pitch * (dstH + 1) * bytesPerPixel;
+        if (!asset || !mine || !theirs) {
+            Thandor_Log("stretchcmp: allocation failed");
+            return;
+        }
+        *maskSlot = (bytesPerPixel == 2) ? quantize[layout][0] : savedMask;
+        *weightSlot = (bytesPerPixel == 2) ? quantize[layout][1] : savedWeights;
+        *(dword *)asset = 0x786667;
+        *(dword *)(asset + 0xb0) = 1;
+        *(dword *)(asset + 0xb8) = 0x200;
+        entry = (dword *)(asset + 0x200);
+        entry[2] = 0xffffffff;
+        entry[3] = 0x220;
+        entry[6] = srcW;
+        entry[7] = srcH;
+        pixels = (dword *)(asset + 0x220);
+        for (i = 0; i < srcW * (srcH + 1) + 2; i++) {
+            seed = seed * 1103515245u + 12345u;
+            pixels[i] = seed ^ (seed >> 13);
+        }
+        fbMine[0] = pitch; fbMine[1] = 0; fbMine[2] = bytesPerPixel; fbMine[3] = (dword)(uintptr_t)mine;
+        fbTheirs[0] = pitch; fbTheirs[1] = 0; fbTheirs[2] = bytesPerPixel; fbTheirs[3] = (dword)(uintptr_t)theirs;
+        if (bytesPerPixel == 2) {
+            SoftwareTextureSource_StretchDirectColorBilinear16(dstH, dstW, 0, 4, 0,
+                (GraphicsTextureSourceAsset *)asset, (SoftwareFramebufferAccess *)fbMine);
+            ((OriginalStretchProc)(uintptr_t)0x4aa170)(dstH, dstW, 0, 4, 0, asset, fbTheirs);
+        }
+        else {
+            SoftwareTextureSource_StretchDirectColorBilinear32(dstH, dstW, 0, 4, 0,
+                (GraphicsTextureSourceAsset *)asset, (SoftwareFramebufferAccess *)fbMine);
+            ((OriginalStretchProc)(uintptr_t)0x4aa3f0)(dstH, dstW, 0, 4, 0, asset, fbTheirs);
+        }
+        __asm emms
+        for (i = 0; i < total && mine[i] == theirs[i]; i++) {
+        }
+        if (i < total) {
+            failures++;
+            Thandor_Log("stretchcmp run %d (%d bpp, %s, %ux%u -> %ux%u): MISMATCH at byte %u (pixel %u,%u): mine %02x theirs %02x",
+                        run, bytesPerPixel * 8, layout ? "555" : "565", srcW, srcH, dstW, dstH, i,
+                        (i / bytesPerPixel) % pitch, (i / bytesPerPixel) / pitch, mine[i], theirs[i]);
+        }
+        else {
+            Thandor_Log("stretchcmp run %d (%d bpp, %s, %ux%u -> %ux%u): identical", run,
+                        bytesPerPixel * 8, layout ? "555" : "565", srcW, srcH, dstW, dstH);
+        }
+        free(asset);
+        free(mine);
+        free(theirs);
+    }
+    *maskSlot = savedMask;
+    *weightSlot = savedWeights;
+    Thandor_Log("stretchcmp: %d of 24 runs differ", failures);
+}
+
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)
 {
     (void)instance;
@@ -155,6 +244,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         }
         if (value != NULL && strcmp(value, "stretch") == 0) {
             Thandor_SelfTestStretch();
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "stretchcmp") == 0) {
+            Thandor_SelfTestStretchCompare();
             return 0;
         }
         if (value != NULL && strcmp(value, "crash") == 0) {
