@@ -1379,7 +1379,7 @@ const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x0053A800u, (void *)&AiArmyCandidate_AddBestScoredVariantB},
     {0x0053A8D0u, (void *)&AiArmyCandidate_AddBestScoredVariantC},
     {0x0053A980u, (void *)&AiFactionRuntime_TestPlanningCapacityExceededCf},
-    {0x0053A9D0u, (void *)&AiStrategicClass_SelectBestCandidate12FTo132},
+    {0x0053A9D0u, (void *)&AiStrategicClass_SelectBestCandidate12ETo132},
     {0x0053AC20u, (void *)&AiStrategicClass_AddCandidate12DOr12FTo132},
     {0x0053ACD0u, (void *)&AiPlacement_ReserveMode3SiteCluster},
     {0x0053AD50u, (void *)&AiCandidatePlanning_ComputeSpecialSiteWeight},

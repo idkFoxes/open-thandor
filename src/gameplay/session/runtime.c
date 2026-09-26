@@ -1718,8 +1718,8 @@ void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(
   undefined4 *scratchBufferSetACursor;
   
   remainingFactions = 8;
-  scratchBufferSetACursor = &g_InGameFactionScratchBufferSetA8;
-  scratchBufferSetBCursor = &g_InGameFactionScratchBufferSetB8;
+  scratchBufferSetACursor = g_InGameFactionScratchBufferSetA8;
+  scratchBufferSetBCursor = g_InGameFactionScratchBufferSetB8;
   do {
     (*g_MemoryApi.free)((void *)*scratchBufferSetACursor);
     (*g_MemoryApi.free)((void *)*scratchBufferSetBCursor);

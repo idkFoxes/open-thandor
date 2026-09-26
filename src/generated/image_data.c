@@ -2807,10 +2807,8 @@ ImageData_004FFC78 g_ImageData_004FFC78 = {
 
 ImageData_00501184 g_ImageData_00501184 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00501184 gap */
-    0, /* 00501190 g_TerrainLightingColorRampArgb256 */
-    {0}, /* 00501194 DAT_00501194 */
-    0, /* 00501590 g_TerrainDirectionalLightColorLut */
-    {0}, /* 00501594 DAT_00501594 */
+    {0}, /* 00501190 g_TerrainLightingColorRampArgb256 */
+    {0}, /* 00501590 g_TerrainDirectionalLightColorLut */
     0, /* 00501994 g_TerrainDirectionalLightSecondaryColor */
     0, /* 00501998 g_TerrainLightDirectionX */
     0, /* 0050199C g_TerrainLightDirectionY */
@@ -3138,10 +3136,8 @@ ImageData_0051494C g_ImageData_0051494C = {
     {0}, /* 00514960 g_SelectionPlayerRuntimeBlockPointers */
     {0},
     0, /* 00514D60 g_SelectionPlayerBlocks */
-    0, /* 00514D64 g_InGameFactionScratchBufferSetA8 */
-    {0}, /* 00514D68 DAT_00514d68 */
-    0, /* 00514D84 g_InGameFactionScratchBufferSetB8 */
-    {0},
+    {0}, /* 00514D64 g_InGameFactionScratchBufferSetA8 */
+    {0}, /* 00514D84 g_InGameFactionScratchBufferSetB8 */
     0, /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
     {0},
     {0},
@@ -3623,9 +3619,7 @@ ImageData_00518074 g_ImageData_00518074 = {
         0x003E3E02, 0xC1000000, 0x003E7E01, 0x81000000, 0x003EBE01, 0x41000000, 0x003EFE01, 0x01000000,
         0x003F3F01, 0xC0000000, 0x003F7F00, 0x80000000, 0x003FBF00, 0x40000000, 0x003FFF00},
     {0},
-    0, /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
-    {0},
-    {0}, /* 00518C7C DAT_00518c7c */
+    {0}, /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
     0x4000400040004000ull, /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
     {
         0x90909090, 0x90909090},
@@ -4441,8 +4435,7 @@ ImageData_00539050 g_ImageData_00539050 = {
 
 ImageData_00539974 g_ImageData_00539974 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00539974 gap */
-    0, /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
-    {0}, /* 00539984 DAT_00539984 */
+    {0}, /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
     0, /* 005399A0 g_TechnologyCategoryMaximum0 */
     0, /* 005399A4 g_TechnologyCategoryMaximum1 */
     0, /* 005399A8 g_TechnologyCategoryMaximum2 */
@@ -4452,21 +4445,13 @@ ImageData_00539974 g_ImageData_00539974 = {
     0, /* 005399B8 g_TechnologyCategoryMaximum6 */
     0, /* 005399BC g_TechnologyCategoryMaximum7 */
     0, /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
-    0x100, /* 005399C4 g_AiStrategicClass12FWeightComponent0 */
-    0, /* 005399C8 g_AiStrategicClass12FWeightComponent1 */
-    0, /* 005399CC g_AiStrategicClass12FWeightComponent2 */
-    0xF0, /* 005399D0 g_AiStrategicClass130WeightComponent0 */
-    0x10, /* 005399D4 g_AiStrategicClass130WeightComponent1 */
-    0, /* 005399D8 g_AiStrategicClass130WeightComponent2 */
-    0, /* 005399DC g_AiStrategicClass131WeightComponent0 */
-    0xB0, /* 005399E0 g_AiStrategicClass131WeightComponent1 */
-    0x50, /* 005399E4 g_AiStrategicClass131WeightComponent2 */
-    0, /* 005399E8 g_AiStrategicClass132WeightComponent0 */
-    0, /* 005399EC g_AiStrategicClass132WeightComponent1 */
-    0x100, /* 005399F0 g_AiStrategicClass132WeightComponent2 */
-    {0}, /* 005399F4 DAT_005399f4 */
-    {0}, /* 005399F8 DAT_005399f8 */
-    {0}, /* 005399FC DAT_005399fc */
+    /* 005399C4 g_AiStrategicClassTerrainWeights */
+    {
+        {0x100, 0, 0},
+        {0xF0, 0x10, 0},
+        {0, 0xB0, 0x50},
+        {0, 0, 0x100},
+        {0, 0, 0}},
     {0}, /* 00539A00 g_TechnologyCategoryMasks */
 };
 
@@ -11022,14 +11007,7 @@ ImageData_00562498 g_ImageData_00562498 = {
     {0x4DD4, 0x4E2C, 0x4E84, 0x4EDC, 0x4F34, 0x4F8C, 0x4FE4}, /* 00562D4C g_UiAction1012SlotPageOffsets */
     {0x1544, 0x15AC, 0x1614, 0x167C, 0x16E4, 0x174C, 0x17B4}, /* 00562D68 g_TechnologyPanelRowFlagOffsets */
     {0x1814, 0x1870, 0x18CC, 0x1928, 0x1984, 0x19E0, 0x1A3C}, /* 00562D84 g_TechnologyPanelRowValueOffsets */
-    0xA1F8, /* 00562DA0 g_InGameSelectionDetailControlOffsetTable32 */
-    /* 00562DA4 DAT_00562da4 */
-    {
-        0x0000A258},
-    /* 00562DA8 DAT_00562da8 */
-    {
-        0x0000A2B8, 0x0000A318, 0x0000A378, 0x0000A3D8, 0x0000A438, 0x0000A498, 0x0000A4F8, 0x0000A558,
-        0x0000A5B8, 0x0000A618},
+    {0xA1F8, 0xA258, 0xA2B8, 0xA318, 0xA378, 0xA3D8, 0xA438, 0xA498, 0xA4F8, 0xA558, 0xA5B8, 0xA618}, /* 00562DA0 g_InGameSelectionDetailGridCellOffsets */
     {0x20E4, 0x2144, 0x21A4, 0x2204, 0x2264, 0x22C4, 0x2324}, /* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
     /* 00562DEC g_RuntimeMaintenanceCallbackPhases */
     {

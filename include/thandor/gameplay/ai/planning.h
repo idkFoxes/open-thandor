@@ -100,7 +100,7 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex);
 
 /* 0x0053A9D0 */
 AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
-AiStrategicClass_SelectBestCandidate12FTo132
+AiStrategicClass_SelectBestCandidate12ETo132
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AF00 */

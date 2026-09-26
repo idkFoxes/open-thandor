@@ -254,7 +254,7 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
     armyAssetRegistryCursor = armyAssetRegistryCursor + 1;
     remainingCount = remainingCount + -1;
   } while (remainingCount != 0);
-  categoryReciprocalCursor = &g_TechnologyCategoryMaximumReciprocalQ24Table8;
+  categoryReciprocalCursor = g_TechnologyCategoryMaximumReciprocalQ24Table8;
   remainingCount = 8;
   do {
     *categoryReciprocalCursor = (int)(0x1000000 / (ulonglong)(uint)categoryReciprocalCursor[8]);

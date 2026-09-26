@@ -3716,8 +3716,10 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
   
   normalDirection = FixedMath_DirectionFromAnglesQ28Regs
                     ((int)cell->triangle0NormalAngles >> 0x10,cell->triangle0NormalAngles & 0xffff);
+  /* the signed Q8 dot product indexes -256..256: g_TerrainLightingColorRampArgb256 lies directly
+     before this table and holds the shaded half */
   directionalLightColor =
-       (&g_TerrainDirectionalLightColorLut)
+       ((PackedArgb32 *)g_TerrainDirectionalLightColorLut)
        [(int)((ulonglong)((longlong)(int)normalDirection.eax * (longlong)(int)g_TerrainLightDirectionX) >> 0x20) +
         (int)((ulonglong)((longlong)(int)normalDirection.ecx * (longlong)(int)g_TerrainLightDirectionY) >> 0x20) +
         (int)((ulonglong)((longlong)(int)normalDirection.edx * (longlong)(int)g_TerrainLightDirectionZ) >> 0x20) >>

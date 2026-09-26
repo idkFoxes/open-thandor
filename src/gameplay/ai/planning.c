@@ -718,9 +718,9 @@ AiArmyCandidate_AddBestScoredVariantA
 /* Address: 0x0053AC20.
    Ownership: gameplay/ai/planning.
    Purpose: Adds strategic candidate 0x12D when its prerequisite state is appropriate, otherwise selects an
-   available class in the 0x12F through 0x132 family and adds it with a knowledge-derived weight reduced by the
+   available class in the 0x12E through 0x132 family and adds it with a knowledge-derived weight reduced by the
    existing class count.
-   Local calls: AiFactionRuntime_TestPlanningCapacityExceededCf, AiStrategicClass_SelectBestCandidate12FTo132.
+   Local calls: AiFactionRuntime_TestPlanningCapacityExceededCf, AiStrategicClass_SelectBestCandidate12ETo132.
    Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
    Technology_IsUnlockedForFactionCf [gameplay/technology/runtime],
    AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
@@ -756,7 +756,7 @@ AiStrategicClass_AddCandidate12DOr12FTo132
                         ((knowledgeData->parameters).strategic12fTo132AdditionalPlanningCapacity,
                          factionIndex);
       if (!conditionMet) {
-        classSelection = AiStrategicClass_SelectBestCandidate12FTo132(factionIndex,worldRuntime);
+        classSelection = AiStrategicClass_SelectBestCandidate12ETo132(factionIndex,worldRuntime);
         if (classSelection.selectedRuntimeToken != 0) {
           weightRange = (knowledgeData->parameters).strategicClass12fTo132BaseWeight;
           if (classSelection.existingCountOrPressure != 0) {
@@ -1379,14 +1379,14 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
 
 /* Address: 0x0053A9D0.
    Ownership: gameplay/ai/planning.
-   Purpose: Evaluates strategic class IDs 0x12F through 0x132 using faction category totals, class-specific
+   Purpose: Evaluates strategic class IDs 0x12E through 0x132 using faction category totals, class-specific
    coefficient tables, current workspace presence, and randomized tie variation. The best available class and
    comparison state are returned through the engine register convention.
    Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
    ArmyAssetRegistry_FindEnabledByIdCf [assets/army/catalog].
 */
 AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
-AiStrategicClass_SelectBestCandidate12FTo132
+AiStrategicClass_SelectBestCandidate12ETo132
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1449,9 +1449,9 @@ AiStrategicClass_SelectBestCandidate12FTo132
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
       randomizedTieBits = randomizedTieBits >> 5;
       bestCandidateScore =
-           freeBits28To30Percent * g_AiStrategicClass12FWeightComponent0 +
-           freeBits25To27PercentOrScore * g_AiStrategicClass12FWeightComponent1 +
-           freeBit24Percent * g_AiStrategicClass12FWeightComponent2 + remainingCellsOrTieBits;
+           freeBits28To30Percent * g_AiStrategicClassTerrainWeights[0][0] +
+           freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[0][1] +
+           freeBit24Percent * g_AiStrategicClassTerrainWeights[0][2] + remainingCellsOrTieBits;
       pendingExistingCount = existingClassCount;
     }
   }
@@ -1463,9 +1463,9 @@ AiStrategicClass_SelectBestCandidate12FTo132
     if (!conditionMet) {
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
       randomizedTieBits = randomizedTieBits >> 5;
-      candidateScore = freeBits28To30Percent * g_AiStrategicClass130WeightComponent0 +
-              freeBits25To27PercentOrScore * g_AiStrategicClass130WeightComponent1 +
-              freeBit24Percent * g_AiStrategicClass130WeightComponent2 + remainingCellsOrTieBits;
+      candidateScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[1][0] +
+              freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[1][1] +
+              freeBit24Percent * g_AiStrategicClassTerrainWeights[1][2] + remainingCellsOrTieBits;
       if (bestCandidateScore < candidateScore) {
         selectedToken = 0x12f;
         bestCandidateScore = candidateScore;
@@ -1479,9 +1479,9 @@ AiStrategicClass_SelectBestCandidate12FTo132
     if (!conditionMet) {
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
       randomizedTieBits = randomizedTieBits >> 5;
-      candidateScore = freeBits28To30Percent * g_AiStrategicClass131WeightComponent0 +
-              freeBits25To27PercentOrScore * g_AiStrategicClass131WeightComponent1 +
-              freeBit24Percent * g_AiStrategicClass131WeightComponent2 + remainingCellsOrTieBits;
+      candidateScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[2][0] +
+              freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[2][1] +
+              freeBit24Percent * g_AiStrategicClassTerrainWeights[2][2] + remainingCellsOrTieBits;
       if (bestCandidateScore < candidateScore) {
         selectedToken = 0x130;
         bestCandidateScore = candidateScore;
@@ -1493,9 +1493,9 @@ AiStrategicClass_SelectBestCandidate12FTo132
     existingClassCount = existingClassCount - 1;
     conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0305_BUILDING_MDL0317);
     if (!conditionMet) {
-      freeBits25To27PercentOrScore = freeBits28To30Percent * g_AiStrategicClass132WeightComponent0 +
-              freeBits25To27PercentOrScore * g_AiStrategicClass132WeightComponent1 +
-              freeBit24Percent * g_AiStrategicClass132WeightComponent2 + (randomizedTieBits & 0x3fff);
+      freeBits25To27PercentOrScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[3][0] +
+              freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[3][1] +
+              freeBit24Percent * g_AiStrategicClassTerrainWeights[3][2] + (randomizedTieBits & 0x3fff);
       if (bestCandidateScore < freeBits25To27PercentOrScore) {
         selectedToken = 0x131;
         bestCandidateScore = freeBits25To27PercentOrScore;
@@ -1507,6 +1507,8 @@ AiStrategicClass_SelectBestCandidate12FTo132
     existingClassCount = existingClassCount - 1;
     conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0306_BUILDING_MDL0310);
     if (!conditionMet) {
+      /* the original also scores class 0x132 with g_AiStrategicClassTerrainWeights[4] but
+         discards the result (XOR EDX,EDX): 0x132 wins only over a negative best score */
       if (bestCandidateScore < 0) {
         selectedToken = 0x132;
       }

@@ -654,7 +654,7 @@ TerrainLighting_BuildColorRampAndSetBaseColor
   uint *rampEntryCursor;
   PackedArgb32 *lightLutCursor;
   
-  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = 0x100;
   do {
     channelValue = ((rampStepColorArgb & 0xff) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff);
@@ -665,7 +665,7 @@ TerrainLighting_BuildColorRampAndSetBaseColor
     rampEntryCursor = rampEntryCursor + 1;
     rampStepsRemaining = rampStepsRemaining + -1;
   } while (rampStepsRemaining != 0);
-  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = 0x100;
   do {
     channelValue = ((rampStepColorArgb & 0xff00) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff00);
@@ -676,7 +676,7 @@ TerrainLighting_BuildColorRampAndSetBaseColor
     rampEntryCursor = rampEntryCursor + 1;
     rampStepsRemaining = rampStepsRemaining + -1;
   } while (rampStepsRemaining != 0);
-  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = 0x100;
   do {
     channelValue = ((rampStepColorArgb & 0xff0000) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff0000);
@@ -687,7 +687,7 @@ TerrainLighting_BuildColorRampAndSetBaseColor
     rampEntryCursor = rampEntryCursor + 1;
     rampStepsRemaining = rampStepsRemaining + -1;
   } while (rampStepsRemaining != 0);
-  rampEntryCursor = &g_TerrainLightingColorRampArgb256;
+  rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = 0x100;
   do {
     *rampEntryCursor = *rampEntryCursor | baseColorArgb & 0xff000000;
@@ -695,7 +695,7 @@ TerrainLighting_BuildColorRampAndSetBaseColor
     rampStepsRemaining = rampStepsRemaining + -1;
   } while (rampStepsRemaining != 0);
   g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
-  lightLutCursor = &g_TerrainDirectionalLightColorLut;
+  lightLutCursor = g_TerrainDirectionalLightColorLut;
   for (rampStepsRemaining = 0x101; rampStepsRemaining != 0; rampStepsRemaining = rampStepsRemaining + -1) {
     *lightLutCursor = baseColorArgb;
     lightLutCursor = lightLutCursor + 1;

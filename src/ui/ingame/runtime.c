@@ -2330,7 +2330,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     cellLeft = 0;
     cellTop = 0;
     do {
-      detailControlOffset = (&g_InGameSelectionDetailControlOffsetTable32)[detailIndex];
+      detailControlOffset = g_InGameSelectionDetailGridCellOffsets[detailIndex];
       *(int *)((int)&(inGameRoot->base).leftOffset + detailControlOffset) = cellLeft;
       *(int *)((int)&(inGameRoot->base).topOffset + detailControlOffset) = cellTop;
       cellLeft = cellLeft + stepOffset;
@@ -5628,7 +5628,7 @@ InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails:
     else if ((selectedCountOrCounter != 0) && (workValue == (lastSelectedEntity->common).ownership.ownerIndex)) {
       UiPageStack_SetActiveIndex(2,stack);
       selectedCountOrCounter = 0x20;
-      recordCursor = &g_InGameSelectionDetailControlOffsetTable32;
+      recordCursor = g_InGameSelectionDetailGridCellOffsets;
       workValue = 0xc;
       entitySlot = g_SelectionInfoEntitySlots->entries;
       do {

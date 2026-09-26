@@ -64323,7 +64323,7 @@ SoftwareTexture_BilinearBlendScaleSubresources
           countOrSourceXFixed = countOrSourceXFixed - 1;
         } while (countOrSourceXFixed != 0);
         countOrSourceXFixed = 0xff;
-        lutCursor = &g_SoftwarePixelIntensityToNativeColorLut256;
+        lutCursor = g_SoftwarePixelIntensityToNativeColorLut256;
         do {
           *lutCursor = (countOrSourceXFixed >> (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f)) <<
                      ((byte)g_SoftwarePixelFormatConfig.redShift & 0x1f) |
@@ -64384,7 +64384,7 @@ SoftwareTexture_BilinearBlendScaleSubresources
               if ((intensityLevel & 0xffffff00) != 0) {
                 intensityLevel = 0xff;
               }
-              *destCursor16 = (short)(&g_SoftwarePixelIntensityToNativeColorLut256)[intensityLevel];
+              *destCursor16 = (short)g_SoftwarePixelIntensityToNativeColorLut256[intensityLevel];
               destCursor16 = destCursor16 + 1;
               countOrSourceXFixed = countOrSourceXFixed + entryOffsetAOrStepX;
               columnsLeft = columnsLeft - 1;
@@ -64442,7 +64442,7 @@ SoftwareTexture_BilinearBlendScaleSubresources
               if ((intensityLevel & 0xffffff00) != 0) {
                 intensityLevel = 0xff;
               }
-              *destCursor32 = (&g_SoftwarePixelIntensityToNativeColorLut256)[intensityLevel];
+              *destCursor32 = g_SoftwarePixelIntensityToNativeColorLut256[intensityLevel];
               destCursor32 = destCursor32 + 1;
               countOrSourceXFixed = countOrSourceXFixed + entryOffsetAOrStepX;
               columnsLeft = columnsLeft - 1;
