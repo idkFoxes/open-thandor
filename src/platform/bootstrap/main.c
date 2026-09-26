@@ -349,75 +349,80 @@ static void Thandor_SelfTestScanAddresses(void)
     Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);
 }
 
-/* OPEN_THANDOR_SELFTEST=imagecmp checks src/generated/image_data.c against the original file:
-   every generated dword, with pointers translated back (into a generated block -> original
-   address, C function -> original entry), must equal the original. Dwords that share bytes with
-   original code are counted separately (the generator zeroes those code bytes). */
+/* OPEN_THANDOR_SELFTEST=imagecmp checks src/generated/image_data.c against the original file.
+   Every converted pointer (g_ThandorImagePointers) is translated back - into a generated block ->
+   original address, C function -> original entry - and must equal the recorded original value;
+   every other byte must equal the original. Bytes of original code inside a block are zero in
+   the generated data and counted separately. */
+static dword ImageCompare_ToOriginal(dword generated, unsigned blocks)
+{
+    unsigned k;
+    for (k = 0; k < blocks; k++) {
+        const ThandorImageBlock *block = &g_ThandorImageBlocks[k];
+        dword base = (dword)(uintptr_t)block->data;
+        if (generated >= base && generated < base + (block->end - block->start)) {
+            return block->start + (generated - base);
+        }
+    }
+    for (k = 0; k < g_ThandorFunctionMapCount; k++) {
+        if ((dword)(uintptr_t)g_ThandorFunctionMap[k].function == generated) {
+            return g_ThandorFunctionMap[k].originalAddress;
+        }
+    }
+    return 0xFFFFFFFFu;
+}
+
 static void Thandor_SelfTestImageCompare(void)
 {
     const byte *original = (const byte *)Thandor_LoadOriginalCodeCopy(0x401000, 0x18b000);
     unsigned blocks = sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0];
+    unsigned pointerCount = sizeof g_ThandorImagePointers / sizeof g_ThandorImagePointers[0];
     unsigned b;
-    unsigned compared = 0;
-    unsigned functionPointers = 0;
-    unsigned dataPointers = 0;
-    unsigned edgeDifferences = 0;
+    unsigned p = 0;
+    unsigned bytes = 0;
+    unsigned pointerMismatches = 0;
     unsigned mismatches = 0;
+    unsigned zeroedCode = 0;
     if (original == NULL) {
         Thandor_Log("imagecmp: could not read thandor_original.exe");
         return;
     }
     for (b = 0; b < blocks; b++) {
         const ThandorImageBlock *block = &g_ThandorImageBlocks[b];
-        unsigned count = (block->end - block->start) / 4;
-        unsigned i;
-        for (i = 0; i < count; i++) {
-            dword generated = block->data[i];
-            dword expected = *(const dword *)(original + block->start + i * 4 - 0x401000);
-            dword translated = generated;
-            unsigned k;
-            for (k = 0; k < blocks; k++) {
-                const ThandorImageBlock *target = &g_ThandorImageBlocks[k];
-                dword base = (dword)(uintptr_t)target->data;
-                if (generated >= base && generated < base + (target->end - target->start)) {
-                    translated = target->start + (generated - base);
-                    dataPointers++;
-                    break;
-                }
+        dword address;
+        for (address = block->start; address < block->end; address++) {
+            byte generated = block->data[address - block->start];
+            byte expected = original[address - 0x401000];
+            while (p < pointerCount && g_ThandorImagePointers[p].location + 4 <= address) {
+                p++;
             }
-            if (translated == generated) {
-                for (k = 0; k < g_ThandorFunctionMapCount; k++) {
-                    if ((dword)(uintptr_t)g_ThandorFunctionMap[k].function == generated) {
-                        translated = g_ThandorFunctionMap[k].originalAddress;
-                        functionPointers++;
-                        break;
+            if (p < pointerCount && g_ThandorImagePointers[p].location == address) {
+                dword value = *(const dword *)(block->data + (address - block->start));
+                dword translated = ImageCompare_ToOriginal(value, blocks);
+                if (translated != g_ThandorImagePointers[p].originalValue ||
+                    translated != *(const dword *)(original + address - 0x401000)) {
+                    if (pointerMismatches++ < 10) {
+                        Thandor_Log("imagecmp: pointer at %08X is %08X (as original %08X), original %08X",
+                                    address, value, translated, g_ThandorImagePointers[p].originalValue);
                     }
                 }
+                bytes += 4;
+                address += 3;
+                continue;
             }
-            compared++;
-            if (translated != expected) {
-                /* bytes of original code inside a block are zeroed by the generator */
-                int onlyZeroedCode = 1;
-                int byteIndex;
-                for (byteIndex = 0; byteIndex < 4; byteIndex++) {
-                    byte g = (byte)(translated >> (byteIndex * 8));
-                    byte o = (byte)(expected >> (byteIndex * 8));
-                    if (g != o && g != 0) {
-                        onlyZeroedCode = 0;
-                    }
+            bytes++;
+            if (generated != expected) {
+                if (generated == 0) {
+                    zeroedCode++;
                 }
-                if (onlyZeroedCode) {
-                    edgeDifferences++;
-                }
-                else if (mismatches++ < 20) {
-                    Thandor_Log("imagecmp: %08X generated %08X (as original %08X), original %08X",
-                                block->start + i * 4, generated, translated, expected);
+                else if (mismatches++ < 10) {
+                    Thandor_Log("imagecmp: byte at %08X is %02X, original %02X", address, generated, expected);
                 }
             }
         }
     }
-    Thandor_Log("imagecmp: %u blocks, %u dwords, %u function and %u data pointers, %u mismatches, %u dwords with zeroed code bytes",
-                blocks, compared, functionPointers, dataPointers, mismatches, edgeDifferences);
+    Thandor_Log("imagecmp: %u blocks, %u bytes, %u pointers, %u pointer mismatches, %u byte mismatches, %u zeroed code bytes",
+                blocks, bytes, pointerCount, pointerMismatches, mismatches, zeroedCode);
 }
 
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)

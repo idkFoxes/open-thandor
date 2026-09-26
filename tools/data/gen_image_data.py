@@ -1,20 +1,20 @@
 """Generates the data of the original image as C, so the executable no longer needs it.
 
-Every contiguous run of data bytes in 0x401000-0x58C000 (everything that is not an original
-instruction) becomes one dword array, in original order, so code that walks from one object into
-its neighbour keeps working. Values stay numbers except pointers, which become symbols:
-  - a dword equal to an original function entry  -> (dword)CFunction
-  - a dword pointing at a known data anchor (object/member start, Ghidra label or symbol) inside a
-    block, found in an object that is not a plain number table   -> (dword)&g_ImageData_x[i] (+ bytes)
-Everything else stays the original number.
+Every run of data bytes between original code in 0x401000-0x58C000 becomes one packed struct
+(g_ImageData_<start>) with one named member per object, in original order: code that walks from
+one object into its neighbour keeps working. Members:
+  - strings from the Ghidra export as literals (word[] = L"...", char[] = "..."),
+  - everything else as dword arrays counted from the object's own start, with pointers written as
+    symbols: an original function entry -> (dword)CFunction, a known data anchor -> the address of
+    the member (or byte offset) that now holds it; other values stay numbers,
+  - all-zero objects as {0}; gaps (padding, code inside a block) as zero byte arrays.
 
 Outputs:
-  src/generated/image_data.c               the arrays, with a comment at every named object
-  include/thandor/generated/image_data.h   THANDOR_IMAGE_0x<address> for every address used by the
-                                           address macros (globals.h, recovered.h), and the block
-                                           table for the comparison self-test
+  include/thandor/generated/image_data.h   member layouts, THANDOR_IMAGE_0x<address> for every address
+                                           used by the address macros, tables for the self-test
+  src/generated/image_data.c               the initialized blocks
   <work>/image_pointers.tsv                every converted pointer, for review
-Needs globalmap.txt and layout.tsv/members.tsv in the work directory (globalmap.py, layout.py)."""
+Needs globalmap.txt, layout.tsv and members.tsv in the work directory (globalmap.py, layout.py)."""
 import bisect
 import json
 import os
@@ -26,6 +26,8 @@ import common
 NUMERIC = re.compile(r'^(?:const )?(?:byte|word|dword|qword|short|ushort|int|uint|sdword|char|undefined[1248]?|'
                      r'Q\d+|float|double|long|ulong|longlong|ulonglong|SoftwareBgraWordLanes|PackedArgb32)\s*'
                      r'(?:\(\*\)\[[^\]]*\](?:\[[^\]]*\])*)?\s*\*?$')
+HEADER = ('/*\n * Open Thandor\n * Project: https://github.com/idkFoxes/open-thandor/tree/main\n'
+          ' * File: https://github.com/idkFoxes/open-thandor/blob/main/%s\n */\n\n')
 
 args = common.parse_arguments(__doc__)
 START, END = common.TEXT_START, common.TEXT_END
@@ -34,8 +36,16 @@ code = common.code_mask(text, common.instruction_starts(args.asm), args.work)
 funcs = common.function_map()
 macros = common.address_macros()
 sizes = common.global_sizes(args.work)
+types = {n: t for n, (t, _) in macros.items()}
 
-# ---- blocks: runs of non-code bytes, dword aligned, merged across gaps shorter than 8 bytes
+def byte_at(addr):
+    return 0 if not START <= addr < END or code[addr - START] else text[addr - START]
+
+def dword_at(addr):
+    return byte_at(addr) | byte_at(addr + 1) << 8 | byte_at(addr + 2) << 16 | byte_at(addr + 3) << 24
+
+# ---- blocks: runs of non-code bytes, dword aligned, merged across gaps shorter than 8 bytes, and
+# only those holding something the code can name
 runs = []
 i = 0
 while i < END - START:
@@ -54,8 +64,6 @@ for a, b in runs:
         blocks[-1][1] = max(blocks[-1][1], b)
     else:
         blocks.append([a, b])
-# keep only blocks that hold something the code can name (object, member, label): the rest is
-# padding between functions
 wanted = set(a for _, (a, _) in sizes.items())
 for line in open(os.path.join(args.work, 'members.tsv'), encoding='utf-8'):
     wanted.add(int(line.split('\t')[0], 16))
@@ -76,180 +84,231 @@ def block_of(addr):
 def block_name(k):
     return 'g_ImageData_%08X' % blocks[k][0]
 
-# ---- data anchors: addresses a data pointer may legitimately point at
-anchors = set(a for _, (a, _) in sizes.items())
-for line in open(os.path.join(args.work, 'members.tsv'), encoding='utf-8'):
-    anchors.add(int(line.split('\t')[0], 16))
-anchors.update(a for a, _ in common.ghidra_labels())
-for name in ('symbols.jsonl', 'strings.jsonl'):
-    for j in map(json.loads, open(os.path.join(common.REPO, 'ghidra', 'export', name))):
-        anchors.add(int(j['address'], 16))
-anchors = set(a for a in anchors if START <= a < END and block_of(a) is not None and not code[a - START])
-
-# ---- which objects are plain number tables (never hold pointers)
+# ---- objects (layout.tsv) and the names a pointer target may carry
 objects = []
 for line in open(os.path.join(args.work, 'layout.tsv'), encoding='utf-8'):
     a, size, declared, name, kind, nonzero = line.rstrip('\n').split('\t')
     objects.append((int(a, 16), int(size), name))
 object_starts = [o[0] for o in objects]
-types = {n: t for n, (t, _) in macros.items()}
 
 def containing_object(addr):
     k = bisect.bisect_right(object_starts, addr) - 1
     return objects[k] if k >= 0 and objects[k][0] <= addr < objects[k][0] + objects[k][1] else None
 
-names_at = {}
-for n, (a, s) in sizes.items():
-    names_at.setdefault(a, []).append(n)
+anchors = set(a for _, (a, _) in sizes.items())
 for line in open(os.path.join(args.work, 'members.tsv'), encoding='utf-8'):
-    a, s, n = line.rstrip('\n').split('\t')
-    names_at.setdefault(int(a, 16), []).append(n)
-for a, n in common.ghidra_labels():
-    if START <= a < END and not code[a - START] and a not in names_at and \
-            not re.match(r'(DAT|LAB|UNK|PTR|switchD|caseD|override|s_|u_|[a-z]Ram)', n):
-        names_at[a] = [n]
+    anchors.add(int(line.split('\t')[0], 16))
+anchors.update(a for a, _ in common.ghidra_labels())
+strings = {}
+for name in ('symbols.jsonl', 'strings.jsonl'):
+    for j in map(json.loads, open(os.path.join(common.REPO, 'ghidra', 'export', name))):
+        anchors.add(int(j['address'], 16))
+        if name == 'strings.jsonl':
+            strings[int(j['address'], 16)] = (j['type'], j['value'])
+anchors = set(a for a in anchors if block_of(a) is not None and not code[a - START])
 
-# ---- islands: objects at unaligned addresses that hold function pointers (vtables the original
-# placed inline between functions). A dword array cannot carry a symbol at an unaligned offset,
-# so each island becomes its own aligned array and every reference to it points there.
-islands = []  # (start, end, name)
-for a in sorted(anchors):
-    if a % 4 == 0 or not names_at.get(a):
-        continue
-    end = a
-    while end + 4 <= END and end - a < 0x400 and not any(code[x - START] for x in range(end, end + 4)):
-        end += 4
-    entries = [struct.unpack_from('<I', text, x - START)[0] for x in range(a, end, 4)]
-    if any(v in funcs for v in entries):
-        if islands and a < islands[-1][1]:
-            continue  # alias inside an island already found (e.g. a named vtable slot)
-        islands.append((a, end, names_at[a][0]))
+# ---- member layout per block
+def identifier(name, used):
+    # leading underscore: the object names are also macros (globals.h), which would expand here
+    base = '_' + re.sub(r'\W', '_', name)
+    candidate = base
+    n = 2
+    while candidate in used:
+        candidate = '%s_%d' % (base, n)
+        n += 1
+    used.add(candidate)
+    return candidate
 
-def island_of(addr):
-    for start, end, name in islands:
-        if start <= addr < end:
-            return start, end, name
-    return None
-
-def island_name(start):
-    return 'g_ImageObject_%08X' % start
-
-def pointer_expression(value):
-    island = island_of(value)
-    if island is not None:
-        index, rest = divmod(value - island[0], 4)
-        base = '&%s[0x%X]' % (island_name(island[0]), index)
-    else:
-        t = block_of(value)
-        index, rest = divmod(value - blocks[t][0], 4)
-        base = '&%s[0x%X]' % (block_name(t), index)
-    return '(dword)%s' % base if rest == 0 else '(dword)((byte *)%s + %d)' % (base, rest)
-
-# ---- emit
-pointers = []
-out = []
-out.append('/*\n * Open Thandor\n * Project: https://github.com/idkFoxes/open-thandor/tree/main\n'
-           ' * File: https://github.com/idkFoxes/open-thandor/blob/main/src/generated/image_data.c\n */\n\n'
-           '/* Generated by tools/data/gen_image_data.py from the original thandor.exe: the data of\n'
-           '   0x401000-0x58C000 in original order, one array per run between code. Do not edit;\n'
-           '   regenerate, or move objects out into hand-written definitions. */\n\n'
-           '#include <thandor/thandor.h>\n#include <thandor/generated/image_data.h>\n\n')
+members = []        # per block: list of (start, end, member name, object name or None)
+member_at = {}      # address -> (block index, member name)
 for k, (a, b) in enumerate(blocks):
-    out.append('dword %s[0x%X] = {\n' % (block_name(k), (b - a) // 4))
+    used = set()
+    fields = []
+    cursor = a
+    first = bisect.bisect_left(object_starts, a)
+    for start, size, name in objects[first:]:
+        if start >= b:
+            break
+        end = min(start + size, b)
+        if start > cursor:
+            fields.append((cursor, start, identifier('gap_%08X' % cursor, used), None))
+        fields.append((start, end, identifier(name, used), name))
+        member_at[start] = (k, fields[-1][2])
+        cursor = end
+    if cursor < b:
+        fields.append((cursor, b, identifier('gap_%08X' % cursor, used), None))
+    members.append(fields)
+
+def address_expression(value):
+    """C constant expression for the generated address of original data address value."""
+    if value in member_at:
+        k, member = member_at[value]
+        return '&%s.%s' % (block_name(k), member)
+    k = block_of(value)
+    return '(byte *)&%s + 0x%X' % (block_name(k), value - blocks[k][0])
+
+# ---- initializers
+def c_string_literal(value, wide):
+    out = []
+    for ch in value:
+        o = ord(ch)
+        if ch == '\\':
+            out.append('\\\\')
+        elif ch == '"':
+            out.append('\\"')
+        elif 0x20 <= o < 0x7f:
+            out.append(ch)
+        elif o < 0x100:
+            out.append('\\%03o' % o)
+        elif wide:
+            out.append('\\u%04x' % o)
+        else:
+            return None
+    return ('L"%s"' if wide else '"%s"') % ''.join(out)
+
+def string_member(start, end):
+    entry = strings.get(start)
+    if entry is None:
+        return None
+    kind, value = entry
+    wide = kind == 'unicode'
+    unit = 2 if wide else 1
+    try:
+        encoded = (value + '\0').encode('utf-16le' if wide else 'latin-1')
+    except UnicodeEncodeError:
+        return None
+    if len(encoded) > end - start or (end - start) % unit:
+        return None
+    if bytes(byte_at(x) for x in range(start, start + len(encoded))) != encoded:
+        return None
+    if any(byte_at(x) for x in range(start + len(encoded), end)):
+        return None
+    literal = c_string_literal(value, wide)
+    if literal is None:
+        return None
+    return ('word' if wide else 'char', (end - start) // unit, literal)
+
+pointers = []
+
+def value_expression(field_addr, owner_numeric):
+    value = dword_at(field_addr)
+    if not owner_numeric and value in funcs:
+        pointers.append((field_addr, value, 'function', funcs[value]))
+        return '(dword)%s' % funcs[value]
+    if not owner_numeric and value in anchors:
+        pointers.append((field_addr, value, 'data', ''))
+        target = address_expression(value)
+        return '(dword)(%s)' % target if '+' in target else '(dword)%s' % target
+    return '0x%08X' % value
+
+def dword_list(start, count, numeric):
+    values = [value_expression(start + 4 * i, numeric) for i in range(count)]
+    while values and values[-1] == '0x00000000':
+        values.pop()
+    if not values:
+        return '{0}'
+    lines = []
     line = []
-    for addr in range(a, b, 4):
-        labels = [(addr + o, n) for o in range(4) for n in sorted(names_at.get(addr + o, []))]
-        if labels and line:
-            out.append('    %s,\n' % ', '.join(line))
-            line = []
-        for at, n in labels:
-            out.append('    /* %08X %s */\n' % (at, n))
-        # code bytes at the block edges (alignment) are not data: zero
-        value = struct.unpack('<I', bytes(0 if not START <= x < END or code[x - START] else text[x - START]
-                                          for x in range(addr, addr + 4)))[0]
-        owner = containing_object(addr)
-        numeric = owner is not None and NUMERIC.match(types.get(owner[2], 'struct').strip())
-        expr = '0x%08X' % value
-        if value in funcs and not numeric:
-            expr = '(dword)%s' % funcs[value]
-            pointers.append((addr, value, 'function', funcs[value]))
-        elif value in anchors and not numeric:
-            expr = pointer_expression(value)
-            if names_at.get(value):
-                expr += ' /* %s */' % sorted(names_at[value])[0]
-            pointers.append((addr, value, 'data', owner[2] if owner else '-'))
-        line.append(expr)
-        if len(line) == 8 or expr.startswith('(dword)'):
-            out.append('    %s,\n' % ', '.join(line))
+    for v in values:
+        line.append(v)
+        if len(line) == 8 or v.startswith('(dword)'):
+            lines.append(', '.join(line))
             line = []
     if line:
-        out.append('    %s,\n' % ', '.join(line))
-    out.append('};\n\n')
-for start, end, name in islands:
-    out.append('/* %08X %s: placed unaligned between functions in the original; kept aligned here and\n'
-               '   referenced instead of its original bytes. */\n' % (start, name))
-    out.append('dword %s[0x%X] = {\n' % (island_name(start), (end - start) // 4))
-    for addr in range(start, end, 4):
-        value = struct.unpack_from('<I', text, addr - START)[0]
-        if value in funcs:
-            out.append('    (dword)%s,\n' % funcs[value])
-            pointers.append((addr, value, 'function', funcs[value]))
-        elif value in anchors:
-            out.append('    %s,\n' % pointer_expression(value))
-            pointers.append((addr, value, 'data', name))
-        else:
-            out.append('    0x%08X,\n' % value)
-    out.append('};\n\n')
-open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'w', encoding='utf-8').write(''.join(out))
+        lines.append(', '.join(line))
+    return '{\n        ' + ',\n        '.join(lines) + '}'
 
-# ---- header: address macros used by globals.h / recovered.h
-used = set(a for _, (_, a) in macros.items())
-hdr = ['/*\n * Open Thandor\n * Project: https://github.com/idkFoxes/open-thandor/tree/main\n'
-       ' * File: https://github.com/idkFoxes/open-thandor/blob/main/include/thandor/generated/image_data.h\n */\n\n'
-       '/* Generated by tools/data/gen_image_data.py. */\n\n'
-       '#ifndef THANDOR_GENERATED_IMAGE_DATA_H\n#define THANDOR_GENERATED_IMAGE_DATA_H\n\n'
-       '#include <thandor/generated/types.h>\n\n']
+def byte_list(start, end):
+    values = [byte_at(x) for x in range(start, end)]
+    while values and values[-1] == 0:
+        values.pop()
+    if not values:
+        return '{0}'
+    return '{' + ', '.join('0x%02X' % v for v in values) + '}'
+
+layout_lines = []   # struct member declarations per block
+init_lines = []     # initializer per block
 for k, (a, b) in enumerate(blocks):
-    hdr.append('extern dword %s[0x%X];\n' % (block_name(k), (b - a) // 4))
-for start, end, name in islands:
-    hdr.append('extern dword %s[0x%X]; /* %s, unaligned in the original */\n' % (island_name(start),
-                                                                              (end - start) // 4, name))
-hdr.append('\n/* Original address -> generated storage. */\n')
+    decls = []
+    inits = []
+    for start, end, member, name in members[k]:
+        comment = '/* %08X %s */' % (start, name if name else 'gap')
+        owner = containing_object(start)
+        numeric = owner is not None and bool(NUMERIC.match(types.get(owner[2], 'struct').strip()))
+        s = string_member(start, end) if name else None
+        if s is not None:
+            ctype, count, literal = s
+            decls.append('    %s %s[%d]; %s' % (ctype, member, count, comment))
+            inits.append('    %s, %s' % (literal, comment))
+            continue
+        count, tail = divmod(end - start, 4)
+        if name is None or count == 0:
+            decls.append('    byte %s[%d]; %s' % (member, end - start, comment))
+            inits.append('    %s, %s' % (byte_list(start, end), comment))
+            continue
+        decls.append('    dword %s[%d]; %s' % (member, count, comment))
+        inits.append('    %s, %s' % (dword_list(start, count, numeric), comment))
+        if tail:
+            decls.append('    byte %s_tail[%d];' % (member, tail))
+            inits.append('    %s,' % byte_list(start + 4 * count, end))
+    layout_lines.append(decls)
+    init_lines.append(inits)
+
+# ---- header
+hdr = [HEADER % 'include/thandor/generated/image_data.h',
+       '/* Generated by tools/data/gen_image_data.py from the original thandor.exe. Do not edit. */\n\n'
+       '#ifndef THANDOR_GENERATED_IMAGE_DATA_H\n#define THANDOR_GENERATED_IMAGE_DATA_H\n\n'
+       '#include <thandor/generated/types.h>\n\n#pragma pack(push, 1)\n']
+for k, (a, b) in enumerate(blocks):
+    hdr.append('\n/* original 0x%08X-0x%08X */\ntypedef struct ImageData_%08X {\n%s\n} ImageData_%08X;\n'
+               'extern ImageData_%08X %s;\n' % (a, b, a, '\n'.join(layout_lines[k]), a, a, block_name(k)))
+hdr.append('\n#pragma pack(pop)\n\n/* Original address -> generated storage. */\n')
 missing = []
-for addr in sorted(used):
-    island = island_of(addr)
-    if island is not None:
-        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)%s + 0x%X)\n' % (addr, island_name(island[0]),
-                                                                         addr - island[0]))
-        continue
-    k = block_of(addr)
-    if k is None:
-        if not START <= addr < END:
-            # numbers Ghidra typed as addresses (low error codes, the image base in a comparison)
-            hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)0x%08xu)\n' % (addr, addr))
-        else:
-            missing.append(addr)
-        continue
-    hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)%s + 0x%X)\n' % (addr, block_name(k), addr - blocks[k][0]))
-hdr.append('\n/* Blocks for the comparison self-test: original start, end, storage. */\n'
-           'typedef struct ThandorImageBlock { dword start; dword end; dword *data; } ThandorImageBlock;\n'
-           'extern const ThandorImageBlock g_ThandorImageBlocks[%d];\n\n#endif\n' % (len(blocks) + len(islands)))
+for addr in sorted(set(a for _, (_, a) in macros.items())):
+    if addr in member_at:
+        k, member = member_at[addr]
+        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)&%s.%s)\n' % (addr, block_name(k), member))
+    elif block_of(addr) is not None:
+        k = block_of(addr)
+        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)&%s + 0x%X)\n' % (addr, block_name(k), addr - blocks[k][0]))
+    elif not START <= addr < END:
+        # numbers Ghidra typed as addresses (low error codes, the image base in a comparison)
+        hdr.append('#define THANDOR_IMAGE_0x%08x ((uintptr_t)0x%08xu)\n' % (addr, addr))
+    else:
+        missing.append(addr)
+hdr.append('\n/* For OPEN_THANDOR_SELFTEST=imagecmp: each block with its original range, and every converted\n'
+           '   pointer with its original location and value. */\n'
+           'typedef struct ThandorImageBlock { dword start; dword end; const byte *data; } ThandorImageBlock;\n'
+           'typedef struct ThandorImagePointer { dword location; dword originalValue; } ThandorImagePointer;\n'
+           'extern const ThandorImageBlock g_ThandorImageBlocks[%d];\n'
+           'extern const ThandorImagePointer g_ThandorImagePointers[%d];\n\n#endif\n' % (len(blocks), len(pointers)))
 open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'image_data.h'), 'w',
      encoding='utf-8').write(''.join(hdr))
-with open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'a', encoding='utf-8') as f:
-    f.write('const ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % (len(blocks) + len(islands)))
-    for k, (a, b) in enumerate(blocks):
-        f.write('    {0x%08X, 0x%08X, %s},\n' % (a, b, block_name(k)))
-    for start, end, name in islands:
-        f.write('    {0x%08X, 0x%08X, %s},\n' % (start, end, island_name(start)))
-    f.write('};\n')
+
+# ---- source
+src = [HEADER % 'src/generated/image_data.c',
+       '/* Generated by tools/data/gen_image_data.py from the original thandor.exe: the data of\n'
+       '   0x401000-0x58C000 in original order, one packed struct per run between code. Do not edit;\n'
+       '   regenerate, or move objects out into hand-written definitions. */\n\n'
+       '#include <thandor/thandor.h>\n#include <thandor/generated/image_data.h>\n']
+for k, (a, b) in enumerate(blocks):
+    src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(init_lines[k])))
+src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))
+for k, (a, b) in enumerate(blocks):
+    src.append('    {0x%08X, 0x%08X, (const byte *)&%s},\n' % (a, b, block_name(k)))
+src.append('};\n\nconst ThandorImagePointer g_ThandorImagePointers[%d] = {\n' % len(pointers))
+for location, value, kind, name in pointers:
+    src.append('    {0x%08X, 0x%08X},\n' % (location, value))
+src.append('};\n')
+open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'w', encoding='utf-8').write(''.join(src))
 
 with open(os.path.join(args.work, 'image_pointers.tsv'), 'w', encoding='utf-8') as f:
     for p in pointers:
         f.write('%08x\t%08x\t%s\t%s\n' % p)
-print('islands: ' + ', '.join('%08x-%08x %s' % i for i in islands))
-print('%d blocks, %d bytes, %d function pointers, %d data pointers' % (
-    len(blocks), sum(b - a for a, b in blocks), sum(1 for p in pointers if p[2] == 'function'),
-    sum(1 for p in pointers if p[2] == 'data')))
+string_count = sum(1 for lines in layout_lines for l in lines if ' = ' not in l and ('word ' in l or 'char ' in l)
+                   and not l.strip().startswith('dword'))
+print('%d blocks, %d bytes, %d members, %d function pointers, %d data pointers' % (
+    len(blocks), sum(b - a for a, b in blocks), sum(len(m) for m in members),
+    sum(1 for p in pointers if p[2] == 'function'), sum(1 for p in pointers if p[2] == 'data')))
 if missing:
     print('address macros outside every block:', ', '.join('%08x' % a for a in missing))
