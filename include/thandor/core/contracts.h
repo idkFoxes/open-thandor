@@ -46,10 +46,12 @@ or to other layout-compatible structs, which C only allows through a union.
 #ifdef THANDOR_MAPPED_IMAGE
 #define THANDOR_IMAGE(address) ((uintptr_t)(address))
 #else
-#include <thandor/generated/image_data.h>
 #define THANDOR_IMAGE(address) THANDOR_IMAGE_##address
 #endif
 #include <thandor/generated/globals.h>
+#ifndef THANDOR_MAPPED_IMAGE
+#include <thandor/generated/image_data.h>
+#endif
 #include <thandor/data/recovered.h>
 #include <thandor/generated/imports.h>
 

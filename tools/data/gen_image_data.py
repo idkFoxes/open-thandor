@@ -110,7 +110,7 @@ anchors = set(a for a in anchors if block_of(a) is not None and not code[a - STA
 # ---- member layout per block
 def identifier(name, used):
     # leading underscore: the object names are also macros (globals.h), which would expand here
-    base = '_' + re.sub(r'\W', '_', name)
+    base = 'at_' + re.sub(r'\W', '_', name)
     candidate = base
     n = 2
     while candidate in used:
@@ -226,8 +226,174 @@ def byte_list(start, end):
         return '{0}'
     return '{' + ', '.join('0x%02X' % v for v in values) + '}'
 
+# ---- typed members: objects whose declared type is known and representable as a C initializer
+layout_path = os.path.join(args.work, 'typelayout.json')
+type_layouts = json.load(open(layout_path)) if os.path.exists(layout_path) else {}
+typedef_text = {}
+for m in re.finditer(r'^typedef\s+(.+?)\s+(\w+)\s*;',
+                     open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'types.h'),
+                          encoding='utf-8').read(), re.M):
+    typedef_text[m.group(2)] = m.group(1).strip()
+INT_SIZES = {'byte': 1, 'char': 1, 'uchar': 1, 'undefined': 1, 'undefined1': 1, 'bool': 1,
+             'unsigned char': 1, 'word': 2, 'short': 2, 'ushort': 2, 'undefined2': 2, 'unsigned short': 2,
+             'dword': 4, 'int': 4, 'uint': 4, 'sdword': 4, 'undefined4': 4, 'long': 4, 'ulong': 4,
+             'unsigned int': 4, 'unsigned long': 4, 'qword': 8, 'longlong': 8, 'ulonglong': 8,
+             'undefined8': 8, 'unsigned long long': 8, 'long long': 8}
+
+def resolve_type(t):
+    t = t.strip()
+    seen = set()
+    while t in typedef_text and t not in seen:
+        seen.add(t)
+        t = typedef_text[t]
+    return t
+
+class Unrepresentable(Exception):
+    pass
+
+def scalar_init(t, addr, typed_pointers):
+    """Initializer for one scalar of type t at addr; pointers go through typed_pointers."""
+    r = resolve_type(t)
+    if '*' in r or '(' in r:
+        value = dword_at(addr)
+        if value == 0:
+            return '0'
+        if value in funcs:
+            typed_pointers.append((addr, value, 'function', funcs[value]))
+            return '(void *)%s' % funcs[value]
+        if value in anchors:
+            typed_pointers.append((addr, value, 'data', ''))
+            return '(void *)(%s)' % address_expression(value)
+        return '(void *)0x%08X' % value
+    if r.startswith('enum '):
+        size = 4
+    elif r in INT_SIZES:
+        size = INT_SIZES[r]
+    elif r in ('float', 'double'):
+        size = 4 if r == 'float' else 8
+        raw = bytes(byte_at(addr + i) for i in range(size))
+        value = struct.unpack('<f' if size == 4 else '<d', raw)[0]
+        literal = repr(value)
+        if value != value or literal in ('inf', '-inf') or \
+                struct.pack('<f' if size == 4 else '<d', float(literal)) != raw:
+            raise Unrepresentable(t)
+        return literal + ('f' if size == 4 else '')
+    else:
+        raise Unrepresentable(t)
+    value = int.from_bytes(bytes(byte_at(addr + i) for i in range(size)), 'little')
+    if value == 0:
+        return '0'
+    if value in funcs or value in anchors:
+        raise Unrepresentable('address-like value in an integer field')
+    return ('0x%X' % value) + ('ull' if size == 8 else '')
+
+def type_size(t):
+    r = resolve_type(t)
+    if '*' in r or '(' in r or r.startswith('enum '):
+        return 4
+    if r in INT_SIZES:
+        return INT_SIZES[r]
+    if r in ('float', 'double'):
+        return 4 if r == 'float' else 8
+    if r.startswith('struct ') and r.split()[1] in type_layouts:
+        return type_layouts[r.split()[1]]['size']
+    if r in type_layouts:
+        return type_layouts[r]['size']
+    raise Unrepresentable(t)
+
+def value_init(t, addr, typed_pointers, depth=0):
+    r = resolve_type(t)
+    if '*' in r or '(' in r:
+        return scalar_init(t, addr, typed_pointers)
+    struct_name = r.split()[1] if r.startswith('struct ') else (r if r in type_layouts else None)
+    if struct_name is not None:
+        layout = type_layouts.get(struct_name)
+        if layout is None or layout['size'] is None:
+            raise Unrepresentable(t)
+        covered = bytearray(layout['size'])
+        parts = []
+        for field in layout['fields']:
+            kind = field['kind']
+            if 'offset' not in field or kind in ('union', 'array-of-union', 'bitfield', 'unparsed', 'opaque'):
+                if any(byte_at(addr + x) for x in range(field.get('offset', 0),
+                                                         field.get('offset', 0) + field.get('size', 0))) \
+                        or 'offset' not in field:
+                    raise Unrepresentable(struct_name + '.' + str(field['name']))
+                for x in range(field['offset'], field['offset'] + field['size']):
+                    covered[x] = 1
+                continue
+            for x in range(field['offset'], field['offset'] + field['size']):
+                covered[x] = 1
+            if kind == 'pointer' and '(' in field['type']:
+                element = 'void *'
+            else:
+                element = re.sub(r'\s*\[.*$', '', field['type'])
+            if kind.startswith('array-of-'):
+                count = field['count']
+                width = field['size'] // count
+                items = [value_init(element, addr + field['offset'] + i * width, typed_pointers, depth + 1)
+                         for i in range(count)]
+                while items and items[-1] in ('0', '{0}'):
+                    items.pop()
+                if items:
+                    parts.append('.%s = {%s}' % (field['name'], ', '.join(items)))
+            else:
+                item = value_init(element, addr + field['offset'], typed_pointers, depth + 1)
+                if item not in ('0', '{0}'):
+                    parts.append('.%s = %s' % (field['name'], item))
+        if any(byte_at(addr + x) for x in range(layout['size']) if not covered[x]):
+            raise Unrepresentable(struct_name + ' padding')
+        return '{%s}' % ', '.join(parts) if parts else '{0}'
+    if r.startswith('union '):
+        if any(byte_at(addr + x) for x in range(type_size(t))):
+            raise Unrepresentable(t)
+        return '{0}'
+    return scalar_init(t, addr, typed_pointers)
+
+def typed_member(start, end, name, member):
+    """(declarations, initializers, pointers) for an object with a known type, or None."""
+    macro = macros.get(name)
+    if macro is None or macro[1] != start:
+        return None
+    t = macro[0].strip()
+    array = re.match(r'(.+?)\s*\(\*\)\[(\w+)\]$', t)
+    if array:
+        element, count = array.group(1).strip(), int(array.group(2), 0)
+    elif t.endswith('*'):
+        element, count = t[:-1].strip(), 1
+    else:
+        return None
+    if resolve_type(element) in ('undefined', 'undefined1', 'undefined2', 'undefined4', 'undefined8'):
+        return None
+    try:
+        width = type_size(element)
+        if width * count > end - start:
+            return None
+        typed_pointers = []
+        items = [value_init(element, start + i * width, typed_pointers) for i in range(count)]
+    except (Unrepresentable, RecursionError):
+        return None
+    # every pointer the dword grid would convert must also be a pointer field here; otherwise
+    # (e.g. UI nodes inside a template's opaque byte gaps) keep the grid
+    owner = containing_object(start)
+    if not (owner is not None and NUMERIC.match(types.get(owner[2], 'struct').strip())):
+        typed_locations = set(p[0] for p in typed_pointers)
+        for offset in range(0, width * count - 3, 4):
+            value = dword_at(start + offset)
+            if (value in funcs or value in anchors) and start + offset not in typed_locations:
+                return None
+    decl = '    %s %s%s;' % (element, member, '[%d]' % count if array else '')
+    if array:
+        while items and items[-1] in ('0', '{0}'):
+            items.pop()
+        init = '{%s}' % ', '.join(items) if items else '{0}'
+    else:
+        init = items[0]
+    return decl, init, typed_pointers, start + width * count
+
 layout_lines = []   # struct member declarations per block
 init_lines = []     # initializer per block
+typed_count = 0
 for k, (a, b) in enumerate(blocks):
     decls = []
     inits = []
@@ -240,6 +406,22 @@ for k, (a, b) in enumerate(blocks):
             ctype, count, literal = s
             decls.append('    %s %s[%d]; %s' % (ctype, member, count, comment))
             inits.append('    %s, %s' % (literal, comment))
+            continue
+        typed = typed_member(start, end, name, member) if name else None
+        if typed is not None:
+            decl, init, typed_pointers, typed_end = typed
+            pointers.extend(typed_pointers)
+            typed_count += 1
+            decls.append('%s %s' % (decl, comment))
+            inits.append('    %s, %s' % (init, comment))
+            if typed_end < end:
+                rest_count, rest_tail = divmod(end - typed_end, 4)
+                if rest_count:
+                    decls.append('    dword %s_rest[%d]; /* beyond the declared type */' % (member, rest_count))
+                    inits.append('    %s,' % dword_list(typed_end, rest_count, numeric))
+                if rest_tail:
+                    decls.append('    byte %s_rest_tail[%d];' % (member, rest_tail))
+                    inits.append('    %s,' % byte_list(typed_end + 4 * rest_count, end))
             continue
         count, tail = divmod(end - start, 4)
         if name is None or count == 0:
@@ -290,7 +472,8 @@ src = [HEADER % 'src/generated/image_data.c',
        '/* Generated by tools/data/gen_image_data.py from the original thandor.exe: the data of\n'
        '   0x401000-0x58C000 in original order, one packed struct per run between code. Do not edit;\n'
        '   regenerate, or move objects out into hand-written definitions. */\n\n'
-       '#include <thandor/thandor.h>\n#include <thandor/generated/image_data.h>\n']
+       '#include <thandor/thandor.h>\n#include <thandor/generated/image_data.h>\n\n'
+       '#pragma warning(disable : 4152) /* function pointer fields initialized through (void *) */\n']
 for k, (a, b) in enumerate(blocks):
     src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(init_lines[k])))
 src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))
@@ -307,8 +490,8 @@ with open(os.path.join(args.work, 'image_pointers.tsv'), 'w', encoding='utf-8') 
         f.write('%08x\t%08x\t%s\t%s\n' % p)
 string_count = sum(1 for lines in layout_lines for l in lines if ' = ' not in l and ('word ' in l or 'char ' in l)
                    and not l.strip().startswith('dword'))
-print('%d blocks, %d bytes, %d members, %d function pointers, %d data pointers' % (
-    len(blocks), sum(b - a for a, b in blocks), sum(len(m) for m in members),
+print('%d blocks, %d bytes, %d members (%d typed), %d function pointers, %d data pointers' % (
+    len(blocks), sum(b - a for a, b in blocks), sum(len(m) for m in members), typed_count,
     sum(1 for p in pointers if p[2] == 'function'), sum(1 for p in pointers if p[2] == 'data')))
 if missing:
     print('address macros outside every block:', ', '.join('%08x' % a for a in missing))

@@ -59,6 +59,8 @@ These analyse which parts of the original image the C code still depends on. All
 
 | Script | Output |
 |---|---|
+| `typelayout.py` | `typelayout.json`: offset, size and kind of every struct field (compiler `offsetof`); lets the generator write typed initializers |
+| `gen_image_data.py` | `src/generated/image_data.c` + `include/thandor/generated/image_data.h`: the original data as C (run `globalmap.py`, `layout.py`, `typelayout.py` first; check with the `imagecmp` self-test) |
 | `globalmap.py` | `globalmap.txt`: address and compiler `sizeof` of every address-defined object (needs `cl` from a vcvars prompt). Run first. |
 | `rawaddr.py` | check: original-image address literals left in `src/` (expected: 0) |
 | `layout.py` | `layout.tsv`, `members.tsv`: every data byte assigned to an object; globals typed too small; bytes in no object |
