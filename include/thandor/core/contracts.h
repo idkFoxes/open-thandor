@@ -76,6 +76,10 @@ static __inline StatusValueEaxCf5 StatusValue_Fail(dword errorCode)
    the decompiler dropped at every call site. The original addresses them as base + byte offset. */
 #define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((byte *)(uintptr_t)(base) + (int)(offset)))
 
+/* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
+   UiNodeBase; the node offsets are those of the template in src/generated/image_data.c. */
+#define THANDOR_UI_FIELD(base, offset, type) (*(type *)((byte *)(uintptr_t)(base) + (int)(offset)))
+
 /* The top-level UI node: follow parent links until the -1 sentinel (the original's inline loop). */
 static __inline UiNodeBase *Thandor_UiRoot(const void *node)
 {
