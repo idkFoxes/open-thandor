@@ -51,6 +51,7 @@ InGameRuntime_RunSessionUntilExit
     goto InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCarrySet;
   }
   do {
+    g_TestAidInGameFrames = g_TestAidInGameFrames + 1;
     g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks + -2;
     if ((int)g_InGamePendingSimulationTicks < 0) {
       g_InGamePendingSimulationTicks = 0;

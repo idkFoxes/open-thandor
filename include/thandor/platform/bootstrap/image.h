@@ -50,6 +50,9 @@ void Thandor_SleepMs(unsigned milliseconds);
 int Thandor_DirectoryExistsW(const unsigned short *path);
 /* Self-tests: an executable copy of original code bytes (position-independent functions only). */
 void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size);
+/* Test aid (OPEN_THANDOR_SCRIPT `ingame`): counts in-game session frames, i.e. frames after the
+   level has finished loading. */
+extern volatile unsigned g_TestAidInGameFrames;
 /* Full path of the running executable (ANSI), independent of how it was started. */
 void Thandor_GetExecutablePathA(char *out, unsigned capacity);
 
