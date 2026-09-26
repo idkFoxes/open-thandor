@@ -675,6 +675,10 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   
   subresourceCount = (uint)control[1].base.left >> 2;
   value = subresourceCount;
+  /* The option control stores the grid half size at +0x60 (ECX); the texture dimension is twice
+     that (EDX). The decompile passed both as uninitialized locals. */
+  newGridHalfSize = (PersistentSettingsDwordValue)control[1].base.vtable;
+  newTextureDimension = newGridHalfSize * 2;
   GraphicsShadingRuntime_Shutdown();
   initStatus = GraphicsShadingRuntime_InitializeGeneratedTextureCf
                     (subresourceCount,newGridHalfSize,newTextureDimension);
