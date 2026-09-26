@@ -130,7 +130,9 @@ static void Thandor_SelfTestStretch(void)
 }
 
 /* OPEN_THANDOR_SELFTEST=stretchcmp compares the C bilinear stretches against the original machine
-   code (0x004AA170 16-bit, 0x004AA3F0 32-bit) on random sources, sizes and 555/565 constants. */
+   code (0x004AA170 16-bit, 0x004AA3F0 32-bit) on random sources, sizes and 555/565 constants. The
+   mapped entries jump to the C versions, so the original bytes are copied from the file; both
+   routines only use absolute data addresses and internal relative jumps. */
 typedef void (__stdcall *OriginalStretchProc)(dword, dword, dword, dword, dword, void *, void *);
 
 static void Thandor_SelfTestStretchCompare(void)
@@ -147,6 +149,12 @@ static void Thandor_SelfTestStretchCompare(void)
     unsigned seed = 4711;
     int run;
     int failures = 0;
+    OriginalStretchProc original16 = (OriginalStretchProc)Thandor_LoadOriginalCodeCopy(0x4aa170, 0x4aa3eb - 0x4aa170);
+    OriginalStretchProc original32 = (OriginalStretchProc)Thandor_LoadOriginalCodeCopy(0x4aa3f0, 0x4aa622 - 0x4aa3f0);
+    if (original16 == NULL || original32 == NULL) {
+        Thandor_Log("stretchcmp: could not load the original code");
+        return;
+    }
     for (run = 0; run < 24; run++) {
         int bytesPerPixel = (run & 1) ? 4 : 2;
         int layout = (run >> 1) & 1;
@@ -189,12 +197,12 @@ static void Thandor_SelfTestStretchCompare(void)
         if (bytesPerPixel == 2) {
             SoftwareTextureSource_StretchDirectColorBilinear16(dstH, dstW, 0, 4, 0,
                 (GraphicsTextureSourceAsset *)asset, (SoftwareFramebufferAccess *)fbMine);
-            ((OriginalStretchProc)(uintptr_t)0x4aa170)(dstH, dstW, 0, 4, 0, asset, fbTheirs);
+            original16(dstH, dstW, 0, 4, 0, asset, fbTheirs);
         }
         else {
             SoftwareTextureSource_StretchDirectColorBilinear32(dstH, dstW, 0, 4, 0,
                 (GraphicsTextureSourceAsset *)asset, (SoftwareFramebufferAccess *)fbMine);
-            ((OriginalStretchProc)(uintptr_t)0x4aa3f0)(dstH, dstW, 0, 4, 0, asset, fbTheirs);
+            original32(dstH, dstW, 0, 4, 0, asset, fbTheirs);
         }
         __asm emms
         for (i = 0; i < total && mine[i] == theirs[i]; i++) {

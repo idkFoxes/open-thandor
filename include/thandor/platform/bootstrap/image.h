@@ -48,6 +48,8 @@ unsigned Thandor_TickCount(void);
 void Thandor_SleepMs(unsigned milliseconds);
 /* Returns nonzero when the UTF-16 path names an existing directory. */
 int Thandor_DirectoryExistsW(const unsigned short *path);
+/* Self-tests: an executable copy of original code bytes (position-independent functions only). */
+void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size);
 
 /* Symbol name (+offset) of an address in this executable, for diagnostics. */
 const char *Thandor_SymbolName(const void *address);
