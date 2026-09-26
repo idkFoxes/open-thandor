@@ -21,17 +21,17 @@ sdword __stdcall Direct3D_EnumDeviceCallback
                  GraphicsAdapterRecord *adapterContext)
 
 {
-  GraphicsAdapterRecord *pGVar1;
-  dword dVar2;
-  dword dVar3;
-  int iVar4;
-  GraphicsAdapterRecord *pGVar5;
-  GraphicsAdapterRecord *pGVar6;
-  TH_LEGACY_GUID *pTVar7;
-  D3DDEVICEDESC_DX6 *pDVar8;
-  ArenaAllocEaxCf5 AVar9;
+  GraphicsAdapterRecord *filledRecord;
+  dword newAdapterIndex;
+  dword updatedAdapterCount;
+  int remainingDwords;
+  GraphicsAdapterRecord *newRecord;
+  GraphicsAdapterRecord *recordCursor;
+  TH_LEGACY_GUID *guidCursor;
+  D3DDEVICEDESC_DX6 *descCursor;
+  ArenaAllocEaxCf5 descAllocation;
   
-  dVar2 = g_GraphicsAdapterCount;
+  newAdapterIndex = g_GraphicsAdapterCount;
   if ((g_GraphicsAdapterCount < 0x10) &&
      ((g_GraphicsEnumerateAllDevicesFlag == 0 ||
       (((((((hardwareDesc->dwFlags & 1) != 0 && ((hardwareDesc->dwFlags & 0x100) != 0)) &&
@@ -51,41 +51,41 @@ sdword __stdcall Direct3D_EnumDeviceCallback
         (((((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x4000) != 0 ||
           (((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x8000) != 0)) ||
          (((hardwareDesc->dpcTriCaps).dwRasterCaps & 0x200) != 0)))))))))) {
-    AVar9 = (*g_MemoryApi.alloc)(0x198);
-    dVar3 = g_GraphicsAdapterCount;
-    if (!AVar9.carry) {
-      pGVar5 = g_GraphicsAdapters + dVar2;
-      iVar4 = 0x20;
+    descAllocation = (*g_MemoryApi.alloc)(0x198);
+    updatedAdapterCount = g_GraphicsAdapterCount;
+    if (!descAllocation.carry) {
+      newRecord = g_GraphicsAdapters + newAdapterIndex;
+      remainingDwords = 0x20;
       g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
-      pGVar6 = pGVar5;
+      recordCursor = newRecord;
       if ((g_GraphicsEnumerateAllDevicesFlag == 0) ||
-         (pGVar1 = adapterContext, (adapterContext->deviceGuid).Data1 != 0)) {
-        for (; pGVar1 = pGVar5, dVar3 = g_GraphicsAdapterCount, iVar4 != 0; iVar4 = iVar4 + -1) {
-          (pGVar6->adapterGuid).Data1 = (adapterContext->adapterGuid).Data1;
+         (filledRecord = adapterContext, (adapterContext->deviceGuid).Data1 != 0)) {
+        for (; filledRecord = newRecord, updatedAdapterCount = g_GraphicsAdapterCount, remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+          (recordCursor->adapterGuid).Data1 = (adapterContext->adapterGuid).Data1;
           adapterContext = (GraphicsAdapterRecord *)&(adapterContext->adapterGuid).Data2;
-          pGVar6 = (GraphicsAdapterRecord *)&(pGVar6->adapterGuid).Data2;
+          recordCursor = (GraphicsAdapterRecord *)&(recordCursor->adapterGuid).Data2;
         }
       }
-      g_GraphicsAdapterCount = dVar3;
-      pTVar7 = &pGVar1->deviceGuid;
-      for (iVar4 = 4; iVar4 != 0; iVar4 = iVar4 + -1) {
-        pTVar7->Data1 = deviceGuid->Data1;
+      g_GraphicsAdapterCount = updatedAdapterCount;
+      guidCursor = &filledRecord->deviceGuid;
+      for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+        guidCursor->Data1 = deviceGuid->Data1;
         deviceGuid = (TH_LEGACY_GUID *)&deviceGuid->Data2;
-        pTVar7 = (TH_LEGACY_GUID *)&pTVar7->Data2;
+        guidCursor = (TH_LEGACY_GUID *)&guidCursor->Data2;
       }
-      Text_CopyNarrowToUtf16Cf(0x28,pGVar1->deviceNameUtf16,(byte *)deviceName);
-      pGVar1->hardwareDesc = (D3DDEVICEDESC_DX6 *)AVar9.eax;
-      pDVar8 = (D3DDEVICEDESC_DX6 *)AVar9.eax;
-      for (iVar4 = 0x33; iVar4 != 0; iVar4 = iVar4 + -1) {
-        pDVar8->dwSize = hardwareDesc->dwSize;
+      Text_CopyNarrowToUtf16Cf(0x28,filledRecord->deviceNameUtf16,(byte *)deviceName);
+      filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.eax;
+      descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.eax;
+      for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+        descCursor->dwSize = hardwareDesc->dwSize;
         hardwareDesc = (D3DDEVICEDESC_DX6 *)&hardwareDesc->dwFlags;
-        pDVar8 = (D3DDEVICEDESC_DX6 *)&pDVar8->dwFlags;
+        descCursor = (D3DDEVICEDESC_DX6 *)&descCursor->dwFlags;
       }
-      pGVar1->softwareDesc = pDVar8;
-      for (iVar4 = 0x33; iVar4 != 0; iVar4 = iVar4 + -1) {
-        pDVar8->dwSize = softwareDesc->dwSize;
+      filledRecord->softwareDesc = descCursor;
+      for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+        descCursor->dwSize = softwareDesc->dwSize;
         softwareDesc = (D3DDEVICEDESC_DX6 *)&softwareDesc->dwFlags;
-        pDVar8 = (D3DDEVICEDESC_DX6 *)&pDVar8->dwFlags;
+        descCursor = (D3DDEVICEDESC_DX6 *)&descCursor->dwFlags;
       }
     }
   }
@@ -103,78 +103,78 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context)
 
 {
-  uint uVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  uint uVar7;
-  DDPIXELFORMAT *pDVar8;
-  TH_LEGACY_DWORD *pTVar9;
+  uint pixelFormatFlags;
+  int currentAlphaLowBit;
+  int candidateAlphaLowBit;
+  int candidateAlphaHighBit;
+  uint bitCountOrMaskDelta;
+  int highBitOrCopyCount;
+  uint candidateColorMask;
+  DDPIXELFORMAT *pixelFormatCursor;
+  TH_LEGACY_DWORD *formatDwordCursor;
   
-  uVar5 = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
-  uVar1 = (surfaceDesc->ddpfPixelFormat).dwFlags;
-  if (uVar5 < 8) {
+  bitCountOrMaskDelta = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
+  pixelFormatFlags = (surfaceDesc->ddpfPixelFormat).dwFlags;
+  if (bitCountOrMaskDelta < 8) {
     return 1;
   }
-  if (uVar5 == 8) {
+  if (bitCountOrMaskDelta == 8) {
     return 1;
   }
-  if ((uVar5 != 0x10) && (uVar5 != 0x20)) {
+  if ((bitCountOrMaskDelta != 0x10) && (bitCountOrMaskDelta != 0x20)) {
     return 1;
   }
-  if ((uVar1 & 0x40) == 0) {
+  if ((pixelFormatFlags & 0x40) == 0) {
     return 1;
   }
   if (g_Direct3DOpaqueTextureFormatBitsPerPixel != 0) {
-    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < uVar5) goto LAB_005788c0;
-    if (g_Direct3DOpaqueTextureFormatBitsPerPixel == uVar5) {
-      uVar7 = (surfaceDesc->ddpfPixelFormat).dwRBitMask | (surfaceDesc->ddpfPixelFormat).dwGBitMask
+    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < bitCountOrMaskDelta) goto LAB_005788c0;
+    if (g_Direct3DOpaqueTextureFormatBitsPerPixel == bitCountOrMaskDelta) {
+      candidateColorMask = (surfaceDesc->ddpfPixelFormat).dwRBitMask | (surfaceDesc->ddpfPixelFormat).dwGBitMask
               | (surfaceDesc->ddpfPixelFormat).dwBBitMask;
-      uVar5 = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
-              | _g_Direct3DOpaqueTextureFormatBlueBitMask) ^ uVar7;
-      if ((uVar5 == 0) || ((uVar5 & uVar7) == 0)) goto LAB_005788c0;
+      bitCountOrMaskDelta = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
+              | _g_Direct3DOpaqueTextureFormatBlueBitMask) ^ candidateColorMask;
+      if ((bitCountOrMaskDelta == 0) || ((bitCountOrMaskDelta & candidateColorMask) == 0)) goto LAB_005788c0;
     }
   }
-  pDVar8 = &surfaceDesc->ddpfPixelFormat;
-  pTVar9 = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
-  for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *pTVar9 = pDVar8->dwSize;
-    pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;
-    pTVar9 = pTVar9 + 1;
+  pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
+  formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
+  for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
+    *formatDwordCursor = pixelFormatCursor->dwSize;
+    pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
+    formatDwordCursor = formatDwordCursor + 1;
   }
 LAB_005788c0:
-  if (((uVar1 & 1) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
-    iVar6 = 0x1f;
+  if (((pixelFormatFlags & 1) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
+    highBitOrCopyCount = 0x1f;
     if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
-      for (; _g_Direct3DAlphaTextureFormatAlphaBitMask >> iVar6 == 0; iVar6 = iVar6 + -1) {
+      for (; _g_Direct3DAlphaTextureFormatAlphaBitMask >> highBitOrCopyCount == 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
       }
     }
-    iVar2 = 0;
+    currentAlphaLowBit = 0;
     if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
-      for (; (_g_Direct3DAlphaTextureFormatAlphaBitMask >> iVar2 & 1) == 0; iVar2 = iVar2 + 1) {
+      for (; (_g_Direct3DAlphaTextureFormatAlphaBitMask >> currentAlphaLowBit & 1) == 0; currentAlphaLowBit = currentAlphaLowBit + 1) {
       }
     }
-    pTVar9 = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
-    iVar4 = 0x1f;
-    if (*pTVar9 != 0) {
-      for (; *pTVar9 >> iVar4 == 0; iVar4 = iVar4 + -1) {
+    formatDwordCursor = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
+    candidateAlphaHighBit = 0x1f;
+    if (*formatDwordCursor != 0) {
+      for (; *formatDwordCursor >> candidateAlphaHighBit == 0; candidateAlphaHighBit = candidateAlphaHighBit + -1) {
       }
     }
-    pTVar9 = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
-    iVar3 = 0;
-    if (*pTVar9 != 0) {
-      for (; (*pTVar9 >> iVar3 & 1) == 0; iVar3 = iVar3 + 1) {
+    formatDwordCursor = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
+    candidateAlphaLowBit = 0;
+    if (*formatDwordCursor != 0) {
+      for (; (*formatDwordCursor >> candidateAlphaLowBit & 1) == 0; candidateAlphaLowBit = candidateAlphaLowBit + 1) {
       }
     }
-    if ((uint)(iVar2 - iVar6) < (uint)(iVar3 - iVar4)) {
-      pDVar8 = &surfaceDesc->ddpfPixelFormat;
-      pTVar9 = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
-      for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *pTVar9 = pDVar8->dwSize;
-        pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;
-        pTVar9 = pTVar9 + 1;
+    if ((uint)(currentAlphaLowBit - highBitOrCopyCount) < (uint)(candidateAlphaLowBit - candidateAlphaHighBit)) {
+      pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
+      formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
+      for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
+        *formatDwordCursor = pixelFormatCursor->dwSize;
+        pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
+        formatDwordCursor = formatDwordCursor + 1;
       }
     }
   }
@@ -190,22 +190,22 @@ Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetAntialiasMode(dword antialiasMode)
 
 {
-  sdword sVar1;
-  Direct3DRenderStateApplyEaxCf5 DVar2;
-  Direct3DRenderStateApplyEaxCf5 DVar3;
+  sdword direct3DResult;
+  Direct3DRenderStateApplyEaxCf5 successResult;
+  Direct3DRenderStateApplyEaxCf5 failureResult;
   
-  sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                     (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,antialiasMode);
-  if (sVar1 == 0) {
+  if (direct3DResult == 0) {
     g_Direct3DAntialiasMode = antialiasMode;
-    DVar2.carry = false;
-    DVar2.appliedValueOrError = antialiasMode;
-    return DVar2;
+    successResult.carry = false;
+    successResult.appliedValueOrError = antialiasMode;
+    return successResult;
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
-  DVar3.carry = true;
-  DVar3.appliedValueOrError = 0x1d;
-  return DVar3;
+  failureResult.carry = true;
+  failureResult.appliedValueOrError = 0x1d;
+  return failureResult;
 }
 
 
@@ -217,29 +217,29 @@ Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTextureFilterMode(dword textureFilterMode)
 
 {
-  sdword sVar1;
-  Direct3DRenderStateApplyEaxCf5 DVar2;
-  Direct3DRenderStateApplyEaxCf5 DVar3;
-  sdword sStack_1c;
+  sdword direct3DResult;
+  Direct3DRenderStateApplyEaxCf5 successResult;
+  Direct3DRenderStateApplyEaxCf5 failureResult;
+  sdword errorCode;
   
-  sStack_1c = 0x6e;
-  sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  errorCode = 0x6e;
+  direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,textureFilterMode);
-  if (sVar1 == 0) {
-    sStack_1c = 0x6f;
-    sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  if (direct3DResult == 0) {
+    errorCode = 0x6f;
+    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,textureFilterMode);
-    if (sVar1 == 0) {
+    if (direct3DResult == 0) {
       g_Direct3DTextureFilterMode = textureFilterMode;
-      DVar2.carry = false;
-      DVar2.appliedValueOrError = textureFilterMode;
-      return DVar2;
+      successResult.carry = false;
+      successResult.appliedValueOrError = textureFilterMode;
+      return successResult;
     }
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,sStack_1c,g_PackageLastErrorPath);
-  DVar3.carry = true;
-  DVar3.appliedValueOrError = 0x1d;
-  return DVar3;
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,errorCode,g_PackageLastErrorPath);
+  failureResult.carry = true;
+  failureResult.appliedValueOrError = 0x1d;
+  return failureResult;
 }
 
 
@@ -251,22 +251,22 @@ Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTexturePerspectiveEnabled(dword texturePerspectiveEnabled)
 
 {
-  sdword sVar1;
-  Direct3DRenderStateApplyEaxCf5 DVar2;
-  Direct3DRenderStateApplyEaxCf5 DVar3;
+  sdword direct3DResult;
+  Direct3DRenderStateApplyEaxCf5 successResult;
+  Direct3DRenderStateApplyEaxCf5 failureResult;
   
-  sVar1 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,texturePerspectiveEnabled);
-  if (sVar1 == 0) {
+  if (direct3DResult == 0) {
     g_Direct3DTexturePerspectiveEnabled = texturePerspectiveEnabled;
-    DVar2.carry = false;
-    DVar2.appliedValueOrError = texturePerspectiveEnabled;
-    return DVar2;
+    successResult.carry = false;
+    successResult.appliedValueOrError = texturePerspectiveEnabled;
+    return successResult;
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x78,g_PackageLastErrorPath);
-  DVar3.carry = true;
-  DVar3.appliedValueOrError = 0x1d;
-  return DVar3;
+  failureResult.carry = true;
+  failureResult.appliedValueOrError = 0x1d;
+  return failureResult;
 }
 
 
@@ -282,26 +282,26 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
   long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
-  PackedArgb32 PVar1;
-  PackedArgb32 PVar2;
-  PackedArgb32 PVar3;
-  PackedArgb32 PVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  undefined4 uVar12;
-  sdword sVar13;
-  int iVar14;
-  D3DDEVICEDESC_DX6 *pDVar15;
-  D3DTLVERTEX_DX6 *pDVar16;
-  D3DTLVERTEX_DX6 *pDVar17;
+  PackedArgb32 packetModulationColor;
+  PackedArgb32 vertex0Diffuse;
+  PackedArgb32 vertex1Diffuse;
+  PackedArgb32 vertex2Diffuse;
+  short channel0Product;
+  short channel1Product;
+  short channel2Product;
+  short channel3Product;
+  undefined4 vertex0AlphaDword;
+  undefined4 vertex1AlphaDword;
+  undefined4 vertex2AlphaDword;
+  undefined4 modulationAlphaDword;
+  sdword bindResult;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
   undefined1 mm0PackedValue0ByteLane1;
   undefined1 mm0PackedValue0ByteLane2;
-  sdword sVar19;
+  sdword unusedResult;
   undefined8 mm0PackedValue0;
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
@@ -319,7 +319,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
   unkbyte10 in_ST3;
-  IDirect3DDevice2 *pIVar18;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
@@ -341,116 +341,116 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
-      pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar15->dwFlags & 1) == 0) || (pDVar15->dcmColorModel == 2)) {
-        pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       in_ST1 = extraout_ST1_01;
-      if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
       }
     }
   }
-  PVar1 = packet->modulationColor;
-  PVar2 = packet->vertices[0].diffuseColor;
-  PVar3 = packet->vertices[1].diffuseColor;
-  PVar4 = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
+  packetModulationColor = packet->modulationColor;
+  vertex0Diffuse = packet->vertices[0].diffuseColor;
+  vertex1Diffuse = packet->vertices[1].diffuseColor;
+  vertex2Diffuse = packet->vertices[2].diffuseColor;
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
+  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
+  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
   THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
   THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
   THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
+       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
+                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
   THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
   THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
   THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
   mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar9 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,PVar2)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
+                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                        mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar2,(char)PVar2) >> 4))),
+                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
               mm3PackedValue0);
   mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar10 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar10,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,PVar3)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
+                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
                                                        mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar3,(char)PVar3) >> 4))),
+                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
               mm3PackedValue0);
   mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar11 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar11,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,PVar4)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
+                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
                                                        mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar4,(char)PVar4) >> 4))),
+                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
               mm3PackedValue0);
-  sVar5 = (short)mm0PackedValue0;
-  sVar6 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  channel0Product = (short)mm0PackedValue0;
+  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm1PackedValue0;
-  sVar6 = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm1PackedValue0;
+  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm2PackedValue0;
-  sVar6 = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm2PackedValue0;
+  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < sVar5))));
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
+                                  (0xff < channel0Product))));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -509,22 +509,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
-    pDVar16 = g_ImmediateTLVertices + 1;
-    pDVar17 = g_ImmediateTLVertices + 3;
-    for (iVar14 = 8; iVar14 != 0; iVar14 = iVar14 + -1) {
-      pDVar17->sx = pDVar16->sx;
-      pDVar16 = (D3DTLVERTEX_DX6 *)&pDVar16->sy;
-      pDVar17 = (D3DTLVERTEX_DX6 *)&pDVar17->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
-    pIVar18 = g_Direct3DDevice2;
-    sVar13 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (sVar13 != 0) {
-      pIVar18 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar18;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -543,26 +543,26 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
   long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
-  PackedArgb32 PVar1;
-  PackedArgb32 PVar2;
-  PackedArgb32 PVar3;
-  PackedArgb32 PVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  undefined4 uVar12;
-  sdword sVar13;
-  int iVar14;
-  D3DDEVICEDESC_DX6 *pDVar15;
-  D3DTLVERTEX_DX6 *pDVar16;
-  D3DTLVERTEX_DX6 *pDVar17;
+  PackedArgb32 packetModulationColor;
+  PackedArgb32 vertex0Diffuse;
+  PackedArgb32 vertex1Diffuse;
+  PackedArgb32 vertex2Diffuse;
+  short channel0Product;
+  short channel1Product;
+  short channel2Product;
+  short channel3Product;
+  undefined4 vertex0AlphaDword;
+  undefined4 vertex1AlphaDword;
+  undefined4 vertex2AlphaDword;
+  undefined4 modulationAlphaDword;
+  sdword bindResult;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
   undefined1 mm0PackedValue0ByteLane1;
   undefined1 mm0PackedValue0ByteLane2;
-  sdword sVar19;
+  sdword unusedResult;
   undefined8 mm0PackedValue0;
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
@@ -582,7 +582,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
   unkbyte10 in_ST3;
-  IDirect3DDevice2 *pIVar18;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
@@ -604,12 +604,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
-      pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar15->dwFlags & 1) == 0) || (pDVar15->dcmColorModel == 2)) {
-        pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       in_ST1 = extraout_ST1_01;
-      if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
@@ -632,104 +632,104 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
                          g_PrimitiveRenderStatePresets[2].destinationBlend);
     in_ST1 = extraout_ST1_04;
   }
-  PVar1 = packet->modulationColor;
-  PVar2 = packet->vertices[0].diffuseColor;
-  PVar3 = packet->vertices[1].diffuseColor;
-  PVar4 = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
+  packetModulationColor = packet->modulationColor;
+  vertex0Diffuse = packet->vertices[0].diffuseColor;
+  vertex1Diffuse = packet->vertices[1].diffuseColor;
+  vertex2Diffuse = packet->vertices[2].diffuseColor;
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
+  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
+  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
   THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
   THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
   THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
+       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
+                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
   THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
   THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
   THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
   mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar9 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,PVar2)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
+                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                        mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar2,(char)PVar2) >> 4))),
+                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
               mm3PackedValue0);
   mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar10 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar10,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,PVar3)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
+                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
                                                        mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar3,(char)PVar3) >> 4))),
+                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
               mm3PackedValue0);
   mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar11 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar11,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,PVar4)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
+                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
                                                        mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar4,(char)PVar4) >> 4))),
+                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
               mm3PackedValue0);
-  sVar5 = (short)mm0PackedValue0;
-  sVar6 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  channel0Product = (short)mm0PackedValue0;
+  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm1PackedValue0;
-  sVar6 = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm1PackedValue0;
+  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm2PackedValue0;
-  sVar6 = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm2PackedValue0;
+  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < sVar5))));
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
+                                  (0xff < channel0Product))));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -788,22 +788,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
-    pDVar16 = g_ImmediateTLVertices + 1;
-    pDVar17 = g_ImmediateTLVertices + 3;
-    for (iVar14 = 8; iVar14 != 0; iVar14 = iVar14 + -1) {
-      pDVar17->sx = pDVar16->sx;
-      pDVar16 = (D3DTLVERTEX_DX6 *)&pDVar16->sy;
-      pDVar17 = (D3DTLVERTEX_DX6 *)&pDVar17->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
-    pIVar18 = g_Direct3DDevice2;
-    sVar13 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (sVar13 != 0) {
-      pIVar18 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar18;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -823,26 +823,26 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
   long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
-  PackedArgb32 PVar1;
-  PackedArgb32 PVar2;
-  PackedArgb32 PVar3;
-  PackedArgb32 PVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  undefined4 uVar12;
-  sdword sVar13;
-  int iVar14;
-  D3DDEVICEDESC_DX6 *pDVar15;
-  D3DTLVERTEX_DX6 *pDVar16;
-  D3DTLVERTEX_DX6 *pDVar17;
+  PackedArgb32 packetModulationColor;
+  PackedArgb32 vertex0Diffuse;
+  PackedArgb32 vertex1Diffuse;
+  PackedArgb32 vertex2Diffuse;
+  short channel0Product;
+  short channel1Product;
+  short channel2Product;
+  short channel3Product;
+  undefined4 vertex0AlphaDword;
+  undefined4 vertex1AlphaDword;
+  undefined4 vertex2AlphaDword;
+  undefined4 modulationAlphaDword;
+  sdword bindResult;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
   undefined1 mm0PackedValue0ByteLane1;
   undefined1 mm0PackedValue0ByteLane2;
-  sdword sVar19;
+  sdword unusedResult;
   undefined8 mm0PackedValue0;
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
@@ -862,7 +862,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
   unkbyte10 in_ST3;
-  IDirect3DDevice2 *pIVar18;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
@@ -884,12 +884,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
-      pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar15->dwFlags & 1) == 0) || (pDVar15->dcmColorModel == 2)) {
-        pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       in_ST1 = extraout_ST1_01;
-      if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
@@ -912,104 +912,104 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
                          g_PrimitiveRenderStatePresets[3].destinationBlend);
     in_ST1 = extraout_ST1_04;
   }
-  PVar1 = packet->modulationColor;
-  PVar2 = packet->vertices[0].diffuseColor;
-  PVar3 = packet->vertices[1].diffuseColor;
-  PVar4 = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
+  packetModulationColor = packet->modulationColor;
+  vertex0Diffuse = packet->vertices[0].diffuseColor;
+  vertex1Diffuse = packet->vertices[1].diffuseColor;
+  vertex2Diffuse = packet->vertices[2].diffuseColor;
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
+  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
+  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
   THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
   THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
   THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
+       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
+                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
   THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
   THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
   THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
   mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar9 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,PVar2)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
+                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                        mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar2,(char)PVar2) >> 4))),
+                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
               mm3PackedValue0);
   mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar10 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar10,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,PVar3)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
+                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
                                                        mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar3,(char)PVar3) >> 4))),
+                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
               mm3PackedValue0);
   mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar11 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar11,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,PVar4)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
+                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
                                                        mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar4,(char)PVar4) >> 4))),
+                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
               mm3PackedValue0);
-  sVar5 = (short)mm0PackedValue0;
-  sVar6 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  channel0Product = (short)mm0PackedValue0;
+  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm1PackedValue0;
-  sVar6 = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm1PackedValue0;
+  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm2PackedValue0;
-  sVar6 = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm2PackedValue0;
+  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < sVar5))));
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
+                                  (0xff < channel0Product))));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -1068,22 +1068,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
-    pDVar16 = g_ImmediateTLVertices + 1;
-    pDVar17 = g_ImmediateTLVertices + 3;
-    for (iVar14 = 8; iVar14 != 0; iVar14 = iVar14 + -1) {
-      pDVar17->sx = pDVar16->sx;
-      pDVar16 = (D3DTLVERTEX_DX6 *)&pDVar16->sy;
-      pDVar17 = (D3DTLVERTEX_DX6 *)&pDVar17->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
-    pIVar18 = g_Direct3DDevice2;
-    sVar13 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (sVar13 != 0) {
-      pIVar18 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar18;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1102,26 +1102,26 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
   long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
-  PackedArgb32 PVar1;
-  PackedArgb32 PVar2;
-  PackedArgb32 PVar3;
-  PackedArgb32 PVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  undefined4 uVar12;
-  sdword sVar13;
-  int iVar14;
-  D3DDEVICEDESC_DX6 *pDVar15;
-  D3DTLVERTEX_DX6 *pDVar16;
-  D3DTLVERTEX_DX6 *pDVar17;
+  PackedArgb32 packetModulationColor;
+  PackedArgb32 vertex0Diffuse;
+  PackedArgb32 vertex1Diffuse;
+  PackedArgb32 vertex2Diffuse;
+  short channel0Product;
+  short channel1Product;
+  short channel2Product;
+  short channel3Product;
+  undefined4 vertex0AlphaDword;
+  undefined4 vertex1AlphaDword;
+  undefined4 vertex2AlphaDword;
+  undefined4 modulationAlphaDword;
+  sdword bindResult;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
   undefined1 mm0PackedValue0ByteLane1;
   undefined1 mm0PackedValue0ByteLane2;
-  sdword sVar19;
+  sdword unusedResult;
   undefined8 mm0PackedValue0;
   undefined8 mm1PackedValue0;
   undefined1 mm1PackedValue0ByteLane1;
@@ -1141,7 +1141,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   undefined1 mm3PackedValue0ByteLane1;
   undefined1 mm3PackedValue0ByteLane2;
   unkbyte10 in_ST3;
-  IDirect3DDevice2 *pIVar18;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
@@ -1163,12 +1163,12 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
       direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
-      pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar15->dwFlags & 1) == 0) || (pDVar15->dcmColorModel == 2)) {
-        pDVar15 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       in_ST1 = extraout_ST1_01;
-      if (((pDVar15->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
         in_ST1 = extraout_ST1_02;
@@ -1191,104 +1191,104 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
                          g_PrimitiveRenderStatePresets[4].destinationBlend);
     in_ST1 = extraout_ST1_04;
   }
-  PVar1 = packet->modulationColor;
-  PVar2 = packet->vertices[0].diffuseColor;
-  PVar3 = packet->vertices[1].diffuseColor;
-  PVar4 = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 0x18);
-  uVar9 = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
+  packetModulationColor = packet->modulationColor;
+  vertex0Diffuse = packet->vertices[0].diffuseColor;
+  vertex1Diffuse = packet->vertices[1].diffuseColor;
+  vertex2Diffuse = packet->vertices[2].diffuseColor;
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
+  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
                    mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(PVar2 >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(PVar2 >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 0x18);
-  uVar10 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
+  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
+  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
+  vertex1AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST1) >> 0x40),mm1PackedValue0ByteLane1),
                     mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(PVar3 >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(PVar3 >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 0x18);
-  uVar11 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
+  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
+  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
+  vertex2AlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST2) >> 0x40),mm2PackedValue0ByteLane1),
                     mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(PVar4 >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(PVar4 >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 0x18);
-  uVar12 = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
+  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
+  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
+  modulationAlphaDword = CONCAT31(CONCAT21((short)(THANDOR_BITCAST(unkbyte10, unkuint10, in_ST3) >> 0x40),mm3PackedValue0ByteLane1),
                     mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(PVar1 >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(PVar1 >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)PVar1,(char)PVar1) >> 4;
+  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
+  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
+  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
   THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
   THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
   THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(uVar12,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,PVar1)) >> 0x20);
+       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
+                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
   THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
   THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)uVar12;
+  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
   THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
   mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
   mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar9 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar9,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,PVar2)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
+                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
                                                        mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar2,(char)PVar2) >> 4))),
+                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
               mm3PackedValue0);
   mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar10 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar10,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,PVar3)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
+                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
                                                        mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar3,(char)PVar3) >> 4))),
+                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
               mm3PackedValue0);
   mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)uVar11 >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(uVar11,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,PVar4)) >> 0x20)
+       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
+                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
+                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
                                 >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
                                                        mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)PVar4,(char)PVar4) >> 4))),
+                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
               mm3PackedValue0);
-  sVar5 = (short)mm0PackedValue0;
-  sVar6 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  channel0Product = (short)mm0PackedValue0;
+  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm1PackedValue0;
-  sVar6 = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm1PackedValue0;
+  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < sVar5))));
-  sVar5 = (short)mm2PackedValue0;
-  sVar6 = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  sVar7 = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  sVar8 = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
+                                  (0xff < channel0Product))));
+  channel0Product = (short)mm2PackedValue0;
+  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
+  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
+  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < sVar8) * (sVar8 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < sVar8),
-                CONCAT12((0 < sVar7) * (sVar7 < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < sVar7),
-                         CONCAT11((0 < sVar6) * (sVar6 < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < sVar6),
-                                  (0 < sVar5) * (sVar5 < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < sVar5))));
+       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
+                (0xff < channel3Product),
+                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
+                         - (0xff < channel2Product),
+                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
+                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
+                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
+                                  (0xff < channel0Product))));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -1347,22 +1347,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
   }
   if (3 < g_ImmediateVertexCount) {
-    pDVar16 = g_ImmediateTLVertices + 1;
-    pDVar17 = g_ImmediateTLVertices + 3;
-    for (iVar14 = 8; iVar14 != 0; iVar14 = iVar14 + -1) {
-      pDVar17->sx = pDVar16->sx;
-      pDVar16 = (D3DTLVERTEX_DX6 *)&pDVar16->sy;
-      pDVar17 = (D3DTLVERTEX_DX6 *)&pDVar17->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
-    pIVar18 = g_Direct3DDevice2;
-    sVar13 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (sVar13 != 0) {
-      pIVar18 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar18;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1382,20 +1382,20 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
-  uint uVar2;
-  uint uVar3;
-  GraphicsTextureSetEntry *pGVar4;
+  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
+  uint textureWidthLog2;
+  uint textureHeightLog2;
+  GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
-  GraphicsTextureHandle arg2;
-  sdword sVar5;
-  byte bVar6;
-  uint uVar7;
-  int iVar8;
-  D3DDEVICEDESC_DX6 *pDVar9;
-  D3DTLVERTEX_DX6 *pDVar10;
-  D3DTLVERTEX_DX6 *pDVar11;
-  IDirect3DDevice2 *pIVar12;
+  GraphicsTextureHandle deviceTextureHandle;
+  sdword bindResult;
+  byte coordinateShift;
+  uint largerDimensionLog2;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
@@ -1415,11 +1415,11 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
       (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
-      pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar9->dwFlags & 1) == 0) || (pDVar9->dcmColorModel == 2)) {
-        pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((pDVar9->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1469,26 +1469,26 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].sy != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
-  uVar2 = packet->textureEntry->widthLog2;
-  uVar3 = packet->textureEntry->heightLog2;
-  uVar7 = uVar2;
-  if (uVar2 < uVar3) {
-    uVar7 = uVar3;
+  textureWidthLog2 = packet->textureEntry->widthLog2;
+  textureHeightLog2 = packet->textureEntry->heightLog2;
+  largerDimensionLog2 = textureWidthLog2;
+  if (textureWidthLog2 < textureHeightLog2) {
+    largerDimensionLog2 = textureHeightLog2;
   }
-  bVar6 = (char)uVar7 - (char)uVar2;
-  pGVar1 = &packet->vertices[0].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  bVar6 = (char)uVar7 - (char)uVar3;
-  pGVar1 = &packet->vertices[0].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
+  textureCoordinate = &packet->vertices[0].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
+  textureCoordinate = &packet->vertices[0].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1537,36 +1537,36 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
-  pGVar4 = packet->textureEntry;
+  packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    pDVar10 = g_ImmediateTLVertices + 1;
-    pDVar11 = g_ImmediateTLVertices + 3;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
-      pDVar11->sx = pDVar10->sx;
-      pDVar10 = (D3DTLVERTEX_DX6 *)&pDVar10->sy;
-      pDVar11 = (D3DTLVERTEX_DX6 *)&pDVar11->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
-  texture = pGVar4->texture;
-  arg2 = 0;
+  texture = packetTextureEntry->texture;
+  deviceTextureHandle = 0;
   if (texture != (GraphicsTextureResource *)0x0) {
-    arg2 = texture->textureHandle;
+    deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
     g_TextureUseSerial = g_TextureUseSerial + 1;
-    if (arg2 == 0) {
+    if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = texture->textureHandle;
+      deviceTextureHandle = texture->textureHandle;
     }
   }
-  if (arg2 != g_BoundTextureHandle) {
-    pIVar12 = g_Direct3DDevice2;
-    sVar5 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,arg2);
-    if (sVar5 != 0) {
-      pIVar12 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+  if (deviceTextureHandle != g_BoundTextureHandle) {
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar12;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1586,20 +1586,20 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
-  uint uVar2;
-  uint uVar3;
-  GraphicsTextureSetEntry *pGVar4;
+  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
+  uint textureWidthLog2;
+  uint textureHeightLog2;
+  GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
-  GraphicsTextureHandle arg2;
-  sdword sVar5;
-  byte bVar6;
-  uint uVar7;
-  int iVar8;
-  D3DDEVICEDESC_DX6 *pDVar9;
-  D3DTLVERTEX_DX6 *pDVar10;
-  D3DTLVERTEX_DX6 *pDVar11;
-  IDirect3DDevice2 *pIVar12;
+  GraphicsTextureHandle deviceTextureHandle;
+  sdword bindResult;
+  byte coordinateShift;
+  uint largerDimensionLog2;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[1].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[1].zWriteEnable;
@@ -1619,11 +1619,11 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
       (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[1].alphaBlendEnable);
-      pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar9->dwFlags & 1) == 0) || (pDVar9->dcmColorModel == 2)) {
-        pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((pDVar9->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1673,26 +1673,26 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].sy != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
-  uVar2 = packet->textureEntry->widthLog2;
-  uVar3 = packet->textureEntry->heightLog2;
-  uVar7 = uVar2;
-  if (uVar2 < uVar3) {
-    uVar7 = uVar3;
+  textureWidthLog2 = packet->textureEntry->widthLog2;
+  textureHeightLog2 = packet->textureEntry->heightLog2;
+  largerDimensionLog2 = textureWidthLog2;
+  if (textureWidthLog2 < textureHeightLog2) {
+    largerDimensionLog2 = textureHeightLog2;
   }
-  bVar6 = (char)uVar7 - (char)uVar2;
-  pGVar1 = &packet->vertices[0].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  bVar6 = (char)uVar7 - (char)uVar3;
-  pGVar1 = &packet->vertices[0].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
+  textureCoordinate = &packet->vertices[0].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
+  textureCoordinate = &packet->vertices[0].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1741,36 +1741,36 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
-  pGVar4 = packet->textureEntry;
+  packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    pDVar10 = g_ImmediateTLVertices + 1;
-    pDVar11 = g_ImmediateTLVertices + 3;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
-      pDVar11->sx = pDVar10->sx;
-      pDVar10 = (D3DTLVERTEX_DX6 *)&pDVar10->sy;
-      pDVar11 = (D3DTLVERTEX_DX6 *)&pDVar11->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
-  texture = pGVar4->texture;
-  arg2 = 0;
+  texture = packetTextureEntry->texture;
+  deviceTextureHandle = 0;
   if (texture != (GraphicsTextureResource *)0x0) {
-    arg2 = texture->textureHandle;
+    deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
     g_TextureUseSerial = g_TextureUseSerial + 1;
-    if (arg2 == 0) {
+    if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = texture->textureHandle;
+      deviceTextureHandle = texture->textureHandle;
     }
   }
-  if (arg2 != g_BoundTextureHandle) {
-    pIVar12 = g_Direct3DDevice2;
-    sVar5 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,arg2);
-    if (sVar5 != 0) {
-      pIVar12 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+  if (deviceTextureHandle != g_BoundTextureHandle) {
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar12;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1790,20 +1790,20 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
-  uint uVar2;
-  uint uVar3;
-  GraphicsTextureSetEntry *pGVar4;
+  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
+  uint textureWidthLog2;
+  uint textureHeightLog2;
+  GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
-  GraphicsTextureHandle arg2;
-  sdword sVar5;
-  byte bVar6;
-  uint uVar7;
-  int iVar8;
-  D3DDEVICEDESC_DX6 *pDVar9;
-  D3DTLVERTEX_DX6 *pDVar10;
-  D3DTLVERTEX_DX6 *pDVar11;
-  IDirect3DDevice2 *pIVar12;
+  GraphicsTextureHandle deviceTextureHandle;
+  sdword bindResult;
+  byte coordinateShift;
+  uint largerDimensionLog2;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
@@ -1823,11 +1823,11 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
       (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
-      pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar9->dwFlags & 1) == 0) || (pDVar9->dcmColorModel == 2)) {
-        pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((pDVar9->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1877,26 +1877,26 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].sy != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
-  uVar2 = packet->textureEntry->widthLog2;
-  uVar3 = packet->textureEntry->heightLog2;
-  uVar7 = uVar2;
-  if (uVar2 < uVar3) {
-    uVar7 = uVar3;
+  textureWidthLog2 = packet->textureEntry->widthLog2;
+  textureHeightLog2 = packet->textureEntry->heightLog2;
+  largerDimensionLog2 = textureWidthLog2;
+  if (textureWidthLog2 < textureHeightLog2) {
+    largerDimensionLog2 = textureHeightLog2;
   }
-  bVar6 = (char)uVar7 - (char)uVar2;
-  pGVar1 = &packet->vertices[0].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  bVar6 = (char)uVar7 - (char)uVar3;
-  pGVar1 = &packet->vertices[0].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
+  textureCoordinate = &packet->vertices[0].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
+  textureCoordinate = &packet->vertices[0].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1945,36 +1945,36 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
-  pGVar4 = packet->textureEntry;
+  packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    pDVar10 = g_ImmediateTLVertices + 1;
-    pDVar11 = g_ImmediateTLVertices + 3;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
-      pDVar11->sx = pDVar10->sx;
-      pDVar10 = (D3DTLVERTEX_DX6 *)&pDVar10->sy;
-      pDVar11 = (D3DTLVERTEX_DX6 *)&pDVar11->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
-  texture = pGVar4->texture;
-  arg2 = 0;
+  texture = packetTextureEntry->texture;
+  deviceTextureHandle = 0;
   if (texture != (GraphicsTextureResource *)0x0) {
-    arg2 = texture->textureHandle;
+    deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
     g_TextureUseSerial = g_TextureUseSerial + 1;
-    if (arg2 == 0) {
+    if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = texture->textureHandle;
+      deviceTextureHandle = texture->textureHandle;
     }
   }
-  if (arg2 != g_BoundTextureHandle) {
-    pIVar12 = g_Direct3DDevice2;
-    sVar5 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,arg2);
-    if (sVar5 != 0) {
-      pIVar12 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+  if (deviceTextureHandle != g_BoundTextureHandle) {
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar12;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1995,20 +1995,20 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
-  uint uVar2;
-  uint uVar3;
-  GraphicsTextureSetEntry *pGVar4;
+  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
+  uint textureWidthLog2;
+  uint textureHeightLog2;
+  GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
-  GraphicsTextureHandle arg2;
-  sdword sVar5;
-  byte bVar6;
-  uint uVar7;
-  int iVar8;
-  D3DDEVICEDESC_DX6 *pDVar9;
-  D3DTLVERTEX_DX6 *pDVar10;
-  D3DTLVERTEX_DX6 *pDVar11;
-  IDirect3DDevice2 *pIVar12;
+  GraphicsTextureHandle deviceTextureHandle;
+  sdword bindResult;
+  byte coordinateShift;
+  uint largerDimensionLog2;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
@@ -2028,11 +2028,11 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
       (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
-      pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar9->dwFlags & 1) == 0) || (pDVar9->dcmColorModel == 2)) {
-        pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((pDVar9->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -2082,26 +2082,26 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].sy != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
-  uVar2 = packet->textureEntry->widthLog2;
-  uVar3 = packet->textureEntry->heightLog2;
-  uVar7 = uVar2;
-  if (uVar2 < uVar3) {
-    uVar7 = uVar3;
+  textureWidthLog2 = packet->textureEntry->widthLog2;
+  textureHeightLog2 = packet->textureEntry->heightLog2;
+  largerDimensionLog2 = textureWidthLog2;
+  if (textureWidthLog2 < textureHeightLog2) {
+    largerDimensionLog2 = textureHeightLog2;
   }
-  bVar6 = (char)uVar7 - (char)uVar2;
-  pGVar1 = &packet->vertices[0].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  bVar6 = (char)uVar7 - (char)uVar3;
-  pGVar1 = &packet->vertices[0].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
+  textureCoordinate = &packet->vertices[0].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
+  textureCoordinate = &packet->vertices[0].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -2150,36 +2150,36 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
-  pGVar4 = packet->textureEntry;
+  packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    pDVar10 = g_ImmediateTLVertices + 1;
-    pDVar11 = g_ImmediateTLVertices + 3;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
-      pDVar11->sx = pDVar10->sx;
-      pDVar10 = (D3DTLVERTEX_DX6 *)&pDVar10->sy;
-      pDVar11 = (D3DTLVERTEX_DX6 *)&pDVar11->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
-  texture = pGVar4->texture;
-  arg2 = 0;
+  texture = packetTextureEntry->texture;
+  deviceTextureHandle = 0;
   if (texture != (GraphicsTextureResource *)0x0) {
-    arg2 = texture->textureHandle;
+    deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
     g_TextureUseSerial = g_TextureUseSerial + 1;
-    if (arg2 == 0) {
+    if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = texture->textureHandle;
+      deviceTextureHandle = texture->textureHandle;
     }
   }
-  if (arg2 != g_BoundTextureHandle) {
-    pIVar12 = g_Direct3DDevice2;
-    sVar5 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,arg2);
-    if (sVar5 != 0) {
-      pIVar12 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+  if (deviceTextureHandle != g_BoundTextureHandle) {
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar12;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -2199,20 +2199,20 @@ void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *pGVar1;
-  uint uVar2;
-  uint uVar3;
-  GraphicsTextureSetEntry *pGVar4;
+  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
+  uint textureWidthLog2;
+  uint textureHeightLog2;
+  GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
-  GraphicsTextureHandle arg2;
-  sdword sVar5;
-  byte bVar6;
-  uint uVar7;
-  int iVar8;
-  D3DDEVICEDESC_DX6 *pDVar9;
-  D3DTLVERTEX_DX6 *pDVar10;
-  D3DTLVERTEX_DX6 *pDVar11;
-  IDirect3DDevice2 *pIVar12;
+  GraphicsTextureHandle deviceTextureHandle;
+  sdword bindResult;
+  byte coordinateShift;
+  uint largerDimensionLog2;
+  int remainingDwords;
+  D3DDEVICEDESC_DX6 *deviceDesc;
+  D3DTLVERTEX_DX6 *sourceVertexCursor;
+  D3DTLVERTEX_DX6 *destVertexCursor;
+  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
@@ -2232,11 +2232,11 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
       (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
-      pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((pDVar9->dwFlags & 1) == 0) || (pDVar9->dcmColorModel == 2)) {
-        pDVar9 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
+      deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
+      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+        deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((pDVar9->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
         (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -2286,26 +2286,26 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].sy != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
   }
-  uVar2 = packet->textureEntry->widthLog2;
-  uVar3 = packet->textureEntry->heightLog2;
-  uVar7 = uVar2;
-  if (uVar2 < uVar3) {
-    uVar7 = uVar3;
+  textureWidthLog2 = packet->textureEntry->widthLog2;
+  textureHeightLog2 = packet->textureEntry->heightLog2;
+  largerDimensionLog2 = textureWidthLog2;
+  if (textureWidthLog2 < textureHeightLog2) {
+    largerDimensionLog2 = textureHeightLog2;
   }
-  bVar6 = (char)uVar7 - (char)uVar2;
-  pGVar1 = &packet->vertices[0].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureU;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  bVar6 = (char)uVar7 - (char)uVar3;
-  pGVar1 = &packet->vertices[0].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[1].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
-  pGVar1 = &packet->vertices[2].textureV;
-  *pGVar1 = *pGVar1 >> (bVar6 & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
+  textureCoordinate = &packet->vertices[0].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureU;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
+  textureCoordinate = &packet->vertices[0].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[1].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  textureCoordinate = &packet->vertices[2].textureV;
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -2354,36 +2354,36 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
   }
-  pGVar4 = packet->textureEntry;
+  packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    pDVar10 = g_ImmediateTLVertices + 1;
-    pDVar11 = g_ImmediateTLVertices + 3;
-    for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
-      pDVar11->sx = pDVar10->sx;
-      pDVar10 = (D3DTLVERTEX_DX6 *)&pDVar10->sy;
-      pDVar11 = (D3DTLVERTEX_DX6 *)&pDVar11->sy;
+    sourceVertexCursor = g_ImmediateTLVertices + 1;
+    destVertexCursor = g_ImmediateTLVertices + 3;
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      destVertexCursor->sx = sourceVertexCursor->sx;
+      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
+      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
-  texture = pGVar4->texture;
-  arg2 = 0;
+  texture = packetTextureEntry->texture;
+  deviceTextureHandle = 0;
   if (texture != (GraphicsTextureResource *)0x0) {
-    arg2 = texture->textureHandle;
+    deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
     g_TextureUseSerial = g_TextureUseSerial + 1;
-    if (arg2 == 0) {
+    if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
       g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
-      arg2 = texture->textureHandle;
+      deviceTextureHandle = texture->textureHandle;
     }
   }
-  if (arg2 != g_BoundTextureHandle) {
-    pIVar12 = g_Direct3DDevice2;
-    sVar5 = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
-                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,arg2);
-    if (sVar5 != 0) {
-      pIVar12 = (IDirect3DDevice2 *)g_BoundTextureHandle;
+  if (deviceTextureHandle != g_BoundTextureHandle) {
+    newBoundTextureHandle = g_Direct3DDevice2;
+    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+                      (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
+    if (bindResult != 0) {
+      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)pIVar12;
+    g_BoundTextureHandle = (dword)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;

@@ -25,81 +25,81 @@ Movie_EncodeFlmBufferFromFrameProviderCf
           uint *outputBuffer,MovieFrameProviderCfProc *frameProvider)
 
 {
-  dword dVar1;
+  dword packedTimeOrDate;
   void *frameToReleaseOrNull;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint byteCount;
+  int clearCount;
+  uint frameCount;
   uint *sourcePixels;
-  uint *puVar5;
-  MovieFrameProviderEaxCf5 MVar6;
-  StatusValueEaxCf5 SVar7;
-  StatusValueEaxCf5 SVar8;
-  void *frameToReleaseOrNull_00;
+  uint *outputCursor;
+  MovieFrameProviderEaxCf5 providerResult;
+  StatusValueEaxCf5 successResult;
+  StatusValueEaxCf5 failureResult;
+  void *firstFrame;
   
-  puVar5 = outputBuffer;
-  for (iVar3 = 0x80; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = 0;
-    puVar5 = puVar5 + 1;
+  outputCursor = outputBuffer;
+  for (clearCount = 0x80; clearCount != 0; clearCount = clearCount + -1) {
+    *outputCursor = 0;
+    outputCursor = outputCursor + 1;
   }
-  puVar5[-0x80] = 0x6d6c66;
-  puVar5[-0x7f] = 0x200;
-  puVar5[-0x7e] = 1;
-  puVar5[-0x7d] = 0x20001;
-  dVar1 = (*g_LocaleGetPackedCurrentTime)();
-  puVar5[-0x7c] = dVar1;
-  puVar5[-0x7a] = dVar1;
-  puVar5[-0x78] = dVar1;
-  dVar1 = (*g_LocaleGetPackedCurrentDate)();
-  puVar5[-0x7b] = dVar1;
-  puVar5[-0x79] = dVar1;
-  puVar5[-0x77] = dVar1;
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(puVar5 + -0x74));
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(puVar5 + -100));
-  *(undefined1 *)(puVar5 + -0x40) = 0;
-  puVar5[-0x54] = frameWidthPixels;
-  puVar5[-0x53] = frameHeightPixels;
-  puVar5[-0x52] = 0;
-  puVar5[-0x51] = 0;
-  MVar6 = (*frameProvider)((void *)0x0);
-  frameToReleaseOrNull = MVar6.frameOrError;
-  if (!MVar6.carry) {
-    uVar4 = 1;
+  outputCursor[-0x80] = 0x6d6c66;
+  outputCursor[-0x7f] = 0x200;
+  outputCursor[-0x7e] = 1;
+  outputCursor[-0x7d] = 0x20001;
+  packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
+  outputCursor[-0x7c] = packedTimeOrDate;
+  outputCursor[-0x7a] = packedTimeOrDate;
+  outputCursor[-0x78] = packedTimeOrDate;
+  packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
+  outputCursor[-0x7b] = packedTimeOrDate;
+  outputCursor[-0x79] = packedTimeOrDate;
+  outputCursor[-0x77] = packedTimeOrDate;
+  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputCursor + -0x74));
+  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputCursor + -100));
+  *(undefined1 *)(outputCursor + -0x40) = 0;
+  outputCursor[-0x54] = frameWidthPixels;
+  outputCursor[-0x53] = frameHeightPixels;
+  outputCursor[-0x52] = 0;
+  outputCursor[-0x51] = 0;
+  providerResult = (*frameProvider)((void *)0x0);
+  frameToReleaseOrNull = providerResult.frameOrError;
+  if (!providerResult.carry) {
+    frameCount = 1;
     sourcePixels = (uint *)((int)frameToReleaseOrNull +
                            *(int *)((int)frameToReleaseOrNull +
                                    *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc));
-    uVar2 = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,puVar5,sourcePixels);
-    puVar5 = (uint *)((int)puVar5 + uVar2);
-    frameToReleaseOrNull_00 = frameToReleaseOrNull;
+    byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels);
+    outputCursor = (uint *)((int)outputCursor + byteCount);
+    firstFrame = frameToReleaseOrNull;
     while( true ) {
-      MVar6 = (*frameProvider)((void *)0x0);
-      frameToReleaseOrNull = MVar6.frameOrError;
-      if (MVar6.carry) break;
-      uVar4 = uVar4 + 1;
-      uVar2 = Movie_EncodeFrame4x4Delta
-                        (frameHeightPixels,frameWidthPixels,puVar5,sourcePixels,
+      providerResult = (*frameProvider)((void *)0x0);
+      frameToReleaseOrNull = providerResult.frameOrError;
+      if (providerResult.carry) break;
+      frameCount = frameCount + 1;
+      byteCount = Movie_EncodeFrame4x4Delta
+                        (frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels,
                          (uint *)(*(int *)((int)frameToReleaseOrNull +
                                           *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc) +
                                  (int)frameToReleaseOrNull));
-      puVar5 = (uint *)((int)puVar5 + uVar2);
+      outputCursor = (uint *)((int)outputCursor + byteCount);
       (*frameProvider)(frameToReleaseOrNull);
     }
-    (*frameProvider)(frameToReleaseOrNull_00);
-    uVar2 = (int)puVar5 - (int)outputBuffer;
-    outputBuffer[0x2e] = uVar4;
+    (*frameProvider)(firstFrame);
+    byteCount = (int)outputCursor - (int)outputBuffer;
+    outputBuffer[0x2e] = frameCount;
     outputBuffer[0x3f] = 0x10;
-    outputBuffer[1] = uVar2;
-    outputBuffer[0x30] = uVar2;
+    outputBuffer[1] = byteCount;
+    outputBuffer[0x30] = byteCount;
     if (frameToReleaseOrNull == (void *)0xffffffff) {
       outputBuffer[0x30] = outputBuffer[0x30] - 0x200;
-      SVar7.carry = false;
-      SVar7.valueOrError = uVar2;
-      return SVar7;
+      successResult.carry = false;
+      successResult.valueOrError = byteCount;
+      return successResult;
     }
   }
-  SVar8.carry = true;
-  SVar8.valueOrError = (dword)frameToReleaseOrNull;
-  return SVar8;
+  failureResult.carry = true;
+  failureResult.valueOrError = (dword)frameToReleaseOrNull;
+  return failureResult;
 }
 
 
@@ -115,15 +115,15 @@ void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndT
 
 {
   uint targetFrame;
-  uint targetFrame_00;
+  uint boundaryFrame;
   
   g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + 1;
   if (g_MoviePlaybackScheduleSpan != 0) {
     targetFrame = (uint)(g_MoviePlaybackScheduleCounter * 8) / g_MoviePlaybackScheduleSpan + 1 +
                   g_MoviePlaybackBaseFrameGroup * 8;
-    for (targetFrame_00 = 8; targetFrame_00 < targetFrame; targetFrame_00 = targetFrame_00 + 8) {
-      if (g_MoviePlaybackCurrentFrame < targetFrame_00) {
-        MoviePlayback_AdvanceToFrameAndPresent(targetFrame_00);
+    for (boundaryFrame = 8; boundaryFrame < targetFrame; boundaryFrame = boundaryFrame + 8) {
+      if (g_MoviePlaybackCurrentFrame < boundaryFrame) {
+        MoviePlayback_AdvanceToFrameAndPresent(boundaryFrame);
       }
     }
     if (targetFrame != g_MoviePlaybackCurrentFrame) {
@@ -146,243 +146,243 @@ void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndT
 MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,word *path)
 
 {
-  MovieFileHeader *pMVar1;
-  uint uVar2;
-  MovieSubresourceCount MVar3;
-  MoviePaletteBankCount MVar4;
-  MovieAudioGainQ15 MVar5;
-  MovieRuntime *pMVar6;
-  MovieRuntime *pMVar7;
-  HANDLE pvVar8;
-  dword dVar9;
-  int iVar10;
+  MovieFileHeader *streamByteCount;
+  uint audioTrackCount;
+  MovieSubresourceCount frameWidth;
+  MoviePaletteBankCount frameHeight;
+  MovieAudioGainQ15 defaultAudioGain;
+  MovieRuntime *flmBufferOrError;
+  MovieRuntime *runtimeOrScratch;
+  HANDLE semaphoreOrThread;
+  dword sizeOrValue;
+  int copyCountOrTrackOffset;
   MovieFileHeader *byteCount;
-  uint uVar11;
-  MovieRuntime *pMVar12;
+  uint tracksToSkip;
+  MovieRuntime *voiceSetOrError;
   MovieRuntime *handle;
-  AssetMagic *pAVar13;
-  bool bVar14;
-  FileSystemOpenEaxCf5 FVar15;
-  FileSystemSeekEaxCf5 FVar16;
-  FileSystemReadEaxCf5 FVar17;
-  ArenaAllocEaxCf5 AVar18;
-  SoundCreateSampleVoiceSetEaxCf5 SVar19;
-  MovieOpenEaxCf5 MVar20;
-  MovieOpenEaxCf5 MVar21;
-  PackageFindEntryEaxEbxCf9 PVar22;
+  AssetMagic *headerSource;
+  bool readFailed;
+  FileSystemOpenEaxCf5 openResult;
+  FileSystemSeekEaxCf5 seekResult;
+  FileSystemReadEaxCf5 readResult;
+  ArenaAllocEaxCf5 allocResult;
+  SoundCreateSampleVoiceSetEaxCf5 voiceSetResult;
+  MovieOpenEaxCf5 successResult;
+  MovieOpenEaxCf5 failureResult;
+  PackageFindEntryEaxEbxCf9 packageEntry;
   LPSECURITY_ATTRIBUTES lpThreadAttributes;
   SIZE_T dwStackSize;
   LPTHREAD_START_ROUTINE lpStartAddress;
   LPVOID lpParameter;
   DWORD dwCreationFlags;
   MovieStreamByteCount *lpThreadId;
-  MovieStreamByteCount local_2c;
-  byte *local_28;
-  MovieRuntime *local_24;
-  MovieRuntime *local_20;
-  MovieSharedStreamHandleFlag local_1c;
-  MovieRuntime *local_18;
+  MovieStreamByteCount remainingByteCount;
+  byte *loadedEnd;
+  MovieRuntime *streamPosition;
+  MovieRuntime *savedStreamHandle;
+  MovieSharedStreamHandleFlag isSharedPackageHandle;
+  MovieRuntime *headerAllocation;
   
-  local_1c = 0;
+  isSharedPackageHandle = 0;
   if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    FVar15 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    handle = (MovieRuntime *)FVar15.eax;
-    if (FVar15.carry) goto Movie_OpenResolvePackageOrFallbackStream;
+    openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    handle = (MovieRuntime *)openResult.eax;
+    if (openResult.carry) goto Movie_OpenResolvePackageOrFallbackStream;
   }
   else {
 Movie_OpenResolvePackageOrFallbackStream:
     movieOpenFlags = movieOpenFlags & 0x7fffffff;
-    PVar22 = Package_FindEntryAcrossMounts(path);
-    if ((PVar22.carry) ||
-       (FVar16 = (*g_FileSystemSeekCf)
-                           (FILESYSTEM_SEEK_BEGIN,*(int *)(PVar22.eax + 0x1ec) + 0x200,
-                            (MovieRuntime *)PVar22.ebx), FVar16.carry)){
+    packageEntry = Package_FindEntryAcrossMounts(path);
+    if ((packageEntry.carry) ||
+       (seekResult = (*g_FileSystemSeekCf)
+                           (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.eax + 0x1ec) + 0x200,
+                            (MovieRuntime *)packageEntry.ebx), seekResult.carry)){
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (word *)&g_ExecutableDirectoryUtf16);
-      FVar15 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-      handle = (MovieRuntime *)FVar15.eax;
-      if (FVar15.carry) {
-        FVar15 = (*g_FileSystemOpenCf)(0,path);
-        pMVar6 = (MovieRuntime *)FVar15.eax;
-        handle = pMVar6;
-        if (FVar15.carry) goto LAB_004a8a0b;
+      openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+      handle = (MovieRuntime *)openResult.eax;
+      if (openResult.carry) {
+        openResult = (*g_FileSystemOpenCf)(0,path);
+        flmBufferOrError = (MovieRuntime *)openResult.eax;
+        handle = flmBufferOrError;
+        if (openResult.carry) goto LAB_004a8a0b;
       }
     }
     else {
-      local_1c = local_1c + 1;
-      handle = (MovieRuntime *)PVar22.ebx;
+      isSharedPackageHandle = isSharedPackageHandle + 1;
+      handle = (MovieRuntime *)packageEntry.ebx;
     }
   }
-  pAVar13 = (AssetMagic *)g_PackageScratchBuffer;
-  FVar17 = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
-  pMVar6 = (MovieRuntime *)FVar17.eax;
-  if (!FVar17.carry) {
-    pMVar6 = (MovieRuntime *)0x30;
-    if ((*pAVar13 == 0x6d6c66) &&
-       (dVar9 = *(int *)((int)pAVar13 + 0xc0) + 0x200, *(int *)((int)pAVar13 + 0xc) == 0x20001)) {
-      if ((0x3c0000 < dVar9) && (movieOpenFlags != 0)) {
-        dVar9 = 0x3c0000;
+  headerSource = (AssetMagic *)g_PackageScratchBuffer;
+  readResult = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
+  flmBufferOrError = (MovieRuntime *)readResult.eax;
+  if (!readResult.carry) {
+    flmBufferOrError = (MovieRuntime *)0x30;
+    if ((*headerSource == 0x6d6c66) &&
+       (sizeOrValue = *(int *)((int)headerSource + 0xc0) + 0x200, *(int *)((int)headerSource + 0xc) == 0x20001)) {
+      if ((0x3c0000 < sizeOrValue) && (movieOpenFlags != 0)) {
+        sizeOrValue = 0x3c0000;
       }
-      AVar18 = (*g_MemoryApi.alloc)(dVar9);
-      pMVar6 = (MovieRuntime *)AVar18.eax;
-      if (!AVar18.carry) {
-        pMVar7 = pMVar6;
-        for (iVar10 = 0x80; iVar10 != 0; iVar10 = iVar10 + -1) {
-          (pMVar7->textureCommon).magic = *pAVar13;
-          pAVar13 = pAVar13 + 1;
-          pMVar7 = (MovieRuntime *)&(pMVar7->textureCommon).allocationSizeBytes;
+      allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
+      flmBufferOrError = (MovieRuntime *)allocResult.eax;
+      if (!allocResult.carry) {
+        runtimeOrScratch = flmBufferOrError;
+        for (copyCountOrTrackOffset = 0x80; copyCountOrTrackOffset != 0; copyCountOrTrackOffset = copyCountOrTrackOffset + -1) {
+          (runtimeOrScratch->textureCommon).magic = *headerSource;
+          headerSource = headerSource + 1;
+          runtimeOrScratch = (MovieRuntime *)&(runtimeOrScratch->textureCommon).allocationSizeBytes;
         }
-        pMVar1 = pMVar6->fileHeader;
-        byteCount = pMVar1;
-        if (((MovieFileHeader *)0x3a2000 < pMVar1) && (movieOpenFlags != 0)) {
+        streamByteCount = flmBufferOrError->fileHeader;
+        byteCount = streamByteCount;
+        if (((MovieFileHeader *)0x3a2000 < streamByteCount) && (movieOpenFlags != 0)) {
           byteCount = (MovieFileHeader *)0x3a2000;
         }
-        local_2c = (int)pMVar1 - (int)byteCount;
-        local_28 = byteCount[-1].reserved100_1FF +
-                   (int)(&(pMVar7->textureCommon).buildMetadata + 1) + 0x50;
-        local_20 = handle;
-        local_18 = pMVar6;
-        FVar17 = (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,pMVar7,handle);
-        bVar14 = FVar17.carry;
-        pMVar7 = (MovieRuntime *)FVar17.eax;
-        if ((bVar14) || (pMVar7 = (MovieRuntime *)(*g_FileSystemGetPositionCf)(handle), bVar14))
+        remainingByteCount = (int)streamByteCount - (int)byteCount;
+        loadedEnd = byteCount[-1].reserved100_1FF +
+                   (int)(&(runtimeOrScratch->textureCommon).buildMetadata + 1) + 0x50;
+        savedStreamHandle = handle;
+        headerAllocation = flmBufferOrError;
+        readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,runtimeOrScratch,handle);
+        readFailed = readResult.carry;
+        runtimeOrScratch = (MovieRuntime *)readResult.eax;
+        if ((readFailed) || (runtimeOrScratch = (MovieRuntime *)(*g_FileSystemGetPositionCf)(handle), readFailed))
         goto Movie_OpenReleaseHeaderAllocationAfterFailure;
-        uVar2 = pMVar6->reservedBC;
-        uVar11 = 0;
-        local_24 = pMVar7;
-        if ((uVar2 == 0) || (0xe < uVar2)) {
+        audioTrackCount = flmBufferOrError->reservedBC;
+        tracksToSkip = 0;
+        streamPosition = runtimeOrScratch;
+        if ((audioTrackCount == 0) || (0xe < audioTrackCount)) {
 LAB_004a87c0:
-          pMVar12 = (MovieRuntime *)0x0;
+          voiceSetOrError = (MovieRuntime *)0x0;
 Movie_OpenAllocateAndInitializeRuntime:
-          dVar9 = pMVar6->subresourceCount * pMVar6->paletteBankCount * 4 + 0x220;
-          AVar18 = (*g_MemoryApi.alloc)(dVar9);
-          pMVar7 = (MovieRuntime *)AVar18.eax;
-          if (!AVar18.carry) {
-            g_ActiveMovie = pMVar7;
-            if ((local_1c == 0) && (local_2c == 0)) {
+          sizeOrValue = flmBufferOrError->subresourceCount * flmBufferOrError->paletteBankCount * 4 + 0x220;
+          allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
+          runtimeOrScratch = (MovieRuntime *)allocResult.eax;
+          if (!allocResult.carry) {
+            g_ActiveMovie = runtimeOrScratch;
+            if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
               (*g_FileSystemClose)(handle);
             }
-            (pMVar7->textureCommon).magic = ASSET_MAGIC_GFX;
-            (pMVar7->textureCommon).allocationSizeBytes = dVar9;
-            (pMVar7->textureCommon).formatVersion = 1;
-            (pMVar7->textureCommon).converterVersion = 0;
-            pMVar7->audioVoiceSet = (DirectSoundVoiceSet *)pMVar12;
-            pMVar7->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
-            MVar3 = pMVar6->subresourceCount;
-            MVar4 = pMVar6->paletteBankCount;
-            dVar9 = (*g_LocaleGetPackedCurrentTime)();
-            (pMVar7->textureCommon).buildMetadata.timestamps.dateValue0 = dVar9;
-            (pMVar7->textureCommon).buildMetadata.timestamps.dateValue1 = dVar9;
-            (pMVar7->textureCommon).buildMetadata.timestamps.dateValue2 = dVar9;
-            dVar9 = (*g_LocaleGetPackedCurrentDate)();
-            (pMVar7->textureCommon).buildMetadata.timestamps.timeValue0 = dVar9;
-            (pMVar7->textureCommon).buildMetadata.timestamps.timeValue1 = dVar9;
-            (pMVar7->textureCommon).buildMetadata.timestamps.timeValue2 = dVar9;
+            (runtimeOrScratch->textureCommon).magic = ASSET_MAGIC_GFX;
+            (runtimeOrScratch->textureCommon).allocationSizeBytes = sizeOrValue;
+            (runtimeOrScratch->textureCommon).formatVersion = 1;
+            (runtimeOrScratch->textureCommon).converterVersion = 0;
+            runtimeOrScratch->audioVoiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
+            runtimeOrScratch->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
+            frameWidth = flmBufferOrError->subresourceCount;
+            frameHeight = flmBufferOrError->paletteBankCount;
+            sizeOrValue = (*g_LocaleGetPackedCurrentTime)();
+            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.dateValue0 = sizeOrValue;
+            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.dateValue1 = sizeOrValue;
+            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.dateValue2 = sizeOrValue;
+            sizeOrValue = (*g_LocaleGetPackedCurrentDate)();
+            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.timeValue0 = sizeOrValue;
+            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.timeValue1 = sizeOrValue;
+            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.timeValue2 = sizeOrValue;
             (*g_LocaleCopyDefaultComputerLabelUtf16)
-                      ((pMVar7->textureCommon).buildMetadata.names.producerName);
+                      ((runtimeOrScratch->textureCommon).buildMetadata.names.producerName);
             (*g_LocaleCopyDefaultComputerLabelUtf16)
-                      ((pMVar7->textureCommon).buildMetadata.names.sourceName);
-            pMVar7->reserved100_1FF[0] = 0;
-            pMVar7->subresourceTableOffset = 0x200;
-            pMVar7->paletteBankCount = 0;
-            pMVar7->subresourceCount = 1;
-            pMVar7->fileHeader = (MovieFileHeader *)pMVar6;
-            pMVar7->currentFrameIndex = 0;
-            pMVar7->videoStreamOffset = 0x200;
-            (pMVar7->sourceEntry).dataOffset = 0x220;
-            (pMVar7->sourceEntry).pixelWidth = MVar3;
-            (pMVar7->sourceEntry).pixelHeight = MVar4;
-            (pMVar7->sourceEntry).logicalWidth = MVar3;
-            (pMVar7->sourceEntry).logicalHeight = MVar4;
-            (pMVar7->sourceEntry).paletteIndex = -1;
-            (pMVar7->sourceEntry).originX = 0;
-            (pMVar7->sourceEntry).originY = 0;
-            pMVar7->remainingVideoBytes = local_2c;
-            pMVar7->streamHandle = local_20;
-            pMVar7->loadedVideoEnd = local_28;
-            MVar5 = g_MovieDefaultAudioGainQ15;
-            pMVar7->streamHandleIsSharedPackage = local_1c;
-            pMVar7->openFlags = movieOpenFlags;
-            pMVar7->streamFileOffset = (MovieStreamFileOffset)local_24;
-            pMVar7->audioGainQ15 = MVar5;
-            lpThreadId = &local_2c;
-            pMVar7->workerActive = 0;
-            pMVar7->streamState = MOVIE_STREAM_IDLE;
-            pMVar7->refillSemaphore = (void *)0x0;
-            if ((local_2c != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
-              pMVar7->workerActive = pMVar7->workerActive + 1;
+                      ((runtimeOrScratch->textureCommon).buildMetadata.names.sourceName);
+            runtimeOrScratch->reserved100_1FF[0] = 0;
+            runtimeOrScratch->subresourceTableOffset = 0x200;
+            runtimeOrScratch->paletteBankCount = 0;
+            runtimeOrScratch->subresourceCount = 1;
+            runtimeOrScratch->fileHeader = (MovieFileHeader *)flmBufferOrError;
+            runtimeOrScratch->currentFrameIndex = 0;
+            runtimeOrScratch->videoStreamOffset = 0x200;
+            (runtimeOrScratch->sourceEntry).dataOffset = 0x220;
+            (runtimeOrScratch->sourceEntry).pixelWidth = frameWidth;
+            (runtimeOrScratch->sourceEntry).pixelHeight = frameHeight;
+            (runtimeOrScratch->sourceEntry).logicalWidth = frameWidth;
+            (runtimeOrScratch->sourceEntry).logicalHeight = frameHeight;
+            (runtimeOrScratch->sourceEntry).paletteIndex = -1;
+            (runtimeOrScratch->sourceEntry).originX = 0;
+            (runtimeOrScratch->sourceEntry).originY = 0;
+            runtimeOrScratch->remainingVideoBytes = remainingByteCount;
+            runtimeOrScratch->streamHandle = savedStreamHandle;
+            runtimeOrScratch->loadedVideoEnd = loadedEnd;
+            defaultAudioGain = g_MovieDefaultAudioGainQ15;
+            runtimeOrScratch->streamHandleIsSharedPackage = isSharedPackageHandle;
+            runtimeOrScratch->openFlags = movieOpenFlags;
+            runtimeOrScratch->streamFileOffset = (MovieStreamFileOffset)streamPosition;
+            runtimeOrScratch->audioGainQ15 = defaultAudioGain;
+            lpThreadId = &remainingByteCount;
+            runtimeOrScratch->workerActive = 0;
+            runtimeOrScratch->streamState = MOVIE_STREAM_IDLE;
+            runtimeOrScratch->refillSemaphore = (void *)0x0;
+            if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
+              runtimeOrScratch->workerActive = runtimeOrScratch->workerActive + 1;
               dwCreationFlags = 0;
               lpParameter = (LPVOID)0x0;
               lpStartAddress = (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread;
               dwStackSize = 0;
               lpThreadAttributes = (LPSECURITY_ATTRIBUTES)0x0;
-              pvVar8 = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
-              pMVar7->refillSemaphore = pvVar8;
-              pvVar8 = CreateThread(lpThreadAttributes,dwStackSize,lpStartAddress,lpParameter,
+              semaphoreOrThread = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
+              runtimeOrScratch->refillSemaphore = semaphoreOrThread;
+              semaphoreOrThread = CreateThread(lpThreadAttributes,dwStackSize,lpStartAddress,lpParameter,
                                     dwCreationFlags,lpThreadId);
-              if (pvVar8 == (HANDLE)0x0) {
-                pMVar7->workerActive = pMVar7->workerActive - 1;
+              if (semaphoreOrThread == (HANDLE)0x0) {
+                runtimeOrScratch->workerActive = runtimeOrScratch->workerActive - 1;
               }
               else {
-                CloseHandle(pvVar8);
+                CloseHandle(semaphoreOrThread);
               }
             }
-            MVar20.carry = false;
-            MVar20.eax = pMVar6->subresourceTableOffset;
-            MVar20.playbackRateHzEcx = *(dword *)((byte *)pMVar6 + 0xfc); /* MOV ECX,[ESI+0xFC] */
-            return MVar20;
+            successResult.carry = false;
+            successResult.eax = flmBufferOrError->subresourceTableOffset;
+            successResult.playbackRateHzEcx = *(dword *)((byte *)flmBufferOrError + 0xfc); /* MOV ECX,[ESI+0xFC] */
+            return successResult;
           }
         }
         else {
-          if (1 < uVar2) {
-            dVar9 = Random_NextPrimary();
-            uVar11 = (dVar9 & 0xffff) % uVar2;
+          if (1 < audioTrackCount) {
+            sizeOrValue = Random_NextPrimary();
+            tracksToSkip = (sizeOrValue & 0xffff) % audioTrackCount;
           }
-          iVar10 = 0;
-          pMVar7 = pMVar6;
-          for (; uVar11 != 0; uVar11 = uVar11 - 1) {
-            iVar10 = iVar10 + pMVar7->currentFrameIndex;
-            pMVar7 = (MovieRuntime *)&(pMVar7->textureCommon).allocationSizeBytes;
+          copyCountOrTrackOffset = 0;
+          runtimeOrScratch = flmBufferOrError;
+          for (; tracksToSkip != 0; tracksToSkip = tracksToSkip - 1) {
+            copyCountOrTrackOffset = copyCountOrTrackOffset + runtimeOrScratch->currentFrameIndex;
+            runtimeOrScratch = (MovieRuntime *)&(runtimeOrScratch->textureCommon).allocationSizeBytes;
           }
-          dVar9 = pMVar7->currentFrameIndex;
-          if (dVar9 == 0) goto LAB_004a87c0;
-          FVar16 = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,iVar10 + local_2c,handle);
-          pMVar7 = (MovieRuntime *)FVar16.eax;
-          if (!FVar16.carry) {
-            AVar18 = (*g_MemoryApi.alloc)(dVar9);
-            pMVar7 = (MovieRuntime *)AVar18.eax;
-            if (AVar18.carry) goto Movie_OpenReleaseHeaderAllocationAfterFailure;
-            FVar17 = (*g_FileSystemReadExactCf)(dVar9,pMVar7,handle);
-            pMVar12 = (MovieRuntime *)FVar17.eax;
-            if (FVar17.carry) {
+          sizeOrValue = runtimeOrScratch->currentFrameIndex;
+          if (sizeOrValue == 0) goto LAB_004a87c0;
+          seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,copyCountOrTrackOffset + remainingByteCount,handle);
+          runtimeOrScratch = (MovieRuntime *)seekResult.eax;
+          if (!seekResult.carry) {
+            allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
+            runtimeOrScratch = (MovieRuntime *)allocResult.eax;
+            if (allocResult.carry) goto Movie_OpenReleaseHeaderAllocationAfterFailure;
+            readResult = (*g_FileSystemReadExactCf)(sizeOrValue,runtimeOrScratch,handle);
+            voiceSetOrError = (MovieRuntime *)readResult.eax;
+            if (readResult.carry) {
 LAB_004a89e8:
-              (*g_MemoryApi.free)(pMVar7);
-              pMVar7 = pMVar12;
+              (*g_MemoryApi.free)(runtimeOrScratch);
+              runtimeOrScratch = voiceSetOrError;
               goto Movie_OpenReleaseHeaderAllocationAfterFailure;
             }
-            SVar19 = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)pMVar7);
-            pMVar12 = (MovieRuntime *)SVar19.eax;
-            if (SVar19.carry) goto LAB_004a89e8;
-            (*g_MemoryApi.free)(pMVar7);
+            voiceSetResult = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)runtimeOrScratch);
+            voiceSetOrError = (MovieRuntime *)voiceSetResult.eax;
+            if (voiceSetResult.carry) goto LAB_004a89e8;
+            (*g_MemoryApi.free)(runtimeOrScratch);
             goto Movie_OpenAllocateAndInitializeRuntime;
           }
         }
 Movie_OpenReleaseHeaderAllocationAfterFailure:
-        pMVar6 = pMVar7;
-        (*g_MemoryApi.free)(local_18);
+        flmBufferOrError = runtimeOrScratch;
+        (*g_MemoryApi.free)(headerAllocation);
       }
     }
   }
-  if (local_1c == 0) {
+  if (isSharedPackageHandle == 0) {
     (*g_FileSystemClose)(handle);
   }
 LAB_004a8a0b:
-  MVar21.carry = true;
-  MVar21.eax = (dword)pMVar6;
-  return MVar21;
+  failureResult.carry = true;
+  failureResult.eax = (dword)flmBufferOrError;
+  return failureResult;
 }
 
 
@@ -431,9 +431,9 @@ dword __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 {
   void *handle;
-  MovieRuntime *pMVar1;
+  MovieRuntime *movie;
   uint byteCount;
-  FileSystemReadEaxCf5 FVar2;
+  FileSystemReadEaxCf5 readResult;
   
   do {
     do {
@@ -445,7 +445,7 @@ Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
         return 0;
       }
       MsgWaitForMultipleObjects(1,&g_ActiveMovie->refillSemaphore,0,0x100,0);
-      pMVar1 = g_ActiveMovie;
+      movie = g_ActiveMovie;
       if ((((g_ActiveMovie == (MovieRuntime *)0x0) ||
            (g_ActiveMovie->streamState == MOVIE_STREAM_SHUTDOWN)) ||
           (g_ActiveMovie->workerActive == 0)) || (g_ActiveMovie->remainingVideoBytes == 0))
@@ -458,23 +458,23 @@ Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
         byteCount = 0x1e000;
       }
       (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,g_ActiveMovie->streamFileOffset,handle);
-      FVar2 = (*g_FileSystemReadExactCf)(byteCount,pMVar1->loadedVideoEnd,handle);
-      if (FVar2.carry) {
-        if (pMVar1->streamState != MOVIE_STREAM_SHUTDOWN) {
-          pMVar1->streamState = MOVIE_STREAM_READ_FAILED;
+      readResult = (*g_FileSystemReadExactCf)(byteCount,movie->loadedVideoEnd,handle);
+      if (readResult.carry) {
+        if (movie->streamState != MOVIE_STREAM_SHUTDOWN) {
+          movie->streamState = MOVIE_STREAM_READ_FAILED;
         }
         goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
       }
-      pMVar1->remainingVideoBytes = pMVar1->remainingVideoBytes - byteCount;
-      pMVar1->streamFileOffset = pMVar1->streamFileOffset + byteCount;
-      pMVar1->loadedVideoEnd = pMVar1->loadedVideoEnd + byteCount;
-      if ((pMVar1->remainingVideoBytes == 0) && (pMVar1->streamHandleIsSharedPackage == 0)) {
+      movie->remainingVideoBytes = movie->remainingVideoBytes - byteCount;
+      movie->streamFileOffset = movie->streamFileOffset + byteCount;
+      movie->loadedVideoEnd = movie->loadedVideoEnd + byteCount;
+      if ((movie->remainingVideoBytes == 0) && (movie->streamHandleIsSharedPackage == 0)) {
         (*g_FileSystemClose)(handle);
       }
     }
-    if ((pMVar1->streamState == MOVIE_STREAM_SHUTDOWN) || (pMVar1->remainingVideoBytes == 0))
+    if ((movie->streamState == MOVIE_STREAM_SHUTDOWN) || (movie->remainingVideoBytes == 0))
     goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
-    pMVar1->streamState = MOVIE_STREAM_IDLE;
+    movie->streamState = MOVIE_STREAM_IDLE;
   } while( true );
 }
 
@@ -509,34 +509,34 @@ void Movie_Rewind(void)
 void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
 
 {
-  MovieRuntime *memory;
+  MovieRuntime *movie;
   HANDLE currentProcessHandle;
   HANDLE hProcess;
   
-  memory = g_ActiveMovie;
+  movie = g_ActiveMovie;
   if (g_ActiveMovie != (MovieRuntime *)0x0) {
     if (g_MemoryApi.alloc == ArenaHeap_Alloc) {
       g_ActiveMovie->streamState = MOVIE_STREAM_SHUTDOWN;
       currentProcessHandle = GetCurrentProcess();
       SetPriorityClass(currentProcessHandle,0x20);
       do {
-      } while (memory->workerActive != 0);
-      if (memory->refillSemaphore != (void *)0x0) {
-        CloseHandle(memory->refillSemaphore);
-        memory->refillSemaphore = (void *)0x0;
+      } while (movie->workerActive != 0);
+      if (movie->refillSemaphore != (void *)0x0) {
+        CloseHandle(movie->refillSemaphore);
+        movie->refillSemaphore = (void *)0x0;
       }
       hProcess = GetCurrentProcess();
       SetPriorityClass(hProcess,0x100);
     }
     g_ActiveMovie = (MovieRuntime *)0x0;
-    (*g_MemoryApi.free)(memory->fileHeader);
-    if (memory->audioVoiceSet != (DirectSoundVoiceSet *)0x0) {
-      (*g_SoundReleaseSampleVoiceSet)(memory->audioVoiceSet);
+    (*g_MemoryApi.free)(movie->fileHeader);
+    if (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0) {
+      (*g_SoundReleaseSampleVoiceSet)(movie->audioVoiceSet);
     }
-    if ((memory->remainingVideoBytes != 0) && (memory->streamHandleIsSharedPackage == 0)) {
-      (*g_FileSystemClose)(memory->streamHandle);
+    if ((movie->remainingVideoBytes != 0) && (movie->streamHandleIsSharedPackage == 0)) {
+      (*g_FileSystemClose)(movie->streamHandle);
     }
-    (*g_MemoryApi.free)(memory);
+    (*g_MemoryApi.free)(movie);
   }
   return;
 }
@@ -684,606 +684,606 @@ Movie_EncodeFrame4x4Keyframe
           uint *encodedOutput,uint *sourcePixels)
 
 {
-  PackedRgb24 PVar1;
-  PackedRgb24 PVar2;
-  PackedRgb24 PVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  uint uVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  int iVar11;
-  int iVar12;
-  int iVar13;
-  int iVar14;
-  int iVar15;
-  int iVar16;
-  uint uVar17;
-  uint uVar18;
-  uint uVar19;
-  uint uVar20;
-  uint uVar21;
-  uint uVar22;
-  PackedRgb24 *pPVar23;
-  uint *puVar24;
-  undefined1 uVar25;
-  undefined1 uVar26;
-  undefined1 uVar27;
-  undefined1 uVar28;
-  undefined1 uVar29;
-  undefined1 uVar30;
-  undefined1 uVar31;
-  undefined1 uVar32;
-  ushort uVar33;
-  ushort uVar36;
-  PackedRgb24 PVar34;
-  ushort uVar37;
-  undefined8 uVar35;
-  ushort uVar38;
-  uint uStack_24;
-  uint uStack_20;
+  PackedRgb24 pixel1;
+  PackedRgb24 pixel2;
+  PackedRgb24 pixel3;
+  uint maxLumaOrLevel;
+  uint minLumaOrBaseLuma;
+  uint sampleLumaOrLevel;
+  uint minLumaChromaOrLevel;
+  int level0;
+  int level1;
+  int level2;
+  int level3;
+  int level4;
+  int level5;
+  int level6;
+  int level7;
+  int level8;
+  uint wideLevel0;
+  uint wideLevel1;
+  uint wideLevel2;
+  uint wideLevel3;
+  uint wideLevel4;
+  uint wideLevel5;
+  PackedRgb24 *blockRowPixels;
+  uint *outputCursor;
+  undefined1 pixel0Byte3Or1;
+  undefined1 pixel0Byte2;
+  undefined1 pixel1Byte3Or1;
+  undefined1 pixel1Byte2;
+  undefined1 pixel2Byte3Or1;
+  undefined1 pixel2Byte2;
+  undefined1 pixel3Byte3Or1;
+  undefined1 pixel3Byte2;
+  ushort pair0OrAverage0;
+  ushort pair1OrAverage1;
+  PackedRgb24 pixel0OrAverageColor;
+  ushort pair2OrAverage2;
+  undefined8 channelSums;
+  ushort pair3OrAverage3;
+  uint blocksLeftInRow;
+  uint blockRowsLeft;
   
-  uStack_20 = frameHeightPixels >> 2;
-  puVar24 = encodedOutput;
-  uStack_24 = frameWidthPixels >> 2;
+  blockRowsLeft = frameHeightPixels >> 2;
+  outputCursor = encodedOutput;
+  blocksLeftInRow = frameWidthPixels >> 2;
   do {
     do {
-      PVar34 = *sourcePixels;
-      PVar1 = sourcePixels[1];
-      PVar2 = sourcePixels[2];
-      PVar3 = sourcePixels[3];
-      uVar25 = (undefined1)(PVar34 >> 0x18);
-      uVar33 = CONCAT11(uVar25,uVar25);
-      uVar26 = (undefined1)(PVar34 >> 0x10);
-      uVar25 = (undefined1)(PVar34 >> 8);
-      uVar27 = (undefined1)(PVar1 >> 0x18);
-      uVar36 = CONCAT11(uVar27,uVar27);
-      uVar28 = (undefined1)(PVar1 >> 0x10);
-      uVar27 = (undefined1)(PVar1 >> 8);
-      uVar29 = (undefined1)(PVar2 >> 0x18);
-      uVar37 = CONCAT11(uVar29,uVar29);
-      uVar30 = (undefined1)(PVar2 >> 0x10);
-      uVar29 = (undefined1)(PVar2 >> 8);
-      uVar31 = (undefined1)(PVar3 >> 0x18);
-      uVar38 = CONCAT11(uVar31,uVar31);
-      uVar32 = (undefined1)(PVar3 >> 0x10);
-      uVar31 = (undefined1)(PVar3 >> 8);
-      uVar35 = CONCAT26((uVar38 >> 6) + (uVar37 >> 6) + (uVar33 >> 6) + (uVar36 >> 6),
-                        CONCAT24(((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+      pixel0OrAverageColor = *sourcePixels;
+      pixel1 = sourcePixels[1];
+      pixel2 = sourcePixels[2];
+      pixel3 = sourcePixels[3];
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+      channelSums = CONCAT26((pair3OrAverage3 >> 6) + (pair2OrAverage2 >> 6) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6),
+                        CONCAT24(((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
                                           >> 0x20) >> 6),
-                                 CONCAT22((CONCAT11(uVar31,uVar31) >> 6) +
-                                          (CONCAT11(uVar29,uVar29) >> 6) +
-                                          (CONCAT11(uVar25,uVar25) >> 6) +
-                                          (CONCAT11(uVar27,uVar27) >> 6),
-                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6) +
-                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
-                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
-                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6))));
-      uVar4 = MovieColor_ComputeLuma5FromRgb888(*sourcePixels);
-      uVar5 = MovieColor_ComputeLuma5FromRgb888(sourcePixels[1]);
-      uVar7 = uVar5;
-      if (((int)uVar4 <= (int)uVar5) && (uVar7 = uVar4, (int)uVar4 < (int)uVar5)) {
-        uVar4 = uVar5;
+                                 CONCAT22((CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6),
+                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6) +
+                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6))));
+      maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*sourcePixels);
+      minLumaOrBaseLuma = MovieColor_ComputeLuma5FromRgb888(sourcePixels[1]);
+      minLumaChromaOrLevel = minLumaOrBaseLuma;
+      if (((int)maxLumaOrLevel <= (int)minLumaOrBaseLuma) && (minLumaChromaOrLevel = maxLumaOrLevel, (int)maxLumaOrLevel < (int)minLumaOrBaseLuma)) {
+        maxLumaOrLevel = minLumaOrBaseLuma;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(sourcePixels[2]);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(sourcePixels[2]);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(sourcePixels[3]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(sourcePixels[3]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      pPVar23 = sourcePixels + frameWidthPixels;
-      PVar34 = *pPVar23;
-      PVar1 = pPVar23[1];
-      PVar2 = pPVar23[2];
-      PVar3 = pPVar23[3];
-      uVar25 = (undefined1)(PVar34 >> 0x18);
-      uVar33 = CONCAT11(uVar25,uVar25);
-      uVar26 = (undefined1)(PVar34 >> 0x10);
-      uVar25 = (undefined1)(PVar34 >> 8);
-      uVar27 = (undefined1)(PVar1 >> 0x18);
-      uVar36 = CONCAT11(uVar27,uVar27);
-      uVar28 = (undefined1)(PVar1 >> 0x10);
-      uVar27 = (undefined1)(PVar1 >> 8);
-      uVar29 = (undefined1)(PVar2 >> 0x18);
-      uVar37 = CONCAT11(uVar29,uVar29);
-      uVar30 = (undefined1)(PVar2 >> 0x10);
-      uVar29 = (undefined1)(PVar2 >> 8);
-      uVar31 = (undefined1)(PVar3 >> 0x18);
-      uVar38 = CONCAT11(uVar31,uVar31);
-      uVar32 = (undefined1)(PVar3 >> 0x10);
-      uVar31 = (undefined1)(PVar3 >> 8);
-      uVar35 = CONCAT26((short)((ulonglong)uVar35 >> 0x30) + (uVar33 >> 6) + (uVar36 >> 6) +
-                        (uVar37 >> 6) + (uVar38 >> 6),
-                        CONCAT24((short)((ulonglong)uVar35 >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+      blockRowPixels = sourcePixels + frameWidthPixels;
+      pixel0OrAverageColor = *blockRowPixels;
+      pixel1 = blockRowPixels[1];
+      pixel2 = blockRowPixels[2];
+      pixel3 = blockRowPixels[3];
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+      channelSums = CONCAT26((short)((ulonglong)channelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
+                        (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
+                        CONCAT24((short)((ulonglong)channelSums >> 0x20) +
+                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+                                 ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
                                           >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)uVar35 >> 0x10) +
-                                          (CONCAT11(uVar25,uVar25) >> 6) +
-                                          (CONCAT11(uVar27,uVar27) >> 6) +
-                                          (CONCAT11(uVar29,uVar29) >> 6) +
-                                          (CONCAT11(uVar31,uVar31) >> 6),
-                                          (short)uVar35 +
-                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
-                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6) +
-                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
-                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6))));
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+                                 CONCAT22((short)((ulonglong)channelSums >> 0x10) +
+                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
+                                          (short)channelSums +
+                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
+                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      pPVar23 = pPVar23 + frameWidthPixels;
-      PVar34 = *pPVar23;
-      PVar1 = pPVar23[1];
-      PVar2 = pPVar23[2];
-      PVar3 = pPVar23[3];
-      uVar25 = (undefined1)(PVar34 >> 0x18);
-      uVar33 = CONCAT11(uVar25,uVar25);
-      uVar26 = (undefined1)(PVar34 >> 0x10);
-      uVar25 = (undefined1)(PVar34 >> 8);
-      uVar27 = (undefined1)(PVar1 >> 0x18);
-      uVar36 = CONCAT11(uVar27,uVar27);
-      uVar28 = (undefined1)(PVar1 >> 0x10);
-      uVar27 = (undefined1)(PVar1 >> 8);
-      uVar29 = (undefined1)(PVar2 >> 0x18);
-      uVar37 = CONCAT11(uVar29,uVar29);
-      uVar30 = (undefined1)(PVar2 >> 0x10);
-      uVar29 = (undefined1)(PVar2 >> 8);
-      uVar31 = (undefined1)(PVar3 >> 0x18);
-      uVar38 = CONCAT11(uVar31,uVar31);
-      uVar32 = (undefined1)(PVar3 >> 0x10);
-      uVar31 = (undefined1)(PVar3 >> 8);
-      uVar35 = CONCAT26((short)((ulonglong)uVar35 >> 0x30) + (uVar33 >> 6) + (uVar36 >> 6) +
-                        (uVar37 >> 6) + (uVar38 >> 6),
-                        CONCAT24((short)((ulonglong)uVar35 >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+      blockRowPixels = blockRowPixels + frameWidthPixels;
+      pixel0OrAverageColor = *blockRowPixels;
+      pixel1 = blockRowPixels[1];
+      pixel2 = blockRowPixels[2];
+      pixel3 = blockRowPixels[3];
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+      channelSums = CONCAT26((short)((ulonglong)channelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
+                        (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
+                        CONCAT24((short)((ulonglong)channelSums >> 0x20) +
+                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+                                 ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
                                           >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)uVar35 >> 0x10) +
-                                          (CONCAT11(uVar25,uVar25) >> 6) +
-                                          (CONCAT11(uVar27,uVar27) >> 6) +
-                                          (CONCAT11(uVar29,uVar29) >> 6) +
-                                          (CONCAT11(uVar31,uVar31) >> 6),
-                                          (short)uVar35 +
-                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
-                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6) +
-                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
-                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6))));
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+                                 CONCAT22((short)((ulonglong)channelSums >> 0x10) +
+                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
+                                          (short)channelSums +
+                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
+                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      pPVar23 = pPVar23 + frameWidthPixels;
-      PVar34 = *pPVar23;
-      PVar1 = pPVar23[1];
-      PVar2 = pPVar23[2];
-      PVar3 = pPVar23[3];
-      uVar25 = (undefined1)(PVar34 >> 0x18);
-      uVar33 = CONCAT11(uVar25,uVar25);
-      uVar26 = (undefined1)(PVar34 >> 0x10);
-      uVar25 = (undefined1)(PVar34 >> 8);
-      uVar27 = (undefined1)(PVar1 >> 0x18);
-      uVar36 = CONCAT11(uVar27,uVar27);
-      uVar28 = (undefined1)(PVar1 >> 0x10);
-      uVar27 = (undefined1)(PVar1 >> 8);
-      uVar29 = (undefined1)(PVar2 >> 0x18);
-      uVar37 = CONCAT11(uVar29,uVar29);
-      uVar30 = (undefined1)(PVar2 >> 0x10);
-      uVar29 = (undefined1)(PVar2 >> 8);
-      uVar31 = (undefined1)(PVar3 >> 0x18);
-      uVar38 = CONCAT11(uVar31,uVar31);
-      uVar32 = (undefined1)(PVar3 >> 0x10);
-      uVar31 = (undefined1)(PVar3 >> 8);
-      uVar35 = CONCAT26((short)((ulonglong)uVar35 >> 0x30) + (uVar33 >> 6) + (uVar36 >> 6) +
-                        (uVar37 >> 6) + (uVar38 >> 6),
-                        CONCAT24((short)((ulonglong)uVar35 >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar33,uVar26),CONCAT14(uVar26,PVar34))
+      blockRowPixels = blockRowPixels + frameWidthPixels;
+      pixel0OrAverageColor = *blockRowPixels;
+      pixel1 = blockRowPixels[1];
+      pixel2 = blockRowPixels[2];
+      pixel3 = blockRowPixels[3];
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+      channelSums = CONCAT26((short)((ulonglong)channelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
+                        (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
+                        CONCAT24((short)((ulonglong)channelSums >> 0x20) +
+                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar36,uVar28),CONCAT14(uVar28,PVar1))
+                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar37,uVar30),CONCAT14(uVar30,PVar2))
+                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
                                           >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(uVar38,uVar32),CONCAT14(uVar32,PVar3))
+                                 ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
                                           >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)uVar35 >> 0x10) +
-                                          (CONCAT11(uVar25,uVar25) >> 6) +
-                                          (CONCAT11(uVar27,uVar27) >> 6) +
-                                          (CONCAT11(uVar29,uVar29) >> 6) +
-                                          (CONCAT11(uVar31,uVar31) >> 6),
-                                          (short)uVar35 +
-                                          (CONCAT11((char)PVar34,(char)PVar34) >> 6) +
-                                          (CONCAT11((char)PVar1,(char)PVar1) >> 6) +
-                                          (CONCAT11((char)PVar2,(char)PVar2) >> 6) +
-                                          (CONCAT11((char)PVar3,(char)PVar3) >> 6))));
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+                                 CONCAT22((short)((ulonglong)channelSums >> 0x10) +
+                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                          (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
+                                          (short)channelSums +
+                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
+                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-      uVar5 = uVar6;
-      if (((int)uVar7 <= (int)uVar6) && (uVar5 = uVar7, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+      minLumaOrBaseLuma = sampleLumaOrLevel;
+      if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-      uVar7 = uVar6;
-      if (((int)uVar5 <= (int)uVar6) && (uVar7 = uVar5, (int)uVar4 < (int)uVar6)) {
-        uVar4 = uVar6;
+      sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+      minLumaChromaOrLevel = sampleLumaOrLevel;
+      if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
+        maxLumaOrLevel = sampleLumaOrLevel;
       }
-      uVar33 = (ushort)uVar35 >> 6;
-      uVar36 = (ushort)((ulonglong)uVar35 >> 0x10) >> 6;
-      uVar37 = (ushort)((ulonglong)uVar35 >> 0x20) >> 6;
-      uVar38 = (ushort)((ulonglong)uVar35 >> 0x36);
-      PVar34 = CONCAT13((uVar38 != 0) * (uVar38 < 0x100) * (char)uVar38 - (0xff < uVar38),
-                        CONCAT12((uVar37 != 0) * (uVar37 < 0x100) * (char)uVar37 - (0xff < uVar37),
-                                 CONCAT11((uVar36 != 0) * (uVar36 < 0x100) * (char)uVar36 -
-                                          (0xff < uVar36),
-                                          (uVar33 != 0) * (uVar33 < 0x100) * (char)uVar33 -
-                                          (0xff < uVar33))));
-      uVar5 = (int)((uVar7 - 8) + uVar4) >> 1;
-      if ((int)uVar5 < 0) {
-        uVar5 = 0;
+      pair0OrAverage0 = (ushort)channelSums >> 6;
+      pair1OrAverage1 = (ushort)((ulonglong)channelSums >> 0x10) >> 6;
+      pair2OrAverage2 = (ushort)((ulonglong)channelSums >> 0x20) >> 6;
+      pair3OrAverage3 = (ushort)((ulonglong)channelSums >> 0x36);
+      pixel0OrAverageColor = CONCAT13((pair3OrAverage3 != 0) * (pair3OrAverage3 < 0x100) * (char)pair3OrAverage3 - (0xff < pair3OrAverage3),
+                        CONCAT12((pair2OrAverage2 != 0) * (pair2OrAverage2 < 0x100) * (char)pair2OrAverage2 - (0xff < pair2OrAverage2),
+                                 CONCAT11((pair1OrAverage1 != 0) * (pair1OrAverage1 < 0x100) * (char)pair1OrAverage1 -
+                                          (0xff < pair1OrAverage1),
+                                          (pair0OrAverage0 != 0) * (pair0OrAverage0 < 0x100) * (char)pair0OrAverage0 -
+                                          (0xff < pair0OrAverage0))));
+      minLumaOrBaseLuma = (int)((minLumaChromaOrLevel - 8) + maxLumaOrLevel) >> 1;
+      if ((int)minLumaOrBaseLuma < 0) {
+        minLumaOrBaseLuma = 0;
       }
-      else if (0x18 < (int)uVar5) {
-        uVar5 = 0x18;
+      else if (0x18 < (int)minLumaOrBaseLuma) {
+        minLumaOrBaseLuma = 0x18;
       }
-      if (uVar4 - uVar7 < 0xc) {
-        *puVar24 = uVar5;
-        uVar7 = MovieColor_ComputeChromaCodeFromRgb888(PVar34);
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        iVar8 = uVar4 - uVar5;
-        if (iVar8 < 0) {
-          iVar8 = 0;
+      if (maxLumaOrLevel - minLumaChromaOrLevel < 0xc) {
+        *outputCursor = minLumaOrBaseLuma;
+        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        level0 = maxLumaOrLevel - minLumaOrBaseLuma;
+        if (level0 < 0) {
+          level0 = 0;
         }
-        else if (7 < iVar8) {
-          iVar8 = 7;
+        else if (7 < level0) {
+          level0 = 7;
         }
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        iVar9 = uVar4 - uVar5;
-        if (iVar9 < 0) {
-          iVar9 = 0;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        level1 = maxLumaOrLevel - minLumaOrBaseLuma;
+        if (level1 < 0) {
+          level1 = 0;
         }
-        else if (7 < iVar9) {
-          iVar9 = 7;
+        else if (7 < level1) {
+          level1 = 7;
         }
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        iVar10 = uVar4 - uVar5;
-        if (iVar10 < 0) {
-          iVar10 = 0;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        level2 = maxLumaOrLevel - minLumaOrBaseLuma;
+        if (level2 < 0) {
+          level2 = 0;
         }
-        else if (7 < iVar10) {
-          iVar10 = 7;
+        else if (7 < level2) {
+          level2 = 7;
         }
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        iVar11 = uVar4 - uVar5;
-        if (iVar11 < 0) {
-          iVar11 = 0;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        level3 = maxLumaOrLevel - minLumaOrBaseLuma;
+        if (level3 < 0) {
+          level3 = 0;
         }
-        else if (7 < iVar11) {
-          iVar11 = 7;
+        else if (7 < level3) {
+          level3 = 7;
         }
-        pPVar23 = pPVar23 + -frameWidthPixels;
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        iVar12 = uVar4 - uVar5;
-        if (iVar12 < 0) {
-          iVar12 = 0;
+        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        level4 = maxLumaOrLevel - minLumaOrBaseLuma;
+        if (level4 < 0) {
+          level4 = 0;
         }
-        else if (7 < iVar12) {
-          iVar12 = 7;
+        else if (7 < level4) {
+          level4 = 7;
         }
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        iVar13 = uVar4 - uVar5;
-        if (iVar13 < 0) {
-          iVar13 = 0;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        level5 = maxLumaOrLevel - minLumaOrBaseLuma;
+        if (level5 < 0) {
+          level5 = 0;
         }
-        else if (7 < iVar13) {
-          iVar13 = 7;
+        else if (7 < level5) {
+          level5 = 7;
         }
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        uVar4 = uVar4 - uVar5;
-        if ((int)uVar4 < 0) {
-          uVar4 = 0;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
+        if ((int)maxLumaOrLevel < 0) {
+          maxLumaOrLevel = 0;
         }
-        else if (7 < (int)uVar4) {
-          uVar4 = 7;
+        else if (7 < (int)maxLumaOrLevel) {
+          maxLumaOrLevel = 7;
         }
-        uVar6 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        puVar24[1] = (uVar7 & 0x7fe0) << 0x10 | iVar8 << 0x12 | iVar9 << 0xf | iVar10 << 0xc |
-                     iVar11 << 9 | iVar12 << 6 | iVar13 << 3 | uVar4;
-        iVar8 = uVar6 - uVar5;
-        if (iVar8 < 0) {
-          iVar8 = 0;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        outputCursor[1] = (minLumaChromaOrLevel & 0x7fe0) << 0x10 | level0 << 0x12 | level1 << 0xf | level2 << 0xc |
+                     level3 << 9 | level4 << 6 | level5 << 3 | maxLumaOrLevel;
+        level0 = sampleLumaOrLevel - minLumaOrBaseLuma;
+        if (level0 < 0) {
+          level0 = 0;
         }
-        else if (7 < iVar8) {
-          iVar8 = 7;
+        else if (7 < level0) {
+          level0 = 7;
         }
-        pPVar23 = pPVar23 + -frameWidthPixels;
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        iVar9 = uVar7 - uVar5;
-        if (iVar9 < 0) {
-          iVar9 = 0;
+        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        level1 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level1 < 0) {
+          level1 = 0;
         }
-        else if (7 < iVar9) {
-          iVar9 = 7;
+        else if (7 < level1) {
+          level1 = 7;
         }
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        iVar10 = uVar7 - uVar5;
-        if (iVar10 < 0) {
-          iVar10 = 0;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        level2 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level2 < 0) {
+          level2 = 0;
         }
-        else if (7 < iVar10) {
-          iVar10 = 7;
+        else if (7 < level2) {
+          level2 = 7;
         }
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        iVar11 = uVar7 - uVar5;
-        if (iVar11 < 0) {
-          iVar11 = 0;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        level3 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level3 < 0) {
+          level3 = 0;
         }
-        else if (7 < iVar11) {
-          iVar11 = 7;
+        else if (7 < level3) {
+          level3 = 7;
         }
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        iVar12 = uVar7 - uVar5;
-        if (iVar12 < 0) {
-          iVar12 = 0;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        level4 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level4 < 0) {
+          level4 = 0;
         }
-        else if (7 < iVar12) {
-          iVar12 = 7;
+        else if (7 < level4) {
+          level4 = 7;
         }
-        pPVar23 = pPVar23 + -frameWidthPixels;
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        iVar13 = uVar7 - uVar5;
-        if (iVar13 < 0) {
-          iVar13 = 0;
+        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        level5 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level5 < 0) {
+          level5 = 0;
         }
-        else if (7 < iVar13) {
-          iVar13 = 7;
+        else if (7 < level5) {
+          level5 = 7;
         }
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        iVar14 = uVar7 - uVar5;
-        if (iVar14 < 0) {
-          iVar14 = 0;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        level6 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level6 < 0) {
+          level6 = 0;
         }
-        else if (7 < iVar14) {
-          iVar14 = 7;
+        else if (7 < level6) {
+          level6 = 7;
         }
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        iVar15 = uVar7 - uVar5;
-        if (iVar15 < 0) {
-          iVar15 = 0;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        level7 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level7 < 0) {
+          level7 = 0;
         }
-        else if (7 < iVar15) {
-          iVar15 = 7;
+        else if (7 < level7) {
+          level7 = 7;
         }
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        iVar16 = uVar7 - uVar5;
-        if (iVar16 < 0) {
-          iVar16 = 0;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        level8 = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if (level8 < 0) {
+          level8 = 0;
         }
-        else if (7 < iVar16) {
-          iVar16 = 7;
+        else if (7 < level8) {
+          level8 = 7;
         }
-        *puVar24 = *puVar24 |
-                   iVar8 << 0x1d | iVar9 << 0x1a | iVar10 << 0x17 | iVar11 << 0x14 | iVar12 << 0x11
-                   | iVar13 << 0xe | iVar14 << 0xb | iVar15 << 8 | iVar16 << 5;
+        *outputCursor = *outputCursor |
+                   level0 << 0x1d | level1 << 0x1a | level2 << 0x17 | level3 << 0x14 | level4 << 0x11
+                   | level5 << 0xe | level6 << 0xb | level7 << 8 | level8 << 5;
       }
       else {
-        uVar5 = uVar5 - 4;
-        if ((int)uVar5 < 0) {
-          uVar5 = 0;
+        minLumaOrBaseLuma = minLumaOrBaseLuma - 4;
+        if ((int)minLumaOrBaseLuma < 0) {
+          minLumaOrBaseLuma = 0;
         }
-        else if (0x10 < (int)uVar5) {
-          uVar5 = 0x10;
+        else if (0x10 < (int)minLumaOrBaseLuma) {
+          minLumaOrBaseLuma = 0x10;
         }
-        *puVar24 = uVar5;
-        uVar7 = MovieColor_ComputeChromaCodeFromRgb888(PVar34);
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        uVar4 = uVar4 - uVar5;
-        if ((int)uVar4 < 0) {
-          uVar4 = 0;
+        *outputCursor = minLumaOrBaseLuma;
+        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
+        if ((int)maxLumaOrLevel < 0) {
+          maxLumaOrLevel = 0;
         }
-        else if (0xf < (int)uVar4) {
-          uVar4 = 0xf;
+        else if (0xf < (int)maxLumaOrLevel) {
+          maxLumaOrLevel = 0xf;
         }
-        uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        uVar6 = uVar6 - uVar5;
-        if ((int)uVar6 < 0) {
-          uVar6 = 0;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
+        if ((int)sampleLumaOrLevel < 0) {
+          sampleLumaOrLevel = 0;
         }
-        else if (0xf < (int)uVar6) {
-          uVar6 = 0xf;
+        else if (0xf < (int)sampleLumaOrLevel) {
+          sampleLumaOrLevel = 0xf;
         }
-        uVar17 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        uVar17 = uVar17 - uVar5;
-        if ((int)uVar17 < 0) {
-          uVar17 = 0;
+        wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
+        if ((int)wideLevel0 < 0) {
+          wideLevel0 = 0;
         }
-        else if (0xf < (int)uVar17) {
-          uVar17 = 0xf;
+        else if (0xf < (int)wideLevel0) {
+          wideLevel0 = 0xf;
         }
-        uVar18 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        uVar18 = uVar18 - uVar5;
-        if ((int)uVar18 < 0) {
-          uVar18 = 0;
+        wideLevel1 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
+        if ((int)wideLevel1 < 0) {
+          wideLevel1 = 0;
         }
-        else if (0xf < (int)uVar18) {
-          uVar18 = 0xf;
+        else if (0xf < (int)wideLevel1) {
+          wideLevel1 = 0xf;
         }
-        pPVar23 = pPVar23 + -frameWidthPixels;
-        uVar19 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        uVar19 = uVar19 - uVar5;
-        if ((int)uVar19 < 0) {
-          uVar19 = 0;
+        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
+        if ((int)wideLevel2 < 0) {
+          wideLevel2 = 0;
         }
-        else if (0xf < (int)uVar19) {
-          uVar19 = 0xf;
+        else if (0xf < (int)wideLevel2) {
+          wideLevel2 = 0xf;
         }
-        uVar20 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        uVar20 = uVar20 - uVar5;
-        if ((int)uVar20 < 0) {
-          uVar20 = 0;
+        wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
+        if ((int)wideLevel3 < 0) {
+          wideLevel3 = 0;
         }
-        else if (0xf < (int)uVar20) {
-          uVar20 = 0xf;
+        else if (0xf < (int)wideLevel3) {
+          wideLevel3 = 0xf;
         }
-        uVar21 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        uVar21 = uVar21 - uVar5;
-        if ((int)uVar21 < 0) {
-          uVar21 = 0;
+        wideLevel4 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
+        if ((int)wideLevel4 < 0) {
+          wideLevel4 = 0;
         }
-        else if (0xf < (int)uVar21) {
-          uVar21 = 0xf;
+        else if (0xf < (int)wideLevel4) {
+          wideLevel4 = 0xf;
         }
-        uVar22 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        puVar24[1] = (uVar7 & 0x7fe0) * 0x10000 + 0x80000000 | (uVar4 >> 1) << 0x12 |
-                     (uVar6 >> 1) << 0xf | (uVar17 >> 1) << 0xc | (uVar18 >> 1) << 9 |
-                     (uVar19 >> 1) << 6 | (uVar20 >> 1) << 3 | uVar21 >> 1;
-        uVar22 = uVar22 - uVar5;
-        if ((int)uVar22 < 0) {
-          uVar22 = 0;
+        wideLevel5 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        outputCursor[1] = (minLumaChromaOrLevel & 0x7fe0) * 0x10000 + 0x80000000 | (maxLumaOrLevel >> 1) << 0x12 |
+                     (sampleLumaOrLevel >> 1) << 0xf | (wideLevel0 >> 1) << 0xc | (wideLevel1 >> 1) << 9 |
+                     (wideLevel2 >> 1) << 6 | (wideLevel3 >> 1) << 3 | wideLevel4 >> 1;
+        wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
+        if ((int)wideLevel5 < 0) {
+          wideLevel5 = 0;
         }
-        else if (0xf < (int)uVar22) {
-          uVar22 = 0xf;
+        else if (0xf < (int)wideLevel5) {
+          wideLevel5 = 0xf;
         }
-        pPVar23 = pPVar23 + -frameWidthPixels;
-        uVar7 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        uVar7 = uVar7 - uVar5;
-        if ((int)uVar7 < 0) {
-          uVar7 = 0;
+        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        minLumaChromaOrLevel = minLumaChromaOrLevel - minLumaOrBaseLuma;
+        if ((int)minLumaChromaOrLevel < 0) {
+          minLumaChromaOrLevel = 0;
         }
-        else if (0xf < (int)uVar7) {
-          uVar7 = 0xf;
+        else if (0xf < (int)minLumaChromaOrLevel) {
+          minLumaChromaOrLevel = 0xf;
         }
-        uVar4 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        uVar4 = uVar4 - uVar5;
-        if ((int)uVar4 < 0) {
-          uVar4 = 0;
+        maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
+        if ((int)maxLumaOrLevel < 0) {
+          maxLumaOrLevel = 0;
         }
-        else if (0xf < (int)uVar4) {
-          uVar4 = 0xf;
+        else if (0xf < (int)maxLumaOrLevel) {
+          maxLumaOrLevel = 0xf;
         }
-        uVar6 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        uVar6 = uVar6 - uVar5;
-        if ((int)uVar6 < 0) {
-          uVar6 = 0;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
+        if ((int)sampleLumaOrLevel < 0) {
+          sampleLumaOrLevel = 0;
         }
-        else if (0xf < (int)uVar6) {
-          uVar6 = 0xf;
+        else if (0xf < (int)sampleLumaOrLevel) {
+          sampleLumaOrLevel = 0xf;
         }
-        uVar17 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        uVar17 = uVar17 - uVar5;
-        if ((int)uVar17 < 0) {
-          uVar17 = 0;
+        wideLevel0 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
+        if ((int)wideLevel0 < 0) {
+          wideLevel0 = 0;
         }
-        else if (0xf < (int)uVar17) {
-          uVar17 = 0xf;
+        else if (0xf < (int)wideLevel0) {
+          wideLevel0 = 0xf;
         }
-        pPVar23 = pPVar23 + -frameWidthPixels;
-        uVar18 = MovieColor_ComputeLuma5FromRgb888(pPVar23[3]);
-        uVar18 = uVar18 - uVar5;
-        if ((int)uVar18 < 0) {
-          uVar18 = 0;
+        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        wideLevel1 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
+        if ((int)wideLevel1 < 0) {
+          wideLevel1 = 0;
         }
-        else if (0xf < (int)uVar18) {
-          uVar18 = 0xf;
+        else if (0xf < (int)wideLevel1) {
+          wideLevel1 = 0xf;
         }
-        uVar19 = MovieColor_ComputeLuma5FromRgb888(pPVar23[2]);
-        uVar19 = uVar19 - uVar5;
-        if ((int)uVar19 < 0) {
-          uVar19 = 0;
+        wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
+        if ((int)wideLevel2 < 0) {
+          wideLevel2 = 0;
         }
-        else if (0xf < (int)uVar19) {
-          uVar19 = 0xf;
+        else if (0xf < (int)wideLevel2) {
+          wideLevel2 = 0xf;
         }
-        uVar20 = MovieColor_ComputeLuma5FromRgb888(pPVar23[1]);
-        uVar20 = uVar20 - uVar5;
-        if ((int)uVar20 < 0) {
-          uVar20 = 0;
+        wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
+        if ((int)wideLevel3 < 0) {
+          wideLevel3 = 0;
         }
-        else if (0xf < (int)uVar20) {
-          uVar20 = 0xf;
+        else if (0xf < (int)wideLevel3) {
+          wideLevel3 = 0xf;
         }
-        uVar21 = MovieColor_ComputeLuma5FromRgb888(*pPVar23);
-        uVar21 = uVar21 - uVar5;
-        if ((int)uVar21 < 0) {
-          uVar21 = 0;
+        wideLevel4 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
+        if ((int)wideLevel4 < 0) {
+          wideLevel4 = 0;
         }
-        else if (0xf < (int)uVar21) {
-          uVar21 = 0xf;
+        else if (0xf < (int)wideLevel4) {
+          wideLevel4 = 0xf;
         }
-        *puVar24 = *puVar24 |
-                   (uVar22 >> 1) << 0x1d | (uVar7 >> 1) << 0x1a | (uVar4 >> 1) << 0x17 |
-                   (uVar6 >> 1) << 0x14 | (uVar17 >> 1) << 0x11 | (uVar18 >> 1) << 0xe |
-                   (uVar19 >> 1) << 0xb | (uVar20 >> 1) << 8 | (uVar21 >> 1) << 5;
+        *outputCursor = *outputCursor |
+                   (wideLevel5 >> 1) << 0x1d | (minLumaChromaOrLevel >> 1) << 0x1a | (maxLumaOrLevel >> 1) << 0x17 |
+                   (sampleLumaOrLevel >> 1) << 0x14 | (wideLevel0 >> 1) << 0x11 | (wideLevel1 >> 1) << 0xe |
+                   (wideLevel2 >> 1) << 0xb | (wideLevel3 >> 1) << 8 | (wideLevel4 >> 1) << 5;
       }
-      sourcePixels = pPVar23 + 4;
-      puVar24 = puVar24 + 2;
-      uStack_24 = uStack_24 - 1;
-    } while (uStack_24 != 0);
+      sourcePixels = blockRowPixels + 4;
+      outputCursor = outputCursor + 2;
+      blocksLeftInRow = blocksLeftInRow - 1;
+    } while (blocksLeftInRow != 0);
     sourcePixels = sourcePixels + frameWidthPixels * 3;
-    uStack_20 = uStack_20 - 1;
-    uStack_24 = frameWidthPixels >> 2;
-  } while (uStack_20 != 0);
-  return (int)puVar24 - (int)encodedOutput;
+    blockRowsLeft = blockRowsLeft - 1;
+    blocksLeftInRow = frameWidthPixels >> 2;
+  } while (blockRowsLeft != 0);
+  return (int)outputCursor - (int)encodedOutput;
 }
 
 
@@ -1298,689 +1298,689 @@ Movie_EncodeFrame4x4Delta
           uint *encodedOutput,uint *previousFramePixels,uint *currentFramePixels)
 
 {
-  int iVar1;
-  undefined8 uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  PackedRgb24 PVar7;
-  PackedRgb24 PVar8;
-  PackedRgb24 PVar9;
-  ulonglong *puVar10;
-  uint uVar11;
-  uint uVar12;
-  uint uVar13;
-  uint uVar14;
-  int iVar15;
-  int iVar16;
-  int iVar17;
-  int iVar18;
-  int iVar19;
-  int iVar20;
-  uint uVar21;
-  int iVar22;
-  int iVar23;
-  int iVar24;
-  uint uVar25;
-  uint uVar26;
-  uint uVar27;
-  uint uVar28;
-  uint uVar29;
-  uint uVar30;
-  PackedRgb24 *pPVar31;
-  ulonglong *puVar32;
-  uint *puVar33;
-  undefined1 uVar35;
-  undefined1 uVar36;
-  ulonglong uVar34;
-  undefined1 uVar37;
-  undefined1 uVar38;
-  undefined1 uVar39;
-  undefined1 uVar40;
-  undefined1 uVar41;
-  undefined1 uVar42;
-  ushort uVar43;
-  ushort uVar46;
-  PackedRgb24 PVar44;
-  ushort uVar47;
-  undefined8 uVar45;
-  ushort uVar48;
-  uint uStack_28;
-  uint uStack_24;
-  uint uStack_1c;
+  int rowStrideBytes;
+  undefined8 copiedQword;
+  undefined4 pixel0Raw;
+  undefined4 pixel1Raw;
+  undefined4 pixel2Raw;
+  undefined4 pixel3Raw;
+  PackedRgb24 pixel1;
+  PackedRgb24 pixel2;
+  PackedRgb24 pixel3;
+  ulonglong *previousBlock;
+  uint maxLumaChromaOrLevel;
+  uint minLumaOrBaseLuma;
+  uint sampleLumaOrLevel;
+  uint minLumaOrSkipCount;
+  int level0;
+  int level1;
+  int level2;
+  int level3;
+  int level4;
+  int level5;
+  uint wideLevel0;
+  int level6;
+  int level7;
+  int level8;
+  uint wideLevel1;
+  uint wideLevel2;
+  uint wideLevel3;
+  uint wideLevel4;
+  uint wideLevel5;
+  uint wideLevel6;
+  PackedRgb24 *blockRowPixels;
+  ulonglong *currentBlockCursor;
+  uint *outputCursor;
+  undefined1 pixel0Byte3Or1;
+  undefined1 pixel0Byte2;
+  ulonglong changedBitsOrQword;
+  undefined1 pixel1Byte3Or1;
+  undefined1 pixel1Byte2;
+  undefined1 pixel2Byte3Or1;
+  undefined1 pixel2Byte2;
+  undefined1 pixel3Byte3Or1;
+  undefined1 pixel3Byte2;
+  ushort pair0OrAverage0;
+  ushort pair1OrAverage1;
+  PackedRgb24 pixel0OrAverageColor;
+  ushort pair2OrAverage2;
+  undefined8 copiedQwordOrChannelSums;
+  ushort pair3OrAverage3;
+  uint blocksLeftInRow;
+  uint blockRowsLeft;
+  uint pendingSkipCount;
   
-  iVar1 = frameWidthPixels * 4;
-  uStack_24 = frameHeightPixels >> 2;
-  uStack_1c = 0;
-  puVar32 = (ulonglong *)currentFramePixels;
-  puVar33 = encodedOutput;
-  uStack_28 = frameWidthPixels >> 2;
+  rowStrideBytes = frameWidthPixels * 4;
+  blockRowsLeft = frameHeightPixels >> 2;
+  pendingSkipCount = 0;
+  currentBlockCursor = (ulonglong *)currentFramePixels;
+  outputCursor = encodedOutput;
+  blocksLeftInRow = frameWidthPixels >> 2;
   do {
     do {
-      puVar10 = (ulonglong *)(((int)previousFramePixels + (int)puVar32) - (int)currentFramePixels);
-      uVar34 = g_MovieDeltaRgbHighNibbleMask2Pixels &
-               (*puVar32 & g_MovieDeltaRgbHighNibbleMask2Pixels ^ *puVar10 |
-                puVar32[1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^ puVar10[1] |
-                *(ulonglong *)(iVar1 + (int)puVar32) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
-                *(ulonglong *)((int)puVar10 + iVar1) |
-                *(ulonglong *)(iVar1 + 8 + (int)puVar32) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
-                *(ulonglong *)((int)puVar10 + iVar1 + 8) |
-                puVar32[frameWidthPixels] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
-                puVar10[frameWidthPixels] |
-                puVar32[frameWidthPixels + 1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
-                puVar10[frameWidthPixels + 1] |
-               *(ulonglong *)((int)puVar32 + frameWidthPixels * 0xc) &
+      previousBlock = (ulonglong *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels);
+      changedBitsOrQword = g_MovieDeltaRgbHighNibbleMask2Pixels &
+               (*currentBlockCursor & g_MovieDeltaRgbHighNibbleMask2Pixels ^ *previousBlock |
+                currentBlockCursor[1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^ previousBlock[1] |
+                *(ulonglong *)(rowStrideBytes + (int)currentBlockCursor) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                *(ulonglong *)((int)previousBlock + rowStrideBytes) |
+                *(ulonglong *)(rowStrideBytes + 8 + (int)currentBlockCursor) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                *(ulonglong *)((int)previousBlock + rowStrideBytes + 8) |
+                currentBlockCursor[frameWidthPixels] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                previousBlock[frameWidthPixels] |
+                currentBlockCursor[frameWidthPixels + 1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                previousBlock[frameWidthPixels + 1] |
+               *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
-               *(ulonglong *)((int)puVar10 + frameWidthPixels * 0xc) |
-               *(ulonglong *)((int)puVar32 + frameWidthPixels * 0xc + 8) &
+               *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc) |
+               *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc + 8) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
-               *(ulonglong *)((int)puVar10 + frameWidthPixels * 0xc + 8));
-      uVar14 = uStack_1c + 1;
-      if ((int)(uVar34 >> 0x20) != 0 || (int)uVar34 != 0) {
-        if (uStack_1c != 0) {
-          if (uStack_1c < 9) {
-            *(byte *)puVar33 = ((char)uStack_1c + -1) * ' ' | 0x19;
-            puVar33 = (uint *)((int)puVar33 + 1);
+               *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc + 8));
+      minLumaOrSkipCount = pendingSkipCount + 1;
+      if ((int)(changedBitsOrQword >> 0x20) != 0 || (int)changedBitsOrQword != 0) {
+        if (pendingSkipCount != 0) {
+          if (pendingSkipCount < 9) {
+            *(byte *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
+            outputCursor = (uint *)((int)outputCursor + 1);
           }
-          else if (uStack_1c < 0x809) {
-            *(ushort *)puVar33 = ((short)uStack_1c + -9) * 0x20 | 0x1a;
-            puVar33 = (uint *)((int)puVar33 + 2);
+          else if (pendingSkipCount < 0x809) {
+            *(ushort *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
+            outputCursor = (uint *)((int)outputCursor + 2);
           }
           else {
-            *puVar33 = (uStack_1c - 0x809) * 0x20 | 0x1b;
-            puVar33 = puVar33 + 1;
+            *outputCursor = (pendingSkipCount - 0x809) * 0x20 | 0x1b;
+            outputCursor = outputCursor + 1;
           }
-          uStack_1c = 0;
+          pendingSkipCount = 0;
         }
-        puVar10 = (ulonglong *)(((int)previousFramePixels + (int)puVar32) - (int)currentFramePixels)
+        previousBlock = (ulonglong *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels)
         ;
-        uVar34 = puVar32[1];
-        uVar45 = *(undefined8 *)((int)puVar32 + frameWidthPixels * 4);
-        uVar2 = *(undefined8 *)((int)puVar32 + (frameWidthPixels + 2) * 4);
-        *puVar10 = *puVar32;
-        puVar10[1] = uVar34;
-        *(undefined8 *)((int)puVar10 + iVar1) = uVar45;
-        *(undefined8 *)((int)puVar10 + iVar1 + 8) = uVar2;
-        uVar34 = puVar32[frameWidthPixels + 1];
-        uVar45 = *(undefined8 *)((int)puVar32 + frameWidthPixels * 0xc);
-        uVar2 = *(undefined8 *)((int)puVar32 + (frameWidthPixels * 3 + 2) * 4);
-        puVar10[frameWidthPixels] = puVar32[frameWidthPixels];
-        puVar10[frameWidthPixels + 1] = uVar34;
-        *(undefined8 *)((int)puVar10 + frameWidthPixels * 0xc) = uVar45;
-        *(undefined8 *)((int)puVar10 + frameWidthPixels * 0xc + 8) = uVar2;
-        uVar3 = (undefined4)*puVar32;
-        uVar4 = *(undefined4 *)((int)puVar32 + 4);
-        uVar5 = (undefined4)puVar32[1];
-        uVar6 = *(undefined4 *)((int)puVar32 + 0xc);
-        uVar35 = (undefined1)((uint)uVar3 >> 0x18);
-        uVar43 = CONCAT11(uVar35,uVar35);
-        uVar36 = (undefined1)((uint)uVar3 >> 0x10);
-        uVar35 = (undefined1)((uint)uVar3 >> 8);
-        uVar37 = (undefined1)((uint)uVar4 >> 0x18);
-        uVar46 = CONCAT11(uVar37,uVar37);
-        uVar38 = (undefined1)((uint)uVar4 >> 0x10);
-        uVar37 = (undefined1)((uint)uVar4 >> 8);
-        uVar39 = (undefined1)((uint)uVar5 >> 0x18);
-        uVar47 = CONCAT11(uVar39,uVar39);
-        uVar40 = (undefined1)((uint)uVar5 >> 0x10);
-        uVar39 = (undefined1)((uint)uVar5 >> 8);
-        uVar41 = (undefined1)((uint)uVar6 >> 0x18);
-        uVar48 = CONCAT11(uVar41,uVar41);
-        uVar42 = (undefined1)((uint)uVar6 >> 0x10);
-        uVar41 = (undefined1)((uint)uVar6 >> 8);
-        uVar45 = CONCAT26((uVar48 >> 6) + (uVar47 >> 6) + (uVar43 >> 6) + (uVar46 >> 6),
-                          CONCAT24(((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,uVar6)
+        changedBitsOrQword = currentBlockCursor[1];
+        copiedQwordOrChannelSums = *(undefined8 *)((int)currentBlockCursor + frameWidthPixels * 4);
+        copiedQword = *(undefined8 *)((int)currentBlockCursor + (frameWidthPixels + 2) * 4);
+        *previousBlock = *currentBlockCursor;
+        previousBlock[1] = changedBitsOrQword;
+        *(undefined8 *)((int)previousBlock + rowStrideBytes) = copiedQwordOrChannelSums;
+        *(undefined8 *)((int)previousBlock + rowStrideBytes + 8) = copiedQword;
+        changedBitsOrQword = currentBlockCursor[frameWidthPixels + 1];
+        copiedQwordOrChannelSums = *(undefined8 *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+        copiedQword = *(undefined8 *)((int)currentBlockCursor + (frameWidthPixels * 3 + 2) * 4);
+        previousBlock[frameWidthPixels] = currentBlockCursor[frameWidthPixels];
+        previousBlock[frameWidthPixels + 1] = changedBitsOrQword;
+        *(undefined8 *)((int)previousBlock + frameWidthPixels * 0xc) = copiedQwordOrChannelSums;
+        *(undefined8 *)((int)previousBlock + frameWidthPixels * 0xc + 8) = copiedQword;
+        pixel0Raw = (undefined4)*currentBlockCursor;
+        pixel1Raw = *(undefined4 *)((int)currentBlockCursor + 4);
+        pixel2Raw = (undefined4)currentBlockCursor[1];
+        pixel3Raw = *(undefined4 *)((int)currentBlockCursor + 0xc);
+        pixel0Byte3Or1 = (undefined1)((uint)pixel0Raw >> 0x18);
+        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+        pixel0Byte2 = (undefined1)((uint)pixel0Raw >> 0x10);
+        pixel0Byte3Or1 = (undefined1)((uint)pixel0Raw >> 8);
+        pixel1Byte3Or1 = (undefined1)((uint)pixel1Raw >> 0x18);
+        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+        pixel1Byte2 = (undefined1)((uint)pixel1Raw >> 0x10);
+        pixel1Byte3Or1 = (undefined1)((uint)pixel1Raw >> 8);
+        pixel2Byte3Or1 = (undefined1)((uint)pixel2Raw >> 0x18);
+        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+        pixel2Byte2 = (undefined1)((uint)pixel2Raw >> 0x10);
+        pixel2Byte3Or1 = (undefined1)((uint)pixel2Raw >> 8);
+        pixel3Byte3Or1 = (undefined1)((uint)pixel3Raw >> 0x18);
+        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+        pixel3Byte2 = (undefined1)((uint)pixel3Raw >> 0x10);
+        pixel3Byte3Or1 = (undefined1)((uint)pixel3Raw >> 8);
+        copiedQwordOrChannelSums = CONCAT26((pair3OrAverage3 >> 6) + (pair2OrAverage2 >> 6) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6),
+                          CONCAT24(((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3Raw)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,uVar5)
+                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2Raw)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),CONCAT14(uVar36,uVar3)
+                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0Raw)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,uVar4)
+                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1Raw)
                                                      ) >> 0x20) >> 6),
-                                   CONCAT22((CONCAT11(uVar41,uVar41) >> 6) +
-                                            (CONCAT11(uVar39,uVar39) >> 6) +
-                                            (CONCAT11(uVar35,uVar35) >> 6) +
-                                            (CONCAT11(uVar37,uVar37) >> 6),
-                                            (CONCAT11((char)uVar6,(char)uVar6) >> 6) +
-                                            (CONCAT11((char)uVar5,(char)uVar5) >> 6) +
-                                            (CONCAT11((char)uVar3,(char)uVar3) >> 6) +
-                                            (CONCAT11((char)uVar4,(char)uVar4) >> 6))));
-        uVar11 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*puVar32);
-        uVar12 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 4));
-        uVar14 = uVar12;
-        if (((int)uVar11 <= (int)uVar12) && (uVar14 = uVar11, (int)uVar11 < (int)uVar12)) {
-          uVar11 = uVar12;
+                                   CONCAT22((CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6),
+                                            (CONCAT11((char)pixel3Raw,(char)pixel3Raw) >> 6) +
+                                            (CONCAT11((char)pixel2Raw,(char)pixel2Raw) >> 6) +
+                                            (CONCAT11((char)pixel0Raw,(char)pixel0Raw) >> 6) +
+                                            (CONCAT11((char)pixel1Raw,(char)pixel1Raw) >> 6))));
+        maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*currentBlockCursor);
+        minLumaOrBaseLuma = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 4));
+        minLumaOrSkipCount = minLumaOrBaseLuma;
+        if (((int)maxLumaChromaOrLevel <= (int)minLumaOrBaseLuma) && (minLumaOrSkipCount = maxLumaChromaOrLevel, (int)maxLumaChromaOrLevel < (int)minLumaOrBaseLuma)) {
+          maxLumaChromaOrLevel = minLumaOrBaseLuma;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)puVar32[1]);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)currentBlockCursor[1]);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 0xc));
-        uVar14 = uVar13;
-        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
+        minLumaOrSkipCount = sampleLumaOrLevel;
+        if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        pPVar31 = (PackedRgb24 *)((int)puVar32 + frameWidthPixels * 4);
-        PVar44 = *pPVar31;
-        PVar7 = pPVar31[1];
-        PVar8 = pPVar31[2];
-        PVar9 = pPVar31[3];
-        uVar35 = (undefined1)(PVar44 >> 0x18);
-        uVar43 = CONCAT11(uVar35,uVar35);
-        uVar36 = (undefined1)(PVar44 >> 0x10);
-        uVar35 = (undefined1)(PVar44 >> 8);
-        uVar37 = (undefined1)(PVar7 >> 0x18);
-        uVar46 = CONCAT11(uVar37,uVar37);
-        uVar38 = (undefined1)(PVar7 >> 0x10);
-        uVar37 = (undefined1)(PVar7 >> 8);
-        uVar39 = (undefined1)(PVar8 >> 0x18);
-        uVar47 = CONCAT11(uVar39,uVar39);
-        uVar40 = (undefined1)(PVar8 >> 0x10);
-        uVar39 = (undefined1)(PVar8 >> 8);
-        uVar41 = (undefined1)(PVar9 >> 0x18);
-        uVar48 = CONCAT11(uVar41,uVar41);
-        uVar42 = (undefined1)(PVar9 >> 0x10);
-        uVar41 = (undefined1)(PVar9 >> 8);
-        uVar45 = CONCAT26((short)((ulonglong)uVar45 >> 0x30) + (uVar43 >> 6) + (uVar46 >> 6) +
-                          (uVar47 >> 6) + (uVar48 >> 6),
-                          CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),
-                                                      CONCAT14(uVar36,PVar44)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,PVar7)
+        blockRowPixels = (PackedRgb24 *)((int)currentBlockCursor + frameWidthPixels * 4);
+        pixel0OrAverageColor = *blockRowPixels;
+        pixel1 = blockRowPixels[1];
+        pixel2 = blockRowPixels[2];
+        pixel3 = blockRowPixels[3];
+        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+        pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+        pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+        pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+        pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+        pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+        pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+        pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+        pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+        pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+        pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+        copiedQwordOrChannelSums = CONCAT26((short)((ulonglong)copiedQwordOrChannelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
+                          (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
+                          CONCAT24((short)((ulonglong)copiedQwordOrChannelSums >> 0x20) +
+                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),
+                                                      CONCAT14(pixel0Byte2,pixel0OrAverageColor)) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,PVar8)
+                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,PVar9)
+                                   ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3)
                                                      ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
-                                            (CONCAT11(uVar35,uVar35) >> 6) +
-                                            (CONCAT11(uVar37,uVar37) >> 6) +
-                                            (CONCAT11(uVar39,uVar39) >> 6) +
-                                            (CONCAT11(uVar41,uVar41) >> 6),
-                                            (short)uVar45 +
-                                            (CONCAT11((char)PVar44,(char)PVar44) >> 6) +
-                                            (CONCAT11((char)PVar7,(char)PVar7) >> 6) +
-                                            (CONCAT11((char)PVar8,(char)PVar8) >> 6) +
-                                            (CONCAT11((char)PVar9,(char)PVar9) >> 6))));
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+                                   CONCAT22((short)((ulonglong)copiedQwordOrChannelSums >> 0x10) +
+                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
+                                            (short)copiedQwordOrChannelSums +
+                                            (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                            (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
+                                            (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                            (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-        uVar14 = uVar13;
-        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        minLumaOrSkipCount = sampleLumaOrLevel;
+        if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-        uVar14 = uVar13;
-        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        minLumaOrSkipCount = sampleLumaOrLevel;
+        if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        pPVar31 = pPVar31 + frameWidthPixels;
-        PVar44 = *pPVar31;
-        PVar7 = pPVar31[1];
-        PVar8 = pPVar31[2];
-        PVar9 = pPVar31[3];
-        uVar35 = (undefined1)(PVar44 >> 0x18);
-        uVar43 = CONCAT11(uVar35,uVar35);
-        uVar36 = (undefined1)(PVar44 >> 0x10);
-        uVar35 = (undefined1)(PVar44 >> 8);
-        uVar37 = (undefined1)(PVar7 >> 0x18);
-        uVar46 = CONCAT11(uVar37,uVar37);
-        uVar38 = (undefined1)(PVar7 >> 0x10);
-        uVar37 = (undefined1)(PVar7 >> 8);
-        uVar39 = (undefined1)(PVar8 >> 0x18);
-        uVar47 = CONCAT11(uVar39,uVar39);
-        uVar40 = (undefined1)(PVar8 >> 0x10);
-        uVar39 = (undefined1)(PVar8 >> 8);
-        uVar41 = (undefined1)(PVar9 >> 0x18);
-        uVar48 = CONCAT11(uVar41,uVar41);
-        uVar42 = (undefined1)(PVar9 >> 0x10);
-        uVar41 = (undefined1)(PVar9 >> 8);
-        uVar45 = CONCAT26((short)((ulonglong)uVar45 >> 0x30) + (uVar43 >> 6) + (uVar46 >> 6) +
-                          (uVar47 >> 6) + (uVar48 >> 6),
-                          CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),
-                                                      CONCAT14(uVar36,PVar44)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,PVar7)
+        blockRowPixels = blockRowPixels + frameWidthPixels;
+        pixel0OrAverageColor = *blockRowPixels;
+        pixel1 = blockRowPixels[1];
+        pixel2 = blockRowPixels[2];
+        pixel3 = blockRowPixels[3];
+        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+        pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+        pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+        pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+        pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+        pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+        pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+        pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+        pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+        pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+        pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+        copiedQwordOrChannelSums = CONCAT26((short)((ulonglong)copiedQwordOrChannelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
+                          (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
+                          CONCAT24((short)((ulonglong)copiedQwordOrChannelSums >> 0x20) +
+                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),
+                                                      CONCAT14(pixel0Byte2,pixel0OrAverageColor)) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,PVar8)
+                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,PVar9)
+                                   ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3)
                                                      ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
-                                            (CONCAT11(uVar35,uVar35) >> 6) +
-                                            (CONCAT11(uVar37,uVar37) >> 6) +
-                                            (CONCAT11(uVar39,uVar39) >> 6) +
-                                            (CONCAT11(uVar41,uVar41) >> 6),
-                                            (short)uVar45 +
-                                            (CONCAT11((char)PVar44,(char)PVar44) >> 6) +
-                                            (CONCAT11((char)PVar7,(char)PVar7) >> 6) +
-                                            (CONCAT11((char)PVar8,(char)PVar8) >> 6) +
-                                            (CONCAT11((char)PVar9,(char)PVar9) >> 6))));
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+                                   CONCAT22((short)((ulonglong)copiedQwordOrChannelSums >> 0x10) +
+                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
+                                            (short)copiedQwordOrChannelSums +
+                                            (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                            (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
+                                            (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                            (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-        uVar14 = uVar13;
-        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        minLumaOrSkipCount = sampleLumaOrLevel;
+        if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-        uVar14 = uVar13;
-        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        minLumaOrSkipCount = sampleLumaOrLevel;
+        if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        pPVar31 = pPVar31 + frameWidthPixels;
-        PVar44 = *pPVar31;
-        PVar7 = pPVar31[1];
-        PVar8 = pPVar31[2];
-        PVar9 = pPVar31[3];
-        uVar35 = (undefined1)(PVar44 >> 0x18);
-        uVar43 = CONCAT11(uVar35,uVar35);
-        uVar36 = (undefined1)(PVar44 >> 0x10);
-        uVar35 = (undefined1)(PVar44 >> 8);
-        uVar37 = (undefined1)(PVar7 >> 0x18);
-        uVar46 = CONCAT11(uVar37,uVar37);
-        uVar38 = (undefined1)(PVar7 >> 0x10);
-        uVar37 = (undefined1)(PVar7 >> 8);
-        uVar39 = (undefined1)(PVar8 >> 0x18);
-        uVar47 = CONCAT11(uVar39,uVar39);
-        uVar40 = (undefined1)(PVar8 >> 0x10);
-        uVar39 = (undefined1)(PVar8 >> 8);
-        uVar41 = (undefined1)(PVar9 >> 0x18);
-        uVar48 = CONCAT11(uVar41,uVar41);
-        uVar42 = (undefined1)(PVar9 >> 0x10);
-        uVar41 = (undefined1)(PVar9 >> 8);
-        uVar45 = CONCAT26((short)((ulonglong)uVar45 >> 0x30) + (uVar43 >> 6) + (uVar46 >> 6) +
-                          (uVar47 >> 6) + (uVar48 >> 6),
-                          CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar43,uVar36),
-                                                      CONCAT14(uVar36,PVar44)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar46,uVar38),CONCAT14(uVar38,PVar7)
+        blockRowPixels = blockRowPixels + frameWidthPixels;
+        pixel0OrAverageColor = *blockRowPixels;
+        pixel1 = blockRowPixels[1];
+        pixel2 = blockRowPixels[2];
+        pixel3 = blockRowPixels[3];
+        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
+        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
+        pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
+        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
+        pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
+        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
+        pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
+        pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
+        pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
+        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
+        pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
+        pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
+        pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
+        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
+        pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
+        pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
+        copiedQwordOrChannelSums = CONCAT26((short)((ulonglong)copiedQwordOrChannelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
+                          (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
+                          CONCAT24((short)((ulonglong)copiedQwordOrChannelSums >> 0x20) +
+                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),
+                                                      CONCAT14(pixel0Byte2,pixel0OrAverageColor)) >> 0x20) >> 6) +
+                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar47,uVar40),CONCAT14(uVar40,PVar8)
+                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2)
                                                      ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(uVar48,uVar42),CONCAT14(uVar42,PVar9)
+                                   ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3)
                                                      ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
-                                            (CONCAT11(uVar35,uVar35) >> 6) +
-                                            (CONCAT11(uVar37,uVar37) >> 6) +
-                                            (CONCAT11(uVar39,uVar39) >> 6) +
-                                            (CONCAT11(uVar41,uVar41) >> 6),
-                                            (short)uVar45 +
-                                            (CONCAT11((char)PVar44,(char)PVar44) >> 6) +
-                                            (CONCAT11((char)PVar7,(char)PVar7) >> 6) +
-                                            (CONCAT11((char)PVar8,(char)PVar8) >> 6) +
-                                            (CONCAT11((char)PVar9,(char)PVar9) >> 6))));
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+                                   CONCAT22((short)((ulonglong)copiedQwordOrChannelSums >> 0x10) +
+                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
+                                            (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
+                                            (short)copiedQwordOrChannelSums +
+                                            (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
+                                            (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
+                                            (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
+                                            (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-        uVar14 = uVar13;
-        if (((int)uVar12 <= (int)uVar13) && (uVar14 = uVar12, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+        minLumaOrSkipCount = sampleLumaOrLevel;
+        if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-        uVar12 = uVar13;
-        if (((int)uVar14 <= (int)uVar13) && (uVar12 = uVar14, (int)uVar11 < (int)uVar13)) {
-          uVar11 = uVar13;
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+        minLumaOrBaseLuma = sampleLumaOrLevel;
+        if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
+          maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        uVar14 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-        uVar13 = uVar14;
-        if (((int)uVar12 <= (int)uVar14) && (uVar13 = uVar12, (int)uVar11 < (int)uVar14)) {
-          uVar11 = uVar14;
+        minLumaOrSkipCount = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+        sampleLumaOrLevel = minLumaOrSkipCount;
+        if (((int)minLumaOrBaseLuma <= (int)minLumaOrSkipCount) && (sampleLumaOrLevel = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)minLumaOrSkipCount)) {
+          maxLumaChromaOrLevel = minLumaOrSkipCount;
         }
-        uVar43 = (ushort)uVar45 >> 6;
-        uVar46 = (ushort)((ulonglong)uVar45 >> 0x10) >> 6;
-        uVar47 = (ushort)((ulonglong)uVar45 >> 0x20) >> 6;
-        uVar48 = (ushort)((ulonglong)uVar45 >> 0x36);
-        PVar44 = CONCAT13((uVar48 != 0) * (uVar48 < 0x100) * (char)uVar48 - (0xff < uVar48),
-                          CONCAT12((uVar47 != 0) * (uVar47 < 0x100) * (char)uVar47 - (0xff < uVar47)
-                                   ,CONCAT11((uVar46 != 0) * (uVar46 < 0x100) * (char)uVar46 -
-                                             (0xff < uVar46),
-                                             (uVar43 != 0) * (uVar43 < 0x100) * (char)uVar43 -
-                                             (0xff < uVar43))));
-        uVar12 = (int)((uVar13 - 8) + uVar11) >> 1;
-        if ((int)uVar12 < 0) {
-          uVar12 = 0;
+        pair0OrAverage0 = (ushort)copiedQwordOrChannelSums >> 6;
+        pair1OrAverage1 = (ushort)((ulonglong)copiedQwordOrChannelSums >> 0x10) >> 6;
+        pair2OrAverage2 = (ushort)((ulonglong)copiedQwordOrChannelSums >> 0x20) >> 6;
+        pair3OrAverage3 = (ushort)((ulonglong)copiedQwordOrChannelSums >> 0x36);
+        pixel0OrAverageColor = CONCAT13((pair3OrAverage3 != 0) * (pair3OrAverage3 < 0x100) * (char)pair3OrAverage3 - (0xff < pair3OrAverage3),
+                          CONCAT12((pair2OrAverage2 != 0) * (pair2OrAverage2 < 0x100) * (char)pair2OrAverage2 - (0xff < pair2OrAverage2)
+                                   ,CONCAT11((pair1OrAverage1 != 0) * (pair1OrAverage1 < 0x100) * (char)pair1OrAverage1 -
+                                             (0xff < pair1OrAverage1),
+                                             (pair0OrAverage0 != 0) * (pair0OrAverage0 < 0x100) * (char)pair0OrAverage0 -
+                                             (0xff < pair0OrAverage0))));
+        minLumaOrBaseLuma = (int)((sampleLumaOrLevel - 8) + maxLumaChromaOrLevel) >> 1;
+        if ((int)minLumaOrBaseLuma < 0) {
+          minLumaOrBaseLuma = 0;
         }
-        else if (0x18 < uVar12) {
-          uVar12 = 0x18;
+        else if (0x18 < minLumaOrBaseLuma) {
+          minLumaOrBaseLuma = 0x18;
         }
-        uVar14 = uStack_1c;
-        if (uVar11 - uVar13 < 0xc) {
-          *puVar33 = uVar12;
-          uVar11 = MovieColor_ComputeChromaCodeFromRgb888(PVar44);
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-          iVar15 = uVar13 - uVar12;
-          if (iVar15 < 0) {
-            iVar15 = 0;
+        minLumaOrSkipCount = pendingSkipCount;
+        if (maxLumaChromaOrLevel - sampleLumaOrLevel < 0xc) {
+          *outputCursor = minLumaOrBaseLuma;
+          maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+          level0 = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if (level0 < 0) {
+            level0 = 0;
           }
-          else if (7 < iVar15) {
-            iVar15 = 7;
+          else if (7 < level0) {
+            level0 = 7;
           }
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-          iVar16 = uVar13 - uVar12;
-          if (iVar16 < 0) {
-            iVar16 = 0;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+          level1 = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if (level1 < 0) {
+            level1 = 0;
           }
-          else if (7 < iVar16) {
-            iVar16 = 7;
+          else if (7 < level1) {
+            level1 = 7;
           }
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-          iVar17 = uVar13 - uVar12;
-          if (iVar17 < 0) {
-            iVar17 = 0;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+          level2 = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if (level2 < 0) {
+            level2 = 0;
           }
-          else if (7 < iVar17) {
-            iVar17 = 7;
+          else if (7 < level2) {
+            level2 = 7;
           }
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-          iVar18 = uVar13 - uVar12;
-          if (iVar18 < 0) {
-            iVar18 = 0;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+          level3 = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if (level3 < 0) {
+            level3 = 0;
           }
-          else if (7 < iVar18) {
-            iVar18 = 7;
+          else if (7 < level3) {
+            level3 = 7;
           }
-          pPVar31 = pPVar31 + -frameWidthPixels;
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-          iVar19 = uVar13 - uVar12;
-          if (iVar19 < 0) {
-            iVar19 = 0;
+          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+          level4 = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if (level4 < 0) {
+            level4 = 0;
           }
-          else if (7 < iVar19) {
-            iVar19 = 7;
+          else if (7 < level4) {
+            level4 = 7;
           }
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-          iVar20 = uVar13 - uVar12;
-          if (iVar20 < 0) {
-            iVar20 = 0;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+          level5 = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if (level5 < 0) {
+            level5 = 0;
           }
-          else if (7 < iVar20) {
-            iVar20 = 7;
+          else if (7 < level5) {
+            level5 = 7;
           }
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-          uVar13 = uVar13 - uVar12;
-          if ((int)uVar13 < 0) {
-            uVar13 = 0;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+          sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if ((int)sampleLumaOrLevel < 0) {
+            sampleLumaOrLevel = 0;
           }
-          else if (7 < (int)uVar13) {
-            uVar13 = 7;
+          else if (7 < (int)sampleLumaOrLevel) {
+            sampleLumaOrLevel = 7;
           }
-          uVar21 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-          puVar33[1] = (uVar11 & 0x7fe0) << 0x10 | iVar15 << 0x12 | iVar16 << 0xf | iVar17 << 0xc |
-                       iVar18 << 9 | iVar19 << 6 | iVar20 << 3 | uVar13;
-          iVar15 = uVar21 - uVar12;
-          if (iVar15 < 0) {
-            iVar15 = 0;
+          wideLevel0 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+          outputCursor[1] = (maxLumaChromaOrLevel & 0x7fe0) << 0x10 | level0 << 0x12 | level1 << 0xf | level2 << 0xc |
+                       level3 << 9 | level4 << 6 | level5 << 3 | sampleLumaOrLevel;
+          level0 = wideLevel0 - minLumaOrBaseLuma;
+          if (level0 < 0) {
+            level0 = 0;
           }
-          else if (7 < iVar15) {
-            iVar15 = 7;
+          else if (7 < level0) {
+            level0 = 7;
           }
-          pPVar31 = pPVar31 + -frameWidthPixels;
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-          iVar16 = uVar11 - uVar12;
-          if (iVar16 < 0) {
-            iVar16 = 0;
+          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+          level1 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level1 < 0) {
+            level1 = 0;
           }
-          else if (7 < iVar16) {
-            iVar16 = 7;
+          else if (7 < level1) {
+            level1 = 7;
           }
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-          iVar17 = uVar11 - uVar12;
-          if (iVar17 < 0) {
-            iVar17 = 0;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+          level2 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level2 < 0) {
+            level2 = 0;
           }
-          else if (7 < iVar17) {
-            iVar17 = 7;
+          else if (7 < level2) {
+            level2 = 7;
           }
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-          iVar18 = uVar11 - uVar12;
-          if (iVar18 < 0) {
-            iVar18 = 0;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+          level3 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level3 < 0) {
+            level3 = 0;
           }
-          else if (7 < iVar18) {
-            iVar18 = 7;
+          else if (7 < level3) {
+            level3 = 7;
           }
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-          iVar19 = uVar11 - uVar12;
-          if (iVar19 < 0) {
-            iVar19 = 0;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+          level4 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level4 < 0) {
+            level4 = 0;
           }
-          else if (7 < iVar19) {
-            iVar19 = 7;
+          else if (7 < level4) {
+            level4 = 7;
           }
-          puVar32 = (ulonglong *)(pPVar31 + -frameWidthPixels);
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 0xc));
-          iVar20 = uVar11 - uVar12;
-          if (iVar20 < 0) {
-            iVar20 = 0;
+          currentBlockCursor = (ulonglong *)(blockRowPixels + -frameWidthPixels);
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
+          level5 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level5 < 0) {
+            level5 = 0;
           }
-          else if (7 < iVar20) {
-            iVar20 = 7;
+          else if (7 < level5) {
+            level5 = 7;
           }
-          uVar11 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)puVar32[1]);
-          iVar22 = uVar11 - uVar12;
-          if (iVar22 < 0) {
-            iVar22 = 0;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)currentBlockCursor[1]);
+          level6 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level6 < 0) {
+            level6 = 0;
           }
-          else if (7 < iVar22) {
-            iVar22 = 7;
+          else if (7 < level6) {
+            level6 = 7;
           }
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 4));
-          iVar23 = uVar11 - uVar12;
-          if (iVar23 < 0) {
-            iVar23 = 0;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 4));
+          level7 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level7 < 0) {
+            level7 = 0;
           }
-          else if (7 < iVar23) {
-            iVar23 = 7;
+          else if (7 < level7) {
+            level7 = 7;
           }
-          uVar11 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*puVar32);
-          iVar24 = uVar11 - uVar12;
-          if (iVar24 < 0) {
-            iVar24 = 0;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*currentBlockCursor);
+          level8 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if (level8 < 0) {
+            level8 = 0;
           }
-          else if (7 < iVar24) {
-            iVar24 = 7;
+          else if (7 < level8) {
+            level8 = 7;
           }
-          *puVar33 = *puVar33 |
-                     iVar15 << 0x1d | iVar16 << 0x1a | iVar17 << 0x17 | iVar18 << 0x14 |
-                     iVar19 << 0x11 | iVar20 << 0xe | iVar22 << 0xb | iVar23 << 8 | iVar24 << 5;
-          puVar33 = puVar33 + 2;
+          *outputCursor = *outputCursor |
+                     level0 << 0x1d | level1 << 0x1a | level2 << 0x17 | level3 << 0x14 |
+                     level4 << 0x11 | level5 << 0xe | level6 << 0xb | level7 << 8 | level8 << 5;
+          outputCursor = outputCursor + 2;
         }
         else {
-          uVar12 = uVar12 - 4;
-          if ((int)uVar12 < 0) {
-            uVar12 = 0;
+          minLumaOrBaseLuma = minLumaOrBaseLuma - 4;
+          if ((int)minLumaOrBaseLuma < 0) {
+            minLumaOrBaseLuma = 0;
           }
-          else if (0x10 < (int)uVar12) {
-            uVar12 = 0x10;
+          else if (0x10 < (int)minLumaOrBaseLuma) {
+            minLumaOrBaseLuma = 0x10;
           }
-          *puVar33 = uVar12;
-          uVar11 = MovieColor_ComputeChromaCodeFromRgb888(PVar44);
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-          uVar13 = uVar13 - uVar12;
-          if ((int)uVar13 < 0) {
-            uVar13 = 0;
+          *outputCursor = minLumaOrBaseLuma;
+          maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+          sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if ((int)sampleLumaOrLevel < 0) {
+            sampleLumaOrLevel = 0;
           }
-          else if (0xf < (int)uVar13) {
-            uVar13 = 0xf;
+          else if (0xf < (int)sampleLumaOrLevel) {
+            sampleLumaOrLevel = 0xf;
           }
-          uVar21 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-          uVar21 = uVar21 - uVar12;
-          if ((int)uVar21 < 0) {
-            uVar21 = 0;
+          wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+          wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
+          if ((int)wideLevel0 < 0) {
+            wideLevel0 = 0;
           }
-          else if (0xf < (int)uVar21) {
-            uVar21 = 0xf;
+          else if (0xf < (int)wideLevel0) {
+            wideLevel0 = 0xf;
           }
-          uVar25 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-          uVar25 = uVar25 - uVar12;
-          if ((int)uVar25 < 0) {
-            uVar25 = 0;
+          wideLevel1 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+          wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
+          if ((int)wideLevel1 < 0) {
+            wideLevel1 = 0;
           }
-          else if (0xf < (int)uVar25) {
-            uVar25 = 0xf;
+          else if (0xf < (int)wideLevel1) {
+            wideLevel1 = 0xf;
           }
-          uVar26 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-          uVar26 = uVar26 - uVar12;
-          if ((int)uVar26 < 0) {
-            uVar26 = 0;
+          wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+          wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
+          if ((int)wideLevel2 < 0) {
+            wideLevel2 = 0;
           }
-          else if (0xf < (int)uVar26) {
-            uVar26 = 0xf;
+          else if (0xf < (int)wideLevel2) {
+            wideLevel2 = 0xf;
           }
-          pPVar31 = pPVar31 + -frameWidthPixels;
-          uVar27 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-          uVar27 = uVar27 - uVar12;
-          if ((int)uVar27 < 0) {
-            uVar27 = 0;
+          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+          wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
+          if ((int)wideLevel3 < 0) {
+            wideLevel3 = 0;
           }
-          else if (0xf < (int)uVar27) {
-            uVar27 = 0xf;
+          else if (0xf < (int)wideLevel3) {
+            wideLevel3 = 0xf;
           }
-          uVar28 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-          uVar28 = uVar28 - uVar12;
-          if ((int)uVar28 < 0) {
-            uVar28 = 0;
+          wideLevel4 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+          wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
+          if ((int)wideLevel4 < 0) {
+            wideLevel4 = 0;
           }
-          else if (0xf < (int)uVar28) {
-            uVar28 = 0xf;
+          else if (0xf < (int)wideLevel4) {
+            wideLevel4 = 0xf;
           }
-          uVar29 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-          uVar29 = uVar29 - uVar12;
-          if ((int)uVar29 < 0) {
-            uVar29 = 0;
+          wideLevel5 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+          wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
+          if ((int)wideLevel5 < 0) {
+            wideLevel5 = 0;
           }
-          else if (0xf < (int)uVar29) {
-            uVar29 = 0xf;
+          else if (0xf < (int)wideLevel5) {
+            wideLevel5 = 0xf;
           }
-          uVar30 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-          puVar33[1] = (uVar11 & 0x7fe0) * 0x10000 + 0x80000000 | (uVar13 >> 1) << 0x12 |
-                       (uVar21 >> 1) << 0xf | (uVar25 >> 1) << 0xc | (uVar26 >> 1) << 9 |
-                       (uVar27 >> 1) << 6 | (uVar28 >> 1) << 3 | uVar29 >> 1;
-          uVar30 = uVar30 - uVar12;
-          if ((int)uVar30 < 0) {
-            uVar30 = 0;
+          wideLevel6 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+          outputCursor[1] = (maxLumaChromaOrLevel & 0x7fe0) * 0x10000 + 0x80000000 | (sampleLumaOrLevel >> 1) << 0x12 |
+                       (wideLevel0 >> 1) << 0xf | (wideLevel1 >> 1) << 0xc | (wideLevel2 >> 1) << 9 |
+                       (wideLevel3 >> 1) << 6 | (wideLevel4 >> 1) << 3 | wideLevel5 >> 1;
+          wideLevel6 = wideLevel6 - minLumaOrBaseLuma;
+          if ((int)wideLevel6 < 0) {
+            wideLevel6 = 0;
           }
-          else if (0xf < (int)uVar30) {
-            uVar30 = 0xf;
+          else if (0xf < (int)wideLevel6) {
+            wideLevel6 = 0xf;
           }
-          pPVar31 = pPVar31 + -frameWidthPixels;
-          uVar11 = MovieColor_ComputeLuma5FromRgb888(pPVar31[3]);
-          uVar11 = uVar11 - uVar12;
-          if ((int)uVar11 < 0) {
-            uVar11 = 0;
+          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
+          maxLumaChromaOrLevel = maxLumaChromaOrLevel - minLumaOrBaseLuma;
+          if ((int)maxLumaChromaOrLevel < 0) {
+            maxLumaChromaOrLevel = 0;
           }
-          else if (0xf < (int)uVar11) {
-            uVar11 = 0xf;
+          else if (0xf < (int)maxLumaChromaOrLevel) {
+            maxLumaChromaOrLevel = 0xf;
           }
-          uVar13 = MovieColor_ComputeLuma5FromRgb888(pPVar31[2]);
-          uVar13 = uVar13 - uVar12;
-          if ((int)uVar13 < 0) {
-            uVar13 = 0;
+          sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
+          sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
+          if ((int)sampleLumaOrLevel < 0) {
+            sampleLumaOrLevel = 0;
           }
-          else if (0xf < (int)uVar13) {
-            uVar13 = 0xf;
+          else if (0xf < (int)sampleLumaOrLevel) {
+            sampleLumaOrLevel = 0xf;
           }
-          uVar21 = MovieColor_ComputeLuma5FromRgb888(pPVar31[1]);
-          uVar21 = uVar21 - uVar12;
-          if ((int)uVar21 < 0) {
-            uVar21 = 0;
+          wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
+          wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
+          if ((int)wideLevel0 < 0) {
+            wideLevel0 = 0;
           }
-          else if (0xf < (int)uVar21) {
-            uVar21 = 0xf;
+          else if (0xf < (int)wideLevel0) {
+            wideLevel0 = 0xf;
           }
-          uVar25 = MovieColor_ComputeLuma5FromRgb888(*pPVar31);
-          uVar25 = uVar25 - uVar12;
-          if ((int)uVar25 < 0) {
-            uVar25 = 0;
+          wideLevel1 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
+          wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
+          if ((int)wideLevel1 < 0) {
+            wideLevel1 = 0;
           }
-          else if (0xf < (int)uVar25) {
-            uVar25 = 0xf;
+          else if (0xf < (int)wideLevel1) {
+            wideLevel1 = 0xf;
           }
-          puVar32 = (ulonglong *)(pPVar31 + -frameWidthPixels);
-          uVar26 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 0xc));
-          uVar26 = uVar26 - uVar12;
-          if ((int)uVar26 < 0) {
-            uVar26 = 0;
+          currentBlockCursor = (ulonglong *)(blockRowPixels + -frameWidthPixels);
+          wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
+          wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
+          if ((int)wideLevel2 < 0) {
+            wideLevel2 = 0;
           }
-          else if (0xf < (int)uVar26) {
-            uVar26 = 0xf;
+          else if (0xf < (int)wideLevel2) {
+            wideLevel2 = 0xf;
           }
-          uVar27 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)puVar32[1]);
-          uVar27 = uVar27 - uVar12;
-          if ((int)uVar27 < 0) {
-            uVar27 = 0;
+          wideLevel3 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)currentBlockCursor[1]);
+          wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
+          if ((int)wideLevel3 < 0) {
+            wideLevel3 = 0;
           }
-          else if (0xf < (int)uVar27) {
-            uVar27 = 0xf;
+          else if (0xf < (int)wideLevel3) {
+            wideLevel3 = 0xf;
           }
-          uVar28 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)puVar32 + 4));
-          uVar28 = uVar28 - uVar12;
-          if ((int)uVar28 < 0) {
-            uVar28 = 0;
+          wideLevel4 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 4));
+          wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
+          if ((int)wideLevel4 < 0) {
+            wideLevel4 = 0;
           }
-          else if (0xf < (int)uVar28) {
-            uVar28 = 0xf;
+          else if (0xf < (int)wideLevel4) {
+            wideLevel4 = 0xf;
           }
-          uVar29 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*puVar32);
-          uVar29 = uVar29 - uVar12;
-          if ((int)uVar29 < 0) {
-            uVar29 = 0;
+          wideLevel5 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*currentBlockCursor);
+          wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
+          if ((int)wideLevel5 < 0) {
+            wideLevel5 = 0;
           }
-          else if (0xf < (int)uVar29) {
-            uVar29 = 0xf;
+          else if (0xf < (int)wideLevel5) {
+            wideLevel5 = 0xf;
           }
-          *puVar33 = *puVar33 |
-                     (uVar30 >> 1) << 0x1d | (uVar11 >> 1) << 0x1a | (uVar13 >> 1) << 0x17 |
-                     (uVar21 >> 1) << 0x14 | (uVar25 >> 1) << 0x11 | (uVar26 >> 1) << 0xe |
-                     (uVar27 >> 1) << 0xb | (uVar28 >> 1) << 8 | (uVar29 >> 1) << 5;
-          puVar33 = puVar33 + 2;
+          *outputCursor = *outputCursor |
+                     (wideLevel6 >> 1) << 0x1d | (maxLumaChromaOrLevel >> 1) << 0x1a | (sampleLumaOrLevel >> 1) << 0x17 |
+                     (wideLevel0 >> 1) << 0x14 | (wideLevel1 >> 1) << 0x11 | (wideLevel2 >> 1) << 0xe |
+                     (wideLevel3 >> 1) << 0xb | (wideLevel4 >> 1) << 8 | (wideLevel5 >> 1) << 5;
+          outputCursor = outputCursor + 2;
         }
       }
-      uStack_1c = uVar14;
-      puVar32 = puVar32 + 2;
-      uStack_28 = uStack_28 - 1;
-    } while (uStack_28 != 0);
-    puVar32 = (ulonglong *)((int)puVar32 + frameWidthPixels * 0xc);
-    uStack_24 = uStack_24 - 1;
-    uStack_28 = frameWidthPixels >> 2;
-  } while (uStack_24 != 0);
-  if (uStack_1c != 0) {
-    if (uStack_1c < 9) {
-      *(byte *)puVar33 = ((char)uStack_1c + -1) * ' ' | 0x19;
-      puVar33 = (uint *)((int)puVar33 + 1);
+      pendingSkipCount = minLumaOrSkipCount;
+      currentBlockCursor = currentBlockCursor + 2;
+      blocksLeftInRow = blocksLeftInRow - 1;
+    } while (blocksLeftInRow != 0);
+    currentBlockCursor = (ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+    blockRowsLeft = blockRowsLeft - 1;
+    blocksLeftInRow = frameWidthPixels >> 2;
+  } while (blockRowsLeft != 0);
+  if (pendingSkipCount != 0) {
+    if (pendingSkipCount < 9) {
+      *(byte *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
+      outputCursor = (uint *)((int)outputCursor + 1);
     }
-    else if (uStack_1c < 0x809) {
-      *(ushort *)puVar33 = ((short)uStack_1c + -9) * 0x20 | 0x1a;
-      puVar33 = (uint *)((int)puVar33 + 2);
+    else if (pendingSkipCount < 0x809) {
+      *(ushort *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
+      outputCursor = (uint *)((int)outputCursor + 2);
     }
     else {
-      *puVar33 = (uStack_1c - 0x809) * 0x20 | 0x1b;
-      puVar33 = puVar33 + 1;
+      *outputCursor = (pendingSkipCount - 0x809) * 0x20 | 0x1b;
+      outputCursor = outputCursor + 1;
     }
   }
-  return (int)puVar33 + (7 - (int)encodedOutput) & 0xfffffff8;
+  return (int)outputCursor + (7 - (int)encodedOutput) & 0xfffffff8;
 }
 
 
@@ -2047,26 +2047,26 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, dword consumedBytes)
 MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 {
-  MovieFileHeader *pMVar1;
-  MovieFrameIndex MVar2;
-  MovieRuntime *pMVar3;
-  uint uVar4;
-  dword dVar5;
-  uint uVar6;
+  MovieFileHeader *flmHeader;
+  MovieFrameIndex previousFrameIndex;
+  MovieRuntime *movie;
+  uint byteCountOrStatus;
+  dword consumedBytes;
+  uint nextFrameOrLoadedSize;
   void *unaff_EBX = (void *)0; /* the original closes a stale caller EBX here */
-  undefined4 *puVar7;
-  byte *pbVar8;
-  SoundPlayVoiceEaxCf5 SVar9;
-  MovieAdvanceFrameEaxCf5 MVar10;
-  MovieAdvanceFrameEaxCf5 MVar11;
-  MovieAdvanceFrameEaxCf5 MVar12;
+  undefined4 *copySource;
+  byte *streamCursor;
+  SoundPlayVoiceEaxCf5 playResult;
+  MovieAdvanceFrameEaxCf5 successResult;
+  MovieAdvanceFrameEaxCf5 bufferingResult;
+  MovieAdvanceFrameEaxCf5 failureResult;
   
-  pMVar3 = g_ActiveMovie;
-  uVar4 = 0x30;
+  movie = g_ActiveMovie;
+  byteCountOrStatus = 0x30;
   if (g_ActiveMovie != (MovieRuntime *)0x0) {
     if (g_ActiveMovie->streamState == MOVIE_STREAM_READ_FAILED) {
       (*g_FileSystemClose)(unaff_EBX);
-      pMVar3->remainingVideoBytes = 0;
+      movie->remainingVideoBytes = 0;
     }
     else {
       if (((g_ActiveMovie->streamState == MOVIE_STREAM_IDLE) && (g_ActiveMovie->workerActive != 0))
@@ -2074,56 +2074,56 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
         if ((uint)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200)
         {
           g_ActiveMovie->streamState = MOVIE_STREAM_FILL_REQUESTED;
-          ReleaseSemaphore(pMVar3->refillSemaphore,1,(LPLONG)0x0);
+          ReleaseSemaphore(movie->refillSemaphore,1,(LPLONG)0x0);
         }
       }
-      pMVar1 = pMVar3->fileHeader;
-      MVar2 = pMVar3->currentFrameIndex;
-      pbVar8 = (pMVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-               (pMVar3->videoStreamOffset - 0x28);
-      if ((MVar2 == 0) && (pMVar3->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
-        SVar9 = (*g_SoundPlayOneShot)
-                          (pMVar3->audioGainQ15,pMVar3->audioGainQ15,pMVar3->audioVoiceSet);
-        pMVar3->activeAudioBuffer = SVar9.eax;
+      flmHeader = movie->fileHeader;
+      previousFrameIndex = movie->currentFrameIndex;
+      streamCursor = (flmHeader->common).buildMetadata.assetRelativeAddressAnchor28 +
+               (movie->videoStreamOffset - 0x28);
+      if ((previousFrameIndex == 0) && (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
+        playResult = (*g_SoundPlayOneShot)
+                          (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
+        movie->activeAudioBuffer = playResult.eax;
       }
-      uVar6 = MVar2 + 1;
-      uVar4 = (int)pMVar3->loadedVideoEnd - (int)pbVar8;
-      if (uVar6 <= pMVar1->frameCount) {
-        if ((pMVar3->remainingVideoBytes != 0) && (uVar4 < 0x1e000)) {
-          MVar11.carry = false;
-          MVar11.eax = (dword)&pMVar3[-1].textureCommon.allocationSizeBytes;
-          return MVar11;
+      nextFrameOrLoadedSize = previousFrameIndex + 1;
+      byteCountOrStatus = (int)movie->loadedVideoEnd - (int)streamCursor;
+      if (nextFrameOrLoadedSize <= flmHeader->frameCount) {
+        if ((movie->remainingVideoBytes != 0) && (byteCountOrStatus < 0x1e000)) {
+          bufferingResult.carry = false;
+          bufferingResult.eax = (dword)&movie[-1].textureCommon.allocationSizeBytes;
+          return bufferingResult;
         }
-        dVar5 = Movie_DecodeFrame4x4Delta
-                          (pMVar1->heightPixels,pMVar1->widthPixels,pMVar3->argbPixels,pbVar8);
-        pMVar3->currentFrameIndex = uVar6;
-        pMVar3->videoStreamOffset = pMVar3->videoStreamOffset + dVar5;
-        Movie_DebugDumpFrame(pMVar3, dVar5);
-        if ((pMVar3->openFlags != 0) && (pMVar3->streamState == MOVIE_STREAM_IDLE)) {
-          uVar4 = pMVar3->videoStreamOffset;
-          uVar6 = (int)pMVar3->loadedVideoEnd - (int)pMVar3->fileHeader;
-          if ((0x1e01ff < uVar4) && (uVar4 < uVar6)) {
-            pMVar3->videoStreamOffset = pMVar3->videoStreamOffset - 0x1e0000;
-            pbVar8 = pMVar3->fileHeader[-0xf00].common.buildMetadata.assetRelativeAddressAnchor28 +
-                     (uVar4 - 0x28);
-            pMVar3->loadedVideoEnd = pMVar3->loadedVideoEnd + -0x1e0000;
-            puVar7 = (undefined4 *)(pbVar8 + 0x1e0000);
-            for (uVar4 = uVar6 - uVar4 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
-              *(undefined4 *)pbVar8 = *puVar7;
-              puVar7 = puVar7 + 1;
-              pbVar8 = pbVar8 + 4;
+        consumedBytes = Movie_DecodeFrame4x4Delta
+                          (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor);
+        movie->currentFrameIndex = nextFrameOrLoadedSize;
+        movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
+        Movie_DebugDumpFrame(movie, consumedBytes);
+        if ((movie->openFlags != 0) && (movie->streamState == MOVIE_STREAM_IDLE)) {
+          byteCountOrStatus = movie->videoStreamOffset;
+          nextFrameOrLoadedSize = (int)movie->loadedVideoEnd - (int)movie->fileHeader;
+          if ((0x1e01ff < byteCountOrStatus) && (byteCountOrStatus < nextFrameOrLoadedSize)) {
+            movie->videoStreamOffset = movie->videoStreamOffset - 0x1e0000;
+            streamCursor = movie->fileHeader[-0xf00].common.buildMetadata.assetRelativeAddressAnchor28 +
+                     (byteCountOrStatus - 0x28);
+            movie->loadedVideoEnd = movie->loadedVideoEnd + -0x1e0000;
+            copySource = (undefined4 *)(streamCursor + 0x1e0000);
+            for (byteCountOrStatus = nextFrameOrLoadedSize - byteCountOrStatus >> 2; byteCountOrStatus != 0; byteCountOrStatus = byteCountOrStatus - 1) {
+              *(undefined4 *)streamCursor = *copySource;
+              copySource = copySource + 1;
+              streamCursor = streamCursor + 4;
             }
           }
         }
-        MVar10.carry = false;
-        MVar10.eax = (dword)pMVar3;
-        return MVar10;
+        successResult.carry = false;
+        successResult.eax = (dword)movie;
+        return successResult;
       }
     }
   }
-  MVar12.carry = true;
-  MVar12.eax = uVar4;
-  return MVar12;
+  failureResult.carry = true;
+  failureResult.eax = byteCountOrStatus;
+  return failureResult;
 }
 
 
@@ -2141,19 +2141,19 @@ void __thandor_void_preserve_eax_ecx_edx
 MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 {
-  uint uVar1;
-  MovieAdvanceFrameEaxCf5 MVar2;
+  uint frameIndex;
+  MovieAdvanceFrameEaxCf5 advanceResult;
   
-  uVar1 = g_MoviePlaybackCurrentFrame;
+  frameIndex = g_MoviePlaybackCurrentFrame;
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
     do {
-      uVar1 = uVar1 + 1;
-      MVar2 = Movie_AdvanceFrame();
-      if (MVar2.carry) {
+      frameIndex = frameIndex + 1;
+      advanceResult = Movie_AdvanceFrame();
+      if (advanceResult.carry) {
         return;
       }
-    } while (uVar1 < targetFrame);
-    g_MoviePlaybackCurrentFrame = uVar1;
+    } while (frameIndex < targetFrame);
+    g_MoviePlaybackCurrentFrame = frameIndex;
     UiRootStack_InvalidateAll();
     UiFrame_Draw();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
@@ -2174,131 +2174,131 @@ Movie_DecodeFrame4x4Delta
           byte *encodedFrame)
 
 {
-  uint uVar1;
-  uint uVar2;
-  dword dVar3;
-  dword dVar4;
-  dword dVar5;
-  uint uVar6;
-  uint *puVar7;
-  dword *pdVar8;
-  uint local_28;
-  uint local_24;
-  uint local_1c;
+  uint blockWord0;
+  uint blockWord1;
+  dword pixel1;
+  dword pixel2;
+  dword pixel3;
+  uint tokenOrColorBase;
+  uint *streamCursor;
+  dword *destinationRow;
+  uint blocksLeftInRow;
+  uint blockRowsLeft;
+  uint skipRemaining;
   
-  local_24 = heightPixels >> 2;
-  local_1c = 0;
-  puVar7 = (uint *)encodedFrame;
-  local_28 = widthPixels >> 2;
+  blockRowsLeft = heightPixels >> 2;
+  skipRemaining = 0;
+  streamCursor = (uint *)encodedFrame;
+  blocksLeftInRow = widthPixels >> 2;
   do {
     do {
-      uVar1 = *puVar7;
-      if (local_1c == 0) {
-        uVar6 = uVar1 & 0x1f;
-        uVar2 = puVar7[1];
-        if (uVar6 < 0x19) {
-          if ((int)uVar2 < 0) {
-            uVar6 = (uVar2 & 0x7fe00000) >> 0x10 | *puVar7 & 0x1f;
-            uVar1 = *puVar7;
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 8 & 7) * 2];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0xb & 7) * 2];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0xe & 7) * 2];
-            *destinationArgb = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 5 & 7) * 2];
-            destinationArgb[1] = dVar3;
-            destinationArgb[2] = dVar4;
-            destinationArgb[3] = dVar5;
-            pdVar8 = destinationArgb + widthPixels;
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x14 & 7) * 2];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x17 & 7) * 2];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x1a & 7) * 2];
-            *pdVar8 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x11 & 7) * 2];
-            pdVar8[1] = dVar3;
-            pdVar8[2] = dVar4;
-            pdVar8[3] = dVar5;
-            pdVar8 = pdVar8 + widthPixels;
-            uVar2 = puVar7[1];
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 & 7) * 2];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 3 & 7) * 2];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 6 & 7) * 2];
-            *pdVar8 = *(dword *)((int)g_MovieChromaLumaToArgb[0] +
-                                (uVar1 >> 0x1a & 0xfffffff8) + uVar6 * 4);
-            pdVar8[1] = dVar3;
-            pdVar8[2] = dVar4;
-            pdVar8[3] = dVar5;
-            pdVar8 = pdVar8 + widthPixels;
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 0xc & 7) * 2];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 0xf & 7) * 2];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 0x12 & 7) * 2];
-            puVar7 = puVar7 + 2;
-            *pdVar8 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 9 & 7) * 2];
-            pdVar8[1] = dVar3;
-            pdVar8[2] = dVar4;
-            pdVar8[3] = dVar5;
-            destinationArgb = pdVar8 + widthPixels * -3;
+      blockWord0 = *streamCursor;
+      if (skipRemaining == 0) {
+        tokenOrColorBase = blockWord0 & 0x1f;
+        blockWord1 = streamCursor[1];
+        if (tokenOrColorBase < 0x19) {
+          if ((int)blockWord1 < 0) {
+            tokenOrColorBase = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
+            blockWord0 = *streamCursor;
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 8 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xb & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xe & 7) * 2];
+            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 5 & 7) * 2];
+            destinationArgb[1] = pixel1;
+            destinationArgb[2] = pixel2;
+            destinationArgb[3] = pixel3;
+            destinationRow = destinationArgb + widthPixels;
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x14 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x17 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x1a & 7) * 2];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x11 & 7) * 2];
+            destinationRow[1] = pixel1;
+            destinationRow[2] = pixel2;
+            destinationRow[3] = pixel3;
+            destinationRow = destinationRow + widthPixels;
+            blockWord1 = streamCursor[1];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 3 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 6 & 7) * 2];
+            *destinationRow = *(dword *)((int)g_MovieChromaLumaToArgb[0] +
+                                (blockWord0 >> 0x1a & 0xfffffff8) + tokenOrColorBase * 4);
+            destinationRow[1] = pixel1;
+            destinationRow[2] = pixel2;
+            destinationRow[3] = pixel3;
+            destinationRow = destinationRow + widthPixels;
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xc & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xf & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0x12 & 7) * 2];
+            streamCursor = streamCursor + 2;
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 9 & 7) * 2];
+            destinationRow[1] = pixel1;
+            destinationRow[2] = pixel2;
+            destinationRow[3] = pixel3;
+            destinationArgb = destinationRow + widthPixels * -3;
           }
           else {
-            uVar6 = (uVar2 & 0x7fe00000) >> 0x10 | *puVar7 & 0x1f;
-            uVar1 = *puVar7;
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 8 & 7)];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0xb & 7)];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0xe & 7)];
-            *destinationArgb = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 5 & 7)];
-            destinationArgb[1] = dVar3;
-            destinationArgb[2] = dVar4;
-            destinationArgb[3] = dVar5;
-            pdVar8 = destinationArgb + widthPixels;
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x14 & 7)];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x17 & 7)];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x1a & 7)];
-            *pdVar8 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x11 & 7)];
-            pdVar8[1] = dVar3;
-            pdVar8[2] = dVar4;
-            pdVar8[3] = dVar5;
-            pdVar8 = pdVar8 + widthPixels;
-            uVar2 = puVar7[1];
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 & 7)];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 3 & 7)];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 6 & 7)];
-            *pdVar8 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar1 >> 0x1d)];
-            pdVar8[1] = dVar3;
-            pdVar8[2] = dVar4;
-            pdVar8[3] = dVar5;
-            pdVar8 = pdVar8 + widthPixels;
-            dVar3 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 0xc & 7)];
-            dVar4 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 0xf & 7)];
-            dVar5 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 0x12 & 7)];
-            puVar7 = puVar7 + 2;
-            *pdVar8 = g_MovieChromaLumaToArgb[0][uVar6 + (uVar2 >> 9 & 7)];
-            pdVar8[1] = dVar3;
-            pdVar8[2] = dVar4;
-            pdVar8[3] = dVar5;
-            destinationArgb = pdVar8 + widthPixels * -3;
+            tokenOrColorBase = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
+            blockWord0 = *streamCursor;
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 8 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xb & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xe & 7)];
+            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 5 & 7)];
+            destinationArgb[1] = pixel1;
+            destinationArgb[2] = pixel2;
+            destinationArgb[3] = pixel3;
+            destinationRow = destinationArgb + widthPixels;
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x14 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x17 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x1a & 7)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x11 & 7)];
+            destinationRow[1] = pixel1;
+            destinationRow[2] = pixel2;
+            destinationRow[3] = pixel3;
+            destinationRow = destinationRow + widthPixels;
+            blockWord1 = streamCursor[1];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 3 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 6 & 7)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x1d)];
+            destinationRow[1] = pixel1;
+            destinationRow[2] = pixel2;
+            destinationRow[3] = pixel3;
+            destinationRow = destinationRow + widthPixels;
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xc & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xf & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0x12 & 7)];
+            streamCursor = streamCursor + 2;
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 9 & 7)];
+            destinationRow[1] = pixel1;
+            destinationRow[2] = pixel2;
+            destinationRow[3] = pixel3;
+            destinationArgb = destinationRow + widthPixels * -3;
           }
         }
-        else if (uVar6 == 0x19) {
-          puVar7 = (uint *)((int)puVar7 + 1);
-          local_1c = (uVar1 & 0xff) >> 5;
+        else if (tokenOrColorBase == 0x19) {
+          streamCursor = (uint *)((int)streamCursor + 1);
+          skipRemaining = (blockWord0 & 0xff) >> 5;
         }
-        else if (uVar6 < 0x1b) {
-          puVar7 = (uint *)((int)puVar7 + 2);
-          local_1c = ((uVar1 & 0xffff) >> 5) + 8;
+        else if (tokenOrColorBase < 0x1b) {
+          streamCursor = (uint *)((int)streamCursor + 2);
+          skipRemaining = ((blockWord0 & 0xffff) >> 5) + 8;
         }
         else {
-          puVar7 = puVar7 + 1;
-          local_1c = (uVar1 >> 5) + 0x808;
+          streamCursor = streamCursor + 1;
+          skipRemaining = (blockWord0 >> 5) + 0x808;
         }
       }
       else {
-        local_1c = local_1c - 1;
+        skipRemaining = skipRemaining - 1;
       }
       destinationArgb = destinationArgb + 4;
-      local_28 = local_28 - 1;
-    } while (local_28 != 0);
+      blocksLeftInRow = blocksLeftInRow - 1;
+    } while (blocksLeftInRow != 0);
     destinationArgb = destinationArgb + widthPixels * 3;
-    local_24 = local_24 - 1;
-    local_28 = widthPixels >> 2;
-  } while (local_24 != 0);
-  return (int)puVar7 + (7 - (int)encodedFrame) & 0xfffffff8;
+    blockRowsLeft = blockRowsLeft - 1;
+    blocksLeftInRow = widthPixels >> 2;
+  } while (blockRowsLeft != 0);
+  return (int)streamCursor + (7 - (int)encodedFrame) & 0xfffffff8;
 }
 
 
@@ -2310,14 +2310,14 @@ Movie_DecodeFrame4x4Delta
 uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 
 {
-  uint uVar1;
-  FixedLengthAngleEaxEdx8 FVar2;
+  uint middleChannel;
+  FixedLengthAngleEaxEdx8 angleAndLength;
   
-  uVar1 = rgb888 >> 8 & 0xff;
-  FVar2 = FixedMath_Vector2AngleAndLengthRegs
-                    (((rgb888 & 0xff) - uVar1) * 0xddb4,
-                     (uVar1 + (rgb888 & 0xff) + (rgb888 >> 0x10 & 0xff) * -2) * 0x8000);
-  return FVar2.length >> 9 & 0x7c00 | FVar2.angle >> 6 & 0x3e0;
+  middleChannel = rgb888 >> 8 & 0xff;
+  angleAndLength = FixedMath_Vector2AngleAndLengthRegs
+                    (((rgb888 & 0xff) - middleChannel) * 0xddb4,
+                     (middleChannel + (rgb888 & 0xff) + (rgb888 >> 0x10 & 0xff) * -2) * 0x8000);
+  return angleAndLength.length >> 9 & 0x7c00 | angleAndLength.angle >> 6 & 0x3e0;
 }
 
 

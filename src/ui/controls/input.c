@@ -43,12 +43,12 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
 
 {
   UiNodeBase *control;
-  char cVar1;
+  char eventKind;
   UiPixelCoordinate pointerX;
   UiPixelCoordinate pointerY;
   GraphicsCursorButtonState buttonMask;
   UiPointerWheelDelta wheelDelta;
-  GraphicsCursorInputEventRegsCf21 GVar2;
+  GraphicsCursorInputEventRegsCf21 pointerEvent;
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
@@ -56,15 +56,15 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
   }
   while( true ) {
     control = g_UiPointerCaptureTarget;
-    GVar2 = (*g_GraphicsCursorConsumeEvent)();
-    pointerX = GVar2.pointerX;
-    wheelDelta = GVar2.wheelDelta;
-    pointerY = GVar2.pointerY;
-    buttonMask = GVar2.buttonState;
-    if (GVar2.carry) break;
-    cVar1 = (char)GVar2.eventCode;
-    if (cVar1 < '\a') {
-      if (cVar1 == '\x06') {
+    pointerEvent = (*g_GraphicsCursorConsumeEvent)();
+    pointerX = pointerEvent.pointerX;
+    wheelDelta = pointerEvent.wheelDelta;
+    pointerY = pointerEvent.pointerY;
+    buttonMask = pointerEvent.buttonState;
+    if (pointerEvent.carry) break;
+    eventKind = (char)pointerEvent.eventCode;
+    if (eventKind < '\a') {
+      if (eventKind == '\x06') {
         if ((control != (UiNodeBase *)0xffffffff) &&
            (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_MIDDLE)) {
           (*control->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control);
@@ -74,12 +74,12 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
           Random_NextPrimary();
         }
       }
-      else if (cVar1 < '\x04') {
-        if (cVar1 == '\x03') {
+      else if (eventKind < '\x04') {
+        if (eventKind == '\x03') {
           UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
         }
-        else if (cVar1 < '\x02') {
-          if (cVar1 == '\x01') {
+        else if (eventKind < '\x02') {
+          if (eventKind == '\x01') {
             UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
           }
           else {
@@ -140,25 +140,25 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase 
 void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
 
 {
-  UiNodeFlags UVar1;
-  bool bVar2;
+  UiNodeFlags candidateFlags;
+  bool wrappedOnce;
   UiKeyboardEventCode keyCode;
   UiKeyboardStateMask keyboardStateMask;
   UiNodeBase *control;
-  UiNodeBase *pUVar3;
-  bool bVar4;
-  KeyboardEventEaxEdxCf9 KVar5;
+  UiNodeBase *walkNode;
+  bool passToNext;
+  KeyboardEventEaxEdxCf9 keyboardEvent;
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   do {
     do {
       while( true ) {
         do {
-          KVar5 = (*g_KeyboardReadEvent)();
+          keyboardEvent = (*g_KeyboardReadEvent)();
           control = g_UiKeyboardFocusNode;
-          keyboardStateMask = KVar5.eventData;
-          keyCode = KVar5.eventCode;
-          if (KVar5.carry) {
+          keyboardStateMask = keyboardEvent.eventData;
+          keyCode = keyboardEvent.eventCode;
+          if (keyboardEvent.carry) {
             (*g_SpinLockReleaseAndInvoke)
                       ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,
                        g_UiRuntimeFrameLock);
@@ -172,37 +172,37 @@ UiKeyboard_DispatchEventToRootFallback:
           (*g_UiRootNode->callbacks->keyboardFallbackCf)(keyboardStateMask,keyCode,g_UiRootNode);
         }
       }
-      bVar2 = false;
-      bVar4 = (*g_UiKeyboardFocusNode->vtable->keyboardEventCf)
+      wrappedOnce = false;
+      passToNext = (*g_UiKeyboardFocusNode->vtable->keyboardEventCf)
                         (keyboardStateMask,keyCode,g_UiKeyboardFocusNode);
-    } while (!bVar4);
+    } while (!passToNext);
     do {
       do {
-        pUVar3 = UiKeyboard_CheckedLink(control,"firstChild",control->firstChild);
-        if (pUVar3 == (UiNodeBase *)0xffffffff) {
+        walkNode = UiKeyboard_CheckedLink(control,"firstChild",control->firstChild);
+        if (walkNode == (UiNodeBase *)0xffffffff) {
           do {
-            pUVar3 = control;
-            control = UiKeyboard_CheckedLink(pUVar3,"nextSibling",pUVar3->nextSibling);
+            walkNode = control;
+            control = UiKeyboard_CheckedLink(walkNode,"nextSibling",walkNode->nextSibling);
             if (control != (UiNodeBase *)0xffffffff) {
-              UVar1 = control->nodeFlags;
+              candidateFlags = control->nodeFlags;
               goto joined_r0x004af45a;
             }
-            control = UiKeyboard_CheckedLink(pUVar3,"parent",pUVar3->parent);
+            control = UiKeyboard_CheckedLink(walkNode,"parent",walkNode->parent);
           } while (control != (UiNodeBase *)0xffffffff);
-          if (bVar2) goto UiKeyboard_DispatchEventToRootFallback;
-          bVar2 = true;
-          UVar1 = pUVar3->nodeFlags;
-          control = pUVar3;
+          if (wrappedOnce) goto UiKeyboard_DispatchEventToRootFallback;
+          wrappedOnce = true;
+          candidateFlags = walkNode->nodeFlags;
+          control = walkNode;
         }
         else {
-          UVar1 = pUVar3->nodeFlags;
-          control = pUVar3;
+          candidateFlags = walkNode->nodeFlags;
+          control = walkNode;
         }
 joined_r0x004af45a:;
-      } while ((UVar1 & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0);
+      } while ((candidateFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0);
       if (control == g_UiKeyboardFocusNode) goto UiKeyboard_DispatchEventToRootFallback;
     } while (((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
-            (bVar4 = (*control->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control), bVar4))
+            (passToNext = (*control->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control), passToNext))
     ;
     UiKeyboardFocus_Set(control);
   } while( true );
@@ -297,12 +297,12 @@ UiRangeSliderControl_HandleKeyboardCf
 {
   UiNodeBase *increasedSliderValue;
   UiNodeBase *adjustedSliderValue;
-  bool bVar1;
+  bool delegatedResult;
   
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
 UiRangeSliderControl_DelegateUnhandledKeyboardEvent:
-    bVar1 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
-    return bVar1;
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
+    return delegatedResult;
   }
   if (((uint)control[1].nextSibling & 1) == 0) {
     if (keyCode == 0x10014) {
@@ -354,23 +354,23 @@ UiFocusProxyControl_ForwardKeyboardEventToChildCf
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   bool childHandledEvent;
-  bool bVar1;
+  bool eventResult;
   
-  control_00 = control[1].firstChild;
+  childControl = control[1].firstChild;
   if ((keyCode & 0xffff0000) == 0) {
     if ((((uint)control[1].nextSibling & 0x8000) != 0) && ((keyCode & 0x30) != 0)) {
       return false;
     }
   }
   else if (keyCode == 0x10002) {
-    bVar1 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,0x10002,control);
-    return bVar1;
+    eventResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,0x10002,control);
+    return eventResult;
   }
-  if (control_00 != (UiNodeBase *)0x0) {
-    bVar1 = (*control_00->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control_00);
-    if (!bVar1) {
+  if (childControl != (UiNodeBase *)0x0) {
+    eventResult = (*childControl->vtable->keyboardEventCf)(keyboardStateMask,keyCode,childControl);
+    if (!eventResult) {
       UiNode_InvalidateRoot(control);
       return false;
     }
@@ -391,20 +391,20 @@ UiFocusProxyControl_ForwardPointerWheelToChildOrParent
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
   if (((uint)control[1].nextSibling & 0x400) == 0) {
-    control_00 = control[1].firstChild;
+    childControl = control[1].firstChild;
     control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x400);
-    if (control_00 != (UiNodeBase *)0x0) {
+    if (childControl != (UiNodeBase *)0x0) {
       if (control == g_UiKeyboardFocusNode) {
-        g_UiKeyboardFocusNode = control_00;
-        control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+        g_UiKeyboardFocusNode = childControl;
+        childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       }
-      (*control_00->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,control_00);
-      if (control_00 == g_UiKeyboardFocusNode) {
+      (*childControl->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,childControl);
+      if (childControl == g_UiKeyboardFocusNode) {
         g_UiKeyboardFocusNode = control;
-        control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+        childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
       }
       UiNode_InvalidateRoot(control);
     }
@@ -439,61 +439,61 @@ UiRangeSliderControl_UpdateValueFromPointer
           UiNodeBase *control)
 
 {
-  ulonglong uVar1;
-  uint uVar2;
-  UiNodeBase *pUVar3;
-  uint uVar4;
-  GraphicsTextureSizeEaxEdxCf9 GVar5;
+  ulonglong scaledOffset;
+  uint pointerOffset;
+  UiNodeBase *sliderValue;
+  uint trackLength;
+  GraphicsTextureSizeEaxEdxCf9 thumbSize;
   
   if (((uint)control[1].nextSibling & 2) != 0) {
     if (((uint)control[1].nextSibling & 1) == 0) {
-      GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
-      uVar4 = control->layoutWidth - GVar5.logicalWidthPixels;
-      if (uVar4 == 0) {
-        uVar4 = 1;
+      thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
+      trackLength = control->layoutWidth - thumbSize.logicalWidthPixels;
+      if (trackLength == 0) {
+        trackLength = 1;
       }
-      uVar2 = (pointerX - ((int)GVar5.logicalWidthPixels >> 1)) - control->left;
-      if ((int)uVar2 < 0) {
-        uVar2 = 0;
+      pointerOffset = (pointerX - ((int)thumbSize.logicalWidthPixels >> 1)) - control->left;
+      if ((int)pointerOffset < 0) {
+        pointerOffset = 0;
       }
-      uVar1 = (ulonglong)uVar2 *
+      scaledOffset = (ulonglong)pointerOffset *
               (ulonglong)(uint)((int)control[1].parent - (int)control[1].firstChild);
-      pUVar3 = (UiNodeBase *)
+      sliderValue = (UiNodeBase *)
                ((int)&(control[1].firstChild)->nextSibling +
-               (uint)(uVar4 < (uint)((int)(uVar1 % (ulonglong)uVar4) * 2)) + (int)(uVar1 / uVar4));
-      if ((int)control[1].parent < (int)pUVar3) {
-        pUVar3 = control[1].parent;
+               (uint)(trackLength < (uint)((int)(scaledOffset % (ulonglong)trackLength) * 2)) + (int)(scaledOffset / trackLength));
+      if ((int)control[1].parent < (int)sliderValue) {
+        sliderValue = control[1].parent;
       }
       if (((uint)control[1].nextSibling & 8) != 0) {
-        pUVar3 = (UiNodeBase *)((int)control[1].parent - ((int)pUVar3 - (int)control[1].firstChild))
+        sliderValue = (UiNodeBase *)((int)control[1].parent - ((int)sliderValue - (int)control[1].firstChild))
         ;
       }
-      control[1].vtable = (UiNodeVtable *)pUVar3;
+      control[1].vtable = (UiNodeVtable *)sliderValue;
       UiActionQueue_Enqueue(control[1].top,control);
       UiNode_InvalidateRoot(control);
       return;
     }
-    GVar5 = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
-    uVar4 = control->layoutHeight - GVar5.logicalHeightPixels;
-    if (uVar4 == 0) {
-      uVar4 = 1;
+    thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
+    trackLength = control->layoutHeight - thumbSize.logicalHeightPixels;
+    if (trackLength == 0) {
+      trackLength = 1;
     }
-    uVar2 = (control->bottom - pointerY) - ((int)GVar5.logicalHeightPixels >> 1);
-    if ((int)uVar2 < 0) {
-      uVar2 = 0;
+    pointerOffset = (control->bottom - pointerY) - ((int)thumbSize.logicalHeightPixels >> 1);
+    if ((int)pointerOffset < 0) {
+      pointerOffset = 0;
     }
-    uVar1 = (ulonglong)uVar2 *
+    scaledOffset = (ulonglong)pointerOffset *
             (ulonglong)(uint)((int)control[1].parent - (int)control[1].firstChild);
-    pUVar3 = (UiNodeBase *)
+    sliderValue = (UiNodeBase *)
              ((int)&(control[1].firstChild)->nextSibling +
-             (uint)(uVar4 < (uint)((int)(uVar1 % (ulonglong)uVar4) * 2)) + (int)(uVar1 / uVar4));
-    if ((int)control[1].parent < (int)pUVar3) {
-      pUVar3 = control[1].parent;
+             (uint)(trackLength < (uint)((int)(scaledOffset % (ulonglong)trackLength) * 2)) + (int)(scaledOffset / trackLength));
+    if ((int)control[1].parent < (int)sliderValue) {
+      sliderValue = control[1].parent;
     }
     if (((uint)control[1].nextSibling & 8) != 0) {
-      pUVar3 = (UiNodeBase *)((int)control[1].parent - ((int)pUVar3 - (int)control[1].firstChild));
+      sliderValue = (UiNodeBase *)((int)control[1].parent - ((int)sliderValue - (int)control[1].firstChild));
     }
-    control[1].vtable = (UiNodeVtable *)pUVar3;
+    control[1].vtable = (UiNodeVtable *)sliderValue;
     UiActionQueue_Enqueue(control[1].top,control);
     UiNode_InvalidateRoot(control);
   }
@@ -580,18 +580,18 @@ UiFocusProxyControl_ForwardNonRightPressToChild
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->nonRightPress)(wheelDelta,pointerY,pointerX,control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    (*childControl->vtable->nonRightPress)(wheelDelta,pointerY,pointerX,childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -610,18 +610,18 @@ UiFocusProxyControl_ForwardNonRightReleaseToChild
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    (*childControl->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -640,20 +640,20 @@ UiFocusProxyControl_ForwardRightPressToChild
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    if (control != control_00->parent) {
-      (*control_00->vtable->rightPress)(wheelDelta,pointerY,pointerX,control_00);
+    if (control != childControl->parent) {
+      (*childControl->vtable->rightPress)(wheelDelta,pointerY,pointerX,childControl);
     }
-    if (control_00 == g_UiKeyboardFocusNode) {
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -672,18 +672,18 @@ UiFocusProxyControl_ForwardRightReleaseToChild
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->rightRelease)(wheelDelta,pointerY,pointerX,control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    (*childControl->vtable->rightRelease)(wheelDelta,pointerY,pointerX,childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -702,18 +702,18 @@ UiFocusProxyControl_ForwardNonRightDragToChild
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    (*childControl->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -732,18 +732,18 @@ UiFocusProxyControl_ForwardRightDragToChild
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->rightDrag)(wheelDelta,pointerY,pointerX,control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    (*childControl->vtable->rightDrag)(wheelDelta,pointerY,pointerX,childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -761,24 +761,24 @@ UiFocusProxyControl_ForwardPointerMoveToChild
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
-  GraphicsCursorFrameIndex GVar1;
+  UiNodeBase *childControl;
+  GraphicsCursorFrameIndex cursorFrame;
   
-  GVar1 = 0;
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  cursorFrame = 0;
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    GVar1 = (*control_00->vtable->pointerMove)(pointerY,pointerX,control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    cursorFrame = (*childControl->vtable->pointerMove)(pointerY,pointerX,childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
-  return GVar1;
+  return cursorFrame;
 }
 
 
@@ -821,18 +821,18 @@ UiFocusProxyControl_HitTestChildProxy
 void __thandor_preserve_eax_edx UiFocusProxyControl_ForwardTickToChild(UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
-  control_00 = control[1].firstChild;
-  if (control_00 != (UiNodeBase *)0x0) {
+  childControl = control[1].firstChild;
+  if (childControl != (UiNodeBase *)0x0) {
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = control_00;
-      control_00->nodeFlags = control_00->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = childControl;
+      childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*control_00->vtable->tick)(control_00);
-    if (control_00 == g_UiKeyboardFocusNode) {
+    (*childControl->vtable->tick)(childControl);
+    if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = control;
-      control_00->nodeFlags = control_00->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     UiNode_InvalidateRoot(control);
   }
@@ -851,37 +851,37 @@ UiImageControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
 
 {
-  UiImageControl *control_00;
-  GraphicsCursorFrameIndex GVar1;
+  UiImageControl *hitControl;
+  GraphicsCursorFrameIndex cursorFrame;
   bool opaquePixelHit;
-  bool bVar2;
+  bool opaqueTestResult;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueTestResult = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
-      if (bVar2) {
+      if (opaqueTestResult) {
         return 0;
       }
     }
     else {
-      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueTestResult = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
-      if (bVar2) {
+      if (opaqueTestResult) {
         return 0;
       }
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
-      control_00 = (UiImageControl *)
+      hitControl = (UiImageControl *)
                    UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control);
-      if (control_00 != control) {
-        GVar1 = (*((control_00->selectable).base.vtable)->pointerMove)
-                          (pointerY,pointerX,(UiNodeBase *)control_00);
-        return GVar1;
+      if (hitControl != control) {
+        cursorFrame = (*((hitControl->selectable).base.vtable)->pointerMove)
+                          (pointerY,pointerX,(UiNodeBase *)hitControl);
+        return cursorFrame;
       }
       if (g_UiImageControlHoverTarget == (UiImageControl *)0x0) {
         return 8;
@@ -902,68 +902,68 @@ UiSelectionGeometryControl_DrawClipped
           )
 
 {
-  GraphicsTextureSourceAsset *pGVar1;
-  AssetRelativeOffset AVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  longlong lVar6;
-  longlong lVar7;
-  longlong lVar8;
-  char cVar9;
-  int iVar13;
-  uint uVar14;
-  uint uVar15;
-  uint uVar16;
-  int iVar17;
-  int iVar18;
-  int iVar19;
-  int iVar20;
-  byte *pbVar21;
-  bool bVar22;
+  GraphicsTextureSourceAsset *sourceTexture;
+  AssetRelativeOffset subresourceTable;
+  int sourceWidth;
+  int sourceHeight;
+  int pixelDataOffset;
+  longlong rotationProductA;
+  longlong rotationProductB;
+  longlong rotationProductC;
+  char clampedLane0;
+  int sourceColumn;
+  uint sinTermOrSourceU;
+  uint stepTermOrRowStartU;
+  uint stepTermOrRowStartV;
+  int sourceRow;
+  int clipHeightOrColumnTerm;
+  int clipWidth;
+  int texelIndexOrFraction;
+  byte *destPixel;
+  bool framebufferUnavailable;
   uint pixelStepU;
   uint pixelStepV;
-  undefined1 uVar25;
-  undefined1 uVar26;
+  undefined1 channelByte;
+  undefined1 sample3Byte2;
   PackedArgb32 sourcePixelSample3;
-  undefined4 uVar24;
+  undefined4 sample3Word;
   undefined8 mm1PackedValue0;
-  ulonglong uVar27;
-  int iVar28;
-  undefined1 uVar32;
-  undefined1 uVar33;
-  int iVar29;
+  ulonglong rowStepU;
+  int rowStepUHigh;
+  undefined1 sample2Byte1;
+  undefined1 sample2Byte2;
+  int cosTermOrRowStepV;
   PackedArgb32 sourcePixelSample2;
-  undefined4 uVar30;
+  undefined4 sample2Word;
   undefined8 mm3PackedValue0;
-  undefined8 uVar31;
-  ulonglong uVar34;
-  uint uVar35;
-  undefined1 uVar39;
-  undefined1 uVar40;
+  undefined8 row1BlendOrPacked;
+  ulonglong sourceStartU;
+  uint sourceV;
+  undefined1 sample1Byte1;
+  undefined1 sample1Byte2;
   PackedArgb32 sourcePixelSample1;
-  undefined4 uVar36;
+  undefined4 sample1Word;
   undefined8 mm5PackedValue0;
-  undefined8 uVar38;
-  ushort uVar41;
-  undefined1 uVar47;
+  undefined8 sample1WeightedOrRow0Blend;
+  ushort lane0Word;
+  undefined1 sample0Byte2;
   PackedArgb32 sourcePixelSample0;
   PackedArgb32 sourcePixelSample4;
-  ushort uVar48;
-  undefined4 uVar42;
-  undefined4 uVar43;
-  undefined1 uVar46;
-  ushort uVar49;
+  ushort lane1Word;
+  undefined4 sample0Word;
+  undefined4 sample0Load;
+  undefined1 sample0Byte1;
+  ushort lane2Word;
   undefined8 mm7PackedValue0;
-  undefined8 uVar44;
-  ushort uVar50;
-  undefined8 uVar45;
-  int iStack_2c;
-  byte *pbStack_28;
-  char cVar10;
-  char cVar11;
-  char cVar12;
-  undefined4 uVar37;
+  undefined8 row0BlendOrSample2;
+  ushort lane3Word;
+  undefined8 sample0Weighted;
+  int remainingColumns;
+  byte *destRowStart;
+  char clampedLane1;
+  char clampedLane2;
+  char clampedLane3;
+  undefined4 sample1Default;
   
   if (clipRight < (control->base).left) {
     clipRight = (control->base).left;
@@ -977,57 +977,57 @@ UiSelectionGeometryControl_DrawClipped
   if ((control->base).bottom < clipTop) {
     clipTop = (control->base).bottom;
   }
-  iVar19 = clipLeft - clipRight;
-  if (((iVar19 != 0 && clipRight <= clipLeft) &&
-      (iVar18 = clipTop - clipBottom, iVar18 != 0 && clipBottom <= clipTop)) &&
+  clipWidth = clipLeft - clipRight;
+  if (((clipWidth != 0 && clipRight <= clipLeft) &&
+      (clipHeightOrColumnTerm = clipTop - clipBottom, clipHeightOrColumnTerm != 0 && clipBottom <= clipTop)) &&
      (control->textureSource != (GraphicsTextureSourceAsset *)0x0)) {
-    lVar6 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
-    iVar29 = -((int)((ulonglong)lVar6 >> 0x20) << 4 | (uint)lVar6 >> 0x1c);
-    lVar6 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
-    uVar14 = (int)((ulonglong)lVar6 >> 0x20) << 4 | (uint)lVar6 >> 0x1c;
-    lVar6 = (longlong)(int)uVar14 * 0x1c6e9c;
-    lVar7 = (longlong)iVar29 * -0x20c8cc;
-    uVar15 = (int)((ulonglong)lVar7 >> 0x20) << 0xb | (uint)lVar7 >> 0x15;
-    lVar7 = (longlong)iVar29 * 0x1c6e9c;
-    lVar8 = (longlong)(int)-uVar14 * -0x20c8cc;
-    uVar16 = (int)((ulonglong)lVar8 >> 0x20) << 0xb | (uint)lVar8 >> 0x15;
-    uVar14 = ((int)((ulonglong)lVar7 >> 0x20) << 0xc | (uint)lVar7 >> 0x14) - uVar16;
-    iVar29 = uVar16 * 2;
-    uVar27 = (ulonglong)uVar14;
-    uVar34 = (ulonglong)
+    rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
+    cosTermOrRowStepV = -((int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c);
+    rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
+    sinTermOrSourceU = (int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c;
+    rotationProductA = (longlong)(int)sinTermOrSourceU * 0x1c6e9c;
+    rotationProductB = (longlong)cosTermOrRowStepV * -0x20c8cc;
+    stepTermOrRowStartU = (int)((ulonglong)rotationProductB >> 0x20) << 0xb | (uint)rotationProductB >> 0x15;
+    rotationProductB = (longlong)cosTermOrRowStepV * 0x1c6e9c;
+    rotationProductC = (longlong)(int)-sinTermOrSourceU * -0x20c8cc;
+    stepTermOrRowStartV = (int)((ulonglong)rotationProductC >> 0x20) << 0xb | (uint)rotationProductC >> 0x15;
+    sinTermOrSourceU = ((int)((ulonglong)rotationProductB >> 0x20) << 0xc | (uint)rotationProductB >> 0x14) - stepTermOrRowStartV;
+    cosTermOrRowStepV = stepTermOrRowStartV * 2;
+    rowStepU = (ulonglong)sinTermOrSourceU;
+    sourceStartU = (ulonglong)
              (control->sourceOriginYQ12 -
-             (uVar14 * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
-             (((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar15) *
+             (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
+             (((int)((ulonglong)rotationProductA >> 0x20) << 0xc | (uint)rotationProductA >> 0x14) - stepTermOrRowStartU) *
              (((control->base).left + (control->base).right >> 1) - clipRight)));
     /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
-    pixelStepU = ((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar15;
-    pixelStepV = uVar15 * 2;
-    iVar20 = control->sourceOriginXQ12 -
-             (iVar29 * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
-             uVar15 * 2 * (((control->base).left + (control->base).right >> 1) - clipRight));
-    pGVar1 = control->textureSource;
-    AVar2 = (pGVar1->tableDescriptor).subresourceTableOffset;
-    if (*(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0x20)) < 0)
+    pixelStepU = ((int)((ulonglong)rotationProductA >> 0x20) << 0xc | (uint)rotationProductA >> 0x14) - stepTermOrRowStartU;
+    pixelStepV = stepTermOrRowStartU * 2;
+    texelIndexOrFraction = control->sourceOriginXQ12 -
+             (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
+             stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipRight));
+    sourceTexture = control->textureSource;
+    subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
+    if (*(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x20)) < 0)
     {
-      iVar3 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0x10))
+      sourceWidth = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x10))
       ;
-      iVar4 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0xc));
-      iVar5 = *(int *)((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 + (AVar2 - 0x1c))
+      sourceHeight = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0xc));
+      pixelDataOffset = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x1c))
       ;
-      bVar22 = (*g_GraphicsFramebufferBeginAccess)();
-      if (!bVar22) {
-        iVar28 = (int)(uVar27 >> 0x20);
-        uVar14 = (uint)uVar34;
-        iVar13 = (int)(uVar34 >> 0x20);
-        clipTop = iVar18;
-        iStack_2c = iVar19;
+      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      if (!framebufferUnavailable) {
+        rowStepUHigh = (int)(rowStepU >> 0x20);
+        sinTermOrSourceU = (uint)sourceStartU;
+        sourceColumn = (int)(sourceStartU >> 0x20);
+        clipTop = clipHeightOrColumnTerm;
+        remainingColumns = clipWidth;
         if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-          pbVar21 = g_FramebufferAccess->pixels +
+          destPixel = g_FramebufferAccess->pixels +
                     g_FramebufferRowStrideBytes * clipBottom + clipRight * 2;
-          uVar35 = iVar13 + iVar20;
-          uVar15 = uVar14;
-          uVar16 = uVar35;
-          pbStack_28 = pbVar21;
+          sourceV = sourceColumn + texelIndexOrFraction;
+          stepTermOrRowStartU = sinTermOrSourceU;
+          stepTermOrRowStartV = sourceV;
+          destRowStart = destPixel;
           do {
             do {
               sourcePixelSample0 = 0;
@@ -1037,92 +1037,92 @@ UiSelectionGeometryControl_DrawClipped
               sourcePixelSample2 = 0;
               sourcePixelSample2 = 0;
               sourcePixelSample3 = 0;
-              iVar17 = (int)uVar35 >> 0xc;
-              iVar13 = (int)uVar14 >> 0xc;
-              iVar20 = iVar3 * iVar17 + iVar13;
-              iVar18 = iVar13 + 1;
-              if (iVar17 < iVar4) {
+              sourceRow = (int)sourceV >> 0xc;
+              sourceColumn = (int)sinTermOrSourceU >> 0xc;
+              texelIndexOrFraction = sourceWidth * sourceRow + sourceColumn;
+              clipHeightOrColumnTerm = sourceColumn + 1;
+              if (sourceRow < sourceHeight) {
                 sourcePixelSample0 = sourcePixelSample0;
                 sourcePixelSample1 = sourcePixelSample1;
-                if ((-1 < iVar17) && (iVar13 < iVar3)) {
+                if ((-1 < sourceRow) && (sourceColumn < sourceWidth)) {
                   sourcePixelSample4 = sourcePixelSample0;
-                  if (-1 < iVar13) {
+                  if (-1 < sourceColumn) {
                     sourcePixelSample4 =
                          *(PackedArgb32 *)
-                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          iVar20 * 4 + iVar5 + -0x28);
+                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          texelIndexOrFraction * 4 + pixelDataOffset + -0x28);
                   }
                   sourcePixelSample0 = sourcePixelSample4;
-                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
+                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
-                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          iVar20 * 4 + iVar5 + -0x24);
+                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          texelIndexOrFraction * 4 + pixelDataOffset + -0x24);
                   }
                 }
-                if (((-1 < iVar17 + 1) && (iVar17 + 1 < iVar4)) && (iVar13 < iVar3)) {
+                if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
                   sourcePixelSample2 = sourcePixelSample2;
-                  if (-1 < iVar13) {
+                  if (-1 < sourceColumn) {
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
-                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          (iVar20 + iVar3) * 4 + iVar5 + -0x28);
+                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x28);
                   }
-                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
+                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
-                          ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          (iVar20 + iVar3) * 4 + iVar5 + -0x24);
+                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x24);
                   }
                 }
               }
-              uVar25 = (undefined1)(sourcePixelSample0 >> 0x18);
-              uVar41 = CONCAT11(uVar25,uVar25);
-              uVar47 = (undefined1)(sourcePixelSample0 >> 0x10);
-              uVar46 = (undefined1)(sourcePixelSample0 >> 8);
-              uVar25 = (undefined1)(sourcePixelSample1 >> 0x18);
-              uVar48 = CONCAT11(uVar25,uVar25);
-              uVar40 = (undefined1)(sourcePixelSample1 >> 0x10);
-              uVar39 = (undefined1)(sourcePixelSample1 >> 8);
-              uVar25 = (undefined1)(sourcePixelSample2 >> 0x18);
-              uVar49 = CONCAT11(uVar25,uVar25);
-              uVar33 = (undefined1)(sourcePixelSample2 >> 0x10);
-              uVar32 = (undefined1)(sourcePixelSample2 >> 8);
-              uVar25 = (undefined1)(sourcePixelSample3 >> 0x18);
-              uVar50 = CONCAT11(uVar25,uVar25);
-              uVar26 = (undefined1)(sourcePixelSample3 >> 0x10);
-              uVar25 = (undefined1)(sourcePixelSample3 >> 8);
-              iVar20 = (int)(uVar35 & 0xfff) >> 4;
-              iVar18 = (int)(uVar14 & 0xfff) >> 4;
+              channelByte = (undefined1)(sourcePixelSample0 >> 0x18);
+              lane0Word = CONCAT11(channelByte,channelByte);
+              sample0Byte2 = (undefined1)(sourcePixelSample0 >> 0x10);
+              sample0Byte1 = (undefined1)(sourcePixelSample0 >> 8);
+              channelByte = (undefined1)(sourcePixelSample1 >> 0x18);
+              lane1Word = CONCAT11(channelByte,channelByte);
+              sample1Byte2 = (undefined1)(sourcePixelSample1 >> 0x10);
+              sample1Byte1 = (undefined1)(sourcePixelSample1 >> 8);
+              channelByte = (undefined1)(sourcePixelSample2 >> 0x18);
+              lane2Word = CONCAT11(channelByte,channelByte);
+              sample2Byte2 = (undefined1)(sourcePixelSample2 >> 0x10);
+              sample2Byte1 = (undefined1)(sourcePixelSample2 >> 8);
+              channelByte = (undefined1)(sourcePixelSample3 >> 0x18);
+              lane3Word = CONCAT11(channelByte,channelByte);
+              sample3Byte2 = (undefined1)(sourcePixelSample3 >> 0x10);
+              channelByte = (undefined1)(sourcePixelSample3 >> 8);
+              texelIndexOrFraction = (int)(sourceV & 0xfff) >> 4;
+              clipHeightOrColumnTerm = (int)(sinTermOrSourceU & 0xfff) >> 4;
               mm7PackedValue0 =
-                   pmulhw(CONCAT26(uVar41 >> 2,
-                                   CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,uVar47),uVar47) >> 2,
-                                            CONCAT22(CONCAT11(uVar46,uVar46) >> 2,
+                   pmulhw(CONCAT26(lane0Word >> 2,
+                                   CONCAT24((ushort)CONCAT31(CONCAT21(lane0Word,sample0Byte2),sample0Byte2) >> 2,
+                                            CONCAT22(CONCAT11(sample0Byte1,sample0Byte1) >> 2,
                                                      CONCAT11((char)sourcePixelSample0,
                                                               (char)sourcePixelSample0) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
+                          *(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               mm5PackedValue0 =
-                   pmulhw(CONCAT26(uVar48 >> 2,
-                                   CONCAT24((ushort)CONCAT31(CONCAT21(uVar48,uVar40),uVar40) >> 2,
-                                            CONCAT22(CONCAT11(uVar39,uVar39) >> 2,
+                   pmulhw(CONCAT26(lane1Word >> 2,
+                                   CONCAT24((ushort)CONCAT31(CONCAT21(lane1Word,sample1Byte2),sample1Byte2) >> 2,
+                                            CONCAT22(CONCAT11(sample1Byte1,sample1Byte1) >> 2,
                                                      CONCAT11((char)sourcePixelSample1,
                                                               (char)sourcePixelSample1) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
+                          *(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               mm3PackedValue0 =
-                   pmulhw(CONCAT26(uVar49 >> 2,
-                                   CONCAT24((ushort)CONCAT31(CONCAT21(uVar49,uVar33),uVar33) >> 2,
-                                            CONCAT22(CONCAT11(uVar32,uVar32) >> 2,
+                   pmulhw(CONCAT26(lane2Word >> 2,
+                                   CONCAT24((ushort)CONCAT31(CONCAT21(lane2Word,sample2Byte2),sample2Byte2) >> 2,
+                                            CONCAT22(CONCAT11(sample2Byte1,sample2Byte1) >> 2,
                                                      CONCAT11((char)sourcePixelSample2,
                                                               (char)sourcePixelSample2) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
+                          *(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               mm1PackedValue0 =
-                   pmulhw(CONCAT26(uVar50 >> 2,
-                                   CONCAT24((ushort)CONCAT31(CONCAT21(uVar50,uVar26),uVar26) >> 2,
-                                            CONCAT22(CONCAT11(uVar25,uVar25) >> 2,
+                   pmulhw(CONCAT26(lane3Word >> 2,
+                                   CONCAT24((ushort)CONCAT31(CONCAT21(lane3Word,sample3Byte2),sample3Byte2) >> 2,
+                                            CONCAT22(CONCAT11(channelByte,channelByte) >> 2,
                                                      CONCAT11((char)sourcePixelSample3,
                                                               (char)sourcePixelSample3) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
-              uVar44 = pmulhw(CONCAT26((short)((ulonglong)mm7PackedValue0 >> 0x30) +
+                          *(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
+              row0BlendOrSample2 = pmulhw(CONCAT26((short)((ulonglong)mm7PackedValue0 >> 0x30) +
                                        (short)((ulonglong)mm5PackedValue0 >> 0x30),
                                        CONCAT24((short)((ulonglong)mm7PackedValue0 >> 0x20) +
                                                 (short)((ulonglong)mm5PackedValue0 >> 0x20),
@@ -1131,8 +1131,8 @@ UiSelectionGeometryControl_DrawClipped
                                                                   0x10),
                                                          (short)mm7PackedValue0 +
                                                          (short)mm5PackedValue0))),
-                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
-              uVar31 = pmulhw(CONCAT26((short)((ulonglong)mm3PackedValue0 >> 0x30) +
+                              *(undefined8 *)(texelIndexOrFraction * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
+              row1BlendOrPacked = pmulhw(CONCAT26((short)((ulonglong)mm3PackedValue0 >> 0x30) +
                                        (short)((ulonglong)mm1PackedValue0 >> 0x30),
                                        CONCAT24((short)((ulonglong)mm3PackedValue0 >> 0x20) +
                                                 (short)((ulonglong)mm1PackedValue0 >> 0x20),
@@ -1141,173 +1141,173 @@ UiSelectionGeometryControl_DrawClipped
                                                                   0x10),
                                                          (short)mm3PackedValue0 +
                                                          (short)mm1PackedValue0))),
-                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
-              uVar41 = (ushort)((short)uVar44 + (short)uVar31) >> 2;
-              uVar48 = (ushort)((short)((ulonglong)uVar44 >> 0x10) +
-                               (short)((ulonglong)uVar31 >> 0x10)) >> 2;
-              uVar49 = (ushort)((short)((ulonglong)uVar44 >> 0x20) +
-                               (short)((ulonglong)uVar31 >> 0x20)) >> 2;
-              uVar50 = (ushort)((short)((ulonglong)uVar44 >> 0x30) +
-                               (short)((ulonglong)uVar31 >> 0x30)) >> 2;
-              cVar9 = (uVar41 != 0) * (uVar41 < 0x100) * (char)uVar41 - (0xff < uVar41);
-              cVar10 = (uVar48 != 0) * (uVar48 < 0x100) * (char)uVar48 - (0xff < uVar48);
-              cVar11 = (uVar49 != 0) * (uVar49 < 0x100) * (char)uVar49 - (0xff < uVar49);
-              cVar12 = (uVar50 != 0) * (uVar50 < 0x100) * (char)uVar50 - (0xff < uVar50);
-              uVar41 = CONCAT11(cVar12,cVar12);
-              uVar31 = pmaddwd(CONCAT26(uVar41 >> 4,
-                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,cVar11),cVar11) >>
-                                                 4,CONCAT22(CONCAT11(cVar10,cVar10) >> 4,
-                                                            CONCAT11(cVar9,cVar9) >> 4))) &
+                              *(undefined8 *)(texelIndexOrFraction * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
+              lane0Word = (ushort)((short)row0BlendOrSample2 + (short)row1BlendOrPacked) >> 2;
+              lane1Word = (ushort)((short)((ulonglong)row0BlendOrSample2 >> 0x10) +
+                               (short)((ulonglong)row1BlendOrPacked >> 0x10)) >> 2;
+              lane2Word = (ushort)((short)((ulonglong)row0BlendOrSample2 >> 0x20) +
+                               (short)((ulonglong)row1BlendOrPacked >> 0x20)) >> 2;
+              lane3Word = (ushort)((short)((ulonglong)row0BlendOrSample2 >> 0x30) +
+                               (short)((ulonglong)row1BlendOrPacked >> 0x30)) >> 2;
+              clampedLane0 = (lane0Word != 0) * (lane0Word < 0x100) * (char)lane0Word - (0xff < lane0Word);
+              clampedLane1 = (lane1Word != 0) * (lane1Word < 0x100) * (char)lane1Word - (0xff < lane1Word);
+              clampedLane2 = (lane2Word != 0) * (lane2Word < 0x100) * (char)lane2Word - (0xff < lane2Word);
+              clampedLane3 = (lane3Word != 0) * (lane3Word < 0x100) * (char)lane3Word - (0xff < lane3Word);
+              lane0Word = CONCAT11(clampedLane3,clampedLane3);
+              row1BlendOrPacked = pmaddwd(CONCAT26(lane0Word >> 4,
+                                        CONCAT24((ushort)CONCAT31(CONCAT21(lane0Word,clampedLane2),clampedLane2) >>
+                                                 4,CONCAT22(CONCAT11(clampedLane1,clampedLane1) >> 4,
+                                                            CONCAT11(clampedLane0,clampedLane0) >> 4))) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
-              *(short *)pbVar21 =
-                   (short)((ulonglong)uVar31 >> 0x28) + (short)((ulonglong)uVar31 >> 8);
-              uVar14 = uVar14 + (int)pixelStepU;
-              uVar35 = uVar35 + pixelStepV;
-              pbVar21 = pbVar21 + 2;
-              iStack_2c = iStack_2c + -1;
-            } while (iStack_2c != 0);
-            uVar14 = uVar15 + (int)uVar27;
-            uVar35 = uVar16 + iVar28 + iVar29;
-            pbVar21 = pbStack_28 + g_FramebufferRowStrideBytes;
+              *(short *)destPixel =
+                   (short)((ulonglong)row1BlendOrPacked >> 0x28) + (short)((ulonglong)row1BlendOrPacked >> 8);
+              sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
+              sourceV = sourceV + pixelStepV;
+              destPixel = destPixel + 2;
+              remainingColumns = remainingColumns + -1;
+            } while (remainingColumns != 0);
+            sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
+            sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
+            destPixel = destRowStart + g_FramebufferRowStrideBytes;
             clipTop = clipTop + -1;
-            uVar15 = uVar14;
-            uVar16 = uVar35;
-            iStack_2c = iVar19;
-            pbStack_28 = pbVar21;
+            stepTermOrRowStartU = sinTermOrSourceU;
+            stepTermOrRowStartV = sourceV;
+            remainingColumns = clipWidth;
+            destRowStart = destPixel;
           } while (clipTop != 0);
         }
         else {
-          pbVar21 = g_FramebufferAccess->pixels +
+          destPixel = g_FramebufferAccess->pixels +
                     g_FramebufferRowStrideBytes * clipBottom + clipRight * 4;
-          uVar35 = iVar13 + iVar20;
-          uVar15 = uVar14;
-          uVar16 = uVar35;
-          pbStack_28 = pbVar21;
+          sourceV = sourceColumn + texelIndexOrFraction;
+          stepTermOrRowStartU = sinTermOrSourceU;
+          stepTermOrRowStartV = sourceV;
+          destRowStart = destPixel;
           do {
             do {
-              uVar43 = 0;
-              uVar42 = 0;
-              uVar37 = 0;
-              uVar36 = 0;
-              uVar30 = 0;
-              uVar24 = 0;
-              iVar17 = (int)uVar35 >> 0xc;
-              iVar13 = (int)uVar14 >> 0xc;
-              iVar20 = iVar3 * iVar17 + iVar13;
-              iVar18 = iVar13 + 1;
-              if (iVar17 < iVar4) {
-                uVar42 = uVar43;
-                uVar36 = uVar37;
-                if ((-1 < iVar17) && (iVar13 < iVar3)) {
-                  if (-1 < iVar13) {
-                    uVar43 = *(undefined4 *)
-                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              iVar20 * 4 + iVar5 + -0x28);
+              sample0Load = 0;
+              sample0Word = 0;
+              sample1Default = 0;
+              sample1Word = 0;
+              sample2Word = 0;
+              sample3Word = 0;
+              sourceRow = (int)sourceV >> 0xc;
+              sourceColumn = (int)sinTermOrSourceU >> 0xc;
+              texelIndexOrFraction = sourceWidth * sourceRow + sourceColumn;
+              clipHeightOrColumnTerm = sourceColumn + 1;
+              if (sourceRow < sourceHeight) {
+                sample0Word = sample0Load;
+                sample1Word = sample1Default;
+                if ((-1 < sourceRow) && (sourceColumn < sourceWidth)) {
+                  if (-1 < sourceColumn) {
+                    sample0Load = *(undefined4 *)
+                              ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              texelIndexOrFraction * 4 + pixelDataOffset + -0x28);
                   }
-                  uVar42 = uVar43;
-                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
-                    uVar36 = *(undefined4 *)
-                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              iVar20 * 4 + iVar5 + -0x24);
+                  sample0Word = sample0Load;
+                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
+                    sample1Word = *(undefined4 *)
+                              ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              texelIndexOrFraction * 4 + pixelDataOffset + -0x24);
                   }
                 }
-                if (((-1 < iVar17 + 1) && (iVar17 + 1 < iVar4)) && (iVar13 < iVar3)) {
-                  uVar30 = 0;
-                  if (-1 < iVar13) {
-                    uVar30 = *(undefined4 *)
-                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (iVar20 + iVar3) * 4 + iVar5 + -0x28);
+                if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
+                  sample2Word = 0;
+                  if (-1 < sourceColumn) {
+                    sample2Word = *(undefined4 *)
+                              ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x28);
                   }
-                  if ((-1 < iVar18) && (iVar18 < iVar3)) {
-                    uVar24 = *(undefined4 *)
-                              ((pGVar1->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (iVar20 + iVar3) * 4 + iVar5 + -0x24);
+                  if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
+                    sample3Word = *(undefined4 *)
+                              ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x24);
                   }
                 }
               }
-              uVar25 = (undefined1)((uint)uVar42 >> 0x18);
-              uVar41 = CONCAT11(uVar25,uVar25);
-              uVar47 = (undefined1)((uint)uVar42 >> 0x10);
-              uVar46 = (undefined1)((uint)uVar42 >> 8);
-              uVar25 = (undefined1)((uint)uVar36 >> 0x18);
-              uVar48 = CONCAT11(uVar25,uVar25);
-              uVar40 = (undefined1)((uint)uVar36 >> 0x10);
-              uVar39 = (undefined1)((uint)uVar36 >> 8);
-              uVar25 = (undefined1)((uint)uVar30 >> 0x18);
-              uVar49 = CONCAT11(uVar25,uVar25);
-              uVar33 = (undefined1)((uint)uVar30 >> 0x10);
-              uVar32 = (undefined1)((uint)uVar30 >> 8);
-              uVar25 = (undefined1)((uint)uVar24 >> 0x18);
-              uVar50 = CONCAT11(uVar25,uVar25);
-              uVar26 = (undefined1)((uint)uVar24 >> 0x10);
-              uVar25 = (undefined1)((uint)uVar24 >> 8);
-              iVar20 = (int)(uVar35 & 0xfff) >> 4;
-              iVar18 = (int)(uVar14 & 0xfff) >> 4;
-              uVar45 = pmulhw(CONCAT26(uVar41 >> 2,
-                                       CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,uVar47),uVar47) >>
-                                                2,CONCAT22(CONCAT11(uVar46,uVar46) >> 2,
-                                                           CONCAT11((char)uVar42,(char)uVar42) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
-              uVar38 = pmulhw(CONCAT26(uVar48 >> 2,
-                                       CONCAT24((ushort)CONCAT31(CONCAT21(uVar48,uVar40),uVar40) >>
-                                                2,CONCAT22(CONCAT11(uVar39,uVar39) >> 2,
-                                                           CONCAT11((char)uVar36,(char)uVar36) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
-              uVar44 = pmulhw(CONCAT26(uVar49 >> 2,
-                                       CONCAT24((ushort)CONCAT31(CONCAT21(uVar49,uVar33),uVar33) >>
-                                                2,CONCAT22(CONCAT11(uVar32,uVar32) >> 2,
-                                                           CONCAT11((char)uVar30,(char)uVar30) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
-              uVar31 = pmulhw(CONCAT26(uVar50 >> 2,
-                                       CONCAT24((ushort)CONCAT31(CONCAT21(uVar50,uVar26),uVar26) >>
-                                                2,CONCAT22(CONCAT11(uVar25,uVar25) >> 2,
-                                                           CONCAT11((char)uVar24,(char)uVar24) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
-              uVar38 = pmulhw(CONCAT26((short)((ulonglong)uVar45 >> 0x30) +
-                                       (short)((ulonglong)uVar38 >> 0x30),
-                                       CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
-                                                (short)((ulonglong)uVar38 >> 0x20),
-                                                CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
-                                                         (short)((ulonglong)uVar38 >> 0x10),
-                                                         (short)uVar45 + (short)uVar38))),
-                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
-              uVar31 = pmulhw(CONCAT26((short)((ulonglong)uVar44 >> 0x30) +
-                                       (short)((ulonglong)uVar31 >> 0x30),
-                                       CONCAT24((short)((ulonglong)uVar44 >> 0x20) +
-                                                (short)((ulonglong)uVar31 >> 0x20),
-                                                CONCAT22((short)((ulonglong)uVar44 >> 0x10) +
-                                                         (short)((ulonglong)uVar31 >> 0x10),
-                                                         (short)uVar44 + (short)uVar31))),
-                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
-              uVar41 = (ushort)((short)uVar38 + (short)uVar31) >> 2;
-              uVar48 = (ushort)((short)((ulonglong)uVar38 >> 0x10) +
-                               (short)((ulonglong)uVar31 >> 0x10)) >> 2;
-              uVar49 = (ushort)((short)((ulonglong)uVar38 >> 0x20) +
-                               (short)((ulonglong)uVar31 >> 0x20)) >> 2;
-              uVar50 = (ushort)((short)((ulonglong)uVar38 >> 0x30) +
-                               (short)((ulonglong)uVar31 >> 0x30)) >> 2;
-              *(uint *)pbVar21 =
-                   CONCAT13((uVar50 != 0) * (uVar50 < 0x100) * (char)uVar50 - (0xff < uVar50),
-                            CONCAT12((uVar49 != 0) * (uVar49 < 0x100) * (char)uVar49 -
-                                     (0xff < uVar49),
-                                     CONCAT11((uVar48 != 0) * (uVar48 < 0x100) * (char)uVar48 -
-                                              (0xff < uVar48),
-                                              (uVar41 != 0) * (uVar41 < 0x100) * (char)uVar41 -
-                                              (0xff < uVar41))));
-              uVar14 = uVar14 + (int)pixelStepU;
-              uVar35 = uVar35 + pixelStepV;
-              pbVar21 = pbVar21 + 4;
-              iStack_2c = iStack_2c + -1;
-            } while (iStack_2c != 0);
-            uVar14 = uVar15 + (int)uVar27;
-            uVar35 = uVar16 + iVar28 + iVar29;
-            pbVar21 = pbStack_28 + g_FramebufferRowStrideBytes;
+              channelByte = (undefined1)((uint)sample0Word >> 0x18);
+              lane0Word = CONCAT11(channelByte,channelByte);
+              sample0Byte2 = (undefined1)((uint)sample0Word >> 0x10);
+              sample0Byte1 = (undefined1)((uint)sample0Word >> 8);
+              channelByte = (undefined1)((uint)sample1Word >> 0x18);
+              lane1Word = CONCAT11(channelByte,channelByte);
+              sample1Byte2 = (undefined1)((uint)sample1Word >> 0x10);
+              sample1Byte1 = (undefined1)((uint)sample1Word >> 8);
+              channelByte = (undefined1)((uint)sample2Word >> 0x18);
+              lane2Word = CONCAT11(channelByte,channelByte);
+              sample2Byte2 = (undefined1)((uint)sample2Word >> 0x10);
+              sample2Byte1 = (undefined1)((uint)sample2Word >> 8);
+              channelByte = (undefined1)((uint)sample3Word >> 0x18);
+              lane3Word = CONCAT11(channelByte,channelByte);
+              sample3Byte2 = (undefined1)((uint)sample3Word >> 0x10);
+              channelByte = (undefined1)((uint)sample3Word >> 8);
+              texelIndexOrFraction = (int)(sourceV & 0xfff) >> 4;
+              clipHeightOrColumnTerm = (int)(sinTermOrSourceU & 0xfff) >> 4;
+              sample0Weighted = pmulhw(CONCAT26(lane0Word >> 2,
+                                       CONCAT24((ushort)CONCAT31(CONCAT21(lane0Word,sample0Byte2),sample0Byte2) >>
+                                                2,CONCAT22(CONCAT11(sample0Byte1,sample0Byte1) >> 2,
+                                                           CONCAT11((char)sample0Word,(char)sample0Word) >> 2)
+                                               )),*(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
+              sample1WeightedOrRow0Blend = pmulhw(CONCAT26(lane1Word >> 2,
+                                       CONCAT24((ushort)CONCAT31(CONCAT21(lane1Word,sample1Byte2),sample1Byte2) >>
+                                                2,CONCAT22(CONCAT11(sample1Byte1,sample1Byte1) >> 2,
+                                                           CONCAT11((char)sample1Word,(char)sample1Word) >> 2)
+                                               )),*(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
+              row0BlendOrSample2 = pmulhw(CONCAT26(lane2Word >> 2,
+                                       CONCAT24((ushort)CONCAT31(CONCAT21(lane2Word,sample2Byte2),sample2Byte2) >>
+                                                2,CONCAT22(CONCAT11(sample2Byte1,sample2Byte1) >> 2,
+                                                           CONCAT11((char)sample2Word,(char)sample2Word) >> 2)
+                                               )),*(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
+              row1BlendOrPacked = pmulhw(CONCAT26(lane3Word >> 2,
+                                       CONCAT24((ushort)CONCAT31(CONCAT21(lane3Word,sample3Byte2),sample3Byte2) >>
+                                                2,CONCAT22(CONCAT11(channelByte,channelByte) >> 2,
+                                                           CONCAT11((char)sample3Word,(char)sample3Word) >> 2)
+                                               )),*(undefined8 *)(clipHeightOrColumnTerm * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
+              sample1WeightedOrRow0Blend = pmulhw(CONCAT26((short)((ulonglong)sample0Weighted >> 0x30) +
+                                       (short)((ulonglong)sample1WeightedOrRow0Blend >> 0x30),
+                                       CONCAT24((short)((ulonglong)sample0Weighted >> 0x20) +
+                                                (short)((ulonglong)sample1WeightedOrRow0Blend >> 0x20),
+                                                CONCAT22((short)((ulonglong)sample0Weighted >> 0x10) +
+                                                         (short)((ulonglong)sample1WeightedOrRow0Blend >> 0x10),
+                                                         (short)sample0Weighted + (short)sample1WeightedOrRow0Blend))),
+                              *(undefined8 *)(texelIndexOrFraction * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
+              row1BlendOrPacked = pmulhw(CONCAT26((short)((ulonglong)row0BlendOrSample2 >> 0x30) +
+                                       (short)((ulonglong)row1BlendOrPacked >> 0x30),
+                                       CONCAT24((short)((ulonglong)row0BlendOrSample2 >> 0x20) +
+                                                (short)((ulonglong)row1BlendOrPacked >> 0x20),
+                                                CONCAT22((short)((ulonglong)row0BlendOrSample2 >> 0x10) +
+                                                         (short)((ulonglong)row1BlendOrPacked >> 0x10),
+                                                         (short)row0BlendOrSample2 + (short)row1BlendOrPacked))),
+                              *(undefined8 *)(texelIndexOrFraction * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
+              lane0Word = (ushort)((short)sample1WeightedOrRow0Blend + (short)row1BlendOrPacked) >> 2;
+              lane1Word = (ushort)((short)((ulonglong)sample1WeightedOrRow0Blend >> 0x10) +
+                               (short)((ulonglong)row1BlendOrPacked >> 0x10)) >> 2;
+              lane2Word = (ushort)((short)((ulonglong)sample1WeightedOrRow0Blend >> 0x20) +
+                               (short)((ulonglong)row1BlendOrPacked >> 0x20)) >> 2;
+              lane3Word = (ushort)((short)((ulonglong)sample1WeightedOrRow0Blend >> 0x30) +
+                               (short)((ulonglong)row1BlendOrPacked >> 0x30)) >> 2;
+              *(uint *)destPixel =
+                   CONCAT13((lane3Word != 0) * (lane3Word < 0x100) * (char)lane3Word - (0xff < lane3Word),
+                            CONCAT12((lane2Word != 0) * (lane2Word < 0x100) * (char)lane2Word -
+                                     (0xff < lane2Word),
+                                     CONCAT11((lane1Word != 0) * (lane1Word < 0x100) * (char)lane1Word -
+                                              (0xff < lane1Word),
+                                              (lane0Word != 0) * (lane0Word < 0x100) * (char)lane0Word -
+                                              (0xff < lane0Word))));
+              sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
+              sourceV = sourceV + pixelStepV;
+              destPixel = destPixel + 4;
+              remainingColumns = remainingColumns + -1;
+            } while (remainingColumns != 0);
+            sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
+            sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
+            destPixel = destRowStart + g_FramebufferRowStrideBytes;
             clipTop = clipTop + -1;
-            uVar15 = uVar14;
-            uVar16 = uVar35;
-            iStack_2c = iVar19;
-            pbStack_28 = pbVar21;
+            stepTermOrRowStartU = sinTermOrSourceU;
+            stepTermOrRowStartV = sourceV;
+            remainingColumns = clipWidth;
+            destRowStart = destPixel;
           } while (clipTop != 0);
         }
         (*g_GraphicsFramebufferEndAccess)();
@@ -1329,39 +1329,39 @@ UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           UiSelectionGeometryControl *control)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  longlong lVar5;
-  longlong lVar6;
-  longlong lVar7;
-  uint uVar8;
-  uint uVar9;
+  int cosTermOrBoundsLeft;
+  int boundsRight;
+  int boundsTop;
+  int boundsBottom;
+  longlong rotationProductA;
+  longlong rotationProductB;
+  longlong rotationProductC;
+  uint sinTermOrStepY;
+  uint stepTermX;
   
-  lVar5 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
-  iVar1 = -((int)((ulonglong)lVar5 >> 0x20) << 4 | (uint)lVar5 >> 0x1c);
-  lVar5 = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
-  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 4 | (uint)lVar5 >> 0x1c;
-  lVar5 = (longlong)(int)uVar8 * 0x1c6e9c;
-  lVar6 = (longlong)iVar1 * -0x20c8cc;
-  uVar9 = (int)((ulonglong)lVar6 >> 0x20) << 0xb | (uint)lVar6 >> 0x15;
-  lVar6 = (longlong)iVar1 * 0x1c6e9c;
-  lVar7 = (longlong)(int)-uVar8 * -0x20c8cc;
-  uVar8 = (int)((ulonglong)lVar7 >> 0x20) << 0xb | (uint)lVar7 >> 0x15;
-  iVar1 = (control->base).left;
-  iVar2 = (control->base).right;
-  iVar3 = (control->base).top;
-  iVar4 = (control->base).bottom;
+  rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
+  cosTermOrBoundsLeft = -((int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c);
+  rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
+  sinTermOrStepY = (int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c;
+  rotationProductA = (longlong)(int)sinTermOrStepY * 0x1c6e9c;
+  rotationProductB = (longlong)cosTermOrBoundsLeft * -0x20c8cc;
+  stepTermX = (int)((ulonglong)rotationProductB >> 0x20) << 0xb | (uint)rotationProductB >> 0x15;
+  rotationProductB = (longlong)cosTermOrBoundsLeft * 0x1c6e9c;
+  rotationProductC = (longlong)(int)-sinTermOrStepY * -0x20c8cc;
+  sinTermOrStepY = (int)((ulonglong)rotationProductC >> 0x20) << 0xb | (uint)rotationProductC >> 0x15;
+  cosTermOrBoundsLeft = (control->base).left;
+  boundsRight = (control->base).right;
+  boundsTop = (control->base).top;
+  boundsBottom = (control->base).bottom;
   control->selectedSourceYQ12 =
        control->sourceOriginYQ12 -
-       ((((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar8) *
+       ((((int)((ulonglong)rotationProductB >> 0x20) << 0xc | (uint)rotationProductB >> 0x14) - sinTermOrStepY) *
         (((control->base).top + (control->base).bottom >> 1) - pointerY) +
-       (((int)((ulonglong)lVar5 >> 0x20) << 0xc | (uint)lVar5 >> 0x14) - uVar9) *
+       (((int)((ulonglong)rotationProductA >> 0x20) << 0xc | (uint)rotationProductA >> 0x14) - stepTermX) *
        (((control->base).left + (control->base).right >> 1) - pointerX));
   control->selectedSourceXQ12 =
-       (control->sourceOriginXQ12 - uVar9 * 2 * ((iVar1 + iVar2 >> 1) - pointerX)) -
-       uVar8 * 2 * ((iVar3 + iVar4 >> 1) - pointerY);
+       (control->sourceOriginXQ12 - stepTermX * 2 * ((cosTermOrBoundsLeft + boundsRight >> 1) - pointerX)) -
+       sinTermOrStepY * 2 * ((boundsTop + boundsBottom >> 1) - pointerY);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
 }
@@ -1381,41 +1381,41 @@ UiPointer_DispatchLeftPress
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  UiNodeFlags *pUVar2;
-  UiRootCallbacks **ppUVar3;
-  UiNodeVtable *pUVar4;
-  UiRootNode *pUVar5;
-  UiNodeBase *pUVar6;
+  UiSelectableStateFlags *stateFlagsField;
+  UiNodeFlags *nodeFlagsField;
+  UiRootCallbacks **callbacksField;
+  UiNodeVtable *nodeVtable;
+  UiRootNode *topRoot;
+  UiNodeBase *opaqueHit;
   UiImageControl *node;
   UiRootNode *root;
-  bool bVar7;
+  bool handled;
   
   node = g_UiImageControlHoverTarget;
-  pUVar5 = g_UiRootNode;
+  topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    root = pUVar5;
+    root = topRoot;
     if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
-      pUVar6 = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
+      opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
       g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-      if (pUVar6 != (UiNodeBase *)0xffffffff) {
+      if (opaqueHit != (UiNodeBase *)0xffffffff) {
 UiPointer_DispatchLeftPressToCapturedTarget:
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_LEFT;
         if ((buttonMask & 0x80000000) == CURSOR_BUTTON_NONE) {
-          pUVar2 = &(node->selectable).base.nodeFlags;
-          *pUVar2 = *pUVar2 & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
+          nodeFlagsField = &(node->selectable).base.nodeFlags;
+          *nodeFlagsField = *nodeFlagsField & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
         }
         else {
-          pUVar2 = &(node->selectable).base.nodeFlags;
-          *pUVar2 = *pUVar2 | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
+          nodeFlagsField = &(node->selectable).base.nodeFlags;
+          *nodeFlagsField = *nodeFlagsField | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
         }
-        pUVar4 = (node->selectable).base.vtable;
+        nodeVtable = (node->selectable).base.vtable;
         g_UiPointerCaptureTarget = (UiNodeBase *)node;
         if (((node->selectable).base.nodeFlags &
             (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
           UiKeyboardFocus_Set((UiNodeBase *)node);
         }
-        (*pUVar4->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
+        (*nodeVtable->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
           return;
         }
@@ -1423,15 +1423,15 @@ UiPointer_DispatchLeftPressToCapturedTarget:
                   (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
         return;
       }
-      pUVar1 = &(node->selectable).stateFlags;
-      *pUVar1 = *pUVar1 & 0xfffff9fc;
+      stateFlagsField = &(node->selectable).stateFlags;
+      *stateFlagsField = *stateFlagsField & 0xfffff9fc;
     }
     while (root != (UiRootNode *)0xffffffff) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
            ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
          ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
         node = (UiImageControl *)(*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        if ((root != pUVar5) && (bVar7 = UiRootStack_BringToFront(root), bVar7)) {
+        if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
           return;
         }
         if (node == (UiImageControl *)0xffffffff) {
@@ -1439,10 +1439,10 @@ UiPointer_DispatchLeftPressToCapturedTarget:
         }
         goto UiPointer_DispatchLeftPressToCapturedTarget;
       }
-      ppUVar3 = &root->callbacks;
+      callbacksField = &root->callbacks;
       root = root->previousRoot;
-      if (((*ppUVar3)->method08 != (UiRootMethod08Callback *)0x0) &&
-         (bVar7 = (*(*ppUVar3)->method08)(root), bVar7)) {
+      if (((*callbacksField)->method08 != (UiRootMethod08Callback *)0x0) &&
+         (handled = (*(*callbacksField)->method08)(root), handled)) {
         return;
       }
     }
@@ -1468,35 +1468,35 @@ UiPointer_DispatchMiddlePress
           UiPixelCoordinate pointerX)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  UiNodeFlags *pUVar2;
-  UiRootCallbacks **ppUVar3;
-  UiNodeVtable *pUVar4;
-  UiRootNode *pUVar5;
-  UiNodeBase *pUVar6;
+  UiSelectableStateFlags *stateFlagsField;
+  UiNodeFlags *nodeFlagsField;
+  UiRootCallbacks **callbacksField;
+  UiNodeVtable *nodeVtable;
+  UiRootNode *topRoot;
+  UiNodeBase *opaqueHit;
   UiImageControl *node;
   UiRootNode *root;
-  bool bVar7;
+  bool handled;
   
   node = g_UiImageControlHoverTarget;
-  pUVar5 = g_UiRootNode;
+  topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    root = pUVar5;
+    root = topRoot;
     if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
-      pUVar6 = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
+      opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
       g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-      if (pUVar6 != (UiNodeBase *)0xffffffff) {
+      if (opaqueHit != (UiNodeBase *)0xffffffff) {
 UiPointer_DispatchMiddlePressToCapturedTarget:
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_MIDDLE;
-        pUVar2 = &(node->selectable).base.nodeFlags;
-        *pUVar2 = *pUVar2 | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
-        pUVar4 = (node->selectable).base.vtable;
+        nodeFlagsField = &(node->selectable).base.nodeFlags;
+        *nodeFlagsField = *nodeFlagsField | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
+        nodeVtable = (node->selectable).base.vtable;
         g_UiPointerCaptureTarget = (UiNodeBase *)node;
         if (((node->selectable).base.nodeFlags &
             (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
           UiKeyboardFocus_Set((UiNodeBase *)node);
         }
-        (*pUVar4->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
+        (*nodeVtable->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
           return;
         }
@@ -1504,15 +1504,15 @@ UiPointer_DispatchMiddlePressToCapturedTarget:
                   (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
         return;
       }
-      pUVar1 = &(node->selectable).stateFlags;
-      *pUVar1 = *pUVar1 & 0xfffff9fc;
+      stateFlagsField = &(node->selectable).stateFlags;
+      *stateFlagsField = *stateFlagsField & 0xfffff9fc;
     }
     while (root != (UiRootNode *)0xffffffff) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
            ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
          ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
         node = (UiImageControl *)(*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        if ((root != pUVar5) && (bVar7 = UiRootStack_BringToFront(root), bVar7)) {
+        if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
           return;
         }
         if (node == (UiImageControl *)0xffffffff) {
@@ -1520,10 +1520,10 @@ UiPointer_DispatchMiddlePressToCapturedTarget:
         }
         goto UiPointer_DispatchMiddlePressToCapturedTarget;
       }
-      ppUVar3 = &root->callbacks;
+      callbacksField = &root->callbacks;
       root = root->previousRoot;
-      if (((*ppUVar3)->method08 != (UiRootMethod08Callback *)0x0) &&
-         (bVar7 = (*(*ppUVar3)->method08)(root), bVar7)) {
+      if (((*callbacksField)->method08 != (UiRootMethod08Callback *)0x0) &&
+         (handled = (*(*callbacksField)->method08)(root), handled)) {
         return;
       }
     }
@@ -1548,27 +1548,27 @@ UiPointer_DispatchRightPress
           UiPixelCoordinate pointerX)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  UiRootCallbacks **ppUVar2;
-  UiNodeVtable *pUVar3;
-  UiRootNode *pUVar4;
+  UiSelectableStateFlags *stateFlagsField;
+  UiRootCallbacks **callbacksField;
+  UiNodeVtable *nodeVtable;
+  UiRootNode *topRoot;
   UiNodeBase *node;
   UiRootNode *root;
-  bool bVar5;
+  bool handled;
   
-  pUVar4 = g_UiRootNode;
+  topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
-    root = pUVar4;
+    root = topRoot;
     if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
-      pUVar1 = &(g_UiImageControlHoverTarget->selectable).stateFlags;
-      *pUVar1 = *pUVar1 & 0xfffff9fc;
+      stateFlagsField = &(g_UiImageControlHoverTarget->selectable).stateFlags;
+      *stateFlagsField = *stateFlagsField & 0xfffff9fc;
     }
     while (root != (UiRootNode *)0xffffffff) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
            ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
          ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
         node = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-        if ((root != pUVar4) && (bVar5 = UiRootStack_BringToFront(root), bVar5)) {
+        if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
           return;
         }
         if (node == (UiNodeBase *)0xffffffff) {
@@ -1581,13 +1581,13 @@ UiPointer_DispatchRightPress
         else {
           node->nodeFlags = node->nodeFlags | UI_NODE_REPEAT_OR_DOUBLE_CLICK;
         }
-        pUVar3 = node->vtable;
+        nodeVtable = node->vtable;
         g_UiPointerCaptureTarget = node;
         if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)
         {
           UiKeyboardFocus_Set(node);
         }
-        (*pUVar3->rightPress)(wheelDelta,pointerY,pointerX,node);
+        (*nodeVtable->rightPress)(wheelDelta,pointerY,pointerX,node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
           return;
         }
@@ -1595,10 +1595,10 @@ UiPointer_DispatchRightPress
                   (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
         return;
       }
-      ppUVar2 = &root->callbacks;
+      callbacksField = &root->callbacks;
       root = root->previousRoot;
-      if (((*ppUVar2)->method08 != (UiRootMethod08Callback *)0x0) &&
-         (bVar5 = (*(*ppUVar2)->method08)(root), bVar5)) {
+      if (((*callbacksField)->method08 != (UiRootMethod08Callback *)0x0) &&
+         (handled = (*(*callbacksField)->method08)(root), handled)) {
         return;
       }
     }
@@ -1668,25 +1668,25 @@ UiPointer_DispatchMotionAndWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
-  UiNodeVtable *pUVar1;
-  UiRootPointerMissPolicyCallback *pUVar2;
-  UiNodeBase *pUVar3;
-  int iVar4;
+  UiNodeVtable *nodeVtable;
+  UiRootPointerMissPolicyCallback *missPolicy;
+  UiNodeBase *targetNode;
+  int missPolicyResult;
   UiRootNode *root;
   
-  pUVar3 = g_UiPointerCaptureTarget;
+  targetNode = g_UiPointerCaptureTarget;
   if (g_UiHoverSelectionRecord != (UiCommandRuntimeRecordPrefix *)0x0) {
     g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)0x0;
     InGameSelectionDetailPanel_Rebuild();
   }
   UiTooltip_UpdateHoverTarget(pointerY,pointerX);
   root = g_UiRootNode;
-  if (pUVar3 != (UiNodeBase *)0xffffffff) {
+  if (targetNode != (UiNodeBase *)0xffffffff) {
     if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT) {
-      (*pUVar3->vtable->rightDrag)(wheelDelta,pointerY,pointerX,pUVar3);
+      (*targetNode->vtable->rightDrag)(wheelDelta,pointerY,pointerX,targetNode);
     }
     else {
-      (*pUVar3->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,pUVar3);
+      (*targetNode->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,targetNode);
     }
     return;
   }
@@ -1696,24 +1696,24 @@ UiPointer_DispatchMotionAndWheel
     }
     if (((((root->base).left <= pointerX) && ((root->base).top <= pointerY)) &&
         (pointerX < (root->base).right)) && (pointerY < (root->base).bottom)) {
-      pUVar3 = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-      if (pUVar3 == (UiNodeBase *)0xffffffff) {
+      targetNode = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
+      if (targetNode == (UiNodeBase *)0xffffffff) {
         return;
       }
-      pUVar1 = pUVar3->vtable;
-      (*pUVar1->pointerMove)(pointerY,pointerX,pUVar3);
+      nodeVtable = targetNode->vtable;
+      (*nodeVtable->pointerMove)(pointerY,pointerX,targetNode);
       if (wheelDelta == 0) {
         return;
       }
-      (*pUVar1->pointerWheel)(wheelDelta,pointerY,pointerX,pUVar3);
+      (*nodeVtable->pointerWheel)(wheelDelta,pointerY,pointerX,targetNode);
       return;
     }
-    pUVar2 = root->callbacks->pointerMissPolicy;
-    if (pUVar2 == (UiRootPointerMissPolicyCallback *)0x0) {
+    missPolicy = root->callbacks->pointerMissPolicy;
+    if (missPolicy == (UiRootPointerMissPolicyCallback *)0x0) {
       return;
     }
-    iVar4 = (*pUVar2)(root);
-    if (-1 < iVar4) break;
+    missPolicyResult = (*missPolicy)(root);
+    if (-1 < missPolicyResult) break;
     root = root->previousRoot;
   }
   return;
@@ -1730,11 +1730,11 @@ UiNode_ForwardPointerWheelToParent
           UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *parentControl;
   
-  control_00 = control->parent;
-  if (control_00 != (UiNodeBase *)0xffffffff) {
-    (*control_00->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,control_00);
+  parentControl = control->parent;
+  if (parentControl != (UiNodeBase *)0xffffffff) {
+    (*parentControl->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,parentControl);
   }
   return;
 }

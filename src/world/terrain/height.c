@@ -27,18 +27,18 @@ TerrainHeightBand_TestAroundWorldPoint
           FieldGridAsset *fieldGrid)
 
 {
-  uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  FieldGridCell *pFVar7;
-  FieldGridCell *pFVar8;
-  bool bVar9;
-  FieldGridCoordinatesEaxEdx8 FVar10;
-  uint uVar11;
-  uint uVar12;
+  uint fractionSumOrGridWidth;
+  uint baseColumn;
+  uint columnFractionQ12;
+  int relativeHeightQ12;
+  uint rowFractionQ12;
+  int centerCellIndex;
+  FieldGridCell *wedgeCell;
+  FieldGridCell *centerOrWedgeCell;
+  bool wedgeBlocked;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  uint cellRow;
+  uint cellColumn;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
     g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
@@ -49,57 +49,57 @@ TerrainHeightBand_TestAroundWorldPoint
       g_TerrainScanStepLimit = 0xff;
     }
     g_TerrainScanReferenceHeight = referenceHeightQ12;
-    FVar10 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
-    uVar2 = FVar10.columnQ12 >> 0xc;
-    uVar11 = FVar10.rowQ12 >> 0xc;
-    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff);
-    uVar5 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff) >> 0x20);
-    uVar1 = uVar5 + uVar3 * 2;
-    uVar12 = uVar2;
-    if (uVar1 < 0x1000) {
-      if (0xfff < uVar3 + uVar5 * 2) {
-        uVar11 = uVar11 + 1;
+    gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    baseColumn = gridCoordinates.columnQ12 >> 0xc;
+    cellRow = gridCoordinates.rowQ12 >> 0xc;
+    columnFractionQ12 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff);
+    rowFractionQ12 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
+    cellColumn = baseColumn;
+    if (fractionSumOrGridWidth < 0x1000) {
+      if (0xfff < columnFractionQ12 + rowFractionQ12 * 2) {
+        cellRow = cellRow + 1;
       }
     }
-    else if (uVar1 < 0x2001) {
-      uVar12 = uVar2 + 1;
-      if (uVar3 < uVar5) {
-        uVar11 = uVar11 + 1;
-        uVar12 = uVar2;
+    else if (fractionSumOrGridWidth < 0x2001) {
+      cellColumn = baseColumn + 1;
+      if (columnFractionQ12 < rowFractionQ12) {
+        cellRow = cellRow + 1;
+        cellColumn = baseColumn;
       }
     }
     else {
-      uVar12 = uVar2 + 1;
-      if (0x1fff < uVar3 + uVar5 * 2) {
-        uVar11 = uVar11 + 1;
+      cellColumn = baseColumn + 1;
+      if (0x1fff < columnFractionQ12 + rowFractionQ12 * 2) {
+        cellRow = cellRow + 1;
       }
     }
-    uVar1 = fieldGrid->gridWidth;
-    g_TerrainScanRowStrideBytes = uVar1 * 0x80;
-    if ((((-1 < (int)uVar12) && (-1 < (int)uVar11)) && (uVar11 < fieldGrid->gridHeight)) &&
-       (uVar12 < (uVar1 & 0x1ffffff))) {
-      iVar6 = uVar11 * (uVar1 & 0x1ffffff) + uVar12;
-      if ((((fieldGrid->cells[iVar6].flagsAndMaterial & 0x88006000) == 0) &&
-          (iVar4 = fieldGrid->cells[iVar6].terrainHeight - g_TerrainScanReferenceHeight,
-          fieldGrid->cells[iVar6].waterSurfaceDelta < 1)) &&
-         ((iVar4 <= (int)g_TerrainHeightBandMaximumDelta && ((int)g_TerrainHeightBandMinimumDelta <= iVar4))))
+    fractionSumOrGridWidth = fieldGrid->gridWidth;
+    g_TerrainScanRowStrideBytes = fractionSumOrGridWidth * 0x80;
+    if ((((-1 < (int)cellColumn) && (-1 < (int)cellRow)) && (cellRow < fieldGrid->gridHeight)) &&
+       (cellColumn < (fractionSumOrGridWidth & 0x1ffffff))) {
+      centerCellIndex = cellRow * (fractionSumOrGridWidth & 0x1ffffff) + cellColumn;
+      if ((((fieldGrid->cells[centerCellIndex].flagsAndMaterial & 0x88006000) == 0) &&
+          (relativeHeightQ12 = fieldGrid->cells[centerCellIndex].terrainHeight - g_TerrainScanReferenceHeight,
+          fieldGrid->cells[centerCellIndex].waterSurfaceDelta < 1)) &&
+         ((relativeHeightQ12 <= (int)g_TerrainHeightBandMaximumDelta && ((int)g_TerrainHeightBandMinimumDelta <= relativeHeightQ12))))
       {
-        pFVar8 = (FieldGridCell *)
+        centerOrWedgeCell = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 iVar6 * 0x80 + -0x28);
-        pFVar7 = pFVar8 + -uVar1;
-        bVar9 = TerrainHeightBand_TestWedge0(0,pFVar8);
-        if (!bVar9) {
-          pFVar8 = pFVar7 + -1;
-          bVar9 = TerrainHeightBand_TestWedge1(0,pFVar7);
-          if (!bVar9) {
-            pFVar7 = pFVar8 + (uVar1 - 1);
-            bVar9 = TerrainHeightBand_TestWedge2(0,pFVar8);
-            if (!bVar9) {
-              bVar9 = TerrainHeightBand_TestWedge3(0,(byte *)pFVar7);
-              if (!bVar9) {
-                bVar9 = TerrainHeightBand_TestWedge4(0,pFVar7 + uVar1);
-                if ((!bVar9) && (bVar9 = TerrainHeightBand_TestWedge5(0,pFVar7 + uVar1 + 1), !bVar9)
+                 centerCellIndex * 0x80 + -0x28);
+        wedgeCell = centerOrWedgeCell + -fractionSumOrGridWidth;
+        wedgeBlocked = TerrainHeightBand_TestWedge0(0,centerOrWedgeCell);
+        if (!wedgeBlocked) {
+          centerOrWedgeCell = wedgeCell + -1;
+          wedgeBlocked = TerrainHeightBand_TestWedge1(0,wedgeCell);
+          if (!wedgeBlocked) {
+            wedgeCell = centerOrWedgeCell + (fractionSumOrGridWidth - 1);
+            wedgeBlocked = TerrainHeightBand_TestWedge2(0,centerOrWedgeCell);
+            if (!wedgeBlocked) {
+              wedgeBlocked = TerrainHeightBand_TestWedge3(0,(byte *)wedgeCell);
+              if (!wedgeBlocked) {
+                wedgeBlocked = TerrainHeightBand_TestWedge4(0,wedgeCell + fractionSumOrGridWidth);
+                if ((!wedgeBlocked) && (wedgeBlocked = TerrainHeightBand_TestWedge5(0,wedgeCell + fractionSumOrGridWidth + 1), !wedgeBlocked)
                    ) {
                   return false;
                 }
@@ -132,17 +132,17 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
           FieldGridAsset *fieldGrid)
 
 {
-  uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  uint uVar4;
-  int iVar5;
-  FieldGridCell *pFVar6;
-  FieldGridCell *pFVar7;
-  bool bVar8;
-  FieldGridCoordinatesEaxEdx8 FVar9;
-  uint uVar10;
-  uint uVar11;
+  uint fractionSumOrGridWidth;
+  uint baseColumn;
+  uint columnFractionQ12;
+  uint rowFractionQ12;
+  int centerCellIndex;
+  FieldGridCell *wedgeCell;
+  FieldGridCell *centerOrWedgeCell;
+  bool wedgeBlocked;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  uint cellRow;
+  uint cellColumn;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
     g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
@@ -153,57 +153,57 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
       g_TerrainScanStepLimit = 0xff;
     }
     g_TerrainScanReferenceHeight = referenceHeightQ12;
-    FVar9 = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
-    uVar2 = FVar9.columnQ12 >> 0xc;
-    uVar10 = FVar9.rowQ12 >> 0xc;
-    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff);
-    uVar4 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar9) & 0xfff00000fff) >> 0x20);
-    uVar1 = uVar4 + uVar3 * 2;
-    uVar11 = uVar2;
-    if (uVar1 < 0x1000) {
-      if (0xfff < uVar3 + uVar4 * 2) {
-        uVar10 = uVar10 + 1;
+    gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    baseColumn = gridCoordinates.columnQ12 >> 0xc;
+    cellRow = gridCoordinates.rowQ12 >> 0xc;
+    columnFractionQ12 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff);
+    rowFractionQ12 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
+    cellColumn = baseColumn;
+    if (fractionSumOrGridWidth < 0x1000) {
+      if (0xfff < columnFractionQ12 + rowFractionQ12 * 2) {
+        cellRow = cellRow + 1;
       }
     }
-    else if (uVar1 < 0x2001) {
-      uVar11 = uVar2 + 1;
-      if (uVar3 < uVar4) {
-        uVar10 = uVar10 + 1;
-        uVar11 = uVar2;
+    else if (fractionSumOrGridWidth < 0x2001) {
+      cellColumn = baseColumn + 1;
+      if (columnFractionQ12 < rowFractionQ12) {
+        cellRow = cellRow + 1;
+        cellColumn = baseColumn;
       }
     }
     else {
-      uVar11 = uVar2 + 1;
-      if (0x1fff < uVar3 + uVar4 * 2) {
-        uVar10 = uVar10 + 1;
+      cellColumn = baseColumn + 1;
+      if (0x1fff < columnFractionQ12 + rowFractionQ12 * 2) {
+        cellRow = cellRow + 1;
       }
     }
-    uVar1 = fieldGrid->gridWidth;
-    g_TerrainScanRowStrideBytes = uVar1 * 0x80;
-    if ((((-1 < (int)uVar11) && (-1 < (int)uVar10)) && (uVar10 < fieldGrid->gridHeight)) &&
-       (uVar11 < (uVar1 & 0x1ffffff))) {
-      iVar5 = uVar10 * (uVar1 & 0x1ffffff) + uVar11;
-      if ((((fieldGrid->cells[iVar5].flagsAndMaterial & 0x88006000) == 0) &&
-          (-1 < fieldGrid->cells[iVar5].waterSurfaceDelta)) &&
-         ((int)g_TerrainAuxHeightMinimum <= (int)fieldGrid->cells[iVar5].triangle0NormalAngles >> 0x10))
+    fractionSumOrGridWidth = fieldGrid->gridWidth;
+    g_TerrainScanRowStrideBytes = fractionSumOrGridWidth * 0x80;
+    if ((((-1 < (int)cellColumn) && (-1 < (int)cellRow)) && (cellRow < fieldGrid->gridHeight)) &&
+       (cellColumn < (fractionSumOrGridWidth & 0x1ffffff))) {
+      centerCellIndex = cellRow * (fractionSumOrGridWidth & 0x1ffffff) + cellColumn;
+      if ((((fieldGrid->cells[centerCellIndex].flagsAndMaterial & 0x88006000) == 0) &&
+          (-1 < fieldGrid->cells[centerCellIndex].waterSurfaceDelta)) &&
+         ((int)g_TerrainAuxHeightMinimum <= (int)fieldGrid->cells[centerCellIndex].triangle0NormalAngles >> 0x10))
       {
-        pFVar7 = (FieldGridCell *)
+        centerOrWedgeCell = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 iVar5 * 0x80 + -0x28);
-        pFVar6 = pFVar7 + -uVar1;
-        bVar8 = TerrainAuxHeightThreshold_TestWedge0(0,pFVar7);
-        if (!bVar8) {
-          pFVar7 = pFVar6 + -1;
-          bVar8 = TerrainAuxHeightThreshold_TestWedge1(0,pFVar6);
-          if (!bVar8) {
-            pFVar6 = pFVar7 + (uVar1 - 1);
-            bVar8 = TerrainAuxHeightThreshold_TestWedge2(0,pFVar7);
-            if (!bVar8) {
-              bVar8 = TerrainAuxHeightThreshold_TestWedge3(0,pFVar6);
-              if (!bVar8) {
-                bVar8 = TerrainAuxHeightThreshold_TestWedge4(0,pFVar6 + uVar1);
-                if ((!bVar8) &&
-                   (bVar8 = TerrainAuxHeightThreshold_TestWedge5(0,pFVar6 + uVar1 + 1), !bVar8)) {
+                 centerCellIndex * 0x80 + -0x28);
+        wedgeCell = centerOrWedgeCell + -fractionSumOrGridWidth;
+        wedgeBlocked = TerrainAuxHeightThreshold_TestWedge0(0,centerOrWedgeCell);
+        if (!wedgeBlocked) {
+          centerOrWedgeCell = wedgeCell + -1;
+          wedgeBlocked = TerrainAuxHeightThreshold_TestWedge1(0,wedgeCell);
+          if (!wedgeBlocked) {
+            wedgeCell = centerOrWedgeCell + (fractionSumOrGridWidth - 1);
+            wedgeBlocked = TerrainAuxHeightThreshold_TestWedge2(0,centerOrWedgeCell);
+            if (!wedgeBlocked) {
+              wedgeBlocked = TerrainAuxHeightThreshold_TestWedge3(0,wedgeCell);
+              if (!wedgeBlocked) {
+                wedgeBlocked = TerrainAuxHeightThreshold_TestWedge4(0,wedgeCell + fractionSumOrGridWidth);
+                if ((!wedgeBlocked) &&
+                   (wedgeBlocked = TerrainAuxHeightThreshold_TestWedge5(0,wedgeCell + fractionSumOrGridWidth + 1), !wedgeBlocked)) {
                   return false;
                 }
               }
@@ -228,33 +228,33 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int *piVar1;
-  int iVar2;
+  int *adjacentWaterDeltaField;
+  int heightAdjustmentOrRowStride;
   int adjacentHeightAdjustmentQ12;
-  FieldGridCell *cell_00;
+  FieldGridCell *directionStartCell;
   int *adjacentHeightField;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      iVar2 = g_TerrainScanReferenceHeight - cell->terrainHeight;
-      cell->terrainHeight = cell->terrainHeight + iVar2;
-      cell->waterSurfaceDelta = cell->waterSurfaceDelta - iVar2;
-      iVar2 = g_TerrainScanRowStrideBytes;
-      cell_00 = cell + 1;
-      TerrainHeightDelta_ApplyDirection0(scanStep + 4,cell_00);
+      heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
+      heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
+      directionStartCell = cell + 1;
+      TerrainHeightDelta_ApplyDirection0(scanStep + 4,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)cell_00 + (0x50 - iVar2)) & 0x88006000) != 0) {
+      if ((*(uint *)((int)directionStartCell + (0x50 - heightAdjustmentOrRowStride)) & 0x88006000) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
-           g_TerrainScanReferenceHeight - *(int *)((int)cell_00 + (0x48 - iVar2));
-      adjacentHeightField = (int *)((int)cell_00 + (0x48 - iVar2));
+           g_TerrainScanReferenceHeight - *(int *)((int)directionStartCell + (0x48 - heightAdjustmentOrRowStride));
+      adjacentHeightField = (int *)((int)directionStartCell + (0x48 - heightAdjustmentOrRowStride));
       *adjacentHeightField = *adjacentHeightField + adjacentHeightAdjustmentQ12;
-      piVar1 = (int *)((int)cell_00 + (0x4c - iVar2));
-      *piVar1 = *piVar1 - adjacentHeightAdjustmentQ12;
-      cell = (FieldGridCell *)((int)cell_00 + (0x80 - iVar2));
+      adjacentWaterDeltaField = (int *)((int)directionStartCell + (0x4c - heightAdjustmentOrRowStride));
+      *adjacentWaterDeltaField = *adjacentWaterDeltaField - adjacentHeightAdjustmentQ12;
+      cell = (FieldGridCell *)((int)directionStartCell + (0x80 - heightAdjustmentOrRowStride));
       scanStep = scanStep + 7;
       TerrainHeightDelta_ApplyDirection1
                 (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
@@ -278,36 +278,36 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int *piVar1;
-  int iVar2;
+  int *adjacentWaterDeltaField;
+  int heightAdjustmentOrRowStride;
   int adjacentHeightAdjustmentQ12;
-  FieldGridCell *cell_00;
+  FieldGridCell *directionStartCell;
   int *adjacentHeightField;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      iVar2 = g_TerrainScanReferenceHeight - cell->terrainHeight;
-      cell->terrainHeight = cell->terrainHeight + iVar2;
-      cell->waterSurfaceDelta = cell->waterSurfaceDelta - iVar2;
-      iVar2 = g_TerrainScanRowStrideBytes;
+      heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
+      heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
       TerrainHeightDelta_ApplyDirection1
                 (scanStep + 4,(FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)cell + (0x50 - iVar2)) & 0x88006000) != 0) {
+      if ((*(uint *)((int)cell + (0x50 - heightAdjustmentOrRowStride)) & 0x88006000) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
-           g_TerrainScanReferenceHeight - *(int *)((int)cell + (0x48 - iVar2));
-      adjacentHeightField = (int *)((int)cell + (0x48 - iVar2));
+           g_TerrainScanReferenceHeight - *(int *)((int)cell + (0x48 - heightAdjustmentOrRowStride));
+      adjacentHeightField = (int *)((int)cell + (0x48 - heightAdjustmentOrRowStride));
       *adjacentHeightField = *adjacentHeightField + adjacentHeightAdjustmentQ12;
-      piVar1 = (int *)((int)cell + (0x4c - iVar2));
-      *piVar1 = *piVar1 - adjacentHeightAdjustmentQ12;
-      cell_00 = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - iVar2));
+      adjacentWaterDeltaField = (int *)((int)cell + (0x4c - heightAdjustmentOrRowStride));
+      *adjacentWaterDeltaField = *adjacentWaterDeltaField - adjacentHeightAdjustmentQ12;
+      directionStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - heightAdjustmentOrRowStride));
       scanStep = scanStep + 7;
-      cell = cell_00 + 1;
-      TerrainHeightDelta_ApplyDirection2(scanStep,cell_00);
+      cell = directionStartCell + 1;
+      TerrainHeightDelta_ApplyDirection2(scanStep,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -328,7 +328,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  FieldGridCell *cell_00;
+  FieldGridCell *directionStartCell;
   int heightAdjustmentQ12;
   int adjacentHeightAdjustmentQ12;
   
@@ -348,10 +348,10 @@ TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell
       adjacentHeightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell[-1].terrainHeight;
       cell[-1].terrainHeight = cell[-1].terrainHeight + adjacentHeightAdjustmentQ12;
       cell[-1].waterSurfaceDelta = cell[-1].waterSurfaceDelta - adjacentHeightAdjustmentQ12;
-      cell_00 = cell + -2;
+      directionStartCell = cell + -2;
       scanStep = scanStep + 7;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
-      TerrainHeightDelta_ApplyDirection3(scanStep,cell_00);
+      TerrainHeightDelta_ApplyDirection3(scanStep,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -372,31 +372,31 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
+  int heightAdjustmentOrRowStride;
   int adjacentHeightAdjustmentQ12;
-  FieldGridCell *cell_00;
+  FieldGridCell *directionStartCell;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      iVar1 = g_TerrainScanReferenceHeight - cell->terrainHeight;
-      cell->terrainHeight = cell->terrainHeight + iVar1;
-      cell->waterSurfaceDelta = cell->waterSurfaceDelta - iVar1;
-      iVar1 = g_TerrainScanRowStrideBytes;
-      cell_00 = cell + -1;
-      TerrainHeightDelta_ApplyDirection3(scanStep + 4,cell_00);
+      heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
+      heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
+      directionStartCell = cell + -1;
+      TerrainHeightDelta_ApplyDirection3(scanStep + 4,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(cell_00->runtime60_6B + iVar1 + -0x10) & 0x88006000) != 0) {
+      if ((*(uint *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x10) & 0x88006000) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
-           g_TerrainScanReferenceHeight - *(int *)(cell_00->runtime60_6B + iVar1 + -0x18);
-      *(int *)(cell_00->runtime60_6B + iVar1 + -0x18) =
-           *(int *)(cell_00->runtime60_6B + iVar1 + -0x18) + adjacentHeightAdjustmentQ12;
-      *(int *)(cell_00->runtime60_6B + iVar1 + -0x14) =
-           *(int *)(cell_00->runtime60_6B + iVar1 + -0x14) - adjacentHeightAdjustmentQ12;
-      cell = (FieldGridCell *)(cell_00[-1].runtime0C_3F + iVar1 + -0xc);
+           g_TerrainScanReferenceHeight - *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x18);
+      *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) =
+           *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) + adjacentHeightAdjustmentQ12;
+      *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) =
+           *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) - adjacentHeightAdjustmentQ12;
+      cell = (FieldGridCell *)(directionStartCell[-1].runtime0C_3F + heightAdjustmentOrRowStride + -0xc);
       scanStep = scanStep + 7;
       TerrainHeightDelta_ApplyDirection4
                 (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc)
@@ -421,38 +421,38 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
+  int heightAdjustmentOrRowStride;
   int adjacentHeightAdjustmentQ12;
   byte *currentCellRuntimeBase;
   
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      iVar1 = g_TerrainScanReferenceHeight - cell->terrainHeight;
-      cell->terrainHeight = cell->terrainHeight + iVar1;
-      cell->waterSurfaceDelta = cell->waterSurfaceDelta - iVar1;
-      iVar1 = g_TerrainScanRowStrideBytes;
+      heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
+      cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
+      heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
       TerrainHeightDelta_ApplyDirection4
                 (scanStep + 4,
                  (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(cell->runtime60_6B + iVar1 + -0x10) & 0x88006000) != 0) {
+      if ((*(uint *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x10) & 0x88006000) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
-           g_TerrainScanReferenceHeight - *(int *)(cell->runtime60_6B + iVar1 + -0x18);
-      *(int *)(cell->runtime60_6B + iVar1 + -0x18) =
-           *(int *)(cell->runtime60_6B + iVar1 + -0x18) + adjacentHeightAdjustmentQ12;
-      *(int *)(cell->runtime60_6B + iVar1 + -0x14) =
-           *(int *)(cell->runtime60_6B + iVar1 + -0x14) - adjacentHeightAdjustmentQ12;
+           g_TerrainScanReferenceHeight - *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x18);
+      *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) =
+           *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) + adjacentHeightAdjustmentQ12;
+      *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) =
+           *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) - adjacentHeightAdjustmentQ12;
       currentCellRuntimeBase = cell->runtime0C_3F;
       scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(currentCellRuntimeBase + g_TerrainScanRowStrideBytes + iVar1 + -0xc)
+      cell = (FieldGridCell *)(currentCellRuntimeBase + g_TerrainScanRowStrideBytes + heightAdjustmentOrRowStride + -0xc)
              + -1;
       TerrainHeightDelta_ApplyDirection5
                 (scanStep,(FieldGridCell *)
-                          (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + iVar1 + -0xc));
+                          (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + heightAdjustmentOrRowStride + -0xc));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -473,7 +473,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  FieldGridCell *cell_00;
+  FieldGridCell *directionStartCell;
   int heightAdjustmentQ12;
   int adjacentHeightAdjustmentQ12;
   
@@ -494,10 +494,10 @@ TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell
       adjacentHeightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell[1].terrainHeight;
       cell[1].terrainHeight = cell[1].terrainHeight + adjacentHeightAdjustmentQ12;
       cell[1].waterSurfaceDelta = cell[1].waterSurfaceDelta - adjacentHeightAdjustmentQ12;
-      cell_00 = cell + 2;
+      directionStartCell = cell + 2;
       scanStep = scanStep + 7;
       cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
-      TerrainHeightDelta_ApplyDirection0(scanStep,cell_00);
+      TerrainHeightDelta_ApplyDirection0(scanStep,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -524,302 +524,302 @@ TerrainTriangle_IntersectRayDistanceCf
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12)
 
 {
-  longlong lVar1;
-  longlong lVar2;
-  longlong lVar3;
-  longlong lVar4;
-  ulonglong uVar5;
-  uint uVar6;
-  uint uVar7;
-  uint uVar8;
-  uint uVar9;
-  uint uVar10;
-  uint uVar11;
-  int iVar12;
-  Q12 QVar13;
-  uint uVar14;
-  int iVar15;
-  int iVar16;
-  int iVar17;
-  int iVar18;
-  uint uVar19;
-  uint uVar20;
-  uint uVar21;
-  TerrainDistanceEaxCf5 TVar22;
-  TerrainDistanceEaxCf5 TVar23;
-  TerrainDistanceEaxCf5 TVar24;
-  TerrainDistanceEaxCf5 TVar25;
-  TerrainDistanceEaxCf5 TVar26;
+  longlong planeTermOrProductA;
+  longlong lengthZProduct;
+  longlong lengthYProduct;
+  longlong planeTermOrProductB;
+  ulonglong rayCrossLocal;
+  uint heightDeltaOrLowWord;
+  uint productLowOrDivisor;
+  uint shiftedLowA;
+  uint productLowB;
+  uint shiftedLowB;
+  uint rateHighOrEdgeSumLow;
+  int combinedHigh;
+  Q12 lowestRayZQ12;
+  uint rateShiftedWord;
+  int edgeHighOrCoord0;
+  int edgeHighOrCoord1;
+  int edgeHighC;
+  int edgeHighD;
+  uint edgeSumLowA;
+  uint edgeSumLowB;
+  uint partialSumLow;
+  TerrainDistanceEaxCf5 rejectResult;
+  TerrainDistanceEaxCf5 firstTriangleHit;
+  TerrainDistanceEaxCf5 secondTriangleHit;
+  TerrainDistanceEaxCf5 secondTriangleZeroResult;
+  TerrainDistanceEaxCf5 firstTriangleZeroResult;
   
-  QVar13 = rayOriginZQ12;
+  lowestRayZQ12 = rayOriginZQ12;
   if (rayDeltaZQ12 < 0) {
-    QVar13 = rayOriginZQ12 + rayDeltaZQ12;
+    lowestRayZQ12 = rayOriginZQ12 + rayDeltaZQ12;
   }
-  if ((((cornerHeight3Q12 <= QVar13) && (cornerHeight2Q12 <= QVar13)) &&
-      (cornerHeight1Q12 <= QVar13)) && (uVar6 = cornerHeight2Q12, cornerHeight0Q12 <= QVar13))
+  if ((((cornerHeight3Q12 <= lowestRayZQ12) && (cornerHeight2Q12 <= lowestRayZQ12)) &&
+      (cornerHeight1Q12 <= lowestRayZQ12)) && (heightDeltaOrLowWord = cornerHeight2Q12, cornerHeight0Q12 <= lowestRayZQ12))
   goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
-  lVar1 = ((longlong)(cornerHeight1Q12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12 +
+  planeTermOrProductA = ((longlong)(cornerHeight1Q12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12 +
           (longlong)(cornerHeight2Q12 - cornerHeight3Q12) * (longlong)gridRayDelta1Q12) -
           CONCAT44(rayDeltaZQ12 >> 0x14,rayDeltaZQ12 << 0xc);
-  lVar4 = (longlong)(cornerHeight1Q12 - cornerHeight3Q12) * (longlong)cellLocalCoord1Q12 +
+  planeTermOrProductB = (longlong)(cornerHeight1Q12 - cornerHeight3Q12) * (longlong)cellLocalCoord1Q12 +
           (longlong)(cornerHeight2Q12 - cornerHeight3Q12) * (longlong)cellLocalCoord0Q12 +
           CONCAT44(rayOriginZQ12 - cornerHeight3Q12 >> 0x14,
                    (rayOriginZQ12 - cornerHeight3Q12) * 0x1000);
-  if (lVar4 < 0) {
-    if ((lVar1 < 0) && (-1 < lVar4 - lVar1))
+  if (planeTermOrProductB < 0) {
+    if ((planeTermOrProductA < 0) && (-1 < planeTermOrProductB - planeTermOrProductA))
     goto TerrainTriangle_IntersectRayDistanceCf_BeginFirstTriangleEdgeTestsAfterPlaneCrossing;
   }
-  else if ((-1 < lVar1) && (lVar4 - lVar1 < 0)) {
+  else if ((-1 < planeTermOrProductA) && (planeTermOrProductB - planeTermOrProductA < 0)) {
 TerrainTriangle_IntersectRayDistanceCf_BeginFirstTriangleEdgeTestsAfterPlaneCrossing:
-    uVar5 = (longlong)gridRayDelta1Q12 * (longlong)cellLocalCoord1Q12 -
+    rayCrossLocal = (longlong)gridRayDelta1Q12 * (longlong)cellLocalCoord1Q12 -
             (longlong)cellLocalCoord0Q12 * (longlong)gridRayDelta0Q12;
-    iVar15 = (int)(uVar5 >> 0x20);
-    uVar6 = cornerHeight1Q12 - cornerHeight3Q12;
-    if ((int)uVar6 < 0) {
-      lVar4 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-      uVar7 = (uint)lVar4;
-      iVar16 = (iVar15 * uVar6 - (int)uVar5) + (int)((ulonglong)lVar4 >> 0x20);
+    edgeHighOrCoord0 = (int)(rayCrossLocal >> 0x20);
+    heightDeltaOrLowWord = cornerHeight1Q12 - cornerHeight3Q12;
+    if ((int)heightDeltaOrLowWord < 0) {
+      planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+      productLowOrDivisor = (uint)planeTermOrProductB;
+      edgeHighOrCoord1 = (edgeHighOrCoord0 * heightDeltaOrLowWord - (int)rayCrossLocal) + (int)((ulonglong)planeTermOrProductB >> 0x20);
     }
     else {
-      lVar4 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-      uVar7 = (uint)lVar4;
-      iVar16 = iVar15 * uVar6 + (int)((ulonglong)lVar4 >> 0x20);
+      planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+      productLowOrDivisor = (uint)planeTermOrProductB;
+      edgeHighOrCoord1 = edgeHighOrCoord0 * heightDeltaOrLowWord + (int)((ulonglong)planeTermOrProductB >> 0x20);
     }
-    lVar4 = (longlong)(rayOriginZQ12 - cornerHeight3Q12) * (longlong)gridRayDelta1Q12;
-    uVar6 = (uint)lVar4;
-    uVar8 = uVar6 * 0x1000;
-    uVar19 = uVar7 + uVar8;
-    uVar9 = (uint)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord0Q12);
-    uVar10 = uVar9 * 0x1000;
-    uVar20 = uVar19 + uVar10;
-    iVar16 = iVar16 + ((int)((ulonglong)lVar4 >> 0x20) << 0xc | uVar6 >> 0x14) +
-             (uint)CARRY4(uVar7,uVar8) +
+    planeTermOrProductB = (longlong)(rayOriginZQ12 - cornerHeight3Q12) * (longlong)gridRayDelta1Q12;
+    heightDeltaOrLowWord = (uint)planeTermOrProductB;
+    shiftedLowA = heightDeltaOrLowWord * 0x1000;
+    edgeSumLowA = productLowOrDivisor + shiftedLowA;
+    productLowB = (uint)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord0Q12);
+    shiftedLowB = productLowB * 0x1000;
+    edgeSumLowB = edgeSumLowA + shiftedLowB;
+    edgeHighOrCoord1 = edgeHighOrCoord1 + ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0xc | heightDeltaOrLowWord >> 0x14) +
+             (uint)CARRY4(productLowOrDivisor,shiftedLowA) +
              ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord0Q12) >> 0x20) <<
-              0xc | uVar9 >> 0x14) + (uint)CARRY4(uVar19,uVar10);
-    if (iVar16 < 0) {
-      if (lVar1 < 0) {
+              0xc | productLowB >> 0x14) + (uint)CARRY4(edgeSumLowA,shiftedLowB);
+    if (edgeHighOrCoord1 < 0) {
+      if (planeTermOrProductA < 0) {
 TerrainTriangle_IntersectRayDistanceCf_EvaluateFirstTriangleRemainingEdgeConstraints:
-        uVar6 = cornerHeight3Q12 - cornerHeight2Q12;
-        if ((int)uVar6 < 0) {
-          lVar4 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-          uVar7 = (uint)lVar4;
-          iVar15 = (iVar15 * uVar6 - (int)uVar5) + (int)((ulonglong)lVar4 >> 0x20);
+        heightDeltaOrLowWord = cornerHeight3Q12 - cornerHeight2Q12;
+        if ((int)heightDeltaOrLowWord < 0) {
+          planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+          productLowOrDivisor = (uint)planeTermOrProductB;
+          edgeHighOrCoord0 = (edgeHighOrCoord0 * heightDeltaOrLowWord - (int)rayCrossLocal) + (int)((ulonglong)planeTermOrProductB >> 0x20);
         }
         else {
-          lVar4 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-          uVar7 = (uint)lVar4;
-          iVar15 = iVar15 * uVar6 + (int)((ulonglong)lVar4 >> 0x20);
+          planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+          productLowOrDivisor = (uint)planeTermOrProductB;
+          edgeHighOrCoord0 = edgeHighOrCoord0 * heightDeltaOrLowWord + (int)((ulonglong)planeTermOrProductB >> 0x20);
         }
-        lVar4 = (longlong)(rayOriginZQ12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12;
-        uVar6 = (uint)lVar4;
-        uVar8 = uVar6 * 0x1000;
-        uVar21 = uVar7 + uVar8;
-        uVar9 = (uint)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12);
-        uVar10 = uVar9 * 0x1000;
-        uVar11 = (int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14;
-        uVar14 = (uint)lVar1 * 0x1000;
-        uVar19 = uVar10 + uVar21;
-        iVar15 = ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12) >> 0x20)
-                  << 0xc | uVar9 >> 0x14) +
-                 iVar15 + ((int)((ulonglong)lVar4 >> 0x20) << 0xc | uVar6 >> 0x14) +
-                 (uint)CARRY4(uVar7,uVar8) + (uint)CARRY4(uVar10,uVar21);
-        if (iVar15 < 0) {
-          if ((int)uVar11 < 0) {
-            uVar6 = (uVar14 - uVar19) - uVar20;
-            iVar12 = (((uVar11 - iVar15) - (uint)(uVar14 < uVar19)) - iVar16) -
-                     (uint)(uVar14 - uVar19 < uVar20);
-            if (iVar12 < 0) {
+        planeTermOrProductB = (longlong)(rayOriginZQ12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12;
+        heightDeltaOrLowWord = (uint)planeTermOrProductB;
+        shiftedLowA = heightDeltaOrLowWord * 0x1000;
+        partialSumLow = productLowOrDivisor + shiftedLowA;
+        productLowB = (uint)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12);
+        shiftedLowB = productLowB * 0x1000;
+        rateHighOrEdgeSumLow = (int)((ulonglong)planeTermOrProductA >> 0x20) << 0xc | (uint)planeTermOrProductA >> 0x14;
+        rateShiftedWord = (uint)planeTermOrProductA * 0x1000;
+        edgeSumLowA = shiftedLowB + partialSumLow;
+        edgeHighOrCoord0 = ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12) >> 0x20)
+                  << 0xc | productLowB >> 0x14) +
+                 edgeHighOrCoord0 + ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0xc | heightDeltaOrLowWord >> 0x14) +
+                 (uint)CARRY4(productLowOrDivisor,shiftedLowA) + (uint)CARRY4(shiftedLowB,partialSumLow);
+        if (edgeHighOrCoord0 < 0) {
+          if ((int)rateHighOrEdgeSumLow < 0) {
+            heightDeltaOrLowWord = (rateShiftedWord - edgeSumLowA) - edgeSumLowB;
+            combinedHigh = (((rateHighOrEdgeSumLow - edgeHighOrCoord0) - (uint)(rateShiftedWord < edgeSumLowA)) - edgeHighOrCoord1) -
+                     (uint)(rateShiftedWord - edgeSumLowA < edgeSumLowB);
+            if (combinedHigh < 0) {
 TerrainTriangle_IntersectRayDistanceCf_ComputeFirstTriangleIntersectionDistance:
-              iVar12 = iVar12 + iVar15 + (uint)CARRY4(uVar6,uVar19) + iVar16 +
-                       (uint)CARRY4(uVar6 + uVar19,uVar20);
-              uVar6 = uVar6 + uVar19 + uVar20 >> 0xc | iVar12 * 0x100000;
-              iVar12 = iVar12 >> 0xc;
-              if (uVar6 == 0) {
-                TVar26.distanceQ12 = 0;
-                TVar26.carry = false;
-                return TVar26;
+              combinedHigh = combinedHigh + edgeHighOrCoord0 + (uint)CARRY4(heightDeltaOrLowWord,edgeSumLowA) + edgeHighOrCoord1 +
+                       (uint)CARRY4(heightDeltaOrLowWord + edgeSumLowA,edgeSumLowB);
+              heightDeltaOrLowWord = heightDeltaOrLowWord + edgeSumLowA + edgeSumLowB >> 0xc | combinedHigh * 0x100000;
+              combinedHigh = combinedHigh >> 0xc;
+              if (heightDeltaOrLowWord == 0) {
+                firstTriangleZeroResult.distanceQ12 = 0;
+                firstTriangleZeroResult.carry = false;
+                return firstTriangleZeroResult;
               }
-              if ((int)uVar6 < 0) {
-                if (iVar12 != -1) {
-                  uVar20 = uVar20 >> 0xc | iVar16 * 0x100000;
-                  uVar19 = uVar19 >> 0xc | iVar15 * 0x100000;
-                  uVar6 = uVar6 >> 0xc | iVar12 << 0x14;
-                  iVar15 = iVar15 >> 0xc;
-                  iVar16 = iVar16 >> 0xc;
+              if ((int)heightDeltaOrLowWord < 0) {
+                if (combinedHigh != -1) {
+                  edgeSumLowB = edgeSumLowB >> 0xc | edgeHighOrCoord1 * 0x100000;
+                  edgeSumLowA = edgeSumLowA >> 0xc | edgeHighOrCoord0 * 0x100000;
+                  heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh << 0x14;
+                  edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
+                  edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
                 }
               }
-              else if (iVar12 != 0) {
-                uVar20 = uVar20 >> 0xc | iVar16 * 0x100000;
-                uVar19 = uVar19 >> 0xc | iVar15 * 0x100000;
-                uVar6 = uVar6 >> 0xc | iVar12 << 0x14;
-                iVar15 = iVar15 >> 0xc;
-                iVar16 = iVar16 >> 0xc;
+              else if (combinedHigh != 0) {
+                edgeSumLowB = edgeSumLowB >> 0xc | edgeHighOrCoord1 * 0x100000;
+                edgeSumLowA = edgeSumLowA >> 0xc | edgeHighOrCoord0 * 0x100000;
+                heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh << 0x14;
+                edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
+                edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
               }
-              iVar15 = (int)(CONCAT44(iVar15,uVar19) / (longlong)(int)uVar6);
-              iVar12 = cellLocalCoord1Q12 + iVar15;
-              iVar16 = (int)(CONCAT44(iVar16,uVar20) / (longlong)(int)uVar6);
-              lVar4 = (longlong)iVar16 * (longlong)(cornerHeight2Q12 - cornerHeight3Q12);
-              lVar1 = (longlong)iVar15 * (longlong)(cornerHeight1Q12 - cornerHeight3Q12);
-              lVar2 = (longlong)(iVar12 + (cellLocalCoord0Q12 + iVar16) * 2) * 0x901;
-              lVar3 = (longlong)iVar12 * -1999;
-              TVar23.distanceQ12 =
+              edgeHighOrCoord0 = (int)(CONCAT44(edgeHighOrCoord0,edgeSumLowA) / (longlong)(int)heightDeltaOrLowWord);
+              combinedHigh = cellLocalCoord1Q12 + edgeHighOrCoord0;
+              edgeHighOrCoord1 = (int)(CONCAT44(edgeHighOrCoord1,edgeSumLowB) / (longlong)(int)heightDeltaOrLowWord);
+              planeTermOrProductB = (longlong)edgeHighOrCoord1 * (longlong)(cornerHeight2Q12 - cornerHeight3Q12);
+              planeTermOrProductA = (longlong)edgeHighOrCoord0 * (longlong)(cornerHeight1Q12 - cornerHeight3Q12);
+              lengthZProduct = (longlong)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * 0x901;
+              lengthYProduct = (longlong)combinedHigh * -1999;
+              firstTriangleHit.distanceQ12 =
                    FixedMath_Length3(((cornerHeight3Q12 +
-                                      ((int)((ulonglong)lVar4 >> 0x20) << 0x14 | (uint)lVar4 >> 0xc)
+                                      ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0x14 | (uint)planeTermOrProductB >> 0xc)
                                       ) - rayOriginZQ12) +
-                                     ((int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc),
-                                     (int)((ulonglong)lVar3 >> 0x20) << 0x14 | (uint)lVar3 >> 0xc,
-                                     (int)((ulonglong)lVar2 >> 0x20) << 0x13 | (uint)lVar2 >> 0xd);
-              TVar23.carry = false;
-              return TVar23;
+                                     ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0x14 | (uint)planeTermOrProductA >> 0xc),
+                                     (int)((ulonglong)lengthYProduct >> 0x20) << 0x14 | (uint)lengthYProduct >> 0xc,
+                                     (int)((ulonglong)lengthZProduct >> 0x20) << 0x13 | (uint)lengthZProduct >> 0xd);
+              firstTriangleHit.carry = false;
+              return firstTriangleHit;
             }
           }
         }
-        else if (-1 < (int)uVar11) {
-          uVar6 = (uVar14 - uVar19) - uVar20;
-          iVar12 = (((uVar11 - iVar15) - (uint)(uVar14 < uVar19)) - iVar16) -
-                   (uint)(uVar14 - uVar19 < uVar20);
-          if (-1 < iVar12)
+        else if (-1 < (int)rateHighOrEdgeSumLow) {
+          heightDeltaOrLowWord = (rateShiftedWord - edgeSumLowA) - edgeSumLowB;
+          combinedHigh = (((rateHighOrEdgeSumLow - edgeHighOrCoord0) - (uint)(rateShiftedWord < edgeSumLowA)) - edgeHighOrCoord1) -
+                   (uint)(rateShiftedWord - edgeSumLowA < edgeSumLowB);
+          if (-1 < combinedHigh)
           goto TerrainTriangle_IntersectRayDistanceCf_ComputeFirstTriangleIntersectionDistance;
         }
       }
     }
-    else if (-1 < lVar1)
+    else if (-1 < planeTermOrProductA)
     goto TerrainTriangle_IntersectRayDistanceCf_EvaluateFirstTriangleRemainingEdgeConstraints;
   }
-  iVar15 = cellLocalCoord0Q12 + 0x1000;
-  iVar16 = cellLocalCoord1Q12 + 0x1000;
-  lVar4 = (longlong)(cornerHeight2Q12 - cornerHeight0Q12) * (longlong)gridRayDelta0Q12 +
+  edgeHighOrCoord0 = cellLocalCoord0Q12 + 0x1000;
+  edgeHighOrCoord1 = cellLocalCoord1Q12 + 0x1000;
+  planeTermOrProductB = (longlong)(cornerHeight2Q12 - cornerHeight0Q12) * (longlong)gridRayDelta0Q12 +
           (longlong)(cornerHeight1Q12 - cornerHeight0Q12) * (longlong)gridRayDelta1Q12 +
           CONCAT44(rayDeltaZQ12 >> 0x14,rayDeltaZQ12 << 0xc);
-  uVar7 = (uint)lVar4;
-  iVar12 = (int)((ulonglong)lVar4 >> 0x20);
-  uVar6 = (cornerHeight0Q12 - rayOriginZQ12) * 0x1000;
-  lVar1 = (longlong)(cornerHeight2Q12 - cornerHeight0Q12) * (longlong)iVar16 +
-          (longlong)(cornerHeight1Q12 - cornerHeight0Q12) * (longlong)iVar15 +
-          CONCAT44(cornerHeight0Q12 - rayOriginZQ12 >> 0x14,uVar6);
-  iVar17 = (int)((ulonglong)lVar1 >> 0x20);
-  if (lVar1 < 0) {
-    if ((-1 < lVar4) || ((int)((iVar17 - iVar12) - (uint)((uint)lVar1 < uVar7)) < 0))
+  productLowOrDivisor = (uint)planeTermOrProductB;
+  combinedHigh = (int)((ulonglong)planeTermOrProductB >> 0x20);
+  heightDeltaOrLowWord = (cornerHeight0Q12 - rayOriginZQ12) * 0x1000;
+  planeTermOrProductA = (longlong)(cornerHeight2Q12 - cornerHeight0Q12) * (longlong)edgeHighOrCoord1 +
+          (longlong)(cornerHeight1Q12 - cornerHeight0Q12) * (longlong)edgeHighOrCoord0 +
+          CONCAT44(cornerHeight0Q12 - rayOriginZQ12 >> 0x14,heightDeltaOrLowWord);
+  edgeHighC = (int)((ulonglong)planeTermOrProductA >> 0x20);
+  if (planeTermOrProductA < 0) {
+    if ((-1 < planeTermOrProductB) || ((int)((edgeHighC - combinedHigh) - (uint)((uint)planeTermOrProductA < productLowOrDivisor)) < 0))
     goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
   }
-  else if ((lVar4 < 0) || (-1 < (int)((iVar17 - iVar12) - (uint)((uint)lVar1 < uVar7))))
+  else if ((planeTermOrProductB < 0) || (-1 < (int)((edgeHighC - combinedHigh) - (uint)((uint)planeTermOrProductA < productLowOrDivisor))))
   goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
-  uVar5 = (longlong)gridRayDelta1Q12 * (longlong)iVar16 -
-          (longlong)iVar15 * (longlong)gridRayDelta0Q12;
-  iVar17 = (int)(uVar5 >> 0x20);
-  uVar6 = cornerHeight0Q12 - cornerHeight2Q12;
-  if ((int)uVar6 < 0) {
-    lVar1 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-    uVar8 = (uint)lVar1;
-    iVar18 = (iVar17 * uVar6 - (int)uVar5) + (int)((ulonglong)lVar1 >> 0x20);
+  rayCrossLocal = (longlong)gridRayDelta1Q12 * (longlong)edgeHighOrCoord1 -
+          (longlong)edgeHighOrCoord0 * (longlong)gridRayDelta0Q12;
+  edgeHighC = (int)(rayCrossLocal >> 0x20);
+  heightDeltaOrLowWord = cornerHeight0Q12 - cornerHeight2Q12;
+  if ((int)heightDeltaOrLowWord < 0) {
+    planeTermOrProductA = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+    shiftedLowA = (uint)planeTermOrProductA;
+    edgeHighD = (edgeHighC * heightDeltaOrLowWord - (int)rayCrossLocal) + (int)((ulonglong)planeTermOrProductA >> 0x20);
   }
   else {
-    lVar1 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-    uVar8 = (uint)lVar1;
-    iVar18 = iVar17 * uVar6 + (int)((ulonglong)lVar1 >> 0x20);
+    planeTermOrProductA = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+    shiftedLowA = (uint)planeTermOrProductA;
+    edgeHighD = edgeHighC * heightDeltaOrLowWord + (int)((ulonglong)planeTermOrProductA >> 0x20);
   }
-  lVar1 = (longlong)(rayOriginZQ12 - cornerHeight0Q12) * (longlong)gridRayDelta1Q12;
-  uVar9 = (uint)lVar1;
-  uVar10 = uVar9 * 0x1000;
-  uVar20 = uVar8 + uVar10;
-  uVar19 = (uint)((longlong)rayDeltaZQ12 * (longlong)iVar15);
-  uVar6 = uVar19 * 0x1000;
-  uVar11 = uVar20 + uVar6;
-  iVar18 = iVar18 + ((int)((ulonglong)lVar1 >> 0x20) << 0xc | uVar9 >> 0x14) +
-           (uint)CARRY4(uVar8,uVar10) +
-           ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)iVar15) >> 0x20) << 0xc |
-           uVar19 >> 0x14) + (uint)CARRY4(uVar20,uVar6);
-  if (iVar18 < 0) {
-    if (-1 < lVar4)
+  planeTermOrProductA = (longlong)(rayOriginZQ12 - cornerHeight0Q12) * (longlong)gridRayDelta1Q12;
+  productLowB = (uint)planeTermOrProductA;
+  shiftedLowB = productLowB * 0x1000;
+  edgeSumLowB = shiftedLowA + shiftedLowB;
+  edgeSumLowA = (uint)((longlong)rayDeltaZQ12 * (longlong)edgeHighOrCoord0);
+  heightDeltaOrLowWord = edgeSumLowA * 0x1000;
+  rateHighOrEdgeSumLow = edgeSumLowB + heightDeltaOrLowWord;
+  edgeHighD = edgeHighD + ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0xc | productLowB >> 0x14) +
+           (uint)CARRY4(shiftedLowA,shiftedLowB) +
+           ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)edgeHighOrCoord0) >> 0x20) << 0xc |
+           edgeSumLowA >> 0x14) + (uint)CARRY4(edgeSumLowB,heightDeltaOrLowWord);
+  if (edgeHighD < 0) {
+    if (-1 < planeTermOrProductB)
     goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
   }
-  else if (lVar4 < 0)
+  else if (planeTermOrProductB < 0)
   goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
-  uVar6 = cornerHeight1Q12 - cornerHeight0Q12;
-  if ((int)uVar6 < 0) {
-    lVar4 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-    uVar8 = (uint)lVar4;
-    iVar17 = (iVar17 * uVar6 - (int)uVar5) + (int)((ulonglong)lVar4 >> 0x20);
+  heightDeltaOrLowWord = cornerHeight1Q12 - cornerHeight0Q12;
+  if ((int)heightDeltaOrLowWord < 0) {
+    planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+    shiftedLowA = (uint)planeTermOrProductB;
+    edgeHighC = (edgeHighC * heightDeltaOrLowWord - (int)rayCrossLocal) + (int)((ulonglong)planeTermOrProductB >> 0x20);
   }
   else {
-    lVar4 = (ulonglong)uVar6 * (uVar5 & 0xffffffff);
-    uVar8 = (uint)lVar4;
-    iVar17 = iVar17 * uVar6 + (int)((ulonglong)lVar4 >> 0x20);
+    planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+    shiftedLowA = (uint)planeTermOrProductB;
+    edgeHighC = edgeHighC * heightDeltaOrLowWord + (int)((ulonglong)planeTermOrProductB >> 0x20);
   }
-  lVar4 = (longlong)(rayOriginZQ12 - cornerHeight0Q12) * (longlong)gridRayDelta0Q12;
-  uVar9 = (uint)lVar4;
-  uVar10 = uVar9 * 0x1000;
-  uVar21 = uVar8 + uVar10;
-  uVar19 = (uint)((longlong)rayDeltaZQ12 * (longlong)iVar16);
-  uVar20 = uVar19 * 0x1000;
-  uVar14 = iVar12 << 0xc | uVar7 >> 0x14;
-  uVar7 = uVar7 * 0x1000;
-  uVar6 = uVar20 + uVar21;
-  iVar12 = ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)iVar16) >> 0x20) << 0xc |
-           uVar19 >> 0x14) +
-           iVar17 + ((int)((ulonglong)lVar4 >> 0x20) << 0xc | uVar9 >> 0x14) +
-           (uint)CARRY4(uVar8,uVar10) + (uint)CARRY4(uVar20,uVar21);
-  if (iVar12 < 0) {
-    if ((int)uVar14 < 0) {
-      uVar8 = (uVar7 - uVar6) - uVar11;
-      iVar17 = (((uVar14 - iVar12) - (uint)(uVar7 < uVar6)) - iVar18) -
-               (uint)(uVar7 - uVar6 < uVar11);
-      if (iVar17 < 0) {
+  planeTermOrProductB = (longlong)(rayOriginZQ12 - cornerHeight0Q12) * (longlong)gridRayDelta0Q12;
+  productLowB = (uint)planeTermOrProductB;
+  shiftedLowB = productLowB * 0x1000;
+  partialSumLow = shiftedLowA + shiftedLowB;
+  edgeSumLowA = (uint)((longlong)rayDeltaZQ12 * (longlong)edgeHighOrCoord1);
+  edgeSumLowB = edgeSumLowA * 0x1000;
+  rateShiftedWord = combinedHigh << 0xc | productLowOrDivisor >> 0x14;
+  productLowOrDivisor = productLowOrDivisor * 0x1000;
+  heightDeltaOrLowWord = edgeSumLowB + partialSumLow;
+  combinedHigh = ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)edgeHighOrCoord1) >> 0x20) << 0xc |
+           edgeSumLowA >> 0x14) +
+           edgeHighC + ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0xc | productLowB >> 0x14) +
+           (uint)CARRY4(shiftedLowA,shiftedLowB) + (uint)CARRY4(edgeSumLowB,partialSumLow);
+  if (combinedHigh < 0) {
+    if ((int)rateShiftedWord < 0) {
+      shiftedLowA = (productLowOrDivisor - heightDeltaOrLowWord) - rateHighOrEdgeSumLow;
+      edgeHighC = (((rateShiftedWord - combinedHigh) - (uint)(productLowOrDivisor < heightDeltaOrLowWord)) - edgeHighD) -
+               (uint)(productLowOrDivisor - heightDeltaOrLowWord < rateHighOrEdgeSumLow);
+      if (edgeHighC < 0) {
 LAB_00504912:
-        iVar17 = iVar17 + iVar12 + (uint)CARRY4(uVar8,uVar6) + iVar18 +
-                 (uint)CARRY4(uVar8 + uVar6,uVar11);
-        uVar7 = uVar8 + uVar6 + uVar11 >> 0xc | iVar17 * 0x100000;
-        iVar17 = iVar17 >> 0xc;
-        if (uVar7 == 0) {
-          TVar25.distanceQ12 = 0;
-          TVar25.carry = false;
-          return TVar25;
+        edgeHighC = edgeHighC + combinedHigh + (uint)CARRY4(shiftedLowA,heightDeltaOrLowWord) + edgeHighD +
+                 (uint)CARRY4(shiftedLowA + heightDeltaOrLowWord,rateHighOrEdgeSumLow);
+        productLowOrDivisor = shiftedLowA + heightDeltaOrLowWord + rateHighOrEdgeSumLow >> 0xc | edgeHighC * 0x100000;
+        edgeHighC = edgeHighC >> 0xc;
+        if (productLowOrDivisor == 0) {
+          secondTriangleZeroResult.distanceQ12 = 0;
+          secondTriangleZeroResult.carry = false;
+          return secondTriangleZeroResult;
         }
-        if ((int)uVar7 < 0) {
-          if (iVar17 != -1) {
-            uVar11 = uVar11 >> 0xc | iVar18 * 0x100000;
-            uVar6 = uVar6 >> 0xc | iVar12 * 0x100000;
-            uVar7 = uVar7 >> 0xc | iVar17 << 0x14;
-            iVar12 = iVar12 >> 0xc;
-            iVar18 = iVar18 >> 0xc;
+        if ((int)productLowOrDivisor < 0) {
+          if (edgeHighC != -1) {
+            rateHighOrEdgeSumLow = rateHighOrEdgeSumLow >> 0xc | edgeHighD * 0x100000;
+            heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh * 0x100000;
+            productLowOrDivisor = productLowOrDivisor >> 0xc | edgeHighC << 0x14;
+            combinedHigh = combinedHigh >> 0xc;
+            edgeHighD = edgeHighD >> 0xc;
           }
         }
-        else if (iVar17 != 0) {
-          uVar11 = uVar11 >> 0xc | iVar18 * 0x100000;
-          uVar6 = uVar6 >> 0xc | iVar12 * 0x100000;
-          uVar7 = uVar7 >> 0xc | iVar17 << 0x14;
-          iVar12 = iVar12 >> 0xc;
-          iVar18 = iVar18 >> 0xc;
+        else if (edgeHighC != 0) {
+          rateHighOrEdgeSumLow = rateHighOrEdgeSumLow >> 0xc | edgeHighD * 0x100000;
+          heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh * 0x100000;
+          productLowOrDivisor = productLowOrDivisor >> 0xc | edgeHighC << 0x14;
+          combinedHigh = combinedHigh >> 0xc;
+          edgeHighD = edgeHighD >> 0xc;
         }
-        iVar12 = (int)(CONCAT44(iVar12,uVar6) / (longlong)(int)uVar7);
-        iVar16 = iVar16 - iVar12;
-        iVar17 = (int)(CONCAT44(iVar18,uVar11) / (longlong)(int)uVar7);
-        lVar4 = (longlong)iVar17 * (longlong)(cornerHeight1Q12 - cornerHeight0Q12);
-        lVar1 = (longlong)iVar12 * (longlong)(cornerHeight2Q12 - cornerHeight0Q12);
-        lVar2 = (longlong)(iVar16 + (iVar15 - iVar17) * 2) * 0x901;
-        lVar3 = (longlong)iVar16 * -1999;
-        TVar24.distanceQ12 =
+        combinedHigh = (int)(CONCAT44(combinedHigh,heightDeltaOrLowWord) / (longlong)(int)productLowOrDivisor);
+        edgeHighOrCoord1 = edgeHighOrCoord1 - combinedHigh;
+        edgeHighC = (int)(CONCAT44(edgeHighD,rateHighOrEdgeSumLow) / (longlong)(int)productLowOrDivisor);
+        planeTermOrProductB = (longlong)edgeHighC * (longlong)(cornerHeight1Q12 - cornerHeight0Q12);
+        planeTermOrProductA = (longlong)combinedHigh * (longlong)(cornerHeight2Q12 - cornerHeight0Q12);
+        lengthZProduct = (longlong)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * 0x901;
+        lengthYProduct = (longlong)edgeHighOrCoord1 * -1999;
+        secondTriangleHit.distanceQ12 =
              FixedMath_Length3(((cornerHeight0Q12 +
-                                ((int)((ulonglong)lVar4 >> 0x20) << 0x14 | (uint)lVar4 >> 0xc)) -
+                                ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0x14 | (uint)planeTermOrProductB >> 0xc)) -
                                rayOriginZQ12) +
-                               ((int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc),
-                               (int)((ulonglong)lVar3 >> 0x20) << 0x14 | (uint)lVar3 >> 0xc,
-                               (int)((ulonglong)lVar2 >> 0x20) << 0x13 | (uint)lVar2 >> 0xd);
-        TVar24.carry = false;
-        return TVar24;
+                               ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0x14 | (uint)planeTermOrProductA >> 0xc),
+                               (int)((ulonglong)lengthYProduct >> 0x20) << 0x14 | (uint)lengthYProduct >> 0xc,
+                               (int)((ulonglong)lengthZProduct >> 0x20) << 0x13 | (uint)lengthZProduct >> 0xd);
+        secondTriangleHit.carry = false;
+        return secondTriangleHit;
       }
     }
   }
-  else if (-1 < (int)uVar14) {
-    uVar8 = (uVar7 - uVar6) - uVar11;
-    iVar17 = (((uVar14 - iVar12) - (uint)(uVar7 < uVar6)) - iVar18) - (uint)(uVar7 - uVar6 < uVar11)
+  else if (-1 < (int)rateShiftedWord) {
+    shiftedLowA = (productLowOrDivisor - heightDeltaOrLowWord) - rateHighOrEdgeSumLow;
+    edgeHighC = (((rateShiftedWord - combinedHigh) - (uint)(productLowOrDivisor < heightDeltaOrLowWord)) - edgeHighD) - (uint)(productLowOrDivisor - heightDeltaOrLowWord < rateHighOrEdgeSumLow)
     ;
-    if (-1 < iVar17) goto LAB_00504912;
+    if (-1 < edgeHighC) goto LAB_00504912;
   }
 TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet:
-  TVar22.carry = true;
-  TVar22.distanceQ12 = uVar6;
-  return TVar22;
+  rejectResult.carry = true;
+  rejectResult.distanceQ12 = heightDeltaOrLowWord;
+  return rejectResult;
 }
 
 
@@ -913,46 +913,46 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
-  int iVar2;
-  FieldGridCell *cell_00;
-  bool bVar3;
+  int rowStrideBytes;
+  int relativeHeightQ12;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar1 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
-           (iVar2 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
-           ) || ((int)g_TerrainHeightBandMaximumDelta < iVar2)) ||
-         (iVar2 < (int)g_TerrainHeightBandMinimumDelta)) {
+           (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
+           ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
+         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      cell_00 = cell + 1;
-      bVar3 = TerrainHeightBand_TestDirection0(scanStep + 4,cell_00);
-      if (bVar3) {
+      directionStartCell = cell + 1;
+      directionFailed = TerrainHeightBand_TestDirection0(scanStep + 4,directionStartCell);
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)((int)cell_00 + (0x50 - iVar1)) & 0x88006000) != 0) {
+      if ((*(uint *)((int)directionStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return true;
       }
-      iVar2 = *(int *)((int)cell_00 + (0x48 - iVar1)) - g_TerrainScanReferenceHeight;
-      if (0 < *(int *)((int)cell_00 + (0x4c - iVar1))) {
+      relativeHeightQ12 = *(int *)((int)directionStartCell + (0x48 - rowStrideBytes)) - g_TerrainScanReferenceHeight;
+      if (0 < *(int *)((int)directionStartCell + (0x4c - rowStrideBytes))) {
         return true;
       }
-      if ((int)g_TerrainHeightBandMaximumDelta < iVar2) {
+      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
         return true;
       }
-      if (iVar2 < (int)g_TerrainHeightBandMinimumDelta) {
+      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      cell = (FieldGridCell *)((int)cell_00 + (0x80 - iVar1));
+      cell = (FieldGridCell *)((int)directionStartCell + (0x80 - rowStrideBytes));
       scanStep = scanStep + 7;
-      bVar3 = TerrainHeightBand_TestDirection1
+      directionFailed = TerrainHeightBand_TestDirection1
                         (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (bVar3) {
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -973,47 +973,47 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
-  int iVar2;
-  FieldGridCell *cell_00;
-  bool bVar3;
+  int rowStrideBytes;
+  int relativeHeightQ12;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar1 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
-           (iVar2 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
-           ) || ((int)g_TerrainHeightBandMaximumDelta < iVar2)) ||
-         (iVar2 < (int)g_TerrainHeightBandMinimumDelta)) {
+           (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
+           ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
+         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      bVar3 = TerrainHeightBand_TestDirection1
+      directionFailed = TerrainHeightBand_TestDirection1
                         (scanStep + 4,
                          (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (bVar3) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)((int)cell + (0x50 - iVar1)) & 0x88006000) != 0) {
+      if ((*(uint *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return true;
       }
-      iVar2 = *(int *)((int)cell + (0x48 - iVar1)) - g_TerrainScanReferenceHeight;
-      if (0 < *(int *)((int)cell + (0x4c - iVar1))) {
+      relativeHeightQ12 = *(int *)((int)cell + (0x48 - rowStrideBytes)) - g_TerrainScanReferenceHeight;
+      if (0 < *(int *)((int)cell + (0x4c - rowStrideBytes))) {
         return true;
       }
-      if ((int)g_TerrainHeightBandMaximumDelta < iVar2) {
+      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
         return true;
       }
-      if (iVar2 < (int)g_TerrainHeightBandMinimumDelta) {
+      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      cell_00 = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - iVar1));
+      directionStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
       scanStep = scanStep + 7;
-      cell = cell_00 + 1;
-      bVar3 = TerrainHeightBand_TestDirection2(scanStep,cell_00);
-      if (bVar3) {
+      cell = directionStartCell + 1;
+      directionFailed = TerrainHeightBand_TestDirection2(scanStep,directionStartCell);
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1036,21 +1036,21 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  FieldGridCell *cell_00;
-  int iVar1;
-  bool bVar2;
+  FieldGridCell *directionStartCell;
+  int relativeHeightQ12;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
-           (iVar1 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
-           ) || ((int)g_TerrainHeightBandMaximumDelta < iVar1)) ||
-         (iVar1 < (int)g_TerrainHeightBandMinimumDelta)) {
+           (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
+           ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
+         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      bVar2 = TerrainHeightBand_TestDirection2
+      directionFailed = TerrainHeightBand_TestDirection2
                         (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (bVar2) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
@@ -1059,21 +1059,21 @@ TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *
       if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
         return true;
       }
-      iVar1 = cell[-1].terrainHeight - g_TerrainScanReferenceHeight;
+      relativeHeightQ12 = cell[-1].terrainHeight - g_TerrainScanReferenceHeight;
       if (0 < cell[-1].waterSurfaceDelta) {
         return true;
       }
-      if ((int)g_TerrainHeightBandMaximumDelta < iVar1) {
+      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
         return true;
       }
-      if (iVar1 < (int)g_TerrainHeightBandMinimumDelta) {
+      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      cell_00 = cell + -2;
+      directionStartCell = cell + -2;
       scanStep = scanStep + 7;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
-      bVar2 = TerrainHeightBand_TestDirection3(scanStep,cell_00);
-      if (bVar2) {
+      directionFailed = TerrainHeightBand_TestDirection3(scanStep,directionStartCell);
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1094,14 +1094,14 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,byte *cell)
 
 {
-  int iVar1;
-  int iVar2;
-  FieldGridCell *cell_00;
-  bool bVar3;
+  int rowStrideBytes;
+  int relativeHeightQ12;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar1 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if (((((*(uint *)(cell + 0x50) & 0x88006000) != 0) ||
            (0 < (int)*(PackedArgb32 *)(cell + 0x4c))) ||
           ((int)g_TerrainHeightBandMaximumDelta <
@@ -1110,32 +1110,32 @@ TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,byte *cell)
           (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      cell_00 = (FieldGridCell *)(cell + -0x80);
-      bVar3 = TerrainHeightBand_TestDirection3(scanStep + 4,cell_00);
-      if (bVar3) {
+      directionStartCell = (FieldGridCell *)(cell + -0x80);
+      directionFailed = TerrainHeightBand_TestDirection3(scanStep + 4,directionStartCell);
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)(cell_00->runtime60_6B + iVar1 + -0x10) & 0x88006000) != 0) {
+      if ((*(uint *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return true;
       }
-      iVar2 = *(int *)(cell_00->runtime60_6B + iVar1 + -0x18) - g_TerrainScanReferenceHeight;
-      if (0 < *(int *)(cell_00->runtime60_6B + iVar1 + -0x14)) {
+      relativeHeightQ12 = *(int *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x18) - g_TerrainScanReferenceHeight;
+      if (0 < *(int *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x14)) {
         return true;
       }
-      if ((int)g_TerrainHeightBandMaximumDelta < iVar2) {
+      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
         return true;
       }
-      if (iVar2 < (int)g_TerrainHeightBandMinimumDelta) {
+      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      cell = cell_00[-1].runtime0C_3F + iVar1 + -0xc;
+      cell = directionStartCell[-1].runtime0C_3F + rowStrideBytes + -0xc;
       scanStep = scanStep + 7;
-      bVar3 = TerrainHeightBand_TestDirection4
+      directionFailed = TerrainHeightBand_TestDirection4
                         (scanStep,(FieldGridCell *)(cell + g_TerrainScanRowStrideBytes));
-      if (bVar3) {
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1156,50 +1156,50 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  byte *pbVar1;
-  int iVar2;
-  int iVar3;
-  bool bVar4;
+  byte *cellRuntimeBase;
+  int rowStrideBytes;
+  int relativeHeightQ12;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar2 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
-           (iVar3 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
-           ) || ((int)g_TerrainHeightBandMaximumDelta < iVar3)) ||
-         (iVar3 < (int)g_TerrainHeightBandMinimumDelta)) {
+           (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
+           ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
+         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      bVar4 = TerrainHeightBand_TestDirection4
+      directionFailed = TerrainHeightBand_TestDirection4
                         (scanStep + 4,
                          (FieldGridCell *)
                          (cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (bVar4) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)(cell->runtime60_6B + iVar2 + -0x10) & 0x88006000) != 0) {
+      if ((*(uint *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return true;
       }
-      iVar3 = *(int *)(cell->runtime60_6B + iVar2 + -0x18) - g_TerrainScanReferenceHeight;
-      if (0 < *(int *)(cell->runtime60_6B + iVar2 + -0x14)) {
+      relativeHeightQ12 = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - g_TerrainScanReferenceHeight;
+      if (0 < *(int *)(cell->runtime60_6B + rowStrideBytes + -0x14)) {
         return true;
       }
-      if ((int)g_TerrainHeightBandMaximumDelta < iVar3) {
+      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
         return true;
       }
-      if (iVar3 < (int)g_TerrainHeightBandMinimumDelta) {
+      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      pbVar1 = cell->runtime0C_3F;
+      cellRuntimeBase = cell->runtime0C_3F;
       scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(pbVar1 + g_TerrainScanRowStrideBytes + iVar2 + -0xc) + -1;
-      bVar4 = TerrainHeightBand_TestDirection5
+      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) + -1;
+      directionFailed = TerrainHeightBand_TestDirection5
                         (scanStep,(FieldGridCell *)
-                                  (pbVar1 + g_TerrainScanRowStrideBytes + iVar2 + -0xc));
-      if (bVar4) {
+                                  (cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1222,23 +1222,23 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  FieldGridCell *cell_00;
-  int iVar1;
-  bool bVar2;
+  FieldGridCell *directionStartCell;
+  int relativeHeightQ12;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
-           (iVar1 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
-           ) || ((int)g_TerrainHeightBandMaximumDelta < iVar1)) ||
-         (iVar1 < (int)g_TerrainHeightBandMinimumDelta)) {
+           (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
+           ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
+         (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      bVar2 = TerrainHeightBand_TestDirection5
+      directionFailed = TerrainHeightBand_TestDirection5
                         (scanStep + 4,
                          (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc))
       ;
-      if (bVar2) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
@@ -1247,21 +1247,21 @@ TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *
       if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
         return true;
       }
-      iVar1 = cell[1].terrainHeight - g_TerrainScanReferenceHeight;
+      relativeHeightQ12 = cell[1].terrainHeight - g_TerrainScanReferenceHeight;
       if (0 < cell[1].waterSurfaceDelta) {
         return true;
       }
-      if ((int)g_TerrainHeightBandMaximumDelta < iVar1) {
+      if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
         return true;
       }
-      if (iVar1 < (int)g_TerrainHeightBandMinimumDelta) {
+      if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      cell_00 = cell + 2;
+      directionStartCell = cell + 2;
       scanStep = scanStep + 7;
       cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
-      bVar2 = TerrainHeightBand_TestDirection0(scanStep,cell_00);
-      if (bVar2) {
+      directionFailed = TerrainHeightBand_TestDirection0(scanStep,directionStartCell);
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1282,39 +1282,39 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
-  FieldGridCell *cell_00;
-  bool bVar2;
+  int rowStrideBytes;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar1 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
          ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      cell_00 = cell + 1;
-      bVar2 = TerrainAuxHeightThreshold_TestDirection0(scanStep + 4,cell_00);
-      if (bVar2) {
+      directionStartCell = cell + 1;
+      directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep + 4,directionStartCell);
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)((int)cell_00 + (0x50 - iVar1)) & 0x88006000) != 0) {
+      if ((*(uint *)((int)directionStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return true;
       }
-      if (*(int *)((int)cell_00 + (0x4c - iVar1)) < 0) {
+      if (*(int *)((int)directionStartCell + (0x4c - rowStrideBytes)) < 0) {
         return true;
       }
-      if (*(int *)((int)cell_00 + (0x78 - iVar1)) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)((int)directionStartCell + (0x78 - rowStrideBytes)) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      cell = (FieldGridCell *)((int)cell_00 + (0x80 - iVar1));
+      cell = (FieldGridCell *)((int)directionStartCell + (0x80 - rowStrideBytes));
       scanStep = scanStep + 7;
-      bVar2 = TerrainAuxHeightThreshold_TestDirection1
+      directionFailed = TerrainAuxHeightThreshold_TestDirection1
                         (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (bVar2) {
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1335,40 +1335,40 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
-  FieldGridCell *cell_00;
-  bool bVar2;
+  int rowStrideBytes;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar1 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
          ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      bVar2 = TerrainAuxHeightThreshold_TestDirection1
+      directionFailed = TerrainAuxHeightThreshold_TestDirection1
                         (scanStep + 4,
                          (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (bVar2) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)((int)cell + (0x50 - iVar1)) & 0x88006000) != 0) {
+      if ((*(uint *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return true;
       }
-      if (*(int *)((int)cell + (0x4c - iVar1)) < 0) {
+      if (*(int *)((int)cell + (0x4c - rowStrideBytes)) < 0) {
         return true;
       }
-      if (*(int *)((int)cell + (0x78 - iVar1)) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)((int)cell + (0x78 - rowStrideBytes)) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      cell_00 = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - iVar1));
+      directionStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
       scanStep = scanStep + 7;
-      cell = cell_00 + 1;
-      bVar2 = TerrainAuxHeightThreshold_TestDirection2(scanStep,cell_00);
-      if (bVar2) {
+      cell = directionStartCell + 1;
+      directionFailed = TerrainAuxHeightThreshold_TestDirection2(scanStep,directionStartCell);
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1389,8 +1389,8 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  FieldGridCell *cell_00;
-  bool bVar1;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1398,9 +1398,9 @@ TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGr
          ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      bVar1 = TerrainAuxHeightThreshold_TestDirection2
+      directionFailed = TerrainAuxHeightThreshold_TestDirection2
                         (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (bVar1) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
@@ -1415,11 +1415,11 @@ TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGr
       if ((int)cell[-1].triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      cell_00 = cell + -2;
+      directionStartCell = cell + -2;
       scanStep = scanStep + 7;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
-      bVar1 = TerrainAuxHeightThreshold_TestDirection3(scanStep,cell_00);
-      if (bVar1) {
+      directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep,directionStartCell);
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1440,40 +1440,40 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  int iVar1;
-  FieldGridCell *cell_00;
-  bool bVar2;
+  int rowStrideBytes;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar1 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
          ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      cell_00 = cell + -1;
-      bVar2 = TerrainAuxHeightThreshold_TestDirection3(scanStep + 4,cell_00);
-      if (bVar2) {
+      directionStartCell = cell + -1;
+      directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep + 4,directionStartCell);
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)(cell_00->runtime60_6B + iVar1 + -0x10) & 0x88006000) != 0) {
+      if ((*(uint *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return true;
       }
-      if (*(int *)(cell_00->runtime60_6B + iVar1 + -0x14) < 0) {
+      if (*(int *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x14) < 0) {
         return true;
       }
-      if (*(int *)(cell_00->runtime60_6B + iVar1 + 0x18) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)(directionStartCell->runtime60_6B + rowStrideBytes + 0x18) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      cell = (FieldGridCell *)(cell_00[-1].runtime0C_3F + iVar1 + -0xc);
+      cell = (FieldGridCell *)(directionStartCell[-1].runtime0C_3F + rowStrideBytes + -0xc);
       scanStep = scanStep + 7;
-      bVar2 = TerrainAuxHeightThreshold_TestDirection4
+      directionFailed = TerrainAuxHeightThreshold_TestDirection4
                         (scanStep,(FieldGridCell *)
                                   (cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (bVar2) {
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1494,43 +1494,43 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  byte *pbVar1;
-  int iVar2;
-  bool bVar3;
+  byte *cellRuntimeBase;
+  int rowStrideBytes;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      iVar2 = g_TerrainScanRowStrideBytes;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
       if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
          ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      bVar3 = TerrainAuxHeightThreshold_TestDirection4
+      directionFailed = TerrainAuxHeightThreshold_TestDirection4
                         (scanStep + 4,
                          (FieldGridCell *)
                          (cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (bVar3) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return false;
       }
-      if ((*(uint *)(cell->runtime60_6B + iVar2 + -0x10) & 0x88006000) != 0) {
+      if ((*(uint *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return true;
       }
-      if (*(int *)(cell->runtime60_6B + iVar2 + -0x14) < 0) {
+      if (*(int *)(cell->runtime60_6B + rowStrideBytes + -0x14) < 0) {
         return true;
       }
-      if (*(int *)(cell->runtime60_6B + iVar2 + 0x18) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)(cell->runtime60_6B + rowStrideBytes + 0x18) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      pbVar1 = cell->runtime0C_3F;
+      cellRuntimeBase = cell->runtime0C_3F;
       scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(pbVar1 + g_TerrainScanRowStrideBytes + iVar2 + -0xc) + -1;
-      bVar3 = TerrainAuxHeightThreshold_TestDirection5
+      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) + -1;
+      directionFailed = TerrainAuxHeightThreshold_TestDirection5
                         (scanStep,(FieldGridCell *)
-                                  (pbVar1 + g_TerrainScanRowStrideBytes + iVar2 + -0xc));
-      if (bVar3) {
+                                  (cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);
@@ -1551,8 +1551,8 @@ bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  FieldGridCell *cell_00;
-  bool bVar1;
+  FieldGridCell *directionStartCell;
+  bool directionFailed;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -1560,11 +1560,11 @@ TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGr
          ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      bVar1 = TerrainAuxHeightThreshold_TestDirection5
+      directionFailed = TerrainAuxHeightThreshold_TestDirection5
                         (scanStep + 4,
                          (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc))
       ;
-      if (bVar1) {
+      if (directionFailed) {
         return true;
       }
       if (g_TerrainScanStepLimit <= scanStep + 4) {
@@ -1579,11 +1579,11 @@ TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGr
       if ((int)cell[1].triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      cell_00 = cell + 2;
+      directionStartCell = cell + 2;
       scanStep = scanStep + 7;
       cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
-      bVar1 = TerrainAuxHeightThreshold_TestDirection0(scanStep,cell_00);
-      if (bVar1) {
+      directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep,directionStartCell);
+      if (directionFailed) {
         return true;
       }
     } while (scanStep < g_TerrainScanStepLimit);

@@ -29,49 +29,49 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext)
 
 {
-  GraphicsProjectedPointPair GVar1;
-  GraphicsProjectedPointPair GVar2;
-  GraphicsProjectedPointPair GVar3;
-  short sVar4;
-  short sVar5;
-  short sVar6;
-  short sVar7;
-  short sVar8;
-  short sVar9;
-  short sVar10;
-  short sVar11;
-  short sVar12;
-  short sVar13;
-  short sVar14;
-  short sVar15;
-  byte bVar16;
-  ushort uVar17;
-  GraphicsWorldCoordinateQ12 GVar18;
-  sdword sVar19;
-  int iVar20;
-  dword dVar21;
-  FixedMathScale32 FVar22;
-  Q12 QVar23;
-  GraphicsProjectedPointPair *pGVar24;
-  uint uVar25;
-  dword dVar26;
-  int iVar27;
-  dword dVar28;
-  int iVar29;
-  uint uVar30;
-  uint uVar31;
-  bool bVar32;
-  undefined1 uVar33;
-  undefined1 uVar34;
-  undefined8 uVar35;
-  undefined8 uVar36;
-  undefined8 uVar37;
-  undefined8 uVar38;
-  GraphicsProjectedPointPair GVar39;
-  FieldGridHeightEaxCf5 FVar40;
-  GraphicsProjectedBlockEaxCf5 GVar41;
-  FieldGridRaycastEaxEdxCf9 FVar42;
-  FixedDirectionXyzRegs12 FVar43;
+  GraphicsProjectedPointPair pointPair1;
+  GraphicsProjectedPointPair pointPair2;
+  GraphicsProjectedPointPair pointPair3;
+  short shadeA0;
+  short shadeB0;
+  short shadeC0;
+  short shadeA1;
+  short shadeB1;
+  short shadeC1;
+  short shadeA2;
+  short shadeB2;
+  short shadeC2;
+  short shadeA3;
+  short shadeB3;
+  short shadeC3;
+  byte tintAlpha;
+  ushort halfAlphaPair;
+  GraphicsWorldCoordinateQ12 sampleWorldZ;
+  sdword planeDotOrTextureOffset;
+  int radiusScaleOrCoordinate;
+  dword directionXOrTileCoordinate;
+  FixedMathScale32 surfaceDistanceQ12;
+  Q12 remainingRayLength;
+  GraphicsProjectedPointPair *projectedBlocks;
+  uint tintMaskOrIntensityB;
+  dword directionYOrGridStep;
+  int halfDirectionYOrCoordinate;
+  dword directionZ;
+  int halfDirectionZOrCoordinate;
+  uint intensityC;
+  uint heightDeltaOrIntensityA;
+  bool lacksGeometry;
+  undefined1 tintGreenHalf;
+  undefined1 tintRedHalf;
+  undefined8 shadedA;
+  undefined8 shadedB;
+  undefined8 shadedC;
+  undefined8 tintLanesOrShadedC;
+  GraphicsProjectedPointPair pointPair0;
+  FieldGridHeightEaxCf5 surfaceHeight;
+  GraphicsProjectedBlockEaxCf5 reservedBlocks;
+  FieldGridRaycastEaxEdxCf9 terrainRay;
+  FixedDirectionXyzRegs12 direction;
   
   if (g_GraphicsShadingGeneratedTextureCompletedTraversalCount == 0) {
     g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x =
@@ -80,28 +80,28 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
          (modelNode->worldTransform).translation.y;
     g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z =
          (modelNode->worldTransform).translation.z;
-    iVar20 = modelNode->subtreeBoundingRadiusQ12;
+    radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12;
     g_ModelCullViewRelativeX =
          g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - g_ViewOriginFixed.x;
     g_ModelCullViewRelativeY =
          g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - g_ViewOriginFixed.y;
     g_ModelCullViewRelativeZ =
          g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - g_ViewOriginFixed.z;
-    bVar32 = GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(modelNode);
-    if (!bVar32) {
-      uVar31 = (uint)(iVar20 * 9) >> 2;
-      sVar19 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
+    lacksGeometry = GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(modelNode);
+    if (!lacksGeometry) {
+      heightDeltaOrIntensityA = (uint)(radiusScaleOrCoordinate * 9) >> 2;
+      planeDotOrTextureOffset = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
                                 (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
-      if ((((sVar19 <= (int)uVar31) &&
-           (sVar19 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,
+      if ((((planeDotOrTextureOffset <= (int)heightDeltaOrIntensityA) &&
+           (planeDotOrTextureOffset = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 1,
                                       (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX),
-           sVar19 <= (int)uVar31)) &&
-          (sVar19 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 2,
+           planeDotOrTextureOffset <= (int)heightDeltaOrIntensityA)) &&
+          (planeDotOrTextureOffset = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 2,
                                      (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX),
-          sVar19 <= (int)uVar31)) &&
-         (sVar19 = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 3,
+          planeDotOrTextureOffset <= (int)heightDeltaOrIntensityA)) &&
+         (planeDotOrTextureOffset = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0 + 3,
                                     (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX),
-         sVar19 <= (int)uVar31)) {
+         planeDotOrTextureOffset <= (int)heightDeltaOrIntensityA)) {
         FixedTransform_ApplyPoint
                   ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
                    &g_GeneratedTextureScratchRuntime.currentModelOriginQ12,
@@ -114,26 +114,26 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           g_GeneratedTextureScratchRuntime.projectedMaxX = -0x7fffffff;
           g_GeneratedTextureScratchRuntime.projectedMaxY = -0x7fffffff;
           GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds(modelNode);
-          FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+          direction = FixedMath_DirectionFromAnglesScaledRegs
                              (0,renderContext->viewAngleB8 + 0x4000 & 0xffff,
                               g_GeneratedTextureScratchRuntime.projectedMinX +
                               g_GeneratedTextureScratchRuntime.projectedMaxX >> 1);
           g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x =
-               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - FVar43.eax;
+               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - direction.eax;
           g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y =
-               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - FVar43.ecx;
+               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - direction.ecx;
           g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z =
-               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - FVar43.edx;
-          FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - direction.edx;
+          direction = FixedMath_DirectionFromAnglesScaledRegs
                              (renderContext->viewAngleBC + 0x4000,renderContext->viewAngleB8,
                               g_GeneratedTextureScratchRuntime.projectedMinY +
                               g_GeneratedTextureScratchRuntime.projectedMaxY >> 1);
           g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x =
-               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - FVar43.eax;
+               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x - direction.eax;
           g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y =
-               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - FVar43.ecx;
+               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y - direction.ecx;
           g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z =
-               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - FVar43.edx;
+               g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - direction.edx;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
                g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
@@ -206,7 +206,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
                g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
-          iVar20 = (int)(CONCAT44((int)(g_GraphicsShadingGridHalfSize -
+          radiusScaleOrCoordinate = (int)(CONCAT44((int)(g_GraphicsShadingGridHalfSize -
                                        g_GeneratedTextureScratchRuntime.downsampleBorderOffset) >> 8
                                   ,(g_GraphicsShadingGridHalfSize -
                                    g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
@@ -216,26 +216,26 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                               g_GeneratedTextureScratchRuntime.projectedMinX));
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow0[0] =
                (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (longlong)iVar20) >>
+                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (longlong)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (longlong)iVar20) >>
+               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (longlong)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow0[1] =
                (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (longlong)iVar20) >>
+                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (longlong)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (longlong)iVar20) >>
+               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (longlong)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow0[2] =
                (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (longlong)iVar20) >>
+                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (longlong)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (longlong)iVar20) >>
+               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (longlong)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[0] = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[1] = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[2] = 0;
-          iVar20 = (int)(CONCAT44((int)(g_GraphicsShadingGridHalfSize -
+          radiusScaleOrCoordinate = (int)(CONCAT44((int)(g_GraphicsShadingGridHalfSize -
                                        g_GeneratedTextureScratchRuntime.downsampleBorderOffset) >> 8
                                   ,(g_GraphicsShadingGridHalfSize -
                                    g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
@@ -245,166 +245,166 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                               g_GeneratedTextureScratchRuntime.projectedMinY));
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow1[0] =
                (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (longlong)iVar20) >>
+                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (longlong)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (longlong)iVar20) >>
+               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (longlong)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow1[1] =
                (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (longlong)iVar20) >>
+                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (longlong)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (longlong)iVar20) >>
+               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (longlong)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow1[2] =
                (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (longlong)iVar20) >>
+                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (longlong)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (longlong)iVar20) >>
+               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (longlong)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.translation.x = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.translation.y = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.translation.z = 0;
-          FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+          direction = FixedMath_DirectionFromAnglesScaledRegs
                              (0,renderContext->viewAngleB8 + 0x4000 & 0xffff,
                               g_GeneratedTextureScratchRuntime.projectedMaxX -
                               g_GeneratedTextureScratchRuntime.projectedMinX >> 1);
-          dVar28 = FVar43.edx;
-          dVar26 = FVar43.ecx;
-          dVar21 = FVar43.eax;
+          directionZ = direction.edx;
+          directionYOrGridStep = direction.ecx;
+          directionXOrTileCoordinate = direction.eax;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + dVar21;
+               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + dVar26;
+               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + dVar28;
+               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + directionZ;
           g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + dVar21;
+               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + dVar26;
+               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + dVar28;
+               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + directionZ;
           g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x - dVar21;
+               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x - directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y - dVar26;
+               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y - directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z - dVar28;
+               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z - directionZ;
           g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x - dVar21;
+               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x - directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - dVar26;
+               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - dVar28;
+               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - directionZ;
           g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + dVar21;
+               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + dVar26;
+               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + dVar28;
+               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + directionZ;
           g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x - dVar21;
+               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x - directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y - dVar26;
+               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y - directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z - dVar28;
-          iVar20 = (int)dVar21 >> 1;
-          iVar27 = (int)dVar26 >> 1;
-          iVar29 = (int)dVar28 >> 1;
+               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z - directionZ;
+          radiusScaleOrCoordinate = (int)directionXOrTileCoordinate >> 1;
+          halfDirectionYOrCoordinate = (int)directionYOrGridStep >> 1;
+          halfDirectionZOrCoordinate = (int)directionZ >> 1;
           g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + iVar20;
+               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + iVar27;
+               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + iVar29;
+               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + iVar20;
+               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + iVar27;
+               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + iVar29;
+               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x - iVar20;
+               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x - radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y - iVar27;
+               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y - halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z - iVar29;
+               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z - halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x - iVar20;
+               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x - radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y - iVar27;
+               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y - halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z - iVar29;
-          FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z - halfDirectionZOrCoordinate;
+          direction = FixedMath_DirectionFromAnglesScaledRegs
                              (renderContext->viewAngleBC + 0x4000,renderContext->viewAngleB8,
                               g_GeneratedTextureScratchRuntime.projectedMaxY -
                               g_GeneratedTextureScratchRuntime.projectedMinY >> 1);
-          dVar28 = FVar43.edx;
-          dVar26 = FVar43.ecx;
-          dVar21 = FVar43.eax;
+          directionZ = direction.edx;
+          directionYOrGridStep = direction.ecx;
+          directionXOrTileCoordinate = direction.eax;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + dVar21;
+               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + dVar26;
+               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + dVar28;
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z;
+               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + directionZ;
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z;
           g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x - dVar21;
+               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x - directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y - dVar26;
+               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y - directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z - dVar28;
+               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z - directionZ;
           g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + dVar21;
+               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + dVar26;
+               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + dVar28;
+               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + directionZ;
           g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x - dVar21;
+               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x - directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - dVar26;
+               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - dVar28;
+               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - directionZ;
           g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + dVar21;
+               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + dVar26;
+               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + dVar28;
+               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + directionZ;
           g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x - dVar21;
+               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x - directionXOrTileCoordinate;
           g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y - dVar26;
+               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y - directionYOrGridStep;
           g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z - dVar28;
-          iVar20 = (int)dVar21 >> 1;
-          iVar27 = (int)dVar26 >> 1;
-          iVar29 = (int)dVar28 >> 1;
+               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z - directionZ;
+          radiusScaleOrCoordinate = (int)directionXOrTileCoordinate >> 1;
+          halfDirectionYOrCoordinate = (int)directionYOrGridStep >> 1;
+          halfDirectionZOrCoordinate = (int)directionZ >> 1;
           g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + iVar20;
+               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + iVar27;
+               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + iVar29;
+               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x - iVar20;
+               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x - radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y - iVar27;
+               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y - halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z - iVar29;
+               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z - halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + iVar20;
+               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + iVar27;
+               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + iVar29;
+               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x - iVar20;
+               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x - radiusScaleOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y - iVar27;
+               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y - halfDirectionYOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z - iVar29;
+               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z - halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 =
                g_GraphicsShadingGridStepQ20Current - 0x1000;
           g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 =
@@ -428,75 +428,75 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20;
           g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 =
                g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[0].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20) {
@@ -505,126 +505,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[2].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20) {
@@ -633,126 +633,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[1].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20) {
@@ -761,126 +761,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[3].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20) {
@@ -889,126 +889,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[4].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20) {
@@ -1017,126 +1017,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[5].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20) {
@@ -1145,126 +1145,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[6].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20) {
@@ -1273,126 +1273,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[7].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20) {
@@ -1401,126 +1401,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[8].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20) {
@@ -1529,126 +1529,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
+            if (terrainRay.carry) {
               g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 =
-                   FVar42.distanceQ12;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+                   terrainRay.distanceQ12;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[10].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20) {
@@ -1657,126 +1657,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
-              g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = FVar42.distanceQ12
+            if (terrainRay.carry) {
+              g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[9].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20) {
@@ -1785,126 +1785,126 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar18 = g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z;
-          FVar40 = FieldGrid_InterpolateTopSurfaceHeight
+          sampleWorldZ = g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z;
+          surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
                               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                               renderContext->fieldGrid);
-          sVar19 = g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20;
-          uVar31 = FVar40.heightQ12 - GVar18;
-          if (FVar40.heightQ12 < GVar18) {
-            FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+          planeDotOrTextureOffset = g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20;
+          heightDeltaOrIntensityA = surfaceHeight.heightQ12 - sampleWorldZ;
+          if (surfaceHeight.heightQ12 < sampleWorldZ) {
+            terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                 modelNode->subtreeBoundingRadiusQ12 * 2,
                                 g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z,
                                 g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (FVar42.carry) {
+            if (terrainRay.carry) {
               g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 =
-                   FVar42.distanceQ12;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+                   terrainRay.distanceQ12;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + direction.edx;
             }
             else {
-              iVar20 = modelNode->subtreeBoundingRadiusQ12 * 2;
+              radiusScaleOrCoordinate = modelNode->subtreeBoundingRadiusQ12 * 2;
               if (g_GraphicsShadingGridStepQ20Current -
                   g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              QVar23 = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((longlong)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[0xb].
-                                   textureCoordinateOffsetQ20) * (longlong)iVar20) /
+                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
                             (longlong)(int)g_GraphicsShadingGridStepQ20Current);
-              g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 = iVar20;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,iVar20);
+              g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + FVar43.edx;
-              uVar31 = renderContext->viewAngleB8 ^ 0x8000;
-              FVar42 = FieldGrid_RaycastTerrainSurfaceDistanceCf
-                                 (-renderContext->viewAngleBC - 0x4000,uVar31,QVar23,
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + direction.edx;
+              heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+                                 (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                                   renderContext->fieldGrid);
-              FVar22 = FVar42.distanceQ12;
-              if (!FVar42.carry) {
+              surfaceDistanceQ12 = terrainRay.distanceQ12;
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
-                                 (FVar42.materialOrCellIndex,uVar31,FVar22);
+              direction = FixedMath_DirectionFromAnglesScaledRegs
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)FVar22 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
+                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
                          (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20) {
@@ -1913,687 +1913,687 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= uVar31) {
-              uVar31 = modelNode->subtreeBoundingRadiusQ12;
+            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+              heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 = 0;
-            iVar20 = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
+            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
                            (longlong)
                            (int)((int)((ulonglong)
-                                       ((longlong)(int)uVar31 *
+                                       ((longlong)(int)heightDeltaOrIntensityA *
                                        (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)uVar31 *
+                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
                                               (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
                                         >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 =
-                 g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 - iVar20;
-            if (sVar19 < iVar20) {
+                 g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
+            if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
               g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 = 0;
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2);
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x - FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x - direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y - FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y - direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z - FVar43.edx;
-              FVar42 = FieldGrid_RaycastTerrainTrianglesAlongDirection
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z - direction.edx;
+              terrainRay = FieldGrid_RaycastTerrainTrianglesAlongDirection
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
                                   modelNode->subtreeBoundingRadiusQ12 * 2,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!FVar42.carry) {
+              if (!terrainRay.carry) {
                 return;
               }
-              FVar43 = FixedMath_DirectionFromAnglesScaledRegs
+              direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,
-                                  FVar42.distanceQ12);
+                                  terrainRay.distanceQ12);
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + FVar43.eax;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + direction.eax;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + FVar43.ecx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y + direction.ecx;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + FVar43.edx;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + direction.edx;
             }
             else {
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
-                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + uVar31;
+                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + heightDeltaOrIntensityA;
             }
           }
-          GVar41 = GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
+          reservedBlocks = GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
                              (renderContext);
-          pGVar24 = GVar41.firstBlock;
-          if (!GVar41.carry) {
+          projectedBlocks = reservedBlocks.firstBlock;
+          if (!reservedBlocks.carry) {
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x65),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x65),
                        &g_GeneratedTextureScratchRuntime.samples[0].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0xb1),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0xb1),
                        &g_GeneratedTextureScratchRuntime.samples[1].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x71),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x71),
                        &g_GeneratedTextureScratchRuntime.samples[2].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0xa9),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0xa9),
                        &g_GeneratedTextureScratchRuntime.samples[3].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x55),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x55),
                        &g_GeneratedTextureScratchRuntime.samples[4].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x39),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x39),
                        &g_GeneratedTextureScratchRuntime.samples[5].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x29),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x29),
                        &g_GeneratedTextureScratchRuntime.samples[6].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x45),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x45),
                        &g_GeneratedTextureScratchRuntime.samples[7].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 1),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 1),
                        &g_GeneratedTextureScratchRuntime.samples[8].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 9),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 9),
                        &g_GeneratedTextureScratchRuntime.samples[9].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 5),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 5),
                        &g_GeneratedTextureScratchRuntime.samples[10].worldPoint,
                        &g_ViewProjectionMatrixFixed);
             FixedTransform_ApplyPoint
-                      ((GraphicsFixedVec3 *)(pGVar24 + 0x11),
+                      ((GraphicsFixedVec3 *)(projectedBlocks + 0x11),
                        &g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint,
                        &g_ViewProjectionMatrixFixed);
-            if ((((pGVar24[0x66].projectedX < (int)g_ProjectionScaleFixed) ||
-                 (pGVar24[0xb2].projectedX < (int)g_ProjectionScaleFixed)) ||
-                ((pGVar24[0x72].projectedX < (int)g_ProjectionScaleFixed ||
-                 (((pGVar24[0xaa].projectedX < (int)g_ProjectionScaleFixed ||
-                   (pGVar24[0x56].projectedX < (int)g_ProjectionScaleFixed)) ||
-                  (pGVar24[0x3a].projectedX < (int)g_ProjectionScaleFixed)))))) ||
-               (((pGVar24[0x2a].projectedX < (int)g_ProjectionScaleFixed ||
-                 (pGVar24[0x46].projectedX < (int)g_ProjectionScaleFixed)) ||
-                ((pGVar24[2].projectedX < (int)g_ProjectionScaleFixed ||
-                 (((pGVar24[10].projectedX < (int)g_ProjectionScaleFixed ||
-                   (pGVar24[6].projectedX < (int)g_ProjectionScaleFixed)) ||
-                  (pGVar24[0x12].projectedX < (int)g_ProjectionScaleFixed)))))))) {
+            if ((((projectedBlocks[0x66].projectedX < (int)g_ProjectionScaleFixed) ||
+                 (projectedBlocks[0xb2].projectedX < (int)g_ProjectionScaleFixed)) ||
+                ((projectedBlocks[0x72].projectedX < (int)g_ProjectionScaleFixed ||
+                 (((projectedBlocks[0xaa].projectedX < (int)g_ProjectionScaleFixed ||
+                   (projectedBlocks[0x56].projectedX < (int)g_ProjectionScaleFixed)) ||
+                  (projectedBlocks[0x3a].projectedX < (int)g_ProjectionScaleFixed)))))) ||
+               (((projectedBlocks[0x2a].projectedX < (int)g_ProjectionScaleFixed ||
+                 (projectedBlocks[0x46].projectedX < (int)g_ProjectionScaleFixed)) ||
+                ((projectedBlocks[2].projectedX < (int)g_ProjectionScaleFixed ||
+                 (((projectedBlocks[10].projectedX < (int)g_ProjectionScaleFixed ||
+                   (projectedBlocks[6].projectedX < (int)g_ProjectionScaleFixed)) ||
+                  (projectedBlocks[0x12].projectedX < (int)g_ProjectionScaleFixed)))))))) {
               GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks(renderContext);
             }
             else {
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x65));
-              pGVar24[100] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0xb1));
-              pGVar24[0xb0] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x71));
-              pGVar24[0x70] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0xa9));
-              pGVar24[0xa8] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x55));
-              pGVar24[0x54] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x39));
-              pGVar24[0x38] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x29));
-              pGVar24[0x28] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x45));
-              pGVar24[0x44] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 1));
-              *pGVar24 = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 9));
-              pGVar24[8] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 5));
-              pGVar24[4] = GVar39;
-              GVar39 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(pGVar24 + 0x11));
-              pGVar24[0x10] = GVar39;
-              dVar26 = g_GraphicsShadingGridStepQ20;
-              dVar21 = g_GraphicsShadingGeneratedTextureTileXQ20;
-              iVar27 = (g_GraphicsShadingGridStepQ20 - 0x1000) +
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x65));
+              projectedBlocks[100] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0xb1));
+              projectedBlocks[0xb0] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x71));
+              projectedBlocks[0x70] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0xa9));
+              projectedBlocks[0xa8] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x55));
+              projectedBlocks[0x54] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x39));
+              projectedBlocks[0x38] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x29));
+              projectedBlocks[0x28] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x45));
+              projectedBlocks[0x44] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 1));
+              *projectedBlocks = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 9));
+              projectedBlocks[8] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 5));
+              projectedBlocks[4] = pointPair0;
+              pointPair0 = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)(projectedBlocks + 0x11));
+              projectedBlocks[0x10] = pointPair0;
+              directionYOrGridStep = g_GraphicsShadingGridStepQ20;
+              directionXOrTileCoordinate = g_GraphicsShadingGeneratedTextureTileXQ20;
+              halfDirectionYOrCoordinate = (g_GraphicsShadingGridStepQ20 - 0x1000) +
                        g_GraphicsShadingGeneratedTextureTileXQ20;
-              iVar20 = ((int)g_GraphicsShadingGridStepQ20 >> 1) +
+              radiusScaleOrCoordinate = ((int)g_GraphicsShadingGridStepQ20 >> 1) +
                        g_GraphicsShadingGeneratedTextureTileXQ20;
-              pGVar24[0x66].projectedY = g_GraphicsShadingGeneratedTextureTileXQ20;
-              pGVar24[0x72].projectedY = iVar27;
-              pGVar24[0xb2].projectedY = dVar21;
-              pGVar24[0xaa].projectedY = iVar27;
-              pGVar24[0x56].projectedY = dVar21;
-              pGVar24[0x3a].projectedY = iVar27;
-              pGVar24[0x2a].projectedY = iVar20;
-              pGVar24[0x46].projectedY = iVar20;
-              iVar27 = ((int)dVar26 >> 2) + iVar20;
-              iVar20 = iVar20 - ((int)dVar26 >> 2);
-              pGVar24[2].projectedY = iVar20;
-              pGVar24[6].projectedY = iVar27;
-              pGVar24[10].projectedY = iVar20;
-              pGVar24[0x12].projectedY = iVar27;
-              dVar21 = g_GraphicsShadingGeneratedTextureTileYQ20;
-              iVar29 = g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 +
+              projectedBlocks[0x66].projectedY = g_GraphicsShadingGeneratedTextureTileXQ20;
+              projectedBlocks[0x72].projectedY = halfDirectionYOrCoordinate;
+              projectedBlocks[0xb2].projectedY = directionXOrTileCoordinate;
+              projectedBlocks[0xaa].projectedY = halfDirectionYOrCoordinate;
+              projectedBlocks[0x56].projectedY = directionXOrTileCoordinate;
+              projectedBlocks[0x3a].projectedY = halfDirectionYOrCoordinate;
+              projectedBlocks[0x2a].projectedY = radiusScaleOrCoordinate;
+              projectedBlocks[0x46].projectedY = radiusScaleOrCoordinate;
+              halfDirectionYOrCoordinate = ((int)directionYOrGridStep >> 2) + radiusScaleOrCoordinate;
+              radiusScaleOrCoordinate = radiusScaleOrCoordinate - ((int)directionYOrGridStep >> 2);
+              projectedBlocks[2].projectedY = radiusScaleOrCoordinate;
+              projectedBlocks[6].projectedY = halfDirectionYOrCoordinate;
+              projectedBlocks[10].projectedY = radiusScaleOrCoordinate;
+              projectedBlocks[0x12].projectedY = halfDirectionYOrCoordinate;
+              directionXOrTileCoordinate = g_GraphicsShadingGeneratedTextureTileYQ20;
+              halfDirectionZOrCoordinate = g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 +
                        g_GraphicsShadingGeneratedTextureTileYQ20;
-              iVar20 = g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 +
+              radiusScaleOrCoordinate = g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 +
                        g_GraphicsShadingGeneratedTextureTileYQ20;
-              iVar27 = g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 +
+              halfDirectionYOrCoordinate = g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 +
                        g_GraphicsShadingGeneratedTextureTileYQ20;
-              pGVar24[0x67].projectedX =
+              projectedBlocks[0x67].projectedX =
                    g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 +
                    g_GraphicsShadingGeneratedTextureTileYQ20;
-              pGVar24[0xb3].projectedX = iVar29;
-              pGVar24[0x73].projectedX = iVar20;
-              pGVar24[0xab].projectedX = iVar27;
-              iVar29 = g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 +
-                       dVar21;
-              iVar20 = g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 +
-                       dVar21;
-              iVar27 = g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 +
-                       dVar21;
-              pGVar24[0x57].projectedX =
-                   g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 + dVar21;
-              pGVar24[0x3b].projectedX = iVar29;
-              pGVar24[0x2b].projectedX = iVar20;
-              pGVar24[0x47].projectedX = iVar27;
-              iVar29 = g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 +
-                       dVar21;
-              iVar20 = g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 +
-                       dVar21;
-              iVar27 = g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 +
-                       dVar21;
-              pGVar24[3].projectedX =
-                   g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 + dVar21;
-              pGVar24[0xb].projectedX = iVar29;
-              pGVar24[7].projectedX = iVar20;
-              pGVar24[0x13].projectedX = iVar27;
-              pGVar24[0x66].projectedX = pGVar24[0x66].projectedX + -0x1000;
-              pGVar24[0xb2].projectedX = pGVar24[0xb2].projectedX + -0x1000;
-              pGVar24[0x72].projectedX = pGVar24[0x72].projectedX + -0x1000;
-              pGVar24[0xaa].projectedX = pGVar24[0xaa].projectedX + -0x1000;
-              pGVar24[0x56].projectedX = pGVar24[0x56].projectedX + -0x1000;
-              pGVar24[0x3a].projectedX = pGVar24[0x3a].projectedX + -0x1000;
-              pGVar24[0x2a].projectedX = pGVar24[0x2a].projectedX + -0x1000;
-              pGVar24[0x46].projectedX = pGVar24[0x46].projectedX + -0x1000;
-              pGVar24[2].projectedX = pGVar24[2].projectedX + -0x1000;
-              pGVar24[10].projectedX = pGVar24[10].projectedX + -0x1000;
-              pGVar24[6].projectedX = pGVar24[6].projectedX + -0x1000;
-              pGVar24[0x12].projectedX = pGVar24[0x12].projectedX + -0x1000;
-              uVar31 = modelNode->tintArgb >> 1;
-              uVar25 = uVar31 | 0xffffff;
-              bVar16 = (byte)(modelNode->tintArgb >> 0x18);
-              uVar17 = CONCAT11(bVar16 >> 1,bVar16 >> 1);
-              uVar34 = (undefined1)(uVar25 >> 0x10);
-              uVar33 = (undefined1)(uVar25 >> 8);
-              uVar38 = CONCAT26(uVar17 >> 4,
-                                CONCAT24((ushort)(CONCAT35(CONCAT21(uVar17,uVar34),
-                                                           CONCAT14(uVar34,uVar31)) >> 0x20) >> 4,
-                                         CONCAT22(CONCAT11(uVar33,uVar33) >> 4,
-                                                  CONCAT11((char)uVar25,(char)uVar25) >> 4)));
-              uVar31 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12;
-              if ((int)uVar31 < 0) {
-                uVar31 = 0;
+              projectedBlocks[0xb3].projectedX = halfDirectionZOrCoordinate;
+              projectedBlocks[0x73].projectedX = radiusScaleOrCoordinate;
+              projectedBlocks[0xab].projectedX = halfDirectionYOrCoordinate;
+              halfDirectionZOrCoordinate = g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 +
+                       directionXOrTileCoordinate;
+              radiusScaleOrCoordinate = g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 +
+                       directionXOrTileCoordinate;
+              halfDirectionYOrCoordinate = g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 +
+                       directionXOrTileCoordinate;
+              projectedBlocks[0x57].projectedX =
+                   g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 + directionXOrTileCoordinate;
+              projectedBlocks[0x3b].projectedX = halfDirectionZOrCoordinate;
+              projectedBlocks[0x2b].projectedX = radiusScaleOrCoordinate;
+              projectedBlocks[0x47].projectedX = halfDirectionYOrCoordinate;
+              halfDirectionZOrCoordinate = g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 +
+                       directionXOrTileCoordinate;
+              radiusScaleOrCoordinate = g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 +
+                       directionXOrTileCoordinate;
+              halfDirectionYOrCoordinate = g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 +
+                       directionXOrTileCoordinate;
+              projectedBlocks[3].projectedX =
+                   g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 + directionXOrTileCoordinate;
+              projectedBlocks[0xb].projectedX = halfDirectionZOrCoordinate;
+              projectedBlocks[7].projectedX = radiusScaleOrCoordinate;
+              projectedBlocks[0x13].projectedX = halfDirectionYOrCoordinate;
+              projectedBlocks[0x66].projectedX = projectedBlocks[0x66].projectedX + -0x1000;
+              projectedBlocks[0xb2].projectedX = projectedBlocks[0xb2].projectedX + -0x1000;
+              projectedBlocks[0x72].projectedX = projectedBlocks[0x72].projectedX + -0x1000;
+              projectedBlocks[0xaa].projectedX = projectedBlocks[0xaa].projectedX + -0x1000;
+              projectedBlocks[0x56].projectedX = projectedBlocks[0x56].projectedX + -0x1000;
+              projectedBlocks[0x3a].projectedX = projectedBlocks[0x3a].projectedX + -0x1000;
+              projectedBlocks[0x2a].projectedX = projectedBlocks[0x2a].projectedX + -0x1000;
+              projectedBlocks[0x46].projectedX = projectedBlocks[0x46].projectedX + -0x1000;
+              projectedBlocks[2].projectedX = projectedBlocks[2].projectedX + -0x1000;
+              projectedBlocks[10].projectedX = projectedBlocks[10].projectedX + -0x1000;
+              projectedBlocks[6].projectedX = projectedBlocks[6].projectedX + -0x1000;
+              projectedBlocks[0x12].projectedX = projectedBlocks[0x12].projectedX + -0x1000;
+              heightDeltaOrIntensityA = modelNode->tintArgb >> 1;
+              tintMaskOrIntensityB = heightDeltaOrIntensityA | 0xffffff;
+              tintAlpha = (byte)(modelNode->tintArgb >> 0x18);
+              halfAlphaPair = CONCAT11(tintAlpha >> 1,tintAlpha >> 1);
+              tintRedHalf = (undefined1)(tintMaskOrIntensityB >> 0x10);
+              tintGreenHalf = (undefined1)(tintMaskOrIntensityB >> 8);
+              tintLanesOrShadedC = CONCAT26(halfAlphaPair >> 4,
+                                CONCAT24((ushort)(CONCAT35(CONCAT21(halfAlphaPair,tintRedHalf),
+                                                           CONCAT14(tintRedHalf,heightDeltaOrIntensityA)) >> 0x20) >> 4,
+                                         CONCAT22(CONCAT11(tintGreenHalf,tintGreenHalf) >> 4,
+                                                  CONCAT11((char)tintMaskOrIntensityB,(char)tintMaskOrIntensityB) >> 4)));
+              heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12;
+              if ((int)heightDeltaOrIntensityA < 0) {
+                heightDeltaOrIntensityA = 0;
               }
-              uVar25 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12;
-              if ((int)uVar25 < 0) {
-                uVar25 = 0;
+              tintMaskOrIntensityB = 0x5000 - g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12;
+              if ((int)tintMaskOrIntensityB < 0) {
+                tintMaskOrIntensityB = 0;
               }
-              uVar30 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12;
-              if ((int)uVar30 < 0) {
-                uVar30 = 0;
+              intensityC = 0x5000 - g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12;
+              if ((int)intensityC < 0) {
+                intensityC = 0;
               }
-              uVar31 = uVar31 >> 6;
-              uVar25 = uVar25 >> 6;
-              uVar30 = uVar30 >> 6;
-              if (0xff < uVar31) {
-                uVar31 = 0xff;
+              heightDeltaOrIntensityA = heightDeltaOrIntensityA >> 6;
+              tintMaskOrIntensityB = tintMaskOrIntensityB >> 6;
+              intensityC = intensityC >> 6;
+              if (0xff < heightDeltaOrIntensityA) {
+                heightDeltaOrIntensityA = 0xff;
               }
-              if (0xff < uVar25) {
-                uVar25 = 0xff;
+              if (0xff < tintMaskOrIntensityB) {
+                tintMaskOrIntensityB = 0xff;
               }
-              if (0xff < uVar30) {
-                uVar30 = 0xff;
+              if (0xff < intensityC) {
+                intensityC = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              sVar4 = (short)uVar35;
-              sVar7 = (short)((ulonglong)uVar35 >> 0x10);
-              sVar10 = (short)((ulonglong)uVar35 >> 0x20);
-              sVar13 = (short)((ulonglong)uVar35 >> 0x30);
-              sVar5 = (short)uVar36;
-              sVar8 = (short)((ulonglong)uVar36 >> 0x10);
-              sVar11 = (short)((ulonglong)uVar36 >> 0x20);
-              sVar14 = (short)((ulonglong)uVar36 >> 0x30);
-              sVar6 = (short)uVar37;
-              sVar9 = (short)((ulonglong)uVar37 >> 0x10);
-              sVar12 = (short)((ulonglong)uVar37 >> 0x20);
-              sVar15 = (short)((ulonglong)uVar37 >> 0x30);
-              pGVar24[0x67].projectedY =
-                   CONCAT13((0 < sVar13) * (sVar13 < 0x100) * (char)((ulonglong)uVar35 >> 0x30) -
-                            (0xff < sVar13),
-                            CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                                     (char)((ulonglong)uVar35 >> 0x20) - (0xff < sVar10),
-                                     CONCAT11((0 < sVar7) * (sVar7 < 0x100) *
-                                              (char)((ulonglong)uVar35 >> 0x10) - (0xff < sVar7),
-                                              (0 < sVar4) * (sVar4 < 0x100) * (char)uVar35 -
-                                              (0xff < sVar4))));
-              pGVar24[0xb3].projectedY =
-                   CONCAT13((0 < sVar14) * (sVar14 < 0x100) * (char)((ulonglong)uVar36 >> 0x30) -
-                            (0xff < sVar14),
-                            CONCAT12((0 < sVar11) * (sVar11 < 0x100) *
-                                     (char)((ulonglong)uVar36 >> 0x20) - (0xff < sVar11),
-                                     CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
-                                              (char)((ulonglong)uVar36 >> 0x10) - (0xff < sVar8),
-                                              (0 < sVar5) * (sVar5 < 0x100) * (char)uVar36 -
-                                              (0xff < sVar5))));
-              pGVar24[0x73].projectedY =
-                   CONCAT13((0 < sVar15) * (sVar15 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
-                            (0xff < sVar15),
-                            CONCAT12((0 < sVar12) * (sVar12 < 0x100) *
-                                     (char)((ulonglong)uVar37 >> 0x20) - (0xff < sVar12),
-                                     CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
-                                              (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar9),
-                                              (0 < sVar6) * (sVar6 < 0x100) * (char)uVar37 -
-                                              (0xff < sVar6))));
-              uVar31 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12;
-              if ((int)uVar31 < 0) {
-                uVar31 = 0;
+              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadeA0 = (short)shadedA;
+              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
+              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
+              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
+              shadeB0 = (short)shadedB;
+              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
+              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
+              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
+              shadeC0 = (short)shadedC;
+              shadeC1 = (short)((ulonglong)shadedC >> 0x10);
+              shadeC2 = (short)((ulonglong)shadedC >> 0x20);
+              shadeC3 = (short)((ulonglong)shadedC >> 0x30);
+              projectedBlocks[0x67].projectedY =
+                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
+                            (0xff < shadeA3),
+                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
+                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
+                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
+                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
+                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
+                                              (0xff < shadeA0))));
+              projectedBlocks[0xb3].projectedY =
+                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
+                            (0xff < shadeB3),
+                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
+                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
+                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
+                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
+                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
+                                              (0xff < shadeB0))));
+              projectedBlocks[0x73].projectedY =
+                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)shadedC >> 0x30) -
+                            (0xff < shadeC3),
+                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
+                                     (char)((ulonglong)shadedC >> 0x20) - (0xff < shadeC2),
+                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
+                                              (char)((ulonglong)shadedC >> 0x10) - (0xff < shadeC1),
+                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)shadedC -
+                                              (0xff < shadeC0))));
+              heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12;
+              if ((int)heightDeltaOrIntensityA < 0) {
+                heightDeltaOrIntensityA = 0;
               }
-              uVar25 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12;
-              if ((int)uVar25 < 0) {
-                uVar25 = 0;
+              tintMaskOrIntensityB = 0x5000 - g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12;
+              if ((int)tintMaskOrIntensityB < 0) {
+                tintMaskOrIntensityB = 0;
               }
-              uVar30 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12;
-              if ((int)uVar30 < 0) {
-                uVar30 = 0;
+              intensityC = 0x5000 - g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12;
+              if ((int)intensityC < 0) {
+                intensityC = 0;
               }
-              uVar31 = uVar31 >> 6;
-              uVar25 = uVar25 >> 6;
-              uVar30 = uVar30 >> 6;
-              if (0xff < uVar31) {
-                uVar31 = 0xff;
+              heightDeltaOrIntensityA = heightDeltaOrIntensityA >> 6;
+              tintMaskOrIntensityB = tintMaskOrIntensityB >> 6;
+              intensityC = intensityC >> 6;
+              if (0xff < heightDeltaOrIntensityA) {
+                heightDeltaOrIntensityA = 0xff;
               }
-              if (0xff < uVar25) {
-                uVar25 = 0xff;
+              if (0xff < tintMaskOrIntensityB) {
+                tintMaskOrIntensityB = 0xff;
               }
-              if (0xff < uVar30) {
-                uVar30 = 0xff;
+              if (0xff < intensityC) {
+                intensityC = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              sVar4 = (short)uVar35;
-              sVar7 = (short)((ulonglong)uVar35 >> 0x10);
-              sVar10 = (short)((ulonglong)uVar35 >> 0x20);
-              sVar13 = (short)((ulonglong)uVar35 >> 0x30);
-              sVar5 = (short)uVar36;
-              sVar8 = (short)((ulonglong)uVar36 >> 0x10);
-              sVar11 = (short)((ulonglong)uVar36 >> 0x20);
-              sVar14 = (short)((ulonglong)uVar36 >> 0x30);
-              sVar6 = (short)uVar37;
-              sVar9 = (short)((ulonglong)uVar37 >> 0x10);
-              sVar12 = (short)((ulonglong)uVar37 >> 0x20);
-              sVar15 = (short)((ulonglong)uVar37 >> 0x30);
-              pGVar24[0xab].projectedY =
-                   CONCAT13((0 < sVar13) * (sVar13 < 0x100) * (char)((ulonglong)uVar35 >> 0x30) -
-                            (0xff < sVar13),
-                            CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                                     (char)((ulonglong)uVar35 >> 0x20) - (0xff < sVar10),
-                                     CONCAT11((0 < sVar7) * (sVar7 < 0x100) *
-                                              (char)((ulonglong)uVar35 >> 0x10) - (0xff < sVar7),
-                                              (0 < sVar4) * (sVar4 < 0x100) * (char)uVar35 -
-                                              (0xff < sVar4))));
-              pGVar24[0x57].projectedY =
-                   CONCAT13((0 < sVar14) * (sVar14 < 0x100) * (char)((ulonglong)uVar36 >> 0x30) -
-                            (0xff < sVar14),
-                            CONCAT12((0 < sVar11) * (sVar11 < 0x100) *
-                                     (char)((ulonglong)uVar36 >> 0x20) - (0xff < sVar11),
-                                     CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
-                                              (char)((ulonglong)uVar36 >> 0x10) - (0xff < sVar8),
-                                              (0 < sVar5) * (sVar5 < 0x100) * (char)uVar36 -
-                                              (0xff < sVar5))));
-              pGVar24[0x3b].projectedY =
-                   CONCAT13((0 < sVar15) * (sVar15 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
-                            (0xff < sVar15),
-                            CONCAT12((0 < sVar12) * (sVar12 < 0x100) *
-                                     (char)((ulonglong)uVar37 >> 0x20) - (0xff < sVar12),
-                                     CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
-                                              (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar9),
-                                              (0 < sVar6) * (sVar6 < 0x100) * (char)uVar37 -
-                                              (0xff < sVar6))));
-              uVar31 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12;
-              if ((int)uVar31 < 0) {
-                uVar31 = 0;
+              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadeA0 = (short)shadedA;
+              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
+              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
+              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
+              shadeB0 = (short)shadedB;
+              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
+              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
+              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
+              shadeC0 = (short)shadedC;
+              shadeC1 = (short)((ulonglong)shadedC >> 0x10);
+              shadeC2 = (short)((ulonglong)shadedC >> 0x20);
+              shadeC3 = (short)((ulonglong)shadedC >> 0x30);
+              projectedBlocks[0xab].projectedY =
+                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
+                            (0xff < shadeA3),
+                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
+                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
+                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
+                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
+                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
+                                              (0xff < shadeA0))));
+              projectedBlocks[0x57].projectedY =
+                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
+                            (0xff < shadeB3),
+                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
+                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
+                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
+                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
+                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
+                                              (0xff < shadeB0))));
+              projectedBlocks[0x3b].projectedY =
+                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)shadedC >> 0x30) -
+                            (0xff < shadeC3),
+                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
+                                     (char)((ulonglong)shadedC >> 0x20) - (0xff < shadeC2),
+                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
+                                              (char)((ulonglong)shadedC >> 0x10) - (0xff < shadeC1),
+                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)shadedC -
+                                              (0xff < shadeC0))));
+              heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12;
+              if ((int)heightDeltaOrIntensityA < 0) {
+                heightDeltaOrIntensityA = 0;
               }
-              uVar25 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12;
-              if ((int)uVar25 < 0) {
-                uVar25 = 0;
+              tintMaskOrIntensityB = 0x5000 - g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12;
+              if ((int)tintMaskOrIntensityB < 0) {
+                tintMaskOrIntensityB = 0;
               }
-              uVar30 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12;
-              if ((int)uVar30 < 0) {
-                uVar30 = 0;
+              intensityC = 0x5000 - g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12;
+              if ((int)intensityC < 0) {
+                intensityC = 0;
               }
-              uVar31 = uVar31 >> 6;
-              uVar25 = uVar25 >> 6;
-              uVar30 = uVar30 >> 6;
-              if (0xff < uVar31) {
-                uVar31 = 0xff;
+              heightDeltaOrIntensityA = heightDeltaOrIntensityA >> 6;
+              tintMaskOrIntensityB = tintMaskOrIntensityB >> 6;
+              intensityC = intensityC >> 6;
+              if (0xff < heightDeltaOrIntensityA) {
+                heightDeltaOrIntensityA = 0xff;
               }
-              if (0xff < uVar25) {
-                uVar25 = 0xff;
+              if (0xff < tintMaskOrIntensityB) {
+                tintMaskOrIntensityB = 0xff;
               }
-              if (0xff < uVar30) {
-                uVar30 = 0xff;
+              if (0xff < intensityC) {
+                intensityC = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              sVar4 = (short)uVar35;
-              sVar7 = (short)((ulonglong)uVar35 >> 0x10);
-              sVar10 = (short)((ulonglong)uVar35 >> 0x20);
-              sVar13 = (short)((ulonglong)uVar35 >> 0x30);
-              sVar5 = (short)uVar36;
-              sVar8 = (short)((ulonglong)uVar36 >> 0x10);
-              sVar11 = (short)((ulonglong)uVar36 >> 0x20);
-              sVar14 = (short)((ulonglong)uVar36 >> 0x30);
-              sVar6 = (short)uVar37;
-              sVar9 = (short)((ulonglong)uVar37 >> 0x10);
-              sVar12 = (short)((ulonglong)uVar37 >> 0x20);
-              sVar15 = (short)((ulonglong)uVar37 >> 0x30);
-              pGVar24[0x2b].projectedY =
-                   CONCAT13((0 < sVar13) * (sVar13 < 0x100) * (char)((ulonglong)uVar35 >> 0x30) -
-                            (0xff < sVar13),
-                            CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                                     (char)((ulonglong)uVar35 >> 0x20) - (0xff < sVar10),
-                                     CONCAT11((0 < sVar7) * (sVar7 < 0x100) *
-                                              (char)((ulonglong)uVar35 >> 0x10) - (0xff < sVar7),
-                                              (0 < sVar4) * (sVar4 < 0x100) * (char)uVar35 -
-                                              (0xff < sVar4))));
-              pGVar24[0x47].projectedY =
-                   CONCAT13((0 < sVar14) * (sVar14 < 0x100) * (char)((ulonglong)uVar36 >> 0x30) -
-                            (0xff < sVar14),
-                            CONCAT12((0 < sVar11) * (sVar11 < 0x100) *
-                                     (char)((ulonglong)uVar36 >> 0x20) - (0xff < sVar11),
-                                     CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
-                                              (char)((ulonglong)uVar36 >> 0x10) - (0xff < sVar8),
-                                              (0 < sVar5) * (sVar5 < 0x100) * (char)uVar36 -
-                                              (0xff < sVar5))));
-              pGVar24[3].projectedY =
-                   CONCAT13((0 < sVar15) * (sVar15 < 0x100) * (char)((ulonglong)uVar37 >> 0x30) -
-                            (0xff < sVar15),
-                            CONCAT12((0 < sVar12) * (sVar12 < 0x100) *
-                                     (char)((ulonglong)uVar37 >> 0x20) - (0xff < sVar12),
-                                     CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
-                                              (char)((ulonglong)uVar37 >> 0x10) - (0xff < sVar9),
-                                              (0 < sVar6) * (sVar6 < 0x100) * (char)uVar37 -
-                                              (0xff < sVar6))));
-              uVar31 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12;
-              if ((int)uVar31 < 0) {
-                uVar31 = 0;
+              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadeA0 = (short)shadedA;
+              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
+              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
+              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
+              shadeB0 = (short)shadedB;
+              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
+              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
+              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
+              shadeC0 = (short)shadedC;
+              shadeC1 = (short)((ulonglong)shadedC >> 0x10);
+              shadeC2 = (short)((ulonglong)shadedC >> 0x20);
+              shadeC3 = (short)((ulonglong)shadedC >> 0x30);
+              projectedBlocks[0x2b].projectedY =
+                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
+                            (0xff < shadeA3),
+                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
+                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
+                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
+                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
+                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
+                                              (0xff < shadeA0))));
+              projectedBlocks[0x47].projectedY =
+                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
+                            (0xff < shadeB3),
+                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
+                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
+                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
+                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
+                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
+                                              (0xff < shadeB0))));
+              projectedBlocks[3].projectedY =
+                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)shadedC >> 0x30) -
+                            (0xff < shadeC3),
+                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
+                                     (char)((ulonglong)shadedC >> 0x20) - (0xff < shadeC2),
+                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
+                                              (char)((ulonglong)shadedC >> 0x10) - (0xff < shadeC1),
+                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)shadedC -
+                                              (0xff < shadeC0))));
+              heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12;
+              if ((int)heightDeltaOrIntensityA < 0) {
+                heightDeltaOrIntensityA = 0;
               }
-              uVar25 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12;
-              if ((int)uVar25 < 0) {
-                uVar25 = 0;
+              tintMaskOrIntensityB = 0x5000 - g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12;
+              if ((int)tintMaskOrIntensityB < 0) {
+                tintMaskOrIntensityB = 0;
               }
-              uVar30 = 0x5000 - g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12;
-              if ((int)uVar30 < 0) {
-                uVar30 = 0;
+              intensityC = 0x5000 - g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12;
+              if ((int)intensityC < 0) {
+                intensityC = 0;
               }
-              uVar31 = uVar31 >> 6;
-              uVar25 = uVar25 >> 6;
-              uVar30 = uVar30 >> 6;
-              if (0xff < uVar31) {
-                uVar31 = 0xff;
+              heightDeltaOrIntensityA = heightDeltaOrIntensityA >> 6;
+              tintMaskOrIntensityB = tintMaskOrIntensityB >> 6;
+              intensityC = intensityC >> 6;
+              if (0xff < heightDeltaOrIntensityA) {
+                heightDeltaOrIntensityA = 0xff;
               }
-              if (0xff < uVar25) {
-                uVar25 = 0xff;
+              if (0xff < tintMaskOrIntensityB) {
+                tintMaskOrIntensityB = 0xff;
               }
-              if (0xff < uVar30) {
-                uVar30 = 0xff;
+              if (0xff < intensityC) {
+                intensityC = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              uVar38 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
-              sVar4 = (short)uVar35;
-              sVar7 = (short)((ulonglong)uVar35 >> 0x10);
-              sVar10 = (short)((ulonglong)uVar35 >> 0x20);
-              sVar13 = (short)((ulonglong)uVar35 >> 0x30);
-              sVar5 = (short)uVar36;
-              sVar8 = (short)((ulonglong)uVar36 >> 0x10);
-              sVar11 = (short)((ulonglong)uVar36 >> 0x20);
-              sVar14 = (short)((ulonglong)uVar36 >> 0x30);
-              sVar6 = (short)uVar38;
-              sVar9 = (short)((ulonglong)uVar38 >> 0x10);
-              sVar12 = (short)((ulonglong)uVar38 >> 0x20);
-              sVar15 = (short)((ulonglong)uVar38 >> 0x30);
-              pGVar24[0xb].projectedY =
-                   CONCAT13((0 < sVar13) * (sVar13 < 0x100) * (char)((ulonglong)uVar35 >> 0x30) -
-                            (0xff < sVar13),
-                            CONCAT12((0 < sVar10) * (sVar10 < 0x100) *
-                                     (char)((ulonglong)uVar35 >> 0x20) - (0xff < sVar10),
-                                     CONCAT11((0 < sVar7) * (sVar7 < 0x100) *
-                                              (char)((ulonglong)uVar35 >> 0x10) - (0xff < sVar7),
-                                              (0 < sVar4) * (sVar4 < 0x100) * (char)uVar35 -
-                                              (0xff < sVar4))));
-              pGVar24[7].projectedY =
-                   CONCAT13((0 < sVar14) * (sVar14 < 0x100) * (char)((ulonglong)uVar36 >> 0x30) -
-                            (0xff < sVar14),
-                            CONCAT12((0 < sVar11) * (sVar11 < 0x100) *
-                                     (char)((ulonglong)uVar36 >> 0x20) - (0xff < sVar11),
-                                     CONCAT11((0 < sVar8) * (sVar8 < 0x100) *
-                                              (char)((ulonglong)uVar36 >> 0x10) - (0xff < sVar8),
-                                              (0 < sVar5) * (sVar5 < 0x100) * (char)uVar36 -
-                                              (0xff < sVar5))));
-              pGVar24[0x13].projectedY =
-                   CONCAT13((0 < sVar15) * (sVar15 < 0x100) * (char)((ulonglong)uVar38 >> 0x30) -
-                            (0xff < sVar15),
-                            CONCAT12((0 < sVar12) * (sVar12 < 0x100) *
-                                     (char)((ulonglong)uVar38 >> 0x20) - (0xff < sVar12),
-                                     CONCAT11((0 < sVar9) * (sVar9 < 0x100) *
-                                              (char)((ulonglong)uVar38 >> 0x10) - (0xff < sVar9),
-                                              (0 < sVar6) * (sVar6 < 0x100) * (char)uVar38 -
-                                              (0xff < sVar6))));
-              pGVar24[0xc].projectedY =
+              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              tintLanesOrShadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadeA0 = (short)shadedA;
+              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
+              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
+              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
+              shadeB0 = (short)shadedB;
+              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
+              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
+              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
+              shadeC0 = (short)tintLanesOrShadedC;
+              shadeC1 = (short)((ulonglong)tintLanesOrShadedC >> 0x10);
+              shadeC2 = (short)((ulonglong)tintLanesOrShadedC >> 0x20);
+              shadeC3 = (short)((ulonglong)tintLanesOrShadedC >> 0x30);
+              projectedBlocks[0xb].projectedY =
+                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
+                            (0xff < shadeA3),
+                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
+                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
+                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
+                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
+                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
+                                              (0xff < shadeA0))));
+              projectedBlocks[7].projectedY =
+                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
+                            (0xff < shadeB3),
+                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
+                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
+                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
+                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
+                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
+                                              (0xff < shadeB0))));
+              projectedBlocks[0x13].projectedY =
+                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)tintLanesOrShadedC >> 0x30) -
+                            (0xff < shadeC3),
+                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
+                                     (char)((ulonglong)tintLanesOrShadedC >> 0x20) - (0xff < shadeC2),
+                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
+                                              (char)((ulonglong)tintLanesOrShadedC >> 0x10) - (0xff < shadeC1),
+                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)tintLanesOrShadedC -
+                                              (0xff < shadeC0))));
+              projectedBlocks[0xc].projectedY =
                    (GraphicsPrimitiveBackendCoordinate)
                    (g_GraphicsShadingTextureSet->entries +
                    g_GraphicsShadingGeneratedTextureSubresourceIndex);
-              GVar39 = *pGVar24;
-              GVar1 = pGVar24[1];
-              GVar2 = pGVar24[2];
-              GVar3 = pGVar24[3];
-              pGVar24[0x20] = GVar39;
-              pGVar24[0x21] = GVar1;
-              pGVar24[0x22] = GVar2;
-              pGVar24[0x23] = GVar3;
-              pGVar24[0x50] = GVar39;
-              pGVar24[0x51] = GVar1;
-              pGVar24[0x52] = GVar2;
-              pGVar24[0x53] = GVar3;
-              pGVar24[0x60] = GVar39;
-              pGVar24[0x61] = GVar1;
-              pGVar24[0x62] = GVar2;
-              pGVar24[99] = GVar3;
-              pGVar24[0xd0] = GVar39;
-              pGVar24[0xd1] = GVar1;
-              pGVar24[0xd2] = GVar2;
-              pGVar24[0xd3] = GVar3;
-              GVar39 = pGVar24[4];
-              GVar1 = pGVar24[5];
-              GVar2 = pGVar24[6];
-              GVar3 = pGVar24[7];
-              pGVar24[0x14] = GVar39;
-              pGVar24[0x15] = GVar1;
-              pGVar24[0x16] = GVar2;
-              pGVar24[0x17] = GVar3;
-              pGVar24[0x24] = GVar39;
-              pGVar24[0x25] = GVar1;
-              pGVar24[0x26] = GVar2;
-              pGVar24[0x27] = GVar3;
-              pGVar24[0x34] = GVar39;
-              pGVar24[0x35] = GVar1;
-              pGVar24[0x36] = GVar2;
-              pGVar24[0x37] = GVar3;
-              pGVar24[0x74] = GVar39;
-              pGVar24[0x75] = GVar1;
-              pGVar24[0x76] = GVar2;
-              pGVar24[0x77] = GVar3;
-              pGVar24[0x84] = GVar39;
-              pGVar24[0x85] = GVar1;
-              pGVar24[0x86] = GVar2;
-              pGVar24[0x87] = GVar3;
-              GVar39 = pGVar24[8];
-              GVar1 = pGVar24[9];
-              GVar2 = pGVar24[10];
-              GVar3 = pGVar24[0xb];
-              pGVar24[0x18] = GVar39;
-              pGVar24[0x19] = GVar1;
-              pGVar24[0x1a] = GVar2;
-              pGVar24[0x1b] = GVar3;
-              pGVar24[0x48] = GVar39;
-              pGVar24[0x49] = GVar1;
-              pGVar24[0x4a] = GVar2;
-              pGVar24[0x4b] = GVar3;
-              pGVar24[0x58] = GVar39;
-              pGVar24[0x59] = GVar1;
-              pGVar24[0x5a] = GVar2;
-              pGVar24[0x5b] = GVar3;
-              pGVar24[0xb8] = GVar39;
-              pGVar24[0xb9] = GVar1;
-              pGVar24[0xba] = GVar2;
-              pGVar24[0xbb] = GVar3;
-              pGVar24[200] = GVar39;
-              pGVar24[0xc9] = GVar1;
-              pGVar24[0xca] = GVar2;
-              pGVar24[0xcb] = GVar3;
-              GVar39 = pGVar24[0x10];
-              GVar1 = pGVar24[0x11];
-              GVar2 = pGVar24[0x12];
-              GVar3 = pGVar24[0x13];
-              pGVar24[0x30] = GVar39;
-              pGVar24[0x31] = GVar1;
-              pGVar24[0x32] = GVar2;
-              pGVar24[0x33] = GVar3;
-              pGVar24[0x40] = GVar39;
-              pGVar24[0x41] = GVar1;
-              pGVar24[0x42] = GVar2;
-              pGVar24[0x43] = GVar3;
-              pGVar24[0x90] = GVar39;
-              pGVar24[0x91] = GVar1;
-              pGVar24[0x92] = GVar2;
-              pGVar24[0x93] = GVar3;
-              pGVar24[0xa0] = GVar39;
-              pGVar24[0xa1] = GVar1;
-              pGVar24[0xa2] = GVar2;
-              pGVar24[0xa3] = GVar3;
-              pGVar24[0x68] = pGVar24[0x28];
-              pGVar24[0x69] = pGVar24[0x29];
-              pGVar24[0x6a] = pGVar24[0x2a];
-              pGVar24[0x6b] = pGVar24[0x2b];
-              pGVar24[0x78] = pGVar24[0x28];
-              pGVar24[0x79] = pGVar24[0x29];
-              pGVar24[0x7a] = pGVar24[0x2a];
-              pGVar24[0x7b] = pGVar24[0x2b];
-              pGVar24[0x88] = pGVar24[0x38];
-              pGVar24[0x89] = pGVar24[0x39];
-              pGVar24[0x8a] = pGVar24[0x3a];
-              pGVar24[0x8b] = pGVar24[0x3b];
-              pGVar24[0x98] = pGVar24[0x38];
-              pGVar24[0x99] = pGVar24[0x39];
-              pGVar24[0x9a] = pGVar24[0x3a];
-              pGVar24[0x9b] = pGVar24[0x3b];
-              pGVar24[0xa4] = pGVar24[0x44];
-              pGVar24[0xa5] = pGVar24[0x45];
-              pGVar24[0xa6] = pGVar24[0x46];
-              pGVar24[0xa7] = pGVar24[0x47];
-              pGVar24[0xb4] = pGVar24[0x44];
-              pGVar24[0xb5] = pGVar24[0x45];
-              pGVar24[0xb6] = pGVar24[0x46];
-              pGVar24[0xb7] = pGVar24[0x47];
-              pGVar24[0xc4] = pGVar24[0x54];
-              pGVar24[0xc5] = pGVar24[0x55];
-              pGVar24[0xc6] = pGVar24[0x56];
-              pGVar24[199] = pGVar24[0x57];
-              pGVar24[0xd4] = pGVar24[0x54];
-              pGVar24[0xd5] = pGVar24[0x55];
-              pGVar24[0xd6] = pGVar24[0x56];
-              pGVar24[0xd7] = pGVar24[0x57];
-              pGVar24[0xd8] = pGVar24[100];
-              pGVar24[0xd9] = pGVar24[0x65];
-              pGVar24[0xda] = pGVar24[0x66];
-              pGVar24[0xdb] = pGVar24[0x67];
-              pGVar24[0x80] = pGVar24[0x70];
-              pGVar24[0x81] = pGVar24[0x71];
-              pGVar24[0x82] = pGVar24[0x72];
-              pGVar24[0x83] = pGVar24[0x73];
-              pGVar24[0x94] = pGVar24[0xa8];
-              pGVar24[0x95] = pGVar24[0xa9];
-              pGVar24[0x96] = pGVar24[0xaa];
-              pGVar24[0x97] = pGVar24[0xab];
-              pGVar24[0xc0] = pGVar24[0xb0];
-              pGVar24[0xc1] = pGVar24[0xb1];
-              pGVar24[0xc2] = pGVar24[0xb2];
-              pGVar24[0xc3] = pGVar24[0xb3];
-              GVar39 = pGVar24[0xc];
-              GVar1 = pGVar24[0xd];
-              GVar2 = pGVar24[0xe];
-              GVar3 = pGVar24[0xf];
-              pGVar24[0x1c] = GVar39;
-              pGVar24[0x1d] = GVar1;
-              pGVar24[0x1e] = GVar2;
-              pGVar24[0x1f] = GVar3;
-              pGVar24[0x2c] = GVar39;
-              pGVar24[0x2d] = GVar1;
-              pGVar24[0x2e] = GVar2;
-              pGVar24[0x2f] = GVar3;
-              pGVar24[0x3c] = GVar39;
-              pGVar24[0x3d] = GVar1;
-              pGVar24[0x3e] = GVar2;
-              pGVar24[0x3f] = GVar3;
-              pGVar24[0x4c] = GVar39;
-              pGVar24[0x4d] = GVar1;
-              pGVar24[0x4e] = GVar2;
-              pGVar24[0x4f] = GVar3;
-              pGVar24[0x5c] = GVar39;
-              pGVar24[0x5d] = GVar1;
-              pGVar24[0x5e] = GVar2;
-              pGVar24[0x5f] = GVar3;
-              pGVar24[0x6c] = GVar39;
-              pGVar24[0x6d] = GVar1;
-              pGVar24[0x6e] = GVar2;
-              pGVar24[0x6f] = GVar3;
-              pGVar24[0x7c] = GVar39;
-              pGVar24[0x7d] = GVar1;
-              pGVar24[0x7e] = GVar2;
-              pGVar24[0x7f] = GVar3;
-              pGVar24[0x8c] = GVar39;
-              pGVar24[0x8d] = GVar1;
-              pGVar24[0x8e] = GVar2;
-              pGVar24[0x8f] = GVar3;
-              pGVar24[0x9c] = GVar39;
-              pGVar24[0x9d] = GVar1;
-              pGVar24[0x9e] = GVar2;
-              pGVar24[0x9f] = GVar3;
-              pGVar24[0xac] = GVar39;
-              pGVar24[0xad] = GVar1;
-              pGVar24[0xae] = GVar2;
-              pGVar24[0xaf] = GVar3;
-              pGVar24[0xbc] = GVar39;
-              pGVar24[0xbd] = GVar1;
-              pGVar24[0xbe] = GVar2;
-              pGVar24[0xbf] = GVar3;
-              pGVar24[0xcc] = GVar39;
-              pGVar24[0xcd] = GVar1;
-              pGVar24[0xce] = GVar2;
-              pGVar24[0xcf] = GVar3;
-              pGVar24[0xdc] = GVar39;
-              pGVar24[0xdd] = GVar1;
-              pGVar24[0xde] = GVar2;
-              pGVar24[0xdf] = GVar3;
+              pointPair0 = *projectedBlocks;
+              pointPair1 = projectedBlocks[1];
+              pointPair2 = projectedBlocks[2];
+              pointPair3 = projectedBlocks[3];
+              projectedBlocks[0x20] = pointPair0;
+              projectedBlocks[0x21] = pointPair1;
+              projectedBlocks[0x22] = pointPair2;
+              projectedBlocks[0x23] = pointPair3;
+              projectedBlocks[0x50] = pointPair0;
+              projectedBlocks[0x51] = pointPair1;
+              projectedBlocks[0x52] = pointPair2;
+              projectedBlocks[0x53] = pointPair3;
+              projectedBlocks[0x60] = pointPair0;
+              projectedBlocks[0x61] = pointPair1;
+              projectedBlocks[0x62] = pointPair2;
+              projectedBlocks[99] = pointPair3;
+              projectedBlocks[0xd0] = pointPair0;
+              projectedBlocks[0xd1] = pointPair1;
+              projectedBlocks[0xd2] = pointPair2;
+              projectedBlocks[0xd3] = pointPair3;
+              pointPair0 = projectedBlocks[4];
+              pointPair1 = projectedBlocks[5];
+              pointPair2 = projectedBlocks[6];
+              pointPair3 = projectedBlocks[7];
+              projectedBlocks[0x14] = pointPair0;
+              projectedBlocks[0x15] = pointPair1;
+              projectedBlocks[0x16] = pointPair2;
+              projectedBlocks[0x17] = pointPair3;
+              projectedBlocks[0x24] = pointPair0;
+              projectedBlocks[0x25] = pointPair1;
+              projectedBlocks[0x26] = pointPair2;
+              projectedBlocks[0x27] = pointPair3;
+              projectedBlocks[0x34] = pointPair0;
+              projectedBlocks[0x35] = pointPair1;
+              projectedBlocks[0x36] = pointPair2;
+              projectedBlocks[0x37] = pointPair3;
+              projectedBlocks[0x74] = pointPair0;
+              projectedBlocks[0x75] = pointPair1;
+              projectedBlocks[0x76] = pointPair2;
+              projectedBlocks[0x77] = pointPair3;
+              projectedBlocks[0x84] = pointPair0;
+              projectedBlocks[0x85] = pointPair1;
+              projectedBlocks[0x86] = pointPair2;
+              projectedBlocks[0x87] = pointPair3;
+              pointPair0 = projectedBlocks[8];
+              pointPair1 = projectedBlocks[9];
+              pointPair2 = projectedBlocks[10];
+              pointPair3 = projectedBlocks[0xb];
+              projectedBlocks[0x18] = pointPair0;
+              projectedBlocks[0x19] = pointPair1;
+              projectedBlocks[0x1a] = pointPair2;
+              projectedBlocks[0x1b] = pointPair3;
+              projectedBlocks[0x48] = pointPair0;
+              projectedBlocks[0x49] = pointPair1;
+              projectedBlocks[0x4a] = pointPair2;
+              projectedBlocks[0x4b] = pointPair3;
+              projectedBlocks[0x58] = pointPair0;
+              projectedBlocks[0x59] = pointPair1;
+              projectedBlocks[0x5a] = pointPair2;
+              projectedBlocks[0x5b] = pointPair3;
+              projectedBlocks[0xb8] = pointPair0;
+              projectedBlocks[0xb9] = pointPair1;
+              projectedBlocks[0xba] = pointPair2;
+              projectedBlocks[0xbb] = pointPair3;
+              projectedBlocks[200] = pointPair0;
+              projectedBlocks[0xc9] = pointPair1;
+              projectedBlocks[0xca] = pointPair2;
+              projectedBlocks[0xcb] = pointPair3;
+              pointPair0 = projectedBlocks[0x10];
+              pointPair1 = projectedBlocks[0x11];
+              pointPair2 = projectedBlocks[0x12];
+              pointPair3 = projectedBlocks[0x13];
+              projectedBlocks[0x30] = pointPair0;
+              projectedBlocks[0x31] = pointPair1;
+              projectedBlocks[0x32] = pointPair2;
+              projectedBlocks[0x33] = pointPair3;
+              projectedBlocks[0x40] = pointPair0;
+              projectedBlocks[0x41] = pointPair1;
+              projectedBlocks[0x42] = pointPair2;
+              projectedBlocks[0x43] = pointPair3;
+              projectedBlocks[0x90] = pointPair0;
+              projectedBlocks[0x91] = pointPair1;
+              projectedBlocks[0x92] = pointPair2;
+              projectedBlocks[0x93] = pointPair3;
+              projectedBlocks[0xa0] = pointPair0;
+              projectedBlocks[0xa1] = pointPair1;
+              projectedBlocks[0xa2] = pointPair2;
+              projectedBlocks[0xa3] = pointPair3;
+              projectedBlocks[0x68] = projectedBlocks[0x28];
+              projectedBlocks[0x69] = projectedBlocks[0x29];
+              projectedBlocks[0x6a] = projectedBlocks[0x2a];
+              projectedBlocks[0x6b] = projectedBlocks[0x2b];
+              projectedBlocks[0x78] = projectedBlocks[0x28];
+              projectedBlocks[0x79] = projectedBlocks[0x29];
+              projectedBlocks[0x7a] = projectedBlocks[0x2a];
+              projectedBlocks[0x7b] = projectedBlocks[0x2b];
+              projectedBlocks[0x88] = projectedBlocks[0x38];
+              projectedBlocks[0x89] = projectedBlocks[0x39];
+              projectedBlocks[0x8a] = projectedBlocks[0x3a];
+              projectedBlocks[0x8b] = projectedBlocks[0x3b];
+              projectedBlocks[0x98] = projectedBlocks[0x38];
+              projectedBlocks[0x99] = projectedBlocks[0x39];
+              projectedBlocks[0x9a] = projectedBlocks[0x3a];
+              projectedBlocks[0x9b] = projectedBlocks[0x3b];
+              projectedBlocks[0xa4] = projectedBlocks[0x44];
+              projectedBlocks[0xa5] = projectedBlocks[0x45];
+              projectedBlocks[0xa6] = projectedBlocks[0x46];
+              projectedBlocks[0xa7] = projectedBlocks[0x47];
+              projectedBlocks[0xb4] = projectedBlocks[0x44];
+              projectedBlocks[0xb5] = projectedBlocks[0x45];
+              projectedBlocks[0xb6] = projectedBlocks[0x46];
+              projectedBlocks[0xb7] = projectedBlocks[0x47];
+              projectedBlocks[0xc4] = projectedBlocks[0x54];
+              projectedBlocks[0xc5] = projectedBlocks[0x55];
+              projectedBlocks[0xc6] = projectedBlocks[0x56];
+              projectedBlocks[199] = projectedBlocks[0x57];
+              projectedBlocks[0xd4] = projectedBlocks[0x54];
+              projectedBlocks[0xd5] = projectedBlocks[0x55];
+              projectedBlocks[0xd6] = projectedBlocks[0x56];
+              projectedBlocks[0xd7] = projectedBlocks[0x57];
+              projectedBlocks[0xd8] = projectedBlocks[100];
+              projectedBlocks[0xd9] = projectedBlocks[0x65];
+              projectedBlocks[0xda] = projectedBlocks[0x66];
+              projectedBlocks[0xdb] = projectedBlocks[0x67];
+              projectedBlocks[0x80] = projectedBlocks[0x70];
+              projectedBlocks[0x81] = projectedBlocks[0x71];
+              projectedBlocks[0x82] = projectedBlocks[0x72];
+              projectedBlocks[0x83] = projectedBlocks[0x73];
+              projectedBlocks[0x94] = projectedBlocks[0xa8];
+              projectedBlocks[0x95] = projectedBlocks[0xa9];
+              projectedBlocks[0x96] = projectedBlocks[0xaa];
+              projectedBlocks[0x97] = projectedBlocks[0xab];
+              projectedBlocks[0xc0] = projectedBlocks[0xb0];
+              projectedBlocks[0xc1] = projectedBlocks[0xb1];
+              projectedBlocks[0xc2] = projectedBlocks[0xb2];
+              projectedBlocks[0xc3] = projectedBlocks[0xb3];
+              pointPair0 = projectedBlocks[0xc];
+              pointPair1 = projectedBlocks[0xd];
+              pointPair2 = projectedBlocks[0xe];
+              pointPair3 = projectedBlocks[0xf];
+              projectedBlocks[0x1c] = pointPair0;
+              projectedBlocks[0x1d] = pointPair1;
+              projectedBlocks[0x1e] = pointPair2;
+              projectedBlocks[0x1f] = pointPair3;
+              projectedBlocks[0x2c] = pointPair0;
+              projectedBlocks[0x2d] = pointPair1;
+              projectedBlocks[0x2e] = pointPair2;
+              projectedBlocks[0x2f] = pointPair3;
+              projectedBlocks[0x3c] = pointPair0;
+              projectedBlocks[0x3d] = pointPair1;
+              projectedBlocks[0x3e] = pointPair2;
+              projectedBlocks[0x3f] = pointPair3;
+              projectedBlocks[0x4c] = pointPair0;
+              projectedBlocks[0x4d] = pointPair1;
+              projectedBlocks[0x4e] = pointPair2;
+              projectedBlocks[0x4f] = pointPair3;
+              projectedBlocks[0x5c] = pointPair0;
+              projectedBlocks[0x5d] = pointPair1;
+              projectedBlocks[0x5e] = pointPair2;
+              projectedBlocks[0x5f] = pointPair3;
+              projectedBlocks[0x6c] = pointPair0;
+              projectedBlocks[0x6d] = pointPair1;
+              projectedBlocks[0x6e] = pointPair2;
+              projectedBlocks[0x6f] = pointPair3;
+              projectedBlocks[0x7c] = pointPair0;
+              projectedBlocks[0x7d] = pointPair1;
+              projectedBlocks[0x7e] = pointPair2;
+              projectedBlocks[0x7f] = pointPair3;
+              projectedBlocks[0x8c] = pointPair0;
+              projectedBlocks[0x8d] = pointPair1;
+              projectedBlocks[0x8e] = pointPair2;
+              projectedBlocks[0x8f] = pointPair3;
+              projectedBlocks[0x9c] = pointPair0;
+              projectedBlocks[0x9d] = pointPair1;
+              projectedBlocks[0x9e] = pointPair2;
+              projectedBlocks[0x9f] = pointPair3;
+              projectedBlocks[0xac] = pointPair0;
+              projectedBlocks[0xad] = pointPair1;
+              projectedBlocks[0xae] = pointPair2;
+              projectedBlocks[0xaf] = pointPair3;
+              projectedBlocks[0xbc] = pointPair0;
+              projectedBlocks[0xbd] = pointPair1;
+              projectedBlocks[0xbe] = pointPair2;
+              projectedBlocks[0xbf] = pointPair3;
+              projectedBlocks[0xcc] = pointPair0;
+              projectedBlocks[0xcd] = pointPair1;
+              projectedBlocks[0xce] = pointPair2;
+              projectedBlocks[0xcf] = pointPair3;
+              projectedBlocks[0xdc] = pointPair0;
+              projectedBlocks[0xdd] = pointPair1;
+              projectedBlocks[0xde] = pointPair2;
+              projectedBlocks[0xdf] = pointPair3;
               GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode);
-              if (iVar29 != 0) {
+              if (halfDirectionZOrCoordinate != 0) {
                 GraphicsShadingGeneratedTexture_FilterGridScratchMmx();
               }
               GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(modelNode);
@@ -2616,43 +2616,43 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
 bool __thandor_void_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void)
 
 {
-  int iVar1;
-  char cVar2;
-  uint uVar3;
-  int iVar4;
-  char *pcVar5;
-  ArenaAllocEaxCf5 AVar6;
+  int rowsRemaining;
+  char inputByte;
+  uint inputValue;
+  int referenceValue;
+  char *tableCursor;
+  ArenaAllocEaxCf5 allocResult;
   
-  AVar6 = (*g_MemoryApi.alloc)(0x20000);
-  if (!AVar6.carry) {
-    uVar3 = 0;
-    pcVar5 = (char *)(AVar6.eax + 0xffff & 0xffff0000);
-    iVar1 = 0x100;
-    iVar4 = 0;
-    g_GraphicsIntensityClampTableBase = pcVar5;
+  allocResult = (*g_MemoryApi.alloc)(0x20000);
+  if (!allocResult.carry) {
+    inputValue = 0;
+    tableCursor = (char *)(allocResult.eax + 0xffff & 0xffff0000);
+    rowsRemaining = 0x100;
+    referenceValue = 0;
+    g_GraphicsIntensityClampTableBase = tableCursor;
     do {
       do {
-        cVar2 = (char)uVar3;
-        if (iVar4 < (int)uVar3) {
-          if (iVar4 + 0x15 < (int)uVar3) {
-            *pcVar5 = (char)(iVar4 + 0x15);
+        inputByte = (char)inputValue;
+        if (referenceValue < (int)inputValue) {
+          if (referenceValue + 0x15 < (int)inputValue) {
+            *tableCursor = (char)(referenceValue + 0x15);
           }
           else {
-            *pcVar5 = cVar2;
+            *tableCursor = inputByte;
           }
         }
-        else if ((int)uVar3 < iVar4 + -0x15) {
-          *pcVar5 = (char)(iVar4 + -0x15);
+        else if ((int)inputValue < referenceValue + -0x15) {
+          *tableCursor = (char)(referenceValue + -0x15);
         }
         else {
-          *pcVar5 = cVar2;
+          *tableCursor = inputByte;
         }
-        pcVar5 = pcVar5 + 1;
-        uVar3 = (uint)(byte)(cVar2 + 1U);
-      } while ((byte)(cVar2 + 1U) != 0);
-      iVar4 = iVar4 + 1;
-      iVar1 = iVar1 + -1;
-    } while (iVar1 != 0);
+        tableCursor = tableCursor + 1;
+        inputValue = (uint)(byte)(inputByte + 1U);
+      } while ((byte)(inputByte + 1U) != 0);
+      referenceValue = referenceValue + 1;
+      rowsRemaining = rowsRemaining + -1;
+    } while (rowsRemaining != 0);
     return false;
   }
   return true;
@@ -2668,66 +2668,66 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulatorMmx)
 
 {
-  PackedRgb24 PVar1;
-  longlong lVar2;
-  ushort uVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  uint uVar7;
-  GraphicsShadingRecordCount GVar8;
-  uint uVar9;
-  GraphicsShadingRuntimeRecord *shadingRecord1;
-  undefined1 uVar11;
-  undefined1 uVar12;
-  undefined8 uVar10;
+  PackedRgb24 packedColor;
+  longlong axisDeltaSquared;
+  ushort highBytePair;
+  int remainingHigh;
+  uint remainingLowOrSquareLow;
+  int axisDelta;
+  uint squareLow;
+  GraphicsShadingRecordCount recordsRemaining;
+  uint remainingLowOrRadiusScale;
+  GraphicsShadingRuntimeRecord *shadingRecord;
+  undefined1 colorByteHighOrMid;
+  undefined1 colorByteLow;
+  undefined8 scaledLight;
   
-  shadingRecord1 = g_GraphicsShadingCompactRecords;
-  for (GVar8 = g_GraphicsShadingCompactRecordCount; GVar8 != 0; GVar8 = GVar8 - 1) {
-    if (shadingRecord1->targetRadiusQ12 != 0) {
-      uVar7 = (uint)shadingRecord1->squaredRadiusQ24;
-      iVar4 = worldPointQ12->x - shadingRecord1->worldXQ12;
-      lVar2 = (longlong)iVar4 * (longlong)iVar4;
-      uVar5 = (uint)lVar2;
-      uVar9 = uVar7 - uVar5;
-      iVar4 = (*(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) -
-              (int)((ulonglong)lVar2 >> 0x20)) - (uint)(uVar7 < uVar5);
-      if (-1 < iVar4) {
-        iVar6 = worldPointQ12->y - shadingRecord1->worldYQ12;
-        lVar2 = (longlong)iVar6 * (longlong)iVar6;
-        uVar7 = (uint)lVar2;
-        uVar5 = uVar9 - uVar7;
-        iVar4 = (iVar4 - (int)((ulonglong)lVar2 >> 0x20)) - (uint)(uVar9 < uVar7);
-        if (-1 < iVar4) {
-          iVar6 = worldPointQ12->z - shadingRecord1->worldZQ12;
-          lVar2 = (longlong)iVar6 * (longlong)iVar6;
-          uVar7 = (uint)lVar2;
-          iVar4 = (iVar4 - (int)((ulonglong)lVar2 >> 0x20)) - (uint)(uVar5 < uVar7);
-          if (-1 < iVar4) {
-            PVar1 = shadingRecord1->packedColorRgbActive;
-            uVar9 = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) << 0x14 |
-                    (uint)shadingRecord1->squaredRadiusQ24 >> 0xc;
-            if (uVar9 != 0) {
-              uVar11 = (undefined1)(PVar1 >> 0x18);
-              uVar3 = CONCAT11(uVar11,uVar11);
-              uVar12 = (undefined1)(PVar1 >> 0x10);
-              uVar11 = (undefined1)(PVar1 >> 8);
-              uVar10 = pmulhw(CONCAT26(uVar3 >> 2,
-                                       CONCAT24((ushort)(CONCAT35(CONCAT21(uVar3,uVar12),
-                                                                  CONCAT14(uVar12,PVar1)) >> 0x20)
-                                                >> 2,CONCAT22(CONCAT11(uVar11,uVar11) >> 2,
-                                                              CONCAT11((char)PVar1,(char)PVar1) >> 2
+  shadingRecord = g_GraphicsShadingCompactRecords;
+  for (recordsRemaining = g_GraphicsShadingCompactRecordCount; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
+    if (shadingRecord->targetRadiusQ12 != 0) {
+      squareLow = (uint)shadingRecord->squaredRadiusQ24;
+      remainingHigh = worldPointQ12->x - shadingRecord->worldXQ12;
+      axisDeltaSquared = (longlong)remainingHigh * (longlong)remainingHigh;
+      remainingLowOrSquareLow = (uint)axisDeltaSquared;
+      remainingLowOrRadiusScale = squareLow - remainingLowOrSquareLow;
+      remainingHigh = (*(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) -
+              (int)((ulonglong)axisDeltaSquared >> 0x20)) - (uint)(squareLow < remainingLowOrSquareLow);
+      if (-1 < remainingHigh) {
+        axisDelta = worldPointQ12->y - shadingRecord->worldYQ12;
+        axisDeltaSquared = (longlong)axisDelta * (longlong)axisDelta;
+        squareLow = (uint)axisDeltaSquared;
+        remainingLowOrSquareLow = remainingLowOrRadiusScale - squareLow;
+        remainingHigh = (remainingHigh - (int)((ulonglong)axisDeltaSquared >> 0x20)) - (uint)(remainingLowOrRadiusScale < squareLow);
+        if (-1 < remainingHigh) {
+          axisDelta = worldPointQ12->z - shadingRecord->worldZQ12;
+          axisDeltaSquared = (longlong)axisDelta * (longlong)axisDelta;
+          squareLow = (uint)axisDeltaSquared;
+          remainingHigh = (remainingHigh - (int)((ulonglong)axisDeltaSquared >> 0x20)) - (uint)(remainingLowOrSquareLow < squareLow);
+          if (-1 < remainingHigh) {
+            packedColor = shadingRecord->packedColorRgbActive;
+            remainingLowOrRadiusScale = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
+                    (uint)shadingRecord->squaredRadiusQ24 >> 0xc;
+            if (remainingLowOrRadiusScale != 0) {
+              colorByteHighOrMid = (undefined1)(packedColor >> 0x18);
+              highBytePair = CONCAT11(colorByteHighOrMid,colorByteHighOrMid);
+              colorByteLow = (undefined1)(packedColor >> 0x10);
+              colorByteHighOrMid = (undefined1)(packedColor >> 8);
+              scaledLight = pmulhw(CONCAT26(highBytePair >> 2,
+                                       CONCAT24((ushort)(CONCAT35(CONCAT21(highBytePair,colorByteLow),
+                                                                  CONCAT14(colorByteLow,packedColor)) >> 0x20)
+                                                >> 2,CONCAT22(CONCAT11(colorByteHighOrMid,colorByteHighOrMid) >> 2,
+                                                              CONCAT11((char)packedColor,(char)packedColor) >> 2
                                                              ))),
                               *(undefined8 *)
                                (&g_PackedLightingLookupTable +
-                               ((iVar4 * 0x8000000 | uVar5 - uVar7 >> 5) / uVar9) * 8));
-              packedLightAccumulatorMmx = paddusw(packedLightAccumulatorMmx,uVar10);
+                               ((remainingHigh * 0x8000000 | remainingLowOrSquareLow - squareLow >> 5) / remainingLowOrRadiusScale) * 8));
+              packedLightAccumulatorMmx = paddusw(packedLightAccumulatorMmx,scaledLight);
             }
           }
         }
       }
     }
-    shadingRecord1 = shadingRecord1 + 1;
+    shadingRecord = shadingRecord + 1;
   }
   return packedLightAccumulatorMmx;
 }
@@ -2747,8 +2747,8 @@ GraphicsShadingRuntime_AllocateRecordRegs
 {
   int recordsRemaining;
   GraphicsShadingRuntimeRecord *recordCursor;
-  GraphicsShadingRuntimeRecordEaxCf5 GVar1;
-  GraphicsShadingRuntimeRecordEaxCf5 GVar2;
+  GraphicsShadingRuntimeRecordEaxCf5 failureResult;
+  GraphicsShadingRuntimeRecordEaxCf5 successResult;
   
   if (packedColorRgb != 0) {
     recordCursor = g_GraphicsShadingRuntimeRecords;
@@ -2771,17 +2771,17 @@ GraphicsShadingRuntime_AllocateRecordRegs
         recordCursor->worldXQ12 = worldXQ12;
         recordCursor->worldYQ12 = worldYQ12;
         recordCursor->worldZQ12 = worldZQ12;
-        GVar2.carry = false;
-        GVar2.record = recordCursor;
-        return GVar2;
+        successResult.carry = false;
+        successResult.record = recordCursor;
+        return successResult;
       }
       recordCursor = recordCursor + 1;
       recordsRemaining = recordsRemaining + -1;
     } while (recordsRemaining != 0);
   }
-  GVar1.record = (GraphicsShadingRuntimeRecord *)0x0;
-  GVar1.carry = true;
-  return GVar1;
+  failureResult.record = (GraphicsShadingRuntimeRecord *)0x0;
+  failureResult.carry = true;
+  return failureResult;
 }
 
 
@@ -2815,35 +2815,35 @@ void __thandor_void_preserve_eax_ecx GraphicsShadingRuntime_ClearRecordTable(voi
 void __thandor_void_preserve_eax_ecx_edx GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
 
 {
-  GraphicsRadiusQ12 GVar1;
-  undefined4 uVar2;
-  GraphicsShadingRecordCount GVar3;
-  int iVar4;
-  GraphicsShadingRuntimeRecord *point;
-  GraphicsShadingRuntimeRecord *output;
+  GraphicsRadiusQ12 targetRadius;
+  undefined4 squaredRadiusHigh;
+  GraphicsShadingRecordCount compactCount;
+  int recordsRemaining;
+  GraphicsShadingRuntimeRecord *sourceRecord;
+  GraphicsShadingRuntimeRecord *compactRecord;
   
-  point = g_GraphicsShadingRuntimeRecords;
-  output = g_GraphicsShadingCompactRecords;
-  iVar4 = 0x100;
-  GVar3 = 0;
+  sourceRecord = g_GraphicsShadingRuntimeRecords;
+  compactRecord = g_GraphicsShadingCompactRecords;
+  recordsRemaining = 0x100;
+  compactCount = 0;
   do {
-    if (point->packedColorRgbActive != 0) {
+    if (sourceRecord->packedColorRgbActive != 0) {
       FixedTransform_ApplyPoint
-                ((GraphicsFixedVec3 *)output,(GraphicsFixedVec3 *)point,&g_ViewProjectionMatrixFixed
+                ((GraphicsFixedVec3 *)compactRecord,(GraphicsFixedVec3 *)sourceRecord,&g_ViewProjectionMatrixFixed
                 );
-      GVar1 = point->targetRadiusQ12;
-      output->packedColorRgbActive = point->packedColorRgbActive;
-      output->targetRadiusQ12 = GVar1;
-      uVar2 = *(undefined4 *)((int)&point->squaredRadiusQ24 + 4);
-      GVar3 = GVar3 + 1;
-      *(int *)&output->squaredRadiusQ24 = (int)point->squaredRadiusQ24;
-      *(undefined4 *)((int)&output->squaredRadiusQ24 + 4) = uVar2;
-      output = output + 1;
+      targetRadius = sourceRecord->targetRadiusQ12;
+      compactRecord->packedColorRgbActive = sourceRecord->packedColorRgbActive;
+      compactRecord->targetRadiusQ12 = targetRadius;
+      squaredRadiusHigh = *(undefined4 *)((int)&sourceRecord->squaredRadiusQ24 + 4);
+      compactCount = compactCount + 1;
+      *(int *)&compactRecord->squaredRadiusQ24 = (int)sourceRecord->squaredRadiusQ24;
+      *(undefined4 *)((int)&compactRecord->squaredRadiusQ24 + 4) = squaredRadiusHigh;
+      compactRecord = compactRecord + 1;
     }
-    point = point + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  g_GraphicsShadingCompactRecordCount = GVar3;
+    sourceRecord = sourceRecord + 1;
+    recordsRemaining = recordsRemaining + -1;
+  } while (recordsRemaining != 0);
+  g_GraphicsShadingCompactRecordCount = compactCount;
   return;
 }
 
@@ -2860,7 +2860,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)
 
 {
-  int iVar1;
+  int deltaXRadiusOrCounter;
   int deltaYQ12;
   int deltaZQ12;
   dword sourceRecordsRemaining;
@@ -2874,14 +2874,14 @@ GraphicsShadingRuntime_CollectNearbyRecords
   g_GraphicsShadingNearbyRecordCount = 0;
   for (sourceRecordsRemaining = g_GraphicsShadingCompactRecordCount; sourceRecordsRemaining != 0;
       sourceRecordsRemaining = sourceRecordsRemaining - 1) {
-    iVar1 = worldXQ12 - sourceRecordCursor->worldXQ12;
+    deltaXRadiusOrCounter = worldXQ12 - sourceRecordCursor->worldXQ12;
     deltaYQ12 = worldYQ12 - sourceRecordCursor->worldYQ12;
     deltaZQ12 = worldZQ12 - sourceRecordCursor->worldZQ12;
     distanceSquaredQ24 =
-         (longlong)deltaYQ12 * (longlong)deltaYQ12 + (longlong)iVar1 * (longlong)iVar1 +
+         (longlong)deltaYQ12 * (longlong)deltaYQ12 + (longlong)deltaXRadiusOrCounter * (longlong)deltaXRadiusOrCounter +
          (longlong)deltaZQ12 * (longlong)deltaZQ12;
-    iVar1 = queryRadiusQ12 + sourceRecordCursor->targetRadiusQ12;
-    combinedRadiusSquaredQ24 = (longlong)iVar1 * (longlong)iVar1;
+    deltaXRadiusOrCounter = queryRadiusQ12 + sourceRecordCursor->targetRadiusQ12;
+    combinedRadiusSquaredQ24 = (longlong)deltaXRadiusOrCounter * (longlong)deltaXRadiusOrCounter;
     if ((int)(((int)((ulonglong)combinedRadiusSquaredQ24 >> 0x20) -
               (int)((ulonglong)distanceSquaredQ24 >> 0x20)) -
              (uint)((uint)combinedRadiusSquaredQ24 < (uint)distanceSquaredQ24)) < 0) {
@@ -2889,7 +2889,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
     }
     else {
       g_GraphicsShadingNearbyRecordCount = g_GraphicsShadingNearbyRecordCount + 1;
-      for (iVar1 = 0x10; iVar1 != 0; iVar1 = iVar1 + -1) {
+      for (deltaXRadiusOrCounter = 0x10; deltaXRadiusOrCounter != 0; deltaXRadiusOrCounter = deltaXRadiusOrCounter + -1) {
         destinationRecordCursor->worldXQ12 = sourceRecordCursor->worldXQ12;
         sourceRecordCursor = (GraphicsShadingRuntimeRecord *)&sourceRecordCursor->worldYQ12;
         destinationRecordCursor =
@@ -2917,92 +2917,92 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
           GraphicsPixelDimension textureDimension)
 
 {
-  GraphicsGeneratedTextureAssetOrEntryView200 *pGVar2;
-  AssetMagic AVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  AssetRelativeOffset PVar7;
-  GraphicsGeneratedTextureAssetOrEntryView200 *pGVar5;
-  ArenaAllocEaxCf5 AVar6;
-  GraphicsTextureSetEaxCf5 GVar7;
-  StatusValueEaxCf5 SVar8;
+  GraphicsGeneratedTextureAssetOrEntryView200 *allocationCursor;
+  AssetMagic paletteEntry;
+  uint allocationSize;
+  uint dwordsRemaining;
+  int counterOrGridOrigin;
+  AssetRelativeOffset pixelDataOffset;
+  GraphicsGeneratedTextureAssetOrEntryView200 *entryCursor;
+  ArenaAllocEaxCf5 allocResult;
+  GraphicsTextureSetEaxCf5 textureSetResult;
+  StatusValueEaxCf5 failureStatus;
   
-  uVar2 = gridHalfSize * 2 * gridHalfSize * 2;
-  AVar6 = (*g_MemoryApi.alloc)(uVar2);
-  pGVar2 = (GraphicsGeneratedTextureAssetOrEntryView200 *)AVar6.eax;
-  if (!AVar6.carry) {
-    uVar2 = uVar2 >> 2;
-    g_GraphicsShadingGridScratchInterior = (undefined *)((int)pGVar2 + uVar2 + (gridHalfSize >> 1));
-    g_GraphicsShadingGridScratch = pGVar2;
-    for (; uVar2 != 0; uVar2 = uVar2 - 1) {
-      (pGVar2->asset).common.magic = 0;
-      pGVar2 = (GraphicsGeneratedTextureAssetOrEntryView200 *)
-               &(pGVar2->asset).common.allocationSizeBytes;
+  allocationSize = gridHalfSize * 2 * gridHalfSize * 2;
+  allocResult = (*g_MemoryApi.alloc)(allocationSize);
+  allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.eax;
+  if (!allocResult.carry) {
+    allocationSize = allocationSize >> 2;
+    g_GraphicsShadingGridScratchInterior = (undefined *)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
+    g_GraphicsShadingGridScratch = allocationCursor;
+    for (; allocationSize != 0; allocationSize = allocationSize - 1) {
+      (allocationCursor->asset).common.magic = 0;
+      allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
+               &(allocationCursor->asset).common.allocationSizeBytes;
     }
-    uVar2 = (textureDimension * textureDimension + 0x20) * subresourceCount + 0xa00;
-    AVar6 = (*g_MemoryApi.alloc)(uVar2);
-    pGVar2 = (GraphicsGeneratedTextureAssetOrEntryView200 *)AVar6.eax;
-    if (!AVar6.carry) {
-      pGVar5 = pGVar2;
-      g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)pGVar2;
-      for (uVar3 = uVar2 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
-        (pGVar5->asset).common.magic = 0;
-        pGVar5 = (GraphicsGeneratedTextureAssetOrEntryView200 *)
-                 &(pGVar5->asset).common.allocationSizeBytes;
+    allocationSize = (textureDimension * textureDimension + 0x20) * subresourceCount + 0xa00;
+    allocResult = (*g_MemoryApi.alloc)(allocationSize);
+    allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.eax;
+    if (!allocResult.carry) {
+      entryCursor = allocationCursor;
+      g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)allocationCursor;
+      for (dwordsRemaining = allocationSize >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
+        (entryCursor->asset).common.magic = 0;
+        entryCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
+                 &(entryCursor->asset).common.allocationSizeBytes;
       }
-      (pGVar2->asset).common.magic = ASSET_MAGIC_GFX;
-      (pGVar2->asset).common.allocationSizeBytes = uVar2;
-      (pGVar2->asset).tableDescriptor.subresourceCount = subresourceCount;
-      (pGVar2->asset).tableDescriptor.paletteBankCount = 1;
-      (pGVar2->asset).tableDescriptor.subresourceTableOffset = 0xa00;
-      AVar1 = 0xffffff;
-      pGVar5 = pGVar2 + 1;
-      iVar4 = 0x100;
+      (allocationCursor->asset).common.magic = ASSET_MAGIC_GFX;
+      (allocationCursor->asset).common.allocationSizeBytes = allocationSize;
+      (allocationCursor->asset).tableDescriptor.subresourceCount = subresourceCount;
+      (allocationCursor->asset).tableDescriptor.paletteBankCount = 1;
+      (allocationCursor->asset).tableDescriptor.subresourceTableOffset = 0xa00;
+      paletteEntry = 0xffffff;
+      entryCursor = allocationCursor + 1;
+      counterOrGridOrigin = 0x100;
       do {
-        (pGVar5->asset).common.magic = AVar1;
-        AVar1 = AVar1 + 0x1000000;
-        pGVar5 = (GraphicsGeneratedTextureAssetOrEntryView200 *)
-                 &(pGVar5->asset).common.formatVersion;
-        iVar4 = iVar4 + -1;
-      } while (iVar4 != 0);
+        (entryCursor->asset).common.magic = paletteEntry;
+        paletteEntry = paletteEntry + 0x1000000;
+        entryCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
+                 &(entryCursor->asset).common.formatVersion;
+        counterOrGridOrigin = counterOrGridOrigin + -1;
+      } while (counterOrGridOrigin != 0);
       g_GraphicsShadingSubresourceCount = subresourceCount;
-      pGVar5 = pGVar2 + 5;
-      PVar7 = subresourceCount * 0x20 + 0xa00;
+      entryCursor = allocationCursor + 5;
+      pixelDataOffset = subresourceCount * 0x20 + 0xa00;
       do {
-        (pGVar5->asset).common.magic = textureDimension;
-        (pGVar5->asset).common.allocationSizeBytes = textureDimension;
-        (pGVar5->asset).common.formatVersion = 0;
-        (pGVar5->sourceEntry).dataOffset = PVar7;
-        (pGVar5->asset).common.buildMetadata.timestamps.dateValue0 = 0;
-        (pGVar5->asset).common.buildMetadata.timestamps.timeValue0 = 0;
-        (pGVar5->asset).common.buildMetadata.timestamps.dateValue1 = textureDimension;
-        (pGVar5->asset).common.buildMetadata.timestamps.timeValue1 = textureDimension;
-        PVar7 = PVar7 + textureDimension * textureDimension;
-        pGVar5 = (GraphicsGeneratedTextureAssetOrEntryView200 *)
-                 &(pGVar5->asset).common.buildMetadata.timestamps.dateValue2;
+        (entryCursor->asset).common.magic = textureDimension;
+        (entryCursor->asset).common.allocationSizeBytes = textureDimension;
+        (entryCursor->asset).common.formatVersion = 0;
+        (entryCursor->sourceEntry).dataOffset = pixelDataOffset;
+        (entryCursor->asset).common.buildMetadata.timestamps.dateValue0 = 0;
+        (entryCursor->asset).common.buildMetadata.timestamps.timeValue0 = 0;
+        (entryCursor->asset).common.buildMetadata.timestamps.dateValue1 = textureDimension;
+        (entryCursor->asset).common.buildMetadata.timestamps.timeValue1 = textureDimension;
+        pixelDataOffset = pixelDataOffset + textureDimension * textureDimension;
+        entryCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
+                 &(entryCursor->asset).common.buildMetadata.timestamps.dateValue2;
         subresourceCount = subresourceCount - 1;
       } while (subresourceCount != 0);
       g_GraphicsShadingTextureDimension = textureDimension;
       g_GraphicsShadingGridHalfSize = gridHalfSize;
       g_GraphicsShadingGridStepQ20 =
            (dword)(((ulonglong)gridHalfSize * 0x100000) / (ulonglong)textureDimension);
-      iVar4 = ((int)gridHalfSize >> 1) + -1;
-      g_GraphicsShadingPositiveGridOriginQ12 = iVar4 * 0x1000;
-      g_GraphicsShadingNegativeGridOriginQ12 = iVar4 * -0x1000;
+      counterOrGridOrigin = ((int)gridHalfSize >> 1) + -1;
+      g_GraphicsShadingPositiveGridOriginQ12 = counterOrGridOrigin * 0x1000;
+      g_GraphicsShadingNegativeGridOriginQ12 = counterOrGridOrigin * -0x1000;
       g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
-      GVar7 = (*g_GraphicsCreateTextureSet)(g_GraphicsShadingGeneratedAsset);
-      pGVar2 = (GraphicsGeneratedTextureAssetOrEntryView200 *)GVar7.textureSet;
-      if (!GVar7.carry) {
-        g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&pGVar2->asset;
-        return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(GraphicsTextureSetEaxCf5, qword, GVar7) & 0xFFFFFFFFFFull) & 0xffffffff));
+      textureSetResult = (*g_GraphicsCreateTextureSet)(g_GraphicsShadingGeneratedAsset);
+      allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)textureSetResult.textureSet;
+      if (!textureSetResult.carry) {
+        g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&allocationCursor->asset;
+        return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(GraphicsTextureSetEaxCf5, qword, textureSetResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)(g_GraphicsShadingGeneratedAsset);
     }
   }
-  SVar8.carry = true;
-  SVar8.valueOrError = (dword)pGVar2;
-  return SVar8;
+  failureStatus.carry = true;
+  failureStatus.valueOrError = (dword)allocationCursor;
+  return failureStatus;
 }
 
 
@@ -3032,9 +3032,9 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
 
 {
-  AssetRelativeOffset AVar1;
-  uint uVar2;
-  byte *pbVar3;
+  AssetRelativeOffset tableOffset;
+  uint dwordsRemaining;
+  byte *alphaCursor;
   
   g_GeneratedTextureScratchRuntime.downsampleBorderOffset = g_TextureDownsampleShift << 2;
   g_GraphicsShadingGeneratedTexturePixelCursor =
@@ -3049,20 +3049,20 @@ GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
   g_GraphicsShadingGeneratedTextureTileXQ20 = 0;
   g_GraphicsShadingGeneratedTextureTileYQ20 = 0;
   g_GraphicsShadingGeneratedTextureCompletedTraversalCount = 0;
-  AVar1 = (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset;
-  pbVar3 = (g_GraphicsShadingGeneratedAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-           g_GraphicsShadingSubresourceCount * 0x20 + AVar1 + -0x28;
-  for (uVar2 = g_GraphicsShadingSubresourceCount *
+  tableOffset = (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset;
+  alphaCursor = (g_GraphicsShadingGeneratedAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+           g_GraphicsShadingSubresourceCount * 0x20 + tableOffset + -0x28;
+  for (dwordsRemaining = g_GraphicsShadingSubresourceCount *
                *(int *)((g_GraphicsShadingGeneratedAsset->common).buildMetadata.
-                        assetRelativeAddressAnchor28 + (AVar1 - 0x10)) *
+                        assetRelativeAddressAnchor28 + (tableOffset - 0x10)) *
                *(int *)((g_GraphicsShadingGeneratedAsset->common).buildMetadata.
-                        assetRelativeAddressAnchor28 + (AVar1 - 0xc)) >> 2; uVar2 != 0;
-      uVar2 = uVar2 - 1) {
-    pbVar3[0] = 0;
-    pbVar3[1] = 0;
-    pbVar3[2] = 0;
-    pbVar3[3] = 0;
-    pbVar3 = pbVar3 + 4;
+                        assetRelativeAddressAnchor28 + (tableOffset - 0xc)) >> 2; dwordsRemaining != 0;
+      dwordsRemaining = dwordsRemaining - 1) {
+    alphaCursor[0] = 0;
+    alphaCursor[1] = 0;
+    alphaCursor[2] = 0;
+    alphaCursor[3] = 0;
+    alphaCursor = alphaCursor + 4;
   }
   return;
 }
@@ -3076,18 +3076,18 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
 
 {
-  dword arg0;
-  GraphicsSubresourceIndex GVar1;
+  dword subresourceIndex;
+  GraphicsSubresourceIndex subresourcesRemaining;
   
-  arg0 = 0;
-  for (GVar1 = g_GraphicsShadingGeneratedTextureSubresourceIndex; GVar1 != 0; GVar1 = GVar1 - 1) {
-    (*g_GraphicsRefreshTextureAlpha)(arg0,g_GraphicsShadingTextureSet);
-    arg0 = arg0 + 1;
+  subresourceIndex = 0;
+  for (subresourcesRemaining = g_GraphicsShadingGeneratedTextureSubresourceIndex; subresourcesRemaining != 0; subresourcesRemaining = subresourcesRemaining - 1) {
+    (*g_GraphicsRefreshTextureAlpha)(subresourceIndex,g_GraphicsShadingTextureSet);
+    subresourceIndex = subresourceIndex + 1;
   }
   if ((g_GraphicsShadingGeneratedTextureCompletedTraversalCount == 0) &&
      ((g_GraphicsShadingGeneratedTextureTileX != 0 || (g_GraphicsShadingGeneratedTextureTileY != 0))
      )) {
-    (*g_GraphicsRefreshTextureAlpha)(arg0,g_GraphicsShadingTextureSet);
+    (*g_GraphicsRefreshTextureAlpha)(subresourceIndex,g_GraphicsShadingTextureSet);
   }
   return;
 }
@@ -3101,14 +3101,14 @@ void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlockCf
                (GeneratedTextureRenderContextView *renderContext)
 
 {
-  uint *puVar1;
-  uint uVar2;
+  uint *blockPool;
+  uint usedBlockCount;
   
-  puVar1 = renderContext->projectedPointBlockPool;
-  uVar2 = puVar1[1];
-  if (uVar2 + 1 < *puVar1) {
-    puVar1[1] = uVar2 + 1;
-    puVar1[uVar2 * 4 + 9] = uVar2 * 0x80 + puVar1[2];
+  blockPool = renderContext->projectedPointBlockPool;
+  usedBlockCount = blockPool[1];
+  if (usedBlockCount + 1 < *blockPool) {
+    blockPool[1] = usedBlockCount + 1;
+    blockPool[usedBlockCount * 4 + 9] = usedBlockCount * 0x80 + blockPool[2];
     return;
   }
   return;
@@ -3125,27 +3125,27 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshGroup)
 
 {
-  int iVar1;
-  int iVar2;
-  GraphicsFixedVec3 *point;
+  int vertexCount;
+  int triangleCount;
+  GraphicsFixedVec3 *recordCursor;
   
-  iVar1 = *(int *)(meshGroup + 8);
-  iVar2 = *(int *)(meshGroup + 0xc);
+  vertexCount = *(int *)(meshGroup + 8);
+  triangleCount = *(int *)(meshGroup + 0xc);
   if (((*(uint *)(meshGroup + 0x10) & 1) == 0) &&
-     (point = (GraphicsFixedVec3 *)(meshGroup + 0x20), iVar1 != 0)) {
+     (recordCursor = (GraphicsFixedVec3 *)(meshGroup + 0x20), vertexCount != 0)) {
     do {
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
-                ((GraphicsFixedVec2 *)&point[2].z,point,
+                ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
-      point = (GraphicsFixedVec3 *)&point[5].y;
-      iVar1 = iVar1 + -1;
-    } while (iVar1 != 0);
-    for (; iVar2 != 0; iVar2 = iVar2 + -1) {
+      recordCursor = (GraphicsFixedVec3 *)&recordCursor[5].y;
+      vertexCount = vertexCount + -1;
+    } while (vertexCount != 0);
+    for (; triangleCount != 0; triangleCount = triangleCount + -1) {
       GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                ((GraphicsFixedVec2 *)(*(int *)((int)point + 0x18) + 0x20),
-                 (GraphicsFixedVec2 *)(*(int *)((int)point + 0xc) + 0x20),
-                 (GraphicsFixedVec2 *)(point->x + 0x20));
-      point = (GraphicsFixedVec3 *)((int)point + 0x40);
+                ((GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0x18) + 0x20),
+                 (GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0xc) + 0x20),
+                 (GraphicsFixedVec2 *)(recordCursor->x + 0x20));
+      recordCursor = (GraphicsFixedVec3 *)((int)recordCursor + 0x40);
     }
   }
   return;
@@ -3162,51 +3162,51 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode)
 
 {
-  GraphicsFixedVec3 *pGVar1;
-  GraphicsWorldCoordinateQ12 *pGVar2;
-  ModelResourceHitTestAndRenderView210 *pMVar3;
-  GraphicsWorldCoordinateQ12 GVar4;
-  GraphicsWorldCoordinateQ12 GVar5;
-  GraphicsWorldCoordinateQ12 GVar6;
-  int iVar7;
-  dword dVar8;
+  GraphicsFixedVec3 *nodeTranslation;
+  GraphicsWorldCoordinateQ12 *translationComponent;
+  ModelResourceHitTestAndRenderView210 *resourceView;
+  GraphicsWorldCoordinateQ12 originX;
+  GraphicsWorldCoordinateQ12 originY;
+  GraphicsWorldCoordinateQ12 originZ;
+  int offsetCountOrChildIndex;
+  dword childrenRemaining;
   byte *meshGroup;
   
-  GVar6 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
-  GVar5 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
-  GVar4 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  pGVar1 = &(modelNode->worldTransform).translation;
-  pGVar1->x = pGVar1->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  pGVar2 = &(modelNode->worldTransform).translation.y;
-  *pGVar2 = *pGVar2 - GVar5;
-  pGVar2 = &(modelNode->worldTransform).translation.z;
-  *pGVar2 = *pGVar2 - GVar6;
+  originZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
+  originY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
+  originX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
+  nodeTranslation = &(modelNode->worldTransform).translation;
+  nodeTranslation->x = nodeTranslation->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
+  translationComponent = &(modelNode->worldTransform).translation.y;
+  *translationComponent = *translationComponent - originY;
+  translationComponent = &(modelNode->worldTransform).translation.z;
+  *translationComponent = *translationComponent - originZ;
   GraphicsShadingGeneratedTexture_ComposeTransform
             (&g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform,
              &modelNode->worldTransform,
              &g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform);
-  pGVar1 = &(modelNode->worldTransform).translation;
-  pGVar1->x = pGVar1->x + GVar4;
-  pGVar2 = &(modelNode->worldTransform).translation.y;
-  *pGVar2 = *pGVar2 + GVar5;
-  pGVar2 = &(modelNode->worldTransform).translation.z;
-  *pGVar2 = *pGVar2 + GVar6;
-  pMVar3 = (modelNode->modelPayload).modelResource;
-  iVar7 = *(int *)pMVar3->reservedEC_1FF;
-  if (iVar7 != 0) {
-    meshGroup = pMVar3->reserved00_AF + iVar7 + 0x20;
-    for (iVar7 = *(int *)(pMVar3->reserved00_AF + iVar7 + 4); iVar7 != 0; iVar7 = iVar7 + -1) {
+  nodeTranslation = &(modelNode->worldTransform).translation;
+  nodeTranslation->x = nodeTranslation->x + originX;
+  translationComponent = &(modelNode->worldTransform).translation.y;
+  *translationComponent = *translationComponent + originY;
+  translationComponent = &(modelNode->worldTransform).translation.z;
+  *translationComponent = *translationComponent + originZ;
+  resourceView = (modelNode->modelPayload).modelResource;
+  offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  if (offsetCountOrChildIndex != 0) {
+    meshGroup = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
+    for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex = offsetCountOrChildIndex + -1) {
       GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear
                 ((ModelMeshGroupAddress32)meshGroup);
       meshGroup = meshGroup + *(int *)meshGroup;
     }
   }
-  iVar7 = 0;
-  for (dVar8 = modelNode->childCount; dVar8 != 0; dVar8 = dVar8 - 1) {
-    if (modelNode->childNodes[iVar7] != (ModelRuntimeNode *)0x0) {
-      GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(modelNode->childNodes[iVar7]);
+  offsetCountOrChildIndex = 0;
+  for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
+    if (modelNode->childNodes[offsetCountOrChildIndex] != (ModelRuntimeNode *)0x0) {
+      GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(modelNode->childNodes[offsetCountOrChildIndex]);
     }
-    iVar7 = iVar7 + 1;
+    offsetCountOrChildIndex = offsetCountOrChildIndex + 1;
   }
   return;
 }
@@ -3222,27 +3222,27 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshGroup)
 
 {
-  int iVar1;
-  int iVar2;
-  GraphicsFixedVec3 *point;
+  int vertexCount;
+  int triangleCount;
+  GraphicsFixedVec3 *recordCursor;
   
-  iVar1 = *(int *)(meshGroup + 8);
-  iVar2 = *(int *)(meshGroup + 0xc);
+  vertexCount = *(int *)(meshGroup + 8);
+  triangleCount = *(int *)(meshGroup + 0xc);
   if (((*(uint *)(meshGroup + 0x10) & 1) != 0) &&
-     (point = (GraphicsFixedVec3 *)(meshGroup + 0x20), iVar1 != 0)) {
+     (recordCursor = (GraphicsFixedVec3 *)(meshGroup + 0x20), vertexCount != 0)) {
     do {
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
-                ((GraphicsFixedVec2 *)&point[2].z,point,
+                ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
-      point = (GraphicsFixedVec3 *)&point[5].y;
-      iVar1 = iVar1 + -1;
-    } while (iVar1 != 0);
-    for (; iVar2 != 0; iVar2 = iVar2 + -1) {
+      recordCursor = (GraphicsFixedVec3 *)&recordCursor[5].y;
+      vertexCount = vertexCount + -1;
+    } while (vertexCount != 0);
+    for (; triangleCount != 0; triangleCount = triangleCount + -1) {
       GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                ((GraphicsFixedVec2 *)(*(int *)((int)point + 0x18) + 0x20),
-                 (GraphicsFixedVec2 *)(*(int *)((int)point + 0xc) + 0x20),
-                 (GraphicsFixedVec2 *)(point->x + 0x20));
-      point = (GraphicsFixedVec3 *)((int)point + 0x40);
+                ((GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0x18) + 0x20),
+                 (GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0xc) + 0x20),
+                 (GraphicsFixedVec2 *)(recordCursor->x + 0x20));
+      recordCursor = (GraphicsFixedVec3 *)((int)recordCursor + 0x40);
     }
   }
   return;
@@ -3259,51 +3259,51 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *modelNode)
 
 {
-  GraphicsFixedVec3 *pGVar1;
-  GraphicsWorldCoordinateQ12 *pGVar2;
-  ModelResourceHitTestAndRenderView210 *pMVar3;
-  GraphicsWorldCoordinateQ12 GVar4;
-  GraphicsWorldCoordinateQ12 GVar5;
-  GraphicsWorldCoordinateQ12 GVar6;
-  int iVar7;
-  dword dVar8;
+  GraphicsFixedVec3 *nodeTranslation;
+  GraphicsWorldCoordinateQ12 *translationComponent;
+  ModelResourceHitTestAndRenderView210 *resourceView;
+  GraphicsWorldCoordinateQ12 originX;
+  GraphicsWorldCoordinateQ12 originY;
+  GraphicsWorldCoordinateQ12 originZ;
+  int offsetCountOrChildIndex;
+  dword childrenRemaining;
   byte *meshGroup;
   
-  GVar6 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
-  GVar5 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
-  GVar4 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  pGVar1 = &(modelNode->worldTransform).translation;
-  pGVar1->x = pGVar1->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  pGVar2 = &(modelNode->worldTransform).translation.y;
-  *pGVar2 = *pGVar2 - GVar5;
-  pGVar2 = &(modelNode->worldTransform).translation.z;
-  *pGVar2 = *pGVar2 - GVar6;
+  originZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
+  originY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
+  originX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
+  nodeTranslation = &(modelNode->worldTransform).translation;
+  nodeTranslation->x = nodeTranslation->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
+  translationComponent = &(modelNode->worldTransform).translation.y;
+  *translationComponent = *translationComponent - originY;
+  translationComponent = &(modelNode->worldTransform).translation.z;
+  *translationComponent = *translationComponent - originZ;
   GraphicsShadingGeneratedTexture_ComposeTransform
             (&g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform,
              &modelNode->worldTransform,
              &g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform);
-  pGVar1 = &(modelNode->worldTransform).translation;
-  pGVar1->x = pGVar1->x + GVar4;
-  pGVar2 = &(modelNode->worldTransform).translation.y;
-  *pGVar2 = *pGVar2 + GVar5;
-  pGVar2 = &(modelNode->worldTransform).translation.z;
-  *pGVar2 = *pGVar2 + GVar6;
-  pMVar3 = (modelNode->modelPayload).modelResource;
-  iVar7 = *(int *)pMVar3->reservedEC_1FF;
-  if (iVar7 != 0) {
-    meshGroup = pMVar3->reserved00_AF + iVar7 + 0x20;
-    for (iVar7 = *(int *)(pMVar3->reserved00_AF + iVar7 + 4); iVar7 != 0; iVar7 = iVar7 + -1) {
+  nodeTranslation = &(modelNode->worldTransform).translation;
+  nodeTranslation->x = nodeTranslation->x + originX;
+  translationComponent = &(modelNode->worldTransform).translation.y;
+  *translationComponent = *translationComponent + originY;
+  translationComponent = &(modelNode->worldTransform).translation.z;
+  *translationComponent = *translationComponent + originZ;
+  resourceView = (modelNode->modelPayload).modelResource;
+  offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  if (offsetCountOrChildIndex != 0) {
+    meshGroup = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
+    for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex = offsetCountOrChildIndex + -1) {
       GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set
                 ((ModelMeshGroupAddress32)meshGroup);
       meshGroup = meshGroup + *(int *)meshGroup;
     }
   }
-  iVar7 = 0;
-  for (dVar8 = modelNode->childCount; dVar8 != 0; dVar8 = dVar8 - 1) {
-    if (modelNode->childNodes[iVar7] != (ModelRuntimeNode *)0x0) {
-      GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode->childNodes[iVar7]);
+  offsetCountOrChildIndex = 0;
+  for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
+    if (modelNode->childNodes[offsetCountOrChildIndex] != (ModelRuntimeNode *)0x0) {
+      GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(modelNode->childNodes[offsetCountOrChildIndex]);
     }
-    iVar7 = iVar7 + 1;
+    offsetCountOrChildIndex = offsetCountOrChildIndex + 1;
   }
   return;
 }
@@ -3319,30 +3319,30 @@ GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
           (ModelMeshGroupAddress32 meshGroup)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  GraphicsFixedVec3 *point;
+  int vertexX;
+  int vertexY;
+  int verticesRemaining;
+  GraphicsFixedVec3 *vertexCursor;
   
-  point = (GraphicsFixedVec3 *)(meshGroup + 0x20);
-  for (iVar3 = *(int *)(meshGroup + 8); iVar3 != 0; iVar3 = iVar3 + -1) {
+  vertexCursor = (GraphicsFixedVec3 *)(meshGroup + 0x20);
+  for (verticesRemaining = *(int *)(meshGroup + 8); verticesRemaining != 0; verticesRemaining = verticesRemaining + -1) {
     GraphicsShadingGeneratedTexture_TransformPointXY
-              ((GraphicsFixedVec2 *)&point[2].z,point,
+              ((GraphicsFixedVec2 *)&vertexCursor[2].z,vertexCursor,
                &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
-    iVar1 = point[2].z;
-    iVar2 = point[3].x;
-    point = (GraphicsFixedVec3 *)&point[5].y;
-    if (iVar1 < g_GeneratedTextureScratchRuntime.projectedMinX) {
-      g_GeneratedTextureScratchRuntime.projectedMinX = iVar1;
+    vertexX = vertexCursor[2].z;
+    vertexY = vertexCursor[3].x;
+    vertexCursor = (GraphicsFixedVec3 *)&vertexCursor[5].y;
+    if (vertexX < g_GeneratedTextureScratchRuntime.projectedMinX) {
+      g_GeneratedTextureScratchRuntime.projectedMinX = vertexX;
     }
-    if (iVar2 < g_GeneratedTextureScratchRuntime.projectedMinY) {
-      g_GeneratedTextureScratchRuntime.projectedMinY = iVar2;
+    if (vertexY < g_GeneratedTextureScratchRuntime.projectedMinY) {
+      g_GeneratedTextureScratchRuntime.projectedMinY = vertexY;
     }
-    if (g_GeneratedTextureScratchRuntime.projectedMaxX < iVar1) {
-      g_GeneratedTextureScratchRuntime.projectedMaxX = iVar1;
+    if (g_GeneratedTextureScratchRuntime.projectedMaxX < vertexX) {
+      g_GeneratedTextureScratchRuntime.projectedMaxX = vertexX;
     }
-    if (g_GeneratedTextureScratchRuntime.projectedMaxY < iVar2) {
-      g_GeneratedTextureScratchRuntime.projectedMaxY = iVar2;
+    if (g_GeneratedTextureScratchRuntime.projectedMaxY < vertexY) {
+      g_GeneratedTextureScratchRuntime.projectedMaxY = vertexY;
     }
   }
   return;
@@ -3360,51 +3360,51 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
           (ModelRuntimeNode *modelNode)
 
 {
-  GraphicsFixedVec3 *pGVar1;
-  GraphicsWorldCoordinateQ12 *pGVar2;
-  ModelResourceHitTestAndRenderView210 *pMVar3;
-  GraphicsWorldCoordinateQ12 GVar4;
-  GraphicsWorldCoordinateQ12 GVar5;
-  GraphicsWorldCoordinateQ12 GVar6;
-  int iVar7;
-  dword dVar8;
+  GraphicsFixedVec3 *nodeTranslation;
+  GraphicsWorldCoordinateQ12 *translationComponent;
+  ModelResourceHitTestAndRenderView210 *resourceView;
+  GraphicsWorldCoordinateQ12 originX;
+  GraphicsWorldCoordinateQ12 originY;
+  GraphicsWorldCoordinateQ12 originZ;
+  int offsetCountOrChildIndex;
+  dword childrenRemaining;
   byte *meshGroup;
   
-  GVar6 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
-  GVar5 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
-  GVar4 = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  pGVar1 = &(modelNode->worldTransform).translation;
-  pGVar1->x = pGVar1->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
-  pGVar2 = &(modelNode->worldTransform).translation.y;
-  *pGVar2 = *pGVar2 - GVar5;
-  pGVar2 = &(modelNode->worldTransform).translation.z;
-  *pGVar2 = *pGVar2 - GVar6;
+  originZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
+  originY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
+  originX = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
+  nodeTranslation = &(modelNode->worldTransform).translation;
+  nodeTranslation->x = nodeTranslation->x - g_GeneratedTextureScratchRuntime.currentModelOriginQ12.x;
+  translationComponent = &(modelNode->worldTransform).translation.y;
+  *translationComponent = *translationComponent - originY;
+  translationComponent = &(modelNode->worldTransform).translation.z;
+  *translationComponent = *translationComponent - originZ;
   FixedTransform_Compose
             (&g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform,
              &modelNode->worldTransform,&g_AuxiliaryRotationMatrixFixed);
-  pGVar1 = &(modelNode->worldTransform).translation;
-  pGVar1->x = pGVar1->x + GVar4;
-  pGVar2 = &(modelNode->worldTransform).translation.y;
-  *pGVar2 = *pGVar2 + GVar5;
-  pGVar2 = &(modelNode->worldTransform).translation.z;
-  *pGVar2 = *pGVar2 + GVar6;
-  pMVar3 = (modelNode->modelPayload).modelResource;
-  iVar7 = *(int *)pMVar3->reservedEC_1FF;
-  if (iVar7 != 0) {
-    meshGroup = pMVar3->reserved00_AF + iVar7 + 0x20;
-    for (iVar7 = *(int *)(pMVar3->reserved00_AF + iVar7 + 4); iVar7 != 0; iVar7 = iVar7 + -1) {
+  nodeTranslation = &(modelNode->worldTransform).translation;
+  nodeTranslation->x = nodeTranslation->x + originX;
+  translationComponent = &(modelNode->worldTransform).translation.y;
+  *translationComponent = *translationComponent + originY;
+  translationComponent = &(modelNode->worldTransform).translation.z;
+  *translationComponent = *translationComponent + originZ;
+  resourceView = (modelNode->modelPayload).modelResource;
+  offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  if (offsetCountOrChildIndex != 0) {
+    meshGroup = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
+    for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex = offsetCountOrChildIndex + -1) {
       GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
                 ((ModelMeshGroupAddress32)meshGroup);
       meshGroup = meshGroup + *(int *)meshGroup;
     }
   }
-  iVar7 = 0;
-  for (dVar8 = modelNode->childCount; dVar8 != 0; dVar8 = dVar8 - 1) {
-    if (modelNode->childNodes[iVar7] != (ModelRuntimeNode *)0x0) {
+  offsetCountOrChildIndex = 0;
+  for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
+    if (modelNode->childNodes[offsetCountOrChildIndex] != (ModelRuntimeNode *)0x0) {
       GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
-                (modelNode->childNodes[iVar7]);
+                (modelNode->childNodes[offsetCountOrChildIndex]);
     }
-    iVar7 = iVar7 + 1;
+    offsetCountOrChildIndex = offsetCountOrChildIndex + 1;
   }
   return;
 }
@@ -3419,20 +3419,20 @@ GraphicsShadingGeneratedTexture_TransformPointXY
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int row1Column0;
+  longlong dotProduct;
   
-  lVar2 = (longlong)transform->basisRow0[1] * (longlong)point->y +
+  dotProduct = (longlong)transform->basisRow0[1] * (longlong)point->y +
           (longlong)transform->basisRow0[0] * (longlong)point->x +
           (longlong)transform->basisRow0[2] * (longlong)point->z;
-  iVar1 = transform->basisRow1[0];
+  row1Column0 = transform->basisRow1[0];
   outputXY->component0 =
-       ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) + (transform->translation).x;
-  lVar2 = (longlong)transform->basisRow1[1] * (longlong)point->y +
-          (longlong)iVar1 * (longlong)point->x +
+       ((int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c) + (transform->translation).x;
+  dotProduct = (longlong)transform->basisRow1[1] * (longlong)point->y +
+          (longlong)row1Column0 * (longlong)point->x +
           (longlong)transform->basisRow1[2] * (longlong)point->z;
   outputXY->component1 =
-       ((int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c) + (transform->translation).y;
+       ((int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c) + (transform->translation).y;
   return;
 }
 
@@ -3483,179 +3483,179 @@ void __thandor_void_preserve_eax_ecx GraphicsShadingGeneratedTexture_AdvanceTile
 void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
 
 {
-  int iVar1;
-  qword qVar2;
-  int iVar3;
-  uint uVar4;
-  uint uVar5;
-  ulonglong *puVar6;
-  undefined8 *puVar7;
-  longlong *plVar8;
-  ulonglong *puVar9;
-  ulonglong *puVar10;
-  uint uVar11;
-  bool bVar12;
-  undefined8 uVar13;
-  ulonglong uVar14;
-  undefined8 uVar15;
-  ulonglong uVar16;
-  undefined8 uVar17;
-  ulonglong uVar18;
-  undefined8 uVar19;
-  ulonglong uVar20;
-  undefined8 uVar21;
-  undefined8 uVar22;
-  undefined8 uVar23;
-  undefined8 uVar24;
+  int backtrackOffset;
+  qword threeBitMask;
+  int scratchBlockStride;
+  uint rowBytesRemaining;
+  uint rowsRemaining;
+  ulonglong *scratchWriteCursor;
+  undefined8 *neighborCursor;
+  longlong *scratchCursor;
+  ulonglong *textureWriteCursor;
+  ulonglong *textureReadCursor;
+  uint neighborStep;
+  bool rowContinues;
+  undefined8 weightedSum0;
+  ulonglong quad1OrResult0;
+  undefined8 weightedSum1;
+  ulonglong quad2OrResult1;
+  undefined8 weightedSum2;
+  ulonglong quad3OrResult2;
+  undefined8 weightedSum3;
+  ulonglong result3;
+  undefined8 crossSum0;
+  undefined8 crossSum1;
+  undefined8 crossSum2;
+  undefined8 crossSum3;
   
-  qVar2 = g_GraphicsShadingMmxPacked3BitPerByteMask;
-  uVar11 = g_GraphicsShadingGridHalfSize >> 4;
-  puVar9 = (ulonglong *)
+  threeBitMask = g_GraphicsShadingMmxPacked3BitPerByteMask;
+  neighborStep = g_GraphicsShadingGridHalfSize >> 4;
+  textureWriteCursor = (ulonglong *)
            (g_GraphicsShadingGeneratedTexturePixelCursor +
            (-(g_GraphicsShadingGridHalfSize >> 1) -
            g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1)));
-  uVar4 = g_GraphicsShadingGridHalfSize;
-  uVar5 = g_GraphicsShadingGridHalfSize;
-  puVar6 = (ulonglong *)g_GraphicsShadingGridScratchInterior;
-  puVar10 = puVar9;
+  rowBytesRemaining = g_GraphicsShadingGridHalfSize;
+  rowsRemaining = g_GraphicsShadingGridHalfSize;
+  scratchWriteCursor = (ulonglong *)g_GraphicsShadingGridScratchInterior;
+  textureReadCursor = textureWriteCursor;
   do {
     do {
-      uVar14 = puVar10[1];
-      uVar16 = puVar10[2];
-      uVar18 = puVar10[3];
-      *puVar6 = *puVar10 >> 5 & qVar2;
-      puVar6[1] = uVar14 >> 5 & qVar2;
-      puVar6[2] = uVar16 >> 5 & qVar2;
-      puVar6[3] = uVar18 >> 5 & qVar2;
-      puVar10 = puVar10 + 4;
-      puVar6 = puVar6 + 4;
-      bVar12 = 0x1f < uVar4;
-      uVar4 = uVar4 - 0x20;
-    } while (bVar12 && uVar4 != 0);
-    puVar6 = (ulonglong *)((int)puVar6 + g_GraphicsShadingGridHalfSize);
-    puVar10 = (ulonglong *)
-              ((int)puVar10 + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
-    uVar5 = uVar5 - 1;
-    uVar4 = g_GraphicsShadingGridHalfSize;
-  } while (uVar5 != 0);
-  iVar3 = g_GraphicsShadingGridHalfSize * 2 * uVar11;
-  uVar5 = g_GraphicsShadingGridHalfSize;
-  plVar8 = (longlong *)g_GraphicsShadingGridScratchInterior;
+      quad1OrResult0 = textureReadCursor[1];
+      quad2OrResult1 = textureReadCursor[2];
+      quad3OrResult2 = textureReadCursor[3];
+      *scratchWriteCursor = *textureReadCursor >> 5 & threeBitMask;
+      scratchWriteCursor[1] = quad1OrResult0 >> 5 & threeBitMask;
+      scratchWriteCursor[2] = quad2OrResult1 >> 5 & threeBitMask;
+      scratchWriteCursor[3] = quad3OrResult2 >> 5 & threeBitMask;
+      textureReadCursor = textureReadCursor + 4;
+      scratchWriteCursor = scratchWriteCursor + 4;
+      rowContinues = 0x1f < rowBytesRemaining;
+      rowBytesRemaining = rowBytesRemaining - 0x20;
+    } while (rowContinues && rowBytesRemaining != 0);
+    scratchWriteCursor = (ulonglong *)((int)scratchWriteCursor + g_GraphicsShadingGridHalfSize);
+    textureReadCursor = (ulonglong *)
+              ((int)textureReadCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
+    rowsRemaining = rowsRemaining - 1;
+    rowBytesRemaining = g_GraphicsShadingGridHalfSize;
+  } while (rowsRemaining != 0);
+  scratchBlockStride = g_GraphicsShadingGridHalfSize * 2 * neighborStep;
+  rowsRemaining = g_GraphicsShadingGridHalfSize;
+  scratchCursor = (longlong *)g_GraphicsShadingGridScratchInterior;
   do {
     do {
-      uVar13 = paddusb(*plVar8 << 2,*(undefined8 *)((int)plVar8 + uVar11 * 2));
-      uVar15 = paddusb(plVar8[1] << 2,*(undefined8 *)((int)plVar8 + uVar11 * 2 + 8));
-      uVar17 = paddusb(plVar8[2] << 2,*(undefined8 *)((int)plVar8 + uVar11 * 2 + 0x10));
-      uVar19 = paddusb(plVar8[3] << 2,*(undefined8 *)((int)plVar8 + uVar11 * 2 + 0x18));
-      puVar7 = (undefined8 *)((int)plVar8 - uVar11);
-      uVar21 = paddusb(*(undefined8 *)((int)plVar8 + uVar11),*puVar7);
-      uVar22 = paddusb(*(undefined8 *)((int)plVar8 + uVar11 + 8),puVar7[1]);
-      uVar23 = paddusb(*(undefined8 *)((int)plVar8 + uVar11 + 0x10),puVar7[2]);
-      uVar24 = paddusb(*(undefined8 *)((int)plVar8 + uVar11 + 0x18),puVar7[3]);
-      puVar7 = (undefined8 *)((int)puVar7 - uVar11);
-      uVar13 = paddusb(uVar13,*puVar7);
-      uVar15 = paddusb(uVar15,puVar7[1]);
-      uVar17 = paddusb(uVar17,puVar7[2]);
-      uVar19 = paddusb(uVar19,puVar7[3]);
-      puVar7 = (undefined8 *)((int)puVar7 + (uVar11 * 2 - iVar3));
-      uVar21 = paddusb(uVar21,*puVar7);
-      uVar22 = paddusb(uVar22,puVar7[1]);
-      uVar23 = paddusb(uVar23,puVar7[2]);
-      uVar24 = paddusb(uVar24,puVar7[3]);
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + uVar11));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + uVar11 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + uVar11 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + uVar11 + 0x18));
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + uVar11 * 2));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + uVar11 * 2 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + uVar11 * 2 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + uVar11 * 2 + 0x18));
-      puVar7 = (undefined8 *)((int)puVar7 - uVar11);
-      uVar13 = paddusb(uVar13,*puVar7);
-      uVar15 = paddusb(uVar15,puVar7[1]);
-      uVar17 = paddusb(uVar17,puVar7[2]);
-      uVar19 = paddusb(uVar19,puVar7[3]);
-      puVar7 = (undefined8 *)((int)puVar7 - uVar11);
-      uVar13 = paddusb(uVar13,*puVar7);
-      uVar15 = paddusb(uVar15,puVar7[1]);
-      uVar17 = paddusb(uVar17,puVar7[2]);
-      uVar19 = paddusb(uVar19,puVar7[3]);
-      puVar7 = (undefined8 *)((int)puVar7 + iVar3 * 2 + uVar11 * 2);
-      uVar21 = paddusb(uVar21,*puVar7);
-      uVar22 = paddusb(uVar22,puVar7[1]);
-      uVar23 = paddusb(uVar23,puVar7[2]);
-      uVar24 = paddusb(uVar24,puVar7[3]);
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + uVar11));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + uVar11 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + uVar11 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + uVar11 + 0x18));
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + uVar11 * 2));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + uVar11 * 2 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + uVar11 * 2 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + uVar11 * 2 + 0x18));
-      iVar1 = -iVar3 - uVar11;
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + iVar3 + iVar1));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + iVar3 + 8 + iVar1));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + iVar3 + 0x10 + iVar1));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + iVar3 + 0x18 + iVar1));
-      iVar1 = (iVar1 - uVar11) - iVar3;
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + iVar3 * 2 + iVar1));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + iVar3 * 2 + iVar1 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + iVar3 * 2 + iVar1 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + iVar3 * 2 + iVar1 + 0x18));
-      uVar13 = paddusb(uVar13,uVar21);
-      uVar15 = paddusb(uVar15,uVar22);
-      uVar17 = paddusb(uVar17,uVar23);
-      uVar19 = paddusb(uVar19,uVar24);
-      uVar13 = paddusb(uVar13,uVar21);
-      uVar15 = paddusb(uVar15,uVar22);
-      uVar17 = paddusb(uVar17,uVar23);
-      uVar19 = paddusb(uVar19,uVar24);
-      puVar7 = (undefined8 *)((int)puVar7 + uVar11 * 2 + (iVar1 - iVar3));
-      uVar13 = paddusb(uVar13,uVar21);
-      uVar15 = paddusb(uVar15,uVar22);
-      uVar17 = paddusb(uVar17,uVar23);
-      uVar19 = paddusb(uVar19,uVar24);
-      uVar13 = paddusb(uVar13,*puVar7);
-      uVar15 = paddusb(uVar15,puVar7[1]);
-      uVar17 = paddusb(uVar17,puVar7[2]);
-      uVar19 = paddusb(uVar19,puVar7[3]);
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + uVar11));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + uVar11 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + uVar11 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + uVar11 + 0x18));
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + iVar3 * 4));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + iVar3 * 4 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + iVar3 * 4 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + iVar3 * 4 + 0x18));
-      puVar7 = (undefined8 *)((int)puVar7 - uVar11);
-      uVar13 = paddusb(uVar13,*puVar7);
-      uVar15 = paddusb(uVar15,puVar7[1]);
-      uVar17 = paddusb(uVar17,puVar7[2]);
-      uVar19 = paddusb(uVar19,puVar7[3]);
-      uVar13 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + iVar3 * 4));
-      uVar15 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + iVar3 * 4 + 8));
-      uVar17 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + iVar3 * 4 + 0x10));
-      uVar19 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + iVar3 * 4 + 0x18));
-      uVar14 = paddusb(uVar13,*(undefined8 *)((int)puVar7 + iVar3 * 4 + uVar11 * 2));
-      uVar16 = paddusb(uVar15,*(undefined8 *)((int)puVar7 + iVar3 * 4 + uVar11 * 2 + 8));
-      uVar18 = paddusb(uVar17,*(undefined8 *)((int)puVar7 + iVar3 * 4 + uVar11 * 2 + 0x10));
-      uVar20 = paddusb(uVar19,*(undefined8 *)((int)puVar7 + iVar3 * 4 + uVar11 * 2 + 0x18));
-      *puVar9 = uVar14;
-      puVar9[1] = uVar16;
-      puVar9[2] = uVar18;
-      puVar9[3] = uVar20;
-      plVar8 = (longlong *)((int)puVar7 + iVar3 * 2 + uVar11 + 0x20);
-      puVar9 = puVar9 + 4;
-      bVar12 = 0x1f < uVar4;
-      uVar4 = uVar4 - 0x20;
-    } while (bVar12 && uVar4 != 0);
-    plVar8 = (longlong *)((int)plVar8 + g_GraphicsShadingGridHalfSize);
-    puVar9 = (ulonglong *)
-             ((int)puVar9 + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
-    uVar5 = uVar5 - 1;
-    uVar4 = g_GraphicsShadingGridHalfSize;
-  } while (uVar5 != 0);
+      weightedSum0 = paddusb(*scratchCursor << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2));
+      weightedSum1 = paddusb(scratchCursor[1] << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(scratchCursor[2] << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(scratchCursor[3] << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2 + 0x18));
+      neighborCursor = (undefined8 *)((int)scratchCursor - neighborStep);
+      crossSum0 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep),*neighborCursor);
+      crossSum1 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep + 8),neighborCursor[1]);
+      crossSum2 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep + 0x10),neighborCursor[2]);
+      crossSum3 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep + 0x18),neighborCursor[3]);
+      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
+      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
+      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
+      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
+      neighborCursor = (undefined8 *)((int)neighborCursor + (neighborStep * 2 - scratchBlockStride));
+      crossSum0 = paddusb(crossSum0,*neighborCursor);
+      crossSum1 = paddusb(crossSum1,neighborCursor[1]);
+      crossSum2 = paddusb(crossSum2,neighborCursor[2]);
+      crossSum3 = paddusb(crossSum3,neighborCursor[3]);
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep * 2));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x18));
+      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
+      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
+      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
+      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
+      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
+      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
+      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
+      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
+      neighborCursor = (undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep * 2);
+      crossSum0 = paddusb(crossSum0,*neighborCursor);
+      crossSum1 = paddusb(crossSum1,neighborCursor[1]);
+      crossSum2 = paddusb(crossSum2,neighborCursor[2]);
+      crossSum3 = paddusb(crossSum3,neighborCursor[3]);
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep * 2));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x18));
+      backtrackOffset = -scratchBlockStride - neighborStep;
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride + backtrackOffset));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride + 8 + backtrackOffset));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride + 0x10 + backtrackOffset));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride + 0x18 + backtrackOffset));
+      backtrackOffset = (backtrackOffset - neighborStep) - scratchBlockStride;
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x18));
+      weightedSum0 = paddusb(weightedSum0,crossSum0);
+      weightedSum1 = paddusb(weightedSum1,crossSum1);
+      weightedSum2 = paddusb(weightedSum2,crossSum2);
+      weightedSum3 = paddusb(weightedSum3,crossSum3);
+      weightedSum0 = paddusb(weightedSum0,crossSum0);
+      weightedSum1 = paddusb(weightedSum1,crossSum1);
+      weightedSum2 = paddusb(weightedSum2,crossSum2);
+      weightedSum3 = paddusb(weightedSum3,crossSum3);
+      neighborCursor = (undefined8 *)((int)neighborCursor + neighborStep * 2 + (backtrackOffset - scratchBlockStride));
+      weightedSum0 = paddusb(weightedSum0,crossSum0);
+      weightedSum1 = paddusb(weightedSum1,crossSum1);
+      weightedSum2 = paddusb(weightedSum2,crossSum2);
+      weightedSum3 = paddusb(weightedSum3,crossSum3);
+      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
+      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
+      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
+      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
+      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*neighborCursor);
+      weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
+      weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
+      weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
+      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4));
+      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
+      quad1OrResult0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2));
+      quad2OrResult1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 8));
+      quad3OrResult2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x10));
+      result3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x18));
+      *textureWriteCursor = quad1OrResult0;
+      textureWriteCursor[1] = quad2OrResult1;
+      textureWriteCursor[2] = quad3OrResult2;
+      textureWriteCursor[3] = result3;
+      scratchCursor = (longlong *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep + 0x20);
+      textureWriteCursor = textureWriteCursor + 4;
+      rowContinues = 0x1f < rowBytesRemaining;
+      rowBytesRemaining = rowBytesRemaining - 0x20;
+    } while (rowContinues && rowBytesRemaining != 0);
+    scratchCursor = (longlong *)((int)scratchCursor + g_GraphicsShadingGridHalfSize);
+    textureWriteCursor = (ulonglong *)
+             ((int)textureWriteCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
+    rowsRemaining = rowsRemaining - 1;
+    rowBytesRemaining = g_GraphicsShadingGridHalfSize;
+  } while (rowsRemaining != 0);
   return;
 }
 
@@ -3668,23 +3668,23 @@ bool __thandor_void_preserve_eax_ecx
 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
 
 {
-  dword dVar1;
-  dword dVar2;
-  int iVar3;
-  bool bVar4;
+  dword decrementedCount;
+  dword childrenRemaining;
+  int childIndex;
+  bool childLacksGeometry;
   
   if (*(int *)((modelNode->modelPayload).modelResource)->reservedEC_1FF == 0) {
-    dVar2 = modelNode->childCount;
+    childrenRemaining = modelNode->childCount;
     do {
-      dVar1 = dVar2 - 1;
-      if ((int)dVar1 < 0) {
+      decrementedCount = childrenRemaining - 1;
+      if ((int)decrementedCount < 0) {
         return true;
       }
-      iVar3 = dVar2 - 1;
-      dVar2 = dVar1;
-    } while ((modelNode->childNodes[iVar3] == (ModelRuntimeNode *)0x0) ||
-            (bVar4 = GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry
-                               (modelNode->childNodes[iVar3]), bVar4));
+      childIndex = childrenRemaining - 1;
+      childrenRemaining = decrementedCount;
+    } while ((modelNode->childNodes[childIndex] == (ModelRuntimeNode *)0x0) ||
+            (childLacksGeometry = GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry
+                               (modelNode->childNodes[childIndex]), childLacksGeometry));
   }
   return false;
 }
@@ -3699,38 +3699,38 @@ GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext)
 
 {
-  uint *puVar1;
-  uint uVar2;
-  GraphicsProjectedBlockEaxCf5 GVar3;
-  GraphicsProjectedBlockEaxCf5 GVar4;
+  uint *blockPool;
+  uint usedBlockCount;
+  GraphicsProjectedBlockEaxCf5 reservedResult;
+  GraphicsProjectedBlockEaxCf5 newCountOrFailure;
   
-  puVar1 = renderContext->projectedPointBlockPool;
-  uVar2 = puVar1[1];
-  GVar4.firstBlock = (void *)(uVar2 + 0xe);
-  if (GVar4.firstBlock < (void *)*puVar1) {
-    puVar1[1] = (uint)GVar4.firstBlock;
-    GVar3.firstBlock = uVar2 * 0x80 + puVar1[2];
-    puVar1[uVar2 * 4 + 9] = GVar3.firstBlock;
-    puVar1[uVar2 * 4 + 0xd] = (byte *)GVar3.firstBlock + 0x80;
-    puVar1[uVar2 * 4 + 0x11] = (byte *)GVar3.firstBlock + 0x100;
-    puVar1[uVar2 * 4 + 0x15] = (byte *)GVar3.firstBlock + 0x180;
-    puVar1[uVar2 * 4 + 0x19] = (byte *)GVar3.firstBlock + 0x200;
-    puVar1[uVar2 * 4 + 0x1d] = (byte *)GVar3.firstBlock + 0x280;
-    puVar1[uVar2 * 4 + 0x21] = (byte *)GVar3.firstBlock + 0x300;
-    puVar1[uVar2 * 4 + 0x25] = (byte *)GVar3.firstBlock + 0x380;
-    puVar1[uVar2 * 4 + 0x29] = (byte *)GVar3.firstBlock + 0x400;
-    puVar1[uVar2 * 4 + 0x2d] = (byte *)GVar3.firstBlock + 0x480;
-    puVar1[uVar2 * 4 + 0x31] = (byte *)GVar3.firstBlock + 0x500;
-    puVar1[uVar2 * 4 + 0x35] = (byte *)GVar3.firstBlock + 0x580;
-    puVar1[uVar2 * 4 + 0x39] = (byte *)GVar3.firstBlock + 0x600;
-    puVar1[uVar2 * 4 + 0x3d] = (byte *)GVar3.firstBlock + 0x680;
-    *(undefined4 *)((byte *)GVar3.firstBlock + 0x60) = 0;
-    *(undefined4 *)((byte *)GVar3.firstBlock + 0x68) = 0x11000;
-    GVar3.carry = false;
-    return GVar3;
+  blockPool = renderContext->projectedPointBlockPool;
+  usedBlockCount = blockPool[1];
+  newCountOrFailure.firstBlock = (void *)(usedBlockCount + 0xe);
+  if (newCountOrFailure.firstBlock < (void *)*blockPool) {
+    blockPool[1] = (uint)newCountOrFailure.firstBlock;
+    reservedResult.firstBlock = usedBlockCount * 0x80 + blockPool[2];
+    blockPool[usedBlockCount * 4 + 9] = reservedResult.firstBlock;
+    blockPool[usedBlockCount * 4 + 0xd] = (byte *)reservedResult.firstBlock + 0x80;
+    blockPool[usedBlockCount * 4 + 0x11] = (byte *)reservedResult.firstBlock + 0x100;
+    blockPool[usedBlockCount * 4 + 0x15] = (byte *)reservedResult.firstBlock + 0x180;
+    blockPool[usedBlockCount * 4 + 0x19] = (byte *)reservedResult.firstBlock + 0x200;
+    blockPool[usedBlockCount * 4 + 0x1d] = (byte *)reservedResult.firstBlock + 0x280;
+    blockPool[usedBlockCount * 4 + 0x21] = (byte *)reservedResult.firstBlock + 0x300;
+    blockPool[usedBlockCount * 4 + 0x25] = (byte *)reservedResult.firstBlock + 0x380;
+    blockPool[usedBlockCount * 4 + 0x29] = (byte *)reservedResult.firstBlock + 0x400;
+    blockPool[usedBlockCount * 4 + 0x2d] = (byte *)reservedResult.firstBlock + 0x480;
+    blockPool[usedBlockCount * 4 + 0x31] = (byte *)reservedResult.firstBlock + 0x500;
+    blockPool[usedBlockCount * 4 + 0x35] = (byte *)reservedResult.firstBlock + 0x580;
+    blockPool[usedBlockCount * 4 + 0x39] = (byte *)reservedResult.firstBlock + 0x600;
+    blockPool[usedBlockCount * 4 + 0x3d] = (byte *)reservedResult.firstBlock + 0x680;
+    *(undefined4 *)((byte *)reservedResult.firstBlock + 0x60) = 0;
+    *(undefined4 *)((byte *)reservedResult.firstBlock + 0x68) = 0x11000;
+    reservedResult.carry = false;
+    return reservedResult;
   }
-  GVar4.carry = true;
-  return GVar4;
+  newCountOrFailure.carry = true;
+  return newCountOrFailure;
 }
 
 
@@ -3756,21 +3756,21 @@ GraphicsShadingGeneratedTexture_TransformPointXYQuantized
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int row1Column0;
+  longlong dotProduct;
   
-  lVar2 = (longlong)transform->basisRow0[1] * (longlong)point->y +
+  dotProduct = (longlong)transform->basisRow0[1] * (longlong)point->y +
           (longlong)transform->basisRow0[0] * (longlong)point->x +
           (longlong)transform->basisRow0[2] * (longlong)point->z;
-  iVar1 = transform->basisRow1[0];
+  row1Column0 = transform->basisRow1[0];
   outputXY->component0 =
-       ((int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc) + (transform->translation).x &
+       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) + (transform->translation).x &
        0xfffff000;
-  lVar2 = (longlong)transform->basisRow1[1] * (longlong)point->y +
-          (longlong)iVar1 * (longlong)point->x +
+  dotProduct = (longlong)transform->basisRow1[1] * (longlong)point->y +
+          (longlong)row1Column0 * (longlong)point->x +
           (longlong)transform->basisRow1[2] * (longlong)point->z;
   outputXY->component1 =
-       ((int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc) + (transform->translation).y &
+       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) + (transform->translation).y &
        0xfffff000;
   return;
 }
@@ -3786,73 +3786,73 @@ GraphicsShadingGeneratedTexture_ComposeTransform
           GraphicsFixedMatrix3x4 *lhsTransform)
 
 {
-  int iVar1;
-  longlong lVar2;
+  int lhsElement;
+  longlong dotProduct;
   
-  lVar2 = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[0] +
+  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[0] +
           (longlong)lhsTransform->basisRow0[0] * (longlong)rhsTransform->basisRow0[0] +
           (longlong)lhsTransform->basisRow0[2] * (longlong)rhsTransform->basisRow2[0];
-  iVar1 = lhsTransform->basisRow0[0];
-  outTransform->basisRow0[0] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[1] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[1] +
+  lhsElement = lhsTransform->basisRow0[0];
+  outTransform->basisRow0[0] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[1] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[1] +
           (longlong)lhsTransform->basisRow0[2] * (longlong)rhsTransform->basisRow2[1];
-  iVar1 = lhsTransform->basisRow0[0];
-  outTransform->basisRow0[1] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[2] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[2] +
+  lhsElement = lhsTransform->basisRow0[0];
+  outTransform->basisRow0[1] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[2] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[2] +
           (longlong)lhsTransform->basisRow0[2] * (longlong)rhsTransform->basisRow2[2];
-  iVar1 = lhsTransform->basisRow0[0];
-  outTransform->basisRow0[2] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow0[1] * (longlong)(rhsTransform->translation).y +
-          (longlong)iVar1 * (longlong)(rhsTransform->translation).x +
+  lhsElement = lhsTransform->basisRow0[0];
+  outTransform->basisRow0[2] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)(rhsTransform->translation).y +
+          (longlong)lhsElement * (longlong)(rhsTransform->translation).x +
           (longlong)lhsTransform->basisRow0[2] * (longlong)(rhsTransform->translation).z;
-  iVar1 = lhsTransform->basisRow1[0];
+  lhsElement = lhsTransform->basisRow1[0];
   (outTransform->translation).x =
-       ((int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc) +
+       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) +
        (lhsTransform->translation).x;
-  lVar2 = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[0] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[0] +
+  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[0] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[0] +
           (longlong)lhsTransform->basisRow1[2] * (longlong)rhsTransform->basisRow2[0];
-  iVar1 = lhsTransform->basisRow1[0];
-  outTransform->basisRow1[0] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[1] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[1] +
+  lhsElement = lhsTransform->basisRow1[0];
+  outTransform->basisRow1[0] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[1] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[1] +
           (longlong)lhsTransform->basisRow1[2] * (longlong)rhsTransform->basisRow2[1];
-  iVar1 = lhsTransform->basisRow1[0];
-  outTransform->basisRow1[1] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[2] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[2] +
+  lhsElement = lhsTransform->basisRow1[0];
+  outTransform->basisRow1[1] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[2] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[2] +
           (longlong)lhsTransform->basisRow1[2] * (longlong)rhsTransform->basisRow2[2];
-  iVar1 = lhsTransform->basisRow1[0];
-  outTransform->basisRow1[2] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow1[1] * (longlong)(rhsTransform->translation).y +
-          (longlong)iVar1 * (longlong)(rhsTransform->translation).x +
+  lhsElement = lhsTransform->basisRow1[0];
+  outTransform->basisRow1[2] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)(rhsTransform->translation).y +
+          (longlong)lhsElement * (longlong)(rhsTransform->translation).x +
           (longlong)lhsTransform->basisRow1[2] * (longlong)(rhsTransform->translation).z;
-  iVar1 = lhsTransform->basisRow2[0];
+  lhsElement = lhsTransform->basisRow2[0];
   (outTransform->translation).y =
-       ((int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc) +
+       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) +
        (lhsTransform->translation).y;
-  lVar2 = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[0] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[0] +
+  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[0] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[0] +
           (longlong)lhsTransform->basisRow2[2] * (longlong)rhsTransform->basisRow2[0];
-  iVar1 = lhsTransform->basisRow2[0];
-  outTransform->basisRow2[0] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[1] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[1] +
+  lhsElement = lhsTransform->basisRow2[0];
+  outTransform->basisRow2[0] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[1] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[1] +
           (longlong)lhsTransform->basisRow2[2] * (longlong)rhsTransform->basisRow2[1];
-  iVar1 = lhsTransform->basisRow2[0];
-  outTransform->basisRow2[1] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[2] +
-          (longlong)iVar1 * (longlong)rhsTransform->basisRow0[2] +
+  lhsElement = lhsTransform->basisRow2[0];
+  outTransform->basisRow2[1] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[2] +
+          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[2] +
           (longlong)lhsTransform->basisRow2[2] * (longlong)rhsTransform->basisRow2[2];
-  iVar1 = lhsTransform->basisRow2[0];
-  outTransform->basisRow2[2] = (int)((ulonglong)lVar2 >> 0x20) << 4 | (uint)lVar2 >> 0x1c;
-  lVar2 = (longlong)lhsTransform->basisRow2[1] * (longlong)(rhsTransform->translation).y +
-          (longlong)iVar1 * (longlong)(rhsTransform->translation).x +
+  lhsElement = lhsTransform->basisRow2[0];
+  outTransform->basisRow2[2] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
+  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)(rhsTransform->translation).y +
+          (longlong)lhsElement * (longlong)(rhsTransform->translation).x +
           (longlong)lhsTransform->basisRow2[2] * (longlong)(rhsTransform->translation).z;
   (outTransform->translation).z =
-       ((int)((ulonglong)lVar2 >> 0x20) << 0x14 | (uint)lVar2 >> 0xc) +
+       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) +
        (lhsTransform->translation).z;
   return;
 }
@@ -3867,140 +3867,140 @@ GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  sdword sVar8;
-  int iVar9;
-  GraphicsFixedVec2 *pGVar10;
-  GraphicsFixedVec2 *pGVar11;
-  GraphicsFixedVec2 *pGVar12;
-  byte *pbVar13;
-  byte *pbVar14;
-  sdword sVar15;
-  int iVar16;
-  sdword sVar17;
+  int upperEdgeStep;
+  int upperRowsOrSpanCount;
+  int yOrShortEdgeDelta;
+  int spanDelta;
+  int spanRemaining;
+  int yOrLongEdgeStep;
+  int yOrRowsRemaining;
+  sdword bottomXClamped;
+  int xDeltaOrSpan;
+  GraphicsFixedVec2 *otherVertex;
+  GraphicsFixedVec2 *bottomVertex;
+  GraphicsFixedVec2 *middleVertex;
+  byte *rowPixels;
+  byte *spanPixel;
+  sdword upperEdgeX;
+  int topYOrLongEdgeX;
+  sdword lowerEdgeX;
   
-  iVar16 = vertexC->component1;
-  iVar7 = vertexB->component1;
-  iVar6 = vertexA->component1;
-  iVar3 = iVar16;
-  pGVar12 = vertexB;
-  if (iVar7 < iVar16) {
-    iVar3 = iVar7;
-    iVar7 = iVar16;
-    pGVar12 = vertexC;
+  topYOrLongEdgeX = vertexC->component1;
+  yOrRowsRemaining = vertexB->component1;
+  yOrLongEdgeStep = vertexA->component1;
+  yOrShortEdgeDelta = topYOrLongEdgeX;
+  middleVertex = vertexB;
+  if (yOrRowsRemaining < topYOrLongEdgeX) {
+    yOrShortEdgeDelta = yOrRowsRemaining;
+    yOrRowsRemaining = topYOrLongEdgeX;
+    middleVertex = vertexC;
     vertexC = vertexB;
   }
-  iVar16 = iVar3;
-  pGVar10 = vertexA;
-  if (iVar6 < iVar3) {
-    iVar16 = iVar6;
-    iVar6 = iVar3;
-    pGVar10 = vertexC;
+  topYOrLongEdgeX = yOrShortEdgeDelta;
+  otherVertex = vertexA;
+  if (yOrLongEdgeStep < yOrShortEdgeDelta) {
+    topYOrLongEdgeX = yOrLongEdgeStep;
+    yOrLongEdgeStep = yOrShortEdgeDelta;
+    otherVertex = vertexC;
     vertexC = vertexA;
   }
-  iVar3 = iVar7;
-  pGVar11 = pGVar10;
-  if (iVar6 < iVar7) {
-    iVar3 = iVar6;
-    iVar6 = iVar7;
-    pGVar11 = pGVar12;
-    pGVar12 = pGVar10;
+  yOrShortEdgeDelta = yOrRowsRemaining;
+  bottomVertex = otherVertex;
+  if (yOrLongEdgeStep < yOrRowsRemaining) {
+    yOrShortEdgeDelta = yOrLongEdgeStep;
+    yOrLongEdgeStep = yOrRowsRemaining;
+    bottomVertex = middleVertex;
+    middleVertex = otherVertex;
   }
-  if (iVar16 < g_GraphicsShadingNegativeGridOriginQ12) {
-    if (iVar3 < g_GraphicsShadingNegativeGridOriginQ12) {
-      iVar3 = g_GraphicsShadingNegativeGridOriginQ12;
+  if (topYOrLongEdgeX < g_GraphicsShadingNegativeGridOriginQ12) {
+    if (yOrShortEdgeDelta < g_GraphicsShadingNegativeGridOriginQ12) {
+      yOrShortEdgeDelta = g_GraphicsShadingNegativeGridOriginQ12;
     }
-    iVar16 = g_GraphicsShadingNegativeGridOriginQ12;
-    if (iVar6 < g_GraphicsShadingNegativeGridOriginQ12) {
+    topYOrLongEdgeX = g_GraphicsShadingNegativeGridOriginQ12;
+    if (yOrLongEdgeStep < g_GraphicsShadingNegativeGridOriginQ12) {
       return;
     }
   }
-  if (g_GraphicsShadingPositiveGridOriginQ12 < iVar6) {
-    if (g_GraphicsShadingPositiveGridOriginQ12 < iVar3) {
-      iVar3 = g_GraphicsShadingPositiveGridOriginQ12;
+  if (g_GraphicsShadingPositiveGridOriginQ12 < yOrLongEdgeStep) {
+    if (g_GraphicsShadingPositiveGridOriginQ12 < yOrShortEdgeDelta) {
+      yOrShortEdgeDelta = g_GraphicsShadingPositiveGridOriginQ12;
     }
-    iVar6 = g_GraphicsShadingPositiveGridOriginQ12;
-    if (g_GraphicsShadingPositiveGridOriginQ12 < iVar16) {
+    yOrLongEdgeStep = g_GraphicsShadingPositiveGridOriginQ12;
+    if (g_GraphicsShadingPositiveGridOriginQ12 < topYOrLongEdgeX) {
       return;
     }
   }
-  iVar7 = iVar6 - iVar16 >> 0xc;
-  if (iVar7 != 0) {
-    iVar2 = iVar3 - iVar16 >> 0xc;
-    iVar6 = vertexC->component0;
-    iVar3 = pGVar12->component0;
-    iVar9 = pGVar11->component0;
-    sVar15 = g_GraphicsShadingNegativeGridOriginQ12;
-    if ((g_GraphicsShadingNegativeGridOriginQ12 <= iVar6) &&
-       (sVar15 = iVar6, g_GraphicsShadingPositiveGridOriginQ12 < iVar6)) {
-      sVar15 = g_GraphicsShadingPositiveGridOriginQ12;
+  yOrRowsRemaining = yOrLongEdgeStep - topYOrLongEdgeX >> 0xc;
+  if (yOrRowsRemaining != 0) {
+    upperRowsOrSpanCount = yOrShortEdgeDelta - topYOrLongEdgeX >> 0xc;
+    yOrLongEdgeStep = vertexC->component0;
+    yOrShortEdgeDelta = middleVertex->component0;
+    xDeltaOrSpan = bottomVertex->component0;
+    upperEdgeX = g_GraphicsShadingNegativeGridOriginQ12;
+    if ((g_GraphicsShadingNegativeGridOriginQ12 <= yOrLongEdgeStep) &&
+       (upperEdgeX = yOrLongEdgeStep, g_GraphicsShadingPositiveGridOriginQ12 < yOrLongEdgeStep)) {
+      upperEdgeX = g_GraphicsShadingPositiveGridOriginQ12;
     }
-    sVar17 = g_GraphicsShadingNegativeGridOriginQ12;
-    if ((g_GraphicsShadingNegativeGridOriginQ12 <= iVar3) &&
-       (sVar17 = iVar3, g_GraphicsShadingPositiveGridOriginQ12 < iVar3)) {
-      sVar17 = g_GraphicsShadingPositiveGridOriginQ12;
+    lowerEdgeX = g_GraphicsShadingNegativeGridOriginQ12;
+    if ((g_GraphicsShadingNegativeGridOriginQ12 <= yOrShortEdgeDelta) &&
+       (lowerEdgeX = yOrShortEdgeDelta, g_GraphicsShadingPositiveGridOriginQ12 < yOrShortEdgeDelta)) {
+      lowerEdgeX = g_GraphicsShadingPositiveGridOriginQ12;
     }
-    sVar8 = g_GraphicsShadingNegativeGridOriginQ12;
-    if ((g_GraphicsShadingNegativeGridOriginQ12 <= iVar9) &&
-       (sVar8 = iVar9, g_GraphicsShadingPositiveGridOriginQ12 < iVar9)) {
-      sVar8 = g_GraphicsShadingPositiveGridOriginQ12;
+    bottomXClamped = g_GraphicsShadingNegativeGridOriginQ12;
+    if ((g_GraphicsShadingNegativeGridOriginQ12 <= xDeltaOrSpan) &&
+       (bottomXClamped = xDeltaOrSpan, g_GraphicsShadingPositiveGridOriginQ12 < xDeltaOrSpan)) {
+      bottomXClamped = g_GraphicsShadingPositiveGridOriginQ12;
     }
-    iVar3 = sVar17 - sVar15;
-    iVar9 = sVar8 - sVar15;
-    pbVar13 = g_GraphicsShadingGeneratedTexturePixelCursor +
-              (iVar16 >> 0xc) * g_GraphicsShadingTextureDimension;
-    iVar6 = iVar9 / iVar7;
-    iVar16 = sVar15;
-    if (iVar2 != 0) {
-      iVar1 = iVar3 / iVar2;
+    yOrShortEdgeDelta = lowerEdgeX - upperEdgeX;
+    xDeltaOrSpan = bottomXClamped - upperEdgeX;
+    rowPixels = g_GraphicsShadingGeneratedTexturePixelCursor +
+              (topYOrLongEdgeX >> 0xc) * g_GraphicsShadingTextureDimension;
+    yOrLongEdgeStep = xDeltaOrSpan / yOrRowsRemaining;
+    topYOrLongEdgeX = upperEdgeX;
+    if (upperRowsOrSpanCount != 0) {
+      upperEdgeStep = yOrShortEdgeDelta / upperRowsOrSpanCount;
       do {
-        pbVar14 = pbVar13 + (sVar15 >> 0xc);
-        iVar4 = (iVar16 >> 0xc) - (sVar15 >> 0xc);
-        if (iVar4 != 0) {
-          iVar5 = iVar4;
-          if (iVar4 < 0) {
-            iVar5 = -iVar4;
-            pbVar14 = pbVar14 + iVar4;
+        spanPixel = rowPixels + (upperEdgeX >> 0xc);
+        spanDelta = (topYOrLongEdgeX >> 0xc) - (upperEdgeX >> 0xc);
+        if (spanDelta != 0) {
+          spanRemaining = spanDelta;
+          if (spanDelta < 0) {
+            spanRemaining = -spanDelta;
+            spanPixel = spanPixel + spanDelta;
           }
-          for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-            *pbVar14 = 0xff;
-            pbVar14 = pbVar14 + 1;
+          for (; spanRemaining != 0; spanRemaining = spanRemaining + -1) {
+            *spanPixel = 0xff;
+            spanPixel = spanPixel + 1;
           }
         }
-        pbVar13 = pbVar13 + g_GraphicsShadingTextureDimension;
-        sVar15 = sVar15 + iVar1;
-        iVar16 = iVar16 + iVar6;
-        iVar7 = iVar7 - (int)g_GraphicsShadingRasterizeMmxPackedDwordOneZero;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
+        rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
+        upperEdgeX = upperEdgeX + upperEdgeStep;
+        topYOrLongEdgeX = topYOrLongEdgeX + yOrLongEdgeStep;
+        yOrRowsRemaining = yOrRowsRemaining - (int)g_GraphicsShadingRasterizeMmxPackedDwordOneZero;
+        upperRowsOrSpanCount = upperRowsOrSpanCount + -1;
+      } while (upperRowsOrSpanCount != 0);
     }
-    if (iVar7 != 0) {
-      iVar3 = (iVar9 - iVar3) / iVar7;
+    if (yOrRowsRemaining != 0) {
+      yOrShortEdgeDelta = (xDeltaOrSpan - yOrShortEdgeDelta) / yOrRowsRemaining;
       do {
-        pbVar14 = pbVar13 + (sVar17 >> 0xc);
-        iVar9 = (iVar16 >> 0xc) - (sVar17 >> 0xc);
-        if (iVar9 != 0) {
-          iVar2 = iVar9;
-          if (iVar9 < 0) {
-            iVar2 = -iVar9;
-            pbVar14 = pbVar14 + iVar9;
+        spanPixel = rowPixels + (lowerEdgeX >> 0xc);
+        xDeltaOrSpan = (topYOrLongEdgeX >> 0xc) - (lowerEdgeX >> 0xc);
+        if (xDeltaOrSpan != 0) {
+          upperRowsOrSpanCount = xDeltaOrSpan;
+          if (xDeltaOrSpan < 0) {
+            upperRowsOrSpanCount = -xDeltaOrSpan;
+            spanPixel = spanPixel + xDeltaOrSpan;
           }
-          for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-            *pbVar14 = 0xff;
-            pbVar14 = pbVar14 + 1;
+          for (; upperRowsOrSpanCount != 0; upperRowsOrSpanCount = upperRowsOrSpanCount + -1) {
+            *spanPixel = 0xff;
+            spanPixel = spanPixel + 1;
           }
         }
-        pbVar13 = pbVar13 + g_GraphicsShadingTextureDimension;
-        sVar17 = sVar17 + iVar3;
-        iVar16 = iVar16 + iVar6;
-        iVar7 = iVar7 + -1;
-      } while (iVar7 != 0);
+        rowPixels = rowPixels + g_GraphicsShadingTextureDimension;
+        lowerEdgeX = lowerEdgeX + yOrShortEdgeDelta;
+        topYOrLongEdgeX = topYOrLongEdgeX + yOrLongEdgeStep;
+        yOrRowsRemaining = yOrRowsRemaining + -1;
+      } while (yOrRowsRemaining != 0);
     }
   }
   return;
