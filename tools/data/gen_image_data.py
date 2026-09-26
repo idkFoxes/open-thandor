@@ -420,15 +420,29 @@ def value_init(t, addr, typed_pointers, depth=0):
         return '{0}'
     return scalar_init(t, addr, typed_pointers)
 
+def nested_init(items, dims, depth):
+    """Braced initializer of a multi-dimensional array, innermost rows on one line."""
+    if len(dims) == 1:
+        return '{%s}' % ', '.join(items)
+    step = len(items) // dims[0]
+    rows = [nested_init(items[i * step:(i + 1) * step], dims[1:], depth + 1) for i in range(dims[0])]
+    indent = '\n' + '    ' * (depth + 1)
+    return '{' + indent + (',' + indent).join(rows) + '}'
+
 def typed_member(start, end, name, member):
     """(declarations, initializers, pointers) for an object with a known type, or None."""
     macro = macros.get(name)
     if macro is None or macro[1] != start:
         return None
     t = macro[0].strip()
-    array = re.match(r'(.+?)\s*\(\*\)\[(\w+)\]$', t)
+    array = re.match(r'(.+?)\s*\(\*\)((?:\[\w+\])+)$', t)
+    dims = []
     if array:
-        element, count = array.group(1).strip(), int(array.group(2), 0)
+        element = array.group(1).strip()
+        dims = [int(d, 0) for d in re.findall(r'\[(\w+)\]', array.group(2))]
+        count = 1
+        for d in dims:
+            count *= d
     elif t.endswith('*'):
         element, count = t[:-1].strip(), 1
     else:
@@ -452,8 +466,10 @@ def typed_member(start, end, name, member):
             value = dword_at(start + offset)
             if (value in funcs or value in anchors) and start + offset not in typed_locations:
                 return None
-    decl = '    %s %s%s;' % (element, member, '[%d]' % count if array else '')
-    if array:
+    decl = '    %s %s%s;' % (element, member, ''.join('[%d]' % d for d in dims))
+    if len(dims) > 1:
+        init = nested_init(items, dims, 1)
+    elif array:
         while items and items[-1] in ('0', '{0}'):
             items.pop()
         init = '{%s}' % ', '.join(items) if items else '{0}'

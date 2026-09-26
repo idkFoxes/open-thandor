@@ -93,7 +93,7 @@ typedef struct ImageData_00403158 {
     undefined at_g_RandomPrimaryNibbleMixTable7; /* 00404D60 g_RandomPrimaryNibbleMixTable7 */
     dword at_g_RandomPrimaryNibbleMixTable7_rest[255]; /* beyond the declared type */
     byte at_g_RandomPrimaryNibbleMixTable7_rest_tail[3];
-    dword at_g_UiTransferCipherSubstitution[2048]; /* 00405160 g_UiTransferCipherSubstitution */
+    dword at_g_UiTransferCipherSubstitution[8][16][16]; /* 00405160 g_UiTransferCipherSubstitution */
 } ImageData_00403158;
 extern ImageData_00403158 g_ImageData_00403158;
 
