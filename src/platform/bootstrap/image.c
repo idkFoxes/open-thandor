@@ -298,7 +298,26 @@ void Thandor_LogStack(const char *reason, unsigned value)
         return;
     }
     fprintf(out, "%s 0x%08X\n", reason, value);
-    RtlCaptureContext(&context);
+    /* RtlCaptureContext reads the caller's return address through EBP, which the optimized
+       build does not keep as a frame pointer (EBP may be 0). Capture ESP/EBP/EIP directly. */
+    memset(&context, 0, sizeof context);
+    context.ContextFlags = CONTEXT_CONTROL;
+    {
+        DWORD espValue;
+        DWORD ebpValue;
+        DWORD eipValue;
+        __asm {
+            mov espValue, esp
+            mov ebpValue, ebp
+            call here
+        here:
+            pop eax
+            mov eipValue, eax
+        }
+        context.Esp = espValue;
+        context.Ebp = ebpValue;
+        context.Eip = eipValue;
+    }
     log_stack_thread(out, &context, GetCurrentThread());
     fclose(out);
 }

@@ -541,9 +541,12 @@ UiRangeSliderControl_HandlePointerWheel
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiFocusProxyControl_RelocateChild
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control,UiNodeBase *controlReg)
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
+  /* EBX is the control, the same node as the stack argument; the relocate vtable slot passes
+     only (delta, control). */
+  UiNodeBase *controlReg = control;
   UiNodeFlags *childNodeFlagsField;
   
   if (((controlReg->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0

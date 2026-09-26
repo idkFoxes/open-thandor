@@ -64,7 +64,7 @@ UiRangeSliderControl_HandlePointerWheel
 /* 0x004B9580 */
 void __thandor_void_preserve_eax_ecx_edx
 UiFocusProxyControl_RelocateChild
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control,UiNodeBase *controlReg);
+          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
 
 /* 0x004B99A0 */
 void __thandor_preserve_eax_edx
