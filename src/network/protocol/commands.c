@@ -168,18 +168,18 @@ InGameCommandQueue_ContainsTripletValueCf
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {
-  UiCommandQueueRecord *pUVar1;
-  UiCommandQueueRecord *pUVar2;
+  UiCommandQueueRecord *nextRecord;
+  UiCommandQueueRecord *record;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    pUVar1 = g_InGameCommandQueueRecords;
-    while (pUVar2 = pUVar1, pUVar2 < g_InGameCommandQueueEnd) {
-      pUVar1 = pUVar2 + 1;
+    nextRecord = g_InGameCommandQueueRecords;
+    while (record = nextRecord, record < g_InGameCommandQueueEnd) {
+      nextRecord = record + 1;
       if ((((commandHandlerAddress + -0x55f130) * 0x100 | g_LocalPlayerRuntimeId) ==
-           pUVar2->packedCommandAndPlayerId) &&
-         (((payloadValue == pUVar2->payloadDword04 || (payloadValue == pUVar2->payloadDword08)) ||
-          (payloadValue == pUVar2->payloadDword0C)))) {
+           record->packedCommandAndPlayerId) &&
+         (((payloadValue == record->payloadDword04 || (payloadValue == record->payloadDword08)) ||
+          (payloadValue == record->payloadDword0C)))) {
         return true;
       }
     }
