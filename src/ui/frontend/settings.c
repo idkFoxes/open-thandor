@@ -675,29 +675,29 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
   sdword *compactLayoutFlags;
   dword persistedValue;
   
-  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)THANDOR_UI_AT(frontendRoot,0x508));
+  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    compactLayoutFlags = &THANDOR_UI_FIELD(frontendRoot,0x368 + 0x4C,sdword);
+    compactLayoutFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,sdword);
     *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
   persistedValue = PersistentSettings_ReadDword(0,0x40);
   UiSelectableControl_SetSelected
-            (persistedValue & 1,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2A84));
+            (persistedValue & 1,(UiSelectableControl *)FRONTEND_UI(frontendRoot,autoZoomOffCheckbox));
   UiSelectableControl_SetSelected
-            (persistedValue & 2,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2AE4));
-  UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2854));
+            (persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,autoRotationOffCheckbox));
+  UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)FRONTEND_UI(frontendRoot,hidePanelCheckbox));
   persistedValue = PersistentSettings_ReadDword(0,0x5c);
   if ((persistedValue & 1) != 0) {
     UiNodeList_SuppressActionId(0x203f,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
-            (persistedValue & 1,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2B98));
+            (persistedValue & 1,(UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationZoomCheckbox));
   if ((persistedValue & 2) != 0) {
     UiNodeList_SuppressActionId(0x203e,&frontendRoot->base);
   }
-  UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)THANDOR_UI_AT(frontendRoot,0x2BF8));
+  UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
   persistedValue = PersistentSettings_ReadDword(0x20,0x48);
-  THANDOR_UI_FIELD(frontendRoot,0x29C8 + 0x58,dword) = persistedValue;
+  FRONTEND_UI_FIELD(frontendRoot,scrollSpeedSlider,0x58,dword) = persistedValue;
   return;
 }
 
@@ -1413,7 +1413,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
     networkedOrRemainingCount = remainingSearchCount;
   }
   rowIndexOrCount = 7;
-  THANDOR_UI_FIELD(taskAssignmentRoot,0x1BDC + 0x54,struct UiNodeBase *) =
+  FRONTEND_UI_FIELD(taskAssignmentRoot,taskDescriptionText,0x54,struct UiNodeBase *) =
        (UiNodeBase *)
        (localFactionIndex + 0x230010 + (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
   do {
@@ -1529,14 +1529,14 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
     textRowCursor->textUtf16[1] = 0;
     textRowCursor = (FrontendTaskAssignmentGeneratedFactionTextRow50 *)(textRowCursor->textUtf16 + 2);
   }
-  rosterLayoutFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,0x1B24 + 0x48,sdword);
+  rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,sdword);
   *rosterLayoutFlags = *rosterLayoutFlags | 8;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  rosterLayoutFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,0x1B24 + 0x48,sdword);
+  rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,sdword);
   *rosterLayoutFlags = *rosterLayoutFlags & 0xfffffff7;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerName = &playerRecord->playerName;
@@ -1594,7 +1594,7 @@ FrontendTaskAssignment_AppendPlayerNameToFactionRosterText:
     playerName = playerName + 0x7e;
     if (remainingPlayers == 0) {
       rowIndexOrCount = 7;
-      if (((uint)THANDOR_UI_FIELD(taskAssignmentRoot,0xC0C + 0x4C,struct UiRootCallbacks *) & 2) == 0) {
+      if (((uint)FRONTEND_UI_FIELD(taskAssignmentRoot,factionSetupFinishButton,0x4C,struct UiRootCallbacks *) & 2) == 0) {
         do {
           controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
           if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {

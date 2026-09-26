@@ -1145,9 +1145,9 @@ ScenarioCatalog_RebuildSaveRecordListPage
   
   firstNode = g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x62].bottomAnchorQ31,
-      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
@@ -1202,9 +1202,9 @@ ScenarioCatalog_RebuildLevelRecordListPage
   
   firstNode = g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[100].firstChild,
-      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     remainingRows = g_ScenarioCatalog->levelRecordCount;
@@ -1279,9 +1279,9 @@ ScenarioCatalog_RebuildCampaignRecordListPage
   
   firstNode = g_FrontendRootNode;
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x65].right,
-      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&firstNode[0x67].bottomAnchorQ31);
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     remainingRows = g_ScenarioCatalog->campaignRecordCount;

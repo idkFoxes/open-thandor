@@ -24,15 +24,15 @@ UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiAnchorFractionQ31 colorBiasQ16;
   UiAnchorFractionQ31 colorScaleQ16;
   
-  colorBiasQ16 = THANDOR_UI_FIELD(root,0xA78 + 0x58,sdword);
-  colorScaleQ16 = THANDOR_UI_FIELD(root,0x9B8 + 0x58,sdword);
-  if ((colorBiasQ16 != THANDOR_UI_FIELD(root,0xD4 + 0x6C,dword)) || (colorScaleQ16 != THANDOR_UI_FIELD(root,0xD4 + 0x70,dword))) {
-    THANDOR_UI_FIELD(root,0xD4 + 0x6C,dword) = colorBiasQ16;
-    THANDOR_UI_FIELD(root,0xD4 + 0x70,dword) = colorScaleQ16;
+  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorBiasSlider,0x58,sdword);
+  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorScaleSlider,0x58,sdword);
+  if ((colorBiasQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,dword)) || (colorScaleQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,dword))) {
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,dword) = colorBiasQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,dword) = colorScaleQ16;
     (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
-              (THANDOR_UI_FIELD(root,0xD4 + 0x68,dword),(UiNodeBase *)THANDOR_UI_FIELD(root,0xD4 + 0x64,dword),
-               THANDOR_UI_FIELD(root,0xD4 + 0x60,sdword),THANDOR_UI_FIELD(root,0xD4 + 0x5C,sdword),&root->base);
+              (DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,dword),(UiNodeBase *)DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,dword),
+               DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,sdword),DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,sdword),&root->base);
     UiRuntime_FormatSignedValues140And144(root);
   }
   return;
@@ -131,10 +131,10 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   dword modeWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  modeWidth = THANDOR_UI_FIELD(root,0x110 + 0x64,sdword);
-  modeHeight = THANDOR_UI_FIELD(root,0x110 + 0x68,sdword);
-  bitsPerPixel = THANDOR_UI_FIELD(root,0x110 + 0x6C,sdword);
-  adapterIndex = THANDOR_UI_FIELD(root,0x110 + 0x70,sdword);
+  modeWidth = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,sdword);
+  modeHeight = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,sdword);
+  bitsPerPixel = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,sdword);
+  adapterIndex = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,sdword);
   UiRootStack_PopCf(root);
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
@@ -291,12 +291,12 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   dword pendingHeightOrCurrentWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  pendingWidthOrCurrentHeight = THANDOR_UI_AT(root,0x110)->leftOffset;
-  pendingHeightOrCurrentWidth = THANDOR_UI_AT(root,0x110)->topOffset;
-  pendingBitsPerPixel = THANDOR_UI_FIELD(root,0x110 + 0x28,dword);
+  pendingWidthOrCurrentHeight = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,sdword);
+  pendingHeightOrCurrentWidth = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,sdword);
+  pendingBitsPerPixel = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,dword);
   currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
-  pendingAdapterIndex = THANDOR_UI_FIELD(root,0x110 + 0x2C,dword);
+  pendingAdapterIndex = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,dword);
   UiRootStack_PopCf(root);
   if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
@@ -361,19 +361,19 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   sdword *countdownTicksField;
   UiNodeVtable **countdownNumberField;
   
-  countdownTicksField = &THANDOR_UI_FIELD(root,0x110 + 0x60,sdword);
+  countdownTicksField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x60,sdword);
   *countdownTicksField = *countdownTicksField + -1;
   if (*countdownTicksField == 0) {
-    THANDOR_UI_FIELD(root,0x110 + 0x60,sdword) = 0x14;
-    countdownNumberField = &THANDOR_UI_FIELD(root,0x110 + 0x5C,struct UiNodeVtable *);
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x60,sdword) = 0x14;
+    countdownNumberField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,struct UiNodeVtable *);
     *countdownNumberField = (UiNodeVtable *)((int)&(*countdownNumberField)[-1].pointerWheel + 3);
     if (*countdownNumberField == (UiNodeVtable *)0x0) {
       UiActionQueue_Enqueue(0x20d,root);
     }
     else {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)THANDOR_UI_FIELD(root,0x110 + 0x5C,struct UiNodeVtable *),
-                 (word *)&THANDOR_UI_FIELD(root,0x110 + 0x74,sdword));
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,struct UiNodeVtable *),
+                 (word *)&FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,sdword));
     }
   }
   return;
@@ -1185,10 +1185,10 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
     }
   }
   UiSelectableGroup_SelectExclusive(4,selected,
-      THANDOR_UI_AT(displaySettingsRoot,0x3b8),
-      THANDOR_UI_AT(displaySettingsRoot,0x350),
-      THANDOR_UI_AT(displaySettingsRoot,0x2e8),
-      THANDOR_UI_AT(displaySettingsRoot,0x280));
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption4),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption3),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption2),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption1));
   for (i = 0; i < 8; i++) {
     dword height = DISPLAY_MODE_FIELD(sizeButtons[i] - 0xc);
     dword width = DISPLAY_MODE_FIELD(sizeButtons[i] - 8);
@@ -1204,14 +1204,14 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
     }
   }
   UiSelectableGroup_SelectExclusive(8,selected,
-      THANDOR_UI_AT(displaySettingsRoot,0x6f8),
-      THANDOR_UI_AT(displaySettingsRoot,0x690),
-      THANDOR_UI_AT(displaySettingsRoot,0x628),
-      THANDOR_UI_AT(displaySettingsRoot,0x5c0),
-      THANDOR_UI_AT(displaySettingsRoot,0x558),
-      THANDOR_UI_AT(displaySettingsRoot,0x4f0),
-      THANDOR_UI_AT(displaySettingsRoot,0x488),
-      THANDOR_UI_AT(displaySettingsRoot,0x420));
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption8),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption7),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption6),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption5),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption4),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption3),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption2),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption1));
   for (i = 0; i < 5; i++) {
     dword adapter = DISPLAY_MODE_FIELD(adapterButtons[i] - 8);
     enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapter,bitsPerPixel,modeHeight,modeWidth);
@@ -1226,11 +1226,11 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
     }
   }
   UiSelectableGroup_SelectExclusive(5,selected,
-      THANDOR_UI_AT(displaySettingsRoot,0x900),
-      THANDOR_UI_AT(displaySettingsRoot,0x898),
-      THANDOR_UI_AT(displaySettingsRoot,0x830),
-      THANDOR_UI_AT(displaySettingsRoot,0x7c8),
-      THANDOR_UI_AT(displaySettingsRoot,0x760));
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption5),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption4),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption3),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption2),
+      DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption1));
   DISPLAY_MODE_FIELD(0x130) = modeWidth;
   DISPLAY_MODE_FIELD(0x134) = modeHeight;
   DISPLAY_MODE_FIELD(0x138) = bitsPerPixel;

@@ -72,23 +72,23 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   int remainingCount;
   uint areaIndex;
   
-  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0xA30 + 0x48,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,worldView,0x48,sdword);
   *flagSlot = *flagSlot | 8;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)THANDOR_UI_AT(inGameRoot,0xA30));
+  UiKeyboardFocus_ReleaseNode((UiNodeBase *)INGAME_UI(inGameRoot,worldView));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   entityDefinition = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0x1544 + 0x4C,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab1,0x4C,sdword);
   *flagSlot = *flagSlot & 0xfffffffd;
-  THANDOR_UI_FIELD(inGameRoot,0x15AC + 0x4C,struct UiRootCallbacks *) = (UiRootCallbacks *)((uint)THANDOR_UI_FIELD(inGameRoot,0x15AC + 0x4C,struct UiRootCallbacks *) & 0xfffffffd);
-  parentFlagSlot = &THANDOR_UI_FIELD(inGameRoot,0x1614 + 0x4C,struct UiNodeBase *);
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) = (UiRootCallbacks *)((uint)INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) & 0xfffffffd);
+  parentFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x4C,struct UiNodeBase *);
   *parentFlagSlot = (UiNodeBase *)((uint)*parentFlagSlot & 0xfffffffd);
-  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0x167C + 0x4C,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x4C,sdword);
   *flagSlot = *flagSlot & 0xfffffffd;
-  flagSlot = &THANDOR_UI_FIELD(inGameRoot,0x16E4 + 0x4C,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x4C,sdword);
   *flagSlot = *flagSlot & 0xfffffffd;
-  anchorFlagSlot = &THANDOR_UI_FIELD(inGameRoot,0x174C + 0x4C,dword);
+  anchorFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab6,0x4C,dword);
   *anchorFlagSlot = *anchorFlagSlot & 0xfffffffd;
-  nodeFlagsSlot = &THANDOR_UI_FIELD(inGameRoot,0x17B4 + 0x4C,enum UiNodeFlags);
+  nodeFlagsSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab7,0x4C,enum UiNodeFlags);
   *nodeFlagsSlot = *nodeFlagsSlot & ~UI_NODE_PREFERRED_FOCUS_TARGET;
   if ((entityDefinition[0x3b] & 0xc0U) != 0) {
     technologyCursor = *entityDefinition;

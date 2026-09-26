@@ -1,0 +1,2868 @@
+{
+ "DisplaySettingsUiImage": {
+  "0x0000": {
+   "name": "DisplaySettingsWindow",
+   "note": "Centered resizable window root of the display settings dialog; parent of all other nodes."
+  },
+  "0x0078": {
+   "name": "CancelButton",
+   "note": "Bottom-left button, action 0x20E, text 0x101 (Cancel); restores the previous pixel-pack color tables."
+  },
+  "0x00D4": {
+   "name": "ApplyButton",
+   "note": "Bottom button, action 0x200, text 0x100 (OK); its extra fields hold the selected and original mode tuple plus color bias/scale, suppressed while nothing changed."
+  },
+  "0x0160": {
+   "name": "ResolutionHeading",
+   "note": "Label text 0x10C above the resolution button column."
+  },
+  "0x01BC": {
+   "name": "ColorDepthHeading",
+   "note": "Label text 0x10D above the color depth button column."
+  },
+  "0x0218": {
+   "name": "AdapterHeading",
+   "note": "Label text 0x10F above the graphics adapter button column; its tail dword holds the first depth option's value."
+  },
+  "0x0280": {
+   "name": "ColorDepthOption1",
+   "note": "First color depth option button (action 0x201, group 0x480)."
+  },
+  "0x02E8": {
+   "name": "ColorDepthOption2",
+   "note": "Second color depth option button (action 0x202)."
+  },
+  "0x0350": {
+   "name": "ColorDepthOption3",
+   "note": "Third color depth option button (action 0x203)."
+  },
+  "0x03B8": {
+   "name": "ColorDepthOption4",
+   "note": "Fourth color depth option button (action 0x204)."
+  },
+  "0x0420": {
+   "name": "ResolutionOption1",
+   "note": "First resolution option button (action 0x205, group 0x400)."
+  },
+  "0x0488": {
+   "name": "ResolutionOption2",
+   "note": "Second resolution option button (action 0x206)."
+  },
+  "0x04F0": {
+   "name": "ResolutionOption3",
+   "note": "Third resolution option button (action 0x207)."
+  },
+  "0x0558": {
+   "name": "ResolutionOption4",
+   "note": "Fourth resolution option button (action 0x208)."
+  },
+  "0x05C0": {
+   "name": "ResolutionOption5",
+   "note": "Fifth resolution option button (action 0x209)."
+  },
+  "0x0628": {
+   "name": "ResolutionOption6",
+   "note": "Sixth resolution option button (action 0x20A)."
+  },
+  "0x0690": {
+   "name": "ResolutionOption7",
+   "note": "Seventh resolution option button (action 0x20B)."
+  },
+  "0x06F8": {
+   "name": "ResolutionOption8",
+   "note": "Eighth resolution option button (action 0x20C)."
+  },
+  "0x0760": {
+   "name": "AdapterOption1",
+   "note": "First graphics adapter option button (action 0x20F, group 0xC00)."
+  },
+  "0x07C8": {
+   "name": "AdapterOption2",
+   "note": "Second graphics adapter option button (action 0x210)."
+  },
+  "0x0830": {
+   "name": "AdapterOption3",
+   "note": "Third graphics adapter option button (action 0x211)."
+  },
+  "0x0898": {
+   "name": "AdapterOption4",
+   "note": "Fourth graphics adapter option button (action 0x212)."
+  },
+  "0x0900": {
+   "name": "AdapterOption5",
+   "note": "Fifth graphics adapter option button (action 0x213)."
+  },
+  "0x095C": {
+   "name": "ColorScaleSliderFrame",
+   "note": "Framed column (text 0x10A) holding the color scale slider, likely contrast."
+  },
+  "0x09B8": {
+   "name": "ColorScaleSlider",
+   "note": "Vertical range slider for the pixel-pack color scale (Q16, 0.5 to 2.0)."
+  },
+  "0x0A1C": {
+   "name": "ColorBiasSliderFrame",
+   "note": "Framed column (text 0x10B) holding the color bias slider, likely brightness."
+  },
+  "0x0A78": {
+   "name": "ColorBiasSlider",
+   "note": "Vertical range slider for the pixel-pack color bias (Q16, -64 to +64)."
+  },
+  "0x0ADC": {
+   "name": "ColorScaleValueText",
+   "note": "Text readout below the color scale slider."
+  },
+  "0x0B38": {
+   "name": "ColorBiasValueText",
+   "note": "Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiRuntime_FormatSignedValues140And144."
+  }
+ },
+ "FatalErrorUiImage": {
+  "0x0000": {
+   "name": "FatalErrorPanel",
+   "note": "Panel root of the fatal error dialog; g_FatalErrorRichTextLeft/Right lie in its rect/offset fields."
+  },
+  "0x0058": {
+   "name": "ErrorMessageText",
+   "note": "Rich text area showing the error; g_FatalErrorRichTextTop/Bottom and g_FatalErrorRichTextStream lie inside this node."
+  },
+  "0x00B4": {
+   "name": "OkButton",
+   "note": "Bottom-right button, action 1, text 0x100 (OK), closes the dialog."
+  }
+ },
+ "FourValueDialogUiImage": {
+  "0x0000": {
+   "name": "ConfirmModeDialogPanel",
+   "note": "Centered panel root of the confirm-new-display-mode dialog."
+  },
+  "0x0058": {
+   "name": "RevertButton",
+   "note": "Bottom-left button, action 0x20D, text 0x101 (Cancel); also enqueued when the countdown reaches zero to restore the previous mode."
+  },
+  "0x00B4": {
+   "name": "KeepModeButton",
+   "note": "Bottom-right button, text 0x100 (OK), keeps the new display mode."
+  },
+  "0x0110": {
+   "name": "CountdownMessageText",
+   "note": "Rich text 0x109 with the countdown seconds (+0x5C), tick counter (+0x60), previous mode tuple (+0x64..+0x70) and number buffer (+0x74)."
+  }
+ },
+ "FrontendUiImage": {
+  "0x0000": {
+   "name": "FrontendRoot",
+   "note": "Root panel of the frontend template."
+  },
+  "0x0058": {
+   "name": "FrontendViewModeStack",
+   "note": "Two-page stack: page 0 = menu room (3D room view, dialog page stack, top/bottom bars), page 1 = full-screen movie view."
+  },
+  "0x00B0": {
+   "name": "ChatInputSlot",
+   "note": "Page stack inside the bottom bar (0x4694): empty page or the chat input line."
+  },
+  "0x0108": {
+   "name": "ChatInputEdit",
+   "note": "Text edit for typing a network chat message; action 0x204C publishes it via the player message buffer."
+  },
+  "0x01D4": {
+   "name": "MoviePlaybackView",
+   "note": "Software texture view that plays a movie; clicking (action 0x2048) closes the movie and returns to the main page."
+  },
+  "0x0240": {
+   "name": "MovieLetterboxTopBar",
+   "note": "Black fill bar above the movie view (top 1/8 of the screen)."
+  },
+  "0x029C": {
+   "name": "MovieLetterboxBottomBar",
+   "note": "Black fill bar below the movie view (bottom 1/8 of the screen)."
+  },
+  "0x02F8": {
+   "name": "ChatMessageHistory",
+   "note": "Top-left strip showing the five most recent chat messages (action 0x200E trims/sorts the recent-text history)."
+  },
+  "0x0368": {
+   "name": "MenuRoomModelView",
+   "note": "3D model/pointer context rendering the main menu room between the top and bottom bars."
+  },
+  "0x0508": {
+   "name": "FrontendPageStack",
+   "note": "Stack of 13 frontend dialog pages (0 none, 5 options, 9 quit, 10 game selection, 11 faction setup, 12 mission briefing; 1-4 and 6-8 are in part 2)."
+  },
+  "0x058C": {
+   "name": "MissionBriefingPage",
+   "note": "Mission briefing page (page 12): description text, image, opponent setting, Back/Begin or Exit/Save."
+  },
+  "0x05E8": {
+   "name": "BriefingBackButton",
+   "note": "\"Back\" button (action 0x2043); shown when the briefing is opened from the frontend."
+  },
+  "0x0648": {
+   "name": "BriefingExitButton",
+   "note": "\"Exit\" button (action 0x204F); replaces Back when the briefing is opened in-game."
+  },
+  "0x06A8": {
+   "name": "BriefingSaveButton",
+   "note": "\"Save\" button (action 0x2050); shown only in the in-game variant of the briefing."
+  },
+  "0x0708": {
+   "name": "BriefingBeginButton",
+   "note": "\"Begin\" button (action 0x2047) that starts the mission."
+  },
+  "0x0768": {
+   "name": "BriefingTitleLabel",
+   "note": "Title \"Mission description (%s)\"."
+  },
+  "0x07C4": {
+   "name": "BriefingTextScroller",
+   "note": "Scrollable frame holding the mission briefing text."
+  },
+  "0x0854": {
+   "name": "BriefingText",
+   "note": "Mission description text; its text id is set from the level and it is resized to the text extent."
+  },
+  "0x08B0": {
+   "name": "BriefingImage",
+   "note": "Animated mission image next to the text; its first frame is set from the level."
+  },
+  "0x0914": {
+   "name": "OpponentSettingsGroup",
+   "note": "Group \"Settings for computer opponent\" with weak/strong labels and slider."
+  },
+  "0x0970": {
+   "name": "OpponentWeakLabel",
+   "note": "Label \"weak\" at the left end of the opponent slider."
+  },
+  "0x09CC": {
+   "name": "OpponentStrongLabel",
+   "note": "Label \"strong\" at the right end of the opponent slider."
+  },
+  "0x0A28": {
+   "name": "OpponentStrengthSlider",
+   "note": "Slider 80..120 (default 100); action 0x204A applies it as game-speed percent and persists it."
+  },
+  "0x0A90": {
+   "name": "FactionSetupPage",
+   "note": "Page 11 \"Choose faction\": faction roster (colour, mode, play checkbox, participants) and task description."
+  },
+  "0x0AEC": {
+   "name": "FactionSetupBackButton",
+   "note": "\"Back\" button (action 0x2040)."
+  },
+  "0x0B4C": {
+   "name": "FactionSetupNextButton",
+   "note": "\"Next\" button (action 0x2041)."
+  },
+  "0x0BAC": {
+   "name": "FactionSetupTitleLabel",
+   "note": "Title \"Choose faction\"; hint text says a network game waits until all players are ready."
+  },
+  "0x0C0C": {
+   "name": "FactionSetupFinishButton",
+   "note": "\"Finish\" button (action 0x2042); its flag bit 2 gates the roster row checks."
+  },
+  "0x0C6C": {
+   "name": "FactionRosterTable",
+   "note": "Single-page container holding the 7-row faction table and its column headers."
+  },
+  "0x0CC0": {
+   "name": "FactionRow1NumberLabel",
+   "note": "Row number label \"1.\" in the Faction column."
+  },
+  "0x0D1C": {
+   "name": "FactionRow2NumberLabel",
+   "note": "Row number label \"2.\" in the Faction column."
+  },
+  "0x0D78": {
+   "name": "FactionRow3NumberLabel",
+   "note": "Row number label \"3.\" in the Faction column."
+  },
+  "0x0DD4": {
+   "name": "FactionRow4NumberLabel",
+   "note": "Row number label \"4.\" in the Faction column."
+  },
+  "0x0E30": {
+   "name": "FactionRow5NumberLabel",
+   "note": "Row number label \"5.\" in the Faction column."
+  },
+  "0x0E8C": {
+   "name": "FactionRow6NumberLabel",
+   "note": "Row number label \"6.\" in the Faction column."
+  },
+  "0x0EE8": {
+   "name": "FactionRow7NumberLabel",
+   "note": "Row number label \"7.\" in the Faction column."
+  },
+  "0x0F44": {
+   "name": "FactionRow1ColourButton",
+   "note": "Faction 1 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x0FA4": {
+   "name": "FactionRow2ColourButton",
+   "note": "Faction 2 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x1004": {
+   "name": "FactionRow3ColourButton",
+   "note": "Faction 3 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x1064": {
+   "name": "FactionRow4ColourButton",
+   "note": "Faction 4 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x10C4": {
+   "name": "FactionRow5ColourButton",
+   "note": "Faction 5 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x1124": {
+   "name": "FactionRow6ColourButton",
+   "note": "Faction 6 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x1184": {
+   "name": "FactionRow7ColourButton",
+   "note": "Faction 7 name with colour swatch in the Colour column; action 0x2044 (factionControls table) cycles the colour."
+  },
+  "0x11E4": {
+   "name": "FactionRow1ModeButton",
+   "note": "Mode button of faction 1 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x1244": {
+   "name": "FactionRow2ModeButton",
+   "note": "Mode button of faction 2 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x12A4": {
+   "name": "FactionRow3ModeButton",
+   "note": "Mode button of faction 3 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x1304": {
+   "name": "FactionRow4ModeButton",
+   "note": "Mode button of faction 4 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x1364": {
+   "name": "FactionRow5ModeButton",
+   "note": "Mode button of faction 5 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x13C4": {
+   "name": "FactionRow6ModeButton",
+   "note": "Mode button of faction 6 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x1424": {
+   "name": "FactionRow7ModeButton",
+   "note": "Mode button of faction 7 (Player/Computer/No-one), action 0x2045 (playerControls table)."
+  },
+  "0x1484": {
+   "name": "FactionRow1PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 1 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x14E4": {
+   "name": "FactionRow2PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 2 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x1544": {
+   "name": "FactionRow3PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 3 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x15A4": {
+   "name": "FactionRow4PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 4 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x1604": {
+   "name": "FactionRow5PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 5 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x1664": {
+   "name": "FactionRow6PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 6 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x16C4": {
+   "name": "FactionRow7PlayCheckbox",
+   "note": "Checkbox under \"Accept\" choosing faction 7 as the one to play, action 0x2046 (selectionRows table)."
+  },
+  "0x1724": {
+   "name": "FactionRow1ParticipantsLabel",
+   "note": "Participant column text for faction 1: names of the network players assigned to it."
+  },
+  "0x1780": {
+   "name": "FactionRow2ParticipantsLabel",
+   "note": "Participant column text for faction 2: names of the network players assigned to it."
+  },
+  "0x17DC": {
+   "name": "FactionRow3ParticipantsLabel",
+   "note": "Participant column text for faction 3: names of the network players assigned to it."
+  },
+  "0x1838": {
+   "name": "FactionRow4ParticipantsLabel",
+   "note": "Participant column text for faction 4: names of the network players assigned to it."
+  },
+  "0x1894": {
+   "name": "FactionRow5ParticipantsLabel",
+   "note": "Participant column text for faction 5: names of the network players assigned to it."
+  },
+  "0x18F0": {
+   "name": "FactionRow6ParticipantsLabel",
+   "note": "Participant column text for faction 6: names of the network players assigned to it."
+  },
+  "0x194C": {
+   "name": "FactionRow7ParticipantsLabel",
+   "note": "Participant column text for faction 7: names of the network players assigned to it."
+  },
+  "0x19A8": {
+   "name": "RosterFactionHeader",
+   "note": "Column header \"Faction\" (hint: click to make the faction appear in the game)."
+  },
+  "0x1A08": {
+   "name": "RosterModeHeader",
+   "note": "Column header \"Mode\" (hint: click several times to cycle)."
+  },
+  "0x1A68": {
+   "name": "RosterColourHeader",
+   "note": "Column header \"Colour\" (hint: choose the faction to play)."
+  },
+  "0x1AC8": {
+   "name": "RosterAcceptHeader",
+   "note": "Column header \"Accept\" above the play checkboxes."
+  },
+  "0x1B24": {
+   "name": "RosterParticipantHeader",
+   "note": "Column header \"Participant\"; hidden in local (non-network) games."
+  },
+  "0x1B80": {
+   "name": "TaskDescriptionLabel",
+   "note": "Label \"Task description (%s):\" for the selected faction."
+  },
+  "0x1BDC": {
+   "name": "TaskDescriptionText",
+   "note": "Faction task text from the level (text id 0x230010 + faction + level*0x10)."
+  },
+  "0x1C38": {
+   "name": "GameSelectPage",
+   "note": "Page 10 \"Choose game\": tabs Load game / Single game / Campaigns with lists and descriptions."
+  },
+  "0x1C94": {
+   "name": "GameSelectCancelButton",
+   "note": "\"Cancel\" button (action 0x2034)."
+  },
+  "0x1CF4": {
+   "name": "GameSelectStartButton",
+   "note": "\"Start\" button (action 0x2038) starting the selected entry."
+  },
+  "0x1D54": {
+   "name": "LoadGameTabButton",
+   "note": "Tab button \"Load game\" (action 0x2035)."
+  },
+  "0x1DB4": {
+   "name": "SingleGameTabButton",
+   "note": "Tab button \"Single game\" (action 0x2036)."
+  },
+  "0x1E14": {
+   "name": "CampaignsTabButton",
+   "note": "Tab button \"Campaigns\" (action 0x2037)."
+  },
+  "0x1E74": {
+   "name": "GameSelectTitleLabel",
+   "note": "Title \"Choose game\"."
+  },
+  "0x1ED0": {
+   "name": "GameSelectTabStack",
+   "note": "Three-page stack: saved games, individual missions, campaigns."
+  },
+  "0x1F2C": {
+   "name": "SavedGamesScroller",
+   "note": "Scroll frame of the saved-games list (Load game tab)."
+  },
+  "0x1FBC": {
+   "name": "SavedGamesList",
+   "note": "List of saved games (name, time, date), action 0x2039."
+  },
+  "0x203C": {
+   "name": "SavedGamesLabel",
+   "note": "Label \"Games saved:\" above the saved-games list."
+  },
+  "0x2098": {
+   "name": "SavedGameDescriptionText",
+   "note": "Description text of the selected saved game."
+  },
+  "0x20F4": {
+   "name": "MissionsScroller",
+   "note": "Scroll frame of the individual-missions list (Single game tab)."
+  },
+  "0x2184": {
+   "name": "MissionsList",
+   "note": "List of single missions (map, planet, size, human/total factions), action 0x203A."
+  },
+  "0x221C": {
+   "name": "MissionsLabel",
+   "note": "Label \"Individual missions:\"."
+  },
+  "0x2278": {
+   "name": "MissionDescriptionText",
+   "note": "Description text of the selected single mission."
+  },
+  "0x22D4": {
+   "name": "CampaignsScroller",
+   "note": "Scroll frame of the campaigns list (Campaigns tab)."
+  },
+  "0x2364": {
+   "name": "CampaignsList",
+   "note": "List of campaigns (name, human/total factions), action 0x203B."
+  },
+  "0x23EC": {
+   "name": "CampaignsLabel",
+   "note": "Label \"Campaigns:\"."
+  },
+  "0x2448": {
+   "name": "CampaignDescriptionText",
+   "note": "Description text of the selected campaign."
+  },
+  "0x24A4": {
+   "name": "QuitConfirmPage",
+   "note": "Page 9 \"Exit programme\" confirmation."
+  },
+  "0x2500": {
+   "name": "QuitNoButton",
+   "note": "\"no\" button (action 0x2033) closing the quit dialog."
+  },
+  "0x2560": {
+   "name": "QuitYesButton",
+   "note": "\"yes\" button (no action id in the template) that exits the programme."
+  },
+  "0x25C0": {
+   "name": "QuitTitleLabel",
+   "note": "Title \"Exit programme\"."
+  },
+  "0x261C": {
+   "name": "OptionsPage",
+   "note": "Page 5 \"Options\": graphics/3D/sound sub-pages, panel, scroll speed, map and mouse settings."
+  },
+  "0x2678": {
+   "name": "OptionsOkButton",
+   "note": "\"Ok\" button (action 0x2010) closing the options."
+  },
+  "0x26D8": {
+   "name": "OptionsTitleLabel",
+   "note": "Title \"Options\"."
+  },
+  "0x2734": {
+   "name": "GraphicsSettingsButton",
+   "note": "\"Graphics\" button (action 0x2011) opening the graphics settings page."
+  },
+  "0x2794": {
+   "name": "Settings3DButton",
+   "note": "\"3D\" button (action 0x2012) opening the 3D settings page."
+  },
+  "0x27F4": {
+   "name": "SoundSettingsButton",
+   "note": "\"Sound\" button (action 0x2013) opening the sound settings page."
+  },
+  "0x2854": {
+   "name": "HidePanelCheckbox",
+   "note": "Checkbox \"Hide panel\" (action 0x2049, persisted bit 4)."
+  },
+  "0x28B4": {
+   "name": "ScrollSpeedGroup",
+   "note": "Group \"Scroll speed:\" with slow/fast labels and slider."
+  },
+  "0x2910": {
+   "name": "ScrollSpeedSlowLabel",
+   "note": "Label \"slow\" of the scroll-speed slider."
+  },
+  "0x296C": {
+   "name": "ScrollSpeedFastLabel",
+   "note": "Label \"fast\" of the scroll-speed slider."
+  },
+  "0x29C8": {
+   "name": "ScrollSpeedSlider",
+   "note": "Scroll-speed slider 8..128 (action 0x204B, persisted)."
+  },
+  "0x2A30": {
+   "name": "GeneralMapGroup",
+   "note": "Titled box \"General map:\" with auto-zoom and auto-rotation options."
+  },
+  "0x2A84": {
+   "name": "AutoZoomOffCheckbox",
+   "note": "Checkbox \"Automatic zoom off\" (action 0x203C, bit 1)."
+  },
+  "0x2AE4": {
+   "name": "AutoRotationOffCheckbox",
+   "note": "Checkbox \"Automatic rotation off\" (action 0x203D, bit 2)."
+  },
+  "0x2B44": {
+   "name": "MouseCommandsGroup",
+   "note": "Titled box \"Mouse commands:\" with the mouse option checkboxes."
+  },
+  "0x2B98": {
+   "name": "LinkRotationZoomCheckbox",
+   "note": "Checkbox \"Link rotation/zoom\" (action 0x203E, bit 1)."
+  },
+  "0x2BF8": {
+   "name": "LinkRotationTiltCheckbox",
+   "note": "Checkbox \"Link rotation/tilt\" (action 0x203F, bit 2)."
+  },
+  "0x2C58": {
+   "name": "RightButtonNoScrollCheckbox",
+   "note": "Checkbox \"Right button does not scroll\" (action 0x2051)."
+  },
+  "0x2CB8": {
+   "name": "DisplaySettingsPage",
+   "note": "Page-stack page 6 (opened by action 0x2011): display adapter, resolution and colour-depth selection."
+  },
+  "0x2D14": {
+   "name": "DisplaySettingsBackButton",
+   "note": "Action 0x2010: returns to the options menu page (page 5)."
+  },
+  "0x2D74": {
+   "name": "DisplaySettingsApplyButton",
+   "note": "Action 0x2031 FrontendDisplaySettings_ApplyMode: applies the pending display mode."
+  },
+  "0x2DD4": {
+   "name": "DisplaySettingsTitle",
+   "note": "Page title caption (text 0x2124) of the display settings page."
+  },
+  "0x2E30": {
+   "name": "DisplayAdapterGroup",
+   "note": "Titled box (text 0x2125) holding the five graphics-adapter choices."
+  },
+  "0x2E84": {
+   "name": "DisplayAdapterOption1",
+   "note": "Adapter choice 0 (action 0x202C); label filled from g_GraphicsAdapters[0]."
+  },
+  "0x2EEC": {
+   "name": "DisplayAdapterOption2",
+   "note": "Adapter choice 1 (action 0x202D)."
+  },
+  "0x2F54": {
+   "name": "DisplayAdapterOption3",
+   "note": "Adapter choice 2 (action 0x202E)."
+  },
+  "0x2FBC": {
+   "name": "DisplayAdapterOption4",
+   "note": "Adapter choice 3 (action 0x202F)."
+  },
+  "0x3024": {
+   "name": "DisplayAdapterOption5",
+   "note": "Adapter choice 4 (action 0x2030)."
+  },
+  "0x308C": {
+   "name": "DisplayResolutionGroup",
+   "note": "Titled box (text 0x2126) holding the ten resolution choices."
+  },
+  "0x30E0": {
+   "name": "DisplayResolutionOption1",
+   "note": "Resolution choice 1 (action 0x2022, width/height pair set at runtime)."
+  },
+  "0x3148": {
+   "name": "DisplayResolutionOption2",
+   "note": "Resolution choice 2 (action 0x2023)."
+  },
+  "0x31B0": {
+   "name": "DisplayResolutionOption3",
+   "note": "Resolution choice 3 (action 0x2024)."
+  },
+  "0x3218": {
+   "name": "DisplayResolutionOption4",
+   "note": "Resolution choice 4 (action 0x2025)."
+  },
+  "0x3280": {
+   "name": "DisplayResolutionOption5",
+   "note": "Resolution choice 5 (action 0x2026)."
+  },
+  "0x32E8": {
+   "name": "DisplayResolutionOption6",
+   "note": "Resolution choice 6 (action 0x2027)."
+  },
+  "0x3350": {
+   "name": "DisplayResolutionOption7",
+   "note": "Resolution choice 7 (action 0x2028)."
+  },
+  "0x33B8": {
+   "name": "DisplayResolutionOption8",
+   "note": "Resolution choice 8 (action 0x2029)."
+  },
+  "0x3420": {
+   "name": "DisplayResolutionOption9",
+   "note": "Resolution choice 9 (action 0x202A)."
+  },
+  "0x3488": {
+   "name": "DisplayResolutionOption10",
+   "note": "Resolution choice 10 (action 0x202B)."
+  },
+  "0x34F0": {
+   "name": "DisplayColorDepthGroup",
+   "note": "Titled box (text 0x2127) holding the four colour-depth choices."
+  },
+  "0x3544": {
+   "name": "DisplayColorDepthOption1",
+   "note": "Lowest available bits-per-pixel choice (action 0x201E, value filled by action 0x2011)."
+  },
+  "0x35AC": {
+   "name": "DisplayColorDepthOption2",
+   "note": "Second colour-depth choice (action 0x201F)."
+  },
+  "0x3614": {
+   "name": "DisplayColorDepthOption3",
+   "note": "Third colour-depth choice (action 0x2020)."
+  },
+  "0x367C": {
+   "name": "DisplayColorDepthOption4",
+   "note": "Fourth colour-depth choice (action 0x2021)."
+  },
+  "0x36E4": {
+   "name": "GraphicsSettingsPage",
+   "note": "Page-stack page 7 (action 0x2012): shading, polygon detail and texture quality."
+  },
+  "0x3740": {
+   "name": "GraphicsSettingsBackButton",
+   "note": "Action 0x2010: returns to the options menu page."
+  },
+  "0x37A0": {
+   "name": "GraphicsSettingsTitle",
+   "note": "Page title caption (text 0x212E) of the graphics settings page."
+  },
+  "0x37FC": {
+   "name": "ShadingEnabledCheckbox",
+   "note": "Toggle (action 0x2014 FrontendShadingSettings_SetEnabled) for shading on/off."
+  },
+  "0x385C": {
+   "name": "ShadingLevelGroup",
+   "note": "Titled box (text 0x2130) with the six shading grid/depth levels."
+  },
+  "0x38B0": {
+   "name": "ShadingLevelGrid32Depth32",
+   "note": "Shading level choice (action 0x2015) with grid 0x20, depth 0x20."
+  },
+  "0x3918": {
+   "name": "ShadingLevelGrid32Depth64",
+   "note": "Shading level choice (action 0x2015) with grid 0x20, depth 0x40."
+  },
+  "0x3980": {
+   "name": "ShadingLevelGrid32Depth128",
+   "note": "Shading level choice (action 0x2015) with grid 0x20, depth 0x80."
+  },
+  "0x39E8": {
+   "name": "ShadingLevelGrid64Depth64",
+   "note": "Shading level choice (action 0x2015) with grid 0x40, depth 0x40."
+  },
+  "0x3A50": {
+   "name": "ShadingLevelGrid64Depth128",
+   "note": "Shading level choice (action 0x2015) with grid 0x40, depth 0x80."
+  },
+  "0x3AB8": {
+   "name": "ShadingLevelGrid128Depth128",
+   "note": "Shading level choice (action 0x2015) with grid 0x80, depth 0x80."
+  },
+  "0x3B20": {
+   "name": "PolygonDetailLabel",
+   "note": "Caption (text 0x2131) bound to the polygon-detail slider 0x3C34."
+  },
+  "0x3B7C": {
+   "name": "PolygonDetailMinCaption",
+   "note": "Low-end caption (text 0x2134) under the polygon-detail slider."
+  },
+  "0x3BD8": {
+   "name": "PolygonDetailMaxCaption",
+   "note": "High-end caption (text 0x2135) under the polygon-detail slider."
+  },
+  "0x3C34": {
+   "name": "PolygonDetailSlider",
+   "note": "Slider 0x4000..0x40000 (action 0x2016) setting the model LOD depth threshold."
+  },
+  "0x3C9C": {
+   "name": "TextureQualityGroup",
+   "note": "Titled box (text 0x2132) with the three texture-quality choices."
+  },
+  "0x3CF0": {
+   "name": "TextureQualityLow",
+   "note": "Texture quality choice 1 (action 0x2017, text 0x2136)."
+  },
+  "0x3D50": {
+   "name": "TextureQualityMedium",
+   "note": "Texture quality choice 2 (action 0x2017, text 0x2137)."
+  },
+  "0x3DB0": {
+   "name": "TextureQualityHigh",
+   "note": "Texture quality choice 3 (action 0x2017, text 0x2138)."
+  },
+  "0x3E10": {
+   "name": "AudioSettingsPage",
+   "note": "Page-stack page 8 (action 0x2013): sound toggles and volume sliders."
+  },
+  "0x3E6C": {
+   "name": "AudioSettingsBackButton",
+   "note": "Action 0x2010: returns to the options menu page."
+  },
+  "0x3ECC": {
+   "name": "AudioSettingsTitle",
+   "note": "Page title caption (text 0x213A) of the audio settings page."
+  },
+  "0x3F28": {
+   "name": "MusicEnabledCheckbox",
+   "note": "Toggle (action 0x2019) that starts/stops frontend music."
+  },
+  "0x3F88": {
+   "name": "SoundEffectsEnabledCheckbox",
+   "note": "Toggle (action 0x2018) for sound effects on/off."
+  },
+  "0x3FE8": {
+   "name": "ReverseStereoCheckbox",
+   "note": "Toggle (action 0x201A) that swaps left/right stereo channels."
+  },
+  "0x4048": {
+   "name": "EffectsVolumeLabel",
+   "note": "Caption (text 0x213E) bound to the effects-volume slider 0x415C."
+  },
+  "0x40A4": {
+   "name": "EffectsVolumeMinCaption",
+   "note": "Low-end caption (text 0x2141) of the effects-volume slider."
+  },
+  "0x4100": {
+   "name": "EffectsVolumeMaxCaption",
+   "note": "High-end caption (text 0x2142) of the effects-volume slider."
+  },
+  "0x415C": {
+   "name": "EffectsVolumeSlider",
+   "note": "Slider 0..0x8000 (action 0x201B) setting the effects gain."
+  },
+  "0x41C4": {
+   "name": "MovieVolumeLabel",
+   "note": "Caption (text 0x213F) bound to the movie-volume slider 0x42D8."
+  },
+  "0x4220": {
+   "name": "MovieVolumeMinCaption",
+   "note": "Low-end caption (text 0x2141) of the movie-volume slider."
+  },
+  "0x427C": {
+   "name": "MovieVolumeMaxCaption",
+   "note": "High-end caption (text 0x2142) of the movie-volume slider."
+  },
+  "0x42D8": {
+   "name": "MovieVolumeSlider",
+   "note": "Slider 0..0x8000 (action 0x201C) setting the default movie audio gain."
+  },
+  "0x4340": {
+   "name": "MusicVolumeLabel",
+   "note": "Caption (text 0x2140) bound to the music-volume slider 0x4454."
+  },
+  "0x439C": {
+   "name": "MusicVolumeMinCaption",
+   "note": "Low-end caption (text 0x2141) of the music-volume slider."
+  },
+  "0x43F8": {
+   "name": "MusicVolumeMaxCaption",
+   "note": "High-end caption (text 0x2142) of the music-volume slider."
+  },
+  "0x4454": {
+   "name": "MusicVolumeSlider",
+   "note": "Slider 0..0x8000 (action 0x201D) setting the music gain."
+  },
+  "0x44BC": {
+   "name": "MovieEventVolumeLabel",
+   "note": "Caption (text 0x2143) bound to the alternate movie-volume slider 0x45D0."
+  },
+  "0x4518": {
+   "name": "MovieEventVolumeMinCaption",
+   "note": "Low-end caption (text 0x2141) of the alternate movie-volume slider."
+  },
+  "0x4574": {
+   "name": "MovieEventVolumeMaxCaption",
+   "note": "High-end caption (text 0x2142) of the alternate movie-volume slider."
+  },
+  "0x45D0": {
+   "name": "MovieEventVolumeSlider",
+   "note": "Slider 0..0x8000 (action 0x204E) setting the alternate movie gain used by timed movie events."
+  },
+  "0x4638": {
+   "name": "TopBlackBar",
+   "note": "Black fill panel over the top eighth of the screen, sibling after the page stack."
+  },
+  "0x4694": {
+   "name": "BottomBar",
+   "note": "Black fill panel over the bottom eighth of the screen; holds the status text and the chat input container 0xB0."
+  },
+  "0x46F0": {
+   "name": "BottomBarConditionalAction",
+   "note": "Zero-size ConditionalAction control centred in the bottom bar (action -1); exact role unknown."
+  },
+  "0x4750": {
+   "name": "BottomBarStatusText",
+   "note": "Full-size caption (style 0xA, text 0x112) in the bottom bar; probably the status/help line (role inferred)."
+  },
+  "0x47AC": {
+   "name": "BottomBarCornerNode",
+   "note": "Class 00517DE0 node at the bottom-right corner of the bottom bar; role unknown."
+  },
+  "0x4808": {
+   "name": "NetworkGamePage",
+   "note": "Page-stack page 1 (action 0x2003): network protocol, player name, host address and session list."
+  },
+  "0x4864": {
+   "name": "NetworkGameTitle",
+   "note": "Page title caption (text 0x2107) of the network game page."
+  },
+  "0x48C0": {
+   "name": "NetworkGameBackButton",
+   "note": "Action 0x2000: resets networking and returns to the main menu."
+  },
+  "0x4920": {
+   "name": "NetworkGameHostButton",
+   "note": "Action 0x2001: initialises the host (create game) setup page."
+  },
+  "0x4980": {
+   "name": "NetworkGameJoinButton",
+   "note": "Action 0x2002: sends the join request (player descriptor) to the selected session."
+  },
+  "0x49E0": {
+   "name": "NetworkProtocolScrollBox",
+   "note": "Scroll frame around the network protocol/backend list."
+  },
+  "0x4A70": {
+   "name": "NetworkProtocolList",
+   "note": "Text list of network backends (action 0x200F selects/opens the backend)."
+  },
+  "0x4AD8": {
+   "name": "SessionListScrollBox",
+   "note": "Scroll frame around the list of discovered sessions."
+  },
+  "0x4B68": {
+   "name": "SessionList",
+   "note": "List of discovered network sessions (g_FrontendSessionListRows, action 0x2009 updates Join availability)."
+  },
+  "0x4BEC": {
+   "name": "HostAddressLabel",
+   "note": "Caption (text 0x2103) above the host address edit 0x4D5C."
+  },
+  "0x4C48": {
+   "name": "PlayerNameLabel",
+   "note": "Caption (text 0x2106) above the player name edit 0x4E48."
+  },
+  "0x4CA4": {
+   "name": "NetworkProtocolLabel",
+   "note": "Caption (text 0x2105) above the network protocol list."
+  },
+  "0x4D00": {
+   "name": "SessionListLabel",
+   "note": "Caption (text 0x2104) above the session list."
+  },
+  "0x4D5C": {
+   "name": "HostAddressEdit",
+   "note": "64-char endpoint/address edit (action 0x200D validates and requests the session mailbox)."
+  },
+  "0x4E48": {
+   "name": "PlayerNameEdit",
+   "note": "20-char player name edit (action 0x2032 persists the player name)."
+  },
+  "0x4EDC": {
+   "name": "HostGameSetupPage",
+   "note": "Page-stack page 2: game name, player count and network speed for hosting."
+  },
+  "0x4F38": {
+   "name": "HostGameSetupTitle",
+   "note": "Page title caption (text 0x210C) of the host game setup page."
+  },
+  "0x4F94": {
+   "name": "HostGameSetupBackButton",
+   "note": "Action 0x2003: returns to the network game page."
+  },
+  "0x4FF4": {
+   "name": "HostGameCreateButton",
+   "note": "Action 0x2004: creates the session with one local player and opens the host lobby."
+  },
+  "0x5054": {
+   "name": "GameNameEdit",
+   "note": "20-char game name edit (action 0x2008 FrontendNetworkSettings_SetGameName)."
+  },
+  "0x50E8": {
+   "name": "MaxPlayersSlider",
+   "note": "Slider 2..8 (action 0x2007) setting the session player count."
+  },
+  "0x5150": {
+   "name": "MaxPlayersValueText",
+   "note": "Text display bound to g_FrontendNetworkPlayerCountTextUtf16 showing the player count."
+  },
+  "0x51AC": {
+   "name": "NetworkSpeedSlider",
+   "note": "Slider 1..7 (action 0x204D) setting g_SessionNetworkTickInterval and its label; 'speed' reading inferred."
+  },
+  "0x5214": {
+   "name": "NetworkSpeedValueText",
+   "note": "Text display bound to g_FrontendNetworkPlayerCountLabelUtf16 (label built by action 0x204D)."
+  },
+  "0x5270": {
+   "name": "MaxPlayersLabel",
+   "note": "Caption (text 0x210A) left of the player count slider."
+  },
+  "0x52CC": {
+   "name": "NetworkSpeedLabel",
+   "note": "Caption (text 0x210D) left of the network tick-interval slider."
+  },
+  "0x5328": {
+   "name": "GameNameLabel",
+   "note": "Caption (text 0x210B) above the game name edit."
+  },
+  "0x5384": {
+   "name": "HostLobbyPage",
+   "note": "Page-stack page 3: host waits for joining players, can kick them and start the game."
+  },
+  "0x53E0": {
+   "name": "HostLobbyTitle",
+   "note": "Page title caption (text 0x2119) of the host lobby page."
+  },
+  "0x543C": {
+   "name": "HostLobbyBackButton",
+   "note": "Action 0x2005: drops to local mode, resets the roster and returns to the host setup page."
+  },
+  "0x549C": {
+   "name": "HostLobbyKickPlayerButton",
+   "note": "Action 0x200B: expires/removes the selected joined player."
+  },
+  "0x54FC": {
+   "name": "HostLobbyStartButton",
+   "note": "Action 0x2006: seeds the random streams and starts the network game."
+  },
+  "0x555C": {
+   "name": "HostLobbyPlayerScrollBox",
+   "note": "Scroll frame around the host lobby player list."
+  },
+  "0x55EC": {
+   "name": "HostLobbyPlayerList",
+   "note": "List of joined players (g_FrontendPlayerRuntimeRecordPointers32, action 0x200C toggles Kick)."
+  },
+  "0x5670": {
+   "name": "HostLobbyPlayerListLabel",
+   "note": "Caption (text 0x2117) above the host lobby player list."
+  },
+  "0x56CC": {
+   "name": "ClientLobbyPage",
+   "note": "Page-stack page 4 (join ack): client waits in the session and sees the player list."
+  },
+  "0x5728": {
+   "name": "ClientLobbyTitle",
+   "note": "Page title caption (text 0x211E) of the client lobby page."
+  },
+  "0x5784": {
+   "name": "ClientLobbyLeaveButton",
+   "note": "Action 0x200A: leaves the session and reopens the network game page (also used on timeout)."
+  },
+  "0x57E4": {
+   "name": "ClientLobbyPlayerScrollBox",
+   "note": "Scroll frame around the client lobby player list."
+  },
+  "0x5874": {
+   "name": "ClientLobbyPlayerList",
+   "note": "List of session players (g_FrontendPlayerListRows) filled from host packets."
+  },
+  "0x58F8": {
+   "name": "ClientLobbyPlayerListLabel",
+   "note": "Caption (text 0x2117) above the client lobby player list."
+  }
+ },
+ "InGameUiImage": {
+  "0x0000": {
+   "name": "InGameRootPanel",
+   "note": "Root panel of the in-game UI; its only child is the primary page stack."
+  },
+  "0x0058": {
+   "name": "ChatInputPageStack",
+   "note": "Two-page stack (empty or chat input) inside the world view area that shows or hides the chat text entry line."
+  },
+  "0x00B0": {
+   "name": "ChatInputTextEdit",
+   "note": "Chat/command text entry (action 0x1024): sends the typed text to the selected players; in single player it checks the developer cheat phrase."
+  },
+  "0x017C": {
+   "name": "PrimaryPageStack",
+   "note": "Top-level page stack (primaryPageStack017C); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC."
+  },
+  "0x01D8": {
+   "name": "EndMovieView",
+   "note": "Image/action surface that shows the end movie (activeEndMovieRuntime022C); action 0x1009 clears the playback flag to skip the movie."
+  },
+  "0x0240": {
+   "name": "EndMovieLetterboxTop",
+   "note": "Black fill bar over the top eighth of the screen while the end movie plays."
+  },
+  "0x029C": {
+   "name": "EndMovieLetterboxBottom",
+   "note": "Black fill bar over the bottom eighth of the screen while the end movie plays."
+  },
+  "0x02F8": {
+   "name": "EndMoviePageStack",
+   "note": "Two-page stack (movie only or results screen); set to page 1 after the end movie to show the results screen."
+  },
+  "0x0350": {
+   "name": "ResultsScreenPanel",
+   "note": "End-of-game results screen background panel holding the chart tabs, charts and summary text."
+  },
+  "0x03AC": {
+   "name": "ResultsChartPageStack",
+   "note": "Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C)."
+  },
+  "0x0408": {
+   "name": "ResultsChart1",
+   "note": "First results statistics chart (graph control 0x00516F60); which category (points/economy/military) is not verified."
+  },
+  "0x0484": {
+   "name": "ResultsChart2",
+   "note": "Second results statistics chart; its display mode is mirrored from the chart mode buttons (action 0x1026)."
+  },
+  "0x0500": {
+   "name": "ResultsChart3",
+   "note": "Third results statistics chart (8 series); its display mode is mirrored from the chart mode buttons (action 0x1026)."
+  },
+  "0x0584": {
+   "name": "ResultsTabMilitary",
+   "note": "Results chart tab button labelled Military (text 0x21B1); action 0x101C selects the chart page."
+  },
+  "0x05E4": {
+   "name": "ResultsTabEconomy",
+   "note": "Results chart tab button labelled Economy (text 0x21B0); action 0x101C selects the chart page."
+  },
+  "0x0644": {
+   "name": "ResultsTabThird",
+   "note": "Third results chart tab button (text 0x21AF, probably total/points); action 0x101C selects the chart page."
+  },
+  "0x06A4": {
+   "name": "ResultsContinueButton",
+   "note": "Results screen continue/OK button (action 0x101B, text 0x21AE) that marks the results as done."
+  },
+  "0x0704": {
+   "name": "ResultsSecondaryExitButton",
+   "note": "Results button (action 0x1025, text 0x21C5) setting runtime flag 0x1000; suppressed in local games, likely a multiplayer leave/next option."
+  },
+  "0x0764": {
+   "name": "ResultsChartModeButtonA",
+   "note": "First of two exclusive chart mode buttons (action 0x1026, text 0x21C6); the mode index is mirrored into the charts."
+  },
+  "0x07C4": {
+   "name": "ResultsChartModeButtonB",
+   "note": "Second of two exclusive chart mode buttons (action 0x1026, text 0x21C7)."
+  },
+  "0x0824": {
+   "name": "ResultsSummaryText",
+   "note": "Results summary text 0x21C0 patched with the level title and elapsed game time."
+  },
+  "0x0880": {
+   "name": "LevelMovieView",
+   "note": "Image/action surface playing the level movie (levelMovieRuntime08D4 lives in this node)."
+  },
+  "0x08E4": {
+   "name": "LevelMovieOverlay",
+   "note": "Conditional-action node inside the level movie view (types.h: playerStatusNode08E4), invalidated during movie playback; exact role unverified."
+  },
+  "0x0960": {
+   "name": "MessageHistoryPanel",
+   "note": "Recent message history display (recentTextHistory09B8 lives inside it); action 0x100F trims the history to three lines."
+  },
+  "0x09DC": {
+   "name": "WorldViewArea",
+   "note": "Container for the main play area left of the side panel (right offset set from the panel width); holds world view, windows, messages and chat input."
+  },
+  "0x0A30": {
+   "name": "WorldView",
+   "note": "The 3D world view control (worldRuntime0A30) that receives map pointer input and hosts the on-screen status texts."
+  },
+  "0x0BD0": {
+   "name": "GameWindowPageStack",
+   "note": "Page stack of the in-game windows (types.h technologyPageStack0BD0): 0 none, 1 message, 2 technology, 3 game menu, 4 quit, 5 save, 6 graphics, 7 audio, 8 mission help."
+  },
+  "0x0C44": {
+   "name": "GameMenuWindow",
+   "note": "Game menu / gameplay options window (page 3, action 0x1003) with save, quit, graphics, audio buttons and camera options."
+  },
+  "0x0CA0": {
+   "name": "QuitGameWindow",
+   "note": "Leave/quit game window (page 4, opened by action 0x1200); its buttons (0x101D/0x101E/0x1027) are in another part."
+  },
+  "0x0CFC": {
+   "name": "SaveGameWindow",
+   "note": "Save game window (page 5) with save list, save, delete and back buttons."
+  },
+  "0x0D58": {
+   "name": "GraphicsSettingsWindow",
+   "note": "Graphics settings window (page 6, opened by action 0x1202)."
+  },
+  "0x0DB4": {
+   "name": "AudioSettingsWindow",
+   "note": "Audio settings window (page 7, opened by action 0x1203)."
+  },
+  "0x0E10": {
+   "name": "MissionHelpWindow",
+   "note": "Mission info/help window (page 8, action 0x101F) with three tabs: mission briefing, keyboard help and mouse/cursor help."
+  },
+  "0x0E6C": {
+   "name": "TechnologyWindow",
+   "note": "Technology research window (page 2, action 0x1010), sized from the tech.gfx texture."
+  },
+  "0x0EC8": {
+   "name": "MissionHelpTitle",
+   "note": "Title label of the mission help window (text 0x21CC)."
+  },
+  "0x0F24": {
+   "name": "MissionHelpCloseButton",
+   "note": "Close button of the mission help window (action 0x1020, text 0x21CD)."
+  },
+  "0x0F84": {
+   "name": "MissionHelpBriefingTab",
+   "note": "Tab 0 button (action 0x1021, text 0x21CE) showing the mission briefing text."
+  },
+  "0x0FE4": {
+   "name": "MissionHelpKeyboardTab",
+   "note": "Tab 1 button (action 0x1022, text 0x21CF) showing the keyboard help (text page texte_tastatur)."
+  },
+  "0x1044": {
+   "name": "MissionHelpMouseTab",
+   "note": "Tab 2 button (action 0x1023, text 0x21D0) showing help text 0x2402 with inline cursor icons (likely mouse controls)."
+  },
+  "0x10A4": {
+   "name": "MissionHelpTabPageStack",
+   "note": "Page stack holding the three scrollable help text pages."
+  },
+  "0x1100": {
+   "name": "MissionBriefingScroll",
+   "note": "Scrollable view of the mission briefing text (textPanel0_1100)."
+  },
+  "0x1190": {
+   "name": "MissionBriefingText",
+   "note": "Briefing text; its resource id is set from the level title and active faction when the window opens."
+  },
+  "0x11EC": {
+   "name": "KeyboardHelpScroll",
+   "note": "Scrollable view of the keyboard help (textPanel1_11EC)."
+  },
+  "0x127C": {
+   "name": "KeyboardHelpKeyColumn",
+   "note": "Keyboard help text 0x2400 (likely the key column)."
+  },
+  "0x12D8": {
+   "name": "KeyboardHelpDescriptionColumn",
+   "note": "Keyboard help text 0x2401 next to the key column (likely the descriptions)."
+  },
+  "0x1334": {
+   "name": "MouseHelpScroll",
+   "note": "Scrollable view of help text 0x2402 (textPanel2_1334)."
+  },
+  "0x13C4": {
+   "name": "MouseHelpText",
+   "note": "Help text 0x2402 bound to the cursor texture (mouse/cursor explanations)."
+  },
+  "0x1420": {
+   "name": "TechnologyTitle",
+   "note": "Title label of the technology window (text 0x217C)."
+  },
+  "0x147C": {
+   "name": "TechnologyCloseButton",
+   "note": "Close button (action 0x1011): clears the selected army token and closes the window."
+  },
+  "0x14DC": {
+   "name": "TechnologyResearchButton",
+   "note": "Starts research of the selected technology (action 0x1013)."
+  },
+  "0x1544": {
+   "name": "TechnologyAreaTab1",
+   "note": "Technology area tab 1 (action 0x1014) with an icon from tech.gfx."
+  },
+  "0x15AC": {
+   "name": "TechnologyAreaTab2",
+   "note": "Technology area tab 2 (action 0x1015)."
+  },
+  "0x1614": {
+   "name": "TechnologyAreaTab3",
+   "note": "Technology area tab 3 (action 0x1016)."
+  },
+  "0x167C": {
+   "name": "TechnologyAreaTab4",
+   "note": "Technology area tab 4 (action 0x1017)."
+  },
+  "0x16E4": {
+   "name": "TechnologyAreaTab5",
+   "note": "Technology area tab 5 (action 0x1018)."
+  },
+  "0x174C": {
+   "name": "TechnologyAreaTab6",
+   "note": "Technology area tab 6 (action 0x1019)."
+  },
+  "0x17B4": {
+   "name": "TechnologyAreaTab7",
+   "note": "Technology area tab 7 (action 0x101A)."
+  },
+  "0x1814": {
+   "name": "TechnologyAreaTab1Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 1."
+  },
+  "0x1870": {
+   "name": "TechnologyAreaTab2Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 2."
+  },
+  "0x18CC": {
+   "name": "TechnologyAreaTab3Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 3."
+  },
+  "0x1928": {
+   "name": "TechnologyAreaTab4Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 4."
+  },
+  "0x1984": {
+   "name": "TechnologyAreaTab5Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 5."
+  },
+  "0x19E0": {
+   "name": "TechnologyAreaTab6Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 6."
+  },
+  "0x1A3C": {
+   "name": "TechnologyAreaTab7Icon",
+   "note": "Icon image (tech.gfx) of technology area tab 7."
+  },
+  "0x1A98": {
+   "name": "TechnologyDescriptionFrame",
+   "note": "Image panel beside the description area, widened by the panel texture subresource width; exact role unverified."
+  },
+  "0x1AF4": {
+   "name": "TechnologyDescriptionScroll",
+   "note": "Scrollable view of the selected technology description."
+  },
+  "0x1B84": {
+   "name": "TechnologyDescriptionText",
+   "note": "Description text of the selected technology (default 0x217F); wrap width derived from the window width."
+  },
+  "0x1BE0": {
+   "name": "MessageWindow",
+   "note": "Send-message window (page 1): text entry, recipient mode buttons, player checkboxes and send/cancel buttons."
+  },
+  "0x1C3C": {
+   "name": "MessageWindowTitle",
+   "note": "Title label of the message window (text 0x2166)."
+  },
+  "0x1C98": {
+   "name": "MessageTextEdit",
+   "note": "Message text entry whose text is sent as a 48-byte payload."
+  },
+  "0x1D64": {
+   "name": "MessageCancelButton",
+   "note": "Closes the message window (action 0x1002, text 0x2168)."
+  },
+  "0x1DC4": {
+   "name": "MessageSendAndCloseButton",
+   "note": "Sends the message and closes the window (action 0x1005, text 0x2169)."
+  },
+  "0x1E24": {
+   "name": "MessageSendButton",
+   "note": "Sends the message with the current recipient mask (action 0x1004, text 0x2167)."
+  },
+  "0x1E84": {
+   "name": "MessageRecipientPlayersTab",
+   "note": "Recipient mode: fills the seven checkboxes from the active players (action 0x1006, text 0x216B)."
+  },
+  "0x1EE4": {
+   "name": "MessageRecipientGroupsTab",
+   "note": "Recipient mode: fills the seven checkboxes from the runtime record catalog, probably teams (action 0x1007, text 0x216C)."
+  },
+  "0x1F44": {
+   "name": "MessageRecipientAllTab",
+   "note": "Recipient mode that hides the checkbox list, likely send to all (action 0x1008, text 0x216A)."
+  },
+  "0x1FA4": {
+   "name": "MessageRecipientPageStack",
+   "note": "Two-page stack: recipient checkbox list or nothing."
+  },
+  "0x1FFC": {
+   "name": "MessageRecipientScroll",
+   "note": "Scrollable view of the recipient checkbox list."
+  },
+  "0x208C": {
+   "name": "MessageRecipientList",
+   "note": "Panel holding the seven recipient checkboxes."
+  },
+  "0x20E4": {
+   "name": "MessageRecipientCheckbox1",
+   "note": "Recipient slot 1 checkbox (text 0x216D, preselected)."
+  },
+  "0x2144": {
+   "name": "MessageRecipientCheckbox2",
+   "note": "Recipient slot 2 checkbox (text 0x216E)."
+  },
+  "0x21A4": {
+   "name": "MessageRecipientCheckbox3",
+   "note": "Recipient slot 3 checkbox (text 0x216F)."
+  },
+  "0x2204": {
+   "name": "MessageRecipientCheckbox4",
+   "note": "Recipient slot 4 checkbox (text 0x2170)."
+  },
+  "0x2264": {
+   "name": "MessageRecipientCheckbox5",
+   "note": "Recipient slot 5 checkbox (text 0x2171)."
+  },
+  "0x22C4": {
+   "name": "MessageRecipientCheckbox6",
+   "note": "Recipient slot 6 checkbox (text 0x2172)."
+  },
+  "0x2324": {
+   "name": "MessageRecipientCheckbox7",
+   "note": "Recipient slot 7 checkbox (text 0x2173)."
+  },
+  "0x2384": {
+   "name": "WorldViewCyclingInfoText",
+   "note": "Single-line world view text whose resource id a hotkey cycles through 0x112..0x117; the value is also published as the world-state mirror."
+  },
+  "0x23E0": {
+   "name": "WorldViewStatusTextA",
+   "note": "Single-line world view text 0x21D1 shown for command flags 0x801 (a status message, unverified)."
+  },
+  "0x243C": {
+   "name": "WorldViewStatusTextB",
+   "note": "Single-line world view text 0x21D5 shown for command flags 0x1001 (a status message, unverified)."
+  },
+  "0x2498": {
+   "name": "WorldViewWrappedStatusText",
+   "note": "Wrapped world view text shown for command flag 0x10; exact message unverified."
+  },
+  "0x24F4": {
+   "name": "GameMenuTitle",
+   "note": "Title label of the game menu window (text 0x2123)."
+  },
+  "0x2550": {
+   "name": "GameMenuSaveButton",
+   "note": "Opens the save game window and rebuilds the save list (action 0x120E, text 0x214D)."
+  },
+  "0x25B0": {
+   "name": "GameMenuQuitButton",
+   "note": "Opens the quit game window, page 4 (action 0x1200, text 0x2148)."
+  },
+  "0x2610": {
+   "name": "GameMenuGraphicsButton",
+   "note": "Opens the graphics settings window (action 0x1202, text 0x2121)."
+  },
+  "0x2670": {
+   "name": "GameMenuAudioButton",
+   "note": "Opens the audio settings window (action 0x1203, text 0x2122)."
+  },
+  "0x26D0": {
+   "name": "RightButtonNoScrollCheckbox",
+   "note": "Option: right mouse button does not scroll (action 0x1216, text 0x21C8)."
+  },
+  "0x2730": {
+   "name": "ScrollSpeedGroup",
+   "note": "Labelled group for the camera scroll speed slider (text 0x21C9)."
+  },
+  "0x278C": {
+   "name": "ScrollSpeedMinLabel",
+   "note": "Scroll speed slider end label (text 0x21CA), probably slow."
+  },
+  "0x27E8": {
+   "name": "ScrollSpeedMaxLabel",
+   "note": "Scroll speed slider end label (text 0x21CB), probably fast."
+  },
+  "0x2844": {
+   "name": "ScrollSpeedSlider",
+   "note": "Camera scroll step slider (action 0x1217)."
+  },
+  "0x28AC": {
+   "name": "AutoCameraGroup",
+   "note": "Titled group (text 0x215F) with the automatic zoom/rotation options."
+  },
+  "0x2900": {
+   "name": "AutoZoomOffCheckbox",
+   "note": "Option: automatic zoom off (action 0x1212, text 0x2160)."
+  },
+  "0x2960": {
+   "name": "AutoRotationOffCheckbox",
+   "note": "Option: automatic rotation off (action 0x1213, text 0x2161)."
+  },
+  "0x29C0": {
+   "name": "CameraLinkGroup",
+   "note": "Titled group (text 0x2162) with the rotation link and hide panel options."
+  },
+  "0x2A14": {
+   "name": "LinkRotationZoomCheckbox",
+   "note": "Option: link rotation with zoom (action 0x1214, excludes 0x1215, text 0x2163)."
+  },
+  "0x2A74": {
+   "name": "LinkRotationTiltCheckbox",
+   "note": "Option: link rotation with tilt (action 0x1215, excludes 0x1214, text 0x2164)."
+  },
+  "0x2AD4": {
+   "name": "HidePanelCheckbox",
+   "note": "Option: hide panel (action 0x121B, text 0x2165)."
+  },
+  "0x2B34": {
+   "name": "GameMenuCloseButton",
+   "note": "Closes the game menu (action 0x1201, text 0x211F)."
+  },
+  "0x2B94": {
+   "name": "SaveGameBackButton",
+   "note": "Returns from the save window to the game menu (action 0x1218, text 0x214F)."
+  },
+  "0x2BF4": {
+   "name": "SaveGameTitle",
+   "note": "Title label of the save game window (text 0x214E)."
+  },
+  "0x2C50": {
+   "name": "SaveGameSaveButton",
+   "note": "Saves to the selected or typed save name (action 0x1210, text 0x214D)."
+  },
+  "0x2CB0": {
+   "name": "SaveGameDeleteButton",
+   "note": "Deletes the selected save file and rebuilds the list (action 0x1219, text 0x2153)."
+  },
+  "0x2D10": {
+   "name": "SaveGameListScroll",
+   "note": "Scrollable area of the save game list (children in part 2)."
+  },
+  "0x2DA0": {
+   "name": "SaveGameList",
+   "note": "Row list of save/*.sve catalog entries on the save-game page; selecting a row fires action 0x120F (InGameSaveGameList_SelectAndRefreshDetail)."
+  },
+  "0x2E1C": {
+   "name": "SaveGameListHeaderLabel",
+   "note": "Static text 0x2150 above the save list on the save-game page (header caption)."
+  },
+  "0x2E78": {
+   "name": "SaveGameDescriptionText",
+   "note": "Text box below the list showing the selected save's description (text 0x215D, or 0x215E patched with save details)."
+  },
+  "0x2ED4": {
+   "name": "SaveNameEntryStack",
+   "note": "Detail page stack of the save page: page 0 empty, page 1 shows the save-name editor when the trailing new-save row is selected."
+  },
+  "0x2F2C": {
+   "name": "SaveNameEdit",
+   "note": "Required text edit for the new save name; action 0x1211 validates the name and enables the Save button (0x1210)."
+  },
+  "0x2FD8": {
+   "name": "SaveNameLabel",
+   "note": "Caption text 0x2152 above the save-name edit field."
+  },
+  "0x3034": {
+   "name": "QuitMenuBackButton",
+   "note": "Quit page button (action 0x1218, text 0x2149) that returns to the in-game menu."
+  },
+  "0x3094": {
+   "name": "QuitMenuTitleLabel",
+   "note": "Title text 0x2144 of the in-game quit page (menu page stack index 4)."
+  },
+  "0x30F0": {
+   "name": "QuitMenuAbortMissionButton",
+   "note": "Action 0x101D: closes the menu and issues operation 0x150 mode 0 (local player departs, runtime flag 0x20000 aborts back to the frontend); text 0x214A."
+  },
+  "0x3150": {
+   "name": "QuitMenuSurrenderButton",
+   "note": "Action 0x101E: operation 0x150 mode 1, which destroys all armies of the local faction (give up); text 0x214B; label inferred from behaviour."
+  },
+  "0x31B0": {
+   "name": "QuitMenuRestartMissionButton",
+   "note": "Action 0x1027: operation 0x150 mode 2, sets runtime flag 0x10000 (session ends but keeps the scenario path, likely restart); text 0x214C; label unverified."
+  },
+  "0x3210": {
+   "name": "GraphicsOptionsBackButton",
+   "note": "Graphics options page button (action 0x1218, text 0x211F) returning to the in-game menu."
+  },
+  "0x3270": {
+   "name": "GraphicsOptionsTitleLabel",
+   "note": "Title text 0x212E of the in-game graphics options page (menu page index 6)."
+  },
+  "0x32CC": {
+   "name": "ShadingEnabledCheckbox",
+   "note": "Toggle (action 0x1204, text 0x212F) enabling shading (InGameShadingSettings_SetEnabled)."
+  },
+  "0x332C": {
+   "name": "ShadingLevelGroup",
+   "note": "Titled frame (text 0x2130) holding the six shading-level choice buttons."
+  },
+  "0x3380": {
+   "name": "ShadingLevel32x32Button",
+   "note": "Shading level choice (action 0x1205) with value pair 0x20/0x20."
+  },
+  "0x33E8": {
+   "name": "ShadingLevel32x64Button",
+   "note": "Shading level choice (action 0x1205) with value pair 0x20/0x40."
+  },
+  "0x3450": {
+   "name": "ShadingLevel32x128Button",
+   "note": "Shading level choice (action 0x1205) with value pair 0x20/0x80."
+  },
+  "0x34B8": {
+   "name": "ShadingLevel64x64Button",
+   "note": "Shading level choice (action 0x1205) with value pair 0x40/0x40."
+  },
+  "0x3520": {
+   "name": "ShadingLevel64x128Button",
+   "note": "Shading level choice (action 0x1205) with value pair 0x40/0x80."
+  },
+  "0x3588": {
+   "name": "ShadingLevel128x128Button",
+   "note": "Shading level choice (action 0x1205) with value pair 0x80/0x80."
+  },
+  "0x35F0": {
+   "name": "ModelDetailGroup",
+   "note": "Captioned group (text 0x2131) around the model-LOD distance slider."
+  },
+  "0x364C": {
+   "name": "ModelDetailMinLabel",
+   "note": "Left-aligned end caption (text 0x2134) of the model-LOD slider."
+  },
+  "0x36A8": {
+   "name": "ModelDetailMaxLabel",
+   "note": "Right-aligned end caption (text 0x2135) of the model-LOD slider."
+  },
+  "0x3704": {
+   "name": "ModelDetailSlider",
+   "note": "Range slider (action 0x1206) setting the model LOD depth threshold Q8 (range 0x4000..0x40000)."
+  },
+  "0x376C": {
+   "name": "TextureQualityGroup",
+   "note": "Titled frame (text 0x2132) holding the three texture-quality radio buttons."
+  },
+  "0x37C0": {
+   "name": "TextureQualityHighButton",
+   "note": "Texture quality choice High (action 0x1207, text 0x2136)."
+  },
+  "0x3820": {
+   "name": "TextureQualityMediumButton",
+   "note": "Texture quality choice Medium (action 0x1207, text 0x2137)."
+  },
+  "0x3880": {
+   "name": "TextureQualityLowButton",
+   "note": "Texture quality choice Low (action 0x1207, text 0x2138)."
+  },
+  "0x38E0": {
+   "name": "SoundOptionsBackButton",
+   "note": "Sound options page button (action 0x1218, text 0x211F) returning to the in-game menu."
+  },
+  "0x3940": {
+   "name": "SoundOptionsTitleLabel",
+   "note": "Title text 0x213A of the in-game sound options page (menu page index 7)."
+  },
+  "0x399C": {
+   "name": "MusicEnabledCheckbox",
+   "note": "Toggle (action 0x1209, text 0x213B) enabling music (InGameAudioSettings_SetMusicEnabled)."
+  },
+  "0x39FC": {
+   "name": "EffectsEnabledCheckbox",
+   "note": "Toggle (action 0x1208, text 0x213C) enabling sound effects."
+  },
+  "0x3A5C": {
+   "name": "ReverseStereoCheckbox",
+   "note": "Toggle (action 0x120A, text 0x213D) swapping the stereo channels."
+  },
+  "0x3ABC": {
+   "name": "EffectsVolumeGroup",
+   "note": "Captioned group (text 0x213E) around the effects volume slider."
+  },
+  "0x3B18": {
+   "name": "EffectsVolumeMinLabel",
+   "note": "Left end caption (text 0x2141) of the effects volume slider."
+  },
+  "0x3B74": {
+   "name": "EffectsVolumeMaxLabel",
+   "note": "Right end caption (text 0x2142) of the effects volume slider."
+  },
+  "0x3BD0": {
+   "name": "EffectsVolumeSlider",
+   "note": "Slider (action 0x120B) writing soundEffectsGainQ15."
+  },
+  "0x3C38": {
+   "name": "MovieVolumeGroup",
+   "note": "Captioned group (text 0x213F) around the default movie audio volume slider."
+  },
+  "0x3C94": {
+   "name": "MovieVolumeMinLabel",
+   "note": "Left end caption (text 0x2141) of the movie volume slider."
+  },
+  "0x3CF0": {
+   "name": "MovieVolumeMaxLabel",
+   "note": "Right end caption (text 0x2142) of the movie volume slider."
+  },
+  "0x3D4C": {
+   "name": "MovieVolumeSlider",
+   "note": "Slider (action 0x120C) writing movieDefaultAudioGainQ15."
+  },
+  "0x3DB4": {
+   "name": "MusicVolumeGroup",
+   "note": "Captioned group (text 0x2140) around the music volume slider."
+  },
+  "0x3E10": {
+   "name": "MusicVolumeMinLabel",
+   "note": "Left end caption (text 0x2141) of the music volume slider."
+  },
+  "0x3E6C": {
+   "name": "MusicVolumeMaxLabel",
+   "note": "Right end caption (text 0x2142) of the music volume slider."
+  },
+  "0x3EC8": {
+   "name": "MusicVolumeSlider",
+   "note": "Slider (action 0x120D) writing musicGainQ15 to the looping music voice."
+  },
+  "0x3F30": {
+   "name": "MessageMovieVolumeGroup",
+   "note": "Captioned group (text 0x2143) around the alternate movie volume slider used by timed in-mission movie events."
+  },
+  "0x3F8C": {
+   "name": "MessageMovieVolumeMinLabel",
+   "note": "Left end caption (text 0x2141) of the alternate movie volume slider."
+  },
+  "0x3FE8": {
+   "name": "MessageMovieVolumeMaxLabel",
+   "note": "Right end caption (text 0x2142) of the alternate movie volume slider; sits in 0x3F30's sibling chain although its parent link says 0x3DB4."
+  },
+  "0x4044": {
+   "name": "MessageMovieVolumeSlider",
+   "note": "Slider (action 0x121A) writing movieAlternateAudioGainQ15."
+  },
+  "0x40AC": {
+   "name": "SidePanelStack",
+   "note": "Page stack for the right side panel frame: page 0 shows the side panel (game layout), page 1 is empty (editor layout, world view goes full width); toggled by a hotkey and settings bit 0x4."
+  },
+  "0x4104": {
+   "name": "SidePanelFrameLeftEdge",
+   "note": "Side panel frame image (panel subresource 0), full-height left border strip; its left offset defines the side panel width."
+  },
+  "0x4160": {
+   "name": "SidePanelFrameRightEdge",
+   "note": "Side panel frame image (panel subresource 1), full-height right border strip."
+  },
+  "0x41BC": {
+   "name": "SidePanelFrameTopCap",
+   "note": "Side panel frame image (panel subresource 2), top piece between the edge strips."
+  },
+  "0x4218": {
+   "name": "SidePanelFrameMenuBar",
+   "note": "Side panel frame image (panel subresource 3) below the top cap; the menu/objectives buttons and countdown are laid out over it."
+  },
+  "0x4274": {
+   "name": "SidePanelFrameInfoSection",
+   "note": "Side panel frame image (panel subresource 4), middle section whose rect positions the 0xB210..0xB590 controls."
+  },
+  "0x42D0": {
+   "name": "SidePanelFrameBottomCap",
+   "note": "Side panel frame image (panel subresource 5), bottom piece of the side panel frame."
+  },
+  "0x432C": {
+   "name": "SidePanelMenuButtonStack",
+   "note": "Two-page container (page 0 = menu button row, page 1 empty) holding the menu and objectives buttons and the countdown display."
+  },
+  "0x4388": {
+   "name": "InGameMenuButton",
+   "note": "Sprite toggle (action 0x1003) that opens/closes the in-game menu page (sharedSettingsToggle4388)."
+  },
+  "0x4400": {
+   "name": "MissionObjectivesButton",
+   "note": "Sprite toggle (action 0x101F) that opens menu page 8 (mission briefing/objectives text panels) and pauses local play."
+  },
+  "0x4478": {
+   "name": "CountdownDisplayPanel",
+   "note": "Image panel (subresource 9) next to the menu buttons that hosts the countdown text."
+  },
+  "0x44D4": {
+   "name": "CountdownText",
+   "note": "Text control bound to g_InGameCountdownTextUtf16 (mission countdown)."
+  },
+  "0x4530": {
+   "name": "ResourceBarModeStack",
+   "note": "Page stack switched by the game/editor layout toggle: page 1 = resource panel (game), page 2 = editor tab strip A (editor)."
+  },
+  "0x458C": {
+   "name": "ResourcePanel",
+   "note": "Image panel (subresource 6) in the game layout with the Xenite/Tritium/Energy gauges and their icons."
+  },
+  "0x45E8": {
+   "name": "EditorTabStripA",
+   "note": "Image panel (subresource 0x26) shown in the editor layout; holds editor mode tabs G0..G2."
+  },
+  "0x4644": {
+   "name": "GamePanelsModeStack",
+   "note": "Page stack switched by the game/editor layout toggle: page 1 = game panels area, page 2 = editor tab strip B."
+  },
+  "0x46A0": {
+   "name": "GamePanelsArea",
+   "note": "Image panel (subresource 7) in the game layout hosting the pop-up panels (diplomacy panel 0x4D0C, build catalog 0x5DB4, ...)."
+  },
+  "0x46FC": {
+   "name": "EditorTabStripB",
+   "note": "Image panel (subresource 0x27) shown in the editor layout; holds editor mode tabs G3..G5."
+  },
+  "0x4758": {
+   "name": "ResourcePanelImageToggle8",
+   "note": "Hover/selectable image control (image 8) on the resource panel with a nine-slice popup; exact role unknown, named from class and parent."
+  },
+  "0x47C4": {
+   "name": "ResourcePanelImageToggle8Popup",
+   "note": "Nine-slice panel parented to image control 0x4758 (popup background); role inferred from structure only."
+  },
+  "0x4820": {
+   "name": "ResourcePanelImageToggle9",
+   "note": "Hover/selectable image control (image 9) on the resource panel with a nine-slice popup; exact role unknown, named from class and parent."
+  },
+  "0x488C": {
+   "name": "ResourcePanelImageToggle9Popup",
+   "note": "Nine-slice panel parented to image control 0x4820 (tooltip id 0x180005); role inferred from structure only."
+  },
+  "0x48EC": {
+   "name": "ResourcePanelIconButton",
+   "note": "Sprite button (sprite 0xA, no action, tooltip 0x180011) on the resource panel; exact role unknown, named from class and parent."
+  },
+  "0x4964": {
+   "name": "XeniteGauge",
+   "note": "Formatted value display for the primary resource Xenite (current/limit at root+0x49B4/0x49B8)."
+  },
+  "0x49FC": {
+   "name": "TritiumGauge",
+   "note": "Formatted value display for the secondary resource Tritium (current/limit at root+0x4A4C/0x4A50)."
+  },
+  "0x4A94": {
+   "name": "EnergyGauge",
+   "note": "Two-value display for energy demand vs. generation capacity (root+0x4AE4/0x4AE8/0x4B28)."
+  },
+  "0x4B44": {
+   "name": "XeniteAmountText",
+   "note": "Text control bound to g_FrontendCurrentFactionPrimaryResourceTextUtf16 (formatted Xenite amount)."
+  },
+  "0x4BA4": {
+   "name": "EditorModeTabTerrainHeight",
+   "note": "Editor mode tab G0 (action 0x1100, InGameCommandModeG_Select0): terrain height tool; syncs the three mode-G page stacks."
+  },
+  "0x4C1C": {
+   "name": "EditorModeTabTerrainMaterial",
+   "note": "Editor mode tab G1 (action 0x1101, InGameCommandModeG_Select1): terrain material/texture palette tool."
+  },
+  "0x4C94": {
+   "name": "EditorModeTabTerrainSmoothing",
+   "note": "Editor mode tab G2 (action 0x1102, InGameCommandModeG_Select2): terrain relaxation/smoothing tool (role partly resolved)."
+  },
+  "0x4D0C": {
+   "name": "DiplomacyPanel",
+   "note": "Image-control window (image 0xC, otherPlayerTargetGridNode4D0C) listing the other active players and relations."
+  },
+  "0x4D78": {
+   "name": "DiplomacyFrame",
+   "note": "Nine-slice frame of the diplomacy panel holding the seven player row stacks (rebuilt by InGameOtherPlayerCommand_RebuildTargetEntries)."
+  },
+  "0x4DD4": {
+   "name": "DiplomacyRow1",
+   "note": "Slot page stack for diplomacy row 1 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x4E2C": {
+   "name": "DiplomacyRow2",
+   "note": "Slot page stack for diplomacy row 2 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x4E84": {
+   "name": "DiplomacyRow3",
+   "note": "Slot page stack for diplomacy row 3 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x4EDC": {
+   "name": "DiplomacyRow4",
+   "note": "Slot page stack for diplomacy row 4 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x4F34": {
+   "name": "DiplomacyRow5",
+   "note": "Slot page stack for diplomacy row 5 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x4F8C": {
+   "name": "DiplomacyRow6",
+   "note": "Slot page stack for diplomacy row 6 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x4FE4": {
+   "name": "DiplomacyRow7",
+   "note": "Slot page stack for diplomacy row 7 (page 0 visible, page 1 hidden when fewer players)."
+  },
+  "0x503C": {
+   "name": "DiplomacyRow1PlayerNumberLabel",
+   "note": "Player number text (0x2190 + faction index) of diplomacy row 1."
+  },
+  "0x5098": {
+   "name": "DiplomacyRow2PlayerNumberLabel",
+   "note": "Player number text of diplomacy row 2."
+  },
+  "0x50F4": {
+   "name": "DiplomacyRow3PlayerNumberLabel",
+   "note": "Player number text of diplomacy row 3."
+  },
+  "0x5150": {
+   "name": "DiplomacyRow4PlayerNumberLabel",
+   "note": "Player number text of diplomacy row 4."
+  },
+  "0x51AC": {
+   "name": "DiplomacyRow5PlayerNumberLabel",
+   "note": "Player number text of diplomacy row 5."
+  },
+  "0x5208": {
+   "name": "DiplomacyRow6PlayerNumberLabel",
+   "note": "Player number text of diplomacy row 6."
+  },
+  "0x5264": {
+   "name": "DiplomacyRow7PlayerNumberLabel",
+   "note": "Player number text of diplomacy row 7."
+  },
+  "0x52C0": {
+   "name": "DiplomacyRow1FactionLabel",
+   "note": "Faction/race label text (0x2173 + faction record type) of diplomacy row 1."
+  },
+  "0x531C": {
+   "name": "DiplomacyRow2FactionLabel",
+   "note": "Faction/race label text of diplomacy row 2."
+  },
+  "0x5378": {
+   "name": "DiplomacyRow3FactionLabel",
+   "note": "Faction/race label text of diplomacy row 3."
+  },
+  "0x53D4": {
+   "name": "DiplomacyRow4FactionLabel",
+   "note": "Faction/race label text of diplomacy row 4."
+  },
+  "0x5430": {
+   "name": "DiplomacyRow5FactionLabel",
+   "note": "Faction/race label text of diplomacy row 5."
+  },
+  "0x548C": {
+   "name": "DiplomacyRow6FactionLabel",
+   "note": "Faction/race label text of diplomacy row 6."
+  },
+  "0x54E8": {
+   "name": "DiplomacyRow7FactionLabel",
+   "note": "Faction/race label text of diplomacy row 7."
+  },
+  "0x5544": {
+   "name": "DiplomacyRow1RelationLabel",
+   "note": "Diplomatic relation state text (0x21A3 + relation state) of diplomacy row 1."
+  },
+  "0x55A0": {
+   "name": "DiplomacyRow2RelationLabel",
+   "note": "Diplomatic relation state text of diplomacy row 2."
+  },
+  "0x55FC": {
+   "name": "DiplomacyRow3RelationLabel",
+   "note": "Diplomatic relation state text of diplomacy row 3."
+  },
+  "0x5658": {
+   "name": "DiplomacyRow4RelationLabel",
+   "note": "Diplomatic relation state text of diplomacy row 4."
+  },
+  "0x56B4": {
+   "name": "DiplomacyRow5RelationLabel",
+   "note": "Diplomatic relation state text of diplomacy row 5."
+  },
+  "0x5710": {
+   "name": "DiplomacyRow6RelationLabel",
+   "note": "Diplomatic relation state text of diplomacy row 6."
+  },
+  "0x576C": {
+   "name": "DiplomacyRow7RelationLabel",
+   "note": "Diplomatic relation state text of diplomacy row 7."
+  },
+  "0x57C8": {
+   "name": "DiplomacyRow1PlayerNameLabel",
+   "note": "Player name text (network player name, else empty) of diplomacy row 1."
+  },
+  "0x5824": {
+   "name": "DiplomacyRow2PlayerNameLabel",
+   "note": "Player name text of diplomacy row 2."
+  },
+  "0x5880": {
+   "name": "DiplomacyRow3PlayerNameLabel",
+   "note": "Player name text of diplomacy row 3."
+  },
+  "0x58DC": {
+   "name": "DiplomacyRow4PlayerNameLabel",
+   "note": "Player-name text of diplomacy row 4 (g_UiAction1012IconImageOffsets[3]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries."
+  },
+  "0x5938": {
+   "name": "DiplomacyRow5PlayerNameLabel",
+   "note": "Player-name text of diplomacy row 5 (g_UiAction1012IconImageOffsets[4]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries."
+  },
+  "0x5994": {
+   "name": "DiplomacyRow6PlayerNameLabel",
+   "note": "Player-name text of diplomacy row 6 (g_UiAction1012IconImageOffsets[5]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries."
+  },
+  "0x59F0": {
+   "name": "DiplomacyRow7PlayerNameLabel",
+   "note": "Player-name text of diplomacy row 7 (g_UiAction1012IconImageOffsets[6]); set to the other player's network name or empty by InGameOtherPlayerCommand_RebuildTargetEntries."
+  },
+  "0x5A4C": {
+   "name": "DiplomacyRow1RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 1; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5AC8": {
+   "name": "DiplomacyRow2RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 2; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5B44": {
+   "name": "DiplomacyRow3RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 3; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5BC0": {
+   "name": "DiplomacyRow4RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 4; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5C3C": {
+   "name": "DiplomacyRow5RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 5; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5CB8": {
+   "name": "DiplomacyRow6RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 6; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5D34": {
+   "name": "DiplomacyRow7RelationButton",
+   "note": "Action-0x1012 command sprite button of diplomacy row 7; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget)."
+  },
+  "0x5DB4": {
+   "name": "BuildCatalogPanel",
+   "note": "Image-control window (id 0xD, catalogGroup48GridNode5DB4) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid)."
+  },
+  "0x5E20": {
+   "name": "BuildCatalogFrame",
+   "note": "Nine-slice frame of the 48-entry build catalog (catalogGroup48LayoutNode5E20); resized to the computed grid in UiCatalogGroup48_RebuildGrid."
+  },
+  "0x5E7C": {
+   "name": "BuildCatalogEntry00",
+   "note": "Catalog entry 0 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[0] under column count 0)."
+  },
+  "0x5EFC": {
+   "name": "BuildCatalogEntry01",
+   "note": "Catalog entry 1 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[1] under column count 0)."
+  },
+  "0x5F7C": {
+   "name": "BuildCatalogEntry02",
+   "note": "Catalog entry 2 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[2] under column count 0)."
+  },
+  "0x5FFC": {
+   "name": "BuildCatalogEntry03",
+   "note": "Catalog entry 3 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[3] under column count 0)."
+  },
+  "0x607C": {
+   "name": "BuildCatalogEntry04",
+   "note": "Catalog entry 4 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[4] under column count 0)."
+  },
+  "0x60FC": {
+   "name": "BuildCatalogEntry05",
+   "note": "Catalog entry 5 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[5] under column count 0)."
+  },
+  "0x617C": {
+   "name": "BuildCatalogEntry06",
+   "note": "Catalog entry 6 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[6] under column count 0)."
+  },
+  "0x61FC": {
+   "name": "BuildCatalogEntry07",
+   "note": "Catalog entry 7 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[7] under column count 0)."
+  },
+  "0x627C": {
+   "name": "BuildCatalogEntry08",
+   "note": "Catalog entry 8 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[8] under column count 0)."
+  },
+  "0x62FC": {
+   "name": "BuildCatalogEntry09",
+   "note": "Catalog entry 9 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[9] under column count 0)."
+  },
+  "0x637C": {
+   "name": "BuildCatalogEntry10",
+   "note": "Catalog entry 10 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[10] under column count 0)."
+  },
+  "0x63FC": {
+   "name": "BuildCatalogEntry11",
+   "note": "Catalog entry 11 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[11] under column count 0)."
+  },
+  "0x647C": {
+   "name": "BuildCatalogEntry12",
+   "note": "Catalog entry 12 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[12] under column count 0)."
+  },
+  "0x64FC": {
+   "name": "BuildCatalogEntry13",
+   "note": "Catalog entry 13 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[13] under column count 0)."
+  },
+  "0x657C": {
+   "name": "BuildCatalogEntry14",
+   "note": "Catalog entry 14 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[14] under column count 0)."
+  },
+  "0x65FC": {
+   "name": "BuildCatalogEntry15",
+   "note": "Catalog entry 15 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[15] under column count 0)."
+  },
+  "0x667C": {
+   "name": "BuildCatalogEntry16",
+   "note": "Catalog entry 16 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[16] under column count 0)."
+  },
+  "0x66FC": {
+   "name": "BuildCatalogEntry17",
+   "note": "Catalog entry 17 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[17] under column count 0)."
+  },
+  "0x677C": {
+   "name": "BuildCatalogEntry18",
+   "note": "Catalog entry 18 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[18] under column count 0)."
+  },
+  "0x67FC": {
+   "name": "BuildCatalogEntry19",
+   "note": "Catalog entry 19 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[19] under column count 0)."
+  },
+  "0x687C": {
+   "name": "BuildCatalogEntry20",
+   "note": "Catalog entry 20 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[20] under column count 0)."
+  },
+  "0x68FC": {
+   "name": "BuildCatalogEntry21",
+   "note": "Catalog entry 21 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[21] under column count 0)."
+  },
+  "0x697C": {
+   "name": "BuildCatalogEntry22",
+   "note": "Catalog entry 22 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[22] under column count 0)."
+  },
+  "0x69FC": {
+   "name": "BuildCatalogEntry23",
+   "note": "Catalog entry 23 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[23] under column count 0)."
+  },
+  "0x6A7C": {
+   "name": "BuildCatalogEntry24",
+   "note": "Catalog entry 24 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[24] under column count 0)."
+  },
+  "0x6AFC": {
+   "name": "BuildCatalogEntry25",
+   "note": "Catalog entry 25 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[25] under column count 0)."
+  },
+  "0x6B7C": {
+   "name": "BuildCatalogEntry26",
+   "note": "Catalog entry 26 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[26] under column count 0)."
+  },
+  "0x6BFC": {
+   "name": "BuildCatalogEntry27",
+   "note": "Catalog entry 27 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[27] under column count 0)."
+  },
+  "0x6C7C": {
+   "name": "BuildCatalogEntry28",
+   "note": "Catalog entry 28 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[28] under column count 0)."
+  },
+  "0x6CFC": {
+   "name": "BuildCatalogEntry29",
+   "note": "Catalog entry 29 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[29] under column count 0)."
+  },
+  "0x6D7C": {
+   "name": "BuildCatalogEntry30",
+   "note": "Catalog entry 30 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[30] under column count 0)."
+  },
+  "0x6DFC": {
+   "name": "BuildCatalogEntry31",
+   "note": "Catalog entry 31 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[31] under column count 0)."
+  },
+  "0x6E7C": {
+   "name": "BuildCatalogEntry32",
+   "note": "Catalog entry 32 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[32] under column count 0)."
+  },
+  "0x6EFC": {
+   "name": "BuildCatalogEntry33",
+   "note": "Catalog entry 33 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[33] under column count 0)."
+  },
+  "0x6F7C": {
+   "name": "BuildCatalogEntry34",
+   "note": "Catalog entry 34 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[34] under column count 0)."
+  },
+  "0x6FFC": {
+   "name": "BuildCatalogEntry35",
+   "note": "Catalog entry 35 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[35] under column count 0)."
+  },
+  "0x707C": {
+   "name": "BuildCatalogEntry36",
+   "note": "Catalog entry 36 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[36] under column count 0)."
+  },
+  "0x70FC": {
+   "name": "BuildCatalogEntry37",
+   "note": "Catalog entry 37 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[37] under column count 0)."
+  },
+  "0x717C": {
+   "name": "BuildCatalogEntry38",
+   "note": "Catalog entry 38 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[38] under column count 0)."
+  },
+  "0x71FC": {
+   "name": "BuildCatalogEntry39",
+   "note": "Catalog entry 39 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[39] under column count 0)."
+  },
+  "0x727C": {
+   "name": "BuildCatalogEntry40",
+   "note": "Catalog entry 40 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[40] under column count 0)."
+  },
+  "0x72FC": {
+   "name": "BuildCatalogEntry41",
+   "note": "Catalog entry 41 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[41] under column count 0)."
+  },
+  "0x737C": {
+   "name": "BuildCatalogEntry42",
+   "note": "Catalog entry 42 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[42] under column count 0)."
+  },
+  "0x73FC": {
+   "name": "BuildCatalogEntry43",
+   "note": "Catalog entry 43 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[43] under column count 0)."
+  },
+  "0x747C": {
+   "name": "BuildCatalogEntry44",
+   "note": "Catalog entry 44 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[44] under column count 0)."
+  },
+  "0x74FC": {
+   "name": "BuildCatalogEntry45",
+   "note": "Catalog entry 45 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[45] under column count 0)."
+  },
+  "0x757C": {
+   "name": "BuildCatalogEntry46",
+   "note": "Catalog entry 46 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[46] under column count 0)."
+  },
+  "0x75FC": {
+   "name": "BuildCatalogEntry47",
+   "note": "Catalog entry 47 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[47] under column count 0)."
+  },
+  "0x7680": {
+   "name": "SpecialBuildCatalogPanel",
+   "note": "Image-control window (id 0xE, catalogGroup42GridNode7680) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid)."
+  },
+  "0x76EC": {
+   "name": "SpecialBuildCatalogFrame",
+   "note": "Nine-slice frame of the 42-entry special build catalog (catalogGroup42LayoutNode76EC); resized to the computed grid."
+  },
+  "0x7748": {
+   "name": "SpecialBuildCatalogEntry00",
+   "note": "Catalog entry 0 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[0])."
+  },
+  "0x77C8": {
+   "name": "SpecialBuildCatalogEntry01",
+   "note": "Catalog entry 1 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[1])."
+  },
+  "0x7848": {
+   "name": "SpecialBuildCatalogEntry02",
+   "note": "Catalog entry 2 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[2])."
+  },
+  "0x78C8": {
+   "name": "SpecialBuildCatalogEntry03",
+   "note": "Catalog entry 3 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[3])."
+  },
+  "0x7948": {
+   "name": "SpecialBuildCatalogEntry04",
+   "note": "Catalog entry 4 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[4])."
+  },
+  "0x79C8": {
+   "name": "SpecialBuildCatalogEntry05",
+   "note": "Catalog entry 5 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[5])."
+  },
+  "0x7A48": {
+   "name": "SpecialBuildCatalogEntry06",
+   "note": "Catalog entry 6 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[6])."
+  },
+  "0x7AC8": {
+   "name": "SpecialBuildCatalogEntry07",
+   "note": "Catalog entry 7 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[7])."
+  },
+  "0x7B48": {
+   "name": "SpecialBuildCatalogEntry08",
+   "note": "Catalog entry 8 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[8])."
+  },
+  "0x7BC8": {
+   "name": "SpecialBuildCatalogEntry09",
+   "note": "Catalog entry 9 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[9])."
+  },
+  "0x7C48": {
+   "name": "SpecialBuildCatalogEntry10",
+   "note": "Catalog entry 10 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[10])."
+  },
+  "0x7CC8": {
+   "name": "SpecialBuildCatalogEntry11",
+   "note": "Catalog entry 11 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[11])."
+  },
+  "0x7D48": {
+   "name": "SpecialBuildCatalogEntry12",
+   "note": "Catalog entry 12 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[12])."
+  },
+  "0x7DC8": {
+   "name": "SpecialBuildCatalogEntry13",
+   "note": "Catalog entry 13 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[13])."
+  },
+  "0x7E48": {
+   "name": "SpecialBuildCatalogEntry14",
+   "note": "Catalog entry 14 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[14])."
+  },
+  "0x7EC8": {
+   "name": "SpecialBuildCatalogEntry15",
+   "note": "Catalog entry 15 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[15])."
+  },
+  "0x7F48": {
+   "name": "SpecialBuildCatalogEntry16",
+   "note": "Catalog entry 16 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[16])."
+  },
+  "0x7FC8": {
+   "name": "SpecialBuildCatalogEntry17",
+   "note": "Catalog entry 17 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[17])."
+  },
+  "0x8048": {
+   "name": "SpecialBuildCatalogEntry18",
+   "note": "Catalog entry 18 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[18])."
+  },
+  "0x80C8": {
+   "name": "SpecialBuildCatalogEntry19",
+   "note": "Catalog entry 19 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[19])."
+  },
+  "0x8148": {
+   "name": "SpecialBuildCatalogEntry20",
+   "note": "Catalog entry 20 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[20])."
+  },
+  "0x81C8": {
+   "name": "SpecialBuildCatalogEntry21",
+   "note": "Catalog entry 21 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[21])."
+  },
+  "0x8248": {
+   "name": "SpecialBuildCatalogEntry22",
+   "note": "Catalog entry 22 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[22])."
+  },
+  "0x82C8": {
+   "name": "SpecialBuildCatalogEntry23",
+   "note": "Catalog entry 23 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[23])."
+  },
+  "0x8348": {
+   "name": "SpecialBuildCatalogEntry24",
+   "note": "Catalog entry 24 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[24])."
+  },
+  "0x83C8": {
+   "name": "SpecialBuildCatalogEntry25",
+   "note": "Catalog entry 25 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[25])."
+  },
+  "0x8448": {
+   "name": "SpecialBuildCatalogEntry26",
+   "note": "Catalog entry 26 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[26])."
+  },
+  "0x84C8": {
+   "name": "SpecialBuildCatalogEntry27",
+   "note": "Catalog entry 27 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[27])."
+  },
+  "0x8548": {
+   "name": "SpecialBuildCatalogEntry28",
+   "note": "Catalog entry 28 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[28])."
+  },
+  "0x85C8": {
+   "name": "SpecialBuildCatalogEntry29",
+   "note": "Catalog entry 29 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[29])."
+  },
+  "0x8648": {
+   "name": "SpecialBuildCatalogEntry30",
+   "note": "Catalog entry 30 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[30])."
+  },
+  "0x86C8": {
+   "name": "SpecialBuildCatalogEntry31",
+   "note": "Catalog entry 31 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[31])."
+  },
+  "0x8748": {
+   "name": "SpecialBuildCatalogEntry32",
+   "note": "Catalog entry 32 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[32])."
+  },
+  "0x87C8": {
+   "name": "SpecialBuildCatalogEntry33",
+   "note": "Catalog entry 33 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[33])."
+  },
+  "0x8848": {
+   "name": "SpecialBuildCatalogEntry34",
+   "note": "Catalog entry 34 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[34])."
+  },
+  "0x88C8": {
+   "name": "SpecialBuildCatalogEntry35",
+   "note": "Catalog entry 35 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[35])."
+  },
+  "0x8948": {
+   "name": "SpecialBuildCatalogEntry36",
+   "note": "Catalog entry 36 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[36])."
+  },
+  "0x89C8": {
+   "name": "SpecialBuildCatalogEntry37",
+   "note": "Catalog entry 37 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[37])."
+  },
+  "0x8A48": {
+   "name": "SpecialBuildCatalogEntry38",
+   "note": "Catalog entry 38 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[38])."
+  },
+  "0x8AC8": {
+   "name": "SpecialBuildCatalogEntry39",
+   "note": "Catalog entry 39 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[39])."
+  },
+  "0x8B48": {
+   "name": "SpecialBuildCatalogEntry40",
+   "note": "Catalog entry 40 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[40])."
+  },
+  "0x8BC8": {
+   "name": "SpecialBuildCatalogEntry41",
+   "note": "Catalog entry 41 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[41])."
+  },
+  "0x8C4C": {
+   "name": "ArmyStockPanel",
+   "note": "Image-control window (id 0xF, commandSpriteVariantAGridNode8C4C) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid)."
+  },
+  "0x8CB8": {
+   "name": "ArmyStockFrame",
+   "note": "Nine-slice frame of the 24-slot army stock grid (commandSpriteVariantALayoutNode8CB8); resized/suppressed by the rebuild."
+  },
+  "0x8D14": {
+   "name": "ArmyStockSlot00",
+   "note": "Army stock slot 0 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund."
+  },
+  "0x8D90": {
+   "name": "ArmyStockSlot01",
+   "note": "Army stock slot 1 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund."
+  },
+  "0x8E0C": {
+   "name": "ArmyStockSlot02",
+   "note": "Army stock slot 2 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund."
+  },
+  "0x8E88": {
+   "name": "ArmyStockSlot03",
+   "note": "Army stock slot 3 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund."
+  },
+  "0x8F04": {
+   "name": "ArmyStockSlot04",
+   "note": "Army stock slot 4 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund."
+  },
+  "0x8F80": {
+   "name": "ArmyStockSlot05",
+   "note": "Army stock slot 5 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund."
+  },
+  "0x8FFC": {
+   "name": "ArmyStockSlot06",
+   "note": "Slot 6 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9078": {
+   "name": "ArmyStockSlot07",
+   "note": "Slot 7 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x90F4": {
+   "name": "ArmyStockSlot08",
+   "note": "Slot 8 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9170": {
+   "name": "ArmyStockSlot09",
+   "note": "Slot 9 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x91EC": {
+   "name": "ArmyStockSlot10",
+   "note": "Slot 10 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9268": {
+   "name": "ArmyStockSlot11",
+   "note": "Slot 11 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x92E4": {
+   "name": "ArmyStockSlot12",
+   "note": "Slot 12 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9360": {
+   "name": "ArmyStockSlot13",
+   "note": "Slot 13 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x93DC": {
+   "name": "ArmyStockSlot14",
+   "note": "Slot 14 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9458": {
+   "name": "ArmyStockSlot15",
+   "note": "Slot 15 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x94D4": {
+   "name": "ArmyStockSlot16",
+   "note": "Slot 16 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9550": {
+   "name": "ArmyStockSlot17",
+   "note": "Slot 17 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x95CC": {
+   "name": "ArmyStockSlot18",
+   "note": "Slot 18 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9648": {
+   "name": "ArmyStockSlot19",
+   "note": "Slot 19 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x96C4": {
+   "name": "ArmyStockSlot20",
+   "note": "Slot 20 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9740": {
+   "name": "ArmyStockSlot21",
+   "note": "Slot 21 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x97BC": {
+   "name": "ArmyStockSlot22",
+   "note": "Slot 22 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund."
+  },
+  "0x9838": {
+   "name": "ArmyStockSlot23",
+   "note": "Slot 23 of the 24-slot faction asset depot grid (UiCommandSpriteVariantA, action 0x1001): shows a purchased army asset; click takes it for placement, other button sells it for 7/8 refund. Last slot; distinct class variant with extra text id 0x180019."
+  },
+  "0x98B8": {
+   "name": "EditorModeTabRegion",
+   "note": "Editor mode tab G5 (action 0x1104, InGameCommandModeG_Select5): tool with two F variants that insert/remove player-pair ranges on the field grid; exact role unresolved."
+  },
+  "0x9930": {
+   "name": "EditorModeTabUnitPlacement",
+   "note": "Editor mode tab G3 (action 0x1105): place faction-owned army assets (flag 0x100 without 0x200, owner faction cyclable)."
+  },
+  "0x99A8": {
+   "name": "EditorModeTabObjectPlacement",
+   "note": "Editor mode tab G4 (action 0x1106): place ownerless army assets with flags 0x100|0x200 (objects)."
+  },
+  "0x9A1C": {
+   "name": "MinimapView",
+   "note": "Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (fieldGridPosition9A6C)."
+  },
+  "0x9A8C": {
+   "name": "ModePreviewPageStack",
+   "note": "8-page stack synced by mode G (primary index table): page 0 normal game, pages 1-5/7 editor tool previews."
+  },
+  "0x9AFC": {
+   "name": "NotificationTargetButton",
+   "note": "Page 0 of ModePreviewPageStack: image button; left click (0x100D) jumps to/resolves the active notification target, right click (0x100E) cancels and restores the view."
+  },
+  "0x9B60": {
+   "name": "HeightToolPreview",
+   "note": "Page 1 (mode G0, terrain height tool) of ModePreviewPageStack; static image."
+  },
+  "0x9BBC": {
+   "name": "MaterialToolSelectedSwatch",
+   "note": "Page 2 (mode G1) of ModePreviewPageStack: shows the texture of the currently selected terrain material (set by UiCommandMatrix_SelectIndex)."
+  },
+  "0x9C18": {
+   "name": "SmoothingToolPreview",
+   "note": "Page 3 (mode G2) of ModePreviewPageStack; static image; G2 role (relaxation/smoothing tool) only partly resolved."
+  },
+  "0x9C74": {
+   "name": "UnitPlacementPreviewFrame",
+   "note": "Page 4 (mode G3) of ModePreviewPageStack: black fill frame around the unit preview."
+  },
+  "0x9CD0": {
+   "name": "UnitPlacementPreviewImage",
+   "note": "Preview texture of the army asset currently chosen for unit placement (g_UiCommandModeGArmyAssetId)."
+  },
+  "0x9D2C": {
+   "name": "ObjectPlacementPreviewFrame",
+   "note": "Page 5 (mode G4) of ModePreviewPageStack: black fill frame around the object preview."
+  },
+  "0x9D88": {
+   "name": "ObjectPlacementPreviewImage",
+   "note": "Preview texture of the object asset currently chosen for placement (g_UiCommandMode4ArmyAssetId)."
+  },
+  "0x9DE4": {
+   "name": "RegionToolPreview",
+   "note": "Page 7 (mode G5) of ModePreviewPageStack; image panel."
+  },
+  "0x9EE0": {
+   "name": "ModeDetailPageStack",
+   "note": "8-page stack synced by mode G (secondary index table): page 0 selection detail in normal game, other pages editor tool panels."
+  },
+  "0x9F50": {
+   "name": "SelectionDetailPanel",
+   "note": "Page 0 of ModeDetailPageStack: background image hosting the selection detail page stack."
+  },
+  "0x9FAC": {
+   "name": "SelectionDetailPageStack",
+   "note": "Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack9FAC)."
+  },
+  "0xA00C": {
+   "name": "SingleSelectionMetrics",
+   "note": "Single-selection page: army metrics panel (portrait/health/value) of the one selected own entity."
+  },
+  "0xA06C": {
+   "name": "SingleSelectionStatsText",
+   "note": "Single-selection page: text list with name/armour/energy/weapon lines of the selected entity."
+  },
+  "0xA0CC": {
+   "name": "SingleSelectionUpgradeButton",
+   "note": "Single-selection page: action 0x1010 button toggling the technology page stack to page 2 for the unit; suppressed unless technologies are available."
+  },
+  "0xA140": {
+   "name": "HoverItemIcon",
+   "note": "Hover page: icon texture of the hovered build/catalog record."
+  },
+  "0xA19C": {
+   "name": "HoverItemStatsText",
+   "note": "Hover page: text list with armour, Xenite cost, build time and energy of the hovered record."
+  },
+  "0xA1F8": {
+   "name": "MultiSelectionCell00",
+   "note": "Multi-selection page: grid cell 0 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA258": {
+   "name": "MultiSelectionCell01",
+   "note": "Multi-selection page: grid cell 1 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA2B8": {
+   "name": "MultiSelectionCell02",
+   "note": "Multi-selection page: grid cell 2 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA318": {
+   "name": "MultiSelectionCell03",
+   "note": "Multi-selection page: grid cell 3 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA378": {
+   "name": "MultiSelectionCell04",
+   "note": "Multi-selection page: grid cell 4 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA3D8": {
+   "name": "MultiSelectionCell05",
+   "note": "Multi-selection page: grid cell 5 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA438": {
+   "name": "MultiSelectionCell06",
+   "note": "Multi-selection page: grid cell 6 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA498": {
+   "name": "MultiSelectionCell07",
+   "note": "Multi-selection page: grid cell 7 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA4F8": {
+   "name": "MultiSelectionCell08",
+   "note": "Multi-selection page: grid cell 8 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA558": {
+   "name": "MultiSelectionCell09",
+   "note": "Multi-selection page: grid cell 9 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA5B8": {
+   "name": "MultiSelectionCell10",
+   "note": "Multi-selection page: grid cell 10 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA618": {
+   "name": "MultiSelectionCell11",
+   "note": "Multi-selection page: grid cell 11 of 12 (g_InGameSelectionDetailGridCellOffsets) showing one selected entity's metrics."
+  },
+  "0xA678": {
+   "name": "HeightToolPanel",
+   "note": "Page 1 (mode G0) of ModeDetailPageStack; background image."
+  },
+  "0xA6D4": {
+   "name": "MaterialPalettePanel",
+   "note": "Page 2 (mode G1) of ModeDetailPageStack: background of the 12-swatch terrain material palette (swatches follow as siblings)."
+  },
+  "0xA730": {
+   "name": "MaterialSwatch00",
+   "note": "Terrain material palette swatch 0 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xA78C": {
+   "name": "MaterialSwatch00Selector",
+   "note": "Selectable frame on swatch 0 (action 0x1110, g_UiMappedCommandControlOffsets[0]); click selects that terrain material."
+  },
+  "0xA7E8": {
+   "name": "MaterialSwatch01",
+   "note": "Terrain material palette swatch 1 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xA844": {
+   "name": "MaterialSwatch01Selector",
+   "note": "Selectable frame on swatch 1 (action 0x1110, g_UiMappedCommandControlOffsets[1]); click selects that terrain material."
+  },
+  "0xA8A0": {
+   "name": "MaterialSwatch02",
+   "note": "Terrain material palette swatch 2 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xA8FC": {
+   "name": "MaterialSwatch02Selector",
+   "note": "Selectable frame on swatch 2 (action 0x1110, g_UiMappedCommandControlOffsets[2]); click selects that terrain material."
+  },
+  "0xA958": {
+   "name": "MaterialSwatch03",
+   "note": "Terrain material palette swatch 3 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xA9B4": {
+   "name": "MaterialSwatch03Selector",
+   "note": "Selectable frame on swatch 3 (action 0x1110, g_UiMappedCommandControlOffsets[3]); click selects that terrain material."
+  },
+  "0xAA10": {
+   "name": "MaterialSwatch04",
+   "note": "Terrain material palette swatch 4 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAA6C": {
+   "name": "MaterialSwatch04Selector",
+   "note": "Selectable frame on swatch 4 (action 0x1110, g_UiMappedCommandControlOffsets[4]); click selects that terrain material."
+  },
+  "0xAAC8": {
+   "name": "MaterialSwatch05",
+   "note": "Terrain material palette swatch 5 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAB24": {
+   "name": "MaterialSwatch05Selector",
+   "note": "Selectable frame on swatch 5 (action 0x1110, g_UiMappedCommandControlOffsets[5]); click selects that terrain material."
+  },
+  "0xAB80": {
+   "name": "MaterialSwatch06",
+   "note": "Terrain material palette swatch 6 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xABDC": {
+   "name": "MaterialSwatch06Selector",
+   "note": "Selectable frame on swatch 6 (action 0x1110, g_UiMappedCommandControlOffsets[6]); click selects that terrain material."
+  },
+  "0xAC38": {
+   "name": "MaterialSwatch07",
+   "note": "Terrain material palette swatch 7 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAC94": {
+   "name": "MaterialSwatch07Selector",
+   "note": "Selectable frame on swatch 7 (action 0x1110, g_UiMappedCommandControlOffsets[7]); click selects that terrain material."
+  },
+  "0xACF0": {
+   "name": "MaterialSwatch08",
+   "note": "Terrain material palette swatch 8 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAD4C": {
+   "name": "MaterialSwatch08Selector",
+   "note": "Selectable frame on swatch 8 (action 0x1110, g_UiMappedCommandControlOffsets[8]); click selects that terrain material."
+  },
+  "0xADA8": {
+   "name": "MaterialSwatch09",
+   "note": "Terrain material palette swatch 9 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAE04": {
+   "name": "MaterialSwatch09Selector",
+   "note": "Selectable frame on swatch 9 (action 0x1110, g_UiMappedCommandControlOffsets[9]); click selects that terrain material."
+  },
+  "0xAE60": {
+   "name": "MaterialSwatch10",
+   "note": "Terrain material palette swatch 10 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAEBC": {
+   "name": "MaterialSwatch10Selector",
+   "note": "Selectable frame on swatch 10 (action 0x1110, g_UiMappedCommandControlOffsets[10]); click selects that terrain material."
+  },
+  "0xAF18": {
+   "name": "MaterialSwatch11",
+   "note": "Terrain material palette swatch 11 of 12 (3 columns); shows a material texture from the current scroll page."
+  },
+  "0xAF74": {
+   "name": "MaterialSwatch11Selector",
+   "note": "Selectable frame on swatch 11 (action 0x1110, g_UiMappedCommandControlOffsets[11]); click selects that terrain material."
+  },
+  "0xAFD0": {
+   "name": "SmoothingToolPanel",
+   "note": "Page 3 (mode G2) of ModeDetailPageStack; background image."
+  },
+  "0xB02C": {
+   "name": "UnitPlacementPanel",
+   "note": "Page 4 (mode G3) of ModeDetailPageStack; background of the unit-placement info."
+  },
+  "0xB088": {
+   "name": "UnitPlacementStatsText",
+   "note": "Text list on UnitPlacementPanel with the stats of the unit chosen for placement."
+  },
+  "0xB0E4": {
+   "name": "ObjectPlacementPanel",
+   "note": "Page 5 (mode G4) of ModeDetailPageStack; background image."
+  },
+  "0xB140": {
+   "name": "RegionToolPanel",
+   "note": "Page 7 (mode G5) of ModeDetailPageStack; background image."
+  },
+  "0xB19C": {
+   "name": "ModeCommandPageStack",
+   "note": "8-page stack synced by mode G (tertiary index table): page 0 selection group buttons, other pages editor tool option buttons."
+  },
+  "0xB210": {
+   "name": "SelectionGroupButton0",
+   "note": "Selection group button 0 (action 0x100A, g_UiAction100AControlOffsets[0]): store/recall/jump to faction group 0 depending on modifiers/double-click."
+  },
+  "0xB290": {
+   "name": "SelectionGroupButton1",
+   "note": "Selection group button 1 (action 0x100A, g_UiAction100AControlOffsets[1]): store/recall/jump to faction group 1 depending on modifiers/double-click."
+  },
+  "0xB310": {
+   "name": "SelectionGroupButton2",
+   "note": "Selection group button 2 (action 0x100A, g_UiAction100AControlOffsets[2]): store/recall/jump to faction group 2 depending on modifiers/double-click."
+  },
+  "0xB390": {
+   "name": "SelectionGroupButton3",
+   "note": "Selection group button 3 (action 0x100A, g_UiAction100AControlOffsets[3]): store/recall/jump to faction group 3 depending on modifiers/double-click."
+  },
+  "0xB410": {
+   "name": "SelectionGroupButton4",
+   "note": "Selection group button 4 (action 0x100A, g_UiAction100AControlOffsets[4]): store/recall/jump to faction group 4 depending on modifiers/double-click."
+  },
+  "0xB490": {
+   "name": "SelectionGroupButton5",
+   "note": "Selection group button 5 (action 0x100A, g_UiAction100AControlOffsets[5]): store/recall/jump to faction group 5 depending on modifiers/double-click."
+  },
+  "0xB510": {
+   "name": "SelectionGroupButton6",
+   "note": "Selection group button 6 (action 0x100A, g_UiAction100AControlOffsets[6]): store/recall/jump to faction group 6 depending on modifiers/double-click."
+  },
+  "0xB590": {
+   "name": "SelectionGroupButton7",
+   "note": "Selection group button 7 (action 0x100A, g_UiAction100AControlOffsets[7]): store/recall/jump to faction group 7 depending on modifiers/double-click."
+  },
+  "0xB610": {
+   "name": "HeightToolOption0",
+   "note": "Exclusive tool sub-mode button (action 0x1108) selecting mode C=0; exact option label unresolved."
+  },
+  "0xB688": {
+   "name": "HeightToolOption1",
+   "note": "Exclusive tool sub-mode button (action 0x1109) selecting mode C=1; exact option label unresolved."
+  },
+  "0xB700": {
+   "name": "HeightToolOption2",
+   "note": "Exclusive tool sub-mode button (action 0x110A) selecting mode C=2; exact option label unresolved."
+  },
+  "0xB778": {
+   "name": "HeightToolOption3",
+   "note": "Exclusive tool sub-mode button (action 0x110B) selecting mode C=3; exact option label unresolved."
+  },
+  "0xB7F0": {
+   "name": "MaterialToolOption0",
+   "note": "Exclusive tool sub-mode button (action 0x110C) selecting mode D=0; exact option label unresolved."
+  },
+  "0xB868": {
+   "name": "MaterialToolOption1",
+   "note": "Exclusive tool sub-mode button (action 0x110D) selecting mode D=1; exact option label unresolved."
+  },
+  "0xB8E0": {
+   "name": "MaterialToolOption2",
+   "note": "Exclusive tool sub-mode button (action 0x110E) selecting mode D=2; exact option label unresolved."
+  },
+  "0xB958": {
+   "name": "MaterialToolOption3",
+   "note": "Exclusive tool sub-mode button (action 0x110F) selecting mode D=3; exact option label unresolved."
+  },
+  "0xB9D0": {
+   "name": "SmoothingToolOption0",
+   "note": "Exclusive tool sub-mode button (action 0x1117) selecting mode E=0; exact option label unresolved."
+  },
+  "0xBA48": {
+   "name": "SmoothingToolOption1",
+   "note": "Exclusive tool sub-mode button (action 0x1118) selecting mode E=1; exact option label unresolved."
+  },
+  "0xBAC0": {
+   "name": "SmoothingToolOption2",
+   "note": "Exclusive tool sub-mode button (action 0x1119) selecting mode E=2; exact option label unresolved."
+  },
+  "0xBB38": {
+   "name": "SmoothingRelaxGatedButton",
+   "note": "Mode G2 page: action 0x111A runs terrain relaxation passes (length 0x80, sign-gated) over the field."
+  },
+  "0xBBB0": {
+   "name": "SmoothingRelaxLandButton",
+   "note": "Mode G2 page: action 0x111B runs terrain relaxation passes (length 0x80, ungated land tool)."
+  },
+  "0xBC28": {
+   "name": "UnitPlacementOption0",
+   "note": "Exclusive tool sub-mode button (action 0x1111) selecting mode A=0; exact option label unresolved."
+  },
+  "0xBCA0": {
+   "name": "UnitPlacementOption2",
+   "note": "Exclusive tool sub-mode button (action 0x1113) selecting mode A=2; exact option label unresolved."
+  },
+  "0xBD18": {
+   "name": "UnitPlacementOption1",
+   "note": "Exclusive tool sub-mode button (action 0x1112) selecting mode A=1; exact option label unresolved."
+  },
+  "0xBD90": {
+   "name": "ObjectPlacementOption0",
+   "note": "Exclusive tool sub-mode button (action 0x1114) selecting mode B=0; exact option label unresolved."
+  },
+  "0xBE08": {
+   "name": "ObjectPlacementOption2",
+   "note": "Exclusive tool sub-mode button (action 0x1116) selecting mode B=2; exact option label unresolved."
+  },
+  "0xBE80": {
+   "name": "ObjectPlacementOption1",
+   "note": "Exclusive tool sub-mode button (action 0x1115) selecting mode B=1; exact option label unresolved."
+  },
+  "0xBEF8": {
+   "name": "RegionToolOption0",
+   "note": "Exclusive tool sub-mode button (action 0x111C) selecting mode F=0; exact option label unresolved."
+  },
+  "0xBF70": {
+   "name": "RegionToolOption1",
+   "note": "Exclusive tool sub-mode button (action 0x111D) selecting mode F=1; exact option label unresolved."
+  }
+ }
+}

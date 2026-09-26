@@ -2442,7 +2442,7 @@ void __thandor_void_preserve_eax_ecx
 InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
 
 {
-  g_InGameWorldStatePointerMirror = THANDOR_UI_FIELD(inGameRoot,0x2384 + 0x54,sdword);
+  g_InGameWorldStatePointerMirror = INGAME_UI_FIELD(inGameRoot,worldViewCyclingInfoText,0x54,sdword);
   g_SharedWorldStatePointer = g_InGameWorldStatePointerMirror;
   return;
 }

@@ -103,9 +103,9 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
                      ((UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0x508));
   if (activePageStatus.valueOrError == 10) {
     selectedGroup = UiSelectableGroup_NoneSelectedCf(3,
-      THANDOR_UI_AT(g_FrontendRootNode,0x1d54),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1db4),
-      THANDOR_UI_AT(g_FrontendRootNode,0x1e14));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
     if (((!selectedGroup.carryNoneSelected) && (selectedGroup.selectedIndexOrCount == 1)) &&
        (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
@@ -179,13 +179,13 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     savedSettingValue = PersistentSettings_ReadDword(100,0x44);
-    THANDOR_UI_FIELD(frontendRoot,0xA28 + 0x58,dword) = savedSettingValue;
+    FRONTEND_UI_FIELD(frontendRoot,opponentStrengthSlider,0x58,dword) = savedSettingValue;
   }
-  UiPageStack_SetActiveIndex(0xc,(UiPageStackControl *)THANDOR_UI_AT(frontendRoot,0x508));
+  UiPageStack_SetActiveIndex(0xc,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((int)g_FramebufferWidth < 0x281) {
-    layoutField = &THANDOR_UI_FIELD(frontendRoot,0x368 + 0x4C,sdword);
+    layoutField = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,sdword);
     *layoutField = *layoutField | 0x2000;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -197,7 +197,7 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     playersRemaining = playersRemaining - 1;
   } while (playersRemaining != 0);
   titleTextId = (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex;
-  THANDOR_UI_FIELD(frontendRoot,0x854 + 0x54,sdword) =
+  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,sdword) =
        (playerRecord->factionAssignment).factionAssignmentIndex + 0x230017 +
        (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10;
   briefingText = TextResource_Resolve(titleTextId + 0x2230);
@@ -210,57 +210,57 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   WidePath_SetExtensionCode(0x6d6c66,(word *)&g_FrontendMissionBriefingMoviePathUtf16);
   movieOpen = Movie_Open(0x80000000,(word *)&g_FrontendMissionBriefingMoviePathUtf16);
   if (movieOpen.carry) {
-    THANDOR_UI_FIELD(frontendRoot,0x8B0 + 0x54,sdword) = 0;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,sdword) = 0;
   }
   else {
     firstFrame = Movie_AdvanceFrame();
-    THANDOR_UI_FIELD(frontendRoot,0x8B0 + 0x54,sdword) = firstFrame.eax;
-    THANDOR_UI_FIELD(frontendRoot,0x8B0 + 0x58,sdword) = 0;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,sdword) = firstFrame.eax;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x58,sdword) = 0;
   }
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
       (g_FrontendLoadedCampaignAsset == 0)) && (g_FrontendScenarioInitializationCount == 0)) {
-    THANDOR_UI_FIELD(frontendRoot,0x5E8 + 0x48,struct UiNodeBase *) =
-         (UiNodeBase *)((uint)THANDOR_UI_FIELD(frontendRoot,0x5E8 + 0x48,struct UiNodeBase *) & 0xfffffff7);
-    nodeLinkField = &THANDOR_UI_FIELD(frontendRoot,0x5E8 + 0x4C,struct UiNodeBase *);
+    FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) =
+         (UiNodeBase *)((uint)FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) & 0xfffffff7);
+    nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x4C,struct UiNodeBase *);
     *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField & 0xfffffbff);
   }
   else {
-    THANDOR_UI_FIELD(frontendRoot,0x5E8 + 0x48,struct UiNodeBase *) =
-         (UiNodeBase *)((uint)THANDOR_UI_FIELD(frontendRoot,0x5E8 + 0x48,struct UiNodeBase *) | 8);
-    nodeLinkField = &THANDOR_UI_FIELD(frontendRoot,0x5E8 + 0x4C,struct UiNodeBase *);
+    FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) =
+         (UiNodeBase *)((uint)FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) | 8);
+    nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x4C,struct UiNodeBase *);
     *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField | 0x400);
     if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != 0)) {
-      nodeLinkField = &THANDOR_UI_FIELD(frontendRoot,0x648 + 0x48,struct UiNodeBase *);
+      nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x48,struct UiNodeBase *);
       *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField & 0xfffffff7);
-      vtableField = &THANDOR_UI_FIELD(frontendRoot,0x648 + 0x4C,struct UiNodeVtable *);
+      vtableField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x4C,struct UiNodeVtable *);
       *vtableField = (UiNodeVtable *)((uint)*vtableField & 0xfffffbff);
-      layoutField = &THANDOR_UI_FIELD(frontendRoot,0x6A8 + 0x48,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,sdword);
       *layoutField = *layoutField & 0xfffffff7;
-      layoutField = &THANDOR_UI_FIELD(frontendRoot,0x6A8 + 0x4C,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,sdword);
       *layoutField = *layoutField & 0xfffffbff;
-      layoutField = &THANDOR_UI_FIELD(frontendRoot,0x6A8 + 0x48,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,sdword);
       *layoutField = *layoutField | 8;
-      layoutField = &THANDOR_UI_FIELD(frontendRoot,0x6A8 + 0x4C,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,sdword);
       *layoutField = *layoutField | 0x400;
       goto FrontendMissionBriefing_InitializePlayerReadinessAndLayout;
     }
   }
-  nodeLinkField = &THANDOR_UI_FIELD(frontendRoot,0x648 + 0x48,struct UiNodeBase *);
+  nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x48,struct UiNodeBase *);
   *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField | 8);
-  vtableField = &THANDOR_UI_FIELD(frontendRoot,0x648 + 0x4C,struct UiNodeVtable *);
+  vtableField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x4C,struct UiNodeVtable *);
   *vtableField = (UiNodeVtable *)((uint)*vtableField | 0x400);
-  layoutField = &THANDOR_UI_FIELD(frontendRoot,0x6A8 + 0x48,sdword);
+  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,sdword);
   *layoutField = *layoutField | 8;
-  layoutField = &THANDOR_UI_FIELD(frontendRoot,0x6A8 + 0x4C,sdword);
+  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,sdword);
   *layoutField = *layoutField | 0x400;
 FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
-  layoutField = &THANDOR_UI_FIELD(frontendRoot,0x708 + 0x48,sdword);
+  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingBeginButton,0x48,sdword);
   *layoutField = *layoutField & 0xfffffff7;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) &&
      (1 < g_FrontendPlayerRuntimeBlockCount)) {
-    layoutField = &THANDOR_UI_FIELD(frontendRoot,0x708 + 0x48,sdword);
+    layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingBeginButton,0x48,sdword);
     *layoutField = *layoutField | 8;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -270,12 +270,12 @@ FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
     playersRemaining = playersRemaining - 1;
     playerRecord = playerRecord + 1;
   } while (playersRemaining != 0);
-  briefingText = TextResource_Resolve(THANDOR_UI_FIELD(frontendRoot,0x854 + 0x54,sdword));
+  briefingText = TextResource_Resolve(FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,sdword));
   textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                     (g_UiTextStyleNormal,briefingText.eax,(UiPixelExtent)THANDOR_UI_FIELD(frontendRoot,0x854 + 0x50,struct UiNodeVtable *));
-  THANDOR_UI_FIELD(frontendRoot,0x854 + 0x28,dword) = textExtent.widthPixels + 6;
-  THANDOR_UI_AT(frontendRoot,0x854)->bottomOffset = textExtent.heightPixels + 6;
-  control = (UiAnchorFractionQ31 *)THANDOR_UI_AT(frontendRoot,0x7C4);
+                     (g_UiTextStyleNormal,briefingText.eax,(UiPixelExtent)FRONTEND_UI_FIELD(frontendRoot,briefingText,0x50,struct UiNodeVtable *));
+  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x28,dword) = textExtent.widthPixels + 6;
+  FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;
+  control = (UiAnchorFractionQ31 *)FRONTEND_UI(frontendRoot,briefingTextScroller);
   UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)control);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)control);
   UiNodeList_UnsuppressActionId(0x204a,&frontendRoot->base);
@@ -306,11 +306,11 @@ FrontendMissionBriefing_AdvanceFactionAvailabilityScan:
       if (((g_FrontendLoadedCampaignAsset == 0) ||
           (*(int *)(g_FrontendLoadedCampaignAsset + 0xc4) ==
            *(int *)(g_FrontendLoadedCampaignAsset + 0xb4))) && (unclaimedActiveFactions != 0)) {
-        layoutField = &THANDOR_UI_FIELD(frontendRoot,0x914 + 0x48,sdword);
+        layoutField = &FRONTEND_UI_FIELD(frontendRoot,opponentSettingsGroup,0x48,sdword);
         *layoutField = *layoutField & 0xfffffff7;
       }
       else {
-        layoutField = &THANDOR_UI_FIELD(frontendRoot,0x914 + 0x48,sdword);
+        layoutField = &FRONTEND_UI_FIELD(frontendRoot,opponentSettingsGroup,0x48,sdword);
         *layoutField = *layoutField | 8;
         UiNodeList_SuppressActionId(0x204a,&frontendRoot->base);
       }
