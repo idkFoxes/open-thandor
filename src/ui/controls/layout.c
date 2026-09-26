@@ -1733,47 +1733,51 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
 void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
 
 {
+  /* Rewritten from the assembly (0x004AF7E0): the original pushes every root on the machine stack
+     while walking previousRoot down, then pops them to draw bottom to top. The decompiled loop drew
+     the bottom root once per root and never the roots stacked above it (e.g. the end movie). */
+  enum { ROOT_LIMIT = 64 };
+  UiRootNode *roots[ROOT_LIMIT];
+  UiRootNode *root;
+  int count;
   int clipRight;
-  int rootsRemaining;
   int clipBottom;
-  dword clipTop;
-  dword clipLeft;
-  UiRootNode *control;
-  UiRootNode *rootCursor;
-  
-  if (g_UiRootNode != (UiRootNode *)0xffffffff) {
-    rootsRemaining = 0;
-    rootCursor = g_UiRootNode;
-    do {
-      control = rootCursor;
-      rootsRemaining = rootsRemaining + 1;
-      rootCursor = control->previousRoot;
-    } while (control->previousRoot != (UiRootNode *)0xffffffff);
-    do {
-      clipRight = (control->base).left;
-      clipBottom = (control->base).top;
-      clipLeft = (control->base).right;
-      clipTop = (control->base).bottom;
-      if (clipRight < 0) {
-        clipRight = 0;
-      }
-      if (clipBottom < 0) {
-        clipBottom = 0;
-      }
-      if ((int)g_FramebufferWidth < (int)clipLeft) {
-        clipLeft = g_FramebufferWidth;
-      }
-      if ((int)g_FramebufferHeight < (int)clipTop) {
-        clipTop = g_FramebufferHeight;
-      }
-      if ((clipRight < (int)clipLeft) && (clipBottom < (int)clipTop)) {
-        (*((control->base).vtable)->drawClipped)
-                  (clipTop,clipLeft,clipBottom,clipRight,&control->base);
-      }
-      rootsRemaining = rootsRemaining + -1;
-    } while (rootsRemaining != 0);
-    UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
+  int clipLeft;
+  int clipTop;
+
+  if (g_UiRootNode == (UiRootNode *)0xffffffff) {
+    return;
   }
+  count = 0;
+  for (root = g_UiRootNode; (root != (UiRootNode *)0xffffffff) && (count < ROOT_LIMIT);
+       root = root->previousRoot) {
+    roots[count] = root;
+    count = count + 1;
+  }
+  while (count != 0) {
+    count = count - 1;
+    root = roots[count];
+    clipRight = (root->base).left;
+    clipBottom = (root->base).top;
+    clipLeft = (root->base).right;
+    clipTop = (root->base).bottom;
+    if (clipRight < 0) {
+      clipRight = 0;
+    }
+    if (clipBottom < 0) {
+      clipBottom = 0;
+    }
+    if ((int)g_FramebufferWidth < clipLeft) {
+      clipLeft = g_FramebufferWidth;
+    }
+    if ((int)g_FramebufferHeight < clipTop) {
+      clipTop = g_FramebufferHeight;
+    }
+    if ((clipRight < clipLeft) && (clipBottom < clipTop)) {
+      (*((root->base).vtable)->drawClipped)(clipTop,clipLeft,clipBottom,clipRight,&root->base);
+    }
+  }
+  UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
   return;
 }
 
