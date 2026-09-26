@@ -67,7 +67,7 @@ ImageData_00401000 g_ImageData_00401000 = {
         0xC4C3C2C1, 0xC8C7C6C5, 0xCCCBCAC9, 0xD0CFCECD, 0xD4D3D2D1, 0xD8D7D6D5, 0xDCDBDAD9, 0xE0DFDEDD,
         0xE4E3E2E1, 0xE8E7E6E5, 0xECEBEAE9, 0xF0EFEEED, 0xF4F3F2F1, 0xF8F7F6F5, 0xFCFBFAF9},
     {0xFD, 0xFE, 0xFF},
-    {.path = {0x74, 0x68, 0x61, 0x6E, 0x64, 0x6F, 0x72, 0x2E, 0x64, 0x61, 0x74}}, /* 004028D0 g_PersistentSettings */
+    {.path = L"thandor.dat"}, /* 004028D0 g_PersistentSettings */
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x90900000, 0x90909090, 0x90909090,
         0x90909090},
@@ -639,7 +639,7 @@ ImageData_00407510 g_ImageData_00407510 = {
     0, /* 00407D1C g_FatalErrorExitFallbackDispatchCf */
     L"texte\\error.str", /* 00407D20 u_texte_error_str_00407d20 */
     L"error: IO: initialization failed!", /* 00407D40 g_ErrorTextIoInitializationFailed */
-    {0x65, 0x72, 0x72, 0x6F, 0x72, 0x3A, 0x20, 0x48, 0x45, 0x41, 0x50, 0x3A, 0x20, 0x63, 0x61, 0x6E, 0x6E, 0x6F, 0x74, 0x20, 0x61, 0x6C, 0x6C, 0x6F, 0x63, 0x61, 0x74, 0x65, 0x20, 0x68, 0x65, 0x61, 0x70, 0x20, 0x6D, 0x65, 0x6D, 0x6F, 0x72, 0x79, 0x21, 0x20, 0x50, 0x6C, 0x65, 0x61, 0x73, 0x65, 0x20, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x79, 0x6F, 0x75, 0x72, 0x20, 0x73, 0x77, 0x61, 0x70, 0x2D, 0x66, 0x69, 0x6C, 0x65, 0x2E}, /* 00407D84 g_ErrorTextHeapAllocationFailed */
+    L"error: HEAP: cannot allocate heap memory! Please check your swap-file.", /* 00407D84 g_ErrorTextHeapAllocationFailed */
     {
         0x90909090, 0x90909090, 0x90909090},
     {0x90, 0x90},
@@ -717,11 +717,11 @@ ImageData_0040ABBC g_ImageData_0040ABBC = {
     {(void *)PckCodec_DecodeHuffmanRle, (void *)PckCodec_DecodeStored, (void *)PckCodec_DecodeFieldGrid}, /* 0040E230 g_PckDecoderTable */
     {0},
     L"THANDOR.cfg", /* 0040E23D u_THANDOR_cfg_0040e23d */
-    {0x65, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x2E, 0x70, 0x63, 0x6B}, /* 0040E255 u_engine_pck_0040e255 */
+    L"engine.pck", /* 0040E255 u_engine_pck_0040e255 */
     {
         0x90909090},
     {0x90},
-    {0x43, 0x6F, 0x6D, 0x70, 0x75, 0x74, 0x65, 0x72}, /* 0040E270 g_DefaultComputerLabelUtf16 */
+    L"Computer", /* 0040E270 g_DefaultComputerLabelUtf16 */
 };
 
 ImageData_0040F524 g_ImageData_0040F524 = {
@@ -732,8 +732,8 @@ ImageData_0040F524 g_ImageData_0040F524 = {
     {0}, /* 0040F950 g_UiTimedListSecondaryPathScratch */
     {0}, /* 0040FB50 g_UiTimedListHierarchyPathScratch */
     {0}, /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
-    {0x2A, 0x2E, 0x2A}, /* 0040FF50 g_WildcardAllFilesUtf16 */
-    {0x3F, 0x3A, 0x5C, 0x2A, 0x2E, 0x2A}, /* 0040FF58 u________0040ff58 */
+    L"*.*", /* 0040FF50 g_WildcardAllFilesUtf16 */
+    L"?:\\*.*", /* 0040FF58 u________0040ff58 */
     {
         0x90909090, 0x90909090},
     {0x90, 0x90},
@@ -771,7 +771,7 @@ ImageData_004107E8 g_ImageData_004107E8 = {
     0, /* 0041685C g_CursorOverflowTop */
     0, /* 00416860 g_CursorOverflowBottom */
     L"engine\\mouse.gfx", /* 00416864 u_engine_mouse_gfx_00416864 */
-    {0x65, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x5C, 0x6D, 0x6F, 0x75, 0x73, 0x65, 0x2E, 0x64, 0x61, 0x74}, /* 00416886 u_engine_mouse_dat_00416886 */
+    L"engine\\mouse.dat", /* 00416886 u_engine_mouse_dat_00416886 */
     {
         0x90909090, 0x90909090},
 };
@@ -865,10 +865,10 @@ ImageData_0041A740 g_ImageData_0041A740 = {
     {0},
     L"error: TXT2STR: unknown character at:                        ", /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
     {0}, /* 0041B028 g_FontTextureSources */
-    {0x65, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x5C, 0x66, 0x6F, 0x6E, 0x74, 0x2E, 0x67, 0x66, 0x78}, /* 0041B030 u_engine_font_gfx_0041b030 */
+    L"engine\\font.gfx", /* 0041B030 u_engine_font_gfx_0041b030 */
     {
         0x006E0065, 0x00690067, 0x0065006E, 0x0066005C, 0x006E006F, 0x006B0074, 0x0067002E, 0x00780066,
-        0x90900000, 0x90909090, 0x90909090, 0x90909090},
+        0x90900000, 0x90909090, 0x90909090, 0x90909090}, /* 0041B050 str_0041B050 */
 };
 
 ImageData_0041B128 g_ImageData_0041B128 = {
@@ -17319,10 +17319,10 @@ ImageData_0050D928 g_ImageData_0050D928 = {
     0, /* 0050D9BC g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 */
     0, /* 0050D9C0 g_ScenarioCatalog */
     0, /* 0050D9C4 g_ScenarioCatalogUsedBytes */
-    {0x73, 0x61, 0x76, 0x65, 0x5C, 0x2A, 0x2E, 0x73, 0x76, 0x65}, /* 0050D9C8 u_save___sve_0050d9c8 */
+    L"save\\*.sve", /* 0050D9C8 u_save___sve_0050d9c8 */
     {
         0x0065006C, 0x00650076, 0x005C006C, 0x002E002A, 0x0065006C, 0x00000076, 0x0065006C, 0x00650076,
-        0x005C006C, 0x002E002A, 0x00670063, 0x0000006E},
+        0x005C006C, 0x002E002A, 0x00670063, 0x0000006E}, /* 0050D9DE str_0050D9DE */
     L"level\\level.dat", /* 0050DA0E u_level_level_dat_0050da0e */
     {
         0x0065006C, 0x00650076, 0x005C006C, 0x0065006C, 0x00650076, 0x0030006C, 0x002E0030, 0x00610064,
@@ -17339,9 +17339,8 @@ ImageData_0050D928 g_ImageData_0050D928 = {
     {0},
     {0},
     {0}, /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
-    {0x74, 0x65, 0x78, 0x74, 0x65, 0x5C, 0x74, 0x65, 0x63, 0x68, 0x6E, 0x6F, 0x2E, 0x73, 0x74, 0x72}, /* 0050DEC4 u_texte_techno_str_0050dec4 */
-    {
-        0x006E0065, 0x00690067, 0x0065006E, 0x0074005C, 0x00630065, 0x002E0068, 0x00650074, 0x00000063},
+    L"texte\\techno.str", /* 0050DEC4 u_texte_techno_str_0050dec4 */
+    L"engine\\tech.tec", /* 0050DEE6 str_0050DEE6 */
     L"flm\\ende0000.flm", /* 0050DF06 u_flm_ende0000_flm_0050df06 */
     L"flm\\ende0001.flm", /* 0050DF28 u_flm_ende0001_flm_0050df28 */
     L"flm\\ende0000.flm", /* 0050DF4A u_flm_ende0000_flm_0050df4a */
@@ -17391,7 +17390,7 @@ ImageData_0050F044 g_ImageData_0050F044 = {
     0, /* 0050F050 g_FrontendPlayerRuntimeCount */
     0, /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
     {0}, /* 0050F058 DAT_0050f058 */
-    {0x31, 0x2E, 0x35, 0x2E, 0x34, 0x35}, /* 0050F07C g_GameVersionUtf16 */
+    L"1.5.45", /* 0050F07C g_GameVersionUtf16 */
     {
         0x90909090},
     {0x90, 0x90},
@@ -17412,7 +17411,7 @@ ImageData_0050F044 g_ImageData_0050F044 = {
     0, /* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
     0, /* 0050F0E0 g_RecentTextSlotStorage */
     {0}, /* 0050F0E4 g_RecentTextEntrySerials */
-    {0x74, 0x65, 0x78, 0x74, 0x65, 0x5C, 0x6E, 0x65, 0x74, 0x65, 0x72, 0x72, 0x6F, 0x72, 0x2E, 0x73, 0x74, 0x72}, /* 0050F104 u_texte_neterror_str_0050f104 */
+    L"texte\\neterror.str", /* 0050F104 u_texte_neterror_str_0050f104 */
     {
         0x90909090},
     {0x90, 0x90},
@@ -19755,7 +19754,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
     "SPIELER=\"SPIEL=\"NETZWERK=\"HOST", /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
     "NAME=\"CLIENT=\"KARTE=\"", /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
     L"level\\*.lev", /* 005460A6 u_level___lev_005460a6 */
-    {0x6C, 0x65, 0x76, 0x65, 0x6C, 0x5C, 0x2A, 0x2E, 0x73, 0x74, 0x72}, /* 005460BE u_level___str_005460be */
+    L"level\\*.str", /* 005460BE u_level___str_005460be */
     {
         0x90909090, 0x90909090},
     {0x90, 0x90},
@@ -21762,7 +21761,11 @@ ImageData_00562498 g_ImageData_00562498 = {
     L"texte\\help.str", /* 00563170 u_texte_help_str_00563170 */
     L"gfx\\panel\\window.gfx", /* 0056318E u_gfx_panel_window_gfx_0056318e */
     L"texte\\tastatur.str", /* 005631B8 u_texte_tastatur_str_005631b8 */
-    {0x4F, 0x68, 0x20, 0x67, 0x72, 0x6F, 0x73, 0x73, 0x65, 0x72, 0x20, 0x54, 0x68, 0x6F, 0x6D, 0x61, 0x73, 0x2C, 0x20, 0x65, 0x72, 0x6C, 0xF6, 0x73, 0x65, 0x20, 0x6D, 0x69, 0x63, 0x68, 0x21}, /* 005631DE g_DeveloperChatPhraseUtf16 */
+    {
+        0x0068004F, 0x00670020, 0x006F0072, 0x00730073, 0x00720065, 0x00540020, 0x006F0068, 0x0061006D,
+        0x002C0073, 0x00650020, 0x006C0072}, /* 005631DE g_DeveloperChatPhraseUtf16 */
+    {0xF6},
+    L"se mich!", /* 0056320C str_0056320C */
     {0x48}, /* 0056321E u_Hmmm__na_gut________0056321e */
     {
         0x006D006D, 0x002C006D, 0x006E0020, 0x00200061, 0x00750067, 0x002E0074, 0x002E002E, 0x003B0020,
@@ -22065,7 +22068,7 @@ ImageData_00572AB0 g_ImageData_00572AB0 = {
     "Software\\Planet4\\Thandor", /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
     0x43, /* 00572E39 s_InstallRegistryValueNameCD */
     {0x44}, /* 00572E3A u_Dscreen00_pcx_00572e3a */
-    {0x73, 0x63, 0x72, 0x65, 0x65, 0x6E, 0x30, 0x30, 0x2E, 0x70, 0x63, 0x78}, /* 00572E3C g_ScreenshotFileNameUtf16 */
+    L"screen00.pcx", /* 00572E3C g_ScreenshotFileNameUtf16 */
     L"daten.pck", /* 00572E56 u_daten_pck_00572e56 */
     L"modelle.pck", /* 00572E6A u_modelle_pck_00572e6a */
     L"graphik.pck", /* 00572E82 u_graphik_pck_00572e82 */
@@ -22086,7 +22089,7 @@ ImageData_00572AB0 g_ImageData_00572AB0 = {
     L"gfx\\panel\\stat.gfx", /* 00573002 u_gfx_panel_stat_gfx_00573002 */
     L"engine\\pcx.fnc", /* 00573028 u_engine_pcx_fnc_00573028 */
     L"flm\\intro0.flm", /* 00573046 u_flm_intro0_flm_00573046 */
-    {0x4E, 0x4F, 0x49, 0x4E, 0x54, 0x52, 0x4F}, /* 00573064 s_NOINTRO_00573064 */
+    "NOINTRO", /* 00573064 s_NOINTRO_00573064 */
     {
         0x90909090},
 };
@@ -22420,9 +22423,9 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x00, 0x90},
     "WINMM", /* 005744AE sz_WINMM */
     "DDRAW", /* 005744B4 dynapi_2 */
-    {0x44, 0x49, 0x4E, 0x50, 0x55, 0x54}, /* 005744BA dynapi_3 */
+    "DINPUT", /* 005744BA dynapi_3 */
     {0x90},
-    {0x44, 0x53, 0x4F, 0x55, 0x4E, 0x44}, /* 005744C2 dynapi_4 */
+    "DSOUND", /* 005744C2 dynapi_4 */
     {0x90},
     "GLIDE3X", /* 005744CA dynapi_5 */
     {
@@ -22431,7 +22434,7 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "WSOCK32", /* 005744DC s_Wsock32ModuleName */
     {
         0x5F325357, 0x90003233}, /* 005744E4 sz_WS2_32 */
-    {0x4C, 0x6F, 0x61, 0x64, 0x4C, 0x69, 0x62, 0x72, 0x61, 0x72, 0x79, 0x41}, /* 005744EC dynapi_9 */
+    "LoadLibraryA", /* 005744EC dynapi_9 */
     {0x90},
     "FreeLibrary", /* 005744FA dynapi_10 */
     "RegOpenKeyExA", /* 00574506 dynapi_11 */
@@ -22444,17 +22447,17 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x00, 0x90},
     "timeKillEvent", /* 00574540 dynapi_15 */
     "mciSendCommandA", /* 0057454E dynapi_16 */
-    {0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x44, 0x72, 0x61, 0x77, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65}, /* 0057455E dynapi_17 */
+    "DirectDrawCreate", /* 0057455E dynapi_17 */
     {0x90},
-    {0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x44, 0x72, 0x61, 0x77, 0x45, 0x6E, 0x75, 0x6D, 0x65, 0x72, 0x61, 0x74, 0x65, 0x41}, /* 00574570 dynapi_18 */
+    "DirectDrawEnumerateA", /* 00574570 dynapi_18 */
     {0x90},
-    {0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x49, 0x6E, 0x70, 0x75, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x41}, /* 00574586 dynapi_19 */
+    "DirectInputCreateA", /* 00574586 dynapi_19 */
     {0x90},
     "DirectSoundCreate", /* 0057459A dynapi_20 */
     "DirectSoundEnumerateA", /* 005745AC dynapi_21 */
-    {0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x53, 0x6F, 0x75, 0x6E, 0x64, 0x43, 0x61, 0x70, 0x74, 0x75, 0x72, 0x65, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65}, /* 005745C2 dynapi_22 */
+    "DirectSoundCaptureCreate", /* 005745C2 dynapi_22 */
     {0x90},
-    {0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x53, 0x6F, 0x75, 0x6E, 0x64, 0x43, 0x61, 0x70, 0x74, 0x75, 0x72, 0x65, 0x45, 0x6E, 0x75, 0x6D, 0x65, 0x72, 0x61, 0x74, 0x65, 0x41}, /* 005745DC dynapi_23 */
+    "DirectSoundCaptureEnumerateA", /* 005745DC dynapi_23 */
     {0x90},
     {
         0x4172675F, 0x61724441, 0x69725477, 0x6C676E61, 0x34324065}, /* 005745FA dynapi_24 */
@@ -22622,70 +22625,70 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {
         0x4775675F, 0x616D6D61, 0x72726F43, 0x69746365, 0x47526E6F, 0x32314042}, /* 00574D26 dynapi_115 */
     {0x00, 0x90},
-    {0x61, 0x63, 0x63, 0x65, 0x70, 0x74}, /* 00574D40 s_Wsock32Export_accept */
+    "accept", /* 00574D40 s_Wsock32Export_accept */
     {0x90},
-    {0x62, 0x69, 0x6E, 0x64}, /* 00574D48 s_Wsock32Export_bind */
+    "bind", /* 00574D48 s_Wsock32Export_bind */
     {0x90},
     "closesocket", /* 00574D4E s_Wsock32Export_closesocket */
     "connect", /* 00574D5A s_Wsock32Export_connect */
     "getpeername", /* 00574D62 s_Wsock32Export_getpeername */
     "getsockname", /* 00574D6E s_Wsock32Export_getsockname */
-    {0x67, 0x65, 0x74, 0x73, 0x6F, 0x63, 0x6B, 0x6F, 0x70, 0x74}, /* 00574D7A s_Wsock32Export_getsockopt */
+    "getsockopt", /* 00574D7A s_Wsock32Export_getsockopt */
     {0x90},
     "htonl", /* 00574D86 s_Wsock32Export_htonl */
     "htons", /* 00574D8C s_Wsock32Export_htons */
     "inet_addr", /* 00574D92 s_Wsock32Export_inet_addr */
     "inet_ntoa", /* 00574D9C s_Wsock32Export_inet_ntoa */
     "ioctlsocket", /* 00574DA6 s_Wsock32Export_ioctlsocket */
-    {0x6C, 0x69, 0x73, 0x74, 0x65, 0x6E}, /* 00574DB2 s_Wsock32Export_listen */
+    "listen", /* 00574DB2 s_Wsock32Export_listen */
     {0x90},
     "ntohl", /* 00574DBA s_Wsock32Export_ntohl */
     "ntohs", /* 00574DC0 s_Wsock32Export_ntohs */
-    {0x72, 0x65, 0x63, 0x76}, /* 00574DC6 s_Wsock32Export_recv */
+    "recv", /* 00574DC6 s_Wsock32Export_recv */
     {0x90},
-    {0x72, 0x65, 0x63, 0x76, 0x66, 0x72, 0x6F, 0x6D}, /* 00574DCC s_Wsock32Export_recvfrom */
+    "recvfrom", /* 00574DCC s_Wsock32Export_recvfrom */
     {0x90},
-    {0x73, 0x65, 0x6C, 0x65, 0x63, 0x74}, /* 00574DD6 s_Wsock32Export_select */
+    "select", /* 00574DD6 s_Wsock32Export_select */
     {0x90},
-    {0x73, 0x65, 0x6E, 0x64}, /* 00574DDE s_Wsock32Export_send */
+    "send", /* 00574DDE s_Wsock32Export_send */
     {0x90},
-    {0x73, 0x65, 0x6E, 0x64, 0x74, 0x6F}, /* 00574DE4 s_Wsock32Export_sendto */
+    "sendto", /* 00574DE4 s_Wsock32Export_sendto */
     {0x90},
-    {0x73, 0x65, 0x74, 0x73, 0x6F, 0x63, 0x6B, 0x6F, 0x70, 0x74}, /* 00574DEC s_Wsock32Export_setsockopt */
+    "setsockopt", /* 00574DEC s_Wsock32Export_setsockopt */
     {0x90},
-    {0x73, 0x68, 0x75, 0x74, 0x64, 0x6F, 0x77, 0x6E}, /* 00574DF8 s_Wsock32Export_shutdown */
+    "shutdown", /* 00574DF8 s_Wsock32Export_shutdown */
     {0x90},
-    {0x73, 0x6F, 0x63, 0x6B, 0x65, 0x74}, /* 00574E02 s_Wsock32Export_socket */
+    "socket", /* 00574E02 s_Wsock32Export_socket */
     {0x90},
     "gethostbyaddr", /* 00574E0A s_Wsock32Export_gethostbyaddr */
     "gethostbyname", /* 00574E18 s_Wsock32Export_gethostbyname */
     "gethostname", /* 00574E26 s_Wsock32Export_gethostname */
-    {0x67, 0x65, 0x74, 0x70, 0x72, 0x6F, 0x74, 0x6F, 0x62, 0x79, 0x6E, 0x61, 0x6D, 0x65}, /* 00574E32 s_Wsock32Export_getprotobyname */
+    "getprotobyname", /* 00574E32 s_Wsock32Export_getprotobyname */
     {0x90},
-    {0x67, 0x65, 0x74, 0x70, 0x72, 0x6F, 0x74, 0x6F, 0x62, 0x79, 0x6E, 0x75, 0x6D, 0x62, 0x65, 0x72}, /* 00574E42 s_Wsock32Export_getprotobynumber */
+    "getprotobynumber", /* 00574E42 s_Wsock32Export_getprotobynumber */
     {0x90},
     "getservbyname", /* 00574E54 s_Wsock32Export_getservbyname */
     "getservbyport", /* 00574E62 s_Wsock32Export_getservbyport */
     "WSAAsyncGetHostByAddr", /* 00574E70 s_Wsock32Export_WSAAsyncGetHostByAddr */
     "WSAAsyncGetHostByName", /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
-    {0x57, 0x53, 0x41, 0x41, 0x73, 0x79, 0x6E, 0x63, 0x47, 0x65, 0x74, 0x50, 0x72, 0x6F, 0x74, 0x6F, 0x42, 0x79, 0x4E, 0x61, 0x6D, 0x65}, /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
+    "WSAAsyncGetProtoByName", /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
     {0x90},
-    {0x57, 0x53, 0x41, 0x41, 0x73, 0x79, 0x6E, 0x63, 0x47, 0x65, 0x74, 0x50, 0x72, 0x6F, 0x74, 0x6F, 0x42, 0x79, 0x4E, 0x75, 0x6D, 0x62, 0x65, 0x72}, /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
+    "WSAAsyncGetProtoByNumber", /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
     {0x90},
     "WSAAsyncGetServByName", /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
     "WSAAsyncGetServByPort", /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
-    {0x57, 0x53, 0x41, 0x41, 0x73, 0x79, 0x6E, 0x63, 0x53, 0x65, 0x6C, 0x65, 0x63, 0x74}, /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
+    "WSAAsyncSelect", /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
     {0x90},
     "WSACancelAsyncRequest", /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
     "WSACancelBlockingCall", /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
-    {0x57, 0x53, 0x41, 0x43, 0x6C, 0x65, 0x61, 0x6E, 0x75, 0x70}, /* 00574F36 s_Wsock32Export_WSACleanup */
+    "WSACleanup", /* 00574F36 s_Wsock32Export_WSACleanup */
     {0x90},
     "WSAGetLastError", /* 00574F42 s_Wsock32Export_WSAGetLastError */
     "WSAIsBlocking", /* 00574F52 s_Wsock32Export_WSAIsBlocking */
-    {0x57, 0x53, 0x41, 0x53, 0x65, 0x74, 0x42, 0x6C, 0x6F, 0x63, 0x6B, 0x69, 0x6E, 0x67, 0x48, 0x6F, 0x6F, 0x6B}, /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
+    "WSASetBlockingHook", /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
     {0x90},
     "WSASetLastError", /* 00574F74 dynapi_159 */
-    {0x57, 0x53, 0x41, 0x53, 0x74, 0x61, 0x72, 0x74, 0x75, 0x70}, /* 00574F84 s_Wsock32Export_WSAStartup */
+    "WSAStartup", /* 00574F84 s_Wsock32Export_WSAStartup */
     {0x90},
     "WSAUnhookBlockingHook", /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
     {
@@ -22868,7 +22871,7 @@ ImageData_00576B04 g_ImageData_00576B04 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00576B04 gap */
     0, /* 00576B10 g_DirectInput */
     0, /* 00576B14 g_MouseDevice */
-    {.Data1 = 0x6F1D2B60, .Data2 = 0xD5A0, .Data3 = 0x11CF, .Data4 = {0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54}}, /* 00576B18 GUID_SysMouse_Local */
+    {.Data1 = 0x6F1D2B60, .Data2 = 0xD5A0, .Data3 = 0x11CF, .Data4 = "\277\307DEST"}, /* 00576B18 GUID_SysMouse_Local */
     {
         0xA36D02E0, 0x11CFC9F3, 0x4544C7BF, 0x00005453}, /* 00576B28 GUID_XAxis_Local */
     {
@@ -23010,7 +23013,7 @@ ImageData_00577BFC g_ImageData_00577BFC = {
     {0}, /* 00578060 g_DisplayFramebufferAccess */
     0, /* 00578070 g_ActiveTextureUploads */
     0, /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
-    {0x44, 0x33, 0x44, 0x41, 0x4C, 0x4C}, /* 00578078 s_D3DALL_00578078 */
+    "D3DALL", /* 00578078 s_D3DALL_00578078 */
     {0x90},
 };
 
@@ -23081,7 +23084,7 @@ ImageData_0057ECC8 g_ImageData_0057ECC8 = {
     0, /* 0057EE78 g_GlideResidentTextureHead */
     0, /* 0057EE7C g_GlideSecondBufferOffset */
     0, /* 0057EE80 g_GlideSecondBufferBase */
-    {0x47, 0x4C, 0x49, 0x44, 0x45}, /* 0057EE84 s_GLIDE_0057ee84 */
+    "GLIDE", /* 0057EE84 s_GLIDE_0057ee84 */
     {
         0x90909090},
     {0x90, 0x90},
@@ -23125,7 +23128,7 @@ ImageData_00583D28 g_ImageData_00583D28 = {
     0, /* 00583F40 g_NetworkEndpointTextScratchA */
     {0},
     {0},
-    {.displayNameUtf16 = {0x57, 0x69, 0x6E, 0x53, 0x6F, 0x63, 0x6B, 0x33, 0x32, 0x20, 0x31, 0x2E, 0x31, 0x20, 0x2D, 0x20, 0x55, 0x44, 0x50}}, /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
+    {.displayNameUtf16 = L"WinSock32 1.1 - UDP"}, /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
     {0x49, 0x50, 0x3D, 0x90}, /* 00584078 s_CommandLineOptionIp */
     {
         0x90909090},
@@ -23152,7 +23155,7 @@ ImageData_005856A0 g_ImageData_005856A0 = {
     {0}, /* 0058571C g_TimerSystemState */
     {0}, /* 0058581C g_CommandLine */
     " thandor  (TG)", /* 00585D1C sz_MainWindowTitle */
-    {0x74, 0x68, 0x61, 0x6E, 0x64, 0x6F, 0x72, 0x43, 0x4C, 0x41, 0x53, 0x53, 0x28, 0x54, 0x47, 0x29}, /* 00585D2B sz_MainWindowClass */
+    "thandorCLASS(TG)", /* 00585D2B sz_MainWindowClass */
     {
         0x90909090},
 };

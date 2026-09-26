@@ -28,7 +28,11 @@ Environment switches for testing:
 |---|---|
 | `OPEN_THANDOR_SELFTEST=codec\|path\|stretch\|stretchcmp\|scanaddr\|crash` | run one self-test and exit (results in `thandor.log`) |
 | `OPEN_THANDOR_MOVIE=<name>\|all` | play `flm\<name>.flm`, or every name in `movies.txt`, max. 10 s each (`OPEN_THANDOR_MOVIE_START`, `_STRETCH`, `OPEN_THANDOR_MOVIEDUMP`) |
+| `OPEN_THANDOR_AUTOSHOT=<ms>` | save the framebuffer every <ms> to `shots\shot_NNNN.bmp` |
+| `OPEN_THANDOR_SCRIPT=<file>` | replay timed input (`<ms> click x y`, `rclick`, `move`, `key <vk>`, `quit`) |
 | `OPEN_THANDOR_POISON=1` | overwrite all original instructions with INT3 (needs `code_starts.bin`, see below) |
+
+Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
 
 ## Generated files and tools
 

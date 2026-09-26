@@ -80,10 +80,109 @@ static void Win32_AutoShotTick(void)
   }
 }
 
+/* Test aid: OPEN_THANDOR_SCRIPT=<file> replays timed input from a text file, one command per line:
+     <ms> click <x> <y>     left press and release at framebuffer pixel x,y
+     <ms> rclick <x> <y>    the same with the right button
+     <ms> move <x> <y>      pointer motion
+     <ms> key <vk>          key press and release (Windows virtual-key code, decimal)
+     <ms> shot              save the framebuffer now (shots\script_NNNN.bmp, needs AUTOSHOT's folder)
+     <ms> quit              end the process
+   <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
+static void Win32_PushCursorEvent(GraphicsCursorEventType type, dword buttons, int x, int y)
+{
+  dword index = g_CursorInputWriteIndex;
+  dword next = index + 1;
+  if (0xff < next) {
+    next = 0;
+  }
+  g_MouseX = x;
+  g_MouseY = y;
+  g_MouseButtonMask = buttons;
+  g_CursorInputEvents[index].eventType00 = type;
+  g_CursorInputEvents[index].buttonState04 = buttons;
+  g_CursorInputEvents[index].pointerX08 = x;
+  g_CursorInputEvents[index].pointerY0C = y;
+  g_CursorInputEvents[index].wheelDelta10 = 0;
+  g_CursorInputEvents[index].clockValue14 = g_CursorInputClockValue;
+  g_CursorInputWriteIndex = next;
+}
+
+static void Win32_ScriptTick(void)
+{
+  static FILE *script;
+  static int state = -1;
+  static unsigned start;
+  static unsigned due;
+  static char command[16];
+  static int x;
+  static int y;
+  static int pendingRelease;
+  static dword releaseButton;
+  static unsigned releaseAt;
+  char line[128];
+  unsigned now;
+  if (state < 0) {
+    const char *path = getenv("OPEN_THANDOR_SCRIPT");
+    state = 0;
+    if (path != NULL && (script = fopen(path, "r")) != NULL) {
+      state = 1;
+      start = Thandor_TickCount();
+      Thandor_Log("script: %s", path);
+    }
+  }
+  now = Thandor_TickCount() - start;
+  if (pendingRelease && now >= releaseAt) {
+    Win32_PushCursorEvent(releaseButton == 1 ? LEFT_RELEASE : RIGHT_RELEASE, 0, x, y);
+    pendingRelease = 0;
+  }
+  if (state == 0) {
+    return;
+  }
+  for (;;) {
+    if (state == 1) {
+      if (fgets(line, sizeof line, script) == NULL) {
+        state = 0;
+        fclose(script);
+        return;
+      }
+      command[0] = 0;
+      x = y = 0;
+      if (sscanf(line, "%u %15s %d %d", &due, command, &x, &y) < 2) {
+        continue;
+      }
+      state = 2;
+    }
+    if (now < due || pendingRelease) {
+      return;
+    }
+    state = 1;
+    Thandor_Log("script: %u ms %s %d %d", now, command, x, y);
+    if (strcmp(command, "click") == 0 || strcmp(command, "rclick") == 0) {
+      int right = command[0] == 'r';
+      Win32_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
+      Win32_PushCursorEvent(right ? RIGHT_PRESS : LEFT_PRESS, right ? 4 : 1, x, y);
+      pendingRelease = 1;
+      releaseButton = right ? 4 : 1;
+      releaseAt = now + 120;
+    }
+    else if (strcmp(command, "move") == 0) {
+      Win32_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
+    }
+    else if (strcmp(command, "key") == 0) {
+      Keyboard_OnKeyDown(x);
+      Keyboard_OnKeyUp(x);
+    }
+    else if (strcmp(command, "quit") == 0) {
+      ExitProcess(0);
+    }
+  }
+}
+
 void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
 
 {
   Win32_AutoShotTick();
+  Win32_ScriptTick();
   BOOL messageAvailable;
   bool shouldTranslateMessage;
   bool bVar1;

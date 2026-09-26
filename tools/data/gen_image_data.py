@@ -107,6 +107,31 @@ for name in ('symbols.jsonl', 'strings.jsonl'):
             strings[int(j['address'], 16)] = (j['type'], j['value'])
 anchors = set(a for a in anchors if block_of(a) is not None and not code[a - START])
 
+# strings that start inside an object (typically the next string of a string list) become their
+# own object, unless the object has a struct type
+label_names = {}
+for a, n in common.ghidra_labels():
+    label_names.setdefault(a, n)
+split = []
+for a in sorted(strings):
+    owner = containing_object(a)
+    if owner is None or owner[0] == a:
+        continue
+    t = types.get(owner[2], '')
+    if t and not re.match(r'^(?:word|char|byte|undefined[12]?)\s*(?:\*|\(\*\)\[)', t.strip()):
+        continue
+    split.append(a)
+if split:
+    new_objects = []
+    for start, size, name in objects:
+        cuts = [a for a in split if start < a < start + size]
+        bounds = [start] + cuts + [start + size]
+        for i in range(len(bounds) - 1):
+            piece_name = name if i == 0 else label_names.get(bounds[i], 'str_%08X' % bounds[i])
+            new_objects.append((bounds[i], bounds[i + 1] - bounds[i], piece_name))
+    objects = new_objects
+    object_starts = [o[0] for o in objects]
+
 # ---- member layout per block
 def identifier(name, used):
     # leading underscore: the object names are also macros (globals.h), which would expand here
@@ -301,6 +326,23 @@ def type_size(t):
         return type_layouts[r]['size']
     raise Unrepresentable(t)
 
+def array_string(element, addr, count, width):
+    """A char/word array holding NUL-terminated printable text (and zeros after it) as a literal."""
+    r = resolve_type(element)
+    if width not in (1, 2) or r not in INT_SIZES or '*' in r:
+        return None
+    units = [int.from_bytes(bytes(byte_at(addr + i * width + b) for b in range(width)), 'little')
+             for i in range(count)]
+    if 0 not in units:
+        return None
+    end = units.index(0)
+    if end < 2 or any(units[end:]):
+        return None
+    chars = ''.join(chr(u) for u in units[:end])
+    if not all(ch.isprintable() or ch in '\t\r\n' for ch in chars):
+        return None
+    return c_string_literal(chars, width == 2)
+
 def value_init(t, addr, typed_pointers, depth=0):
     r = resolve_type(t)
     if '*' in r or '(' in r:
@@ -331,6 +373,10 @@ def value_init(t, addr, typed_pointers, depth=0):
             if kind.startswith('array-of-'):
                 count = field['count']
                 width = field['size'] // count
+                text_literal = array_string(element, addr + field['offset'], count, width)
+                if text_literal is not None:
+                    parts.append('.%s = %s' % (field['name'], text_literal))
+                    continue
                 items = [value_init(element, addr + field['offset'] + i * width, typed_pointers, depth + 1)
                          for i in range(count)]
                 while items and items[-1] in ('0', '{0}'):
@@ -387,6 +433,9 @@ def typed_member(start, end, name, member):
         while items and items[-1] in ('0', '{0}'):
             items.pop()
         init = '{%s}' % ', '.join(items) if items else '{0}'
+        text_literal = array_string(element, start, count, width)
+        if text_literal is not None and not typed_pointers:
+            init = text_literal
     else:
         init = items[0]
     return decl, init, typed_pointers, start + width * count

@@ -331,7 +331,7 @@ typedef struct ImageData_0041A740 {
     word at_u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
     GraphicsTextureSourceAsset * at_g_FontTextureSources[2]; /* 0041B028 g_FontTextureSources */
     word at_u_engine_font_gfx_0041b030[16]; /* 0041B030 u_engine_font_gfx_0041b030 */
-    dword at_u_engine_font_gfx_0041b030_rest[12]; /* beyond the declared type */
+    dword at_str_0041B050[12]; /* 0041B050 str_0041B050 */
 } ImageData_0041A740;
 extern ImageData_0041A740 g_ImageData_0041A740;
 
@@ -1367,7 +1367,7 @@ typedef struct ImageData_0050D928 {
     ScenarioCatalogHeader * at_g_ScenarioCatalog; /* 0050D9C0 g_ScenarioCatalog */
     dword at_g_ScenarioCatalogUsedBytes; /* 0050D9C4 g_ScenarioCatalogUsedBytes */
     word at_u_save___sve_0050d9c8[11]; /* 0050D9C8 u_save___sve_0050d9c8 */
-    dword at_u_save___sve_0050d9c8_rest[12]; /* beyond the declared type */
+    dword at_str_0050D9DE[12]; /* 0050D9DE str_0050D9DE */
     word at_u_level_level_dat_0050da0e[16]; /* 0050DA0E u_level_level_dat_0050da0e */
     dword at_g_ScenarioLevelDataPathTemplateUtf16[9]; /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
     word at_u_level_campagne_dat_0050da52[19]; /* 0050DA52 u_level_campagne_dat_0050da52 */
@@ -1381,7 +1381,7 @@ typedef struct ImageData_0050D928 {
     byte at_g_ScenarioCatalogPathScratchUtf16_rest_tail[3];
     word at_g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
     word at_u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
-    dword at_u_texte_techno_str_0050dec4_rest[8]; /* beyond the declared type */
+    word at_str_0050DEE6[16]; /* 0050DEE6 str_0050DEE6 */
     word at_u_flm_ende0000_flm_0050df06[17]; /* 0050DF06 u_flm_ende0000_flm_0050df06 */
     word at_u_flm_ende0001_flm_0050df28[17]; /* 0050DF28 u_flm_ende0001_flm_0050df28 */
     word at_u_flm_ende0000_flm_0050df4a[17]; /* 0050DF4A u_flm_ende0000_flm_0050df4a */
@@ -2448,7 +2448,9 @@ typedef struct ImageData_00562498 {
     word at_u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
     word at_u_gfx_panel_window_gfx_0056318e[21]; /* 0056318E u_gfx_panel_window_gfx_0056318e */
     word at_u_texte_tastatur_str_005631b8[19]; /* 005631B8 u_texte_tastatur_str_005631b8 */
-    word at_g_DeveloperChatPhraseUtf16[32]; /* 005631DE g_DeveloperChatPhraseUtf16 */
+    dword at_g_DeveloperChatPhraseUtf16[11]; /* 005631DE g_DeveloperChatPhraseUtf16 */
+    byte at_g_DeveloperChatPhraseUtf16_tail[2];
+    word at_str_0056320C[9]; /* 0056320C str_0056320C */
     word at_u_Hmmm__na_gut________0056321e[1]; /* 0056321E u_Hmmm__na_gut________0056321e */
     dword at_u_Hmmm__na_gut________0056321e_rest[16]; /* beyond the declared type */
     dword at_g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
