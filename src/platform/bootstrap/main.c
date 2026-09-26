@@ -4,6 +4,7 @@
  * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/bootstrap/main.c
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <thandor/thandor.h>
@@ -226,6 +227,127 @@ static void Thandor_SelfTestStretchCompare(void)
     Thandor_Log("stretchcmp: %d of 24 runs differ", failures);
 }
 
+/* OPEN_THANDOR_SELFTEST=scanaddr decodes every entry of the packages next to the executable (all
+   but FILME.PCK) and writes each aligned dword in the original image range 0x401000-0x58C000 to
+   scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
+   original code or data addresses. */
+/* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
+static ArenaAllocEaxCf5 SelfTest_Alloc(dword bytes)
+{
+    ArenaAllocEaxCf5 result;
+    result.eax = (dword)(uintptr_t)malloc(bytes);
+    result.carry = result.eax == 0;
+    return result;
+}
+
+static ArenaFreeEaxCf5 SelfTest_Free(void *memory)
+{
+    ArenaFreeEaxCf5 result;
+    memset(&result, 0, sizeof result);
+    free(memory);
+    return result;
+}
+
+static void Thandor_SelfTestScanAddresses(void)
+{
+    ArenaAllocEaxCf5 (*savedAlloc)(dword) = g_MemoryApi.alloc;
+    ArenaFreeEaxCf5 (*savedFree)(void *) = g_MemoryApi.free;
+    static const char *packages[] = {"DATEN.PCK", "ENGINE.PCK", "GRAPHIK.PCK", "LEVEL.PCK",
+                                     "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
+    unsigned p;
+    FILE *out = fopen("scanaddr.txt", "w");
+    byte *packed = (byte *)malloc(0x800000);
+    unsigned totalEntries = 0;
+    unsigned totalHits = 0;
+    if (out == NULL || packed == NULL) {
+        Thandor_Log("scanaddr: setup failed");
+        return;
+    }
+    g_MemoryApi.alloc = SelfTest_Alloc;
+    g_MemoryApi.free = SelfTest_Free;
+    /* OPEN_THANDOR_SCANFILES=a;b;... scans those package-format files (e.g. saves) instead. */
+    const char *extra = getenv("OPEN_THANDOR_SCANFILES");
+    static char extraNames[32][260];
+    const char *list[32];
+    unsigned listCount = 0;
+    if (extra != NULL) {
+        const char *cursor = extra;
+        while (*cursor != 0 && listCount < 32) {
+            unsigned n = 0;
+            while (*cursor != 0 && *cursor != ';' && n < 259) extraNames[listCount][n++] = *cursor++;
+            extraNames[listCount][n] = 0;
+            if (*cursor == ';') cursor++;
+            if (n != 0) { list[listCount] = extraNames[listCount]; listCount++; }
+        }
+    }
+    else {
+        for (p = 0; p < sizeof packages / sizeof packages[0]; p++) list[listCount++] = packages[p];
+    }
+    for (p = 0; p < listCount; p++) {
+        FILE *pck;
+        long position = 0x200;
+        pck = fopen(list[p], "rb");
+        if (pck == NULL) {
+            continue;
+        }
+        for (;;) {
+            PckEntryHeader header;
+            byte *unpacked;
+            PckCodecEaxCf5 decoded;
+            char name[247];
+            int k;
+            dword i;
+            if (fseek(pck, position, SEEK_SET) != 0 || fread(&header, sizeof header, 1, pck) != 1) {
+                break;
+            }
+            if (header.packedSize == 0 || header.packedSize > 0x800000 || header.unpackedSize > 0x4000000 ||
+                (dword)header.compressionMethod > 3) {
+                break;
+            }
+            for (k = 0; k < 246 && header.path[k] != 0; k++) {
+                name[k] = (char)header.path[k];
+            }
+            name[k] = 0;
+            if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
+                break;
+            }
+            unpacked = (byte *)malloc(header.unpackedSize + 4);
+            if (unpacked == NULL) {
+                break;
+            }
+            if (g_PckDecoderTable[header.compressionMethod] == NULL) {
+                fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (dword)header.compressionMethod);
+                free(unpacked);
+                position += 0x200 + (long)header.packedSize;
+                continue;
+            }
+            decoded = (*g_PckDecoderTable[header.compressionMethod])
+                          (header.unpackedSize, unpacked, header.packedSize, packed);
+            totalEntries++;
+            if (decoded.carry) {
+                fprintf(out, "%s %s DECODE-FAILED\n", list[p], name);
+            }
+            else {
+                for (i = 0; i + 4 <= header.unpackedSize; i += 4) {
+                    dword value = *(dword *)(unpacked + i);
+                    if ((value >= 0x401000 && value < 0x58c000) || (value >= 0x10000000 && value < 0x10300000)) {
+                        fprintf(out, "%s %s %08x %x %08x\n", list[p], name, (dword)header.typeTag, i, value);
+                        totalHits++;
+                    }
+                }
+            }
+            free(unpacked);
+            position += 0x200 + (long)header.packedSize;
+        }
+        fclose(pck);
+    }
+    fclose(out);
+    free(packed);
+    g_MemoryApi.alloc = savedAlloc;
+    g_MemoryApi.free = savedFree;
+    Thandor_Log("scanaddr: %u entries decoded, %u dwords in the original image range", totalEntries, totalHits);
+}
+
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)
 {
     (void)instance;
@@ -252,6 +374,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         }
         if (value != NULL && strcmp(value, "stretch") == 0) {
             Thandor_SelfTestStretch();
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "scanaddr") == 0) {
+            Thandor_SelfTestScanAddresses();
             return 0;
         }
         if (value != NULL && strcmp(value, "stretchcmp") == 0) {
