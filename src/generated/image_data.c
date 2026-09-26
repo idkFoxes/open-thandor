@@ -524,9 +524,7 @@ ImageData_00407510 g_ImageData_00407510 = {
     L"texte\\error.str", /* 00407D20 u_texte_error_str_00407d20 */
     L"error: IO: initialization failed!", /* 00407D40 g_ErrorTextIoInitializationFailed */
     L"error: HEAP: cannot allocate heap memory! Please check your swap-file.", /* 00407D84 g_ErrorTextHeapAllocationFailed */
-    {
-        0x90909090, 0x90909090, 0x90909090},
-    {0x90, 0x90},
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
     0, /* 00407E20 g_FatalErrorUiRootTemplate */
     0, /* 00407E24 g_FatalErrorDialogDismissed */
     /* 00407E28 g_UiRootCallbacks_00407E28 */
@@ -610,9 +608,7 @@ ImageData_0040ABBC g_ImageData_0040ABBC = {
     {0},
     L"THANDOR.cfg", /* 0040E23D u_THANDOR_cfg_0040e23d */
     L"engine.pck", /* 0040E255 u_engine_pck_0040e255 */
-    {
-        0x90909090},
-    {0x90},
+    {0x90, 0x90, 0x90, 0x90, 0x90},
     L"Computer", /* 0040E270 g_DefaultComputerLabelUtf16 */
 };
 
@@ -626,9 +622,7 @@ ImageData_0040F524 g_ImageData_0040F524 = {
     {0}, /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
     L"*.*", /* 0040FF50 g_WildcardAllFilesUtf16 */
     L"?:\\*.*", /* 0040FF58 u________0040ff58 */
-    {
-        0x90909090, 0x90909090},
-    {0x90, 0x90},
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_004107E8 g_ImageData_004107E8 = {
@@ -664,8 +658,7 @@ ImageData_004107E8 g_ImageData_004107E8 = {
     0, /* 00416860 g_CursorOverflowBottom */
     L"engine\\mouse.gfx", /* 00416864 u_engine_mouse_gfx_00416864 */
     L"engine\\mouse.dat", /* 00416886 u_engine_mouse_dat_00416886 */
-    {
-        0x90909090, 0x90909090},
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_004169DC g_ImageData_004169DC = {
@@ -762,10 +755,8 @@ ImageData_0041A740 g_ImageData_0041A740 = {
     L"error: TXT2STR: unknown character at:                        ", /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
     {0}, /* 0041B028 g_FontTextureSources */
     L"engine\\font.gfx", /* 0041B030 u_engine_font_gfx_0041b030 */
-    /* 0041B050 str_0041B050 */
-    {
-        0x006E0065, 0x00690067, 0x0065006E, 0x0066005C, 0x006E006F, 0x006B0074, 0x0067002E, 0x00780066,
-        0x90900000, 0x90909090, 0x90909090, 0x90909090},
+    L"engine\\fontk.gfx", /* 0041B050 str_0041B050 */
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_0041B128 g_ImageData_0041B128 = {
@@ -775,10 +766,10 @@ ImageData_0041B128 g_ImageData_0041B128 = {
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B1C0, 0x0041B110,
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110,
         0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110},
-    /* 0041B180 g_SoundDispatchTable_0041B180 */
+    /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
     {
         0x0041B1B0, 0x0041B1B0, 0x0041B1B0, 0x0041B110},
-    /* 0041B190 g_SoundDispatchTable_0041B190 */
+    /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
     {
         0x0041B1E0, 0x0041B1E0, 0x0041B1D0, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110, 0x0041B110},
 };
@@ -790,10 +781,10 @@ ImageData_0041B228 g_ImageData_0041B228 = {
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B2D0, 0x0041B210,
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210,
         0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210},
-    /* 0041B280 g_SoundDispatchTable_0041B280 */
+    /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
     {
         0x0041B2B0, 0x0041B2B0, 0x0041B2B0, 0x0041B210},
-    /* 0041B290 g_SoundDispatchTable_0041B290 */
+    /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
     {
         0x0041B2C0, 0x0041B2C0, 0x0041B2E0, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210, 0x0041B210},
 };
@@ -869,10 +860,10 @@ ImageData_0041B9C8 g_ImageData_0041B9C8 = {
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041BA50, 0x0041B970,
         0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970,
         0x0041BA90, 0x0041B970, 0x0041BA7A, 0x0041B970},
-    /* 0041BA20 g_SoundDispatchTable_0041BA20 */
+    /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
     {
         0x0041BA58, 0x0041BA58, 0x0041BA58, 0x0041B970},
-    /* 0041BA30 g_SoundDispatchTable_0041BA30 */
+    /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
     {
         0x0041BA68, 0x0041BA73, 0x0041BA60, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970, 0x0041B970},
 };
@@ -884,10 +875,10 @@ ImageData_0041BB78 g_ImageData_0041BB78 = {
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BC00, 0x0041BB20,
         0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20,
         0x0041BC40, 0x0041BB20, 0x0041BC2A, 0x0041BB20},
-    /* 0041BBD0 g_SoundDispatchTable_0041BBD0 */
+    /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
     {
         0x0041BC08, 0x0041BC08, 0x0041BC08, 0x0041BB20},
-    /* 0041BBE0 g_SoundDispatchTable_0041BBE0 */
+    /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
     {
         0x0041BC18, 0x0041BC23, 0x0041BC10, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20, 0x0041BB20},
 };
@@ -940,11 +931,11 @@ ImageData_0041C15C g_ImageData_0041C15C = {
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C600, 0x0041C593, 0x0041C120, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593,
         0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C593, 0x0041C560, 0x0041C6E0, 0x0041C593},
-    /* 0041C220 g_SoundDispatchTable_0041C220 */
+    /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
     {
         0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620, 0x0041C620,
         0x0041C620, 0x0041C620, 0x0041C593, 0x0041C593, 0x0041C670, 0x0041C593, 0x0041C690, 0x0041C593},
-    /* 0041C260 g_SoundDispatchTable_0041C260 */
+    /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
     {
         0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610,
         0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610, 0x0041C610,
@@ -993,10 +984,10 @@ ImageData_0041CB68 g_ImageData_0041CB68 = {
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CC00, 0x0041CB50,
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50,
         0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50},
-    /* 0041CBC0 g_SoundDispatchTable_0041CBC0 */
+    /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
     {
         0x0041CBF0, 0x0041CBF0, 0x0041CBF0, 0x0041CB50},
-    /* 0041CBD0 g_SoundDispatchTable_0041CBD0 */
+    /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
     {
         0x0041CC50, 0x0041CC50, 0x0041CC10, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50, 0x0041CB50},
 };
@@ -1006,14 +997,14 @@ ImageData_0041CF7C g_ImageData_0041CF7C = {
     /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
     {
         0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041D010, 0x0041CF60},
-    /* 0041CFA0 g_SoundDispatchTable_0041CFA0 */
+    /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
     {
         0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050, 0x0041D050,
         0x0041D020, 0x0041CF60, 0x0041D0A0, 0x0041CF60},
-    /* 0041CFD0 g_SoundDispatchTable_0041CFD0 */
+    /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
     {
         0x0041D000, 0x0041D000, 0x0041D000, 0x0041CF60},
-    /* 0041CFE0 g_SoundDispatchTable_0041CFE0 */
+    /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
     {
         0x0041D090, 0x0041D080, 0x0041D060, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60, 0x0041CF60},
 };
@@ -1027,7 +1018,7 @@ ImageData_0041D144 g_ImageData_0041D144 = {
     /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
     {
         0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D1D0, 0x0041D120},
-    /* 0041D170 g_SoundDispatchTable_0041D170 */
+    /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
     {
         0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210, 0x0041D210,
         0x0041D1E0, 0x0041D240, 0x0041D280, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120, 0x0041D120,
@@ -1039,14 +1030,14 @@ ImageData_0041D53C g_ImageData_0041D53C = {
     /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
     {
         0x0041D5D0, 0x0041D5F0, 0x0041D610, 0x0041D630, 0x0041D650, 0x0041D670, 0x0041D690, 0x0041D520},
-    /* 0041D560 g_SoundDispatchTable_0041D560 */
+    /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
     {
         0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0, 0x0041D6E0,
         0x0041D6F0, 0x0041D520, 0x0041D780, 0x0041D520},
-    /* 0041D590 g_SoundDispatchTable_0041D590 */
+    /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
     {
         0x0041D5C0, 0x0041D5C0, 0x0041D5C0, 0x0041D520},
-    /* 0041D5A0 g_SoundDispatchTable_0041D5A0 */
+    /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
     {
         0x0041D770, 0x0041D760, 0x0041D720, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520, 0x0041D520},
 };
@@ -1060,7 +1051,7 @@ ImageData_0041D880 g_ImageData_0041D880 = {
     /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
     {
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D910, 0x0041D860},
-    /* 0041D8B0 g_SoundDispatchTable_0041D8B0 */
+    /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
     {
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950, 0x0041D950,
         0x0041D950, 0x0041D950, 0x0041D950, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860, 0x0041D860,
@@ -3078,7 +3069,7 @@ ImageData_0050E21C g_ImageData_0050E21C = {
 
 ImageData_0050E95C g_ImageData_0050E95C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0050E95C gap */
-    /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3 */
+    /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
     {
         0x0050E970, 0x0050E9A0, 0x0050E9C0, 0x90909090},
 };
@@ -3116,9 +3107,7 @@ ImageData_0050F044 g_ImageData_0050F044 = {
     0, /* 0050F0E0 g_RecentTextSlotStorage */
     {0}, /* 0050F0E4 g_RecentTextEntrySerials */
     L"texte\\neterror.str", /* 0050F104 u_texte_neterror_str_0050f104 */
-    {
-        0x90909090},
-    {0x90, 0x90},
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_0050F328 g_ImageData_0050F328 = {
@@ -3473,7 +3462,7 @@ ImageData_00516E90 g_ImageData_00516E90 = {
 
 ImageData_00517068 g_ImageData_00517068 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517068 gap */
-    /* 00517070 g_UiNodeVtable_00517070 */
+    /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
     {
         0x005170C0, 0x005170D0, 0x005170E0, 0x00517100, 0x00517120, 0x00517140, 0x00517160, 0x00517180,
         0x005171A0, 0x005171D0, 0x00517200, 0x00517230, 0x00517260, 0x00517290, 0x005172C0, 0x005172F0,
@@ -3829,7 +3818,7 @@ ImageData_0051DBB4 g_ImageData_0051DBB4 = {
 
 ImageData_0051EAA0 g_ImageData_0051EAA0 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0051EAA0 gap */
-    /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5 */
+    /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
     {
         0x0051EAD0, 0x0051ED00, 0x0051EE60, 0x0051EED0, 0x0051EB20, 0x90909090, 0x90909090, 0x90909090},
 };
@@ -4224,7 +4213,7 @@ ImageData_00525A8C g_ImageData_00525A8C = {
 
 ImageData_005266B0 g_ImageData_005266B0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 005266B0 gap */
-    /* 005266C0 g_ArmyTerrainContactDispatchTable2 */
+    /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
     {
         0x005266D0, 0x00526830, 0x90909090, 0x90909090},
 };
@@ -6822,9 +6811,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
     "NAME=\"CLIENT=\"KARTE=\"", /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
     L"level\\*.lev", /* 005460A6 u_level___lev_005460a6 */
     L"level\\*.str", /* 005460BE u_level___str_005460be */
-    {
-        0x90909090, 0x90909090},
-    {0x90, 0x90},
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_00546BB4 g_ImageData_00546BB4 = {
@@ -6832,7 +6819,7 @@ ImageData_00546BB4 g_ImageData_00546BB4 = {
 };
 
 ImageData_00547660 g_ImageData_00547660 = {
-    /* 00547660 PTR_ARRAY_00547660 */
+    /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
     {
         0x00547680, 0x005476B0, 0x00547700, 0x00547750, 0x005477A0, 0x005477F0, 0x90909090, 0x90909090},
 };
@@ -10805,7 +10792,7 @@ ImageData_0055F7B4 g_ImageData_0055F7B4 = {
     /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
     {
         0x0055F820, 0x0055F820},
-    /* 0055F7C8 g_CodePointerTable_0055F7C8 */
+    /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
     {
         0x0055F800, 0x0055F840, 0x0055F860, 0x0055F880, 0x0055F8A0, 0x0055F903, 0x0055F8C0, 0x0055F8D0,
         0x0055F8F0, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903, 0x0055F903},
@@ -10816,10 +10803,10 @@ ImageData_0055F934 g_ImageData_0055F934 = {
     /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
     {
         0x0055FA13},
-    /* 0055F944 g_CodePointerTable_0055F944 */
+    /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
     {
         0x0055F9C0, 0x0055F9C0, 0x0055F9C0, 0x0055F980, 0x0055F9E0, 0x0055F980, 0x0055FA13},
-    /* 0055F960 g_CodePointerTable_0055F960 */
+    /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
     {
         0x0055F9A0, 0x0055FA00, 0x0055F9A0, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13, 0x0055FA13},
 };
@@ -11077,10 +11064,8 @@ ImageData_00562498 g_ImageData_00562498 = {
         0x002C0073, 0x00650020, 0x006C0072},
     {0xF6},
     L"se mich!", /* 0056320C str_0056320C */
-    {0x48}, /* 0056321E u_Hmmm__na_gut________0056321e */
-    {
-        0x006D006D, 0x002C006D, 0x006E0020, 0x00200061, 0x00750067, 0x002E0074, 0x002E002E, 0x003B0020,
-        0x0029002D, 0x90900000, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
+    L"Hmmm, na gut... ;-)", /* 0056321E u_Hmmm__na_gut________0056321e */
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
     0, /* 00563260 g_UiCommandRuntimeFlags */
     0, /* 00563264 g_InGameSimulationStepTicks */
     0, /* 00563268 g_InGamePendingSimulationTicks */
@@ -11325,35 +11310,35 @@ ImageData_0056F278 g_ImageData_0056F278 = {
 
 ImageData_0056F81C g_ImageData_0056F81C = {
     {0x90, 0x90, 0x90, 0x90}, /* 0056F81C gap */
-    /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable */
+    /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x0056F840, 0x0056F8A0, 0x0056F8F0, 0x0056F930, 0x0056FA20, 0x0056FA50, 0x90909090, 0x90909090},
 };
 
 ImageData_0056FA98 g_ImageData_0056FA98 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0056FA98 gap */
-    /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable */
+    /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x0056FAC0, 0x0056FD50, 0x0056FED0, 0x00570100, 0x005701B0, 0x00570310, 0x90909090, 0x90909090},
 };
 
 ImageData_00570408 g_ImageData_00570408 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570408 gap */
-    /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable */
+    /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x00570430, 0x00570770, 0x00570840, 0x00570A10, 0x00570B20, 0x00570CC0, 0x90909090, 0x90909090},
 };
 
 ImageData_00570D90 g_ImageData_00570D90 = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570D90 gap */
-    /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable */
+    /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x00570DC0, 0x00570E40, 0x00570F10, 0x00570EA0, 0x00570EF0, 0x00570F10, 0x90909090, 0x90909090},
 };
 
 ImageData_00570F48 g_ImageData_00570F48 = {
     {0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00570F48 gap */
-    /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable */
+    /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
     {
         0x00570F70, 0x00570FB0, 0x00571010, 0x00570FE0, 0x00570FE0, 0x00571010, 0x90909090, 0x90909090},
 };
@@ -11435,8 +11420,7 @@ ImageData_00572AB0 g_ImageData_00572AB0 = {
     L"engine\\pcx.fnc", /* 00573028 u_engine_pcx_fnc_00573028 */
     L"flm\\intro0.flm", /* 00573046 u_flm_intro0_flm_00573046 */
     "NOINTRO", /* 00573064 s_NOINTRO_00573064 */
-    {
-        0x90909090},
+    {0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_00573EE8 g_ImageData_00573EE8 = {
@@ -11840,10 +11824,8 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     0, /* 00574478 g_Ws2_32_WSAAddressToStringA */
     {0},
     0, /* 005744A0 g_Ws2_32_WSAStringToAddressA */
-    /* 005744A4 sz_KERNEL32 */
-    {
-        0x4E52454B, 0x32334C45},
-    {0x00, 0x90},
+    "KERNEL32", /* 005744A4 sz_KERNEL32 */
+    {0x90},
     "WINMM", /* 005744AE sz_WINMM */
     "DDRAW", /* 005744B4 dynapi_2 */
     "DINPUT", /* 005744BA dynapi_3 */
@@ -11851,27 +11833,20 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "DSOUND", /* 005744C2 dynapi_4 */
     {0x90},
     "GLIDE3X", /* 005744CA dynapi_5 */
-    /* 005744D2 sz_ADVAPI32 */
-    {
-        0x41564441, 0x32334950},
-    {0x00, 0x90},
+    "ADVAPI32", /* 005744D2 sz_ADVAPI32 */
+    {0x90},
     "WSOCK32", /* 005744DC s_Wsock32ModuleName */
-    /* 005744E4 sz_WS2_32 */
-    {
-        0x5F325357, 0x90003233},
+    "WS2_32", /* 005744E4 sz_WS2_32 */
+    {0x90},
     "LoadLibraryA", /* 005744EC dynapi_9 */
     {0x90},
     "FreeLibrary", /* 005744FA dynapi_10 */
     "RegOpenKeyExA", /* 00574506 dynapi_11 */
-    /* 00574514 dynapi_12 */
-    {
-        0x51676552, 0x79726575, 0x756C6156, 0x41784565},
-    {0x00, 0x90},
+    "RegQueryValueExA", /* 00574514 dynapi_12 */
+    {0x90},
     "RegCloseKey", /* 00574526 dynapi_13 */
-    /* 00574532 dynapi_14 */
-    {
-        0x656D6974, 0x45746553, 0x746E6576},
-    {0x00, 0x90},
+    "timeSetEvent", /* 00574532 dynapi_14 */
+    {0x90},
     "timeKillEvent", /* 00574540 dynapi_15 */
     "mciSendCommandA", /* 0057454E dynapi_16 */
     "DirectDrawCreate", /* 0057455E dynapi_17 */
@@ -11886,223 +11861,149 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x90},
     "DirectSoundCaptureEnumerateA", /* 005745DC dynapi_23 */
     {0x90},
-    /* 005745FA dynapi_24 */
-    {
-        0x4172675F, 0x61724441, 0x69725477, 0x6C676E61, 0x34324065},
-    {0x00, 0x90},
-    /* 00574610 dynapi_25 */
-    {
-        0x4172675F, 0x6168706C, 0x6E656C42, 0x6E754664, 0x6F697463, 0x3631406E},
-    {0x00, 0x90},
-    /* 0057462A dynapi_26 */
-    {
-        0x4172675F, 0x6168706C, 0x626D6F43, 0x40656E69, 0x90003032},
+    "_grAADrawTriangle@24", /* 005745FA dynapi_24 */
+    {0x90},
+    "_grAlphaBlendFunction@16", /* 00574610 dynapi_25 */
+    {0x90},
+    "_grAlphaCombine@20", /* 0057462A dynapi_26 */
+    {0x90},
     "_grAlphaControlsITRGBLighting@4", /* 0057463E dynapi_27 */
-    /* 0057465E dynapi_28 */
-    {
-        0x4172675F, 0x6168706C, 0x74736554, 0x636E7546, 0x6E6F6974, 0x90003440},
-    /* 00574676 dynapi_29 */
-    {
-        0x4172675F, 0x6168706C, 0x74736554, 0x65666552, 0x636E6572, 0x6C615665, 0x34406575},
-    {0x00, 0x90},
+    "_grAlphaTestFunction@4", /* 0057465E dynapi_28 */
+    {0x90},
+    "_grAlphaTestReferenceValue@4", /* 00574676 dynapi_29 */
+    {0x90},
     "_grBufferClear@12", /* 00574694 dynapi_30 */
     "_grBufferSwap@4", /* 005746A6 dynapi_31 */
-    /* 005746B6 dynapi_32 */
-    {
-        0x4372675F, 0x6D6F7268, 0x79656B61, 0x65646F4D, 0x90003440},
+    "_grChromakeyMode@4", /* 005746B6 dynapi_32 */
+    {0x90},
     "_grChromakeyValue@4", /* 005746CA dynapi_33 */
-    /* 005746DE dynapi_34 */
-    {
-        0x68437267, 0x616D6F72, 0x676E6152, 0x74784565},
-    {0x00, 0x90},
-    /* 005746F0 dynapi_35 */
-    {
-        0x68437267, 0x616D6F72, 0x676E6152, 0x646F4D65, 0x74784565},
-    {0x00, 0x90},
-    /* 00574706 dynapi_36 */
-    {
-        0x4372675F, 0x5770696C, 0x6F646E69, 0x36314077},
-    {0x00, 0x90},
-    /* 00574718 dynapi_37 */
-    {
-        0x4372675F, 0x726F6C6F, 0x626D6F43, 0x40656E69, 0x90003032},
-    /* 0057472C dynapi_38 */
-    {
-        0x4372675F, 0x726F6C6F, 0x6B73614D, 0x90003840},
+    "grChromaRangeExt", /* 005746DE dynapi_34 */
+    {0x90},
+    "grChromaRangeModeExt", /* 005746F0 dynapi_35 */
+    {0x90},
+    "_grClipWindow@16", /* 00574706 dynapi_36 */
+    {0x90},
+    "_grColorCombine@20", /* 00574718 dynapi_37 */
+    {0x90},
+    "_grColorMask@8", /* 0057472C dynapi_38 */
+    {0x90},
     "_grConstantColorValue@4", /* 0057473C dynapi_39 */
-    /* 00574754 dynapi_40 */
-    {
-        0x4372675F, 0x64726F6F, 0x74616E69, 0x61705365, 0x34406563},
-    {0x00, 0x90},
+    "_grCoordinateSpace@4", /* 00574754 dynapi_40 */
+    {0x90},
     "_grCullMode@4", /* 0057476A dynapi_41 */
     "_grDepthBiasLevel@4", /* 00574778 dynapi_42 */
-    /* 0057478C dynapi_43 */
-    {
-        0x4472675F, 0x68747065, 0x66667542, 0x75467265, 0x6974636E, 0x34406E6F},
-    {0x00, 0x90},
-    /* 005747A6 dynapi_44 */
-    {
-        0x4472675F, 0x68747065, 0x66667542, 0x6F4D7265, 0x34406564},
-    {0x00, 0x90},
-    /* 005747BC dynapi_45 */
-    {
-        0x4472675F, 0x68747065, 0x6B73614D, 0x90003440},
+    "_grDepthBufferFunction@4", /* 0057478C dynapi_43 */
+    {0x90},
+    "_grDepthBufferMode@4", /* 005747A6 dynapi_44 */
+    {0x90},
+    "_grDepthMask@4", /* 005747BC dynapi_45 */
+    {0x90},
     "_grDepthRange@8", /* 005747CC dynapi_46 */
-    /* 005747DC dynapi_47 */
-    {
-        0x4472675F, 0x62617369, 0x3440656C},
-    {0x00, 0x90},
-    /* 005747EA dynapi_48 */
-    {
-        0x4472675F, 0x62617369, 0x6C41656C, 0x6666456C, 0x73746365, 0x90003040},
+    "_grDisable@4", /* 005747DC dynapi_47 */
+    {0x90},
+    "_grDisableAllEffects@0", /* 005747EA dynapi_48 */
+    {0x90},
     "_grDitherMode@4", /* 00574802 dynapi_49 */
     "_grDrawLine@8", /* 00574812 dynapi_50 */
-    /* 00574820 dynapi_51 */
-    {
-        0x4472675F, 0x50776172, 0x746E696F, 0x90003440},
-    /* 00574830 dynapi_52 */
-    {
-        0x4472675F, 0x54776172, 0x6E616972, 0x40656C67, 0x90003231},
+    "_grDrawPoint@4", /* 00574820 dynapi_51 */
+    {0x90},
+    "_grDrawTriangle@12", /* 00574830 dynapi_52 */
+    {0x90},
     "_grDrawVertexArray@12", /* 00574844 dynapi_53 */
     "_grDrawVertexArrayContiguous@16", /* 0057485A dynapi_54 */
     "_grEnable@4", /* 0057487A dynapi_55 */
     "_grErrorSetCallback@4", /* 00574886 dynapi_56 */
     "_grFinish@0", /* 0057489C dynapi_57 */
-    /* 005748A8 dynapi_58 */
-    {
-        0x4672675F, 0x6873756C, 0x90003040},
-    /* 005748B4 dynapi_59 */
-    {
-        0x4672675F, 0x6F43676F, 0x56726F6C, 0x65756C61, 0x90003440},
-    /* 005748C8 dynapi_60 */
-    {
-        0x4672675F, 0x6F4D676F, 0x34406564},
-    {0x00, 0x90},
+    "_grFlush@0", /* 005748A8 dynapi_58 */
+    {0x90},
+    "_grFogColorValue@4", /* 005748B4 dynapi_59 */
+    {0x90},
+    "_grFogMode@4", /* 005748C8 dynapi_60 */
+    {0x90},
     "_grFogTable@4", /* 005748D6 dynapi_61 */
     "_grGet@12", /* 005748E4 dynapi_62 */
     "_grGetProcAddress@4", /* 005748EE dynapi_63 */
-    /* 00574902 dynapi_64 */
-    {
-        0x4772675F, 0x74537465, 0x676E6972, 0x90003440},
-    /* 00574912 dynapi_65 */
-    {
-        0x4772675F, 0x6564696C, 0x53746547, 0x65746174, 0x90003440},
+    "_grGetString@4", /* 00574902 dynapi_64 */
+    {0x90},
+    "_grGlideGetState@4", /* 00574912 dynapi_65 */
+    {0x90},
     "_grGlideGetVertexLayout@4", /* 00574926 dynapi_66 */
-    /* 00574940 dynapi_67 */
-    {
-        0x4772675F, 0x6564696C, 0x74696E49, 0x90003040},
-    /* 00574950 dynapi_68 */
-    {
-        0x4772675F, 0x6564696C, 0x53746553, 0x65746174, 0x90003440},
+    "_grGlideInit@0", /* 00574940 dynapi_67 */
+    {0x90},
+    "_grGlideSetState@4", /* 00574950 dynapi_68 */
+    {0x90},
     "_grGlideSetVertexLayout@4", /* 00574964 dynapi_69 */
-    /* 0057497E dynapi_70 */
-    {
-        0x4772675F, 0x6564696C, 0x74756853, 0x6E776F64, 0x90003040},
+    "_grGlideShutdown@0", /* 0057497E dynapi_70 */
+    {0x90},
     "_grLfbConstantAlpha@4", /* 00574992 dynapi_71 */
     "_grLfbConstantDepth@4", /* 005749A8 dynapi_72 */
     "_grLfbLock@24", /* 005749BE dynapi_73 */
     "_grLfbReadRegion@28", /* 005749CC dynapi_74 */
-    /* 005749E0 dynapi_75 */
-    {
-        0x4C72675F, 0x6E556266, 0x6B636F6C, 0x90003840},
-    /* 005749F0 dynapi_76 */
-    {
-        0x4C72675F, 0x72576266, 0x52657469, 0x6F696765, 0x3633406E},
-    {0x00, 0x90},
-    /* 00574A06 dynapi_77 */
-    {
-        0x4C72675F, 0x4764616F, 0x616D6D61, 0x6C626154, 0x36314065},
-    {0x00, 0x90},
+    "_grLfbUnlock@8", /* 005749E0 dynapi_75 */
+    {0x90},
+    "_grLfbWriteRegion@36", /* 005749F0 dynapi_76 */
+    {0x90},
+    "_grLoadGammaTable@16", /* 00574A06 dynapi_77 */
+    {0x90},
     "_grQueryResolutions@8", /* 00574A1C dynapi_78 */
     "_grRenderBuffer@4", /* 00574A32 dynapi_79 */
-    /* 00574A44 dynapi_80 */
-    {
-        0x5272675F, 0x74657365, 0x90003440},
-    /* 00574A50 dynapi_81 */
-    {
-        0x5372675F, 0x63656C65, 0x6E6F4374, 0x74786574, 0x90003440},
-    /* 00574A64 dynapi_82 */
-    {
-        0x5372675F, 0x724F7473, 0x6E696769, 0x90003440},
-    /* 00574A74 dynapi_83 */
-    {
-        0x5372675F, 0x65537473, 0x7463656C, 0x90003440},
-    /* 00574A84 dynapi_84 */
-    {
-        0x5372675F, 0x69577473, 0x6F6C436E, 0x34406573},
-    {0x00, 0x90},
-    /* 00574A96 dynapi_85 */
-    {
-        0x5372675F, 0x69577473, 0x65704F6E, 0x3832406E},
-    {0x00, 0x90},
-    /* 00574AA8 dynapi_86 */
-    {
-        0x5472675F, 0x61437865, 0x654D636C, 0x7165526D, 0x65726975, 0x36314064},
-    {0x00, 0x90},
+    "_grReset@4", /* 00574A44 dynapi_80 */
+    {0x90},
+    "_grSelectContext@4", /* 00574A50 dynapi_81 */
+    {0x90},
+    "_grSstOrigin@4", /* 00574A64 dynapi_82 */
+    {0x90},
+    "_grSstSelect@4", /* 00574A74 dynapi_83 */
+    {0x90},
+    "_grSstWinClose@4", /* 00574A84 dynapi_84 */
+    {0x90},
+    "_grSstWinOpen@28", /* 00574A96 dynapi_85 */
+    {0x90},
+    "_grTexCalcMemRequired@16", /* 00574AA8 dynapi_86 */
+    {0x90},
     "_grTexChromaModeExt@8", /* 00574AC2 dynapi_87 */
     "_grTexChromaRangeExt@16", /* 00574AD8 dynapi_88 */
-    /* 00574AF0 dynapi_89 */
-    {
-        0x5472675F, 0x6C437865, 0x4D706D61, 0x4065646F, 0x90003231},
-    /* 00574B04 dynapi_90 */
-    {
-        0x5472675F, 0x6F437865, 0x6E69626D, 0x38324065},
-    {0x00, 0x90},
-    /* 00574B16 dynapi_91 */
-    {
-        0x5472675F, 0x65447865, 0x6C696174, 0x746E6F43, 0x406C6F72, 0x90003631},
+    "_grTexClampMode@12", /* 00574AF0 dynapi_89 */
+    {0x90},
+    "_grTexCombine@28", /* 00574B04 dynapi_90 */
+    {0x90},
+    "_grTexDetailControl@16", /* 00574B16 dynapi_91 */
+    {0x90},
     "_grTexDownloadMipMap@16", /* 00574B2E dynapi_92 */
-    /* 00574B46 dynapi_93 */
-    {
-        0x5472675F, 0x6F447865, 0x6F6C6E77, 0x694D6461, 0x70614D70, 0x6576654C, 0x3233406C},
-    {0x00, 0x90},
+    "_grTexDownloadMipMapLevel@32", /* 00574B46 dynapi_93 */
+    {0x90},
     "_grTexDownloadMipMapLevelPartial@40", /* 00574B64 dynapi_94 */
     "_grTexDownloadTable@8", /* 00574B88 dynapi_95 */
     "_grTexDownloadTablePartial@16", /* 00574B9E dynapi_96 */
     "_grTexFilterMode@12", /* 00574BBC dynapi_97 */
-    /* 00574BD0 dynapi_98 */
-    {
-        0x5472675F, 0x6F4C7865, 0x61694264, 0x6C615673, 0x38406575},
-    {0x00, 0x90},
-    /* 00574BE6 dynapi_99 */
-    {
-        0x5472675F, 0x614D7865, 0x64644178, 0x73736572, 0x90003440},
-    /* 00574BFA dynapi_100 */
-    {
-        0x5472675F, 0x694D7865, 0x6464416E, 0x73736572, 0x90003440},
+    "_grTexLodBiasValue@8", /* 00574BD0 dynapi_98 */
+    {0x90},
+    "_grTexMaxAddress@4", /* 00574BE6 dynapi_99 */
+    {0x90},
+    "_grTexMinAddress@4", /* 00574BFA dynapi_100 */
+    {0x90},
     "_grTexMipMapMode@12", /* 00574C0E dynapi_101 */
     "_grTexMultibase@8", /* 00574C22 dynapi_102 */
     "_grTexMultibaseAddress@20", /* 00574C34 dynapi_103 */
-    /* 00574C4E dynapi_104 */
-    {
-        0x5472675F, 0x434E7865, 0x62615443, 0x3440656C},
-    {0x00, 0x90},
+    "_grTexNCCTable@4", /* 00574C4E dynapi_104 */
+    {0x90},
     "_grTexSource@16", /* 00574C60 dynapi_105 */
-    /* 00574C70 dynapi_106 */
-    {
-        0x5472675F, 0x65547865, 0x72757478, 0x6D654D65, 0x75716552, 0x64657269, 0x90003840},
-    /* 00574C8C dynapi_107 */
-    {
-        0x5672675F, 0x65747265, 0x79614C78, 0x4074756F, 0x90003231},
-    /* 00574CA0 dynapi_108 */
-    {
-        0x5672675F, 0x70776569, 0x4074726F, 0x90003631},
+    "_grTexTextureMemRequired@8", /* 00574C70 dynapi_106 */
+    {0x90},
+    "_grVertexLayout@12", /* 00574C8C dynapi_107 */
+    {0x90},
+    "_grViewport@16", /* 00574CA0 dynapi_108 */
+    {0x90},
     "_gu3dfGetInfo@8", /* 00574CB0 dynapi_109 */
-    /* 00574CC0 dynapi_110 */
-    {
-        0x3375675F, 0x6F4C6664, 0x38406461},
-    {0x00, 0x90},
+    "_gu3dfLoad@8", /* 00574CC0 dynapi_110 */
+    {0x90},
     "_guFogGenerateExp@8", /* 00574CCE dynapi_111 */
-    /* 00574CE2 dynapi_112 */
-    {
-        0x4675675F, 0x6547676F, 0x6172656E, 0x78456574, 0x38403270},
-    {0x00, 0x90},
+    "_guFogGenerateExp2@8", /* 00574CE2 dynapi_112 */
+    {0x90},
     "_guFogGenerateLinear@12", /* 00574CF8 dynapi_113 */
     "_guFogTableIndexToW@4", /* 00574D10 dynapi_114 */
-    /* 00574D26 dynapi_115 */
-    {
-        0x4775675F, 0x616D6D61, 0x72726F43, 0x69746365, 0x47526E6F, 0x32314042},
-    {0x00, 0x90},
+    "_guGammaCorrectionRGB@12", /* 00574D26 dynapi_115 */
+    {0x90},
     "accept", /* 00574D40 s_Wsock32Export_accept */
     {0x90},
     "bind", /* 00574D48 s_Wsock32Export_bind */
@@ -12169,107 +12070,72 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "WSAStartup", /* 00574F84 s_Wsock32Export_WSAStartup */
     {0x90},
     "WSAUnhookBlockingHook", /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
-    /* 00574FA6 dynapi_162 */
-    {
-        0x65636361, 0x90007470},
-    /* 00574FAE dynapi_163 */
-    {
-        0x646E6962},
-    {0x00, 0x90},
+    "accept", /* 00574FA6 dynapi_162 */
+    {0x90},
+    "bind", /* 00574FAE dynapi_163 */
+    {0x90},
     "closesocket", /* 00574FB4 dynapi_164 */
     "connect", /* 00574FC0 dynapi_165 */
     "getpeername", /* 00574FC8 dynapi_166 */
     "getsockname", /* 00574FD4 dynapi_167 */
-    /* 00574FE0 dynapi_168 */
-    {
-        0x73746567, 0x6F6B636F, 0x90007470},
+    "getsockopt", /* 00574FE0 dynapi_168 */
+    {0x90},
     "htonl", /* 00574FEC dynapi_169 */
     "htons", /* 00574FF2 dynapi_170 */
     "ioctlsocket", /* 00574FF8 dynapi_171 */
-    /* 00575004 dynapi_172 */
-    {
-        0x7473696C, 0x90006E65},
+    "listen", /* 00575004 dynapi_172 */
+    {0x90},
     "ntohl", /* 0057500C dynapi_173 */
     "ntohs", /* 00575012 dynapi_174 */
-    /* 00575018 dynapi_175 */
-    {
-        0x76636572},
-    {0x00, 0x90},
-    /* 0057501E dynapi_176 */
-    {
-        0x76636572, 0x6D6F7266},
-    {0x00, 0x90},
-    /* 00575028 dynapi_177 */
-    {
-        0x656C6573, 0x90007463},
-    /* 00575030 dynapi_178 */
-    {
-        0x646E6573},
-    {0x00, 0x90},
-    /* 00575036 dynapi_179 */
-    {
-        0x646E6573, 0x90006F74},
-    /* 0057503E dynapi_180 */
-    {
-        0x73746573, 0x6F6B636F, 0x90007470},
-    /* 0057504A dynapi_181 */
-    {
-        0x74756873, 0x6E776F64},
-    {0x00, 0x90},
-    /* 00575054 dynapi_182 */
-    {
-        0x6B636F73, 0x90007465},
+    "recv", /* 00575018 dynapi_175 */
+    {0x90},
+    "recvfrom", /* 0057501E dynapi_176 */
+    {0x90},
+    "select", /* 00575028 dynapi_177 */
+    {0x90},
+    "send", /* 00575030 dynapi_178 */
+    {0x90},
+    "sendto", /* 00575036 dynapi_179 */
+    {0x90},
+    "setsockopt", /* 0057503E dynapi_180 */
+    {0x90},
+    "shutdown", /* 0057504A dynapi_181 */
+    {0x90},
+    "socket", /* 00575054 dynapi_182 */
+    {0x90},
     "WSAAccept", /* 0057505C dynapi_183 */
-    /* 00575066 dynapi_184 */
-    {
-        0x41415357, 0x636E7973, 0x656C6553, 0x90007463},
+    "WSAAsyncSelect", /* 00575066 dynapi_184 */
+    {0x90},
     "WSACancelBlockingCall", /* 00575076 dynapi_185 */
-    /* 0057508C dynapi_186 */
-    {
-        0x43415357, 0x6E61656C, 0x90007075},
+    "WSACleanup", /* 0057508C dynapi_186 */
+    {0x90},
     "WSACloseEvent", /* 00575098 dynapi_187 */
-    /* 005750A6 dynapi_188 */
-    {
-        0x43415357, 0x656E6E6F, 0x90007463},
-    /* 005750B2 dynapi_189 */
-    {
-        0x43415357, 0x74616572, 0x65764565, 0x9000746E},
+    "WSAConnect", /* 005750A6 dynapi_188 */
+    {0x90},
+    "WSACreateEvent", /* 005750B2 dynapi_189 */
+    {0x90},
     "WSADuplicateSocketA", /* 005750C2 dynapi_190 */
-    /* 005750D6 dynapi_191 */
-    {
-        0x45415357, 0x4E6D756E, 0x6F777465, 0x76456B72, 0x73746E65},
-    {0x00, 0x90},
+    "WSAEnumNetworkEvents", /* 005750D6 dynapi_191 */
+    {0x90},
     "WSAEnumProtocolsA", /* 005750EC dynapi_192 */
-    /* 005750FE dynapi_193 */
-    {
-        0x45415357, 0x746E6576, 0x656C6553, 0x90007463},
+    "WSAEventSelect", /* 005750FE dynapi_193 */
+    {0x90},
     "WSAGetLastError", /* 0057510E dynapi_194 */
-    /* 0057511E dynapi_195 */
-    {
-        0x47415357, 0x764F7465, 0x616C7265, 0x64657070, 0x75736552, 0x9000746C},
+    "WSAGetOverlappedResult", /* 0057511E dynapi_195 */
+    {0x90},
     "WSAGetQOSByName", /* 00575136 dynapi_196 */
-    /* 00575146 dynapi_197 */
-    {
-        0x48415357, 0x6C6E6F74},
-    {0x00, 0x90},
-    /* 00575150 dynapi_198 */
-    {
-        0x48415357, 0x736E6F74},
-    {0x00, 0x90},
-    /* 0057515A dynapi_199 */
-    {
-        0x49415357, 0x6C74636F},
-    {0x00, 0x90},
+    "WSAHtonl", /* 00575146 dynapi_197 */
+    {0x90},
+    "WSAHtons", /* 00575150 dynapi_198 */
+    {0x90},
+    "WSAIoctl", /* 0057515A dynapi_199 */
+    {0x90},
     "WSAIsBlocking", /* 00575164 dynapi_200 */
     "WSAJoinLeaf", /* 00575172 dynapi_201 */
-    /* 0057517E dynapi_202 */
-    {
-        0x4E415357, 0x6C686F74},
-    {0x00, 0x90},
-    /* 00575188 dynapi_203 */
-    {
-        0x4E415357, 0x73686F74},
-    {0x00, 0x90},
+    "WSANtohl", /* 0057517E dynapi_202 */
+    {0x90},
+    "WSANtohs", /* 00575188 dynapi_203 */
+    {0x90},
     "WSARecv", /* 00575192 dynapi_204 */
     "WSARecvDisconnect", /* 0057519A dynapi_205 */
     "WSARecvFrom", /* 005751AC dynapi_206 */
@@ -12277,71 +12143,53 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "WSASend", /* 005751C6 dynapi_208 */
     "WSASendDisconnect", /* 005751CE dynapi_209 */
     "WSASendTo", /* 005751E0 dynapi_210 */
-    /* 005751EA dynapi_211 */
-    {
-        0x53415357, 0x6C427465, 0x696B636F, 0x6F48676E, 0x90006B6F},
+    "WSASetBlockingHook", /* 005751EA dynapi_211 */
+    {0x90},
     "WSASetEvent", /* 005751FE dynapi_212 */
     "WSASetLastError", /* 0057520A dynapi_213 */
-    /* 0057521A dynapi_214 */
-    {
-        0x53415357, 0x656B636F, 0x90004174},
-    /* 00575226 dynapi_215 */
-    {
-        0x53415357, 0x74726174, 0x90007075},
+    "WSASocketA", /* 0057521A dynapi_214 */
+    {0x90},
+    "WSAStartup", /* 00575226 dynapi_215 */
+    {0x90},
     "WSAUnhookBlockingHook", /* 00575232 dynapi_216 */
-    /* 00575248 dynapi_217 */
-    {
-        0x57415357, 0x46746961, 0x754D726F, 0x7069746C, 0x7645656C, 0x73746E65},
-    {0x00, 0x90},
+    "WSAWaitForMultipleEvents", /* 00575248 dynapi_217 */
+    {0x90},
     "inet_addr", /* 00575262 dynapi_218 */
     "inet_ntoa", /* 0057526C dynapi_219 */
     "gethostbyaddr", /* 00575276 dynapi_220 */
     "gethostbyname", /* 00575284 dynapi_221 */
     "gethostname", /* 00575292 dynapi_222 */
-    /* 0057529E dynapi_223 */
-    {
-        0x70746567, 0x6F746F72, 0x616E7962, 0x9000656D},
-    /* 005752AE dynapi_224 */
-    {
-        0x70746567, 0x6F746F72, 0x756E7962, 0x7265626D},
-    {0x00, 0x90},
+    "getprotobyname", /* 0057529E dynapi_223 */
+    {0x90},
+    "getprotobynumber", /* 005752AE dynapi_224 */
+    {0x90},
     "getservbyname", /* 005752C0 dynapi_225 */
     "getservbyport", /* 005752CE dynapi_226 */
     "WSAAsyncGetHostByAddr", /* 005752DC dynapi_227 */
     "WSAAsyncGetHostByName", /* 005752F2 dynapi_228 */
-    /* 00575308 dynapi_229 */
-    {
-        0x41415357, 0x636E7973, 0x50746547, 0x6F746F72, 0x614E7942, 0x9000656D},
-    /* 00575320 dynapi_230 */
-    {
-        0x41415357, 0x636E7973, 0x50746547, 0x6F746F72, 0x754E7942, 0x7265626D},
-    {0x00, 0x90},
+    "WSAAsyncGetProtoByName", /* 00575308 dynapi_229 */
+    {0x90},
+    "WSAAsyncGetProtoByNumber", /* 00575320 dynapi_230 */
+    {0x90},
     "WSAAsyncGetServByName", /* 0057533A dynapi_231 */
     "WSAAsyncGetServByPort", /* 00575350 dynapi_232 */
     "WSACancelAsyncRequest", /* 00575366 dynapi_233 */
     "WSAAddressToStringA", /* 0057537C dynapi_234 */
-    /* 00575390 dynapi_235 */
-    {
-        0x45415357, 0x4E6D756E, 0x53656D61, 0x65636170, 0x766F7250, 0x72656469, 0x90004173},
+    "WSAEnumNameSpaceProvidersA", /* 00575390 dynapi_235 */
+    {0x90},
     "WSAGetServiceClassInfoA", /* 005753AC dynapi_236 */
-    /* 005753C4 dynapi_237 */
-    {
-        0x47415357, 0x65537465, 0x63697672, 0x616C4365, 0x614E7373, 0x7942656D, 0x73616C43, 0x41644973},
-    {0x00, 0x90},
+    "WSAGetServiceClassNameByClassIdA", /* 005753C4 dynapi_237 */
+    {0x90},
     "WSAInstallServiceClassA", /* 005753E6 dynapi_238 */
-    /* 005753FE dynapi_239 */
-    {
-        0x4C415357, 0x756B6F6F, 0x72655370, 0x65636976, 0x69676542, 0x9000416E},
+    "WSALookupServiceBeginA", /* 005753FE dynapi_239 */
+    {0x90},
     "WSALookupServiceEnd", /* 00575416 dynapi_240 */
     "WSALookupServiceNextA", /* 0057542A dynapi_241 */
     "WSARemoveServiceClass", /* 00575440 dynapi_242 */
-    /* 00575456 dynapi_243 */
-    {
-        0x53415357, 0x65537465, 0x63697672, 0x90004165},
-    /* 00575466 dynapi_244 */
-    {
-        0x53415357, 0x6E697274, 0x416F5467, 0x65726464, 0x00417373, 0x90909090},
-    {0x90, 0x90},
+    "WSASetServiceA", /* 00575456 dynapi_243 */
+    {0x90},
+    "WSAStringToAddressA", /* 00575466 dynapi_244 */
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
     {0}, /* 00575480 g_FatalErrorNarrowBuffer */
     {
         0x00000000, 0x90909090, 0x90909090, 0x90909090},
@@ -12671,9 +12519,7 @@ ImageData_0057ECC8 g_ImageData_0057ECC8 = {
     0, /* 0057EE7C g_GlideSecondBufferOffset */
     0, /* 0057EE80 g_GlideSecondBufferBase */
     "GLIDE", /* 0057EE84 s_GLIDE_0057ee84 */
-    {
-        0x90909090},
-    {0x90, 0x90},
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_00582ED8 g_ImageData_00582ED8 = {
@@ -12744,8 +12590,7 @@ ImageData_005856A0 g_ImageData_005856A0 = {
     {0}, /* 0058581C g_CommandLine */
     " thandor  (TG)", /* 00585D1C sz_MainWindowTitle */
     "thandorCLASS(TG)", /* 00585D2B sz_MainWindowClass */
-    {
-        0x90909090},
+    {0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_00586950 g_ImageData_00586950 = {

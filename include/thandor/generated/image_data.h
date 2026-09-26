@@ -110,8 +110,7 @@ typedef struct ImageData_00407510 {
     word at_u_texte_error_str_00407d20[16]; /* 00407D20 u_texte_error_str_00407d20 */
     word at_g_ErrorTextIoInitializationFailed[34]; /* 00407D40 g_ErrorTextIoInitializationFailed */
     word at_g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
-    dword at_g_ErrorTextHeapAllocationFailed_rest[3]; /* beyond the declared type */
-    byte at_g_ErrorTextHeapAllocationFailed_rest_tail[2];
+    byte at_g_ErrorTextHeapAllocationFailed_padding[14];
     UiRootNode * at_g_FatalErrorUiRootTemplate; /* 00407E20 g_FatalErrorUiRootTemplate */
     undefined4 at_g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
     UiRootCallbacks at_g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks_00407E28 */
@@ -169,8 +168,7 @@ typedef struct ImageData_0040ABBC {
     byte at_g_PckDecoderTable_rest_tail[1];
     word at_u_THANDOR_cfg_0040e23d[12]; /* 0040E23D u_THANDOR_cfg_0040e23d */
     word at_u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
-    dword at_u_engine_pck_0040e255_rest[1]; /* beyond the declared type */
-    byte at_u_engine_pck_0040e255_rest_tail[1];
+    byte at_u_engine_pck_0040e255_padding[5];
     word at_g_DefaultComputerLabelUtf16[32]; /* 0040E270 g_DefaultComputerLabelUtf16 */
 } ImageData_0040ABBC;
 extern ImageData_0040ABBC g_ImageData_0040ABBC;
@@ -186,8 +184,7 @@ typedef struct ImageData_0040F524 {
     dword at_g_UiTimedListHierarchyParentPathScratch[128]; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
     word at_g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
     word at_u________0040ff58[7]; /* 0040FF58 u________0040ff58 */
-    dword at_u________0040ff58_rest[2]; /* beyond the declared type */
-    byte at_u________0040ff58_rest_tail[2];
+    byte at_u________0040ff58_padding[10];
 } ImageData_0040F524;
 extern ImageData_0040F524 g_ImageData_0040F524;
 
@@ -225,7 +222,7 @@ typedef struct ImageData_004107E8 {
     dword at_g_CursorOverflowBottom; /* 00416860 g_CursorOverflowBottom */
     word at_u_engine_mouse_gfx_00416864[17]; /* 00416864 u_engine_mouse_gfx_00416864 */
     word at_u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
-    dword at_u_engine_mouse_dat_00416886_rest[2]; /* beyond the declared type */
+    byte at_u_engine_mouse_dat_00416886_padding[8];
 } ImageData_004107E8;
 extern ImageData_004107E8 g_ImageData_004107E8;
 
@@ -321,7 +318,8 @@ typedef struct ImageData_0041A740 {
     word at_u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
     GraphicsTextureSourceAsset * at_g_FontTextureSources[2]; /* 0041B028 g_FontTextureSources */
     word at_u_engine_font_gfx_0041b030[16]; /* 0041B030 u_engine_font_gfx_0041b030 */
-    dword at_str_0041B050[12]; /* 0041B050 str_0041B050 */
+    word at_str_0041B050[17]; /* 0041B050 str_0041B050 */
+    byte at_str_0041B050_padding[14];
 } ImageData_0041A740;
 extern ImageData_0041A740 g_ImageData_0041A740;
 
@@ -329,8 +327,8 @@ extern ImageData_0041A740 g_ImageData_0041A740;
 typedef struct ImageData_0041B128 {
     byte at_gap_0041B128[8]; /* 0041B128 gap */
     dword at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130[20]; /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041B180[4]; /* 0041B180 g_SoundDispatchTable_0041B180 */
-    dword at_g_SoundDispatchTable_0041B190[8]; /* 0041B190 g_SoundDispatchTable_0041B190 */
+    dword at_g_SoundDispatchTable_0041B180[4]; /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041B190[8]; /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
 } ImageData_0041B128;
 extern ImageData_0041B128 g_ImageData_0041B128;
 
@@ -338,8 +336,8 @@ extern ImageData_0041B128 g_ImageData_0041B128;
 typedef struct ImageData_0041B228 {
     byte at_gap_0041B228[8]; /* 0041B228 gap */
     dword at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230[20]; /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041B280[4]; /* 0041B280 g_SoundDispatchTable_0041B280 */
-    dword at_g_SoundDispatchTable_0041B290[8]; /* 0041B290 g_SoundDispatchTable_0041B290 */
+    dword at_g_SoundDispatchTable_0041B280[4]; /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041B290[8]; /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
 } ImageData_0041B228;
 extern ImageData_0041B228 g_ImageData_0041B228;
 
@@ -389,8 +387,8 @@ extern ImageData_0041B868 g_ImageData_0041B868;
 typedef struct ImageData_0041B9C8 {
     byte at_gap_0041B9C8[8]; /* 0041B9C8 gap */
     dword at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0[20]; /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041BA20[4]; /* 0041BA20 g_SoundDispatchTable_0041BA20 */
-    dword at_g_SoundDispatchTable_0041BA30[8]; /* 0041BA30 g_SoundDispatchTable_0041BA30 */
+    dword at_g_SoundDispatchTable_0041BA20[4]; /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041BA30[8]; /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
 } ImageData_0041B9C8;
 extern ImageData_0041B9C8 g_ImageData_0041B9C8;
 
@@ -398,8 +396,8 @@ extern ImageData_0041B9C8 g_ImageData_0041B9C8;
 typedef struct ImageData_0041BB78 {
     byte at_gap_0041BB78[8]; /* 0041BB78 gap */
     dword at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80[20]; /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041BBD0[4]; /* 0041BBD0 g_SoundDispatchTable_0041BBD0 */
-    dword at_g_SoundDispatchTable_0041BBE0[8]; /* 0041BBE0 g_SoundDispatchTable_0041BBE0 */
+    dword at_g_SoundDispatchTable_0041BBD0[4]; /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041BBE0[8]; /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
 } ImageData_0041BB78;
 extern ImageData_0041BB78 g_ImageData_0041BB78;
 
@@ -414,8 +412,8 @@ extern ImageData_0041BCEC g_ImageData_0041BCEC;
 typedef struct ImageData_0041C15C {
     byte at_gap_0041C15C[4]; /* 0041C15C gap */
     dword at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160[48]; /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041C220[16]; /* 0041C220 g_SoundDispatchTable_0041C220 */
-    dword at_g_SoundDispatchTable_0041C260[192]; /* 0041C260 g_SoundDispatchTable_0041C260 */
+    dword at_g_SoundDispatchTable_0041C220[16]; /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041C260[192]; /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
 } ImageData_0041C15C;
 extern ImageData_0041C15C g_ImageData_0041C15C;
 
@@ -436,8 +434,8 @@ extern ImageData_0041CAFC g_ImageData_0041CAFC;
 typedef struct ImageData_0041CB68 {
     byte at_gap_0041CB68[8]; /* 0041CB68 gap */
     dword at_g_TextResourcePage_Load_SwitchTable_0041CB70[20]; /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CBC0[4]; /* 0041CBC0 g_SoundDispatchTable_0041CBC0 */
-    dword at_g_SoundDispatchTable_0041CBD0[8]; /* 0041CBD0 g_SoundDispatchTable_0041CBD0 */
+    dword at_g_SoundDispatchTable_0041CBC0[4]; /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041CBD0[8]; /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
 } ImageData_0041CB68;
 extern ImageData_0041CB68 g_ImageData_0041CB68;
 
@@ -445,9 +443,9 @@ extern ImageData_0041CB68 g_ImageData_0041CB68;
 typedef struct ImageData_0041CF7C {
     byte at_gap_0041CF7C[4]; /* 0041CF7C gap */
     dword at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80[8]; /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CFA0[12]; /* 0041CFA0 g_SoundDispatchTable_0041CFA0 */
-    dword at_g_SoundDispatchTable_0041CFD0[4]; /* 0041CFD0 g_SoundDispatchTable_0041CFD0 */
-    dword at_g_SoundDispatchTable_0041CFE0[8]; /* 0041CFE0 g_SoundDispatchTable_0041CFE0 */
+    dword at_g_SoundDispatchTable_0041CFA0[12]; /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041CFD0[4]; /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041CFE0[8]; /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
 } ImageData_0041CF7C;
 extern ImageData_0041CF7C g_ImageData_0041CF7C;
 
@@ -461,7 +459,7 @@ extern ImageData_0041D07C g_ImageData_0041D07C;
 typedef struct ImageData_0041D144 {
     byte at_gap_0041D144[12]; /* 0041D144 gap */
     dword at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150[8]; /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D170[24]; /* 0041D170 g_SoundDispatchTable_0041D170 */
+    dword at_g_SoundDispatchTable_0041D170[24]; /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
 } ImageData_0041D144;
 extern ImageData_0041D144 g_ImageData_0041D144;
 
@@ -469,9 +467,9 @@ extern ImageData_0041D144 g_ImageData_0041D144;
 typedef struct ImageData_0041D53C {
     byte at_gap_0041D53C[4]; /* 0041D53C gap */
     dword at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540[8]; /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D560[12]; /* 0041D560 g_SoundDispatchTable_0041D560 */
-    dword at_g_SoundDispatchTable_0041D590[4]; /* 0041D590 g_SoundDispatchTable_0041D590 */
-    dword at_g_SoundDispatchTable_0041D5A0[8]; /* 0041D5A0 g_SoundDispatchTable_0041D5A0 */
+    dword at_g_SoundDispatchTable_0041D560[12]; /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041D590[4]; /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
+    dword at_g_SoundDispatchTable_0041D5A0[8]; /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
 } ImageData_0041D53C;
 extern ImageData_0041D53C g_ImageData_0041D53C;
 
@@ -485,7 +483,7 @@ extern ImageData_0041D75C g_ImageData_0041D75C;
 typedef struct ImageData_0041D880 {
     byte at_gap_0041D880[16]; /* 0041D880 gap */
     dword at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890[8]; /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D8B0[24]; /* 0041D8B0 g_SoundDispatchTable_0041D8B0 */
+    dword at_g_SoundDispatchTable_0041D8B0[24]; /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
 } ImageData_0041D880;
 extern ImageData_0041D880 g_ImageData_0041D880;
 
@@ -1419,7 +1417,7 @@ extern ImageData_0050E21C g_ImageData_0050E21C;
 /* original 0x0050E95C-0x0050E970 */
 typedef struct ImageData_0050E95C {
     byte at_gap_0050E95C[4]; /* 0050E95C gap */
-    dword at_g_ResourceRegistrationDomainPairCallbacks3[4]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3 */
+    dword at_g_ResourceRegistrationDomainPairCallbacks3[4]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
 } ImageData_0050E95C;
 extern ImageData_0050E95C g_ImageData_0050E95C;
 
@@ -1455,8 +1453,7 @@ typedef struct ImageData_0050F044 {
     RecentTextHistorySlot * at_g_RecentTextSlotStorage; /* 0050F0E0 g_RecentTextSlotStorage */
     dword at_g_RecentTextEntrySerials[8]; /* 0050F0E4 g_RecentTextEntrySerials */
     word at_u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
-    dword at_u_texte_neterror_str_0050f104_rest[1]; /* beyond the declared type */
-    byte at_u_texte_neterror_str_0050f104_rest_tail[2];
+    byte at_u_texte_neterror_str_0050f104_padding[6];
 } ImageData_0050F044;
 extern ImageData_0050F044 g_ImageData_0050F044;
 
@@ -1612,7 +1609,7 @@ extern ImageData_00516E90 g_ImageData_00516E90;
 /* original 0x00517068-0x005170C0 */
 typedef struct ImageData_00517068 {
     byte at_gap_00517068[8]; /* 00517068 gap */
-    dword at_g_UiNodeVtable_00517070[20]; /* 00517070 g_UiNodeVtable_00517070 */
+    dword at_g_UiNodeVtable_00517070[20]; /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
 } ImageData_00517068;
 extern ImageData_00517068 g_ImageData_00517068;
 
@@ -1703,7 +1700,7 @@ extern ImageData_0051DBB4 g_ImageData_0051DBB4;
 /* original 0x0051EAA0-0x0051EAD0 */
 typedef struct ImageData_0051EAA0 {
     byte at_gap_0051EAA0[16]; /* 0051EAA0 gap */
-    dword at_g_EffectLifecycleTransitionDispatchTable5[8]; /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5 */
+    dword at_g_EffectLifecycleTransitionDispatchTable5[8]; /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
 } ImageData_0051EAA0;
 extern ImageData_0051EAA0 g_ImageData_0051EAA0;
 
@@ -1773,7 +1770,7 @@ extern ImageData_00525A8C g_ImageData_00525A8C;
 /* original 0x005266B0-0x005266D0 */
 typedef struct ImageData_005266B0 {
     byte at_gap_005266B0[16]; /* 005266B0 gap */
-    dword at_g_ArmyTerrainContactDispatchTable2[4]; /* 005266C0 g_ArmyTerrainContactDispatchTable2 */
+    dword at_g_ArmyTerrainContactDispatchTable2[4]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
 } ImageData_005266B0;
 extern ImageData_005266B0 g_ImageData_005266B0;
 
@@ -2230,8 +2227,7 @@ typedef struct ImageData_005456F0 {
     char at_s_NAME__CLIENT__KARTE___00545e91[533]; /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
     word at_u_level___lev_005460a6[12]; /* 005460A6 u_level___lev_005460a6 */
     word at_u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
-    dword at_u_level___str_005460be_rest[2]; /* beyond the declared type */
-    byte at_u_level___str_005460be_rest_tail[2];
+    byte at_u_level___str_005460be_padding[10];
 } ImageData_005456F0;
 extern ImageData_005456F0 g_ImageData_005456F0;
 
@@ -2243,7 +2239,7 @@ extern ImageData_00546BB4 g_ImageData_00546BB4;
 
 /* original 0x00547660-0x00547680 */
 typedef struct ImageData_00547660 {
-    dword at_PTR_ARRAY_00547660[8]; /* 00547660 PTR_ARRAY_00547660 */
+    dword at_PTR_ARRAY_00547660[8]; /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
 } ImageData_00547660;
 extern ImageData_00547660 g_ImageData_00547660;
 
@@ -2371,7 +2367,7 @@ extern ImageData_0055EFB0 g_ImageData_0055EFB0;
 typedef struct ImageData_0055F7B4 {
     byte at_gap_0055F7B4[12]; /* 0055F7B4 gap */
     dword at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0[2]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
-    dword at_g_CodePointerTable_0055F7C8[14]; /* 0055F7C8 g_CodePointerTable_0055F7C8 */
+    dword at_g_CodePointerTable_0055F7C8[14]; /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
 } ImageData_0055F7B4;
 extern ImageData_0055F7B4 g_ImageData_0055F7B4;
 
@@ -2379,8 +2375,8 @@ extern ImageData_0055F7B4 g_ImageData_0055F7B4;
 typedef struct ImageData_0055F934 {
     byte at_gap_0055F934[12]; /* 0055F934 gap */
     dword at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940[1]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
-    dword at_g_CodePointerTable_0055F944[7]; /* 0055F944 g_CodePointerTable_0055F944 */
-    dword at_g_CodePointerTable_0055F960[8]; /* 0055F960 g_CodePointerTable_0055F960 */
+    dword at_g_CodePointerTable_0055F944[7]; /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
+    dword at_g_CodePointerTable_0055F960[8]; /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
 } ImageData_0055F934;
 extern ImageData_0055F934 g_ImageData_0055F934;
 
@@ -2438,8 +2434,8 @@ typedef struct ImageData_00562498 {
     dword at_g_DeveloperChatPhraseUtf16[11]; /* 005631DE g_DeveloperChatPhraseUtf16 */
     byte at_g_DeveloperChatPhraseUtf16_tail[2];
     word at_str_0056320C[9]; /* 0056320C str_0056320C */
-    word at_u_Hmmm__na_gut________0056321e[1]; /* 0056321E u_Hmmm__na_gut________0056321e */
-    dword at_u_Hmmm__na_gut________0056321e_rest[16]; /* beyond the declared type */
+    word at_u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
+    byte at_u_Hmmm__na_gut________0056321e_padding[26];
     dword at_g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
     InGameSimulationStepBatchTicks at_g_InGameSimulationStepTicks; /* 00563264 g_InGameSimulationStepTicks */
     sdword at_g_InGamePendingSimulationTicks; /* 00563268 g_InGamePendingSimulationTicks */
@@ -2654,35 +2650,35 @@ extern ImageData_0056F278 g_ImageData_0056F278;
 /* original 0x0056F81C-0x0056F840 */
 typedef struct ImageData_0056F81C {
     byte at_gap_0056F81C[4]; /* 0056F81C gap */
-    dword at_g_InGameUiCommandCursorCodeModeDispatchTable[8]; /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable */
+    dword at_g_InGameUiCommandCursorCodeModeDispatchTable[8]; /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_0056F81C;
 extern ImageData_0056F81C g_ImageData_0056F81C;
 
 /* original 0x0056FA98-0x0056FAC0 */
 typedef struct ImageData_0056FA98 {
     byte at_gap_0056FA98[8]; /* 0056FA98 gap */
-    dword at_g_InGameUiCommandBeginInteractionModeDispatchTable[8]; /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable */
+    dword at_g_InGameUiCommandBeginInteractionModeDispatchTable[8]; /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_0056FA98;
 extern ImageData_0056FA98 g_ImageData_0056FA98;
 
 /* original 0x00570408-0x00570430 */
 typedef struct ImageData_00570408 {
     byte at_gap_00570408[8]; /* 00570408 gap */
-    dword at_g_InGameUiCommandUpdateInteractionModeDispatchTable[8]; /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable */
+    dword at_g_InGameUiCommandUpdateInteractionModeDispatchTable[8]; /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_00570408;
 extern ImageData_00570408 g_ImageData_00570408;
 
 /* original 0x00570D90-0x00570DC0 */
 typedef struct ImageData_00570D90 {
     byte at_gap_00570D90[16]; /* 00570D90 gap */
-    dword at_g_InGameUiCommandEndInteractionModeDispatchTable[8]; /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable */
+    dword at_g_InGameUiCommandEndInteractionModeDispatchTable[8]; /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_00570D90;
 extern ImageData_00570D90 g_ImageData_00570D90;
 
 /* original 0x00570F48-0x00570F70 */
 typedef struct ImageData_00570F48 {
     byte at_gap_00570F48[8]; /* 00570F48 gap */
-    dword at_g_InGameUiCommandResetInteractionModeDispatchTable[8]; /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable */
+    dword at_g_InGameUiCommandResetInteractionModeDispatchTable[8]; /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_00570F48;
 extern ImageData_00570F48 g_ImageData_00570F48;
 
@@ -2770,7 +2766,7 @@ typedef struct ImageData_00572AB0 {
     word at_u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
     word at_u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
     char at_s_NOINTRO_00573064[8]; /* 00573064 s_NOINTRO_00573064 */
-    dword at_s_NOINTRO_00573064_rest[1]; /* beyond the declared type */
+    byte at_s_NOINTRO_00573064_padding[4];
 } ImageData_00572AB0;
 extern ImageData_00572AB0 g_ImageData_00572AB0;
 
@@ -3011,276 +3007,318 @@ typedef struct ImageData_00573EE8 {
     WSAAddressToStringA_Proc * at_g_Ws2_32_WSAAddressToStringA; /* 00574478 g_Ws2_32_WSAAddressToStringA */
     dword at_g_Ws2_32_WSAAddressToStringA_rest[9]; /* beyond the declared type */
     WSAStringToAddressA_Proc * at_g_Ws2_32_WSAStringToAddressA; /* 005744A0 g_Ws2_32_WSAStringToAddressA */
-    dword at_sz_KERNEL32[2]; /* 005744A4 sz_KERNEL32 */
-    byte at_sz_KERNEL32_tail[2];
+    char at_sz_KERNEL32[9]; /* 005744A4 sz_KERNEL32 */
+    byte at_sz_KERNEL32_padding[1];
     char at_sz_WINMM[6]; /* 005744AE sz_WINMM */
     char at_dynapi_2[6]; /* 005744B4 dynapi_2 */
     char at_dynapi_3[7]; /* 005744BA dynapi_3 */
-    byte at_dynapi_3_rest_tail[1];
+    byte at_dynapi_3_padding[1];
     char at_dynapi_4[7]; /* 005744C2 dynapi_4 */
-    byte at_dynapi_4_rest_tail[1];
+    byte at_dynapi_4_padding[1];
     char at_dynapi_5[8]; /* 005744CA dynapi_5 */
-    dword at_sz_ADVAPI32[2]; /* 005744D2 sz_ADVAPI32 */
-    byte at_sz_ADVAPI32_tail[2];
+    char at_sz_ADVAPI32[9]; /* 005744D2 sz_ADVAPI32 */
+    byte at_sz_ADVAPI32_padding[1];
     char at_s_Wsock32ModuleName[8]; /* 005744DC s_Wsock32ModuleName */
-    dword at_sz_WS2_32[2]; /* 005744E4 sz_WS2_32 */
+    char at_sz_WS2_32[7]; /* 005744E4 sz_WS2_32 */
+    byte at_sz_WS2_32_padding[1];
     char at_dynapi_9[13]; /* 005744EC dynapi_9 */
-    byte at_dynapi_9_rest_tail[1];
+    byte at_dynapi_9_padding[1];
     char at_dynapi_10[12]; /* 005744FA dynapi_10 */
     char at_dynapi_11[14]; /* 00574506 dynapi_11 */
-    dword at_dynapi_12[4]; /* 00574514 dynapi_12 */
-    byte at_dynapi_12_tail[2];
+    char at_dynapi_12[17]; /* 00574514 dynapi_12 */
+    byte at_dynapi_12_padding[1];
     char at_dynapi_13[12]; /* 00574526 dynapi_13 */
-    dword at_dynapi_14[3]; /* 00574532 dynapi_14 */
-    byte at_dynapi_14_tail[2];
+    char at_dynapi_14[13]; /* 00574532 dynapi_14 */
+    byte at_dynapi_14_padding[1];
     char at_dynapi_15[14]; /* 00574540 dynapi_15 */
     char at_dynapi_16[16]; /* 0057454E dynapi_16 */
     char at_dynapi_17[17]; /* 0057455E dynapi_17 */
-    byte at_dynapi_17_rest_tail[1];
+    byte at_dynapi_17_padding[1];
     char at_dynapi_18[21]; /* 00574570 dynapi_18 */
-    byte at_dynapi_18_rest_tail[1];
+    byte at_dynapi_18_padding[1];
     char at_dynapi_19[19]; /* 00574586 dynapi_19 */
-    byte at_dynapi_19_rest_tail[1];
+    byte at_dynapi_19_padding[1];
     char at_dynapi_20[18]; /* 0057459A dynapi_20 */
     char at_dynapi_21[22]; /* 005745AC dynapi_21 */
     char at_dynapi_22[25]; /* 005745C2 dynapi_22 */
-    byte at_dynapi_22_rest_tail[1];
+    byte at_dynapi_22_padding[1];
     char at_dynapi_23[29]; /* 005745DC dynapi_23 */
-    byte at_dynapi_23_rest_tail[1];
-    dword at_dynapi_24[5]; /* 005745FA dynapi_24 */
-    byte at_dynapi_24_tail[2];
-    dword at_dynapi_25[6]; /* 00574610 dynapi_25 */
-    byte at_dynapi_25_tail[2];
-    dword at_dynapi_26[5]; /* 0057462A dynapi_26 */
+    byte at_dynapi_23_padding[1];
+    char at_dynapi_24[21]; /* 005745FA dynapi_24 */
+    byte at_dynapi_24_padding[1];
+    char at_dynapi_25[25]; /* 00574610 dynapi_25 */
+    byte at_dynapi_25_padding[1];
+    char at_dynapi_26[19]; /* 0057462A dynapi_26 */
+    byte at_dynapi_26_padding[1];
     char at_dynapi_27[32]; /* 0057463E dynapi_27 */
-    dword at_dynapi_28[6]; /* 0057465E dynapi_28 */
-    dword at_dynapi_29[7]; /* 00574676 dynapi_29 */
-    byte at_dynapi_29_tail[2];
+    char at_dynapi_28[23]; /* 0057465E dynapi_28 */
+    byte at_dynapi_28_padding[1];
+    char at_dynapi_29[29]; /* 00574676 dynapi_29 */
+    byte at_dynapi_29_padding[1];
     char at_dynapi_30[18]; /* 00574694 dynapi_30 */
     char at_dynapi_31[16]; /* 005746A6 dynapi_31 */
-    dword at_dynapi_32[5]; /* 005746B6 dynapi_32 */
+    char at_dynapi_32[19]; /* 005746B6 dynapi_32 */
+    byte at_dynapi_32_padding[1];
     char at_dynapi_33[20]; /* 005746CA dynapi_33 */
-    dword at_dynapi_34[4]; /* 005746DE dynapi_34 */
-    byte at_dynapi_34_tail[2];
-    dword at_dynapi_35[5]; /* 005746F0 dynapi_35 */
-    byte at_dynapi_35_tail[2];
-    dword at_dynapi_36[4]; /* 00574706 dynapi_36 */
-    byte at_dynapi_36_tail[2];
-    dword at_dynapi_37[5]; /* 00574718 dynapi_37 */
-    dword at_dynapi_38[4]; /* 0057472C dynapi_38 */
+    char at_dynapi_34[17]; /* 005746DE dynapi_34 */
+    byte at_dynapi_34_padding[1];
+    char at_dynapi_35[21]; /* 005746F0 dynapi_35 */
+    byte at_dynapi_35_padding[1];
+    char at_dynapi_36[17]; /* 00574706 dynapi_36 */
+    byte at_dynapi_36_padding[1];
+    char at_dynapi_37[19]; /* 00574718 dynapi_37 */
+    byte at_dynapi_37_padding[1];
+    char at_dynapi_38[15]; /* 0057472C dynapi_38 */
+    byte at_dynapi_38_padding[1];
     char at_dynapi_39[24]; /* 0057473C dynapi_39 */
-    dword at_dynapi_40[5]; /* 00574754 dynapi_40 */
-    byte at_dynapi_40_tail[2];
+    char at_dynapi_40[21]; /* 00574754 dynapi_40 */
+    byte at_dynapi_40_padding[1];
     char at_dynapi_41[14]; /* 0057476A dynapi_41 */
     char at_dynapi_42[20]; /* 00574778 dynapi_42 */
-    dword at_dynapi_43[6]; /* 0057478C dynapi_43 */
-    byte at_dynapi_43_tail[2];
-    dword at_dynapi_44[5]; /* 005747A6 dynapi_44 */
-    byte at_dynapi_44_tail[2];
-    dword at_dynapi_45[4]; /* 005747BC dynapi_45 */
+    char at_dynapi_43[25]; /* 0057478C dynapi_43 */
+    byte at_dynapi_43_padding[1];
+    char at_dynapi_44[21]; /* 005747A6 dynapi_44 */
+    byte at_dynapi_44_padding[1];
+    char at_dynapi_45[15]; /* 005747BC dynapi_45 */
+    byte at_dynapi_45_padding[1];
     char at_dynapi_46[16]; /* 005747CC dynapi_46 */
-    dword at_dynapi_47[3]; /* 005747DC dynapi_47 */
-    byte at_dynapi_47_tail[2];
-    dword at_dynapi_48[6]; /* 005747EA dynapi_48 */
+    char at_dynapi_47[13]; /* 005747DC dynapi_47 */
+    byte at_dynapi_47_padding[1];
+    char at_dynapi_48[23]; /* 005747EA dynapi_48 */
+    byte at_dynapi_48_padding[1];
     char at_dynapi_49[16]; /* 00574802 dynapi_49 */
     char at_dynapi_50[14]; /* 00574812 dynapi_50 */
-    dword at_dynapi_51[4]; /* 00574820 dynapi_51 */
-    dword at_dynapi_52[5]; /* 00574830 dynapi_52 */
+    char at_dynapi_51[15]; /* 00574820 dynapi_51 */
+    byte at_dynapi_51_padding[1];
+    char at_dynapi_52[19]; /* 00574830 dynapi_52 */
+    byte at_dynapi_52_padding[1];
     char at_dynapi_53[22]; /* 00574844 dynapi_53 */
     char at_dynapi_54[32]; /* 0057485A dynapi_54 */
     char at_dynapi_55[12]; /* 0057487A dynapi_55 */
     char at_dynapi_56[22]; /* 00574886 dynapi_56 */
     char at_dynapi_57[12]; /* 0057489C dynapi_57 */
-    dword at_dynapi_58[3]; /* 005748A8 dynapi_58 */
-    dword at_dynapi_59[5]; /* 005748B4 dynapi_59 */
-    dword at_dynapi_60[3]; /* 005748C8 dynapi_60 */
-    byte at_dynapi_60_tail[2];
+    char at_dynapi_58[11]; /* 005748A8 dynapi_58 */
+    byte at_dynapi_58_padding[1];
+    char at_dynapi_59[19]; /* 005748B4 dynapi_59 */
+    byte at_dynapi_59_padding[1];
+    char at_dynapi_60[13]; /* 005748C8 dynapi_60 */
+    byte at_dynapi_60_padding[1];
     char at_dynapi_61[14]; /* 005748D6 dynapi_61 */
     char at_dynapi_62[10]; /* 005748E4 dynapi_62 */
     char at_dynapi_63[20]; /* 005748EE dynapi_63 */
-    dword at_dynapi_64[4]; /* 00574902 dynapi_64 */
-    dword at_dynapi_65[5]; /* 00574912 dynapi_65 */
+    char at_dynapi_64[15]; /* 00574902 dynapi_64 */
+    byte at_dynapi_64_padding[1];
+    char at_dynapi_65[19]; /* 00574912 dynapi_65 */
+    byte at_dynapi_65_padding[1];
     char at_dynapi_66[26]; /* 00574926 dynapi_66 */
-    dword at_dynapi_67[4]; /* 00574940 dynapi_67 */
-    dword at_dynapi_68[5]; /* 00574950 dynapi_68 */
+    char at_dynapi_67[15]; /* 00574940 dynapi_67 */
+    byte at_dynapi_67_padding[1];
+    char at_dynapi_68[19]; /* 00574950 dynapi_68 */
+    byte at_dynapi_68_padding[1];
     char at_dynapi_69[26]; /* 00574964 dynapi_69 */
-    dword at_dynapi_70[5]; /* 0057497E dynapi_70 */
+    char at_dynapi_70[19]; /* 0057497E dynapi_70 */
+    byte at_dynapi_70_padding[1];
     char at_dynapi_71[22]; /* 00574992 dynapi_71 */
     char at_dynapi_72[22]; /* 005749A8 dynapi_72 */
     char at_dynapi_73[14]; /* 005749BE dynapi_73 */
     char at_dynapi_74[20]; /* 005749CC dynapi_74 */
-    dword at_dynapi_75[4]; /* 005749E0 dynapi_75 */
-    dword at_dynapi_76[5]; /* 005749F0 dynapi_76 */
-    byte at_dynapi_76_tail[2];
-    dword at_dynapi_77[5]; /* 00574A06 dynapi_77 */
-    byte at_dynapi_77_tail[2];
+    char at_dynapi_75[15]; /* 005749E0 dynapi_75 */
+    byte at_dynapi_75_padding[1];
+    char at_dynapi_76[21]; /* 005749F0 dynapi_76 */
+    byte at_dynapi_76_padding[1];
+    char at_dynapi_77[21]; /* 00574A06 dynapi_77 */
+    byte at_dynapi_77_padding[1];
     char at_dynapi_78[22]; /* 00574A1C dynapi_78 */
     char at_dynapi_79[18]; /* 00574A32 dynapi_79 */
-    dword at_dynapi_80[3]; /* 00574A44 dynapi_80 */
-    dword at_dynapi_81[5]; /* 00574A50 dynapi_81 */
-    dword at_dynapi_82[4]; /* 00574A64 dynapi_82 */
-    dword at_dynapi_83[4]; /* 00574A74 dynapi_83 */
-    dword at_dynapi_84[4]; /* 00574A84 dynapi_84 */
-    byte at_dynapi_84_tail[2];
-    dword at_dynapi_85[4]; /* 00574A96 dynapi_85 */
-    byte at_dynapi_85_tail[2];
-    dword at_dynapi_86[6]; /* 00574AA8 dynapi_86 */
-    byte at_dynapi_86_tail[2];
+    char at_dynapi_80[11]; /* 00574A44 dynapi_80 */
+    byte at_dynapi_80_padding[1];
+    char at_dynapi_81[19]; /* 00574A50 dynapi_81 */
+    byte at_dynapi_81_padding[1];
+    char at_dynapi_82[15]; /* 00574A64 dynapi_82 */
+    byte at_dynapi_82_padding[1];
+    char at_dynapi_83[15]; /* 00574A74 dynapi_83 */
+    byte at_dynapi_83_padding[1];
+    char at_dynapi_84[17]; /* 00574A84 dynapi_84 */
+    byte at_dynapi_84_padding[1];
+    char at_dynapi_85[17]; /* 00574A96 dynapi_85 */
+    byte at_dynapi_85_padding[1];
+    char at_dynapi_86[25]; /* 00574AA8 dynapi_86 */
+    byte at_dynapi_86_padding[1];
     char at_dynapi_87[22]; /* 00574AC2 dynapi_87 */
     char at_dynapi_88[24]; /* 00574AD8 dynapi_88 */
-    dword at_dynapi_89[5]; /* 00574AF0 dynapi_89 */
-    dword at_dynapi_90[4]; /* 00574B04 dynapi_90 */
-    byte at_dynapi_90_tail[2];
-    dword at_dynapi_91[6]; /* 00574B16 dynapi_91 */
+    char at_dynapi_89[19]; /* 00574AF0 dynapi_89 */
+    byte at_dynapi_89_padding[1];
+    char at_dynapi_90[17]; /* 00574B04 dynapi_90 */
+    byte at_dynapi_90_padding[1];
+    char at_dynapi_91[23]; /* 00574B16 dynapi_91 */
+    byte at_dynapi_91_padding[1];
     char at_dynapi_92[24]; /* 00574B2E dynapi_92 */
-    dword at_dynapi_93[7]; /* 00574B46 dynapi_93 */
-    byte at_dynapi_93_tail[2];
+    char at_dynapi_93[29]; /* 00574B46 dynapi_93 */
+    byte at_dynapi_93_padding[1];
     char at_dynapi_94[36]; /* 00574B64 dynapi_94 */
     char at_dynapi_95[22]; /* 00574B88 dynapi_95 */
     char at_dynapi_96[30]; /* 00574B9E dynapi_96 */
     char at_dynapi_97[20]; /* 00574BBC dynapi_97 */
-    dword at_dynapi_98[5]; /* 00574BD0 dynapi_98 */
-    byte at_dynapi_98_tail[2];
-    dword at_dynapi_99[5]; /* 00574BE6 dynapi_99 */
-    dword at_dynapi_100[5]; /* 00574BFA dynapi_100 */
+    char at_dynapi_98[21]; /* 00574BD0 dynapi_98 */
+    byte at_dynapi_98_padding[1];
+    char at_dynapi_99[19]; /* 00574BE6 dynapi_99 */
+    byte at_dynapi_99_padding[1];
+    char at_dynapi_100[19]; /* 00574BFA dynapi_100 */
+    byte at_dynapi_100_padding[1];
     char at_dynapi_101[20]; /* 00574C0E dynapi_101 */
     char at_dynapi_102[18]; /* 00574C22 dynapi_102 */
     char at_dynapi_103[26]; /* 00574C34 dynapi_103 */
-    dword at_dynapi_104[4]; /* 00574C4E dynapi_104 */
-    byte at_dynapi_104_tail[2];
+    char at_dynapi_104[17]; /* 00574C4E dynapi_104 */
+    byte at_dynapi_104_padding[1];
     char at_dynapi_105[16]; /* 00574C60 dynapi_105 */
-    dword at_dynapi_106[7]; /* 00574C70 dynapi_106 */
-    dword at_dynapi_107[5]; /* 00574C8C dynapi_107 */
-    dword at_dynapi_108[4]; /* 00574CA0 dynapi_108 */
+    char at_dynapi_106[27]; /* 00574C70 dynapi_106 */
+    byte at_dynapi_106_padding[1];
+    char at_dynapi_107[19]; /* 00574C8C dynapi_107 */
+    byte at_dynapi_107_padding[1];
+    char at_dynapi_108[15]; /* 00574CA0 dynapi_108 */
+    byte at_dynapi_108_padding[1];
     char at_dynapi_109[16]; /* 00574CB0 dynapi_109 */
-    dword at_dynapi_110[3]; /* 00574CC0 dynapi_110 */
-    byte at_dynapi_110_tail[2];
+    char at_dynapi_110[13]; /* 00574CC0 dynapi_110 */
+    byte at_dynapi_110_padding[1];
     char at_dynapi_111[20]; /* 00574CCE dynapi_111 */
-    dword at_dynapi_112[5]; /* 00574CE2 dynapi_112 */
-    byte at_dynapi_112_tail[2];
+    char at_dynapi_112[21]; /* 00574CE2 dynapi_112 */
+    byte at_dynapi_112_padding[1];
     char at_dynapi_113[24]; /* 00574CF8 dynapi_113 */
     char at_dynapi_114[22]; /* 00574D10 dynapi_114 */
-    dword at_dynapi_115[6]; /* 00574D26 dynapi_115 */
-    byte at_dynapi_115_tail[2];
+    char at_dynapi_115[25]; /* 00574D26 dynapi_115 */
+    byte at_dynapi_115_padding[1];
     char at_s_Wsock32Export_accept[7]; /* 00574D40 s_Wsock32Export_accept */
-    byte at_s_Wsock32Export_accept_rest_tail[1];
+    byte at_s_Wsock32Export_accept_padding[1];
     char at_s_Wsock32Export_bind[5]; /* 00574D48 s_Wsock32Export_bind */
-    byte at_s_Wsock32Export_bind_rest_tail[1];
+    byte at_s_Wsock32Export_bind_padding[1];
     char at_s_Wsock32Export_closesocket[12]; /* 00574D4E s_Wsock32Export_closesocket */
     char at_s_Wsock32Export_connect[8]; /* 00574D5A s_Wsock32Export_connect */
     char at_s_Wsock32Export_getpeername[12]; /* 00574D62 s_Wsock32Export_getpeername */
     char at_s_Wsock32Export_getsockname[12]; /* 00574D6E s_Wsock32Export_getsockname */
     char at_s_Wsock32Export_getsockopt[11]; /* 00574D7A s_Wsock32Export_getsockopt */
-    byte at_s_Wsock32Export_getsockopt_rest_tail[1];
+    byte at_s_Wsock32Export_getsockopt_padding[1];
     char at_s_Wsock32Export_htonl[6]; /* 00574D86 s_Wsock32Export_htonl */
     char at_s_Wsock32Export_htons[6]; /* 00574D8C s_Wsock32Export_htons */
     char at_s_Wsock32Export_inet_addr[10]; /* 00574D92 s_Wsock32Export_inet_addr */
     char at_s_Wsock32Export_inet_ntoa[10]; /* 00574D9C s_Wsock32Export_inet_ntoa */
     char at_s_Wsock32Export_ioctlsocket[12]; /* 00574DA6 s_Wsock32Export_ioctlsocket */
     char at_s_Wsock32Export_listen[7]; /* 00574DB2 s_Wsock32Export_listen */
-    byte at_s_Wsock32Export_listen_rest_tail[1];
+    byte at_s_Wsock32Export_listen_padding[1];
     char at_s_Wsock32Export_ntohl[6]; /* 00574DBA s_Wsock32Export_ntohl */
     char at_s_Wsock32Export_ntohs[6]; /* 00574DC0 s_Wsock32Export_ntohs */
     char at_s_Wsock32Export_recv[5]; /* 00574DC6 s_Wsock32Export_recv */
-    byte at_s_Wsock32Export_recv_rest_tail[1];
+    byte at_s_Wsock32Export_recv_padding[1];
     char at_s_Wsock32Export_recvfrom[9]; /* 00574DCC s_Wsock32Export_recvfrom */
-    byte at_s_Wsock32Export_recvfrom_rest_tail[1];
+    byte at_s_Wsock32Export_recvfrom_padding[1];
     char at_s_Wsock32Export_select[7]; /* 00574DD6 s_Wsock32Export_select */
-    byte at_s_Wsock32Export_select_rest_tail[1];
+    byte at_s_Wsock32Export_select_padding[1];
     char at_s_Wsock32Export_send[5]; /* 00574DDE s_Wsock32Export_send */
-    byte at_s_Wsock32Export_send_rest_tail[1];
+    byte at_s_Wsock32Export_send_padding[1];
     char at_s_Wsock32Export_sendto[7]; /* 00574DE4 s_Wsock32Export_sendto */
-    byte at_s_Wsock32Export_sendto_rest_tail[1];
+    byte at_s_Wsock32Export_sendto_padding[1];
     char at_s_Wsock32Export_setsockopt[11]; /* 00574DEC s_Wsock32Export_setsockopt */
-    byte at_s_Wsock32Export_setsockopt_rest_tail[1];
+    byte at_s_Wsock32Export_setsockopt_padding[1];
     char at_s_Wsock32Export_shutdown[9]; /* 00574DF8 s_Wsock32Export_shutdown */
-    byte at_s_Wsock32Export_shutdown_rest_tail[1];
+    byte at_s_Wsock32Export_shutdown_padding[1];
     char at_s_Wsock32Export_socket[7]; /* 00574E02 s_Wsock32Export_socket */
-    byte at_s_Wsock32Export_socket_rest_tail[1];
+    byte at_s_Wsock32Export_socket_padding[1];
     char at_s_Wsock32Export_gethostbyaddr[14]; /* 00574E0A s_Wsock32Export_gethostbyaddr */
     char at_s_Wsock32Export_gethostbyname[14]; /* 00574E18 s_Wsock32Export_gethostbyname */
     char at_s_Wsock32Export_gethostname[12]; /* 00574E26 s_Wsock32Export_gethostname */
     char at_s_Wsock32Export_getprotobyname[15]; /* 00574E32 s_Wsock32Export_getprotobyname */
-    byte at_s_Wsock32Export_getprotobyname_rest_tail[1];
+    byte at_s_Wsock32Export_getprotobyname_padding[1];
     char at_s_Wsock32Export_getprotobynumber[17]; /* 00574E42 s_Wsock32Export_getprotobynumber */
-    byte at_s_Wsock32Export_getprotobynumber_rest_tail[1];
+    byte at_s_Wsock32Export_getprotobynumber_padding[1];
     char at_s_Wsock32Export_getservbyname[14]; /* 00574E54 s_Wsock32Export_getservbyname */
     char at_s_Wsock32Export_getservbyport[14]; /* 00574E62 s_Wsock32Export_getservbyport */
     char at_s_Wsock32Export_WSAAsyncGetHostByAddr[22]; /* 00574E70 s_Wsock32Export_WSAAsyncGetHostByAddr */
     char at_s_Wsock32Export_WSAAsyncGetHostByName[22]; /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
     char at_s_Wsock32Export_WSAAsyncGetProtoByName[23]; /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
-    byte at_s_Wsock32Export_WSAAsyncGetProtoByName_rest_tail[1];
+    byte at_s_Wsock32Export_WSAAsyncGetProtoByName_padding[1];
     char at_s_Wsock32Export_WSAAsyncGetProtoByNumber[25]; /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
-    byte at_s_Wsock32Export_WSAAsyncGetProtoByNumber_rest_tail[1];
+    byte at_s_Wsock32Export_WSAAsyncGetProtoByNumber_padding[1];
     char at_s_Wsock32Export_WSAAsyncGetServByName[22]; /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
     char at_s_Wsock32Export_WSAAsyncGetServByPort[22]; /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
     char at_s_Wsock32Export_WSAAsyncSelect[15]; /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
-    byte at_s_Wsock32Export_WSAAsyncSelect_rest_tail[1];
+    byte at_s_Wsock32Export_WSAAsyncSelect_padding[1];
     char at_s_Wsock32Export_WSACancelAsyncRequest[22]; /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
     char at_s_Wsock32Export_WSACancelBlockingCall[22]; /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
     char at_s_Wsock32Export_WSACleanup[11]; /* 00574F36 s_Wsock32Export_WSACleanup */
-    byte at_s_Wsock32Export_WSACleanup_rest_tail[1];
+    byte at_s_Wsock32Export_WSACleanup_padding[1];
     char at_s_Wsock32Export_WSAGetLastError[16]; /* 00574F42 s_Wsock32Export_WSAGetLastError */
     char at_s_Wsock32Export_WSAIsBlocking[14]; /* 00574F52 s_Wsock32Export_WSAIsBlocking */
     char at_s_Wsock32Export_WSASetBlockingHook[19]; /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
-    byte at_s_Wsock32Export_WSASetBlockingHook_rest_tail[1];
+    byte at_s_Wsock32Export_WSASetBlockingHook_padding[1];
     char at_dynapi_159[16]; /* 00574F74 dynapi_159 */
     char at_s_Wsock32Export_WSAStartup[11]; /* 00574F84 s_Wsock32Export_WSAStartup */
-    byte at_s_Wsock32Export_WSAStartup_rest_tail[1];
+    byte at_s_Wsock32Export_WSAStartup_padding[1];
     char at_s_Wsock32Export_WSAUnhookBlockingHook[22]; /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
-    dword at_dynapi_162[2]; /* 00574FA6 dynapi_162 */
-    dword at_dynapi_163[1]; /* 00574FAE dynapi_163 */
-    byte at_dynapi_163_tail[2];
+    char at_dynapi_162[7]; /* 00574FA6 dynapi_162 */
+    byte at_dynapi_162_padding[1];
+    char at_dynapi_163[5]; /* 00574FAE dynapi_163 */
+    byte at_dynapi_163_padding[1];
     char at_dynapi_164[12]; /* 00574FB4 dynapi_164 */
     char at_dynapi_165[8]; /* 00574FC0 dynapi_165 */
     char at_dynapi_166[12]; /* 00574FC8 dynapi_166 */
     char at_dynapi_167[12]; /* 00574FD4 dynapi_167 */
-    dword at_dynapi_168[3]; /* 00574FE0 dynapi_168 */
+    char at_dynapi_168[11]; /* 00574FE0 dynapi_168 */
+    byte at_dynapi_168_padding[1];
     char at_dynapi_169[6]; /* 00574FEC dynapi_169 */
     char at_dynapi_170[6]; /* 00574FF2 dynapi_170 */
     char at_dynapi_171[12]; /* 00574FF8 dynapi_171 */
-    dword at_dynapi_172[2]; /* 00575004 dynapi_172 */
+    char at_dynapi_172[7]; /* 00575004 dynapi_172 */
+    byte at_dynapi_172_padding[1];
     char at_dynapi_173[6]; /* 0057500C dynapi_173 */
     char at_dynapi_174[6]; /* 00575012 dynapi_174 */
-    dword at_dynapi_175[1]; /* 00575018 dynapi_175 */
-    byte at_dynapi_175_tail[2];
-    dword at_dynapi_176[2]; /* 0057501E dynapi_176 */
-    byte at_dynapi_176_tail[2];
-    dword at_dynapi_177[2]; /* 00575028 dynapi_177 */
-    dword at_dynapi_178[1]; /* 00575030 dynapi_178 */
-    byte at_dynapi_178_tail[2];
-    dword at_dynapi_179[2]; /* 00575036 dynapi_179 */
-    dword at_dynapi_180[3]; /* 0057503E dynapi_180 */
-    dword at_dynapi_181[2]; /* 0057504A dynapi_181 */
-    byte at_dynapi_181_tail[2];
-    dword at_dynapi_182[2]; /* 00575054 dynapi_182 */
+    char at_dynapi_175[5]; /* 00575018 dynapi_175 */
+    byte at_dynapi_175_padding[1];
+    char at_dynapi_176[9]; /* 0057501E dynapi_176 */
+    byte at_dynapi_176_padding[1];
+    char at_dynapi_177[7]; /* 00575028 dynapi_177 */
+    byte at_dynapi_177_padding[1];
+    char at_dynapi_178[5]; /* 00575030 dynapi_178 */
+    byte at_dynapi_178_padding[1];
+    char at_dynapi_179[7]; /* 00575036 dynapi_179 */
+    byte at_dynapi_179_padding[1];
+    char at_dynapi_180[11]; /* 0057503E dynapi_180 */
+    byte at_dynapi_180_padding[1];
+    char at_dynapi_181[9]; /* 0057504A dynapi_181 */
+    byte at_dynapi_181_padding[1];
+    char at_dynapi_182[7]; /* 00575054 dynapi_182 */
+    byte at_dynapi_182_padding[1];
     char at_dynapi_183[10]; /* 0057505C dynapi_183 */
-    dword at_dynapi_184[4]; /* 00575066 dynapi_184 */
+    char at_dynapi_184[15]; /* 00575066 dynapi_184 */
+    byte at_dynapi_184_padding[1];
     char at_dynapi_185[22]; /* 00575076 dynapi_185 */
-    dword at_dynapi_186[3]; /* 0057508C dynapi_186 */
+    char at_dynapi_186[11]; /* 0057508C dynapi_186 */
+    byte at_dynapi_186_padding[1];
     char at_dynapi_187[14]; /* 00575098 dynapi_187 */
-    dword at_dynapi_188[3]; /* 005750A6 dynapi_188 */
-    dword at_dynapi_189[4]; /* 005750B2 dynapi_189 */
+    char at_dynapi_188[11]; /* 005750A6 dynapi_188 */
+    byte at_dynapi_188_padding[1];
+    char at_dynapi_189[15]; /* 005750B2 dynapi_189 */
+    byte at_dynapi_189_padding[1];
     char at_dynapi_190[20]; /* 005750C2 dynapi_190 */
-    dword at_dynapi_191[5]; /* 005750D6 dynapi_191 */
-    byte at_dynapi_191_tail[2];
+    char at_dynapi_191[21]; /* 005750D6 dynapi_191 */
+    byte at_dynapi_191_padding[1];
     char at_dynapi_192[18]; /* 005750EC dynapi_192 */
-    dword at_dynapi_193[4]; /* 005750FE dynapi_193 */
+    char at_dynapi_193[15]; /* 005750FE dynapi_193 */
+    byte at_dynapi_193_padding[1];
     char at_dynapi_194[16]; /* 0057510E dynapi_194 */
-    dword at_dynapi_195[6]; /* 0057511E dynapi_195 */
+    char at_dynapi_195[23]; /* 0057511E dynapi_195 */
+    byte at_dynapi_195_padding[1];
     char at_dynapi_196[16]; /* 00575136 dynapi_196 */
-    dword at_dynapi_197[2]; /* 00575146 dynapi_197 */
-    byte at_dynapi_197_tail[2];
-    dword at_dynapi_198[2]; /* 00575150 dynapi_198 */
-    byte at_dynapi_198_tail[2];
-    dword at_dynapi_199[2]; /* 0057515A dynapi_199 */
-    byte at_dynapi_199_tail[2];
+    char at_dynapi_197[9]; /* 00575146 dynapi_197 */
+    byte at_dynapi_197_padding[1];
+    char at_dynapi_198[9]; /* 00575150 dynapi_198 */
+    byte at_dynapi_198_padding[1];
+    char at_dynapi_199[9]; /* 0057515A dynapi_199 */
+    byte at_dynapi_199_padding[1];
     char at_dynapi_200[14]; /* 00575164 dynapi_200 */
     char at_dynapi_201[12]; /* 00575172 dynapi_201 */
-    dword at_dynapi_202[2]; /* 0057517E dynapi_202 */
-    byte at_dynapi_202_tail[2];
-    dword at_dynapi_203[2]; /* 00575188 dynapi_203 */
-    byte at_dynapi_203_tail[2];
+    char at_dynapi_202[9]; /* 0057517E dynapi_202 */
+    byte at_dynapi_202_padding[1];
+    char at_dynapi_203[9]; /* 00575188 dynapi_203 */
+    byte at_dynapi_203_padding[1];
     char at_dynapi_204[8]; /* 00575192 dynapi_204 */
     char at_dynapi_205[18]; /* 0057519A dynapi_205 */
     char at_dynapi_206[12]; /* 005751AC dynapi_206 */
@@ -3288,45 +3326,53 @@ typedef struct ImageData_00573EE8 {
     char at_dynapi_208[8]; /* 005751C6 dynapi_208 */
     char at_dynapi_209[18]; /* 005751CE dynapi_209 */
     char at_dynapi_210[10]; /* 005751E0 dynapi_210 */
-    dword at_dynapi_211[5]; /* 005751EA dynapi_211 */
+    char at_dynapi_211[19]; /* 005751EA dynapi_211 */
+    byte at_dynapi_211_padding[1];
     char at_dynapi_212[12]; /* 005751FE dynapi_212 */
     char at_dynapi_213[16]; /* 0057520A dynapi_213 */
-    dword at_dynapi_214[3]; /* 0057521A dynapi_214 */
-    dword at_dynapi_215[3]; /* 00575226 dynapi_215 */
+    char at_dynapi_214[11]; /* 0057521A dynapi_214 */
+    byte at_dynapi_214_padding[1];
+    char at_dynapi_215[11]; /* 00575226 dynapi_215 */
+    byte at_dynapi_215_padding[1];
     char at_dynapi_216[22]; /* 00575232 dynapi_216 */
-    dword at_dynapi_217[6]; /* 00575248 dynapi_217 */
-    byte at_dynapi_217_tail[2];
+    char at_dynapi_217[25]; /* 00575248 dynapi_217 */
+    byte at_dynapi_217_padding[1];
     char at_dynapi_218[10]; /* 00575262 dynapi_218 */
     char at_dynapi_219[10]; /* 0057526C dynapi_219 */
     char at_dynapi_220[14]; /* 00575276 dynapi_220 */
     char at_dynapi_221[14]; /* 00575284 dynapi_221 */
     char at_dynapi_222[12]; /* 00575292 dynapi_222 */
-    dword at_dynapi_223[4]; /* 0057529E dynapi_223 */
-    dword at_dynapi_224[4]; /* 005752AE dynapi_224 */
-    byte at_dynapi_224_tail[2];
+    char at_dynapi_223[15]; /* 0057529E dynapi_223 */
+    byte at_dynapi_223_padding[1];
+    char at_dynapi_224[17]; /* 005752AE dynapi_224 */
+    byte at_dynapi_224_padding[1];
     char at_dynapi_225[14]; /* 005752C0 dynapi_225 */
     char at_dynapi_226[14]; /* 005752CE dynapi_226 */
     char at_dynapi_227[22]; /* 005752DC dynapi_227 */
     char at_dynapi_228[22]; /* 005752F2 dynapi_228 */
-    dword at_dynapi_229[6]; /* 00575308 dynapi_229 */
-    dword at_dynapi_230[6]; /* 00575320 dynapi_230 */
-    byte at_dynapi_230_tail[2];
+    char at_dynapi_229[23]; /* 00575308 dynapi_229 */
+    byte at_dynapi_229_padding[1];
+    char at_dynapi_230[25]; /* 00575320 dynapi_230 */
+    byte at_dynapi_230_padding[1];
     char at_dynapi_231[22]; /* 0057533A dynapi_231 */
     char at_dynapi_232[22]; /* 00575350 dynapi_232 */
     char at_dynapi_233[22]; /* 00575366 dynapi_233 */
     char at_dynapi_234[20]; /* 0057537C dynapi_234 */
-    dword at_dynapi_235[7]; /* 00575390 dynapi_235 */
+    char at_dynapi_235[27]; /* 00575390 dynapi_235 */
+    byte at_dynapi_235_padding[1];
     char at_dynapi_236[24]; /* 005753AC dynapi_236 */
-    dword at_dynapi_237[8]; /* 005753C4 dynapi_237 */
-    byte at_dynapi_237_tail[2];
+    char at_dynapi_237[33]; /* 005753C4 dynapi_237 */
+    byte at_dynapi_237_padding[1];
     char at_dynapi_238[24]; /* 005753E6 dynapi_238 */
-    dword at_dynapi_239[6]; /* 005753FE dynapi_239 */
+    char at_dynapi_239[23]; /* 005753FE dynapi_239 */
+    byte at_dynapi_239_padding[1];
     char at_dynapi_240[20]; /* 00575416 dynapi_240 */
     char at_dynapi_241[22]; /* 0057542A dynapi_241 */
     char at_dynapi_242[22]; /* 00575440 dynapi_242 */
-    dword at_dynapi_243[4]; /* 00575456 dynapi_243 */
-    dword at_dynapi_244[6]; /* 00575466 dynapi_244 */
-    byte at_dynapi_244_tail[2];
+    char at_dynapi_243[15]; /* 00575456 dynapi_243 */
+    byte at_dynapi_243_padding[1];
+    char at_dynapi_244[20]; /* 00575466 dynapi_244 */
+    byte at_dynapi_244_padding[6];
     byte at_g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
     dword at_g_FatalErrorNarrowBuffer_rest[4]; /* beyond the declared type */
 } ImageData_00573EE8;
@@ -3455,7 +3501,7 @@ typedef struct ImageData_00577BFC {
     dword at_g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
     dword at_g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
     char at_s_D3DALL_00578078[7]; /* 00578078 s_D3DALL_00578078 */
-    byte at_s_D3DALL_00578078_rest_tail[1];
+    byte at_s_D3DALL_00578078_padding[1];
 } ImageData_00577BFC;
 extern ImageData_00577BFC g_ImageData_00577BFC;
 
@@ -3521,8 +3567,7 @@ typedef struct ImageData_0057ECC8 {
     sdword at_g_GlideSecondBufferOffset; /* 0057EE7C g_GlideSecondBufferOffset */
     byte * at_g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
     char at_s_GLIDE_0057ee84[6]; /* 0057EE84 s_GLIDE_0057ee84 */
-    dword at_s_GLIDE_0057ee84_rest[1]; /* beyond the declared type */
-    byte at_s_GLIDE_0057ee84_rest_tail[2];
+    byte at_s_GLIDE_0057ee84_padding[6];
 } ImageData_0057ECC8;
 extern ImageData_0057ECC8 g_ImageData_0057ECC8;
 
@@ -3593,7 +3638,7 @@ typedef struct ImageData_005856A0 {
     CommandLineArgumentMirrorState500 at_g_CommandLine; /* 0058581C g_CommandLine */
     char at_sz_MainWindowTitle[15]; /* 00585D1C sz_MainWindowTitle */
     char at_sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
-    dword at_sz_MainWindowClass_rest[1]; /* beyond the declared type */
+    byte at_sz_MainWindowClass_padding[4];
 } ImageData_005856A0;
 extern ImageData_005856A0 g_ImageData_005856A0;
 

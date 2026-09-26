@@ -161,6 +161,21 @@ for k, (start, size, name) in enumerate(objects):
 objects = renamed
 object_starts = [o[0] for o in objects]
 
+def is_jump_table(name, start, end):
+    """A label-only object holding only addresses inside original functions (switch targets) and
+    0x90 padding: a jump table (or the tail of one) of the original code."""
+    if name in macros or end - start < 8:
+        return False
+    targets = 0
+    for x in range(start, end - 3, 4):
+        v = dword_at(x)
+        if v == 0x90909090:
+            continue
+        if not (START <= v < END and code[v - START] and v not in funcs):
+            return False
+        targets += 1
+    return targets > 0
+
 # ---- member layout per block
 def identifier(name, used):
     # leading underscore: the object names are also macros (globals.h), which would expand here
@@ -246,16 +261,20 @@ def string_member(start, end):
         encoded = (value + '\0').encode('utf-16le' if wide else 'latin-1')
     except UnicodeEncodeError:
         return None
-    if len(encoded) > end - start or (end - start) % unit:
+    if len(encoded) > end - start:
         return None
     if bytes(byte_at(x) for x in range(start, start + len(encoded))) != encoded:
-        return None
-    if any(byte_at(x) for x in range(start + len(encoded), end)):
         return None
     literal = c_string_literal(value, wide)
     if literal is None:
         return None
-    return ('word' if wide else 'char', (end - start) // unit, literal)
+    rest = [byte_at(x) for x in range(start + len(encoded), end)]
+    if not any(rest) and (end - start) % unit == 0:
+        return ('word' if wide else 'char', (end - start) // unit, literal, end - start)
+    if all(b in (0, 0x90) for b in rest):
+        # the string, then alignment padding (0x90) up to the next object
+        return ('word' if wide else 'char', len(encoded) // unit, literal, len(encoded))
+    return None
 
 pointers = []
 
@@ -567,7 +586,7 @@ def node_member(type_name, offset):
         return 'node%04X' % offset, ''
     name = entry['name']
     return name[0].lower() + name[1:], entry.get('note', '')
-ui_vtables = set(a for a, _, n in objects if 'vtable' in n.lower())
+ui_vtables = set(a for a, s, n in objects if 'vtable' in n.lower() and not is_jump_table(n, a, a + s))
 NODE_BASE = type_layouts.get('UiNodeBase')
 NODE_LINKS = ('nextSibling', 'firstChild', 'parent')
 extra_types = {}    # block index -> typedefs the block struct needs
@@ -667,15 +686,18 @@ for k, (a, b) in enumerate(blocks):
     inits = []
     for start, end, member, name in members[k]:
         comment = '/* %08X %s */' % (start, name if name else 'gap')
-        if name and ('_SwitchTable_' in name or name.startswith('switchdata')):
+        if name and ('_SwitchTable_' in name or name.startswith('switchdata') or is_jump_table(name, start, end)):
             comment = '/* %08X %s: jump table of the original code, not used by the C code */' % (start, name)
         owner = containing_object(start)
         numeric = owner is not None and bool(NUMERIC.match(types.get(owner[2], 'struct').strip()))
         s = string_member(start, end) if name else None
         if s is not None:
-            ctype, count, literal = s
+            ctype, count, literal, used = s
             decls.append('    %s %s[%d]; %s' % (ctype, member, count, comment))
             inits.append('    %s, %s' % (literal, comment))
+            if start + used < end:
+                decls.append('    byte %s_padding[%d];' % (member, end - start - used))
+                inits.append('    %s,' % byte_list(start + used, end))
             continue
         if name in COMPUTED:
             count, tail = divmod(end - start, 4)
