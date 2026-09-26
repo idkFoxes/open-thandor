@@ -24,36 +24,36 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 
 {
   dword registrationStatusCode;
-  AssetRecordCount AVar1;
+  AssetRecordCount remainingEntryCount;
   EffectAssetHeader *definition;
   EffectDefinition *definitionCursor;
-  StatusValueEaxCf5 SVar2;
-  StatusValueEaxCf5 SVar3;
+  StatusValueEaxCf5 registrationResult;
+  StatusValueEaxCf5 failureResult;
   
   registrationStatusCode = 0x47;
   if (((asset->entryCountHeader).common.magic == ASSET_MAGIC_EFF) &&
      ((asset->entryCountHeader).common.converterVersion == PCK_CONVERTER_EFF_00040007)) {
-    AVar1 = (asset->entryCountHeader).entryCount;
+    remainingEntryCount = (asset->entryCountHeader).entryCount;
     definition = asset + 1;
     while( true ) {
-      if (AVar1 == 0) {
-        SVar2.carry = false;
-        SVar2.valueOrError = registrationStatusCode;
-        return SVar2;
+      if (remainingEntryCount == 0) {
+        registrationResult.carry = false;
+        registrationResult.valueOrError = registrationStatusCode;
+        return registrationResult;
       }
-      SVar2 = EffectDefinition_RegisterAndLoadSpriteCf((EffectDefinition *)definition);
-      registrationStatusCode = SVar2.valueOrError;
-      if (SVar2.carry) break;
+      registrationResult = EffectDefinition_RegisterAndLoadSpriteCf((EffectDefinition *)definition);
+      registrationStatusCode = registrationResult.valueOrError;
+      if (registrationResult.carry) break;
       definition = (EffectAssetHeader *)(definition->reservedB4_1FF + 0xc);
-      AVar1 = AVar1 - 1;
+      remainingEntryCount = remainingEntryCount - 1;
     }
   }
   else {
     Package_SetLastErrorPath((word *)asset);
   }
-  SVar3.carry = true;
-  SVar3.valueOrError = registrationStatusCode;
-  return SVar3;
+  failureResult.carry = true;
+  failureResult.valueOrError = registrationStatusCode;
+  return failureResult;
 }
 
 
@@ -67,12 +67,12 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossReferences(void)
 
 {
-  StatusValueEaxCf5 SVar1;
+  StatusValueEaxCf5 successResult;
   ShotDefinition *in_EAX = (ShotDefinition *)0; /* success returns the last resolved definition; callers test CF only */
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
-  EffectDefinitionLookupEaxCf5 EVar2;
-  ShotDefinitionLookupEaxCf5 SVar3;
+  EffectDefinitionLookupEaxCf5 effectLookup;
+  ShotDefinitionLookupEaxCf5 shotLookup;
   EffectDefinition *currentDefinition;
   
   registryCursor = g_EffectDefinitionRegistry;
@@ -81,20 +81,20 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
     currentDefinition = *registryCursor;
     if (currentDefinition != (EffectDefinition *)0x0) {
       if (currentDefinition->linkedEffectPresent != 0) {
-        EVar2 = EffectDefinitionRegistry_FindByIdWithErrorCf
+        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
-        in_EAX = (ShotDefinition *)EVar2.definitionOrError;
-        if (EVar2.carry) {
-          return THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, StatusValueEaxCf5, EVar2);
+        in_EAX = (ShotDefinition *)effectLookup.definitionOrError;
+        if (effectLookup.carry) {
+          return THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, StatusValueEaxCf5, effectLookup);
         }
         currentDefinition->linkedEffectDefinition = (EffectDefinition *)in_EAX;
       }
       if (currentDefinition->linkedShotPresent != 0) {
-        SVar3 = ShotDefinitionRegistry_FindByIdWithErrorCf
+        shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
                           ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
-        in_EAX = SVar3.definitionOrError;
-        if (SVar3.carry) {
-          return THANDOR_BITCAST(ShotDefinitionLookupEaxCf5, StatusValueEaxCf5, SVar3);
+        in_EAX = shotLookup.definitionOrError;
+        if (shotLookup.carry) {
+          return THANDOR_BITCAST(ShotDefinitionLookupEaxCf5, StatusValueEaxCf5, shotLookup);
         }
         currentDefinition->linkedShotDefinition = in_EAX;
       }
@@ -102,9 +102,9 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
   } while (registrySlotsRemaining != 0);
-  SVar1.carry = false;
-  SVar1.valueOrError = (dword)in_EAX;
-  return SVar1;
+  successResult.carry = false;
+  successResult.valueOrError = (dword)in_EAX;
+  return successResult;
 }
 
 
@@ -126,51 +126,51 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
 
 {
   SpriteAssetHeader *asset;
-  SpriteAssetHeader *pSVar1;
-  int iVar2;
+  SpriteAssetHeader *existingSpriteAsset;
+  int registrySlotsRemaining;
   EffectDefinition **registrySlotCursor;
-  bool bVar3;
-  EffectDefinitionLookupEaxCf5 EVar4;
-  StatusValueEaxCf5 SVar5;
-  PackageLoadEntryEaxCf5 PVar6;
-  SpriteRegisterRelocateEaxCf5 SVar7;
-  StatusValueEaxCf5 SVar8;
+  bool extensionFailed;
+  EffectDefinitionLookupEaxCf5 duplicateLookup;
+  StatusValueEaxCf5 failureResult;
+  PackageLoadEntryEaxCf5 packageLoad;
+  SpriteRegisterRelocateEaxCf5 spriteRegistration;
+  StatusValueEaxCf5 successResult;
   
   registrySlotCursor = g_EffectDefinitionRegistry;
-  iVar2 = 0x100;
-  EVar4 = EffectRuntime_FindDefinitionByIdCf(definition->definitionId);
-  asset = (SpriteAssetHeader *)EVar4.definitionOrError;
-  if (EVar4.carry) {
+  registrySlotsRemaining = 0x100;
+  duplicateLookup = EffectRuntime_FindDefinitionByIdCf(definition->definitionId);
+  asset = (SpriteAssetHeader *)duplicateLookup.definitionOrError;
+  if (duplicateLookup.carry) {
     do {
       if (*registrySlotCursor == (EffectDefinition *)0x0) {
         *registrySlotCursor = definition;
-        bVar3 = WidePath_SetExtensionCode(0x727073,definition->resourcePathUtf16);
-        if (bVar3) goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
-        PVar6 = Package_LoadEntry(definition->resourcePathUtf16);
-        asset = PVar6.bufferOrError;
-        if (PVar6.carry)
+        extensionFailed = WidePath_SetExtensionCode(0x727073,definition->resourcePathUtf16);
+        if (extensionFailed) goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
+        packageLoad = Package_LoadEntry(definition->resourcePathUtf16);
+        asset = packageLoad.bufferOrError;
+        if (packageLoad.carry)
         goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
-        pSVar1 = SpriteAssetRegistry_FindById((asset->registryHeader).registryId);
-        if (pSVar1 == (SpriteAssetHeader *)0x0) {
+        existingSpriteAsset = SpriteAssetRegistry_FindById((asset->registryHeader).registryId);
+        if (existingSpriteAsset == (SpriteAssetHeader *)0x0) {
           definition->ownedNestedResourcePresent = definition->ownedNestedResourcePresent + 1;
           definition->ownedNestedResource = asset;
-          SVar7 = SpriteAsset_RegisterAndRelocatePointers(asset);
-          asset = SVar7.assetOrError;
-          if (SVar7.carry)
+          spriteRegistration = SpriteAsset_RegisterAndRelocatePointers(asset);
+          asset = spriteRegistration.assetOrError;
+          if (spriteRegistration.carry)
           goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
         }
         else {
-          definition->ownedNestedResource = pSVar1;
+          definition->ownedNestedResource = existingSpriteAsset;
           Resource_Release(asset);
-          asset = pSVar1;
+          asset = existingSpriteAsset;
         }
-        SVar8.carry = false;
-        SVar8.valueOrError = (dword)asset;
-        return SVar8;
+        successResult.carry = false;
+        successResult.valueOrError = (dword)asset;
+        return successResult;
       }
       registrySlotCursor = registrySlotCursor + 1;
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
+      registrySlotsRemaining = registrySlotsRemaining + -1;
+    } while (registrySlotsRemaining != 0);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
     asset = (SpriteAssetHeader *)0x49;
   }
@@ -180,9 +180,9 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
     asset = (SpriteAssetHeader *)0x4e;
   }
 EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError:
-  SVar5.carry = true;
-  SVar5.valueOrError = (dword)asset;
-  return SVar5;
+  failureResult.carry = true;
+  failureResult.valueOrError = (dword)asset;
+  return failureResult;
 }
 
 
@@ -198,8 +198,8 @@ EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog defini
   EffectDefinition *candidateDefinition;
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
-  EffectDefinitionLookupEaxCf5 EVar1;
-  EffectDefinitionLookupEaxCf5 EVar2;
+  EffectDefinitionLookupEaxCf5 missResult;
+  EffectDefinitionLookupEaxCf5 foundResult;
   
   registryCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = 0x100;
@@ -212,14 +212,14 @@ EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog defini
       if (registrySlotsRemaining == 0) {
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-        EVar1.carry = true;
-        EVar1.definitionOrError = (EffectDefinition *)0x48;
-        return EVar1;
+        missResult.carry = true;
+        missResult.definitionOrError = (EffectDefinition *)0x48;
+        return missResult;
       }
     }
   }
-  EVar2.carry = false;
-  EVar2.definitionOrError = candidateDefinition;
-  return EVar2;
+  foundResult.carry = false;
+  foundResult.definitionOrError = candidateDefinition;
+  return foundResult;
 }
 

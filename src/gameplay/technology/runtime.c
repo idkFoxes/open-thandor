@@ -28,7 +28,7 @@ Technology_UnlockForFaction
           TechnologyId technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
-  WorldOwnerListNode100 *pWVar1;
+  WorldOwnerListNode100 *ownerNode;
   ArmyRuntimeSlot *modelRuntimeHolder;
   InGameRuntimeRootImageC3E4 *node;
   uint technologyBitMask;
@@ -58,10 +58,10 @@ Technology_UnlockForFaction
     Technology_UnlockForFaction
               (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex)
     ;
-    for (pWVar1 = (node->worldRuntime0A30).ownerListHead; pWVar1 != (WorldOwnerListNode100 *)0x0;
-        pWVar1 = pWVar1->nextNode) {
-      if ((pWVar1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-         (modelRuntimeHolder = *(ArmyRuntimeSlot **)((int)pWVar1->runtimePayload + 8),
+    for (ownerNode = (node->worldRuntime0A30).ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+        ownerNode = ownerNode->nextNode) {
+      if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+         (modelRuntimeHolder = *(ArmyRuntimeSlot **)((int)ownerNode->runtimePayload + 8),
          factionIndex == modelRuntimeHolder->factionIndex)) {
         ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(factionIndex,modelRuntimeHolder);
       }
@@ -210,15 +210,15 @@ void __thandor_void_preserve_eax_ecx_edx
 TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
 
 {
-  ModelDefinitionRecordPrefix *pMVar1;
+  ModelDefinitionRecordPrefix *definitionRecord;
   uint technologyBitMask;
-  int iVar2;
-  int iVar3;
+  int remainingCount;
+  int maskWordIndex;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
   undefined4 *categoryReciprocalCursor;
   TechnologyCategoryMasks *categoryMaskClearCursor;
   TechnologyRecord *technologyRecordCursor;
-  ModelDefinitionLookupEaxCf5 MVar4;
+  ModelDefinitionLookupEaxCf5 modelLookup;
   ArmyAssetRecordPrefix *armyAssetRecord;
   
   g_TechnologyCategoryMaximum0 = 1;
@@ -231,62 +231,62 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   g_TechnologyCategoryMaximum7 = 1;
   g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
   armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
-  iVar2 = 0x300;
+  remainingCount = 0x300;
   do {
     armyAssetRecord = *armyAssetRegistryCursor;
     if ((armyAssetRecord != (ArmyAssetRecordPrefix *)0x0) &&
        ((armyAssetRecord[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-      MVar4 = ModelDefinitionRegistry_FindByIdWithErrorCf
+      modelLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
                         (*(PckModelDefinitionIdCatalog *)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
-      pMVar1 = MVar4.modelDefinition;
-      if (!MVar4.carry) {
-        if ((int)(&g_TechnologyCategoryMaximum0)[pMVar1[7].definitionId] < (int)pMVar1[8].byteSize)
+      definitionRecord = modelLookup.modelDefinition;
+      if (!modelLookup.carry) {
+        if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord[7].definitionId] < (int)definitionRecord[8].byteSize)
         {
-          (&g_TechnologyCategoryMaximum0)[pMVar1[7].definitionId] = pMVar1[8].byteSize;
+          (&g_TechnologyCategoryMaximum0)[definitionRecord[7].definitionId] = definitionRecord[8].byteSize;
         }
-        if ((pMVar1[2].byteSize != 0) &&
-           ((int)g_AiArmyCandidateFlaggedDefinitionValueMaximum < (int)pMVar1[1].byteSize)) {
-          g_AiArmyCandidateFlaggedDefinitionValueMaximum = pMVar1[1].byteSize;
+        if ((definitionRecord[2].byteSize != 0) &&
+           ((int)g_AiArmyCandidateFlaggedDefinitionValueMaximum < (int)definitionRecord[1].byteSize)) {
+          g_AiArmyCandidateFlaggedDefinitionValueMaximum = definitionRecord[1].byteSize;
         }
       }
     }
     armyAssetRegistryCursor = armyAssetRegistryCursor + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   categoryReciprocalCursor = &g_TechnologyCategoryMaximumReciprocalQ24Table8;
-  iVar2 = 8;
+  remainingCount = 8;
   do {
     *categoryReciprocalCursor = (int)(0x1000000 / (ulonglong)(uint)categoryReciprocalCursor[8]);
     categoryReciprocalCursor = categoryReciprocalCursor + 1;
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   categoryMaskClearCursor = &g_TechnologyCategoryMasks;
-  for (iVar2 = 0x10; iVar2 != 0; iVar2 = iVar2 + -1) {
+  for (remainingCount = 0x10; remainingCount != 0; remainingCount = remainingCount + -1) {
     categoryMaskClearCursor->category2[0] = 0;
     categoryMaskClearCursor = (TechnologyCategoryMasks *)(categoryMaskClearCursor->category2 + 1);
   }
-  iVar2 = 0x100;
+  remainingCount = 0x100;
   technologyRecordCursor = g_TechnologyAsset->records;
   technologyBitMask = 1;
-  iVar3 = 0;
+  maskWordIndex = 0;
   do {
     if (technologyRecordCursor->category == TECHNOLOGY_CATEGORY_C) {
-      g_TechnologyCategoryMasks.category2[iVar3] =
-           g_TechnologyCategoryMasks.category2[iVar3] | technologyBitMask;
+      g_TechnologyCategoryMasks.category2[maskWordIndex] =
+           g_TechnologyCategoryMasks.category2[maskWordIndex] | technologyBitMask;
     }
     if (technologyRecordCursor->category == TECHNOLOGY_CATEGORY_D) {
-      g_TechnologyCategoryMasks.category3[iVar3] =
-           g_TechnologyCategoryMasks.category3[iVar3] | technologyBitMask;
+      g_TechnologyCategoryMasks.category3[maskWordIndex] =
+           g_TechnologyCategoryMasks.category3[maskWordIndex] | technologyBitMask;
     }
     technologyRecordCursor = technologyRecordCursor + 1;
     technologyBitMask = technologyBitMask * 2;
     if (technologyBitMask == 0) {
-      iVar3 = iVar3 + 1;
+      maskWordIndex = maskWordIndex + 1;
       technologyBitMask = 1;
     }
-    iVar2 = iVar2 + -1;
-  } while (iVar2 != 0);
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
   return;
 }
 

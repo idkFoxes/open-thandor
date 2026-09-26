@@ -144,7 +144,7 @@ WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
 {
   int codeUnitsRemaining;
   int copyCodeUnitsRemaining;
-  int iVar1;
+  int leafCodeUnitsRemaining;
   word *directoryScanCursor;
   word *currentPathScanCursor;
   bool terminatorFound;
@@ -172,17 +172,17 @@ WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
         destination = destination + 1;
       }
     }
-    iVar1 = 0x100;
+    leafCodeUnitsRemaining = 0x100;
     leafTerminatorFound = true;
     currentPathScanCursor = leaf;
     do {
-      if (iVar1 == 0) break;
-      iVar1 = iVar1 + -1;
+      if (leafCodeUnitsRemaining == 0) break;
+      leafCodeUnitsRemaining = leafCodeUnitsRemaining + -1;
       leafTerminatorFound = *currentPathScanCursor == 0;
       currentPathScanCursor = currentPathScanCursor + 1;
     } while (!leafTerminatorFound);
     if (leafTerminatorFound) {
-      for (iVar1 = 0x100 - iVar1; iVar1 != 0; iVar1 = iVar1 + -1) {
+      for (leafCodeUnitsRemaining = 0x100 - leafCodeUnitsRemaining; leafCodeUnitsRemaining != 0; leafCodeUnitsRemaining = leafCodeUnitsRemaining + -1) {
         *destination = *leaf;
         leaf = leaf + 1;
         destination = destination + 1;
@@ -202,44 +202,44 @@ WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
 dword __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(word *path)
 
 {
-  dword dVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
+  dword parsedValue;
+  int scanCountOrPlaceValue;
+  uint scannedCodeUnitCount;
+  uint digitValue;
   word *terminatorCursor;
   ushort *digitScanCursor;
   word currentCodeUnit;
   ushort digitCodeUnit;
   
-  iVar2 = 0x20;
+  scanCountOrPlaceValue = 0x20;
   do {
     terminatorCursor = path;
-    if (iVar2 == 0) break;
-    iVar2 = iVar2 + -1;
+    if (scanCountOrPlaceValue == 0) break;
+    scanCountOrPlaceValue = scanCountOrPlaceValue + -1;
     terminatorCursor = path + 1;
     currentCodeUnit = *path;
     path = terminatorCursor;
   } while (currentCodeUnit != 0);
   terminatorCursor = terminatorCursor + -6;
-  dVar1 = 0;
-  uVar3 = iVar2 + 6;
-  iVar2 = 1;
+  parsedValue = 0;
+  scannedCodeUnitCount = scanCountOrPlaceValue + 6;
+  scanCountOrPlaceValue = 1;
   digitScanCursor = terminatorCursor;
   while( true ) {
     digitCodeUnit = *digitScanCursor;
-    uVar3 = uVar3 + 1;
+    scannedCodeUnitCount = scannedCodeUnitCount + 1;
     digitScanCursor = digitScanCursor + -1;
-    uVar4 = digitCodeUnit - 0x30;
+    digitValue = digitCodeUnit - 0x30;
     if (digitCodeUnit < 0x30) {
-      return dVar1;
+      return parsedValue;
     }
-    if (9 < uVar4) break;
-    dVar1 = dVar1 + uVar4 * iVar2;
-    iVar2 = iVar2 * 10;
-    if (0x1f < uVar3) {
-      return dVar1;
+    if (9 < digitValue) break;
+    parsedValue = parsedValue + digitValue * scanCountOrPlaceValue;
+    scanCountOrPlaceValue = scanCountOrPlaceValue * 10;
+    if (0x1f < scannedCodeUnitCount) {
+      return parsedValue;
     }
   }
-  return dVar1;
+  return parsedValue;
 }
 

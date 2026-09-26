@@ -32,58 +32,58 @@ dword FncModule_GetBindingModeCf(FncModuleHeader *module)
 FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule)
 
 {
-  ArenaFreeProc *pAVar1;
-  ArenaShrinkProc *pAVar2;
-  LocaleGetPackedCurrentDateProc *pLVar3;
-  AssetMagic *pAVar4;
-  uint uVar5;
-  AssetMagic AVar6;
-  AssetMagic *pAVar7;
-  int *piVar8;
+  ArenaFreeProc *arenaFreeProc;
+  ArenaShrinkProc *arenaShrinkProc;
+  LocaleGetPackedCurrentDateProc *packedDateProc;
+  AssetMagic *moduleBaseOrError;
+  uint sizeOrDwordCount;
+  AssetMagic relocationsRemaining;
+  AssetMagic *copyCursor;
+  int *relocationCursor;
   void **runtimeCallbackTableCursor;
-  ArenaLinearReserveEaxCf5 AVar9;
-  FncModuleLoadEaxCf5 FVar10;
+  ArenaLinearReserveEaxCf5 reserveResult;
+  FncModuleLoadEaxCf5 failureResult;
   
-  pAVar4 = (AssetMagic *)0x62;
+  moduleBaseOrError = (AssetMagic *)0x62;
   if (serializedModule->magic == ASSET_MAGIC_FNC) {
-    pAVar4 = (AssetMagic *)0x63;
-    uVar5 = serializedModule->allocationSizeBytes;
+    moduleBaseOrError = (AssetMagic *)0x63;
+    sizeOrDwordCount = serializedModule->allocationSizeBytes;
     if ((serializedModule->exportBinding).bindingMode == 0) {
-      AVar9 = (*g_MemoryApi.reserveLinear)(uVar5);
-      pAVar4 = (AssetMagic *)AVar9.baseOrError;
-      if (!AVar9.carry) {
-        pAVar7 = pAVar4;
-        for (uVar5 = uVar5 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-          *pAVar7 = serializedModule->magic;
+      reserveResult = (*g_MemoryApi.reserveLinear)(sizeOrDwordCount);
+      moduleBaseOrError = (AssetMagic *)reserveResult.baseOrError;
+      if (!reserveResult.carry) {
+        copyCursor = moduleBaseOrError;
+        for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount = sizeOrDwordCount - 1) {
+          *copyCursor = serializedModule->magic;
           serializedModule = (FncModuleHeader *)&serializedModule->allocationSizeBytes;
-          pAVar7 = pAVar7 + 1;
+          copyCursor = copyCursor + 1;
         }
-        piVar8 = (int *)((int)pAVar4 + pAVar4[0x2e]);
-        pAVar1 = g_MemoryApi.free;
-        for (AVar6 = pAVar4[0x2c]; g_MemoryApi.free = pAVar1, AVar6 != 0; AVar6 = AVar6 - 1) {
-          *piVar8 = *piVar8 + (int)pAVar4;
-          piVar8 = piVar8 + 1;
-          pAVar1 = g_MemoryApi.free;
+        relocationCursor = (int *)((int)moduleBaseOrError + moduleBaseOrError[0x2e]);
+        arenaFreeProc = g_MemoryApi.free;
+        for (relocationsRemaining = moduleBaseOrError[0x2c]; g_MemoryApi.free = arenaFreeProc, relocationsRemaining != 0; relocationsRemaining = relocationsRemaining - 1) {
+          *relocationCursor = *relocationCursor + (int)moduleBaseOrError;
+          relocationCursor = relocationCursor + 1;
+          arenaFreeProc = g_MemoryApi.free;
         }
-        runtimeCallbackTableCursor = (void **)((int)pAVar4 + pAVar4[0x2f]);
-        if (pAVar4[0x2d] == 0) {
+        runtimeCallbackTableCursor = (void **)((int)moduleBaseOrError + moduleBaseOrError[0x2f]);
+        if (moduleBaseOrError[0x2d] == 0) {
           *runtimeCallbackTableCursor = g_MemoryApi.alloc;
-          runtimeCallbackTableCursor[1] = pAVar1;
-          pAVar2 = g_MemoryApi.shrinkInPlace;
+          runtimeCallbackTableCursor[1] = arenaFreeProc;
+          arenaShrinkProc = g_MemoryApi.shrinkInPlace;
           runtimeCallbackTableCursor[2] = g_MemoryApi.allocLargestFreeBlock;
-          runtimeCallbackTableCursor[3] = pAVar2;
-          pLVar3 = g_LocaleGetPackedCurrentDate;
+          runtimeCallbackTableCursor[3] = arenaShrinkProc;
+          packedDateProc = g_LocaleGetPackedCurrentDate;
           runtimeCallbackTableCursor[4] = g_LocaleGetPackedCurrentTime;
-          runtimeCallbackTableCursor[5] = pLVar3;
+          runtimeCallbackTableCursor[5] = packedDateProc;
           runtimeCallbackTableCursor[6] = g_LocaleCopyDefaultComputerLabelUtf16;
         }
-        return THANDOR_BITCAST(qword, FncModuleLoadEaxCf5, ((THANDOR_BITCAST(ArenaLinearReserveEaxCf5, qword, AVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(qword, FncModuleLoadEaxCf5, ((THANDOR_BITCAST(ArenaLinearReserveEaxCf5, qword, reserveResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
-  FVar10.carry = true;
-  FVar10.moduleBase = (int *)pAVar4;
-  return FVar10;
+  failureResult.carry = true;
+  failureResult.moduleBase = (int *)moduleBaseOrError;
+  return failureResult;
 }
 
 
@@ -98,18 +98,18 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module)
 
 {
-  StatusValueEaxCf5 SVar1;
-  StatusValueEaxCf5 SVar2;
+  StatusValueEaxCf5 successResult;
+  StatusValueEaxCf5 failureResult;
   
   if (exportIndex < (module->exportBinding).exportCount) {
-    SVar1.carry = false;
-    SVar1.valueOrError =
+    successResult.carry = false;
+    successResult.valueOrError =
          *(uint *)(module->reserved10_AF +
                   exportIndex * 4 + (module->exportBinding).exportTableOffset + -0x10);
-    return SVar1;
+    return successResult;
   }
-  SVar2.carry = true;
-  SVar2.valueOrError = 99;
-  return SVar2;
+  failureResult.carry = true;
+  failureResult.valueOrError = 99;
+  return failureResult;
 }
 

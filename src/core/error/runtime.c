@@ -20,14 +20,14 @@
 void __cdecl ErrorSystem_Init(void)
 
 {
-  TextResourceLoadEaxCf5 TVar1;
+  TextResourceLoadEaxCf5 loadResult;
   
   g_FatalErrorPrimaryDispatchCf = FatalError_Exit;
   g_FatalErrorRuntimeDispatchCf = FatalError_Exit;
   g_FatalErrorExitFallbackDispatchCf = FatalError_Exit;
-  TVar1 = TextResourcePage_Load(0,(word *)u_texte_error_str_00407d20);
+  loadResult = TextResourcePage_Load(0,(word *)u_texte_error_str_00407d20);
                     // WARNING: Subroutine does not return
-  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),TVar1.carry);
+  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),loadResult.carry);
 }
 
 
@@ -81,49 +81,49 @@ FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
 FatalErrorRuntime_DispatchPendingErrorCf(dword errorOrValue,bool carryIn)
 
 {
-  sdword *psVar1;
-  UiRootNode *pUVar2;
+  sdword *topOffsetField;
+  UiRootNode *uiRootTemplate;
   word *stream;
-  int iVar3;
-  undefined4 *puVar4;
-  UiRootNode *pUVar5;
-  RichTextExtentRegs RVar6;
-  FatalErrorEaxCf5 FVar7;
-  FatalErrorEaxCf5 FVar8;
-  TextResourceResolveEaxCf5 TVar9;
+  int remainingDwords;
+  undefined4 *templateImageCursor;
+  UiRootNode *templateCopyCursor;
+  RichTextExtentRegs wrappedExtent;
+  FatalErrorEaxCf5 passThroughResult;
+  FatalErrorEaxCf5 dispatchResult;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if (!carryIn) {
-    FVar7.carry = false;
-    FVar7.eax = errorOrValue;
-    return FVar7;
+    passThroughResult.carry = false;
+    passThroughResult.eax = errorOrValue;
+    return passThroughResult;
   }
   if (g_FatalErrorUiRootTemplate == (UiRootNode *)0x0) {
-    FVar8 = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
-    errorOrValue = FVar8.eax;
+    dispatchResult = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
+    errorOrValue = dispatchResult.eax;
   }
   stream = (word *)errorOrValue;
   if ((errorOrValue & 0xffffff00) == 0) {
-    TVar9 = TextResource_Resolve(errorOrValue);
-    stream = TVar9.eax;
+    resolvedText = TextResource_Resolve(errorOrValue);
+    stream = resolvedText.eax;
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,stream);
   }
-  puVar4 = &g_FatalErrorUiRootTemplateImage;
-  pUVar5 = g_FatalErrorUiRootTemplate;
+  templateImageCursor = &g_FatalErrorUiRootTemplateImage;
+  templateCopyCursor = g_FatalErrorUiRootTemplate;
   g_FatalErrorRichTextStream = stream;
-  for (iVar3 = 0x44; pUVar2 = g_FatalErrorUiRootTemplate, iVar3 != 0; iVar3 = iVar3 + -1) {
-    (pUVar5->base).nextSibling = (UiNodeBase *)*puVar4;
-    puVar4 = puVar4 + 1;
-    pUVar5 = (UiRootNode *)&(pUVar5->base).firstChild;
+  for (remainingDwords = 0x44; uiRootTemplate = g_FatalErrorUiRootTemplate, remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    (templateCopyCursor->base).nextSibling = (UiNodeBase *)*templateImageCursor;
+    templateImageCursor = templateImageCursor + 1;
+    templateCopyCursor = (UiRootNode *)&(templateCopyCursor->base).firstChild;
   }
-  RVar6 = RichTextCommandStream_MeasureWrappedBlockRegs
+  wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
                     (g_UiTextStyleNormal,g_FatalErrorRichTextStream,
                      ((g_FatalErrorRichTextRight - g_FatalErrorRichTextLeft) +
                      g_FatalErrorRichTextBottom) - g_FatalErrorRichTextTop);
-  psVar1 = &(pUVar2->base).topOffset;
-  *psVar1 = *psVar1 - RVar6.heightPixels;
+  topOffsetField = &(uiRootTemplate->base).topOffset;
+  *topOffsetField = *topOffsetField - wrappedExtent.heightPixels;
   UiRootStack_Push(&g_UiRootCallbacks_00407E28,g_FatalErrorUiRootTemplate);
   g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
@@ -134,9 +134,9 @@ FatalErrorRuntime_DispatchPendingErrorCf(dword errorOrValue,bool carryIn)
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresentWithLockTransition();
   } while (g_FatalErrorDialogDismissed == 0);
-  FVar8.carry = true;
-  FVar8.eax = errorOrValue;
-  return FVar8;
+  dispatchResult.carry = true;
+  dispatchResult.eax = errorOrValue;
+  return dispatchResult;
 }
 
 
@@ -149,11 +149,11 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 {
   void *allocatedFatalErrorUiRootTemplate;
-  ArenaAllocEaxCf5 AVar1;
+  ArenaAllocEaxCf5 allocResult;
   
-  AVar1 = (*g_MemoryApi.alloc)(0x110);
-  allocatedFatalErrorUiRootTemplate = (void *)AVar1.eax;
-  if (!AVar1.carry) {
+  allocResult = (*g_MemoryApi.alloc)(0x110);
+  allocatedFatalErrorUiRootTemplate = (void *)allocResult.eax;
+  if (!allocResult.carry) {
     g_FatalErrorRuntimeDispatchCf = FatalErrorRuntime_DispatchPendingErrorCf;
     g_FatalErrorUiRootTemplate = allocatedFatalErrorUiRootTemplate;
   }
@@ -169,30 +169,30 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination,byte *source)
 
 {
-  byte bVar1;
-  TextOutputCapacityBytes TVar2;
-  bool bVar3;
-  StatusValueEaxCf5 SVar4;
-  StatusValueEaxCf5 SVar5;
+  byte sourceByte;
+  TextOutputCapacityBytes remainingCapacityBytes;
+  bool capacityExhausted;
+  StatusValueEaxCf5 successResult;
+  StatusValueEaxCf5 overflowResult;
   
-  TVar2 = capacityBytes;
+  remainingCapacityBytes = capacityBytes;
   do {
-    bVar1 = *source;
-    bVar3 = TVar2 < 2;
-    TVar2 = TVar2 - 2;
-    if (bVar3 || TVar2 == 0) {
+    sourceByte = *source;
+    capacityExhausted = remainingCapacityBytes < 2;
+    remainingCapacityBytes = remainingCapacityBytes - 2;
+    if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
-      SVar5.carry = true;
-      SVar5.valueOrError = 0x14;
-      return SVar5;
+      overflowResult.carry = true;
+      overflowResult.valueOrError = 0x14;
+      return overflowResult;
     }
-    *destination = (ushort)bVar1;
+    *destination = (ushort)sourceByte;
     source = source + 1;
     destination = destination + 1;
-  } while (bVar1 != 0);
-  SVar4.valueOrError = capacityBytes - TVar2;
-  SVar4.carry = false;
-  return SVar4;
+  } while (sourceByte != 0);
+  successResult.valueOrError = capacityBytes - remainingCapacityBytes;
+  successResult.carry = false;
+  return successResult;
 }
 
 
@@ -207,20 +207,20 @@ FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
 FatalError_Exit(dword errorOrValue,bool carryIn)
 
 {
-  FatalErrorEaxCf5 FVar1;
-  TextResourceResolveEaxCf5 TVar2;
+  FatalErrorEaxCf5 passThroughResult;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if (!carryIn) {
-    FVar1.carry = false;
-    FVar1.eax = errorOrValue;
-    return FVar1;
+    passThroughResult.carry = false;
+    passThroughResult.eax = errorOrValue;
+    return passThroughResult;
   }
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08X, last path \"%ls\"", errorOrValue, (wchar_t *)g_PackageLastErrorPath);
   Thandor_LogStack("fatal error stack", errorOrValue);
   if ((errorOrValue & 0xffffff00) == 0) {
-    TVar2 = TextResource_Resolve(errorOrValue);
-    errorOrValue = (dword)TVar2.eax;
+    resolvedText = TextResource_Resolve(errorOrValue);
+    errorOrValue = (dword)resolvedText.eax;
   }
   RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,(word *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(word *)errorOrValue);
@@ -246,7 +246,7 @@ int FatalError_CopyRichTextToNarrowCf
               (TextOutputCapacityBytes capacityBytes,byte *destination,word *source)
 
 {
-  word *pwVar1;
+  word *nextCommand;
   dword remainingCapacityBytes;
   ushort *commandCursor;
   word *streamCursor;
@@ -257,18 +257,18 @@ int FatalError_CopyRichTextToNarrowCf
   
   nestedDepth = 0;
   remainingCapacityBytes = capacityBytes;
-  pwVar1 = source;
+  nextCommand = source;
   while( true ) {
     while( true ) {
-      commandCursor = pwVar1;
+      commandCursor = nextCommand;
       commandOrCodeUnit = *commandCursor;
       streamCursor = commandCursor + 1;
       if (commandOrCodeUnit == 0) break;
       if ((short)commandOrCodeUnit < 0) {
-        pwVar1 = streamCursor;
+        nextCommand = streamCursor;
         switch(commandOrCodeUnit & 0x1f) {
         case 6:
-          pwVar1 = commandCursor + 9;
+          nextCommand = commandCursor + 9;
           break;
         case 0x10:
           remainingCapacityBytes = remainingCapacityBytes - 1;
@@ -276,7 +276,7 @@ int FatalError_CopyRichTextToNarrowCf
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
           *destination = 0x20;
           destination = destination + 1;
-          pwVar1 = streamCursor;
+          nextCommand = streamCursor;
           break;
         case 0x12:
           newlineCapacityUnderflow = remainingCapacityBytes < 2;
@@ -286,40 +286,40 @@ int FatalError_CopyRichTextToNarrowCf
           destination[0] = 0xd;
           destination[1] = 10;
           destination = destination + 2;
-          pwVar1 = streamCursor;
+          nextCommand = streamCursor;
           break;
         case 0x14:
         case 0x15:
         case 0x16:
-          pwVar1 = commandCursor + 3;
+          nextCommand = commandCursor + 3;
           break;
         case 0x18:
           if (nestedDepth == 64)
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
           nestedReturnStack[nestedDepth++] = streamCursor;
-          pwVar1 = *(ushort **)streamCursor;
+          nextCommand = *(ushort **)streamCursor;
           break;
         case 0x19:
-          pwVar1 = *(ushort **)streamCursor;
+          nextCommand = *(ushort **)streamCursor;
           break;
         case 0x1a:
-          pwVar1 = commandCursor + 5;
+          nextCommand = commandCursor + 5;
         }
       }
       else {
-        pwVar1 = streamCursor;
+        nextCommand = streamCursor;
         if ((commandOrCodeUnit & 0xff00) == 0) {
           remainingCapacityBytes = remainingCapacityBytes - 1;
           if (remainingCapacityBytes == 0)
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
           *destination = (byte)commandOrCodeUnit;
           destination = destination + 1;
-          pwVar1 = streamCursor;
+          nextCommand = streamCursor;
         }
       }
     }
     if (nestedDepth == 0) break;
-    pwVar1 = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
+    nextCommand = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;

@@ -23,37 +23,37 @@ GameFactionRelations_UpdateAllPairsForFaction
           (FactionRuntimeIndex sourceFactionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  int sourceFactionIndex_04;
-  FactionRuntimeIndex sourceFactionIndex_03;
-  bool bVar1;
+  int opposingFactionIndex;
+  FactionRuntimeIndex unusedFactionIndex;
+  bool pairTestResult;
   
-  sourceFactionIndex_04 = 7;
+  opposingFactionIndex = 7;
   do {
-    if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[sourceFactionIndex_04] ==
-         FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (sourceFactionIndex != sourceFactionIndex_04)) {
-      bVar1 = GameFactionRelations_TestPairTransitionAllowedCf
-                        (sourceFactionIndex_04,sourceFactionIndex);
-      if (bVar1) {
-        bVar1 = GameFactionRelations_IsResetEligibleStateCf
-                          (sourceFactionIndex_04,sourceFactionIndex);
-        if (!bVar1) {
-          GameFactionRelations_MaybeResetPairState(sourceFactionIndex_04,sourceFactionIndex);
+    if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[opposingFactionIndex] ==
+         FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (sourceFactionIndex != opposingFactionIndex)) {
+      pairTestResult = GameFactionRelations_TestPairTransitionAllowedCf
+                        (opposingFactionIndex,sourceFactionIndex);
+      if (pairTestResult) {
+        pairTestResult = GameFactionRelations_IsResetEligibleStateCf
+                          (opposingFactionIndex,sourceFactionIndex);
+        if (!pairTestResult) {
+          GameFactionRelations_MaybeResetPairState(opposingFactionIndex,sourceFactionIndex);
         }
       }
       else {
-        bVar1 = GameFactionRelations_IsResetEligibleStateCf
-                          (sourceFactionIndex_04,sourceFactionIndex);
-        if (bVar1) {
-          GameFactionRelations_MaybeAdvancePairStateRare(sourceFactionIndex_04,sourceFactionIndex);
+        pairTestResult = GameFactionRelations_IsResetEligibleStateCf
+                          (opposingFactionIndex,sourceFactionIndex);
+        if (pairTestResult) {
+          GameFactionRelations_MaybeAdvancePairStateRare(opposingFactionIndex,sourceFactionIndex);
         }
         else {
-          GameFactionRelations_MaybeAdvancePairStateCommon(sourceFactionIndex_04,sourceFactionIndex)
+          GameFactionRelations_MaybeAdvancePairStateCommon(opposingFactionIndex,sourceFactionIndex)
           ;
         }
       }
     }
-    sourceFactionIndex_04 = sourceFactionIndex_04 + -1;
-  } while (sourceFactionIndex_04 != 0);
+    opposingFactionIndex = opposingFactionIndex + -1;
+  } while (opposingFactionIndex != 0);
   return;
 }
 
@@ -113,26 +113,26 @@ GameFactionRelations_TestPairTransitionAllowedCf
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  FactionRelationState FVar1;
-  FactionActiveMask FVar2;
-  FactionActiveMask FVar3;
-  bool bVar4;
+  FactionRelationState relationState;
+  FactionActiveMask targetEligibleMask;
+  FactionActiveMask sourceEligibleMask;
+  bool rulesSatisfied;
   
-  FVar1 = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
-  if (((((FVar1 != 2) && (FVar1 != 5)) && (FVar1 != 9)) &&
+  relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
+  if (((((relationState != 2) && (relationState != 5)) && (relationState != 9)) &&
       ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) == 0)) &&
-     ((FVar1 < 4 ||
+     ((relationState < 4 ||
       (((g_GameFactionRuntimeImage.tail.relationUiFlags & 2) == 0 &&
-       ((FVar1 < 8 || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) == 0)))))))) {
-    if (3 < FVar1) {
+       ((relationState < 8 || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) == 0)))))))) {
+    if (3 < relationState) {
       return false;
     }
-    FVar2 = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
-    FVar3 = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
-    bVar4 = GameFactionRelations_EvaluateTransitionRulesCf(targetFactionIndex,FVar3 | FVar2);
-    if ((!bVar4) &&
-       (bVar4 = GameFactionRelations_EvaluateTransitionRulesCf(sourceFactionIndex,FVar3 | FVar2),
-       !bVar4)) {
+    targetEligibleMask = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
+    sourceEligibleMask = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
+    rulesSatisfied = GameFactionRelations_EvaluateTransitionRulesCf(targetFactionIndex,sourceEligibleMask | targetEligibleMask);
+    if ((!rulesSatisfied) &&
+       (rulesSatisfied = GameFactionRelations_EvaluateTransitionRulesCf(sourceFactionIndex,sourceEligibleMask | targetEligibleMask),
+       !rulesSatisfied)) {
       return false;
     }
   }
@@ -189,133 +189,133 @@ GameFactionRelations_EvaluateTransitionRulesCf
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
-  byte bVar1;
-  InGameLevelConditionStorageView800 *pIVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  InGameScheduledConditionKind IVar6;
-  byte *pbVar7;
-  byte bVar8;
-  InGameConditionScheduleImageView480 *pIVar9;
-  InGameEndConditionTriggerRecord8ReferenceView *pIVar10;
+  byte tokenOrFactionIndex;
+  InGameLevelConditionStorageView800 *levelConditionStorage;
+  uint currentActiveMask;
+  int remainingCount;
+  uint currentFactionBit;
+  InGameScheduledConditionKind kindOrStackValue;
+  byte *expressionCursor;
+  byte movieVariant;
+  InGameConditionScheduleImageView480 *conditionCursor;
+  InGameEndConditionTriggerRecord8ReferenceView *triggerCursor;
   
-  pIVar2 = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  uVar3 = 0;
-  uVar5 = 0x80;
-  iVar4 = 7;
+  levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
+  currentActiveMask = 0;
+  currentFactionBit = 0x80;
+  remainingCount = 7;
   do {
-    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[iVar4] ==
+    if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[remainingCount] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-      uVar3 = uVar3 | uVar5;
+      currentActiveMask = currentActiveMask | currentFactionBit;
     }
-    uVar5 = uVar5 >> 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
-  if (uVar3 != activeFactionMask) {
-    iVar4 = 0x40;
-    pIVar9 = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
+    currentFactionBit = currentFactionBit >> 1;
+    remainingCount = remainingCount + -1;
+  } while (remainingCount != 0);
+  if (currentActiveMask != activeFactionMask) {
+    remainingCount = 0x40;
+    conditionCursor = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
     do {
-      IVar6 = pIVar9->conditions[0].statusAndKind.kind;
-      pIVar9->conditions[0].statusAndKind.kind =
-           pIVar9->conditions[0].statusAndKind.kind & 0xfffffffe;
+      kindOrStackValue = conditionCursor->conditions[0].statusAndKind.kind;
+      conditionCursor->conditions[0].statusAndKind.kind =
+           conditionCursor->conditions[0].statusAndKind.kind & 0xfffffffe;
                     // WARNING: Switch is manually overridden
-      switch(IVar6 & 0xfe) {
+      switch(kindOrStackValue & 0xfe) {
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
-        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
-          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_CLASS_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
-          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_RUNTIME_ID:
-        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
-          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
-        pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+        conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         break;
       case 
       INGAME_SCHEDULED_CONDITION_MATCHING_DEFINITION_AND_RUNTIME_ID_ACTIVE_ENTITY_COUNT_AT_LEAST:
-        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) != 0
+        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) != 0
            ) {
-          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
-        pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+        conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         break;
       case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
-        if (pIVar9->conditions[0].payload.operands[1] == 0) {
-          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+        if (conditionCursor->conditions[0].payload.operands[1] == 0) {
+          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_PRIMARY_RESOURCE_LIMIT_AT_MOST_0FA0:
-        pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+        conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_CLASS_ID_OUTSIDE_CLASS_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((byte)pIVar9->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
-          pIVar9->conditions[0].statusAndKind.kind = pIVar9->conditions[0].statusAndKind.kind | 1;
+          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-        pbVar7 = (byte *)((int)&pIVar9->conditions[0].statusAndKind.kind + 1);
-        IVar6 = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
+        expressionCursor = (byte *)((int)&conditionCursor->conditions[0].statusAndKind.kind + 1);
+        kindOrStackValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
         while( true ) {
           while( true ) {
             while( true ) {
               while( true ) {
-                bVar1 = *pbVar7;
-                pbVar7 = pbVar7 + 1;
-                if (bVar1 != 0xff) break;
-                IVar6 = IVar6 >> 1 | IVar6 & 1;
+                tokenOrFactionIndex = *expressionCursor;
+                expressionCursor = expressionCursor + 1;
+                if (tokenOrFactionIndex != 0xff) break;
+                kindOrStackValue = kindOrStackValue >> 1 | kindOrStackValue & 1;
               }
-              if (bVar1 != 0xfe) break;
-              IVar6 = IVar6 >> 1 & (IVar6 | 0xfffffffe);
+              if (tokenOrFactionIndex != 0xfe) break;
+              kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | 0xfffffffe);
             }
-            if (bVar1 != 0xfd) break;
-            IVar6 = IVar6 ^ 1;
+            if (tokenOrFactionIndex != 0xfd) break;
+            kindOrStackValue = kindOrStackValue ^ 1;
           }
-          if (bVar1 == 0xfc) break;
-          IVar6 = ((pIVar2->schedule).conditions[bVar1].statusAndKind.kind & 1) + IVar6 * 2;
+          if (tokenOrFactionIndex == 0xfc) break;
+          kindOrStackValue = ((levelConditionStorage->schedule).conditions[tokenOrFactionIndex].statusAndKind.kind & 1) + kindOrStackValue * 2;
         }
-        pIVar9->conditions[0].statusAndKind.kind =
-             pIVar9->conditions[0].statusAndKind.kind | IVar6 & 1;
+        conditionCursor->conditions[0].statusAndKind.kind =
+             conditionCursor->conditions[0].statusAndKind.kind | kindOrStackValue & 1;
       }
-      pIVar9 = (InGameConditionScheduleImageView480 *)(pIVar9->conditions + 1);
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
-    pIVar10 = (pIVar2->schedule).triggers;
-    iVar4 = 0x10;
+      conditionCursor = (InGameConditionScheduleImageView480 *)(conditionCursor->conditions + 1);
+      remainingCount = remainingCount + -1;
+    } while (remainingCount != 0);
+    triggerCursor = (levelConditionStorage->schedule).triggers;
+    remainingCount = 0x10;
     do {
-      if ((pIVar10->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
-         (((pIVar2->schedule).conditions[pIVar10->conditionIndex].statusAndKind.kind & 1) !=
+      if ((triggerCursor->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
+         (((levelConditionStorage->schedule).conditions[triggerCursor->conditionIndex].statusAndKind.kind & 1) !=
           INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED)) {
-        bVar1 = pIVar10->factionRuntimeIndex;
-        if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[bVar1] ==
+        tokenOrFactionIndex = triggerCursor->factionRuntimeIndex;
+        if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[tokenOrFactionIndex] ==
             FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-          bVar8 = pIVar10->movieVariantSelector;
-          if ((focalFactionIndex != (uint)bVar1) && ((activeFactionMask & 1 << (bVar1 & 0x1f)) == 0)
+          movieVariant = triggerCursor->movieVariantSelector;
+          if ((focalFactionIndex != (uint)tokenOrFactionIndex) && ((activeFactionMask & 1 << (tokenOrFactionIndex & 0x1f)) == 0)
              ) {
-            bVar8 = bVar8 ^ 1;
+            movieVariant = movieVariant ^ 1;
           }
-          if (bVar8 == 0) {
+          if (movieVariant == 0) {
             return true;
           }
           return false;
         }
       }
-      pIVar10 = pIVar10 + 1;
-      iVar4 = iVar4 + -1;
-    } while (iVar4 != 0);
+      triggerCursor = triggerCursor + 1;
+      remainingCount = remainingCount + -1;
+    } while (remainingCount != 0);
   }
   return true;
 }
@@ -355,25 +355,25 @@ GameFactionRelations_MaybeAdvancePairStateRare
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  uint uVar1;
-  dword dVar2;
-  uint uVar3;
+  uint pairPressure;
+  dword randomValue;
+  uint maskedRandom;
   
-  dVar2 = (*g_RandomGeneratorState.next)();
-  uVar1 = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
-  if (uVar1 == 0) {
-    uVar3 = dVar2 & 0x17f;
+  randomValue = (*g_RandomGeneratorState.next)();
+  pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
+  if (pairPressure == 0) {
+    maskedRandom = randomValue & 0x17f;
   }
   else {
-    if (0x1f < uVar1) {
+    if (0x1f < pairPressure) {
       return;
     }
-    uVar3 = dVar2 & 0x3ff;
-    if (dVar2 >> 0x1c <= uVar1) {
+    maskedRandom = randomValue & 0x3ff;
+    if (randomValue >> 0x1c <= pairPressure) {
       return;
     }
   }
-  if (uVar3 == 0x55) {
+  if (maskedRandom == 0x55) {
     GameFactionRuntime_AdvancePairwiseRelationState
               (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
   }
@@ -393,25 +393,25 @@ GameFactionRelations_MaybeAdvancePairStateCommon
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  uint uVar1;
-  dword dVar2;
-  uint uVar3;
+  uint pairPressure;
+  dword randomValue;
+  uint maskedRandom;
   
-  dVar2 = (*g_RandomGeneratorState.next)();
-  uVar1 = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
-  if (uVar1 == 0) {
-    uVar3 = dVar2 & 0x7f;
+  randomValue = (*g_RandomGeneratorState.next)();
+  pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
+  if (pairPressure == 0) {
+    maskedRandom = randomValue & 0x7f;
   }
   else {
-    if (0x1f < uVar1) {
+    if (0x1f < pairPressure) {
       return;
     }
-    uVar3 = dVar2 & 0x1ff;
-    if (dVar2 >> 0x1c <= uVar1) {
+    maskedRandom = randomValue & 0x1ff;
+    if (randomValue >> 0x1c <= pairPressure) {
       return;
     }
   }
-  if (uVar3 == 0x55) {
+  if (maskedRandom == 0x55) {
     GameFactionRuntime_AdvancePairwiseRelationState
               (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
   }
@@ -431,10 +431,10 @@ GameFactionRelations_MaybeResetPairState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  dword dVar1;
+  dword randomValue;
   
-  dVar1 = (*g_RandomGeneratorState.next)();
-  if ((dVar1 & 0x180) == 0x80) {
+  randomValue = (*g_RandomGeneratorState.next)();
+  if ((randomValue & 0x180) == 0x80) {
     GameFactionRuntime_ResetPairwiseRelationState
               (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
   }

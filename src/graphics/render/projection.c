@@ -50,70 +50,70 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
           ModelRuntimeNode **modelNodes)
 
 {
-  sdword *psVar1;
-  sdword sVar2;
-  sdword *psVar3;
-  dword dVar4;
-  sdword *psVar5;
+  sdword *savedDepthBuffer;
+  sdword savedDepthEpoch;
+  sdword *textureSourceOrDepthBuffer;
+  dword packedTimeOrDate;
+  sdword *zeroCursorOrDepthBuffer;
   GraphicsPrimitiveQueue *queue;
-  uint uVar6;
-  uint uVar7;
-  sdword *psVar8;
-  ArenaAllocEaxCf5 AVar9;
-  ArenaAllocEaxCf5 AVar10;
-  GraphicsPrimitiveQueueEaxCf5 GVar11;
-  GraphicsOffscreenAllocationEaxCf5 GVar12;
+  uint dwordsRemaining;
+  uint byteSizeOrPixelsRemaining;
+  sdword *depthCursor;
+  ArenaAllocEaxCf5 textureAllocation;
+  ArenaAllocEaxCf5 depthAllocation;
+  GraphicsPrimitiveQueueEaxCf5 queueResult;
+  GraphicsOffscreenAllocationEaxCf5 failureResult;
   
-  uVar7 = outputHeight * outputWidth * 4 + 0x220;
-  AVar9 = (*g_MemoryApi.alloc)(uVar7);
-  psVar3 = (sdword *)AVar9.eax;
-  if (!AVar9.carry) {
-    psVar5 = psVar3;
-    for (uVar6 = uVar7 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
-      *psVar5 = 0;
-      psVar5 = psVar5 + 1;
+  byteSizeOrPixelsRemaining = outputHeight * outputWidth * 4 + 0x220;
+  textureAllocation = (*g_MemoryApi.alloc)(byteSizeOrPixelsRemaining);
+  textureSourceOrDepthBuffer = (sdword *)textureAllocation.eax;
+  if (!textureAllocation.carry) {
+    zeroCursorOrDepthBuffer = textureSourceOrDepthBuffer;
+    for (dwordsRemaining = byteSizeOrPixelsRemaining >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
+      *zeroCursorOrDepthBuffer = 0;
+      zeroCursorOrDepthBuffer = zeroCursorOrDepthBuffer + 1;
     }
-    *psVar3 = 0x786667;
-    psVar3[1] = uVar7;
-    psVar3[2] = 1;
-    psVar3[3] = 0;
-    dVar4 = (*g_LocaleGetPackedCurrentTime)();
-    psVar3[4] = dVar4;
-    psVar3[6] = dVar4;
-    psVar3[8] = dVar4;
-    dVar4 = (*g_LocaleGetPackedCurrentDate)();
-    psVar3[5] = dVar4;
-    psVar3[7] = dVar4;
-    psVar3[9] = dVar4;
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(psVar3 + 0xc));
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(psVar3 + 0x1c));
-    *(undefined1 *)(psVar3 + 0x40) = 0;
-    psVar3[0x2c] = 1;
-    psVar3[0x2d] = 0;
-    psVar3[0x2e] = 0x200;
-    psVar3[0x80] = outputHeight;
-    psVar3[0x81] = outputWidth;
-    psVar3[0x86] = outputHeight;
-    psVar3[0x87] = outputWidth;
-    psVar3[0x84] = 0;
-    psVar3[0x85] = 0;
-    psVar3[0x82] = -1;
-    psVar3[0x83] = 0x220;
-    AVar10 = (*g_MemoryApi.alloc)(outputWidth * outputHeight * 4);
-    psVar5 = (sdword *)AVar10.eax;
-    if (!AVar10.carry) {
-      psVar8 = psVar5;
-      for (uVar7 = outputWidth * outputHeight & 0x3fffffff; sVar2 = g_SoftwareDepthEpoch,
-          psVar1 = g_SoftwareDepthBuffer, uVar7 != 0; uVar7 = uVar7 - 1) {
-        *psVar8 = -1;
-        psVar8 = psVar8 + 1;
+    *textureSourceOrDepthBuffer = 0x786667;
+    textureSourceOrDepthBuffer[1] = byteSizeOrPixelsRemaining;
+    textureSourceOrDepthBuffer[2] = 1;
+    textureSourceOrDepthBuffer[3] = 0;
+    packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
+    textureSourceOrDepthBuffer[4] = packedTimeOrDate;
+    textureSourceOrDepthBuffer[6] = packedTimeOrDate;
+    textureSourceOrDepthBuffer[8] = packedTimeOrDate;
+    packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
+    textureSourceOrDepthBuffer[5] = packedTimeOrDate;
+    textureSourceOrDepthBuffer[7] = packedTimeOrDate;
+    textureSourceOrDepthBuffer[9] = packedTimeOrDate;
+    (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(textureSourceOrDepthBuffer + 0xc));
+    (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(textureSourceOrDepthBuffer + 0x1c));
+    *(undefined1 *)(textureSourceOrDepthBuffer + 0x40) = 0;
+    textureSourceOrDepthBuffer[0x2c] = 1;
+    textureSourceOrDepthBuffer[0x2d] = 0;
+    textureSourceOrDepthBuffer[0x2e] = 0x200;
+    textureSourceOrDepthBuffer[0x80] = outputHeight;
+    textureSourceOrDepthBuffer[0x81] = outputWidth;
+    textureSourceOrDepthBuffer[0x86] = outputHeight;
+    textureSourceOrDepthBuffer[0x87] = outputWidth;
+    textureSourceOrDepthBuffer[0x84] = 0;
+    textureSourceOrDepthBuffer[0x85] = 0;
+    textureSourceOrDepthBuffer[0x82] = -1;
+    textureSourceOrDepthBuffer[0x83] = 0x220;
+    depthAllocation = (*g_MemoryApi.alloc)(outputWidth * outputHeight * 4);
+    zeroCursorOrDepthBuffer = (sdword *)depthAllocation.eax;
+    if (!depthAllocation.carry) {
+      depthCursor = zeroCursorOrDepthBuffer;
+      for (byteSizeOrPixelsRemaining = outputWidth * outputHeight & 0x3fffffff; savedDepthEpoch = g_SoftwareDepthEpoch,
+          savedDepthBuffer = g_SoftwareDepthBuffer, byteSizeOrPixelsRemaining != 0; byteSizeOrPixelsRemaining = byteSizeOrPixelsRemaining - 1) {
+        *depthCursor = -1;
+        depthCursor = depthCursor + 1;
       }
       LOCK();
       g_SoftwareDepthEpoch = -1;
       UNLOCK();
       LOCK();
       UNLOCK();
-      g_SoftwareDepthBuffer = psVar5;
+      g_SoftwareDepthBuffer = zeroCursorOrDepthBuffer;
       Graphics_SetProjectionClipRect(outputWidth,outputHeight,0,0);
       Graphics_SetViewProjectionParameters
                 (viewParameters->projectionShift,viewParameters->viewAngle1,
@@ -126,9 +126,9 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
                  sceneExtents->verticalExtent,sceneExtents->horizontalExtent,0,0,0,0);
       Graphics_RebuildFrustumPlanes();
       g_GraphicsShadingCompactRecordCount = 0;
-      GVar11 = GraphicsPrimitiveQueue_ResetGlobal();
-      queue = GVar11.queue;
-      if (!GVar11.carry) {
+      queueResult = GraphicsPrimitiveQueue_ResetGlobal();
+      queue = queueResult.queue;
+      if (!queueResult.carry) {
         Graphics_SetActivePrimitiveQueue(queue);
         for (; modelCount != 0; modelCount = modelCount - 1) {
           if (*modelNodes != (ModelRuntimeNode *)0x0) {
@@ -137,22 +137,22 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
           modelNodes = modelNodes + 1;
         }
         GraphicsPrimitiveQueue_RadixSortForRendering(GRAPHICS_STATE_DISABLED,queue);
-        SoftwareRenderer_DrawQueueAuxiliary(outputWidth,outputHeight,psVar3 + 0x88,queue);
+        SoftwareRenderer_DrawQueueAuxiliary(outputWidth,outputHeight,textureSourceOrDepthBuffer + 0x88,queue);
       }
-      psVar3 = g_SoftwareDepthBuffer;
+      textureSourceOrDepthBuffer = g_SoftwareDepthBuffer;
       LOCK();
       UNLOCK();
-      g_SoftwareDepthBuffer = psVar1;
-      g_SoftwareDepthEpoch = sVar2;
-      (*g_MemoryApi.free)(psVar3);
-      return THANDOR_BITCAST(qword, GraphicsOffscreenAllocationEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar9) & 0xFFFFFFFFFFull) & 0xffffffff));
+      g_SoftwareDepthBuffer = savedDepthBuffer;
+      g_SoftwareDepthEpoch = savedDepthEpoch;
+      (*g_MemoryApi.free)(textureSourceOrDepthBuffer);
+      return THANDOR_BITCAST(qword, GraphicsOffscreenAllocationEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, textureAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
-    (*g_MemoryApi.free)(psVar3);
-    psVar3 = psVar5;
+    (*g_MemoryApi.free)(textureSourceOrDepthBuffer);
+    textureSourceOrDepthBuffer = zeroCursorOrDepthBuffer;
   }
-  GVar12.carry = true;
-  GVar12.allocation = psVar3;
-  return GVar12;
+  failureResult.carry = true;
+  failureResult.allocation = textureSourceOrDepthBuffer;
+  return failureResult;
 }
 
 
@@ -166,34 +166,34 @@ GraphicsProjectedPoint_IsInsideTriangleCf
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2)
 
 {
-  longlong lVar1;
-  longlong lVar2;
-  GraphicsProjectedPoint2i *pGVar3;
+  longlong crossPartB;
+  longlong crossPartA;
+  GraphicsProjectedPoint2i *orderedVertex2;
   
-  lVar2 = (longlong)(vertex0->y - vertex1->y) * (longlong)vertex2->x +
+  crossPartA = (longlong)(vertex0->y - vertex1->y) * (longlong)vertex2->x +
           (longlong)(vertex2->y - vertex0->y) * (longlong)vertex1->x;
-  lVar1 = (longlong)(vertex1->y - vertex2->y) * (longlong)vertex0->x;
-  pGVar3 = vertex2;
-  if (-1 < (int)((int)((ulonglong)lVar1 >> 0x20) + (int)((ulonglong)lVar2 >> 0x20) +
-                (uint)CARRY4((uint)lVar1,(uint)lVar2))) {
-    pGVar3 = vertex1;
+  crossPartB = (longlong)(vertex1->y - vertex2->y) * (longlong)vertex0->x;
+  orderedVertex2 = vertex2;
+  if (-1 < (int)((int)((ulonglong)crossPartB >> 0x20) + (int)((ulonglong)crossPartA >> 0x20) +
+                (uint)CARRY4((uint)crossPartB,(uint)crossPartA))) {
+    orderedVertex2 = vertex1;
     vertex1 = vertex2;
   }
-  lVar2 = (longlong)(pointerY - vertex1->y) * (longlong)pGVar3->x +
-          (longlong)(pGVar3->y - pointerY) * (longlong)vertex1->x;
-  lVar1 = (longlong)(vertex1->y - pGVar3->y) * (longlong)pointerX;
-  if ((int)((int)((ulonglong)lVar1 >> 0x20) + (int)((ulonglong)lVar2 >> 0x20) +
-           (uint)CARRY4((uint)lVar1,(uint)lVar2)) < 0) {
-    lVar2 = (longlong)(vertex0->y - pointerY) * (longlong)pGVar3->x +
-            (longlong)(pGVar3->y - vertex0->y) * (longlong)pointerX;
-    lVar1 = (longlong)(pointerY - pGVar3->y) * (longlong)vertex0->x;
-    if ((int)((int)((ulonglong)lVar1 >> 0x20) + (int)((ulonglong)lVar2 >> 0x20) +
-             (uint)CARRY4((uint)lVar1,(uint)lVar2)) < 0) {
-      lVar2 = (longlong)(vertex0->y - vertex1->y) * (longlong)pointerX +
+  crossPartA = (longlong)(pointerY - vertex1->y) * (longlong)orderedVertex2->x +
+          (longlong)(orderedVertex2->y - pointerY) * (longlong)vertex1->x;
+  crossPartB = (longlong)(vertex1->y - orderedVertex2->y) * (longlong)pointerX;
+  if ((int)((int)((ulonglong)crossPartB >> 0x20) + (int)((ulonglong)crossPartA >> 0x20) +
+           (uint)CARRY4((uint)crossPartB,(uint)crossPartA)) < 0) {
+    crossPartA = (longlong)(vertex0->y - pointerY) * (longlong)orderedVertex2->x +
+            (longlong)(orderedVertex2->y - vertex0->y) * (longlong)pointerX;
+    crossPartB = (longlong)(pointerY - orderedVertex2->y) * (longlong)vertex0->x;
+    if ((int)((int)((ulonglong)crossPartB >> 0x20) + (int)((ulonglong)crossPartA >> 0x20) +
+             (uint)CARRY4((uint)crossPartB,(uint)crossPartA)) < 0) {
+      crossPartA = (longlong)(vertex0->y - vertex1->y) * (longlong)pointerX +
               (longlong)(pointerY - vertex0->y) * (longlong)vertex1->x;
-      lVar1 = (longlong)(vertex1->y - pointerY) * (longlong)vertex0->x;
-      if ((int)((int)((ulonglong)lVar1 >> 0x20) + (int)((ulonglong)lVar2 >> 0x20) +
-               (uint)CARRY4((uint)lVar1,(uint)lVar2)) < 0) {
+      crossPartB = (longlong)(vertex1->y - pointerY) * (longlong)vertex0->x;
+      if ((int)((int)((ulonglong)crossPartB >> 0x20) + (int)((ulonglong)crossPartA >> 0x20) +
+               (uint)CARRY4((uint)crossPartB,(uint)crossPartA)) < 0) {
         return true;
       }
     }

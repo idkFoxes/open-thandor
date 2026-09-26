@@ -74,8 +74,8 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
   SprGroupRelocationHeader20 *groupRelocationCursor;
   SprRelocationBlockHeader20 *relocationBlockCursor;
   SprPointerRelocationRecord40 *pointerRelocationCursor;
-  SpriteRegisterRelocateEaxCf5 SVar1;
-  SpriteRegisterRelocateEaxCf5 SVar2;
+  SpriteRegisterRelocateEaxCf5 successResult;
+  SpriteRegisterRelocateEaxCf5 errorResult;
   AssetRecordCount groupsRemaining;
   SpriteAssetHeader *previousRegistryHead;
   
@@ -123,13 +123,13 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
         groupsRemaining = groupsRemaining - 1;
       } while (groupsRemaining != 0);
     }
-    SVar1.carry = false;
-    SVar1.assetOrError = asset;
-    return SVar1;
+    successResult.carry = false;
+    successResult.assetOrError = asset;
+    return successResult;
   }
-  SVar2.carry = true;
-  SVar2.assetOrError = (SpriteAssetHeader *)0x36;
-  return SVar2;
+  errorResult.carry = true;
+  errorResult.assetOrError = (SpriteAssetHeader *)0x36;
+  return errorResult;
 }
 
 /* Address: 0x004BE5A0.
@@ -141,55 +141,55 @@ SpriteAsset_CopyAndDerelocateImage
           (void *serializedDestination,SpriteAssetHeader *relocatedSourceImage)
 
 {
-  uint uVar1;
-  int iVar2;
-  int iVar3;
-  SpriteAssetHeader *pSVar4;
-  int *piVar5;
-  int *piVar6;
-  AssetMagic *pAVar7;
-  int *piVar8;
-  int iStack_20;
+  uint copyDwordsRemaining;
+  int blocksRemaining;
+  int recordsRemaining;
+  SpriteAssetHeader *sourceCursor;
+  int *blockCursor;
+  int *groupCursor;
+  AssetMagic *destinationCursor;
+  int *recordCursor;
+  int groupsRemaining;
   
-  pSVar4 = relocatedSourceImage;
-  pAVar7 = serializedDestination;
-  for (uVar1 = (relocatedSourceImage->registryHeader).common.allocationSizeBytes >> 2; uVar1 != 0;
-      uVar1 = uVar1 - 1) {
-    *pAVar7 = (pSVar4->registryHeader).common.magic;
-    pSVar4 = (SpriteAssetHeader *)&(pSVar4->registryHeader).common.allocationSizeBytes;
-    pAVar7 = pAVar7 + 1;
+  sourceCursor = relocatedSourceImage;
+  destinationCursor = serializedDestination;
+  for (copyDwordsRemaining = (relocatedSourceImage->registryHeader).common.allocationSizeBytes >> 2; copyDwordsRemaining != 0;
+      copyDwordsRemaining = copyDwordsRemaining - 1) {
+    *destinationCursor = (sourceCursor->registryHeader).common.magic;
+    sourceCursor = (SpriteAssetHeader *)&(sourceCursor->registryHeader).common.allocationSizeBytes;
+    destinationCursor = destinationCursor + 1;
   }
-  piVar6 = (int *)((int)serializedDestination + 0x200);
-  iStack_20 = *(int *)((int)serializedDestination + 0xb0);
+  groupCursor = (int *)((int)serializedDestination + 0x200);
+  groupsRemaining = *(int *)((int)serializedDestination + 0xb0);
   do {
-    iVar2 = piVar6[1];
-    piVar5 = piVar6 + 8;
+    blocksRemaining = groupCursor[1];
+    blockCursor = groupCursor + 8;
     do {
-      iVar3 = piVar5[2];
-      piVar8 = piVar5 + 8;
+      recordsRemaining = blockCursor[2];
+      recordCursor = blockCursor + 8;
       do {
-        piVar8[0xc] = 0;
-        piVar8[0xd] = 0;
-        piVar8[8] = 0;
-        piVar8[9] = 0;
-        piVar8[10] = 0;
-        piVar8 = piVar8 + 0x10;
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
-      iVar3 = piVar5[3];
+        recordCursor[0xc] = 0;
+        recordCursor[0xd] = 0;
+        recordCursor[8] = 0;
+        recordCursor[9] = 0;
+        recordCursor[10] = 0;
+        recordCursor = recordCursor + 0x10;
+        recordsRemaining = recordsRemaining + -1;
+      } while (recordsRemaining != 0);
+      recordsRemaining = blockCursor[3];
       do {
-        *piVar8 = *piVar8 - (int)relocatedSourceImage;
-        piVar8[3] = piVar8[3] - (int)relocatedSourceImage;
-        piVar8[6] = piVar8[6] - (int)relocatedSourceImage;
-        piVar8 = piVar8 + 0x10;
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
-      piVar5 = (int *)((int)piVar5 + *piVar5);
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
-    piVar6 = (int *)((int)piVar6 + *piVar6);
-    iStack_20 = iStack_20 + -1;
-  } while (iStack_20 != 0);
+        *recordCursor = *recordCursor - (int)relocatedSourceImage;
+        recordCursor[3] = recordCursor[3] - (int)relocatedSourceImage;
+        recordCursor[6] = recordCursor[6] - (int)relocatedSourceImage;
+        recordCursor = recordCursor + 0x10;
+        recordsRemaining = recordsRemaining + -1;
+      } while (recordsRemaining != 0);
+      blockCursor = (int *)((int)blockCursor + *blockCursor);
+      blocksRemaining = blocksRemaining + -1;
+    } while (blocksRemaining != 0);
+    groupCursor = (int *)((int)groupCursor + *groupCursor);
+    groupsRemaining = groupsRemaining + -1;
+  } while (groupsRemaining != 0);
   return;
 }
 

@@ -56,13 +56,13 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint uVar1;
-  AssetRecordByteCount AVar2;
-  int iVar3;
+  uint definitionField1;
+  AssetRecordByteCount definitionField10;
+  int initialTimingValue;
   ModelRuntimeNode *rootChild0Node;
   Q12 grandchildLocalYQ12;
   
-  uVar1 = modelDefinition[1].byteSize;
+  definitionField1 = modelDefinition[1].byteSize;
   (modelRuntimeSlot->classLinkState).classState68 = 0x80000000;
   (modelRuntimeSlot->classLinkState).armyLinkOrState6C.classState = 0x80000000;
   (modelRuntimeSlot->classLinkState).classState70 = 0x80000000;
@@ -75,15 +75,15 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   grandchildLocalYQ12 = (rootChild0Node->childNodes[0]->modelPayload).localTranslationYQ12;
   (modelRuntimeSlot->classState).classStateB0 = (rootChild0Node->modelPayload).localTranslationYQ12;
   (modelRuntimeSlot->classState).classStateB4 = grandchildLocalYQ12;
-  AVar2 = modelDefinition[0x10].byteSize;
-  iVar3 = (int)(((longlong)
-                 (int)(CONCAT44(((int)uVar1 >> 0x1f) << 0xc | uVar1 >> 0x14,uVar1 << 0xc) /
-                      (longlong)(int)AVar2) * (longlong)(int)(modelDefinition[0x10].flags + AVar2))
-               / (longlong)(int)AVar2) -
-          (int)(((longlong)(int)AVar2 * (longlong)(int)modelDefinition[2].byteSize) /
-               (longlong)(int)(uVar1 << 2));
-  *(int *)modelRuntimeSlot->reserved10_37 = iVar3;
-  (modelRuntimeSlot->classState).classStateD0 = iVar3;
+  definitionField10 = modelDefinition[0x10].byteSize;
+  initialTimingValue = (int)(((longlong)
+                 (int)(CONCAT44(((int)definitionField1 >> 0x1f) << 0xc | definitionField1 >> 0x14,definitionField1 << 0xc) /
+                      (longlong)(int)definitionField10) * (longlong)(int)(modelDefinition[0x10].flags + definitionField10))
+               / (longlong)(int)definitionField10) -
+          (int)(((longlong)(int)definitionField10 * (longlong)(int)modelDefinition[2].byteSize) /
+               (longlong)(int)(definitionField1 << 2));
+  *(int *)modelRuntimeSlot->reserved10_37 = initialTimingValue;
+  (modelRuntimeSlot->classState).classStateD0 = initialTimingValue;
   (modelRuntimeSlot->classState).enabledStateE8 = 0x7fffffff;
   return;
 }
@@ -131,9 +131,9 @@ ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  dword *pdVar1;
-  ModelRuntimeArmyLinkOrState4 *pMVar2;
-  ModelLookupPayloadEaxEcxEdxCf13 MVar3;
+  dword *classCounterField;
+  ModelRuntimeArmyLinkOrState4 *armyLinkCounterField;
+  ModelLookupPayloadEaxEcxEdxCf13 keyLookupResult;
   dword *matchedClassCounterField;
   ModelRuntimeArmyLinkOrState4 *class6CCounterField;
   ModelRuntimeNode *modelKeyLookupNode;
@@ -151,45 +151,45 @@ ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   (modelRuntimeSlot->classLinkState).classState74 = 0;
   (modelRuntimeSlot->classLinkState).classState78 = 0;
   (modelRuntimeSlot->classLinkState).classState7C = 0;
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(0,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(0,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
     (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
          (ModelRuntimeSlot *)((modelRuntimeSlot->classLinkState).modelLinkOrState60.classState - 1);
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(1,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(1,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
     matchedClassCounterField = &(modelRuntimeSlot->classLinkState).classState64;
     *matchedClassCounterField = *matchedClassCounterField - 1;
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(2,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
-    pdVar1 = &(modelRuntimeSlot->classLinkState).classState68;
-    *pdVar1 = *pdVar1 - 1;
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(2,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
+    classCounterField = &(modelRuntimeSlot->classLinkState).classState68;
+    *classCounterField = *classCounterField - 1;
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(3,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
-    pMVar2 = &(modelRuntimeSlot->classLinkState).armyLinkOrState6C;
-    pMVar2->armyRuntime = (ArmyRuntimeSlot *)(pMVar2->classState - 1);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(3,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
+    armyLinkCounterField = &(modelRuntimeSlot->classLinkState).armyLinkOrState6C;
+    armyLinkCounterField->armyRuntime = (ArmyRuntimeSlot *)(armyLinkCounterField->classState - 1);
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(4,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
-    pdVar1 = &(modelRuntimeSlot->classLinkState).classState70;
-    *pdVar1 = *pdVar1 - 1;
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(4,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
+    classCounterField = &(modelRuntimeSlot->classLinkState).classState70;
+    *classCounterField = *classCounterField - 1;
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(5,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
-    pdVar1 = &(modelRuntimeSlot->classLinkState).classState74;
-    *pdVar1 = *pdVar1 - 1;
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(5,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
+    classCounterField = &(modelRuntimeSlot->classLinkState).classState74;
+    *classCounterField = *classCounterField - 1;
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(6,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
-    pdVar1 = &(modelRuntimeSlot->classLinkState).classState78;
-    *pdVar1 = *pdVar1 - 1;
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(6,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
+    classCounterField = &(modelRuntimeSlot->classLinkState).classState78;
+    *classCounterField = *classCounterField - 1;
   }
-  MVar3 = ModelLookupTable_FindPackedKeyEntryRegsCf(7,2,(modelNode1->modelPayload).modelResource);
-  if (MVar3.carry) {
-    pdVar1 = &(modelRuntimeSlot->classLinkState).classState7C;
-    *pdVar1 = *pdVar1 - 1;
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(7,2,(modelNode1->modelPayload).modelResource);
+  if (keyLookupResult.carry) {
+    classCounterField = &(modelRuntimeSlot->classLinkState).classState7C;
+    *classCounterField = *classCounterField - 1;
   }
   return;
 }
@@ -298,22 +298,22 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  byte *pbVar1;
-  int iVar2;
-  int iVar3;
+  byte *factionMetricField;
+  int factionRecordOffset;
+  int metricRecordOffset;
   ArmyRuntimeSlot *armySlot1;
   ModelRuntimeNode *modelNode1;
   
   armySlot1 = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
   (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
-  iVar2 = armySlot1->factionIndex * 0x740;
-  iVar3 = iVar2 + 4;
+  factionRecordOffset = armySlot1->factionIndex * 0x740;
+  metricRecordOffset = factionRecordOffset + 4;
   if (modelDefinition[0x10].byteSize != 0) {
-    iVar3 = iVar2 + 0x14;
+    metricRecordOffset = factionRecordOffset + 0x14;
   }
   modelNode1 = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  pbVar1 = g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar3 + -0x78;
-  *(dword *)pbVar1 = *(int *)pbVar1 + modelDefinition[0x10].flags;
+  factionMetricField = g_GameFactionRuntimeImage.records[0].reserved78_87 + metricRecordOffset + -0x78;
+  *(dword *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
   if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
       (3 < modelNode1->childCount)) && (modelNode1->childNodes[3] != (ModelRuntimeNode *)0x0)) {
     WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[3]);
@@ -335,21 +335,21 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  byte *pbVar1;
-  int iVar2;
-  int iVar3;
+  byte *factionMetricField;
+  int factionRecordOffset;
+  int metricRecordOffset;
   ArmyRuntimeSlot *armySlot1;
   ModelRuntimeNode *modelNode1;
   
   armySlot1 = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
-  iVar2 = armySlot1->factionIndex * 0x740;
-  iVar3 = iVar2 + 4;
+  factionRecordOffset = armySlot1->factionIndex * 0x740;
+  metricRecordOffset = factionRecordOffset + 4;
   if (modelDefinition[0x10].byteSize != 0) {
-    iVar3 = iVar2 + 0x14;
+    metricRecordOffset = factionRecordOffset + 0x14;
   }
   modelNode1 = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  pbVar1 = g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar3 + -0x78;
-  *(dword *)pbVar1 = *(int *)pbVar1 + modelDefinition[0x10].flags;
+  factionMetricField = g_GameFactionRuntimeImage.records[0].reserved78_87 + metricRecordOffset + -0x78;
+  *(dword *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
   if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
       (1 < modelNode1->childCount)) && (modelNode1->childNodes[1] != (ModelRuntimeNode *)0x0)) {
     WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[1]);

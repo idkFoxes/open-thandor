@@ -151,9 +151,9 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 {
   dword bytes;
-  GraphicsTextureSourceLoadEaxCf5 GVar1;
-  ArenaAllocEaxCf5 AVar2;
-  GraphicsTextureSizeEaxEdxCf9 GVar3;
+  GraphicsTextureSourceLoadEaxCf5 textureLoadResult;
+  ArenaAllocEaxCf5 bufferAllocResult;
+  GraphicsTextureSizeEaxEdxCf9 textureSizeResult;
   
   (*g_GraphicsCursorSetFrame)(6);
   (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
@@ -162,17 +162,17 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   (frontendCreditsView->creditsMaskRuntime).patternState54 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState58 = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  GVar1 = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_credits_gfx_00545c22);
-  if (!GVar1.carry) {
-    (frontendCreditsView->creditsMaskRuntime).textureSource = GVar1.eax;
-    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0,GVar1.eax);
-    bytes = GVar3.logicalHeightPixels * GVar3.logicalWidthPixels;
-    AVar2 = (*g_MemoryApi.alloc)(bytes);
-    if (!AVar2.carry) {
-      (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)AVar2.eax;
-      AVar2 = (*g_MemoryApi.alloc)(bytes);
-      if (!AVar2.carry) {
-        (frontendCreditsView->creditsMaskRuntime).unresolved64 = AVar2.eax;
+  textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_credits_gfx_00545c22);
+  if (!textureLoadResult.carry) {
+    (frontendCreditsView->creditsMaskRuntime).textureSource = textureLoadResult.eax;
+    textureSizeResult = (*g_GraphicsTextureSourceGetLogicalSize)(0,textureLoadResult.eax);
+    bytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
+    bufferAllocResult = (*g_MemoryApi.alloc)(bytes);
+    if (!bufferAllocResult.carry) {
+      (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)bufferAllocResult.eax;
+      bufferAllocResult = (*g_MemoryApi.alloc)(bytes);
+      if (!bufferAllocResult.carry) {
+        (frontendCreditsView->creditsMaskRuntime).unresolved64 = bufferAllocResult.eax;
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
         UiPageStack_SetActiveIndex(1,&frontendCreditsView->pageStack);
@@ -204,57 +204,57 @@ bool __thandor_cf_preserve_eax_ecx_edx
 PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourcePath)
 
 {
-  word wVar1;
-  int iVar2;
+  word pathChar;
+  int headerOrPixelDataOffset;
   void *sourceBytes;
   void *memory;
-  int iVar3;
+  int dwordsRemaining;
   dword *pcxDwordReadCursor;
-  undefined4 *puVar4;
-  word *pwVar5;
-  PcxDecodeEaxCf5 PVar6;
-  ResourceLoadEaxEcxCf9 RVar7;
+  undefined4 *pixelDwordCursor;
+  word *sanitizedPathCursor;
+  PcxDecodeEaxCf5 pcxDecodeResult;
+  ResourceLoadEaxEcxCf9 resourceLoadResult;
   
-  pwVar5 = g_LevelEndingMovieSourcePath;
+  sanitizedPathCursor = g_LevelEndingMovieSourcePath;
   while( true ) {
-    wVar1 = *sourcePath;
-    *pwVar5 = wVar1;
+    pathChar = *sourcePath;
+    *sanitizedPathCursor = pathChar;
     sourcePath = sourcePath + 1;
-    if (wVar1 == 0) break;
-    if ((((wVar1 != 0x2a) && (wVar1 != 0x2e)) &&
-        ((wVar1 != 0x3f && ((wVar1 != 0x2f && (wVar1 != 0x5c)))))) &&
-       ((wVar1 != 0x3c &&
-        ((((wVar1 != 0x3e && (wVar1 != 0x22)) && (wVar1 != 0x3a)) && (wVar1 != 0x7c)))))) {
-      pwVar5 = pwVar5 + 1;
+    if (pathChar == 0) break;
+    if ((((pathChar != 0x2a) && (pathChar != 0x2e)) &&
+        ((pathChar != 0x3f && ((pathChar != 0x2f && (pathChar != 0x5c)))))) &&
+       ((pathChar != 0x3c &&
+        ((((pathChar != 0x3e && (pathChar != 0x22)) && (pathChar != 0x3a)) && (pathChar != 0x7c)))))) {
+      sanitizedPathCursor = sanitizedPathCursor + 1;
     }
   }
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (word *)&g_ExecutableDirectoryUtf16);
   WidePath_SetExtensionCode(0x786370,(word *)&g_LevelResourcePathScratchUtf16);
-  RVar7 = Resource_Load((word *)&g_LevelResourcePathScratchUtf16);
-  sourceBytes = (void *)RVar7.eax;
-  if (!RVar7.carry) {
-    PVar6 = (*g_PcxFunctionExport2)(g_PcxFunctionModule,RVar7.ecx,sourceBytes);
-    memory = PVar6.decodedImageOrError;
-    if (!PVar6.carry) {
-      iVar2 = *(int *)((int)memory + 0xb8);
-      if (((*(int *)((int)memory + iVar2 + 8) == 0) &&
-          (*(int *)((int)memory + iVar2 + 0x18) == 0x40)) &&
-         (*(int *)((int)memory + iVar2 + 0x1c) == 0x40)) {
+  resourceLoadResult = Resource_Load((word *)&g_LevelResourcePathScratchUtf16);
+  sourceBytes = (void *)resourceLoadResult.eax;
+  if (!resourceLoadResult.carry) {
+    pcxDecodeResult = (*g_PcxFunctionExport2)(g_PcxFunctionModule,resourceLoadResult.ecx,sourceBytes);
+    memory = pcxDecodeResult.decodedImageOrError;
+    if (!pcxDecodeResult.carry) {
+      headerOrPixelDataOffset = *(int *)((int)memory + 0xb8);
+      if (((*(int *)((int)memory + headerOrPixelDataOffset + 8) == 0) &&
+          (*(int *)((int)memory + headerOrPixelDataOffset + 0x18) == 0x40)) &&
+         (*(int *)((int)memory + headerOrPixelDataOffset + 0x1c) == 0x40)) {
         pcxDwordReadCursor = (dword *)((int)memory + 0x200);
-        iVar3 = 0x100;
-        iVar2 = *(int *)((int)memory + iVar2 + 0xc);
+        dwordsRemaining = 0x100;
+        headerOrPixelDataOffset = *(int *)((int)memory + headerOrPixelDataOffset + 0xc);
         do {
           *(dword *)outputPreview->paletteRgbTriplets256 = *pcxDwordReadCursor;
           pcxDwordReadCursor = pcxDwordReadCursor + 2;
           outputPreview = (PcxPreview64 *)(outputPreview->paletteRgbTriplets256 + 1);
-          iVar3 = iVar3 + -1;
-        } while (iVar3 != 0);
-        puVar4 = (undefined4 *)((int)memory + iVar2);
-        for (iVar3 = 0x400; iVar3 != 0; iVar3 = iVar3 + -1) {
-          *(undefined4 *)outputPreview->paletteRgbTriplets256 = *puVar4;
-          puVar4 = puVar4 + 1;
+          dwordsRemaining = dwordsRemaining + -1;
+        } while (dwordsRemaining != 0);
+        pixelDwordCursor = (undefined4 *)((int)memory + headerOrPixelDataOffset);
+        for (dwordsRemaining = 0x400; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+          *(undefined4 *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
+          pixelDwordCursor = pixelDwordCursor + 1;
           outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
         }
         (*g_MemoryApi.free)(memory);
@@ -280,35 +280,35 @@ void __thandor_void_preserve_eax_ecx_edx
 RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
 
 {
-  dword dVar1;
-  dword dVar2;
-  dword dVar3;
-  int iVar4;
+  dword firstHighDword;
+  dword serialOrFirstLowDword;
+  dword secondHighDword;
+  int dwordPairsRemaining;
   dword *firstSlotDwords;
   dword *secondSlotDwords;
   
-  dVar2 = g_RecentTextEntrySerials[secondIndex];
+  serialOrFirstLowDword = g_RecentTextEntrySerials[secondIndex];
   g_RecentTextEntrySerials[secondIndex] = g_RecentTextEntrySerials[firstIndex];
-  g_RecentTextEntrySerials[firstIndex] = dVar2;
+  g_RecentTextEntrySerials[firstIndex] = serialOrFirstLowDword;
   secondSlotDwords = (dword *)(g_RecentTextSlotStorage + secondIndex);
   firstSlotDwords = (dword *)(g_RecentTextSlotStorage + firstIndex);
-  iVar4 = 0x20;
+  dwordPairsRemaining = 0x20;
   do {
-    dVar3 = secondSlotDwords[1];
+    secondHighDword = secondSlotDwords[1];
     LOCK();
-    dVar2 = *firstSlotDwords;
+    serialOrFirstLowDword = *firstSlotDwords;
     *firstSlotDwords = *secondSlotDwords;
     UNLOCK();
     LOCK();
-    dVar1 = firstSlotDwords[1];
-    firstSlotDwords[1] = dVar3;
+    firstHighDword = firstSlotDwords[1];
+    firstSlotDwords[1] = secondHighDword;
     UNLOCK();
-    *secondSlotDwords = dVar2;
-    secondSlotDwords[1] = dVar1;
+    *secondSlotDwords = serialOrFirstLowDword;
+    secondSlotDwords[1] = firstHighDword;
     firstSlotDwords = firstSlotDwords + 2;
     secondSlotDwords = secondSlotDwords + 2;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    dwordPairsRemaining = dwordPairsRemaining + -1;
+  } while (dwordPairsRemaining != 0);
   return;
 }
 

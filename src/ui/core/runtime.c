@@ -18,10 +18,10 @@
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_FreeCf(UiRootNode *root)
 
 {
-  ArenaFreeEaxCf5 AVar1;
+  ArenaFreeEaxCf5 freeResult;
   
-  AVar1 = (*g_MemoryApi.free)(root);
-  return AVar1.carry;
+  freeResult = (*g_MemoryApi.free)(root);
+  return freeResult.carry;
 }
 
 
@@ -81,29 +81,29 @@ UiRuntime_OpenFourValueDialogCf
           UiPixelCoordinate value3)
 
 {
-  sdword *arg5;
+  sdword *valueTextBuffer;
   UiRootNode *root;
-  int iVar1;
-  undefined4 *puVar2;
-  UiRootNode *pUVar3;
-  ArenaAllocEaxCf5 AVar4;
-  TextResourceResolveEaxCf5 TVar5;
+  int remainingDwords;
+  undefined4 *templateCursor;
+  UiRootNode *copyCursor;
+  ArenaAllocEaxCf5 allocResult;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  AVar4 = (*g_MemoryApi.alloc)(0x1a4);
-  root = (UiRootNode *)AVar4.eax;
-  if (!AVar4.carry) {
-    puVar2 = &g_UiFourValueDialogTemplateImage;
-    pUVar3 = root;
-    for (iVar1 = 0x69; iVar1 != 0; iVar1 = iVar1 + -1) {
-      (pUVar3->base).nextSibling = (UiNodeBase *)*puVar2;
-      puVar2 = puVar2 + 1;
-      pUVar3 = (UiRootNode *)&(pUVar3->base).firstChild;
+  allocResult = (*g_MemoryApi.alloc)(0x1a4);
+  root = (UiRootNode *)allocResult.eax;
+  if (!allocResult.carry) {
+    templateCursor = &g_UiFourValueDialogTemplateImage;
+    copyCursor = root;
+    for (remainingDwords = 0x69; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      (copyCursor->base).nextSibling = (UiNodeBase *)*templateCursor;
+      templateCursor = templateCursor + 1;
+      copyCursor = (UiRootNode *)&(copyCursor->base).firstChild;
     }
-    arg5 = &root[4].base.topOffset;
-    TVar5 = TextResource_Resolve(0x109);
-    RichTextCommandStream_PatchPayloadBySelector(0,arg5,TVar5.eax);
+    valueTextBuffer = &root[4].base.topOffset;
+    resolvedText = TextResource_Resolve(0x109);
+    RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.eax);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)root[4].base.vtable,(word *)arg5);
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)root[4].base.vtable,(word *)valueTextBuffer);
     root[4].base.top = value3;
     root[4].base.right = value2;
     root[4].base.bottom = value1;
@@ -125,31 +125,31 @@ UiRuntimeRecordRingDiscardEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 UiRuntimeRecordRing_DiscardOldestCf(void)
 
 {
-  uint uVar1;
-  dword dVar2;
-  UiRuntimeRecordRingDiscardEaxEdxCf9 UVar3;
-  UiRuntimeRecordRingDiscardEaxEdxCf9 UVar4;
+  uint nextReadIndex;
+  dword readIndex;
+  UiRuntimeRecordRingDiscardEaxEdxCf9 discardedResult;
+  UiRuntimeRecordRingDiscardEaxEdxCf9 emptyResult;
   
   (*g_SpinLockAcquire)(&g_UiRuntimeRecordRingLock);
-  dVar2 = g_UiRuntimeRecordReadIndex;
+  readIndex = g_UiRuntimeRecordReadIndex;
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
-    uVar1 = g_UiRuntimeRecordReadIndex + 1;
-    UVar3.eaxPayloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
-    UVar3.edxEndpointOrReadIndex =
+    nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
+    discardedResult.eaxPayloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
+    discardedResult.edxEndpointOrReadIndex =
          g_UiRuntimeRecordReadIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000;
-    g_UiRuntimeRecordReadIndex = uVar1;
-    if (0xff < uVar1) {
+    g_UiRuntimeRecordReadIndex = nextReadIndex;
+    if (0xff < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
     }
     (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-    UVar3.carryEmpty = false;
-    return UVar3;
+    discardedResult.carryEmpty = false;
+    return discardedResult;
   }
   (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-  UVar4.edxEndpointOrReadIndex = dVar2;
-  UVar4.eaxPayloadOrReadIndex = dVar2;
-  UVar4.carryEmpty = true;
-  return UVar4;
+  emptyResult.edxEndpointOrReadIndex = readIndex;
+  emptyResult.eaxPayloadOrReadIndex = readIndex;
+  emptyResult.carryEmpty = true;
+  return emptyResult;
 }
 
 
@@ -191,10 +191,10 @@ UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
 {
   dword ringIndex;
   UiRuntimeRecord *recordCursor;
-  bool bVar1;
+  bool lockUnavailable;
   
-  bVar1 = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
-  if (!bVar1) {
+  lockUnavailable = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
+  if (!lockUnavailable) {
     if (g_UiRuntimeRecordReadIndex != g_UiRuntimeRecordWriteIndex) {
       recordCursor = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
       ringIndex = g_UiRuntimeRecordReadIndex;
@@ -246,33 +246,33 @@ UiRuntime_SetSynchronizationHooks
 void __thandor_preserve_eax UiRuntime_Initialize(void)
 
 {
-  ArenaAllocEaxCf5 AVar1;
-  FatalErrorEaxCf5 FVar2;
+  ArenaAllocEaxCf5 allocResult;
+  FatalErrorEaxCf5 checkedResult;
   
   (*g_TimerRegisterPeriodic)(0x14,UiRuntime_IncrementPeriodicTickCounter);
   g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + 1;
   FontRuntime_Init();
   UiWindowResources_Init();
-  AVar1 = (*g_MemoryApi.alloc)(0x600);
-  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
-  g_UiDirtyRectEntries = (UiDirtyRectEntry *)FVar2.eax;
-  AVar1 = (*g_MemoryApi.alloc)(0x80);
-  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
-  g_UiActionQueueEntries = (UiActionQueueEntry *)FVar2.eax;
+  allocResult = (*g_MemoryApi.alloc)(0x600);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+  g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedResult.eax;
+  allocResult = (*g_MemoryApi.alloc)(0x80);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+  g_UiActionQueueEntries = (UiActionQueueEntry *)checkedResult.eax;
   ErrorRuntime_InstallUiHandlerAndAllocateState();
   (*g_TimerRegisterPeriodic)(0x7d,UiTransferMailbox_ServiceAndRetransmitTimer);
-  AVar1 = (*g_MemoryApi.alloc)(0x8000);
-  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
-  g_UiRuntimeAuxiliaryBuffer8000 = FVar2.eax;
-  AVar1 = (*g_MemoryApi.alloc)(0x10000);
-  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
-  g_UiRuntimeRecordRing = (UiRuntimeRecord *)FVar2.eax;
-  AVar1 = (*g_MemoryApi.alloc)(0x1000);
-  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
-  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)FVar2.eax;
-  AVar1 = (*g_MemoryApi.alloc)(0x2000);
-  FVar2 = (*g_FatalErrorPrimaryDispatchCf)(AVar1.eax,AVar1.carry);
-  g_UiTransferDataBuffer = (byte *)FVar2.eax;
+  allocResult = (*g_MemoryApi.alloc)(0x8000);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+  g_UiRuntimeAuxiliaryBuffer8000 = checkedResult.eax;
+  allocResult = (*g_MemoryApi.alloc)(0x10000);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+  g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.eax;
+  allocResult = (*g_MemoryApi.alloc)(0x1000);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedResult.eax;
+  allocResult = (*g_MemoryApi.alloc)(0x2000);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
+  g_UiTransferDataBuffer = (byte *)checkedResult.eax;
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;
   g_UiTransferUnitCursor = 0;
@@ -328,28 +328,28 @@ void __cdecl UiRuntime_IncrementPeriodicTickCounter(void)
 void __cdecl UiActionQueue_DispatchPending(void)
 
 {
-  void *pvVar1;
-  code *pcVar2;
-  UiActionQueueEntry *pUVar3;
-  int iVar4;
-  UiActionQueueEntry *pUVar5;
-  UiActionQueueEntry *pUVar6;
+  void *actionSource;
+  code *actionHandler;
+  UiActionQueueEntry *queueHead;
+  int remainingCount;
+  UiActionQueueEntry *sourceEntry;
+  UiActionQueueEntry *destinationEntry;
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
-  pUVar3 = g_UiActionQueueEntries;
+  queueHead = g_UiActionQueueEntries;
   while (g_UiActionQueueUsedBytes != 0) {
-    pvVar1 = pUVar3->source;
+    actionSource = queueHead->source;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - 8;
-    pcVar2 = *(code **)((int)g_UiActionHandlerPages[(uint)pUVar3->actionId >> 8]->handlers +
-                       (pUVar3->actionId * 4 & 0x3fcU));
-    pUVar5 = pUVar3 + 1;
-    pUVar6 = pUVar3;
-    for (iVar4 = 0x1e; pUVar3 = g_UiActionQueueEntries, iVar4 != 0; iVar4 = iVar4 + -1) {
-      pUVar6->actionId = pUVar5->actionId;
-      pUVar5 = (UiActionQueueEntry *)&pUVar5->source;
-      pUVar6 = (UiActionQueueEntry *)&pUVar6->source;
+    actionHandler = *(code **)((int)g_UiActionHandlerPages[(uint)queueHead->actionId >> 8]->handlers +
+                       (queueHead->actionId * 4 & 0x3fcU));
+    sourceEntry = queueHead + 1;
+    destinationEntry = queueHead;
+    for (remainingCount = 0x1e; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount = remainingCount + -1) {
+      destinationEntry->actionId = sourceEntry->actionId;
+      sourceEntry = (UiActionQueueEntry *)&sourceEntry->source;
+      destinationEntry = (UiActionQueueEntry *)&destinationEntry->source;
     }
-    (*pcVar2)(pvVar1);
+    (*actionHandler)(actionSource);
   }
   (*g_SpinLockReleaseAndInvoke)
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
@@ -475,13 +475,13 @@ void __thandor_void_preserve_eax_ecx_edx
 UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
 
 {
-  UiNodeBase *control_00;
+  UiNodeBase *childControl;
   
   control->nodeFlags = control->nodeFlags & retainMask;
   control->nodeFlags = control->nodeFlags | setMask;
-  for (control_00 = control->firstChild; control_00 != (UiNodeBase *)0xffffffff;
-      control_00 = control_00->nextSibling) {
-    (*control_00->vtable->applyFlags)(setMask,retainMask,control_00);
+  for (childControl = control->firstChild; childControl != (UiNodeBase *)0xffffffff;
+      childControl = childControl->nextSibling) {
+    (*childControl->vtable->applyFlags)(setMask,retainMask,childControl);
   }
   return;
 }

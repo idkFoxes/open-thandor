@@ -19,22 +19,22 @@ bool SpatialSoundPool_Init(void)
 {
   SpatialSoundSlot *spatialSoundStorageCursor;
   int allocationDwordsRemaining;
-  bool bVar1;
-  ArenaAllocEaxCf5 AVar2;
+  bool allocationFailed;
+  ArenaAllocEaxCf5 allocResult;
   
-  AVar2 = (*g_MemoryApi.alloc)(0x1000);
-  bVar1 = AVar2.carry;
-  spatialSoundStorageCursor = (SpatialSoundSlot *)AVar2.eax;
-  if (!bVar1) {
+  allocResult = (*g_MemoryApi.alloc)(0x1000);
+  allocationFailed = allocResult.carry;
+  spatialSoundStorageCursor = (SpatialSoundSlot *)allocResult.eax;
+  if (!allocationFailed) {
     g_SpatialSoundSlots = spatialSoundStorageCursor;
     for (allocationDwordsRemaining = 0x400; allocationDwordsRemaining != 0;
         allocationDwordsRemaining = allocationDwordsRemaining + -1) {
       spatialSoundStorageCursor->voiceSet = (DirectSoundVoiceSet *)0x0;
       spatialSoundStorageCursor = (SpatialSoundSlot *)&spatialSoundStorageCursor->activeVoice;
     }
-    bVar1 = false;
+    allocationFailed = false;
   }
-  return bVar1;
+  return allocationFailed;
 }
 
 
@@ -87,52 +87,52 @@ SpatialSound_PlayPositionedOneShot
           GraphicsFixedVec3 *worldPosition,DirectSoundVoiceSet **voiceSetRef)
 
 {
-  longlong lVar1;
-  uint uVar2;
-  uint uVar3;
-  uint uVar4;
-  FixedLengthAnglesEaxEcxEdx12 FVar5;
+  longlong scaledProduct;
+  uint distanceOrPannedGain;
+  uint azimuthOrLeftGainQ15;
+  uint volumeOrRightGainQ15;
+  FixedLengthAnglesEaxEcxEdx12 lengthAngles;
   
-  uVar4 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
-  if ((voiceSetRef != (DirectSoundVoiceSet **)0x0) && (uVar4 != 0)) {
+  volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
+  if ((voiceSetRef != (DirectSoundVoiceSet **)0x0) && (volumeOrRightGainQ15 != 0)) {
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
                (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
-    FVar5 = FixedMath_VectorToAnglesAndLength3Regs
+    lengthAngles = FixedMath_VectorToAnglesAndLength3Regs
                       (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
-    uVar3 = FVar5.azimuthAngle;
-    uVar2 = FVar5.lengthQ12;
-    if ((uVar2 < maximumDistanceQ12) &&
-       (lVar1 = (longlong)
+    azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
+    distanceOrPannedGain = lengthAngles.lengthQ12;
+    if ((distanceOrPannedGain < maximumDistanceQ12) &&
+       (scaledProduct = (longlong)
                 g_FixedCosQ28
-                [(int)(CONCAT44(uVar2 >> 0x12,uVar2 << 0xe) / (ulonglong)maximumDistanceQ12)] *
-                (longlong)(int)uVar4,
-       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c, 0x100 < (int)uVar4)) {
-      if (uVar3 < 0x8000) {
-        uVar2 = (uint)((ulonglong)
-                       ((longlong)(g_FixedCosQ28[uVar3 * 2] + 0x10000000) *
-                       (longlong)(int)(uVar4 << 3)) >> 0x20);
-        uVar3 = uVar4;
+                [(int)(CONCAT44(distanceOrPannedGain >> 0x12,distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
+                (longlong)(int)volumeOrRightGainQ15,
+       volumeOrRightGainQ15 = (int)((ulonglong)scaledProduct >> 0x20) << 4 | (uint)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
+      if (azimuthOrLeftGainQ15 < 0x8000) {
+        distanceOrPannedGain = (uint)((ulonglong)
+                       ((longlong)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
+                       (longlong)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
+        azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
-        lVar1 = (longlong)
-                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + uVar3 * 8) + 0x10000000) *
-                (longlong)(int)uVar4;
-        uVar3 = (uint)lVar1 >> 0x1d | (int)((ulonglong)lVar1 >> 0x20) << 3;
-        uVar2 = uVar4;
+        scaledProduct = (longlong)
+                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + 0x10000000) *
+                (longlong)(int)volumeOrRightGainQ15;
+        azimuthOrLeftGainQ15 = (uint)scaledProduct >> 0x1d | (int)((ulonglong)scaledProduct >> 0x20) << 3;
+        distanceOrPannedGain = volumeOrRightGainQ15;
       }
-      uVar4 = uVar2;
+      volumeOrRightGainQ15 = distanceOrPannedGain;
       if (g_ReverseStereoMask != 0) {
-        uVar4 = uVar3;
-        uVar3 = uVar2;
+        volumeOrRightGainQ15 = azimuthOrLeftGainQ15;
+        azimuthOrLeftGainQ15 = distanceOrPannedGain;
       }
-      if (0x8000 < (int)uVar3) {
-        uVar3 = 0x8000;
+      if (0x8000 < (int)azimuthOrLeftGainQ15) {
+        azimuthOrLeftGainQ15 = 0x8000;
       }
-      if (0x8000 < (int)uVar4) {
-        uVar4 = 0x8000;
+      if (0x8000 < (int)volumeOrRightGainQ15) {
+        volumeOrRightGainQ15 = 0x8000;
       }
-      (*g_SoundPlayOneShot)(uVar4,uVar3,*voiceSetRef);
+      (*g_SoundPlayOneShot)(volumeOrRightGainQ15,azimuthOrLeftGainQ15,*voiceSetRef);
     }
   }
   return;
@@ -153,53 +153,53 @@ SpatialSound_UpdateDesiredPositionedGains
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot)
 
 {
-  longlong lVar1;
-  uint uVar2;
-  uint uVar3;
-  uint uVar4;
-  FixedLengthAnglesEaxEcxEdx12 FVar5;
+  longlong scaledProduct;
+  uint distanceOrPannedGain;
+  uint azimuthOrLeftGainQ15;
+  uint volumeOrRightGainQ15;
+  FixedLengthAnglesEaxEcxEdx12 lengthAngles;
   
-  uVar4 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
-  if ((slot != (SpatialSoundSlot *)0x0) && (uVar4 != 0)) {
+  volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
+  if ((slot != (SpatialSoundSlot *)0x0) && (volumeOrRightGainQ15 != 0)) {
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
                (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
-    FVar5 = FixedMath_VectorToAnglesAndLength3Regs
+    lengthAngles = FixedMath_VectorToAnglesAndLength3Regs
                       (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
-    uVar3 = FVar5.azimuthAngle;
-    uVar2 = FVar5.lengthQ12;
-    if ((uVar2 < maximumDistanceQ12) &&
-       (lVar1 = (longlong)
+    azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
+    distanceOrPannedGain = lengthAngles.lengthQ12;
+    if ((distanceOrPannedGain < maximumDistanceQ12) &&
+       (scaledProduct = (longlong)
                 g_FixedCosQ28
-                [(int)(CONCAT44(uVar2 >> 0x12,uVar2 << 0xe) / (ulonglong)maximumDistanceQ12)] *
-                (longlong)(int)uVar4,
-       uVar4 = (int)((ulonglong)lVar1 >> 0x20) << 4 | (uint)lVar1 >> 0x1c, 0x100 < (int)uVar4)) {
-      if (uVar3 < 0x8000) {
-        uVar2 = (uint)((ulonglong)
-                       ((longlong)(g_FixedCosQ28[uVar3 * 2] + 0x10000000) *
-                       (longlong)(int)(uVar4 << 3)) >> 0x20);
-        uVar3 = uVar4;
+                [(int)(CONCAT44(distanceOrPannedGain >> 0x12,distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
+                (longlong)(int)volumeOrRightGainQ15,
+       volumeOrRightGainQ15 = (int)((ulonglong)scaledProduct >> 0x20) << 4 | (uint)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
+      if (azimuthOrLeftGainQ15 < 0x8000) {
+        distanceOrPannedGain = (uint)((ulonglong)
+                       ((longlong)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
+                       (longlong)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
+        azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
-        lVar1 = (longlong)
-                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + uVar3 * 8) + 0x10000000) *
-                (longlong)(int)uVar4;
-        uVar3 = (uint)lVar1 >> 0x1d | (int)((ulonglong)lVar1 >> 0x20) << 3;
-        uVar2 = uVar4;
+        scaledProduct = (longlong)
+                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + 0x10000000) *
+                (longlong)(int)volumeOrRightGainQ15;
+        azimuthOrLeftGainQ15 = (uint)scaledProduct >> 0x1d | (int)((ulonglong)scaledProduct >> 0x20) << 3;
+        distanceOrPannedGain = volumeOrRightGainQ15;
       }
-      uVar4 = uVar2;
+      volumeOrRightGainQ15 = distanceOrPannedGain;
       if (g_ReverseStereoMask != 0) {
-        uVar4 = uVar3;
-        uVar3 = uVar2;
+        volumeOrRightGainQ15 = azimuthOrLeftGainQ15;
+        azimuthOrLeftGainQ15 = distanceOrPannedGain;
       }
-      if (0x8000 < (int)uVar3) {
-        uVar3 = 0x8000;
+      if (0x8000 < (int)azimuthOrLeftGainQ15) {
+        azimuthOrLeftGainQ15 = 0x8000;
       }
-      if (0x8000 < (int)uVar4) {
-        uVar4 = 0x8000;
+      if (0x8000 < (int)volumeOrRightGainQ15) {
+        volumeOrRightGainQ15 = 0x8000;
       }
-      slot->desiredLeftGainQ15 = uVar3;
-      slot->desiredRightGainQ15 = uVar4;
+      slot->desiredLeftGainQ15 = azimuthOrLeftGainQ15;
+      slot->desiredRightGainQ15 = volumeOrRightGainQ15;
     }
   }
   return;
@@ -216,37 +216,37 @@ SpatialSoundSlotEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
 
 {
-  SpatialSoundSlot *arg0;
+  SpatialSoundSlot *voiceSetOrError;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
-  SoundCreateSampleVoiceSetEaxCf5 SVar1;
-  SpatialSoundSlotEaxCf5 SVar2;
-  SpatialSoundSlotEaxCf5 SVar3;
+  SoundCreateSampleVoiceSetEaxCf5 createResult;
+  SpatialSoundSlotEaxCf5 failureResult;
+  SpatialSoundSlotEaxCf5 successResult;
   
-  SVar1 = (*g_SoundCreateSampleVoiceSet)(sampleAsset);
-  arg0 = (SpatialSoundSlot *)SVar1.eax;
-  if (!SVar1.carry) {
+  createResult = (*g_SoundCreateSampleVoiceSet)(sampleAsset);
+  voiceSetOrError = (SpatialSoundSlot *)createResult.eax;
+  if (!createResult.carry) {
     slotsRemaining = 0x100;
     slotCursor = g_SpatialSoundSlots;
     do {
       if (slotCursor->voiceSet == (DirectSoundVoiceSet *)0x0) {
-        slotCursor->voiceSet = (DirectSoundVoiceSet *)arg0;
+        slotCursor->voiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
         slotCursor->desiredLeftGainQ15 = 0;
         slotCursor->desiredRightGainQ15 = 0;
         slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
-        SVar3.carry = false;
-        SVar3.soundSlot = slotCursor;
-        return SVar3;
+        successResult.carry = false;
+        successResult.soundSlot = slotCursor;
+        return successResult;
       }
       slotCursor = slotCursor + 1;
       slotsRemaining = slotsRemaining + -1;
     } while (slotsRemaining != 0);
-    (*g_SoundReleaseSampleVoiceSet)((DirectSoundVoiceSet *)arg0);
-    arg0 = (SpatialSoundSlot *)0x14;
+    (*g_SoundReleaseSampleVoiceSet)((DirectSoundVoiceSet *)voiceSetOrError);
+    voiceSetOrError = (SpatialSoundSlot *)0x14;
   }
-  SVar2.carry = true;
-  SVar2.soundSlot = arg0;
-  return SVar2;
+  failureResult.carry = true;
+  failureResult.soundSlot = voiceSetOrError;
+  return failureResult;
 }
 
 
@@ -261,32 +261,32 @@ SpatialSoundSlot_CreateFromPcm
           void *pcmData)
 
 {
-  SpatialSoundSlot *arg0;
-  int iVar1;
-  SpatialSoundSlot *pSVar2;
-  SoundCreatePcmVoiceSetEaxCf5 SVar3;
+  SpatialSoundSlot *voiceSetOrError;
+  int slotsRemaining;
+  SpatialSoundSlot *slotCursor;
+  SoundCreatePcmVoiceSetEaxCf5 createResult;
   
-  SVar3 = (*g_SoundCreatePcmVoiceSet)
+  createResult = (*g_SoundCreatePcmVoiceSet)
                     (bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData);
-  arg0 = (SpatialSoundSlot *)SVar3.eax;
-  if (!SVar3.carry) {
-    iVar1 = 0x100;
-    pSVar2 = g_SpatialSoundSlots;
+  voiceSetOrError = (SpatialSoundSlot *)createResult.eax;
+  if (!createResult.carry) {
+    slotsRemaining = 0x100;
+    slotCursor = g_SpatialSoundSlots;
     do {
-      if (pSVar2->voiceSet == (DirectSoundVoiceSet *)0x0) {
-        pSVar2->voiceSet = (DirectSoundVoiceSet *)arg0;
-        pSVar2->desiredLeftGainQ15 = 0;
-        pSVar2->desiredRightGainQ15 = 0;
-        pSVar2->activeVoice = (IDirectSoundBuffer *)0x0;
-        return pSVar2;
+      if (slotCursor->voiceSet == (DirectSoundVoiceSet *)0x0) {
+        slotCursor->voiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
+        slotCursor->desiredLeftGainQ15 = 0;
+        slotCursor->desiredRightGainQ15 = 0;
+        slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
+        return slotCursor;
       }
-      pSVar2 = pSVar2 + 1;
-      iVar1 = iVar1 + -1;
-    } while (iVar1 != 0);
-    (*g_SoundReleasePcmVoiceSet)((DirectSoundVoiceSet *)arg0);
-    arg0 = (SpatialSoundSlot *)0x14;
+      slotCursor = slotCursor + 1;
+      slotsRemaining = slotsRemaining + -1;
+    } while (slotsRemaining != 0);
+    (*g_SoundReleasePcmVoiceSet)((DirectSoundVoiceSet *)voiceSetOrError);
+    voiceSetOrError = (SpatialSoundSlot *)0x14;
   }
-  return arg0;
+  return voiceSetOrError;
 }
 
 
@@ -367,32 +367,32 @@ void __thandor_void_preserve_eax_ecx SpatialSoundPool_ClearDesiredGains(void)
 void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void)
 
 {
-  IDirectSoundBuffer *arg2;
+  IDirectSoundBuffer *existingVoice;
   IDirectSoundBuffer *activeVoice;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
-  SoundPlayVoiceEaxCf5 SVar1;
+  SoundPlayVoiceEaxCf5 playResult;
   
   slotsRemaining = 0x100;
   slotCursor = g_SpatialSoundSlots;
   do {
     if (slotCursor->voiceSet != (DirectSoundVoiceSet *)0x0) {
-      arg2 = slotCursor->activeVoice;
-      if (arg2 == (IDirectSoundBuffer *)0x0) {
+      existingVoice = slotCursor->activeVoice;
+      if (existingVoice == (IDirectSoundBuffer *)0x0) {
         if (slotCursor->desiredLeftGainQ15 != 0 || slotCursor->desiredRightGainQ15 != 0) {
-          SVar1 = (*g_SoundPlayLooping)
+          playResult = (*g_SoundPlayLooping)
                             (slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,
                              slotCursor->voiceSet);
-          activeVoice = SVar1.eax;
+          activeVoice = playResult.eax;
           slotCursor->activeVoice = activeVoice;
         }
       }
       else if (slotCursor->desiredLeftGainQ15 == 0 && slotCursor->desiredRightGainQ15 == 0) {
-        (*g_SoundStopVoice)(arg2);
+        (*g_SoundStopVoice)(existingVoice);
         slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
       }
       else {
-        (*g_SoundSetVoiceGains)(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,arg2)
+        (*g_SoundSetVoiceGains)(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice)
         ;
       }
     }

@@ -48,48 +48,48 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
 {
   dword *settingsClearCursor;
   void *handle;
-  int iVar1;
+  int dwordsRemaining;
   uint byteCount;
   PersistentSettingsImage *destination;
-  ArenaAllocEaxCf5 AVar2;
-  FileSystemOpenEaxCf5 FVar3;
-  RichTextCopyExpandedEaxCf5 RVar4;
-  FileSystemSizeEaxCf5 FVar5;
-  FileSystemReadEaxCf5 FVar6;
+  ArenaAllocEaxCf5 allocResult;
+  FileSystemOpenEaxCf5 openResult;
+  RichTextCopyExpandedEaxCf5 pathCopyResult;
+  FileSystemSizeEaxCf5 sizeResult;
+  FileSystemReadEaxCf5 readResult;
   
   Resource_Release(g_PersistentSettings.image);
   g_PersistentSettings.image = (PersistentSettingsImage *)0x0;
-  AVar2 = (*g_MemoryApi.alloc)(200);
-  settingsClearCursor = (dword *)AVar2.eax;
-  if (AVar2.carry) {
+  allocResult = (*g_MemoryApi.alloc)(200);
+  settingsClearCursor = (dword *)allocResult.eax;
+  if (allocResult.carry) {
     return;
   }
-  for (iVar1 = 0x32; iVar1 != 0; iVar1 = iVar1 + -1) {
+  for (dwordsRemaining = 0x32; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
     *settingsClearCursor = 0;
     settingsClearCursor = settingsClearCursor + 1;
   }
   destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
-  FVar3 = (*g_FileSystemOpenCf)(0,g_PersistentSettings.path);
-  handle = (void *)FVar3.eax;
-  if (FVar3.carry) {
+  openResult = (*g_FileSystemOpenCf)(0,g_PersistentSettings.path);
+  handle = (void *)openResult.eax;
+  if (openResult.carry) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (word *)&g_ExecutableDirectoryUtf16);
-    FVar3 = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    if (FVar3.carry) goto PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure;
-    RVar4 = RichTextCommandStream_CopyExpandedCf
+    openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+    if (openResult.carry) goto PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure;
+    pathCopyResult = RichTextCommandStream_CopyExpandedCf
                       (0x200,g_PersistentSettings.path,(word *)&g_FileSystemCombinedPathScratchUtf16
                       );
-    handle = (void *)RVar4.eax;
+    handle = (void *)pathCopyResult.eax;
   }
-  FVar5 = (*g_FileSystemGetSizeCf)(handle);
-  if (!FVar5.carry) {
+  sizeResult = (*g_FileSystemGetSizeCf)(handle);
+  if (!sizeResult.carry) {
     byteCount = 200;
-    if (FVar5.eax < 200) {
-      byteCount = FVar5.eax;
+    if (sizeResult.eax < 200) {
+      byteCount = sizeResult.eax;
     }
-    FVar6 = (*g_FileSystemReadExactCf)(byteCount,destination,handle);
-    if (!FVar6.carry) {
+    readResult = (*g_FileSystemReadExactCf)(byteCount,destination,handle);
+    if (!readResult.carry) {
       (*g_FileSystemClose)(handle);
       if (byteCount < 0x3c) {
         g_PersistentSettings.image = destination;

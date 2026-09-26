@@ -24,22 +24,22 @@ AiCombatDecision_UpdateTargetAssignment
 
 {
   ArmyRuntimeSlot *selectedTargetArmyRuntime;
-  AiCombatTargetSelectionResult AVar1;
+  AiCombatTargetSelectionResult selectionResult;
   ArmyCommandGeneration candidateCommandGenerationBase;
   AiCommandGenerationRightShiftBits selectedCommandGenerationRightShiftBits;
   
   if (((armyRuntime->commandModeFlags & 4) == 0) &&
      (((int)armyRuntime->commandGeneration < 1 || ((armyRuntime->commandModeFlags & 3) == 0)))) {
-    AVar1 = AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime);
+    selectionResult = AiCombatTarget_SelectBestCandidate(worldRuntime,armyRuntime);
     selectedCommandGenerationRightShiftBits =
          g_AiCombatTargetSelectedCommandGenerationRightShiftBits;
     candidateCommandGenerationBase = g_AiCommandGenerationCandidateBase;
-    selectedTargetArmyRuntime = AVar1.targetArmyRuntime;
+    selectedTargetArmyRuntime = selectionResult.targetArmyRuntime;
     if (selectedTargetArmyRuntime == armyRuntime->commandTargetArmyRuntime) {
       armyRuntime->commandGeneration = g_AiCommandGenerationRetainedTarget;
     }
     else if ((selectedTargetArmyRuntime == (ArmyRuntimeSlot *)0x0) &&
-            (AVar1.sourceClassCount != 0 && -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, longlong, AVar1))) {
+            (selectionResult.sourceClassCount != 0 && -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, longlong, selectionResult))) {
       ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->runtimeState98,armyRuntime);
       if ((armyRuntime->commandModeFlags & 1) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | 4;
@@ -66,35 +66,35 @@ AiCombatDecision_UpdateTargetAssignment
 void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
 
 {
-  dword dVar1;
+  dword targetClassIndex;
   GameEntityRuntime *targetRuntime;
-  ArmyCommandGeneration AVar2;
-  uint uVar3;
+  ArmyCommandGeneration assignedCommandGeneration;
+  uint remainingOrBestScore;
   int targetCandidateRecordsRemaining;
-  uint uVar4;
-  ArmyRuntimeSlot *armyRuntime7;
+  uint accumulatedScaleRatio;
+  ArmyRuntimeSlot *collectedOrTargetArmy;
   AiTargetWorkspaceEntry *targetCandidateRecordCursor;
-  ArmyRuntimeSlot **ppAVar5;
+  ArmyRuntimeSlot **collectedArmyCursor;
   ModelRuntimeScaleRatioRegisterPairQ12 collectedHierarchyScaleRatioPairQ12;
   byte *candidateArmyRuntime;
-  ArmyRuntimeSlot *armyRuntime4;
+  ArmyRuntimeSlot *candidateTargetArmy;
   
   if (1 < g_AiCollectedEntityCount) {
-    uVar4 = 0;
-    uVar3 = g_AiCollectedEntityCount;
-    armyRuntime7 = (ArmyRuntimeSlot *)g_AiWorkspaceBuffer14_Size0100;
+    accumulatedScaleRatio = 0;
+    remainingOrBestScore = g_AiCollectedEntityCount;
+    collectedOrTargetArmy = (ArmyRuntimeSlot *)g_AiWorkspaceBuffer14_Size0100;
     do {
       collectedHierarchyScaleRatioPairQ12 =
            ModelRuntime_QueryHierarchyScaleRatioQ12Regs
                      ((RuntimeModelFactionPrefix10 *)
-                      (armyRuntime7->modelRuntimeOrSavedOffset).modelRuntime);
-      AVar2 = g_AiCommandGenerationCandidateBase;
+                      (collectedOrTargetArmy->modelRuntimeOrSavedOffset).modelRuntime);
+      assignedCommandGeneration = g_AiCommandGenerationCandidateBase;
       THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4) =
            (uint)(collectedHierarchyScaleRatioPairQ12 >> 0x20);
       if ((THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4) != 0) &&
-         (uVar4 = uVar4 + (uint)((int)collectedHierarchyScaleRatioPairQ12 << 8) /
-                          THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4), 0x1ff < uVar4)) {
-        uVar3 = 0;
+         (accumulatedScaleRatio = accumulatedScaleRatio + (uint)((int)collectedHierarchyScaleRatioPairQ12 << 8) /
+                          THANDOR_PART(dword, collectedHierarchyScaleRatioPairQ12, 4), 0x1ff < accumulatedScaleRatio)) {
+        remainingOrBestScore = 0;
         targetCandidateRecordsRemaining = g_AiWorkspace07Count;
         targetCandidateRecordCursor = g_AiWorkspaceBuffer07_Size0400;
         if ((g_AiWorkspace07Count == 0) &&
@@ -104,39 +104,39 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
           return;
         }
         do {
-          armyRuntime4 = targetCandidateRecordCursor->armyRuntime;
-          if ((armyRuntime4 != (ArmyRuntimeSlot *)0x0) &&
-             (dVar1 = ((armyRuntime4->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C
-             , uVar3 <= *(uint *)(&g_AiCombatTargetClassBaseScoreTable24 + dVar1 * 4))) {
-            uVar3 = *(uint *)(&g_AiCombatTargetClassBaseScoreTable24 + dVar1 * 4);
-            armyRuntime7 = armyRuntime4;
+          candidateTargetArmy = targetCandidateRecordCursor->armyRuntime;
+          if ((candidateTargetArmy != (ArmyRuntimeSlot *)0x0) &&
+             (targetClassIndex = ((candidateTargetArmy->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C
+             , remainingOrBestScore <= *(uint *)(&g_AiCombatTargetClassBaseScoreTable24 + targetClassIndex * 4))) {
+            remainingOrBestScore = *(uint *)(&g_AiCombatTargetClassBaseScoreTable24 + targetClassIndex * 4);
+            collectedOrTargetArmy = candidateTargetArmy;
           }
           targetCandidateRecordCursor = targetCandidateRecordCursor + 1;
           targetCandidateRecordsRemaining = targetCandidateRecordsRemaining + -1;
         } while (targetCandidateRecordsRemaining != 0);
-        if (uVar3 == 0) {
+        if (remainingOrBestScore == 0) {
           return;
         }
-        targetRuntime = armyRuntime7->linkedEntityRuntime;
-        uVar3 = g_AiCollectedEntityCount;
-        ppAVar5 = g_AiWorkspaceBuffer14_Size0100;
+        targetRuntime = collectedOrTargetArmy->linkedEntityRuntime;
+        remainingOrBestScore = g_AiCollectedEntityCount;
+        collectedArmyCursor = g_AiWorkspaceBuffer14_Size0100;
         do {
-          armyRuntime7 = *ppAVar5;
-          ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,armyRuntime7);
-          armyRuntime7->runtimeState98 = (dword)targetRuntime;
-          armyRuntime7->commandModeFlags = armyRuntime7->commandModeFlags | 4;
-          armyRuntime7->runtimeState94 = armyRuntime7->runtimeState94 | 1;
-          armyRuntime7->movementStateFlags = armyRuntime7->movementStateFlags & 0xfffffdff;
-          armyRuntime7->runtimeState8C = 8;
-          armyRuntime7->commandGeneration = AVar2;
-          ppAVar5 = ppAVar5 + 1;
-          uVar3 = uVar3 - 1;
-        } while (uVar3 != 0);
+          collectedOrTargetArmy = *collectedArmyCursor;
+          ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,collectedOrTargetArmy);
+          collectedOrTargetArmy->runtimeState98 = (dword)targetRuntime;
+          collectedOrTargetArmy->commandModeFlags = collectedOrTargetArmy->commandModeFlags | 4;
+          collectedOrTargetArmy->runtimeState94 = collectedOrTargetArmy->runtimeState94 | 1;
+          collectedOrTargetArmy->movementStateFlags = collectedOrTargetArmy->movementStateFlags & 0xfffffdff;
+          collectedOrTargetArmy->runtimeState8C = 8;
+          collectedOrTargetArmy->commandGeneration = assignedCommandGeneration;
+          collectedArmyCursor = collectedArmyCursor + 1;
+          remainingOrBestScore = remainingOrBestScore - 1;
+        } while (remainingOrBestScore != 0);
         return;
       }
-      armyRuntime7 = (ArmyRuntimeSlot *)&armyRuntime7->modelNodeRuntime;
-      uVar3 = uVar3 - 1;
-    } while (uVar3 != 0);
+      collectedOrTargetArmy = (ArmyRuntimeSlot *)&collectedOrTargetArmy->modelNodeRuntime;
+      remainingOrBestScore = remainingOrBestScore - 1;
+    } while (remainingOrBestScore != 0);
   }
   return;
 }
@@ -157,7 +157,7 @@ AiCombatTarget_SelectBestCandidate
   DepthBinMask32 sourceDepthMask1;
   DepthBinMask32 sourceDepthMask0;
   AiCandidateScore32 candidateScore;
-  int iVar1;
+  int classIndexOrFaction;
   Q12 searchRadiusQ12;
   AiCandidateScore32 currentBestScore;
   AiSourceClassCount sourceClassCount;
@@ -171,13 +171,13 @@ AiCombatTarget_SelectBestCandidate
   
   sourceClassCount = 0;
   ownerNodeCursor = (WorldRuntimeNode *)worldRuntime->ownerListHead;
-  iVar1 = 7;
+  classIndexOrFaction = 7;
   bestCandidateArmyRuntime = (ArmyRuntimeSlot *)0x0;
   do {
-    sourceClassCount = sourceClassCount + *(int *)(sourceArmyRuntime->reservedF8_FF + iVar1 * 4 + 8)
+    sourceClassCount = sourceClassCount + *(int *)(sourceArmyRuntime->reservedF8_FF + classIndexOrFaction * 4 + 8)
     ;
-    iVar1 = iVar1 + -1;
-  } while (-1 < iVar1);
+    classIndexOrFaction = classIndexOrFaction + -1;
+  } while (-1 < classIndexOrFaction);
   if (sourceClassCount != 0) {
     sourceModelNode = sourceArmyRuntime->modelNodeRuntime;
     searchRadiusQ12 = sourceArmyRuntime->runtimeState4C + 0x4000;
@@ -197,13 +197,13 @@ AiCombatTarget_SelectBestCandidate
         if ((((-1 < sourceClassCount) ||
              (((candidateEntityRuntime->common).runtimeFlags & 0x400) == 0)) &&
             (((candidateEntityRuntime->common).runtimeFlags & 8) == 0)) &&
-           (iVar1 = candidateArmyRuntime->factionIndex, iVar1 != 0)) {
+           (classIndexOrFaction = candidateArmyRuntime->factionIndex, classIndexOrFaction != 0)) {
           if (sourceClassCount < 1) {
-            if ((iVar1 == sourceArmyRuntime->factionIndex) &&
+            if ((classIndexOrFaction == sourceArmyRuntime->factionIndex) &&
                (sourceArmyRuntime != candidateArmyRuntime))
             goto AiCombatTarget_SelectBestCandidate_EvaluateRelationEligibleCandidateAndUpdateBest;
           }
-          else if (iVar1 != sourceArmyRuntime->factionIndex) {
+          else if (classIndexOrFaction != sourceArmyRuntime->factionIndex) {
 AiCombatTarget_SelectBestCandidate_EvaluateRelationEligibleCandidateAndUpdateBest:
             if (((candidateArmyRuntime->terrainOccupancyMask0 &
                  2 << ((char)sourceFactionIndex * '\x02' & 0x1fU)) != 0) &&
@@ -249,68 +249,68 @@ AiCombatTarget_EvaluateCandidateScore
           ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
 
 {
-  dword dVar1;
-  longlong lVar2;
-  int iVar3;
-  int iVar4;
+  dword factionOrDefinitionAddress;
+  longlong clearanceSquaredOrWeight;
+  int reachDeltaOrSourceCounter;
+  int deltaXOrCandidateCounter;
   dword radialClearanceQ12;
   ModelRuntimeSlot *sourceWeaponModelRuntime;
   ModelRuntimeNode *candidateAimModelNode;
-  int iVar5;
-  bool bVar6;
+  int classBaseScore;
+  bool testPassed;
   ModelRuntimeScaleRatioRegisterPairQ12 hierarchyScaleRatioPairQ12;
   uint candidateScore;
   dword sourceRadiusQ12;
   ModelRuntimeSlot *sourceModelRuntime;
-  ModelRuntimeNode *modelNode1;
+  ModelRuntimeNode *candidateModelNode;
   
-  dVar1 = candidateArmyRuntime->factionIndex;
-  modelNode1 = candidateArmyRuntime->modelNodeRuntime;
-  bVar6 = DepthBinMasks_OverlapCf
-                    (modelNode1->depthBinMaskFar,modelNode1->depthBinMaskNear,sourceDepthMask0,
+  factionOrDefinitionAddress = candidateArmyRuntime->factionIndex;
+  candidateModelNode = candidateArmyRuntime->modelNodeRuntime;
+  testPassed = DepthBinMasks_OverlapCf
+                    (candidateModelNode->depthBinMaskFar,candidateModelNode->depthBinMaskNear,sourceDepthMask0,
                      sourceDepthMask1);
-  if (bVar6) {
+  if (testPassed) {
     if (sourceClassCount < 1) {
-      bVar6 = GameFactionRuntime_TestCapabilityBitClearCf(dVar1,sourceArmyRuntime->factionIndex);
-      if (bVar6) {
+      testPassed = GameFactionRuntime_TestCapabilityBitClearCf(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
+      if (testPassed) {
         return 0;
       }
     }
     else {
-      bVar6 = GameFactionRuntime_TestCapabilityBitClearCf(dVar1,sourceArmyRuntime->factionIndex);
-      if (!bVar6) {
+      testPassed = GameFactionRuntime_TestCapabilityBitClearCf(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
+      if (!testPassed) {
         return 0;
       }
     }
-    iVar3 = sourceArmyRuntime->runtimeState4C + 0x2000;
-    iVar4 = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.x -
-            (modelNode1->worldTransform).translation.x;
-    lVar2 = (longlong)iVar3 * (longlong)iVar3 - (longlong)iVar4 * (longlong)iVar4;
-    if (-1 < lVar2) {
-      iVar3 = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.y -
-              (modelNode1->worldTransform).translation.y;
-      lVar2 = lVar2 - (longlong)iVar3 * (longlong)iVar3;
-      if (-1 < lVar2) {
+    reachDeltaOrSourceCounter = sourceArmyRuntime->runtimeState4C + 0x2000;
+    deltaXOrCandidateCounter = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.x -
+            (candidateModelNode->worldTransform).translation.x;
+    clearanceSquaredOrWeight = (longlong)reachDeltaOrSourceCounter * (longlong)reachDeltaOrSourceCounter - (longlong)deltaXOrCandidateCounter * (longlong)deltaXOrCandidateCounter;
+    if (-1 < clearanceSquaredOrWeight) {
+      reachDeltaOrSourceCounter = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.y -
+              (candidateModelNode->worldTransform).translation.y;
+      clearanceSquaredOrWeight = clearanceSquaredOrWeight - (longlong)reachDeltaOrSourceCounter * (longlong)reachDeltaOrSourceCounter;
+      if (-1 < clearanceSquaredOrWeight) {
         radialClearanceQ12 =
-             FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)lVar2 >> 0x20),(UInt64Half32)lVar2);
-        lVar2 = (longlong)(int)g_AiCombatTargetRadialClearanceWeight;
+             FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)clearanceSquaredOrWeight >> 0x20),(UInt64Half32)clearanceSquaredOrWeight);
+        clearanceSquaredOrWeight = (longlong)(int)g_AiCombatTargetRadialClearanceWeight;
         sourceRadiusQ12 = sourceArmyRuntime->runtimeState4C;
-        dVar1 = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+        factionOrDefinitionAddress = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                 definitionOrSavedId).savedIdOrOffset;
-        iVar3 = *(int *)(candidateArmyRuntime->reservedF8_FF +
+        reachDeltaOrSourceCounter = *(int *)(candidateArmyRuntime->reservedF8_FF +
                         *(int *)((((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                                  definitionOrSavedId).savedIdOrOffset + 0x5c) * 4 + 8);
-        iVar4 = *(int *)(sourceArmyRuntime->reservedF8_FF + *(int *)(dVar1 + 0x5c) * 4 + 8);
+        deltaXOrCandidateCounter = *(int *)(sourceArmyRuntime->reservedF8_FF + *(int *)(factionOrDefinitionAddress + 0x5c) * 4 + 8);
         g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 0;
-        if (iVar3 == 0) {
+        if (reachDeltaOrSourceCounter == 0) {
           g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 2;
         }
-        if (iVar4 != 0) {
-          if (iVar4 < 0) {
-            iVar3 = 0;
-            iVar4 = -iVar4;
+        if (deltaXOrCandidateCounter != 0) {
+          if (deltaXOrCandidateCounter < 0) {
+            reachDeltaOrSourceCounter = 0;
+            deltaXOrCandidateCounter = -deltaXOrCandidateCounter;
           }
-          iVar5 = *(int *)(&g_AiCombatTargetClassBaseScoreTable24 + *(int *)(dVar1 + 0x4c) * 4) *
+          classBaseScore = *(int *)(&g_AiCombatTargetClassBaseScoreTable24 + *(int *)(factionOrDefinitionAddress + 0x4c) * 4) *
                   g_AiCombatTargetClassBaseScoreMultiplier;
           hierarchyScaleRatioPairQ12 =
                ModelRuntime_QueryHierarchyScaleRatioQ12Regs
@@ -319,16 +319,16 @@ AiCombatTarget_EvaluateCandidateScore
           if ((-1 < sourceClassCount) ||
              ((uint)hierarchyScaleRatioPairQ12 < THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4))) {
             candidateScore =
-                 (int)(((int)radialClearanceQ12 * lVar2) / (longlong)(int)sourceRadiusQ12) + iVar5 +
-                 (int)(((longlong)(int)g_AiCombatTargetSourceCounterCountWeight * (longlong)iVar3) /
+                 (int)(((int)radialClearanceQ12 * clearanceSquaredOrWeight) / (longlong)(int)sourceRadiusQ12) + classBaseScore +
+                 (int)(((longlong)(int)g_AiCombatTargetSourceCounterCountWeight * (longlong)reachDeltaOrSourceCounter) /
                       (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4)) +
-                 (int)(((longlong)(int)g_AiCombatTargetCandidateCounterCountWeight * (longlong)iVar4) /
+                 (int)(((longlong)(int)g_AiCombatTargetCandidateCounterCountWeight * (longlong)deltaXOrCandidateCounter) /
                       (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4)) +
                  (int)(((longlong)(int)g_AiCombatTargetScaleDeficitWeight *
                        (longlong)
                        (int)(THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4) - (uint)hierarchyScaleRatioPairQ12)) /
                       (longlong)(int)THANDOR_PART(dword, hierarchyScaleRatioPairQ12, 4));
-            if (iVar3 == 0) {
+            if (reachDeltaOrSourceCounter == 0) {
               candidateScore = candidateScore >> 2;
             }
             if (currentBestScore < (int)candidateScore) {
@@ -337,24 +337,24 @@ AiCombatTarget_EvaluateCandidateScore
               sourceWeaponModelRuntime =
                    sourceModelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
               if ((sourceModelRuntime->attachmentCount0C != 0) &&
-                 ((dVar1 = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+                 ((factionOrDefinitionAddress = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                            definitionOrSavedId).savedIdOrOffset,
                   sourceWeaponModelRuntime != (ModelRuntimeSlot *)0x0 ||
                   ((sourceWeaponModelRuntime =
                          sourceModelRuntime->attachments140[1].childModelRuntimeOrSavedOffset00,
                    sourceModelRuntime->attachmentCount0C != 1 &&
                    (sourceWeaponModelRuntime != (ModelRuntimeSlot *)0x0)))))) {
-                if (*(int *)(dVar1 + 0x4c) == 0x15) {
+                if (*(int *)(factionOrDefinitionAddress + 0x4c) == 0x15) {
                   candidateAimModelNode = candidateAimModelNode->childNodes[0];
                 }
-                bVar6 = ArmyWeaponRuntime_TestTargetLineOfFireCf
-                                  (*(int *)(dVar1 + 0x50) +
+                testPassed = ArmyWeaponRuntime_TestTargetLineOfFireCf
+                                  (*(int *)(factionOrDefinitionAddress + 0x50) +
                                    (candidateAimModelNode->worldTransform).translation.z,
                                    (candidateAimModelNode->worldTransform).translation.y,
                                    (candidateAimModelNode->worldTransform).translation.x,
                                    &g_InGameRuntimeRoot->worldRuntime0A30,
                                    (ArmyRuntimeSlot *)sourceWeaponModelRuntime);
-                if ((bVar6) &&
+                if ((testPassed) &&
                    (candidateScore = candidateScore >> 2,
                    *(int *)((((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                             definitionOrSavedId).savedIdOrOffset + 0x18) == 0)) {

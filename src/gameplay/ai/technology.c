@@ -25,51 +25,51 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           WorldRuntimeContext *worldRuntime)
 
 {
-  dword dVar1;
-  TechnologyAsset *pTVar2;
-  ModelDefinitionRecordPrefix *modelDefinition1;
-  UQ8 UVar3;
-  uint uVar4;
-  bool bVar5;
+  dword definitionClassValue;
+  TechnologyAsset *technologyAsset;
+  ModelDefinitionRecordPrefix *candidateDefinition;
+  UQ8 relationScaleQ8;
+  uint candidateScore;
+  bool cfResult;
   
-  modelDefinition1 = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
-  pTVar2 = g_TechnologyAsset;
-  if (modelDefinition1 == (ModelDefinitionRecordPrefix *)0x0) {
+  candidateDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
+  technologyAsset = g_TechnologyAsset;
+  if (candidateDefinition == (ModelDefinitionRecordPrefix *)0x0) {
     return 0;
   }
-  dVar1 = modelDefinition1[6].flags;
-  if (dVar1 != 1) {
-    if ((((dVar1 != 0x15) && (dVar1 != 2)) && (dVar1 != 3)) && ((dVar1 != 0x11 && (dVar1 != 0x13))))
+  definitionClassValue = candidateDefinition[6].flags;
+  if (definitionClassValue != 1) {
+    if ((((definitionClassValue != 0x15) && (definitionClassValue != 2)) && (definitionClassValue != 3)) && ((definitionClassValue != 0x11 && (definitionClassValue != 0x13))))
     {
-      return (AiTechnologyCandidateScore)modelDefinition1;
+      return (AiTechnologyCandidateScore)candidateDefinition;
     }
-    bVar5 = AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf(factionIndex,modelDefinition1);
-    if (!bVar5) {
-      UVar3 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(modelDefinition1);
-      return (UVar3 * 40000 >> 8) * pTVar2->records[technologyId].baseCandidateScore >> 8;
+    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf(factionIndex,candidateDefinition);
+    if (!cfResult) {
+      relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
+      return (relationScaleQ8 * 40000 >> 8) * technologyAsset->records[technologyId].baseCandidateScore >> 8;
     }
     return 0;
   }
-  bVar5 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0302_BUILDING_MDL0300);
-  if (bVar5) {
+  cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0302_BUILDING_MDL0300);
+  if (cfResult) {
     return 0;
   }
-  bVar5 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0303_BUILDING_MDL0316);
-  if (!bVar5) {
-    bVar5 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0304_BUILDING_MDL0324);
-    if (bVar5) {
+  cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0303_BUILDING_MDL0316);
+  if (!cfResult) {
+    cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0304_BUILDING_MDL0324);
+    if (cfResult) {
       return 0;
     }
-    bVar5 = AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf(factionIndex,modelDefinition1);
-    if (!bVar5) {
-      UVar3 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(modelDefinition1);
-      uVar4 = (UVar3 * 40000 >> 8) * pTVar2->records[technologyId].baseCandidateScore >> 8;
-      bVar5 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0305_BUILDING_MDL0317);
-      if ((bVar5) || (bVar5 = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0306_BUILDING_MDL0310), bVar5))
+    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf(factionIndex,candidateDefinition);
+    if (!cfResult) {
+      relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
+      candidateScore = (relationScaleQ8 * 40000 >> 8) * technologyAsset->records[technologyId].baseCandidateScore >> 8;
+      cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0305_BUILDING_MDL0317);
+      if ((cfResult) || (cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0306_BUILDING_MDL0310), cfResult))
       {
-        uVar4 = uVar4 * 3 >> 2;
+        candidateScore = candidateScore * 3 >> 2;
       }
-      return uVar4 >> 1;
+      return candidateScore >> 1;
     }
     return 0;
   }
@@ -92,18 +92,18 @@ AiTechnologyCandidate_IsCurrentlyAvailableCf
           )
 
 {
-  AiWorkspaceRuntimeSlotAddress32 AVar1;
-  int iVar2;
-  AiWorkspace00EntryView8 *pAVar3;
+  AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddress;
+  int remainingCount;
+  AiWorkspace00EntryView8 *workspaceEntry;
   
-  pAVar3 = g_AiWorkspaceBuffer00_Size0400;
-  for (iVar2 = g_AiWorkspace00Count; iVar2 != 0; iVar2 = iVar2 + -1) {
-    AVar1 = pAVar3->runtimeSlotAddressOrZero;
-    if (((AVar1 != 0) && ((*(uint *)(AVar1 + 0xec) & 0xc0) != 0)) &&
-       (technologyIndex == *(PckTechnologyIdCatalog *)(AVar1 + 0x100))) {
+  workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
+  for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount = remainingCount + -1) {
+    runtimeSlotAddress = workspaceEntry->runtimeSlotAddressOrZero;
+    if (((runtimeSlotAddress != 0) && ((*(uint *)(runtimeSlotAddress + 0xec) & 0xc0) != 0)) &&
+       (technologyIndex == *(PckTechnologyIdCatalog *)(runtimeSlotAddress + 0x100))) {
       return true;
     }
-    pAVar3 = pAVar3 + 1;
+    workspaceEntry = workspaceEntry + 1;
   }
   if ((((((*(uint *)(factionRecordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
           1 << ((byte)technologyIndex & 0x1f)) == 0) &&
@@ -157,50 +157,50 @@ AiTechnologyPlanning_AddCandidateRecord
           ArmyRuntimeSlot *sourceArmyRuntime,PckTechnologyIdCatalog technologyId)
 
 {
-  AiTechnologyPlanningCandidate *pAVar1;
-  AiTechnologyPlanningCandidateCount AVar2;
-  AiTechnologyPlanningLoopRegisterContinuityResult AVar3;
+  AiTechnologyPlanningCandidate *candidateBuffer;
+  AiTechnologyPlanningCandidateCount candidateIndex;
+  AiTechnologyPlanningLoopRegisterContinuityResult continuityResult;
   MdlDefinitionSemanticPrefix80 *sourceArmyModelDefinition;
   
-  AVar2 = g_AiWorkspace12Count;
-  pAVar1 = g_AiWorkspaceBuffer12_Size0200;
+  candidateIndex = g_AiWorkspace12Count;
+  candidateBuffer = g_AiWorkspaceBuffer12_Size0200;
   if ((g_AiWorkspace12Count < 0x20) && (technologyId != TEC_011_PIONEER_VEHICLE)) {
     g_AiWorkspaceBuffer12_Size0200[g_AiWorkspace12Count].technologyId00 = technologyId;
-    pAVar1[AVar2].sourceArmyRuntime04 = sourceArmyRuntime;
-    pAVar1[AVar2].scoreKind08 = AI_TECHNOLOGY_SCORE_DEFAULT_ZERO;
+    candidateBuffer[candidateIndex].sourceArmyRuntime04 = sourceArmyRuntime;
+    candidateBuffer[candidateIndex].scoreKind08 = AI_TECHNOLOGY_SCORE_DEFAULT_ZERO;
     g_AiWorkspace12Count = g_AiWorkspace12Count + 1;
     sourceArmyModelDefinition =
          (MdlDefinitionSemanticPrefix80 *)
          (sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
     if ((((technologyId != TEC_216_WALL) &&
          (((technologyId != TEC_217_HIGH_WALL &&
-           (pAVar1[AVar2].scoreKind08 =
-                 pAVar1[AVar2].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
+           (candidateBuffer[candidateIndex].scoreKind08 =
+                 candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
            technologyId != TEC_210_IMPROVE_XENITE_MINE_1)) &&
           (technologyId != TEC_211_IMPROVE_XENITE_MINE_2)))) &&
         ((((technologyId != TEC_213_IMPROVE_TRITIUM_PUMP_1 &&
            (technologyId != TEC_214_IMPROVE_TRITIUM_PUMP_2)) &&
-          (pAVar1[AVar2].scoreKind08 =
-                pAVar1[AVar2].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
+          (candidateBuffer[candidateIndex].scoreKind08 =
+                candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
           sourceArmyModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_11)) &&
-         ((pAVar1[AVar2].scoreKind08 =
-                pAVar1[AVar2].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
+         ((candidateBuffer[candidateIndex].scoreKind08 =
+                candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
           sourceArmyModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_13 &&
           (sourceArmyModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_22)))))) &&
-       ((pAVar1[AVar2].scoreKind08 = pAVar1[AVar2].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
+       ((candidateBuffer[candidateIndex].scoreKind08 = candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
         technologyId != TEC_183_RADAR &&
         ((((technologyId != TEC_184_RADAR_RANGE_PLUS_10_PERCENT &&
            (technologyId != TEC_185_RADAR_RANGE_PLUS_10_PERCENT)) &&
           (technologyId != TEC_189_AR_MINUS_M_SILO)) &&
          ((technologyId != TEC_190_AR_MINUS_M_SILO_RANGE_PLUS_10_PERCENT &&
           (technologyId != TEC_191_AR_MINUS_M_SILO_RANGE_PLUS_10_PERCENT)))))))) {
-      pAVar1[AVar2].scoreKind08 = pAVar1[AVar2].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED;
+      candidateBuffer[candidateIndex].scoreKind08 = candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED;
     }
   }
-  AVar3.preservedEcxSourceArmyEntriesRemaining = sourceArmyEntriesRemaining;
-  AVar3.preservedEaxTechnologyPanelIndex = technologyPanelIndex;
-  AVar3.preservedEdxFactionRecordOffset = factionRecordOffset;
-  return AVar3;
+  continuityResult.preservedEcxSourceArmyEntriesRemaining = sourceArmyEntriesRemaining;
+  continuityResult.preservedEaxTechnologyPanelIndex = technologyPanelIndex;
+  continuityResult.preservedEdxFactionRecordOffset = factionRecordOffset;
+  return continuityResult;
 }
 
 
@@ -306,29 +306,29 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime)
 
 {
-  TechnologyCategory TVar1;
-  uint uVar2;
-  TechnologyAsset *pTVar3;
-  AiCandidateScore32 AVar4;
+  TechnologyCategory technologyCategory;
+  uint categoryMaskBit;
+  TechnologyAsset *technologyAsset;
+  AiCandidateScore32 averageAssetScore;
   
-  pTVar3 = g_TechnologyAsset;
-  TVar1 = g_TechnologyAsset->records[technologyId].category;
-  if (TVar1 == TECHNOLOGY_CATEGORY_C) {
-    uVar2 = categoryMaskEdx & 2;
+  technologyAsset = g_TechnologyAsset;
+  technologyCategory = g_TechnologyAsset->records[technologyId].category;
+  if (technologyCategory == TECHNOLOGY_CATEGORY_C) {
+    categoryMaskBit = categoryMaskEdx & 2;
   }
   else {
-    if (TVar1 != TECHNOLOGY_CATEGORY_D)
+    if (technologyCategory != TECHNOLOGY_CATEGORY_D)
     goto 
     AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_ComputeWeightedArmyCompatibilityScore;
-    uVar2 = categoryMaskEdx & 4;
+    categoryMaskBit = categoryMaskEdx & 4;
   }
-  if (uVar2 == 0) {
+  if (categoryMaskBit == 0) {
     return 0;
   }
 AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_ComputeWeightedArmyCompatibilityScore:
-  AVar4 = AiArmyCandidate_ComputeAverageCompatibleAssetScore
+  averageAssetScore = AiArmyCandidate_ComputeAverageCompatibleAssetScore
                     (&g_AiArmyCandidateScoreWeightsVariantC15,factionIndex,technologyId);
-  return (uint)(AVar4 * pTVar3->records[technologyId].baseCandidateScore) >> 8;
+  return (uint)(averageAssetScore * technologyAsset->records[technologyId].baseCandidateScore) >> 8;
 }
 
 
@@ -354,36 +354,36 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
               (ModelDefinitionRecordPrefix *candidateDefinition)
 
 {
-  ArmyRuntimeSlot *pAVar1;
-  UQ8 UVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
+  ArmyRuntimeSlot *ownerArmyRuntime;
+  UQ8 averageScaleQ8;
+  int remainingCount;
+  int definitionIdDelta;
+  uint occupiedEntryCount;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
   
-  UVar2 = 0x100;
+  averageScaleQ8 = 0x100;
   if (g_AiWorkspace01Count != 0) {
-    uVar5 = 0;
-    iVar3 = g_AiWorkspace01Count;
+    occupiedEntryCount = 0;
+    remainingCount = g_AiWorkspace01Count;
     runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200;
     do {
       if (runtimeWorkspaceEntry->armyRuntime != (ArmyRuntimeSlot *)0x0) {
-        uVar5 = uVar5 + 1;
-        pAVar1 = (((runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+        occupiedEntryCount = occupiedEntryCount + 1;
+        ownerArmyRuntime = (((runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                  ownerArmyRuntimeOrSavedOffset).armyRuntime;
-        iVar4 = (int)pAVar1 - (int)candidateDefinition->definitionId;
-        if ((((pAVar1 == (ArmyRuntimeSlot *)candidateDefinition->definitionId) || (iVar4 == -1000))
-            || (iVar4 == -2000)) || ((iVar4 == 1000 || (iVar4 == 2000)))) {
-          UVar2 = UVar2 + 0x200;
+        definitionIdDelta = (int)ownerArmyRuntime - (int)candidateDefinition->definitionId;
+        if ((((ownerArmyRuntime == (ArmyRuntimeSlot *)candidateDefinition->definitionId) || (definitionIdDelta == -1000))
+            || (definitionIdDelta == -2000)) || ((definitionIdDelta == 1000 || (definitionIdDelta == 2000)))) {
+          averageScaleQ8 = averageScaleQ8 + 0x200;
         }
       }
       runtimeWorkspaceEntry = runtimeWorkspaceEntry + 1;
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
-    if (uVar5 != 0) {
-      UVar2 = UVar2 / uVar5;
+      remainingCount = remainingCount + -1;
+    } while (remainingCount != 0);
+    if (occupiedEntryCount != 0) {
+      averageScaleQ8 = averageScaleQ8 / occupiedEntryCount;
     }
   }
-  return UVar2;
+  return averageScaleQ8;
 }
 
