@@ -339,10 +339,6 @@ FrontendSessionList_DecrementExpiryAndCompactRows
    [network/protocol/transfer], UiRuntimeRecordRing_ContainsIdCf [ui/core/runtime],
    FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf [network/backend/runtime].
 */
-/* Diagnostics for the end-movie playback loop. */
-volatile long g_ThandorDiagSessionTickCalls;
-volatile long g_ThandorDiagSessionTickLockBusy;
-
 void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
 
 {
@@ -352,9 +348,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
   
   bVar2 = (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
   pIVar1 = g_InGameRuntimeRoot;
-  g_ThandorDiagSessionTickCalls++;
   if (bVar2) {
-    g_ThandorDiagSessionTickLockBusy++;
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {

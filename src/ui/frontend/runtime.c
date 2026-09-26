@@ -2629,18 +2629,6 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
         pIVar4->endMoviePlaybackState0230 = 0;
         g_EndMoviePendingTicks = 0;
         do {
-          {
-            extern volatile long g_ThandorDiagSessionTickCalls;
-            extern volatile long g_ThandorDiagSessionTickLockBusy;
-            static int iterations;
-            if ((iterations++ % 200) == 0 && iterations < 3000) {
-              Thandor_Log("end movie loop %d: pending=%u flags=%08x countdown=%u lock=%08x tickCalls=%ld lockBusy=%ld rate=%u frame=%u",
-                          iterations, g_EndMoviePendingTicks, g_UiCommandRuntimeFlags,
-                          g_InGameNetworkTickCountdown, *(dword *)&g_InGameStateTickSpinLock,
-                          g_ThandorDiagSessionTickCalls, g_ThandorDiagSessionTickLockBusy, arg0,
-                          g_ActiveMovie ? g_ActiveMovie->currentFrameIndex : 0);
-            }
-          }
           if (g_EndMoviePendingTicks != 0) {
             g_EndMoviePendingTicks = g_EndMoviePendingTicks - 1;
             MVar14 = Movie_AdvanceFrame();
