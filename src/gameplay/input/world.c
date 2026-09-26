@@ -196,8 +196,8 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
     g_InGameCommandPreviewWorldYQ12 = pointerValue2;
     g_InGameCommandPreviewWorldXQ12 = pointerValue1;
     g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = pointerValue0;
-    g_InGameCommandPreviewArmyAssetId = *(undefined4 *)((uVar2 & dVar1) * 4 + 0x563788);
-    return *(dword *)((uVar2 & dVar1) * 4 + 0x563768);
+    g_InGameCommandPreviewArmyAssetId = *(undefined4 *)((uVar2 & dVar1) * 4 + THANDOR_ADDR(g_InGamePointerModePreviewArmyIds,0));
+    return *(dword *)((uVar2 & dVar1) * 4 + THANDOR_ADDR(g_InGamePointerModeCommandIds,0));
   }
   if ((inGameRuntime->runtimeFlags & 0x80) != 0) {
     return 0;
@@ -643,7 +643,7 @@ InGameWorldInput_CommitPointerActionCf
       }
       dVar2 = SelectionInfo_CollectAttachmentEffectVariantMask();
       if ((uVar3 & dVar2) != 0) {
-        pcVar1 = *(code **)((uVar3 & dVar2) * 4 + 0x563748); /* TODO: absolute handler table in thandor.exe */
+        pcVar1 = *(code **)((uVar3 & dVar2) * 4 + THANDOR_ADDR(g_InGamePointerModeHandlers,0)); /* TODO: absolute handler table in thandor.exe */
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           (*pcVar1)(g_LocalPlayerRuntimeId);

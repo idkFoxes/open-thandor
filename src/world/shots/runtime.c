@@ -73,9 +73,9 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
         pIVar2 = g_InGameRuntimeRoot;
         IVar1 = g_GameFactionRuntimeImage.tail.simulationTick;
         if (bVar4) {
-          *(InGameSimulationTick *)(factionIndex * 0x740 + 0x50fa40 + capabilityBitIndex * 4) =
+          *(InGameSimulationTick *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + capabilityBitIndex * 4) =
                g_GameFactionRuntimeImage.tail.simulationTick;
-          *(InGameSimulationTick *)(capabilityBitIndex * 0x740 + 0x50fa40 + factionIndex * 4) =
+          *(InGameSimulationTick *)(capabilityBitIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + factionIndex * 4) =
                IVar1;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetArmyRuntime,&pIVar2->worldRuntime0A30);
@@ -85,8 +85,8 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
                  ((armyRuntime->commandTargetArmyRuntime != (ArmyRuntimeSlot *)0x0 &&
                   (capabilityBitIndex == armyRuntime->commandTargetArmyRuntime->factionIndex)))) &&
                 (99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -
-                            *(int *)(factionIndex * 0x740 + 0x50fa40 + capabilityBitIndex * 4)) -
-                           *(int *)(capabilityBitIndex * 0x740 + 0x50fa40 + factionIndex * 4)))) {
+                            *(int *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + capabilityBitIndex * 4)) -
+                           *(int *)(capabilityBitIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + factionIndex * 4)))) {
           stateSecondTowardFirst = 0;
           stateFirstTowardSecond = 0;
           activeFactionCodeForSecond = 0xb;

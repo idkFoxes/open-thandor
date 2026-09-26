@@ -187,7 +187,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
           pvVar9 = output;
           do {
             uVar2 = *(uint *)((int)pvVar9 + 4);
-            if ((uVar2 < 9) && (uVar3 = *(uint *)(uVar2 * 4 + 0x57ecf0), uVar4 <= uVar3)) {
+            if ((uVar2 < 9) && (uVar3 = *(uint *)(uVar2 * 4 + THANDOR_ADDR(g_GlideRefreshRatesHz,0)), uVar4 <= uVar3)) {
               uVar4 = uVar3;
               selectedRefreshRateCode = uVar2;
             }
@@ -4586,7 +4586,7 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   }
   (texture->glideInfo).format = 0xc;
   GVar4 = texture->downsampleShift;
-  if ((pDVar3 == (DDPIXELFORMAT *)0x577d90) || (pDVar3 == (DDPIXELFORMAT *)0x577dd0)) {
+  if ((pDVar3 == (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0)) || (pDVar3 == (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0))) {
     (texture->glideInfo).format = 10;
   }
   (texture->glideInfo).smallLodLog2 = (texture->glideInfo).smallLodLog2 - GVar4;

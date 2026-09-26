@@ -38,7 +38,7 @@ Technology_UnlockForFaction
   node = g_InGameRuntimeRoot;
   technologyAsset = g_TechnologyAsset;
   technologyBitMask = 1 << ((byte)technologyIndex & 0x1f);
-  factionTechnologyMaskWord = (uint *)(factionIndex * 0x740 + 0x50fa20 + (technologyIndex >> 5) * 4)
+  factionTechnologyMaskWord = (uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4)
   ;
   if ((*factionTechnologyMaskWord & technologyBitMask) == 0) {
     *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
@@ -86,7 +86,7 @@ Technology_IsUnlockedForFactionCf
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
-  if ((*(uint *)(factionIndex * 0x740 + 0x50fa20 + (technologyIndex >> 5) * 4) &
+  if ((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
       1 << ((byte)technologyIndex & 0x1f)) != 0) {
     return false;
   }
@@ -111,7 +111,7 @@ Technology_IsAvailableForFactionCf
   WorldRuntimeNode *worldNodeCursor;
   ArmyRuntimeSlot *activeResearchArmyRuntime;
   
-  if (((((*(uint *)(factionIndex * 0x740 + 0x50fa20 + (technologyIndex >> 5) * 4) &
+  if (((((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
          1 << ((byte)technologyIndex & 0x1f)) == 0) &&
        ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
         g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0]) ==

@@ -470,7 +470,7 @@ TextResource_Resolve(TextResourceId resourceId)
   TextResourceResolveEaxCf5 TVar10;
   
   if (resourceId == 0xffffffff) {
-    TVar9.eax = (word *)0x41afa4;
+    TVar9.eax = (word *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
     TVar9.carry = false;
     return TVar9;
   }

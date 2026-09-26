@@ -276,7 +276,7 @@ ModelRender_PrepareProjectedVertex
       surfaceNormalQ12 = (GraphicsFixedVec3 *)(meshGroup + 0x24);
     }
     PVar3 = ModelRender_ComputeVertexIntensityDefaultPath
-                      (vertex[2].y,&vertex[2].z,0x4cb1a0,g_SceneBoundsFixed.bound5,
+                      (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelDistanceAttenuationMmx,0),g_SceneBoundsFixed.bound5,
                        g_SceneBoundsFixed.bound4,
                        (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,PVar3,
                        surfaceNormalQ12);

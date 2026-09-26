@@ -184,7 +184,7 @@ dword __cdecl FileSystem_Init(void)
   AVar8 = ArenaHeap_Alloc(0x800000);
   if (AVar8.carry) {
                     // WARNING: Subroutine does not return
-    FatalError_Exit(0x407d40,true);
+    FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
   g_PackageScratchBuffer = (byte *)AVar8.eax;
   WVar9 = Win32File_OpenCf(0,(word *)u_THANDOR_cfg_0040e23d);

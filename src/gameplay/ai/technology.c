@@ -105,7 +105,7 @@ AiTechnologyCandidate_IsCurrentlyAvailableCf
     }
     pAVar3 = pAVar3 + 1;
   }
-  if ((((((*(uint *)(factionRecordOffset + 0x50fa20 + (technologyIndex >> 5) * 4) &
+  if ((((((*(uint *)(factionRecordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
           1 << ((byte)technologyIndex & 0x1f)) == 0) &&
         ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
          *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +

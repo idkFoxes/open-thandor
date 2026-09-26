@@ -170,7 +170,7 @@ FrontendResultsTable_DrawColumnSequenceByType
   else {
     iVar6 = 7;
     pdVar9 = g_FrontendResultsFactionPackedPixelColors;
-    iVar8 = 0x50fa80;
+    iVar8 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     do {
       TVar11 = TextResource_Resolve(*(int *)(iVar8 + 0x38) + 0x2173);
       pwVar3 = TVar11.eax;
@@ -456,7 +456,7 @@ FrontendResultsTable_DrawColourColumn
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
   uVar2 = 1;
-  iVar3 = 0x50fa80;
+  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
@@ -598,7 +598,7 @@ FrontendResultsTable_DrawPointsColumn
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
   uVar2 = 1;
-  iVar3 = 0x50fa80;
+  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
@@ -649,7 +649,7 @@ FrontendResultsTable_DrawEconomyColumn
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
   uVar2 = 1;
-  iVar3 = 0x50fa80;
+  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
@@ -699,7 +699,7 @@ FrontendResultsTable_DrawMilitaryColumn
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,TVar4.eax,drawX + 6,baselineY);
   uVar2 = 1;
-  iVar3 = 0x50fa80;
+  iVar3 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   iVar1 = (baselineY - iVar1) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {

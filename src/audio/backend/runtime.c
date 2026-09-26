@@ -346,8 +346,8 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
         uVar4 = uStack_24 >> 10;
         outputStereoPcm = psStack_20;
         do {
-          dVar3 = SoundSample_DecodePackedCoefficientBlock((short *)0x417364,(byte *)encodedBlock);
-          SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,(short *)0x417364);
+          dVar3 = SoundSample_DecodePackedCoefficientBlock((short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0),(byte *)encodedBlock);
+          SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,(short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0));
           encodedBlock = (SoundSampleAsset *)(encodedBlock->reserved04_0B + (dVar3 - 4));
           outputStereoPcm = outputStereoPcm + 0x200;
           uVar4 = uVar4 - 1;

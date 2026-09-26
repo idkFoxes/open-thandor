@@ -553,9 +553,9 @@ ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   iVar4 = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar5 + -0x78);
   if ((((int)modelRuntime->definitionValue60_3C < 2) && (iVar4 != 0)) &&
      (((modelRuntime->classState).classStateEC & 0x20) == 0)) {
-    *(int *)(iVar5 + 0x50f33c) =
-         *(int *)(iVar5 + 0x50f33c) -
-         (int)(((longlong)(int)dVar2 * (longlong)*(int *)(iVar5 + 0x50f33c)) / (longlong)iVar4);
+    *(int *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
+         *(int *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
+         (int)(((longlong)(int)dVar2 * (longlong)*(int *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)iVar4);
   }
   pbVar1 = g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar5 + -0x78;
   *(dword *)pbVar1 = *(int *)pbVar1 - dVar2;
@@ -604,9 +604,9 @@ ArmyPlacement_ReleaseFactionCapacity
   iVar3 = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar4 + -0x78);
   if ((((int)modelRuntime->definitionValue60_3C < 2) && (iVar3 != 0)) &&
      (((modelRuntime->classState).classStateEC & 0x20) == 0)) {
-    *(int *)(iVar4 + 0x50f33c) =
-         *(int *)(iVar4 + 0x50f33c) -
-         (int)(((longlong)(int)dVar2 * (longlong)*(int *)(iVar4 + 0x50f33c)) / (longlong)iVar3);
+    *(int *)(iVar4 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
+         *(int *)(iVar4 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
+         (int)(((longlong)(int)dVar2 * (longlong)*(int *)(iVar4 + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)iVar3);
   }
   pbVar1 = g_GameFactionRuntimeImage.records[0].reserved78_87 + iVar4 + -0x78;
   *(dword *)pbVar1 = *(int *)pbVar1 - dVar2;

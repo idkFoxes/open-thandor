@@ -436,11 +436,11 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
              INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) &&
            (uVar13 = pIVar20->conditions[0].payload.operands[1], uVar13 != 0)) {
           dVar25 = (*g_WideNumberFormatUtf16)
-                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,uVar13 / 0x3c,(word *)0x550590);
-          *(undefined2 *)(dVar25 + 0x550590) = 0x3a;
+                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,uVar13 / 0x3c,(word *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
+          *(undefined2 *)(dVar25 + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
           (*g_WideNumberFormatUtf16)
                     (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,uVar13 % 0x3c,
-                     (word *)(dVar25 + 0x550592));
+                     (word *)(dVar25 + THANDOR_ADDR(g_InGameCountdownTextUtf16,0x2)));
           IVar14 = g_GameFactionRuntimeImage.tail.presentationTick;
           goto 
           EndGameResultsUiRuntime_UpdateAndHandleInput_RefreshTerrainCompositeOnPresentationCadence;
@@ -672,7 +672,7 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
         RT_DWORD(0x11c + i * 4) = 0;
       }
       visible = UiSelectableGroup_NoneVisibleSelectedCf(3,RT(0x1f44),RT(0x1ee4),RT(0x1e84));
-      (*(void (**)(void *))(uintptr_t)(0x5624a0 + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
+      (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
                 (visible.node);
     }
     UiKeyboardFocus_Set((UiNodeBase *)RT(0xb0));
@@ -729,7 +729,7 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
       RT_DWORD(0x1d04 + i * 4) = 0;
     }
     visible = UiSelectableGroup_NoneVisibleSelectedCf(3,RT(0x1f44),RT(0x1ee4),RT(0x1e84));
-    (*(void (**)(void *))(uintptr_t)(0x5624a0 + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
+    (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
               (visible.node);
     (*g_KeyboardFlushEvents)();
     break;
@@ -778,8 +778,8 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     GraphicsFramebufferCaptureEaxCf5 capture =
          (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeEaxEcxCf9 pcx;
-    word *digitHigh = (word *)(uintptr_t)0x572e48;
-    word *digitLow = (word *)(uintptr_t)0x572e4a;
+    word *digitHigh = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
+    word *digitLow = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
     if (capture.carry) {
       break;
     }
@@ -789,7 +789,7 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
-                                   (word *)(uintptr_t)0x572e3c);
+                                   (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     (*g_MemoryApi.free)(pcx.encodedBytesOrError);
     (*g_MemoryApi.free)(capture.eax);
     *digitLow = *digitLow + 1;
@@ -2160,12 +2160,12 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             uVar6 = iVar8 * 2 * (*puVar15 >> 0x18) *
                     g_GameFactionRuntimeImage.records[uVar22].terrainContributionScaleQ8 >> 0xf;
             uVar12 = puVar15[1];
-            piVar21 = (int *)(iVar19 + 0x50f348 + uVar22 * 0x740);
+            piVar21 = (int *)(iVar19 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x8) + uVar22 * 0x740);
             *piVar21 = *piVar21 + uVar6;
             iVar7 = uVar6 * g_InGameSimulationStepTicks;
             pbVar1 = g_GameFactionRuntimeImage.records[uVar22].reserved78_87 + iVar19 + -0x78;
             *(int *)pbVar1 = *(int *)pbVar1 + iVar7;
-            piVar21 = (int *)(iVar19 + 0x50f34c + uVar22 * 0x740);
+            piVar21 = (int *)(iVar19 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xc) + uVar22 * 0x740);
             *piVar21 = *piVar21 + iVar7;
             if ((uVar12 != 0) &&
                (iVar10 = uVar12 + g_ModelRuntimeRebaseDelta, *(int *)(iVar10 + 4) != 0)) {
@@ -2369,7 +2369,7 @@ InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotif
     } while (uVar6 != 0);
   }
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 0x78) == 0) {
-    iVar8 = 0x50fa80;
+    iVar8 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
     if (g_GameFactionRuntimeImage.tail.simulationTick >> 7 < 0x1000) {
       uVar12 = 1;

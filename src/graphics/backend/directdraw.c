@@ -501,8 +501,8 @@ GraphicsDirectDraw_CreateOrSwitchBackend:
             dVar6 = 0x20;
             iVar5 = iStack_1c + 0xb;
             if (TVar3 != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-            Memory_ZeroDwords(0x20,(void *)0x577d90);
-            Memory_ZeroDwords(0x20,(void *)0x577db0);
+            Memory_ZeroDwords(0x20,(void *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0));
+            Memory_ZeroDwords(0x20,(void *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0));
             TVar3 = (*g_Direct3DDevice2->lpVtbl->EnumTextureFormats)
                               (g_Direct3DDevice2,
                                GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback,
@@ -513,15 +513,15 @@ GraphicsDirectDraw_CreateOrSwitchBackend:
                 (iVar5 = iStack_1c + 0xd, g_Direct3DOpaqueTextureFormatBitsPerPixel == 0)) ||
                (iVar5 = iStack_1c + 0xe, g_Direct3DAlphaTextureFormatBitsPerPixel == 0))
             goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-            puVar7 = (undefined4 *)0x577d90;
-            puVar9 = (undefined4 *)0x577dd0;
+            puVar7 = (undefined4 *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
+            puVar9 = (undefined4 *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
             for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
               *puVar9 = *puVar7;
               puVar7 = puVar7 + 1;
               puVar9 = puVar9 + 1;
             }
-            puVar7 = (undefined4 *)0x577db0;
-            puVar9 = (undefined4 *)0x577df0;
+            puVar7 = (undefined4 *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
+            puVar9 = (undefined4 *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
             for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
               *puVar9 = *puVar7;
               puVar7 = puVar7 + 1;

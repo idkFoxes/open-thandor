@@ -384,7 +384,7 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
   int iVar5;
   
   factionIndex_00 = 1;
-  iVar5 = 0x50fa80;
+  iVar5 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
 GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_BeginNextSourceFactionScan:
   factionIndex = factionIndex_00 + 1;
   iVar1 = iVar5;
@@ -579,7 +579,7 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
   uVar9 = 0;
   do {
     do {
-      if ((*(uint *)(factionIndex * 0x740 + 0x50fa20 + uVar9 * 4) & uVar6) != 0) {
+      if ((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + uVar9 * 4) & uVar6) != 0) {
         uVar4 = uVar4 + 1;
       }
       uVar6 = uVar6 * 2;
@@ -956,7 +956,7 @@ GameFactionRuntime_RegisterArmyAssetPointers
       if (0x3f < FVar2) {
         return;
       }
-      *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + 0x50f420 + FVar2 * 4) = AVar3.eax;
+      *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + FVar2 * 4) = AVar3.eax;
       pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
       *pFVar1 = *pFVar1 + 1;
       FVar2 = FVar2 + 1;
@@ -1002,7 +1002,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
     iVar6 = 0;
     for (FVar4 = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; FVar4 != 0
         ; FVar4 = FVar4 - 1) {
-      while ((armyDefinition1 == *(ArmyAssetRecordPrefix **)(iVar5 + 0x50f420 + iVar7 * 4) &&
+      while ((armyDefinition1 == *(ArmyAssetRecordPrefix **)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar7 * 4) &&
              (0 < (int)requestedCount))) {
         iVar7 = iVar7 + 1;
         pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
@@ -1013,7 +1013,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
         goto 
         GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation;
       }
-      *(undefined4 *)(iVar5 + 0x50f420 + iVar6 * 4) = *(undefined4 *)(iVar5 + 0x50f420 + iVar7 * 4);
+      *(undefined4 *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar6 * 4) = *(undefined4 *)(iVar5 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar7 * 4);
       iVar7 = iVar7 + 1;
       iVar6 = iVar6 + 1;
     }
@@ -1179,7 +1179,7 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   if (dVar2 != 0) {
     uVar3 = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
     if (uVar3 < 0x40) {
-      *(dword *)(factionIndex * 0x740 + 0x50f520 + uVar3 * 4) = dVar2;
+      *(dword *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + uVar3 * 4) = dVar2;
       pFVar1 = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
       *pFVar1 = *pFVar1 + 1;
     }
@@ -1420,7 +1420,7 @@ GameFactionRuntime_IsRecentTimedRelationStateCf
        ((char)otherFactionIndex * '\x04' & 0x1fU) & 0xf;
   if ((((relationStateNibble == 2) || (relationStateNibble == 5)) || (relationStateNibble == 9)) &&
      ((int)(g_GameFactionRuntimeImage.tail.simulationTick -
-           *(int *)(factionIndex * 0x740 + 0x50fa40 + otherFactionIndex * 4)) < 0x259)) {
+           *(int *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + otherFactionIndex * 4)) < 0x259)) {
     return true;
   }
   return false;
@@ -1545,9 +1545,9 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
     *pFVar1 = *pFVar1 | uVar17;
   }
   IVar15 = g_GameFactionRuntimeImage.tail.simulationTick;
-  *(InGameSimulationTick *)(firstFactionIndex * 0x740 + 0x50fa40 + secondFactionIndex * 4) =
+  *(InGameSimulationTick *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + secondFactionIndex * 4) =
        g_GameFactionRuntimeImage.tail.simulationTick;
-  *(InGameSimulationTick *)(secondFactionIndex * 0x740 + 0x50fa40 + firstFactionIndex * 4) = IVar15;
+  *(InGameSimulationTick *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + firstFactionIndex * 4) = IVar15;
   if (stateSecondTowardFirst != 0xb)
   goto GameFactionRuntime_ApplyPairwiseRelationTransition_RebuildTargetEntriesAndReturn;
   uVar17 = 0;
@@ -1689,10 +1689,10 @@ GameFactionRuntime_ApplyPairwiseRelationTransition_CommitSelectedFactionMergeDir
   iVar24 = 0;
   for (uVar17 = g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
       (FVar21 != 0 && (uVar17 < 0x40)); uVar17 = uVar17 + 1) {
-    primaryArmyAssetReferenceDword = *(dword *)(secondFactionIndex * 0x740 + 0x50f520 + iVar24 * 4);
+    primaryArmyAssetReferenceDword = *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + iVar24 * 4);
     pFVar7 = &g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
     *pFVar7 = *pFVar7 + 1;
-    *(dword *)(firstFactionIndex * 0x740 + 0x50f520 + uVar17 * 4) = primaryArmyAssetReferenceDword;
+    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + uVar17 * 4) = primaryArmyAssetReferenceDword;
     iVar24 = iVar24 + 1;
     FVar21 = FVar21 - 1;
   }
@@ -1701,10 +1701,10 @@ GameFactionRuntime_ApplyPairwiseRelationTransition_CommitSelectedFactionMergeDir
   for (uVar17 = g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
       (FVar21 != 0 && (uVar17 < 0x40)); uVar17 = uVar17 + 1) {
     secondaryArmyAssetReferenceDword =
-         *(dword *)(secondFactionIndex * 0x740 + 0x50f420 + iVar24 * 4);
+         *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + iVar24 * 4);
     pFVar7 = &g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
     *pFVar7 = *pFVar7 + 1;
-    *(dword *)(firstFactionIndex * 0x740 + 0x50f420 + uVar17 * 4) = secondaryArmyAssetReferenceDword
+    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + uVar17 * 4) = secondaryArmyAssetReferenceDword
     ;
     iVar24 = iVar24 + 1;
     FVar21 = FVar21 - 1;

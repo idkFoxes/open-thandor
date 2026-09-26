@@ -2283,7 +2283,7 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
     uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14;
     lVar1 = (longlong)(int)(((longlong)planeNormal->y * 1999) / (longlong)planeNormal->x) * 0x1c6e9c
     ;
-    piVar6 = (int *)0x4ffc78;
+    piVar6 = (int *)THANDOR_ADDR(g_TerrainProjectedRowSpans,-8);
     FVar5 = fieldGrid->gridHeight;
     do {
       piVar6 = piVar6 + 2;
@@ -2305,7 +2305,7 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
     uVar3 = (int)((ulonglong)lVar1 >> 0x20) << 0xc | (uint)lVar1 >> 0x14;
     lVar1 = (longlong)(int)(((longlong)planeNormal->y * 1999) / (longlong)planeNormal->x) * 0x1c6e9c
     ;
-    piVar6 = (int *)0x4ffc7c;
+    piVar6 = (int *)THANDOR_ADDR(g_TerrainProjectedRowSpans,-4);
     FVar5 = fieldGrid->gridHeight;
     do {
       piVar6 = piVar6 + 2;

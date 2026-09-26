@@ -150,7 +150,7 @@ UiTransferMailbox_ReleaseRingLockAndReturn:
             mailboxCopySourceOrDestinationDwords =
                  (dword *)((int)g_UiTransferMailbox.outgoingAllocation +
                           g_UiTransferMailboxChunkOffset);
-            pdVar11 = (dword *)0x4aea00;
+            pdVar11 = (dword *)THANDOR_ADDR(g_UiTransferChunkPayload,0);
             for (uVar5 = uVar5 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
               *pdVar11 = *mailboxCopySourceOrDestinationDwords;
               mailboxCopySourceOrDestinationDwords = mailboxCopySourceOrDestinationDwords + 1;
@@ -651,7 +651,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
       g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
     }
     TVar13 = TextResource_Resolve(0x211a);
-    RichTextCommandStream_PatchPayloadBySelector(0,(void *)0x50f07c,TVar13.eax);
+    RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),TVar13.eax);
     RichTextCommandStream_CopyExpandedCf
               (0x28,g_FrontendPacket50001Buffer.sessionTitleUtf16,TVar13.eax);
     TVar13 = TextResource_Resolve(0x211b);
@@ -1508,21 +1508,21 @@ UiTransferBlock_Transform64BitBlocksWithRoundKeys16
       do {
         uVar4 = uVar1;
         uVar3 = uVar3 ^ uVar4;
-        uVar1 = ((((((*(int *)(((roundKeys16[iVar2] & 0xf0000000) >> 0x16) + 0x406d60 +
+        uVar1 = ((((((*(int *)(((roundKeys16[iVar2] & 0xf0000000) >> 0x16) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1c00) +
                               (uVar3 & 0xf) * 4) << 4 |
-                     *(uint *)(((roundKeys16[iVar2] & 0xf000000) >> 0x12) + 0x406960 +
+                     *(uint *)(((roundKeys16[iVar2] & 0xf000000) >> 0x12) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1800) +
                               ((uVar3 & 0xf0) >> 4) * 4)) << 4 |
-                    *(uint *)(((roundKeys16[iVar2] & 0xf00000) >> 0xe) + 0x406560 +
+                    *(uint *)(((roundKeys16[iVar2] & 0xf00000) >> 0xe) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1400) +
                              ((uVar3 & 0xf00) >> 8) * 4)) << 4 |
-                   *(uint *)(((roundKeys16[iVar2] & 0xf0000) >> 10) + 0x406160 +
+                   *(uint *)(((roundKeys16[iVar2] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1000) +
                             ((uVar3 & 0xf000) >> 0xc) * 4)) << 4 |
-                  *(uint *)(((roundKeys16[iVar2] & 0xf000) >> 6) + 0x405d60 +
+                  *(uint *)(((roundKeys16[iVar2] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0xc00) +
                            ((uVar3 & 0xf0000) >> 0x10) * 4)) << 4 |
-                 *(uint *)(((roundKeys16[iVar2] & 0xf00) >> 2) + 0x405960 +
+                 *(uint *)(((roundKeys16[iVar2] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x800) +
                           ((uVar3 & 0xf00000) >> 0x14) * 4)) << 4 |
-                *(uint *)((roundKeys16[iVar2] & 0xf0) * 4 + 0x405560 +
+                *(uint *)((roundKeys16[iVar2] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x400) +
                          ((uVar3 & 0xf000000) >> 0x18) * 4)) << 4 |
-                *(uint *)((roundKeys16[iVar2] & 0xf) * 0x40 + 0x405160 + (uVar3 >> 0x1c) * 4);
+                *(uint *)((roundKeys16[iVar2] & 0xf) * 0x40 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (uVar3 >> 0x1c) * 4);
         iVar2 = iVar2 + -1;
         uVar3 = uVar4;
       } while (-1 < iVar2);

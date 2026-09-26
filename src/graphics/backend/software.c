@@ -1600,10 +1600,10 @@ SoftwareTextureSource_StretchDirectColorBilinear16
      the forward (0x00420F20) and inverse (0x0041FF20) word tables, then packs to 16 bits with the
      runtime quantize masks (0x0041F6E8) and PMADDWD weights (0x0041F6E0), which the display
      setup fills for 555 or 565. */
-  const short *forward = (const short *)(uintptr_t)0x420f20;
-  const short *inverse = (const short *)(uintptr_t)0x41ff20;
-  const word *quantizeMask = (const word *)(uintptr_t)0x41f6e8;
-  const short *packWeights = (const short *)(uintptr_t)0x41f6e0;
+  const short *forward = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearInverseFactors,0);
+  const short *inverse = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearForwardFactors,0);
+  const word *quantizeMask = (const word *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0x8);
+  const short *packWeights = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0);
   byte *asset = (byte *)sourceAsset;
   byte *entry;
   byte *sourceBase;
@@ -1701,9 +1701,9 @@ SoftwareTextureSource_StretchDirectColorBilinear32
      decompiled version (300 lines of lane emulation) left the end-movie frames static. Two
      destination pixels per step; each blends four ARGB8888 neighbours through the forward
      (0x00420F20) and inverse (0x0041FF20) word tables, as PMULHW does. */
-  const short *forward = (const short *)(uintptr_t)0x420f20;
-  const short *inverse = (const short *)(uintptr_t)0x41ff20;
-  const unsigned long long clampMask = *(const unsigned long long *)(uintptr_t)0x41f688;
+  const short *forward = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearInverseFactors,0);
+  const short *inverse = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearForwardFactors,0);
+  const unsigned long long clampMask = *(const unsigned long long *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearPackedByteClampMask,0);
   byte *asset = (byte *)sourceAsset;
   byte *entry;
   byte *sourceBase;

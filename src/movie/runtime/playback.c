@@ -609,8 +609,8 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
     GraphicsFramebufferCaptureEaxCf5 capture =
          (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeEaxEcxCf9 pcx;
-    word *digitHigh = (word *)(uintptr_t)0x572e48;
-    word *digitLow = (word *)(uintptr_t)0x572e4a;
+    word *digitHigh = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
+    word *digitLow = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
     if (capture.carry) {
       break;
     }
@@ -620,7 +620,7 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
-                                   (word *)(uintptr_t)0x572e3c);
+                                   (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     (*g_MemoryApi.free)(pcx.encodedBytesOrError);
     (*g_MemoryApi.free)(capture.eax);
     *digitLow = *digitLow + 1;

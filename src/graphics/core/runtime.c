@@ -480,12 +480,12 @@ GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
   FixedMathVectorAnglesRegs8 FVar1;
   
   FixedTransform_InvertRigidQ28
-            ((GraphicsFixedMatrix3x4 *)0x4bcf20,(GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
-  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)0x4bcf50,elevationAngle,azimuthAngle);
+            ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0),(GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
+  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),elevationAngle,azimuthAngle);
   FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)0x4bcf5c,(GraphicsFixedVec3 *)0x4bcf50,
-             (GraphicsFixedMatrix3x4 *)0x4bcf20);
-  FVar1 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)0x4bcf5c);
+            ((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0),(GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),
+             (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0));
+  FVar1 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0));
   return FVar1;
 }
 
@@ -539,7 +539,7 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
   GraphicsFixedMatrix3x4 *output;
   FixedDirectionXyzRegs12 FVar3;
   
-  output = (GraphicsFixedMatrix3x4 *)0x4bcf20;
+  output = (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0);
   iVar2 = *(int *)(graphicsObjectAddress + 100);
   if (iVar2 == 0) {
     output = (GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10);

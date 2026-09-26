@@ -67,7 +67,7 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
         iVar8 = iVar8 + 0x20;
         iVar4 = iVar4 + -1;
       } while (iVar4 != 0);
-      piVar11 = (int *)0x4ad930;
+      piVar11 = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
       uVar2 = *(uint *)(textureSourceBase + 0xb4);
       puVar7 = (uint *)(textureSourceBase + 0x200);
       if (0x200 < uVar2) {
@@ -88,7 +88,7 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
         uVar2 = uVar2 - 1;
       } while (uVar2 != 0);
 LAB_004ae640:
-      piVar11 = (int *)0x4ad930;
+      piVar11 = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
       iVar4 = *(int *)(textureSourceBase + 0xb4);
       iVar8 = 0;
       do {
@@ -494,7 +494,7 @@ LAB_004ae480:
                     *(int *)(pwVar8 + 6) + -0x28;
           iVar4 = *(int *)(pwVar8 + 0xc) * *(int *)(pwVar8 + 0xe);
           do {
-            *pbVar10 = *(byte *)(*pbVar10 + 0x4ae130);
+            *pbVar10 = *(byte *)(*pbVar10 + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
             pbVar10 = pbVar10 + 1;
             iVar4 = iVar4 + -1;
           } while (iVar4 != 0);
@@ -521,7 +521,7 @@ LAB_004ae450:
   *puVar9 = uVar2;
   puVar9[1] = puVar7[1];
 LAB_004ae478:
-  *(char *)(uVar5 + 0x4ae130) = (char)uVar3;
+  *(char *)(uVar5 + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)uVar3;
   goto LAB_004ae480;
 code_r0x004ae458:
   uVar3 = uVar3 + 1;
@@ -668,8 +668,8 @@ GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
     }
     pwVar7 = pwVar7 + 0x10;
   }
-  pdVar6 = (dword *)(paletteIndex * 4 + 0x4ad930);
-  sourceDwordCursor = (dword *)(paletteIndex * 4 + 0x4ad934);
+  pdVar6 = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
+  sourceDwordCursor = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0x4));
   iVar5 = 0x1ff - paletteIndex;
   if (iVar5 != 0) {
     for (; iVar5 != 0; iVar5 = iVar5 + -1) {

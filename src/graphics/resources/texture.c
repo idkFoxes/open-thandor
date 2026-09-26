@@ -4364,24 +4364,24 @@ GraphicsTexture_SelectPixelFormat
                     );
     do {
       if (*(uint *)pbVar4 < 0xff000000) {
-        return (DDPIXELFORMAT *)0x577db0;
+        return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
       }
       pbVar4 = pbVar4 + 4;
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
-    pDVar2 = (DDPIXELFORMAT *)0x577d90;
+    pDVar2 = (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
   }
   else {
     pGVar3 = sourceAsset + iVar5 * 4 + 1;
     iVar5 = 0x100;
     do {
       if ((pGVar3->common).magic < 0xff000000) {
-        return (DDPIXELFORMAT *)0x577df0;
+        return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
       }
       pGVar3 = (GraphicsTextureSourceAsset *)&(pGVar3->common).formatVersion;
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
-    pDVar2 = (DDPIXELFORMAT *)0x577dd0;
+    pDVar2 = (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
   }
   return pDVar2;
 }

@@ -1163,7 +1163,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
-    DVar23 = (*g_FileSystemEnumerateDriveLetters)((byte *)0x40f530);
+    DVar23 = (*g_FileSystemEnumerateDriveLetters)((byte *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     dVar10 = DVar23.driveCount;
     AVar20 = (*g_MemoryApi.alloc)(DVar23.driveCountMirror * 0x210 + 0x10);
     outputRecords = (dword *)AVar20.eax;
@@ -1174,7 +1174,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
       outputRecords[2] = 0;
       outputRecords[3] = 0x80000000;
       puVar13 = ((dword *)RVar18.recordBlockOrError) + dVar10 * 4;
-      pbVar11 = (byte *)0x40f530;
+      pbVar11 = (byte *)THANDOR_ADDR(g_UiTimedListDriveLetters,0);
       do {
         driveLetter = (uint)*pbVar11;
         *(dword *)RVar18.recordBlockOrError = (dword)puVar13;
@@ -1242,7 +1242,7 @@ LAB_004102e2:
               (g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits,
                pathUtf16);
     WidePath_CombineDirectoryAndLeaf
-              (g_UiTimedListRecordPathScratch.codeUnits,(word *)0x40ff50,
+              (g_UiTimedListRecordPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                g_UiTimedListCombinedPathScratch.codeUnits);
     AVar21 = (*g_MemoryApi.allocLargestFreeBlock)();
     outputRecords = (dword *)AVar21.allocationOrError;
@@ -1280,7 +1280,7 @@ LAB_004102e2:
                           (g_UiTimedListRecordPathScratch.codeUnits,(word *)leaf,
                            g_UiTimedListCombinedPathScratch.codeUnits);
                 WidePath_CombineDirectoryAndLeaf
-                          (g_UiTimedListSecondaryPathScratch.codeUnits,(word *)0x40ff50,
+                          (g_UiTimedListSecondaryPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                            g_UiTimedListRecordPathScratch.codeUnits);
                 FVar22 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
@@ -1507,7 +1507,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
     if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
       WidePath_CombineDirectoryAndLeaf
-                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)0x40ff50,
+                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                  g_UiTimedListRecordPathScratch.codeUnits);
     }
     else {
@@ -1540,7 +1540,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
                 );
       WidePath_CombineDirectoryAndLeaf
-                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)0x40ff50,
+                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                  g_UiTimedListSecondaryPathScratch.codeUnits);
     }
   }
@@ -3214,7 +3214,7 @@ UiCatalogEntryControl_DrawClipped
       for (FVar5 = g_GameFactionRuntimeImage.records[iVar6].secondaryArmyAssetCount; FVar5 != 0;
           FVar5 = FVar5 - 1) {
         if (g_UiCatalogGroup42Records[iVar3] ==
-            *(UiCommandRuntimeRecordPrefix **)(iVar6 * 0x740 + 0x50f41c + FVar5 * 4)) {
+            *(UiCommandRuntimeRecordPrefix **)(iVar6 * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + FVar5 * 4)) {
           iVar4 = iVar4 + 1;
         }
       }
@@ -3277,7 +3277,7 @@ UiCatalogEntryControl_DrawClipped
   for (FVar5 = g_GameFactionRuntimeImage.records[iVar6].secondaryArmyAssetCount; FVar5 != 0;
       FVar5 = FVar5 - 1) {
     if (g_UiCatalogGroup48Records[iVar3] ==
-        *(UiCommandRuntimeRecordPrefix **)(iVar6 * 0x740 + 0x50f41c + FVar5 * 4)) {
+        *(UiCommandRuntimeRecordPrefix **)(iVar6 * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + FVar5 * 4)) {
       iVar4 = iVar4 + 1;
     }
   }

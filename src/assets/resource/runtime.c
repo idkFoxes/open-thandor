@@ -239,7 +239,7 @@ ResourceRegistration_SelectDomainPair
     dVar1 = pRVar8->auxiliarySavedIdOrOffset;
     dVar2 = pRVar8->nestedCountC8;
     if (dVar1 != 0) {
-      dVar1 = dVar1 - 0x4bed4f;
+      dVar1 = dVar1 - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1);
     }
     pRVar8->auxiliarySavedIdOrOffset = dVar1;
     pRVar7 = pRVar8;

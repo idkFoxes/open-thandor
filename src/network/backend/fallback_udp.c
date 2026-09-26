@@ -161,7 +161,7 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
   NVar8.eax = (*g_WinSock_socket)(2,2,0x11);
   if (NVar8.eax != 0xffffffff) {
     NVar5 = 0;
-    CVar10 = (*g_CommandLineFindOption)(3,(char *)0x584078);
+    CVar10 = (*g_CommandLineFindOption)(3,(char *)THANDOR_ADDR(s_CommandLineOptionIp,0));
     if (!CVar10.carry) {
       pbVar6 = CVar10.ebx + 4;
       pbVar2 = g_PackageScratchBuffer;
@@ -208,9 +208,9 @@ NetworkFallback_OpenAndBindUdpSocketCf_ConfigureEndpointAfterOptionalBindAddress
     iVar4 = (*g_WinSock_bind)(NVar8.eax,&g_NetworkFallbackBindEndpoint,0x10);
     dStack_1c = NVar8.eax;
     if (iVar4 == 0) {
-      iVar4 = (*g_WinSock_setsockopt)(NVar8.eax,0xffff,0x20,(byte *)0x583ef6,4);
+      iVar4 = (*g_WinSock_setsockopt)(NVar8.eax,0xffff,0x20,(byte *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
       if (iVar4 == 0) {
-        iVar4 = (*g_WinSock_ioctlsocket)(NVar8.eax,0x8004667e,(dword *)0x583ef6);
+        iVar4 = (*g_WinSock_ioctlsocket)(NVar8.eax,0x8004667e,(dword *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0));
         if (iVar4 == 0) {
           g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder = 0xffffffff;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0;
@@ -453,10 +453,10 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
     }
     iVar3 = (*g_Ws2_32_bind)(dStack_1c,&g_NetworkBackendBindAddress.ipv4,dVar2);
     if (iVar3 == 0) {
-      iVar3 = (*g_Ws2_32_setsockopt)(dStack_1c,0xffff,0x20,(byte *)0x583ef6,4);
+      iVar3 = (*g_Ws2_32_setsockopt)(dStack_1c,0xffff,0x20,(byte *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
       if (iVar3 == 0) {
         iVar3 = (*g_Ws2_32_WSAIoctl)
-                          (dStack_1c,0x8004667e,(void *)0x583ef6,4,(void *)0x0,0,&dStack_20,
+                          (dStack_1c,0x8004667e,(void *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4,(void *)0x0,0,&dStack_20,
                            (void *)0x0,(void *)0x0);
         if (iVar3 == 0) {
           if (g_NetworkBackendActiveAddressFamily == 2) {

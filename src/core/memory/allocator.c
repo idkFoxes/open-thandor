@@ -178,7 +178,7 @@ void * __cdecl ArenaHeap_Init(void)
     }
   }
                     // WARNING: Subroutine does not return
-  FatalError_Exit(0x407d84,true);
+  FatalError_Exit(THANDOR_ADDR(g_ErrorTextHeapAllocationFailed,0),true);
 }
 
 

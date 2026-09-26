@@ -138,7 +138,7 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
     }
   }
   pDVar8 = &surfaceDesc->ddpfPixelFormat;
-  pTVar9 = (TH_LEGACY_DWORD *)0x577d90;
+  pTVar9 = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
   for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
     *pTVar9 = pDVar8->dwSize;
     pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;
@@ -170,7 +170,7 @@ LAB_005788c0:
     }
     if ((uint)(iVar2 - iVar6) < (uint)(iVar3 - iVar4)) {
       pDVar8 = &surfaceDesc->ddpfPixelFormat;
-      pTVar9 = (TH_LEGACY_DWORD *)0x577db0;
+      pTVar9 = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
       for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
         *pTVar9 = pDVar8->dwSize;
         pDVar8 = (DDPIXELFORMAT *)&pDVar8->dwFlags;

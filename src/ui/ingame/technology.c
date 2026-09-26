@@ -100,7 +100,7 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
         uVar10 = 0;
       }
       if (*(int *)(iVar8 + 0x1c8) == piVar6[0x40]) {
-        puVar5 = (uint *)((int)&inGameRoot->rootFlags + *(int *)(uVar10 * 4 + 0x562d68));
+        puVar5 = (uint *)((int)&inGameRoot->rootFlags + *(int *)(uVar10 * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0)));
         *puVar5 = *puVar5 | 2;
         break;
       }
@@ -534,8 +534,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
                           (entityRuntime1->common).ownership.ownerIndex);
       if (bVar17) {
         iVar3 = *(int *)(iVar13 + 0x1c4 + iVar12 * 4);
-        *(int *)((int)&inGameRoot[1].base.nextSibling + *(int *)(iVar16 * 4 + 0x562d84)) = iVar3;
-        iVar4 = *(int *)(iVar16 * 4 + 0x562d68);
+        *(int *)((int)&inGameRoot[1].base.nextSibling + *(int *)(iVar16 * 4 + THANDOR_ADDR(g_TechnologyPanelRowValueOffsets,0))) = iVar3;
+        iVar4 = *(int *)(iVar16 * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0));
         actionId = *(UiActionId *)((int)&inGameRoot->callbacks + iVar4);
         *(int *)((int)inGameRoot + iVar4 + -8) = iVar3 * 2 + 0x300000;
         firstNode = inGameRoot;

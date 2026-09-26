@@ -51,7 +51,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   FatalErrorEaxCf5 FVar20;
   GraphicsFramebufferCaptureEaxCf5 GVar21;
   
-  pdVar9 = (dword *)0x56e410;
+  pdVar9 = (dword *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0);
   do {
     while( true ) {
       do {
@@ -562,7 +562,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
         SESSION_NETWORK_ROLE_LOCAL) {
       iVar1 = 0x10;
       bVar6 = true;
-      piVar4 = (int *)0x5631de;
+      piVar4 = (int *)THANDOR_ADDR(g_DeveloperChatPhraseUtf16,0);
       pwVar5 = commandTextEdit->textBuffer;
       do {
         if (iVar1 == 0) break;
@@ -748,9 +748,9 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   SVar9 = ResourceRegistration_OpenSourceCf(resourcePath);
   handle = (void *)SVar9.valueOrError;
   if (SVar9.carry) {
-    WidePath_SplitParentAndLeaf((word *)g_PackageScratchBuffer,(word *)0x50dcc4,resourcePath);
+    WidePath_SplitParentAndLeaf((word *)g_PackageScratchBuffer,(word *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),resourcePath);
     SVar9 = (*g_FileSystemCreateDirectoryRecursiveCf)
-                      (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(word *)0x50dcc4);
+                      (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(word *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
     if (SVar9.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
     SVar9 = ResourceRegistration_OpenSourceCf(resourcePath);
     handle = (void *)SVar9.valueOrError;
@@ -2804,7 +2804,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
   (*g_LocaleFormatTimeFieldsUtf16)
             ((dword)(uVar3 / 0x3c),(dword)(uVar3 % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
   uVar4 = 1;
-  iVar7 = 0x50fa80;
+  iVar7 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   destination = g_InGameFactionStatusTextScratchUtf16;
   do {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar4] != 0) &&
@@ -2812,7 +2812,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
         FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED)) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(int *)(iVar7 + 0x90) + *(int *)(iVar7 + 0x94),(word *)0x55056e);
+                 *(int *)(iVar7 + 0x90) + *(int *)(iVar7 + 0x94),(word *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0));
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
 InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWithoutPlayerRoster:
@@ -2879,7 +2879,7 @@ InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWith
       stream = TVar12.eax;
       RichTextCommandStream_PatchPayloadBySelector(0,TVar11.eax,stream);
       RichTextCommandStream_PatchPayloadBySelector(1,pwVar9,stream);
-      RichTextCommandStream_PatchPayloadBySelector(2,(void *)0x55056e,stream);
+      RichTextCommandStream_PatchPayloadBySelector(2,(void *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0),stream);
       RVar10 = RichTextCommandStream_CopyExpandedCf(0x400,destination,stream);
       if (!RVar10.carry) {
         destination = (word *)((int)destination + RVar10.eax);
@@ -3398,7 +3398,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   uVar12 = 0;
   if (local_20 != 0) {
     uVar6 = 1;
-    iVar5 = 0x50fa80;
+    iVar5 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     do {
       UVar4 = local_20 + 1;
       if ((uVar6 != node[0x23].bottom) &&
@@ -3816,7 +3816,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   resourceId = 0x216d;
   uVar7 = 0;
   uVar5 = 1;
-  iVar6 = 0x50fa80;
+  iVar6 = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[uVar5] != 0) {
       TVar8 = TextResource_Resolve(resourceId);

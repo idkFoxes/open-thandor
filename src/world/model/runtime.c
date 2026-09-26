@@ -213,7 +213,7 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
     iRam004bcf54 = pMVar1->localBoundsY0Q12 + pMVar1->localBoundsY1Q12 >> 1;
     iRam004bcf58 = pMVar1->localBoundsZ0Q12 + pMVar1->localBoundsZ1Q12 >> 1;
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,(GraphicsFixedVec3 *)0x4bcf50,
+              ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,(GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),
                &g_ViewProjectionMatrixFixed);
     dVar2 = FixedMath_Length3(pMVar1->localBoundsZ1Q12 - pMVar1->localBoundsZ0Q12,
                               pMVar1->localBoundsY1Q12 - pMVar1->localBoundsY0Q12,

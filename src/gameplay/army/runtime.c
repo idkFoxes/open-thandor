@@ -1167,7 +1167,7 @@ ArmyRuntimeClassUpdateSlot11_DispatchByClassId
           uVar10 = g_GameFactionRuntimeImage.records[iVar5].primaryArmyAssetCount;
           if (uVar10 < 0x40) {
             iVar7 = worldRuntime->activeFactionRuntimeIndex;
-            *(ArmyAssetRecordPrefix **)(iVar5 * 0x740 + 0x50f520 + uVar10 * 4) = AVar12.eax;
+            *(ArmyAssetRecordPrefix **)(iVar5 * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + uVar10 * 4) = AVar12.eax;
             pFVar2 = &g_GameFactionRuntimeImage.records[iVar5].primaryArmyAssetCount;
             *pFVar2 = *pFVar2 + 1;
             if (iVar7 == entityRuntime1->factionIndex) {

@@ -27,7 +27,7 @@ void __cdecl ErrorSystem_Init(void)
   g_FatalErrorExitFallbackDispatchCf = FatalError_Exit;
   TVar1 = TextResourcePage_Load(0,(word *)u_texte_error_str_00407d20);
                     // WARNING: Subroutine does not return
-  FatalError_Exit(0x407d40,TVar1.carry);
+  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),TVar1.carry);
 }
 
 

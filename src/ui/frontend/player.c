@@ -1024,7 +1024,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   WorldPositionEaxEcxEdxCf13 WVar11;
   
   pSVar7 = (SelectionPlayerRuntimeBlock *)
-           (selectionGroupIndex * 0x80 + 0x50f620 + factionIndex * 0x740);
+           (selectionGroupIndex * 0x80 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x2e0) + factionIndex * 0x740);
   pSVar6 = pSVar7;
   pSVar9 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   if ((transferModeFlags & 1) != 0) {

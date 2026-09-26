@@ -843,7 +843,7 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     if (AVar17.carry) {
       return;
     }
-    puVar15 = (undefined4 *)0x4229b4;
+    puVar15 = (undefined4 *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
     pUVar13 = root;
     for (iVar10 = 0x2f5; UVar5 = g_ActiveGraphicsAdapterIndex, dVar4 = g_FramebufferHeight,
         dVar3 = g_FramebufferWidth, iVar10 != 0; iVar10 = iVar10 + -1) {

@@ -263,7 +263,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
       } while (iVar10 != 0);
       g_InGameOwnedEntityTransientEffectMarkerCount = 0;
     }
-    commandTargetEffectCursor = (EffectRuntimeSlot **)0x562ecc;
+    commandTargetEffectCursor = (EffectRuntimeSlot **)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
     uVar9 = g_InGameCommandTargetTransientEffectMarkerCount;
     if (g_InGameCommandTargetTransientEffectMarkerCount != 0) {
       do {
@@ -998,7 +998,7 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   iVar4 = g_InGameCommandTargetTransientEffectMarkerCount;
   if ((worldXQ12 != *(int *)((int)sourceWorldNode + 0x94)) ||
      (worldYQ12 != *(int *)((int)sourceWorldNode + 0x98))) {
-    piVar6 = (int *)0x562ecc;
+    piVar6 = (int *)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
     for (iVar5 = g_InGameCommandTargetTransientEffectMarkerCount; iVar5 != 0; iVar5 = iVar5 + -1) {
       if ((worldXQ12 == *(int *)(*(int *)(*piVar6 + 4) + 0x94)) &&
          (worldYQ12 == *(int *)(*(int *)(*piVar6 + 4) + 0x98))) {
@@ -1011,7 +1011,7 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
     EVar8 = EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        FVar7.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
-    *(EffectRuntimeSlot **)(iVar4 * 4 + 0x562ecc) = EVar8.effectRuntime;
+    *(EffectRuntimeSlot **)(iVar4 * 4 + THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0)) = EVar8.effectRuntime;
     pMVar2 = ((EVar8.effectRuntime)->modelNodeOrSavedOffset).modelNode;
     g_InGameCommandTargetTransientEffectMarkerCount =
          g_InGameCommandTargetTransientEffectMarkerCount + 1;

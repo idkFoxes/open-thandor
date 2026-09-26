@@ -2156,9 +2156,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < uVar30) {
                 uVar30 = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + 0x41ee80),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + 0x41ee80),uVar38);
-              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + 0x41ee80),uVar38);
+              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
               sVar4 = (short)uVar35;
               sVar7 = (short)((ulonglong)uVar35 >> 0x10);
               sVar10 = (short)((ulonglong)uVar35 >> 0x20);
@@ -2222,9 +2222,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < uVar30) {
                 uVar30 = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + 0x41ee80),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + 0x41ee80),uVar38);
-              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + 0x41ee80),uVar38);
+              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
               sVar4 = (short)uVar35;
               sVar7 = (short)((ulonglong)uVar35 >> 0x10);
               sVar10 = (short)((ulonglong)uVar35 >> 0x20);
@@ -2288,9 +2288,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < uVar30) {
                 uVar30 = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + 0x41ee80),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + 0x41ee80),uVar38);
-              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + 0x41ee80),uVar38);
+              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar37 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
               sVar4 = (short)uVar35;
               sVar7 = (short)((ulonglong)uVar35 >> 0x10);
               sVar10 = (short)((ulonglong)uVar35 >> 0x20);
@@ -2354,9 +2354,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < uVar30) {
                 uVar30 = 0xff;
               }
-              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + 0x41ee80),uVar38);
-              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + 0x41ee80),uVar38);
-              uVar38 = pmulhw(*(undefined8 *)(uVar30 * 8 + 0x41ee80),uVar38);
+              uVar35 = pmulhw(*(undefined8 *)(uVar31 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar36 = pmulhw(*(undefined8 *)(uVar25 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
+              uVar38 = pmulhw(*(undefined8 *)(uVar30 * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),uVar38);
               sVar4 = (short)uVar35;
               sVar7 = (short)((ulonglong)uVar35 >> 0x10);
               sVar10 = (short)((ulonglong)uVar35 >> 0x20);

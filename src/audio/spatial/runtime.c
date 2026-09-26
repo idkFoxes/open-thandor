@@ -51,7 +51,7 @@ SpatialSound_RebuildListenerTransformFromPose
 
 {
   FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)0x50b550,0x4000 - viewAngle0 & 0xffff,viewAngle1,0xc000);
+            ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_SpatialSoundListenerRotation,0),0x4000 - viewAngle0 & 0xffff,viewAngle1,0xc000);
   uRam0050b574 = 0;
   uRam0050b578 = 0;
   uRam0050b57c = 0;
@@ -69,7 +69,7 @@ SpatialSound_RebuildListenerTransformFromPose
   uRam0050b5a0 = 0x10000000;
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform,
-             (GraphicsFixedMatrix3x4 *)0x50b580,(GraphicsFixedMatrix3x4 *)0x50b550);
+             (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_SpatialSoundListenerWorldToLocal,0),(GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_SpatialSoundListenerRotation,0));
   return;
 }
 

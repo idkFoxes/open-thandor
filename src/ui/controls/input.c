@@ -1100,28 +1100,28 @@ UiSelectionGeometryControl_DrawClipped
                                             CONCAT22(CONCAT11(uVar46,uVar46) >> 2,
                                                      CONCAT11((char)sourcePixelSample0,
                                                               (char)sourcePixelSample0) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + 0x420720));
+                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               mm5PackedValue0 =
                    pmulhw(CONCAT26(uVar48 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar48,uVar40),uVar40) >> 2,
                                             CONCAT22(CONCAT11(uVar39,uVar39) >> 2,
                                                      CONCAT11((char)sourcePixelSample1,
                                                               (char)sourcePixelSample1) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + 0x41f720));
+                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               mm3PackedValue0 =
                    pmulhw(CONCAT26(uVar49 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar49,uVar33),uVar33) >> 2,
                                             CONCAT22(CONCAT11(uVar32,uVar32) >> 2,
                                                      CONCAT11((char)sourcePixelSample2,
                                                               (char)sourcePixelSample2) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + 0x420720));
+                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               mm1PackedValue0 =
                    pmulhw(CONCAT26(uVar50 >> 2,
                                    CONCAT24((ushort)CONCAT31(CONCAT21(uVar50,uVar26),uVar26) >> 2,
                                             CONCAT22(CONCAT11(uVar25,uVar25) >> 2,
                                                      CONCAT11((char)sourcePixelSample3,
                                                               (char)sourcePixelSample3) >> 2))),
-                          *(undefined8 *)(iVar18 * 8 + 0x41f720));
+                          *(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               uVar44 = pmulhw(CONCAT26((short)((ulonglong)mm7PackedValue0 >> 0x30) +
                                        (short)((ulonglong)mm5PackedValue0 >> 0x30),
                                        CONCAT24((short)((ulonglong)mm7PackedValue0 >> 0x20) +
@@ -1131,7 +1131,7 @@ UiSelectionGeometryControl_DrawClipped
                                                                   0x10),
                                                          (short)mm7PackedValue0 +
                                                          (short)mm5PackedValue0))),
-                              *(undefined8 *)(iVar20 * 8 + 0x420720));
+                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               uVar31 = pmulhw(CONCAT26((short)((ulonglong)mm3PackedValue0 >> 0x30) +
                                        (short)((ulonglong)mm1PackedValue0 >> 0x30),
                                        CONCAT24((short)((ulonglong)mm3PackedValue0 >> 0x20) +
@@ -1141,7 +1141,7 @@ UiSelectionGeometryControl_DrawClipped
                                                                   0x10),
                                                          (short)mm3PackedValue0 +
                                                          (short)mm1PackedValue0))),
-                              *(undefined8 *)(iVar20 * 8 + 0x41f720));
+                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               uVar41 = (ushort)((short)uVar44 + (short)uVar31) >> 2;
               uVar48 = (ushort)((short)((ulonglong)uVar44 >> 0x10) +
                                (short)((ulonglong)uVar31 >> 0x10)) >> 2;
@@ -1248,22 +1248,22 @@ UiSelectionGeometryControl_DrawClipped
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar41,uVar47),uVar47) >>
                                                 2,CONCAT22(CONCAT11(uVar46,uVar46) >> 2,
                                                            CONCAT11((char)uVar42,(char)uVar42) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + 0x420720));
+                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               uVar38 = pmulhw(CONCAT26(uVar48 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar48,uVar40),uVar40) >>
                                                 2,CONCAT22(CONCAT11(uVar39,uVar39) >> 2,
                                                            CONCAT11((char)uVar36,(char)uVar36) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + 0x41f720));
+                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               uVar44 = pmulhw(CONCAT26(uVar49 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar49,uVar33),uVar33) >>
                                                 2,CONCAT22(CONCAT11(uVar32,uVar32) >> 2,
                                                            CONCAT11((char)uVar30,(char)uVar30) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + 0x420720));
+                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               uVar31 = pmulhw(CONCAT26(uVar50 >> 2,
                                        CONCAT24((ushort)CONCAT31(CONCAT21(uVar50,uVar26),uVar26) >>
                                                 2,CONCAT22(CONCAT11(uVar25,uVar25) >> 2,
                                                            CONCAT11((char)uVar24,(char)uVar24) >> 2)
-                                               )),*(undefined8 *)(iVar18 * 8 + 0x41f720));
+                                               )),*(undefined8 *)(iVar18 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               uVar38 = pmulhw(CONCAT26((short)((ulonglong)uVar45 >> 0x30) +
                                        (short)((ulonglong)uVar38 >> 0x30),
                                        CONCAT24((short)((ulonglong)uVar45 >> 0x20) +
@@ -1271,7 +1271,7 @@ UiSelectionGeometryControl_DrawClipped
                                                 CONCAT22((short)((ulonglong)uVar45 >> 0x10) +
                                                          (short)((ulonglong)uVar38 >> 0x10),
                                                          (short)uVar45 + (short)uVar38))),
-                              *(undefined8 *)(iVar20 * 8 + 0x420720));
+                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerFirstPixelWeights,0)));
               uVar31 = pmulhw(CONCAT26((short)((ulonglong)uVar44 >> 0x30) +
                                        (short)((ulonglong)uVar31 >> 0x30),
                                        CONCAT24((short)((ulonglong)uVar44 >> 0x20) +
@@ -1279,7 +1279,7 @@ UiSelectionGeometryControl_DrawClipped
                                                 CONCAT22((short)((ulonglong)uVar44 >> 0x10) +
                                                          (short)((ulonglong)uVar31 >> 0x10),
                                                          (short)uVar44 + (short)uVar31))),
-                              *(undefined8 *)(iVar20 * 8 + 0x41f720));
+                              *(undefined8 *)(iVar20 * 8 + THANDOR_ADDR(g_UiScalerSecondPixelWeights,0)));
               uVar41 = (ushort)((short)uVar38 + (short)uVar31) >> 2;
               uVar48 = (ushort)((short)((ulonglong)uVar38 >> 0x10) +
                                (short)((ulonglong)uVar31 >> 0x10)) >> 2;
