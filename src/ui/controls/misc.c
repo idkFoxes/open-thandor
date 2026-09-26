@@ -302,6 +302,10 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
     g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
     UiFrame_ProcessAndPresentWithLockTransition();
+    /* The original passes the dialog's width and height (ECX, EDX) to the hook; the decompile
+       lost them to uninitialized locals. */
+    pendingModeWidth = pendingWidthOrCurrentHeight;
+    pendingModeHeight = pendingHeightOrCurrentWidth;
     currentAdapterIndex = g_ActiveGraphicsAdapterIndex;
     pendingWidthOrCurrentHeight = g_FramebufferHeight;
     pendingHeightOrCurrentWidth = g_FramebufferWidth;
