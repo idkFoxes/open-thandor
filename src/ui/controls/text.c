@@ -47,29 +47,29 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
           UiNumericTextControl *control)
 
 {
-  int *piVar1;
-  ushort uVar2;
-  UiNumericTextEditStateFlags UVar3;
-  UiTextCodeUnitIndex UVar4;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
-  word *pwVar8;
-  word *pwVar9;
-  bool bVar10;
+  int *selectionBoundary;
+  ushort displacedCodeUnit;
+  UiNumericTextEditStateFlags requiredFormatFlag;
+  UiTextCodeUnitIndex codeUnitIndex;
+  int countOrFieldOffset;
+  int shiftCountOrScanIndex;
+  uint insertIndex;
+  word *sourceCursor;
+  word *destinationCursor;
+  bool delegatedResult;
   
   if ((((control->editStateFlags & UI_NUMERIC_TEXT_READ_ONLY) != 0) ||
       (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) || ((keyboardStateMask & 0x30) != 0))
   goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
   if ((keyCode & 0xffff0000) == 0) {
     if (keyCode == 0x2d) {
-      UVar3 = control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE;
+      requiredFormatFlag = control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE;
 joined_r0x004b61ef:
-      if (UVar3 == 0) {
+      if (requiredFormatFlag == 0) {
 UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
-        bVar10 = UiNode_DefaultKeyboardEventMoveFocusNextCf
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf
                            (keyboardStateMask,keyCode,&control->base);
-        return bVar10;
+        return delegatedResult;
       }
     }
     else {
@@ -77,92 +77,92 @@ UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
       if (0x39 < keyCode) {
         if ((keyCode < 0x41) || ((0x46 < keyCode && ((keyCode < 0x61 || (0x66 < keyCode))))))
         goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        UVar3 = control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT;
+        requiredFormatFlag = control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT;
         goto joined_r0x004b61ef;
       }
     }
-    uVar7 = control->cursorIndex;
-    if ((uVar7 != control->selectionStart) || (uVar7 != control->selectionEnd)) {
-      UVar4 = control->selectionEnd;
-      iVar5 = UVar4 - control->selectionStart;
-      pwVar8 = control->textBuffer + UVar4;
-      pwVar9 = control->textBuffer + control->selectionStart;
-      for (iVar6 = 0x10 - UVar4; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *pwVar9 = *pwVar8;
-        pwVar8 = pwVar8 + 1;
-        pwVar9 = pwVar9 + 1;
+    insertIndex = control->cursorIndex;
+    if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
+      codeUnitIndex = control->selectionEnd;
+      countOrFieldOffset = codeUnitIndex - control->selectionStart;
+      sourceCursor = control->textBuffer + codeUnitIndex;
+      destinationCursor = control->textBuffer + control->selectionStart;
+      for (shiftCountOrScanIndex = 0x10 - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
+        *destinationCursor = *sourceCursor;
+        sourceCursor = sourceCursor + 1;
+        destinationCursor = destinationCursor + 1;
       }
-      for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *pwVar9 = 0;
-        pwVar9 = pwVar9 + 1;
+      for (; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+        *destinationCursor = 0;
+        destinationCursor = destinationCursor + 1;
       }
-      uVar7 = control->selectionStart;
-      control->cursorIndex = uVar7;
-      control->selectionEnd = uVar7;
+      insertIndex = control->selectionStart;
+      control->cursorIndex = insertIndex;
+      control->selectionEnd = insertIndex;
     }
-    if (uVar7 < 0xe) {
+    if (insertIndex < 0xe) {
       control->cursorIndex = control->cursorIndex + 1;
       control->selectionStart = control->selectionStart + 1;
       control->selectionEnd = control->selectionEnd + 1;
       if ((control->editStateFlags & UI_NUMERIC_TEXT_OVERWRITE_MODE) == 0) {
         do {
           LOCK();
-          uVar2 = control->textBuffer[uVar7];
-          control->textBuffer[uVar7] = (ushort)keyCode;
-          keyCode = (UiKeyboardEventCode)uVar2;
+          displacedCodeUnit = control->textBuffer[insertIndex];
+          control->textBuffer[insertIndex] = (ushort)keyCode;
+          keyCode = (UiKeyboardEventCode)displacedCodeUnit;
           UNLOCK();
-          uVar7 = uVar7 + 1;
-        } while (uVar7 < 0xe);
+          insertIndex = insertIndex + 1;
+        } while (insertIndex < 0xe);
       }
       else {
-        control->textBuffer[uVar7] = (word)keyCode;
+        control->textBuffer[insertIndex] = (word)keyCode;
       }
     }
   }
   else if ((keyboardStateMask & 0xc) == 0) {
     if ((keyboardStateMask & 3) == 0) {
       if (keyCode == 0x10003) {
-        UVar4 = control->cursorIndex;
-        if ((UVar4 != control->selectionStart) || (UVar4 != control->selectionEnd))
+        codeUnitIndex = control->cursorIndex;
+        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd))
         goto UiNumericTextEdit_DeleteSelectedRange;
         if (control->cursorIndex == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
-        pwVar8 = control->textBuffer + UVar4;
-        pwVar9 = control->textBuffer + (UVar4 - 1);
-        for (iVar5 = 0x10 - UVar4; iVar5 != 0; iVar5 = iVar5 + -1) {
-          *pwVar9 = *pwVar8;
-          pwVar8 = pwVar8 + 1;
-          pwVar9 = pwVar9 + 1;
+        sourceCursor = control->textBuffer + codeUnitIndex;
+        destinationCursor = control->textBuffer + (codeUnitIndex - 1);
+        for (countOrFieldOffset = 0x10 - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+          *destinationCursor = *sourceCursor;
+          sourceCursor = sourceCursor + 1;
+          destinationCursor = destinationCursor + 1;
         }
         control->cursorIndex = control->cursorIndex - 1;
       }
       else {
         if (keyCode == 0x10006) {
-          UVar4 = control->cursorIndex;
-          if ((UVar4 == control->selectionStart) && (UVar4 == control->selectionEnd)) {
-            if (control->textBuffer[UVar4] == 0)
+          codeUnitIndex = control->cursorIndex;
+          if ((codeUnitIndex == control->selectionStart) && (codeUnitIndex == control->selectionEnd)) {
+            if (control->textBuffer[codeUnitIndex] == 0)
             goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
-            pwVar8 = control->textBuffer + UVar4 + 1;
-            pwVar9 = control->textBuffer + UVar4;
-            for (iVar5 = 0xf - UVar4; iVar5 != 0; iVar5 = iVar5 + -1) {
-              *pwVar9 = *pwVar8;
-              pwVar8 = pwVar8 + 1;
-              pwVar9 = pwVar9 + 1;
+            sourceCursor = control->textBuffer + codeUnitIndex + 1;
+            destinationCursor = control->textBuffer + codeUnitIndex;
+            for (countOrFieldOffset = 0xf - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+              *destinationCursor = *sourceCursor;
+              sourceCursor = sourceCursor + 1;
+              destinationCursor = destinationCursor + 1;
             }
             goto UiNumericTextEdit_RecomputeLayoutAfterEdit;
           }
 UiNumericTextEdit_DeleteSelectedRange:
-          UVar4 = control->selectionEnd;
-          iVar5 = UVar4 - control->selectionStart;
-          pwVar8 = control->textBuffer + UVar4;
-          pwVar9 = control->textBuffer + control->selectionStart;
-          for (iVar6 = 0x10 - UVar4; iVar6 != 0; iVar6 = iVar6 + -1) {
-            *pwVar9 = *pwVar8;
-            pwVar8 = pwVar8 + 1;
-            pwVar9 = pwVar9 + 1;
+          codeUnitIndex = control->selectionEnd;
+          countOrFieldOffset = codeUnitIndex - control->selectionStart;
+          sourceCursor = control->textBuffer + codeUnitIndex;
+          destinationCursor = control->textBuffer + control->selectionStart;
+          for (shiftCountOrScanIndex = 0x10 - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
           }
-          for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-            *pwVar9 = 0;
-            pwVar9 = pwVar9 + 1;
+          for (; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = 0;
+            destinationCursor = destinationCursor + 1;
           }
           control->cursorIndex = control->selectionStart;
           control->selectionEnd = control->selectionStart;
@@ -208,10 +208,10 @@ UiNumericTextEdit_CollapseSelectionAtCursor:
     else {
       if (keyCode == 0x10010) {
 UiNumericTextEdit_ExtendSelectionToStart:
-        UVar4 = control->cursorIndex;
-        if (UVar4 == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
         control->cursorIndex = 0;
-        if (UVar4 == control->selectionStart) {
+        if (codeUnitIndex == control->selectionStart) {
           control->selectionStart = 0;
         }
         else {
@@ -221,10 +221,10 @@ UiNumericTextEdit_ExtendSelectionToStart:
       }
       if (keyCode == 0x10018) goto UiNumericTextEdit_ExtendSelectionToEnd;
       if (keyCode == 0x10014) {
-        UVar4 = control->cursorIndex;
-        if (UVar4 == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
         control->cursorIndex = control->cursorIndex - 1;
-        if (UVar4 == control->selectionStart) {
+        if (codeUnitIndex == control->selectionStart) {
           control->selectionStart = control->selectionStart - 1;
         }
         else {
@@ -233,10 +233,10 @@ UiNumericTextEdit_ExtendSelectionToStart:
       }
       else {
         if (keyCode != 0x10016) goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        UVar4 = control->cursorIndex;
-        if (control->textBuffer[UVar4] == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        codeUnitIndex = control->cursorIndex;
+        if (control->textBuffer[codeUnitIndex] == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
         control->cursorIndex = control->cursorIndex + 1;
-        if (UVar4 == control->selectionEnd) {
+        if (codeUnitIndex == control->selectionEnd) {
           control->selectionEnd = control->selectionEnd + 1;
         }
         else {
@@ -263,27 +263,27 @@ UiNumericTextEdit_MoveCursorToStartAndCollapseSelection:
     if (keyCode == 0x10014) goto UiNumericTextEdit_ExtendSelectionToStart;
     if (keyCode != 0x10016) goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
 UiNumericTextEdit_ExtendSelectionToEnd:
-    UVar4 = control->cursorIndex;
-    if (control->textBuffer[UVar4] == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+    codeUnitIndex = control->cursorIndex;
+    if (control->textBuffer[codeUnitIndex] == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
     control->cursorIndex = 0;
-    iVar5 = 0x60;
-    if (UVar4 == control->selectionEnd) {
-      iVar5 = 100;
+    countOrFieldOffset = 0x60;
+    if (codeUnitIndex == control->selectionEnd) {
+      countOrFieldOffset = 100;
     }
     do {
-      piVar1 = (int *)((int)control->textBuffer + iVar5 + -0x6c);
-      *piVar1 = *piVar1 + 1;
+      selectionBoundary = (int *)((int)control->textBuffer + countOrFieldOffset + -0x6c);
+      *selectionBoundary = *selectionBoundary + 1;
       control->cursorIndex = control->cursorIndex + 1;
-      iVar6 = UVar4 + 1;
-      UVar4 = UVar4 + 1;
-    } while (control->textBuffer[iVar6] != 0);
+      shiftCountOrScanIndex = codeUnitIndex + 1;
+      codeUnitIndex = codeUnitIndex + 1;
+    } while (control->textBuffer[shiftCountOrScanIndex] != 0);
 UiNumericTextEdit_NormalizeSelectionOrder:
     if (control->selectionEnd < control->selectionStart) {
       LOCK();
-      UVar4 = control->selectionEnd;
+      codeUnitIndex = control->selectionEnd;
       control->selectionEnd = control->selectionStart;
       UNLOCK();
-      control->selectionStart = UVar4;
+      control->selectionStart = codeUnitIndex;
     }
   }
 UiNumericTextEdit_RecomputeLayoutAfterEdit:
@@ -312,16 +312,16 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
           UiPathTextEditControl *control)
 
 {
-  int *piVar1;
-  ushort uVar2;
-  UiTextCodeUnitIndex UVar3;
-  UiTextCodeUnitIndex UVar4;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
-  word *pwVar8;
-  word *pwVar9;
-  bool bVar10;
+  int *selectionBoundary;
+  ushort displacedCodeUnit;
+  UiTextCodeUnitIndex segmentBoundaryIndex;
+  UiTextCodeUnitIndex codeUnitIndex;
+  int countOrFieldOffset;
+  int shiftCountOrScanIndex;
+  uint insertIndex;
+  word *sourceCursor;
+  word *destinationCursor;
+  bool delegatedResult;
   
   if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0))
@@ -344,9 +344,9 @@ UiPathTextEdit_CheckWildcardPermission:
 UiPathTextEdit_CheckColonOrBackslashRestriction:
           if ((control->editStateFlags & 4) != 0) {
 UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
-            bVar10 = UiNode_DefaultKeyboardEventMoveFocusNextCf
+            delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf
                                (keyboardStateMask,keyCode,&control->base);
-            return bVar10;
+            return delegatedResult;
           }
         }
         else {
@@ -360,41 +360,41 @@ UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
         }
       }
     }
-    uVar7 = control->cursorIndex;
-    if ((uVar7 != control->selectionStart) || (uVar7 != control->selectionEnd)) {
-      UVar4 = control->selectionEnd;
-      iVar5 = UVar4 - control->selectionStart;
-      pwVar8 = control->pathBuffer + UVar4;
-      pwVar9 = control->pathBuffer + control->selectionStart;
-      for (iVar6 = 0x100 - UVar4; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *pwVar9 = *pwVar8;
-        pwVar8 = pwVar8 + 1;
-        pwVar9 = pwVar9 + 1;
+    insertIndex = control->cursorIndex;
+    if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
+      codeUnitIndex = control->selectionEnd;
+      countOrFieldOffset = codeUnitIndex - control->selectionStart;
+      sourceCursor = control->pathBuffer + codeUnitIndex;
+      destinationCursor = control->pathBuffer + control->selectionStart;
+      for (shiftCountOrScanIndex = 0x100 - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
+        *destinationCursor = *sourceCursor;
+        sourceCursor = sourceCursor + 1;
+        destinationCursor = destinationCursor + 1;
       }
-      for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *pwVar9 = 0;
-        pwVar9 = pwVar9 + 1;
+      for (; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+        *destinationCursor = 0;
+        destinationCursor = destinationCursor + 1;
       }
-      uVar7 = control->selectionStart;
-      control->cursorIndex = uVar7;
-      control->selectionEnd = uVar7;
+      insertIndex = control->selectionStart;
+      control->cursorIndex = insertIndex;
+      control->selectionEnd = insertIndex;
     }
-    if (uVar7 < 0xfe) {
+    if (insertIndex < 0xfe) {
       control->cursorIndex = control->cursorIndex + 1;
       control->selectionStart = control->selectionStart + 1;
       control->selectionEnd = control->selectionEnd + 1;
       if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) == 0) {
         do {
           LOCK();
-          uVar2 = control->pathBuffer[uVar7];
-          control->pathBuffer[uVar7] = (ushort)keyCode;
-          keyCode = (UiKeyboardEventCode)uVar2;
+          displacedCodeUnit = control->pathBuffer[insertIndex];
+          control->pathBuffer[insertIndex] = (ushort)keyCode;
+          keyCode = (UiKeyboardEventCode)displacedCodeUnit;
           UNLOCK();
-          uVar7 = uVar7 + 1;
-        } while (uVar7 < 0xfe);
+          insertIndex = insertIndex + 1;
+        } while (insertIndex < 0xfe);
       }
       else {
-        control->pathBuffer[uVar7] = (word)keyCode;
+        control->pathBuffer[insertIndex] = (word)keyCode;
       }
     }
   }
@@ -410,10 +410,10 @@ UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
     if ((keyboardStateMask & 0xc) == 0) {
       if ((keyboardStateMask & 3) != 0) {
         if (keyCode == 0x10010) {
-          UVar4 = control->cursorIndex;
-          if (UVar4 == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
+          codeUnitIndex = control->cursorIndex;
+          if (codeUnitIndex == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
           control->cursorIndex = 0;
-          if (UVar4 == control->selectionStart) {
+          if (codeUnitIndex == control->selectionStart) {
             control->selectionStart = 0;
           }
           else {
@@ -423,10 +423,10 @@ UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
         else {
           if (keyCode != 0x10018) {
             if (keyCode == 0x10014) {
-              UVar4 = control->cursorIndex;
-              if (UVar4 == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
+              codeUnitIndex = control->cursorIndex;
+              if (codeUnitIndex == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
               control->cursorIndex = control->cursorIndex - 1;
-              if (UVar4 == control->selectionStart) {
+              if (codeUnitIndex == control->selectionStart) {
                 control->selectionStart = control->selectionStart - 1;
               }
               else {
@@ -435,11 +435,11 @@ UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
             }
             else {
               if (keyCode != 0x10016) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-              UVar4 = control->cursorIndex;
-              if (control->pathBuffer[UVar4] == 0)
+              codeUnitIndex = control->cursorIndex;
+              if (control->pathBuffer[codeUnitIndex] == 0)
               goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
               control->cursorIndex = control->cursorIndex + 1;
-              if (UVar4 == control->selectionEnd) {
+              if (codeUnitIndex == control->selectionEnd) {
                 control->selectionEnd = control->selectionEnd + 1;
               }
               else {
@@ -448,66 +448,66 @@ UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
             }
             goto UiPathTextEdit_RecomputeLayoutAfterEdit;
           }
-          UVar4 = control->cursorIndex;
-          if (control->pathBuffer[UVar4] == 0)
+          codeUnitIndex = control->cursorIndex;
+          if (control->pathBuffer[codeUnitIndex] == 0)
           goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
           control->cursorIndex = 0;
-          iVar5 = 0x60;
-          if (UVar4 == control->selectionEnd) {
-            iVar5 = 100;
+          countOrFieldOffset = 0x60;
+          if (codeUnitIndex == control->selectionEnd) {
+            countOrFieldOffset = 100;
           }
           do {
-            piVar1 = (int *)((int)control->pathBuffer + iVar5 + -0x6c);
-            *piVar1 = *piVar1 + 1;
+            selectionBoundary = (int *)((int)control->pathBuffer + countOrFieldOffset + -0x6c);
+            *selectionBoundary = *selectionBoundary + 1;
             control->cursorIndex = control->cursorIndex + 1;
-            iVar6 = UVar4 + 1;
-            UVar4 = UVar4 + 1;
-          } while (control->pathBuffer[iVar6] != 0);
+            shiftCountOrScanIndex = codeUnitIndex + 1;
+            codeUnitIndex = codeUnitIndex + 1;
+          } while (control->pathBuffer[shiftCountOrScanIndex] != 0);
         }
         goto UiPathTextEdit_NormalizeSelectionOrder;
       }
       if (keyCode == 0x10003) {
-        UVar4 = control->cursorIndex;
-        if ((UVar4 != control->selectionStart) || (UVar4 != control->selectionEnd))
+        codeUnitIndex = control->cursorIndex;
+        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd))
         goto UiPathTextEdit_DeleteSelectedRange;
         if (control->cursorIndex == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-        pwVar8 = control->pathBuffer + UVar4;
-        pwVar9 = control->pathBuffer + (UVar4 - 1);
-        for (iVar5 = 0x100 - UVar4; iVar5 != 0; iVar5 = iVar5 + -1) {
-          *pwVar9 = *pwVar8;
-          pwVar8 = pwVar8 + 1;
-          pwVar9 = pwVar9 + 1;
+        sourceCursor = control->pathBuffer + codeUnitIndex;
+        destinationCursor = control->pathBuffer + (codeUnitIndex - 1);
+        for (countOrFieldOffset = 0x100 - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+          *destinationCursor = *sourceCursor;
+          sourceCursor = sourceCursor + 1;
+          destinationCursor = destinationCursor + 1;
         }
         control->cursorIndex = control->cursorIndex - 1;
       }
       else {
         if (keyCode == 0x10006) {
-          UVar4 = control->cursorIndex;
-          if ((UVar4 == control->selectionStart) && (UVar4 == control->selectionEnd)) {
-            if (control->pathBuffer[UVar4] == 0)
+          codeUnitIndex = control->cursorIndex;
+          if ((codeUnitIndex == control->selectionStart) && (codeUnitIndex == control->selectionEnd)) {
+            if (control->pathBuffer[codeUnitIndex] == 0)
             goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-            pwVar8 = control->pathBuffer + UVar4 + 1;
-            pwVar9 = control->pathBuffer + UVar4;
-            for (iVar5 = 0xff - UVar4; iVar5 != 0; iVar5 = iVar5 + -1) {
-              *pwVar9 = *pwVar8;
-              pwVar8 = pwVar8 + 1;
-              pwVar9 = pwVar9 + 1;
+            sourceCursor = control->pathBuffer + codeUnitIndex + 1;
+            destinationCursor = control->pathBuffer + codeUnitIndex;
+            for (countOrFieldOffset = 0xff - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+              *destinationCursor = *sourceCursor;
+              sourceCursor = sourceCursor + 1;
+              destinationCursor = destinationCursor + 1;
             }
             goto UiPathTextEdit_RecomputeLayoutAfterEdit;
           }
 UiPathTextEdit_DeleteSelectedRange:
-          UVar4 = control->selectionEnd;
-          iVar5 = UVar4 - control->selectionStart;
-          pwVar8 = control->pathBuffer + UVar4;
-          pwVar9 = control->pathBuffer + control->selectionStart;
-          for (iVar6 = 0x100 - UVar4; iVar6 != 0; iVar6 = iVar6 + -1) {
-            *pwVar9 = *pwVar8;
-            pwVar8 = pwVar8 + 1;
-            pwVar9 = pwVar9 + 1;
+          codeUnitIndex = control->selectionEnd;
+          countOrFieldOffset = codeUnitIndex - control->selectionStart;
+          sourceCursor = control->pathBuffer + codeUnitIndex;
+          destinationCursor = control->pathBuffer + control->selectionStart;
+          for (shiftCountOrScanIndex = 0x100 - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
           }
-          for (; iVar5 != 0; iVar5 = iVar5 + -1) {
-            *pwVar9 = 0;
-            pwVar9 = pwVar9 + 1;
+          for (; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = 0;
+            destinationCursor = destinationCursor + 1;
           }
           control->cursorIndex = control->selectionStart;
           control->selectionEnd = control->selectionStart;
@@ -557,77 +557,77 @@ UiPathTextEdit_DeleteSelectedRange:
     }
     else if ((keyboardStateMask & 3) == 0) {
       if (keyCode == 0x10014) {
-        UVar4 = control->cursorIndex;
-        if (UVar4 != 0) {
-          UVar3 = 0;
-          if (UVar4 != 1) {
-            for (iVar5 = UVar4 - 2;
-                ((UVar3 = 0, iVar5 != 0 && (UVar3 = iVar5 + 1, control->pathBuffer[iVar5] != 0x5c))
-                && (control->pathBuffer[iVar5] != 0x2e)); iVar5 = iVar5 + -1) {
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex != 0) {
+          segmentBoundaryIndex = 0;
+          if (codeUnitIndex != 1) {
+            for (countOrFieldOffset = codeUnitIndex - 2;
+                ((segmentBoundaryIndex = 0, countOrFieldOffset != 0 && (segmentBoundaryIndex = countOrFieldOffset + 1, control->pathBuffer[countOrFieldOffset] != 0x5c))
+                && (control->pathBuffer[countOrFieldOffset] != 0x2e)); countOrFieldOffset = countOrFieldOffset + -1) {
             }
           }
-          control->cursorIndex = UVar3;
-          control->selectionStart = UVar3;
-          control->selectionEnd = UVar3;
+          control->cursorIndex = segmentBoundaryIndex;
+          control->selectionStart = segmentBoundaryIndex;
+          control->selectionEnd = segmentBoundaryIndex;
         }
       }
       else {
         if (keyCode != 0x10016) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        UVar4 = control->cursorIndex;
+        codeUnitIndex = control->cursorIndex;
         do {
-          UVar3 = UVar4;
-          if ((control->pathBuffer[UVar4] == 0) ||
-             (UVar3 = UVar4 + 1, control->pathBuffer[UVar4] == 0x5c)) break;
-          pwVar8 = control->pathBuffer + UVar4;
-          UVar4 = UVar3;
-        } while (*pwVar8 != 0x2e);
-        control->cursorIndex = UVar3;
-        control->selectionStart = UVar3;
-        control->selectionEnd = UVar3;
+          segmentBoundaryIndex = codeUnitIndex;
+          if ((control->pathBuffer[codeUnitIndex] == 0) ||
+             (segmentBoundaryIndex = codeUnitIndex + 1, control->pathBuffer[codeUnitIndex] == 0x5c)) break;
+          sourceCursor = control->pathBuffer + codeUnitIndex;
+          codeUnitIndex = segmentBoundaryIndex;
+        } while (*sourceCursor != 0x2e);
+        control->cursorIndex = segmentBoundaryIndex;
+        control->selectionStart = segmentBoundaryIndex;
+        control->selectionEnd = segmentBoundaryIndex;
       }
     }
     else {
       if (keyCode == 0x10014) {
-        UVar4 = control->cursorIndex;
-        iVar5 = 0x60;
-        if (UVar4 == 0) goto UiPathTextEdit_RecomputeLayoutAfterEdit;
-        if (UVar4 != control->selectionStart) {
-          iVar5 = 100;
+        codeUnitIndex = control->cursorIndex;
+        countOrFieldOffset = 0x60;
+        if (codeUnitIndex == 0) goto UiPathTextEdit_RecomputeLayoutAfterEdit;
+        if (codeUnitIndex != control->selectionStart) {
+          countOrFieldOffset = 100;
         }
-        UVar3 = 0;
-        if (UVar4 != 1) {
-          for (iVar6 = UVar4 - 2;
-              ((UVar3 = 0, iVar6 != 0 && (UVar3 = iVar6 + 1, control->pathBuffer[iVar6] != 0x5c)) &&
-              (control->pathBuffer[iVar6] != 0x2e)); iVar6 = iVar6 + -1) {
+        segmentBoundaryIndex = 0;
+        if (codeUnitIndex != 1) {
+          for (shiftCountOrScanIndex = codeUnitIndex - 2;
+              ((segmentBoundaryIndex = 0, shiftCountOrScanIndex != 0 && (segmentBoundaryIndex = shiftCountOrScanIndex + 1, control->pathBuffer[shiftCountOrScanIndex] != 0x5c)) &&
+              (control->pathBuffer[shiftCountOrScanIndex] != 0x2e)); shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
           }
         }
-        control->cursorIndex = UVar3;
-        *(UiTextCodeUnitIndex *)((int)control->pathBuffer + iVar5 + -0x6c) = UVar3;
+        control->cursorIndex = segmentBoundaryIndex;
+        *(UiTextCodeUnitIndex *)((int)control->pathBuffer + countOrFieldOffset + -0x6c) = segmentBoundaryIndex;
       }
       else {
         if (keyCode != 0x10016) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        UVar4 = control->cursorIndex;
-        iVar5 = 0x60;
-        if (UVar4 != control->selectionStart) {
-          iVar5 = 100;
+        codeUnitIndex = control->cursorIndex;
+        countOrFieldOffset = 0x60;
+        if (codeUnitIndex != control->selectionStart) {
+          countOrFieldOffset = 100;
         }
         do {
-          UVar3 = UVar4;
-          if ((control->pathBuffer[UVar4] == 0) ||
-             (UVar3 = UVar4 + 1, control->pathBuffer[UVar4] == 0x5c)) break;
-          pwVar8 = control->pathBuffer + UVar4;
-          UVar4 = UVar3;
-        } while (*pwVar8 != 0x2e);
-        control->cursorIndex = UVar3;
-        *(UiTextCodeUnitIndex *)((int)control->pathBuffer + iVar5 + -0x6c) = UVar3;
+          segmentBoundaryIndex = codeUnitIndex;
+          if ((control->pathBuffer[codeUnitIndex] == 0) ||
+             (segmentBoundaryIndex = codeUnitIndex + 1, control->pathBuffer[codeUnitIndex] == 0x5c)) break;
+          sourceCursor = control->pathBuffer + codeUnitIndex;
+          codeUnitIndex = segmentBoundaryIndex;
+        } while (*sourceCursor != 0x2e);
+        control->cursorIndex = segmentBoundaryIndex;
+        *(UiTextCodeUnitIndex *)((int)control->pathBuffer + countOrFieldOffset + -0x6c) = segmentBoundaryIndex;
       }
 UiPathTextEdit_NormalizeSelectionOrder:
       if (control->selectionEnd < control->selectionStart) {
         LOCK();
-        UVar4 = control->selectionEnd;
+        codeUnitIndex = control->selectionEnd;
         control->selectionEnd = control->selectionStart;
         UNLOCK();
-        control->selectionStart = UVar4;
+        control->selectionStart = codeUnitIndex;
       }
     }
   }
@@ -660,26 +660,26 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
           UiRequiredTextEditControl *control)
 
 {
-  int *piVar1;
-  ushort uVar2;
-  UiTextCodeUnitIndex UVar3;
-  UiTextCodeUnitIndex UVar4;
-  UiTextCodeUnitIndex UVar5;
-  UiTextCodeUnitCount UVar6;
-  int iVar7;
-  int iVar8;
-  uint uVar9;
-  uint uVar10;
-  word *pwVar11;
-  word *pwVar12;
-  bool bVar13;
+  int *selectionBoundary;
+  ushort displacedCodeUnit;
+  UiTextCodeUnitIndex codeUnitIndex;
+  UiTextCodeUnitIndex wordBoundaryIndex;
+  UiTextCodeUnitIndex scanIndex;
+  UiTextCodeUnitCount remainingCodeUnits;
+  int countOrFieldOffset;
+  int shiftCountOrScanIndex;
+  uint insertLimit;
+  uint insertIndex;
+  word *sourceCursor;
+  word *destinationCursor;
+  bool delegatedResult;
   
-  uVar10 = control->cursorIndex;
+  insertIndex = control->cursorIndex;
   if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
 UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
-    bVar13 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
-    return bVar13;
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    return delegatedResult;
   }
   if ((((keyCode == 0x40) ||
        ((((keyCode == 0x7c || (keyCode == 0x7e)) || (keyCode == 0xb2)) ||
@@ -687,41 +687,41 @@ UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
      (((keyCode == 0x5d || (keyCode == 0x7d)) ||
       ((keyCode == 0x5c || ((keyCode == 0xb5 || (keyCode == 0x80)))))))) {
 UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
-    uVar9 = control->bufferCapacityCodeUnits - 1;
-    if ((uVar10 != control->selectionStart) || (uVar10 != control->selectionEnd)) {
-      UVar3 = control->selectionEnd;
-      iVar7 = UVar3 - control->selectionStart;
-      pwVar11 = control->textPrefix6C + UVar3;
-      pwVar12 = control->textPrefix6C + control->selectionStart;
-      for (iVar8 = control->bufferCapacityCodeUnits - UVar3; iVar8 != 0; iVar8 = iVar8 + -1) {
-        *pwVar12 = *pwVar11;
-        pwVar11 = pwVar11 + 1;
-        pwVar12 = pwVar12 + 1;
+    insertLimit = control->bufferCapacityCodeUnits - 1;
+    if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
+      codeUnitIndex = control->selectionEnd;
+      countOrFieldOffset = codeUnitIndex - control->selectionStart;
+      sourceCursor = control->textPrefix6C + codeUnitIndex;
+      destinationCursor = control->textPrefix6C + control->selectionStart;
+      for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
+        *destinationCursor = *sourceCursor;
+        sourceCursor = sourceCursor + 1;
+        destinationCursor = destinationCursor + 1;
       }
-      for (; iVar7 != 0; iVar7 = iVar7 + -1) {
-        *pwVar12 = 0;
-        pwVar12 = pwVar12 + 1;
+      for (; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+        *destinationCursor = 0;
+        destinationCursor = destinationCursor + 1;
       }
-      uVar10 = control->selectionStart;
-      control->cursorIndex = uVar10;
-      control->selectionEnd = uVar10;
+      insertIndex = control->selectionStart;
+      control->cursorIndex = insertIndex;
+      control->selectionEnd = insertIndex;
     }
-    if (uVar10 < uVar9) {
+    if (insertIndex < insertLimit) {
       control->cursorIndex = control->cursorIndex + 1;
       control->selectionStart = control->selectionStart + 1;
       control->selectionEnd = control->selectionEnd + 1;
       if ((control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE) == 0) {
         do {
           LOCK();
-          uVar2 = control->textPrefix6C[uVar10];
-          control->textPrefix6C[uVar10] = (ushort)keyCode;
-          keyCode = (UiKeyboardEventCode)uVar2;
+          displacedCodeUnit = control->textPrefix6C[insertIndex];
+          control->textPrefix6C[insertIndex] = (ushort)keyCode;
+          keyCode = (UiKeyboardEventCode)displacedCodeUnit;
           UNLOCK();
-          uVar10 = uVar10 + 1;
-        } while (uVar10 < uVar9);
+          insertIndex = insertIndex + 1;
+        } while (insertIndex < insertLimit);
       }
       else {
-        control->textPrefix6C[uVar10] = (word)keyCode;
+        control->textPrefix6C[insertIndex] = (word)keyCode;
       }
     }
   }
@@ -737,10 +737,10 @@ UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
     if ((keyboardStateMask & 0xc) == 0) {
       if ((keyboardStateMask & 3) != 0) {
         if (keyCode == 0x10010) {
-          UVar3 = control->cursorIndex;
-          if (UVar3 == 0) goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
+          codeUnitIndex = control->cursorIndex;
+          if (codeUnitIndex == 0) goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
           control->cursorIndex = 0;
-          if (UVar3 == control->selectionStart) {
+          if (codeUnitIndex == control->selectionStart) {
             control->selectionStart = 0;
           }
           else {
@@ -750,10 +750,10 @@ UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
         else {
           if (keyCode != 0x10018) {
             if (keyCode == 0x10014) {
-              UVar3 = control->cursorIndex;
-              if (UVar3 == 0) goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
+              codeUnitIndex = control->cursorIndex;
+              if (codeUnitIndex == 0) goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
               control->cursorIndex = control->cursorIndex - 1;
-              if (UVar3 == control->selectionStart) {
+              if (codeUnitIndex == control->selectionStart) {
                 control->selectionStart = control->selectionStart - 1;
               }
               else {
@@ -763,11 +763,11 @@ UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
             else {
               if (keyCode != 0x10016)
               goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-              UVar3 = control->cursorIndex;
-              if (control->textPrefix6C[UVar3] == 0)
+              codeUnitIndex = control->cursorIndex;
+              if (control->textPrefix6C[codeUnitIndex] == 0)
               goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
               control->cursorIndex = control->cursorIndex + 1;
-              if (UVar3 == control->selectionEnd) {
+              if (codeUnitIndex == control->selectionEnd) {
                 control->selectionEnd = control->selectionEnd + 1;
               }
               else {
@@ -776,68 +776,68 @@ UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
             }
             goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
           }
-          UVar3 = control->cursorIndex;
-          if (control->textPrefix6C[UVar3] == 0)
+          codeUnitIndex = control->cursorIndex;
+          if (control->textPrefix6C[codeUnitIndex] == 0)
           goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
           control->cursorIndex = 0;
-          iVar7 = 0x60;
-          if (UVar3 == control->selectionEnd) {
-            iVar7 = 100;
+          countOrFieldOffset = 0x60;
+          if (codeUnitIndex == control->selectionEnd) {
+            countOrFieldOffset = 100;
           }
           do {
-            piVar1 = (int *)((int)control->textPrefix6C + iVar7 + -0x6c);
-            *piVar1 = *piVar1 + 1;
+            selectionBoundary = (int *)((int)control->textPrefix6C + countOrFieldOffset + -0x6c);
+            *selectionBoundary = *selectionBoundary + 1;
             control->cursorIndex = control->cursorIndex + 1;
-            iVar8 = UVar3 + 1;
-            UVar3 = UVar3 + 1;
-          } while (control->textPrefix6C[iVar8] != 0);
+            shiftCountOrScanIndex = codeUnitIndex + 1;
+            codeUnitIndex = codeUnitIndex + 1;
+          } while (control->textPrefix6C[shiftCountOrScanIndex] != 0);
         }
         goto UiRequiredTextEdit_NormalizeSelectionOrder;
       }
       if (keyCode == 0x10003) {
-        UVar3 = control->cursorIndex;
-        if ((UVar3 != control->selectionStart) || (UVar3 != control->selectionEnd))
+        codeUnitIndex = control->cursorIndex;
+        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd))
         goto UiRequiredTextEdit_DeleteSelectedRange;
         if (control->cursorIndex == 0)
         goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-        pwVar11 = control->textPrefix6C + UVar3;
-        pwVar12 = control->textPrefix6C + (UVar3 - 1);
-        for (iVar7 = control->bufferCapacityCodeUnits - UVar3; iVar7 != 0; iVar7 = iVar7 + -1) {
-          *pwVar12 = *pwVar11;
-          pwVar11 = pwVar11 + 1;
-          pwVar12 = pwVar12 + 1;
+        sourceCursor = control->textPrefix6C + codeUnitIndex;
+        destinationCursor = control->textPrefix6C + (codeUnitIndex - 1);
+        for (countOrFieldOffset = control->bufferCapacityCodeUnits - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+          *destinationCursor = *sourceCursor;
+          sourceCursor = sourceCursor + 1;
+          destinationCursor = destinationCursor + 1;
         }
         control->cursorIndex = control->cursorIndex - 1;
       }
       else {
         if (keyCode == 0x10006) {
-          UVar3 = control->cursorIndex;
-          if ((UVar3 == control->selectionStart) && (UVar3 == control->selectionEnd)) {
-            if (control->textPrefix6C[UVar3] == 0)
+          codeUnitIndex = control->cursorIndex;
+          if ((codeUnitIndex == control->selectionStart) && (codeUnitIndex == control->selectionEnd)) {
+            if (control->textPrefix6C[codeUnitIndex] == 0)
             goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-            iVar7 = control->bufferCapacityCodeUnits - UVar3;
-            pwVar11 = control->textPrefix6C + UVar3 + 1;
-            pwVar12 = control->textPrefix6C + UVar3;
-            while (iVar7 = iVar7 + -1, iVar7 != 0) {
-              *pwVar12 = *pwVar11;
-              pwVar11 = pwVar11 + 1;
-              pwVar12 = pwVar12 + 1;
+            countOrFieldOffset = control->bufferCapacityCodeUnits - codeUnitIndex;
+            sourceCursor = control->textPrefix6C + codeUnitIndex + 1;
+            destinationCursor = control->textPrefix6C + codeUnitIndex;
+            while (countOrFieldOffset = countOrFieldOffset + -1, countOrFieldOffset != 0) {
+              *destinationCursor = *sourceCursor;
+              sourceCursor = sourceCursor + 1;
+              destinationCursor = destinationCursor + 1;
             }
             goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
           }
 UiRequiredTextEdit_DeleteSelectedRange:
-          UVar3 = control->selectionEnd;
-          iVar7 = UVar3 - control->selectionStart;
-          pwVar11 = control->textPrefix6C + UVar3;
-          pwVar12 = control->textPrefix6C + control->selectionStart;
-          for (iVar8 = control->bufferCapacityCodeUnits - UVar3; iVar8 != 0; iVar8 = iVar8 + -1) {
-            *pwVar12 = *pwVar11;
-            pwVar11 = pwVar11 + 1;
-            pwVar12 = pwVar12 + 1;
+          codeUnitIndex = control->selectionEnd;
+          countOrFieldOffset = codeUnitIndex - control->selectionStart;
+          sourceCursor = control->textPrefix6C + codeUnitIndex;
+          destinationCursor = control->textPrefix6C + control->selectionStart;
+          for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex = shiftCountOrScanIndex + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
           }
-          for (; iVar7 != 0; iVar7 = iVar7 + -1) {
-            *pwVar12 = 0;
-            pwVar12 = pwVar12 + 1;
+          for (; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = 0;
+            destinationCursor = destinationCursor + 1;
           }
           control->cursorIndex = control->selectionStart;
           control->selectionEnd = control->selectionStart;
@@ -875,10 +875,10 @@ UiRequiredTextEdit_DeleteSelectedRange:
             else if (keyCode == 0x10000) {
               if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) != 0)
               {
-                pwVar11 = control->textPrefix6C;
-                for (UVar6 = control->bufferCapacityCodeUnits; UVar6 != 0; UVar6 = UVar6 - 1) {
-                  *pwVar11 = 0;
-                  pwVar11 = pwVar11 + 1;
+                sourceCursor = control->textPrefix6C;
+                for (remainingCodeUnits = control->bufferCapacityCodeUnits; remainingCodeUnits != 0; remainingCodeUnits = remainingCodeUnits - 1) {
+                  *sourceCursor = 0;
+                  sourceCursor = sourceCursor + 1;
                 }
                 control->cursorIndex = 0;
                 control->selectionStart = 0;
@@ -906,123 +906,123 @@ UiRequiredTextEdit_DeleteSelectedRange:
     }
     else if ((keyboardStateMask & 3) == 0) {
       if (keyCode == 0x10014) {
-        UVar3 = control->cursorIndex;
-        if (UVar3 != 0) {
-          if (control->textPrefix6C[UVar3 - 1] == 0x20) {
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex != 0) {
+          if (control->textPrefix6C[codeUnitIndex - 1] == 0x20) {
             do {
-              UVar4 = UVar3 - 1;
-              if (UVar4 == 0) break;
-              iVar7 = UVar3 - 2;
-              UVar3 = UVar4;
-            } while (control->textPrefix6C[iVar7] == 0x20);
+              wordBoundaryIndex = codeUnitIndex - 1;
+              if (wordBoundaryIndex == 0) break;
+              countOrFieldOffset = codeUnitIndex - 2;
+              codeUnitIndex = wordBoundaryIndex;
+            } while (control->textPrefix6C[countOrFieldOffset] == 0x20);
           }
           else {
             do {
-              UVar5 = UVar3;
-              UVar4 = UVar5 - 1;
-              if (UVar4 == 0) goto UiRequiredTextEdit_MoveCursorToPreviousWordBoundary;
-              UVar3 = UVar4;
-            } while (control->textPrefix6C[UVar5 - 2] != 0x20);
-            if ((1 < (int)UVar4) && (control->textPrefix6C[UVar5 - 3] != 0x20)) {
-              UVar4 = UVar5 - 2;
+              scanIndex = codeUnitIndex;
+              wordBoundaryIndex = scanIndex - 1;
+              if (wordBoundaryIndex == 0) goto UiRequiredTextEdit_MoveCursorToPreviousWordBoundary;
+              codeUnitIndex = wordBoundaryIndex;
+            } while (control->textPrefix6C[scanIndex - 2] != 0x20);
+            if ((1 < (int)wordBoundaryIndex) && (control->textPrefix6C[scanIndex - 3] != 0x20)) {
+              wordBoundaryIndex = scanIndex - 2;
             }
           }
 UiRequiredTextEdit_MoveCursorToPreviousWordBoundary:
-          control->cursorIndex = UVar4;
-          control->selectionStart = UVar4;
-          control->selectionEnd = UVar4;
+          control->cursorIndex = wordBoundaryIndex;
+          control->selectionStart = wordBoundaryIndex;
+          control->selectionEnd = wordBoundaryIndex;
         }
       }
       else {
         if (keyCode != 0x10016) goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        UVar3 = control->cursorIndex;
-        if (control->textPrefix6C[UVar3] == 0x20) {
-          for (; (control->textPrefix6C[UVar3] != 0 && (control->textPrefix6C[UVar3] == 0x20));
-              UVar3 = UVar3 + 1) {
+        codeUnitIndex = control->cursorIndex;
+        if (control->textPrefix6C[codeUnitIndex] == 0x20) {
+          for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == 0x20));
+              codeUnitIndex = codeUnitIndex + 1) {
           }
         }
         else {
           do {
-            UVar4 = UVar3;
-            UVar3 = UVar4;
-            if (control->textPrefix6C[UVar4] == 0)
+            wordBoundaryIndex = codeUnitIndex;
+            codeUnitIndex = wordBoundaryIndex;
+            if (control->textPrefix6C[wordBoundaryIndex] == 0)
             goto UiRequiredTextEdit_MoveCursorToNextWordBoundary;
-            UVar3 = UVar4 + 1;
-          } while (control->textPrefix6C[UVar4] != 0x20);
-          if (control->textPrefix6C[UVar4 + 1] == 0x20) {
-            UVar3 = UVar4;
+            codeUnitIndex = wordBoundaryIndex + 1;
+          } while (control->textPrefix6C[wordBoundaryIndex] != 0x20);
+          if (control->textPrefix6C[wordBoundaryIndex + 1] == 0x20) {
+            codeUnitIndex = wordBoundaryIndex;
           }
         }
 UiRequiredTextEdit_MoveCursorToNextWordBoundary:
-        control->cursorIndex = UVar3;
-        control->selectionStart = UVar3;
-        control->selectionEnd = UVar3;
+        control->cursorIndex = codeUnitIndex;
+        control->selectionStart = codeUnitIndex;
+        control->selectionEnd = codeUnitIndex;
       }
     }
     else {
       if (keyCode == 0x10014) {
-        UVar3 = control->cursorIndex;
-        iVar7 = 0x60;
-        if (UVar3 == 0) goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
-        if (UVar3 != control->selectionStart) {
-          iVar7 = 100;
+        codeUnitIndex = control->cursorIndex;
+        countOrFieldOffset = 0x60;
+        if (codeUnitIndex == 0) goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
+        if (codeUnitIndex != control->selectionStart) {
+          countOrFieldOffset = 100;
         }
-        if (control->textPrefix6C[UVar3 - 1] == 0x20) {
+        if (control->textPrefix6C[codeUnitIndex - 1] == 0x20) {
           do {
-            UVar4 = UVar3 - 1;
-            if (UVar4 == 0) break;
-            iVar8 = UVar3 - 2;
-            UVar3 = UVar4;
-          } while (control->textPrefix6C[iVar8] == 0x20);
+            wordBoundaryIndex = codeUnitIndex - 1;
+            if (wordBoundaryIndex == 0) break;
+            shiftCountOrScanIndex = codeUnitIndex - 2;
+            codeUnitIndex = wordBoundaryIndex;
+          } while (control->textPrefix6C[shiftCountOrScanIndex] == 0x20);
         }
         else {
           do {
-            UVar5 = UVar3;
-            UVar4 = UVar5 - 1;
-            if (UVar4 == 0) goto UiRequiredTextEdit_ExtendSelectionToPreviousWordBoundary;
-            UVar3 = UVar4;
-          } while (control->textPrefix6C[UVar5 - 2] != 0x20);
-          if ((1 < (int)UVar4) && (control->textPrefix6C[UVar5 - 3] != 0x20)) {
-            UVar4 = UVar5 - 2;
+            scanIndex = codeUnitIndex;
+            wordBoundaryIndex = scanIndex - 1;
+            if (wordBoundaryIndex == 0) goto UiRequiredTextEdit_ExtendSelectionToPreviousWordBoundary;
+            codeUnitIndex = wordBoundaryIndex;
+          } while (control->textPrefix6C[scanIndex - 2] != 0x20);
+          if ((1 < (int)wordBoundaryIndex) && (control->textPrefix6C[scanIndex - 3] != 0x20)) {
+            wordBoundaryIndex = scanIndex - 2;
           }
         }
 UiRequiredTextEdit_ExtendSelectionToPreviousWordBoundary:
-        control->cursorIndex = UVar4;
-        *(UiTextCodeUnitIndex *)((int)control->textPrefix6C + iVar7 + -0x6c) = UVar4;
+        control->cursorIndex = wordBoundaryIndex;
+        *(UiTextCodeUnitIndex *)((int)control->textPrefix6C + countOrFieldOffset + -0x6c) = wordBoundaryIndex;
       }
       else {
         if (keyCode != 0x10016) goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        UVar3 = control->cursorIndex;
-        iVar7 = 0x60;
-        if ((UVar3 == control->selectionStart) ||
-           (iVar7 = 100, control->textPrefix6C[UVar3] != 0x20)) {
+        codeUnitIndex = control->cursorIndex;
+        countOrFieldOffset = 0x60;
+        if ((codeUnitIndex == control->selectionStart) ||
+           (countOrFieldOffset = 100, control->textPrefix6C[codeUnitIndex] != 0x20)) {
           do {
-            UVar4 = UVar3;
-            UVar3 = UVar4;
-            if (control->textPrefix6C[UVar4] == 0)
+            wordBoundaryIndex = codeUnitIndex;
+            codeUnitIndex = wordBoundaryIndex;
+            if (control->textPrefix6C[wordBoundaryIndex] == 0)
             goto UiRequiredTextEdit_ExtendSelectionToNextWordBoundary;
-            UVar3 = UVar4 + 1;
-          } while (control->textPrefix6C[UVar4] != 0x20);
-          if (control->textPrefix6C[UVar4 + 1] == 0x20) {
-            UVar3 = UVar4;
+            codeUnitIndex = wordBoundaryIndex + 1;
+          } while (control->textPrefix6C[wordBoundaryIndex] != 0x20);
+          if (control->textPrefix6C[wordBoundaryIndex + 1] == 0x20) {
+            codeUnitIndex = wordBoundaryIndex;
           }
         }
         else {
-          for (; (control->textPrefix6C[UVar3] != 0 && (control->textPrefix6C[UVar3] == 0x20));
-              UVar3 = UVar3 + 1) {
+          for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == 0x20));
+              codeUnitIndex = codeUnitIndex + 1) {
           }
         }
 UiRequiredTextEdit_ExtendSelectionToNextWordBoundary:
-        control->cursorIndex = UVar3;
-        *(UiTextCodeUnitIndex *)((int)control->textPrefix6C + iVar7 + -0x6c) = UVar3;
+        control->cursorIndex = codeUnitIndex;
+        *(UiTextCodeUnitIndex *)((int)control->textPrefix6C + countOrFieldOffset + -0x6c) = codeUnitIndex;
       }
 UiRequiredTextEdit_NormalizeSelectionOrder:
       if (control->selectionEnd < control->selectionStart) {
         LOCK();
-        UVar3 = control->selectionEnd;
+        codeUnitIndex = control->selectionEnd;
         control->selectionEnd = control->selectionStart;
         UNLOCK();
-        control->selectionStart = UVar3;
+        control->selectionStart = codeUnitIndex;
       }
     }
   }
@@ -1055,16 +1055,16 @@ UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           UiPixelCoordinate clipRight,UiTextButtonControl *control)
 
 {
-  UiPackedTextStyle UVar1;
-  GraphicsAdapterRecord *pGVar2;
+  UiPackedTextStyle adapterIndex;
+  GraphicsAdapterRecord *adapterRecords;
   word *stream;
   word *replacementPayload;
-  TextResourceResolveEaxCf5 TVar3;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    TVar3 = TextResource_Resolve(control->textResourceId);
-    pGVar2 = g_GraphicsAdapters;
-    stream = TVar3.eax;
+    resolvedText = TextResource_Resolve(control->textResourceId);
+    adapterRecords = g_GraphicsAdapters;
+    stream = resolvedText.eax;
     if (((control->selectable).stateFlags & 0x80) != 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
@@ -1085,15 +1085,15 @@ UiGraphicsAdapterTextButton_DrawFormattedAdapterText
       UiTextButtonControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
       return;
     }
-    UVar1 = control[-1].packedTextStyle;
+    adapterIndex = control[-1].packedTextStyle;
     RichTextCommandStream_PatchPayloadBySelector
-              (0,g_GraphicsAdapters[UVar1].driverDescriptionUtf16,stream);
-    if (pGVar2[UVar1].deviceGuid.Data1 == 0) {
-      TVar3 = TextResource_Resolve(0x111);
-      replacementPayload = TVar3.eax;
+              (0,g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16,stream);
+    if (adapterRecords[adapterIndex].deviceGuid.Data1 == 0) {
+      resolvedText = TextResource_Resolve(0x111);
+      replacementPayload = resolvedText.eax;
     }
     else {
-      replacementPayload = pGVar2[UVar1].deviceNameUtf16;
+      replacementPayload = adapterRecords[adapterIndex].deviceNameUtf16;
     }
     RichTextCommandStream_PatchPayloadBySelector(1,replacementPayload,stream);
     UiTextButtonControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
@@ -1154,42 +1154,42 @@ UiTextEditControl_DrawTextSelectionAndCaret
 
 {
   UiTextCodeUnitCount prefixLength;
-  UiPixelCoordinate UVar1;
-  UiPixelCoordinate UVar2;
-  int iVar3;
-  int iVar4;
+  UiPixelCoordinate startOrCaretWidth;
+  UiPixelCoordinate selectionEndWidth;
+  int styleVerticalOffset;
+  int leftOrTextOffsetX;
   dword tileBottom;
-  int iVar5;
-  int iVar6;
+  int topOrTextOffsetY;
+  int bottomOrCaretY;
   UiPackedTextStyle packedStyle;
-  int iVar7;
-  bool bVar8;
-  GraphicsTextureSizeEaxEdxCf9 GVar9;
-  FontGlyphSizeEaxEdxCf9 FVar10;
-  dword dVar11;
-  GraphicsTextureSourceAsset *arg7;
-  SoftwareFramebufferAccess *arg8;
+  int rightOrCaretX;
+  bool framebufferUnavailable;
+  GraphicsTextureSizeEaxEdxCf9 cornerTileSize;
+  FontGlyphSizeEaxEdxCf9 fontSize;
+  dword borderWidthOrCaretFrame;
+  GraphicsTextureSourceAsset *caretTextureSource;
+  SoftwareFramebufferAccess *caretFramebuffer;
   
-  bVar8 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar8) {
+  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  if (!framebufferUnavailable) {
     if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) == 0) {
-      dVar11 = 0;
-      iVar4 = (control->base).left;
-      iVar5 = (control->base).top;
-      iVar7 = (control->base).right;
-      iVar6 = (control->base).bottom;
+      borderWidthOrCaretFrame = 0;
+      leftOrTextOffsetX = (control->base).left;
+      topOrTextOffsetY = (control->base).top;
+      rightOrCaretX = (control->base).right;
+      bottomOrCaretY = (control->base).bottom;
     }
     else {
-      iVar7 = (control->base).layoutWidth;
-      iVar6 = (control->base).layoutHeight;
-      GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6d,g_UiWindowTextureSource);
-      tileBottom = GVar9.logicalHeightPixels;
-      dVar11 = GVar9.logicalWidthPixels;
-      iVar7 = iVar7 - dVar11;
-      iVar6 = iVar6 - tileBottom;
+      rightOrCaretX = (control->base).layoutWidth;
+      bottomOrCaretY = (control->base).layoutHeight;
+      cornerTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6d,g_UiWindowTextureSource);
+      tileBottom = cornerTileSize.logicalHeightPixels;
+      borderWidthOrCaretFrame = cornerTileSize.logicalWidthPixels;
+      rightOrCaretX = rightOrCaretX - borderWidthOrCaretFrame;
+      bottomOrCaretY = bottomOrCaretY - tileBottom;
       if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_TILED_INTERIOR) != 0) {
         UiWindow_BlitTiledInterior
-                  (clipTop,clipLeft,clipBottom,clipRight,0x7a,iVar6,iVar7,tileBottom,dVar11,control)
+                  (clipTop,clipLeft,clipBottom,clipRight,0x7a,bottomOrCaretY,rightOrCaretX,tileBottom,borderWidthOrCaretFrame,control)
         ;
       }
       (*g_GraphicsTextureSourceBlitSourceAlpha)
@@ -1197,55 +1197,55 @@ UiTextEditControl_DrawTextSelectionAndCaret
                  ,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
-                 iVar7 + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
+                 rightOrCaretX + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY + (control->base).top,
                  (control->base).left,0x6c,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar6 + (control->base).top,
-                 iVar7 + (control->base).left,0x6d,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY + (control->base).top,
+                 rightOrCaretX + (control->base).left,0x6d,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x6e,iVar7,0,dVar11,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x6e,rightOrCaretX,0,borderWidthOrCaretFrame,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x6f,iVar6,tileBottom,0,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x6f,bottomOrCaretY,tileBottom,0,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x70,iVar6,tileBottom,iVar7,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x70,bottomOrCaretY,tileBottom,rightOrCaretX,control);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x71,iVar7,iVar6,dVar11,control);
-      iVar5 = tileBottom + (control->base).top;
-      iVar7 = iVar7 + (control->base).left;
-      iVar4 = dVar11 + (control->base).left;
-      iVar6 = iVar6 + (control->base).top;
+                (clipTop,clipLeft,clipBottom,clipRight,0x71,rightOrCaretX,bottomOrCaretY,borderWidthOrCaretFrame,control);
+      topOrTextOffsetY = tileBottom + (control->base).top;
+      rightOrCaretX = rightOrCaretX + (control->base).left;
+      leftOrTextOffsetX = borderWidthOrCaretFrame + (control->base).left;
+      bottomOrCaretY = bottomOrCaretY + (control->base).top;
     }
-    if (clipRight < iVar4) {
-      clipRight = iVar4;
+    if (clipRight < leftOrTextOffsetX) {
+      clipRight = leftOrTextOffsetX;
     }
-    if (clipBottom < iVar5) {
-      clipBottom = iVar5;
+    if (clipBottom < topOrTextOffsetY) {
+      clipBottom = topOrTextOffsetY;
     }
-    FVar10 = FontGlyph_GetLogicalSizeActiveRegs(0);
-    if (iVar7 < clipLeft) {
-      clipLeft = iVar7;
+    fontSize = FontGlyph_GetLogicalSizeActiveRegs(0);
+    if (rightOrCaretX < clipLeft) {
+      clipLeft = rightOrCaretX;
     }
-    iVar4 = (dVar11 - control->horizontalScrollPixels) + 2;
-    if (iVar6 < clipTop) {
-      clipTop = iVar6;
+    leftOrTextOffsetX = (borderWidthOrCaretFrame - control->horizontalScrollPixels) + 2;
+    if (bottomOrCaretY < clipTop) {
+      clipTop = bottomOrCaretY;
     }
-    iVar5 = (int)((control->base).layoutHeight - FVar10.lineHeight) >> 1;
+    topOrTextOffsetY = (int)((control->base).layoutHeight - fontSize.lineHeight) >> 1;
     prefixLength = control->selectionEnd;
     if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) == 0) &&
        (control->selectionStart != prefixLength)) {
-      UVar1 = UiTextEditControl_MeasurePrefixWidth(control->selectionStart,control);
-      UVar2 = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
-      if (UVar1 == 0) {
-        UVar1 = -2;
+      startOrCaretWidth = UiTextEditControl_MeasurePrefixWidth(control->selectionStart,control);
+      selectionEndWidth = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
+      if (startOrCaretWidth == 0) {
+        startOrCaretWidth = -2;
       }
-      iVar7 = UVar2 + iVar4;
-      if (clipLeft < UVar2 + iVar4) {
-        iVar7 = clipLeft;
+      rightOrCaretX = selectionEndWidth + leftOrTextOffsetX;
+      if (clipLeft < selectionEndWidth + leftOrTextOffsetX) {
+        rightOrCaretX = clipLeft;
       }
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x8b,iVar7,iVar5 + -1,UVar1 + iVar4,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x8b,rightOrCaretX,topOrTextOffsetY + -1,startOrCaretWidth + leftOrTextOffsetX,control);
     }
     packedStyle = g_UiTextEditActiveTextStyle;
     if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
@@ -1263,31 +1263,31 @@ UiTextEditControl_DrawTextSelectionAndCaret
     if ((control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE) == 0) {
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textPrefix6C,
-                 iVar5 + (control->base).top,iVar4 + (control->base).left);
+                 topOrTextOffsetY + (control->base).top,leftOrTextOffsetX + (control->base).left);
     }
     else {
-      UVar1 = UiTextEditControl_MeasurePrefixWidth(control->cursorIndex,control);
-      iVar7 = UVar1 + -2 + iVar4 + (control->base).left;
-      dVar11 = 0x89;
+      startOrCaretWidth = UiTextEditControl_MeasurePrefixWidth(control->cursorIndex,control);
+      rightOrCaretX = startOrCaretWidth + -2 + leftOrTextOffsetX + (control->base).left;
+      borderWidthOrCaretFrame = 0x89;
       if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
-        dVar11 = 0x8a;
+        borderWidthOrCaretFrame = 0x8a;
       }
-      iVar3 = (int)(packedStyle << 0x10) >> 0x18;
-      iVar6 = iVar5 + -1 + (control->base).top + iVar3;
+      styleVerticalOffset = (int)(packedStyle << 0x10) >> 0x18;
+      bottomOrCaretY = topOrTextOffsetY + -1 + (control->base).top + styleVerticalOffset;
       if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
-        iVar6 = iVar6 + 1;
+        bottomOrCaretY = bottomOrCaretY + 1;
       }
-      arg7 = g_UiWindowTextureSource;
-      arg8 = g_FramebufferAccess;
+      caretTextureSource = g_UiWindowTextureSource;
+      caretFramebuffer = g_FramebufferAccess;
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar6,iVar7 + iVar3,0x7f000000,0x89,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY,rightOrCaretX + styleVerticalOffset,0x7f000000,0x89,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textPrefix6C,
-                 iVar5 + (control->base).top,iVar4 + (control->base).left);
+                 topOrTextOffsetY + (control->base).top,leftOrTextOffsetX + (control->base).left);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar5 + (control->base).top + -1,iVar7,dVar11
-                 ,arg7,arg8);
+                (clipTop,clipLeft,clipBottom,clipRight,topOrTextOffsetY + (control->base).top + -1,rightOrCaretX,borderWidthOrCaretFrame
+                 ,caretTextureSource,caretFramebuffer);
     }
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -1337,30 +1337,30 @@ UiTextEditControl_UpdateSelectionFromPointer
           UiTextEditControl *control)
 
 {
-  UiTextCodeUnitIndex UVar1;
-  UiNodeVtable *pUVar2;
-  uint uVar3;
+  UiTextCodeUnitIndex previousCursorOrSelectionStart;
+  UiNodeVtable *nodeVtable;
+  uint movedBoundaryIndex;
   
   if ((control->editStateFlags & UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE) != 0) {
-    UVar1 = control->cursorIndex;
-    uVar3 = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
-    control->cursorIndex = uVar3;
-    if (UVar1 == control->selectionStart) {
-      control->selectionStart = uVar3;
-      uVar3 = control->selectionEnd;
+    previousCursorOrSelectionStart = control->cursorIndex;
+    movedBoundaryIndex = UiTextEditControl_FindCursorIndexAtX(pointerX,control);
+    control->cursorIndex = movedBoundaryIndex;
+    if (previousCursorOrSelectionStart == control->selectionStart) {
+      control->selectionStart = movedBoundaryIndex;
+      movedBoundaryIndex = control->selectionEnd;
     }
     else {
-      control->selectionEnd = uVar3;
+      control->selectionEnd = movedBoundaryIndex;
     }
-    pUVar2 = (control->base).vtable;
-    if (uVar3 < control->selectionStart) {
+    nodeVtable = (control->base).vtable;
+    if (movedBoundaryIndex < control->selectionStart) {
       LOCK();
-      UVar1 = control->selectionStart;
-      control->selectionStart = uVar3;
+      previousCursorOrSelectionStart = control->selectionStart;
+      control->selectionStart = movedBoundaryIndex;
       UNLOCK();
-      control->selectionEnd = UVar1;
+      control->selectionEnd = previousCursorOrSelectionStart;
     }
-    (*pUVar2->layout)(&control->base);
+    (*nodeVtable->layout)(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
   return;
@@ -1453,59 +1453,59 @@ UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
-  void *pvVar1;
-  int iVar2;
-  int iVar3;
-  UiListRowCount UVar4;
-  void **ppvVar5;
-  void **ppvVar6;
-  CompareFlagsCfZf2 CVar7;
-  void *pvVar8;
+  void *swappedRecord;
+  int comparisonsOrRowTop;
+  int remainingPasses;
+  UiListRowCount remainingRows;
+  void **passAnchorSlot;
+  void **rowSlotCursor;
+  CompareFlagsCfZf2 compareFlags;
+  void *selectedRecord;
   
-  ppvVar6 = control->rowSlots;
-  if (ppvVar6 != (void **)0x0) {
-    iVar2 = control->rowCount - 1;
-    if ((iVar2 != 0) && (-1 < iVar2)) {
-      pvVar8 = *control->selectedRowSlot;
-      ppvVar5 = ppvVar6;
-      iVar3 = iVar2;
+  rowSlotCursor = control->rowSlots;
+  if (rowSlotCursor != (void **)0x0) {
+    comparisonsOrRowTop = control->rowCount - 1;
+    if ((comparisonsOrRowTop != 0) && (-1 < comparisonsOrRowTop)) {
+      selectedRecord = *control->selectedRowSlot;
+      passAnchorSlot = rowSlotCursor;
+      remainingPasses = comparisonsOrRowTop;
       do {
         do {
-          ppvVar6 = ppvVar6 + 1;
-          CVar7 = UiPointerList_CompareExpandedTextFlags
-                            ((word *)((int)*ppvVar6 + fieldOffset),
-                             (word *)((int)*ppvVar5 + fieldOffset));
-          if (!CVar7.carry) {
+          rowSlotCursor = rowSlotCursor + 1;
+          compareFlags = UiPointerList_CompareExpandedTextFlags
+                            ((word *)((int)*rowSlotCursor + fieldOffset),
+                             (word *)((int)*passAnchorSlot + fieldOffset));
+          if (!compareFlags.carry) {
             LOCK();
-            pvVar1 = *ppvVar6;
-            *ppvVar6 = *ppvVar5;
+            swappedRecord = *rowSlotCursor;
+            *rowSlotCursor = *passAnchorSlot;
             UNLOCK();
-            *ppvVar5 = pvVar1;
+            *passAnchorSlot = swappedRecord;
           }
-          iVar2 = iVar2 + -1;
-        } while (iVar2 != 0);
-        ppvVar6 = ppvVar5 + 1;
-        iVar2 = iVar3 + -1;
-        ppvVar5 = ppvVar6;
-        iVar3 = iVar2;
-      } while (iVar2 != 0);
-      ppvVar6 = control->rowSlots;
-      UVar4 = control->rowCount;
-      iVar2 = 0;
+          comparisonsOrRowTop = comparisonsOrRowTop + -1;
+        } while (comparisonsOrRowTop != 0);
+        rowSlotCursor = passAnchorSlot + 1;
+        comparisonsOrRowTop = remainingPasses + -1;
+        passAnchorSlot = rowSlotCursor;
+        remainingPasses = comparisonsOrRowTop;
+      } while (comparisonsOrRowTop != 0);
+      rowSlotCursor = control->rowSlots;
+      remainingRows = control->rowCount;
+      comparisonsOrRowTop = 0;
       do {
-        if (pvVar8 == *ppvVar6)
+        if (selectedRecord == *rowSlotCursor)
         goto 
         UiPointerList_SortByExpandedTextFieldAscending_CommitResolvedSelectedRowSlotAndClampViewport
         ;
-        iVar2 = iVar2 + control->rowHeight;
-        ppvVar6 = ppvVar6 + 1;
-        UVar4 = UVar4 - 1;
-      } while (UVar4 != 0);
-      ppvVar6 = control->rowSlots;
+        comparisonsOrRowTop = comparisonsOrRowTop + control->rowHeight;
+        rowSlotCursor = rowSlotCursor + 1;
+        remainingRows = remainingRows - 1;
+      } while (remainingRows != 0);
+      rowSlotCursor = control->rowSlots;
 UiPointerList_SortByExpandedTextFieldAscending_CommitResolvedSelectedRowSlotAndClampViewport:
-      control->selectedRowSlot = ppvVar6;
+      control->selectedRowSlot = rowSlotCursor;
       UiScrollableControl_ClampOffsetsToViewport
-                (iVar2 + 1 + control->rowHeight,(control->base).rightOffset,iVar2,0,
+                (comparisonsOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,comparisonsOrRowTop,0,
                  (UiScrollableControl *)(control->base).parent);
     }
   }
@@ -1527,59 +1527,59 @@ UiPointerList_SortByExpandedTextFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
-  void *pvVar1;
-  int iVar2;
-  int iVar3;
-  UiListRowCount UVar4;
-  void **ppvVar5;
-  void **ppvVar6;
-  CompareFlagsCfZf2 CVar7;
-  void *pvVar8;
+  void *swappedRecord;
+  int comparisonsOrRowTop;
+  int remainingPasses;
+  UiListRowCount remainingRows;
+  void **passAnchorSlot;
+  void **rowSlotCursor;
+  CompareFlagsCfZf2 compareFlags;
+  void *selectedRecord;
   
-  ppvVar6 = control->rowSlots;
-  if (ppvVar6 != (void **)0x0) {
-    iVar2 = control->rowCount - 1;
-    if ((iVar2 != 0) && (-1 < iVar2)) {
-      pvVar8 = *control->selectedRowSlot;
-      ppvVar5 = ppvVar6;
-      iVar3 = iVar2;
+  rowSlotCursor = control->rowSlots;
+  if (rowSlotCursor != (void **)0x0) {
+    comparisonsOrRowTop = control->rowCount - 1;
+    if ((comparisonsOrRowTop != 0) && (-1 < comparisonsOrRowTop)) {
+      selectedRecord = *control->selectedRowSlot;
+      passAnchorSlot = rowSlotCursor;
+      remainingPasses = comparisonsOrRowTop;
       do {
         do {
-          ppvVar6 = ppvVar6 + 1;
-          CVar7 = UiPointerList_CompareExpandedTextFlags
-                            ((word *)((int)*ppvVar6 + fieldOffset),
-                             (word *)((int)*ppvVar5 + fieldOffset));
-          if (CVar7.carry || CVar7.zero) {
+          rowSlotCursor = rowSlotCursor + 1;
+          compareFlags = UiPointerList_CompareExpandedTextFlags
+                            ((word *)((int)*rowSlotCursor + fieldOffset),
+                             (word *)((int)*passAnchorSlot + fieldOffset));
+          if (compareFlags.carry || compareFlags.zero) {
             LOCK();
-            pvVar1 = *ppvVar6;
-            *ppvVar6 = *ppvVar5;
+            swappedRecord = *rowSlotCursor;
+            *rowSlotCursor = *passAnchorSlot;
             UNLOCK();
-            *ppvVar5 = pvVar1;
+            *passAnchorSlot = swappedRecord;
           }
-          iVar2 = iVar2 + -1;
-        } while (iVar2 != 0);
-        ppvVar6 = ppvVar5 + 1;
-        iVar2 = iVar3 + -1;
-        ppvVar5 = ppvVar6;
-        iVar3 = iVar2;
-      } while (iVar2 != 0);
-      ppvVar6 = control->rowSlots;
-      UVar4 = control->rowCount;
-      iVar2 = 0;
+          comparisonsOrRowTop = comparisonsOrRowTop + -1;
+        } while (comparisonsOrRowTop != 0);
+        rowSlotCursor = passAnchorSlot + 1;
+        comparisonsOrRowTop = remainingPasses + -1;
+        passAnchorSlot = rowSlotCursor;
+        remainingPasses = comparisonsOrRowTop;
+      } while (comparisonsOrRowTop != 0);
+      rowSlotCursor = control->rowSlots;
+      remainingRows = control->rowCount;
+      comparisonsOrRowTop = 0;
       do {
-        if (pvVar8 == *ppvVar6)
+        if (selectedRecord == *rowSlotCursor)
         goto 
         UiPointerList_SortByExpandedTextFieldDescending_CommitResolvedSelectedRowSlotAndClampViewport
         ;
-        iVar2 = iVar2 + control->rowHeight;
-        ppvVar6 = ppvVar6 + 1;
-        UVar4 = UVar4 - 1;
-      } while (UVar4 != 0);
-      ppvVar6 = control->rowSlots;
+        comparisonsOrRowTop = comparisonsOrRowTop + control->rowHeight;
+        rowSlotCursor = rowSlotCursor + 1;
+        remainingRows = remainingRows - 1;
+      } while (remainingRows != 0);
+      rowSlotCursor = control->rowSlots;
 UiPointerList_SortByExpandedTextFieldDescending_CommitResolvedSelectedRowSlotAndClampViewport:
-      control->selectedRowSlot = ppvVar6;
+      control->selectedRowSlot = rowSlotCursor;
       UiScrollableControl_ClampOffsetsToViewport
-                (iVar2 + 1 + control->rowHeight,(control->base).rightOffset,iVar2,0,
+                (comparisonsOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,comparisonsOrRowTop,0,
                  (UiScrollableControl *)(control->base).parent);
     }
   }
@@ -1600,20 +1600,20 @@ UiNumericPairTextButton_DrawFormattedValues
           UiPixelCoordinate clipRight,UiTextButtonControl *control)
 
 {
-  TextResourceResolveEaxCf5 TVar1;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    TVar1 = TextResource_Resolve(control->textResourceId);
+    resolvedText = TextResource_Resolve(control->textResourceId);
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)control[1].selectable.base.nextSibling,
                (word *)&g_UiNumericPairFirstValueScratchUtf16);
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)control[1].selectable.base.firstChild,
                (word *)&g_UiNumericPairSecondValueScratchUtf16);
-    RichTextCommandStream_PatchPayloadBySelector(0,&g_UiNumericPairFirstValueScratchUtf16,TVar1.eax)
+    RichTextCommandStream_PatchPayloadBySelector(0,&g_UiNumericPairFirstValueScratchUtf16,resolvedText.eax)
     ;
     RichTextCommandStream_PatchPayloadBySelector
-              (1,&g_UiNumericPairSecondValueScratchUtf16,TVar1.eax);
+              (1,&g_UiNumericPairSecondValueScratchUtf16,resolvedText.eax);
     UiTextButtonControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
   }
   return;
@@ -1633,13 +1633,13 @@ UiPayloadPairTextButton_DrawFormattedPayloads
           UiPixelCoordinate clipRight,UiTextButtonControl *control)
 
 {
-  TextResourceResolveEaxCf5 TVar1;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    TVar1 = TextResource_Resolve(control->textResourceId);
-    RichTextCommandStream_PatchPayloadBySelector(0,control[1].selectable.base.nextSibling,TVar1.eax)
+    resolvedText = TextResource_Resolve(control->textResourceId);
+    RichTextCommandStream_PatchPayloadBySelector(0,control[1].selectable.base.nextSibling,resolvedText.eax)
     ;
-    RichTextCommandStream_PatchPayloadBySelector(1,control[1].selectable.base.firstChild,TVar1.eax);
+    RichTextCommandStream_PatchPayloadBySelector(1,control[1].selectable.base.firstChild,resolvedText.eax);
     UiTextButtonControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
   }
   return;
@@ -1662,82 +1662,82 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
               UiPixelCoordinate clipLeft)
 
 {
-  int iVar1;
-  UiNodeBase *pUVar2;
-  UiNodeBase *pUVar3;
+  int targetRight;
+  UiNodeBase *tooltipTarget;
+  UiNodeBase *rootNode;
   word *commandStream;
-  dword dVar4;
-  sdword arg5;
-  sdword sVar5;
-  int iVar6;
-  int iVar7;
-  int arg4;
-  bool bVar8;
-  RichTextExtentRegs RVar9;
-  TextResourceResolveEaxCf5 TVar10;
-  GraphicsTextureSizeEaxEdxCf9 GVar11;
+  dword edgeTileWidth;
+  sdword frameLeft;
+  sdword frameRight;
+  int frameWidthOrMiddleEnd;
+  int targetLeftOrTileX;
+  int frameTop;
+  bool framebufferUnavailable;
+  RichTextExtentRegs textExtent;
+  TextResourceResolveEaxCf5 resolvedText;
+  GraphicsTextureSizeEaxEdxCf9 tileSize;
   
-  pUVar2 = g_UiTooltipState.targetNode;
+  tooltipTarget = g_UiTooltipState.targetNode;
   if ((g_UiTooltipState.targetNode != (UiNodeBase *)0x0) && (g_UiTooltipState.countdownFrames == 0))
   {
-    pUVar3 = UiNode_GetRoot(g_UiTooltipState.targetNode);
-    commandStream = (word *)pUVar2[-1].nodeFlags;
-    if ((pUVar2->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
-      TVar10 = TextResource_Resolve((TextResourceId)commandStream);
-      commandStream = TVar10.eax;
+    rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
+    commandStream = (word *)tooltipTarget[-1].nodeFlags;
+    if ((tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
+      resolvedText = TextResource_Resolve((TextResourceId)commandStream);
+      commandStream = resolvedText.eax;
     }
-    RVar9 = RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
-    GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0xbc,g_UiWindowTextureSource);
-    dVar4 = GVar11.logicalWidthPixels;
-    iVar6 = RVar9.widthPixels + dVar4 * 2;
-    iVar7 = pUVar2->left;
-    arg4 = pUVar2->top - GVar11.logicalHeightPixels;
-    iVar1 = pUVar2->right;
-    bVar8 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar8) {
-      arg5 = (iVar7 + iVar1) - iVar6 >> 1;
-      if (pUVar3 == (UiNodeBase *)0xffffffff) {
-        pUVar3 = pUVar2;
+    textExtent = RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
+    tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xbc,g_UiWindowTextureSource);
+    edgeTileWidth = tileSize.logicalWidthPixels;
+    frameWidthOrMiddleEnd = textExtent.widthPixels + edgeTileWidth * 2;
+    targetLeftOrTileX = tooltipTarget->left;
+    frameTop = tooltipTarget->top - tileSize.logicalHeightPixels;
+    targetRight = tooltipTarget->right;
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
+      frameLeft = (targetLeftOrTileX + targetRight) - frameWidthOrMiddleEnd >> 1;
+      if (rootNode == (UiNodeBase *)0xffffffff) {
+        rootNode = tooltipTarget;
       }
-      sVar5 = iVar6 + arg5;
-      if (arg5 < pUVar3->left) {
-        sVar5 = sVar5 - (arg5 - pUVar3->left);
-        arg5 = pUVar3->left;
+      frameRight = frameWidthOrMiddleEnd + frameLeft;
+      if (frameLeft < rootNode->left) {
+        frameRight = frameRight - (frameLeft - rootNode->left);
+        frameLeft = rootNode->left;
       }
-      if (pUVar3->right < sVar5) {
-        arg5 = arg5 - (sVar5 - pUVar3->right);
-        sVar5 = pUVar3->right;
+      if (rootNode->right < frameRight) {
+        frameLeft = frameLeft - (frameRight - rootNode->right);
+        frameRight = rootNode->right;
       }
-      if (arg4 < pUVar3->top) {
-        arg4 = arg4 + pUVar2->layoutHeight + GVar11.logicalHeightPixels;
+      if (frameTop < rootNode->top) {
+        frameTop = frameTop + tooltipTarget->layoutHeight + tileSize.logicalHeightPixels;
       }
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipBottom,clipRight,clipTop,clipLeft,arg4,arg5,0xbc,g_UiWindowTextureSource,
+                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameLeft,0xbc,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      iVar6 = sVar5 - dVar4;
+      frameWidthOrMiddleEnd = frameRight - edgeTileWidth;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipBottom,clipRight,clipTop,clipLeft,arg4,iVar6,0xbe,g_UiWindowTextureSource,
+                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameWidthOrMiddleEnd,0xbe,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      if (clipRight < iVar6) {
-        iVar6 = clipRight;
+      if (clipRight < frameWidthOrMiddleEnd) {
+        frameWidthOrMiddleEnd = clipRight;
       }
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)(0xbd,g_UiWindowTextureSource);
-      iVar7 = dVar4 + arg5;
+      tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xbd,g_UiWindowTextureSource);
+      targetLeftOrTileX = edgeTileWidth + frameLeft;
       do {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipBottom,iVar6,clipTop,clipLeft,arg4,iVar7,0xbd,g_UiWindowTextureSource,
+                  (clipBottom,frameWidthOrMiddleEnd,clipTop,clipLeft,frameTop,targetLeftOrTileX,0xbd,g_UiWindowTextureSource,
                    g_FramebufferAccess);
-        iVar7 = iVar7 + GVar11.logicalWidthPixels;
-      } while (iVar7 < iVar6);
+        targetLeftOrTileX = targetLeftOrTileX + tileSize.logicalWidthPixels;
+      } while (targetLeftOrTileX < frameWidthOrMiddleEnd);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,g_UiTooltipTextStyle,commandStream,arg4 + 3,
-                 dVar4 + arg5);
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiTooltipTextStyle,commandStream,frameTop + 3,
+                 edgeTileWidth + frameLeft);
       (*g_GraphicsFramebufferEndAccess)();
     }
   }
   if (g_UiRootNode == (UiRootNode *)0xffffffff) {
-    bVar8 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar8) {
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
       (*g_GraphicsFramebufferFillRectArgb)
                 (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0
                  ,0,0x80000000,g_FramebufferAccess);
@@ -1758,12 +1758,12 @@ bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundaryCf(void)
 
 {
   bool rootWasValid;
-  bool bVar1;
+  bool popStopped;
   
   while (((GraphicsTextureSourceAsset *)g_UiRootNode != g_UiWindowTextureSource &&
          (g_UiRootNode != (UiRootNode *)0xffffffff))) {
-    bVar1 = UiRootStack_PopCf(g_UiRootNode);
-    if (bVar1) {
+    popStopped = UiRootStack_PopCf(g_UiRootNode);
+    if (popStopped) {
       return true;
     }
   }
@@ -1782,7 +1782,7 @@ UiFramedTextButtonControl_Relocate
           (UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control)
 
 {
-  sdword *psVar1;
+  sdword *bottomOffsetField;
   sdword *frameEdgeOffsetField;
   sdword *edgeOffsetField;
   sdword *trailingEdgeOffsetField;
@@ -1796,8 +1796,8 @@ UiFramedTextButtonControl_Relocate
     *frameEdgeOffsetField = *frameEdgeOffsetField - frameInset;
     trailingEdgeOffsetField = &(control->selectable).base.rightOffset;
     *trailingEdgeOffsetField = *trailingEdgeOffsetField + frameInset;
-    psVar1 = &(control->selectable).base.bottomOffset;
-    *psVar1 = *psVar1 + frameInset;
+    bottomOffsetField = &(control->selectable).base.bottomOffset;
+    *bottomOffsetField = *bottomOffsetField + frameInset;
   }
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
   return;
@@ -1820,151 +1820,151 @@ UiFramedTextButtonControl_DrawClipped
 {
   dword tileEnd;
   word *commandStream;
-  dword dVar1;
-  int iVar2;
+  dword frameTileOrTextWidth;
+  int focusTileXOrTop;
   dword tileStart;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
-  bool bVar6;
-  RichTextExtentRegs RVar7;
-  TextResourceResolveEaxCf5 TVar8;
-  GraphicsTextureSizeEaxEdxCf9 GVar9;
-  GraphicsTextureSizeEaxEdxCf9 GVar10;
+  int bottomEdgeOrTextX;
+  uint textStyle;
+  int rightEdgeOrTextY;
+  bool framebufferUnavailable;
+  RichTextExtentRegs textExtent;
+  TextResourceResolveEaxCf5 resolvedText;
+  GraphicsTextureSizeEaxEdxCf9 tileSizeOrEndCapSize;
+  GraphicsTextureSizeEaxEdxCf9 focusTileSize;
   int baselineY;
   int drawX;
   
-  bVar6 = (*g_GraphicsFramebufferBeginAccess)();
-  if (bVar6) goto UiFramedTextButtonControl_DrawClipped_DrawChildrenIfEnabledAndReturn;
+  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  if (framebufferUnavailable) goto UiFramedTextButtonControl_DrawClipped_DrawChildrenIfEnabledAndReturn;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & 4) == 0) {
-      dVar1 = 0x4a;
+      frameTileOrTextWidth = 0x4a;
     }
     else {
-      dVar1 = 0x94;
+      frameTileOrTextWidth = 0x94;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-      dVar1 = dVar1 + 8;
+      frameTileOrTextWidth = frameTileOrTextWidth + 8;
     }
 UiFramedTextButtonControl_DrawClipped_RenderSelectedFrameTextAndFocusChrome:
-    GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar1,g_UiWindowTextureSource);
-    tileStart = GVar9.logicalHeightPixels;
-    tileEnd = GVar9.logicalWidthPixels;
-    iVar5 = (control->selectable).base.layoutWidth - tileEnd;
-    iVar3 = (control->selectable).base.layoutHeight - tileStart;
+    tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(frameTileOrTextWidth,g_UiWindowTextureSource);
+    tileStart = tileSizeOrEndCapSize.logicalHeightPixels;
+    tileEnd = tileSizeOrEndCapSize.logicalWidthPixels;
+    rightEdgeOrTextY = (control->selectable).base.layoutWidth - tileEnd;
+    bottomEdgeOrTextX = (control->selectable).base.layoutHeight - tileStart;
     if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
        (((control->selectable).stateFlags & 0x800) == 0)) {
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
-                 (control->selectable).base.left,dVar1,g_UiWindowTextureSource,g_FramebufferAccess);
+                 (control->selectable).base.left,frameTileOrTextWidth,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
-                 iVar5 + (control->selectable).base.left,dVar1 + 1,g_UiWindowTextureSource,
+                 rightEdgeOrTextY + (control->selectable).base.left,frameTileOrTextWidth + 1,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar3 + (control->selectable).base.top,
-                 (control->selectable).base.left,dVar1 + 2,g_UiWindowTextureSource,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + (control->selectable).base.top,
+                 (control->selectable).base.left,frameTileOrTextWidth + 2,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar3 + (control->selectable).base.top,
-                 iVar5 + (control->selectable).base.left,dVar1 + 3,g_UiWindowTextureSource,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + (control->selectable).base.top,
+                 rightEdgeOrTextY + (control->selectable).base.left,frameTileOrTextWidth + 3,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,dVar1 + 4,iVar5,0,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 4,rightEdgeOrTextY,0,tileEnd,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,dVar1 + 5,iVar3,tileStart,0,control);
+                (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 5,bottomEdgeOrTextX,tileStart,0,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,dVar1 + 6,iVar3,tileStart,iVar5,control);
+                (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 6,bottomEdgeOrTextX,tileStart,rightEdgeOrTextY,control);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,dVar1 + 7,iVar5,iVar3,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 7,rightEdgeOrTextY,bottomEdgeOrTextX,tileEnd,control);
     }
-    TVar8 = TextResource_Resolve(control->textResourceId);
-    commandStream = TVar8.eax;
-    RVar7 = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
-    dVar1 = RVar7.widthPixels;
-    iVar3 = (int)((control->selectable).base.layoutWidth - dVar1) >> 1;
-    iVar5 = (int)((control->selectable).base.layoutHeight - RVar7.heightPixels) >> 1;
-    uVar4 = g_UiTextStyleDisabled;
+    resolvedText = TextResource_Resolve(control->textResourceId);
+    commandStream = resolvedText.eax;
+    textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
+    frameTileOrTextWidth = textExtent.widthPixels;
+    bottomEdgeOrTextX = (int)((control->selectable).base.layoutWidth - frameTileOrTextWidth) >> 1;
+    rightEdgeOrTextY = (int)((control->selectable).base.layoutHeight - textExtent.heightPixels) >> 1;
+    textStyle = g_UiTextStyleDisabled;
     if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-       (uVar4 = g_UiTextStyleNormal,
+       (textStyle = g_UiTextStyleNormal,
        ((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
-      uVar4 = g_UiTextStyleSelected;
+      textStyle = g_UiTextStyleSelected;
     }
     if (((control->selectable).stateFlags & 0x100) == 0) {
       control->packedTextStyle = control->packedTextStyle & 0xff0000;
     }
     else {
-      uVar4 = uVar4 & 0xffffff;
+      textStyle = textStyle & 0xffffff;
     }
     if (((control->selectable).stateFlags & 0x200) == 0) {
       control->packedTextStyle = control->packedTextStyle & 0xff000000;
     }
     else {
-      uVar4 = uVar4 & 0xff00ffff;
+      textStyle = textStyle & 0xff00ffff;
     }
-    uVar4 = uVar4 | control->packedTextStyle;
+    textStyle = textStyle | control->packedTextStyle;
     if ((((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) ||
        (((control->selectable).stateFlags & 0x1000) != 0)) {
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,uVar4,commandStream,
-                 iVar5 + (control->selectable).base.top,iVar3 + (control->selectable).base.left);
+                (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,
+                 rightEdgeOrTextY + (control->selectable).base.top,bottomEdgeOrTextX + (control->selectable).base.left);
     }
     else {
-      iVar3 = iVar3 + (control->selectable).base.left;
-      iVar5 = iVar5 + (control->selectable).base.top;
-      baselineY = iVar3;
-      drawX = iVar5;
+      bottomEdgeOrTextX = bottomEdgeOrTextX + (control->selectable).base.left;
+      rightEdgeOrTextY = rightEdgeOrTextY + (control->selectable).base.top;
+      baselineY = bottomEdgeOrTextX;
+      drawX = rightEdgeOrTextY;
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar5,iVar3 + -2,0x7f000000,0x86,
+                (clipTop,clipLeft,clipBottom,clipRight,rightEdgeOrTextY,bottomEdgeOrTextX + -2,0x7f000000,0x86,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-      GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-      iVar2 = iVar3 + -2 + GVar10.logicalWidthPixels;
-      GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-      iVar3 = ((iVar3 + 4) - GVar9.logicalWidthPixels) + dVar1;
+      tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
+      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+      focusTileXOrTop = bottomEdgeOrTextX + -2 + focusTileSize.logicalWidthPixels;
+      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+      bottomEdgeOrTextX = ((bottomEdgeOrTextX + 4) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar5,iVar3,0x7f000000,0x88,
+                (clipTop,clipLeft,clipBottom,clipRight,rightEdgeOrTextY,bottomEdgeOrTextX,0x7f000000,0x88,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      if (clipLeft < iVar3) {
-        iVar3 = clipLeft;
+      if (clipLeft < bottomEdgeOrTextX) {
+        bottomEdgeOrTextX = clipLeft;
       }
       do {
         (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                  (clipTop,iVar3,clipBottom,clipRight,iVar5,iVar2,0x7f000000,0x87,
+                  (clipTop,bottomEdgeOrTextX,clipBottom,clipRight,rightEdgeOrTextY,focusTileXOrTop,0x7f000000,0x87,
                    g_UiWindowTextureSource,g_FramebufferAccess);
-        iVar2 = iVar2 + GVar10.logicalWidthPixels;
-      } while (iVar2 < iVar3);
-      iVar2 = drawX + -1;
+        focusTileXOrTop = focusTileXOrTop + focusTileSize.logicalWidthPixels;
+      } while (focusTileXOrTop < bottomEdgeOrTextX);
+      focusTileXOrTop = drawX + -1;
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,uVar4,commandStream,drawX,baselineY);
+                (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,drawX,baselineY);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar2,baselineY + -3,0x86,
+                (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,baselineY + -3,0x86,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-      GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-      iVar5 = baselineY + -3 + GVar10.logicalWidthPixels;
-      GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-      iVar3 = ((baselineY + 3) - GVar9.logicalWidthPixels) + dVar1;
+      tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
+      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+      rightEdgeOrTextY = baselineY + -3 + focusTileSize.logicalWidthPixels;
+      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+      bottomEdgeOrTextX = ((baselineY + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar2,iVar3,0x88,g_UiWindowTextureSource,
+                (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,bottomEdgeOrTextX,0x88,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      if (clipLeft < iVar3) {
-        iVar3 = clipLeft;
+      if (clipLeft < bottomEdgeOrTextX) {
+        bottomEdgeOrTextX = clipLeft;
       }
       do {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,iVar3,clipBottom,clipRight,iVar2,iVar5,0x87,g_UiWindowTextureSource,
+                  (clipTop,bottomEdgeOrTextX,clipBottom,clipRight,focusTileXOrTop,rightEdgeOrTextY,0x87,g_UiWindowTextureSource,
                    g_FramebufferAccess);
-        iVar5 = iVar5 + GVar10.logicalWidthPixels;
-      } while (iVar5 < iVar3);
+        rightEdgeOrTextY = rightEdgeOrTextY + focusTileSize.logicalWidthPixels;
+      } while (rightEdgeOrTextY < bottomEdgeOrTextX);
     }
   }
   else if (((control->selectable).stateFlags & 0x400) == 0) {
     if (((control->selectable).stateFlags & 4) == 0) {
-      dVar1 = 0x8c;
+      frameTileOrTextWidth = 0x8c;
     }
     else {
-      dVar1 = 0xa4;
+      frameTileOrTextWidth = 0xa4;
     }
     goto UiFramedTextButtonControl_DrawClipped_RenderSelectedFrameTextAndFocusChrome;
   }
@@ -1990,7 +1990,7 @@ UiFramedTextButtonControl_NonRightPress
           UiFramedTextButtonControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
+  UiSelectableStateFlags *selectedStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *toggleStateFlagsField;
   
@@ -2019,8 +2019,8 @@ UiFramedTextButtonControl_NonRightPress
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
-      pUVar1 = &(control->selectable).stateFlags;
-      *pUVar1 = *pUVar1 | UI_SELECTABLE_SELECTED_OR_CHECKED;
+      selectedStateFlagsField = &(control->selectable).stateFlags;
+      *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiActionQueue_Enqueue((control->selectable).actionId,control);
       UiNode_InvalidateRoot((UiNodeBase *)control);
     }
@@ -2072,27 +2072,27 @@ UiFramedTextButtonControl_NonRightDrag
           UiFramedTextButtonControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  sdword *psVar2;
-  int iVar3;
-  int iVar4;
+  UiSelectableStateFlags *clearedStateFlagsField;
+  sdword *edgeField;
+  int relativeX;
+  int relativeY;
   UiSelectableStateFlags *stateFlagsField;
   
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) {
-    psVar2 = &(control->selectable).base.left;
-    iVar3 = pointerX - *psVar2;
-    if (((pointerX < *psVar2) ||
-        (((psVar2 = &(control->selectable).base.top, iVar4 = pointerY - *psVar2, pointerY < *psVar2
-          || ((control->selectable).base.layoutWidth <= iVar3)) ||
-         ((control->selectable).base.layoutHeight <= iVar4)))) ||
+    edgeField = &(control->selectable).base.left;
+    relativeX = pointerX - *edgeField;
+    if (((pointerX < *edgeField) ||
+        (((edgeField = &(control->selectable).base.top, relativeY = pointerY - *edgeField, pointerY < *edgeField
+          || ((control->selectable).base.layoutWidth <= relativeX)) ||
+         ((control->selectable).base.layoutHeight <= relativeY)))) ||
        ((((control->selectable).stateFlags & 4) != 0 &&
-        (((iVar3 < g_UiWindowFrameInset || (iVar4 < g_UiWindowFrameInset)) ||
-         (((control->selectable).base.layoutWidth <= iVar3 + g_UiWindowFrameInset ||
-          ((control->selectable).base.layoutHeight <= iVar4 + g_UiWindowFrameInset)))))))) {
+        (((relativeX < g_UiWindowFrameInset || (relativeY < g_UiWindowFrameInset)) ||
+         (((control->selectable).base.layoutWidth <= relativeX + g_UiWindowFrameInset ||
+          ((control->selectable).base.layoutHeight <= relativeY + g_UiWindowFrameInset)))))))) {
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-        pUVar1 = &(control->selectable).stateFlags;
-        *pUVar1 = *pUVar1 & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+        clearedStateFlagsField = &(control->selectable).stateFlags;
+        *clearedStateFlagsField = *clearedStateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
         UiNode_InvalidateRoot((UiNodeBase *)control);
       }
     }
@@ -2117,27 +2117,27 @@ UiFramedTextButtonControl_HitTestRect
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
 
 {
-  sdword *psVar1;
-  UiFramedTextButtonControl *pUVar2;
-  int iVar3;
-  int iVar4;
+  sdword *edgeField;
+  UiFramedTextButtonControl *hitResult;
+  int relativeX;
+  int relativeY;
   
-  pUVar2 = (UiFramedTextButtonControl *)0xffffffff;
+  hitResult = (UiFramedTextButtonControl *)0xffffffff;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    psVar1 = &(control->selectable).base.left;
-    iVar3 = pointerX - *psVar1;
-    if (((((*psVar1 <= pointerX) &&
-          (psVar1 = &(control->selectable).base.top, iVar4 = pointerY - *psVar1, *psVar1 <= pointerY
-          )) && (iVar3 < (control->selectable).base.layoutWidth)) &&
-        (iVar4 < (control->selectable).base.layoutHeight)) &&
+    edgeField = &(control->selectable).base.left;
+    relativeX = pointerX - *edgeField;
+    if (((((*edgeField <= pointerX) &&
+          (edgeField = &(control->selectable).base.top, relativeY = pointerY - *edgeField, *edgeField <= pointerY
+          )) && (relativeX < (control->selectable).base.layoutWidth)) &&
+        (relativeY < (control->selectable).base.layoutHeight)) &&
        ((((control->selectable).stateFlags & 4) == 0 ||
-        (((g_UiWindowFrameInset <= iVar3 && (g_UiWindowFrameInset <= iVar4)) &&
-         ((iVar3 + g_UiWindowFrameInset < (control->selectable).base.layoutWidth &&
-          (iVar4 + g_UiWindowFrameInset < (control->selectable).base.layoutHeight)))))))) {
-      pUVar2 = control;
+        (((g_UiWindowFrameInset <= relativeX && (g_UiWindowFrameInset <= relativeY)) &&
+         ((relativeX + g_UiWindowFrameInset < (control->selectable).base.layoutWidth &&
+          (relativeY + g_UiWindowFrameInset < (control->selectable).base.layoutHeight)))))))) {
+      hitResult = control;
     }
   }
-  return (UiNodeBase *)pUVar2;
+  return (UiNodeBase *)hitResult;
 }
 
 
@@ -2154,177 +2154,177 @@ UiWindowControl_DrawFramedTextAndChrome
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  char cVar1;
-  char cVar2;
+  char iconOffsetX;
+  char iconOffsetY;
   dword tileEnd;
   word *commandStream;
-  int iVar3;
-  dword dVar4;
-  int arg5;
+  int styleOffsetOrIconY;
+  dword frameTileOrTextWidth;
+  int focusTileX;
   dword tileStart;
-  int iVar5;
-  uint uVar6;
-  int iVar7;
-  int iVar8;
-  bool bVar9;
-  RichTextExtentRegs RVar10;
-  TextResourceResolveEaxCf5 TVar11;
-  GraphicsTextureSizeEaxEdxCf9 GVar12;
-  GraphicsTextureSizeEaxEdxCf9 GVar13;
+  int bottomEdgeOrTextX;
+  uint textStyle;
+  int focusCoordOrIconX;
+  int rightEdgeOrTextY;
+  bool framebufferUnavailable;
+  RichTextExtentRegs textExtent;
+  TextResourceResolveEaxCf5 resolvedText;
+  GraphicsTextureSizeEaxEdxCf9 tileSizeOrEndCapSize;
+  GraphicsTextureSizeEaxEdxCf9 focusTileSize;
   
-  bVar9 = (*g_GraphicsFramebufferBeginAccess)();
-  if (bVar9) {
+  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  if (framebufferUnavailable) {
     return;
   }
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((uint)control[1].nextSibling & 4) == 0) {
-      dVar4 = 0x4a;
+      frameTileOrTextWidth = 0x4a;
     }
     else {
-      dVar4 = 0x94;
+      frameTileOrTextWidth = 0x94;
     }
     if (((uint)control[1].nextSibling & 2) != 0) {
-      dVar4 = dVar4 + 8;
+      frameTileOrTextWidth = frameTileOrTextWidth + 8;
     }
   }
   else {
     if (((uint)control[1].nextSibling & 0x400) != 0)
     goto UiWindowControl_DrawFramedTextAndChrome_EndFramebufferAccess;
     if (((uint)control[1].nextSibling & 4) == 0) {
-      dVar4 = 0x8c;
+      frameTileOrTextWidth = 0x8c;
     }
     else {
-      dVar4 = 0xa4;
+      frameTileOrTextWidth = 0xa4;
     }
   }
-  GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(dVar4,g_UiWindowTextureSource);
-  tileStart = GVar12.logicalHeightPixels;
-  tileEnd = GVar12.logicalWidthPixels;
-  iVar8 = control->layoutWidth - tileEnd;
-  iVar5 = control->layoutHeight - tileStart;
+  tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(frameTileOrTextWidth,g_UiWindowTextureSource);
+  tileStart = tileSizeOrEndCapSize.logicalHeightPixels;
+  tileEnd = tileSizeOrEndCapSize.logicalWidthPixels;
+  rightEdgeOrTextY = control->layoutWidth - tileEnd;
+  bottomEdgeOrTextX = control->layoutHeight - tileStart;
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,dVar4,
+            (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,frameTileOrTextWidth,
              g_UiWindowTextureSource,g_FramebufferAccess);
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar8 + control->left,dVar4 + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,control->top,rightEdgeOrTextY + control->left,frameTileOrTextWidth + 1,
              g_UiWindowTextureSource,g_FramebufferAccess);
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,iVar5 + control->top,control->left,dVar4 + 2,
+            (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + control->top,control->left,frameTileOrTextWidth + 2,
              g_UiWindowTextureSource,g_FramebufferAccess);
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,iVar5 + control->top,iVar8 + control->left,
-             dVar4 + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+            (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + control->top,rightEdgeOrTextY + control->left,
+             frameTileOrTextWidth + 3,g_UiWindowTextureSource,g_FramebufferAccess);
   UiWindow_BlitTiledHorizontalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,dVar4 + 4,iVar8,0,tileEnd,control);
+            (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 4,rightEdgeOrTextY,0,tileEnd,control);
   UiWindow_BlitTiledVerticalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,dVar4 + 5,iVar5,tileStart,0,control);
+            (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 5,bottomEdgeOrTextX,tileStart,0,control);
   UiWindow_BlitTiledVerticalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,dVar4 + 6,iVar5,tileStart,iVar8,control);
+            (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 6,bottomEdgeOrTextX,tileStart,rightEdgeOrTextY,control);
   UiWindow_BlitTiledHorizontalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,dVar4 + 7,iVar8,iVar5,tileEnd,control);
-  TVar11 = TextResource_Resolve(control[1].top);
-  commandStream = TVar11.eax;
-  iVar5 = control->layoutWidth;
-  RVar10 = RichTextCommandStream_MeasureRegs(control[1].right,commandStream);
-  dVar4 = RVar10.widthPixels;
-  iVar8 = (int)(control->layoutHeight - RVar10.heightPixels) >> 1;
-  iVar5 = ((int)(((uint)(iVar5 * 3) >> 2) - dVar4) >> 1) + ((uint)control->layoutWidth >> 2);
-  uVar6 = g_UiTextStyleDisabled;
+            (clipTop,clipLeft,clipBottom,clipRight,frameTileOrTextWidth + 7,rightEdgeOrTextY,bottomEdgeOrTextX,tileEnd,control);
+  resolvedText = TextResource_Resolve(control[1].top);
+  commandStream = resolvedText.eax;
+  bottomEdgeOrTextX = control->layoutWidth;
+  textExtent = RichTextCommandStream_MeasureRegs(control[1].right,commandStream);
+  frameTileOrTextWidth = textExtent.widthPixels;
+  rightEdgeOrTextY = (int)(control->layoutHeight - textExtent.heightPixels) >> 1;
+  bottomEdgeOrTextX = ((int)(((uint)(bottomEdgeOrTextX * 3) >> 2) - frameTileOrTextWidth) >> 1) + ((uint)control->layoutWidth >> 2);
+  textStyle = g_UiTextStyleDisabled;
   if (((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     (uVar6 = g_UiTextStyleNormal, ((uint)control[1].nextSibling & 2) != 0)) {
-    uVar6 = g_UiTextStyleSelected;
+     (textStyle = g_UiTextStyleNormal, ((uint)control[1].nextSibling & 2) != 0)) {
+    textStyle = g_UiTextStyleSelected;
   }
   if (((uint)control[1].nextSibling & 0x100) == 0) {
     control[1].right = control[1].right & 0xff0000;
   }
   else {
-    uVar6 = uVar6 & 0xffffff;
+    textStyle = textStyle & 0xffffff;
   }
   if (((uint)control[1].nextSibling & 0x200) == 0) {
     control[1].right = control[1].right & 0xff000000;
   }
   else {
-    uVar6 = uVar6 & 0xff00ffff;
+    textStyle = textStyle & 0xff00ffff;
   }
-  uVar6 = uVar6 | control[1].right;
+  textStyle = textStyle | control[1].right;
   if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,uVar6,commandStream,iVar8 + control->top,
-               iVar5 + control->left);
+              (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,rightEdgeOrTextY + control->top,
+               bottomEdgeOrTextX + control->left);
   }
   else {
-    iVar5 = iVar5 + control->left;
-    iVar8 = iVar8 + control->top;
-    iVar3 = (int)(uVar6 << 0x10) >> 0x18;
-    iVar7 = iVar3 + -3 + iVar5;
-    iVar3 = iVar3 + -1 + iVar8;
+    bottomEdgeOrTextX = bottomEdgeOrTextX + control->left;
+    rightEdgeOrTextY = rightEdgeOrTextY + control->top;
+    styleOffsetOrIconY = (int)(textStyle << 0x10) >> 0x18;
+    focusCoordOrIconX = styleOffsetOrIconY + -3 + bottomEdgeOrTextX;
+    styleOffsetOrIconY = styleOffsetOrIconY + -1 + rightEdgeOrTextY;
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar7,0x7f000000,0x86,
+              (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,0x7f000000,0x86,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-    arg5 = iVar7 + GVar13.logicalWidthPixels;
-    GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-    iVar7 = ((iVar7 + 6) - GVar12.logicalWidthPixels) + dVar4;
+    tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    focusTileX = focusCoordOrIconX + focusTileSize.logicalWidthPixels;
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    focusCoordOrIconX = ((focusCoordOrIconX + 6) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar7,0x7f000000,0x88,
+              (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,0x7f000000,0x88,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    if (clipLeft < iVar7) {
-      iVar7 = clipLeft;
+    if (clipLeft < focusCoordOrIconX) {
+      focusCoordOrIconX = clipLeft;
     }
     do {
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,iVar7,clipBottom,clipRight,iVar3,arg5,0x7f000000,0x87,
+                (clipTop,focusCoordOrIconX,clipBottom,clipRight,styleOffsetOrIconY,focusTileX,0x7f000000,0x87,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      arg5 = arg5 + GVar13.logicalWidthPixels;
-    } while (arg5 < iVar7);
-    iVar7 = iVar8 + -1;
+      focusTileX = focusTileX + focusTileSize.logicalWidthPixels;
+    } while (focusTileX < focusCoordOrIconX);
+    focusCoordOrIconX = rightEdgeOrTextY + -1;
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,uVar6,commandStream,iVar8,iVar5);
+              (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,rightEdgeOrTextY,bottomEdgeOrTextX);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5 + -3,0x86,g_UiWindowTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomEdgeOrTextX + -3,0x86,g_UiWindowTextureSource,
                g_FramebufferAccess);
-    GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-    iVar8 = iVar5 + -3 + GVar13.logicalWidthPixels;
-    GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-    iVar5 = ((iVar5 + 3) - GVar12.logicalWidthPixels) + dVar4;
+    tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    rightEdgeOrTextY = bottomEdgeOrTextX + -3 + focusTileSize.logicalWidthPixels;
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    bottomEdgeOrTextX = ((bottomEdgeOrTextX + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar7,iVar5,0x88,g_UiWindowTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomEdgeOrTextX,0x88,g_UiWindowTextureSource,
                g_FramebufferAccess);
-    if (clipLeft < iVar5) {
-      iVar5 = clipLeft;
+    if (clipLeft < bottomEdgeOrTextX) {
+      bottomEdgeOrTextX = clipLeft;
     }
     do {
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,iVar5,clipBottom,clipRight,iVar7,iVar8,0x87,g_UiWindowTextureSource,
+                (clipTop,bottomEdgeOrTextX,clipBottom,clipRight,focusCoordOrIconX,rightEdgeOrTextY,0x87,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      iVar8 = iVar8 + GVar13.logicalWidthPixels;
-    } while (iVar8 < iVar5);
+      rightEdgeOrTextY = rightEdgeOrTextY + focusTileSize.logicalWidthPixels;
+    } while (rightEdgeOrTextY < bottomEdgeOrTextX);
   }
-  GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)
+  tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)
                      ((dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent);
-  iVar7 = (((uint)control->layoutWidth >> 2) - GVar12.logicalWidthPixels) + control->left;
-  iVar3 = ((int)(control->layoutHeight - GVar12.logicalHeightPixels) >> 1) + control->top;
-  iVar5 = iVar7;
-  iVar8 = iVar3;
+  focusCoordOrIconX = (((uint)control->layoutWidth >> 2) - tileSizeOrEndCapSize.logicalWidthPixels) + control->left;
+  styleOffsetOrIconY = ((int)(control->layoutHeight - tileSizeOrEndCapSize.logicalHeightPixels) >> 1) + control->top;
+  bottomEdgeOrTextX = focusCoordOrIconX;
+  rightEdgeOrTextY = styleOffsetOrIconY;
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((uint)control[1].nextSibling & 2) == 0) {
-      cVar1 = (char)control[1].left;
-      cVar2 = *(char *)((int)&control[1].left + 1);
+      iconOffsetX = (char)control[1].left;
+      iconOffsetY = *(char *)((int)&control[1].left + 1);
     }
     else {
-      cVar1 = *(char *)((int)&control[1].left + 2);
-      cVar2 = *(char *)((int)&control[1].left + 3);
+      iconOffsetX = *(char *)((int)&control[1].left + 2);
+      iconOffsetY = *(char *)((int)&control[1].left + 3);
     }
-    iVar5 = iVar7 + cVar1;
-    iVar8 = iVar3 + cVar2;
+    bottomEdgeOrTextX = focusCoordOrIconX + iconOffsetX;
+    rightEdgeOrTextY = styleOffsetOrIconY + iconOffsetY;
   }
   (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,iVar8,iVar5,0x7f000000,(dword)control[1].vtable,
+            (clipTop,clipLeft,clipBottom,clipRight,rightEdgeOrTextY,bottomEdgeOrTextX,0x7f000000,(dword)control[1].vtable,
              (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar7,(dword)control[1].vtable,
+            (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,(dword)control[1].vtable,
              (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
 UiWindowControl_DrawFramedTextAndChrome_EndFramebufferAccess:
   (*g_GraphicsFramebufferEndAccess)();
@@ -2360,18 +2360,18 @@ UiTextButtonControl_NonRightPress
           UiTextButtonControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
+  UiSelectableStateFlags *clearedStateFlagsField;
   bool opaquePixelHit;
-  bool bVar2;
+  bool pixelHit;
   UiSelectableStateFlags *toggleStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) == 0) {
-      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      pixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,0x46,g_UiWindowTextureSource);
-      if (bVar2) {
+      if (pixelHit) {
         if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
           (*g_SoundPlayOneShot)
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -2387,10 +2387,10 @@ UiTextButtonControl_NonRightPress
       }
     }
     else {
-      bVar2 = (*g_GraphicsTextureSourceTestOpaquePixel)
+      pixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,0x40,g_UiWindowTextureSource);
-      if (bVar2) {
+      if (pixelHit) {
         if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
           (*g_SoundPlayOneShot)
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -2398,8 +2398,8 @@ UiTextButtonControl_NonRightPress
         }
         toggleStateFlagsField = &(control->selectable).stateFlags;
         *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
-        pUVar1 = &(control->selectable).stateFlags;
-        *pUVar1 = *pUVar1 & 0xffffffbf;
+        clearedStateFlagsField = &(control->selectable).stateFlags;
+        *clearedStateFlagsField = *clearedStateFlagsField & 0xffffffbf;
         UiActionQueue_Enqueue((control->selectable).actionId,control);
         UiNode_InvalidateRoot((UiNodeBase *)control);
       }
@@ -2422,8 +2422,8 @@ UiTextButtonControl_KeyboardEventCf
           UiTextButtonControl *control)
 
 {
-  UiSelectableStateFlags *pUVar1;
-  bool bVar2;
+  UiSelectableStateFlags *selectedStateFlagsField;
+  bool delegatedResult;
   UiSelectableStateFlags *stateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   
@@ -2450,16 +2450,16 @@ UiTextButtonControl_KeyboardEventCf
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
-      pUVar1 = &(control->selectable).stateFlags;
-      *pUVar1 = *pUVar1 | UI_SELECTABLE_SELECTED_OR_CHECKED;
+      selectedStateFlagsField = &(control->selectable).stateFlags;
+      *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       UiActionQueue_Enqueue((control->selectable).actionId,control);
       UiNode_InvalidateRoot((UiNodeBase *)control);
       return false;
     }
   }
-  bVar2 = UiNode_DefaultKeyboardEventMoveFocusNextCf
+  delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf
                     (keyboardStateMask,keyCode,(UiNodeBase *)control);
-  return bVar2;
+  return delegatedResult;
 }
 
 
@@ -2474,64 +2474,64 @@ UiImagePanelControl_DrawAlignedTextureAndChildren
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  int arg1;
-  int iVar1;
-  int arg3;
-  int arg5;
-  int arg0;
-  int iVar2;
-  int arg2;
-  int arg4;
-  bool bVar3;
-  GraphicsTextureSizeEaxEdxCf9 GVar4;
+  int clippedRight;
+  int slackWidth;
+  int clippedLeft;
+  int drawX;
+  int clippedBottom;
+  int slackHeight;
+  int clippedTop;
+  int drawY;
+  bool framebufferUnavailable;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
   
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    arg3 = control->left;
+    clippedLeft = control->left;
     if (control->left < clipRight) {
-      arg3 = clipRight;
+      clippedLeft = clipRight;
     }
-    arg2 = control->top;
+    clippedTop = control->top;
     if (control->top < clipBottom) {
-      arg2 = clipBottom;
+      clippedTop = clipBottom;
     }
-    arg1 = control->right;
+    clippedRight = control->right;
     if (clipLeft < control->right) {
-      arg1 = clipLeft;
+      clippedRight = clipLeft;
     }
-    arg0 = control->bottom;
+    clippedBottom = control->bottom;
     if (clipTop < control->bottom) {
-      arg0 = clipTop;
+      clippedBottom = clipTop;
     }
-    arg5 = control->left;
-    arg4 = control->top;
+    drawX = control->left;
+    drawY = control->top;
     if ((GraphicsTextureSourceAsset *)control[1].parent != (GraphicsTextureSourceAsset *)0x0) {
-      GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
                         ((dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent);
-      iVar1 = control->layoutWidth - GVar4.logicalWidthPixels;
-      iVar2 = control->layoutHeight - GVar4.logicalHeightPixels;
+      slackWidth = control->layoutWidth - textureSize.logicalWidthPixels;
+      slackHeight = control->layoutHeight - textureSize.logicalHeightPixels;
       if (((uint)control[1].nextSibling & 2) != 0) {
-        arg5 = arg5 + iVar1;
+        drawX = drawX + slackWidth;
       }
       if (((uint)control[1].nextSibling & 8) != 0) {
-        arg4 = arg4 + iVar2;
+        drawY = drawY + slackHeight;
       }
       if (((uint)control[1].nextSibling & 1) != 0) {
-        arg5 = arg5 + (iVar1 >> 1);
+        drawX = drawX + (slackWidth >> 1);
       }
       if (((uint)control[1].nextSibling & 4) != 0) {
-        arg4 = arg4 + (iVar2 >> 1);
+        drawY = drawY + (slackHeight >> 1);
       }
-      bVar3 = (*g_GraphicsFramebufferBeginAccess)();
-      if (!bVar3) {
+      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      if (!framebufferUnavailable) {
         if (((uint)control[1].nextSibling & 0x10) != 0) {
           (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                    (arg0,arg1,arg2,arg3,*(char *)((int)&control[1].firstChild + 1) + arg4,
-                     *(char *)&control[1].firstChild + arg5,0x7f000000,(dword)control[1].vtable,
+                    (clippedBottom,clippedRight,clippedTop,clippedLeft,*(char *)((int)&control[1].firstChild + 1) + drawY,
+                     *(char *)&control[1].firstChild + drawX,0x7f000000,(dword)control[1].vtable,
                      (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
         }
         if (((uint)control[1].nextSibling & 0x80) == 0) {
           (*g_GraphicsTextureSourceBlitSourceAlpha)
-                    (arg0,arg1,arg2,arg3,arg4,arg5,(dword)control[1].vtable,
+                    (clippedBottom,clippedRight,clippedTop,clippedLeft,drawY,drawX,(dword)control[1].vtable,
                      (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
         }
         else {
@@ -2558,17 +2558,17 @@ UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiNodeBase *control)
 
 {
-  bool bVar1;
-  UiNodeBase *pUVar2;
-  int iVar3;
-  int arg3;
-  int iVar4;
-  int arg2;
-  bool bVar5;
-  GraphicsTextureSizeEaxEdxCf9 GVar6;
+  bool childrenAlreadyRetried;
+  UiNodeBase *hitNode;
+  int slackWidth;
+  int drawX;
+  int slackHeight;
+  int drawY;
+  bool opaqueHit;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
   
-  pUVar2 = (UiNodeBase *)0xffffffff;
-  bVar1 = false;
+  hitNode = (UiNodeBase *)0xffffffff;
+  childrenAlreadyRetried = false;
   if (((uint)control[1].nextSibling & 0x20) != 0) {
     return (UiNodeBase *)0xffffffff;
   }
@@ -2576,42 +2576,42 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
   goto UiImagePanelHitTest_CheckChildren;
   do {
     if (((uint)control[1].nextSibling & 0x40) == 0) {
-      arg3 = control->left;
-      arg2 = control->top;
+      drawX = control->left;
+      drawY = control->top;
       if ((GraphicsTextureSourceAsset *)control[1].parent == (GraphicsTextureSourceAsset *)0x0) {
-        return pUVar2;
+        return hitNode;
       }
-      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
                         ((dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent);
-      iVar3 = control->layoutWidth - GVar6.logicalWidthPixels;
-      iVar4 = control->layoutHeight - GVar6.logicalHeightPixels;
+      slackWidth = control->layoutWidth - textureSize.logicalWidthPixels;
+      slackHeight = control->layoutHeight - textureSize.logicalHeightPixels;
       if (((uint)control[1].nextSibling & 2) != 0) {
-        arg3 = arg3 + iVar3;
+        drawX = drawX + slackWidth;
       }
       if (((uint)control[1].nextSibling & 8) != 0) {
-        arg2 = arg2 + iVar4;
+        drawY = drawY + slackHeight;
       }
       if (((uint)control[1].nextSibling & 1) != 0) {
-        arg3 = arg3 + (iVar3 >> 1);
+        drawX = drawX + (slackWidth >> 1);
       }
       if (((uint)control[1].nextSibling & 4) != 0) {
-        arg2 = arg2 + (iVar4 >> 1);
+        drawY = drawY + (slackHeight >> 1);
       }
-      bVar5 = (*g_GraphicsTextureSourceTestOpaquePixel)
-                        (pointerY,pointerX,arg2,arg3,(dword)control[1].vtable,
+      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+                        (pointerY,pointerX,drawY,drawX,(dword)control[1].vtable,
                          (GraphicsTextureSourceAsset *)control[1].parent);
-      if (!bVar5) {
+      if (!opaqueHit) {
         return (UiNodeBase *)0xffffffff;
       }
     }
 UiImagePanelHitTest_CheckChildren:
-    pUVar2 = UiContainer_HitTestChildren(pointerY,pointerX,control);
-    if (bVar1) {
-      return pUVar2;
+    hitNode = UiContainer_HitTestChildren(pointerY,pointerX,control);
+    if (childrenAlreadyRetried) {
+      return hitNode;
     }
-    bVar1 = true;
-  } while (pUVar2 == control);
-  return pUVar2;
+    childrenAlreadyRetried = true;
+  } while (hitNode == control);
+  return hitNode;
 }
 
 
@@ -2626,60 +2626,60 @@ UiFillPanelControl_DrawColorOrTiledTextureAndChildren
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  int arg5;
-  int arg4;
-  dword dVar1;
-  int arg7;
-  dword dVar2;
-  sdword arg6;
-  bool bVar3;
-  GraphicsTextureSizeEaxEdxCf9 GVar4;
+  int controlRight;
+  int controlBottom;
+  dword tileWidth;
+  int tileLeft;
+  dword tileHeight;
+  sdword tileTop;
+  bool framebufferUnavailable;
+  GraphicsTextureSizeEaxEdxCf9 tileSize;
   
-  arg5 = control->right;
-  arg4 = control->bottom;
-  arg7 = control->left;
-  arg6 = control->top;
+  controlRight = control->right;
+  controlBottom = control->bottom;
+  tileLeft = control->left;
+  tileTop = control->top;
   if (control[1].parent == (UiNodeBase *)0x0) {
-    bVar3 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar3) {
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
       (*g_GraphicsFramebufferFillRectArgb)
-                (clipTop,clipLeft,clipBottom,clipRight,arg4,arg5,arg6,arg7,(dword)control[1].vtable,
+                (clipTop,clipLeft,clipBottom,clipRight,controlBottom,controlRight,tileTop,tileLeft,(dword)control[1].vtable,
                  g_FramebufferAccess);
       (*g_GraphicsFramebufferEndAccess)();
     }
   }
   else {
-    if (arg5 < clipLeft) {
-      clipLeft = arg5;
+    if (controlRight < clipLeft) {
+      clipLeft = controlRight;
     }
-    if (arg4 < clipTop) {
-      clipTop = arg4;
+    if (controlBottom < clipTop) {
+      clipTop = controlBottom;
     }
-    GVar4 = (*g_GraphicsTextureSourceGetLogicalSize)
+    tileSize = (*g_GraphicsTextureSourceGetLogicalSize)
                       ((dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent);
-    dVar2 = GVar4.logicalHeightPixels;
-    dVar1 = GVar4.logicalWidthPixels;
-    bVar3 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar3) {
+    tileHeight = tileSize.logicalHeightPixels;
+    tileWidth = tileSize.logicalWidthPixels;
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
 UiFillPanelControl_DrawColorOrTiledTextureAndChildren_BlitNextTextureTile:
       do {
         if (((uint)control[1].nextSibling & 0x10) != 0) {
           (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
                     (clipTop,clipLeft,clipBottom,clipRight,
-                     *(char *)((int)&control[1].firstChild + 1) + arg6,
-                     *(char *)&control[1].firstChild + arg7,0x7f000000,(dword)control[1].vtable,
+                     *(char *)((int)&control[1].firstChild + 1) + tileTop,
+                     *(char *)&control[1].firstChild + tileLeft,0x7f000000,(dword)control[1].vtable,
                      (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
         }
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,arg6,arg7,(dword)control[1].vtable,
+                  (clipTop,clipLeft,clipBottom,clipRight,tileTop,tileLeft,(dword)control[1].vtable,
                    (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
         if (((uint)control[1].nextSibling & 1) != 0) {
-          arg7 = arg7 + dVar1;
-          if (arg7 < clipLeft)
+          tileLeft = tileLeft + tileWidth;
+          if (tileLeft < clipLeft)
           goto UiFillPanelControl_DrawColorOrTiledTextureAndChildren_BlitNextTextureTile;
-          arg7 = control->left;
+          tileLeft = control->left;
         }
-        if ((((uint)control[1].nextSibling & 2) == 0) || (arg6 = arg6 + dVar2, clipTop <= arg6))
+        if ((((uint)control[1].nextSibling & 2) == 0) || (tileTop = tileTop + tileHeight, clipTop <= tileTop))
         goto 
         UiFillPanelControl_DrawColorOrTiledTextureAndChildren_EndFramebufferAccessBeforeChildDraw;
       } while( true );
@@ -2799,159 +2799,159 @@ UiSingleLineTextControl_DrawClipped
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  UiNodeVtable *pUVar1;
-  UiNodeBase *pUVar2;
-  UiNodeBase *pUVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  bool bVar11;
-  RichTextExtentRegs RVar12;
-  TextResourceResolveEaxCf5 TVar13;
-  GraphicsTextureSizeEaxEdxCf9 GVar14;
-  UiPixelCoordinate arg1;
-  UiPixelCoordinate UVar15;
+  UiNodeVtable *packedStyleOverride;
+  UiNodeBase *streamCapWidthOrChild;
+  UiNodeBase *capWidthOrStream;
+  int rightCapXOrFrameTop;
+  uint textStyle;
+  int lineWidth;
+  int alignOffsetY;
+  int frameTopOrTileX;
+  int alignOffsetX;
+  int tileX;
+  bool framebufferUnavailable;
+  RichTextExtentRegs textExtent;
+  TextResourceResolveEaxCf5 resolvedText;
+  GraphicsTextureSizeEaxEdxCf9 tileSize;
+  UiPixelCoordinate originalClipLeft;
+  UiPixelCoordinate restoredClipLeft;
   
-  arg1 = clipLeft;
-  uVar5 = g_UiTextStyleNormal;
-  iVar9 = 0;
-  iVar7 = 0;
+  originalClipLeft = clipLeft;
+  textStyle = g_UiTextStyleNormal;
+  alignOffsetX = 0;
+  alignOffsetY = 0;
   if (((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
      (((uint)control[1].nextSibling & 0x40) == 0)) {
     if (((uint)control[1].nextSibling & 0x100) == 0) {
       control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xffffff);
     }
     else {
-      uVar5 = g_UiTextStyleNormal & 0xffffff;
+      textStyle = g_UiTextStyleNormal & 0xffffff;
     }
     if (((uint)control[1].nextSibling & 0x200) == 0) {
       control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xff00ffff);
     }
     else {
-      uVar5 = uVar5 & 0xff00ffff;
+      textStyle = textStyle & 0xff00ffff;
     }
-    pUVar1 = control[1].vtable;
-    pUVar2 = control[1].parent;
+    packedStyleOverride = control[1].vtable;
+    streamCapWidthOrChild = control[1].parent;
     if (((uint)control[1].nextSibling & 0x10) == 0) {
-      TVar13 = TextResource_Resolve((TextResourceId)pUVar2);
-      pUVar2 = (UiNodeBase *)TVar13.eax;
+      resolvedText = TextResource_Resolve((TextResourceId)streamCapWidthOrChild);
+      streamCapWidthOrChild = (UiNodeBase *)resolvedText.eax;
     }
-    RVar12 = RichTextCommandStream_MeasureRegs((uVar5 | (uint)pUVar1) & 0xffff0000,(word *)pUVar2);
-    iVar6 = (int)(g_UiTextStyleNormal << 0x10) >> 0x18;
-    if (iVar6 < 0) {
-      iVar6 = -iVar6;
+    textExtent = RichTextCommandStream_MeasureRegs((textStyle | (uint)packedStyleOverride) & 0xffff0000,(word *)streamCapWidthOrChild);
+    lineWidth = (int)(g_UiTextStyleNormal << 0x10) >> 0x18;
+    if (lineWidth < 0) {
+      lineWidth = -lineWidth;
     }
-    iVar6 = RVar12.widthPixels + iVar6;
-    GVar14 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-    pUVar2 = (UiNodeBase *)GVar14.logicalWidthPixels;
+    lineWidth = textExtent.widthPixels + lineWidth;
+    tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    streamCapWidthOrChild = (UiNodeBase *)tileSize.logicalWidthPixels;
     if (control[1].firstChild != (UiNodeBase *)0x0) {
-      iVar6 = iVar6 + (int)pUVar2 * 2;
+      lineWidth = lineWidth + (int)streamCapWidthOrChild * 2;
     }
     if (((uint)control[1].nextSibling & 2) != 0) {
-      iVar9 = control->layoutWidth - iVar6;
+      alignOffsetX = control->layoutWidth - lineWidth;
     }
     if (((uint)control[1].nextSibling & 8) != 0) {
-      iVar7 = control->layoutHeight - GVar14.logicalHeightPixels;
+      alignOffsetY = control->layoutHeight - tileSize.logicalHeightPixels;
     }
     if (((uint)control[1].nextSibling & 4) != 0) {
-      iVar7 = (int)(control->layoutHeight - GVar14.logicalHeightPixels) >> 1;
+      alignOffsetY = (int)(control->layoutHeight - tileSize.logicalHeightPixels) >> 1;
     }
     if (((uint)control[1].nextSibling & 1) != 0) {
-      iVar9 = control->layoutWidth - iVar6 >> 1;
+      alignOffsetX = control->layoutWidth - lineWidth >> 1;
     }
-    iVar6 = iVar6 + -1;
-    bVar11 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar11) {
-      UVar15 = clipLeft;
+    lineWidth = lineWidth + -1;
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
+      restoredClipLeft = clipLeft;
       if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
-        iVar10 = iVar9 + 1 + control->left;
-        iVar8 = iVar7 + 1 + control->top;
-        iVar4 = iVar6 + iVar10;
+        tileX = alignOffsetX + 1 + control->left;
+        frameTopOrTileX = alignOffsetY + 1 + control->top;
+        rightCapXOrFrameTop = lineWidth + tileX;
         (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar8,iVar10,0x7f000000,0x86,
+                  (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,0x7f000000,0x86,
                    g_UiWindowTextureSource,g_FramebufferAccess);
-        iVar4 = iVar4 - (int)pUVar2;
+        rightCapXOrFrameTop = rightCapXOrFrameTop - (int)streamCapWidthOrChild;
         (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,iVar8,iVar4,0x7f000000,0x88,
+                  (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,rightCapXOrFrameTop,0x7f000000,0x88,
                    g_UiWindowTextureSource,g_FramebufferAccess);
-        iVar10 = (int)&pUVar2->nextSibling + iVar10;
-        if (iVar4 <= clipLeft) {
-          clipLeft = iVar4;
+        tileX = (int)&streamCapWidthOrChild->nextSibling + tileX;
+        if (rightCapXOrFrameTop <= clipLeft) {
+          clipLeft = rightCapXOrFrameTop;
         }
-        GVar14 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-        pUVar3 = pUVar2;
+        tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+        capWidthOrStream = streamCapWidthOrChild;
         do {
           (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar8,iVar10,0x7f000000,0x87,
+                    (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,0x7f000000,0x87,
                      g_UiWindowTextureSource,g_FramebufferAccess);
-          iVar10 = iVar10 + GVar14.logicalWidthPixels;
-        } while (iVar10 < clipLeft);
-        iVar8 = iVar9 + control->left;
-        iVar4 = iVar7 + control->top;
-        pUVar2 = pUVar3;
-        UVar15 = arg1;
+          tileX = tileX + tileSize.logicalWidthPixels;
+        } while (tileX < clipLeft);
+        frameTopOrTileX = alignOffsetX + control->left;
+        rightCapXOrFrameTop = alignOffsetY + control->top;
+        streamCapWidthOrChild = capWidthOrStream;
+        restoredClipLeft = originalClipLeft;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,arg1,clipBottom,clipRight,iVar4,iVar8,0x86,g_UiWindowTextureSource,
+                  (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,0x86,g_UiWindowTextureSource,
                    g_FramebufferAccess);
-        iVar6 = (iVar6 + iVar8) - (int)pUVar3;
+        lineWidth = (lineWidth + frameTopOrTileX) - (int)capWidthOrStream;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,arg1,clipBottom,clipRight,iVar4,iVar6,0x88,g_UiWindowTextureSource,
+                  (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,lineWidth,0x88,g_UiWindowTextureSource,
                    g_FramebufferAccess);
-        iVar8 = (int)&pUVar3->nextSibling + iVar8;
-        clipLeft = arg1;
-        if (iVar6 <= arg1) {
-          clipLeft = iVar6;
+        frameTopOrTileX = (int)&capWidthOrStream->nextSibling + frameTopOrTileX;
+        clipLeft = originalClipLeft;
+        if (lineWidth <= originalClipLeft) {
+          clipLeft = lineWidth;
         }
-        GVar14 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+        tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
         do {
           (*g_GraphicsTextureSourceBlitSourceAlpha)
-                    (clipTop,clipLeft,clipBottom,clipRight,iVar4,iVar8,0x87,g_UiWindowTextureSource,
+                    (clipTop,clipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,0x87,g_UiWindowTextureSource,
                      g_FramebufferAccess);
-          iVar8 = iVar8 + GVar14.logicalWidthPixels;
-        } while (iVar8 < clipLeft);
+          frameTopOrTileX = frameTopOrTileX + tileSize.logicalWidthPixels;
+        } while (frameTopOrTileX < clipLeft);
       }
-      clipLeft = UVar15;
+      clipLeft = restoredClipLeft;
       if (control[1].firstChild != (UiNodeBase *)0x0) {
-        iVar9 = (int)&pUVar2->nextSibling + iVar9;
-        iVar7 = iVar7 + 1;
+        alignOffsetX = (int)&streamCapWidthOrChild->nextSibling + alignOffsetX;
+        alignOffsetY = alignOffsetY + 1;
       }
-      pUVar3 = control[1].parent;
+      capWidthOrStream = control[1].parent;
       if (((uint)control[1].nextSibling & 0x10) == 0) {
-        TVar13 = TextResource_Resolve((TextResourceId)pUVar3);
-        pUVar3 = (UiNodeBase *)TVar13.eax;
+        resolvedText = TextResource_Resolve((TextResourceId)capWidthOrStream);
+        capWidthOrStream = (UiNodeBase *)resolvedText.eax;
       }
-      pUVar2 = control[1].firstChild;
-      uVar5 = g_UiTextStyleNormal;
-      if ((pUVar2 != (UiNodeBase *)0x0) && ((pUVar2->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-        uVar5 = g_UiTextStyleDisabled;
+      streamCapWidthOrChild = control[1].firstChild;
+      textStyle = g_UiTextStyleNormal;
+      if ((streamCapWidthOrChild != (UiNodeBase *)0x0) && ((streamCapWidthOrChild->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+        textStyle = g_UiTextStyleDisabled;
       }
       if (((uint)control[1].nextSibling & 0x100) == 0) {
         control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xffffff);
       }
       else {
-        uVar5 = uVar5 & 0xffffff;
+        textStyle = textStyle & 0xffffff;
       }
       if (((uint)control[1].nextSibling & 0x200) == 0) {
         control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xff00ffff);
       }
       else {
-        uVar5 = uVar5 & 0xff00ffff;
+        textStyle = textStyle & 0xff00ffff;
       }
       control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xffff0000);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,uVar5 | (uint)control[1].vtable,
-                 (word *)pUVar3,iVar7 + control->top,iVar9 + control->left);
+                (clipTop,clipLeft,clipBottom,clipRight,textStyle | (uint)control[1].vtable,
+                 (word *)capWidthOrStream,alignOffsetY + control->top,alignOffsetX + control->left);
       (*g_GraphicsFramebufferEndAccess)();
     }
     if (control == g_UiKeyboardFocusNode) {
-      g_UiKeyboardFocusNode = pUVar2;
-      pUVar2->nodeFlags = pUVar2->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
+      g_UiKeyboardFocusNode = streamCapWidthOrChild;
+      streamCapWidthOrChild->nodeFlags = streamCapWidthOrChild->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
-      pUVar2->nodeFlags = pUVar2->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
+      streamCapWidthOrChild->nodeFlags = streamCapWidthOrChild->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
       g_UiKeyboardFocusNode = control;
     }
     else {
@@ -2974,59 +2974,59 @@ UiTextListControl_DrawRowsAndSelection
           UiPixelCoordinate clipRight,UiTextListControl *control)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
-  word **ppwVar4;
-  word **ppwVar5;
-  bool bVar6;
-  RichTextExtentRegs RVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
+  int rowTop;
+  uint lastVisibleRow;
+  int highlightWidth;
+  word **lastRowSlot;
+  word **rowSlot;
+  bool framebufferUnavailable;
+  RichTextExtentRegs rowExtent;
+  GraphicsTextureSizeEaxEdxCf9 capSize;
   
   if (control->rowCount != 0) {
-    iVar1 = (clipBottom - (control->base).top) / (int)control->rowHeight;
-    if (iVar1 < 0) {
-      iVar1 = 0;
+    rowTop = (clipBottom - (control->base).top) / (int)control->rowHeight;
+    if (rowTop < 0) {
+      rowTop = 0;
     }
-    ppwVar5 = control->rowTextSlots + iVar1;
-    uVar2 = (int)((clipTop - (control->base).top) + control->rowHeight) / (int)control->rowHeight;
-    iVar1 = iVar1 * control->rowHeight;
-    if (control->rowCount <= uVar2) {
-      uVar2 = control->rowCount - 1;
+    rowSlot = control->rowTextSlots + rowTop;
+    lastVisibleRow = (int)((clipTop - (control->base).top) + control->rowHeight) / (int)control->rowHeight;
+    rowTop = rowTop * control->rowHeight;
+    if (control->rowCount <= lastVisibleRow) {
+      lastVisibleRow = control->rowCount - 1;
     }
-    ppwVar4 = control->rowTextSlots + uVar2;
-    if (ppwVar5 <= ppwVar4) {
-      bVar6 = (*g_GraphicsFramebufferBeginAccess)();
-      if (!bVar6) {
+    lastRowSlot = control->rowTextSlots + lastVisibleRow;
+    if (rowSlot <= lastRowSlot) {
+      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      if (!framebufferUnavailable) {
         do {
-          if (ppwVar5 == control->selectedRowSlot) {
-            RVar7 = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*ppwVar5);
-            iVar3 = RVar7.widthPixels + 6;
+          if (rowSlot == control->selectedRowSlot) {
+            rowExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*rowSlot);
+            highlightWidth = rowExtent.widthPixels + 6;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x82,iVar3,iVar1,0,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,0x82,highlightWidth,rowTop,0,control);
             }
             else {
-              GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
-              iVar3 = iVar3 - GVar8.logicalWidthPixels;
+              capSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+              highlightWidth = highlightWidth - capSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x84,iVar3,iVar1,
-                         GVar8.logicalWidthPixels,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,0x84,highlightWidth,rowTop,
+                         capSize.logicalWidthPixels,control);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,iVar1 + (control->base).top,
+                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
                          (control->base).left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,iVar1 + (control->base).top,
-                         iVar3 + (control->base).left,0x85,g_UiWindowTextureSource,
+                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
+                         highlightWidth + (control->base).left,0x85,g_UiWindowTextureSource,
                          g_FramebufferAccess);
             }
           }
           RichTextCommandStream_DrawSingleLine
-                    (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,*ppwVar5,
-                     iVar1 + 1 + (control->base).top,(control->base).left + 3);
-          ppwVar5 = ppwVar5 + 1;
-          iVar1 = iVar1 + control->rowHeight;
-        } while (ppwVar5 <= ppwVar4);
+                    (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,*rowSlot,
+                     rowTop + 1 + (control->base).top,(control->base).left + 3);
+          rowSlot = rowSlot + 1;
+          rowTop = rowTop + control->rowHeight;
+        } while (rowSlot <= lastRowSlot);
         (*g_GraphicsFramebufferEndAccess)();
       }
     }
@@ -3047,28 +3047,28 @@ UiTextListControl_SelectRowFromPointer
           UiTextListControl *control)
 
 {
-  sdword *psVar1;
-  sdword *psVar2;
-  uint uVar3;
-  int iVar4;
-  RichTextExtentRegs RVar5;
-  word **ppwVar6;
+  sdword *topField;
+  sdword *leftField;
+  uint rowIndex;
+  int controlLeftOrRowTop;
+  RichTextExtentRegs rowExtent;
+  word **clickedRowSlot;
   
-  psVar1 = &(control->base).top;
-  if (((*psVar1 <= pointerY) &&
-      (psVar2 = &(control->base).left, iVar4 = *psVar2, *psVar2 <= pointerX)) &&
-     (uVar3 = (uint)(pointerY - *psVar1) / control->rowHeight, uVar3 < control->rowCount)) {
-    ppwVar6 = control->rowTextSlots + uVar3;
-    RVar5 = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*ppwVar6);
-    if (pointerX - iVar4 < (int)(RVar5.widthPixels + 6)) {
+  topField = &(control->base).top;
+  if (((*topField <= pointerY) &&
+      (leftField = &(control->base).left, controlLeftOrRowTop = *leftField, *leftField <= pointerX)) &&
+     (rowIndex = (uint)(pointerY - *topField) / control->rowHeight, rowIndex < control->rowCount)) {
+    clickedRowSlot = control->rowTextSlots + rowIndex;
+    rowExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*clickedRowSlot);
+    if (pointerX - controlLeftOrRowTop < (int)(rowExtent.widthPixels + 6)) {
       control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_SELECTION_CONFIRMED;
       if ((((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) ||
          (control->listStateFlags = control->listStateFlags & ~UI_TEXT_LIST_SELECTION_CONFIRMED,
-         ppwVar6 != control->selectedRowSlot)) {
-        control->selectedRowSlot = ppwVar6;
-        iVar4 = uVar3 * control->rowHeight;
+         clickedRowSlot != control->selectedRowSlot)) {
+        control->selectedRowSlot = clickedRowSlot;
+        controlLeftOrRowTop = rowIndex * control->rowHeight;
         UiScrollableControl_ClampOffsetsToViewport
-                  (iVar4 + 1 + control->rowHeight,(control->base).rightOffset,iVar4,0,
+                  (controlLeftOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,controlLeftOrRowTop,0,
                    (UiScrollableControl *)(control->base).parent);
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
@@ -3095,35 +3095,35 @@ UiTextListControl_HandleKeyboardNavigationAndSearchCf
           UiTextListControl *control)
 
 {
-  word **ppwVar1;
-  word **ppwVar2;
-  int iVar3;
-  uint uVar4;
-  UiListRowCount UVar5;
-  word **ppwVar6;
-  bool bVar7;
-  UiScrollableContentDimensionsEdxEax8 UVar8;
+  word **previousSelectedSlot;
+  word **slotCursorOrSelection;
+  int rowIndexOrTopOrPulse;
+  uint pageDownRow;
+  UiListRowCount remainingRows;
+  word **candidateSlot;
+  bool delegatedOrMismatch;
+  UiScrollableContentDimensionsEdxEax8 contentSize;
   
-  ppwVar1 = control->selectedRowSlot;
+  previousSelectedSlot = control->selectedRowSlot;
   if ((keyCode & 0xffff0000) == 0) {
     if (((keyboardStateMask & 0x3c) != 0) ||
        ((control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED) == 0)) {
 UiTextListControl_DelegateUnhandledKeyboardEvent:
-      bVar7 = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
-      return bVar7;
+      delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      return delegatedOrMismatch;
     }
-    UVar5 = control->rowCount;
-    ppwVar2 = control->rowTextSlots;
-    if (UVar5 != 0) {
+    remainingRows = control->rowCount;
+    slotCursorOrSelection = control->rowTextSlots;
+    if (remainingRows != 0) {
       do {
-        ppwVar6 = ppwVar2;
-        bVar7 = (byte)(*(code *)g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
-                          (keyCode,*(dword *)*ppwVar6);
-        if (!bVar7) break;
-        UVar5 = UVar5 - 1;
-        ppwVar2 = ppwVar6 + 1;
-      } while (UVar5 != 0);
-      control->selectedRowSlot = ppwVar6;
+        candidateSlot = slotCursorOrSelection;
+        delegatedOrMismatch = (byte)(*(code *)g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
+                          (keyCode,*(dword *)*candidateSlot);
+        if (!delegatedOrMismatch) break;
+        remainingRows = remainingRows - 1;
+        slotCursorOrSelection = candidateSlot + 1;
+      } while (remainingRows != 0);
+      control->selectedRowSlot = candidateSlot;
     }
   }
   else if (keyCode == 0x10001) {
@@ -3137,22 +3137,22 @@ UiTextListControl_DelegateUnhandledKeyboardEvent:
     control->selectedRowSlot = control->rowTextSlots + (control->rowCount - 1);
   }
   else if (keyCode == 0x10012) {
-    UVar8 = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-    iVar3 = ((uint)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
-            ((int)((UVar8 >> 0x20) / (ulonglong)control->rowHeight) + -1);
-    if (iVar3 < 0) {
-      iVar3 = 0;
+    contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
+    rowIndexOrTopOrPulse = ((uint)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
+            ((int)((contentSize >> 0x20) / (ulonglong)control->rowHeight) + -1);
+    if (rowIndexOrTopOrPulse < 0) {
+      rowIndexOrTopOrPulse = 0;
     }
-    control->selectedRowSlot = control->rowTextSlots + iVar3;
+    control->selectedRowSlot = control->rowTextSlots + rowIndexOrTopOrPulse;
   }
   else if (keyCode == 0x1001a) {
-    UVar8 = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-    uVar4 = ((uint)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) +
-            (int)((UVar8 >> 0x20) / (ulonglong)control->rowHeight) + -1;
-    if (control->rowCount <= uVar4) {
-      uVar4 = control->rowCount - 1;
+    contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
+    pageDownRow = ((uint)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) +
+            (int)((contentSize >> 0x20) / (ulonglong)control->rowHeight) + -1;
+    if (control->rowCount <= pageDownRow) {
+      pageDownRow = control->rowCount - 1;
     }
-    control->selectedRowSlot = control->rowTextSlots + uVar4;
+    control->selectedRowSlot = control->rowTextSlots + pageDownRow;
   }
   else if (keyCode == 0x10011) {
     if (control->rowTextSlots <= control->selectedRowSlot + -1) {
@@ -3166,20 +3166,20 @@ UiTextListControl_DelegateUnhandledKeyboardEvent:
       control->selectedRowSlot = control->selectedRowSlot + 1;
     }
   }
-  ppwVar2 = control->selectedRowSlot;
-  if (ppwVar2 != ppwVar1) {
+  slotCursorOrSelection = control->selectedRowSlot;
+  if (slotCursorOrSelection != previousSelectedSlot) {
     if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
        (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
       (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
-    iVar3 = ((uint)((int)ppwVar2 - (int)control->rowTextSlots) >> 2) * control->rowHeight;
+    rowIndexOrTopOrPulse = ((uint)((int)slotCursorOrSelection - (int)control->rowTextSlots) >> 2) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
-              (iVar3 + control->rowHeight + 1,(control->base).rightOffset,iVar3,0,
+              (rowIndexOrTopOrPulse + control->rowHeight + 1,(control->base).rightOffset,rowIndexOrTopOrPulse,0,
                (UiScrollableControl *)(control->base).parent);
-    iVar3 = g_UiListActivationPulseFrames;
+    rowIndexOrTopOrPulse = g_UiListActivationPulseFrames;
     control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_DEFERRED_ACTION_PENDING;
     control->listStateFlags = control->listStateFlags & 0xffffff;
-    control->listStateFlags = control->listStateFlags | iVar3 << 0x18;
+    control->listStateFlags = control->listStateFlags | rowIndexOrTopOrPulse << 0x18;
   }
   return false;
 }
@@ -3255,21 +3255,21 @@ UiPointerList_InitializeMeasuredTextRows
           (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
 
 {
-  UiNodeBase *control_00;
-  UiPixelExtent UVar1;
+  UiNodeBase *parentNode;
+  UiPixelExtent rowHeightPixels;
   uint maximumTextWidthPixels;
   RichTextExtentRegs measuredTextExtent;
-  FontGlyphSizeEaxEdxCf9 FVar2;
+  FontGlyphSizeEaxEdxCf9 fontSize;
   UiNodeVtable *parentVtable;
   
-  FVar2 = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
-  UVar1 = FVar2.lineHeight + 1;
-  control->rowHeight = UVar1;
+  fontSize = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
+  rowHeightPixels = fontSize.lineHeight + 1;
+  control->rowHeight = rowHeightPixels;
   control->rowCount = rowCount;
   control->rowSlots = rowPointers;
   maximumTextWidthPixels = 0;
   control->selectedRowSlot = rowPointers;
-  (control->base).bottomOffset = UVar1 * rowCount + 1;
+  (control->base).bottomOffset = rowHeightPixels * rowCount + 1;
   for (; rowCount != 0; rowCount = rowCount - 1) {
     measuredTextExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*rowPointers);
     if (maximumTextWidthPixels < measuredTextExtent.widthPixels) {
@@ -3277,12 +3277,12 @@ UiPointerList_InitializeMeasuredTextRows
     }
     rowPointers = rowPointers + 1;
   }
-  control_00 = (control->base).parent;
-  parentVtable = control_00->vtable;
+  parentNode = (control->base).parent;
+  parentVtable = parentNode->vtable;
   (control->base).rightOffset = maximumTextWidthPixels + 6;
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
-  (*parentVtable->layout)(control_00);
+  (*parentVtable->layout)(parentNode);
   return;
 }
 
@@ -3300,38 +3300,38 @@ UiWrappedTextControl_DrawClipped
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  UiNodeVtable *pUVar1;
+  UiNodeVtable *packedStyleOverride;
   UiNodeBase *commandStream;
-  uint uVar2;
-  bool bVar3;
-  TextResourceResolveEaxCf5 TVar4;
+  uint textStyle;
+  bool framebufferUnavailable;
+  TextResourceResolveEaxCf5 resolvedText;
   
-  bVar3 = (*g_GraphicsFramebufferBeginAccess)();
-  if (!bVar3) {
+  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  if (!framebufferUnavailable) {
     if (((uint)control[1].nextSibling & 0x40) == 0) {
       control[1].firstChild = (UiNodeBase *)control->layoutWidth;
     }
-    uVar2 = g_UiTextStyleNormal;
+    textStyle = g_UiTextStyleNormal;
     if (((uint)control[1].nextSibling & 0x100) == 0) {
       control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xffffff);
     }
     else {
-      uVar2 = g_UiTextStyleNormal & 0xffffff;
+      textStyle = g_UiTextStyleNormal & 0xffffff;
     }
     if (((uint)control[1].nextSibling & 0x200) == 0) {
       control[1].vtable = (UiNodeVtable *)((uint)control[1].vtable & 0xff00ffff);
     }
     else {
-      uVar2 = uVar2 & 0xff00ffff;
+      textStyle = textStyle & 0xff00ffff;
     }
-    pUVar1 = control[1].vtable;
+    packedStyleOverride = control[1].vtable;
     commandStream = control[1].parent;
     if (((uint)control[1].nextSibling & 0x10) == 0) {
-      TVar4 = TextResource_Resolve((TextResourceId)commandStream);
-      commandStream = (UiNodeBase *)TVar4.eax;
+      resolvedText = TextResource_Resolve((TextResourceId)commandStream);
+      commandStream = (UiNodeBase *)resolvedText.eax;
     }
     RichTextCommandStream_DrawWrappedBlockCf
-              (clipTop,clipLeft,clipBottom,clipRight,(uVar2 | (uint)pUVar1) & 0xffff0000,
+              (clipTop,clipLeft,clipBottom,clipRight,(textStyle | (uint)packedStyleOverride) & 0xffff0000,
                (word *)commandStream,(UiPixelExtent)control[1].firstChild,control->top,control->left
               );
     (*g_GraphicsFramebufferEndAccess)();
@@ -3352,99 +3352,99 @@ UiNineSlicePanelControl_DrawTextureFrameAndChildren
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  UiNodeBase *arg0;
-  dword dVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  bool bVar6;
-  GraphicsTextureSizeEaxEdxCf9 GVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
-  GraphicsTextureSizeEaxEdxCf9 GVar9;
-  GraphicsTextureSizeEaxEdxCf9 GVar10;
-  GraphicsTextureSizeEaxEdxCf9 GVar11;
-  GraphicsTextureSizeEaxEdxCf9 GVar12;
-  GraphicsTextureSizeEaxEdxCf9 GVar13;
+  UiNodeBase *baseTextureFrame;
+  dword slice4Width;
+  int leftEdgeX;
+  int topEdgeY;
+  int bottomEdgeY;
+  int rightEdgeX;
+  bool framebufferUnavailable;
+  GraphicsTextureSizeEaxEdxCf9 slice0Size;
+  GraphicsTextureSizeEaxEdxCf9 slice1Size;
+  GraphicsTextureSizeEaxEdxCf9 slice2Size;
+  GraphicsTextureSizeEaxEdxCf9 slice3Size;
+  GraphicsTextureSizeEaxEdxCf9 slice4Or5Size;
+  GraphicsTextureSizeEaxEdxCf9 slice6Size;
+  GraphicsTextureSizeEaxEdxCf9 slice7Size;
   
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    bVar6 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar6) {
-      arg0 = control[1].parent;
-      GVar7 = (*g_GraphicsTextureSourceGetLogicalSize)
-                        ((dword)arg0,(GraphicsTextureSourceAsset *)control[1].firstChild);
-      GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)
-                        ((dword)((int)&arg0->nextSibling + 1),
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
+      baseTextureFrame = control[1].parent;
+      slice0Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                        ((dword)baseTextureFrame,(GraphicsTextureSourceAsset *)control[1].firstChild);
+      slice1Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                        ((dword)((int)&baseTextureFrame->nextSibling + 1),
                          (GraphicsTextureSourceAsset *)control[1].firstChild);
-      GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)
-                        ((dword)((int)&arg0->nextSibling + 2),
+      slice2Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                        ((dword)((int)&baseTextureFrame->nextSibling + 2),
                          (GraphicsTextureSourceAsset *)control[1].firstChild);
-      GVar10 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         ((dword)((int)&arg0->nextSibling + 3),
+      slice3Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                         ((dword)((int)&baseTextureFrame->nextSibling + 3),
                           (GraphicsTextureSourceAsset *)control[1].firstChild);
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         ((dword)&arg0->firstChild,
+      slice4Or5Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                         ((dword)&baseTextureFrame->firstChild,
                           (GraphicsTextureSourceAsset *)control[1].firstChild);
-      dVar1 = GVar11.logicalWidthPixels;
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         ((dword)((int)&arg0->firstChild + 1),
+      slice4Width = slice4Or5Size.logicalWidthPixels;
+      slice4Or5Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                         ((dword)((int)&baseTextureFrame->firstChild + 1),
                           (GraphicsTextureSourceAsset *)control[1].firstChild);
-      GVar12 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         ((dword)((int)&arg0->firstChild + 2),
+      slice6Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                         ((dword)((int)&baseTextureFrame->firstChild + 2),
                           (GraphicsTextureSourceAsset *)control[1].firstChild);
-      GVar13 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         ((dword)((int)&arg0->firstChild + 3),
+      slice7Size = (*g_GraphicsTextureSourceGetLogicalSize)
+                         ((dword)((int)&baseTextureFrame->firstChild + 3),
                           (GraphicsTextureSourceAsset *)control[1].firstChild);
-      iVar2 = control->left;
-      iVar3 = control->top;
-      iVar4 = control->bottom;
-      iVar5 = control->right - GVar8.logicalWidthPixels;
+      leftEdgeX = control->left;
+      topEdgeY = control->top;
+      bottomEdgeY = control->bottom;
+      rightEdgeX = control->right - slice1Size.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar2,(dword)arg0,
-                 (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar5,
-                 (dword)((int)&arg0->nextSibling + 1),
-                 (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
-      iVar2 = iVar2 + GVar7.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar3,iVar2,
-                 (dword)((int)&arg0->nextSibling + 2),
-                 (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
-      iVar2 = iVar2 - GVar7.logicalWidthPixels;
-      iVar3 = iVar3 + GVar7.logicalHeightPixels;
-      iVar4 = iVar4 - GVar11.logicalHeightPixels;
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar4,-0x80000000,iVar3,iVar2,
-                 (dword)((int)&arg0->nextSibling + 3),
+                (clipTop,clipLeft,clipBottom,clipRight,topEdgeY,leftEdgeX,(dword)baseTextureFrame,
                  (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar4,iVar2,
-                 (dword)((int)&arg0->firstChild + 1),
+                (clipTop,clipLeft,clipBottom,clipRight,topEdgeY,rightEdgeX,
+                 (dword)((int)&baseTextureFrame->nextSibling + 1),
                  (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
-      iVar5 = (iVar5 + GVar8.logicalWidthPixels) - dVar1;
-      iVar3 = (iVar3 - GVar7.logicalHeightPixels) + GVar8.logicalHeightPixels;
-      iVar4 = (iVar4 + GVar11.logicalHeightPixels) - GVar12.logicalHeightPixels;
+      leftEdgeX = leftEdgeX + slice0Size.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar4,-0x80000000,iVar3,iVar5,
-                 (dword)&arg0->firstChild,(GraphicsTextureSourceAsset *)control[1].firstChild,
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightEdgeX,topEdgeY,leftEdgeX,
+                 (dword)((int)&baseTextureFrame->nextSibling + 2),
+                 (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
+      leftEdgeX = leftEdgeX - slice0Size.logicalWidthPixels;
+      topEdgeY = topEdgeY + slice0Size.logicalHeightPixels;
+      bottomEdgeY = bottomEdgeY - slice4Or5Size.logicalHeightPixels;
+      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,-0x80000000,topEdgeY,leftEdgeX,
+                 (dword)((int)&baseTextureFrame->nextSibling + 3),
+                 (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
+      (*g_GraphicsTextureSourceBlitSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,leftEdgeX,
+                 (dword)((int)&baseTextureFrame->firstChild + 1),
+                 (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
+      rightEdgeX = (rightEdgeX + slice1Size.logicalWidthPixels) - slice4Width;
+      topEdgeY = (topEdgeY - slice0Size.logicalHeightPixels) + slice1Size.logicalHeightPixels;
+      bottomEdgeY = (bottomEdgeY + slice4Or5Size.logicalHeightPixels) - slice6Size.logicalHeightPixels;
+      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,-0x80000000,topEdgeY,rightEdgeX,
+                 (dword)&baseTextureFrame->firstChild,(GraphicsTextureSourceAsset *)control[1].firstChild,
                  g_FramebufferAccess);
-      iVar5 = (iVar5 + dVar1) - GVar12.logicalWidthPixels;
+      rightEdgeX = (rightEdgeX + slice4Width) - slice6Size.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar4,iVar5,
-                 (dword)((int)&arg0->firstChild + 2),
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,rightEdgeX,
+                 (dword)((int)&baseTextureFrame->firstChild + 2),
                  (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
-      iVar2 = iVar2 + GVar11.logicalWidthPixels;
-      iVar4 = (iVar4 + GVar12.logicalHeightPixels) - GVar13.logicalHeightPixels;
+      leftEdgeX = leftEdgeX + slice4Or5Size.logicalWidthPixels;
+      bottomEdgeY = (bottomEdgeY + slice6Size.logicalHeightPixels) - slice7Size.logicalHeightPixels;
       (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar5,iVar4,iVar2,
-                 (dword)((int)&arg0->firstChild + 3),
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightEdgeX,bottomEdgeY,leftEdgeX,
+                 (dword)((int)&baseTextureFrame->firstChild + 3),
                  (GraphicsTextureSourceAsset *)control[1].firstChild,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,iVar4,
-                 (iVar5 + GVar12.logicalWidthPixels) - dVar1,
-                 (iVar3 - GVar8.logicalHeightPixels) + GVar9.logicalHeightPixels,
-                 (iVar2 - GVar11.logicalWidthPixels) + GVar10.logicalWidthPixels,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,
+                 (rightEdgeX + slice6Size.logicalWidthPixels) - slice4Width,
+                 (topEdgeY - slice1Size.logicalHeightPixels) + slice2Size.logicalHeightPixels,
+                 (leftEdgeX - slice4Or5Size.logicalWidthPixels) + slice3Size.logicalWidthPixels,
                  (dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].firstChild,
                  g_FramebufferAccess);
       (*g_GraphicsFramebufferEndAccess)();
@@ -3467,11 +3467,11 @@ UiFormattedContainer_RelocateWithPatchedTextPayloads
 
 {
   word *stream;
-  TextResourceResolveEaxCf5 TVar1;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if ((control->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0) {
-    TVar1 = TextResource_Resolve(control[-1].nodeFlags);
-    stream = TVar1.eax;
+    resolvedText = TextResource_Resolve(control[-1].nodeFlags);
+    stream = resolvedText.eax;
     RichTextCommandStream_PatchPayloadBySelector(0,&control[1].top,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&control[1].bottomOffset,stream);
     if (((uint)control[1].nextSibling & 2) != 0) {
@@ -3496,21 +3496,21 @@ UiFormattedContainer_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
-  UiNodeBase *pUVar1;
-  UiNodeBase *pUVar2;
-  uint uVar3;
-  int iVar4;
-  UiNodeBase *pUVar5;
-  dword dVar6;
-  int iVar7;
-  int iVar8;
-  int iVar9;
-  bool bVar10;
-  GraphicsTextureSizeEaxEdxCf9 GVar11;
-  int iStack_28;
+  UiNodeBase *primaryValue;
+  UiNodeBase *secondaryValue;
+  uint fillPercent;
+  int scaleRange;
+  UiNodeBase *scaleLimit;
+  dword textureFrame;
+  int barEndOrSpanOrMarkerX;
+  int variantOrFillEnd;
+  int barStartX;
+  bool framebufferUnavailable;
+  GraphicsTextureSizeEaxEdxCf9 frameSize;
+  int tertiaryMarkerOffset;
   
   if ((control[1].parent == (UiNodeBase *)0x0) ||
-     (bVar10 = (*g_GraphicsFramebufferBeginAccess)(), bVar10))
+     (framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)(), framebufferUnavailable))
   goto UiFormattedContainer_RefreshNumericText;
   if (clipRight < control->left) {
     clipRight = control->left;
@@ -3524,91 +3524,91 @@ UiFormattedContainer_DrawClipped
   if (control->bottom < clipTop) {
     clipTop = control->bottom;
   }
-  dVar6 = control[1].left;
-  iVar9 = control->left;
-  iVar7 = control->right;
+  textureFrame = control[1].left;
+  barStartX = control->left;
+  barEndOrSpanOrMarkerX = control->right;
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar9,dVar6,
+            (clipTop,clipLeft,clipBottom,clipRight,control->top,barStartX,textureFrame,
              (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
-  GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                     (dVar6,(GraphicsTextureSourceAsset *)control[1].vtable);
-  iVar9 = iVar9 + GVar11.logicalWidthPixels;
-  GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                     (dVar6 + 2,(GraphicsTextureSourceAsset *)control[1].vtable);
-  iVar7 = iVar7 - GVar11.logicalWidthPixels;
+  frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                     (textureFrame,(GraphicsTextureSourceAsset *)control[1].vtable);
+  barStartX = barStartX + frameSize.logicalWidthPixels;
+  frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                     (textureFrame + 2,(GraphicsTextureSourceAsset *)control[1].vtable);
+  barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - frameSize.logicalWidthPixels;
   (*g_GraphicsTextureSourceBlitSourceAlpha)
-            (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar7,dVar6 + 2,
+            (clipTop,clipLeft,clipBottom,clipRight,control->top,barEndOrSpanOrMarkerX,textureFrame + 2,
              (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
-  if (iVar9 < iVar7) {
+  if (barStartX < barEndOrSpanOrMarkerX) {
     GraphicsTextureSource_BlitTiledSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar7,control->top,iVar9,dVar6 + 1,
+              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,barEndOrSpanOrMarkerX,control->top,barStartX,textureFrame + 1,
                (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
-    pUVar1 = control[1].firstChild;
-    iVar4 = control[1].layoutHeight;
-    iVar7 = iVar7 - iVar9;
+    primaryValue = control[1].firstChild;
+    scaleRange = control[1].layoutHeight;
+    barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - barStartX;
     while( true ) {
-      for (; (iVar4 < (int)pUVar1 || (iVar4 < (int)control[1].parent)); iVar4 = iVar4 << 2) {
+      for (; (scaleRange < (int)primaryValue || (scaleRange < (int)control[1].parent)); scaleRange = scaleRange << 2) {
       }
       if (((uint)control[1].nextSibling & 2) == 0) goto UiFormattedContainer_UseResolvedScaleRange;
-      if ((int)control[1].nodeFlags <= iVar4) break;
-      iVar4 = iVar4 << 2;
+      if ((int)control[1].nodeFlags <= scaleRange) break;
+      scaleRange = scaleRange << 2;
     }
-    iStack_28 = (int)(((longlong)(int)control[1].nodeFlags * (longlong)iVar7) / (longlong)iVar4);
+    tertiaryMarkerOffset = (int)(((longlong)(int)control[1].nodeFlags * (longlong)barEndOrSpanOrMarkerX) / (longlong)scaleRange);
 UiFormattedContainer_UseResolvedScaleRange:
-    pUVar2 = control[1].parent;
-    pUVar5 = control[1].parent;
-    if ((((uint)control[1].nextSibling & 2) != 0) && ((int)control[1].nodeFlags < (int)pUVar5)) {
-      pUVar5 = (UiNodeBase *)control[1].nodeFlags;
+    secondaryValue = control[1].parent;
+    scaleLimit = control[1].parent;
+    if ((((uint)control[1].nextSibling & 2) != 0) && ((int)control[1].nodeFlags < (int)scaleLimit)) {
+      scaleLimit = (UiNodeBase *)control[1].nodeFlags;
     }
-    uVar3 = (uint)(((longlong)(int)pUVar1 * 100) / (longlong)(int)pUVar5);
+    fillPercent = (uint)(((longlong)(int)primaryValue * 100) / (longlong)(int)scaleLimit);
     if (((uint)control[1].nextSibling & 1) == 0) {
-      iVar8 = 3;
-      if ((((0x4f < uVar3) && (iVar8 = 6, 0x53 < uVar3)) && (iVar8 = 9, 0x57 < uVar3)) &&
-         ((iVar8 = 0xc, 0x5b < uVar3 && (iVar8 = 0xf, 0x5f < uVar3)))) {
+      variantOrFillEnd = 3;
+      if ((((0x4f < fillPercent) && (variantOrFillEnd = 6, 0x53 < fillPercent)) && (variantOrFillEnd = 9, 0x57 < fillPercent)) &&
+         ((variantOrFillEnd = 0xc, 0x5b < fillPercent && (variantOrFillEnd = 0xf, 0x5f < fillPercent)))) {
 UiFormattedContainer_SelectMaximumTextureVariant:
-        iVar8 = 0x12;
+        variantOrFillEnd = 0x12;
       }
     }
     else {
-      iVar8 = 0x12;
-      if (((((7 < uVar3) && (iVar8 = 0xf, 0xf < uVar3)) && (iVar8 = 0xc, 0x17 < uVar3)) &&
-          ((((iVar8 = 9, 0x1f < uVar3 && (iVar8 = 6, 0x27 < uVar3)) &&
-            ((iVar8 = 3, 0x55 < uVar3 && ((iVar8 = 6, 0x57 < uVar3 && (iVar8 = 9, 0x59 < uVar3))))))
-           && (iVar8 = 0xc, 0x5b < uVar3)))) && (iVar8 = 0xf, 0x5d < uVar3))
+      variantOrFillEnd = 0x12;
+      if (((((7 < fillPercent) && (variantOrFillEnd = 0xf, 0xf < fillPercent)) && (variantOrFillEnd = 0xc, 0x17 < fillPercent)) &&
+          ((((variantOrFillEnd = 9, 0x1f < fillPercent && (variantOrFillEnd = 6, 0x27 < fillPercent)) &&
+            ((variantOrFillEnd = 3, 0x55 < fillPercent && ((variantOrFillEnd = 6, 0x57 < fillPercent && (variantOrFillEnd = 9, 0x59 < fillPercent))))))
+           && (variantOrFillEnd = 0xc, 0x5b < fillPercent)))) && (variantOrFillEnd = 0xf, 0x5d < fillPercent))
       goto UiFormattedContainer_SelectMaximumTextureVariant;
     }
-    dVar6 = iVar8 + control[1].left;
+    textureFrame = variantOrFillEnd + control[1].left;
     if (control[1].firstChild != (UiNodeBase *)0x0) {
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         (dVar6,(GraphicsTextureSourceAsset *)control[1].vtable);
-      iVar9 = iVar9 - GVar11.logicalWidthPixels;
+      frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                         (textureFrame,(GraphicsTextureSourceAsset *)control[1].vtable);
+      barStartX = barStartX - frameSize.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar9,dVar6,
+                (clipTop,clipLeft,clipBottom,clipRight,control->top,barStartX,textureFrame,
                  (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
-      iVar9 = iVar9 + GVar11.logicalWidthPixels;
-      iVar8 = (int)(((longlong)(int)pUVar1 * (longlong)iVar7) / (longlong)iVar4) + iVar9;
+      barStartX = barStartX + frameSize.logicalWidthPixels;
+      variantOrFillEnd = (int)(((longlong)(int)primaryValue * (longlong)barEndOrSpanOrMarkerX) / (longlong)scaleRange) + barStartX;
       GraphicsTextureSource_BlitTiledSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,iVar8,control->top,iVar9,
-                 dVar6 + 1,(GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,variantOrFillEnd,control->top,barStartX,
+                 textureFrame + 1,(GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,iVar8,dVar6 + 2,
+                (clipTop,clipLeft,clipBottom,clipRight,control->top,variantOrFillEnd,textureFrame + 2,
                  (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
     }
-    iVar7 = iVar9 + (int)(((longlong)(int)pUVar2 * (longlong)iVar7) / (longlong)iVar4);
-    dVar6 = control[1].left + 0x15;
-    GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                       (dVar6,(GraphicsTextureSourceAsset *)control[1].vtable);
+    barEndOrSpanOrMarkerX = barStartX + (int)(((longlong)(int)secondaryValue * (longlong)barEndOrSpanOrMarkerX) / (longlong)scaleRange);
+    textureFrame = control[1].left + 0x15;
+    frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                       (textureFrame,(GraphicsTextureSourceAsset *)control[1].vtable);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,control->top,
-               iVar7 - ((int)GVar11.logicalWidthPixels >> 1),dVar6,
+               barEndOrSpanOrMarkerX - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
                (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
     if (((uint)control[1].nextSibling & 2) != 0) {
-      dVar6 = control[1].left + 0x15;
-      GVar11 = (*g_GraphicsTextureSourceGetLogicalSize)
-                         (dVar6,(GraphicsTextureSourceAsset *)control[1].vtable);
+      textureFrame = control[1].left + 0x15;
+      frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+                         (textureFrame,(GraphicsTextureSourceAsset *)control[1].vtable);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,control->top,
-                 (iVar9 + iStack_28) - ((int)GVar11.logicalWidthPixels >> 1),dVar6,
+                 (barStartX + tertiaryMarkerOffset) - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
                  (GraphicsTextureSourceAsset *)control[1].vtable,g_FramebufferAccess);
     }
   }
@@ -3640,73 +3640,73 @@ UiArmyMetricsPanel_DrawTextureMetricsAndChildren
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  GraphicsTextureSourceAsset *pGVar1;
-  void *pvVar2;
-  int arg1;
-  int iVar3;
-  int arg3;
-  int arg5;
-  int arg0;
-  int iVar4;
-  int arg2;
-  int arg4;
-  bool bVar5;
-  GraphicsTextureSizeEaxEdxCf9 GVar6;
+  GraphicsTextureSourceAsset *savedTextureSource;
+  void *savedPanelData;
+  int clippedRight;
+  int slackWidth;
+  int clippedLeft;
+  int drawX;
+  int clippedBottom;
+  int slackHeight;
+  int clippedTop;
+  int drawY;
+  bool framebufferUnavailable;
+  GraphicsTextureSizeEaxEdxCf9 textureSize;
   
   if ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    arg3 = control->left;
+    clippedLeft = control->left;
     if (control->left < clipRight) {
-      arg3 = clipRight;
+      clippedLeft = clipRight;
     }
-    arg2 = control->top;
+    clippedTop = control->top;
     if (control->top < clipBottom) {
-      arg2 = clipBottom;
+      clippedTop = clipBottom;
     }
-    arg1 = control->right;
+    clippedRight = control->right;
     if (clipLeft < control->right) {
-      arg1 = clipLeft;
+      clippedRight = clipLeft;
     }
-    arg0 = control->bottom;
+    clippedBottom = control->bottom;
     if (clipTop < control->bottom) {
-      arg0 = clipTop;
+      clippedBottom = clipTop;
     }
-    arg5 = control->left;
-    arg4 = control->top;
+    drawX = control->left;
+    drawY = control->top;
     if ((GraphicsTextureSourceAsset *)control[1].parent != (GraphicsTextureSourceAsset *)0x0) {
-      GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
                         ((dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent);
-      iVar3 = control->layoutWidth - GVar6.logicalWidthPixels;
-      iVar4 = control->layoutHeight - GVar6.logicalHeightPixels;
+      slackWidth = control->layoutWidth - textureSize.logicalWidthPixels;
+      slackHeight = control->layoutHeight - textureSize.logicalHeightPixels;
       if (((uint)control[1].nextSibling & 2) != 0) {
-        arg5 = arg5 + iVar3;
+        drawX = drawX + slackWidth;
       }
       if (((uint)control[1].nextSibling & 8) != 0) {
-        arg4 = arg4 + iVar4;
+        drawY = drawY + slackHeight;
       }
       if (((uint)control[1].nextSibling & 1) != 0) {
-        arg5 = arg5 + (iVar3 >> 1);
+        drawX = drawX + (slackWidth >> 1);
       }
       if (((uint)control[1].nextSibling & 4) != 0) {
-        arg4 = arg4 + (iVar4 >> 1);
+        drawY = drawY + (slackHeight >> 1);
       }
-      bVar5 = (*g_GraphicsFramebufferBeginAccess)();
-      if (!bVar5) {
+      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      if (!framebufferUnavailable) {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (arg0,arg1,arg2,arg3,arg4,arg5,(dword)control[1].vtable,
+                  (clippedBottom,clippedRight,clippedTop,clippedLeft,drawY,drawX,(dword)control[1].vtable,
                    (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
         (*g_GraphicsFramebufferEndAccess)();
-        pvVar2 = g_SelectionPanelData;
-        pGVar1 = g_SelectionPanelTextureSource;
-        g_SelectionPanelTextureSource = pGVar1;
-        g_SelectionPanelData = pvVar2;
+        savedPanelData = g_SelectionPanelData;
+        savedTextureSource = g_SelectionPanelTextureSource;
+        g_SelectionPanelTextureSource = savedTextureSource;
+        g_SelectionPanelData = savedPanelData;
         if (control[1].left != 0) {
           g_SelectionPanelTextureSource = g_InfoPanelTextureSource;
           g_SelectionPanelData = g_InfoPanelData;
           SelectionPanel_RenderArmyRuntimeMetrics
                     (clipTop,clipLeft,clipBottom,clipRight,control->bottom,control->right,
                      control->top,control->left,(RuntimeModelFactionPrefix10 *)control[1].left);
-          g_SelectionPanelTextureSource = pGVar1;
-          g_SelectionPanelData = pvVar2;
+          g_SelectionPanelTextureSource = savedTextureSource;
+          g_SelectionPanelData = savedPanelData;
         }
       }
       UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
@@ -3728,12 +3728,12 @@ UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
-  bool bVar1;
+  bool framebufferUnavailable;
   
   if (((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (control[1].firstChild != (UiNodeBase *)0x0)) {
-    bVar1 = (*g_GraphicsFramebufferBeginAccess)();
-    if (!bVar1) {
+    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    if (!framebufferUnavailable) {
       SoftwareTexture_BilinearBlendScaleSubresources
                 (control->layoutHeight,control->layoutWidth,control->top,control->left,
                  (qword *)control[1].right,(qword *)control[1].top,
@@ -3843,16 +3843,16 @@ void __thandor_void_preserve_eax_ecx_edx
 UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
 
 {
-  uint uVar1;
-  sbyte sVar2;
-  uint uVar3;
-  uint uVar4;
-  word *arg5;
+  uint remainingValue;
+  sbyte rotateShift;
+  uint highBitOrDigitsLeft;
+  uint digitCodeUnit;
+  word *outputCursor;
   
-  arg5 = control->textBuffer;
-  uVar1 = control->currentValue;
-  arg5[0] = 0;
-  arg5[1] = 0;
+  outputCursor = control->textBuffer;
+  remainingValue = control->currentValue;
+  outputCursor[0] = 0;
+  outputCursor[1] = 0;
   control->textBuffer[2] = 0;
   control->textBuffer[3] = 0;
   control->textBuffer[4] = 0;
@@ -3867,43 +3867,43 @@ UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
   control->textBuffer[0xd] = 0;
   control->textBuffer[0xe] = 0;
   control->textBuffer[0xf] = 0;
-  if (((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0) && ((int)uVar1 < 0)) {
-    *arg5 = 0x2d;
-    uVar1 = -uVar1;
-    arg5 = control->textBuffer + 1;
+  if (((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0) && ((int)remainingValue < 0)) {
+    *outputCursor = 0x2d;
+    remainingValue = -remainingValue;
+    outputCursor = control->textBuffer + 1;
   }
   if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,uVar1,arg5);
+    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,remainingValue,outputCursor);
   }
   else {
-    uVar3 = 0x1f;
-    if (uVar1 != 0) {
-      for (; uVar1 >> uVar3 == 0; uVar3 = uVar3 - 1) {
+    highBitOrDigitsLeft = 0x1f;
+    if (remainingValue != 0) {
+      for (; remainingValue >> highBitOrDigitsLeft == 0; highBitOrDigitsLeft = highBitOrDigitsLeft - 1) {
       }
     }
-    if (uVar1 != 0) {
-      sVar2 = (sbyte)(uVar3 & 0x1c);
-      uVar3 = (uVar3 & 0x1c) >> 2;
-      uVar1 = uVar1 >> sVar2 | uVar1 << 0x20 - sVar2;
+    if (remainingValue != 0) {
+      rotateShift = (sbyte)(highBitOrDigitsLeft & 0x1c);
+      highBitOrDigitsLeft = (highBitOrDigitsLeft & 0x1c) >> 2;
+      remainingValue = remainingValue >> rotateShift | remainingValue << 0x20 - rotateShift;
       do {
         while( true ) {
-          uVar4 = (uVar1 >> 0x1c) + 0x30;
-          if (0x39 < uVar4) break;
-          *arg5 = (word)uVar4;
-          uVar3 = uVar3 - 1;
-          uVar1 = uVar1 << 4;
-          arg5 = arg5 + 1;
-          if (uVar3 == 0)
+          digitCodeUnit = (remainingValue >> 0x1c) + 0x30;
+          if (0x39 < digitCodeUnit) break;
+          *outputCursor = (word)digitCodeUnit;
+          highBitOrDigitsLeft = highBitOrDigitsLeft - 1;
+          remainingValue = remainingValue << 4;
+          outputCursor = outputCursor + 1;
+          if (highBitOrDigitsLeft == 0)
           goto UiNumericTextControl_RebuildTextFromValue_UpdateRangeValidityAfterFormatting;
         }
-        *arg5 = (ushort)(uVar1 >> 0x1c) + 0x37;
-        uVar3 = uVar3 - 1;
-        uVar1 = uVar1 << 4;
-        arg5 = arg5 + 1;
-      } while (uVar3 != 0);
+        *outputCursor = (ushort)(remainingValue >> 0x1c) + 0x37;
+        highBitOrDigitsLeft = highBitOrDigitsLeft - 1;
+        remainingValue = remainingValue << 4;
+        outputCursor = outputCursor + 1;
+      } while (highBitOrDigitsLeft != 0);
     }
     else {
-      *arg5 = 0x30;
+      *outputCursor = 0x30;
     }
   }
 UiNumericTextControl_RebuildTextFromValue_UpdateRangeValidityAfterFormatting:
@@ -3923,42 +3923,42 @@ void __thandor_preserve_eax_edx
 UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
 
 {
-  uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  word *pwVar5;
+  uint parsedValue;
+  uint codeUnit;
+  uint digitValue;
+  int sign;
+  word *textCursor;
   
-  pwVar5 = control->textBuffer;
-  iVar4 = 1;
-  if (*pwVar5 != 0) {
-    if (*pwVar5 == 0x2d) {
-      iVar4 = -1;
-      pwVar5 = control->textBuffer + 1;
+  textCursor = control->textBuffer;
+  sign = 1;
+  if (*textCursor != 0) {
+    if (*textCursor == 0x2d) {
+      sign = -1;
+      textCursor = control->textBuffer + 1;
     }
     if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
-      uVar1 = 0;
-      for (; uVar2 = (uint)*pwVar5, uVar2 != 0; pwVar5 = pwVar5 + 1) {
-        if ((uVar2 < 0x30) || (9 < uVar2 - 0x30))
+      parsedValue = 0;
+      for (; codeUnit = (uint)*textCursor, codeUnit != 0; textCursor = textCursor + 1) {
+        if ((codeUnit < 0x30) || (9 < codeUnit - 0x30))
         goto UiNumericTextControl_ParseAndCommitValue_ClearValidityAndReturnAfterParseReject;
-        uVar1 = uVar1 * 10 + (uVar2 - 0x30);
+        parsedValue = parsedValue * 10 + (codeUnit - 0x30);
       }
     }
     else {
-      uVar1 = 0;
-      for (; uVar2 = (uint)*pwVar5, uVar2 != 0; pwVar5 = pwVar5 + 1) {
-        uVar3 = uVar2 - 0x30;
-        if ((uVar2 < 0x30) ||
-           ((9 < uVar3 &&
-            ((uVar3 = uVar2 - 0x37, uVar3 < 10 ||
-             ((0xf < uVar3 && ((uVar3 = uVar2 - 0x57, uVar3 < 10 || (0xf < uVar3))))))))))
+      parsedValue = 0;
+      for (; codeUnit = (uint)*textCursor, codeUnit != 0; textCursor = textCursor + 1) {
+        digitValue = codeUnit - 0x30;
+        if ((codeUnit < 0x30) ||
+           ((9 < digitValue &&
+            ((digitValue = codeUnit - 0x37, digitValue < 10 ||
+             ((0xf < digitValue && ((digitValue = codeUnit - 0x57, digitValue < 10 || (0xf < digitValue))))))))))
         goto UiNumericTextControl_ParseAndCommitValue_ClearValidityAndReturnAfterParseReject;
-        uVar1 = uVar1 << 4 | uVar3 & 0xf;
+        parsedValue = parsedValue << 4 | digitValue & 0xf;
       }
     }
-    if ((-1 < iVar4) ||
-       (uVar1 = -uVar1, (control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0)) {
-      control->currentValue = uVar1;
+    if ((-1 < sign) ||
+       (parsedValue = -parsedValue, (control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0)) {
+      control->currentValue = parsedValue;
       if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
         UiActionQueue_Enqueue(control->actionId,control);
       }
@@ -3984,13 +3984,13 @@ void __thandor_void_preserve_eax_ecx_edx UiTooltip_PrepareTargetText(UiNodeBase 
 
 {
   word *commandStream;
-  TextResourceResolveEaxCf5 TVar1;
+  TextResourceResolveEaxCf5 resolvedText;
   
   if (node != (UiNodeBase *)0x0) {
     commandStream = (word *)node[-1].nodeFlags;
     if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
-      TVar1 = TextResource_Resolve((TextResourceId)commandStream);
-      commandStream = TVar1.eax;
+      resolvedText = TextResource_Resolve((TextResourceId)commandStream);
+      commandStream = resolvedText.eax;
     }
     RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
     (*g_GraphicsTextureSourceGetLogicalSize)(0xbc,g_UiWindowTextureSource);
@@ -4037,24 +4037,24 @@ UiPixelCoordinate __thandor_eax_preserve_ecx_edx
 UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control)
 
 {
-  int iVar1;
-  uint uVar2;
-  FontGlyphSizeEaxEdxCf9 FVar3;
+  int accumulatedWidth;
+  uint glyphIndex;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
   
-  uVar2 = 0;
-  iVar1 = 0;
+  glyphIndex = 0;
+  accumulatedWidth = 0;
   if (prefixLength != 0) {
     do {
-      if (control->textPrefix6C[uVar2] == 0) {
-        return iVar1;
+      if (control->textPrefix6C[glyphIndex] == 0) {
+        return accumulatedWidth;
       }
-      FVar3 = FontGlyph_GetLogicalSizeForStyleRegs
-                        (g_UiTextEditActiveTextStyle,(uint)control->textPrefix6C[uVar2]);
-      uVar2 = uVar2 + 1;
-      iVar1 = iVar1 + FVar3.width;
-    } while (uVar2 < prefixLength);
+      glyphSize = FontGlyph_GetLogicalSizeForStyleRegs
+                        (g_UiTextEditActiveTextStyle,(uint)control->textPrefix6C[glyphIndex]);
+      glyphIndex = glyphIndex + 1;
+      accumulatedWidth = accumulatedWidth + glyphSize.width;
+    } while (glyphIndex < prefixLength);
   }
-  return iVar1;
+  return accumulatedWidth;
 }
 
 
@@ -4068,30 +4068,30 @@ UiTextCodeUnitCount __thandor_eax_preserve_ecx_edx
 UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control)
 
 {
-  int iVar1;
-  int iVar2;
+  int nextTextIndex;
+  int targetOffsetX;
   int currentTextIndex;
   int measuredPrefixWidthPixels;
-  GraphicsTextureSizeEaxEdxCf9 GVar3;
-  FontGlyphSizeEaxEdxCf9 FVar4;
+  GraphicsTextureSizeEaxEdxCf9 decorationSize;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
   
-  iVar2 = (pointerX - (control->base).left) + control->horizontalScrollPixels;
+  targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
-    GVar3 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
-    iVar2 = iVar2 - GVar3.logicalWidthPixels;
+    decorationSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+    targetOffsetX = targetOffsetX - decorationSize.logicalWidthPixels;
   }
   measuredPrefixWidthPixels = 0;
-  iVar1 = 0;
+  nextTextIndex = 0;
   do {
-    currentTextIndex = iVar1;
+    currentTextIndex = nextTextIndex;
     if (control->textPrefix6C[currentTextIndex] == 0) {
       return currentTextIndex;
     }
-    FVar4 = FontGlyph_GetLogicalSizeForStyleRegs
+    glyphSize = FontGlyph_GetLogicalSizeForStyleRegs
                       (g_UiTextEditActiveTextStyle,(uint)control->textPrefix6C[currentTextIndex]);
-    measuredPrefixWidthPixels = measuredPrefixWidthPixels + FVar4.width;
-    iVar1 = currentTextIndex + 1;
-  } while (measuredPrefixWidthPixels < iVar2);
+    measuredPrefixWidthPixels = measuredPrefixWidthPixels + glyphSize.width;
+    nextTextIndex = currentTextIndex + 1;
+  } while (measuredPrefixWidthPixels < targetOffsetX);
   return currentTextIndex;
 }
 
@@ -4106,11 +4106,11 @@ UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 
 {
   bool pathRejected;
-  bool bVar1;
+  bool validatorRejected;
   
-  bVar1 = (bool)(*g_FileSystemValidateDos83Path)
+  validatorRejected = (bool)(*g_FileSystemValidateDos83Path)
                           (control->editStateFlags >> 1 & 3,(byte *)control->pathBuffer);
-  if (bVar1) {
+  if (validatorRejected) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
   }
   else {
@@ -4148,21 +4148,21 @@ CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
 UiPointerList_CompareExpandedTextFlags(word *rightText,word *leftText)
 
 {
-  bool bVar1;
+  bool copyCarry;
   undefined1 in_ZF;
-  RichTextCopyExpandedEaxCf5 RVar2;
-  CompareFlagsCfZf2 CVar3;
+  RichTextCopyExpandedEaxCf5 copyResult;
+  CompareFlagsCfZf2 compareFlags;
   
   RichTextCommandStream_CopyExpandedCf(0x400,(word *)&g_UiPointerListExpandedLeftTextUtf16,leftText)
   ;
-  RVar2 = RichTextCommandStream_CopyExpandedCf
+  copyResult = RichTextCommandStream_CopyExpandedCf
                     (0x400,(word *)&g_UiPointerListExpandedRightTextUtf16,rightText);
-  bVar1 = RVar2.carry;
+  copyCarry = copyResult.carry;
   (*(code *)g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
             (&g_UiPointerListExpandedRightTextUtf16,&g_UiPointerListExpandedLeftTextUtf16);
-  CVar3.carry = bVar1;
-  CVar3.zero = (bool)in_ZF;
-  return CVar3;
+  compareFlags.carry = copyCarry;
+  compareFlags.zero = (bool)in_ZF;
+  return compareFlags;
 }
 
 
@@ -4178,42 +4178,42 @@ UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
 
 {
   UiTextCodeUnitCount prefixLength;
-  UiPixelOffset UVar1;
-  UiPixelCoordinate UVar2;
-  int iVar3;
-  UiPixelOffset UVar4;
-  FontGlyphSizeEaxEdxCf9 FVar5;
-  GraphicsTextureSizeEaxEdxCf9 GVar6;
+  UiPixelOffset cursorWidthOrMinScroll;
+  UiPixelCoordinate fullTextWidth;
+  int overflowOrContentWidth;
+  UiPixelOffset maxScrollOffset;
+  FontGlyphSizeEaxEdxCf9 glyphSize;
+  GraphicsTextureSizeEaxEdxCf9 decorationSize;
   
   (control->base).layoutWidth = (control->base).right - (control->base).left;
   (control->base).layoutHeight = (control->base).bottom - (control->base).top;
   prefixLength = control->cursorIndex;
-  UVar1 = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
-  UVar4 = UVar1;
+  cursorWidthOrMinScroll = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
+  maxScrollOffset = cursorWidthOrMinScroll;
   if (prefixLength != 0) {
-    FVar5 = FontGlyph_GetLogicalSizeActiveRegs((uint)control->textPrefix6C[prefixLength - 1]);
-    UVar4 = UVar1 - FVar5.width;
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint)control->textPrefix6C[prefixLength - 1]);
+    maxScrollOffset = cursorWidthOrMinScroll - glyphSize.width;
   }
-  iVar3 = UVar1 - (control->base).layoutWidth;
+  overflowOrContentWidth = cursorWidthOrMinScroll - (control->base).layoutWidth;
   if (control->textPrefix6C[prefixLength] != 0) {
-    FVar5 = FontGlyph_GetLogicalSizeActiveRegs((uint)control->textPrefix6C[prefixLength]);
-    iVar3 = iVar3 + FVar5.width;
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint)control->textPrefix6C[prefixLength]);
+    overflowOrContentWidth = overflowOrContentWidth + glyphSize.width;
   }
-  UVar2 = UiTextEditControl_MeasurePrefixWidth(0x10,control);
-  GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x8a,g_UiWindowTextureSource);
-  UVar1 = iVar3 + GVar6.logicalWidthPixels;
-  iVar3 = UVar2 + GVar6.logicalWidthPixels;
+  fullTextWidth = UiTextEditControl_MeasurePrefixWidth(0x10,control);
+  decorationSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x8a,g_UiWindowTextureSource);
+  cursorWidthOrMinScroll = overflowOrContentWidth + decorationSize.logicalWidthPixels;
+  overflowOrContentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
-    GVar6 = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
-    iVar3 = iVar3 + GVar6.logicalWidthPixels * 2;
-    UVar1 = UVar1 + GVar6.logicalWidthPixels * 2;
+    decorationSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+    overflowOrContentWidth = overflowOrContentWidth + decorationSize.logicalWidthPixels * 2;
+    cursorWidthOrMinScroll = cursorWidthOrMinScroll + decorationSize.logicalWidthPixels * 2;
   }
-  if ((control->base).layoutWidth < iVar3) {
-    if ((int)UVar4 < (int)control->horizontalScrollPixels) {
-      control->horizontalScrollPixels = UVar4;
+  if ((control->base).layoutWidth < overflowOrContentWidth) {
+    if ((int)maxScrollOffset < (int)control->horizontalScrollPixels) {
+      control->horizontalScrollPixels = maxScrollOffset;
     }
-    else if ((int)control->horizontalScrollPixels < (int)UVar1) {
-      control->horizontalScrollPixels = UVar1;
+    else if ((int)control->horizontalScrollPixels < (int)cursorWidthOrMinScroll) {
+      control->horizontalScrollPixels = cursorWidthOrMinScroll;
     }
   }
   else {
@@ -4237,117 +4237,117 @@ UiTextButtonControl_DrawClipped
 
 {
   word *commandStream;
-  dword arg6;
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  bool bVar5;
-  RichTextExtentRegs RVar6;
-  TextResourceResolveEaxCf5 TVar7;
-  GraphicsTextureSizeEaxEdxCf9 GVar8;
-  GraphicsTextureSizeEaxEdxCf9 GVar9;
+  dword skinFrame;
+  int textXOrFocusEnd;
+  int focusTileXOrTop;
+  int textYOrTileX;
+  uint textStyle;
+  bool framebufferUnavailable;
+  RichTextExtentRegs textExtent;
+  TextResourceResolveEaxCf5 resolvedText;
+  GraphicsTextureSizeEaxEdxCf9 skinSizeOrEndCapSize;
+  GraphicsTextureSizeEaxEdxCf9 focusTileSize;
   int baselineY;
   int drawX;
   
-  bVar5 = (*g_GraphicsFramebufferBeginAccess)();
-  if (bVar5) {
+  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  if (framebufferUnavailable) {
     return;
   }
-  arg6 = 0x46;
+  skinFrame = 0x46;
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-    arg6 = 0x48;
+    skinFrame = 0x48;
   }
   if ((((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) &&
-     (arg6 = arg6 - 6, ((control->selectable).stateFlags & 0x40) != 0)) {
-    arg6 = 0x44;
+     (skinFrame = skinFrame - 6, ((control->selectable).stateFlags & 0x40) != 0)) {
+    skinFrame = 0x44;
   }
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     if (((control->selectable).stateFlags & 0x400) != 0)
     goto UiTextButtonControl_DrawClipped_EndFramebufferAccessAndReturn;
-    arg6 = arg6 + 1;
+    skinFrame = skinFrame + 1;
   }
   (*g_GraphicsTextureSourceBlitSourceAlpha)
             (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
-             (control->selectable).base.left,arg6,g_UiWindowTextureSource,g_FramebufferAccess);
-  GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(arg6,g_UiWindowTextureSource);
-  iVar1 = GVar8.logicalWidthPixels + 6;
-  TVar7 = TextResource_Resolve(control->textResourceId);
-  commandStream = TVar7.eax;
-  RVar6 = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
-  iVar3 = (int)(GVar8.logicalHeightPixels - RVar6.heightPixels) >> 1;
-  uVar4 = g_UiTextStyleDisabled;
+             (control->selectable).base.left,skinFrame,g_UiWindowTextureSource,g_FramebufferAccess);
+  skinSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(skinFrame,g_UiWindowTextureSource);
+  textXOrFocusEnd = skinSizeOrEndCapSize.logicalWidthPixels + 6;
+  resolvedText = TextResource_Resolve(control->textResourceId);
+  commandStream = resolvedText.eax;
+  textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
+  textYOrTileX = (int)(skinSizeOrEndCapSize.logicalHeightPixels - textExtent.heightPixels) >> 1;
+  textStyle = g_UiTextStyleDisabled;
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     (uVar4 = g_UiTextStyleNormal, ((control->selectable).stateFlags & 0x40) != 0)) {
-    uVar4 = g_UiTextStyleAlternate;
+     (textStyle = g_UiTextStyleNormal, ((control->selectable).stateFlags & 0x40) != 0)) {
+    textStyle = g_UiTextStyleAlternate;
   }
   if (((control->selectable).stateFlags & 0x100) == 0) {
     control->packedTextStyle = control->packedTextStyle & 0xff0000;
   }
   else {
-    uVar4 = uVar4 & 0xffffff;
+    textStyle = textStyle & 0xffffff;
   }
   if (((control->selectable).stateFlags & 0x200) == 0) {
     control->packedTextStyle = control->packedTextStyle & 0xff000000;
   }
   else {
-    uVar4 = uVar4 & 0xff00ffff;
+    textStyle = textStyle & 0xff00ffff;
   }
-  uVar4 = uVar4 | control->packedTextStyle;
+  textStyle = textStyle | control->packedTextStyle;
   if ((((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) ||
      (((control->selectable).stateFlags & 0x1000) != 0)) {
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,uVar4,commandStream,
-               iVar3 + (control->selectable).base.top,iVar1 + (control->selectable).base.left);
+              (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,
+               textYOrTileX + (control->selectable).base.top,textXOrFocusEnd + (control->selectable).base.left);
   }
   else {
-    iVar1 = iVar1 + (control->selectable).base.left;
-    iVar3 = iVar3 + (control->selectable).base.top;
-    baselineY = iVar1;
-    drawX = iVar3;
+    textXOrFocusEnd = textXOrFocusEnd + (control->selectable).base.left;
+    textYOrTileX = textYOrTileX + (control->selectable).base.top;
+    baselineY = textXOrFocusEnd;
+    drawX = textYOrTileX;
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar1 + -2,0x7f000000,0x86,
+              (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd + -2,0x7f000000,0x86,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-    iVar2 = iVar1 + -2 + GVar9.logicalWidthPixels;
-    GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-    iVar1 = ((iVar1 + 4) - GVar8.logicalWidthPixels) + RVar6.widthPixels;
+    skinSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    focusTileXOrTop = textXOrFocusEnd + -2 + focusTileSize.logicalWidthPixels;
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    textXOrFocusEnd = ((textXOrFocusEnd + 4) - skinSizeOrEndCapSize.logicalWidthPixels) + textExtent.widthPixels;
     (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar3,iVar1,0x7f000000,0x88,
+              (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd,0x7f000000,0x88,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    if (clipLeft < iVar1) {
-      iVar1 = clipLeft;
+    if (clipLeft < textXOrFocusEnd) {
+      textXOrFocusEnd = clipLeft;
     }
     do {
       (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
-                (clipTop,iVar1,clipBottom,clipRight,iVar3,iVar2,0x7f000000,0x87,
+                (clipTop,textXOrFocusEnd,clipBottom,clipRight,textYOrTileX,focusTileXOrTop,0x7f000000,0x87,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      iVar2 = iVar2 + GVar9.logicalWidthPixels;
-    } while (iVar2 < iVar1);
-    iVar2 = drawX + -1;
+      focusTileXOrTop = focusTileXOrTop + focusTileSize.logicalWidthPixels;
+    } while (focusTileXOrTop < textXOrFocusEnd);
+    focusTileXOrTop = drawX + -1;
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,uVar4,commandStream,drawX,baselineY);
+              (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,drawX,baselineY);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar2,baselineY + -3,0x86,
+              (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,baselineY + -3,0x86,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    GVar8 = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
-    iVar3 = baselineY + -3 + GVar9.logicalWidthPixels;
-    GVar9 = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
-    iVar1 = ((baselineY + 3) - GVar8.logicalWidthPixels) + RVar6.widthPixels;
+    skinSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    textYOrTileX = baselineY + -3 + focusTileSize.logicalWidthPixels;
+    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    textXOrFocusEnd = ((baselineY + 3) - skinSizeOrEndCapSize.logicalWidthPixels) + textExtent.widthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,iVar2,iVar1,0x88,g_UiWindowTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,textXOrFocusEnd,0x88,g_UiWindowTextureSource,
                g_FramebufferAccess);
-    if (clipLeft < iVar1) {
-      iVar1 = clipLeft;
+    if (clipLeft < textXOrFocusEnd) {
+      textXOrFocusEnd = clipLeft;
     }
     do {
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,iVar1,clipBottom,clipRight,iVar2,iVar3,0x87,g_UiWindowTextureSource,
+                (clipTop,textXOrFocusEnd,clipBottom,clipRight,focusTileXOrTop,textYOrTileX,0x87,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      iVar3 = iVar3 + GVar9.logicalWidthPixels;
-    } while (iVar3 < iVar1);
+      textYOrTileX = textYOrTileX + focusTileSize.logicalWidthPixels;
+    } while (textYOrTileX < textXOrFocusEnd);
   }
 UiTextButtonControl_DrawClipped_EndFramebufferAccessAndReturn:
   (*g_GraphicsFramebufferEndAccess)();

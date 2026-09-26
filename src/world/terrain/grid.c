@@ -26,94 +26,94 @@ FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
+  FieldGridDimension rowLength;
+  int columnCountOrColumnsLeft;
+  int minRowOrColumnsLeft;
+  uint horizontalRadiusQ12;
+  int maxRowOrRowsLeft;
+  int boundOrRowsLeft;
+  int minColumnOrRowsLeft;
   FieldGridCell *cell;
-  FieldGridCell *cell_00;
-  FieldGridCell *cell_01;
-  FieldGridCoordinatesEaxEdx8 FVar8;
-  FieldGridCoordinatesEaxEdx8 FVar9;
-  FieldGridCell *pFVar10;
-  FieldGridCell *pFVar11;
+  FieldGridCell *normalCell;
+  FieldGridCell *lightCell;
+  FieldGridCoordinatesEaxEdx8 minCornerGrid;
+  FieldGridCoordinatesEaxEdx8 maxCornerGrid;
+  FieldGridCell *heightOrLightRowStart;
+  FieldGridCell *normalRowStart;
   
   if (0 < radiusWorldUnits) {
-    uVar4 = (int)((ulonglong)((longlong)radiusWorldUnits * 0x1bb6) >> 0x20) << 0x14 |
+    horizontalRadiusQ12 = (int)((ulonglong)((longlong)radiusWorldUnits * 0x1bb6) >> 0x20) << 0x14 |
             (uint)((longlong)radiusWorldUnits * 0x1bb6) >> 0xc;
-    iVar6 = centerWorldXQ12 - uVar4;
-    FVar8 = FieldGrid_WorldToGridQ12(centerWorldYQ12 + radiusWorldUnits,iVar6);
-    FVar9 = FieldGrid_WorldToGridQ12
-                      (centerWorldYQ12 + radiusWorldUnits + radiusWorldUnits * -2,iVar6 + uVar4 * 2)
+    boundOrRowsLeft = centerWorldXQ12 - horizontalRadiusQ12;
+    minCornerGrid = FieldGrid_WorldToGridQ12(centerWorldYQ12 + radiusWorldUnits,boundOrRowsLeft);
+    maxCornerGrid = FieldGrid_WorldToGridQ12
+                      (centerWorldYQ12 + radiusWorldUnits + radiusWorldUnits * -2,boundOrRowsLeft + horizontalRadiusQ12 * 2)
     ;
-    FVar1 = fieldGrid->gridWidth;
-    iVar7 = FVar8.columnQ12 >> 0xc;
-    iVar3 = FVar8.rowQ12 >> 0xc;
-    iVar6 = (FVar9.columnQ12 >> 0xc) + 1;
-    iVar5 = (FVar9.rowQ12 >> 0xc) + 1;
-    if ((int)FVar1 <= iVar6) {
-      iVar6 = FVar1 - 1;
+    rowLength = fieldGrid->gridWidth;
+    minColumnOrRowsLeft = minCornerGrid.columnQ12 >> 0xc;
+    minRowOrColumnsLeft = minCornerGrid.rowQ12 >> 0xc;
+    boundOrRowsLeft = (maxCornerGrid.columnQ12 >> 0xc) + 1;
+    maxRowOrRowsLeft = (maxCornerGrid.rowQ12 >> 0xc) + 1;
+    if ((int)rowLength <= boundOrRowsLeft) {
+      boundOrRowsLeft = rowLength - 1;
     }
-    if (iVar7 < 1) {
-      iVar7 = 1;
+    if (minColumnOrRowsLeft < 1) {
+      minColumnOrRowsLeft = 1;
     }
-    if (iVar3 < 1) {
-      iVar3 = 1;
+    if (minRowOrColumnsLeft < 1) {
+      minRowOrColumnsLeft = 1;
     }
-    if ((int)fieldGrid->gridHeight <= iVar5) {
-      iVar5 = fieldGrid->gridHeight - 1;
+    if ((int)fieldGrid->gridHeight <= maxRowOrRowsLeft) {
+      maxRowOrRowsLeft = fieldGrid->gridHeight - 1;
     }
-    iVar2 = iVar6 - iVar7;
-    if ((iVar2 != 0 && iVar7 <= iVar6) && (iVar6 = iVar5 - iVar3, iVar6 != 0 && iVar3 <= iVar5)) {
+    columnCountOrColumnsLeft = boundOrRowsLeft - minColumnOrRowsLeft;
+    if ((columnCountOrColumnsLeft != 0 && minColumnOrRowsLeft <= boundOrRowsLeft) && (boundOrRowsLeft = maxRowOrRowsLeft - minRowOrColumnsLeft, boundOrRowsLeft != 0 && minRowOrColumnsLeft <= maxRowOrRowsLeft)) {
       fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-      cell = (FieldGridCell *)(fieldGrid->cells[iVar7].runtime0C_3F + iVar3 * FVar1 * 0x80 + -0xc);
-      iVar3 = iVar2;
-      pFVar10 = cell;
-      cell_00 = cell;
-      iVar5 = iVar6;
+      cell = (FieldGridCell *)(fieldGrid->cells[minColumnOrRowsLeft].runtime0C_3F + minRowOrColumnsLeft * rowLength * 0x80 + -0xc);
+      minRowOrColumnsLeft = columnCountOrColumnsLeft;
+      heightOrLightRowStart = cell;
+      normalCell = cell;
+      maxRowOrRowsLeft = boundOrRowsLeft;
       do {
         do {
           FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
                     (terrainMaterialIndexOrNegativeSentinel,radiusWorldUnits,
                      terrainHeightDeltaAmplitudeQ12,centerWorldYQ12,centerWorldXQ12,cell);
           cell = cell + 1;
-          iVar3 = iVar3 + -1;
-        } while (iVar3 != 0);
-        cell = pFVar10 + FVar1;
-        iVar6 = iVar6 + -1;
-        iVar3 = iVar2;
-        pFVar11 = cell_00;
-        pFVar10 = cell;
-        cell_01 = cell_00;
-        iVar7 = iVar5;
-      } while (iVar6 != 0);
+          minRowOrColumnsLeft = minRowOrColumnsLeft + -1;
+        } while (minRowOrColumnsLeft != 0);
+        cell = heightOrLightRowStart + rowLength;
+        boundOrRowsLeft = boundOrRowsLeft + -1;
+        minRowOrColumnsLeft = columnCountOrColumnsLeft;
+        normalRowStart = normalCell;
+        heightOrLightRowStart = cell;
+        lightCell = normalCell;
+        minColumnOrRowsLeft = maxRowOrRowsLeft;
+      } while (boundOrRowsLeft != 0);
       do {
         do {
-          FieldGridCell_RecomputeTriangleNormalAngles(FVar1 * 0x80,cell_00);
-          cell_00 = cell_00 + 1;
-          iVar2 = iVar2 + -1;
-        } while (iVar2 != 0);
-        cell_00 = pFVar11 + FVar1;
-        iVar5 = iVar5 + -1;
-        iVar2 = iVar3;
-        pFVar10 = cell_01;
-        pFVar11 = cell_00;
-        iVar6 = iVar3;
-      } while (iVar5 != 0);
+          FieldGridCell_RecomputeTriangleNormalAngles(rowLength * 0x80,normalCell);
+          normalCell = normalCell + 1;
+          columnCountOrColumnsLeft = columnCountOrColumnsLeft + -1;
+        } while (columnCountOrColumnsLeft != 0);
+        normalCell = normalRowStart + rowLength;
+        maxRowOrRowsLeft = maxRowOrRowsLeft + -1;
+        columnCountOrColumnsLeft = minRowOrColumnsLeft;
+        heightOrLightRowStart = lightCell;
+        normalRowStart = normalCell;
+        boundOrRowsLeft = minRowOrColumnsLeft;
+      } while (maxRowOrRowsLeft != 0);
       do {
         do {
-          FieldGridCell_ComputeDirectionalLightColor(cell_01);
-          cell_01 = cell_01 + 1;
-          iVar3 = iVar3 + -1;
-        } while (iVar3 != 0);
-        cell_01 = pFVar10 + FVar1;
-        iVar7 = iVar7 + -1;
-        iVar3 = iVar6;
-        pFVar10 = cell_01;
-      } while (iVar7 != 0);
+          FieldGridCell_ComputeDirectionalLightColor(lightCell);
+          lightCell = lightCell + 1;
+          minRowOrColumnsLeft = minRowOrColumnsLeft + -1;
+        } while (minRowOrColumnsLeft != 0);
+        lightCell = heightOrLightRowStart + rowLength;
+        minColumnOrRowsLeft = minColumnOrRowsLeft + -1;
+        minRowOrColumnsLeft = boundOrRowsLeft;
+        heightOrLightRowStart = lightCell;
+      } while (minColumnOrRowsLeft != 0);
       return;
     }
   }
@@ -172,142 +172,142 @@ FieldGrid_ApplyPositiveCellDeltas
 
 {
   FieldGridAsset *fieldGrid;
-  FieldGridDimension FVar1;
-  int iVar2;
-  dword dVar3;
-  int iVar4;
-  int iVar5;
+  FieldGridDimension rowLength;
+  int cellDelta;
+  dword remainingPairCount;
+  int remainingCellCount;
+  int countdownOrDelta;
   int rowStrideBytes;
   FieldGridCell *cell;
-  FieldGridCell *pFVar6;
-  FieldGridCell *pFVar7;
-  SelectionPlayerPairRecord *pSVar8;
-  int *piVar9;
-  bool bVar10;
+  FieldGridCell *scanCell;
+  FieldGridCell *applyCell;
+  SelectionPlayerPairRecord *pairRecord;
+  int *scratchHeightCursor;
+  bool containsAnchorPair;
   int *accumulatorPlane;
-  int rowStrideBytes_00;
+  int applyRowStrideBytes;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar9 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
-  FVar1 = fieldGrid->gridWidth;
-  iVar4 = FVar1 * fieldGrid->gridHeight;
-  rowStrideBytes = FVar1 * 0x80;
-  pFVar7 = fieldGrid->cells;
-  iVar5 = iVar4;
-  pFVar6 = pFVar7;
-  accumulatorPlane = piVar9;
-  rowStrideBytes_00 = rowStrideBytes;
+  scratchHeightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  rowLength = fieldGrid->gridWidth;
+  remainingCellCount = rowLength * fieldGrid->gridHeight;
+  rowStrideBytes = rowLength * 0x80;
+  applyCell = fieldGrid->cells;
+  countdownOrDelta = remainingCellCount;
+  scanCell = applyCell;
+  accumulatorPlane = scratchHeightCursor;
+  applyRowStrideBytes = rowStrideBytes;
   do {
-    iVar2 = *piVar9;
-    if (iVar2 != 0) {
-      pFVar6->terrainHeight = pFVar6->terrainHeight - iVar2;
-      pFVar6->waterSurfaceDelta = pFVar6->waterSurfaceDelta + iVar2;
-      if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar6);
-        if (((pFVar6[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + -1);
+    cellDelta = *scratchHeightCursor;
+    if (cellDelta != 0) {
+      scanCell->terrainHeight = scanCell->terrainHeight - cellDelta;
+      scanCell->waterSurfaceDelta = scanCell->waterSurfaceDelta + cellDelta;
+      if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell);
+        if (((scanCell[-1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + -1);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell + -1);
         }
-        if (((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
+        if (((scanCell[1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
         }
-        pFVar6 = pFVar6 + -FVar1;
-        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        scanCell = scanCell + -rowLength;
+        if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell);
         }
-        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
+        if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
         }
-        pFVar6 = pFVar6 + FVar1 * 2 + -1;
-        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        scanCell = scanCell + rowLength * 2 + -1;
+        if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell);
         }
-        cell = pFVar6 + 1;
-        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
+        cell = scanCell + 1;
+        if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
         }
-        pFVar6 = cell + -FVar1;
+        scanCell = cell + -rowLength;
       }
     }
-    *piVar9 = pFVar6->terrainHeight;
-    pFVar6 = pFVar6 + 1;
-    piVar9 = piVar9 + 1;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
-  bVar10 = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
-  if (bVar10) {
+    *scratchHeightCursor = scanCell->terrainHeight;
+    scanCell = scanCell + 1;
+    scratchHeightCursor = scratchHeightCursor + 1;
+    countdownOrDelta = countdownOrDelta + -1;
+  } while (countdownOrDelta != 0);
+  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
+  if (containsAnchorPair) {
     FieldGrid_ProcessHorizontalSpan
               (anchorWorldYQ12,anchorWorldXQ12,(int)packedDragDeltaXY16 >> 0x10,
                (int)(short)packedDragDeltaXY16,anchorWorldYQ12,anchorWorldXQ12,accumulatorPlane,
                fieldGrid);
-    piVar9 = accumulatorPlane;
+    scratchHeightCursor = accumulatorPlane;
   }
   else {
-    pSVar8 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
-    piVar9 = accumulatorPlane;
-    for (dVar3 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
-        dVar3 != 0; dVar3 = dVar3 - 1) {
+    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
+    scratchHeightCursor = accumulatorPlane;
+    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
+        remainingPairCount != 0; remainingPairCount = remainingPairCount - 1) {
       FieldGrid_ProcessHorizontalSpan
                 (anchorWorldYQ12,anchorWorldXQ12,(int)packedDragDeltaXY16 >> 0x10,
-                 (int)(short)packedDragDeltaXY16,pSVar8->pairValue,pSVar8->pairKey,accumulatorPlane,
+                 (int)(short)packedDragDeltaXY16,pairRecord->pairValue,pairRecord->pairKey,accumulatorPlane,
                  fieldGrid);
-      pSVar8 = pSVar8 + 1;
+      pairRecord = pairRecord + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
   do {
     LOCK();
-    iVar5 = *piVar9;
-    *piVar9 = 0;
+    countdownOrDelta = *scratchHeightCursor;
+    *scratchHeightCursor = 0;
     UNLOCK();
-    iVar5 = iVar5 - pFVar7->terrainHeight;
-    if (iVar5 != 0) {
-      pFVar7->terrainHeight = pFVar7->terrainHeight + iVar5;
-      pFVar7->waterSurfaceDelta = pFVar7->waterSurfaceDelta - iVar5;
-      *piVar9 = iVar5;
-      if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar7);
-        if (((pFVar7[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + -1);
+    countdownOrDelta = countdownOrDelta - applyCell->terrainHeight;
+    if (countdownOrDelta != 0) {
+      applyCell->terrainHeight = applyCell->terrainHeight + countdownOrDelta;
+      applyCell->waterSurfaceDelta = applyCell->waterSurfaceDelta - countdownOrDelta;
+      *scratchHeightCursor = countdownOrDelta;
+      if ((applyCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell);
+        FieldGridCell_ComputeDirectionalLightColor(applyCell);
+        if (((applyCell[-1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell + -1);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell + -1);
         }
-        if (((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
+        if (((applyCell[1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell + 1);
         }
-        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
-        if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
+        applyCell = (FieldGridCell *)((int)applyCell - applyRowStrideBytes);
+        if ((applyCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell);
         }
-        if ((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
+        if ((applyCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell + 1);
         }
-        pFVar6 = (FieldGridCell *)(pFVar7[-1].runtime0C_3F + rowStrideBytes_00 * 2 + -0xc);
-        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar6);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        scanCell = (FieldGridCell *)(applyCell[-1].runtime0C_3F + applyRowStrideBytes * 2 + -0xc);
+        if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,scanCell);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell);
         }
-        pFVar7 = pFVar6 + 1;
-        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
+        applyCell = scanCell + 1;
+        if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell);
         }
-        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
+        applyCell = (FieldGridCell *)((int)applyCell - applyRowStrideBytes);
       }
     }
-    pFVar7 = pFVar7 + 1;
-    piVar9 = piVar9 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    applyCell = applyCell + 1;
+    scratchHeightCursor = scratchHeightCursor + 1;
+    remainingCellCount = remainingCellCount + -1;
+  } while (remainingCellCount != 0);
   return;
 }
 
@@ -328,135 +328,135 @@ FieldGrid_ApplyNegativeCellDeltas
 
 {
   FieldGridAsset *fieldGrid;
-  FieldGridDimension FVar1;
-  int iVar2;
-  dword dVar3;
-  int iVar4;
-  int iVar5;
+  FieldGridDimension rowLength;
+  int cellDelta;
+  dword remainingPairCount;
+  int remainingCellCount;
+  int countdownOrDelta;
   int rowStrideBytes;
   FieldGridCell *cell;
-  FieldGridCell *pFVar6;
-  FieldGridCell *pFVar7;
-  SelectionPlayerPairRecord *pSVar8;
-  int *piVar9;
-  bool bVar10;
+  FieldGridCell *scanCell;
+  FieldGridCell *applyCell;
+  SelectionPlayerPairRecord *pairRecord;
+  int *scratchHeightCursor;
+  bool containsAnchorPair;
   int *accumulatorPlane;
-  int rowStrideBytes_00;
+  int applyRowStrideBytes;
   
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  piVar9 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
-  FVar1 = fieldGrid->gridWidth;
-  iVar4 = FVar1 * fieldGrid->gridHeight;
-  rowStrideBytes = FVar1 * 0x80;
-  pFVar7 = fieldGrid->cells;
-  iVar5 = iVar4;
-  pFVar6 = pFVar7;
-  accumulatorPlane = piVar9;
-  rowStrideBytes_00 = rowStrideBytes;
+  scratchHeightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  rowLength = fieldGrid->gridWidth;
+  remainingCellCount = rowLength * fieldGrid->gridHeight;
+  rowStrideBytes = rowLength * 0x80;
+  applyCell = fieldGrid->cells;
+  countdownOrDelta = remainingCellCount;
+  scanCell = applyCell;
+  accumulatorPlane = scratchHeightCursor;
+  applyRowStrideBytes = rowStrideBytes;
   do {
-    iVar2 = *piVar9;
-    if (iVar2 != 0) {
-      pFVar6->terrainHeight = pFVar6->terrainHeight - iVar2;
-      pFVar6->waterSurfaceDelta = pFVar6->waterSurfaceDelta + iVar2;
-      *piVar9 = 0;
-      if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar6);
-        if (((pFVar6[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + -1);
+    cellDelta = *scratchHeightCursor;
+    if (cellDelta != 0) {
+      scanCell->terrainHeight = scanCell->terrainHeight - cellDelta;
+      scanCell->waterSurfaceDelta = scanCell->waterSurfaceDelta + cellDelta;
+      *scratchHeightCursor = 0;
+      if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell);
+        if (((scanCell[-1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + -1);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell + -1);
         }
-        if (((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
+        if (((scanCell[1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
         }
-        pFVar6 = pFVar6 + -FVar1;
-        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        scanCell = scanCell + -rowLength;
+        if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell);
         }
-        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6 + 1);
+        if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
         }
-        pFVar6 = pFVar6 + FVar1 * 2 + -1;
-        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar6);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        scanCell = scanCell + rowLength * 2 + -1;
+        if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell);
         }
-        cell = pFVar6 + 1;
-        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
+        cell = scanCell + 1;
+        if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
         }
-        pFVar6 = cell + -FVar1;
+        scanCell = cell + -rowLength;
       }
     }
-    pFVar6 = pFVar6 + 1;
-    piVar9 = piVar9 + 1;
-    iVar5 = iVar5 + -1;
-  } while (iVar5 != 0);
-  bVar10 = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
-  if (bVar10) {
+    scanCell = scanCell + 1;
+    scratchHeightCursor = scratchHeightCursor + 1;
+    countdownOrDelta = countdownOrDelta + -1;
+  } while (countdownOrDelta != 0);
+  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
+  if (containsAnchorPair) {
     FieldGrid_ProcessVerticalSpan
               ((int)packedDragDeltaXY16 >> 0x10,(int)(short)packedDragDeltaXY16,anchorWorldYQ12,
                anchorWorldXQ12,accumulatorPlane,fieldGrid);
-    piVar9 = accumulatorPlane;
+    scratchHeightCursor = accumulatorPlane;
   }
   else {
-    pSVar8 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
-    piVar9 = accumulatorPlane;
-    for (dVar3 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
-        dVar3 != 0; dVar3 = dVar3 - 1) {
+    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
+    scratchHeightCursor = accumulatorPlane;
+    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
+        remainingPairCount != 0; remainingPairCount = remainingPairCount - 1) {
       FieldGrid_ProcessVerticalSpan
-                ((int)packedDragDeltaXY16 >> 0x10,(int)(short)packedDragDeltaXY16,pSVar8->pairValue,
-                 pSVar8->pairKey,accumulatorPlane,fieldGrid);
-      pSVar8 = pSVar8 + 1;
+                ((int)packedDragDeltaXY16 >> 0x10,(int)(short)packedDragDeltaXY16,pairRecord->pairValue,
+                 pairRecord->pairKey,accumulatorPlane,fieldGrid);
+      pairRecord = pairRecord + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
   do {
-    iVar5 = *piVar9;
-    if (iVar5 != 0) {
-      pFVar7->terrainHeight = pFVar7->terrainHeight + iVar5;
-      pFVar7->waterSurfaceDelta = pFVar7->waterSurfaceDelta - iVar5;
-      if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar7);
-        if (((pFVar7[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + -1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + -1);
+    countdownOrDelta = *scratchHeightCursor;
+    if (countdownOrDelta != 0) {
+      applyCell->terrainHeight = applyCell->terrainHeight + countdownOrDelta;
+      applyCell->waterSurfaceDelta = applyCell->waterSurfaceDelta - countdownOrDelta;
+      if ((applyCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell);
+        FieldGridCell_ComputeDirectionalLightColor(applyCell);
+        if (((applyCell[-1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell + -1);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell + -1);
         }
-        if (((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) && (piVar9[1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
+        if (((applyCell[1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell + 1);
         }
-        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
-        if ((pFVar7->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
+        applyCell = (FieldGridCell *)((int)applyCell - applyRowStrideBytes);
+        if ((applyCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell);
         }
-        if ((pFVar7[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7 + 1);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7 + 1);
+        if ((applyCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell + 1);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell + 1);
         }
-        pFVar6 = (FieldGridCell *)(pFVar7[-1].runtime0C_3F + rowStrideBytes_00 * 2 + -0xc);
-        if ((pFVar6->flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar6);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar6);
+        scanCell = (FieldGridCell *)(applyCell[-1].runtime0C_3F + applyRowStrideBytes * 2 + -0xc);
+        if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,scanCell);
+          FieldGridCell_ComputeDirectionalLightColor(scanCell);
         }
-        pFVar7 = pFVar6 + 1;
-        if ((pFVar6[1].flagsAndMaterial & 0x88006000) == 0) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes_00,pFVar7);
-          FieldGridCell_ComputeDirectionalLightColor(pFVar7);
+        applyCell = scanCell + 1;
+        if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
+          FieldGridCell_RecomputeTriangleNormalAngles(applyRowStrideBytes,applyCell);
+          FieldGridCell_ComputeDirectionalLightColor(applyCell);
         }
-        pFVar7 = (FieldGridCell *)((int)pFVar7 - rowStrideBytes_00);
+        applyCell = (FieldGridCell *)((int)applyCell - applyRowStrideBytes);
       }
     }
-    pFVar7 = pFVar7 + 1;
-    piVar9 = piVar9 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    applyCell = applyCell + 1;
+    scratchHeightCursor = scratchHeightCursor + 1;
+    remainingCellCount = remainingCellCount + -1;
+  } while (remainingCellCount != 0);
   return;
 }
 
@@ -476,74 +476,74 @@ FieldGrid_RebuildLocalInfluenceState
           Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
+  SelectionPlayerRuntimeBlock *playerBlock;
   FieldGridAsset *fieldGrid;
-  FieldGridDimension FVar2;
-  dword dVar3;
-  int iVar4;
+  FieldGridDimension rowLength;
+  dword remainingPairCount;
+  int remainingCellCount;
   int rowStrideBytes;
   FieldGridCell *cell;
-  FieldGridCell *pFVar5;
-  SelectionPlayerPairRecord *pSVar6;
-  int *piVar7;
-  bool bVar8;
+  FieldGridCell *scanCell;
+  SelectionPlayerPairRecord *pairRecord;
+  int *scratchHeightCursor;
+  bool containsAnchorPair;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  bVar8 = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
-  if (bVar8) {
+  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
+  if (containsAnchorPair) {
     FieldGrid_ApplyRectangularTransition(worldYQ12,worldXQ12,fieldGrid);
   }
   else {
-    pSVar6 = pSVar1->pairRecords80_807F;
-    for (dVar3 = pSVar1->activePairCount8084; dVar3 != 0; dVar3 = dVar3 - 1) {
-      FieldGrid_ApplyRectangularTransition(pSVar6->pairValue,pSVar6->pairKey,fieldGrid);
-      pSVar6 = pSVar6 + 1;
+    pairRecord = playerBlock->pairRecords80_807F;
+    for (remainingPairCount = playerBlock->activePairCount8084; remainingPairCount != 0; remainingPairCount = remainingPairCount - 1) {
+      FieldGrid_ApplyRectangularTransition(pairRecord->pairValue,pairRecord->pairKey,fieldGrid);
+      pairRecord = pairRecord + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-  piVar7 = pSVar1->terrainHeightScratchPlane8088;
-  FVar2 = fieldGrid->gridWidth;
-  iVar4 = FVar2 * fieldGrid->gridHeight;
-  rowStrideBytes = FVar2 * 0x80;
-  pFVar5 = fieldGrid->cells;
+  scratchHeightCursor = playerBlock->terrainHeightScratchPlane8088;
+  rowLength = fieldGrid->gridWidth;
+  remainingCellCount = rowLength * fieldGrid->gridHeight;
+  rowStrideBytes = rowLength * 0x80;
+  scanCell = fieldGrid->cells;
   do {
-    if ((*piVar7 != pFVar5->terrainHeight) && ((pFVar5->flagsAndMaterial & 0x88006000) == 0)) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar5);
-      if (((pFVar5[-1].flagsAndMaterial & 0x88006000) == 0) && (piVar7[-1] == 0)) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + -1);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5 + -1);
+    if ((*scratchHeightCursor != scanCell->terrainHeight) && ((scanCell->flagsAndMaterial & 0x88006000) == 0)) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+      FieldGridCell_ComputeDirectionalLightColor(scanCell);
+      if (((scanCell[-1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[-1] == 0)) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + -1);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell + -1);
       }
-      if (((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) && (piVar7[1] == 0)) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
+      if (((scanCell[1].flagsAndMaterial & 0x88006000) == 0) && (scratchHeightCursor[1] == 0)) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
       }
-      pFVar5 = pFVar5 + -FVar2;
-      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+      scanCell = scanCell + -rowLength;
+      if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell);
       }
-      if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5 + 1);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5 + 1);
+      if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell + 1);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell + 1);
       }
-      pFVar5 = pFVar5 + FVar2 * 2 + -1;
-      if ((pFVar5->flagsAndMaterial & 0x88006000) == 0) {
-        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar5);
-        FieldGridCell_ComputeDirectionalLightColor(pFVar5);
+      scanCell = scanCell + rowLength * 2 + -1;
+      if ((scanCell->flagsAndMaterial & 0x88006000) == 0) {
+        FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,scanCell);
+        FieldGridCell_ComputeDirectionalLightColor(scanCell);
       }
-      cell = pFVar5 + 1;
-      if ((pFVar5[1].flagsAndMaterial & 0x88006000) == 0) {
+      cell = scanCell + 1;
+      if ((scanCell[1].flagsAndMaterial & 0x88006000) == 0) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
         FieldGridCell_ComputeDirectionalLightColor(cell);
       }
-      pFVar5 = cell + -FVar2;
+      scanCell = cell + -rowLength;
     }
-    pFVar5 = pFVar5 + 1;
-    piVar7 = piVar7 + 1;
-    iVar4 = iVar4 + -1;
-  } while (iVar4 != 0);
+    scanCell = scanCell + 1;
+    scratchHeightCursor = scratchHeightCursor + 1;
+    remainingCellCount = remainingCellCount + -1;
+  } while (remainingCellCount != 0);
   return;
 }
 
@@ -559,31 +559,31 @@ void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  int iVar3;
+  FieldGridDimension rowLength;
+  int columnsLeft;
+  int rowsLeft;
   FieldGridCell *cell;
   FieldGridCell *cellCursor;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    FVar1 = fieldGrid->gridWidth;
-    iVar3 = fieldGrid->gridHeight - 2;
-    iVar2 = FVar1 - 2;
+    rowLength = fieldGrid->gridWidth;
+    rowsLeft = fieldGrid->gridHeight - 2;
+    columnsLeft = rowLength - 2;
     cellCursor = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 FVar1 * 0x80 + -0x28);
+                 rowLength * 0x80 + -0x28);
     do {
       do {
         cell = cellCursor;
-        FieldGridCell_RecomputeTriangleNormalAngles(FVar1 * 0x80,cell);
-        iVar2 = iVar2 + -1;
+        FieldGridCell_RecomputeTriangleNormalAngles(rowLength * 0x80,cell);
+        columnsLeft = columnsLeft + -1;
         cellCursor = cell + 1;
-      } while (iVar2 != 0);
-      iVar2 = FVar1 - 2;
-      iVar3 = iVar3 + -1;
+      } while (columnsLeft != 0);
+      columnsLeft = rowLength - 2;
+      rowsLeft = rowsLeft + -1;
       cellCursor = cell + 3;
-    } while (iVar3 != 0);
+    } while (rowsLeft != 0);
   }
   return;
 }
@@ -602,9 +602,9 @@ FieldGrid_RecomputeInteriorDirectionalLighting
           (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  int iVar3;
+  FieldGridDimension rowLength;
+  int columnsLeft;
+  int rowsLeft;
   FieldGridCell *cell;
   FieldGridCell *cellCursor;
   
@@ -612,23 +612,23 @@ FieldGrid_RecomputeInteriorDirectionalLighting
             ((GraphicsFixedVec3 *)&g_TerrainLightDirectionX,lightElevationAngle,lightAzimuthAngle);
   if (fieldGrid != (FieldGridAsset *)0x0) {
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    FVar1 = fieldGrid->gridWidth;
-    iVar3 = fieldGrid->gridHeight - 2;
-    iVar2 = FVar1 - 2;
+    rowLength = fieldGrid->gridWidth;
+    rowsLeft = fieldGrid->gridHeight - 2;
+    columnsLeft = rowLength - 2;
     cellCursor = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 FVar1 * 0x80 + -0x28);
+                 rowLength * 0x80 + -0x28);
     do {
       do {
         cell = cellCursor;
         FieldGridCell_ComputeDirectionalLightColor(cell);
-        iVar2 = iVar2 + -1;
+        columnsLeft = columnsLeft + -1;
         cellCursor = cell + 1;
-      } while (iVar2 != 0);
-      iVar2 = FVar1 - 2;
-      iVar3 = iVar3 + -1;
+      } while (columnsLeft != 0);
+      columnsLeft = rowLength - 2;
+      rowsLeft = rowsLeft + -1;
       cellCursor = cell + 3;
-    } while (iVar3 != 0);
+    } while (rowsLeft != 0);
   }
   return;
 }
@@ -653,19 +653,19 @@ FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
           Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  Q12 *pQVar1;
-  uint uVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  uint uVar6;
-  int iVar7;
-  FieldGridCell *pFVar8;
-  FieldGridCell *pFVar9;
+  Q12 *heightField;
+  uint baseColumn;
+  uint columnFractionQ12;
+  int heightDeltaOrRowStride;
+  uint fractionSumOrWidth;
+  uint rowFractionQ12;
+  int cellIndex;
+  FieldGridCell *wedgeCellA;
+  FieldGridCell *wedgeCellB;
   FieldGridCell *cell;
-  FieldGridCoordinatesEaxEdx8 FVar10;
-  uint uVar11;
-  uint uVar12;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  uint targetRow;
+  uint targetColumn;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
     g_TerrainScanStepLimit = heightDeltaSourceValue / 0x240;
@@ -676,58 +676,58 @@ FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
       g_TerrainScanStepLimit = 0xff;
     }
     g_TerrainScanReferenceHeight = worldZQ12;
-    FVar10 = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
+    gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-    uVar2 = FVar10.columnQ12 >> 0xc;
-    uVar11 = FVar10.rowQ12 >> 0xc;
-    uVar3 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff);
-    uVar6 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, FVar10) & 0xfff00000fff) >> 0x20);
-    uVar5 = uVar6 + uVar3 * 2;
-    uVar12 = uVar2;
-    if (uVar5 < 0x1000) {
-      if (0xfff < uVar3 + uVar6 * 2) {
-        uVar11 = uVar11 + 1;
+    baseColumn = gridCoordinates.columnQ12 >> 0xc;
+    targetRow = gridCoordinates.rowQ12 >> 0xc;
+    columnFractionQ12 = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff);
+    rowFractionQ12 = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    fractionSumOrWidth = rowFractionQ12 + columnFractionQ12 * 2;
+    targetColumn = baseColumn;
+    if (fractionSumOrWidth < 0x1000) {
+      if (0xfff < columnFractionQ12 + rowFractionQ12 * 2) {
+        targetRow = targetRow + 1;
       }
     }
-    else if (uVar5 < 0x2001) {
-      uVar12 = uVar2 + 1;
-      if (uVar3 < uVar6) {
-        uVar11 = uVar11 + 1;
-        uVar12 = uVar2;
+    else if (fractionSumOrWidth < 0x2001) {
+      targetColumn = baseColumn + 1;
+      if (columnFractionQ12 < rowFractionQ12) {
+        targetRow = targetRow + 1;
+        targetColumn = baseColumn;
       }
     }
     else {
-      uVar12 = uVar2 + 1;
-      if (0x1fff < uVar3 + uVar6 * 2) {
-        uVar11 = uVar11 + 1;
+      targetColumn = baseColumn + 1;
+      if (0x1fff < columnFractionQ12 + rowFractionQ12 * 2) {
+        targetRow = targetRow + 1;
       }
     }
     g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7;
-    if ((((-1 < (int)uVar12) && (uVar5 = fieldGrid->gridWidth & 0x1ffffff, -1 < (int)uVar11)) &&
-        (uVar11 < fieldGrid->gridHeight)) &&
-       (((uVar12 < uVar5 &&
-         (iVar7 = uVar11 * uVar5 + uVar12,
-         (fieldGrid->cells[iVar7].flagsAndMaterial & 0x88006000) == 0)) &&
-        (fieldGrid->cells[iVar7].waterSurfaceDelta < 1)))) {
-      iVar4 = g_TerrainScanReferenceHeight - fieldGrid->cells[iVar7].terrainHeight;
-      pQVar1 = &fieldGrid->cells[iVar7].terrainHeight;
-      *pQVar1 = *pQVar1 + iVar4;
-      pQVar1 = &fieldGrid->cells[iVar7].waterSurfaceDelta;
-      *pQVar1 = *pQVar1 - iVar4;
-      iVar4 = g_TerrainScanRowStrideBytes;
-      pFVar8 = (FieldGridCell *)
+    if ((((-1 < (int)targetColumn) && (fractionSumOrWidth = fieldGrid->gridWidth & 0x1ffffff, -1 < (int)targetRow)) &&
+        (targetRow < fieldGrid->gridHeight)) &&
+       (((targetColumn < fractionSumOrWidth &&
+         (cellIndex = targetRow * fractionSumOrWidth + targetColumn,
+         (fieldGrid->cells[cellIndex].flagsAndMaterial & 0x88006000) == 0)) &&
+        (fieldGrid->cells[cellIndex].waterSurfaceDelta < 1)))) {
+      heightDeltaOrRowStride = g_TerrainScanReferenceHeight - fieldGrid->cells[cellIndex].terrainHeight;
+      heightField = &fieldGrid->cells[cellIndex].terrainHeight;
+      *heightField = *heightField + heightDeltaOrRowStride;
+      heightField = &fieldGrid->cells[cellIndex].waterSurfaceDelta;
+      *heightField = *heightField - heightDeltaOrRowStride;
+      heightDeltaOrRowStride = g_TerrainScanRowStrideBytes;
+      wedgeCellA = (FieldGridCell *)
                (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-               iVar7 * 0x80 + -0x28);
-      pFVar9 = (FieldGridCell *)((int)pFVar8 - g_TerrainScanRowStrideBytes);
-      TerrainHeightDelta_ApplyWedge0(0,pFVar8);
-      cell = pFVar9 + -1;
-      TerrainHeightDelta_ApplyWedge1(0,pFVar9);
-      pFVar8 = (FieldGridCell *)(cell[-1].runtime0C_3F + iVar4 + -0xc);
+               cellIndex * 0x80 + -0x28);
+      wedgeCellB = (FieldGridCell *)((int)wedgeCellA - g_TerrainScanRowStrideBytes);
+      TerrainHeightDelta_ApplyWedge0(0,wedgeCellA);
+      cell = wedgeCellB + -1;
+      TerrainHeightDelta_ApplyWedge1(0,wedgeCellB);
+      wedgeCellA = (FieldGridCell *)(cell[-1].runtime0C_3F + heightDeltaOrRowStride + -0xc);
       TerrainHeightDelta_ApplyWedge2(0,cell);
-      pFVar9 = (FieldGridCell *)(pFVar8->runtime0C_3F + iVar4 + -0xc);
-      TerrainHeightDelta_ApplyWedge3(0,pFVar8);
-      TerrainHeightDelta_ApplyWedge4(0,pFVar9);
-      TerrainHeightDelta_ApplyWedge5(0,pFVar9 + 1);
+      wedgeCellB = (FieldGridCell *)(wedgeCellA->runtime0C_3F + heightDeltaOrRowStride + -0xc);
+      TerrainHeightDelta_ApplyWedge3(0,wedgeCellA);
+      TerrainHeightDelta_ApplyWedge4(0,wedgeCellB);
+      TerrainHeightDelta_ApplyWedge5(0,wedgeCellB + 1);
       return;
     }
   }
@@ -749,24 +749,24 @@ FieldGrid_ApplyLocalCellUpdate
           Q12 worldXQ12)
 
 {
-  SelectionPlayerRuntimeBlock *pSVar1;
+  SelectionPlayerRuntimeBlock *playerBlock;
   FieldGridAsset *fieldGrid;
-  dword dVar2;
-  SelectionPlayerPairRecord *pSVar3;
-  bool bVar4;
+  dword remainingPairCount;
+  SelectionPlayerPairRecord *pairRecord;
+  bool containsAnchorPair;
   
-  pSVar1 = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
+  playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  bVar4 = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
-  if (bVar4) {
+  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
+  if (containsAnchorPair) {
     FieldGrid_ApplySingleCellTransition(transitionValue,worldYQ12,worldXQ12,fieldGrid);
   }
   else {
-    pSVar3 = pSVar1->pairRecords80_807F;
-    for (dVar2 = pSVar1->activePairCount8084; dVar2 != 0; dVar2 = dVar2 - 1) {
+    pairRecord = playerBlock->pairRecords80_807F;
+    for (remainingPairCount = playerBlock->activePairCount8084; remainingPairCount != 0; remainingPairCount = remainingPairCount - 1) {
       FieldGrid_ApplySingleCellTransition
-                (transitionValue,pSVar3->pairValue,pSVar3->pairKey,fieldGrid);
-      pSVar3 = pSVar3 + 1;
+                (transitionValue,pairRecord->pairValue,pairRecord->pairKey,fieldGrid);
+      pairRecord = pairRecord + 1;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
@@ -885,37 +885,37 @@ FieldGridNearestPointRegsCf13
 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
-  int iVar1;
+  int columnOrCellIndex;
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
   Q12 terrainHeightQ12;
-  undefined1 uVar2;
-  FieldGridNearestPointRegsCf13 FVar3;
+  undefined1 outOfBounds;
+  FieldGridNearestPointRegsCf13 nearestPoint;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
        (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  iVar1 = (int)((((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
+  columnOrCellIndex = (int)((((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
                  (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12) + 0x800)
           >> 0xc;
-  if ((((iVar1 < 0) ||
+  if ((((columnOrCellIndex < 0) ||
        (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 0xc, gridRowIndex < 0)) ||
-      ((int)field->gridWidth <= iVar1)) ||
-     (iVar1 = field->gridWidth * gridRowIndex + iVar1, (int)field->gridHeight <= gridRowIndex)) {
+      ((int)field->gridWidth <= columnOrCellIndex)) ||
+     (columnOrCellIndex = field->gridWidth * gridRowIndex + columnOrCellIndex, (int)field->gridHeight <= gridRowIndex)) {
     terrainHeightQ12 = 0;
-    uVar2 = 1;
+    outOfBounds = 1;
   }
   else {
-    worldX = field->cells[iVar1].worldX;
-    worldY = field->cells[iVar1].worldY;
-    terrainHeightQ12 = field->cells[iVar1].terrainHeight;
-    uVar2 = 0;
+    worldX = field->cells[columnOrCellIndex].worldX;
+    worldY = field->cells[columnOrCellIndex].worldY;
+    terrainHeightQ12 = field->cells[columnOrCellIndex].terrainHeight;
+    outOfBounds = 0;
   }
-  FVar3.ecx = worldY;
-  FVar3.eax = worldX;
-  FVar3.carry = (bool)uVar2;
-  FVar3.edx = terrainHeightQ12;
-  return FVar3;
+  nearestPoint.ecx = worldY;
+  nearestPoint.eax = worldX;
+  nearestPoint.carry = (bool)outOfBounds;
+  nearestPoint.edx = terrainHeightQ12;
+  return nearestPoint;
 }
 
 
@@ -928,36 +928,36 @@ FieldGridSurfacePointEaxEcxEdxCf13
 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
-  int iVar1;
+  int columnCellOrSurfaceZ;
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
-  undefined1 uVar2;
-  FieldGridSurfacePointEaxEcxEdxCf13 FVar3;
+  undefined1 outOfBounds;
+  FieldGridSurfacePointEaxEcxEdxCf13 nearestPoint;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
        (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  iVar1 = (int)((((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
+  columnCellOrSurfaceZ = (int)((((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
                  (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12) + 0x800)
           >> 0xc;
-  if ((((iVar1 < 0) ||
+  if ((((columnCellOrSurfaceZ < 0) ||
        (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 0xc, gridRowIndex < 0)) ||
-      ((int)field->gridWidth <= iVar1)) ||
-     (iVar1 = field->gridWidth * gridRowIndex + iVar1, (int)field->gridHeight <= gridRowIndex)) {
-    iVar1 = 0;
-    uVar2 = 1;
+      ((int)field->gridWidth <= columnCellOrSurfaceZ)) ||
+     (columnCellOrSurfaceZ = field->gridWidth * gridRowIndex + columnCellOrSurfaceZ, (int)field->gridHeight <= gridRowIndex)) {
+    columnCellOrSurfaceZ = 0;
+    outOfBounds = 1;
   }
   else {
-    worldX = field->cells[iVar1].worldX;
-    worldY = field->cells[iVar1].worldY;
-    iVar1 = field->cells[iVar1].waterSurfaceDelta + field->cells[iVar1].terrainHeight;
-    uVar2 = 0;
+    worldX = field->cells[columnCellOrSurfaceZ].worldX;
+    worldY = field->cells[columnCellOrSurfaceZ].worldY;
+    columnCellOrSurfaceZ = field->cells[columnCellOrSurfaceZ].waterSurfaceDelta + field->cells[columnCellOrSurfaceZ].terrainHeight;
+    outOfBounds = 0;
   }
-  FVar3.worldYQ12 = worldY;
-  FVar3.worldXQ12 = worldX;
-  FVar3.carry = (bool)uVar2;
-  FVar3.worldZQ12 = iVar1;
-  return FVar3;
+  nearestPoint.worldYQ12 = worldY;
+  nearestPoint.worldXQ12 = worldX;
+  nearestPoint.carry = (bool)outOfBounds;
+  nearestPoint.worldZQ12 = columnCellOrSurfaceZ;
+  return nearestPoint;
 }
 
 
@@ -972,22 +972,22 @@ sdword __thandor_eax_preserve_ecx_edx
 FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
-  sdword sVar1;
+  sdword columnOrWaterDelta;
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
        (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  sVar1 = (int)((((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
+  columnOrWaterDelta = (int)((((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
                  (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12) + 0x800)
           >> 0xc;
-  if ((((-1 < sVar1) &&
+  if ((((-1 < columnOrWaterDelta) &&
        (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 0xc, -1 < gridRowIndex)) &&
-      (sVar1 < (int)field->gridWidth)) && (gridRowIndex < (int)field->gridHeight)) {
-    sVar1 = field->cells[field->gridWidth * gridRowIndex + sVar1].waterSurfaceDelta;
+      (columnOrWaterDelta < (int)field->gridWidth)) && (gridRowIndex < (int)field->gridHeight)) {
+    columnOrWaterDelta = field->cells[field->gridWidth * gridRowIndex + columnOrWaterDelta].waterSurfaceDelta;
   }
-  return sVar1;
+  return columnOrWaterDelta;
 }
 
 
@@ -1001,16 +1001,16 @@ FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  longlong lVar1;
+  longlong upperTriangleAccumulator;
   int gridColumnIndex;
   uint gridColumnCoordinateQ12;
-  uint uVar2;
+  uint columnFractionOrHeightQ12;
   uint gridRowCoordinateQ12;
-  uint uVar3;
-  int iVar4;
+  uint rowFractionQ12;
+  int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
-  bool bVar5;
-  FieldGridHeightEaxCf5 FVar6;
+  bool sampleFailed;
+  FieldGridHeightEaxCf5 sampleResult;
   FieldGridDimension gridWidth;
   longlong weightedHeightAccumulator;
   
@@ -1022,55 +1022,55 @@ FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *f
        (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - gridRowCoordinateQ12;
   gridWidth = fieldGrid->gridWidth;
   gridColumnIndex = (int)gridColumnCoordinateQ12 >> 0xc;
-  if (((-1 < gridColumnIndex) && (iVar4 = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < iVar4)) &&
+  if (((-1 < gridColumnIndex) && (rowIndexOrRowOffsetBytes = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < rowIndexOrRowOffsetBytes)) &&
      (gridColumnIndex < (int)gridWidth)) {
-    if (iVar4 < (int)fieldGrid->gridHeight) {
-      iVar4 = iVar4 * gridWidth * 0x80;
-      uVar2 = gridColumnCoordinateQ12 & 0xfff;
-      uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x10) & 0x88006000)
+    if (rowIndexOrRowOffsetBytes < (int)fieldGrid->gridHeight) {
+      rowIndexOrRowOffsetBytes = rowIndexOrRowOffsetBytes * gridWidth * 0x80;
+      columnFractionOrHeightQ12 = gridColumnCoordinateQ12 & 0xfff;
+      rowFractionQ12 = gridRowCoordinateQ12 * 2 & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x10) & 0x88006000)
            == 0) &&
          ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
-                          producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
-        triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
-        if (uVar2 + uVar3 < 0x1000) {
+                          producerName + rowIndexOrRowOffsetBytes + 0x20) & 0x88006000) == 0)) {
+        triangleDiagonalWeightQ12 = (columnFractionOrHeightQ12 + rowFractionQ12) - 0x1000;
+        if (columnFractionOrHeightQ12 + rowFractionQ12 < 0x1000) {
           weightedHeightAccumulator =
                (longlong)
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                             producerName + iVar4 + 0x18) * (longlong)(int)uVar2 +
+                             producerName + rowIndexOrRowOffsetBytes + 0x18) * (longlong)(int)columnFractionOrHeightQ12 +
                ((longlong)
-                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x18)
-                * (longlong)(int)uVar3 -
-               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x18) *
+                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18)
+                * (longlong)(int)rowFractionQ12 -
+               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18) *
                (longlong)triangleDiagonalWeightQ12);
-          uVar2 = (uint)weightedHeightAccumulator >> 0xc |
+          columnFractionOrHeightQ12 = (uint)weightedHeightAccumulator >> 0xc |
                   (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
-          bVar5 = false;
+          sampleFailed = false;
         }
         else {
-          lVar1 = (longlong)
+          upperTriangleAccumulator = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                                [gridColumnIndex + gridWidth].producerName + iVar4 + 0x18) *
+                                [gridColumnIndex + gridWidth].producerName + rowIndexOrRowOffsetBytes + 0x18) *
                   (longlong)triangleDiagonalWeightQ12 -
                   ((longlong)
                    *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
-                           iVar4 + -0x18) * (longlong)(int)(uVar2 - 0x1000) +
+                           rowIndexOrRowOffsetBytes + -0x18) * (longlong)(int)(columnFractionOrHeightQ12 - 0x1000) +
                   (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                                producerName + iVar4 + 0x18) * (longlong)(int)(uVar3 - 0x1000));
-          uVar2 = (uint)lVar1 >> 0xc | (int)((ulonglong)lVar1 >> 0x20) << 0x14;
-          bVar5 = false;
+                                producerName + rowIndexOrRowOffsetBytes + 0x18) * (longlong)(int)(rowFractionQ12 - 0x1000));
+          columnFractionOrHeightQ12 = (uint)upperTriangleAccumulator >> 0xc | (int)((ulonglong)upperTriangleAccumulator >> 0x20) << 0x14;
+          sampleFailed = false;
         }
         goto LAB_004fed32;
       }
     }
   }
-  uVar2 = 0;
-  bVar5 = true;
+  columnFractionOrHeightQ12 = 0;
+  sampleFailed = true;
 LAB_004fed32:
-  FVar6.carry = bVar5;
-  FVar6.heightQ12 = uVar2;
-  return FVar6;
+  sampleResult.carry = sampleFailed;
+  sampleResult.heightQ12 = columnFractionOrHeightQ12;
+  return sampleResult;
 }
 
 
@@ -1085,13 +1085,13 @@ sdword __thandor_eax_preserve_ecx_edx
 FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
-  longlong lVar1;
+  longlong upperTriangleAccumulator;
   int gridColumnIndex;
   uint gridColumnCoordinateQ12;
-  uint uVar2;
+  uint columnFractionQ12;
   uint gridRowCoordinateQ12;
-  uint uVar3;
-  int iVar4;
+  uint rowFractionQ12;
+  int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
   FieldGridDimension gridWidth;
   longlong weightedWaterDeltaAccumulator;
@@ -1104,39 +1104,39 @@ FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
        (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridRowCoordinateQ12;
   gridWidth = field->gridWidth;
   gridColumnIndex = (int)gridColumnCoordinateQ12 >> 0xc;
-  if (((-1 < gridColumnIndex) && (iVar4 = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < iVar4)) &&
+  if (((-1 < gridColumnIndex) && (rowIndexOrRowOffsetBytes = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < rowIndexOrRowOffsetBytes)) &&
      (gridColumnIndex < (int)gridWidth)) {
-    if (iVar4 < (int)field->gridHeight) {
-      iVar4 = iVar4 * gridWidth * 0x80;
-      uVar2 = gridColumnCoordinateQ12 & 0xfff;
-      uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
-      if (((*(uint *)(field->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x10) & 0x88006000) == 0
+    if (rowIndexOrRowOffsetBytes < (int)field->gridHeight) {
+      rowIndexOrRowOffsetBytes = rowIndexOrRowOffsetBytes * gridWidth * 0x80;
+      columnFractionQ12 = gridColumnCoordinateQ12 & 0xfff;
+      rowFractionQ12 = gridRowCoordinateQ12 * 2 & 0xfff;
+      if (((*(uint *)(field->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x10) & 0x88006000) == 0
           ) && ((*(uint *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
-                                producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
-        triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
-        if (uVar2 + uVar3 < 0x1000) {
+                                producerName + rowIndexOrRowOffsetBytes + 0x20) & 0x88006000) == 0)) {
+        triangleDiagonalWeightQ12 = (columnFractionQ12 + rowFractionQ12) - 0x1000;
+        if (columnFractionQ12 + rowFractionQ12 < 0x1000) {
           weightedWaterDeltaAccumulator =
                (longlong)
                *(int *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex].producerName +
-                       iVar4 + 0x1c) * (longlong)(int)uVar2 +
+                       rowIndexOrRowOffsetBytes + 0x1c) * (longlong)(int)columnFractionQ12 +
                ((longlong)
-                *(int *)(field->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x14) *
-                (longlong)(int)uVar3 -
-               (longlong)*(int *)(field->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x14) *
+                *(int *)(field->cells[gridColumnIndex + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14) *
+                (longlong)(int)rowFractionQ12 -
+               (longlong)*(int *)(field->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14) *
                (longlong)triangleDiagonalWeightQ12);
           return (uint)weightedWaterDeltaAccumulator >> 0xc |
                  (int)((ulonglong)weightedWaterDeltaAccumulator >> 0x20) << 0x14;
         }
-        lVar1 = (longlong)
+        upperTriangleAccumulator = (longlong)
                 *(int *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
-                              producerName + iVar4 + 0x1c) * (longlong)triangleDiagonalWeightQ12 -
+                              producerName + rowIndexOrRowOffsetBytes + 0x1c) * (longlong)triangleDiagonalWeightQ12 -
                 ((longlong)
-                 *(int *)(field->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x14) *
-                 (longlong)(int)(uVar2 - 0x1000) +
+                 *(int *)(field->cells[gridColumnIndex + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14) *
+                 (longlong)(int)(columnFractionQ12 - 0x1000) +
                 (longlong)
                 *(int *)((int)(&field[1].common.buildMetadata.names)[gridColumnIndex].producerName +
-                        iVar4 + 0x1c) * (longlong)(int)(uVar3 - 0x1000));
-        return (uint)lVar1 >> 0xc | (int)((ulonglong)lVar1 >> 0x20) << 0x14;
+                        rowIndexOrRowOffsetBytes + 0x1c) * (longlong)(int)(rowFractionQ12 - 0x1000));
+        return (uint)upperTriangleAccumulator >> 0xc | (int)((ulonglong)upperTriangleAccumulator >> 0x20) << 0x14;
       }
     }
   }
@@ -1158,15 +1158,15 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
 
 {
   int cellColumn;
-  uint uVar1;
+  uint surfaceHeightQ12;
   Q12 gridRowFixedQ12;
   uint rowFractionQ12;
   Q12 gridColumnFixedQ12;
   uint columnFractionQ12;
-  int iVar2;
+  int rowIndexOrRowOffsetBytes;
   Q12 upperTriangleWeightQ12;
-  bool bVar3;
-  FieldGridHeightEaxCf5 FVar4;
+  bool sampleFailed;
+  FieldGridHeightEaxCf5 sampleResult;
   longlong upperTriangleWeightedHeightAccumulator;
   FieldGridDimension gridWidth;
   longlong weightedHeightAccumulator;
@@ -1179,65 +1179,65 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
        (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - gridColumnFixedQ12;
   gridWidth = fieldGrid->gridWidth;
   cellColumn = gridRowFixedQ12 >> 0xc;
-  if (((-1 < cellColumn) && (iVar2 = gridColumnFixedQ12 * 2 >> 0xc, -1 < iVar2)) &&
+  if (((-1 < cellColumn) && (rowIndexOrRowOffsetBytes = gridColumnFixedQ12 * 2 >> 0xc, -1 < rowIndexOrRowOffsetBytes)) &&
      (cellColumn < (int)gridWidth)) {
-    if (iVar2 < (int)fieldGrid->gridHeight) {
-      iVar2 = iVar2 * gridWidth * 0x80;
+    if (rowIndexOrRowOffsetBytes < (int)fieldGrid->gridHeight) {
+      rowIndexOrRowOffsetBytes = rowIndexOrRowOffsetBytes * gridWidth * 0x80;
       rowFractionQ12 = gridRowFixedQ12 & 0xfff;
       columnFractionQ12 = gridColumnFixedQ12 * 2 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[cellColumn].runtime60_6B + iVar2 + -0x10) & 0x88006000) == 0)
+      if (((*(uint *)(fieldGrid->cells[cellColumn].runtime60_6B + rowIndexOrRowOffsetBytes + -0x10) & 0x88006000) == 0)
          && ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
-                             producerName + iVar2 + 0x20) & 0x88006000) == 0)) {
+                             producerName + rowIndexOrRowOffsetBytes + 0x20) & 0x88006000) == 0)) {
         upperTriangleWeightQ12 = (rowFractionQ12 + columnFractionQ12) - 0x1000;
         if (rowFractionQ12 + columnFractionQ12 < 0x1000) {
           weightedHeightAccumulator =
                (longlong)
                (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                        iVar2 + 0x18) +
+                        rowIndexOrRowOffsetBytes + 0x18) +
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                       iVar2 + 0x1c)) * (longlong)(int)rowFractionQ12 +
+                       rowIndexOrRowOffsetBytes + 0x1c)) * (longlong)(int)rowFractionQ12 +
                ((longlong)
-                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x18) +
-                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x14)) *
+                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18) +
+                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14)) *
                 (longlong)(int)columnFractionQ12 -
                (longlong)
-               (*(int *)(fieldGrid->cells[cellColumn].runtime60_6B + iVar2 + -0x18) +
-               *(int *)(fieldGrid->cells[cellColumn].runtime60_6B + iVar2 + -0x14)) *
+               (*(int *)(fieldGrid->cells[cellColumn].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18) +
+               *(int *)(fieldGrid->cells[cellColumn].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14)) *
                (longlong)upperTriangleWeightQ12);
-          uVar1 = (uint)weightedHeightAccumulator >> 0xc |
+          surfaceHeightQ12 = (uint)weightedHeightAccumulator >> 0xc |
                   (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
-          bVar3 = false;
+          sampleFailed = false;
         }
         else {
           upperTriangleWeightedHeightAccumulator =
                (longlong)
                (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
-                              producerName + iVar2 + 0x18) +
+                              producerName + rowIndexOrRowOffsetBytes + 0x18) +
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn + gridWidth].
-                             producerName + iVar2 + 0x1c)) * (longlong)upperTriangleWeightQ12 -
+                             producerName + rowIndexOrRowOffsetBytes + 0x1c)) * (longlong)upperTriangleWeightQ12 -
                ((longlong)
-                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x18) +
-                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + iVar2 + -0x14)) *
+                (*(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18) +
+                *(int *)(fieldGrid->cells[cellColumn + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14)) *
                 (longlong)(int)(rowFractionQ12 - 0x1000) +
                (longlong)
                (*(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                        iVar2 + 0x18) +
+                        rowIndexOrRowOffsetBytes + 0x18) +
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[cellColumn].producerName +
-                       iVar2 + 0x1c)) * (longlong)(int)(columnFractionQ12 - 0x1000));
-          uVar1 = (uint)upperTriangleWeightedHeightAccumulator >> 0xc |
+                       rowIndexOrRowOffsetBytes + 0x1c)) * (longlong)(int)(columnFractionQ12 - 0x1000));
+          surfaceHeightQ12 = (uint)upperTriangleWeightedHeightAccumulator >> 0xc |
                   (int)((ulonglong)upperTriangleWeightedHeightAccumulator >> 0x20) << 0x14;
-          bVar3 = false;
+          sampleFailed = false;
         }
         goto LAB_004fefd6;
       }
     }
   }
-  uVar1 = 0;
-  bVar3 = true;
+  surfaceHeightQ12 = 0;
+  sampleFailed = true;
 LAB_004fefd6:
-  FVar4.carry = bVar3;
-  FVar4.heightQ12 = uVar1;
-  return FVar4;
+  sampleResult.carry = sampleFailed;
+  sampleResult.heightQ12 = surfaceHeightQ12;
+  return sampleResult;
 }
 
 
@@ -1251,17 +1251,17 @@ FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  longlong lVar1;
+  longlong partialAccumulator;
   int gridColumnIndex;
   uint gridColumnCoordinateQ12;
-  uint uVar2;
+  uint columnFractionOrWaterDelta;
   uint gridRowCoordinateQ12;
-  uint uVar3;
+  uint rowFractionQ12;
   uint terrainHeightQ12;
-  int iVar4;
+  int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
-  bool bVar5;
-  FieldGridHeightEaxCf5 FVar6;
+  bool sampleFailed;
+  FieldGridHeightEaxCf5 sampleResult;
   FieldGridDimension gridWidth;
   longlong weightedSurfaceAccumulator;
   
@@ -1273,82 +1273,82 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
        (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - gridRowCoordinateQ12;
   gridWidth = fieldGrid->gridWidth;
   gridColumnIndex = (int)gridColumnCoordinateQ12 >> 0xc;
-  if (((-1 < gridColumnIndex) && (iVar4 = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < iVar4)) &&
+  if (((-1 < gridColumnIndex) && (rowIndexOrRowOffsetBytes = (int)(gridRowCoordinateQ12 * 2) >> 0xc, -1 < rowIndexOrRowOffsetBytes)) &&
      (gridColumnIndex < (int)gridWidth)) {
-    if (iVar4 < (int)fieldGrid->gridHeight) {
-      iVar4 = iVar4 * gridWidth * 0x80;
-      uVar2 = gridColumnCoordinateQ12 & 0xfff;
-      uVar3 = gridRowCoordinateQ12 * 2 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x10) & 0x88006000)
+    if (rowIndexOrRowOffsetBytes < (int)fieldGrid->gridHeight) {
+      rowIndexOrRowOffsetBytes = rowIndexOrRowOffsetBytes * gridWidth * 0x80;
+      columnFractionOrWaterDelta = gridColumnCoordinateQ12 & 0xfff;
+      rowFractionQ12 = gridRowCoordinateQ12 * 2 & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x10) & 0x88006000)
            == 0) &&
          ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex + gridWidth].
-                          producerName + iVar4 + 0x20) & 0x88006000) == 0)) {
-        triangleDiagonalWeightQ12 = (uVar2 + uVar3) - 0x1000;
-        if (uVar2 + uVar3 < 0x1000) {
+                          producerName + rowIndexOrRowOffsetBytes + 0x20) & 0x88006000) == 0)) {
+        triangleDiagonalWeightQ12 = (columnFractionOrWaterDelta + rowFractionQ12) - 0x1000;
+        if (columnFractionOrWaterDelta + rowFractionQ12 < 0x1000) {
           weightedSurfaceAccumulator =
                (longlong)
                *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                             producerName + iVar4 + 0x18) * (longlong)(int)uVar2 +
+                             producerName + rowIndexOrRowOffsetBytes + 0x18) * (longlong)(int)columnFractionOrWaterDelta +
                ((longlong)
-                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B + iVar4 + -0x18)
-                * (longlong)(int)uVar3 -
-               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x18) *
+                *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18)
+                * (longlong)(int)rowFractionQ12 -
+               (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x18) *
                (longlong)triangleDiagonalWeightQ12);
           terrainHeightQ12 =
                (int)((ulonglong)weightedSurfaceAccumulator >> 0x20) << 0x14 |
                (uint)weightedSurfaceAccumulator >> 0xc;
-          lVar1 = (longlong)
+          partialAccumulator = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                                producerName + iVar4 + 0x1c) * (longlong)(int)uVar2 +
+                                producerName + rowIndexOrRowOffsetBytes + 0x1c) * (longlong)(int)columnFractionOrWaterDelta +
                   ((longlong)
                    *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
-                           iVar4 + -0x14) * (longlong)(int)uVar3 -
-                  (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + iVar4 + -0x14)
+                           rowIndexOrRowOffsetBytes + -0x14) * (longlong)(int)rowFractionQ12 -
+                  (longlong)*(int *)(fieldGrid->cells[gridColumnIndex].runtime60_6B + rowIndexOrRowOffsetBytes + -0x14)
                   * (longlong)triangleDiagonalWeightQ12);
-          uVar2 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-          if (-1 < (int)uVar2) {
-            terrainHeightQ12 = terrainHeightQ12 + uVar2;
+          columnFractionOrWaterDelta = (int)((ulonglong)partialAccumulator >> 0x20) << 0x14 | (uint)partialAccumulator >> 0xc;
+          if (-1 < (int)columnFractionOrWaterDelta) {
+            terrainHeightQ12 = terrainHeightQ12 + columnFractionOrWaterDelta;
           }
-          bVar5 = false;
+          sampleFailed = false;
         }
         else {
-          lVar1 = (longlong)
+          partialAccumulator = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                                [gridColumnIndex + gridWidth].producerName + iVar4 + 0x18) *
+                                [gridColumnIndex + gridWidth].producerName + rowIndexOrRowOffsetBytes + 0x18) *
                   (longlong)triangleDiagonalWeightQ12 -
                   ((longlong)
                    *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
-                           iVar4 + -0x18) * (longlong)(int)(uVar2 - 0x1000) +
+                           rowIndexOrRowOffsetBytes + -0x18) * (longlong)(int)(columnFractionOrWaterDelta - 0x1000) +
                   (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                                producerName + iVar4 + 0x18) * (longlong)(int)(uVar3 - 0x1000));
-          terrainHeightQ12 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-          lVar1 = (longlong)
+                                producerName + rowIndexOrRowOffsetBytes + 0x18) * (longlong)(int)(rowFractionQ12 - 0x1000));
+          terrainHeightQ12 = (int)((ulonglong)partialAccumulator >> 0x20) << 0x14 | (uint)partialAccumulator >> 0xc;
+          partialAccumulator = (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)
-                                [gridColumnIndex + gridWidth].producerName + iVar4 + 0x1c) *
+                                [gridColumnIndex + gridWidth].producerName + rowIndexOrRowOffsetBytes + 0x1c) *
                   (longlong)triangleDiagonalWeightQ12 -
                   ((longlong)
                    *(int *)(fieldGrid->cells[gridColumnIndex + gridWidth].runtime60_6B +
-                           iVar4 + -0x14) * (longlong)(int)(uVar2 - 0x1000) +
+                           rowIndexOrRowOffsetBytes + -0x14) * (longlong)(int)(columnFractionOrWaterDelta - 0x1000) +
                   (longlong)
                   *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[gridColumnIndex].
-                                producerName + iVar4 + 0x1c) * (longlong)(int)(uVar3 - 0x1000));
-          uVar2 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-          if (-1 < (int)uVar2) {
-            terrainHeightQ12 = terrainHeightQ12 + uVar2;
+                                producerName + rowIndexOrRowOffsetBytes + 0x1c) * (longlong)(int)(rowFractionQ12 - 0x1000));
+          columnFractionOrWaterDelta = (int)((ulonglong)partialAccumulator >> 0x20) << 0x14 | (uint)partialAccumulator >> 0xc;
+          if (-1 < (int)columnFractionOrWaterDelta) {
+            terrainHeightQ12 = terrainHeightQ12 + columnFractionOrWaterDelta;
           }
-          bVar5 = false;
+          sampleFailed = false;
         }
         goto LAB_004ff185;
       }
     }
   }
   terrainHeightQ12 = 0;
-  bVar5 = true;
+  sampleFailed = true;
 LAB_004ff185:
-  FVar6.carry = bVar5;
-  FVar6.heightQ12 = terrainHeightQ12;
-  return FVar6;
+  sampleResult.carry = sampleFailed;
+  sampleResult.heightQ12 = terrainHeightQ12;
+  return sampleResult;
 }
 
 
@@ -1365,112 +1365,112 @@ FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
-  FieldGridDimension FVar1;
-  uint uVar2;
-  longlong lVar3;
-  int iVar4;
-  uint uVar5;
-  dword dVar6;
-  uint uVar7;
-  dword dVar8;
-  uint uVar9;
-  dword dVar10;
-  int iVar11;
-  int iVar12;
-  int iVar13;
-  bool bVar14;
-  FieldGridHeightNormalEaxEdxCf9 FVar15;
-  FixedMathVectorAnglesRegs8 FVar16;
-  FixedDirectionXyzRegs12 FVar17;
+  FieldGridDimension rowLength;
+  uint cornerNormalAngles;
+  longlong weightedHeightAccumulator;
+  int columnOrNormalSum;
+  uint interpolatedHeightQ12;
+  dword firstNormalEax;
+  uint columnFractionOrNormalAngles;
+  dword firstNormalEcx;
+  uint rowFractionOrNormalAngles;
+  dword firstNormalEdx;
+  int rowOffsetOrNormalSum;
+  int cellOffsetOrNormalSum;
+  int diagonalWeightOrNormalSum;
+  bool sampleFailed;
+  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  FixedMathVectorAnglesRegs8 blendedNormalAngles;
+  FixedDirectionXyzRegs12 scaledNormal;
   
-  uVar9 = (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
+  rowFractionOrNormalAngles = (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  uVar7 = ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - uVar9;
-  uVar9 = uVar9 * 2;
-  FVar1 = field->gridWidth;
-  iVar4 = (int)uVar7 >> 0xc;
-  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
-    if (iVar11 < (int)field->gridHeight) {
-      iVar11 = iVar11 * FVar1 * 0x80;
-      iVar12 = iVar11 + iVar4 * 0x80;
-      uVar7 = uVar7 & 0xfff;
-      uVar9 = uVar9 & 0xfff;
-      if (((*(uint *)(field->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
-         ((*(uint *)((int)(&field[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar11 + 0x20) & 0x88006000) == 0)) {
-        iVar13 = (uVar7 + uVar9) - 0x1000;
-        if (uVar7 + uVar9 < 0x1000) {
-          lVar3 = (longlong)
-                  *(int *)((int)(&field[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x18) * (longlong)(int)uVar7 +
-                  ((longlong)*(int *)(field->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x18) *
-                   (longlong)(int)uVar9 -
-                  (longlong)*(int *)(field->cells[iVar4].runtime60_6B + iVar11 + -0x18) *
-                  (longlong)iVar13);
-          uVar2 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar12 + -0x20);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
-          dVar10 = FVar17.edx;
-          dVar8 = FVar17.ecx;
-          dVar6 = FVar17.eax;
-          uVar7 = *(uint *)(field->cells[iVar4].runtime0C_3F + iVar11 + -4);
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13)
+  columnFractionOrNormalAngles = ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - rowFractionOrNormalAngles;
+  rowFractionOrNormalAngles = rowFractionOrNormalAngles * 2;
+  rowLength = field->gridWidth;
+  columnOrNormalSum = (int)columnFractionOrNormalAngles >> 0xc;
+  if (((-1 < columnOrNormalSum) && (rowOffsetOrNormalSum = (int)rowFractionOrNormalAngles >> 0xc, -1 < rowOffsetOrNormalSum)) && (columnOrNormalSum < (int)rowLength)) {
+    if (rowOffsetOrNormalSum < (int)field->gridHeight) {
+      rowOffsetOrNormalSum = rowOffsetOrNormalSum * rowLength * 0x80;
+      cellOffsetOrNormalSum = rowOffsetOrNormalSum + columnOrNormalSum * 0x80;
+      columnFractionOrNormalAngles = columnFractionOrNormalAngles & 0xfff;
+      rowFractionOrNormalAngles = rowFractionOrNormalAngles & 0xfff;
+      if (((*(uint *)(field->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + -0x10) & 0x88006000) == 0) &&
+         ((*(uint *)((int)(&field[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].producerName +
+                    rowOffsetOrNormalSum + 0x20) & 0x88006000) == 0)) {
+        diagonalWeightOrNormalSum = (columnFractionOrNormalAngles + rowFractionOrNormalAngles) - 0x1000;
+        if (columnFractionOrNormalAngles + rowFractionOrNormalAngles < 0x1000) {
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&field[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetOrNormalSum + 0x18) * (longlong)(int)columnFractionOrNormalAngles +
+                  ((longlong)*(int *)(field->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + -0x18) *
+                   (longlong)(int)rowFractionOrNormalAngles -
+                  (longlong)*(int *)(field->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + -0x18) *
+                  (longlong)diagonalWeightOrNormalSum);
+          cornerNormalAngles = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           cellOffsetOrNormalSum + -0x20);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
+          firstNormalEdx = scaledNormal.edx;
+          firstNormalEcx = scaledNormal.ecx;
+          firstNormalEax = scaledNormal.eax;
+          columnFractionOrNormalAngles = *(uint *)(field->cells[columnOrNormalSum].runtime0C_3F + rowOffsetOrNormalSum + -4);
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          iVar12 = dVar6 - FVar17.eax;
-          iVar13 = dVar8 - FVar17.ecx;
-          uVar7 = *(uint *)(field->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
-          iVar4 = dVar10 - FVar17.edx;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
-          FVar16 = FixedMath_VectorToAngles3Regs
-                             (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
-          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-          bVar14 = false;
+          cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
+          diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          columnFractionOrNormalAngles = *(uint *)(field->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
+          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
+          blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                             (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
+          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+          sampleFailed = false;
         }
         else {
-          lVar3 = (longlong)
-                  *(int *)((int)(&field[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                          iVar11 + 0x18) * (longlong)iVar13 -
-                  ((longlong)*(int *)(field->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x18) *
-                   (longlong)(int)(uVar7 - 0x1000) +
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&field[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].producerName +
+                          rowOffsetOrNormalSum + 0x18) * (longlong)diagonalWeightOrNormalSum -
+                  ((longlong)*(int *)(field->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + -0x18) *
+                   (longlong)(int)(columnFractionOrNormalAngles - 0x1000) +
                   (longlong)
-                  *(int *)((int)(&field[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x18) * (longlong)(int)(uVar9 - 0x1000));
-          uVar2 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           FVar1 * 0x80 + iVar12 + -0x20);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar13)
+                  *(int *)((int)(&field[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetOrNormalSum + 0x18) * (longlong)(int)(rowFractionOrNormalAngles - 0x1000));
+          cornerNormalAngles = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           rowLength * 0x80 + cellOffsetOrNormalSum + -0x20);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          dVar10 = FVar17.edx;
-          dVar8 = FVar17.ecx;
-          dVar6 = FVar17.eax;
-          uVar2 = *(uint *)(field->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7 - 0x1000);
-          iVar4 = dVar6 - FVar17.eax;
-          iVar11 = dVar8 - FVar17.ecx;
-          uVar7 = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar12 + -0x20);
-          iVar12 = dVar10 - FVar17.edx;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9 - 0x1000);
-          FVar16 = FixedMath_VectorToAngles3Regs
-                             (iVar12 - FVar17.edx,iVar11 - FVar17.ecx,iVar4 - FVar17.eax);
-          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-          bVar14 = false;
+          firstNormalEdx = scaledNormal.edx;
+          firstNormalEcx = scaledNormal.ecx;
+          firstNormalEax = scaledNormal.eax;
+          cornerNormalAngles = *(uint *)(field->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles - 0x1000);
+          columnOrNormalSum = firstNormalEax - scaledNormal.eax;
+          rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          columnFractionOrNormalAngles = *(uint *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           cellOffsetOrNormalSum + -0x20);
+          cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles - 0x1000);
+          blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                             (cellOffsetOrNormalSum - scaledNormal.edx,rowOffsetOrNormalSum - scaledNormal.ecx,columnOrNormalSum - scaledNormal.eax);
+          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+          sampleFailed = false;
         }
         goto FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample;
       }
     }
   }
-  uVar5 = 0;
-  bVar14 = true;
+  interpolatedHeightQ12 = 0;
+  sampleFailed = true;
 FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample:
-  FVar15.packedNormalAngles = uVar9;
-  FVar15.heightQ12 = uVar5;
-  FVar15.carry = bVar14;
-  return FVar15;
+  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+  sampleResult.heightQ12 = interpolatedHeightQ12;
+  sampleResult.carry = sampleFailed;
+  return sampleResult;
 }
 
 
@@ -1485,112 +1485,112 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  uint uVar2;
-  longlong lVar3;
-  int iVar4;
-  uint uVar5;
-  dword dVar6;
-  uint uVar7;
-  dword dVar8;
-  uint uVar9;
-  dword dVar10;
-  int iVar11;
-  int iVar12;
-  int iVar13;
-  bool bVar14;
-  FieldGridHeightNormalEaxEdxCf9 FVar15;
-  FixedMathVectorAnglesRegs8 FVar16;
-  FixedDirectionXyzRegs12 FVar17;
+  FieldGridDimension rowLength;
+  uint cornerNormalAngles;
+  longlong weightedHeightAccumulator;
+  int columnOrNormalSum;
+  uint interpolatedHeightQ12;
+  dword firstNormalEax;
+  uint columnFractionOrNormalAngles;
+  dword firstNormalEcx;
+  uint rowFractionOrNormalAngles;
+  dword firstNormalEdx;
+  int rowOffsetOrNormalSum;
+  int cellOffsetOrNormalSum;
+  int diagonalWeightOrNormalSum;
+  bool sampleFailed;
+  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  FixedMathVectorAnglesRegs8 blendedNormalAngles;
+  FixedDirectionXyzRegs12 scaledNormal;
   
-  uVar9 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  rowFractionOrNormalAngles = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  uVar7 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar9;
-  uVar9 = uVar9 * 2;
-  FVar1 = fieldGrid->gridWidth;
-  iVar4 = (int)uVar7 >> 0xc;
-  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
-    if (iVar11 < (int)fieldGrid->gridHeight) {
-      iVar11 = iVar11 * FVar1 * 0x80;
-      iVar12 = iVar11 + iVar4 * 0x80;
-      uVar7 = uVar7 & 0xfff;
-      uVar9 = uVar9 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
-         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar11 + 0x20) & 0x88006000) == 0)) {
-        iVar13 = (uVar7 + uVar9) - 0x1000;
-        if (uVar7 + uVar9 < 0x1000) {
-          lVar3 = (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x1c) * (longlong)(int)uVar7 +
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
-                   * (longlong)(int)uVar9 -
-                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x14) *
-                  (longlong)iVar13);
-          uVar2 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar12 + -0x20);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
-          dVar10 = FVar17.edx;
-          dVar8 = FVar17.ecx;
-          dVar6 = FVar17.eax;
-          uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime0C_3F + iVar11 + -4);
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13)
+  columnFractionOrNormalAngles = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - rowFractionOrNormalAngles;
+  rowFractionOrNormalAngles = rowFractionOrNormalAngles * 2;
+  rowLength = fieldGrid->gridWidth;
+  columnOrNormalSum = (int)columnFractionOrNormalAngles >> 0xc;
+  if (((-1 < columnOrNormalSum) && (rowOffsetOrNormalSum = (int)rowFractionOrNormalAngles >> 0xc, -1 < rowOffsetOrNormalSum)) && (columnOrNormalSum < (int)rowLength)) {
+    if (rowOffsetOrNormalSum < (int)fieldGrid->gridHeight) {
+      rowOffsetOrNormalSum = rowOffsetOrNormalSum * rowLength * 0x80;
+      cellOffsetOrNormalSum = rowOffsetOrNormalSum + columnOrNormalSum * 0x80;
+      columnFractionOrNormalAngles = columnFractionOrNormalAngles & 0xfff;
+      rowFractionOrNormalAngles = rowFractionOrNormalAngles & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + -0x10) & 0x88006000) == 0) &&
+         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].producerName +
+                    rowOffsetOrNormalSum + 0x20) & 0x88006000) == 0)) {
+        diagonalWeightOrNormalSum = (columnFractionOrNormalAngles + rowFractionOrNormalAngles) - 0x1000;
+        if (columnFractionOrNormalAngles + rowFractionOrNormalAngles < 0x1000) {
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetOrNormalSum + 0x1c) * (longlong)(int)columnFractionOrNormalAngles +
+                  ((longlong)*(int *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + -0x14)
+                   * (longlong)(int)rowFractionOrNormalAngles -
+                  (longlong)*(int *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + -0x14) *
+                  (longlong)diagonalWeightOrNormalSum);
+          cornerNormalAngles = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           cellOffsetOrNormalSum + -0x20);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
+          firstNormalEdx = scaledNormal.edx;
+          firstNormalEcx = scaledNormal.ecx;
+          firstNormalEax = scaledNormal.eax;
+          columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum].runtime0C_3F + rowOffsetOrNormalSum + -4);
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          iVar12 = dVar6 - FVar17.eax;
-          iVar13 = dVar8 - FVar17.ecx;
-          uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
-          iVar4 = dVar10 - FVar17.edx;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
-          FVar16 = FixedMath_VectorToAngles3Regs
-                             (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
-          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-          bVar14 = false;
+          cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
+          diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
+          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
+          blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                             (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
+          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+          sampleFailed = false;
         }
         else {
-          lVar3 = (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                producerName + iVar11 + 0x1c) * (longlong)iVar13 -
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
-                   * (longlong)(int)(uVar7 - 0x1000) +
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].
+                                producerName + rowOffsetOrNormalSum + 0x1c) * (longlong)diagonalWeightOrNormalSum -
+                  ((longlong)*(int *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + -0x14)
+                   * (longlong)(int)(columnFractionOrNormalAngles - 0x1000) +
                   (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x1c) * (longlong)(int)(uVar9 - 0x1000));
-          uVar2 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           FVar1 * 0x80 + iVar12 + -0x20);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar13)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetOrNormalSum + 0x1c) * (longlong)(int)(rowFractionOrNormalAngles - 0x1000));
+          cornerNormalAngles = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           rowLength * 0x80 + cellOffsetOrNormalSum + -0x20);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          dVar10 = FVar17.edx;
-          dVar8 = FVar17.ecx;
-          dVar6 = FVar17.eax;
-          uVar2 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7 - 0x1000);
-          iVar4 = dVar6 - FVar17.eax;
-          iVar11 = dVar8 - FVar17.ecx;
-          uVar7 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                           iVar12 + -0x20);
-          iVar12 = dVar10 - FVar17.edx;
-          FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9 - 0x1000);
-          FVar16 = FixedMath_VectorToAngles3Regs
-                             (iVar12 - FVar17.edx,iVar11 - FVar17.ecx,iVar4 - FVar17.eax);
-          uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-          bVar14 = false;
+          firstNormalEdx = scaledNormal.edx;
+          firstNormalEcx = scaledNormal.ecx;
+          firstNormalEax = scaledNormal.eax;
+          cornerNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles - 0x1000);
+          columnOrNormalSum = firstNormalEax - scaledNormal.eax;
+          rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          columnFractionOrNormalAngles = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                           cellOffsetOrNormalSum + -0x20);
+          cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles - 0x1000);
+          blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                             (cellOffsetOrNormalSum - scaledNormal.edx,rowOffsetOrNormalSum - scaledNormal.ecx,columnOrNormalSum - scaledNormal.eax);
+          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+          sampleFailed = false;
         }
         goto FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefaultSample;
       }
     }
   }
-  uVar5 = 0;
-  bVar14 = true;
+  interpolatedHeightQ12 = 0;
+  sampleFailed = true;
 FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefaultSample:
-  FVar15.packedNormalAngles = uVar9;
-  FVar15.heightQ12 = uVar5;
-  FVar15.carry = bVar14;
-  return FVar15;
+  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+  sampleResult.heightQ12 = interpolatedHeightQ12;
+  sampleResult.carry = sampleFailed;
+  return sampleResult;
 }
 
 
@@ -1605,111 +1605,111 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  uint uVar2;
-  longlong lVar3;
-  int iVar4;
-  uint uVar5;
-  dword dVar6;
-  uint uVar7;
-  dword dVar8;
-  uint uVar9;
-  dword dVar10;
-  int iVar11;
-  int iVar12;
-  bool bVar13;
-  FieldGridHeightNormalEaxEdxCf9 FVar14;
-  FixedMathVectorAnglesRegs8 FVar15;
-  FixedDirectionXyzRegs12 FVar16;
-  int iVar17;
+  FieldGridDimension rowLength;
+  uint cornerNormalAngles;
+  longlong weightedHeightAccumulator;
+  int columnOrNormalSum;
+  uint interpolatedHeightQ12;
+  dword firstNormalEax;
+  uint columnFractionOrNormalAngles;
+  dword firstNormalEcx;
+  uint rowFractionOrNormalAngles;
+  dword firstNormalEdx;
+  int rowOffsetBytes;
+  int diagonalWeightOrNormalSum;
+  bool sampleFailed;
+  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  FixedMathVectorAnglesRegs8 blendedNormalAngles;
+  FixedDirectionXyzRegs12 scaledNormal;
+  int normalSumEcx;
   
-  uVar9 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  rowFractionOrNormalAngles = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  uVar7 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar9;
-  uVar9 = uVar9 * 2;
-  FVar1 = fieldGrid->gridWidth;
-  iVar4 = (int)uVar7 >> 0xc;
-  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
-    if (iVar11 < (int)fieldGrid->gridHeight) {
-      iVar11 = iVar11 * FVar1 * 0x80;
-      uVar7 = uVar7 & 0xfff;
-      uVar9 = uVar9 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
-         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar11 + 0x20) & 0x88006000) == 0)) {
-        iVar12 = (uVar7 + uVar9) - 0x1000;
-        if (uVar7 + uVar9 < 0x1000) {
-          lVar3 = (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x1c) * (longlong)(int)uVar7 +
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
-                   * (longlong)(int)uVar9 -
-                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x14) *
-                  (longlong)iVar12);
-          uVar2 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                           iVar11 + 8);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
-          dVar10 = FVar16.edx;
-          dVar8 = FVar16.ecx;
-          dVar6 = FVar16.eax;
-          uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + 0x18);
-          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar12)
+  columnFractionOrNormalAngles = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - rowFractionOrNormalAngles;
+  rowFractionOrNormalAngles = rowFractionOrNormalAngles * 2;
+  rowLength = fieldGrid->gridWidth;
+  columnOrNormalSum = (int)columnFractionOrNormalAngles >> 0xc;
+  if (((-1 < columnOrNormalSum) && (rowOffsetBytes = (int)rowFractionOrNormalAngles >> 0xc, -1 < rowOffsetBytes)) && (columnOrNormalSum < (int)rowLength)) {
+    if (rowOffsetBytes < (int)fieldGrid->gridHeight) {
+      rowOffsetBytes = rowOffsetBytes * rowLength * 0x80;
+      columnFractionOrNormalAngles = columnFractionOrNormalAngles & 0xfff;
+      rowFractionOrNormalAngles = rowFractionOrNormalAngles & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetBytes + -0x10) & 0x88006000) == 0) &&
+         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].producerName +
+                    rowOffsetBytes + 0x20) & 0x88006000) == 0)) {
+        diagonalWeightOrNormalSum = (columnFractionOrNormalAngles + rowFractionOrNormalAngles) - 0x1000;
+        if (columnFractionOrNormalAngles + rowFractionOrNormalAngles < 0x1000) {
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetBytes + 0x1c) * (longlong)(int)columnFractionOrNormalAngles +
+                  ((longlong)*(int *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetBytes + -0x14)
+                   * (longlong)(int)rowFractionOrNormalAngles -
+                  (longlong)*(int *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetBytes + -0x14) *
+                  (longlong)diagonalWeightOrNormalSum);
+          cornerNormalAngles = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].sourceName +
+                           rowOffsetBytes + 8);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
+          firstNormalEdx = scaledNormal.edx;
+          firstNormalEcx = scaledNormal.ecx;
+          firstNormalEax = scaledNormal.eax;
+          columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetBytes + 0x18);
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          iVar12 = dVar6 - FVar16.eax;
-          iVar17 = dVar8 - FVar16.ecx;
-          uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
-          iVar4 = dVar10 - FVar16.edx;
-          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
-          FVar15 = FixedMath_VectorToAngles3Regs
-                             (iVar4 + FVar16.edx,iVar17 + FVar16.ecx,iVar12 + FVar16.eax);
-          uVar9 = FVar15.edx << 0x10 | FVar15.ecx & 0xffff;
-          bVar13 = false;
+          diagonalWeightOrNormalSum = firstNormalEax - scaledNormal.eax;
+          normalSumEcx = firstNormalEcx - scaledNormal.ecx;
+          columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetBytes + 0x18);
+          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
+          blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                             (columnOrNormalSum + scaledNormal.edx,normalSumEcx + scaledNormal.ecx,diagonalWeightOrNormalSum + scaledNormal.eax);
+          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+          sampleFailed = false;
         }
         else {
-          lVar3 = (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                producerName + iVar11 + 0x1c) * (longlong)iVar12 -
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
-                   * (longlong)(int)(uVar7 - 0x1000) +
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].
+                                producerName + rowOffsetBytes + 0x1c) * (longlong)diagonalWeightOrNormalSum -
+                  ((longlong)*(int *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetBytes + -0x14)
+                   * (longlong)(int)(columnFractionOrNormalAngles - 0x1000) +
                   (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x1c) * (longlong)(int)(uVar9 - 0x1000));
-          uVar2 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                 sourceName + iVar11 + 8);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          FVar16 = FixedMath_DirectionFromAnglesScaledRegs((int)uVar2 >> 0x10,uVar2 & 0xffff,iVar12)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetBytes + 0x1c) * (longlong)(int)(rowFractionOrNormalAngles - 0x1000));
+          cornerNormalAngles = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].
+                                 sourceName + rowOffsetBytes + 8);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          dVar10 = FVar16.edx;
-          dVar8 = FVar16.ecx;
-          dVar6 = FVar16.eax;
-          uVar2 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
-          FVar16 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7 - 0x1000);
-          iVar12 = dVar6 - FVar16.eax;
-          iVar17 = dVar8 - FVar16.ecx;
-          uVar7 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                           iVar11 + 8);
-          iVar4 = dVar10 - FVar16.edx;
-          FVar16 = FixedMath_DirectionFromAnglesScaledRegs
-                             ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9 - 0x1000);
-          FVar15 = FixedMath_VectorToAngles3Regs
-                             (iVar4 - FVar16.edx,iVar17 - FVar16.ecx,iVar12 - FVar16.eax);
-          uVar9 = FVar15.edx << 0x10 | FVar15.ecx & 0xffff;
-          bVar13 = false;
+          firstNormalEdx = scaledNormal.edx;
+          firstNormalEcx = scaledNormal.ecx;
+          firstNormalEax = scaledNormal.eax;
+          cornerNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetBytes + 0x18);
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles - 0x1000);
+          diagonalWeightOrNormalSum = firstNormalEax - scaledNormal.eax;
+          normalSumEcx = firstNormalEcx - scaledNormal.ecx;
+          columnFractionOrNormalAngles = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].sourceName +
+                           rowOffsetBytes + 8);
+          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                             ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles - 0x1000);
+          blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                             (columnOrNormalSum - scaledNormal.edx,normalSumEcx - scaledNormal.ecx,diagonalWeightOrNormalSum - scaledNormal.eax);
+          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+          sampleFailed = false;
         }
         goto FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefaultSample;
       }
     }
   }
-  uVar5 = 0;
-  bVar13 = true;
+  interpolatedHeightQ12 = 0;
+  sampleFailed = true;
 FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefaultSample:
-  FVar14.packedNormalAngles = uVar9;
-  FVar14.heightQ12 = uVar5;
-  FVar14.carry = bVar13;
-  return FVar14;
+  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+  sampleResult.heightQ12 = interpolatedHeightQ12;
+  sampleResult.carry = sampleFailed;
+  return sampleResult;
 }
 
 
@@ -1726,167 +1726,167 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
           FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  uint uVar2;
-  longlong lVar3;
-  int iVar4;
-  uint uVar5;
-  dword dVar6;
-  uint uVar7;
-  dword dVar8;
-  int scale;
-  uint uVar9;
-  dword dVar10;
-  int scale_00;
-  int iVar11;
-  int iVar12;
-  int iVar13;
-  bool bVar14;
-  FieldGridHeightNormalEaxEdxCf9 FVar15;
-  FixedMathVectorAnglesRegs8 FVar16;
-  FixedDirectionXyzRegs12 FVar17;
+  FieldGridDimension rowLength;
+  uint cornerNormalAngles;
+  longlong weightedHeightAccumulator;
+  int columnOrNormalSum;
+  uint interpolatedHeightQ12;
+  dword firstNormalEax;
+  uint columnFractionOrNormalAngles;
+  dword firstNormalEcx;
+  int columnWeightQ12;
+  uint rowFractionOrNormalAngles;
+  dword firstNormalEdx;
+  int rowWeightQ12;
+  int rowOffsetOrNormalSum;
+  int cellOffsetOrNormalSum;
+  int diagonalWeightOrNormalSum;
+  bool sampleFailed;
+  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  FixedMathVectorAnglesRegs8 blendedNormalAngles;
+  FixedDirectionXyzRegs12 scaledNormal;
   
-  uVar9 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  rowFractionOrNormalAngles = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  uVar7 = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar9;
-  uVar9 = uVar9 * 2;
-  FVar1 = fieldGrid->gridWidth;
-  iVar4 = (int)uVar7 >> 0xc;
-  if (((-1 < iVar4) && (iVar11 = (int)uVar9 >> 0xc, -1 < iVar11)) && (iVar4 < (int)FVar1)) {
-    if (iVar11 < (int)fieldGrid->gridHeight) {
-      iVar11 = iVar11 * FVar1 * 0x80;
-      iVar12 = iVar11 + iVar4 * 0x80;
-      uVar7 = uVar7 & 0xfff;
-      uVar9 = uVar9 & 0xfff;
-      if (((*(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x10) & 0x88006000) == 0) &&
-         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].producerName +
-                    iVar11 + 0x20) & 0x88006000) == 0)) {
-        iVar13 = (uVar7 + uVar9) - 0x1000;
-        if (uVar7 + uVar9 < 0x1000) {
-          lVar3 = (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x1c) * (longlong)(int)uVar7 +
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
-                   * (longlong)(int)uVar9 -
-                  (longlong)*(int *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + -0x14) *
-                  (longlong)iVar13);
-          uVar2 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                           iVar11 + 8);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          if ((int)uVar5 < 0) {
-            uVar2 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                             iVar12 + -0x20);
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
-            dVar10 = FVar17.edx;
-            dVar8 = FVar17.ecx;
-            dVar6 = FVar17.eax;
-            uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime0C_3F + iVar11 + -4);
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13);
-            iVar12 = dVar6 - FVar17.eax;
-            iVar13 = dVar8 - FVar17.ecx;
-            uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
-            iVar4 = dVar10 - FVar17.edx;
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
-            FVar16 = FixedMath_VectorToAngles3Regs
-                               (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
-            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-            bVar14 = false;
+  columnFractionOrNormalAngles = ((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+          (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - rowFractionOrNormalAngles;
+  rowFractionOrNormalAngles = rowFractionOrNormalAngles * 2;
+  rowLength = fieldGrid->gridWidth;
+  columnOrNormalSum = (int)columnFractionOrNormalAngles >> 0xc;
+  if (((-1 < columnOrNormalSum) && (rowOffsetOrNormalSum = (int)rowFractionOrNormalAngles >> 0xc, -1 < rowOffsetOrNormalSum)) && (columnOrNormalSum < (int)rowLength)) {
+    if (rowOffsetOrNormalSum < (int)fieldGrid->gridHeight) {
+      rowOffsetOrNormalSum = rowOffsetOrNormalSum * rowLength * 0x80;
+      cellOffsetOrNormalSum = rowOffsetOrNormalSum + columnOrNormalSum * 0x80;
+      columnFractionOrNormalAngles = columnFractionOrNormalAngles & 0xfff;
+      rowFractionOrNormalAngles = rowFractionOrNormalAngles & 0xfff;
+      if (((*(uint *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + -0x10) & 0x88006000) == 0) &&
+         ((*(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].producerName +
+                    rowOffsetOrNormalSum + 0x20) & 0x88006000) == 0)) {
+        diagonalWeightOrNormalSum = (columnFractionOrNormalAngles + rowFractionOrNormalAngles) - 0x1000;
+        if (columnFractionOrNormalAngles + rowFractionOrNormalAngles < 0x1000) {
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetOrNormalSum + 0x1c) * (longlong)(int)columnFractionOrNormalAngles +
+                  ((longlong)*(int *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + -0x14)
+                   * (longlong)(int)rowFractionOrNormalAngles -
+                  (longlong)*(int *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + -0x14) *
+                  (longlong)diagonalWeightOrNormalSum);
+          cornerNormalAngles = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].sourceName +
+                           rowOffsetOrNormalSum + 8);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          if ((int)interpolatedHeightQ12 < 0) {
+            cornerNormalAngles = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                             cellOffsetOrNormalSum + -0x20);
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
+            firstNormalEdx = scaledNormal.edx;
+            firstNormalEcx = scaledNormal.ecx;
+            firstNormalEax = scaledNormal.eax;
+            columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum].runtime0C_3F + rowOffsetOrNormalSum + -4);
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
+            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
+            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
+            columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
+            blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                               (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
+            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+            sampleFailed = false;
           }
           else {
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar2 >> 0x10,uVar2 & 0xffff,uVar7);
-            dVar10 = FVar17.edx;
-            dVar8 = FVar17.ecx;
-            dVar6 = FVar17.eax;
-            uVar7 = *(uint *)(fieldGrid->cells[iVar4].runtime60_6B + iVar11 + 0x18);
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,iVar13);
-            iVar12 = dVar6 - FVar17.eax;
-            iVar13 = dVar8 - FVar17.ecx;
-            uVar7 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
-            iVar4 = dVar10 - FVar17.edx;
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar7 >> 0x10,uVar7 & 0xffff,uVar9);
-            FVar16 = FixedMath_VectorToAngles3Regs
-                               (iVar4 + FVar17.edx,iVar13 + FVar17.ecx,iVar12 + FVar17.eax);
-            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-            bVar14 = false;
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
+            firstNormalEdx = scaledNormal.edx;
+            firstNormalEcx = scaledNormal.ecx;
+            firstNormalEax = scaledNormal.eax;
+            columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + 0x18);
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
+            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
+            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            columnFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + 0x18);
+            columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
+            blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                               (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
+            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+            sampleFailed = false;
           }
         }
         else {
-          scale = uVar7 - 0x1000;
-          scale_00 = uVar9 - 0x1000;
-          lVar3 = (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                producerName + iVar11 + 0x1c) * (longlong)iVar13 -
-                  ((longlong)*(int *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + -0x14)
-                   * (longlong)scale +
+          columnWeightQ12 = columnFractionOrNormalAngles - 0x1000;
+          rowWeightQ12 = rowFractionOrNormalAngles - 0x1000;
+          weightedHeightAccumulator = (longlong)
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].
+                                producerName + rowOffsetOrNormalSum + 0x1c) * (longlong)diagonalWeightOrNormalSum -
+                  ((longlong)*(int *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + -0x14)
+                   * (longlong)columnWeightQ12 +
                   (longlong)
-                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].producerName +
-                          iVar11 + 0x1c) * (longlong)scale_00);
-          uVar9 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4 + FVar1].
-                                 sourceName + iVar11 + 8);
-          uVar5 = (uint)lVar3 >> 0xc | (int)((ulonglong)lVar3 >> 0x20) << 0x14;
-          if ((int)uVar5 < 0) {
-            uVar9 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                             FVar1 * 0x80 + iVar12 + -0x20);
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,iVar13);
-            dVar10 = FVar17.edx;
-            dVar8 = FVar17.ecx;
-            dVar6 = FVar17.eax;
-            uVar9 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime0C_3F + iVar11 + -4);
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale);
-            iVar4 = dVar6 - FVar17.eax;
-            iVar11 = dVar8 - FVar17.ecx;
-            uVar9 = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                             iVar12 + -0x20);
-            iVar12 = dVar10 - FVar17.edx;
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale_00);
-            FVar16 = FixedMath_VectorToAngles3Regs
-                               (iVar12 - FVar17.edx,iVar11 - FVar17.ecx,iVar4 - FVar17.eax);
-            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-            bVar14 = false;
+                  *(int *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].producerName +
+                          rowOffsetOrNormalSum + 0x1c) * (longlong)rowWeightQ12);
+          rowFractionOrNormalAngles = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum + rowLength].
+                                 sourceName + rowOffsetOrNormalSum + 8);
+          interpolatedHeightQ12 = (uint)weightedHeightAccumulator >> 0xc | (int)((ulonglong)weightedHeightAccumulator >> 0x20) << 0x14;
+          if ((int)interpolatedHeightQ12 < 0) {
+            rowFractionOrNormalAngles = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                             rowLength * 0x80 + cellOffsetOrNormalSum + -0x20);
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
+            firstNormalEdx = scaledNormal.edx;
+            firstNormalEcx = scaledNormal.ecx;
+            firstNormalEax = scaledNormal.eax;
+            rowFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,columnWeightQ12);
+            columnOrNormalSum = firstNormalEax - scaledNormal.eax;
+            rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            rowFractionOrNormalAngles = *(uint *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                             cellOffsetOrNormalSum + -0x20);
+            cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,rowWeightQ12);
+            blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                               (cellOffsetOrNormalSum - scaledNormal.edx,rowOffsetOrNormalSum - scaledNormal.ecx,columnOrNormalSum - scaledNormal.eax);
+            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+            sampleFailed = false;
           }
           else {
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,iVar13);
-            dVar10 = FVar17.edx;
-            dVar8 = FVar17.ecx;
-            dVar6 = FVar17.eax;
-            uVar9 = *(uint *)(fieldGrid->cells[iVar4 + FVar1].runtime60_6B + iVar11 + 0x18);
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale);
-            iVar12 = dVar6 - FVar17.eax;
-            iVar13 = dVar8 - FVar17.ecx;
-            uVar9 = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[iVar4].sourceName +
-                             iVar11 + 8);
-            iVar4 = dVar10 - FVar17.edx;
-            FVar17 = FixedMath_DirectionFromAnglesScaledRegs
-                               ((int)uVar9 >> 0x10,uVar9 & 0xffff,scale_00);
-            FVar16 = FixedMath_VectorToAngles3Regs
-                               (iVar4 - FVar17.edx,iVar13 - FVar17.ecx,iVar12 - FVar17.eax);
-            uVar9 = FVar16.edx << 0x10 | FVar16.ecx & 0xffff;
-            bVar14 = false;
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
+            firstNormalEdx = scaledNormal.edx;
+            firstNormalEcx = scaledNormal.ecx;
+            firstNormalEax = scaledNormal.eax;
+            rowFractionOrNormalAngles = *(uint *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + 0x18);
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,columnWeightQ12);
+            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
+            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            rowFractionOrNormalAngles = *(uint *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].sourceName +
+                             rowOffsetOrNormalSum + 8);
+            columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
+                               ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,rowWeightQ12);
+            blendedNormalAngles = FixedMath_VectorToAngles3Regs
+                               (columnOrNormalSum - scaledNormal.edx,diagonalWeightOrNormalSum - scaledNormal.ecx,cellOffsetOrNormalSum - scaledNormal.eax);
+            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+            sampleFailed = false;
           }
         }
         goto LAB_004ffb6c;
       }
     }
   }
-  uVar5 = 0;
-  bVar14 = true;
+  interpolatedHeightQ12 = 0;
+  sampleFailed = true;
 LAB_004ffb6c:
-  FVar15.packedNormalAngles = uVar9;
-  FVar15.heightQ12 = uVar5;
-  FVar15.carry = bVar14;
-  return FVar15;
+  sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+  sampleResult.heightQ12 = interpolatedHeightQ12;
+  sampleResult.carry = sampleFailed;
+  return sampleResult;
 }
 
 
@@ -1942,16 +1942,16 @@ void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
+  FieldGridDimension initGridWidth;
   dword randomValue;
   dword materialVariantRandomBits;
-  FieldGridDimension FVar2;
+  FieldGridDimension initColumnsRemaining;
   FieldGridDimension gridWidth;
-  FieldGridDimension FVar3;
+  FieldGridDimension initRowsRemaining;
   FieldGridDimension rowsRemaining;
   FieldGridDimension topRowCellsRemaining;
   FieldGridCell *initializationCellCursor;
-  int iVar4;
+  int rowBytesOrBottomCellAddress;
   FieldGridCell *cellCursor;
   FieldGridCell *currentRowFirstCell;
   Q12 currentCellWorldXQ12;
@@ -1959,11 +1959,11 @@ FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   undefined4 phaseSeedBitWidth;
   
   phaseSeedBitWidth = *(undefined4 *)((int)g_TerrainSurfacePacketTablePayload + -0x20);
-  FVar3 = fieldGrid->gridHeight;
+  initRowsRemaining = fieldGrid->gridHeight;
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-  FVar1 = fieldGrid->gridWidth;
+  initGridWidth = fieldGrid->gridWidth;
   initializationCellCursor = fieldGrid->cells;
-  FVar2 = FVar1;
+  initColumnsRemaining = initGridWidth;
   do {
     do {
       currentCellWorldXQ12 = initializationCellCursor->worldX;
@@ -1986,11 +1986,11 @@ FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
            initializationCellCursor->flagsAndMaterial |
            materialVariantRandomBits & FIELD_CELL_RANDOM_VARIANT_MASK;
       initializationCellCursor = initializationCellCursor + 1;
-      FVar2 = FVar2 - 1;
-    } while (FVar2 != 0);
-    FVar3 = FVar3 - 1;
-    FVar2 = FVar1;
-  } while (FVar3 != 0);
+      initColumnsRemaining = initColumnsRemaining - 1;
+    } while (initColumnsRemaining != 0);
+    initRowsRemaining = initRowsRemaining - 1;
+    initColumnsRemaining = initGridWidth;
+  } while (initRowsRemaining != 0);
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight;
   currentRowFirstCell = fieldGrid->cells;
@@ -2006,15 +2006,15 @@ FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
          currentRowFirstCell->flagsAndMaterial | FIELD_CELL_FIRST_COLUMN_BOUNDARY;
     cellCursor[-1].flagsAndMaterial =
          cellCursor[-1].flagsAndMaterial | FIELD_CELL_LAST_COLUMN_BOUNDARY;
-    iVar4 = (int)cellCursor - (int)currentRowFirstCell;
-    currentRowFirstCell = (FieldGridCell *)((int)currentRowFirstCell + iVar4);
-    cellCursor = (FieldGridCell *)(iVar4 + (int)currentRowFirstCell);
+    rowBytesOrBottomCellAddress = (int)cellCursor - (int)currentRowFirstCell;
+    currentRowFirstCell = (FieldGridCell *)((int)currentRowFirstCell + rowBytesOrBottomCellAddress);
+    cellCursor = (FieldGridCell *)(rowBytesOrBottomCellAddress + (int)currentRowFirstCell);
     rowsRemaining = rowsRemaining - 1;
   } while (rowsRemaining != 0);
-  iVar4 = (int)currentRowFirstCell * 2 - (int)cellCursor;
+  rowBytesOrBottomCellAddress = (int)currentRowFirstCell * 2 - (int)cellCursor;
   do {
-    *(uint *)(iVar4 + 0x50) = *(uint *)(iVar4 + 0x50) | 0x80000000;
-    iVar4 = iVar4 + 0x80;
+    *(uint *)(rowBytesOrBottomCellAddress + 0x50) = *(uint *)(rowBytesOrBottomCellAddress + 0x50) | 0x80000000;
+    rowBytesOrBottomCellAddress = rowBytesOrBottomCellAddress + 0x80;
     gridWidth = gridWidth - 1;
   } while (gridWidth != 0);
   return;
@@ -2070,8 +2070,8 @@ FieldGrid_ApplyByteClampLookupToCells
           (FieldGridByteOffset sourceChannelOffset,FieldGridAsset *fieldGrid)
 
 {
-  undefined3 uVar1;
-  byte *pbVar2;
+  undefined3 lookupHighBytes;
+  byte *lookupPointerOrResult;
   FieldGridDimension columnsRemaining;
   FieldGridDimension rowsRemaining;
   FieldGridCell *currentCell;
@@ -2081,14 +2081,14 @@ FieldGrid_ApplyByteClampLookupToCells
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
-  pbVar2 = g_TerrainByteClampLookup;
+  lookupPointerOrResult = g_TerrainByteClampLookup;
   columnsRemaining = gridWidth;
   do {
     do {
-      uVar1 = CONCAT21((short)((uint)pbVar2 >> 0x10),
+      lookupHighBytes = CONCAT21((short)((uint)lookupPointerOrResult >> 0x10),
                        currentCell->runtime60_6B[sourceChannelOffset + 0x10]);
-      mappedRuntimeByte = *(byte *)CONCAT31(uVar1,currentCell->runtime60_6B[8]);
-      pbVar2 = (byte *)CONCAT31(uVar1,mappedRuntimeByte);
+      mappedRuntimeByte = *(byte *)CONCAT31(lookupHighBytes,currentCell->runtime60_6B[8]);
+      lookupPointerOrResult = (byte *)CONCAT31(lookupHighBytes,mappedRuntimeByte);
       currentCell->runtime60_6B[8] = mappedRuntimeByte;
       currentCell = currentCell + 1;
       columnsRemaining = columnsRemaining - 1;
@@ -2142,7 +2142,7 @@ FieldGrid_ClassifyCellFlagsToRuntimeByte
 void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuildVectors(void)
 
 {
-  uint uVar1;
+  uint previousPackedAngles;
   TerrainDirectionRecordCount recordsRemaining;
   TerrainDirectionRecord *currentDirectionRecord;
   FixedSinCosEdxEax8 scaledSinCosPair;
@@ -2152,15 +2152,15 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
   currentDirectionRecord = g_TerrainDirectionRecordTable256;
   recordsRemaining = 0x100;
   do {
-    uVar1 = currentDirectionRecord->packedAngleA_low16_AngleB_high16;
+    previousPackedAngles = currentDirectionRecord->packedAngleA_low16_AngleB_high16;
     currentDirectionRecord->packedAngleA_low16_AngleB_high16 =
          currentDirectionRecord->packedAngleA_low16_AngleB_high16 +
          *(int *)&currentDirectionRecord->rateA;
-    scaledSinCosPair = FixedMath_SinCosScaled(uVar1 & 0xffff,currentDirectionRecord->scaleA);
+    scaledSinCosPair = FixedMath_SinCosScaled(previousPackedAngles & 0xffff,currentDirectionRecord->scaleA);
     currentDirectionRecord->angleAComponent0ScaledQ28 = (int)scaledSinCosPair;
     currentDirectionRecord->angleAComponent1ScaledQ28 = (int)(scaledSinCosPair >> 0x20);
     angleBScaledSinCosPair =
-         FixedMath_SinCosScaled((int)uVar1 >> 0x10,currentDirectionRecord->scaleB);
+         FixedMath_SinCosScaled((int)previousPackedAngles >> 0x10,currentDirectionRecord->scaleB);
     currentDirectionRecord->angleBComponent0ScaledQ28 = (dword)angleBScaledSinCosPair;
     currentDirectionRecord = currentDirectionRecord + 1;
     recordsRemaining = recordsRemaining - 1;
@@ -2187,84 +2187,84 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
 
 {
   FieldGridCell *currentCell;
-  FieldGridDimension FVar1;
-  FieldGridDimension FVar2;
-  FieldGridDimension FVar3;
-  longlong lVar4;
-  longlong lVar5;
-  ulonglong uVar6;
+  FieldGridDimension boundsGridWidth;
+  FieldGridDimension boundsGridHeight;
+  FieldGridDimension rowLength;
+  longlong rayEndYProduct;
+  longlong rayEndXProduct;
+  ulonglong packedHit;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
   int rayEndCoord1Q12;
   uint extraout_ECX;
-  uint uVar7;
-  uint uVar8;
+  uint rayStartHalfCoord0Q12;
+  uint endHalfCoordOrCurrentCoord1Q12;
   uint currentGridCoord0Q12;
   int cellLocalCoord1Q12;
   uint extraout_EDX;
-  int iVar9;
-  bool bVar10;
-  TerrainDistanceEaxCf5 TVar11;
-  FieldGridRaycastEaxEdxCf9 FVar12;
-  FieldGridRaycastEaxEdxCf9 FVar13;
-  FixedDirectionXyzRegs12 FVar14;
+  int stepsRemaining;
+  bool traversalDone;
+  TerrainDistanceEaxCf5 triangleHit;
+  FieldGridRaycastEaxEdxCf9 missResult;
+  FieldGridRaycastEaxEdxCf9 hitResult;
+  FixedDirectionXyzRegs12 rayDirection;
   
-  FVar1 = fieldGrid->gridWidth;
-  FVar2 = fieldGrid->gridHeight;
-  uVar7 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  boundsGridWidth = fieldGrid->gridWidth;
+  boundsGridHeight = fieldGrid->gridHeight;
+  rayStartHalfCoord0Q12 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x15;
   rayStartCoord1Q12 =
        ((int)((ulonglong)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar7;
-  rayStartCoord0Q12 = uVar7 * 2;
-  FVar3 = fieldGrid->gridWidth;
+       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - rayStartHalfCoord0Q12;
+  rayStartCoord0Q12 = rayStartHalfCoord0Q12 * 2;
+  rowLength = fieldGrid->gridWidth;
   currentCell = (FieldGridCell *)
                 (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
-                ((int)rayStartCoord0Q12 >> 0xc) * FVar3 * 0x80 + -0xc);
-  FVar14 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  lVar4 = (longlong)(int)(FVar14.eax + rayOriginYQ12) * 0x1c6e9c;
-  lVar5 = (longlong)(int)(FVar14.ecx + rayOriginXQ12) * -0x20c8cc;
-  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 0xb | (uint)lVar5 >> 0x15;
-  rayEndCoord1Q12 = ((int)((ulonglong)lVar4 >> 0x20) << 0xc | (uint)lVar4 >> 0x14) - uVar8;
-  rayEndCoord0Q12 = uVar8 * 2;
-  iVar9 = 0x400;
-  uVar8 = rayStartCoord1Q12 & 0xfffff000;
+                ((int)rayStartCoord0Q12 >> 0xc) * rowLength * 0x80 + -0xc);
+  rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
+  rayEndYProduct = (longlong)(int)(rayDirection.eax + rayOriginYQ12) * 0x1c6e9c;
+  rayEndXProduct = (longlong)(int)(rayDirection.ecx + rayOriginXQ12) * -0x20c8cc;
+  endHalfCoordOrCurrentCoord1Q12 = (int)((ulonglong)rayEndXProduct >> 0x20) << 0xb | (uint)rayEndXProduct >> 0x15;
+  rayEndCoord1Q12 = ((int)((ulonglong)rayEndYProduct >> 0x20) << 0xc | (uint)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
+  rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
+  stepsRemaining = 0x400;
+  endHalfCoordOrCurrentCoord1Q12 = rayStartCoord1Q12 & 0xfffff000;
   currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
   do {
-    iVar9 = iVar9 + -1;
-    if (iVar9 == 0) break;
-    if ((((-1 < (int)uVar8) && (-1 < (int)currentGridCoord0Q12)) &&
-        ((int)uVar8 < (int)((FVar1 - 1) * 0x1000))) &&
-       ((int)currentGridCoord0Q12 < (int)((FVar2 - 1) * 0x1000))) {
-      cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar7 * -2;
-      TVar11 = TerrainTriangle_IntersectRayDistanceCf
-                         (FVar14.edx,rayEndCoord0Q12 + uVar7 * -2,
+    stepsRemaining = stepsRemaining + -1;
+    if (stepsRemaining == 0) break;
+    if ((((-1 < (int)endHalfCoordOrCurrentCoord1Q12) && (-1 < (int)currentGridCoord0Q12)) &&
+        ((int)endHalfCoordOrCurrentCoord1Q12 < (int)((boundsGridWidth - 1) * 0x1000))) &&
+       ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
+      cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
+      triangleHit = TerrainTriangle_IntersectRayDistanceCf
+                         (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
-                          currentCell[FVar3 + 1].terrainHeight,currentCell[FVar3].terrainHeight,
+                          currentCell[rowLength + 1].terrainHeight,currentCell[rowLength].terrainHeight,
                           currentCell[1].terrainHeight,currentCell->terrainHeight,cellLocalCoord1Q12
-                          ,uVar8 - rayStartCoord1Q12);
-      if (!TVar11.carry) {
-        uVar6 = CONCAT44(currentCell->flagsAndMaterial,TVar11.distanceQ12) & 0xffffffffff;
-        FVar13.carry = true;
-        FVar13.distanceQ12 = (int)uVar6;
-        FVar13.materialOrCellIndex = (int)(uVar6 >> 0x20);
-        return FVar13;
+                          ,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
+      if (!triangleHit.carry) {
+        packedHit = CONCAT44(currentCell->flagsAndMaterial,triangleHit.distanceQ12) & 0xffffffffff;
+        hitResult.carry = true;
+        hitResult.distanceQ12 = (int)packedHit;
+        hitResult.materialOrCellIndex = (int)(packedHit >> 0x20);
+        return hitResult;
       }
-      uVar8 = (uVar8 - rayStartCoord1Q12) + rayStartCoord1Q12;
+      endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
       currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
     }
-    bVar10 = TerrainRay_AdvanceGridTraversalCf
+    traversalDone = TerrainRay_AdvanceGridTraversalCf
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);    
+                        rowLength * 0x80,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
-    uVar8 = g_TerrainRayNextCoord1Q12;
+    endHalfCoordOrCurrentCoord1Q12 = g_TerrainRayNextCoord1Q12;
     currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
-  } while (!bVar10);
-  FVar12.materialOrCellIndex = currentGridCoord0Q12;
-  FVar12.distanceQ12 = 0x7fffffff;
-  FVar12.carry = false;
-  return FVar12;
+  } while (!traversalDone);
+  missResult.materialOrCellIndex = currentGridCoord0Q12;
+  missResult.distanceQ12 = 0x7fffffff;
+  missResult.carry = false;
+  return missResult;
 }
 
 
@@ -2286,87 +2286,87 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
 
 {
   FieldGridCell *currentCell;
-  FieldGridDimension FVar1;
-  FieldGridDimension FVar2;
-  FieldGridDimension FVar3;
-  longlong lVar4;
-  longlong lVar5;
-  ulonglong uVar6;
+  FieldGridDimension boundsGridWidth;
+  FieldGridDimension boundsGridHeight;
+  FieldGridDimension rowLength;
+  longlong rayEndYProduct;
+  longlong rayEndXProduct;
+  ulonglong packedHit;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
   int rayEndCoord1Q12;
   uint extraout_ECX;
-  uint uVar7;
-  uint uVar8;
+  uint rayStartHalfCoord0Q12;
+  uint endHalfCoordOrCurrentCoord1Q12;
   uint currentGridCoord0Q12;
   int cellLocalCoord1Q12;
   uint extraout_EDX;
-  int iVar9;
-  bool bVar10;
-  TerrainDistanceEaxCf5 TVar11;
-  FieldGridRaycastEaxEdxCf9 FVar12;
-  FieldGridRaycastEaxEdxCf9 FVar13;
-  FixedDirectionXyzRegs12 FVar14;
+  int stepsRemaining;
+  bool traversalDone;
+  TerrainDistanceEaxCf5 triangleHit;
+  FieldGridRaycastEaxEdxCf9 missResult;
+  FieldGridRaycastEaxEdxCf9 hitResult;
+  FixedDirectionXyzRegs12 rayDirection;
   
-  FVar1 = fieldGrid->gridWidth;
-  FVar2 = fieldGrid->gridHeight;
-  uVar7 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  boundsGridWidth = fieldGrid->gridWidth;
+  boundsGridHeight = fieldGrid->gridHeight;
+  rayStartHalfCoord0Q12 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x15;
   rayStartCoord1Q12 =
        ((int)((ulonglong)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar7;
-  rayStartCoord0Q12 = uVar7 * 2;
-  FVar3 = fieldGrid->gridWidth;
+       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - rayStartHalfCoord0Q12;
+  rayStartCoord0Q12 = rayStartHalfCoord0Q12 * 2;
+  rowLength = fieldGrid->gridWidth;
   currentCell = (FieldGridCell *)
                 (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
-                ((int)rayStartCoord0Q12 >> 0xc) * FVar3 * 0x80 + -0xc);
-  FVar14 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  lVar4 = (longlong)(int)(FVar14.eax + rayOriginYQ12) * 0x1c6e9c;
-  lVar5 = (longlong)(int)(FVar14.ecx + rayOriginXQ12) * -0x20c8cc;
-  uVar8 = (int)((ulonglong)lVar5 >> 0x20) << 0xb | (uint)lVar5 >> 0x15;
-  rayEndCoord1Q12 = ((int)((ulonglong)lVar4 >> 0x20) << 0xc | (uint)lVar4 >> 0x14) - uVar8;
-  rayEndCoord0Q12 = uVar8 * 2;
-  iVar9 = 0x400;
-  uVar8 = rayStartCoord1Q12 & 0xfffff000;
+                ((int)rayStartCoord0Q12 >> 0xc) * rowLength * 0x80 + -0xc);
+  rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
+  rayEndYProduct = (longlong)(int)(rayDirection.eax + rayOriginYQ12) * 0x1c6e9c;
+  rayEndXProduct = (longlong)(int)(rayDirection.ecx + rayOriginXQ12) * -0x20c8cc;
+  endHalfCoordOrCurrentCoord1Q12 = (int)((ulonglong)rayEndXProduct >> 0x20) << 0xb | (uint)rayEndXProduct >> 0x15;
+  rayEndCoord1Q12 = ((int)((ulonglong)rayEndYProduct >> 0x20) << 0xc | (uint)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
+  rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
+  stepsRemaining = 0x400;
+  endHalfCoordOrCurrentCoord1Q12 = rayStartCoord1Q12 & 0xfffff000;
   currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
   do {
-    iVar9 = iVar9 + -1;
-    if (iVar9 == 0) break;
-    if ((((-1 < (int)uVar8) && (-1 < (int)currentGridCoord0Q12)) &&
-        ((int)uVar8 < (int)((FVar1 - 1) * 0x1000))) &&
-       ((int)currentGridCoord0Q12 < (int)((FVar2 - 1) * 0x1000))) {
-      cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar7 * -2;
-      TVar11 = TerrainTriangle_IntersectRayDistanceCf
-                         (FVar14.edx,rayEndCoord0Q12 + uVar7 * -2,
+    stepsRemaining = stepsRemaining + -1;
+    if (stepsRemaining == 0) break;
+    if ((((-1 < (int)endHalfCoordOrCurrentCoord1Q12) && (-1 < (int)currentGridCoord0Q12)) &&
+        ((int)endHalfCoordOrCurrentCoord1Q12 < (int)((boundsGridWidth - 1) * 0x1000))) &&
+       ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
+      cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
+      triangleHit = TerrainTriangle_IntersectRayDistanceCf
+                         (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
-                          currentCell[FVar3 + 1].terrainHeight +
-                          currentCell[FVar3 + 1].waterSurfaceDelta,
-                          currentCell[FVar3].terrainHeight + currentCell[FVar3].waterSurfaceDelta,
+                          currentCell[rowLength + 1].terrainHeight +
+                          currentCell[rowLength + 1].waterSurfaceDelta,
+                          currentCell[rowLength].terrainHeight + currentCell[rowLength].waterSurfaceDelta,
                           currentCell[1].terrainHeight + currentCell[1].waterSurfaceDelta,
                           currentCell->waterSurfaceDelta + currentCell->terrainHeight,
-                          cellLocalCoord1Q12,uVar8 - rayStartCoord1Q12);
-      if (!TVar11.carry) {
-        uVar6 = CONCAT44(currentCell->flagsAndMaterial,TVar11.distanceQ12) & 0xffffffffff;
-        FVar13.carry = true;
-        FVar13.distanceQ12 = (int)uVar6;
-        FVar13.materialOrCellIndex = (int)(uVar6 >> 0x20);
-        return FVar13;
+                          cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
+      if (!triangleHit.carry) {
+        packedHit = CONCAT44(currentCell->flagsAndMaterial,triangleHit.distanceQ12) & 0xffffffffff;
+        hitResult.carry = true;
+        hitResult.distanceQ12 = (int)packedHit;
+        hitResult.materialOrCellIndex = (int)(packedHit >> 0x20);
+        return hitResult;
       }
-      uVar8 = (uVar8 - rayStartCoord1Q12) + rayStartCoord1Q12;
+      endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
       currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
     }
-    bVar10 = TerrainRay_AdvanceGridTraversalCf
+    traversalDone = TerrainRay_AdvanceGridTraversalCf
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        FVar3 * 0x80,currentCell,currentGridCoord0Q12,uVar8);    
+                        rowLength * 0x80,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
-    uVar8 = g_TerrainRayNextCoord1Q12;
+    endHalfCoordOrCurrentCoord1Q12 = g_TerrainRayNextCoord1Q12;
     currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
-  } while (!bVar10);
-  FVar12.materialOrCellIndex = currentGridCoord0Q12;
-  FVar12.distanceQ12 = 0x7fffffff;
-  FVar12.carry = false;
-  return FVar12;
+  } while (!traversalDone);
+  missResult.materialOrCellIndex = currentGridCoord0Q12;
+  missResult.distanceQ12 = 0x7fffffff;
+  missResult.carry = false;
+  return missResult;
 }
 
 
@@ -2383,147 +2383,147 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
           Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  longlong lVar2;
-  longlong lVar3;
-  ulonglong uVar4;
+  FieldGridDimension rowLength;
+  longlong rayEndYProduct;
+  longlong rayEndXProduct;
+  ulonglong packedHit;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
   int rayEndCoord1Q12;
-  int iVar5;
+  int columnOrClampOffset;
   uint extraout_ECX;
-  int iVar6;
-  uint uVar7;
-  uint uVar8;
+  int maxRowIndex;
+  uint rayStartHalfCoord0Q12;
+  uint endHalfCoordOrCurrentCoord1Q12;
   uint currentGridCoord0Q12;
   int cellLocalCoord1Q12;
-  int iVar9;
+  int cellRowIndex;
   uint extraout_EDX;
-  int iVar10;
-  int iVar11;
+  int maxColumnIndex;
+  int stepsRemaining;
   FieldGridCell *currentCell;
-  FieldGridCell *pFVar12;
+  FieldGridCell *sampleCell;
   int rowStrideBytes;
-  bool bVar13;
-  TerrainDistanceEaxCf5 TVar14;
-  FieldGridRaycastEaxEdxCf9 FVar15;
-  FieldGridRaycastEaxEdxCf9 FVar16;
-  FixedDirectionXyzRegs12 FVar17;
+  bool traversalDone;
+  TerrainDistanceEaxCf5 triangleHit;
+  FieldGridRaycastEaxEdxCf9 hitResult;
+  FieldGridRaycastEaxEdxCf9 missResult;
+  FixedDirectionXyzRegs12 rayDirection;
   FieldCellPersistedAux cornerHeight0Q12;
   FieldCellPersistedAux cornerHeight1Q12;
   FieldCellPersistedAux cornerHeight2Q12;
   FieldCellPersistedAux cornerHeight3Q12;
   
-  iVar10 = fieldGrid->gridWidth - 1;
-  iVar6 = fieldGrid->gridHeight - 1;
-  uVar7 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  maxColumnIndex = fieldGrid->gridWidth - 1;
+  maxRowIndex = fieldGrid->gridHeight - 1;
+  rayStartHalfCoord0Q12 = (int)((ulonglong)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)rayOriginXQ12 * -0x20c8cc) >> 0x15;
   rayStartCoord1Q12 =
        ((int)((ulonglong)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - uVar7;
-  rayStartCoord0Q12 = uVar7 * 2;
-  FVar1 = fieldGrid->gridWidth;
-  rowStrideBytes = FVar1 * 0x80;
-  FVar17 = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  lVar2 = (longlong)(int)(FVar17.eax + rayOriginYQ12) * 0x1c6e9c;
-  lVar3 = (longlong)(int)(FVar17.ecx + rayOriginXQ12) * -0x20c8cc;
-  uVar8 = (int)((ulonglong)lVar3 >> 0x20) << 0xb | (uint)lVar3 >> 0x15;
-  rayEndCoord1Q12 = ((int)((ulonglong)lVar2 >> 0x20) << 0xc | (uint)lVar2 >> 0x14) - uVar8;
-  rayEndCoord0Q12 = uVar8 * 2;
-  iVar11 = 0x400;
-  uVar8 = rayStartCoord1Q12 & 0xfffff000;
+       (uint)((longlong)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - rayStartHalfCoord0Q12;
+  rayStartCoord0Q12 = rayStartHalfCoord0Q12 * 2;
+  rowLength = fieldGrid->gridWidth;
+  rowStrideBytes = rowLength * 0x80;
+  rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
+  rayEndYProduct = (longlong)(int)(rayDirection.eax + rayOriginYQ12) * 0x1c6e9c;
+  rayEndXProduct = (longlong)(int)(rayDirection.ecx + rayOriginXQ12) * -0x20c8cc;
+  endHalfCoordOrCurrentCoord1Q12 = (int)((ulonglong)rayEndXProduct >> 0x20) << 0xb | (uint)rayEndXProduct >> 0x15;
+  rayEndCoord1Q12 = ((int)((ulonglong)rayEndYProduct >> 0x20) << 0xc | (uint)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
+  rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
+  stepsRemaining = 0x400;
+  endHalfCoordOrCurrentCoord1Q12 = rayStartCoord1Q12 & 0xfffff000;
   currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
   currentCell = (FieldGridCell *)
                 (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
                 ((int)rayStartCoord0Q12 >> 0xc) * rowStrideBytes + -0xc);
   do {
-    iVar11 = iVar11 + -1;
-    if (iVar11 == 0) break;
-    cellLocalCoord1Q12 = currentGridCoord0Q12 + uVar7 * -2;
-    iVar5 = (int)((uVar8 - rayStartCoord1Q12) + rayStartCoord1Q12) >> 0xc;
-    iVar9 = (int)(cellLocalCoord1Q12 + rayStartCoord0Q12) >> 0xc;
-    if (iVar5 < 0) {
-      pFVar12 = currentCell + -iVar5;
-      iVar5 = iVar9;
-      if ((iVar9 < 0) || (iVar5 = iVar9 - iVar6, iVar6 <= iVar9)) {
+    stepsRemaining = stepsRemaining + -1;
+    if (stepsRemaining == 0) break;
+    cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
+    columnOrClampOffset = (int)((endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12) >> 0xc;
+    cellRowIndex = (int)(cellLocalCoord1Q12 + rayStartCoord0Q12) >> 0xc;
+    if (columnOrClampOffset < 0) {
+      sampleCell = currentCell + -columnOrClampOffset;
+      columnOrClampOffset = cellRowIndex;
+      if ((cellRowIndex < 0) || (columnOrClampOffset = cellRowIndex - maxRowIndex, maxRowIndex <= cellRowIndex)) {
 LAB_00505090:
-        pFVar12 = (FieldGridCell *)((int)pFVar12 - iVar5 * rowStrideBytes);
-        cornerHeight3Q12 = pFVar12->terrainHeight;
-        cornerHeight2Q12 = pFVar12->terrainHeight;
-        cornerHeight1Q12 = pFVar12->terrainHeight;
-        cornerHeight0Q12 = pFVar12->terrainHeight;
+        sampleCell = (FieldGridCell *)((int)sampleCell - columnOrClampOffset * rowStrideBytes);
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell->terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell->terrainHeight;
       }
       else {
-        cornerHeight3Q12 = pFVar12->terrainHeight;
-        cornerHeight2Q12 = pFVar12[FVar1].terrainHeight;
-        cornerHeight1Q12 = pFVar12->terrainHeight;
-        cornerHeight0Q12 = pFVar12[FVar1].terrainHeight;
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell[rowLength].terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell[rowLength].terrainHeight;
       }
     }
-    else if (iVar9 < 0) {
-      pFVar12 = (FieldGridCell *)((int)currentCell - iVar9 * rowStrideBytes);
-      if (iVar5 < iVar10) {
-        cornerHeight3Q12 = pFVar12->terrainHeight;
-        cornerHeight2Q12 = pFVar12[1].terrainHeight;
-        cornerHeight1Q12 = pFVar12->terrainHeight;
-        cornerHeight0Q12 = pFVar12[1].terrainHeight;
+    else if (cellRowIndex < 0) {
+      sampleCell = (FieldGridCell *)((int)currentCell - cellRowIndex * rowStrideBytes);
+      if (columnOrClampOffset < maxColumnIndex) {
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell[1].terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell[1].terrainHeight;
       }
       else {
-        pFVar12 = pFVar12 + -(iVar5 - iVar10);
-        cornerHeight3Q12 = pFVar12->terrainHeight;
-        cornerHeight2Q12 = pFVar12->terrainHeight;
-        cornerHeight1Q12 = pFVar12->terrainHeight;
-        cornerHeight0Q12 = pFVar12->terrainHeight;
+        sampleCell = sampleCell + -(columnOrClampOffset - maxColumnIndex);
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell->terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell->terrainHeight;
       }
     }
-    else if (iVar5 < iVar10) {
-      if (iVar9 < iVar6) {
+    else if (columnOrClampOffset < maxColumnIndex) {
+      if (cellRowIndex < maxRowIndex) {
         cornerHeight3Q12 = currentCell->terrainHeight;
         cornerHeight2Q12 = currentCell[1].terrainHeight;
-        cornerHeight1Q12 = currentCell[FVar1].terrainHeight;
-        cornerHeight0Q12 = currentCell[FVar1 + 1].terrainHeight;
-        pFVar12 = currentCell;
+        cornerHeight1Q12 = currentCell[rowLength].terrainHeight;
+        cornerHeight0Q12 = currentCell[rowLength + 1].terrainHeight;
+        sampleCell = currentCell;
       }
       else {
-        pFVar12 = (FieldGridCell *)((int)currentCell - (iVar9 - iVar6) * rowStrideBytes);
-        cornerHeight3Q12 = pFVar12->terrainHeight;
-        cornerHeight2Q12 = pFVar12[1].terrainHeight;
-        cornerHeight1Q12 = pFVar12->terrainHeight;
-        cornerHeight0Q12 = pFVar12[1].terrainHeight;
+        sampleCell = (FieldGridCell *)((int)currentCell - (cellRowIndex - maxRowIndex) * rowStrideBytes);
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell[1].terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell[1].terrainHeight;
       }
     }
     else {
-      pFVar12 = currentCell + -(iVar5 - iVar10);
-      iVar5 = iVar9 - iVar6;
-      if (iVar6 <= iVar9) goto LAB_00505090;
-      cornerHeight3Q12 = pFVar12->terrainHeight;
-      cornerHeight2Q12 = pFVar12[FVar1].terrainHeight;
-      cornerHeight1Q12 = pFVar12->terrainHeight;
-      cornerHeight0Q12 = pFVar12[FVar1].terrainHeight;
+      sampleCell = currentCell + -(columnOrClampOffset - maxColumnIndex);
+      columnOrClampOffset = cellRowIndex - maxRowIndex;
+      if (maxRowIndex <= cellRowIndex) goto LAB_00505090;
+      cornerHeight3Q12 = sampleCell->terrainHeight;
+      cornerHeight2Q12 = sampleCell[rowLength].terrainHeight;
+      cornerHeight1Q12 = sampleCell->terrainHeight;
+      cornerHeight0Q12 = sampleCell[rowLength].terrainHeight;
     }
-    TVar14 = TerrainTriangle_IntersectRayDistanceCf
-                       (FVar17.edx,rayEndCoord0Q12 + uVar7 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
+    triangleHit = TerrainTriangle_IntersectRayDistanceCf
+                       (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
                         rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
-                        cornerHeight3Q12,cellLocalCoord1Q12,uVar8 - rayStartCoord1Q12);
-    if (!TVar14.carry) {
-      uVar4 = CONCAT44(pFVar12->flagsAndMaterial,TVar14.distanceQ12) & 0xffffffffff;
-      FVar15.carry = true;
-      FVar15.distanceQ12 = (int)uVar4;
-      FVar15.materialOrCellIndex = (int)(uVar4 >> 0x20);
-      return FVar15;
+                        cornerHeight3Q12,cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
+    if (!triangleHit.carry) {
+      packedHit = CONCAT44(sampleCell->flagsAndMaterial,triangleHit.distanceQ12) & 0xffffffffff;
+      hitResult.carry = true;
+      hitResult.distanceQ12 = (int)packedHit;
+      hitResult.materialOrCellIndex = (int)(packedHit >> 0x20);
+      return hitResult;
     }
-    bVar13 = TerrainRay_AdvanceGridTraversalCf
+    traversalDone = TerrainRay_AdvanceGridTraversalCf
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        rowStrideBytes,currentCell,currentGridCoord0Q12,uVar8);    
+                        rowStrideBytes,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
-    uVar8 = g_TerrainRayNextCoord1Q12;
+    endHalfCoordOrCurrentCoord1Q12 = g_TerrainRayNextCoord1Q12;
     currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
-  } while (!bVar13);
-  FVar16.materialOrCellIndex = currentGridCoord0Q12;
-  FVar16.distanceQ12 = 0x7fffffff;
-  FVar16.carry = false;
-  return FVar16;
+  } while (!traversalDone);
+  missResult.materialOrCellIndex = currentGridCoord0Q12;
+  missResult.distanceQ12 = 0x7fffffff;
+  missResult.carry = false;
+  return missResult;
 }
 
 
@@ -2651,20 +2651,20 @@ TerrainGrid_TestProjectedCellMaskBits01Cf
           (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  FieldGridAsset *pFVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
+  FieldGridAsset *activeFieldGrid;
+  int gridColumnIndex;
+  uint gridHalfRowCoordinateQ12;
+  int gridRowIndex;
   
-  pFVar1 = worldRuntime->fieldGrid;
-  uVar3 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+  activeFieldGrid = worldRuntime->fieldGrid;
+  gridHalfRowCoordinateQ12 = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  iVar2 = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - uVar3) + 0x800) >> 0xc;
-  if ((((-1 < iVar2) && (iVar4 = (int)(uVar3 * 2 + 0x800) >> 0xc, -1 < iVar4)) &&
-      (iVar2 < (int)pFVar1->gridWidth)) &&
-     ((iVar4 < (int)pFVar1->gridHeight &&
-      ((pFVar1->cells[pFVar1->gridWidth * iVar4 + iVar2].runtime60_6B
+  gridColumnIndex = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12) + 0x800) >> 0xc;
+  if ((((-1 < gridColumnIndex) && (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 0xc, -1 < gridRowIndex)) &&
+      (gridColumnIndex < (int)activeFieldGrid->gridWidth)) &&
+     ((gridRowIndex < (int)activeFieldGrid->gridHeight &&
+      ((activeFieldGrid->cells[activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex].runtime60_6B
         [worldRuntime->activeFactionRuntimeIndex + 0x10] & 3) != 0)))) {
     return false;
   }
@@ -2679,16 +2679,16 @@ TerrainGrid_TestProjectedCellMaskBits01Cf
 void FieldGrid_ClearCellFlag8000AcrossGrid(FieldGridAsset *fieldGrid)
 
 {
-  int iVar1;
-  FieldGridCell *pFVar2;
+  int cellsRemaining;
+  FieldGridCell *currentCell;
   
-  iVar1 = fieldGrid->gridWidth * fieldGrid->gridHeight;
-  pFVar2 = fieldGrid->cells;
+  cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
+  currentCell = fieldGrid->cells;
   do {
-    pFVar2->flagsAndMaterial = pFVar2->flagsAndMaterial & ~FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15;
-    pFVar2 = pFVar2 + 1;
-    iVar1 = iVar1 + -1;
-  } while (iVar1 != 0);
+    currentCell->flagsAndMaterial = currentCell->flagsAndMaterial & ~FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15;
+    currentCell = currentCell + 1;
+    cellsRemaining = cellsRemaining + -1;
+  } while (cellsRemaining != 0);
   return;
 }
 
@@ -2728,31 +2728,31 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_SaveAssetImageFromRuntimeStateCf(dword *sourceImageDwords)
 
 {
-  FieldGridAsset *pFVar1;
+  FieldGridAsset *writeErrorValue;
   FieldGridAsset *fieldGridImageCopy;
-  uint uVar2;
-  int iVar3;
-  int iVar4;
+  uint imageSizeOrDwordsLeft;
+  int cellsRemaining;
+  int occupancyBytesLeft;
   dword *copyDestinationDwords;
   FieldGridCellSaveImageView80 *fieldGridCellSaveView;
   byte *occupancyBytes;
-  ArenaAllocEaxCf5 AVar5;
-  StatusValueEaxCf5 SVar6;
-  ArenaFreeEaxCf5 AVar7;
+  ArenaAllocEaxCf5 allocResult;
+  StatusValueEaxCf5 writeStatus;
+  ArenaFreeEaxCf5 freeResult;
   
-  uVar2 = sourceImageDwords[1];
-  AVar5 = (*g_MemoryApi.alloc)(uVar2);
-  fieldGridImageCopy = (FieldGridAsset *)AVar5.eax;
-  if (!AVar5.carry) {
+  imageSizeOrDwordsLeft = sourceImageDwords[1];
+  allocResult = (*g_MemoryApi.alloc)(imageSizeOrDwordsLeft);
+  fieldGridImageCopy = (FieldGridAsset *)allocResult.eax;
+  if (!allocResult.carry) {
     copyDestinationDwords = (dword *)fieldGridImageCopy;
-    for (uVar2 = uVar2 >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+    for (imageSizeOrDwordsLeft = imageSizeOrDwordsLeft >> 2; imageSizeOrDwordsLeft != 0; imageSizeOrDwordsLeft = imageSizeOrDwordsLeft - 1) {
       *copyDestinationDwords = *sourceImageDwords;
       sourceImageDwords = sourceImageDwords + 1;
       copyDestinationDwords = copyDestinationDwords + 1;
     }
     fieldGridCellSaveView = (FieldGridCellSaveImageView80 *)fieldGridImageCopy->cells;
     fieldGridImageCopy->fieldFlags = 0;
-    iVar3 = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
+    cellsRemaining = fieldGridImageCopy->gridWidth * fieldGridImageCopy->gridHeight;
     do {
       fieldGridCellSaveView->runtime00 = 0;
       fieldGridCellSaveView->triangle0NormalAngles = 0x40000000;
@@ -2778,27 +2778,27 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(dword *sourceImageDwords)
            fieldGridImageCopy->fieldFlags |
            1 << ((byte)fieldGridCellSaveView->flagsAndMaterial & 0x1f);
       occupancyBytes = (byte *)&fieldGridCellSaveView->occupancyMask;
-      for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
+      for (occupancyBytesLeft = 8; occupancyBytesLeft != 0; occupancyBytesLeft = occupancyBytesLeft + -1) {
         *occupancyBytes = 0;
         occupancyBytes = occupancyBytes + 1;
       }
       fieldGridCellSaveView = fieldGridCellSaveView + 1;
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
-    SVar6 = FileSystem_WriteBufferToPathCf
+      cellsRemaining = cellsRemaining + -1;
+    } while (cellsRemaining != 0);
+    writeStatus = FileSystem_WriteBufferToPathCf
                       ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                        (word *)&g_LevelResourcePathScratchUtf16);
-    if (!SVar6.carry) {
-      AVar7 = (*g_MemoryApi.free)(fieldGridImageCopy);
-      return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, AVar7) & 0xFFFFFFFFFFull) & 0xffffffff));
+    if (!writeStatus.carry) {
+      freeResult = (*g_MemoryApi.free)(fieldGridImageCopy);
+      return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
-    pFVar1 = (FieldGridAsset *)SVar6.valueOrError;
+    writeErrorValue = (FieldGridAsset *)writeStatus.valueOrError;
     (*g_MemoryApi.free)(fieldGridImageCopy);
-    fieldGridImageCopy = pFVar1;
+    fieldGridImageCopy = writeErrorValue;
   }
-  SVar6.carry = true;
-  SVar6.valueOrError = (dword)fieldGridImageCopy;
-  return SVar6;
+  writeStatus.carry = true;
+  writeStatus.valueOrError = (dword)fieldGridImageCopy;
+  return writeStatus;
 }
 
 
@@ -2874,46 +2874,46 @@ FieldGrid_ApplyEncodedUpdateCore
           FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  int iVar2;
-  int iVar3;
+  FieldGridDimension rowLength;
+  int columnIndex;
+  int rowIndex;
   int rowStrideBytes;
-  FieldGridCell *pFVar4;
+  FieldGridCell *neighborCell;
   
-  FVar1 = fieldGrid->gridWidth;
-  iVar2 = worldXQ12 >> 0xc;
-  if ((((-1 < iVar2) && (iVar3 = worldYQ12 >> 0xc, -1 < iVar3)) && (iVar2 < (int)FVar1)) &&
-     (iVar3 < (int)fieldGrid->gridHeight)) {
-    rowStrideBytes = FVar1 * 0x80;
-    pFVar4 = fieldGrid->cells + iVar2 + iVar3 * FVar1;
-    pFVar4->waterSurfaceDelta = pFVar4->waterSurfaceDelta + heightDeltaUnits * -0x40;
-    FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-    FieldGridCell_ComputeDirectionalLightColor(pFVar4);
-    if ((pFVar4[-1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + -1);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar4 + -1);
+  rowLength = fieldGrid->gridWidth;
+  columnIndex = worldXQ12 >> 0xc;
+  if ((((-1 < columnIndex) && (rowIndex = worldYQ12 >> 0xc, -1 < rowIndex)) && (columnIndex < (int)rowLength)) &&
+     (rowIndex < (int)fieldGrid->gridHeight)) {
+    rowStrideBytes = rowLength * 0x80;
+    neighborCell = fieldGrid->cells + columnIndex + rowIndex * rowLength;
+    neighborCell->waterSurfaceDelta = neighborCell->waterSurfaceDelta + heightDeltaUnits * -0x40;
+    FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell);
+    FieldGridCell_ComputeDirectionalLightColor(neighborCell);
+    if ((neighborCell[-1].flagsAndMaterial & 0x88006000) == 0) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell + -1);
+      FieldGridCell_ComputeDirectionalLightColor(neighborCell + -1);
     }
-    if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
+    if ((neighborCell[1].flagsAndMaterial & 0x88006000) == 0) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell + 1);
+      FieldGridCell_ComputeDirectionalLightColor(neighborCell + 1);
     }
-    pFVar4 = pFVar4 + -FVar1;
-    if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar4);
+    neighborCell = neighborCell + -rowLength;
+    if ((neighborCell->flagsAndMaterial & 0x88006000) == 0) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell);
+      FieldGridCell_ComputeDirectionalLightColor(neighborCell);
     }
-    if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
+    if ((neighborCell[1].flagsAndMaterial & 0x88006000) == 0) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell + 1);
+      FieldGridCell_ComputeDirectionalLightColor(neighborCell + 1);
     }
-    pFVar4 = pFVar4 + FVar1 * 2 + -1;
-    if ((pFVar4->flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar4);
+    neighborCell = neighborCell + rowLength * 2 + -1;
+    if ((neighborCell->flagsAndMaterial & 0x88006000) == 0) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell);
+      FieldGridCell_ComputeDirectionalLightColor(neighborCell);
     }
-    if ((pFVar4[1].flagsAndMaterial & 0x88006000) == 0) {
-      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,pFVar4 + 1);
-      FieldGridCell_ComputeDirectionalLightColor(pFVar4 + 1);
+    if ((neighborCell[1].flagsAndMaterial & 0x88006000) == 0) {
+      FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,neighborCell + 1);
+      FieldGridCell_ComputeDirectionalLightColor(neighborCell + 1);
     }
   }
   return;
@@ -2933,29 +2933,29 @@ FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridCell *cell)
 
 {
-  longlong lVar1;
-  ulonglong uVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
-  uint uVar6;
+  longlong scaledDeltaProduct;
+  ulonglong distanceSquared;
+  int deltaXOrRadiusSquaredHigh;
+  int deltaY;
+  uint radiusSquaredOrHeightDelta;
+  uint distanceSquaredHigh;
   
-  iVar3 = centerWorldXQ12 - cell->worldX;
-  iVar4 = cell->worldY - centerWorldYQ12;
-  uVar2 = (longlong)iVar4 * (longlong)iVar4 + (longlong)iVar3 * (longlong)iVar3;
-  uVar6 = (uint)(uVar2 >> 0x20);
-  iVar3 = (int)((ulonglong)((longlong)radiusWorldUnits * (longlong)radiusWorldUnits) >> 0x20);
-  uVar5 = (uint)((longlong)radiusWorldUnits * (longlong)radiusWorldUnits);
-  if (((int)uVar6 <= iVar3) &&
-     ((((int)uVar6 < iVar3 || ((int)uVar2 < (int)uVar5)) &&
-      (uVar5 = iVar3 << 0x14 | uVar5 >> 0xc, uVar5 != 0)))) {
-    lVar1 = (longlong)
-            ((int)((longlong)((ulonglong)uVar6 << 0x20 | uVar2 & 0xffffffff) / (longlong)(int)uVar5)
+  deltaXOrRadiusSquaredHigh = centerWorldXQ12 - cell->worldX;
+  deltaY = cell->worldY - centerWorldYQ12;
+  distanceSquared = (longlong)deltaY * (longlong)deltaY + (longlong)deltaXOrRadiusSquaredHigh * (longlong)deltaXOrRadiusSquaredHigh;
+  distanceSquaredHigh = (uint)(distanceSquared >> 0x20);
+  deltaXOrRadiusSquaredHigh = (int)((ulonglong)((longlong)radiusWorldUnits * (longlong)radiusWorldUnits) >> 0x20);
+  radiusSquaredOrHeightDelta = (uint)((longlong)radiusWorldUnits * (longlong)radiusWorldUnits);
+  if (((int)distanceSquaredHigh <= deltaXOrRadiusSquaredHigh) &&
+     ((((int)distanceSquaredHigh < deltaXOrRadiusSquaredHigh || ((int)distanceSquared < (int)radiusSquaredOrHeightDelta)) &&
+      (radiusSquaredOrHeightDelta = deltaXOrRadiusSquaredHigh << 0x14 | radiusSquaredOrHeightDelta >> 0xc, radiusSquaredOrHeightDelta != 0)))) {
+    scaledDeltaProduct = (longlong)
+            ((int)((longlong)((ulonglong)distanceSquaredHigh << 0x20 | distanceSquared & 0xffffffff) / (longlong)(int)radiusSquaredOrHeightDelta)
             + -0x1000) * (longlong)terrainHeightDeltaAmplitudeQ12;
-    uVar5 = (int)((ulonglong)lVar1 >> 0x20) << 0x14 | (uint)lVar1 >> 0xc;
-    cell->terrainHeight = cell->terrainHeight + uVar5;
+    radiusSquaredOrHeightDelta = (int)((ulonglong)scaledDeltaProduct >> 0x20) << 0x14 | (uint)scaledDeltaProduct >> 0xc;
+    cell->terrainHeight = cell->terrainHeight + radiusSquaredOrHeightDelta;
     if (-1 < cell->waterSurfaceDelta) {
-      cell->waterSurfaceDelta = cell->waterSurfaceDelta - uVar5;
+      cell->waterSurfaceDelta = cell->waterSurfaceDelta - radiusSquaredOrHeightDelta;
     }
     if (-1 < terrainMaterialIndexOrNegativeSentinel) {
       cell->flagsAndMaterial =
@@ -3062,23 +3062,23 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
 
 {
-  int *piVar1;
-  FieldGridDimension FVar2;
+  int *lowerNeighborWaterDelta;
+  FieldGridDimension rowLength;
   int columnsRemaining;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
   int sourceCellAddress;
   int cellAfterSourceAddress;
-  int iVar3;
+  int upperRowCellAddress;
   int neighborWaterDeltaAddress;
   FieldGridDimension gridWidth;
   
-  FVar2 = fieldGrid->gridWidth;
+  rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
   sourceCellAddress =
-       (int)fieldGrid + FVar2 * -0x80 + (FVar2 * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
+       (int)fieldGrid + rowLength * -0x80 + (rowLength * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
   do {
-    columnsRemaining = FVar2 - 2;
+    columnsRemaining = rowLength - 2;
     cellAfterSourceAddress = sourceCellAddress;
     do {
       cellAfterSourceAddress = cellAfterSourceAddress + -0x80;
@@ -3086,31 +3086,31 @@ TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
          ((*(uint *)(cellAfterSourceAddress + -0x30) & 0x40000000) == 0)) {
         sourceSurfaceHeightQ12 =
              *(int *)(cellAfterSourceAddress + -0x34) + *(int *)(cellAfterSourceAddress + -0x38);
-        iVar3 = cellAfterSourceAddress + FVar2 * -0x80;
-        if ((*(uint *)(iVar3 + 0x50) & 0x20000000) == 0) {
-          neighborWaterDeltaAddress = iVar3 + 0x4c;
+        upperRowCellAddress = cellAfterSourceAddress + rowLength * -0x80;
+        if ((*(uint *)(upperRowCellAddress + 0x50) & 0x20000000) == 0) {
+          neighborWaterDeltaAddress = upperRowCellAddress + 0x4c;
           *(int *)neighborWaterDeltaAddress =
                *(int *)neighborWaterDeltaAddress -
-               ((*(int *)(iVar3 + 0x4c) + *(int *)(iVar3 + 0x48)) - sourceSurfaceHeightQ12 >> 3);
+               ((*(int *)(upperRowCellAddress + 0x4c) + *(int *)(upperRowCellAddress + 0x48)) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint *)(iVar3 + 0xd0) & 0x20000000) == 0) {
-          *(int *)(iVar3 + 0xcc) =
-               *(int *)(iVar3 + 0xcc) -
-               ((*(int *)(iVar3 + 0xcc) + *(int *)(iVar3 + 200)) - sourceSurfaceHeightQ12 >> 3);
+        if ((*(uint *)(upperRowCellAddress + 0xd0) & 0x20000000) == 0) {
+          *(int *)(upperRowCellAddress + 0xcc) =
+               *(int *)(upperRowCellAddress + 0xcc) -
+               ((*(int *)(upperRowCellAddress + 0xcc) + *(int *)(upperRowCellAddress + 200)) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint *)(iVar3 + 0x50 + FVar2 * 0x100) & 0x20000000) == 0) {
-          piVar1 = (int *)(iVar3 + 0x4c + FVar2 * 0x100);
-          *piVar1 = *piVar1 - ((*(int *)(iVar3 + 0x4c + FVar2 * 0x100) +
-                               *(int *)(iVar3 + 0x48 + FVar2 * 0x100)) - sourceSurfaceHeightQ12 >> 3
+        if ((*(uint *)(upperRowCellAddress + 0x50 + rowLength * 0x100) & 0x20000000) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + 0x4c + rowLength * 0x100);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + 0x4c + rowLength * 0x100) +
+                               *(int *)(upperRowCellAddress + 0x48 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >> 3
                               );
         }
-        if ((*(uint *)(iVar3 + -0x30 + FVar2 * 0x100) & 0x20000000) == 0) {
-          piVar1 = (int *)(iVar3 + -0x34 + FVar2 * 0x100);
-          *piVar1 = *piVar1 - ((*(int *)(iVar3 + -0x34 + FVar2 * 0x100) +
-                               *(int *)(iVar3 + -0x38 + FVar2 * 0x100)) - sourceSurfaceHeightQ12 >>
+        if ((*(uint *)(upperRowCellAddress + -0x30 + rowLength * 0x100) & 0x20000000) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + -0x34 + rowLength * 0x100);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + -0x34 + rowLength * 0x100) +
+                               *(int *)(upperRowCellAddress + -0x38 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >>
                               3);
         }
-        cellAfterSourceAddress = iVar3 + FVar2 * 0x80;
+        cellAfterSourceAddress = upperRowCellAddress + rowLength * 0x80;
         if ((*(uint *)(cellAfterSourceAddress + -0x30) & 0x20000000) == 0) {
           *(int *)(cellAfterSourceAddress + -0x34) =
                *(int *)(cellAfterSourceAddress + -0x34) -
@@ -3225,54 +3225,54 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
 
 {
-  int *piVar1;
-  FieldGridDimension FVar2;
+  int *lowerNeighborWaterDelta;
+  FieldGridDimension rowLength;
   int columnsRemaining;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
   int sourceCellAddress;
   int cellAfterSourceAddress;
-  int iVar3;
+  int upperRowCellAddress;
   int neighborWaterDeltaAddress;
   FieldGridDimension gridWidth;
   
-  FVar2 = fieldGrid->gridWidth;
+  rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
   sourceCellAddress =
-       (int)fieldGrid + FVar2 * -0x80 + (FVar2 * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
+       (int)fieldGrid + rowLength * -0x80 + (rowLength * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
   do {
-    columnsRemaining = FVar2 - 2;
+    columnsRemaining = rowLength - 2;
     cellAfterSourceAddress = sourceCellAddress;
     do {
       cellAfterSourceAddress = cellAfterSourceAddress + -0x80;
       if ((*(uint *)(cellAfterSourceAddress + -0x30) & 0x40000000) == 0) {
         sourceSurfaceHeightQ12 =
              *(int *)(cellAfterSourceAddress + -0x34) + *(int *)(cellAfterSourceAddress + -0x38);
-        iVar3 = cellAfterSourceAddress + FVar2 * -0x80;
-        if ((*(uint *)(iVar3 + 0x50) & 0x20000000) == 0) {
-          neighborWaterDeltaAddress = iVar3 + 0x4c;
+        upperRowCellAddress = cellAfterSourceAddress + rowLength * -0x80;
+        if ((*(uint *)(upperRowCellAddress + 0x50) & 0x20000000) == 0) {
+          neighborWaterDeltaAddress = upperRowCellAddress + 0x4c;
           *(int *)neighborWaterDeltaAddress =
                *(int *)neighborWaterDeltaAddress -
-               ((*(int *)(iVar3 + 0x4c) + *(int *)(iVar3 + 0x48)) - sourceSurfaceHeightQ12 >> 3);
+               ((*(int *)(upperRowCellAddress + 0x4c) + *(int *)(upperRowCellAddress + 0x48)) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint *)(iVar3 + 0xd0) & 0x20000000) == 0) {
-          *(int *)(iVar3 + 0xcc) =
-               *(int *)(iVar3 + 0xcc) -
-               ((*(int *)(iVar3 + 0xcc) + *(int *)(iVar3 + 200)) - sourceSurfaceHeightQ12 >> 3);
+        if ((*(uint *)(upperRowCellAddress + 0xd0) & 0x20000000) == 0) {
+          *(int *)(upperRowCellAddress + 0xcc) =
+               *(int *)(upperRowCellAddress + 0xcc) -
+               ((*(int *)(upperRowCellAddress + 0xcc) + *(int *)(upperRowCellAddress + 200)) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint *)(iVar3 + 0x50 + FVar2 * 0x100) & 0x20000000) == 0) {
-          piVar1 = (int *)(iVar3 + 0x4c + FVar2 * 0x100);
-          *piVar1 = *piVar1 - ((*(int *)(iVar3 + 0x4c + FVar2 * 0x100) +
-                               *(int *)(iVar3 + 0x48 + FVar2 * 0x100)) - sourceSurfaceHeightQ12 >> 3
+        if ((*(uint *)(upperRowCellAddress + 0x50 + rowLength * 0x100) & 0x20000000) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + 0x4c + rowLength * 0x100);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + 0x4c + rowLength * 0x100) +
+                               *(int *)(upperRowCellAddress + 0x48 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >> 3
                               );
         }
-        if ((*(uint *)(iVar3 + -0x30 + FVar2 * 0x100) & 0x20000000) == 0) {
-          piVar1 = (int *)(iVar3 + -0x34 + FVar2 * 0x100);
-          *piVar1 = *piVar1 - ((*(int *)(iVar3 + -0x34 + FVar2 * 0x100) +
-                               *(int *)(iVar3 + -0x38 + FVar2 * 0x100)) - sourceSurfaceHeightQ12 >>
+        if ((*(uint *)(upperRowCellAddress + -0x30 + rowLength * 0x100) & 0x20000000) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + -0x34 + rowLength * 0x100);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + -0x34 + rowLength * 0x100) +
+                               *(int *)(upperRowCellAddress + -0x38 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >>
                               3);
         }
-        cellAfterSourceAddress = iVar3 + FVar2 * 0x80;
+        cellAfterSourceAddress = upperRowCellAddress + rowLength * 0x80;
         if ((*(uint *)(cellAfterSourceAddress + -0x30) & 0x20000000) == 0) {
           *(int *)(cellAfterSourceAddress + -0x34) =
                *(int *)(cellAfterSourceAddress + -0x34) -
@@ -3310,98 +3310,98 @@ FieldGrid_ProcessHorizontalSpan
           FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension FVar1;
-  longlong lVar2;
-  uint uVar3;
-  int iVar4;
-  int iVar5;
-  dword dVar6;
-  int iVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  int iVar11;
-  FieldGridCell *pFVar12;
-  int *piVar13;
-  FieldGridCell *pFStack_34;
-  int *piStack_30;
-  int iStack_24;
+  FieldGridDimension rowLength;
+  longlong falloffProduct;
+  uint spanRadiusQ12;
+  int maxColumnOrCenterX;
+  int spanColumnCount;
+  dword cellDistance;
+  int minColumnOrCenterY;
+  int minRowOrSourceHeight;
+  int blendedHeight;
+  int maxRowOrColumnsLeft;
+  int heightDifference;
+  FieldGridCell *spanCell;
+  int *accumulatorCursor;
+  FieldGridCell *rowStartCell;
+  int *rowStartAccumulator;
+  int rowsRemaining;
   
-  uVar3 = radiusUnits * 0x40;
-  if ((int)uVar3 < 0) {
-    uVar3 = radiusUnits * -0x40;
+  spanRadiusQ12 = radiusUnits * 0x40;
+  if ((int)spanRadiusQ12 < 0) {
+    spanRadiusQ12 = radiusUnits * -0x40;
   }
-  if (0x5000 < uVar3) {
-    uVar3 = 0x5000;
+  if (0x5000 < spanRadiusQ12) {
+    spanRadiusQ12 = 0x5000;
   }
-  iVar7 = centerWorldXQ12 + uVar3 * -4;
-  iVar8 = centerWorldYQ12 + uVar3 * -4;
-  iVar4 = (int)(iVar7 + 0xfff + uVar3 * 8) >> 0xc;
-  iVar10 = (int)(iVar8 + 0xfff + uVar3 * 8) >> 0xc;
-  iVar7 = iVar7 >> 0xc;
-  if (iVar7 < 0) {
-    iVar7 = 0;
+  minColumnOrCenterY = centerWorldXQ12 + spanRadiusQ12 * -4;
+  minRowOrSourceHeight = centerWorldYQ12 + spanRadiusQ12 * -4;
+  maxColumnOrCenterX = (int)(minColumnOrCenterY + 0xfff + spanRadiusQ12 * 8) >> 0xc;
+  maxRowOrColumnsLeft = (int)(minRowOrSourceHeight + 0xfff + spanRadiusQ12 * 8) >> 0xc;
+  minColumnOrCenterY = minColumnOrCenterY >> 0xc;
+  if (minColumnOrCenterY < 0) {
+    minColumnOrCenterY = 0;
   }
-  iVar8 = iVar8 >> 0xc;
-  if (iVar8 < 0) {
-    iVar8 = 0;
+  minRowOrSourceHeight = minRowOrSourceHeight >> 0xc;
+  if (minRowOrSourceHeight < 0) {
+    minRowOrSourceHeight = 0;
   }
-  if ((int)fieldGrid->gridWidth <= iVar4) {
-    iVar4 = fieldGrid->gridWidth - 1;
+  if ((int)fieldGrid->gridWidth <= maxColumnOrCenterX) {
+    maxColumnOrCenterX = fieldGrid->gridWidth - 1;
   }
-  if ((int)fieldGrid->gridHeight <= iVar10) {
-    iVar10 = fieldGrid->gridHeight - 1;
+  if ((int)fieldGrid->gridHeight <= maxRowOrColumnsLeft) {
+    maxRowOrColumnsLeft = fieldGrid->gridHeight - 1;
   }
-  if ((iVar7 <= iVar4) && (iVar8 <= iVar10)) {
-    iVar5 = (iVar4 - iVar7) + 1;
-    iVar7 = iVar8 * fieldGrid->gridWidth + iVar7;
-    iStack_24 = (iVar10 - iVar8) + 1;
-    piVar13 = accumulatorPlane + iVar7;
-    FVar1 = fieldGrid->gridWidth;
-    iVar8 = (centerWorldYQ12 >> 0xc) * FVar1 + (centerWorldXQ12 >> 0xc);
-    pFVar12 = fieldGrid->cells + iVar7;
-    iVar4 = fieldGrid->cells[iVar8].worldX;
-    iVar7 = fieldGrid->cells[iVar8].worldY;
-    iVar8 = fieldGrid->cells
+  if ((minColumnOrCenterY <= maxColumnOrCenterX) && (minRowOrSourceHeight <= maxRowOrColumnsLeft)) {
+    spanColumnCount = (maxColumnOrCenterX - minColumnOrCenterY) + 1;
+    minColumnOrCenterY = minRowOrSourceHeight * fieldGrid->gridWidth + minColumnOrCenterY;
+    rowsRemaining = (maxRowOrColumnsLeft - minRowOrSourceHeight) + 1;
+    accumulatorCursor = accumulatorPlane + minColumnOrCenterY;
+    rowLength = fieldGrid->gridWidth;
+    minRowOrSourceHeight = (centerWorldYQ12 >> 0xc) * rowLength + (centerWorldXQ12 >> 0xc);
+    spanCell = fieldGrid->cells + minColumnOrCenterY;
+    maxColumnOrCenterX = fieldGrid->cells[minRowOrSourceHeight].worldX;
+    minColumnOrCenterY = fieldGrid->cells[minRowOrSourceHeight].worldY;
+    minRowOrSourceHeight = fieldGrid->cells
             [(sourceWorldYQ12 >> 0xc) * fieldGrid->gridWidth + (sourceWorldXQ12 >> 0xc)].
             terrainHeight;
-    iVar10 = iVar5;
-    pFStack_34 = pFVar12;
-    piStack_30 = piVar13;
+    maxRowOrColumnsLeft = spanColumnCount;
+    rowStartCell = spanCell;
+    rowStartAccumulator = accumulatorCursor;
     do {
       do {
-        dVar6 = FixedMath_Length2(pFVar12->worldY - iVar7,pFVar12->worldX - iVar4);
-        if (dVar6 <= uVar3 + 1) {
-          iVar11 = (iVar8 + heightDeltaUnits * -0x40) - *piVar13;
-          lVar2 = (longlong)
+        cellDistance = FixedMath_Length2(spanCell->worldY - minColumnOrCenterY,spanCell->worldX - maxColumnOrCenterX);
+        if (cellDistance <= spanRadiusQ12 + 1) {
+          heightDifference = (minRowOrSourceHeight + heightDeltaUnits * -0x40) - *accumulatorCursor;
+          falloffProduct = (longlong)
                   (g_FixedCosQ28
                    [(int)((longlong)
-                          ((((longlong)(int)dVar6 & 0x1ffffffffffffU) >> 0x11) << 0x20 |
-                          (longlong)(int)dVar6 * 0x8000 & 0xffffffffU) / (longlong)(int)(uVar3 + 1))
-                   ] + 0x10000000) * (longlong)iVar11;
-          iVar9 = ((int)((ulonglong)lVar2 >> 0x20) << 3 | (uint)lVar2 >> 0x1d) + *piVar13;
-          if (iVar11 != 0) {
-            if (iVar11 < 0) {
-              if (iVar9 < *piVar13) {
-                *piVar13 = iVar9;
+                          ((((longlong)(int)cellDistance & 0x1ffffffffffffU) >> 0x11) << 0x20 |
+                          (longlong)(int)cellDistance * 0x8000 & 0xffffffffU) / (longlong)(int)(spanRadiusQ12 + 1))
+                   ] + 0x10000000) * (longlong)heightDifference;
+          blendedHeight = ((int)((ulonglong)falloffProduct >> 0x20) << 3 | (uint)falloffProduct >> 0x1d) + *accumulatorCursor;
+          if (heightDifference != 0) {
+            if (heightDifference < 0) {
+              if (blendedHeight < *accumulatorCursor) {
+                *accumulatorCursor = blendedHeight;
               }
             }
-            else if (*piVar13 < iVar9) {
-              *piVar13 = iVar9;
+            else if (*accumulatorCursor < blendedHeight) {
+              *accumulatorCursor = blendedHeight;
             }
           }
         }
-        pFVar12 = pFVar12 + 1;
-        piVar13 = piVar13 + 1;
-        iVar10 = iVar10 + -1;
-      } while (iVar10 != 0);
-      piVar13 = piStack_30 + FVar1;
-      pFVar12 = pFStack_34 + FVar1;
-      iStack_24 = iStack_24 + -1;
-      iVar10 = iVar5;
-      pFStack_34 = pFVar12;
-      piStack_30 = piVar13;
-    } while (iStack_24 != 0);
+        spanCell = spanCell + 1;
+        accumulatorCursor = accumulatorCursor + 1;
+        maxRowOrColumnsLeft = maxRowOrColumnsLeft + -1;
+      } while (maxRowOrColumnsLeft != 0);
+      accumulatorCursor = rowStartAccumulator + rowLength;
+      spanCell = rowStartCell + rowLength;
+      rowsRemaining = rowsRemaining + -1;
+      maxRowOrColumnsLeft = spanColumnCount;
+      rowStartCell = spanCell;
+      rowStartAccumulator = accumulatorCursor;
+    } while (rowsRemaining != 0);
   }
   return;
 }
@@ -3420,93 +3420,93 @@ FieldGrid_ProcessVerticalSpan
           FieldGridAsset *fieldGrid)
 
 {
-  int iVar1;
-  FieldGridDimension FVar2;
-  longlong lVar3;
-  uint uVar4;
-  int iVar5;
-  int iVar6;
-  dword dVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  FieldGridCell *pFVar11;
-  int *piVar12;
-  FieldGridCell *pFStack_30;
-  int *piStack_2c;
-  int iStack_24;
+  int targetOffset;
+  FieldGridDimension rowLength;
+  longlong falloffProduct;
+  uint spanRadiusQ12;
+  int maxColumnOrCenterX;
+  int spanColumnCount;
+  dword cellDistance;
+  int minColumnOrCenterY;
+  int minRowOrColumnsLeft;
+  int maxRowOrBlendedValue;
+  FieldGridCell *spanCell;
+  int *accumulatorCursor;
+  FieldGridCell *rowStartCell;
+  int *rowStartAccumulator;
+  int rowsRemaining;
   
-  uVar4 = radiusUnits * 0x40;
-  if ((int)uVar4 < 0) {
-    uVar4 = radiusUnits * -0x40;
+  spanRadiusQ12 = radiusUnits * 0x40;
+  if ((int)spanRadiusQ12 < 0) {
+    spanRadiusQ12 = radiusUnits * -0x40;
   }
-  if (0x5000 < uVar4) {
-    uVar4 = 0x5000;
+  if (0x5000 < spanRadiusQ12) {
+    spanRadiusQ12 = 0x5000;
   }
-  iVar1 = heightDeltaUnits * -0x40;
-  iVar8 = centerWorldXQ12 + uVar4 * -2;
-  iVar9 = centerWorldYQ12 + uVar4 * -2;
-  iVar5 = (int)(iVar8 + 0xfff + uVar4 * 4) >> 0xc;
-  iVar10 = (int)(iVar9 + 0xfff + uVar4 * 4) >> 0xc;
-  iVar8 = iVar8 >> 0xc;
-  if (iVar8 < 0) {
-    iVar8 = 0;
+  targetOffset = heightDeltaUnits * -0x40;
+  minColumnOrCenterY = centerWorldXQ12 + spanRadiusQ12 * -2;
+  minRowOrColumnsLeft = centerWorldYQ12 + spanRadiusQ12 * -2;
+  maxColumnOrCenterX = (int)(minColumnOrCenterY + 0xfff + spanRadiusQ12 * 4) >> 0xc;
+  maxRowOrBlendedValue = (int)(minRowOrColumnsLeft + 0xfff + spanRadiusQ12 * 4) >> 0xc;
+  minColumnOrCenterY = minColumnOrCenterY >> 0xc;
+  if (minColumnOrCenterY < 0) {
+    minColumnOrCenterY = 0;
   }
-  iVar9 = iVar9 >> 0xc;
-  if (iVar9 < 0) {
-    iVar9 = 0;
+  minRowOrColumnsLeft = minRowOrColumnsLeft >> 0xc;
+  if (minRowOrColumnsLeft < 0) {
+    minRowOrColumnsLeft = 0;
   }
-  if ((int)fieldGrid->gridWidth <= iVar5) {
-    iVar5 = fieldGrid->gridWidth - 1;
+  if ((int)fieldGrid->gridWidth <= maxColumnOrCenterX) {
+    maxColumnOrCenterX = fieldGrid->gridWidth - 1;
   }
-  if ((int)fieldGrid->gridHeight <= iVar10) {
-    iVar10 = fieldGrid->gridHeight - 1;
+  if ((int)fieldGrid->gridHeight <= maxRowOrBlendedValue) {
+    maxRowOrBlendedValue = fieldGrid->gridHeight - 1;
   }
-  if ((iVar8 <= iVar5) && (iVar9 <= iVar10)) {
-    iVar6 = (iVar5 - iVar8) + 1;
-    iVar8 = iVar9 * fieldGrid->gridWidth + iVar8;
-    iStack_24 = (iVar10 - iVar9) + 1;
-    piVar12 = accumulatorPlane + iVar8;
-    FVar2 = fieldGrid->gridWidth;
-    iVar9 = (centerWorldYQ12 >> 0xc) * FVar2 + (centerWorldXQ12 >> 0xc);
-    pFVar11 = fieldGrid->cells + iVar8;
-    iVar5 = fieldGrid->cells[iVar9].worldX;
-    iVar8 = fieldGrid->cells[iVar9].worldY;
-    iVar9 = iVar6;
-    pFStack_30 = pFVar11;
-    piStack_2c = piVar12;
+  if ((minColumnOrCenterY <= maxColumnOrCenterX) && (minRowOrColumnsLeft <= maxRowOrBlendedValue)) {
+    spanColumnCount = (maxColumnOrCenterX - minColumnOrCenterY) + 1;
+    minColumnOrCenterY = minRowOrColumnsLeft * fieldGrid->gridWidth + minColumnOrCenterY;
+    rowsRemaining = (maxRowOrBlendedValue - minRowOrColumnsLeft) + 1;
+    accumulatorCursor = accumulatorPlane + minColumnOrCenterY;
+    rowLength = fieldGrid->gridWidth;
+    minRowOrColumnsLeft = (centerWorldYQ12 >> 0xc) * rowLength + (centerWorldXQ12 >> 0xc);
+    spanCell = fieldGrid->cells + minColumnOrCenterY;
+    maxColumnOrCenterX = fieldGrid->cells[minRowOrColumnsLeft].worldX;
+    minColumnOrCenterY = fieldGrid->cells[minRowOrColumnsLeft].worldY;
+    minRowOrColumnsLeft = spanColumnCount;
+    rowStartCell = spanCell;
+    rowStartAccumulator = accumulatorCursor;
     do {
       do {
-        dVar7 = FixedMath_Length2(pFVar11->worldY - iVar8,pFVar11->worldX - iVar5);
-        if (dVar7 <= uVar4 + 1) {
-          lVar3 = (longlong)
+        cellDistance = FixedMath_Length2(spanCell->worldY - minColumnOrCenterY,spanCell->worldX - maxColumnOrCenterX);
+        if (cellDistance <= spanRadiusQ12 + 1) {
+          falloffProduct = (longlong)
                   (g_FixedCosQ28
                    [(int)((longlong)
-                          ((((longlong)(int)dVar7 & 0x1ffffffffffffU) >> 0x11) << 0x20 |
-                          (longlong)(int)dVar7 * 0x8000 & 0xffffffffU) / (longlong)(int)(uVar4 + 1))
-                   ] + 0x10000000) * (longlong)iVar1;
-          iVar10 = ((int)((ulonglong)lVar3 >> 0x20) << 3 | (uint)lVar3 >> 0x1d) + *piVar12;
-          if (iVar1 < 0) {
-            if (iVar10 < iVar1) {
-              iVar10 = iVar1;
+                          ((((longlong)(int)cellDistance & 0x1ffffffffffffU) >> 0x11) << 0x20 |
+                          (longlong)(int)cellDistance * 0x8000 & 0xffffffffU) / (longlong)(int)(spanRadiusQ12 + 1))
+                   ] + 0x10000000) * (longlong)targetOffset;
+          maxRowOrBlendedValue = ((int)((ulonglong)falloffProduct >> 0x20) << 3 | (uint)falloffProduct >> 0x1d) + *accumulatorCursor;
+          if (targetOffset < 0) {
+            if (maxRowOrBlendedValue < targetOffset) {
+              maxRowOrBlendedValue = targetOffset;
             }
           }
-          else if (iVar1 < iVar10) {
-            iVar10 = iVar1;
+          else if (targetOffset < maxRowOrBlendedValue) {
+            maxRowOrBlendedValue = targetOffset;
           }
-          *piVar12 = iVar10;
+          *accumulatorCursor = maxRowOrBlendedValue;
         }
-        pFVar11 = pFVar11 + 1;
-        piVar12 = piVar12 + 1;
-        iVar9 = iVar9 + -1;
-      } while (iVar9 != 0);
-      piVar12 = piStack_2c + FVar2;
-      pFVar11 = pFStack_30 + FVar2;
-      iStack_24 = iStack_24 + -1;
-      iVar9 = iVar6;
-      pFStack_30 = pFVar11;
-      piStack_2c = piVar12;
-    } while (iStack_24 != 0);
+        spanCell = spanCell + 1;
+        accumulatorCursor = accumulatorCursor + 1;
+        minRowOrColumnsLeft = minRowOrColumnsLeft + -1;
+      } while (minRowOrColumnsLeft != 0);
+      accumulatorCursor = rowStartAccumulator + rowLength;
+      spanCell = rowStartCell + rowLength;
+      rowsRemaining = rowsRemaining + -1;
+      minRowOrColumnsLeft = spanColumnCount;
+      rowStartCell = spanCell;
+      rowStartAccumulator = accumulatorCursor;
+    } while (rowsRemaining != 0);
   }
   return;
 }
@@ -3524,14 +3524,14 @@ FieldGrid_ApplySingleCellTransition
 
 {
   int gridRowIndex;
-  int iVar1;
+  int columnOrCellIndex;
   
   gridRowIndex = worldYQ12 >> 0xc;
-  if ((((-1 < gridRowIndex) && (iVar1 = worldXQ12 >> 0xc, -1 < iVar1)) &&
-      (gridRowIndex < (int)fieldGrid->gridHeight)) && (iVar1 < (int)fieldGrid->gridWidth)) {
-    iVar1 = gridRowIndex * fieldGrid->gridWidth + iVar1;
-    fieldGrid->cells[iVar1].flagsAndMaterial =
-         fieldGrid->cells[iVar1].flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK | transitionValue;
+  if ((((-1 < gridRowIndex) && (columnOrCellIndex = worldXQ12 >> 0xc, -1 < columnOrCellIndex)) &&
+      (gridRowIndex < (int)fieldGrid->gridHeight)) && (columnOrCellIndex < (int)fieldGrid->gridWidth)) {
+    columnOrCellIndex = gridRowIndex * fieldGrid->gridWidth + columnOrCellIndex;
+    fieldGrid->cells[columnOrCellIndex].flagsAndMaterial =
+         fieldGrid->cells[columnOrCellIndex].flagsAndMaterial & ~FIELD_CELL_MATERIAL_ID_MASK | transitionValue;
   }
   return;
 }
@@ -3547,28 +3547,28 @@ void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyRectangularTransition(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
-  Q12 *pQVar1;
-  int iVar2;
-  int iVar3;
+  Q12 *heightField;
+  int rowOrHeightDelta;
+  int columnOrCellIndex;
   FieldGridDimension gridWidth;
   
   gridWidth = fieldGrid->gridWidth;
-  iVar2 = worldYQ12 >> 0xc;
-  iVar3 = worldXQ12 >> 0xc;
-  if ((((1 < iVar2) && (1 < iVar3)) && (iVar2 + 1 < (int)fieldGrid->gridHeight)) &&
-     (iVar3 + 1 < (int)gridWidth)) {
-    iVar3 = (iVar2 + -1) * gridWidth + iVar3;
-    iVar2 = (fieldGrid->cells[iVar3].terrainHeight +
-             *(int *)((&fieldGrid[1].common.buildMetadata.names)[iVar3].producerName + 0xc) +
-             fieldGrid->cells[iVar3 + (gridWidth - 1)].terrainHeight +
-             *(int *)((&fieldGrid[1].common.buildMetadata.names)[iVar3 + gridWidth].producerName +
-                     0xc) + *(int *)(fieldGrid->sourcePath + iVar3 * 0x40 + gridWidth * 0x80 + 100)
-            + fieldGrid->cells[iVar3 + gridWidth * 2].terrainHeight) / 6 -
-            fieldGrid->cells[iVar3 + gridWidth].terrainHeight;
-    pQVar1 = &fieldGrid->cells[iVar3 + gridWidth].terrainHeight;
-    *pQVar1 = *pQVar1 + iVar2;
-    pQVar1 = &fieldGrid->cells[iVar3 + gridWidth].waterSurfaceDelta;
-    *pQVar1 = *pQVar1 - iVar2;
+  rowOrHeightDelta = worldYQ12 >> 0xc;
+  columnOrCellIndex = worldXQ12 >> 0xc;
+  if ((((1 < rowOrHeightDelta) && (1 < columnOrCellIndex)) && (rowOrHeightDelta + 1 < (int)fieldGrid->gridHeight)) &&
+     (columnOrCellIndex + 1 < (int)gridWidth)) {
+    columnOrCellIndex = (rowOrHeightDelta + -1) * gridWidth + columnOrCellIndex;
+    rowOrHeightDelta = (fieldGrid->cells[columnOrCellIndex].terrainHeight +
+             *(int *)((&fieldGrid[1].common.buildMetadata.names)[columnOrCellIndex].producerName + 0xc) +
+             fieldGrid->cells[columnOrCellIndex + (gridWidth - 1)].terrainHeight +
+             *(int *)((&fieldGrid[1].common.buildMetadata.names)[columnOrCellIndex + gridWidth].producerName +
+                     0xc) + *(int *)(fieldGrid->sourcePath + columnOrCellIndex * 0x40 + gridWidth * 0x80 + 100)
+            + fieldGrid->cells[columnOrCellIndex + gridWidth * 2].terrainHeight) / 6 -
+            fieldGrid->cells[columnOrCellIndex + gridWidth].terrainHeight;
+    heightField = &fieldGrid->cells[columnOrCellIndex + gridWidth].terrainHeight;
+    *heightField = *heightField + rowOrHeightDelta;
+    heightField = &fieldGrid->cells[columnOrCellIndex + gridWidth].waterSurfaceDelta;
+    *heightField = *heightField - rowOrHeightDelta;
   }
   return;
 }
@@ -3585,16 +3585,16 @@ FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
 
 {
   uint gridHalfRowCoordinateQ12;
-  FieldGridCoordinatesEaxEdx8 FVar1;
+  FieldGridCoordinatesEaxEdx8 gridCoordinates;
   
   gridHalfRowCoordinateQ12 =
        (int)((ulonglong)((longlong)worldY * -0x20c8cc) >> 0x20) << 0xb |
        (uint)((longlong)worldY * -0x20c8cc) >> 0x15;
-  FVar1.rowQ12 = gridHalfRowCoordinateQ12 * 2;
-  FVar1.columnQ12 =
+  gridCoordinates.rowQ12 = gridHalfRowCoordinateQ12 * 2;
+  gridCoordinates.columnQ12 =
        ((int)((ulonglong)((longlong)worldX * 0x1c6e9c) >> 0x20) << 0xc |
        (uint)((longlong)worldX * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12;
-  return FVar1;
+  return gridCoordinates;
 }
 
 
@@ -3610,14 +3610,14 @@ FieldGrid_ApplyMaskedRegionCore
 
 {
   int gridRowIndex;
-  int iVar1;
+  int columnOrCellIndex;
   
   gridRowIndex = worldYQ12 >> 0xc;
-  if ((((-1 < gridRowIndex) && (iVar1 = worldXQ12 >> 0xc, -1 < iVar1)) &&
-      (gridRowIndex < (int)fieldGrid->gridHeight)) && (iVar1 < (int)fieldGrid->gridWidth)) {
-    iVar1 = gridRowIndex * fieldGrid->gridWidth + iVar1;
-    fieldGrid->cells[iVar1].flagsAndMaterial =
-         preserveMask & fieldGrid->cells[iVar1].flagsAndMaterial | setMask;
+  if ((((-1 < gridRowIndex) && (columnOrCellIndex = worldXQ12 >> 0xc, -1 < columnOrCellIndex)) &&
+      (gridRowIndex < (int)fieldGrid->gridHeight)) && (columnOrCellIndex < (int)fieldGrid->gridWidth)) {
+    columnOrCellIndex = gridRowIndex * fieldGrid->gridWidth + columnOrCellIndex;
+    fieldGrid->cells[columnOrCellIndex].flagsAndMaterial =
+         preserveMask & fieldGrid->cells[columnOrCellIndex].flagsAndMaterial | setMask;
   }
   return;
 }
@@ -3635,65 +3635,65 @@ FieldGridCell_RecomputeTriangleNormalAngles
           (FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  FixedMathVectorAnglesRegs8 FVar8;
+  int rightDeltaOrNegativeStride;
+  int neighborDeltaA;
+  int neighborDeltaB;
+  int neighborDeltaC;
+  int neighborDeltaD;
+  int neighborDeltaE;
+  int neighborDeltaF;
+  FixedMathVectorAnglesRegs8 normalAngles;
   
-  iVar1 = cell[1].terrainHeight - cell->terrainHeight;
-  iVar2 = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - cell->terrainHeight;
-  iVar3 = *(int *)((int)cell + (0x48 - rowStrideBytes)) - cell->terrainHeight;
-  iVar4 = cell[-1].terrainHeight - cell->terrainHeight;
-  iVar5 = *(int *)(cell->runtime0C_3F + rowStrideBytes + -0x44) - cell->terrainHeight;
-  iVar6 = *(int *)((int)cell + (200 - rowStrideBytes)) - cell->terrainHeight;
-  FVar8 = FixedMath_VectorToAngles3Regs
+  rightDeltaOrNegativeStride = cell[1].terrainHeight - cell->terrainHeight;
+  neighborDeltaA = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - cell->terrainHeight;
+  neighborDeltaB = *(int *)((int)cell + (0x48 - rowStrideBytes)) - cell->terrainHeight;
+  neighborDeltaC = cell[-1].terrainHeight - cell->terrainHeight;
+  neighborDeltaD = *(int *)(cell->runtime0C_3F + rowStrideBytes + -0x44) - cell->terrainHeight;
+  neighborDeltaE = *(int *)((int)cell + (200 - rowStrideBytes)) - cell->terrainHeight;
+  normalAngles = FixedMath_VectorToAngles3Regs
                     (0xc00000,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x1c) -
-                                    cell->worldY) * iVar2) - (cell[1].worldY - cell->worldY) * iVar1
+                                    cell->worldY) * neighborDeltaA) - (cell[1].worldY - cell->worldY) * rightDeltaOrNegativeStride
                                  ) - (*(int *)((int)cell + (0x44 - rowStrideBytes)) - cell->worldY)
-                                     * iVar3) - (cell[-1].worldY - cell->worldY) * iVar4) -
+                                     * neighborDeltaB) - (cell[-1].worldY - cell->worldY) * neighborDeltaC) -
                               (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x48) - cell->worldY)
-                              * iVar5) -
-                              (*(int *)((int)cell + (0xc4 - rowStrideBytes)) - cell->worldY) * iVar6
+                              * neighborDeltaD) -
+                              (*(int *)((int)cell + (0xc4 - rowStrideBytes)) - cell->worldY) * neighborDeltaE
                      ,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x20) - cell->worldX) *
-                           iVar2) - (cell[1].worldX - cell->worldX) * iVar1) -
-                        (*(int *)((int)cell + (0x40 - rowStrideBytes)) - cell->worldX) * iVar3) -
-                       (cell[-1].worldX - cell->worldX) * iVar4) -
-                      (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * iVar5
-                      ) - (*(int *)((int)cell + (0xc0 - rowStrideBytes)) - cell->worldX) * iVar6);
-  cell->triangle0NormalAngles = FVar8.ecx | FVar8.edx << 0x10;
-  iVar1 = -rowStrideBytes;
-  iVar2 = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
+                           neighborDeltaA) - (cell[1].worldX - cell->worldX) * rightDeltaOrNegativeStride) -
+                        (*(int *)((int)cell + (0x40 - rowStrideBytes)) - cell->worldX) * neighborDeltaB) -
+                       (cell[-1].worldX - cell->worldX) * neighborDeltaC) -
+                      (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * neighborDeltaD
+                      ) - (*(int *)((int)cell + (0xc0 - rowStrideBytes)) - cell->worldX) * neighborDeltaE);
+  cell->triangle0NormalAngles = normalAngles.ecx | normalAngles.edx << 0x10;
+  rightDeltaOrNegativeStride = -rowStrideBytes;
+  neighborDeltaA = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  iVar3 = ((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) +
+  neighborDeltaB = ((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) +
            *(int *)(cell->runtime60_6B + rowStrideBytes + -0x14)) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  iVar4 = ((*(int *)((int)cell + iVar1 + 0x48) + *(int *)((int)cell + iVar1 + 0x4c)) -
+  neighborDeltaC = ((*(int *)((int)cell + rightDeltaOrNegativeStride + 0x48) + *(int *)((int)cell + rightDeltaOrNegativeStride + 0x4c)) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
-  iVar5 = ((cell[-1].terrainHeight + cell[-1].waterSurfaceDelta) - cell->terrainHeight) -
+  neighborDeltaD = ((cell[-1].terrainHeight + cell[-1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  iVar6 = ((*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x44) +
+  neighborDeltaE = ((*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x44) +
            *(int *)(cell->runtime0C_3F + rowStrideBytes + -0x40)) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
-  iVar7 = ((*(int *)((int)cell + iVar1 + 200) + *(int *)((int)cell + iVar1 + 0xcc)) -
+  neighborDeltaF = ((*(int *)((int)cell + rightDeltaOrNegativeStride + 200) + *(int *)((int)cell + rightDeltaOrNegativeStride + 0xcc)) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
-  FVar8 = FixedMath_VectorToAngles3Regs
+  normalAngles = FixedMath_VectorToAngles3Regs
                     (0xc00000,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x1c) -
-                                    cell->worldY) * iVar3) - (cell[1].worldY - cell->worldY) * iVar2
-                                 ) - (*(int *)((int)cell + iVar1 + 0x44) - cell->worldY) * iVar4) -
-                               (cell[-1].worldY - cell->worldY) * iVar5) -
+                                    cell->worldY) * neighborDeltaB) - (cell[1].worldY - cell->worldY) * neighborDeltaA
+                                 ) - (*(int *)((int)cell + rightDeltaOrNegativeStride + 0x44) - cell->worldY) * neighborDeltaC) -
+                               (cell[-1].worldY - cell->worldY) * neighborDeltaD) -
                               (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x48) - cell->worldY)
-                              * iVar6) - (*(int *)((int)cell + iVar1 + 0xc4) - cell->worldY) * iVar7
+                              * neighborDeltaE) - (*(int *)((int)cell + rightDeltaOrNegativeStride + 0xc4) - cell->worldY) * neighborDeltaF
                      ,((((-((*(int *)(cell->runtime60_6B + rowStrideBytes + -0x20) - cell->worldX) *
-                           iVar3) - (cell[1].worldX - cell->worldX) * iVar2) -
-                        (*(int *)((int)cell + iVar1 + 0x40) - cell->worldX) * iVar4) -
-                       (cell[-1].worldX - cell->worldX) * iVar5) -
-                      (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * iVar6
-                      ) - (*(int *)((int)cell + iVar1 + 0xc0) - cell->worldX) * iVar7);
-  cell->triangle1NormalAngles = FVar8.ecx | FVar8.edx << 0x10;
+                           neighborDeltaB) - (cell[1].worldX - cell->worldX) * neighborDeltaA) -
+                        (*(int *)((int)cell + rightDeltaOrNegativeStride + 0x40) - cell->worldX) * neighborDeltaC) -
+                       (cell[-1].worldX - cell->worldX) * neighborDeltaD) -
+                      (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * neighborDeltaE
+                      ) - (*(int *)((int)cell + rightDeltaOrNegativeStride + 0xc0) - cell->worldX) * neighborDeltaF);
+  cell->triangle1NormalAngles = normalAngles.ecx | normalAngles.edx << 0x10;
   return;
 }
 
@@ -3711,16 +3711,16 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 
 {
   FixedDirectionXZEdxEax8 triangleNormalDirectionXZQ28;
-  FixedDirectionXyzRegs12 FVar1;
+  FixedDirectionXyzRegs12 normalDirection;
   PackedArgb32 directionalLightColor;
   
-  FVar1 = FixedMath_DirectionFromAnglesQ28Regs
+  normalDirection = FixedMath_DirectionFromAnglesQ28Regs
                     ((int)cell->triangle0NormalAngles >> 0x10,cell->triangle0NormalAngles & 0xffff);
   directionalLightColor =
        (&g_TerrainDirectionalLightColorLut)
-       [(int)((ulonglong)((longlong)(int)FVar1.eax * (longlong)(int)g_TerrainLightDirectionX) >> 0x20) +
-        (int)((ulonglong)((longlong)(int)FVar1.ecx * (longlong)(int)g_TerrainLightDirectionY) >> 0x20) +
-        (int)((ulonglong)((longlong)(int)FVar1.edx * (longlong)(int)g_TerrainLightDirectionZ) >> 0x20) >>
+       [(int)((ulonglong)((longlong)(int)normalDirection.eax * (longlong)(int)g_TerrainLightDirectionX) >> 0x20) +
+        (int)((ulonglong)((longlong)(int)normalDirection.ecx * (longlong)(int)g_TerrainLightDirectionY) >> 0x20) +
+        (int)((ulonglong)((longlong)(int)normalDirection.edx * (longlong)(int)g_TerrainLightDirectionZ) >> 0x20) >>
         0x10];
   cell->secondarySurfaceDirectionalLightColor5C = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor58 = directionalLightColor;
